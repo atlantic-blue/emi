@@ -9,7 +9,7 @@
 //
 // Coordinates are font units with the baseline at y zero and y rising, the word starting
 // at x zero. The dot of the i is not here: the ring in geometry.ts replaces it.
-// brand/README.md says how to draw these again.
+// brand/logo/README.md says how to draw these again.
 
 export type Command =
   | { readonly type: 'M'; readonly x: number; readonly y: number }

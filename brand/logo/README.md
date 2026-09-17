@@ -1,5 +1,7 @@
 # The mark
 
+The icons are drawn next door, in `brand/icons`.
+
 Three files, all drawn by one program from one set of numbers.
 
     brand/logo/emi-wordmark.svg   the word, with the ring as the dot of the i
