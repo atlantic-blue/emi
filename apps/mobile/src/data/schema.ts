@@ -1,6 +1,7 @@
 import type { Database } from './database';
 import { dayLogMigration } from './migrations/001-day-log';
-import { settingMigration } from './migrations/002-setting';
+import { cycleMigration } from './migrations/002-cycle';
+import { settingMigration } from './migrations/003-setting';
 
 export interface Migration {
   readonly version: number;
@@ -15,7 +16,7 @@ export interface MigrationOutcome {
 }
 
 /** In version order. A shipped migration is never edited, because a phone has already run it. */
-export const migrations: readonly Migration[] = [dayLogMigration, settingMigration];
+export const migrations: readonly Migration[] = [dayLogMigration, cycleMigration, settingMigration];
 
 export function schemaVersion(db: Database): number {
   const rows = db.all<{ user_version: number }>('PRAGMA user_version');

@@ -1,8 +1,8 @@
+import { type DayRecord, recordBytes } from '@emi/crypto';
 import { type Flow, daysBetween } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import { insertDayLog } from '../../data/dayLogRepository';
-import { type RecordedDay, encodeDay } from '../../data/dayPayload';
 import { readSetting, writeSetting } from '../../data/settingRepository';
 import { localDay } from './days';
 
@@ -90,7 +90,7 @@ export function completeFirstRun(db: Database, answers: FirstRunAnswers, now: Da
     throw new FirstRunError('first-run-is-already-done', 'the first run is already done');
   }
 
-  const recorded: RecordedDay = {
+  const recorded: DayRecord = {
     day: answers.periodStartedOn,
     flow: firstRunFlow,
     recordedAt: now.toISOString(),
@@ -98,7 +98,7 @@ export function completeFirstRun(db: Database, answers: FirstRunAnswers, now: Da
 
   db.execute('BEGIN');
   try {
-    insertDayLog(db, { day: recorded.day, payload: encodeDay(recorded), now });
+    insertDayLog(db, { day: recorded.day, payload: recordBytes(recorded), now });
     writeSetting(db, 'cycleLengthDays', String(answers.cycleLengthDays));
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
     db.execute('COMMIT');

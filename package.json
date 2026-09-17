@@ -17,6 +17,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit --project tsconfig.json && npm run typecheck --workspaces --if-present",
     "check:documents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkDocuments.ts",
+    "generate:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts",
+    "check:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts --check",
     "test": "npm run test:workspace && npm run test:mobile",
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile"

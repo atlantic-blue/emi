@@ -2,13 +2,13 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
+import { recordFromBytes } from '@emi/crypto';
 import { startsACycle } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET } from '@emi/tokens';
 import { StyleSheet } from 'react-native';
 
 import type { Database } from '../../src/data/database';
 import { readDayLog } from '../../src/data/dayLogRepository';
-import { decodeDay } from '../../src/data/dayPayload';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { readSetting } from '../../src/data/settingRepository';
 import {
@@ -188,8 +188,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       const row = readDayLog(herDatabase(), herPeriodStarted);
       expect(row?.day).toBe(herPeriodStarted);
-      expect(row && startsACycle(decodeDay(row.payload))).toBe(true);
-      expect(row && decodeDay(row.payload)).toEqual({
+      expect(row && startsACycle(recordFromBytes(row.payload))).toBe(true);
+      expect(row && recordFromBytes(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
         recordedAt: whenSheOpensIt.toISOString(),

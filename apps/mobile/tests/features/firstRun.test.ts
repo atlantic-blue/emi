@@ -1,8 +1,8 @@
+import { recordFromBytes } from '@emi/crypto';
 import { startsACycle } from '@emi/cycle';
 
 import type { Database, SqlValue } from '../../src/data/database';
 import { listDayLogs, readDayLog } from '../../src/data/dayLogRepository';
-import { decodeDay } from '../../src/data/dayPayload';
 import { migrate } from '../../src/data/schema';
 import { readSetting } from '../../src/data/settingRepository';
 import {
@@ -67,8 +67,8 @@ describe('the answers she gives on the first run', () => {
 
       const row = readDayLog(database, herPeriodStarted);
       expect(row?.revision).toBe(1);
-      expect(row && startsACycle(decodeDay(row.payload))).toBe(true);
-      expect(row && decodeDay(row.payload)).toEqual({
+      expect(row && startsACycle(recordFromBytes(row.payload))).toBe(true);
+      expect(row && recordFromBytes(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
         recordedAt: sheAnswered.toISOString(),
