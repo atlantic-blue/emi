@@ -12,5 +12,5 @@
     "types": ["jest", "node"],
     "noEmit": true
   },
-  "include": ["tools"]
+  "include": ["tools", "brand"]
 }
