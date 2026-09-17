@@ -92,8 +92,14 @@ describe('the migration', () => {
     const afterTheFirstRun = shapeOf(db);
     const second = migrate(db);
 
-    expect(first).toEqual({ from: 0, to: 2, applied: ['day log', 'cycle cache'] });
-    expect(second).toEqual({ from: 2, to: 2, applied: [] });
+    const highest = Math.max(...migrations.map((migration) => migration.version));
+
+    expect(first).toEqual({
+      from: 0,
+      to: highest,
+      applied: migrations.map((migration) => migration.name),
+    });
+    expect(second).toEqual({ from: highest, to: highest, applied: [] });
     expect(shapeOf(db)).toEqual(afterTheFirstRun);
     expect(readDayLog(db, firstDay)?.revision).toBe(1);
   });
