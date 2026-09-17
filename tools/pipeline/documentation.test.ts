@@ -40,10 +40,7 @@ function documentOf(directories: string[], body: string): string {
   return `# The architecture\n\n## ${directoryHeading}\n\nStatus: built\n\n${list}\n\n## The shape\n\nStatus: designed\n\n${body}\n`;
 }
 
-const featuresOf = (
-  mapped: string[],
-  refusals: string[] = ['Partner sharing.'],
-): string =>
+const featuresOf = (mapped: string[], refusals: string[] = ['Partner sharing.']): string =>
   [
     '# The features',
     '',
@@ -63,7 +60,12 @@ const contractsOf = (declared: string[]): string =>
     '',
     '## TOKEN, the design tokens',
     '',
-    ...declared.flatMap((contract) => [`### ${contract}, a contract`, '', 'Verified by a test.', '']),
+    ...declared.flatMap((contract) => [
+      `### ${contract}, a contract`,
+      '',
+      'Verified by a test.',
+      '',
+    ]),
   ].join('\n');
 
 interface Documents {
@@ -391,9 +393,13 @@ describe('a contract in one document and missing from the other fails the run', 
   });
 
   it('reads a declaration from a heading, and not from a fenced block', () => {
-    const document = ['### TOKEN-1, the colour set', '', '```', '### TOKEN-2, a sample', '```'].join(
-      '\n',
-    );
+    const document = [
+      '### TOKEN-1, the colour set',
+      '',
+      '```',
+      '### TOKEN-2, a sample',
+      '```',
+    ].join('\n');
 
     expect(contractsDeclaredIn(document)).toEqual(['TOKEN-1']);
   });

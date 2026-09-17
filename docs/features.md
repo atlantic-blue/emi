@@ -203,7 +203,7 @@ promise about when.
 - The conversational assistant.
 - The doctor's report as a formatted document.
 - The condition guides.
-- Any certification.
+- Any badge from an auditor.
 
 Two of these refusals need a reason.
 
@@ -211,9 +211,9 @@ The conversational assistant is out because it cannot exist at the same time as 
 model that answers a question about a cycle is a call to a server, and the call carries the
 question. Emi keeps the promise and drops the assistant.
 
-Certification is out because nobody has audited Emi. A badge that no auditor signed is a claim the
-code cannot support. Emi is not a contraceptive. Emi is not a medical device. Emi makes no claim
-that it can prevent a pregnancy or achieve one.
+The badge is out because nobody has audited Emi. A badge that no auditor signed is a claim the code
+cannot support. Emi is not a contraceptive. Emi is not a medical device. Emi makes no claim to
+prevent or achieve a pregnancy, and it carries no certification badge that an auditor did not sign.
 
 The export in feature 5 covers the plainer half of the doctor's report. She can take every field out
 of Emi and hand it to a doctor. It is a file and not a formatted document.
