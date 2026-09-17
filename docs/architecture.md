@@ -71,6 +71,7 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.
 - `packages/crypto` holds the encrypted record format: the envelope, the canonical json and the
   ranges a day is checked against.
+- `brand` holds the drawn sources of the mark, and the programs that generate assets from them.
 - `tools` holds the checks that guard the repository rather than the product.
 - `docs` holds this document and the documents beside it.
 
@@ -110,6 +111,22 @@ The slug is the only part written into a record, so it can never change. A name 
 may be rewritten at any time. A symptom that is no longer offered keeps its entry and carries the
 day it retired, because six cycles of her history point at that slug. A record that names a slug
 nothing resolves is a record she cannot read.
+
+## The application icon
+
+Status: built
+
+One program draws every icon size. It is `brand/icon/generate.ts`, and `npm run icons` runs it
+through Node with type stripping. It reads one drawn source, `brand/logo/emi-ring.svg`, and writes
+the icons into `apps/mobile/assets/icon`.
+
+The two stores ask for different lists, and both lists change. The lists are data in
+`brand/icon/sizes.ts`, with the reason beside each size. Apple asks only for the 1024 icon today
+and derives the rest. Emi draws every size itself, because the mark is a thin ring with a gap in it,
+and a resample closes the gap.
+
+The program measures the icon it made. It renders the result, finds the ink, and refuses to write
+when the ring is not 56 percent of the icon width. It also refuses when the drawn source is absent.
 
 ## The cycle arithmetic
 
