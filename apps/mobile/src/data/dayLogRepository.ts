@@ -18,7 +18,9 @@ export type DayLogRefusal =
   | 'payload-is-empty'
   | 'day-already-written'
   | 'day-is-not-written'
-  | 'day-is-deleted';
+  | 'day-is-deleted'
+  | 'revision-is-not-written'
+  | 'revision-is-behind';
 
 export class DayLogError extends Error {
   readonly refusal: DayLogRefusal;
@@ -38,6 +40,12 @@ export interface DayLogWrite {
   readonly id?: string;
 }
 
+export interface DayLogAcknowledgement {
+  readonly day: string;
+  /** The revision the server holds. */
+  readonly revision: number;
+}
+
 export interface DayLogDelete {
   readonly day: string;
   readonly now: Date;
@@ -52,13 +60,11 @@ export function insertDayLog(db: Database, write: DayLogWrite): DayLogRow {
   const instant = checkedInstant(write.now);
 
   const held = record(db, day);
+  if (held?.deletedAt != null) {
+    return revive(db, { day, payload, instant });
+  }
   if (held) {
-    throw new DayLogError(
-      'day-already-written',
-      held.deletedAt === null
-        ? `${day} is already written, edit it instead`
-        : `${day} is already written and deleted`,
-    );
+    throw new DayLogError('day-already-written', `${day} is already written, edit it instead`);
   }
 
   db.run(
@@ -69,6 +75,23 @@ export function insertDayLog(db: Database, write: DayLogWrite): DayLogRow {
   );
 
   return written(db, day);
+}
+
+/**
+ * She deleted this day and logged it again. The row keeps its identifier and its creation time, so
+ * the server reads it as the day it already holds rather than as a second one.
+ */
+function revive(
+  db: Database,
+  fresh: { day: string; payload: Uint8Array; instant: string },
+): DayLogRow {
+  db.run(
+    `UPDATE day_log SET payload = ?, revision = revision + 1, updated_at = ?, deleted_at = NULL
+     WHERE day = ? AND deleted_at IS NOT NULL`,
+    [fresh.payload, fresh.instant, fresh.day],
+  );
+
+  return written(db, fresh.day);
 }
 
 export function updateDayLog(db: Database, write: DayLogWrite): DayLogRow {
@@ -99,6 +122,44 @@ export function softDeleteDayLog(db: Database, remove: DayLogDelete): DayLogRow 
   );
 
   return written(db, day);
+}
+
+/**
+ * The server accepted a revision of this day. Her record did not change, so this is the one write
+ * that leaves the revision where it is. A deleted day is marked the same way, because the server
+ * has to be told about the delete too.
+ */
+export function markDayLogSynced(db: Database, seen: DayLogAcknowledgement): DayLogRow {
+  const day = checkedDay(seen.day);
+  const row = record(db, day);
+  if (!row) {
+    throw new DayLogError('day-is-not-written', `${day} is not written`);
+  }
+  if (!Number.isInteger(seen.revision) || seen.revision < 1 || seen.revision > row.revision) {
+    throw new DayLogError(
+      'revision-is-not-written',
+      `${day} is at revision ${row.revision}, and revision ${seen.revision} was acknowledged`,
+    );
+  }
+  if (row.syncedRevision !== null && seen.revision < row.syncedRevision) {
+    throw new DayLogError(
+      'revision-is-behind',
+      `${day} was acknowledged at revision ${row.syncedRevision} already`,
+    );
+  }
+
+  db.run('UPDATE day_log SET synced_revision = ? WHERE day = ?', [seen.revision, day]);
+
+  return written(db, day);
+}
+
+/** Never acknowledged, or written again since it was. A deleted day is here until the server sees it. */
+export function unsentDayLogs(db: Database): DayLogRow[] {
+  return db.all<DayLogRow>(
+    `SELECT ${columns} FROM day_log
+     WHERE synced_revision IS NULL OR synced_revision < revision
+     ORDER BY day`,
+  );
 }
 
 export function readDayLog(db: Database, day: string): DayLogRow | undefined {

@@ -39,11 +39,13 @@ const createUnsyncedIndex = `CREATE INDEX day_log_unsynced ON day_log (synced_re
 
 /**
  * The revision is what the server orders writes by, so a write that does not raise it is refused by
- * the table rather than trusted from the caller.
+ * the table rather than trusted from the caller. It guards the two columns that carry her day. The
+ * sync marker is not one of them: writing `synced_revision` records what the server already has, so
+ * a revision there would make the row unsent again the moment it was marked sent.
  */
 const createRevisionGuard = `
 CREATE TRIGGER day_log_revision_rises
-BEFORE UPDATE ON day_log
+BEFORE UPDATE OF payload, deleted_at ON day_log
 WHEN NEW.revision <= OLD.revision
 BEGIN
   SELECT RAISE(ABORT, 'day_log revision must rise on every write');
