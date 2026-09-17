@@ -5,6 +5,8 @@ claim against the code that makes it. These documents are the readable half of t
 
 - `architecture.md` says what runs on the phone, what runs in Amazon Web Services, and what crosses
   between the two.
+- `privacy.md` says which keys exist, where each one lives, what one encrypted day looks like, and
+  the four attacks Emi does not defend against.
 - `brand.md` carries the palette, the measured contrast ratios, the type scale and the spacing. It
   is generated from `packages/tokens`, so nobody edits it by hand.
 
@@ -43,3 +45,14 @@ The mermaid command line tool draws through Chrome. `npm ci` fetches one on the 
 machine that already has a browser can point the tool at it instead.
 
     PUPPETEER_EXECUTABLE_PATH=/path/to/headless_shell npm run check:documents
+
+## The wording check
+
+One more gate reads every tracked document, every source file and the store listing copy, and
+refuses the wording of a claim Emi cannot support: a claim about preventing a pregnancy, a claim
+that a day is safe, a badge, or the name of a standard nobody has audited.
+
+    npx jest --ci --config jest.node.config.js tools/pipeline/forbiddenClaims.test.ts
+
+The list of wording, and the short list of sentences that deny a claim and may therefore carry the
+words, are in `tools/pipeline/forbiddenClaims.ts`. `privacy.md` says why the list exists.
