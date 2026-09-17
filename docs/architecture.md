@@ -69,8 +69,8 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `packages/tokens` holds the colours, the type scale and the spacing. It is the only place a colour
   value may be written.
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.
-- `packages/crypto` will hold the encrypted record format. It exports its own name and nothing else
-  today.
+- `packages/crypto` holds the encrypted record format: the envelope, the canonical json and the
+  ranges a day is checked against.
 - `tools` holds the checks that guard the repository rather than the product.
 - `docs` holds this document and the documents beside it.
 
@@ -131,17 +131,33 @@ anywhere.
 
 ## The encrypted record
 
-Status: designed
+Status: built
 
-`packages/crypto` will hold one envelope format, used by the phone and validated by the server.
+`packages/crypto` holds one envelope format, used by the phone and read by the server.
 
 The bytes are a version byte of `0x01`, then a 24 byte nonce, then the ciphertext and its 16 byte
-authentication tag. The cipher is XChaCha20-Poly1305. The plaintext is canonical JSON with sorted
+authentication tag. The cipher is XChaCha20-Poly1305. The plaintext is canonical json with sorted
 keys and no whitespace, so the same record always produces the same bytes.
 
-The libraries are `@noble/ciphers`, `@noble/curves` and `@noble/hashes`. They are audited, they have
-no dependencies, and they contain no native code. Nothing to link means nothing that can fail at
-launch on a device while every test stays green.
+A nonce is drawn fresh for every single write. Two writes of the same day are two different
+envelopes, and a source that returns nothing but zeroes is refused rather than used.
+
+The package checks a day before it seals it: the date, the flow, the symptom slugs against the
+catalogue, the energy from one to five, the temperature from 34.0 to 42.0, the weight from 20.0 to
+400.0 and the note at 2000 characters. It does not check those ranges again when it opens a record,
+because a day she wrote years ago is hers to read and a build that refused it would lose her history
+rather than protect it.
+
+`packages/crypto/tests/vectors.json` holds a key, a nonce, a plaintext and the envelope those three
+produce, byte for byte. A change to the format turns the test red. A new version byte adds vectors
+and never edits these.
+
+The libraries are `@noble/ciphers`, `@noble/curves` and `@noble/hashes`. They are audited, they
+have no dependencies, and they contain no native code. Nothing to link means nothing that can fail
+at launch on a device while every test stays green. Only `@noble/ciphers` is installed today.
+
+The day log still writes the payload column as plain bytes. The step that sends every row through
+the envelope comes next.
 
 ## The vault in Amazon Web Services
 
