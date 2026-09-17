@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "icons": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types brand/icon/generate.ts",
     "typecheck": "tsc --noEmit --project tsconfig.json && npm run typecheck --workspaces --if-present",
+    "check:documents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkDocuments.ts",
     "test": "npm run test:workspace && npm run test:mobile",
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile"
@@ -25,6 +26,7 @@
     "@babel/core": "7.29.7",
     "@babel/preset-env": "7.29.7",
     "@babel/preset-typescript": "7.29.7",
+    "@mermaid-js/mermaid-cli": "11.17.0",
     "@resvg/resvg-js": "2.6.2",
     "@types/jest": "29.5.14",
     "@types/node": "22.20.3",
