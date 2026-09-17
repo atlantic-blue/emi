@@ -24,4 +24,5 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run check:documents
+      - run: npm run check:brand
       - run: npm test

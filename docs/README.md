@@ -5,6 +5,8 @@ claim against the code that makes it. These documents are the readable half of t
 
 - `architecture.md` says what runs on the phone, what runs in Amazon Web Services, and what crosses
   between the two.
+- `brand.md` carries the palette, the measured contrast ratios, the type scale and the spacing. It
+  is generated from `packages/tokens`, so nobody edits it by hand.
 
 Each section of each document carries a status line. `Status: built` means the code is here now.
 `Status: designed` means the design describes it and nobody wrote it yet. A test refuses a section
@@ -23,6 +25,17 @@ under every heading.
 
 The check fails when it finds no diagram at all. A render that finds nothing to render reports
 success just the same, and a green check that ran nothing is worth nothing.
+
+## The document that generates itself
+
+`brand.md` is written by `tools/brand/writeBrandDocument.ts` from the token package. The pipeline
+runs one more command.
+
+    npm run check:brand
+
+It regenerates the document in memory and compares it against the committed copy. A difference of
+one character fails the run, names the line, and says to run `npm run generate:brand`. So a colour
+that changes in `packages/tokens` changes this document or stops the pipeline.
 
 ## Running the check on a machine with no bundled browser
 
