@@ -35,4 +35,4 @@ A test run that finds no test fails. It does not report success.
 
 ## Licence
 
-Apache License 2.0. Read `LICENCE`.
+MIT. Read `LICENCE`. The copyright holder is Atlantic Blue Solutions Limited.
