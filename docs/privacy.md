@@ -18,9 +18,11 @@ Every section carries one status line, the same as `architecture.md`. `Status: b
 code is in this repository now. `Status: designed` means `.krewe/design.md` describes it and nobody
 wrote it yet.
 
-Most of the cryptography is `designed` on 2026-09-17. `packages/crypto` exports its own name and
-nothing else. The `payload` column of the day log holds plain bytes today. A document that
-described an empty package as though it protected somebody would be worse than no document.
+On 2026-09-17 the envelope is `built` and the keys around it are `designed`. `packages/crypto`
+seals and opens a day, and fixed vectors hold the format still. Nothing writes through it yet: the
+`payload` column of the day log holds plain bytes, and there is no keychain, no account and no
+server. A document that described an empty package as though it protected somebody would be worse
+than no document.
 
 The wording rules below are `built`. A test reads every document, every source file and every
 string in the application, and fails the pipeline on the forbidden wording.
@@ -97,9 +99,9 @@ the recovery code loses the data.
 
 ## One day, once it is encrypted
 
-Status: designed
+Status: built
 
-The plaintext is canonical JSON. The keys are sorted and there is no whitespace, so the same day
+The plaintext is canonical json. The keys are sorted and there is no whitespace, so the same day
 always produces the same bytes.
 
 The envelope is bytes, in this order.
@@ -108,12 +110,17 @@ The envelope is bytes, in this order.
 - 24 bytes, a random nonce, fresh for every single write
 - the ciphertext, and its 16 byte authentication tag
 
-The cipher is XChaCha20-Poly1305 from `@noble/ciphers`. A record of 37 bytes becomes 53 bytes.
+The cipher is XChaCha20-Poly1305 from `@noble/ciphers`. The envelope costs 41 bytes on top of the
+plaintext, whatever the day holds.
 
-One implementation lives in `packages/crypto`. The application uses it to encrypt and to decrypt.
-The vault service imports it only to refuse a malformed envelope, and never to decrypt, because the
-service has no key. Fixed vectors in the conformance test hold the format still, so a change to it
-is caught rather than shipped.
+One implementation lives in `packages/crypto`. It seals a day and opens it again today. The
+application will use it to encrypt and to decrypt. The vault service will import it only to refuse
+a malformed envelope, and never to decrypt, because the service has no key. The fixed vectors in
+`packages/crypto/tests/vectors.json` hold the format still, so a change to it is caught rather
+than shipped.
+
+The day log still writes the payload column as plain bytes. Step 5.3 sends every row through the
+envelope, and until it does, this section describes a package rather than a product.
 
 The `day` column beside the payload is a copy of the date, kept in the clear so the application can
 query by date. It stays on the phone. It is not part of the envelope that is sent.

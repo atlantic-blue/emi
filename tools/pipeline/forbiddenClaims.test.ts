@@ -1,6 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import {
+  envelopeVersion,
+  headerLength,
+  nonceLength,
+  tagLength,
+} from '../../packages/crypto/src/envelope';
 import { diagramsIn, statusProblems } from './documentation';
 import {
   approvedDenials,
@@ -263,6 +269,15 @@ describe('the privacy document names a defence for every key the design has', ()
   it('marks every section built or designed, and draws the keys once', () => {
     expect(statusProblems(privacyDocument, privacy)).toEqual([]);
     expect(diagramsIn(privacy)).toHaveLength(1);
+  });
+
+  it('takes the envelope figures from the package rather than from a memory', () => {
+    const version = envelopeVersion.toString(16).padStart(2, '0');
+
+    expect(privacy).toContain(`the format version, \`0x${version}\``);
+    expect(privacy).toContain(`${nonceLength} bytes, a random nonce`);
+    expect(privacy).toContain(`its ${tagLength} byte authentication tag`);
+    expect(privacy).toContain(`costs ${headerLength + tagLength} bytes on top of the`);
   });
 
   it('is named in the documents index', () => {
