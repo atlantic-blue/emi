@@ -9,7 +9,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "types": ["jest", "node"],
-    "noEmit": true
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   },
-  "include": ["tools"]
+  "include": ["brand", "tools"]
 }

@@ -3,7 +3,11 @@ module.exports = {
   displayName: 'workspace',
   testEnvironment: 'node',
   rootDir: __dirname,
-  testMatch: ['<rootDir>/packages/**/tests/**/*.test.ts', '<rootDir>/tools/**/*.test.ts'],
+  testMatch: [
+    '<rootDir>/brand/**/tests/**/*.test.ts',
+    '<rootDir>/packages/**/tests/**/*.test.ts',
+    '<rootDir>/tools/**/*.test.ts',
+  ],
   transform: {
     '^.+\\.tsx?$': [
       'babel-jest',
