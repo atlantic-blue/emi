@@ -3,7 +3,11 @@ module.exports = {
   displayName: 'workspace',
   testEnvironment: 'node',
   rootDir: __dirname,
-  testMatch: ['<rootDir>/packages/**/tests/**/*.test.ts', '<rootDir>/tools/**/*.test.ts'],
+  testMatch: [
+    '<rootDir>/packages/**/tests/**/*.test.ts',
+    '<rootDir>/tools/**/*.test.ts',
+    '<rootDir>/brand/**/tests/**/*.test.ts',
+  ],
   // @noble/ciphers ships as a module and nothing else, so babel has to read it rather than
   // skip it the way it skips the rest of node_modules.
   transformIgnorePatterns: ['/node_modules/(?!@noble/)'],
