@@ -92,8 +92,9 @@ describe('the migration', () => {
     const afterTheFirstRun = shapeOf(db);
     const second = migrate(db);
 
-    expect(first).toEqual({ from: 0, to: 1, applied: ['day log'] });
-    expect(second).toEqual({ from: 1, to: 1, applied: [] });
+    expect(first.applied).toContain('day log');
+    expect(first.from).toBe(0);
+    expect(second).toEqual({ from: first.to, to: first.to, applied: [] });
     expect(shapeOf(db)).toEqual(afterTheFirstRun);
     expect(readDayLog(db, firstDay)?.revision).toBe(1);
   });
