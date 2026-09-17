@@ -15,15 +15,18 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit --project tsconfig.json && npm run typecheck --workspaces --if-present",
+    "typecheck": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project brand/tsconfig.json && npm run typecheck --workspaces --if-present",
     "test": "npm run test:workspace && npm run test:mobile",
     "test:workspace": "jest --ci --config jest.node.config.js",
-    "test:mobile": "npm test --workspace apps/mobile"
+    "test:mobile": "npm test --workspace apps/mobile",
+    "specimen": "node --experimental-strip-types brand/specimen/render.ts"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
+    "@babel/plugin-transform-react-jsx": "7.29.7",
     "@babel/preset-env": "7.29.7",
     "@babel/preset-typescript": "7.29.7",
+    "@types/babel__core": "7.20.5",
     "@types/jest": "29.5.14",
     "@types/node": "22.20.3",
     "@types/react": "~19.2.2",
