@@ -8,8 +8,11 @@ module.exports = {
     '<rootDir>/packages/**/tests/**/*.test.ts',
     '<rootDir>/tools/**/*.test.ts',
   ],
+  // @noble/ciphers ships as a module and nothing else, so babel has to read it rather than
+  // skip it the way it skips the rest of node_modules.
+  transformIgnorePatterns: ['/node_modules/(?!@noble/)'],
   transform: {
-    '^.+\\.tsx?$': [
+    '^.+\\.[jt]sx?$': [
       'babel-jest',
       {
         babelrc: false,
