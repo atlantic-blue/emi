@@ -7,6 +7,8 @@ claim against the code that makes it. These documents are the readable half of t
   between the two.
 - `privacy.md` says which keys exist, where each one lives, what one encrypted day looks like, and
   the four attacks Emi does not defend against.
+- `brand.md` carries the palette, the measured contrast ratios, the type scale and the spacing. It
+  is generated from `packages/tokens`, so nobody edits it by hand.
 
 Each section of each document carries a status line. `Status: built` means the code is here now.
 `Status: designed` means the design describes it and nobody wrote it yet. A test refuses a section
@@ -26,6 +28,17 @@ under every heading.
 The check fails when it finds no diagram at all. A render that finds nothing to render reports
 success just the same, and a green check that ran nothing is worth nothing.
 
+## The document that generates itself
+
+`brand.md` is written by `tools/brand/writeBrandDocument.ts` from the token package. The pipeline
+runs one more command.
+
+    npm run check:brand
+
+It regenerates the document in memory and compares it against the committed copy. A difference of
+one character fails the run, names the line, and says to run `npm run generate:brand`. So a colour
+that changes in `packages/tokens` changes this document or stops the pipeline.
+
 ## Running the check on a machine with no bundled browser
 
 The mermaid command line tool draws through Chrome. `npm ci` fetches one on the pipeline runner. A
@@ -35,7 +48,7 @@ machine that already has a browser can point the tool at it instead.
 
 ## The wording check
 
-A second gate reads every tracked document, every source file and the store listing copy, and
+One more gate reads every tracked document, every source file and the store listing copy, and
 refuses the wording of a claim Emi cannot support: a claim about preventing a pregnancy, a claim
 that a day is safe, a badge, or the name of a standard nobody has audited.
 
