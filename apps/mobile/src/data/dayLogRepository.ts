@@ -60,13 +60,11 @@ export function insertDayLog(db: Database, write: DayLogWrite): DayLogRow {
   const instant = checkedInstant(write.now);
 
   const held = record(db, day);
+  if (held?.deletedAt != null) {
+    return revive(db, { day, payload, instant });
+  }
   if (held) {
-    throw new DayLogError(
-      'day-already-written',
-      held.deletedAt === null
-        ? `${day} is already written, edit it instead`
-        : `${day} is already written and deleted`,
-    );
+    throw new DayLogError('day-already-written', `${day} is already written, edit it instead`);
   }
 
   db.run(
@@ -77,6 +75,23 @@ export function insertDayLog(db: Database, write: DayLogWrite): DayLogRow {
   );
 
   return written(db, day);
+}
+
+/**
+ * She deleted this day and logged it again. The row keeps its identifier and its creation time, so
+ * the server reads it as the day it already holds rather than as a second one.
+ */
+function revive(
+  db: Database,
+  fresh: { day: string; payload: Uint8Array; instant: string },
+): DayLogRow {
+  db.run(
+    `UPDATE day_log SET payload = ?, revision = revision + 1, updated_at = ?, deleted_at = NULL
+     WHERE day = ? AND deleted_at IS NOT NULL`,
+    [fresh.payload, fresh.instant, fresh.day],
+  );
+
+  return written(db, fresh.day);
 }
 
 export function updateDayLog(db: Database, write: DayLogWrite): DayLogRow {

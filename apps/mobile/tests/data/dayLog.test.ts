@@ -21,6 +21,7 @@ const editedPayload = new Uint8Array([9, 9, 9]);
 const wroteAt = new Date('2026-09-14T08:15:00.000Z');
 const editedAt = new Date('2026-09-14T19:40:30.250Z');
 const deletedAt = new Date('2026-09-15T06:00:00.000Z');
+const loggedAgainAt = new Date('2026-09-15T20:10:00.000Z');
 
 function migrated(): Database {
   const db = openTestDatabase();
@@ -36,15 +37,6 @@ function refusalOf(act: () => unknown): DayLogRefusal {
       return error.refusal;
     }
     throw error;
-  }
-  throw new Error('the call was accepted and a refusal was expected');
-}
-
-function messageOf(act: () => unknown): string {
-  try {
-    act();
-  } catch (error) {
-    return error instanceof Error ? error.message : String(error);
   }
   throw new Error('the call was accepted and a refusal was expected');
 }
@@ -191,6 +183,36 @@ describe('a day is written, edited and soft deleted', () => {
   });
 });
 
+describe('a day she deleted is logged again', () => {
+  it('comes back on the same row, at the next revision, carrying the new day', () => {
+    const db = migrated();
+    const first = insertDayLog(db, { day: firstDay, payload: firstPayload, now: wroteAt });
+    softDeleteDayLog(db, { day: firstDay, now: deletedAt });
+
+    const again = insertDayLog(db, { day: firstDay, payload: editedPayload, now: loggedAgainAt });
+
+    expect(again.id).toBe(first.id);
+    expect(again.createdAt).toBe(first.createdAt);
+    expect(again.revision).toBe(3);
+    expect(again.deletedAt).toBeNull();
+    expect(again.updatedAt).toBe('2026-09-15T20:10:00.000Z');
+    expect(readDayLog(db, firstDay)?.payload).toEqual(editedPayload);
+    expect(listDayLogs(db).map((row) => row.day)).toEqual([firstDay]);
+  });
+
+  it('leaves one row, and the payload she deleted is gone', () => {
+    const db = migrated();
+    const first = insertDayLog(db, { day: firstDay, payload: firstPayload, now: wroteAt });
+    softDeleteDayLog(db, { day: firstDay, now: deletedAt });
+
+    insertDayLog(db, { day: firstDay, payload: editedPayload, now: loggedAgainAt });
+
+    expect(db.all('SELECT id, payload FROM day_log')).toEqual([
+      { id: first.id, payload: editedPayload },
+    ]);
+  });
+});
+
 describe('the table refuses', () => {
   it('a second write of the same day', () => {
     const db = migrated();
@@ -330,7 +352,6 @@ describe('the table refuses', () => {
     expect(refusalOf(() => softDeleteDayLog(db, { day: firstDay, now: deletedAt }))).toBe(
       'day-is-deleted',
     );
-    expect(messageOf(() => insertDayLog(db, write({})))).toContain('deleted');
   });
 });
 
