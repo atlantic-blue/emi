@@ -1,6 +1,11 @@
 import { resolve } from 'node:path';
 
-import { architectureDocument, documentProblems, markdownFilesOf } from './documentation.ts';
+import {
+  architectureDocument,
+  documentProblems,
+  featureDocument,
+  markdownFilesOf,
+} from './documentation.ts';
 
 // The tooling lives in this repository. The documents being checked need not, so a fixture
 // repository can be handed to the same command the pipeline runs.
@@ -21,5 +26,8 @@ if (result.problems.length > 0) {
 const documents = markdownFilesOf(root).length;
 
 process.stdout.write(
-  `${result.diagrams} diagram(s) rendered across ${documents} document(s), and every section of ${architectureDocument} says built or designed.\n`,
+  `${result.diagrams} diagram(s) rendered across ${documents} document(s), ` +
+    `${result.contracts} contract(s) mapped to a feature in ${featureDocument}, ` +
+    `${result.refusals} refusal(s) named there, ` +
+    `and every section of ${architectureDocument} says built or designed.\n`,
 );
