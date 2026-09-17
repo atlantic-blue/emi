@@ -15,7 +15,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "icons": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types brand/icon/generate.ts",
+    "generate:app-icon": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types brand/icon/generate.ts",
     "typecheck": "tsc --noEmit --project tsconfig.json && npm run typecheck --workspaces --if-present",
     "check:documents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkDocuments.ts",
     "generate:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts",

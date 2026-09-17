@@ -143,9 +143,10 @@ nothing resolves is a record she cannot read.
 
 Status: built
 
-One program draws every icon size. It is `brand/icon/generate.ts`, and `npm run icons` runs it
-through Node with type stripping. It reads one drawn source, `brand/logo/emi-ring.svg`, and writes
-the icons into `apps/mobile/assets/icon`.
+One program draws every icon size. It is `brand/icon/generate.ts`, and `npm run generate:app-icon`
+runs it through Node with type stripping. It reads one drawn source, `brand/logo/emi-ring.svg`, and
+writes the icons into `apps/mobile/assets/icon`. The interface icons are a different set, and they
+live in `brand/icons`.
 
 The two stores ask for different lists, and both lists change. The lists are data in
 `brand/icon/sizes.ts`, with the reason beside each size. Apple asks only for the 1024 icon today

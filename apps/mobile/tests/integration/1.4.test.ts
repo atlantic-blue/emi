@@ -49,7 +49,7 @@ function scratch(): string {
 function generateFrom(source: string, directory = scratch()): Run {
   const run = spawnSync(
     'npm',
-    ['run', 'icons', '--silent', '--', '--ring', source, '--out', directory],
+    ['run', 'generate:app-icon', '--silent', '--', '--ring', source, '--out', directory],
     { cwd: repositoryRoot, encoding: 'utf8' },
   );
 
@@ -286,8 +286,8 @@ describe('one source generates every icon both stores ask for', () => {
         }
       ).scripts;
 
-      expect(scripts.icons).toContain('--experimental-strip-types');
-      expect(scripts.icons).toContain('brand/icon/generate.ts');
+      expect(scripts['generate:app-icon']).toContain('--experimental-strip-types');
+      expect(scripts['generate:app-icon']).toContain('brand/icon/generate.ts');
 
       const shellScripts = readdirSync(join(repositoryRoot, 'brand'), {
         recursive: true,
