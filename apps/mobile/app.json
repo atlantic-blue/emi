@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Emi",
+    "slug": "emi",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "scheme": "emi",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "blue.atlantic.emi"
+    },
+    "android": {
+      "package": "blue.atlantic.emi"
+    },
+    "web": {
+      "output": "static",
+      "bundler": "metro"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
