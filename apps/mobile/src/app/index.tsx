@@ -1,16 +1,16 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
+import type { ReactNode } from 'react';
 
-export default function HomeScreen() {
-  return (
-    <View style={styles.screen} testID="home-screen">
-      <Text accessibilityRole="header" style={styles.wordmark}>
-        Emi
-      </Text>
-    </View>
-  );
+import { HomeScreen } from '../features/home/HomeScreen';
+import { useFirstRun } from '../features/onboarding/FirstRunProvider';
+
+/** Nothing recorded means nothing to draw, so a woman who has not answered yet is sent to answer. */
+export default function HomeRoute(): ReactNode {
+  const { isDone } = useFirstRun();
+
+  if (!isDone) {
+    return <Redirect href="/onboarding/welcome" />;
+  }
+
+  return <HomeScreen />;
 }
-
-const styles = StyleSheet.create({
-  screen: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  wordmark: { fontSize: 34, letterSpacing: 1 },
-});
