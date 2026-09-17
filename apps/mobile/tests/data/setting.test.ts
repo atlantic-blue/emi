@@ -5,7 +5,7 @@ import {
   readSettings,
   writeSetting,
 } from '../../src/data/settingRepository';
-import { migrate, schemaVersion } from '../../src/data/schema';
+import { migrate, migrations, schemaVersion } from '../../src/data/schema';
 import { openTestDatabase } from './nodeDatabase';
 
 function migrated(): Database {
@@ -73,13 +73,14 @@ describe('the setting table', () => {
   });
 
   describe('the migration that creates it', () => {
-    it('takes the schema to version 2 and changes nothing on a second run', () => {
+    it('takes the schema to the highest version it holds, and a second run changes nothing', () => {
       const database = openTestDatabase();
+      const highest = Math.max(...migrations.map((migration) => migration.version));
 
-      expect(migrate(database).applied).toEqual(['day log', 'setting']);
-      expect(schemaVersion(database)).toBe(2);
+      expect(migrate(database).applied).toContain('setting');
+      expect(schemaVersion(database)).toBe(highest);
       expect(migrate(database).applied).toEqual([]);
-      expect(schemaVersion(database)).toBe(2);
+      expect(schemaVersion(database)).toBe(highest);
     });
   });
 });

@@ -9,7 +9,7 @@ export const firstRunCopy = {
     lines: [
       'Your cycle is worked out on this phone. Nothing is sent anywhere.',
       'There is no account. Emi never asks for your email address or a password.',
-      'Emi is not a contraceptive, and it is not a medical device.',
+      'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
     ],
     action: 'Continue',
   },

@@ -15,7 +15,7 @@ CREATE TABLE setting (
 `;
 
 export const settingMigration: Migration = {
-  version: 2,
+  version: 3,
   name: 'setting',
   statements: [createSetting],
 };
