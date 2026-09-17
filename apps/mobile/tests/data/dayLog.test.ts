@@ -4,7 +4,9 @@ import {
   insertDayLog,
   listDayLogs,
   readDayLog,
+  markDayLogSynced,
   softDeleteDayLog,
+  unsentDayLogs,
   updateDayLog,
   type DayLogRefusal,
 } from '../../src/data/dayLogRepository';
@@ -272,7 +274,10 @@ describe('the table refuses', () => {
       ]),
     ).toThrow(/revision must rise/);
     expect(() =>
-      db.run('UPDATE day_log SET revision = revision - 1 WHERE day = ?', [firstDay]),
+      db.run('UPDATE day_log SET deleted_at = ?, revision = revision WHERE day = ?', [
+        deletedAt.toISOString(),
+        firstDay,
+      ]),
     ).toThrow(/revision must rise/);
   });
 
@@ -326,6 +331,67 @@ describe('the table refuses', () => {
       'day-is-deleted',
     );
     expect(messageOf(() => insertDayLog(db, write({})))).toContain('deleted');
+  });
+});
+
+describe('the sync marker', () => {
+  it('records the revision the server accepted, and leaves the revision alone', () => {
+    const db = migrated();
+    const written = insertDayLog(db, { day: firstDay, payload: firstPayload, now: wroteAt });
+
+    const marked = markDayLogSynced(db, { day: firstDay, revision: written.revision });
+
+    expect(marked.revision).toBe(1);
+    expect(marked.syncedRevision).toBe(1);
+    expect(marked.updatedAt).toBe(written.updatedAt);
+    expect(marked.payload).toEqual(firstPayload);
+  });
+
+  it('takes the day out of the unsent list, and the next edit puts it back', () => {
+    const db = migrated();
+    insertDayLog(db, { day: firstDay, payload: firstPayload, now: wroteAt });
+
+    expect(unsentDayLogs(db).map((row) => row.day)).toEqual([firstDay]);
+
+    markDayLogSynced(db, { day: firstDay, revision: 1 });
+    expect(unsentDayLogs(db)).toEqual([]);
+
+    updateDayLog(db, { day: firstDay, payload: editedPayload, now: editedAt });
+    expect(unsentDayLogs(db).map((row) => [row.day, row.revision, row.syncedRevision])).toEqual([
+      [firstDay, 2, 1],
+    ]);
+  });
+
+  it('sends a deleted day until the server has seen the delete', () => {
+    const db = migrated();
+    insertDayLog(db, { day: firstDay, payload: firstPayload, now: wroteAt });
+    markDayLogSynced(db, { day: firstDay, revision: 1 });
+    softDeleteDayLog(db, { day: firstDay, now: deletedAt });
+
+    expect(unsentDayLogs(db).map((row) => row.day)).toEqual([firstDay]);
+
+    const marked = markDayLogSynced(db, { day: firstDay, revision: 2 });
+
+    expect(marked.deletedAt).toBe('2026-09-15T06:00:00.000Z');
+    expect(unsentDayLogs(db)).toEqual([]);
+  });
+
+  it('refuses a revision the phone never wrote, and one behind the last acknowledged', () => {
+    const db = migrated();
+    insertDayLog(db, { day: firstDay, payload: firstPayload, now: wroteAt });
+    updateDayLog(db, { day: firstDay, payload: editedPayload, now: editedAt });
+    markDayLogSynced(db, { day: firstDay, revision: 2 });
+
+    expect(refusalOf(() => markDayLogSynced(db, { day: firstDay, revision: 3 }))).toBe(
+      'revision-is-not-written',
+    );
+    expect(refusalOf(() => markDayLogSynced(db, { day: firstDay, revision: 1 }))).toBe(
+      'revision-is-behind',
+    );
+    expect(refusalOf(() => markDayLogSynced(db, { day: '2026-01-01', revision: 1 }))).toBe(
+      'day-is-not-written',
+    );
+    expect(readDayLog(db, firstDay)?.syncedRevision).toBe(2);
   });
 });
 
