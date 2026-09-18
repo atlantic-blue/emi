@@ -115,6 +115,10 @@ The symptom catalogue is the data this feature starts from. Each symptom carries
 changes, because six cycles of her history point at that slug. `ENVELOPE-2` validates a record
 against that catalogue.
 
+The history screen is where the logging pays. It lists her last six cycles and names the symptoms
+that came back at the same point in three or more of them. A symptom she logged once is not named,
+because calling a coincidence a pattern is the one failure that screen can have.
+
 The contracts it builds:
 
 - `SCREEN-3` the log sheet: flow, mood, energy, symptoms, temperature, weight and a note, saved in

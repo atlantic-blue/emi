@@ -18,6 +18,9 @@ import { NextPeriodOrLearning } from '../forecast/Learning';
 export const logTodayTestID = 'home-log-today';
 export const logTodayLabel = 'Log today';
 
+export const historyTestID = 'home-history';
+export const historyLabel = 'History';
+
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
@@ -37,9 +40,17 @@ interface Props {
   /** The length she gave at the first run, which the learning state counts by. */
   readonly cycleLengthDays: number;
   readonly onLogToday: () => void;
+  /** The way into what she has already written, which is what the logging is for. */
+  readonly onHistory: () => void;
 }
 
-export function HomeScreen({ ring, forecast, cycleLengthDays, onLogToday }: Props): ReactNode {
+export function HomeScreen({
+  ring,
+  forecast,
+  cycleLengthDays,
+  onLogToday,
+  onHistory,
+}: Props): ReactNode {
   return (
     <View style={styles.screen} testID={homeScreenTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
@@ -70,6 +81,15 @@ export function HomeScreen({ ring, forecast, cycleLengthDays, onLogToday }: Prop
         >
           <Text style={styles.actionLabel}>{logTodayLabel}</Text>
         </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={onHistory}
+          style={styles.history}
+          testID={historyTestID}
+        >
+          <Text style={styles.historyLabel}>{historyLabel}</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );
@@ -98,6 +118,19 @@ const styles = StyleSheet.create({
     paddingVertical: space.roomy,
   },
   forecast: { marginTop: space.base },
+  history: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: space.tight,
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+    paddingHorizontal: space.base,
+  },
+  historyLabel: {
+    color: colour.body,
+    fontSize: typeScale.small.size,
+    lineHeight: typeScale.small.lineHeight,
+  },
   noRing: { alignItems: 'center', paddingHorizontal: space.base },
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
   // takes the small size rather than the body size a sentence would otherwise get.

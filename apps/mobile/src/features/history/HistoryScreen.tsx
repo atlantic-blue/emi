@@ -1,0 +1,259 @@
+import type { PhaseName } from '@emi/tokens';
+import {
+  MINIMUM_TAP_TARGET,
+  colour,
+  phaseLabel,
+  phasePalette,
+  radius,
+  space,
+  typeScale,
+} from '@emi/tokens';
+import type { ReactNode } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import type { History, HistoryCycle, HistoryPattern } from './historyNow';
+import { historyNeedsCycles } from './historyNow';
+import {
+  cycleLengthSentence,
+  cycleSentence,
+  historyCopy,
+  patternSentence,
+  patternsWaitingSentence,
+} from './copy';
+
+/**
+ * Six cycles read back, and what came back with them. The value of logging arrives here: a woman
+ * who has written down a year of days is owed the shape of it.
+ *
+ * Every phase colour on this screen is a fill and carries no text, which is contract SEE-2. The
+ * written phase name beside a pattern is drawn in that phase's ink partner, measured above the
+ * contrast floor, because three of the four fills fail as text.
+ */
+
+export const historyScreenTestID = 'history-screen';
+export const historyBackTestID = 'history-back';
+export const historyCyclesTestID = 'history-cycles';
+export const historyPatternsTestID = 'history-patterns';
+export const historyNoCyclesTestID = 'history-no-cycles';
+export const historyWaitingTestID = 'history-waiting';
+
+/** One cycle row, addressed by the day it began, so a test presses the cycle it seeded. */
+export function historyCycleTestID(startedOn: string): string {
+  return `history-cycle-${startedOn}`;
+}
+
+/** One symptom row, addressed by the slug, which is the part of a symptom that never changes. */
+export function historyPatternTestID(slug: string): string {
+  return `history-pattern-${slug}`;
+}
+
+/** One arc of a cycle row, so a test can read the days a phase covers off the drawing itself. */
+export function historyArcTestID(startedOn: string, phase: PhaseName): string {
+  return `history-arc-${startedOn}-${phase}`;
+}
+
+export function historyPatternPhaseTestID(slug: string): string {
+  return `history-pattern-phase-${slug}`;
+}
+
+interface Props {
+  readonly history: History;
+  /** A press opens the day itself, because a pattern she disagrees with is a day she can correct. */
+  readonly onOpenDay: (day: string) => void;
+  readonly onBack: () => void;
+}
+
+function PhaseBar({ cycle }: { readonly cycle: HistoryCycle }): ReactNode {
+  return (
+    <View style={styles.bar}>
+      {cycle.phases
+        .filter((span) => span.days > 0)
+        .map((span) => (
+          <View
+            key={span.phase}
+            style={[
+              styles.arc,
+              { backgroundColor: colour[phasePalette[span.phase].fill], flexGrow: span.days },
+            ]}
+            testID={historyArcTestID(cycle.startedOn, span.phase)}
+          />
+        ))}
+    </View>
+  );
+}
+
+function CycleRow({
+  cycle,
+  onOpenDay,
+}: {
+  readonly cycle: HistoryCycle;
+  readonly onOpenDay: (day: string) => void;
+}): ReactNode {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => onOpenDay(cycle.startedOn)}
+      style={styles.row}
+      testID={historyCycleTestID(cycle.startedOn)}
+    >
+      <Text style={styles.rowTitle}>{cycleSentence(cycle.startedOn, cycle.endedOn)}</Text>
+      <Text style={styles.rowLine}>
+        {cycleLengthSentence(cycle.lengthDays, cycle.periodLengthDays)}
+      </Text>
+      <PhaseBar cycle={cycle} />
+    </Pressable>
+  );
+}
+
+function PatternRow({
+  pattern,
+  onOpenDay,
+}: {
+  readonly pattern: HistoryPattern;
+  readonly onOpenDay: (day: string) => void;
+}): ReactNode {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => onOpenDay(pattern.lastDay)}
+      style={styles.row}
+      testID={historyPatternTestID(pattern.slug)}
+    >
+      <Text style={styles.rowTitle}>{pattern.name}</Text>
+      <Text style={styles.rowLine}>
+        {patternSentence(pattern.anchor, pattern.day, pattern.cyclesWithIt, pattern.cyclesRead)}
+      </Text>
+      <Text
+        style={[styles.phaseName, { color: colour[phasePalette[pattern.phase].ink] }]}
+        testID={historyPatternPhaseTestID(pattern.slug)}
+      >
+        {phaseLabel[pattern.phase]}
+      </Text>
+    </Pressable>
+  );
+}
+
+export function HistoryScreen({ history, onOpenDay, onBack }: Props): ReactNode {
+  return (
+    <View style={styles.screen} testID={historyScreenTestID}>
+      <ScrollView contentContainerStyle={styles.body}>
+        <Text accessibilityRole="header" style={styles.title}>
+          {historyCopy.title}
+        </Text>
+
+        <Text accessibilityRole="header" style={styles.heading}>
+          {historyCopy.patterns}
+        </Text>
+        {history.patterns.length === 0 ? (
+          <Text style={styles.rowLine} testID={historyWaitingTestID}>
+            {history.completeCycles < historyNeedsCycles
+              ? patternsWaitingSentence(history.completeCycles, historyNeedsCycles)
+              : historyCopy.nothingRepeats}
+          </Text>
+        ) : (
+          <View style={styles.list} testID={historyPatternsTestID}>
+            {history.patterns.map((pattern) => (
+              <PatternRow key={pattern.slug} onOpenDay={onOpenDay} pattern={pattern} />
+            ))}
+          </View>
+        )}
+
+        <Text accessibilityRole="header" style={styles.heading}>
+          {historyCopy.cycles}
+        </Text>
+        {history.cycles.length === 0 ? (
+          <Text style={styles.rowLine} testID={historyNoCyclesTestID}>
+            {historyCopy.noCycles}
+          </Text>
+        ) : (
+          <View style={styles.list} testID={historyCyclesTestID}>
+            {history.cycles.map((cycle) => (
+              <CycleRow cycle={cycle} key={cycle.startedOn} onOpenDay={onOpenDay} />
+            ))}
+          </View>
+        )}
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={onBack}
+          style={styles.back}
+          testID={historyBackTestID}
+        >
+          <Text style={styles.backLabel}>{historyCopy.back}</Text>
+        </Pressable>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  // The arc grows by the days of its phase, so the row carries the shape of that cycle and the
+  // colour of it, and never a word on top of either.
+  arc: { flexBasis: 0, height: '100%' },
+  back: {
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: colour.sunk,
+    borderRadius: radius.chip,
+    justifyContent: 'center',
+    marginTop: space.base,
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+    paddingHorizontal: space.snug,
+  },
+  backLabel: {
+    color: colour.body,
+    fontSize: typeScale.body.size,
+    lineHeight: typeScale.body.lineHeight,
+  },
+  bar: {
+    borderRadius: radius.icon,
+    flexDirection: 'row',
+    height: space.tight,
+    marginTop: space.tight,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  body: { padding: space.base },
+  heading: {
+    color: colour.ink,
+    fontSize: typeScale.heading.size,
+    lineHeight: typeScale.heading.lineHeight,
+    marginBottom: space.tight,
+    marginTop: space.base,
+  },
+  list: { gap: space.tight },
+  phaseName: {
+    fontSize: typeScale.label.size,
+    letterSpacing: typeScale.label.letterSpacing,
+    lineHeight: typeScale.label.lineHeight,
+    marginTop: space.hair,
+  },
+  row: {
+    backgroundColor: colour.surface,
+    borderColor: colour.hairline,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+    padding: space.snug,
+  },
+  rowLine: {
+    color: colour.body,
+    fontSize: typeScale.small.size,
+    lineHeight: typeScale.small.lineHeight,
+  },
+  rowTitle: {
+    color: colour.ink,
+    fontSize: typeScale.body.size,
+    lineHeight: typeScale.body.lineHeight,
+  },
+  screen: { backgroundColor: colour.stone, flex: 1 },
+  title: {
+    color: colour.ink,
+    fontSize: typeScale.title.size,
+    letterSpacing: typeScale.title.letterSpacing,
+    lineHeight: typeScale.title.lineHeight,
+  },
+});
