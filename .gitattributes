@@ -1,0 +1,3 @@
+# The fonts and their licences are redistributed as they were published, so git leaves their
+# bytes alone: a line ending it rewrote would make the word unmodified in docs/licences.md false.
+apps/mobile/assets/fonts/** -text

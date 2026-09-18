@@ -10,6 +10,8 @@ claim against the code that makes it. These documents are the readable half of t
 - `contracts.md` states the input, the output and every error of each contract.
 - `privacy.md` says which keys exist, where each one lives, what one encrypted day looks like, and
   the four attacks Emi does not defend against.
+- `licences.md` names every third party file that ships inside the application, which today is
+  the three fonts, and the licence each one travels under.
 - `brand.md` carries the palette, the measured contrast ratios, the type scale and the spacing. It
   is generated from `packages/tokens`, so nobody edits it by hand.
 
