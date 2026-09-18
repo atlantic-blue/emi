@@ -25,5 +25,6 @@ jobs:
       - run: npm run typecheck
       - run: npm run check:documents
       - run: npm run check:brand
+      - run: npm run check:reference
       - run: npm run check:sheet
       - run: npm test

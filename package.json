@@ -19,6 +19,8 @@
     "check:documents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkDocuments.ts",
     "generate:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts",
     "check:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts --check",
+    "generate:reference": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/documentation/writeReference.ts",
+    "check:reference": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/documentation/writeReference.ts --check",
     "generate:sheet": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/sheet/render.ts",
     "check:sheet": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/sheet/writeSheet.ts --check",
     "generate:logo": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/logo/generate.ts",

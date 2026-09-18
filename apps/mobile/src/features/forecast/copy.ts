@@ -13,6 +13,7 @@ import { toDayNumber } from '@emi/cycle';
 
 export const forecastCopy = {
   nextPeriod: 'Next period',
+  fertileWindow: 'Fertile window',
 } as const;
 
 export type ForecastCopyRefusal = 'range-is-one-day' | 'range-ends-before-it-starts';
@@ -115,6 +116,18 @@ export function rangeSentence(range: DayRange): string {
   }
 
   return `Between the ${ordinal(from.dayOfMonth)} and the ${ordinal(to.dayOfMonth)} of ${monthName(to)}`;
+}
+
+/**
+ * What the window is worth, said on the screen that shows it. The design asks every screen that
+ * carries the window to call it an estimate, and the denial is the operator's fourth decision
+ * written where a woman reads it rather than only in a document.
+ *
+ * Both sentences are one string because the wording check reads a denial only where a full stop
+ * comes before it, and a string literal on its own puts a quotation mark there instead.
+ */
+export function fertileWindowSentence(forecast: Forecast): string {
+  return `An estimate from your last ${forecast.fromCycles} cycles. Emi never says a day is safe, because no day is.`;
 }
 
 /**

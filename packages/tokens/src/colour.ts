@@ -1,3 +1,7 @@
+/**
+ * The palette is closed. A screen that wants a nineteenth colour adds it here, where the contrast
+ * test can see it and measure it.
+ */
 export type ColourName =
   | 'stone'
   | 'surface'
@@ -18,8 +22,16 @@ export type ColourName =
   | 'ovulationInk'
   | 'lutealInk';
 
+/**
+ * What a colour is allowed to do. A fill and a text colour are separate roles because three of the
+ * four phase fills fail the contrast floor as text.
+ */
 export type ColourRole = 'ground' | 'text' | 'fill' | 'line';
 
+/**
+ * A value and the rules that travel with it. A value on its own would let a screen put any colour
+ * on any ground, which is the drift the contrast test exists to catch.
+ */
 export interface ColourToken {
   readonly value: string;
   readonly roles: readonly ColourRole[];
@@ -50,6 +62,10 @@ const ALL: readonly ColourName[] = [
 
 const ON_LIGHT: readonly ColourName[] = ['stone', 'surface', 'sunk', 'emberTint'];
 
+/**
+ * The palette. Every value here is the one the design publishes, and the token test holds that
+ * published list, so a colour changed here fails the run until the design changes too.
+ */
 export const colours: Readonly<Record<ColourName, ColourToken>> = {
   stone: { value: '#F7F3EE', roles: ['ground'], textOn: [] },
   surface: { value: '#FFFCF8', roles: ['ground', 'text'], textOn: ['ember', 'emberPressed'] },
@@ -72,6 +88,7 @@ export const colours: Readonly<Record<ColourName, ColourToken>> = {
   lutealInk: { value: '#5E4470', roles: ['text'], textOn: ON_LIGHT },
 };
 
+/** The palette as data, in the order the brand document prints. A type cannot be read at run time. */
 export const colourNames: readonly ColourName[] = ALL;
 
 function valuesOf(): Record<ColourName, string> {
@@ -85,6 +102,7 @@ function valuesOf(): Record<ColourName, string> {
 /** The value of every colour, for a screen that wants the string and nothing else. */
 export const colour: Readonly<Record<ColourName, string>> = valuesOf();
 
+/** Asks the palette whether a colour may be used that way, so a reviewer does not have to. */
 export function hasRole(name: ColourName, role: ColourRole): boolean {
   return colours[name].roles.includes(role);
 }
@@ -111,6 +129,10 @@ export function relativeLuminance(hex: string): number {
   return 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue);
 }
 
+/**
+ * The ratio the Web Content Accessibility Guidelines define, the lighter colour over the darker
+ * one. Which argument is which does not change the answer.
+ */
 export function contrastRatio(one: string, other: string): number {
   const first = relativeLuminance(one);
   const second = relativeLuminance(other);
