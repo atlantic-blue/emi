@@ -1,18 +1,13 @@
 import { join } from 'node:path';
 
-import { type DayRecord, recordBytes, recordFromBytes } from '@emi/crypto';
+import { type DayRecord, recordFromBytes } from '@emi/crypto';
 import { type Flow, addDays } from '@emi/cycle';
 import { phaseLabel } from '@emi/tokens';
 import { fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
 import { cycleRingTestID, ringArcTestID, ringBeadTestID } from '../../src/components/CycleRing';
-import type { Database } from '../../src/data/database';
 import { readDayLog } from '../../src/data/dayLogRepository';
-import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
-import { migrate } from '../../src/data/schema';
-import { writeSetting } from '../../src/data/settingRepository';
-import { logDay } from '../../src/features/cycle/rebuild';
 import { flowOptionTestID, flowLabel } from '../../src/features/log/FlowPicker';
 import {
   logFlowCopy,
@@ -22,7 +17,8 @@ import {
 } from '../../src/features/log/LogFlow';
 import { logTodayTestID } from '../../src/features/home/HomeScreen';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
-import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
+import { resetExpoSqlite } from '../data/expoSqlite';
+import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -31,15 +27,6 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 
 /** Midday, and well away from any summer time change, so her calendar reads the same anywhere. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
-
-/** Her clock's day, read the way the screen reads it rather than by the screen's own arithmetic. */
-function dayOf(date: Date): string {
-  const year = date.getFullYear().toString().padStart(4, '0');
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-}
 
 const today = dayOf(whenSheOpensIt);
 
@@ -71,28 +58,6 @@ function herSixCycles(): DayRecord[] {
 /** A fresh install: the first run recorded one day and she has logged nothing since. */
 function herFirstDayOnly(): DayRecord[] {
   return [aBleedingDay(today)];
-}
-
-function aBleedingDay(day: string): DayRecord {
-  return { day, flow: 'medium', recordedAt: `${day}T08:00:00.000Z` };
-}
-
-function herDatabase(): Database {
-  return expoDatabase(openDatabaseSync(databaseFileName));
-}
-
-/** Her phone before she opens it: the days she recorded, and the answers the first run wrote. */
-function herPhoneHolds(records: readonly DayRecord[]): void {
-  const database = herDatabase();
-  migrate(database);
-
-  for (const record of records) {
-    const when = new Date(record.recordedAt);
-    logDay(database, { day: record.day, payload: recordBytes(record), now: when }, recordFromBytes);
-  }
-
-  writeSetting(database, 'cycleLengthDays', String(defaultCycleLengthDays));
-  writeSetting(database, 'firstRunCompletedAt', whenSheOpensIt.toISOString());
 }
 
 interface OpenApp {
@@ -166,7 +131,7 @@ describe('logging a flow redraws the ring', () => {
 
   describe('she reaches the day from the home screen', () => {
     it('opens the flow picker in one press, with every value of flow on it', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       const app = await sheOpensEmi();
 
       await shePresses(logTodayTestID);
@@ -179,7 +144,7 @@ describe('logging a flow redraws the ring', () => {
     });
 
     it('sends her back to the home screen when she is done', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       const app = await sheOpensEmi();
       await shePresses(logTodayTestID);
 
@@ -191,7 +156,7 @@ describe('logging a flow redraws the ring', () => {
 
   describe('she says today was heavy, on a day the ring called follicular', () => {
     it('writes today, holding the flow she picked and nothing she did not', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
 
       await shePicks('heavy');
@@ -204,7 +169,7 @@ describe('logging a flow redraws the ring', () => {
     });
 
     it('moves today out of the follicular arc and into the period arc', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
 
       expect(theRingSays()).toBe(`Day 2 of ${herCycleLengthDays}, follicular`);
@@ -218,7 +183,7 @@ describe('logging a flow redraws the ring', () => {
     });
 
     it('widens the period arc she is looking at and moves the bead with it', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
       const before = { arc: thePeriodArc(), bead: theBead() };
 
@@ -229,7 +194,7 @@ describe('logging a flow redraws the ring', () => {
     });
 
     it('marks the option she picked, and says the day is saved on this phone', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
 
       await shePicks('heavy');
@@ -240,7 +205,7 @@ describe('logging a flow redraws the ring', () => {
     });
 
     it('keeps the symptoms that day already held, because it writes the day and not the flow', async () => {
-      herPhoneHolds([
+      herPhoneHolds(whenSheOpensIt, [
         ...herSixCycles(),
         { day: today, symptoms: ['cramps', 'low-mood'], recordedAt: `${today}T07:00:00.000Z` },
       ]);
@@ -257,7 +222,7 @@ describe('logging a flow redraws the ring', () => {
     });
 
     it('edits the day she already wrote rather than writing a second one', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
 
       await shePicks('heavy');
@@ -270,7 +235,7 @@ describe('logging a flow redraws the ring', () => {
 
   describe('she says there was no bleeding today after all', () => {
     it('takes today back out of the period arc', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
       await shePicks('heavy');
 
@@ -281,7 +246,7 @@ describe('logging a flow redraws the ring', () => {
     });
 
     it('leaves nothing to draw when it was the only day she had ever bled', async () => {
-      herPhoneHolds(herFirstDayOnly());
+      herPhoneHolds(whenSheOpensIt, herFirstDayOnly());
       await sheOpensEmi('/log');
 
       expect(theRingSays()).toBe(`Day 1 of ${defaultCycleLengthDays}, period`);
@@ -295,7 +260,7 @@ describe('logging a flow redraws the ring', () => {
     });
 
     it('draws the ring again the moment she logs a period', async () => {
-      herPhoneHolds(herFirstDayOnly());
+      herPhoneHolds(whenSheOpensIt, herFirstDayOnly());
       await sheOpensEmi('/log');
       await shePicks('none');
 
@@ -308,14 +273,14 @@ describe('logging a flow redraws the ring', () => {
 
   describe('every control she can press on this screen', () => {
     it('is at least 44 points on both axes, and the failure names any that is not', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
 
       expect(controlsTooSmallToPress(everyControlOnTheScreen())).toEqual([]);
     });
 
     it('is measured against a screen that actually holds controls', async () => {
-      herPhoneHolds(herSixCycles());
+      herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
 
       expect(everyControlOnTheScreen().length).toBeGreaterThan(5);
