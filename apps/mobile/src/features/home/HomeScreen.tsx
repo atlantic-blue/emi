@@ -1,33 +1,76 @@
+import type { ForecastResult } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { CycleRing } from '../../components/CycleRing';
+import type { RingInput } from '../cycle/ringInput';
+import { NextPeriodOrLearning } from '../forecast/Learning';
+
+/**
+ * The one screen she opens. The ring carries the meaning and the words underneath it stay small,
+ * which is design section 9.1: she reads everything and a stranger beside her reads nothing.
+ *
+ * The forecast arrives already worked out. This screen does no arithmetic of its own, so what the
+ * arcs draw and what the sentence names are the same answer read twice.
+ */
 
 export const logTodayTestID = 'home-log-today';
 export const logTodayLabel = 'Log today';
 
+export const homeScreenTestID = 'home-screen';
+export const homeNoRingTestID = 'home-no-ring';
+export const homeForecastTestID = 'home-forecast';
+
+export const homeCopy = {
+  wordmark: 'Emi',
+  noRing: {
+    title: 'Nothing to draw yet',
+    line: 'The ring needs a period. Log a day you bled and it appears.',
+  },
+} as const;
+
 interface Props {
+  /** The cycle she is in, or nothing at all before a day is recorded. */
+  readonly ring: RingInput | undefined;
+  readonly forecast: ForecastResult;
+  /** The length she gave at the first run, which the learning state counts by. */
+  readonly cycleLengthDays: number;
   readonly onLogToday: () => void;
 }
 
-/**
- * The ring and the forecast land here with feature 3. Until then the home screen carries the
- * wordmark and the one way in to the thing she opens Emi to do, because a screen she cannot reach
- * is a feature she does not have.
- */
-export function HomeScreen({ onLogToday }: Props): ReactNode {
+export function HomeScreen({ ring, forecast, cycleLengthDays, onLogToday }: Props): ReactNode {
   return (
-    <View style={styles.screen} testID="home-screen">
-      <Text accessibilityRole="header" style={styles.wordmark}>
-        Emi
-      </Text>
-      <Pressable
-        accessibilityRole="button"
-        onPress={onLogToday}
-        style={styles.action}
-        testID={logTodayTestID}
-      >
-        <Text style={styles.actionLabel}>{logTodayLabel}</Text>
-      </Pressable>
+    <View style={styles.screen} testID={homeScreenTestID}>
+      <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
+        <Text accessibilityRole="header" style={styles.wordmark}>
+          {homeCopy.wordmark}
+        </Text>
+
+        {ring ? (
+          <CycleRing {...ring} />
+        ) : (
+          <View style={styles.noRing} testID={homeNoRingTestID}>
+            <Text accessibilityRole="header" style={styles.noRingTitle}>
+              {homeCopy.noRing.title}
+            </Text>
+            <Text style={styles.noRingLine}>{homeCopy.noRing.line}</Text>
+          </View>
+        )}
+
+        <View style={styles.forecast} testID={homeForecastTestID}>
+          <NextPeriodOrLearning cycleLengthDays={cycleLengthDays} result={forecast} />
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={onLogToday}
+          style={styles.action}
+          testID={logTodayTestID}
+        >
+          <Text style={styles.actionLabel}>{logTodayLabel}</Text>
+        </Pressable>
+      </ScrollView>
     </View>
   );
 }
@@ -48,6 +91,37 @@ const styles = StyleSheet.create({
     fontSize: typeScale.body.size,
     lineHeight: typeScale.body.lineHeight,
   },
-  screen: { alignItems: 'center', flex: 1, justifyContent: 'center' },
-  wordmark: { fontSize: 34, letterSpacing: 1 },
+  body: {
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: space.roomy,
+  },
+  forecast: { marginTop: space.base },
+  noRing: { alignItems: 'center', paddingHorizontal: space.base },
+  // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
+  // takes the small size rather than the body size a sentence would otherwise get.
+  noRingLine: {
+    color: colour.muted,
+    fontSize: typeScale.small.size,
+    lineHeight: typeScale.small.lineHeight,
+    textAlign: 'center',
+  },
+  noRingTitle: {
+    color: colour.ink,
+    fontSize: typeScale.heading.size,
+    lineHeight: typeScale.heading.lineHeight,
+    marginBottom: space.hair,
+  },
+  screen: { backgroundColor: colour.stone, flex: 1 },
+  // The scroll fills the screen so the block inside it sits in the middle of the glass rather than
+  // against the top of it, which is where a container sized to its own content would leave it.
+  scroll: { flex: 1 },
+  wordmark: {
+    color: colour.ink,
+    fontSize: typeScale.title.size,
+    letterSpacing: typeScale.title.letterSpacing,
+    lineHeight: typeScale.title.lineHeight,
+    marginBottom: space.base,
+  },
 });

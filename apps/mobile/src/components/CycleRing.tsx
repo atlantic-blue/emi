@@ -200,10 +200,12 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
+  // Contract SCREEN-2 refuses the four words of the cycle above 14 points, and the phase name is
+  // one of them, so the ring writes it at the small size wherever it is drawn.
   phase: {
-    fontSize: typeScale.heading.size,
-    letterSpacing: typeScale.heading.letterSpacing,
-    lineHeight: typeScale.heading.lineHeight,
+    fontSize: typeScale.small.size,
+    letterSpacing: typeScale.small.letterSpacing,
+    lineHeight: typeScale.small.lineHeight,
   },
   ring: { alignItems: 'center', justifyContent: 'center' },
 });

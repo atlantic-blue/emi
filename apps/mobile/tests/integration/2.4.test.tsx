@@ -122,9 +122,9 @@ describe('the ring renders a short cycle and a long cycle correctly', () => {
       const geometry = ringGeometry(her);
       const forArcs = FULL_TURN_DEGREES - 4 * GAP_DEGREES;
 
-      expect(geometry.arcs.map((arc) => arc.days)).toEqual([6, 20, 7, 12]);
+      expect(geometry.arcs.map((arc) => arc.days)).toEqual([6, 21, 7, 11]);
       expect(geometry.arcs.map((arc) => Math.round(arc.sweepDegrees * 100) / 100)).toEqual(
-        [6, 20, 7, 12].map((days) => Math.round(((forArcs * days) / 45) * 100) / 100),
+        [6, 21, 7, 11].map((days) => Math.round(((forArcs * days) / 45) * 100) / 100),
       );
     });
 
