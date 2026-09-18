@@ -77,6 +77,33 @@ function firstStepOf(name: string): Step {
   return first;
 }
 
+function defaultOf(variable: string): string {
+  const found = /default\s+=\s+"([^"]*)"/.exec(bodyOf(`variable "${variable}"`));
+  if (!found?.[1]) {
+    throw new Error(`the variable ${variable} has no text default`);
+  }
+  return found[1];
+}
+
+function expressionOf(name: string): string {
+  const found = new RegExp(`\\n\\s+${name}\\s+=\\s+"([^"]*)"`).exec(configuration);
+  if (!found?.[1]) {
+    throw new Error(`the configuration has no ${name}`);
+  }
+  return found[1];
+}
+
+/**
+ * A subject local with every variable reference replaced by that variable's default. A token is
+ * matched against the finished string, so an assertion on the expression alone would pass while
+ * the pieces composed into a subject the account refuses.
+ */
+function subjectOf(name: string): string {
+  return expressionOf(name).replace(/\$\{var\.[a-z_]+\}/g, (reference) =>
+    defaultOf(reference.slice('${var.'.length, -1)),
+  );
+}
+
 const table = bodyOf('resource "aws_dynamodb_table" "vault"');
 const planPolicy = bodyOf('data "aws_iam_policy_document" "plan"');
 const planTrust = bodyOf('data "aws_iam_policy_document" "plan_trust"');
@@ -174,20 +201,40 @@ describe('the infrastructure is applied only by the pipeline', () => {
 
   describe('the two roles', () => {
     it('trusts the apply role for the main branch alone', () => {
-      expect(applyTrust).toContain('values   = [local.main_subject]');
-      expect(configuration).toContain(
-        'main_subject         = "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"',
+      expect(applyTrust).toContain(
+        'values   = [local.main_subject_by_name, local.main_subject_by_id]',
+      );
+      expect(subjectOf('main_subject_by_name')).toBe('repo:atlantic-blue/emi:ref:refs/heads/main');
+      expect(subjectOf('main_subject_by_id')).toBe(
+        'repo:atlantic-blue@140661232/emi@1374431048:ref:refs/heads/main',
       );
     });
 
-    it('matches that subject exactly, so a branch named after main cannot assume it', () => {
+    it('lets a pull request assume only the plan role', () => {
+      expect(planTrust).toContain(
+        'values   = [local.pull_request_subject_by_name, local.pull_request_subject_by_id]',
+      );
+      expect(subjectOf('pull_request_subject_by_name')).toBe('repo:atlantic-blue/emi:pull_request');
+      expect(subjectOf('pull_request_subject_by_id')).toBe(
+        'repo:atlantic-blue@140661232/emi@1374431048:pull_request',
+      );
+      expect(applyTrust).not.toContain('pull_request_subject');
+    });
+
+    it('matches every subject exactly, so a branch named after main cannot assume it', () => {
       expect(applyTrust).not.toContain('StringLike');
       expect(planTrust).not.toContain('StringLike');
     });
 
-    it('lets a pull request assume only the plan role', () => {
-      expect(planTrust).toContain('values   = [local.pull_request_subject]');
-      expect(applyTrust).not.toContain('pull_request_subject');
+    it('builds the numeric spelling from variables, so no subject carries a written identifier', () => {
+      for (const name of ['main_subject_by_id', 'pull_request_subject_by_id']) {
+        expect(expressionOf(name)).toContain('${var.github_org_id}');
+        expect(expressionOf(name)).toContain('${var.github_repo_id}');
+        expect(expressionOf(name)).not.toMatch(/[0-9]/);
+      }
+
+      expect(defaultOf('github_org_id')).toBe('140661232');
+      expect(defaultOf('github_repo_id')).toBe('1374431048');
     });
 
     it('gives the plan role nothing but reads', () => {
