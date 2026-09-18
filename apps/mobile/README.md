@@ -20,6 +20,12 @@ because a phone has already run it. Add a new one instead.
 for the same day. `cycleRepository.ts` holds the cache, which is derived and never a source.
 `settingRepository.ts` holds what she chose, one key to one value.
 
+`src/services/vault` holds the key that encrypts every day she logs. `keychain.ts` declares the
+port, two methods over expo-secure-store, and `vaultKey.ts` makes the key once and reads it back. A
+second creation while one exists is refused, because every day she wrote is sealed under the first
+key. `src/services/sync` holds the device key and the request signature, and it reaches the
+keychain through the same port.
+
 `src/features/onboarding` is the first run: what Emi is, when her last period started, how long her
 cycle usually runs. `src/features/home` draws the home screen. `src/features/cycle/rebuild.ts` is
 the write path: `logDay`, `editDay` and `deleteDay`.

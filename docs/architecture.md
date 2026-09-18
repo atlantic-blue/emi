@@ -282,6 +282,42 @@ Three refusals hold the contract up.
 The function that receives the body compares it against the signed digest, which is the half of the
 check the authorizer cannot make.
 
+## The vault key on the phone
+
+Status: built
+
+The key that encrypts every day she logs is thirty two random bytes. It is made once, on her phone,
+at first run. It is never transmitted.
+
+It goes in the keychain and not in the database. The platform deletes an application's database
+with the application, so a woman who reinstalls Emi would find her own history unreadable. The
+keychain item outlives the delete. That is the platform's behaviour rather than ours, and platforms
+change it, so feature 5 step 7 measures it on a real device and writes down the device, the
+operating system version and the date.
+
+The item is `emi.vaultKey.v1`, written base 64, readable only while the phone is unlocked. Emi
+opens in public, so an item readable on a locked phone would give away the thing the product is
+for.
+
+A second creation while one exists is refused. Replacing the key is not losing a password: every
+day she ever wrote was sealed under the first one, and nothing would open them again. For the same
+reason a keychain item of the wrong length refuses rather than reading as nothing, because nothing
+is what sends the caller to make a second key over the top of the first.
+
+The bytes come from expo-crypto's `getRandomValues`. Its other call, `getRandomBytes`, falls back
+to Math.random while a remote debugger is attached, and a key drawn from Math.random is a key
+anybody can draw again. A generator that is not running returns zeroes, and zeroes are refused
+rather than used.
+
+Contract VAULT-1 says the key reaches no log, no export, no error message and no crash report. Two
+things hold that up. Every refusal this module raises is read in a test and carries the reason and
+never the key. And `tools/pipeline/keyLeak.ts` fails the pipeline over the sink rather than over
+the bytes: the application writes to no log at all, and each keychain item is named in one
+directory and nowhere else, so an export or a support screen cannot read an item it cannot name.
+
+Nothing writes a day through the key yet. The step that sends every row through the envelope comes
+next.
+
 ## The vault in Amazon Web Services
 
 Status: designed

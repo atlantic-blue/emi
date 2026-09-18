@@ -8,6 +8,8 @@ import {
   type RandomSource,
 } from '@emi/crypto';
 
+import type { SecureStore } from '../vault/keychain';
+
 /**
  * Her account, made on her phone. There is no sign up screen, because there is nothing to sign up
  * with: thirty two random bytes are the whole account, and the identifier falls out of them.
@@ -21,15 +23,6 @@ export const deviceKeyItem = 'emi.deviceKey.v1';
 
 /** The keychain item that holds the account identifier, so a read needs no arithmetic. */
 export const accountIdItem = 'emi.accountId.v1';
-
-/**
- * The two things this needs of a keychain. The Expo implementation arrives with the vault key in
- * feature 5 step 2, and the port is here so the signing path can be driven end to end before it.
- */
-export interface SecureStore {
-  read(key: string): Promise<string | null>;
-  write(key: string, value: string): Promise<void>;
-}
 
 /** The key pair and the identifier that comes from it. */
 export interface DeviceKey extends DeviceKeyPair {
