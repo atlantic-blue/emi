@@ -1,19 +1,7 @@
 import { render, screen } from '@testing-library/react-native';
 
 import { HomeScreen } from '../src/features/home/HomeScreen';
-
-function textIn(node: unknown): string[] {
-  if (typeof node === 'string') {
-    return [node];
-  }
-  if (Array.isArray(node)) {
-    return node.flatMap(textIn);
-  }
-  if (node !== null && typeof node === 'object' && 'children' in node) {
-    return textIn((node as { children: unknown }).children);
-  }
-  return [];
-}
+import { textIn } from './fixtures/renderedText';
 
 describe('the home screen', () => {
   it('shows the word Emi', async () => {
