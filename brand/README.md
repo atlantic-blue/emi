@@ -32,6 +32,11 @@ ship inside the application, and `docs/licences.md` names the licence each one t
 That is the same arithmetic the component on the phone draws with, and a test asserts the component's
 own paths are the ones in the picture, so the page cannot show a ring the application does not draw.
 
+`screens/` draws the home screen as the application renders it. The renderer mounts the real
+component under the test runner, reads the tree that came back, and turns it into markup, so no
+layout is restated here and a change to the screen changes the picture. It is drawn only when it is
+asked for, because the runner picks up a file named for a test and this one is named for a picture.
+
 `jsx/` is the markup a page is written in. A generator writes a page as markup and gets a string of
 html back, which a browser then draws. `jsx/register.ts` is what lets Node read a `.tsx` file at all,
 because Node strips types from a `.ts` file on its own and does nothing with the markup in a `.tsx`
@@ -49,6 +54,7 @@ From the root of the repository:
     npm run generate:logo
     npm run generate:specimen
     npm run generate:ring-picture
+    npm run generate:home-picture
     npm run test:workspace
 
 The icon set has its own generator, which needs no install of its own:
