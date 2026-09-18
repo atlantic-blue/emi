@@ -33,15 +33,21 @@ device, because there is nowhere for it to go yet.
 flowchart TD
   subgraph Phone["The phone"]
     UI["Screens, through expo-router"]
+    FIRST["First run, three screens"]
     TOK["Design tokens"]
     CAT["Symptom catalogue"]
     DATA["Day log repository"]
+    SET["Setting repository"]
     PORT["Database port: execute, run, all"]
     SQL[("SQLite, through expo-sqlite")]
+    UI --> FIRST
     UI --> TOK
     UI --> CAT
     UI --> DATA
+    FIRST --> DATA
+    FIRST --> SET
     DATA --> PORT
+    SET --> PORT
     PORT --> SQL
   end
   subgraph Pipeline["The pipeline, on every pull request"]
@@ -69,8 +75,10 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `packages/tokens` holds the colours, the type scale and the spacing. It is the only place a colour
   value may be written.
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.
-- `packages/crypto` will hold the encrypted record format. It exports its own name and nothing else
-  today.
+- `packages/crypto` holds the encrypted record format: the envelope, the canonical json and the
+  ranges a day is checked against.
+- `brand` holds the mark, the icons and the fonts, as drawn files and the programs that write
+  them.
 - `tools` holds the checks that guard the repository rather than the product.
 - `docs` holds this document and the documents beside it.
 
@@ -87,6 +95,27 @@ written double, so every constraint is proved against a real database engine.
 
 The `day` column is a copy of the date that also sits inside the payload. It is kept in the clear so
 the application can query by date. It never leaves the phone.
+
+## The first run
+
+Status: built
+
+The home screen has nothing to draw until she has said when her last period started, so a woman who
+has recorded nothing is sent to three screens instead. The first says what Emi is and what it will
+not do. The second asks when her last period started. The third asks roughly how long her cycle
+runs. Those are the two answers a first forecast needs, and the first run asks for nothing else.
+
+There is no account, no email address and no password, and there is no field to type into at all.
+She picks a day from a list of the last ninety one days, and she moves a number between 21 and 45.
+
+Nothing is written until she answers the last screen. The day and both settings are then written in
+one transaction, so a first run she walks away from halfway leaves the database as it was. The
+`setting` table holds the cycle length she stated and the instant she finished. The second reads
+that instant and sends her straight to the home screen.
+
+The day she picks is written as a bleeding day of medium flow. She is never asked how heavy it was,
+because the answer changes no forecast, and a record has no other way to say that a day was a
+bleeding day. She can change it on the day itself.
 
 ## The design tokens
 
@@ -131,17 +160,33 @@ anywhere.
 
 ## The encrypted record
 
-Status: designed
+Status: built
 
-`packages/crypto` will hold one envelope format, used by the phone and validated by the server.
+`packages/crypto` holds one envelope format, used by the phone and read by the server.
 
 The bytes are a version byte of `0x01`, then a 24 byte nonce, then the ciphertext and its 16 byte
-authentication tag. The cipher is XChaCha20-Poly1305. The plaintext is canonical JSON with sorted
+authentication tag. The cipher is XChaCha20-Poly1305. The plaintext is canonical json with sorted
 keys and no whitespace, so the same record always produces the same bytes.
 
-The libraries are `@noble/ciphers`, `@noble/curves` and `@noble/hashes`. They are audited, they have
-no dependencies, and they contain no native code. Nothing to link means nothing that can fail at
-launch on a device while every test stays green.
+A nonce is drawn fresh for every single write. Two writes of the same day are two different
+envelopes, and a source that returns nothing but zeroes is refused rather than used.
+
+The package checks a day before it seals it: the date, the flow, the symptom slugs against the
+catalogue, the energy from one to five, the temperature from 34.0 to 42.0, the weight from 20.0 to
+400.0 and the note at 2000 characters. It does not check those ranges again when it opens a record,
+because a day she wrote years ago is hers to read and a build that refused it would lose her history
+rather than protect it.
+
+`packages/crypto/tests/vectors.json` holds a key, a nonce, a plaintext and the envelope those three
+produce, byte for byte. A change to the format turns the test red. A new version byte adds vectors
+and never edits these.
+
+The libraries are `@noble/ciphers`, `@noble/curves` and `@noble/hashes`. They are audited, they
+have no dependencies, and they contain no native code. Nothing to link means nothing that can fail
+at launch on a device while every test stays green. Only `@noble/ciphers` is installed today.
+
+The day log still writes the payload column as plain bytes. The step that sends every row through
+the envelope comes next.
 
 ## The vault in Amazon Web Services
 

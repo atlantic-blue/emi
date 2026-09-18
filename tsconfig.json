@@ -9,8 +9,9 @@
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
+    "jsx": "react-jsx",
     "types": ["jest", "node"],
     "noEmit": true
   },
-  "include": ["tools"]
+  "include": ["brand", "tools"]
 }

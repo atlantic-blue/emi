@@ -1,13 +1,11 @@
+import { type DayRecord, keyLength, recordBytes, recordFromBytes } from '@emi/crypto';
+
 /**
- * The plaintext of a day, from section 6.2 of the design. Feature 5 step 1 puts it inside the
- * envelope. Until then the day log carries these bytes as they are.
+ * The plaintext of a day, from section 6.2 of the design. The shape, the ranges and the canonical
+ * bytes all live in `@emi/crypto`, because the service reads the same format and one of them
+ * drifting from the other is the failure this package exists to stop.
  */
-export interface DayRecord {
-  readonly day: string;
-  readonly symptoms?: readonly string[];
-  readonly note?: string;
-  readonly recordedAt: string;
-}
+export { type DayRecord, recordBytes, recordFromBytes };
 
 export function aDayRecord(overrides: Partial<DayRecord> = {}): DayRecord {
   return {
@@ -18,11 +16,7 @@ export function aDayRecord(overrides: Partial<DayRecord> = {}): DayRecord {
   };
 }
 
-/** Canonical JSON, keys sorted and no whitespace, so one record is always the same bytes. */
-export function recordBytes(record: DayRecord): Uint8Array {
-  return new TextEncoder().encode(JSON.stringify(record, Object.keys(record).sort()));
-}
-
-export function recordFromBytes(bytes: Uint8Array): DayRecord {
-  return JSON.parse(new TextDecoder().decode(bytes)) as DayRecord;
+/** A key for a test, and a reminder that a real one is 32 bytes from the platform's generator. */
+export function aVaultKey(fill = 0x9f): Uint8Array {
+  return new Uint8Array(keyLength).fill(fill);
 }

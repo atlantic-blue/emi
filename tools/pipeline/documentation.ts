@@ -261,7 +261,187 @@ export function renderProblems(root: string, files: string[], tooling: string): 
   return { diagrams, problems };
 }
 
-export function documentProblems(root: string, tooling: string): RenderResult {
+export const featureDocument = 'docs/features.md';
+
+export const contractDocument = 'docs/contracts.md';
+
+export const refusalHeading = 'What version 1 does not do';
+
+const contractPattern = /^([A-Z]+-\d+)\b/;
+
+const featurePattern = /^## (Feature \d+)\b/;
+
+export interface MappedContract {
+  readonly contract: string;
+  readonly feature: string;
+}
+
+// A bullet may wrap onto an indented line, so the reader joins the wrapped part back on before
+// anybody reads the text of the item.
+function bulletsUnder(markdown: string, heading: string): string[] {
+  const bullets: string[] = [];
+  let inside = false;
+
+  for (const line of linesOf(markdown)) {
+    if (!line.fenced && line.text.startsWith('## ')) {
+      inside = line.text.slice(3).trim() === heading;
+      continue;
+    }
+
+    if (!inside || line.fenced) {
+      continue;
+    }
+
+    if (line.text.startsWith('- ')) {
+      bullets.push(line.text.slice(2).trim());
+      continue;
+    }
+
+    const continued = line.text.startsWith('  ') && line.text.trim().length > 0;
+    const last = bullets.length - 1;
+
+    if (continued && last >= 0) {
+      bullets[last] = `${bullets[last]} ${line.text.trim()}`;
+    }
+  }
+
+  return bullets;
+}
+
+export function contractsDeclaredIn(markdown: string): string[] {
+  const declared: string[] = [];
+
+  for (const line of linesOf(markdown)) {
+    if (line.fenced || !line.text.startsWith('### ')) {
+      continue;
+    }
+
+    const found = contractPattern.exec(line.text.slice(4).trim());
+
+    if (found !== null) {
+      declared.push(found[1] as string);
+    }
+  }
+
+  return declared;
+}
+
+export function contractsMappedIn(markdown: string): MappedContract[] {
+  const mapped: MappedContract[] = [];
+  let feature: string | null = null;
+
+  for (const line of linesOf(markdown)) {
+    if (line.fenced) {
+      continue;
+    }
+
+    if (line.text.startsWith('## ')) {
+      const heading = featurePattern.exec(line.text);
+
+      feature = heading === null ? null : (heading[1] as string);
+      continue;
+    }
+
+    if (feature === null || !line.text.startsWith('- `')) {
+      continue;
+    }
+
+    const closing = line.text.indexOf('`', 3);
+
+    if (closing <= 3) {
+      continue;
+    }
+
+    const found = contractPattern.exec(line.text.slice(3, closing));
+
+    if (found !== null) {
+      mapped.push({ contract: found[1] as string, feature });
+    }
+  }
+
+  return mapped;
+}
+
+export function contractProblems(declared: string[], mapped: MappedContract[]): string[] {
+  const problems: string[] = [];
+  const features = new Map<string, string[]>();
+
+  for (const entry of mapped) {
+    features.set(entry.contract, [...(features.get(entry.contract) ?? []), entry.feature]);
+  }
+
+  if (declared.length === 0) {
+    problems.push(`${contractDocument} declares no contract, so the map proves nothing`);
+  }
+
+  for (const contract of declared) {
+    if (!features.has(contract)) {
+      problems.push(
+        `${contractDocument} declares "${contract}", and ${featureDocument} names it under no feature`,
+      );
+    }
+  }
+
+  for (const [contract, named] of features) {
+    if (!declared.includes(contract)) {
+      problems.push(
+        `${featureDocument} names "${contract}" under ${named[0]}, and ${contractDocument} declares no such contract`,
+      );
+
+      continue;
+    }
+
+    if (named.length > 1) {
+      problems.push(
+        `${featureDocument} names "${contract}" under ${named.join(' and ')}, and one feature builds a contract`,
+      );
+    }
+  }
+
+  return problems;
+}
+
+export function refusalsIn(markdown: string): string[] {
+  return bulletsUnder(markdown, refusalHeading);
+}
+
+export function refusalProblems(file: string, refusals: string[]): string[] {
+  if (refusals.length === 0) {
+    return [`${file} names no refusal under "${refusalHeading}", so version 1 refuses nothing`];
+  }
+
+  const seen = new Set<string>();
+  const problems: string[] = [];
+
+  for (const refusal of refusals) {
+    const said = refusal.toLowerCase().replace(/\s+/g, ' ').replace(/\.$/, '');
+
+    if (seen.has(said)) {
+      problems.push(`${file} names the refusal "${refusal}" twice under "${refusalHeading}"`);
+    }
+
+    seen.add(said);
+  }
+
+  return problems;
+}
+
+export interface DocumentResult {
+  readonly diagrams: number;
+  readonly contracts: number;
+  readonly refusals: number;
+  readonly problems: string[];
+}
+
+function documentIn(root: string, file: string): { markdown: string; problems: string[] } {
+  if (!existsSync(join(root, file))) {
+    return { markdown: '', problems: [`${file} is absent, and the pipeline reads it`] };
+  }
+
+  return { markdown: readFileSync(join(root, file), 'utf8'), problems: [] };
+}
+
+export function documentProblems(root: string, tooling: string): DocumentResult {
   const files = markdownFilesOf(root);
   const architecture = readFileSync(join(root, architectureDocument), 'utf8');
 
@@ -272,10 +452,88 @@ export function documentProblems(root: string, tooling: string): RenderResult {
   );
 
   const marked = statusProblems(architectureDocument, architecture);
+  const features = documentIn(root, featureDocument);
+  const contracts = documentIn(root, contractDocument);
+
+  const declared = contractsDeclaredIn(contracts.markdown);
+  const mapped = contractsMappedIn(features.markdown);
+  const refusals = refusalsIn(features.markdown);
+
+  const agreement =
+    features.problems.length + contracts.problems.length > 0
+      ? []
+      : [...contractProblems(declared, mapped), ...refusalProblems(featureDocument, refusals)];
+
   const rendered = renderProblems(root, files, tooling);
 
   return {
     diagrams: rendered.diagrams,
-    problems: [...drift, ...marked, ...rendered.problems],
+    contracts: mapped.length,
+    refusals: refusals.length,
+    problems: [
+      ...drift,
+      ...marked,
+      ...features.problems,
+      ...contracts.problems,
+      ...agreement,
+      ...rendered.problems,
+    ],
   };
+}
+
+export const readmeFloor = 400;
+
+// brand and tools ship code and are not workspaces, so no manifest names them and the reader
+// below has to.
+export const unlistedDirectories: readonly string[] = ['brand', 'tools'];
+
+export function documentedDirectoriesOf(root: string): string[] {
+  return [...workspaceDirectoriesOf(root), ...unlistedDirectories].sort();
+}
+
+// A workspace is known by the name in its manifest, because that is the name the import uses. A
+// directory with no manifest is known by its path.
+export function nameOf(root: string, directory: string): string {
+  const manifest = join(root, directory, 'package.json');
+
+  if (!existsSync(manifest)) {
+    return directory;
+  }
+
+  const contents = JSON.parse(readFileSync(manifest, 'utf8')) as { name?: string };
+
+  return contents.name ?? directory;
+}
+
+export function readmeProblems(root: string, directories: string[]): string[] {
+  const problems: string[] = [];
+
+  for (const directory of directories) {
+    const file = `${directory}/README.md`;
+    const path = join(root, file);
+
+    if (!existsSync(path)) {
+      problems.push(
+        `${directory} holds no README.md, so opening that directory alone tells nobody what it is`,
+      );
+      continue;
+    }
+
+    const readme = readFileSync(path, 'utf8').trim();
+    const name = nameOf(root, directory);
+
+    if (!readme.includes(name)) {
+      problems.push(
+        `${file} never writes "${name}", so it does not say which package it documents`,
+      );
+    }
+
+    if (readme.length < readmeFloor) {
+      problems.push(
+        `${file} is ${readme.length} characters, under the floor of ${readmeFloor}, so it answers nothing`,
+      );
+    }
+  }
+
+  return problems;
 }
