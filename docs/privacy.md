@@ -181,3 +181,9 @@ it.
 
 One sentence may carry a forbidden word: a sentence that denies the claim. Those sentences are
 listed in the same module, so adding one is a deliberate act a reviewer can see in the diff.
+
+The application and the store listing are held to three more words, listed in the same module as
+`interfaceOnlyWording`. They are ordinary English, and a document has room to explain what it means
+by one. A screen has none, so a woman reads the word on its own and takes it for the claim. That
+scan is in `tools/pipeline/interfaceClaims.ts` and its test is
+`apps/mobile/tests/copy/claims.test.ts`.

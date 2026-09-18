@@ -6,6 +6,10 @@ the answer.
 
 ## What it exports
 
+The whole surface, with the comment that sits on each symbol, is in `docs/reference/cycle.md`.
+That page is generated from the source, so this section is the shape of the package and that one is
+the detail.
+
 `cyclesFrom` turns her day records into cycles. A cycle starts on the first bleeding day that is not
 marked unexpected, and it ends the day before the next such day. `completeCycles` and `cycleLengths`
 read that list. `toDay`, `addDays` and `daysBetween` do the date arithmetic in whole days, with no

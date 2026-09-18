@@ -46,14 +46,31 @@ export const recordKeys: readonly string[] = [
   'weightKilograms',
 ];
 
+/** Degrees. Below this a reading is a thermometer that was not held against anybody. */
 export const lowestTemperatureCelsius = 34;
+/** Degrees. Above this the number came from the keypad and not from a body. */
 export const highestTemperatureCelsius = 42;
+/**
+ * Kilograms. The range is wide on purpose: the field catches a stray digit and it never judges
+ * her.
+ */
 export const lowestWeightKilograms = 20;
+/** Kilograms, and wide for the same reason. A refusal here would lose what she typed. */
 export const highestWeightKilograms = 400;
+/** Five steps begin here. A scale she can answer in one tap beats one she has to think about. */
 export const lowestEnergy = 1;
+/** And they end here. A whole number only, because half a step is a precision she does not have. */
 export const highestEnergy = 5;
+/**
+ * Characters, counted in code points rather than in bytes, so an accented letter costs her one and
+ * not two.
+ */
 export const longestNote = 2000;
 
+/**
+ * Holds every problem the day carries, not the first one, so the message and the list are one
+ * failure read two ways.
+ */
 export class RecordError extends Error {
   readonly problems: readonly string[];
 
@@ -107,6 +124,7 @@ export function recordProblems(
   return problems;
 }
 
+/** Hands the record back, or throws. Every path to an envelope goes through here. */
 export function checkedRecord(record: DayRecord, catalogue?: readonly Symptom[]): DayRecord {
   const problems = recordProblems(record, catalogue);
   if (problems.length > 0) {
@@ -120,6 +138,7 @@ export function recordJson(record: DayRecord, catalogue?: readonly Symptom[]): s
   return canonicalJson(checkedRecord(record, catalogue) as unknown as JsonValue);
 }
 
+/** The plaintext of an envelope: a day that passed its ranges, written as canonical bytes. */
 export function recordBytes(record: DayRecord, catalogue?: readonly Symptom[]): Uint8Array {
   return new TextEncoder().encode(recordJson(record, catalogue));
 }
