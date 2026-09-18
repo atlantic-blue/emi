@@ -1,8 +1,9 @@
-import { type DayRecord, recordBytes, recordFromBytes } from '@emi/crypto';
+import type { DayRecord } from '@emi/crypto';
 import { type Flow, isBleeding } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import { readDayLog } from '../../data/dayLogRepository';
+import type { DayVault } from '../../services/vault/dayVault';
 import type { DayAndCycles } from '../cycle/rebuild';
 import { editDay, logDay } from '../cycle/rebuild';
 
@@ -24,32 +25,32 @@ export interface FlowLog {
   readonly now: Date;
 }
 
-export function logFlow(db: Database, log: FlowLog): DayAndCycles {
+export function logFlow(db: Database, vault: DayVault, log: FlowLog): DayAndCycles {
   const held = readDayLog(db, log.day);
   const record: DayRecord = {
-    ...(held ? withoutTheMark(recordFromBytes(held.payload)) : {}),
+    ...(held ? withoutTheMark(vault.open(held.payload)) : {}),
     day: log.day,
     flow: log.flow,
     ...(marksTheBleeding(log) ? { bleedingIsUnexpected: true } : {}),
     recordedAt: log.now.toISOString(),
   };
-  const write = { day: log.day, payload: recordBytes(record), now: log.now };
+  const write = { day: log.day, payload: vault.seal(record), now: log.now };
 
-  return held ? editDay(db, write, recordFromBytes) : logDay(db, write, recordFromBytes);
+  return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
 }
 
 /** What she picked for this day already, so the picker opens on her own answer. */
-export function flowLogged(db: Database, day: string): Flow | undefined {
+export function flowLogged(db: Database, vault: DayVault, day: string): Flow | undefined {
   const held = readDayLog(db, day);
 
-  return held ? recordFromBytes(held.payload).flow : undefined;
+  return held ? vault.open(held.payload).flow : undefined;
 }
 
 /** Whether she said this day's bleeding was not her period, so the mark opens the way she left it. */
-export function unexpectedLogged(db: Database, day: string): boolean {
+export function unexpectedLogged(db: Database, vault: DayVault, day: string): boolean {
   const held = readDayLog(db, day);
 
-  return held ? recordFromBytes(held.payload).bleedingIsUnexpected === true : false;
+  return held ? vault.open(held.payload).bleedingIsUnexpected === true : false;
 }
 
 /**

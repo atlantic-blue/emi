@@ -10,7 +10,8 @@ import {
 import type { Database } from '../../src/data/database';
 import { insertDayLog, readDayLog } from '../../src/data/dayLogRepository';
 import { migrate } from '../../src/data/schema';
-import { aDayRecord, recordBytes, recordFromBytes } from '../fixtures/dayRecord';
+import { aDayRecord } from '../fixtures/dayRecord';
+import { herVault } from '../fixtures/herVault';
 import { openTestDatabase } from '../data/nodeDatabase';
 
 const marchDay = '2026-03-14';
@@ -30,7 +31,7 @@ function migrated(): Database {
 function marchWrittenTo(database: Database): void {
   insertDayLog(database, {
     day: marchDay,
-    payload: recordBytes(
+    payload: herVault().seal(
       aDayRecord({ day: marchDay, symptoms: ['cramps', 'napping', 'low-mood'] }),
     ),
     now: wroteAt,
@@ -47,7 +48,7 @@ function namesShownFor(
   if (!row) {
     throw new Error(`${day} was written and could not be read back`);
   }
-  return (recordFromBytes(row.payload).symptoms ?? []).map(
+  return (herVault().open(row.payload).symptoms ?? []).map(
     (slug) => findSymptom(slug, catalogue)?.name ?? `unknown symptom ${slug}`,
   );
 }
@@ -81,7 +82,7 @@ describe('a retired symptom still reads on an old record', () => {
     it('still accepts the March record, because a retired slug is a known slug', () => {
       const database = migrated();
       marchWrittenTo(database);
-      const record = recordFromBytes(readDayLog(database, marchDay)!.payload);
+      const record = herVault().open(readDayLog(database, marchDay)!.payload);
 
       expect(unknownSymptomSlugs(record.symptoms ?? [], afterNappingRetires)).toEqual([]);
     });

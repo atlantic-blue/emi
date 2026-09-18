@@ -9,7 +9,8 @@ import { migrate } from '../../src/data/schema';
 import { LogSheet, type LogSheetEntry } from '../../src/features/log/LogSheet';
 import { groupHeadings } from '../../src/features/log/SymptomGroup';
 import { openTestDatabase } from '../data/nodeDatabase';
-import { recordFromBytes } from '../fixtures/dayRecord';
+import { herVault } from '../fixtures/herVault';
+
 import { savesInto as savesEntryInto } from '../fixtures/sheetSave';
 
 const day = '2026-03-14';
@@ -54,7 +55,7 @@ function slugsRecordedFor(database: Database, forDay: string): readonly string[]
   if (!row) {
     throw new Error(`${forDay} was saved and could not be read back`);
   }
-  return recordFromBytes(row.payload).symptoms ?? [];
+  return herVault().open(row.payload).symptoms ?? [];
 }
 
 function revisionOf(database: Database, forDay: string): number {

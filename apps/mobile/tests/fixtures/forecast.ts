@@ -9,6 +9,7 @@ import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/reco
 import { daysOf } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import { daysLogged, migratedDatabase, readDay } from './cycleCache';
 import { encodeDay } from './dayPayload';
+import { herVault } from './herVault';
 
 export const recordedAt = new Date('2026-09-17T08:00:00.000Z');
 
@@ -48,6 +49,7 @@ export function asSheLoggedIt(set: RecordedSet, cycleLengthDays: number): Databa
   const database = migratedDatabase();
   completeFirstRun(
     database,
+    herVault(),
     { periodStartedOn: firstDay.day, cycleLengthDays },
     atNoonOn(firstDay.day),
   );

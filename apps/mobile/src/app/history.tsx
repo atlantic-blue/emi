@@ -6,6 +6,7 @@ import { useDatabase } from '../data/DatabaseProvider';
 import { HistoryScreen } from '../features/history/HistoryScreen';
 import { historyNow } from '../features/history/historyNow';
 import { useFirstRun } from '../features/onboarding/FirstRunProvider';
+import { useVault } from '../services/vault/VaultProvider';
 
 /**
  * Her cycles read back, and the symptoms that came back with them. A day she corrects from here
@@ -13,14 +14,15 @@ import { useFirstRun } from '../features/onboarding/FirstRunProvider';
  */
 export default function HistoryRoute(): ReactNode {
   const database = useDatabase();
+  const vault = useVault();
   const router = useRouter();
   const { isDone } = useFirstRun();
-  const [history, setHistory] = useState(() => historyNow(database));
+  const [history, setHistory] = useState(() => historyNow(database, vault));
 
   useFocusEffect(
     useCallback(() => {
-      setHistory(historyNow(database));
-    }, [database]),
+      setHistory(historyNow(database, vault));
+    }, [database, vault]),
   );
 
   const leave = useCallback(() => {
