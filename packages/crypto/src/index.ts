@@ -8,4 +8,5 @@ export * from './base64';
 export * from './canonical';
 export * from './envelope';
 export * from './record';
+export * from './recovery';
 export * from './signature';

@@ -4,7 +4,7 @@ import type { AccountStore } from '../src/store/accounts';
 import { dynamoStore } from '../src/store/dynamo';
 import { fakeTable, tableName } from './fixtures/dynamoTable';
 import { memoryStore } from './fixtures/memoryStore';
-import { keyPairFromSeed } from './fixtures/requests';
+import { anAccount, keyPairFromSeed } from './fixtures/requests';
 
 /**
  * One suite over both stores. The register and authorizer tests run against the store held in
@@ -23,7 +23,7 @@ const stores: [string, () => AccountStore][] = [
 
 describe.each(stores)('%s', (_name, build) => {
   function account(id: string = accountId) {
-    return { accountId: id, publicKey: pair.publicKey, createdAt, recordCount: 0 };
+    return anAccount(pair, new Date(createdAt), { accountId: id });
   }
 
   it('answers with nothing for an account nobody registered', async () => {

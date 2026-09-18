@@ -6,7 +6,7 @@ import { accountIdFor, base64Of, canonicalBytes, sealRecord } from '@emi/crypto'
 import { putRecordFor } from '../src/handlers/putRecord';
 import { dynamoStore } from '../src/store/dynamo';
 import { fakeTable, type FakeTable, tableName } from './fixtures/dynamoTable';
-import { authorizedEvent, keyPairFromSeed, signedRequest } from './fixtures/requests';
+import { anAccount, authorizedEvent, keyPairFromSeed, signedRequest } from './fixtures/requests';
 
 /**
  * Contracts TABLE-4 and ENVELOPE-4. This is the file the product rests on: the first half writes a
@@ -42,12 +42,7 @@ async function tableAfterSheWrote(): Promise<FakeTable> {
   const table = fakeTable();
   const store = dynamoStore(table, tableName);
 
-  await store.createAccount({
-    accountId,
-    publicKey: pair.publicKey,
-    createdAt: writtenAt.toISOString(),
-    recordCount: 0,
-  });
+  await store.createAccount(anAccount(pair, writtenAt));
 
   const payload = sealRecord(herDay, vaultKey, {
     random: (count) => new Uint8Array(count).fill(9),
@@ -189,15 +184,30 @@ const allowedFromCrypto: readonly string[] = [
   'instantWindowSeconds',
   'presentedSignatureIn',
   'readEnvelope',
+  'readWrappedVaultKey',
+  'recoverySaltLength',
   'refusalMessages',
   'signatureVerifies',
+  'wrappedVaultKeyLength',
 ];
 
-/** The names that open an envelope or write one. The service may hold none of them. */
+/**
+ * The names that open an envelope or write one, and the names that derive a key one could be
+ * opened with. The service may hold none of them. It stores a wrapped vault key from feature 6
+ * step 4, so the derivation is on this list for the same reason the cipher is: a service that
+ * could turn a recovery code into a key is a service that only needs her code to read everything.
+ */
 const namesThatOpenOrSeal: readonly string[] = [
-  'openRecord',
+  'argon2id',
+  'drawRecoveryCode',
   'openBytes',
+  'openRecord',
+  'openWrappedVaultKey',
+  'readRecoveryCode',
+  'recoveryKeyFrom',
   'sealRecord',
+  'sealVaultKey',
+  'wrapVaultKey',
   'xchacha20poly1305',
 ];
 
@@ -210,6 +220,9 @@ const allowedKeyWords: readonly string[] = [
   'ExclusiveStartKey',
   'accountIdContextKey',
   'Key',
+  'readWrappedVaultKey',
+  'wrappedVaultKey',
+  'wrappedVaultKeyLength',
   'KeyConditionExpression',
   'LastEvaluatedKey',
   'accountSortKey',
@@ -321,7 +334,9 @@ describe('the service cannot open what it holds', () => {
       .files.map((file) => readFileSync(join(serviceDirectory, file), 'utf8'))
       .join('\n');
 
-    expect(source).not.toMatch(/openRecord|openBytes|\.decrypt\(|xchacha/);
+    expect(source).not.toMatch(
+      /openRecord|openBytes|openWrappedVaultKey|recoveryKeyFrom|argon2|\.decrypt\(|xchacha/,
+    );
   });
 
   it('holds no key of its own, and reads none from its environment', () => {
