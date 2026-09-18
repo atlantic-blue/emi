@@ -20,6 +20,7 @@ export const settingsCopy = {
       'The cycles Emi worked out from them',
       'Your settings',
       'The key that opens any of it',
+      'Your account on the server, and every day it holds',
     ],
     action: 'Delete everything',
     back: 'Back',
@@ -31,5 +32,7 @@ export const settingsCopy = {
     title: 'It is gone.',
     line: 'This phone holds nothing about you. Emi starts from an empty ring.',
     action: 'Start again',
+    withoutTheServer:
+      'Emi could not reach the server to take your account off it. Nothing can open what is up there now: the only key was on this phone, and it went with your days.',
   },
 } as const;
