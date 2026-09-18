@@ -9,11 +9,13 @@ import type { ColourName } from './colour';
  * phone draw the same shapes from one source.
  */
 
+/** The four phases of a cycle, in the order they run. */
 export type PhaseName = 'period' | 'follicular' | 'ovulation' | 'luteal';
 
 /** The order the four phases run in, which is also the order they are drawn in. */
 export const phaseNames: readonly PhaseName[] = ['period', 'follicular', 'ovulation', 'luteal'];
 
+/** The two colours a phase owns: the one the arc is filled with, and the one text may use. */
 export interface PhasePalette {
   /** The arc. Section 9.3 forbids this colour carrying text. */
   readonly fill: ColourName;
@@ -21,6 +23,7 @@ export interface PhasePalette {
   readonly ink: ColourName;
 }
 
+/** The colour pair each phase draws with. No screen picks a phase colour any other way. */
 export const phasePalette: Readonly<Record<PhaseName, PhasePalette>> = {
   period: { fill: 'period', ink: 'periodInk' },
   follicular: { fill: 'follicular', ink: 'follicularInk' },
@@ -36,6 +39,7 @@ export const phaseLabel: Readonly<Record<PhaseName, string>> = {
   luteal: 'Luteal',
 };
 
+/** A whole turn of the ring. The arcs and the gaps together always add up to this. */
 export const FULL_TURN_DEGREES = 360;
 
 /**
@@ -50,16 +54,25 @@ export const DAYS_AHEAD_STRENGTH = 0.2;
 /** Section 9.5. The ring moves once, when the screen opens, and never again. */
 export const RING_OPEN_MILLISECONDS = 600;
 
+/** The width of the ring across, in points, from design section 9.5. */
 export const RING_DIAMETER = 240;
+
+/** How thick the track is drawn, in points. */
 export const RING_TRACK_WIDTH = 16;
+
+/** The bead that marks today, in points. It is drawn over the track and never inside an arc. */
 export const BEAD_RADIUS = 9;
+
+/** The ground drawn around the bead, in points, so the bead reads against any fill under it. */
 export const BEAD_HALO_WIDTH = 2;
 
+/** How many days one phase runs for. The four spans together are the cycle. */
 export interface PhaseSpan {
   readonly phase: PhaseName;
   readonly days: number;
 }
 
+/** Every way the ring refuses to be drawn. Each one names what was wrong with the days it was given. */
 export type RingRefusal =
   | 'the-phases-are-not-the-four-phases-in-order'
   | 'a-phase-runs-for-a-part-day-or-fewer-than-none'
@@ -67,6 +80,7 @@ export type RingRefusal =
   | 'the-cycle-has-no-days'
   | 'the-day-is-outside-the-cycle';
 
+/** What `ringGeometry` throws. It carries the refusal, so a caller can answer each one differently. */
 export class RingError extends Error {
   readonly refusal: RingRefusal;
 
@@ -77,6 +91,7 @@ export class RingError extends Error {
   }
 }
 
+/** One phase, drawn: where it starts, how far it sweeps, and how much of it she has reached. */
 export interface RingArc {
   readonly phase: PhaseName;
   readonly days: number;
@@ -91,6 +106,7 @@ export interface RingArc {
   readonly elapsedDegrees: number;
 }
 
+/** The whole ring as numbers, which is what a screen or a picture draws without doing arithmetic. */
 export interface RingGeometry {
   readonly cycleLengthDays: number;
   readonly day: number;
@@ -104,6 +120,7 @@ export interface RingGeometry {
   readonly beadDegrees: number;
 }
 
+/** What the ring is drawn from: the length of her cycle, the day she is on, and the four phases. */
 export interface RingInput {
   readonly cycleLengthDays: number;
   /** The day she is on, counting from one. */
@@ -133,6 +150,10 @@ function readPhases(phases: readonly PhaseSpan[]): readonly PhaseSpan[] {
   return phases;
 }
 
+/**
+ * The arcs, the gaps and the bead, from her own days. Every refusal of `RingRefusal` is thrown
+ * from here, so a ring that cannot be drawn is never drawn wrong.
+ */
 export function ringGeometry({ cycleLengthDays, day, phases }: RingInput): RingGeometry {
   const spans = readPhases(phases);
   const counted = spans.reduce((total, span) => total + span.days, 0);
@@ -214,6 +235,7 @@ export function coveredDegrees(geometry: RingGeometry): number {
   return arcs + geometry.gapCount * geometry.gapDegrees;
 }
 
+/** A place on the drawing, in points, with x across and y down. */
 export interface Point {
   readonly x: number;
   readonly y: number;
