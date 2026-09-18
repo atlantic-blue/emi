@@ -256,6 +256,7 @@ describe('after deleting, the table holds no item for that account', () => {
   const fetchWas = global.fetch;
 
   beforeEach(async () => {
+    jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
     resetExpoSqlite();
     resetExpoSecureStore();
@@ -272,6 +273,7 @@ describe('after deleting, the table holds no item for that account', () => {
     } else {
       process.env.EXPO_PUBLIC_EMI_VAULT_URL = addressWas;
     }
+    jest.useRealTimers();
     jest.restoreAllMocks();
   });
 
