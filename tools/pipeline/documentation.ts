@@ -483,8 +483,9 @@ export function documentProblems(root: string, tooling: string): DocumentResult 
 
 export const readmeFloor = 400;
 
-// tools ships code and is not a workspace, so no manifest names it and the reader below has to.
-export const unlistedDirectories: readonly string[] = ['tools'];
+// brand and tools ship code and are not workspaces, so no manifest names them and the reader
+// below has to.
+export const unlistedDirectories: readonly string[] = ['brand', 'tools'];
 
 export function documentedDirectoriesOf(root: string): string[] {
   return [...workspaceDirectoriesOf(root), ...unlistedDirectories].sort();

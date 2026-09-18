@@ -540,9 +540,10 @@ describe('a new package without a readme fails the pipeline', () => {
   describe('every directory in this repository carries one today', () => {
     const directories = documentedDirectoriesOf(repositoryRoot);
 
-    it('reads the five directories somebody can open on their own', () => {
+    it('reads the six directories somebody can open on their own', () => {
       expect(directories).toEqual([
         'apps/mobile',
+        'brand',
         'packages/crypto',
         'packages/cycle',
         'packages/tokens',
@@ -554,9 +555,10 @@ describe('a new package without a readme fails the pipeline', () => {
       expect(readmeProblems(repositoryRoot, directories)).toEqual([]);
     });
 
-    it('takes the name of a workspace from its manifest and the name of tools from its path', () => {
+    it('takes the name of a workspace from its manifest, and the others from their path', () => {
       expect(directories.map((directory) => nameOf(repositoryRoot, directory))).toEqual([
         '@emi/mobile',
+        'brand',
         '@emi/crypto',
         '@emi/cycle',
         '@emi/tokens',
