@@ -1,4 +1,6 @@
-import { base64Of, bytesFromBase64, keyLength } from '@emi/crypto';
+import { randomFillSync } from 'node:crypto';
+
+import { base64Of, bytesFromBase64, keyLength, type RandomSource } from '@emi/crypto';
 
 import { type DayVault, dayVault } from '../../src/services/vault/dayVault';
 import { expoKeychain } from '../../src/services/vault/keychain';
@@ -13,9 +15,15 @@ export function herKey(): Uint8Array {
   return new Uint8Array(keyLength).map((_, at) => (at * 7 + 13) % 256);
 }
 
+/**
+ * Where a nonce comes from in a test. The phone draws from expo-crypto and never from the
+ * runtime's globals, so a test asks Node for the same thing the same way.
+ */
+export const herRandom: RandomSource = (byteCount) => randomFillSync(new Uint8Array(byteCount));
+
 /** The vault a test seals and opens with. */
 export function herVault(): DayVault {
-  return dayVault(herKey());
+  return dayVault(herKey(), herRandom);
 }
 
 /**
@@ -38,5 +46,5 @@ export async function theVaultOnHerPhone(): Promise<DayVault> {
     throw new Error('this phone holds no vault key, so nothing it wrote can be read');
   }
 
-  return dayVault(bytesFromBase64(held));
+  return dayVault(bytesFromBase64(held), herRandom);
 }

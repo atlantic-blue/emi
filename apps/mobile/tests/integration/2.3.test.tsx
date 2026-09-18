@@ -132,6 +132,25 @@ function controlsTooSmallToPress(): string[] {
     .map(({ name, style }) => `${name} is ${style.minWidth} by ${style.minHeight}`);
 }
 
+/**
+ * React Native runs on Hermes, which has no `globalThis.crypto`. Node has one, which is why the
+ * cases above pass while her first run threw on the phone. This takes the global away for the
+ * length of one walk and puts it back, so what she presses is measured against the runtime she
+ * actually holds.
+ */
+async function onARuntimeWithNoGlobalCrypto(walk: () => Promise<void>): Promise<void> {
+  const held = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+
+  Reflect.deleteProperty(globalThis, 'crypto');
+  try {
+    await walk();
+  } finally {
+    if (held !== undefined) {
+      Object.defineProperty(globalThis, 'crypto', held);
+    }
+  }
+}
+
 describe('the first run ends on the home screen with her period recorded', () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -238,6 +257,23 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'last-period.tsx',
         'welcome.tsx',
       ]);
+    });
+  });
+
+  describe('she answers all three screens on a runtime with no generator of its own', () => {
+    it('records her day, because the vault draws from the phone and not from the runtime', async () => {
+      const app = await sheOpensEmi();
+
+      await onARuntimeWithNoGlobalCrypto(sheAnswersEveryScreen);
+
+      expect(app.pathname()).toBe('/');
+      const row = readDayLog(herDatabase(), herPeriodStarted);
+      const vault = await theVaultOnHerPhone();
+      expect(row && vault.open(row.payload)).toEqual({
+        day: herPeriodStarted,
+        flow: 'medium',
+        recordedAt: whenSheOpensIt.toISOString(),
+      });
     });
   });
 
