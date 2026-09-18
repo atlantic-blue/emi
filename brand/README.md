@@ -18,10 +18,19 @@ It measures its own result and refuses to write when the ring misses the fractio
 every drawing follows. Running `icons/generate.ts` reads the directory and writes
 `packages/tokens/src/icons.ts`, so adding an icon means adding one file and running it again.
 
+`illustration/` holds the three onboarding pieces and the style they follow. Each one is two or
+three soft edged shapes in the phase colours on the stone ground, and never a picture of a thing.
+`illustration/README.md` names the five subjects the style refuses and why, and a test refuses a
+drawing that carries one of them in a layer name or in the name of the file.
+
 `specimen/` draws one page of the three faces at all six sizes, in sentences Emi writes. It reads
 the type scale and the font files from `packages/tokens`, so the page cannot name a size or a file
 the application does not have. The fonts themselves live in `apps/mobile/assets/fonts`, because they
 ship inside the application, and `docs/licences.md` names the licence each one travels under.
+
+`ring/` draws the cycle ring at three cycle lengths, from the geometry in `packages/tokens/src/ring.ts`.
+That is the same arithmetic the component on the phone draws with, and a test asserts the component's
+own paths are the ones in the picture, so the page cannot show a ring the application does not draw.
 
 `jsx/` is the markup a page is written in. A generator writes a page as markup and gets a string of
 html back, which a browser then draws. `jsx/register.ts` is what lets Node read a `.tsx` file at all,
@@ -39,11 +48,18 @@ From the root of the repository:
     npm run generate:app-icon
     npm run generate:logo
     npm run generate:specimen
+    npm run generate:ring-picture
     npm run test:workspace
 
 The icon set has its own generator, which needs no install of its own:
 
     node --experimental-strip-types brand/icons/generate.ts
+
+The illustration has two of its own. The first writes the drawings, the second draws each one into
+the picture beside it:
+
+    node --experimental-strip-types brand/illustration/generate.ts
+    node --experimental-strip-types brand/illustration/render.ts
 
 ## The trap
 
@@ -51,9 +67,9 @@ A drawing is generated and never edited. An svg file in this directory is output
 overwritten the next time somebody runs the generator, and the test fails before that anyway. Change
 the numbers in `logo/geometry.ts`, or the drawing in the icon source, and generate again.
 
-The specimen has a trap of its own. It draws through a browser, so it needs one, and it looks for
-a Chromium or Chrome binary in the usual places. Set `EMI_BROWSER` to the binary when it cannot find
-yours.
+The specimen and the ring picture have a trap of their own. They draw through a browser, so they
+need one, and they look for a Chromium or Chrome binary in the usual places. Set `EMI_BROWSER` to
+the binary when they cannot find yours.
 
 The second rule is the colour. A generator imports `packages/tokens`, and an icon leaves its colour
 as `currentColor` so the screen that names it sets the value. Nobody types a hex value into a source

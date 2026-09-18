@@ -6,6 +6,10 @@ a test can read a token without starting a screen.
 
 ## What it exports
 
+The whole surface, with the comment that sits on each symbol, is in `docs/reference/tokens.md`.
+That page is generated from the source, so this section is the shape of the package and that one is
+the detail.
+
 `colours` holds the eighteen tokens. Each one carries its value, the roles it may take (`ground`,
 `text`, `fill` or `line`) and `textOn`, the list of grounds it is approved to carry text on. A text
 token with an empty `textOn` is a token nobody measured. `colour` is the same set flattened to the

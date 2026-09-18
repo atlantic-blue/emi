@@ -34,6 +34,7 @@ flowchart TD
   subgraph Phone["The phone"]
     UI["Screens, through expo-router"]
     FIRST["First run, three screens"]
+    RING["The cycle ring"]
     TOK["Design tokens"]
     CAT["Symptom catalogue"]
     DATA["Day log repository"]
@@ -41,6 +42,8 @@ flowchart TD
     PORT["Database port: execute, run, all"]
     SQL[("SQLite, through expo-sqlite")]
     UI --> FIRST
+    UI --> RING
+    RING --> TOK
     UI --> TOK
     UI --> CAT
     UI --> DATA
@@ -79,6 +82,8 @@ purpose, because the design may name a thing before anybody builds it. This list
   ranges a day is checked against.
 - `brand` holds the mark, the icons and the fonts, as drawn files and the programs that write
   them.
+- `infra` holds the Terraform: the table, the api, the two functions and the two roles. The
+  pipeline validates it on every pull request. Nothing is applied yet.
 - `tools` holds the checks that guard the repository rather than the product.
 - `docs` holds this document and the documents beside it.
 
@@ -139,6 +144,10 @@ The slug is the only part written into a record, so it can never change. A name 
 may be rewritten at any time. A symptom that is no longer offered keeps its entry and carries the
 day it retired, because six cycles of her history point at that slug. A record that names a slug
 nothing resolves is a record she cannot read.
+
+The mood group of the catalogue is not offered as a symptom. The log sheet draws it as a picker of
+its own at the top, and what she picks there is written into the `moods` field of a record rather
+than into `symptoms`, so a screen that reads her history counts a mood once.
 
 ## The application icon
 
@@ -233,8 +242,10 @@ flowchart TD
   KC -.->|"never sent"| GW
 ```
 
-The planned directories are `services/vault` for the Lambda service and `infra` for the Terraform.
-Neither exists. The region is eu-central-1 and the account is 230345688874.
+The Terraform for all of this is in `infra` and it is read on every pull request. None of it is
+applied, because the first apply needs a credential the pipeline does not hold yet. The planned
+directory is `services/vault` for the Lambda service, and it does not exist. The region is
+eu-central-1 and the account is 230345688874.
 
 The dotted line is the product. The key never crosses it.
 

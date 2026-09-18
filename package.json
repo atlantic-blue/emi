@@ -20,8 +20,13 @@
     "check:documents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkDocuments.ts",
     "generate:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts",
     "check:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts --check",
+    "generate:reference": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/documentation/writeReference.ts",
+    "check:reference": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/documentation/writeReference.ts --check",
+    "generate:sheet": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/sheet/render.ts",
+    "check:sheet": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/sheet/writeSheet.ts --check",
     "generate:logo": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/logo/generate.ts",
     "generate:specimen": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/specimen/render.ts",
+    "generate:ring-picture": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/ring/render.ts",
     "test": "npm run test:workspace && npm run test:mobile",
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile"
@@ -42,6 +47,7 @@
     "eslint-config-expo": "57.0.2",
     "jest": "29.7.0",
     "prettier": "3.9.7",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "yaml": "2.9.1"
   }
 }

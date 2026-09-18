@@ -1,0 +1,135 @@
+name: deploy
+
+# A pull request gets a plan. A merge into main gets the apply. Nothing is ever applied from a
+# machine, which is why there is no other path into the account.
+#
+# Both cloud jobs read their role from a repository variable and skip every step while that
+# variable is empty. The roles do not exist until somebody runs the bootstrap in infra/README.md,
+# and a job that tried to reach the account before then would turn main red on every merge.
+
+on:
+  pull_request:
+    paths:
+      - 'infra/**'
+      - '.github/workflows/deploy.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/deploy.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TERRAFORM_VERSION: 1.10.5
+
+jobs:
+  check:
+    name: format and validate the infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: format
+        run: terraform fmt -check -recursive infra
+      - name: validate
+        working-directory: infra
+        run: |
+          terraform init -backend=false -input=false
+          terraform validate
+
+  plan:
+    name: plan the infrastructure
+    needs: check
+    runs-on: ubuntu-latest
+    # A pull request from a fork gets no token it could assume a role with, so it is not asked to.
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      ROLE: ${{ vars.AWS_PLAN_ROLE_ARN }}
+    steps:
+      - name: say whether this job can reach the account
+        run: |
+          if [ -z "${ROLE}" ]; then
+            echo "AWS_PLAN_ROLE_ARN is empty, so this job does nothing."
+            echo "It is waiting for the bootstrap named in infra/README.md to create the roles."
+            echo "Set the repository variable to the plan role address to turn this job on."
+          else
+            echo "Planning as ${ROLE}."
+          fi
+      - uses: actions/checkout@v7
+        if: env.ROLE != ''
+      - uses: hashicorp/setup-terraform@v3
+        if: env.ROLE != ''
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: assume the plan role
+        if: env.ROLE != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE }}
+          aws-region: eu-central-1
+      - name: plan
+        if: env.ROLE != ''
+        working-directory: infra
+        run: |
+          terraform init -input=false -lock=false
+          terraform plan -input=false -lock=false -no-color | tee plan.txt
+      - name: put the plan in the run summary
+        if: env.ROLE != ''
+        working-directory: infra
+        run: |
+          {
+            echo '## Terraform plan'
+            echo '```'
+            cat plan.txt
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+  apply:
+    name: apply the infrastructure
+    needs: check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      ROLE: ${{ vars.AWS_APPLY_ROLE_ARN }}
+    steps:
+      - name: say whether this job can reach the account
+        run: |
+          if [ -z "${ROLE}" ]; then
+            echo "AWS_APPLY_ROLE_ARN is empty, so this job does nothing."
+            echo "It is waiting for the bootstrap named in infra/README.md to create the roles."
+            echo "Set the repository variable to the apply role address to turn this job on."
+          else
+            echo "Applying as ${ROLE}."
+          fi
+      - uses: actions/checkout@v7
+        if: env.ROLE != ''
+      - uses: hashicorp/setup-terraform@v3
+        if: env.ROLE != ''
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: assume the apply role
+        if: env.ROLE != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE }}
+          aws-region: eu-central-1
+      - name: apply
+        if: env.ROLE != ''
+        working-directory: infra
+        run: |
+          terraform init -input=false
+          terraform apply -auto-approve -input=false

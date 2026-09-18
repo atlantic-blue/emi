@@ -6,6 +6,10 @@ the answer.
 
 ## What it exports
 
+The whole surface, with the comment that sits on each symbol, is in `docs/reference/cycle.md`.
+That page is generated from the source, so this section is the shape of the package and that one is
+the detail.
+
 `cyclesFrom` turns her day records into cycles. A cycle starts on the first bleeding day that is not
 marked unexpected, and it ends the day before the next such day. `completeCycles` and `cycleLengths`
 read that list. `toDay`, `addDays` and `daysBetween` do the date arithmetic in whole days, with no
@@ -22,6 +26,12 @@ paper that reports it. `confidenceFor` reads a spread and returns the band.
 `symptoms` is the catalogue: seventy entries across eight groups. `loggableSymptoms` leaves out the
 retired ones, `findSymptom` resolves a retired slug anyway, and `unknownSymptomSlugs` returns the
 offenders rather than a boolean, so a refusal can name them.
+
+`moods` reads the mood group of that same catalogue, because a mood is the thing she reaches for
+every day and a record keeps it in its own field. `loggableMoods`, `findMood` and
+`unknownMoodSlugs` work the way the symptom four do, and `symptomsOutsideTheMoodPicker` returns the
+other sixty, which is what the log sheet offers as symptoms. There is one catalogue and one slug for
+each thing in it, so no word can be offered twice or counted twice.
 
 ## How to run its tests
 

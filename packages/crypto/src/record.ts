@@ -1,4 +1,4 @@
-import { type Flow, unknownSymptomSlugs, type Symptom } from '@emi/cycle';
+import { type Flow, unknownMoodSlugs, unknownSymptomSlugs, type Symptom } from '@emi/cycle';
 
 import { canonicalJson, fromCanonicalBytes, type JsonValue } from './canonical';
 
@@ -46,14 +46,31 @@ export const recordKeys: readonly string[] = [
   'weightKilograms',
 ];
 
+/** Degrees. Below this a reading is a thermometer that was not held against anybody. */
 export const lowestTemperatureCelsius = 34;
+/** Degrees. Above this the number came from the keypad and not from a body. */
 export const highestTemperatureCelsius = 42;
+/**
+ * Kilograms. The range is wide on purpose: the field catches a stray digit and it never judges
+ * her.
+ */
 export const lowestWeightKilograms = 20;
+/** Kilograms, and wide for the same reason. A refusal here would lose what she typed. */
 export const highestWeightKilograms = 400;
+/** Five steps begin here. A scale she can answer in one tap beats one she has to think about. */
 export const lowestEnergy = 1;
+/** And they end here. A whole number only, because half a step is a precision she does not have. */
 export const highestEnergy = 5;
+/**
+ * Characters, counted in code points rather than in bytes, so an accented letter costs her one and
+ * not two.
+ */
 export const longestNote = 2000;
 
+/**
+ * Holds every problem the day carries, not the first one, so the message and the list are one
+ * failure read two ways.
+ */
 export class RecordError extends Error {
   readonly problems: readonly string[];
 
@@ -86,7 +103,7 @@ export function recordProblems(
   problems.push(...flowProblems(held.flow));
   problems.push(...unexpectedBleedingProblems(held.bleedingIsUnexpected));
   problems.push(...symptomProblems(held.symptoms, catalogue));
-  problems.push(...moodProblems(held.moods));
+  problems.push(...moodProblems(held.moods, catalogue));
   problems.push(...energyProblems(held.energy));
   problems.push(
     ...measurementProblems(held.temperatureCelsius, {
@@ -107,6 +124,7 @@ export function recordProblems(
   return problems;
 }
 
+/** Hands the record back, or throws. Every path to an envelope goes through here. */
 export function checkedRecord(record: DayRecord, catalogue?: readonly Symptom[]): DayRecord {
   const problems = recordProblems(record, catalogue);
   if (problems.length > 0) {
@@ -120,6 +138,7 @@ export function recordJson(record: DayRecord, catalogue?: readonly Symptom[]): s
   return canonicalJson(checkedRecord(record, catalogue) as unknown as JsonValue);
 }
 
+/** The plaintext of an envelope: a day that passed its ranges, written as canonical bytes. */
 export function recordBytes(record: DayRecord, catalogue?: readonly Symptom[]): Uint8Array {
   return new TextEncoder().encode(recordJson(record, catalogue));
 }
@@ -190,10 +209,14 @@ function symptomProblems(value: unknown, catalogue?: readonly Symptom[]): readon
   return unknown.length > 0 ? [`the catalogue holds no symptom named ${unknown.join(', ')}`] : [];
 }
 
-function moodProblems(value: unknown): readonly string[] {
-  // The mood catalogue arrives with the mood picker, so a mood is checked for the shape of a slug
-  // and not yet for its membership.
-  return slugListProblems(value, 'a mood');
+function moodProblems(value: unknown, catalogue?: readonly Symptom[]): readonly string[] {
+  const problems = slugListProblems(value, 'a mood');
+  if (problems.length > 0 || value === undefined) {
+    return problems;
+  }
+
+  const unknown = unknownMoodSlugs(value as readonly string[], catalogue);
+  return unknown.length > 0 ? [`the catalogue holds no mood named ${unknown.join(', ')}`] : [];
 }
 
 const slugShape = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
