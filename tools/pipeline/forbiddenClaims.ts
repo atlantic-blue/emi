@@ -35,6 +35,17 @@ export const forbiddenWording: readonly string[] = [
 ];
 
 /**
+ * The wording the interface may never use, on top of the list above. A document has room to explain
+ * what a fertile window is and reaches for these words to do it. A screen has no room, so a woman
+ * reads the word on its own and takes it as the claim Emi does not make. They are refused in the
+ * application and in the store listing, and allowed in a document that argues.
+ */
+export const interfaceOnlyWording: readonly string[] = ['safe', 'protected', 'protection'];
+
+/** What a screen and a store listing are held to: the list above, and the three words beside it. */
+export const interfaceWording: readonly string[] = [...forbiddenWording, ...interfaceOnlyWording];
+
+/**
  * The only sentences that may carry the wording above, because each one denies the claim rather
  * than making it. A sentence is removed from the text before the search runs, so anything else
  * built from the same words is still found. Adding a line here is a deliberate act a reviewer sees.
@@ -102,16 +113,28 @@ function withoutDenials(text: string, denials: readonly string[]): string {
   return cleaned;
 }
 
+/**
+ * The text a search runs over: one space between words, so a phrase still matches where a document
+ * wrapped it across two lines, and every approved denial taken out.
+ */
+export function searchableText(
+  contents: string,
+  denials: readonly string[] = approvedDenials,
+): string {
+  return withoutDenials(collapsed(contents), denials);
+}
+
 export function claimsIn(
   file: string,
   contents: string,
   denials: readonly string[] = approvedDenials,
+  searchFor: readonly string[] = forbiddenWording,
 ): Claim[] {
-  const text = withoutDenials(collapsed(contents), denials);
+  const text = searchableText(contents, denials);
   const searchable = text.toLowerCase();
   const found: Claim[] = [];
 
-  for (const wording of forbiddenWording) {
+  for (const wording of searchFor) {
     const at = searchable.indexOf(wording.toLowerCase());
 
     if (at < 0) {

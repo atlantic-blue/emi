@@ -77,5 +77,10 @@ that a day is safe, a badge, or the name of a standard nobody has audited.
 
     npx jest --ci --config jest.node.config.js tools/pipeline/forbiddenClaims.test.ts
 
+The application and the store listing are read again against a longer list, because a screen has no
+room to explain itself.
+
+    npx jest --ci --config apps/mobile/jest.config.js --rootDir apps/mobile tests/copy/claims
+
 The list of wording, and the short list of sentences that deny a claim and may therefore carry the
 words, are in `tools/pipeline/forbiddenClaims.ts`. `privacy.md` says why the list exists.
