@@ -5,6 +5,7 @@ import type { Database } from '../../data/database';
 import { insertDayLog } from '../../data/dayLogRepository';
 import { readSetting, writeSetting } from '../../data/settingRepository';
 import type { DayVault } from '../../services/vault/dayVault';
+import { setLockOnReturn } from '../lock/lockSetting';
 import { localDay } from './days';
 
 export const minimumCycleLengthDays = 21;
@@ -107,6 +108,7 @@ export function completeFirstRun(
     insertDayLog(db, { day: recorded.day, payload: vault.seal(recorded), now });
     writeSetting(db, 'cycleLengthDays', String(answers.cycleLengthDays));
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
+    setLockOnReturn(db, true);
     db.execute('COMMIT');
   } catch (error) {
     db.execute('ROLLBACK');

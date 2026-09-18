@@ -1,3 +1,5 @@
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+
 /** Every word a rendered screen puts on the glass, in the order it draws them. */
 export function textIn(node: unknown): string[] {
   if (typeof node === 'string') {
@@ -52,6 +54,31 @@ export function sizedTextIn(node: unknown, inherited?: number): SizedText[] {
     const here = sizeIn(props?.style) ?? inherited;
 
     return sizedTextIn((node as { children: unknown }).children, here);
+  }
+  return [];
+}
+
+/**
+ * Every word a rendered screen actually puts in front of her, which is not every word in the tree:
+ * a subtree the layout has been taken away from draws nothing, and the same two style rules decide
+ * it here as decide `toBeVisible`.
+ */
+export function visibleTextIn(node: unknown): string[] {
+  if (typeof node === 'string') {
+    return [node];
+  }
+  if (Array.isArray(node)) {
+    return node.flatMap(visibleTextIn);
+  }
+  if (node !== null && typeof node === 'object' && 'children' in node) {
+    const props = (node as { props?: { style?: unknown } }).props;
+    const style = StyleSheet.flatten(props?.style as StyleProp<ViewStyle>);
+
+    if (style?.display === 'none' || style?.opacity === 0) {
+      return [];
+    }
+
+    return visibleTextIn((node as { children: unknown }).children);
   }
   return [];
 }

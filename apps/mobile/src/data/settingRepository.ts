@@ -2,11 +2,12 @@ import type { Database } from './database';
 
 /** Local only. Nothing here syncs, because none of it is a fact she entered about her body. */
 export type SettingKey =
-  'cycleLengthDays' | 'firstRunCompletedAt' | 'temperatureUnit' | 'weightUnit';
+  'cycleLengthDays' | 'firstRunCompletedAt' | 'lockOnReturn' | 'temperatureUnit' | 'weightUnit';
 
 export const settingKeys: readonly SettingKey[] = [
   'cycleLengthDays',
   'firstRunCompletedAt',
+  'lockOnReturn',
   'temperatureUnit',
   'weightUnit',
 ];
