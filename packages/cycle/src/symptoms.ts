@@ -5,9 +5,14 @@
  * history point at it and a record that names a slug nothing resolves is a record she cannot read.
  */
 
+/** The eight groups the log sheet divides the catalogue into. `symptomGroups` holds their order. */
 export type SymptomGroup =
   'mood' | 'energy' | 'pain' | 'digestion' | 'skin' | 'sleep' | 'head' | 'libido';
 
+/**
+ * One entry. The slug is what a record points at and it never changes. The name is display text
+ * and may be rewritten whenever the wording is wrong.
+ */
 export interface Symptom {
   readonly slug: string;
   readonly name: string;
@@ -28,6 +33,10 @@ export const symptomGroups: readonly SymptomGroup[] = [
   'libido',
 ];
 
+/**
+ * The catalogue itself, and the only list of it. A screen reads this rather than keeping a copy
+ * that goes out of date on its own.
+ */
 export const symptoms: readonly Symptom[] = [
   { slug: 'irritable', name: 'Irritable', group: 'mood' },
   { slug: 'anxious', name: 'Anxious', group: 'mood' },
@@ -111,6 +120,7 @@ export const symptoms: readonly Symptom[] = [
 /** A slug is lowercase letters and digits, and single hyphens between them. */
 export const symptomSlugShape = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
+/** Every slug, the retired ones too, for the test that proves no two entries ever shared one. */
 export const symptomSlugs: readonly string[] = symptoms.map((symptom) => symptom.slug);
 
 /** Resolves a retired symptom too, so a record written before it was retired still reads. */
@@ -121,10 +131,15 @@ export function findSymptom(
   return catalogue.find((symptom) => symptom.slug === slug);
 }
 
+/**
+ * Reads the catalogue and not the shape of the slug, so a slug that looks right and names nothing
+ * is still refused.
+ */
 export function isKnownSymptom(slug: string, catalogue: readonly Symptom[] = symptoms): boolean {
   return findSymptom(slug, catalogue) !== undefined;
 }
 
+/** A retired entry is readable forever and offered never again. */
 export function isRetired(symptom: Symptom): boolean {
   return symptom.retiredOn !== undefined;
 }
@@ -134,6 +149,7 @@ export function loggableSymptoms(catalogue: readonly Symptom[] = symptoms): read
   return catalogue.filter((symptom) => !isRetired(symptom));
 }
 
+/** One group of the log sheet, in catalogue order. The retired entries are already out of it. */
 export function symptomsInGroup(
   group: SymptomGroup,
   catalogue: readonly Symptom[] = symptoms,

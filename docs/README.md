@@ -14,6 +14,8 @@ claim against the code that makes it. These documents are the readable half of t
   the three fonts, and the licence each one travels under.
 - `brand.md` carries the palette, the measured contrast ratios, the type scale and the spacing. It
   is generated from `packages/tokens`, so nobody edits it by hand.
+- `reference/` holds one page for each package: every exported symbol, its signature, and the
+  comment that sits on it in the source. It is generated too.
 
 Each section of `architecture.md` carries a status line. `Status: built` means the code is here now.
 `Status: designed` means the design describes it and nobody wrote it yet. A test refuses a section
@@ -38,16 +40,27 @@ around.
 The check fails when it finds no diagram at all. A render that finds nothing to render reports
 success just the same, and a green check that ran nothing is worth nothing.
 
-## The document that generates itself
+## The pages that generate themselves
 
-`brand.md` is written by `tools/brand/writeBrandDocument.ts` from the token package. The pipeline
-runs one more command.
+`brand.md` is written by `tools/brand/writeBrandDocument.ts` from the token package, and every page
+under `reference/` is written by `tools/documentation/writeReference.ts` from the source of the
+packages. The pipeline runs two more commands.
 
     npm run check:brand
+    npm run check:reference
 
-It regenerates the document in memory and compares it against the committed copy. A difference of
-one character fails the run, names the line, and says to run `npm run generate:brand`. So a colour
-that changes in `packages/tokens` changes this document or stops the pipeline.
+Each one regenerates its pages in memory and compares them against the committed copies. A
+difference of one character fails the run, names the line, and says which generator to run. So a
+colour that changes in `packages/tokens` changes `brand.md` or stops the pipeline, and a signature
+that changes in any package changes its reference page or stops it.
+
+`check:reference` carries two rules the brand check does not. An exported symbol with no
+documentation comment fails the run, named with its file and its line. So does a comment that holds
+no word its own declaration already carries, because a comment that restates a signature costs a
+reader a line and tells them nothing.
+
+A workspace joins the reference by offering `src/index.ts`. `apps/mobile` offers none: it is
+screens, and nobody imports it.
 
 ## Running the check on a machine with no bundled browser
 

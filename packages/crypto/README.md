@@ -6,6 +6,10 @@ would drift, and a drift here is a day she cannot read.
 
 ## What it exports
 
+The whole surface, with the comment that sits on each symbol, is in `docs/reference/crypto.md`.
+That page is generated from the source, so this section is the shape of the package and that one is
+the detail.
+
 `sealRecord` takes a day and a 32 byte key and returns the envelope: one byte of version `0x01`,
 then a 24 byte nonce, then the ciphertext and its 16 byte authentication tag. The cipher is
 XChaCha20-Poly1305 from `@noble/ciphers`. `openRecord` takes the envelope and the key and gives the

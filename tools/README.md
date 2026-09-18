@@ -17,11 +17,21 @@ themselves live in the top level `brand` directory, which is a different thing. 
 generate:brand` writes the document and `npm run check:brand` fails when the committed copy differs
 by one character.
 
+`documentation/writeReference.ts` writes one page under `docs/reference` for each package that
+offers `src/index.ts`. It reads the source with the TypeScript parser, takes the signature of every
+exported symbol and the documentation comment above it, and writes both. `npm run
+generate:reference` writes the pages and `npm run check:reference` fails when a page is stale, when
+an export carries no comment, or when a comment holds no word its own declaration already carries.
+`documentation/exports.ts` reads a file and `documentation/wording.ts` measures a comment against a
+signature, so both can be run against a source written in a test.
+
 The tests beside them run under the workspace jest project. `documentation.test.ts` covers the
 documents, the feature map, the contracts and the readmes. `forbiddenClaims.test.ts` reads every
 tracked text file for wording Emi may never use about itself. `colourLeak.test.ts` proves a hex
 value outside `packages/tokens` is refused. `licence.test.ts` reads the licence and every manifest
-that names one. `emptyTestRun.test.ts` proves a run that finds no test fails.
+that names one. `reference.test.ts` covers the three rules
+of the reference and watches each one go red and green again. `emptyTestRun.test.ts` proves a run
+that finds no test fails.
 
 ## How to run them
 
@@ -29,6 +39,7 @@ From the root of the repository:
 
     npm run check:documents
     npm run check:brand
+    npm run check:reference
     npm run test:workspace
 
 The mermaid tool draws through Chrome, and `npm ci` fetches one on the pipeline runner. On a machine
