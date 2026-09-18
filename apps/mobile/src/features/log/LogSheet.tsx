@@ -1,8 +1,10 @@
-import type { Symptom } from '@emi/cycle';
+import { type Symptom, symptomsOutsideTheMoodPicker } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { EnergyScale } from './EnergyScale';
+import { MoodPicker } from './MoodPicker';
 import { SymptomGroupSection, groupHeadings } from './SymptomGroup';
 import { sectionsFor } from './search';
 
@@ -13,24 +15,42 @@ import { sectionsFor } from './search';
 export interface LogSheetEntry {
   readonly day: string;
   readonly symptoms: readonly string[];
+  readonly moods: readonly string[];
+  /** Absent when she logged no energy, because none is not the same as one. */
+  readonly energy?: number;
 }
 
 export interface LogSheetProps {
   readonly day: string;
   /** What the day already holds. A day with nothing logged opens empty rather than failing. */
   readonly symptoms?: readonly string[];
+  readonly moods?: readonly string[];
+  readonly energy?: number;
   readonly onSave: (entry: LogSheetEntry) => void | Promise<void>;
   /** The catalogue, so a test can drive a retired symptom without editing the real one. */
   readonly catalogue?: readonly Symptom[];
 }
 
-export function LogSheet({ day, symptoms = [], onSave, catalogue }: LogSheetProps) {
+export function LogSheet({
+  day,
+  symptoms = [],
+  moods = [],
+  energy,
+  onSave,
+  catalogue,
+}: LogSheetProps) {
   const [query, setQuery] = useState('');
   const [picked, setPicked] = useState<readonly string[]>(symptoms);
+  const [pickedMoods, setPickedMoods] = useState<readonly string[]>(moods);
+  const [chosenEnergy, setChosenEnergy] = useState<number | undefined>(energy);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  const sections = useMemo(() => sectionsFor(query, catalogue), [query, catalogue]);
+  // The mood group is drawn by the picker above, so the list below offers the other seven.
+  const sections = useMemo(
+    () => sectionsFor(query, symptomsOutsideTheMoodPicker(catalogue)),
+    [query, catalogue],
+  );
 
   function toggle(slug: string): void {
     setIsSaved(false);
@@ -39,10 +59,22 @@ export function LogSheet({ day, symptoms = [], onSave, catalogue }: LogSheetProp
     );
   }
 
+  function toggleMood(slug: string): void {
+    setIsSaved(false);
+    setPickedMoods((held) =>
+      held.includes(slug) ? held.filter((each) => each !== slug) : [...held, slug],
+    );
+  }
+
+  function chooseEnergy(level?: number): void {
+    setIsSaved(false);
+    setChosenEnergy(level);
+  }
+
   async function save(): Promise<void> {
     setIsSaving(true);
     try {
-      await onSave({ day, symptoms: picked });
+      await onSave({ day, symptoms: picked, moods: pickedMoods, energy: chosenEnergy });
       setIsSaved(true);
     } finally {
       setIsSaving(false);
@@ -56,6 +88,10 @@ export function LogSheet({ day, symptoms = [], onSave, catalogue }: LogSheetProp
         keyboardShouldPersistTaps="handled"
         testID="log-sheet-scroll"
       >
+        <MoodPicker catalogue={catalogue} onToggle={toggleMood} picked={pickedMoods} />
+
+        <EnergyScale level={chosenEnergy} onChoose={chooseEnergy} />
+
         <TextInput
           accessibilityLabel="Search symptoms"
           autoCorrect={false}
@@ -94,7 +130,7 @@ export function LogSheet({ day, symptoms = [], onSave, catalogue }: LogSheetProp
 
       <View style={styles.foot}>
         <Text style={styles.count} testID="log-sheet-count">
-          {picked.length === 1 ? '1 picked' : `${picked.length} picked`}
+          {countOf(picked.length + pickedMoods.length)}
         </Text>
         <Pressable
           accessibilityRole="button"
@@ -112,6 +148,10 @@ export function LogSheet({ day, symptoms = [], onSave, catalogue }: LogSheetProp
 
 function found(count: number): string {
   return count === 1 ? '1 found' : `${count} found`;
+}
+
+function countOf(count: number): string {
+  return count === 1 ? '1 picked' : `${count} picked`;
 }
 
 const styles = StyleSheet.create({

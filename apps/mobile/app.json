@@ -6,13 +6,20 @@
     "orientation": "portrait",
     "scheme": "emi",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icon/apple-1024.png",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "blue.atlantic.emi"
+      "bundleIdentifier": "blue.atlantic.emi",
+      "icon": "./assets/icon/apple-1024.png"
     },
     "android": {
-      "package": "blue.atlantic.emi"
+      "package": "blue.atlantic.emi",
+      "icon": "./assets/icon/google-play-512.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon/google-adaptive-foreground-432.png",
+        "backgroundImage": "./assets/icon/google-adaptive-background-432.png"
+      }
     },
     "web": {
       "output": "static",

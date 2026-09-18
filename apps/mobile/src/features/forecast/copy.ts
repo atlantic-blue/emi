@@ -1,4 +1,4 @@
-import type { ConfidenceLevel, DayRange, Forecast } from '@emi/cycle';
+import type { ConfidenceLevel, DayRange, Forecast, Learning } from '@emi/cycle';
 import { toDayNumber } from '@emi/cycle';
 
 /**
@@ -143,4 +143,29 @@ export const confidenceWords: Readonly<Record<ConfidenceLevel, string>> = {
 /** The word, and the count the median was taken over, because the count is what the word rests on. */
 export function confidenceSentence(forecast: Forecast): string {
   return `${confidenceWords[forecast.confidence.level]} confidence, from your last ${forecast.fromCycles} cycles`;
+}
+
+/**
+ * The words of the learning state. Contract CYCLE-3 gives Emi one thing to say before two cycles
+ * are complete: that it is still learning, how many more cycles it wants, and the length it is
+ * counting in the meantime. No confidence word appears here, because there is nothing yet to be
+ * confident about.
+ */
+export const learningCopy = {
+  stillLearning: 'Still learning',
+} as const;
+
+/**
+ * How many more complete cycles Emi wants. The number is the remainder rather than the total, so a
+ * woman with one cycle behind her reads that one more is wanted and not that two are.
+ */
+export function cyclesWantedSentence(learning: Learning): string {
+  const wanted = learning.needsCycles - learning.completeCycles;
+
+  return `Emi needs ${wanted} more complete ${wanted === 1 ? 'cycle' : 'cycles'} before it forecasts.`;
+}
+
+/** The length she gave at the first run, which is all Emi counts by until her own cycles arrive. */
+export function statedLengthSentence(cycleLengthDays: number): string {
+  return `Until then Emi counts a cycle of ${cycleLengthDays} days, the length you gave at the first run.`;
 }

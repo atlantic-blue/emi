@@ -196,6 +196,32 @@ describe('the plaintext of a day', () => {
     });
   });
 
+  describe('a mood', () => {
+    it('accepts a slug the mood group holds', () => {
+      expect(problemsWith({ moods: ['calm', 'irritable'] })).toEqual([]);
+    });
+
+    it('refuses a slug the catalogue never held, and names it', () => {
+      expect(refusedFor({ moods: ['calm', 'ecstatic'] })).toContain(
+        'the catalogue holds no mood named ecstatic',
+      );
+    });
+
+    it('refuses a symptom from another group, because a symptom is not a mood', () => {
+      expect(refusedFor({ moods: ['cramps'] })).toContain(
+        'the catalogue holds no mood named cramps',
+      );
+    });
+
+    it('accepts a mood that was retired, because her history points at it', () => {
+      const laterCatalogue: readonly Symptom[] = symptoms.map((symptom) =>
+        symptom.slug === 'calm' ? { ...symptom, retiredOn: '2027-03-01' } : symptom,
+      );
+
+      expect(recordProblems(aDayWith({ moods: ['calm'] }), laterCatalogue)).toEqual([]);
+    });
+  });
+
   describe('an energy', () => {
     it('accepts one to five', () => {
       for (let energy = lowestEnergy; energy <= highestEnergy; energy += 1) {

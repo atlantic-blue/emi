@@ -147,6 +147,30 @@ may be rewritten at any time. A symptom that is no longer offered keeps its entr
 day it retired, because six cycles of her history point at that slug. A record that names a slug
 nothing resolves is a record she cannot read.
 
+The mood group of the catalogue is not offered as a symptom. The log sheet draws it as a picker of
+its own at the top, and what she picks there is written into the `moods` field of a record rather
+than into `symptoms`, so a screen that reads her history counts a mood once.
+
+## The application icon
+
+Status: built
+
+One program draws every icon size. It is `brand/icon/generate.ts`, and `npm run generate:app-icon`
+runs it through Node with type stripping. It reads one drawn source, `brand/logo/emi-ring.svg`, and
+writes the icons into `apps/mobile/assets/icon`. The interface icons are a different set, and they
+live in `brand/icons`.
+
+The two stores ask for different lists, and both lists change. The lists are data in
+`brand/icon/sizes.ts`, with the reason beside each size. Apple asks only for the 1024 icon today
+and derives the rest. Emi draws every size itself, because the mark is a ring with a gap in it, and a
+resample closes the gap.
+
+The two lists come to 24 files today: 8 for Apple and 16 for Google.
+
+The program measures the icon it made. It renders the result, finds the ink, and refuses to write
+when the ring is not 56 percent of the icon width. On the mark as drawn it reads 56.06 percent. It
+also refuses when the drawn source is absent, and the refusal names the step that draws it.
+
 ## The cycle arithmetic
 
 Status: designed
