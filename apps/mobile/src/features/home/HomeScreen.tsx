@@ -21,6 +21,9 @@ export const logTodayLabel = 'Log today';
 export const historyTestID = 'home-history';
 export const historyLabel = 'History';
 
+export const exportTestID = 'home-export';
+export const exportLabel = 'Export';
+
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
@@ -42,6 +45,8 @@ interface Props {
   readonly onLogToday: () => void;
   /** The way into what she has already written, which is what the logging is for. */
   readonly onHistory: () => void;
+  /** The way out, because a record she cannot take with her is not hers. */
+  readonly onExport: () => void;
 }
 
 export function HomeScreen({
@@ -50,6 +55,7 @@ export function HomeScreen({
   cycleLengthDays,
   onLogToday,
   onHistory,
+  onExport,
 }: Props): ReactNode {
   return (
     <View style={styles.screen} testID={homeScreenTestID}>
@@ -82,14 +88,25 @@ export function HomeScreen({
           <Text style={styles.actionLabel}>{logTodayLabel}</Text>
         </Pressable>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={onHistory}
-          style={styles.history}
-          testID={historyTestID}
-        >
-          <Text style={styles.historyLabel}>{historyLabel}</Text>
-        </Pressable>
+        <View style={styles.links}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onHistory}
+            style={styles.history}
+            testID={historyTestID}
+          >
+            <Text style={styles.historyLabel}>{historyLabel}</Text>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={onExport}
+            style={styles.history}
+            testID={exportTestID}
+          >
+            <Text style={styles.historyLabel}>{exportLabel}</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </View>
   );
@@ -121,7 +138,6 @@ const styles = StyleSheet.create({
   history: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: space.tight,
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.base,
@@ -131,6 +147,7 @@ const styles = StyleSheet.create({
     fontSize: typeScale.small.size,
     lineHeight: typeScale.small.lineHeight,
   },
+  links: { flexDirection: 'row', gap: space.snug, marginTop: space.tight },
   noRing: { alignItems: 'center', paddingHorizontal: space.base },
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
   // takes the small size rather than the body size a sentence would otherwise get.
