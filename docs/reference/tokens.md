@@ -323,7 +323,7 @@ A name outside the set is a drawing nobody has, so it fails here rather than on 
 type PhaseName = 'period' | 'follicular' | 'ovulation' | 'luteal';
 ```
 
-The four phases of a cycle, in the order they run.
+The four phases of a cycle, in the order they run and the order the ring draws them.
 
 ### `phaseNames`
 
@@ -344,7 +344,7 @@ interface PhasePalette {
 }
 ```
 
-The two colours a phase owns: the one the arc is filled with, and the one text may use.
+The pair a phase is drawn in: one colour for the arc, one for the words about it.
 
 ### `phasePalette`
 
@@ -352,7 +352,7 @@ The two colours a phase owns: the one the arc is filled with, and the one text m
 const phasePalette: Readonly<Record<PhaseName, PhasePalette>>
 ```
 
-The colour pair each phase draws with. No screen picks a phase colour any other way.
+Which pair each phase takes. Section 9.3 of the design measured every one of them.
 
 ### `phaseLabel`
 
@@ -368,7 +368,7 @@ The name the ring writes inside the track, which is the cue colour cannot carry.
 const FULL_TURN_DEGREES = 360
 ```
 
-A whole turn of the ring. The arcs and the gaps together always add up to this.
+A whole turn of the ring, which the arcs and the gaps between them share.
 
 ### `GAP_DEGREES`
 
@@ -401,7 +401,7 @@ Section 9.5. The ring moves once, when the screen opens, and never again.
 const RING_DIAMETER = 240
 ```
 
-The width of the ring across, in points, from design section 9.5.
+How wide the ring is drawn, in points, on the phone and in the brand picture alike.
 
 ### `RING_TRACK_WIDTH`
 
@@ -409,7 +409,7 @@ The width of the ring across, in points, from design section 9.5.
 const RING_TRACK_WIDTH = 16
 ```
 
-How thick the track is drawn, in points.
+How thick the track is, in points. The arcs and the ground between them share it.
 
 ### `BEAD_RADIUS`
 
@@ -417,7 +417,7 @@ How thick the track is drawn, in points.
 const BEAD_RADIUS = 9
 ```
 
-The bead that marks today, in points. It is drawn over the track and never inside an arc.
+Today sits on the track as a filled bead of this radius, in points.
 
 ### `BEAD_HALO_WIDTH`
 
@@ -425,7 +425,7 @@ The bead that marks today, in points. It is drawn over the track and never insid
 const BEAD_HALO_WIDTH = 2
 ```
 
-The ground drawn around the bead, in points, so the bead reads against any fill under it.
+Ground drawn around the bead, in points, so it reads against whichever phase is behind it.
 
 ### `PhaseSpan`
 
@@ -436,7 +436,7 @@ interface PhaseSpan {
 }
 ```
 
-How many days one phase runs for. The four spans together are the cycle.
+How long one phase runs in the cycle being drawn, in whole days.
 
 ### `RingRefusal`
 
@@ -449,7 +449,7 @@ type RingRefusal =
   | 'the-day-is-outside-the-cycle';
 ```
 
-Every way the ring refuses to be drawn. Each one names what was wrong with the days it was given.
+Why the ring refused to draw. Each one names a cycle that cannot be a cycle.
 
 ### `RingError`
 
@@ -460,7 +460,7 @@ class RingError extends Error {
 }
 ```
 
-What `ringGeometry` throws. It carries the refusal, so a caller can answer each one differently.
+What ringGeometry throws. The refusal is the machine readable half of the message.
 
 ### `RingArc`
 
@@ -480,7 +480,7 @@ interface RingArc {
 }
 ```
 
-One phase, drawn: where it starts, how far it sweeps, and how much of it she has reached.
+One phase as the ring draws it: where it starts, how far it sweeps, and how much she reached.
 
 ### `RingGeometry`
 
@@ -499,7 +499,7 @@ interface RingGeometry {
 }
 ```
 
-The whole ring as numbers, which is what a screen or a picture draws without doing arithmetic.
+Everything a screen needs to draw the ring, with no arithmetic left to do.
 
 ### `RingInput`
 
@@ -512,7 +512,7 @@ interface RingInput {
 }
 ```
 
-What the ring is drawn from: the length of her cycle, the day she is on, and the four phases.
+One cycle, as the ring is asked to draw it.
 
 ### `ringGeometry`
 
@@ -520,8 +520,8 @@ What the ring is drawn from: the length of her cycle, the day she is on, and the
 function ringGeometry({ cycleLengthDays, day, phases }: RingInput): RingGeometry
 ```
 
-The arcs, the gaps and the bead, from her own days. Every refusal of `RingRefusal` is thrown
-from here, so a ring that cannot be drawn is never drawn wrong.
+The ring, measured rather than drawn. It refuses a cycle it cannot draw honestly: phases that are
+not the four in order, a part day, days that do not add up to the cycle, or a day outside it.
 
 ### `coveredDegrees`
 
@@ -540,7 +540,7 @@ interface Point {
 }
 ```
 
-A place on the drawing, in points, with x across and y down.
+A place on the canvas the ring is drawn on, in points from its top left corner.
 
 ### `pointOnRing`
 
