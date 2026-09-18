@@ -5,6 +5,7 @@ module.exports = {
   rootDir: __dirname,
   testMatch: [
     '<rootDir>/packages/**/tests/**/*.test.ts',
+    '<rootDir>/services/**/tests/**/*.test.ts',
     '<rootDir>/tools/**/*.test.ts',
     '<rootDir>/brand/**/tests/**/*.test.ts',
     '<rootDir>/brand/**/tests/**/*.test.tsx',
