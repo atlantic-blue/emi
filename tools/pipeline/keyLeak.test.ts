@@ -10,6 +10,8 @@ import {
   keyLeaksUnder,
   logCalls,
   logCallsIn,
+  recoveryCodeNamedIn,
+  serviceRoot,
 } from './keyLeak';
 
 const repositoryRoot = resolve(__dirname, '..', '..');
@@ -26,6 +28,7 @@ function theItemCalled(name: string): (typeof keyholdingItems)[number] {
 
 const theVaultKey = theItemCalled('vaultKeyItem');
 const theDeviceKey = theItemCalled('deviceKeyItem');
+const theConfirmation = theItemCalled('recoveryConfirmedItem');
 const aScreen = `${interfaceRoot}/features/home/HomeScreen.tsx`;
 const theVaultModule = `${theVaultKey.home}/vaultKey.ts`;
 
@@ -113,5 +116,102 @@ describe('the vault key reaching a log, an export or a crash report fails the pi
       'logs',
       'names-a-keychain-item',
     ]);
+  });
+});
+
+describe('the recovery code reaching a log or a server field fails the pipeline', () => {
+  const theRecoveryScreens = `${interfaceRoot}/features/recovery/ShowRecoveryCode.tsx`;
+  const theWrapModule = `${interfaceRoot}/services/vault/wrapKey.ts`;
+  const aSyncModule = `${interfaceRoot}/services/sync/sync.ts`;
+
+  describe('the service names it nowhere at all', () => {
+    const serviceFiles = interfaceFilesOf(repositoryRoot, serviceRoot);
+
+    it('finds no naming of it in the service today, and says how much it read', () => {
+      // No homes, because the service has none. Every line that names a code is a leak here.
+      expect(keyLeaksUnder(repositoryRoot, serviceFiles, []).map(describeKeyLeak)).toEqual([]);
+      expect(serviceFiles.length).toBeGreaterThan(5);
+      expect(serviceFiles).toContain(`${serviceRoot}/handlers/register.ts`);
+    });
+
+    it('refuses a registration body that grew a field for it', () => {
+      const body = 'const { publicKey, recoveryCode } = JSON.parse(raw);\n';
+
+      const [described] = recoveryCodeNamedIn(`${serviceRoot}/handlers/register.ts`, body, []).map(
+        describeKeyLeak,
+      );
+
+      expect(described).toContain('handlers/register.ts');
+      expect(described).toContain('recoveryCode');
+    });
+
+    it('refuses it written with a separator, which is how a column would spell it', () => {
+      for (const spelling of ['recovery_code', 'recovery-code', 'Recovery Code', 'RECOVERYCODE']) {
+        expect(
+          recoveryCodeNamedIn(`${serviceRoot}/store/dynamo.ts`, `${spelling}\n`, []),
+        ).toHaveLength(1);
+      }
+    });
+
+    it('leaves the salt and the wrapped key alone, because the service holds both', () => {
+      const stored =
+        'recoverySalt: { B: account.recoverySalt },\nwrappedVaultKey: { B: wrapped },\n';
+
+      expect(recoveryCodeNamedIn(`${serviceRoot}/store/dynamo.ts`, stored, [])).toEqual([]);
+    });
+  });
+
+  describe('the application names it in two directories and nowhere else', () => {
+    it('lets the screens that show it name it', () => {
+      expect(recoveryCodeNamedIn(theRecoveryScreens, 'const recoveryCodeTestID = "x";\n')).toEqual(
+        [],
+      );
+    });
+
+    it('lets the module that wraps a key with it name it', () => {
+      expect(recoveryCodeNamedIn(theWrapModule, 'drawRecoveryCode(random);\n')).toEqual([]);
+    });
+
+    it('refuses a sync module that carries it to the server', () => {
+      const sending = 'await post("/v1/accounts", { recoveryCode: code });\n';
+
+      const [described] = recoveryCodeNamedIn(aSyncModule, sending).map(describeKeyLeak);
+
+      expect(described).toContain('services/sync/sync.ts');
+      expect(described).toContain('her paper');
+    });
+
+    it('refuses a screen that puts it in an export', () => {
+      const exporting = 'rows.push(["recovery code", code]);\n';
+
+      expect(
+        recoveryCodeNamedIn(`${interfaceRoot}/features/export/writeFile.ts`, exporting),
+      ).toHaveLength(1);
+    });
+
+    it('is reported beside a log line from the same file, and not instead of it', () => {
+      const both = 'console.warn("setting up");\nconst shown = recoveryCode;\n';
+
+      expect(keyLeaksIn(aSyncModule, both).map((leak) => leak.reason)).toEqual([
+        'logs',
+        'names-the-recovery-code',
+      ]);
+    });
+  });
+
+  describe('the instant she confirmed is a keychain item like any other', () => {
+    it('lets the module that holds it name it', () => {
+      const source = `export const recoveryConfirmedItem = '${theConfirmation.item}';\n`;
+
+      expect(keychainItemsNamedIn(`${theConfirmation.home}/recoveryConfirmed.ts`, source)).toEqual(
+        [],
+      );
+    });
+
+    it('refuses a screen that reads it directly', () => {
+      expect(
+        keychainItemsNamedIn(aScreen, `await getItemAsync('${theConfirmation.item}');\n`),
+      ).toHaveLength(1);
+    });
   });
 });

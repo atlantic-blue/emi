@@ -121,6 +121,8 @@ function accountFrom(item: Item): StoredAccount {
   return {
     accountId: textOf(item.pk).slice('ACC#'.length),
     publicKey: bytesOf(item.publicKey),
+    wrappedVaultKey: bytesOf(item.wrappedVaultKey),
+    recoverySalt: bytesOf(item.recoverySalt),
     createdAt: textOf(item.createdAt),
     recordCount: numberOf(item.recordCount),
   };
@@ -192,6 +194,8 @@ export function dynamoStore(table: DynamoDbTable, tableName: string): AccountSto
           Item: {
             ...keyOf(account.accountId, accountSortKey),
             publicKey: { B: account.publicKey },
+            wrappedVaultKey: { B: account.wrappedVaultKey },
+            recoverySalt: { B: account.recoverySalt },
             createdAt: { S: account.createdAt },
             recordCount: { N: String(account.recordCount) },
           },
