@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
 
-import HomeScreen from '../src/app/index';
+import { HomeScreen } from '../src/features/home/HomeScreen';
 
 function textIn(node: unknown): string[] {
   if (typeof node === 'string') {
