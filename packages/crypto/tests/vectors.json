@@ -1,0 +1,48 @@
+{
+  "note": "These vectors are frozen. Each one holds a key, a nonce, a plaintext and the envelope those three produce, byte for byte. A new version byte adds vectors to this file and never edits the vectors already in it, because a vector that moves with the code proves nothing about the code.",
+  "version": 1,
+  "vectors": [
+    {
+      "name": "the smallest day",
+      "keyHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "nonceHex": "404142434445464748494a4b4c4d4e4f5051525354555657",
+      "record": {
+        "day": "2026-03-14",
+        "recordedAt": "2026-03-14T21:05:00.000Z"
+      },
+      "canonicalJson": "{\"day\":\"2026-03-14\",\"recordedAt\":\"2026-03-14T21:05:00.000Z\"}",
+      "envelopeHex": "01404142434445464748494a4b4c4d4e4f5051525354555657af1b6111a9c24334bdc4b58882ac56bfa38e8fe8312b36f9054399206d4557b22cdb305e67a4a920cc9fc5785ee8ebcbab5e47d85fab84ac86a62a89a324d2b319d0ba4a3e7a1c3c256b4a96"
+    },
+    {
+      "name": "a day with every field",
+      "keyHex": "9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f9f",
+      "nonceHex": "0102030405060708090a0b0c0d0e0f101112131415161718",
+      "record": {
+        "day": "2026-03-14",
+        "flow": "heavy",
+        "bleedingIsUnexpected": false,
+        "symptoms": ["cramps", "low-mood"],
+        "moods": ["calm"],
+        "energy": 2,
+        "temperatureCelsius": 36.6,
+        "weightKilograms": 64.2,
+        "note": "a long afternoon",
+        "recordedAt": "2026-03-14T21:05:00.000Z"
+      },
+      "canonicalJson": "{\"bleedingIsUnexpected\":false,\"day\":\"2026-03-14\",\"energy\":2,\"flow\":\"heavy\",\"moods\":[\"calm\"],\"note\":\"a long afternoon\",\"recordedAt\":\"2026-03-14T21:05:00.000Z\",\"symptoms\":[\"cramps\",\"low-mood\"],\"temperatureCelsius\":36.6,\"weightKilograms\":64.2}",
+      "envelopeHex": "010102030405060708090a0b0c0d0e0f1011121314151617180ff7a5a44f7ece5fa6fde1d201febc70a62cb8a332ec3856ca68340b4d402d88f1c92512d301d82de31901eee2ca3c2a1db30edcf5e2a98063e7f9141cd6f85e817f5dc4d1297323adab6744b147e01a717370be5bf1c32199bec330990908290d87cb348da23d1d2e1d2814ee401a4af5d0ec7c0584d056374ebf91592716df88d2d25402cbe7b42007cc67737b4060ff9b2059c19421ccff6c777dc46105e8fc325146c55f7ba93b7a76f9d17315dcdae7d2b54a573b0d8d54e4909dd763d65b2270f9f5d8c7deac36e5ddaa80791ff61493309f1a7c81bc89461cb4a62211a403350f79273580369542ad5fe557fd8a4fd0da786c0d3a4569cdfb693fb219"
+    },
+    {
+      "name": "a note that is not written in english",
+      "keyHex": "f0e1d2c3b4a596871a2b3c4d5e6f708192a3b4c5d6e7f8090a1b2c3d4e5f6071",
+      "nonceHex": "fefdfcfbfaf9f8f7f6f5f4f3f2f1f0efeeedecebeae9e8e7",
+      "record": {
+        "day": "2026-03-15",
+        "note": "сегодня лучше",
+        "recordedAt": "2026-03-15T08:30:00.000Z"
+      },
+      "canonicalJson": "{\"day\":\"2026-03-15\",\"note\":\"сегодня лучше\",\"recordedAt\":\"2026-03-15T08:30:00.000Z\"}",
+      "envelopeHex": "01fefdfcfbfaf9f8f7f6f5f4f3f2f1f0efeeedecebeae9e8e7bc0186f201739b155515c4a820be9fa79318f07a719a30e8bdf59fd6f04f10415d9923fc398d469cd7d9297a65e53671c351936fdc4ed6c030a664d4c67059356f324327ebd88384e2cdfa922e4be3de349487eed830b49e29eefdb9f4de63a005a8ca9bb3e08b848a210ec2cacf40"
+    }
+  ]
+}

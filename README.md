@@ -37,7 +37,7 @@ A test run that finds no test fails. It does not report success.
 
 ## The brand sheets
 
-    npm run specimen
+    npm run generate:specimen
 
 It draws the type specimen into `brand/specimen/specimen.png`. It needs a Chromium or Chrome
 binary, and it looks for one in the usual places. Set `EMI_BROWSER` to the binary when it cannot

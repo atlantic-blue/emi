@@ -8,8 +8,11 @@ module.exports = {
     '<rootDir>/tools/**/*.test.ts',
     '<rootDir>/brand/**/*.test.tsx',
   ],
+  // @noble/ciphers ships as a module and nothing else, so babel has to read it rather than
+  // skip it the way it skips the rest of node_modules.
+  transformIgnorePatterns: ['/node_modules/(?!@noble/)'],
   transform: {
-    '^.+\\.tsx?$': [
+    '^.+\\.[jt]sx?$': [
       'babel-jest',
       {
         babelrc: false,
@@ -18,7 +21,7 @@ module.exports = {
           ['@babel/preset-env', { targets: { node: 'current' } }],
           ['@babel/preset-typescript', { allExtensions: true, isTSX: true }],
         ],
-        // The brand pages are written as markup, and each one names the runtime that draws it.
+        // A brand page is written as markup, and each one names the runtime that draws it.
         plugins: [['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]],
       },
     ],

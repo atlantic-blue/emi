@@ -1,18 +1,28 @@
 # The licences of everything Emi redistributes
 
-Emi itself is MIT. Read `LICENCE`. This file covers the third party files that ship inside the
-application, which is the font binaries in `apps/mobile/assets/fonts`.
+Emi itself is MIT. Read `LICENCE`. This document covers the third party files that travel inside the
+application, which today is the font binaries in `apps/mobile/assets/fonts`.
 
-The repository is public and the fonts travel inside the application, so each family needs its
-licence next to it and a reader needs one page that says what those licences are. A test in
-`packages/tokens/tests/fonts.test.ts` reads this page and the tree, and fails when the two
+The repository is public and the fonts ship inside the application, so each family keeps its licence
+next to its files, and a reader gets one page that names all three. A test in
+`packages/tokens/tests/fonts.test.ts` reads this page and the tree, and it fails when the two
 disagree.
 
-Every font here is redistributed unmodified. Nothing is subset, renamed or re-hinted.
+## How to read this document
+
+Status: built
+
+Every section carries one status line, the same as `architecture.md`. `Status: built` means the
+files are in this repository now.
+
+Every font here is redistributed unmodified. Nothing is subset, renamed or re-hinted, and
+`.gitattributes` stops git from rewriting a line ending in a licence file.
 
 ## Fraunces 72pt Soft
 
-Headings and the wordmark.
+Status: built
+
+Headings, and the wordmark.
 
 Licence: SIL Open Font License, Version 1.1, in `apps/mobile/assets/fonts/fraunces/OFL.txt`.
 Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)
@@ -23,14 +33,16 @@ Files:
 - `fraunces/Fraunces72ptSoft-Regular.ttf`
 - `fraunces/Fraunces72ptSoft-SemiBold.ttf`
 
-Fraunces has an optical size axis and a softness axis, and the repository ships one static cut of
-it. The cut is `72pt Soft`. Emi sets headings from 20 to 34 points, which is the middle of that
-axis, and the soft cut is the warmth the design asks for. The three cuts were rendered side by side
-at 20 and at 34 points before the choice: the 9pt cut is sturdier and wider, the 144pt cut is too
+Fraunces carries an optical size axis and a softness axis, and the repository ships one static cut
+of it. The cut is `72pt Soft`. Emi sets headings from 20 to 34 points, which is the middle of that
+axis, and the soft cut is the warmth the design asks for. The three cuts were drawn side by side at
+20 and at 34 points before the choice: the 9pt cut is sturdier and wider, the 144pt cut is too
 delicate at 20 points. If the 72pt cut reads thin on a device, the replacement is the 9pt cut at the
 same two weights.
 
 ## Plus Jakarta Sans
+
+Status: built
 
 The interface and running text.
 
@@ -45,6 +57,8 @@ Files:
 - `plus-jakarta-sans/PlusJakartaSans-SemiBold.ttf`
 
 ## IBM Plex Mono
+
+Status: built
 
 Numbers, units and labels.
 
@@ -62,16 +76,21 @@ may not carry that name. Emi modifies nothing, so the name stays.
 
 ## What the Open Font License asks of Emi
 
-The licence text travels with the files, which is why `OFL.txt` sits in each family's own
-directory rather than once at the root. The fonts may be bundled in the application and sold with
-it. They may not be sold on their own. Attribution sits on this page.
+Status: built
+
+The licence text travels with the files, which is why `OFL.txt` sits in each family's own directory
+rather than once at the root. The fonts may be bundled in the application and sold with it. They may
+not be sold on their own. The attribution sits on this page.
 
 ## Two weights for each face
+
+Status: built
 
 Each face ships regular and semi bold, and no other weight. Running text needs one weight and
 emphasis needs a second. A third weight is bytes in the download that no screen in version 1 asks
 for.
 
-Each file is a static instance rather than a variable font. A variable font registers as its
-default instance on a phone, so a semi bold set in a style would draw the regular one and the
-mistake would be invisible in every test.
+Each file is a static instance rather than a variable font. A variable font registers as its default
+instance on a phone, so a semi bold set in a style would draw the regular one, and the mistake would
+be invisible in every test. The token package names each file, and the test reads the name out of
+the file itself.
