@@ -1,6 +1,7 @@
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
+import { useVault } from '../../services/vault/VaultProvider';
 import { completeFirstRun, defaultCycleLengthDays, firstRunIsDone } from './firstRun';
 
 interface FirstRun {
@@ -21,6 +22,7 @@ const FirstRunContext = createContext<FirstRun | undefined>(undefined);
  */
 export function FirstRunProvider({ children }: { readonly children: ReactNode }): ReactNode {
   const database = useDatabase();
+  const vault = useVault();
   const [isDone, setIsDone] = useState(() => firstRunIsDone(database));
   const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
   const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
@@ -29,9 +31,9 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     if (periodStartedOn === undefined) {
       throw new Error('the first run cannot finish before she has said when her period started');
     }
-    completeFirstRun(database, { periodStartedOn, cycleLengthDays }, new Date());
+    completeFirstRun(database, vault, { periodStartedOn, cycleLengthDays }, new Date());
     setIsDone(firstRunIsDone(database));
-  }, [cycleLengthDays, database, periodStartedOn]);
+  }, [cycleLengthDays, database, periodStartedOn, vault]);
 
   const held = useMemo(
     () => ({

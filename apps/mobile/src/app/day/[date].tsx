@@ -10,6 +10,7 @@ import { LogFlow } from '../../features/log/LogFlow';
 import { editFlow, flowOn, refusalFor, unexpectedOn } from '../../features/log/editDay';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
+import { useVault } from '../../services/vault/VaultProvider';
 
 /**
  * A day she already lived, opened from its own address. The ring beside the picker is the cycle she
@@ -18,6 +19,7 @@ import { localDay } from '../../features/onboarding/days';
  */
 export default function DayRoute(): ReactNode {
   const database = useDatabase();
+  const vault = useVault();
   const router = useRouter();
   const { isDone } = useFirstRun();
   const { date } = useLocalSearchParams<{ date: string }>();
@@ -39,32 +41,38 @@ export default function DayRoute(): ReactNode {
 
   const pick = useCallback(
     (flow: Flow) => {
-      editFlow(database, {
+      editFlow(database, vault, {
         day,
         flow,
-        bleedingIsUnexpected: unexpectedOn(database, { day, today }),
+        bleedingIsUnexpected: unexpectedOn(database, vault, { day, today }),
         now: new Date(),
         today,
       });
       sheWrote();
     },
-    [database, day, today],
+    [database, day, today, vault],
   );
 
   // The write is the whole day, so a mark needs the flow it belongs to. A day she logged no flow
   // on has no bleeding to mark.
   const mark = useCallback(
     (marked: boolean) => {
-      const flow = flowOn(database, { day, today });
+      const flow = flowOn(database, vault, { day, today });
 
       if (flow === undefined) {
         return;
       }
 
-      editFlow(database, { day, flow, bleedingIsUnexpected: marked, now: new Date(), today });
+      editFlow(database, vault, {
+        day,
+        flow,
+        bleedingIsUnexpected: marked,
+        now: new Date(),
+        today,
+      });
       sheWrote();
     },
-    [database, day, today],
+    [database, day, today, vault],
   );
 
   if (!isDone) {
@@ -77,13 +85,13 @@ export default function DayRoute(): ReactNode {
 
   return (
     <LogFlow
-      chosen={flowOn(database, { day, today })}
+      chosen={flowOn(database, vault, { day, today })}
       day={day}
-      marked={unexpectedOn(database, { day, today })}
+      marked={unexpectedOn(database, vault, { day, today })}
       onDone={leave}
       onMark={mark}
       onPick={pick}
-      ring={ringNow(database, today)}
+      ring={ringNow(database, vault, today)}
       today={today}
     />
   );

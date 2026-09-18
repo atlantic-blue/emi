@@ -1,3 +1,5 @@
+import { EnvelopeError, readEnvelope } from '@emi/crypto';
+
 import type { Database } from './database';
 import { uuidV7, uuidV7RandomByteCount } from './uuidV7';
 
@@ -16,6 +18,7 @@ export type DayLogRefusal =
   | 'day-is-not-a-date'
   | 'instant-is-not-a-date'
   | 'payload-is-empty'
+  | 'payload-is-not-an-envelope'
   | 'day-already-written'
   | 'day-is-not-written'
   | 'day-is-deleted'
@@ -231,9 +234,30 @@ function checkedInstant(now: Date): string {
   return now.toISOString();
 }
 
+/**
+ * The payload column carries an envelope and nothing else, so a plaintext day cannot reach the
+ * table through any path. The shape is read the way the service reads it, with no key, because
+ * this is a check on the bytes and not a read of her day.
+ */
 function checkedPayload(payload: Uint8Array): Uint8Array {
   if (payload.byteLength === 0) {
     throw new DayLogError('payload-is-empty', 'a day carries at least one byte');
   }
+
+  try {
+    readEnvelope(payload);
+  } catch (error) {
+    if (error instanceof EnvelopeError) {
+      // The refusal names the shape and never the bytes, because bytes that are not an envelope
+      // are the one thing here that might still be readable.
+      throw new DayLogError(
+        'payload-is-not-an-envelope',
+        `a day is stored as an envelope, and these ${payload.byteLength} bytes are not one: ${error.refusal}`,
+      );
+    }
+
+    throw error;
+  }
+
   return payload;
 }

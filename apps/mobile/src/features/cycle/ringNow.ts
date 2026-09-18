@@ -1,7 +1,6 @@
-import { recordFromBytes } from '@emi/crypto';
-
 import { listCycles } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
+import type { DayVault } from '../../services/vault/dayVault';
 import { defaultCycleLengthDays, statedCycleLengthDays } from '../onboarding/firstRun';
 import { recordedDays } from './rebuild';
 import { type RingInput, ringInputFor } from './ringInput';
@@ -11,10 +10,10 @@ import { type RingInput, ringInputFor } from './ringInput';
  * memory, because a day she writes can move the start of the cycle she is in, which moves the day
  * she is on and the phase the bead sits in.
  */
-export function ringNow(db: Database, today: string): RingInput | undefined {
+export function ringNow(db: Database, vault: DayVault, today: string): RingInput | undefined {
   return ringInputFor({
     cycles: listCycles(db),
-    records: recordedDays(db, recordFromBytes),
+    records: recordedDays(db, vault.open),
     today,
     statedCycleLengthDays: statedCycleLengthDays(db) ?? defaultCycleLengthDays,
   });

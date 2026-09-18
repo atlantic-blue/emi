@@ -8,13 +8,13 @@ import {
   patternsIn,
 } from '@emi/cycle';
 import type { DayRecord } from '@emi/crypto';
-import { recordFromBytes } from '@emi/crypto';
 import type { PhaseName, PhaseSpan } from '@emi/tokens';
 
 import type { CycleRow } from '../../data/cycleRepository';
 import { listCycles } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
 import { listDayLogs } from '../../data/dayLogRepository';
+import type { DayVault } from '../../services/vault/dayVault';
 import { phasesOf, shapeFromLength } from '../cycle/ringInput';
 
 /**
@@ -157,11 +157,11 @@ function named(
  * Her history as it stands now. The cycle she is in comes first, then the six complete cycles the
  * patterns were read from, which is the same window the forecast takes its median over.
  */
-export function historyNow(db: Database): History {
+export function historyNow(db: Database, vault: DayVault): History {
   const cycles = listCycles(db);
   // The whole record, and not the part the cycle arithmetic reads: a pattern is made of the
   // symptoms and the moods, which no other reader of this table needs.
-  const records = listDayLogs(db).map((row) => recordFromBytes(row.payload));
+  const records = listDayLogs(db).map((row) => vault.open(row.payload));
   const complete = cycles.filter((cycle) => cycle.lengthDays !== null);
   const lengths = complete.map((cycle) => cycle.lengthDays as number).slice(-PATTERN_WINDOW_CYCLES);
   const medianLengthDays = lengths.length > 0 ? Math.round(median(lengths)) : 0;

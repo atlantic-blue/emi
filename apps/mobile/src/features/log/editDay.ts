@@ -1,6 +1,7 @@
 import { CycleError, type Flow, toDayNumber } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
+import type { DayVault } from '../../services/vault/dayVault';
 import type { DayAndCycles } from '../cycle/rebuild';
 import { flowLogged, logFlow, unexpectedLogged } from './logDay';
 
@@ -55,27 +56,27 @@ export function refusalFor({ day, today }: DayToOpen): DayRefusal | undefined {
 }
 
 /** What she logged on that day, and nothing where she logged nothing at all. */
-export function flowOn(db: Database, open: DayToOpen): Flow | undefined {
+export function flowOn(db: Database, vault: DayVault, open: DayToOpen): Flow | undefined {
   requireSheCanEdit(open);
 
-  return flowLogged(db, open.day);
+  return flowLogged(db, vault, open.day);
 }
 
 /** Whether she marked that day as not her period, so a day she reopens carries her own answer. */
-export function unexpectedOn(db: Database, open: DayToOpen): boolean {
+export function unexpectedOn(db: Database, vault: DayVault, open: DayToOpen): boolean {
   requireSheCanEdit(open);
 
-  return unexpectedLogged(db, open.day);
+  return unexpectedLogged(db, vault, open.day);
 }
 
 /**
  * One press on a day she reopened. The write is the write today takes, because a day she is
  * correcting is a day like any other: it keeps what it already held and its revision rises.
  */
-export function editFlow(db: Database, edit: DayEdit): DayAndCycles {
+export function editFlow(db: Database, vault: DayVault, edit: DayEdit): DayAndCycles {
   requireSheCanEdit(edit);
 
-  return logFlow(db, {
+  return logFlow(db, vault, {
     day: edit.day,
     flow: edit.flow,
     bleedingIsUnexpected: edit.bleedingIsUnexpected,
