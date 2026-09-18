@@ -1,4 +1,4 @@
-import type { DayRecord } from '@emi/cycle';
+import type { DayRecord, Forecast } from '@emi/cycle';
 import {
   FERTILE_DAYS_AFTER_OVULATION,
   FERTILE_DAYS_BEFORE_OVULATION,
@@ -15,9 +15,9 @@ import { forecastOf } from '../forecast/fromCache';
  * What the ring is handed, worked out from the cycle she is in. The ring draws whatever it is
  * given and derives none of this itself, which is why the boundaries are built here.
  *
- * The phase boundaries are the numbers design section 8 publishes: a luteal length counted back
- * from the next period, and a fertile window of five days before ovulation through one day after
- * it. Feature 3 step 6 replaces them with the boundaries her own forecast produces.
+ * Once two of her cycles are complete the boundaries are the forecast's own days, so the arc the
+ * ring draws ahead of her covers the days the screen names underneath it. Until then they are
+ * counted from the length she gave at the first run, by the one rule below.
  */
 
 export interface RingInput {
@@ -35,23 +35,68 @@ export interface RingInputFrom {
   readonly statedCycleLengthDays: number;
 }
 
-export function phasesOf(lengthDays: number, periodDays: number): PhaseSpan[] {
-  const ovulationDay = lengthDays - LUTEAL_LENGTH_DAYS;
-  const fertileFrom = ovulationDay - FERTILE_DAYS_BEFORE_OVULATION;
-  const fertileTo = Math.min(lengthDays, ovulationDay + FERTILE_DAYS_AFTER_OVULATION);
+/** The days of one cycle the ring divides into arcs, each counted from the day it began. */
+export interface CycleShape {
+  readonly cycleLengthDays: number;
+  readonly periodDays: number;
+  /** The first cycle day of the fertile window, counting from one. */
+  readonly fertileFromDay: number;
+  /** The last cycle day of the fertile window. */
+  readonly fertileToDay: number;
+}
 
-  // A short cycle runs its fertile window into its period, and a phase never takes a day from the
-  // phase before it, so the days that are left over are what each phase gets.
-  const period = Math.max(0, Math.min(periodDays, lengthDays));
-  const follicularEnds = Math.max(period, fertileFrom - 1);
-  const ovulationEnds = Math.max(follicularEnds, fertileTo);
+/**
+ * The four arcs, from the days they cover. A short cycle runs its fertile window into its period,
+ * and a phase never takes a day from the phase before it, so the days that are left over are what
+ * each phase gets.
+ */
+export function phasesOf(shape: CycleShape): PhaseSpan[] {
+  const length = shape.cycleLengthDays;
+  const period = Math.max(0, Math.min(shape.periodDays, length));
+  const follicularEnds = Math.max(period, shape.fertileFromDay - 1);
+  const ovulationEnds = Math.max(follicularEnds, Math.min(length, shape.fertileToDay));
 
   return [
     { phase: 'period', days: period },
     { phase: 'follicular', days: follicularEnds - period },
     { phase: 'ovulation', days: ovulationEnds - follicularEnds },
-    { phase: 'luteal', days: lengthDays - ovulationEnds },
+    { phase: 'luteal', days: length - ovulationEnds },
   ];
+}
+
+/**
+ * The shape of a cycle nobody has forecast yet, from the length she gave at the first run. The
+ * luteal length is counted back from the first day of the next cycle, which is the day design
+ * section 8 counts from, so the learning state and the forecast divide a cycle the same way.
+ */
+export function shapeFromLength(cycleLengthDays: number, periodDays: number): CycleShape {
+  const ovulationDay = cycleLengthDays + 1 - LUTEAL_LENGTH_DAYS;
+
+  return {
+    cycleLengthDays,
+    periodDays,
+    fertileFromDay: ovulationDay - FERTILE_DAYS_BEFORE_OVULATION,
+    fertileToDay: ovulationDay + FERTILE_DAYS_AFTER_OVULATION,
+  };
+}
+
+/**
+ * The shape her own forecast produced, as cycle days. The window arrives as two dates, and the day
+ * the cycle started turns them into the two numbers the ring draws between, so the arc and the
+ * sentence under it can never name different days.
+ */
+export function shapeFromForecast(
+  startedOn: string,
+  forecast: Forecast,
+  cycleLengthDays: number,
+  periodDays: number,
+): CycleShape {
+  return {
+    cycleLengthDays,
+    periodDays,
+    fertileFromDay: daysBetween(startedOn, forecast.fertileWindow.from) + 1,
+    fertileToDay: daysBetween(startedOn, forecast.fertileWindow.to) + 1,
+  };
 }
 
 /**
@@ -69,21 +114,23 @@ export function ringInputFor(from: RingInputFrom): RingInput | undefined {
     return undefined;
   }
 
+  const forecast = forecastOf(from.cycles);
+  const expectedLengthDays =
+    forecast.kind === 'forecast'
+      ? Math.round(forecast.medianLengthDays)
+      : from.statedCycleLengthDays;
+
   // A cycle running late is drawn at the length it has reached, so the bead stays on the track
   // rather than falling off the end of a forecast she has already passed.
-  const cycleLengthDays = Math.max(day, expectedLengthDays(from));
+  const cycleLengthDays = Math.max(day, expectedLengthDays);
   const periodDays = Math.min(cycleLengthDays, open.periodLengthDays ?? daysBled(from, open));
 
-  return { cycleLengthDays, day, phases: phasesOf(cycleLengthDays, periodDays) };
-}
+  const shape =
+    forecast.kind === 'forecast'
+      ? shapeFromForecast(open.startedOn, forecast, cycleLengthDays, periodDays)
+      : shapeFromLength(cycleLengthDays, periodDays);
 
-/** The median of her own cycles, and her stated length until two of them are complete. */
-function expectedLengthDays(from: RingInputFrom): number {
-  const forecast = forecastOf(from.cycles);
-
-  return forecast.kind === 'forecast'
-    ? Math.round(forecast.medianLengthDays)
-    : from.statedCycleLengthDays;
+  return { cycleLengthDays, day, phases: phasesOf(shape) };
 }
 
 /**
