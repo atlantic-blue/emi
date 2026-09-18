@@ -143,6 +143,7 @@ describe('an export with no documentation comment fails the pipeline', () => {
         'packages/tokens/src/colour.ts',
         'packages/tokens/src/font.ts',
         'packages/tokens/src/icons.ts',
+        'packages/tokens/src/ring.ts',
         'packages/tokens/src/space.ts',
         'packages/tokens/src/type.ts',
       ]);
