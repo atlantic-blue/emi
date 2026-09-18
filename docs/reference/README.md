@@ -6,7 +6,7 @@ values are in range.
 
 - `crypto.md` is `@emi/crypto`, 38 exported symbols across 4 files.
 - `cycle.md` is `@emi/cycle`, 53 exported symbols across 5 files.
-- `tokens.md` is `@emi/tokens`, 41 exported symbols across 6 files.
+- `tokens.md` is `@emi/tokens`, 65 exported symbols across 7 files.
 
 ## The three rules the pipeline enforces
 

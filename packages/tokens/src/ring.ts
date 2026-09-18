@@ -9,11 +9,13 @@ import type { ColourName } from './colour';
  * phone draw the same shapes from one source.
  */
 
+/** The four phases of a cycle, in the order they run and the order the ring draws them. */
 export type PhaseName = 'period' | 'follicular' | 'ovulation' | 'luteal';
 
 /** The order the four phases run in, which is also the order they are drawn in. */
 export const phaseNames: readonly PhaseName[] = ['period', 'follicular', 'ovulation', 'luteal'];
 
+/** The pair a phase is drawn in: one colour for the arc, one for the words about it. */
 export interface PhasePalette {
   /** The arc. Section 9.3 forbids this colour carrying text. */
   readonly fill: ColourName;
@@ -21,6 +23,7 @@ export interface PhasePalette {
   readonly ink: ColourName;
 }
 
+/** Which pair each phase takes. Section 9.3 of the design measured every one of them. */
 export const phasePalette: Readonly<Record<PhaseName, PhasePalette>> = {
   period: { fill: 'period', ink: 'periodInk' },
   follicular: { fill: 'follicular', ink: 'follicularInk' },
@@ -36,6 +39,7 @@ export const phaseLabel: Readonly<Record<PhaseName, string>> = {
   luteal: 'Luteal',
 };
 
+/** A whole turn of the ring, which the arcs and the gaps between them share. */
 export const FULL_TURN_DEGREES = 360;
 
 /**
@@ -50,16 +54,22 @@ export const DAYS_AHEAD_STRENGTH = 0.2;
 /** Section 9.5. The ring moves once, when the screen opens, and never again. */
 export const RING_OPEN_MILLISECONDS = 600;
 
+/** How wide the ring is drawn, in points, on the phone and in the brand picture alike. */
 export const RING_DIAMETER = 240;
+/** How thick the track is, in points. The arcs and the ground between them share it. */
 export const RING_TRACK_WIDTH = 16;
+/** Today sits on the track as a filled bead of this radius, in points. */
 export const BEAD_RADIUS = 9;
+/** Ground drawn around the bead, in points, so it reads against whichever phase is behind it. */
 export const BEAD_HALO_WIDTH = 2;
 
+/** How long one phase runs in the cycle being drawn, in whole days. */
 export interface PhaseSpan {
   readonly phase: PhaseName;
   readonly days: number;
 }
 
+/** Why the ring refused to draw. Each one names a cycle that cannot be a cycle. */
 export type RingRefusal =
   | 'the-phases-are-not-the-four-phases-in-order'
   | 'a-phase-runs-for-a-part-day-or-fewer-than-none'
@@ -67,6 +77,7 @@ export type RingRefusal =
   | 'the-cycle-has-no-days'
   | 'the-day-is-outside-the-cycle';
 
+/** What ringGeometry throws. The refusal is the machine readable half of the message. */
 export class RingError extends Error {
   readonly refusal: RingRefusal;
 
@@ -77,6 +88,7 @@ export class RingError extends Error {
   }
 }
 
+/** One phase as the ring draws it: where it starts, how far it sweeps, and how much she reached. */
 export interface RingArc {
   readonly phase: PhaseName;
   readonly days: number;
@@ -91,6 +103,7 @@ export interface RingArc {
   readonly elapsedDegrees: number;
 }
 
+/** Everything a screen needs to draw the ring, with no arithmetic left to do. */
 export interface RingGeometry {
   readonly cycleLengthDays: number;
   readonly day: number;
@@ -104,6 +117,7 @@ export interface RingGeometry {
   readonly beadDegrees: number;
 }
 
+/** One cycle, as the ring is asked to draw it. */
 export interface RingInput {
   readonly cycleLengthDays: number;
   /** The day she is on, counting from one. */
@@ -133,6 +147,10 @@ function readPhases(phases: readonly PhaseSpan[]): readonly PhaseSpan[] {
   return phases;
 }
 
+/**
+ * The ring, measured rather than drawn. It refuses a cycle it cannot draw honestly: phases that are
+ * not the four in order, a part day, days that do not add up to the cycle, or a day outside it.
+ */
 export function ringGeometry({ cycleLengthDays, day, phases }: RingInput): RingGeometry {
   const spans = readPhases(phases);
   const counted = spans.reduce((total, span) => total + span.days, 0);
@@ -214,6 +232,7 @@ export function coveredDegrees(geometry: RingGeometry): number {
   return arcs + geometry.gapCount * geometry.gapDegrees;
 }
 
+/** A place on the canvas the ring is drawn on, in points from its top left corner. */
 export interface Point {
   readonly x: number;
   readonly y: number;
