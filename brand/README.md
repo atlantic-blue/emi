@@ -13,6 +13,11 @@ numbers. `logo/README.md` says what the numbers are.
 every drawing follows. Running `icons/generate.ts` reads the directory and writes
 `packages/tokens/src/icons.ts`, so adding an icon means adding one file and running it again.
 
+`illustration/` holds the three onboarding pieces and the style they follow. Each one is two or
+three soft edged shapes in the phase colours on the stone ground, and never a picture of a thing.
+`illustration/README.md` names the five subjects the style refuses and why, and a test refuses a
+drawing that carries one of them in a layer name or in the name of the file.
+
 `specimen/` draws one page of the three faces at all six sizes, in sentences Emi writes. It reads
 the type scale and the font files from `packages/tokens`, so the page cannot name a size or a file
 the application does not have. The fonts themselves live in `apps/mobile/assets/fonts`, because they
@@ -38,6 +43,12 @@ From the root of the repository:
 The icon set has its own generator, which needs no install of its own:
 
     node --experimental-strip-types brand/icons/generate.ts
+
+The illustration has two of its own. The first writes the drawings, the second draws each one into
+the picture beside it:
+
+    node --experimental-strip-types brand/illustration/generate.ts
+    node --experimental-strip-types brand/illustration/render.ts
 
 ## The trap
 
