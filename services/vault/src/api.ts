@@ -11,7 +11,11 @@ export interface HttpRequestEvent {
   readonly rawPath: string;
   readonly rawQueryString?: string;
   readonly headers: Readonly<Record<string, string | undefined>>;
-  readonly requestContext: { readonly http: { readonly method: string } };
+  readonly requestContext: {
+    readonly http: { readonly method: string };
+    /** What the authorizer handed on. A route with no authorizer leaves it absent. */
+    readonly authorizer?: { readonly lambda?: Readonly<Record<string, string>> };
+  };
   readonly body?: string;
   readonly isBase64Encoded?: boolean;
 }

@@ -9,6 +9,7 @@ import {
 import {
   type AuthorizerEvent,
   type AuthorizerResult,
+  type HttpRequestEvent,
   methodOf,
   refused,
   signedPathOf,
@@ -68,4 +69,20 @@ export function authorizer(
   clock: () => Date = () => new Date(),
 ): (event: AuthorizerEvent) => Promise<AuthorizerResult> {
   return (event) => authorizeRequest(event, store, clock());
+}
+
+/**
+ * Who the authorizer said this is, read by the function behind it. A request that reaches a
+ * handler without passing the authorizer has no account here, and the handler refuses rather than
+ * trusting the header, so a route wired without its authorizer serves nobody.
+ */
+export function authorizedAccountIn(event: HttpRequestEvent): string | null {
+  const carried = event.requestContext.authorizer?.lambda?.[accountIdContextKey];
+  const presented = presentedSignatureIn(event.headers);
+
+  if (carried === undefined || presented === null || presented.accountId !== carried) {
+    return null;
+  }
+
+  return carried;
 }

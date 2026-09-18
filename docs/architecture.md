@@ -285,9 +285,15 @@ The Terraform for all of this is in `infra` and it is read on every pull request
 applied, because the first apply needs a credential the pipeline does not hold yet. The region is
 eu-central-1 and the account is 230345688874.
 
-`services/vault` now holds the account, the request signature and the authorizer, and the section
-below says so. The record endpoints, the storage behind them and the bundle the two functions run
-are not written, so what is deployed today is still the two placeholders the Terraform carries.
+`services/vault` now holds the account, the request signature, the authorizer, the two record
+endpoints and the storage that writes the items. The bundle the two functions run is not written,
+so what is deployed today is still the two placeholders the Terraform carries.
+
+The storage takes the request shapes DynamoDB takes rather than a client of its own, so the item
+the service writes is the item a test reads. The test that reads one writes a day whose note holds
+a rare word and then looks for that word in every attribute of the item that reached the table. A
+second test walks the service from its entry point and asserts it imports no function that could
+open an envelope.
 
 The dotted line is the product. The key never crosses it.
 
