@@ -12,8 +12,12 @@ import {
   diagramsIn,
   directoriesNamedIn,
   directoryHeading,
+  documentedDirectoriesOf,
   driftProblems,
   featureDocument,
+  nameOf,
+  readmeFloor,
+  readmeProblems,
   refusalHeading,
   refusalProblems,
   refusalsIn,
@@ -481,5 +485,146 @@ describe('the feature map names what version 1 refuses, and names each one once'
     ].join('\n');
 
     expect(refusalsIn(document)).toEqual(['Every wearable device.']);
+  });
+});
+
+describe('a new package without a readme fails the pipeline', () => {
+  const made: string[] = [];
+
+  afterAll(() => {
+    for (const root of made) {
+      rmSync(root, { force: true, recursive: true });
+    }
+  });
+
+  interface Package {
+    readonly directory: string;
+    readonly name?: string;
+    readonly readme?: string;
+  }
+
+  const long = (name: string): string =>
+    `# ${name}\n\n${'This readme answers what the package is for. '.repeat(10)}\n`;
+
+  // The fixture is a repository of its own, so a package can be added and taken away again without
+  // touching the tree the rest of the suite is reading.
+  function fixture(packages: Package[]): string {
+    const root = mkdtempSync(join(tmpdir(), 'emi-readmes-'));
+
+    made.push(root);
+
+    writeFileSync(
+      join(root, 'package.json'),
+      `${JSON.stringify({ name: 'fixture', private: true, workspaces: ['packages/*'] }, null, 2)}\n`,
+    );
+
+    for (const entry of packages) {
+      mkdirSync(join(root, entry.directory), { recursive: true });
+
+      if (entry.name !== undefined) {
+        writeFileSync(join(root, entry.directory, 'package.json'), `{ "name": "${entry.name}" }\n`);
+      }
+
+      if (entry.readme !== undefined) {
+        writeFileSync(join(root, entry.directory, 'README.md'), entry.readme);
+      }
+    }
+
+    const started = spawnSync('git', ['init', '--quiet'], { cwd: root, encoding: 'utf8' });
+
+    expect(started.status).toBe(0);
+
+    return root;
+  }
+
+  describe('every directory in this repository carries one today', () => {
+    const directories = documentedDirectoriesOf(repositoryRoot);
+
+    it('reads the six directories somebody can open on their own', () => {
+      expect(directories).toEqual([
+        'apps/mobile',
+        'brand',
+        'packages/crypto',
+        'packages/cycle',
+        'packages/tokens',
+        'tools',
+      ]);
+    });
+
+    it('finds a readme in each of them, and no problem in any', () => {
+      expect(readmeProblems(repositoryRoot, directories)).toEqual([]);
+    });
+
+    it('takes the name of a workspace from its manifest, and the others from their path', () => {
+      expect(directories.map((directory) => nameOf(repositoryRoot, directory))).toEqual([
+        '@emi/mobile',
+        'brand',
+        '@emi/crypto',
+        '@emi/cycle',
+        '@emi/tokens',
+        'tools',
+      ]);
+    });
+  });
+
+  describe('a workspace that arrives without one', () => {
+    const ghost = { directory: 'packages/ghost', name: '@fixture/ghost' };
+    const kept = {
+      directory: 'packages/kept',
+      name: '@fixture/kept',
+      readme: long('@fixture/kept'),
+    };
+
+    it('is found on disk as soon as its manifest is written', () => {
+      const root = fixture([kept, ghost]);
+
+      expect(workspaceDirectoriesOf(root)).toEqual(['packages/ghost', 'packages/kept']);
+    });
+
+    it('names the directory that holds no readme, and leaves the one that does alone', () => {
+      const root = fixture([kept, ghost]);
+
+      expect(readmeProblems(root, workspaceDirectoriesOf(root))).toEqual([
+        'packages/ghost holds no README.md, so opening that directory alone tells nobody what it is',
+      ]);
+    });
+
+    it('goes quiet again once that package carries a readme', () => {
+      const root = fixture([kept, { ...ghost, readme: long('@fixture/ghost') }]);
+
+      expect(readmeProblems(root, workspaceDirectoriesOf(root))).toEqual([]);
+    });
+  });
+
+  describe('a readme that answers nothing', () => {
+    it('refuses one under the floor, and says how short it is', () => {
+      const root = fixture([
+        { directory: 'packages/thin', name: '@fixture/thin', readme: '# @fixture/thin\n' },
+      ]);
+
+      expect(readmeProblems(root, ['packages/thin'])).toEqual([
+        `packages/thin/README.md is 15 characters, under the floor of ${readmeFloor}, so it answers nothing`,
+      ]);
+    });
+
+    it('refuses one that never writes the name of its own package', () => {
+      const root = fixture([
+        { directory: 'packages/other', name: '@fixture/other', readme: long('something else') },
+      ]);
+
+      expect(readmeProblems(root, ['packages/other'])).toEqual([
+        'packages/other/README.md never writes "@fixture/other", so it does not say which package it documents',
+      ]);
+    });
+
+    it('measures the length after the surrounding blank lines come off', () => {
+      const padded = `\n\n\n${'a'.repeat(readmeFloor - 1)}\n\n\n`;
+      const root = fixture([{ directory: 'packages/padded', readme: padded }]);
+
+      expect(readmeProblems(root, ['packages/padded'])).toEqual([
+        `packages/padded/README.md never writes "packages/padded", so it does not say which package it documents`,
+        `packages/padded/README.md is ${readmeFloor - 1} characters, under the floor of ${readmeFloor}, so it answers nothing`,
+      ]);
+    });
   });
 });
