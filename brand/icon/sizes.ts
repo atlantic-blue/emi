@@ -34,8 +34,8 @@ function googleIcon(kind: string, artwork: Artwork, pixels: number, asks: string
  * answers both.
  *
  * Apple has asked only for the 1024 since Xcode 14 and derives the rest at build time. Emi draws
- * every size itself, because the mark is a thin ring with a gap in it and a resample closes the gap
- * long before the eye stops seeing it.
+ * every size itself, because the mark is a ring with a gap in it and a resample closes the gap long
+ * before the eye stops seeing it.
  */
 export const appleIcons: readonly IconFile[] = [
   appleIcon(40, ['notification, 20 points at scale 2']),

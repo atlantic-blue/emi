@@ -9,6 +9,11 @@ reads what they generate.
 `logo/` holds the wordmark, the ring and the lockup, all three drawn by one program from one set of
 numbers. `logo/README.md` says what the numbers are.
 
+`icon/` holds the application icon generator. It reads `logo/emi-ring.svg`, puts the ring on the
+stone ground at 56 percent of the width, and writes every size both stores ask for into
+`apps/mobile/assets/icon`. `icon/sizes.ts` holds the two lists, with the reason beside each size.
+It measures its own result and refuses to write when the ring misses the fraction.
+
 `icons/` holds the first twenty line symbols and the contact sheet. `icons/README.md` says the rules
 every drawing follows. Running `icons/generate.ts` reads the directory and writes
 `packages/tokens/src/icons.ts`, so adding an icon means adding one file and running it again.
@@ -31,6 +36,7 @@ checked from `packages/tokens/tests/icons.test.ts`, beside the module it writes.
 
 From the root of the repository:
 
+    npm run generate:app-icon
     npm run generate:logo
     npm run generate:specimen
     npm run test:workspace

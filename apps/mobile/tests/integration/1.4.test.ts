@@ -278,6 +278,85 @@ describe('one source generates every icon both stores ask for', () => {
     });
   });
 
+  describe('the icons in the tree, and the application that uses them', () => {
+    const shipped = join(repositoryRoot, 'apps', 'mobile', 'assets', 'icon');
+
+    it('holds an icon for every declared size, drawn from the mark on main', () => {
+      const written = readdirSync(shipped)
+        .filter((name) => name.endsWith('.png'))
+        .sort();
+
+      expect(written).toEqual(iconFiles.map((file) => file.name).sort());
+    });
+
+    it('is the tree the generator writes today, byte for byte', () => {
+      const again = generateFrom(join(repositoryRoot, 'brand', 'logo', 'emi-ring.svg'));
+
+      expect(again.status).toBe(0);
+
+      const stale = iconFiles.filter(
+        (file) =>
+          !readFileSync(join(shipped, file.name)).equals(
+            readFileSync(join(again.directory, file.name)),
+          ),
+      );
+
+      expect(stale.map((file) => file.name)).toEqual([]);
+    });
+
+    it('draws the real mark at 56 percent of the width, in ember on stone', () => {
+      const image = decodePng(readFileSync(join(shipped, 'apple-1024.png')));
+      const box = inkBox(image, stone);
+
+      expect(box.width / image.width).toBeCloseTo(RING_FRACTION_OF_WIDTH, 2);
+      expect(pixelAt(image, 0, 0)).toEqual({ ...stone, alpha: 255 });
+      expect(pixelAt(image, box.left + 20, Math.round(box.top + box.height / 2))).toEqual({
+        ...colourFromHex(colour.ember),
+        alpha: 255,
+      });
+    });
+
+    it('gives the application an icon it can actually open, on both platforms', () => {
+      const config = JSON.parse(
+        readFileSync(join(repositoryRoot, 'apps', 'mobile', 'app.json'), 'utf8'),
+      ) as {
+        expo: {
+          icon: string;
+          ios: { icon: string };
+          android: {
+            icon: string;
+            adaptiveIcon: { foregroundImage: string; backgroundImage: string };
+          };
+        };
+      };
+
+      const named = [
+        config.expo.icon,
+        config.expo.ios.icon,
+        config.expo.android.icon,
+        config.expo.android.adaptiveIcon.foregroundImage,
+        config.expo.android.adaptiveIcon.backgroundImage,
+      ];
+
+      expect(named).toHaveLength(5);
+
+      for (const path of named) {
+        const file = join(repositoryRoot, 'apps', 'mobile', path);
+        const declared = iconFiles.find((icon) => path.endsWith(icon.name));
+
+        expect({ path, exists: existsSync(file), declared: declared !== undefined }).toEqual({
+          path,
+          exists: true,
+          declared: true,
+        });
+
+        const image = decodePng(readFileSync(file));
+
+        expect({ path, width: image.width }).toEqual({ path, width: declared?.pixels });
+      }
+    });
+  });
+
   describe('the generator itself', () => {
     it('is TypeScript, run through Node, and never a shell script', () => {
       const scripts = (
