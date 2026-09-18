@@ -1,6 +1,12 @@
-import type { SecureStore } from '../../src/services/sync/deviceKey';
+import type { SecureStore } from '../../src/services/vault/keychain';
 
-/** A keychain held in memory, so the signing path can be driven without a phone. */
+import { ensureValidKey } from './expoSecureStore';
+
+/**
+ * A keychain held in memory, so a key can be made and read without a phone. It refuses an item
+ * name the way the platform refuses it, from the platform's own rule, because a double that is
+ * looser than the phone hides the failure rather than finding it.
+ */
 export interface RecordingSecureStore extends SecureStore {
   /** Every item written, in the order it was written, so a test can see a second write. */
   writes(): { key: string; value: string }[];
@@ -12,12 +18,17 @@ export function memorySecureStore(held: Record<string, string> = {}): RecordingS
 
   return {
     writes: () => [...written],
-    read: (key) => Promise.resolve(items.get(key) ?? null),
-    write: (key, value) => {
+    read: async (key) => {
+      ensureValidKey(key);
+
+      return await Promise.resolve(items.get(key) ?? null);
+    },
+    write: async (key, value) => {
+      ensureValidKey(key);
       items.set(key, value);
       written.push({ key, value });
 
-      return Promise.resolve();
+      await Promise.resolve();
     },
   };
 }
