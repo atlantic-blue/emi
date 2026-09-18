@@ -1,0 +1,21 @@
+import { recordFromBytes } from '@emi/crypto';
+
+import { listCycles } from '../../data/cycleRepository';
+import type { Database } from '../../data/database';
+import { defaultCycleLengthDays, statedCycleLengthDays } from '../onboarding/firstRun';
+import { recordedDays } from './rebuild';
+import { type RingInput, ringInputFor } from './ringInput';
+
+/**
+ * The ring as her cycle stands now, read back out of the database every time. Nothing is patched in
+ * memory, because a day she writes can move the start of the cycle she is in, which moves the day
+ * she is on and the phase the bead sits in.
+ */
+export function ringNow(db: Database, today: string): RingInput | undefined {
+  return ringInputFor({
+    cycles: listCycles(db),
+    records: recordedDays(db, recordFromBytes),
+    today,
+    statedCycleLengthDays: statedCycleLengthDays(db) ?? defaultCycleLengthDays,
+  });
+}
