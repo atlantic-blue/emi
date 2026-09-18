@@ -1,5 +1,5 @@
 {
-  "name": "@emi/crypto",
+  "name": "@emi/vault",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -9,9 +9,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@emi/cycle": "*",
-    "@noble/ciphers": "2.4.0",
-    "@noble/curves": "2.4.0",
-    "@noble/hashes": "2.4.0"
+    "@emi/crypto": "*"
   }
 }

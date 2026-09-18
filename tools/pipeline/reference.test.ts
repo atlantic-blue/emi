@@ -127,11 +127,13 @@ describe('an export with no documentation comment fails the pipeline', () => {
         '@emi/crypto',
         '@emi/cycle',
         '@emi/tokens',
+        '@emi/vault',
       ]);
       expect(shipped.surfaces.map((surface) => surface.page)).toEqual([
         'docs/reference/crypto.md',
         'docs/reference/cycle.md',
         'docs/reference/tokens.md',
+        'docs/reference/vault.md',
       ]);
     });
 
@@ -150,7 +152,7 @@ describe('an export with no documentation comment fails the pipeline', () => {
     });
 
     it('counted a surface worth reading, rather than nothing at all', () => {
-      expect(counts.packages).toBe(3);
+      expect(counts.packages).toBe(4);
       expect(counts.files).toBeGreaterThan(12);
       expect(counts.symbols).toBeGreaterThan(100);
     });

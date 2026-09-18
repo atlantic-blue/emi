@@ -1,0 +1,24 @@
+{
+  "note": "Checked in bytes. A change to the signing string, to the account identifier or to the base 64 writer moves these, so it goes red here before it reaches a phone. Cross checked against the Ed25519 and SHA-256 in node:crypto on 2026-09-18.",
+  "privateKey": "AwoRGB8mLTQ7QklQV15lbHN6gYiPlp2kq7K5wMfO1dw=",
+  "publicKey": "dVxMuSVsp83ErP3Gz+7ahJAX5bn5UU6ZGRvWfgsNQnY=",
+  "accountId": "Q8560GE9FHQTX05DQGE0GRMQ2W",
+  "emptyBodyHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "register": {
+    "method": "POST",
+    "path": "/v1/accounts",
+    "instant": "2026-09-18T10:00:00.000Z",
+    "body": "{\"publicKey\":\"dVxMuSVsp83ErP3Gz+7ahJAX5bn5UU6ZGRvWfgsNQnY=\"}",
+    "bodyHash": "d96034f83dbd48d2604c93d2ffe139c1decb5759987e0f2d4ba9e18a42b51152",
+    "signingString": "POST\n/v1/accounts\n2026-09-18T10:00:00.000Z\nd96034f83dbd48d2604c93d2ffe139c1decb5759987e0f2d4ba9e18a42b51152",
+    "signature": "0pvbSSvJ8zkDvMospED8FM0JuByJFOeTQiRL8UZGqJdVb/7FOW0/dYclw2QN/zNqOuvP6w2FpxGEgbvOIUIgBg=="
+  },
+  "pull": {
+    "method": "GET",
+    "path": "/v1/records?after=2026-09-01T00%3A00%3A00.000Z",
+    "instant": "2026-09-18T10:00:00.000Z",
+    "body": "",
+    "bodyHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "signature": "zznE9sPBF4VFDZt5zZRzgeHUdCtNHOsnGpfNxqXb5/1cp03PYCoJa3aIWG0ghSsQeYgjUjDjFF6UK2imynzPDw=="
+  }
+}
