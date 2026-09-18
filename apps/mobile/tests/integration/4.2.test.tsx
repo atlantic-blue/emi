@@ -6,11 +6,11 @@ import { StyleSheet } from 'react-native';
 import type { Database } from '../../src/data/database';
 import { readDayLog } from '../../src/data/dayLogRepository';
 import { migrate } from '../../src/data/schema';
-import { editDay, logDay } from '../../src/features/cycle/rebuild';
 import { LogSheet, type LogSheetEntry } from '../../src/features/log/LogSheet';
 import { groupHeadings } from '../../src/features/log/SymptomGroup';
 import { openTestDatabase } from '../data/nodeDatabase';
-import { aDayRecord, recordBytes, recordFromBytes } from '../fixtures/dayRecord';
+import { recordFromBytes } from '../fixtures/dayRecord';
+import { savesInto as savesEntryInto } from '../fixtures/sheetSave';
 
 const day = '2026-03-14';
 const pressedSaveAt = new Date('2026-03-14T21:05:00.000Z');
@@ -24,26 +24,8 @@ function migrated(): Database {
   return database;
 }
 
-/**
- * The write the screen hosting the sheet performs. Every write to the day log goes through the
- * rebuild module, so the cycle cache is rebuilt from the whole log rather than patched here.
- */
 function savesInto(database: Database): (entry: LogSheetEntry) => void {
-  return (entry) => {
-    const payload = recordBytes(
-      aDayRecord({
-        day: entry.day,
-        symptoms: entry.symptoms,
-        recordedAt: pressedSaveAt.toISOString(),
-      }),
-    );
-    const write = { day: entry.day, payload, now: pressedSaveAt };
-    if (readDayLog(database, entry.day)) {
-      editDay(database, write, recordFromBytes);
-    } else {
-      logDay(database, write, recordFromBytes);
-    }
-  };
+  return savesEntryInto(database, pressedSaveAt);
 }
 
 async function sheOpensTheSheet(database: Database, held: readonly string[] = []): Promise<void> {
@@ -140,12 +122,15 @@ describe('a symptom is found by search and saved in one action', () => {
       }
     });
 
-    it('offers all seventy symptoms, so nothing in the catalogue is unreachable', async () => {
+    it('offers all seventy, so nothing in the catalogue is unreachable', async () => {
       const database = migrated();
       await sheOpensTheSheet(database);
 
+      // The mood group is reached through the picker at the top of the sheet, not through this
+      // list, so the seventy arrive as sixty chips and ten mood chips.
       expect(loggableSymptoms()).toHaveLength(70);
-      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(70);
+      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(60);
+      expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(10);
     });
   });
 
@@ -209,7 +194,7 @@ describe('a symptom is found by search and saved in one action', () => {
       await sheSearchesFor('cram');
       await sheSearchesFor('');
 
-      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(70);
+      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(60);
     });
 
     it('never offers a retired symptom, however she spells it', async () => {
@@ -244,13 +229,13 @@ describe('a symptom is found by search and saved in one action', () => {
       const database = migrated();
       await sheOpensTheSheet(database);
 
-      await shePicks('low-mood');
+      await shePicks('insomnia');
       await shePicks('bloating');
       await sheSearchesFor('migr');
       await shePicks('migraine');
       await shePressesSave();
 
-      expect(slugsRecordedFor(database, day)).toEqual(['low-mood', 'bloating', 'migraine']);
+      expect(slugsRecordedFor(database, day)).toEqual(['insomnia', 'bloating', 'migraine']);
       expect(revisionOf(database, day)).toBe(1);
     });
 
@@ -359,7 +344,7 @@ describe('a symptom is found by search and saved in one action', () => {
       await sheOpensTheSheet(database);
       const rows = screen.getAllByTestId(/^symptom-group-.*-chips$/);
 
-      expect(rows).toHaveLength(8);
+      expect(rows).toHaveLength(7);
       for (const row of rows) {
         expect(styleOf(row).flexWrap).toBe('wrap');
       }

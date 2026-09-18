@@ -143,6 +143,10 @@ may be rewritten at any time. A symptom that is no longer offered keeps its entr
 day it retired, because six cycles of her history point at that slug. A record that names a slug
 nothing resolves is a record she cannot read.
 
+The mood group of the catalogue is not offered as a symptom. The log sheet draws it as a picker of
+its own at the top, and what she picks there is written into the `moods` field of a record rather
+than into `symptoms`, so a screen that reads her history counts a mood once.
+
 ## The cycle arithmetic
 
 Status: designed

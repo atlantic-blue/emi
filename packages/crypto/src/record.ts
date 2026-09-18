@@ -1,4 +1,4 @@
-import { type Flow, unknownSymptomSlugs, type Symptom } from '@emi/cycle';
+import { type Flow, unknownMoodSlugs, unknownSymptomSlugs, type Symptom } from '@emi/cycle';
 
 import { canonicalJson, fromCanonicalBytes, type JsonValue } from './canonical';
 
@@ -86,7 +86,7 @@ export function recordProblems(
   problems.push(...flowProblems(held.flow));
   problems.push(...unexpectedBleedingProblems(held.bleedingIsUnexpected));
   problems.push(...symptomProblems(held.symptoms, catalogue));
-  problems.push(...moodProblems(held.moods));
+  problems.push(...moodProblems(held.moods, catalogue));
   problems.push(...energyProblems(held.energy));
   problems.push(
     ...measurementProblems(held.temperatureCelsius, {
@@ -190,10 +190,14 @@ function symptomProblems(value: unknown, catalogue?: readonly Symptom[]): readon
   return unknown.length > 0 ? [`the catalogue holds no symptom named ${unknown.join(', ')}`] : [];
 }
 
-function moodProblems(value: unknown): readonly string[] {
-  // The mood catalogue arrives with the mood picker, so a mood is checked for the shape of a slug
-  // and not yet for its membership.
-  return slugListProblems(value, 'a mood');
+function moodProblems(value: unknown, catalogue?: readonly Symptom[]): readonly string[] {
+  const problems = slugListProblems(value, 'a mood');
+  if (problems.length > 0 || value === undefined) {
+    return problems;
+  }
+
+  const unknown = unknownMoodSlugs(value as readonly string[], catalogue);
+  return unknown.length > 0 ? [`the catalogue holds no mood named ${unknown.join(', ')}`] : [];
 }
 
 const slugShape = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
