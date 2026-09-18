@@ -24,6 +24,14 @@ export const deviceKeyItem = 'emi.deviceKey.v1';
 /** The keychain item that holds the account identifier, so a read needs no arithmetic. */
 export const accountIdItem = 'emi.accountId.v1';
 
+/**
+ * Everything this directory keeps in the keychain, so a delete can take it all without naming an
+ * item of its own. The names live here and nowhere else, which `tools/pipeline/keyLeak.ts`
+ * enforces, and a list is how the delete reaches them without breaking that rule. A later item
+ * added above and left off this list survives a delete, so the pipeline holds the two together.
+ */
+export const syncKeychainItems: readonly string[] = [deviceKeyItem, accountIdItem];
+
 /** The key pair and the identifier that comes from it. */
 export interface DeviceKey extends DeviceKeyPair {
   readonly accountId: string;

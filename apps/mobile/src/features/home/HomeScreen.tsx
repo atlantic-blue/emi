@@ -24,6 +24,9 @@ export const historyLabel = 'History';
 export const exportTestID = 'home-export';
 export const exportLabel = 'Export';
 
+export const settingsTestID = 'home-settings';
+export const settingsLabel = 'Settings';
+
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
@@ -47,6 +50,7 @@ interface Props {
   readonly onHistory: () => void;
   /** The way out, because a record she cannot take with her is not hers. */
   readonly onExport: () => void;
+  readonly onSettings: () => void;
 }
 
 export function HomeScreen({
@@ -56,6 +60,7 @@ export function HomeScreen({
   onLogToday,
   onHistory,
   onExport,
+  onSettings,
 }: Props): ReactNode {
   return (
     <View style={styles.screen} testID={homeScreenTestID}>
@@ -105,6 +110,15 @@ export function HomeScreen({
             testID={exportTestID}
           >
             <Text style={styles.historyLabel}>{exportLabel}</Text>
+          </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={onSettings}
+            style={styles.history}
+            testID={settingsTestID}
+          >
+            <Text style={styles.historyLabel}>{settingsLabel}</Text>
           </Pressable>
         </View>
       </ScrollView>

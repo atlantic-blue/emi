@@ -123,6 +123,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       onExport={() => undefined}
       onHistory={() => undefined}
       onLogToday={() => undefined}
+      onSettings={() => undefined}
       ring={ring}
     />,
   );

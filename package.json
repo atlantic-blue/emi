@@ -32,6 +32,7 @@
     "generate:flow-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern logFlow.picture",
     "generate:history-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern history.picture",
     "generate:export-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern export.picture",
+    "generate:delete-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern deleteEverything.picture",
     "test": "npm run test:workspace && npm run test:mobile",
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile"

@@ -12,6 +12,8 @@ import {
   homeNoRingTestID,
   logTodayLabel,
   logTodayTestID,
+  settingsLabel,
+  settingsTestID,
 } from '../src/features/home/HomeScreen';
 import { migratedDatabase } from './fixtures/cycleCache';
 import { textIn } from './fixtures/renderedText';
@@ -25,6 +27,7 @@ async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
       onExport={() => asked.push('export')}
       onHistory={() => asked.push('history')}
       onLogToday={() => asked.push('log today')}
+      onSettings={() => asked.push('settings')}
       ring={undefined}
     />,
   );
@@ -37,7 +40,7 @@ describe('the home screen', () => {
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
   });
 
-  it('shows the wordmark, what to do next, and the three ways in', async () => {
+  it('shows the wordmark, what to do next, and the four ways in', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
@@ -51,6 +54,7 @@ describe('the home screen', () => {
       logTodayLabel,
       historyLabel,
       exportLabel,
+      settingsLabel,
     ]);
   });
 
@@ -79,5 +83,14 @@ describe('the home screen', () => {
     await fireEvent.press(screen.getByTestId(exportTestID));
 
     expect(asked).toEqual(['export']);
+  });
+
+  it('sends her to the settings when she presses the control that says so', async () => {
+    const asked: string[] = [];
+    await theEmptyHomeScreen(asked);
+
+    await fireEvent.press(screen.getByTestId(settingsTestID));
+
+    expect(asked).toEqual(['settings']);
   });
 });

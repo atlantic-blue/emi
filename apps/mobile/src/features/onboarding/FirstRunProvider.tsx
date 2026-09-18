@@ -11,6 +11,11 @@ interface FirstRun {
   readonly setPeriodStartedOn: (day: string) => void;
   readonly setCycleLengthDays: (days: number) => void;
   readonly finish: () => void;
+  /**
+   * Reads the database again. A delete empties the table this answer comes from, and without this
+   * she would be sent to her own home screen with nothing on it.
+   */
+  readonly reread: () => void;
 }
 
 const FirstRunContext = createContext<FirstRun | undefined>(undefined);
@@ -35,6 +40,12 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setIsDone(firstRunIsDone(database));
   }, [cycleLengthDays, database, periodStartedOn, vault]);
 
+  const reread = useCallback(() => {
+    setPeriodStartedOn(undefined);
+    setCycleLengthDays(defaultCycleLengthDays);
+    setIsDone(firstRunIsDone(database));
+  }, [database]);
+
   const held = useMemo(
     () => ({
       isDone,
@@ -43,8 +54,9 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       setPeriodStartedOn,
       setCycleLengthDays,
       finish,
+      reread,
     }),
-    [cycleLengthDays, finish, isDone, periodStartedOn],
+    [cycleLengthDays, finish, isDone, periodStartedOn, reread],
   );
 
   return <FirstRunContext.Provider value={held}>{children}</FirstRunContext.Provider>;

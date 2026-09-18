@@ -170,6 +170,7 @@ async function sheOpensHerHomeScreen(her: HerPhone): Promise<void> {
       onExport={() => undefined}
       onHistory={() => undefined}
       onLogToday={() => undefined}
+      onSettings={() => undefined}
       ring={her.ring}
     />,
   );
@@ -327,6 +328,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
           onExport={() => undefined}
           onHistory={() => undefined}
           onLogToday={() => undefined}
+          onSettings={() => undefined}
           ring={ringInputFor({
             cycles,
             records: recordedDays(database, readDay),
@@ -352,6 +354,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
           onExport={() => undefined}
           onHistory={() => undefined}
           onLogToday={() => undefined}
+          onSettings={() => undefined}
           ring={undefined}
         />,
       );
@@ -390,6 +393,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
           onExport={() => undefined}
           onHistory={() => undefined}
           onLogToday={() => undefined}
+          onSettings={() => undefined}
           ring={undefined}
         />,
       );
