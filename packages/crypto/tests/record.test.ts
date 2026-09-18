@@ -1,4 +1,13 @@
-import { type Flow, cyclesFrom, symptoms, type Symptom } from '@emi/cycle';
+import {
+  type Flow,
+  cyclesFrom,
+  highestTemperatureCelsius,
+  highestWeightKilograms,
+  lowestTemperatureCelsius,
+  lowestWeightKilograms,
+  symptoms,
+  type Symptom,
+} from '@emi/cycle';
 
 import { CanonicalError, canonicalJson } from '../src/canonical';
 import {
@@ -6,12 +15,8 @@ import {
   RecordError,
   flowValues,
   highestEnergy,
-  highestTemperatureCelsius,
-  highestWeightKilograms,
   longestNote,
   lowestEnergy,
-  lowestTemperatureCelsius,
-  lowestWeightKilograms,
   recordBytes,
   recordFromBytes,
   recordJson,

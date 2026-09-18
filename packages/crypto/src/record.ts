@@ -1,4 +1,13 @@
-import { type Flow, unknownMoodSlugs, unknownSymptomSlugs, type Symptom } from '@emi/cycle';
+import {
+  type Flow,
+  highestTemperatureCelsius,
+  highestWeightKilograms,
+  lowestTemperatureCelsius,
+  lowestWeightKilograms,
+  type Symptom,
+  unknownMoodSlugs,
+  unknownSymptomSlugs,
+} from '@emi/cycle';
 
 import { canonicalJson, fromCanonicalBytes, type JsonValue } from './canonical';
 
@@ -46,17 +55,6 @@ export const recordKeys: readonly string[] = [
   'weightKilograms',
 ];
 
-/** Degrees. Below this a reading is a thermometer that was not held against anybody. */
-export const lowestTemperatureCelsius = 34;
-/** Degrees. Above this the number came from the keypad and not from a body. */
-export const highestTemperatureCelsius = 42;
-/**
- * Kilograms. The range is wide on purpose: the field catches a stray digit and it never judges
- * her.
- */
-export const lowestWeightKilograms = 20;
-/** Kilograms, and wide for the same reason. A refusal here would lose what she typed. */
-export const highestWeightKilograms = 400;
 /** Five steps begin here. A scale she can answer in one tap beats one she has to think about. */
 export const lowestEnergy = 1;
 /** And they end here. A whole number only, because half a step is a precision she does not have. */
