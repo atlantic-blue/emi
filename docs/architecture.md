@@ -71,6 +71,8 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.
 - `packages/crypto` holds the encrypted record format: the envelope, the canonical json and the
   ranges a day is checked against.
+- `infra` holds the Terraform: the table, the api, the two functions and the two roles. The
+  pipeline validates it on every pull request. Nothing is applied yet.
 - `tools` holds the checks that guard the repository rather than the product.
 - `docs` holds this document and the documents beside it.
 
@@ -184,8 +186,10 @@ flowchart TD
   KC -.->|"never sent"| GW
 ```
 
-The planned directories are `services/vault` for the Lambda service and `infra` for the Terraform.
-Neither exists. The region is eu-central-1 and the account is 230345688874.
+The Terraform for all of this is in `infra` and it is read on every pull request. None of it is
+applied, because the first apply needs a credential the pipeline does not hold yet. The planned
+directory is `services/vault` for the Lambda service, and it does not exist. The region is
+eu-central-1 and the account is 230345688874.
 
 The dotted line is the product. The key never crosses it.
 

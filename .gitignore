@@ -7,3 +7,9 @@ web-build/
 .DS_Store
 ios/
 android/
+
+# Terraform working files. The provider lock is committed; the plugins and the plan are not.
+.terraform/
+*.tfstate
+*.tfstate.*
+infra/build/
