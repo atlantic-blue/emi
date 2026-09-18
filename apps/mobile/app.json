@@ -25,7 +25,15 @@
       "output": "static",
       "bundler": "metro"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Emi asks for Face ID so only you can open your own records."
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }
