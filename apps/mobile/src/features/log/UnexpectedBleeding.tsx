@@ -25,6 +25,9 @@ interface Props {
 export function UnexpectedBleeding({ marked, onMark }: Props): ReactNode {
   return (
     <View style={styles.block} testID={unexpectedBleedingTestID}>
+      <Text style={styles.line} testID={unexpectedBleedingLineTestID}>
+        {marked ? unexpectedBleedingCopy.marked : unexpectedBleedingCopy.invitation}
+      </Text>
       <Pressable
         accessibilityRole="switch"
         accessibilityState={{ checked: marked }}
@@ -36,15 +39,18 @@ export function UnexpectedBleeding({ marked, onMark }: Props): ReactNode {
           {unexpectedBleedingCopy.mark}
         </Text>
       </Pressable>
-      <Text style={styles.line} testID={unexpectedBleedingLineTestID}>
-        {marked ? unexpectedBleedingCopy.marked : unexpectedBleedingCopy.invitation}
-      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  block: { gap: space.tight },
+  block: {
+    borderTopColor: colour.hairline,
+    borderTopWidth: 1,
+    gap: space.tight,
+    marginTop: space.tight,
+    paddingTop: space.snug,
+  },
   line: {
     color: colour.body,
     fontSize: typeScale.small.size,
