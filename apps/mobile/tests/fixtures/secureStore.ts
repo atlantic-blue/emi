@@ -10,14 +10,21 @@ import { ensureValidKey } from './expoSecureStore';
 export interface RecordingSecureStore extends SecureStore {
   /** Every item written, in the order it was written, so a test can see a second write. */
   writes(): { key: string; value: string }[];
+  /** Every item removed, in order, so a test can see what a delete asked for. */
+  removals(): string[];
+  /** What it holds now, which is how a test reads the keychain rather than asking Emi. */
+  items(): Record<string, string>;
 }
 
 export function memorySecureStore(held: Record<string, string> = {}): RecordingSecureStore {
   const items = new Map<string, string>(Object.entries(held));
   const written: { key: string; value: string }[] = [];
+  const removed: string[] = [];
 
   return {
     writes: () => [...written],
+    removals: () => [...removed],
+    items: () => Object.fromEntries(items),
     read: async (key) => {
       ensureValidKey(key);
 
@@ -27,6 +34,13 @@ export function memorySecureStore(held: Record<string, string> = {}): RecordingS
       ensureValidKey(key);
       items.set(key, value);
       written.push({ key, value });
+
+      await Promise.resolve();
+    },
+    remove: async (key) => {
+      ensureValidKey(key);
+      items.delete(key);
+      removed.push(key);
 
       await Promise.resolve();
     },

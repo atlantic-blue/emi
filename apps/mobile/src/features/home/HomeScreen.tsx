@@ -21,6 +21,9 @@ export const logTodayLabel = 'Log today';
 export const historyTestID = 'home-history';
 export const historyLabel = 'History';
 
+export const settingsTestID = 'home-settings';
+export const settingsLabel = 'Settings';
+
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
@@ -42,6 +45,7 @@ interface Props {
   readonly onLogToday: () => void;
   /** The way into what she has already written, which is what the logging is for. */
   readonly onHistory: () => void;
+  readonly onSettings: () => void;
 }
 
 export function HomeScreen({
@@ -50,6 +54,7 @@ export function HomeScreen({
   cycleLengthDays,
   onLogToday,
   onHistory,
+  onSettings,
 }: Props): ReactNode {
   return (
     <View style={styles.screen} testID={homeScreenTestID}>
@@ -89,6 +94,15 @@ export function HomeScreen({
           testID={historyTestID}
         >
           <Text style={styles.historyLabel}>{historyLabel}</Text>
+        </Pressable>
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={onSettings}
+          style={styles.history}
+          testID={settingsTestID}
+        >
+          <Text style={styles.historyLabel}>{settingsLabel}</Text>
         </Pressable>
       </ScrollView>
     </View>

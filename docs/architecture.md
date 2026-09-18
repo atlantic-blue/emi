@@ -318,6 +318,33 @@ directory and nowhere else, so an export or a support screen cannot read an item
 Nothing writes a day through the key yet. The step that sends every row through the envelope comes
 next.
 
+## Deleting everything
+
+Status: built
+
+One press on the delete screen empties the database and the keychain. Nothing is queued and nothing
+is held back, so there is no window in which she has asked and Emi still holds her days. Contract
+KEEP-3 names a delay or a cooling off period as the error, not only a row that survives.
+
+The tables are read out of `sqlite_master` rather than written down in the code. A table a later
+migration adds is emptied by the same call, with nobody having to remember it. The keychain cannot
+be listed that way, so each directory that keeps an item declares what it keeps, and a test holds
+those declarations against the list the delete uses. An item added and left off the list fails the
+pipeline rather than surviving a delete.
+
+Emptying a table is not the same as the bytes leaving the file. `PRAGMA secure_delete` writes
+zeroes over what it removes, and the vacuum afterwards rebuilds the file out of the pages still in
+use. A test writes four hundred rows carrying one rare word to a real file, deletes, and reads the
+bytes back off the disk to prove the word is gone. Without those two statements the word is still
+there.
+
+Afterwards the phone holds no key, so the screen says so and offers one thing: start again. Taking
+it reads the keychain, finds nothing, makes a key, and the first run asks her the two questions it
+asked the first time.
+
+The server half is feature 6 step 6. Until it lands, this empties the phone and nothing else, and
+the screen says on this phone rather than everywhere.
+
 ## The vault in Amazon Web Services
 
 Status: designed

@@ -55,9 +55,24 @@ export async function setItemAsync(
   await Promise.resolve();
 }
 
+/**
+ * One item the platform will not let go of. A keychain error is rare and it is the one thing that
+ * turns a finished delete into an unfinished one, so a test has to be able to produce it.
+ */
+let refused: string | null = null;
+
+export function theKeychainRefusesToRemove(item: string | null): void {
+  refused = item;
+}
+
 export async function deleteItemAsync(key: string, options: unknown = {}): Promise<void> {
   ensureValidKey(key);
   asked.push({ call: 'delete', key, options });
+
+  if (key === refused) {
+    throw new Error('the platform would not remove this item');
+  }
+
   held.delete(key);
 
   await Promise.resolve();
@@ -77,6 +92,7 @@ export function itemsInTheKeychain(): Record<string, string> {
 export function resetExpoSecureStore(): void {
   held.clear();
   asked.length = 0;
+  refused = null;
 }
 
 /** The module's own check, over the rule the application copied from it. */

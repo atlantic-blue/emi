@@ -68,6 +68,7 @@ export default function HomeRoute(): ReactNode {
       forecast={shown.forecast}
       onHistory={() => router.push('/history')}
       onLogToday={() => router.push('/log')}
+      onSettings={() => router.push('/settings')}
       ring={shown.ring}
     />
   );

@@ -1,4 +1,4 @@
-import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import { type ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
 import { encryptPlainPayloads } from '../../data/migrations/004-encrypt-payloads';
@@ -7,6 +7,7 @@ import { expoKeychain } from './keychain';
 import { phoneRandom, vaultKey } from './vaultKey';
 
 const VaultContext = createContext<DayVault | undefined>(undefined);
+const RenewalContext = createContext<(() => Promise<void>) | undefined>(undefined);
 
 /**
  * The key reaches the screens from here. Reading the keychain is asynchronous, so nothing under
@@ -37,11 +38,26 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
     };
   }, [database]);
 
+  /**
+   * After a delete the keychain holds nothing, so the key in memory here opens rows that no longer
+   * exist and seals new ones under a key her next launch cannot find. This reads the keychain
+   * again and takes whatever it now holds, which after a delete is a key made on the spot. It
+   * resolves once the swap is done, so nothing writes a day in the gap.
+   */
+  const renew = useCallback(async () => {
+    const key = await vaultKey(expoKeychain(), phoneRandom);
+    setVault(dayVault(key));
+  }, []);
+
   if (!vault) {
     return null;
   }
 
-  return <VaultContext.Provider value={vault}>{children}</VaultContext.Provider>;
+  return (
+    <RenewalContext.Provider value={renew}>
+      <VaultContext.Provider value={vault}>{children}</VaultContext.Provider>
+    </RenewalContext.Provider>
+  );
 }
 
 export function useVault(): DayVault {
@@ -50,4 +66,13 @@ export function useVault(): DayVault {
     throw new Error('a screen read the vault from outside the vault provider');
   }
   return vault;
+}
+
+/** What the delete screen calls once the keychain is empty, and nothing else has any use for. */
+export function useRenewVault(): () => Promise<void> {
+  const renew = useContext(RenewalContext);
+  if (!renew) {
+    throw new Error('a screen renewed the vault from outside the vault provider');
+  }
+  return renew;
 }

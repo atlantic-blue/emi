@@ -122,6 +122,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       forecast={forecast}
       onHistory={() => undefined}
       onLogToday={() => undefined}
+      onSettings={() => undefined}
       ring={ring}
     />,
   );

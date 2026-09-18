@@ -1,13 +1,15 @@
 import * as secureStore from 'expo-secure-store';
 
 /**
- * The keychain, as the two calls anything in Emi makes of it. A module that can only read one
- * string and write one string cannot leak a key through a listing or a dump, so the port stays
- * this small on purpose.
+ * The keychain, as the three calls anything in Emi makes of it. There is no way here to list what
+ * the keychain holds, so nothing can write out an item it was not already told the name of, and
+ * the port stays this small on purpose.
  */
 export interface SecureStore {
   read(key: string): Promise<string | null>;
   write(key: string, value: string): Promise<void>;
+  /** Removing an item that was never there is not an error, on the phone or anywhere else. */
+  remove(key: string): Promise<void>;
 }
 
 /**
@@ -38,5 +40,6 @@ export function expoKeychain(): SecureStore {
   return {
     read: async (key) => (await secureStore.getItemAsync(key, keychainOptions())) ?? null,
     write: (key, value) => secureStore.setItemAsync(key, value, keychainOptions()),
+    remove: (key) => secureStore.deleteItemAsync(key, keychainOptions()),
   };
 }

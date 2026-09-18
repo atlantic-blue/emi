@@ -10,6 +10,8 @@ import {
   homeNoRingTestID,
   logTodayLabel,
   logTodayTestID,
+  settingsLabel,
+  settingsTestID,
 } from '../src/features/home/HomeScreen';
 import { migratedDatabase } from './fixtures/cycleCache';
 import { textIn } from './fixtures/renderedText';
@@ -22,6 +24,7 @@ async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
       forecast={forecastOf(listCycles(migratedDatabase()))}
       onHistory={() => asked.push('history')}
       onLogToday={() => asked.push('log today')}
+      onSettings={() => asked.push('settings')}
       ring={undefined}
     />,
   );
@@ -34,7 +37,7 @@ describe('the home screen', () => {
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
   });
 
-  it('shows the wordmark, what to do next, and the two ways in', async () => {
+  it('shows the wordmark, what to do next, and the three ways in', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
@@ -47,6 +50,7 @@ describe('the home screen', () => {
       'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',
       logTodayLabel,
       historyLabel,
+      settingsLabel,
     ]);
   });
 
@@ -66,5 +70,14 @@ describe('the home screen', () => {
     await fireEvent.press(screen.getByTestId(historyTestID));
 
     expect(asked).toEqual(['history']);
+  });
+
+  it('sends her to the settings when she presses the control that says so', async () => {
+    const asked: string[] = [];
+    await theEmptyHomeScreen(asked);
+
+    await fireEvent.press(screen.getByTestId(settingsTestID));
+
+    expect(asked).toEqual(['settings']);
   });
 });

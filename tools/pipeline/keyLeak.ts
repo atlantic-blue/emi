@@ -56,6 +56,11 @@ export const keyholdingItems: readonly KeyholdingItem[] = [
     home: join(interfaceRoot, 'services', 'sync'),
   },
   {
+    item: 'emi.accountId.v1',
+    constant: 'accountIdItem',
+    home: join(interfaceRoot, 'services', 'sync'),
+  },
+  {
     item: 'emi.recoveryConfirmed.v1',
     constant: 'recoveryConfirmedItem',
     home: join(interfaceRoot, 'services', 'vault'),
