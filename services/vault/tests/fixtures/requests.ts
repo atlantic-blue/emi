@@ -1,12 +1,17 @@
 import {
+  accountIdFor,
   bodyHashOf,
   base64Of,
   type DeviceKeyPair,
   deviceKeyPairFrom,
+  envelopeVersion,
+  recoverySaltLength,
   signedHeaders,
+  wrappedVaultKeyLength,
 } from '@emi/crypto';
 
 import type { AuthorizerEvent, HttpRequestEvent } from '../../src/api';
+import type { StoredAccount } from '../../src/store/accounts';
 
 /** Builders for a signed request, so no test writes an event or a header by hand. */
 
@@ -17,7 +22,7 @@ export function keyPairFromSeed(seed: number): DeviceKeyPair {
 
 /** The registration body for a key pair, as the phone writes it. */
 export function registrationBody(pair: DeviceKeyPair): string {
-  return JSON.stringify({ publicKey: base64Of(pair.publicKey) });
+  return registrationBodyWithRecovery(pair);
 }
 
 export interface RequestParts {
@@ -102,4 +107,54 @@ export function authorizedEvent(event: HttpRequestEvent, accountId: string): Htt
       authorizer: { lambda: { accountId } },
     },
   };
+}
+
+/**
+ * An account as the register handler writes one, so the five tests that seed a store do not each
+ * carry their own idea of what an account holds. A field added to `StoredAccount` is added here
+ * once, and every seeded store gains it.
+ */
+export function anAccount(
+  pair: { readonly publicKey: Uint8Array },
+  createdAt: Date,
+  held: Partial<StoredAccount> = {},
+): StoredAccount {
+  return {
+    accountId: accountIdFor(pair.publicKey),
+    publicKey: pair.publicKey,
+    wrappedVaultKey: aWrappedVaultKey(pair.publicKey[0] ?? 1),
+    recoverySalt: aRecoverySalt(pair.publicKey[1] ?? 2),
+    createdAt: createdAt.toISOString(),
+    recordCount: 0,
+    ...held,
+  };
+}
+
+/**
+ * Bytes of the right shape for a wrapped vault key. The service never opens one, so what these
+ * tests need is the shape and the length, and a real wrap costs a tenth of a second of Argon2id.
+ * `packages/crypto/tests/recovery.test.ts` is where the real one is checked.
+ */
+export function aWrappedVaultKey(seed: number): Uint8Array {
+  const wrapped = new Uint8Array(wrappedVaultKeyLength).map((_, at) => (at * 31 + seed) % 256);
+  wrapped[0] = envelopeVersion;
+
+  return wrapped;
+}
+
+export function aRecoverySalt(seed: number): Uint8Array {
+  return new Uint8Array(recoverySaltLength).map((_, at) => ((at + 1) * 17 + seed) % 255 || 3);
+}
+
+/** The registration body a phone writes, with everything contract WIRE-1 asks for. */
+export function registrationBodyWithRecovery(
+  pair: DeviceKeyPair,
+  held: Readonly<Record<string, unknown>> = {},
+): string {
+  return JSON.stringify({
+    publicKey: base64Of(pair.publicKey),
+    wrappedVaultKey: base64Of(aWrappedVaultKey(pair.publicKey[0] ?? 1)),
+    recoverySalt: base64Of(aRecoverySalt(pair.publicKey[1] ?? 2)),
+    ...held,
+  });
 }

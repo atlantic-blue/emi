@@ -5,7 +5,7 @@ import { maximumEnvelopeBytes, putRecordFor } from '../src/handlers/putRecord';
 import { dynamoStore } from '../src/store/dynamo';
 import { pageCostOf, type RecordStore, type StoredRecord } from '../src/store/records';
 import { fakeTable, type FakeTable, tableName } from './fixtures/dynamoTable';
-import { authorizedEvent, keyPairFromSeed, signedRequest } from './fixtures/requests';
+import { anAccount, authorizedEvent, keyPairFromSeed, signedRequest } from './fixtures/requests';
 
 /**
  * Contracts WIRE-2 and WIRE-3, through the handlers and the storage together. The store under
@@ -79,12 +79,7 @@ function storeOver(table: FakeTable) {
 }
 
 async function registered(table: FakeTable): Promise<void> {
-  await storeOver(table).createAccount({
-    accountId,
-    publicKey: pair.publicKey,
-    createdAt: writtenAt.toISOString(),
-    recordCount: 0,
-  });
+  await storeOver(table).createAccount(anAccount(pair, writtenAt));
 }
 
 async function accountAfterwards(table: FakeTable) {

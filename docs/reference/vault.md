@@ -318,8 +318,9 @@ Bytes. A body larger than this is refused before it is read, which is contract W
 function registerAccount(event: HttpRequestEvent, store: AccountStore, now: Date): Promise<HttpResponse>
 ```
 
-She sends a public key, signed by the key she sent. The handler derives the account identifier
-from that key, so she does not choose it and two women cannot land on one.
+She sends a public key, signed by the key she sent, with her wrapped vault key and her salt.
+The handler derives the account identifier from that key, so she does not choose it and two
+women cannot land on one.
 
 ### `register`
 
@@ -337,6 +338,13 @@ The route the api calls, with its storage bound to it.
 interface StoredAccount {
   readonly accountId: string;
   readonly publicKey: Uint8Array;
+  /**
+   * Her vault key, sealed under the key her 26 written characters derive. The service holds these
+   * bytes and no way at all to open them, which is the same sentence as the one about her days.
+   */
+  readonly wrappedVaultKey: Uint8Array;
+  /** The sixteen bytes her code was derived with. Useless on its own, and useless with these. */
+  readonly recoverySalt: Uint8Array;
   readonly createdAt: string;
   readonly recordCount: number;
 }

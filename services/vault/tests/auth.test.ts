@@ -3,7 +3,13 @@ import { accountIdFor, instantWindowSeconds } from '@emi/crypto';
 import { accountIdContextKey, authorizeRequest, authorizer } from '../src/auth/authorizer';
 import { refused } from '../src/api';
 import { memoryStore } from './fixtures/memoryStore';
-import { authorizerEvent, headersFor, keyPairFromSeed, signedRequest } from './fixtures/requests';
+import {
+  anAccount,
+  authorizerEvent,
+  headersFor,
+  keyPairFromSeed,
+  signedRequest,
+} from './fixtures/requests';
 
 const pair = keyPairFromSeed(3);
 const stranger = keyPairFromSeed(101);
@@ -14,12 +20,7 @@ async function storeHolding(...pairs: { publicKey: Uint8Array }[]) {
   const store = memoryStore();
 
   for (const held of pairs) {
-    await store.createAccount({
-      accountId: accountIdFor(held.publicKey),
-      publicKey: held.publicKey,
-      createdAt: signedAt.toISOString(),
-      recordCount: 0,
-    });
+    await store.createAccount(anAccount(held, signedAt));
   }
 
   return store;

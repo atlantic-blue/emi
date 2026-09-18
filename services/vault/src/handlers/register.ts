@@ -5,8 +5,11 @@ import {
   instantIsFresh,
   instantWindowSeconds,
   presentedSignatureIn,
+  readWrappedVaultKey,
+  recoverySaltLength,
   refusalMessages,
   signatureVerifies,
+  wrappedVaultKeyLength,
 } from '@emi/crypto';
 
 import {
@@ -26,18 +29,45 @@ import type { AccountStore } from '../store/accounts';
  * not exist yet and there is no stored key to check a signature against. The body is signed by the
  * key inside it, so the request asserts itself and nothing else.
  *
- * The wrapped vault key and the recovery salt join the body in feature 6 step 4. Until then an
- * account carries a public key and nothing more.
+ * She sends her wrapped vault key and her recovery salt with it. The service checks that each one
+ * is the right shape and the right length and writes it down. It can do nothing else with either:
+ * the key that opens the wrapped bytes is derived from 26 characters that exist on her paper and
+ * nowhere on this side, and no part of them is in this request.
  */
 
 /** Bytes. A body larger than this is refused before it is read, which is contract WIRE-1. */
 export const maximumBodyBytes = 4096;
 
+/**
+ * The three fields a registration carries, and the whole of what Emi ever asks of her. There is no
+ * email address, no telephone number and no name, and a field added here is a field a reviewer
+ * sees in this type.
+ */
 interface RegistrationBody {
   readonly publicKey?: unknown;
+  readonly wrappedVaultKey?: unknown;
+  readonly recoverySalt?: unknown;
 }
 
-function publicKeyIn(body: string): Uint8Array | null {
+interface Registration {
+  readonly publicKey: Uint8Array;
+  readonly wrappedVaultKey: Uint8Array;
+  readonly recoverySalt: Uint8Array;
+}
+
+function bytesOf(value: unknown): Uint8Array | null {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  try {
+    return bytesFromBase64(value);
+  } catch {
+    return null;
+  }
+}
+
+function registrationIn(body: string): Registration | null {
   let parsed: RegistrationBody;
 
   try {
@@ -46,24 +76,39 @@ function publicKeyIn(body: string): Uint8Array | null {
     return null;
   }
 
-  if (typeof parsed?.publicKey !== 'string') {
+  const publicKey = bytesOf(parsed?.publicKey);
+  const wrappedVaultKey = bytesOf(parsed?.wrappedVaultKey);
+  const recoverySalt = bytesOf(parsed?.recoverySalt);
+
+  if (publicKey === null || wrappedVaultKey === null || recoverySalt === null) {
     return null;
   }
 
-  let bytes: Uint8Array;
+  if (publicKey.length !== deviceKeyLength || recoverySalt.length !== recoverySaltLength) {
+    return null;
+  }
 
+  // The shape of the wrapped key, which is the whole of what a service holding no key can check.
+  // A length of its own makes that check worth something: nothing else fits in it.
   try {
-    bytes = bytesFromBase64(parsed.publicKey);
+    readWrappedVaultKey(wrappedVaultKey);
   } catch {
     return null;
   }
 
-  return bytes.length === deviceKeyLength ? bytes : null;
+  // Sixteen zero bytes are what a generator that is not running gives back, and a salt every
+  // account shared would mean one code derived one key for all of them.
+  if (recoverySalt.every((byte) => byte === 0)) {
+    return null;
+  }
+
+  return { publicKey, wrappedVaultKey, recoverySalt };
 }
 
 /**
- * She sends a public key, signed by the key she sent. The handler derives the account identifier
- * from that key, so she does not choose it and two women cannot land on one.
+ * She sends a public key, signed by the key she sent, with her wrapped vault key and her salt.
+ * The handler derives the account identifier from that key, so she does not choose it and two
+ * women cannot land on one.
  */
 export async function registerAccount(
   event: HttpRequestEvent,
@@ -86,12 +131,12 @@ export async function registerAccount(
     return refusal(403, refusalMessages['instant-is-not-fresh']);
   }
 
-  const publicKey = publicKeyIn(body);
+  const registration = registrationIn(body);
 
-  if (publicKey === null) {
+  if (registration === null) {
     return refusal(
       400,
-      `a registration body holds a public key of ${deviceKeyLength} bytes, as base 64`,
+      `a registration body holds a public key of ${deviceKeyLength} bytes, a wrapped vault key of ${wrappedVaultKeyLength} bytes and a recovery salt of ${recoverySaltLength} bytes, each as base 64`,
     );
   }
 
@@ -101,10 +146,10 @@ export async function registerAccount(
     return bodyRefusal;
   }
 
-  const accountId = accountIdFor(publicKey);
+  const accountId = accountIdFor(registration.publicKey);
   const signedByTheKeyItRegisters =
     presented.accountId === accountId &&
-    signatureVerifies(presented, methodOf(event), signedPathOf(event), publicKey);
+    signatureVerifies(presented, methodOf(event), signedPathOf(event), registration.publicKey);
 
   if (!signedByTheKeyItRegisters) {
     return refusal(403, refusalMessages['signature-does-not-verify']);
@@ -120,7 +165,9 @@ export async function registerAccount(
 
   const created = await store.createAccount({
     accountId,
-    publicKey,
+    publicKey: registration.publicKey,
+    wrappedVaultKey: registration.wrappedVaultKey,
+    recoverySalt: registration.recoverySalt,
     createdAt: now.toISOString(),
     recordCount: 0,
   });

@@ -1,13 +1,19 @@
 /**
- * What the service asks of its storage, as a port. The DynamoDB implementation arrives with the
- * record endpoints in feature 6 step 3. Naming the port first keeps the handlers testable against a
- * real engine later without the handlers changing at all.
+ * What the service asks of its storage, as a port. Naming the port rather than a client keeps the
+ * handlers testable against a real engine without the handlers changing at all.
  */
 
 /** The account item of section 6.4 of the design, as far as this step builds it. */
 export interface StoredAccount {
   readonly accountId: string;
   readonly publicKey: Uint8Array;
+  /**
+   * Her vault key, sealed under the key her 26 written characters derive. The service holds these
+   * bytes and no way at all to open them, which is the same sentence as the one about her days.
+   */
+  readonly wrappedVaultKey: Uint8Array;
+  /** The sixteen bytes her code was derived with. Useless on its own, and useless with these. */
+  readonly recoverySalt: Uint8Array;
   readonly createdAt: string;
   readonly recordCount: number;
 }

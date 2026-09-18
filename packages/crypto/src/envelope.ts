@@ -94,8 +94,8 @@ export function openRecord(envelope: Uint8Array, key: Uint8Array): DayRecord {
   return recordFromBytes(openBytes(envelope, key));
 }
 
-// Not exported: `sealRecord` is the only way to write an envelope, so nothing can seal a day
-// that has not passed the ranges of section 6.2 first.
+// Not exported: `sealRecord` and `sealVaultKey` are the only two ways to write an envelope, so
+// nothing can seal a day that has not passed the ranges of section 6.2 first.
 function sealBytes(plaintext: Uint8Array, key: Uint8Array, random: RandomSource): Uint8Array {
   const nonce = drawNonce(random);
   const sealed = xchacha20poly1305(checkedKey(key), nonce).encrypt(plaintext);
@@ -106,6 +106,26 @@ function sealBytes(plaintext: Uint8Array, key: Uint8Array, random: RandomSource)
   envelope.set(sealed, headerLength);
 
   return envelope;
+}
+
+/**
+ * The one other thing Emi seals: a vault key, under the key her recovery code derives. Thirty two
+ * bytes exactly, so this cannot become a second way to write a day that skipped the ranges of
+ * section 6.2. Those two are the whole list of what an envelope may carry.
+ */
+export function sealVaultKey(
+  vaultKey: Uint8Array,
+  under: Uint8Array,
+  random: RandomSource = systemRandom,
+): Uint8Array {
+  if (vaultKey.length !== keyLength) {
+    throw new EnvelopeError(
+      'key-is-the-wrong-length',
+      `a vault key is ${keyLength} bytes, this one is ${vaultKey.length}`,
+    );
+  }
+
+  return sealBytes(vaultKey, checkedKey(under), random);
 }
 
 /**
