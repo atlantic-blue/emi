@@ -65,3 +65,27 @@ export function daysOf(set: RecordedSet): DayRecord[] {
   }
   return days;
 }
+
+/**
+ * Three sets for the learning state, where the days are driven through the first run rather than
+ * written straight into the log. The first run refuses a period start more than ninety days back,
+ * so these count from the days around 2026-09-17 rather than from the January the four sets above
+ * start in.
+ */
+export const noCycleComplete: RecordedSet = {
+  firstStart: '2026-09-05',
+  lengths: [],
+  periodDays: 5,
+};
+
+export const oneCycleComplete: RecordedSet = {
+  firstStart: '2026-08-13',
+  lengths: [28],
+  periodDays: 5,
+};
+
+export const twoCyclesComplete: RecordedSet = {
+  firstStart: '2026-07-16',
+  lengths: [28, 30],
+  periodDays: 5,
+};
