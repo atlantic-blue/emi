@@ -39,6 +39,15 @@ export default defineConfig([
     },
   },
   {
+    // A brand page is markup, not React: the runtime in brand/jsx writes html, so `class` is the
+    // attribute the browser reads and a list of children has nothing to reconcile.
+    files: ['brand/**/*.tsx'],
+    rules: {
+      'react/jsx-key': 'off',
+      'react/no-unknown-property': 'off',
+    },
+  },
+  {
     // The tools read their own configuration through CommonJS, so they see the Node globals.
     files: ['**/*.config.js'],
     languageOptions: {

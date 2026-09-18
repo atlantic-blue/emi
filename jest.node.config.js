@@ -7,6 +7,7 @@ module.exports = {
     '<rootDir>/packages/**/tests/**/*.test.ts',
     '<rootDir>/tools/**/*.test.ts',
     '<rootDir>/brand/**/tests/**/*.test.ts',
+    '<rootDir>/brand/**/tests/**/*.test.tsx',
   ],
   // @noble/ciphers ships as a module and nothing else, so babel has to read it rather than
   // skip it the way it skips the rest of node_modules.
@@ -19,8 +20,10 @@ module.exports = {
         configFile: false,
         presets: [
           ['@babel/preset-env', { targets: { node: 'current' } }],
-          '@babel/preset-typescript',
+          ['@babel/preset-typescript', { allExtensions: true, isTSX: true }],
         ],
+        // A brand page is written as markup, and each page names the runtime that draws it.
+        plugins: [['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]],
       },
     ],
   },

@@ -12,6 +12,8 @@ Emi is not a contraceptive. Emi is not a medical device.
     packages/tokens     the colours, the type scale and the spacing
     packages/cycle      the prediction arithmetic
     packages/crypto     the encrypted record format
+    brand               the logo, the specimen and the generators that draw them
+    docs                the licences of everything Emi redistributes
 
 ## How to run it
 
@@ -33,6 +35,17 @@ The pipeline runs these four commands, in this order, on every pull request.
 
 A test run that finds no test fails. It does not report success.
 
+## The brand sheets
+
+    npm run generate:specimen
+
+It draws the type specimen into `brand/specimen/specimen.png`. It needs a Chromium or Chrome
+binary, and it looks for one in the usual places. Set `EMI_BROWSER` to the binary when it cannot
+find yours.
+
 ## Licence
 
 MIT. Read `LICENCE`. The copyright holder is Atlantic Blue Solutions Limited.
+
+The three fonts inside the application are redistributed under the SIL Open Font License, version
+1.1. Each family keeps its licence next to its files, and `docs/licences.md` names all three.
