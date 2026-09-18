@@ -7,6 +7,7 @@ import type { AccountStore } from '../../../../services/vault/src/store/accounts
 import { memoryStore } from '../../../../services/vault/tests/fixtures/memoryStore';
 import { deviceKey, type DeviceKey } from '../../src/services/sync/deviceKey';
 import { signRequestHeaders } from '../../src/services/sync/sign';
+import { registrationBodyFor } from '../fixtures/registration';
 import { fixedRandom, memorySecureStore } from '../fixtures/secureStore';
 
 /**
@@ -54,7 +55,7 @@ async function phoneOpenedFor(seed: number): Promise<DeviceKey> {
 }
 
 async function registered(store: AccountStore, key: DeviceKey, at: Date) {
-  const body = JSON.stringify({ publicKey: base64Of(key.publicKey) });
+  const body = registrationBodyFor(key.publicKey);
   const headers = signRequestHeaders(key, { method: 'POST', path: '/v1/accounts', body }, at);
 
   return registerAccount(carriedToTheFunction('POST', '/v1/accounts', body, headers), store, at);
@@ -97,11 +98,16 @@ describe('a replayed request is refused', () => {
     it('asks her for no email address and no password to get there', async () => {
       const store = memoryStore();
       const key = await phoneOpenedFor(3);
-      const body = JSON.stringify({ publicKey: base64Of(key.publicKey) });
+      const body = registrationBodyFor(key.publicKey);
 
       await registered(store, key, firstLaunch);
 
-      expect(Object.keys(JSON.parse(body) as Record<string, string>)).toEqual(['publicKey']);
+      expect(Object.keys(JSON.parse(body) as Record<string, string>).sort()).toEqual([
+        'publicKey',
+        'recoverySalt',
+        'wrappedVaultKey',
+      ]);
+      expect(body).not.toMatch(/email|password|name|telephone/i);
     });
   });
 
@@ -168,7 +174,7 @@ describe('a replayed request is refused', () => {
       const key = await phoneOpenedFor(3);
 
       const first = await registered(store, key, firstLaunch);
-      const body = JSON.stringify({ publicKey: base64Of(key.publicKey) });
+      const body = registrationBodyFor(key.publicKey);
       const captured = carriedToTheFunction(
         'POST',
         '/v1/accounts',

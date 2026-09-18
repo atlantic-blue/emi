@@ -1,11 +1,21 @@
-import { accountIdFor, base64Of, bodyHashOf, signedHeaders } from '@emi/crypto';
+import {
+  accountIdFor,
+  base64Of,
+  bodyHashOf,
+  recoverySaltLength,
+  signedHeaders,
+  wrappedVaultKeyLength,
+} from '@emi/crypto';
 
 import { maximumBodyBytes, register, registerAccount } from '../src/handlers/register';
 import { memoryStore } from './fixtures/memoryStore';
 import {
+  aRecoverySalt,
+  aWrappedVaultKey,
   headersFor,
   keyPairFromSeed,
   registrationBody,
+  registrationBodyWithRecovery,
   requestEvent,
   signedRequest,
 } from './fixtures/requests';
@@ -59,6 +69,8 @@ describe('registering an account, which is contract WIRE-1', () => {
         'createdAt',
         'publicKey',
         'recordCount',
+        'recoverySalt',
+        'wrappedVaultKey',
       ]);
     });
 
@@ -238,9 +250,8 @@ describe('registering an account, which is contract WIRE-1', () => {
 
     it('accepts a body that sits just under the limit', async () => {
       const store = memoryStore();
-      const shell = JSON.stringify({ publicKey: base64Of(pair.publicKey), padding: '' });
-      const body = JSON.stringify({
-        publicKey: base64Of(pair.publicKey),
+      const shell = registrationBodyWithRecovery(pair, { padding: '' });
+      const body = registrationBodyWithRecovery(pair, {
         padding: 'a'.repeat(maximumBodyBytes - shell.length),
       });
       const { event } = signedRequest(pair, partsFor(body));
@@ -252,6 +263,106 @@ describe('registering an account, which is contract WIRE-1', () => {
     it('measures the limit in bytes and not in characters', async () => {
       expect(maximumBodyBytes).toBe(4096);
       expect(new TextEncoder().encode('é')).toHaveLength(2);
+    });
+  });
+  describe('the wrapped vault key and the salt she sends with it', () => {
+    const wrapped = aWrappedVaultKey(pair.publicKey[0] ?? 1);
+    const salt = aRecoverySalt(pair.publicKey[1] ?? 2);
+
+    async function registeredWith(held: Readonly<Record<string, unknown>>) {
+      const store = memoryStore();
+      const body = registrationBodyWithRecovery(pair, held);
+      const { event } = signedRequest(pair, partsFor(body));
+      const response = await registerAccount(event, store, signedAt);
+
+      return { response, store };
+    }
+
+    it('are written down byte for byte, so a second phone can ask for them back', async () => {
+      const { response, store } = await registeredWith({});
+      const held = await store.readAccount(accountIdFor(pair.publicKey));
+
+      expect(response.statusCode).toBe(201);
+      expect(held && base64Of(held.wrappedVaultKey)).toBe(base64Of(wrapped));
+      expect(held && base64Of(held.recoverySalt)).toBe(base64Of(salt));
+    });
+
+    it('are refused when the wrapped key is missing, which would lock her out', async () => {
+      const { response, store } = await registeredWith({ wrappedVaultKey: undefined });
+
+      expect(response.statusCode).toBe(400);
+      expect(store.keys()).toEqual([]);
+    });
+
+    it('are refused when the salt is missing', async () => {
+      const { response, store } = await registeredWith({ recoverySalt: undefined });
+
+      expect(response.statusCode).toBe(400);
+      expect(store.keys()).toEqual([]);
+    });
+
+    it('are refused when the wrapped key is not base 64', async () => {
+      const { response } = await registeredWith({ wrappedVaultKey: 'not base 64' });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('are refused when the wrapped key is one byte short of a wrapped key', async () => {
+      const { response } = await registeredWith({
+        wrappedVaultKey: base64Of(wrapped.slice(0, -1)),
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('are refused when the wrapped key is longer, which is where a day would hide', async () => {
+      const { response } = await registeredWith({
+        wrappedVaultKey: base64Of(new Uint8Array(wrappedVaultKeyLength + 32).fill(1)),
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('are refused when the wrapped key says a version this service does not know', async () => {
+      const unknown = Uint8Array.from(wrapped);
+      unknown[0] = 9;
+
+      const { response } = await registeredWith({ wrappedVaultKey: base64Of(unknown) });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('are refused when the salt is not 16 bytes', async () => {
+      for (const length of [15, 17, 0]) {
+        const { response } = await registeredWith({
+          recoverySalt: base64Of(new Uint8Array(length).fill(4)),
+        });
+
+        expect(response.statusCode).toBe(400);
+      }
+    });
+
+    it('are refused when the salt is all zeroes, which every phone would share', async () => {
+      const { response } = await registeredWith({
+        recoverySalt: base64Of(new Uint8Array(recoverySaltLength)),
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+
+    it('say what a registration needs without ever naming a recovery code', async () => {
+      const { response } = await registeredWith({ recoverySalt: undefined });
+
+      expect(bodyOf(response).error).toBe(
+        `a registration body holds a public key of 32 bytes, a wrapped vault key of ${String(wrappedVaultKeyLength)} bytes and a recovery salt of ${String(recoverySaltLength)} bytes, each as base 64`,
+      );
+      expect(bodyOf(response).error).not.toMatch(/recovery code|argon|derive/i);
+    });
+
+    it('are the whole of what a registration carries, so nothing of her is asked for', () => {
+      const carried = Object.keys(JSON.parse(registrationBodyWithRecovery(pair)) as object).sort();
+
+      expect(carried).toEqual(['publicKey', 'recoverySalt', 'wrappedVaultKey']);
     });
   });
 });

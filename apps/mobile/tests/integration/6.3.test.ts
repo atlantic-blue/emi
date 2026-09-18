@@ -13,6 +13,7 @@ import {
 } from '../../../../services/vault/tests/fixtures/dynamoTable';
 import { deviceKey, type DeviceKey } from '../../src/services/sync/deviceKey';
 import { signRequestHeaders } from '../../src/services/sync/sign';
+import { registrationBodyFor } from '../fixtures/registration';
 import { fixedRandom, memorySecureStore } from '../fixtures/secureStore';
 
 /**
@@ -101,7 +102,7 @@ async function herPhone(seed = 3): Promise<Phone> {
   const table = fakeTable();
   const store = dynamoStore(table, tableName);
   const key = await phoneOpenedFor(seed);
-  const body = JSON.stringify({ publicKey: base64Of(key.publicKey) });
+  const body = registrationBodyFor(key.publicKey);
   const headers = signRequestHeaders(
     key,
     { method: 'POST', path: '/v1/accounts', body },
