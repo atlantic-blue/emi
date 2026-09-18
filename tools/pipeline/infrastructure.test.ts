@@ -81,6 +81,7 @@ const table = bodyOf('resource "aws_dynamodb_table" "vault"');
 const planPolicy = bodyOf('data "aws_iam_policy_document" "plan"');
 const planTrust = bodyOf('data "aws_iam_policy_document" "plan_trust"');
 const applyTrust = bodyOf('data "aws_iam_policy_document" "apply_trust"');
+const authorizerPolicy = bodyOf('data "aws_iam_policy_document" "authorizer"');
 
 describe('the infrastructure is applied only by the pipeline', () => {
   describe('the merge is the only thing that applies', () => {
@@ -265,6 +266,20 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(bodyOf('resource "aws_apigatewayv2_authorizer" "signature"')).toContain(
         'authorizer_result_ttl_in_seconds = 0',
       );
+    });
+
+    it('reads the account and writes the signature down, and does nothing else to the table', () => {
+      expect(actionsIn(authorizerPolicy).sort()).toEqual([
+        'dynamodb:GetItem',
+        'dynamodb:PutItem',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+      ]);
+    });
+
+    it('reaches no other table, so one account cannot be read through another', () => {
+      expect(authorizerPolicy).toContain('resources = [aws_dynamodb_table.vault.arn]');
+      expect(authorizerPolicy).not.toContain('/index/');
     });
   });
 

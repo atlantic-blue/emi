@@ -82,6 +82,8 @@ purpose, because the design may name a thing before anybody builds it. This list
   ranges a day is checked against.
 - `brand` holds the mark, the icons and the fonts, as drawn files and the programs that write
   them.
+- `services/vault` holds the service behind the api: the account, the request signature and the
+  authorizer. It holds no key, so it can read nothing it stores.
 - `infra` holds the Terraform: the table, the api, the two functions and the two roles. The
   pipeline validates it on every pull request. Nothing is applied yet.
 - `tools` holds the checks that guard the repository rather than the product.
@@ -193,6 +195,43 @@ at launch on a device while every test stays green. Only `@noble/ciphers` is ins
 The day log still writes the payload column as plain bytes. The step that sends every row through
 the envelope comes next.
 
+## The account and the request signature
+
+Status: built
+
+There is no sign up screen, because there is nothing to sign up with. The phone makes an Ed25519 key
+pair, writes the private half into the keychain, and never sends it anywhere. The account identifier
+is the first 16 bytes of the SHA-256 of the public key, written in Crockford base 32, which is 26
+characters.
+
+Registration is the one call with no authorizer. She sends the public key, signed by that same key,
+so the request asserts itself and nothing else. The service derives the identifier from the key it
+was sent, which is why she cannot choose one and two women cannot land on the same one.
+
+Every later request carries four headers, and the first three of them are what the api reads as an
+identity source.
+
+- `emi-account` names the account.
+- `emi-instant` is the moment it was signed.
+- `emi-body-sha256` is the digest of the body. It travels as a header because an authorizer never
+  receives a body, so without it the authorizer could not verify the whole of what was signed.
+- `emi-signature` is the Ed25519 signature over the method, the path, the instant and that digest,
+  joined by newlines. The path carries the query string where there is one, so a cursor cannot be
+  moved under a signature made for another one.
+
+Three refusals hold the contract up.
+
+- A request signed more than 300 seconds from now is refused, in either direction.
+- A signature that was accepted once is written down and refused the second time it arrives. That is
+  what refuses a captured request inside the window, and it is why the authorizer is allowed one
+  write.
+- An account that does not exist is refused with the words a bad signature is refused with, and it
+  pays for the same Ed25519 verification first, against a key nobody holds. Without that, the time
+  the answer takes would say which accounts exist.
+
+The function that receives the body compares it against the signed digest, which is the half of the
+check the authorizer cannot make.
+
 ## The vault in Amazon Web Services
 
 Status: designed
@@ -219,9 +258,12 @@ flowchart TD
 ```
 
 The Terraform for all of this is in `infra` and it is read on every pull request. None of it is
-applied, because the first apply needs a credential the pipeline does not hold yet. The planned
-directory is `services/vault` for the Lambda service, and it does not exist. The region is
+applied, because the first apply needs a credential the pipeline does not hold yet. The region is
 eu-central-1 and the account is 230345688874.
+
+`services/vault` now holds the account, the request signature and the authorizer, and the section
+below says so. The record endpoints, the storage behind them and the bundle the two functions run
+are not written, so what is deployed today is still the two placeholders the Terraform carries.
 
 The dotted line is the product. The key never crosses it.
 
@@ -229,15 +271,12 @@ The dotted line is the product. The key never crosses it.
 
 Status: designed
 
-The phone sends the envelope, a record identifier and a revision number. It sends three headers on
-every request: the account identifier, an instant, and an Ed25519 signature over the method, the
-path, the instant and the SHA-256 of the body.
+The phone sends the envelope, a record identifier and a revision number. The section above says how
+it signs each request.
 
-The server stores the bytes. It refuses an instant more than 300 seconds from now, which stops a
-captured request being replayed. It refuses a revision that is not greater than the one it holds.
+The server stores the bytes. It refuses a revision that is not greater than the one it holds.
 
-There is no email address, no password and no telephone number in the model. The account identifier
-is the first 16 bytes of the SHA-256 of the device public key.
+There is no email address, no password and no telephone number in the model.
 
 ## What the server can see anyway
 
