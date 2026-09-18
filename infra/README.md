@@ -13,8 +13,10 @@ time. It holds no key, no date, no symptom, no flow and no note.
 One HTTP api, `emi-vault`, with four routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
-Two functions, `emi-vault` and `emi-authorizer`, on Node 22 and arm64. Both ship a placeholder
-today. Feature 6 steps 2 and 3 replace them.
+Two functions, `emi-vault` and `emi-authorizer`, on Node 22 and arm64. Both deployed functions
+are the placeholders that `infra/lambda.tf` holds inline. The real handlers exist, in
+`services/vault/src`, and they merged with feature 6 steps 2 and 3. No step in the path packages
+`services/vault` into either function, so the placeholders are what runs.
 
 Three log groups, each with a retention of 30 days.
 
@@ -45,9 +47,11 @@ AWS_APPLY_ROLE_ARN  arn:aws:iam::230345688874:role/emi-github-actions
 
 So a pull request that touches `infra/` gets a plan, and a merge applies.
 
-The api answered on 2026-09-18. `POST /v1/accounts` answered 501, because the function is still a
-placeholder. `GET /v1/records` answered 401, and `DELETE /v1/account` answered 401. Those two
-answers show the signature authorizer running.
+The api answered on 2026-09-18. `POST /v1/accounts` carries no authorizer. It answered 501, which
+is what the vault placeholder answers, so that route reaches its function. `GET /v1/records` and
+`DELETE /v1/account` carry the authorizer. Both answered 401, so the authorizer runs and refuses.
+It refuses every request, because the placeholder answers `isAuthorized: false` whatever the
+request carries. Nothing measured here says anything about a signature.
 
 ### Building this account again from nothing
 
