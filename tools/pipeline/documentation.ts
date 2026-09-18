@@ -480,3 +480,60 @@ export function documentProblems(root: string, tooling: string): DocumentResult 
     ],
   };
 }
+
+export const readmeFloor = 400;
+
+// brand and tools ship code and are not workspaces, so no manifest names them and the reader
+// below has to.
+export const unlistedDirectories: readonly string[] = ['brand', 'tools'];
+
+export function documentedDirectoriesOf(root: string): string[] {
+  return [...workspaceDirectoriesOf(root), ...unlistedDirectories].sort();
+}
+
+// A workspace is known by the name in its manifest, because that is the name the import uses. A
+// directory with no manifest is known by its path.
+export function nameOf(root: string, directory: string): string {
+  const manifest = join(root, directory, 'package.json');
+
+  if (!existsSync(manifest)) {
+    return directory;
+  }
+
+  const contents = JSON.parse(readFileSync(manifest, 'utf8')) as { name?: string };
+
+  return contents.name ?? directory;
+}
+
+export function readmeProblems(root: string, directories: string[]): string[] {
+  const problems: string[] = [];
+
+  for (const directory of directories) {
+    const file = `${directory}/README.md`;
+    const path = join(root, file);
+
+    if (!existsSync(path)) {
+      problems.push(
+        `${directory} holds no README.md, so opening that directory alone tells nobody what it is`,
+      );
+      continue;
+    }
+
+    const readme = readFileSync(path, 'utf8').trim();
+    const name = nameOf(root, directory);
+
+    if (!readme.includes(name)) {
+      problems.push(
+        `${file} never writes "${name}", so it does not say which package it documents`,
+      );
+    }
+
+    if (readme.length < readmeFloor) {
+      problems.push(
+        `${file} is ${readme.length} characters, under the floor of ${readmeFloor}, so it answers nothing`,
+      );
+    }
+  }
+
+  return problems;
+}
