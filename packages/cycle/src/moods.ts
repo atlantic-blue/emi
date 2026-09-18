@@ -11,6 +11,7 @@ import { type Symptom, type SymptomGroup, isRetired, symptoms } from './symptoms
  */
 export const moodGroup: SymptomGroup = 'mood';
 
+/** Every mood the given catalogue holds, retired ones included, in catalogue order. */
 export function moodsIn(catalogue: readonly Symptom[] = symptoms): readonly Symptom[] {
   return catalogue.filter((symptom) => symptom.group === moodGroup);
 }
@@ -22,8 +23,10 @@ export function symptomsOutsideTheMoodPicker(
   return catalogue.filter((symptom) => symptom.group !== moodGroup);
 }
 
+/** The moods that ship, which is the mood group of the catalogue that ships. */
 export const moods: readonly Symptom[] = moodsIn();
 
+/** The slug of each of them, which is what a record carries and what never changes. */
 export const moodSlugs: readonly string[] = moods.map((mood) => mood.slug);
 
 /** What the picker offers her. A retired mood is readable and is never offered again. */
@@ -39,6 +42,7 @@ export function findMood(
   return moodsIn(catalogue).find((mood) => mood.slug === slug);
 }
 
+/** Whether a slug names a mood. A symptom from another group is not one. */
 export function isKnownMood(slug: string, catalogue: readonly Symptom[] = symptoms): boolean {
   return findMood(slug, catalogue) !== undefined;
 }
