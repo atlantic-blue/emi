@@ -28,7 +28,8 @@
     "generate:logo": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/logo/generate.ts",
     "generate:specimen": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/specimen/render.ts",
     "generate:ring-picture": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/ring/render.ts",
-    "generate:home-picture": "jest --ci --config brand/screens/jest.config.js",
+    "generate:home-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern homeScreen.picture",
+    "generate:flow-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern logFlow.picture",
     "test": "npm run test:workspace && npm run test:mobile",
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile"

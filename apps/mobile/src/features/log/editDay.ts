@@ -2,7 +2,7 @@ import { CycleError, type Flow, toDayNumber } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import type { DayAndCycles } from '../cycle/rebuild';
-import { flowLogged, logFlow } from './logDay';
+import { flowLogged, logFlow, unexpectedLogged } from './logDay';
 
 /**
  * Which days she may open, and the one write a day she opened takes. A day behind her is a memory
@@ -29,6 +29,8 @@ export interface DayToOpen {
 
 export interface DayEdit extends DayToOpen {
   readonly flow: Flow;
+  /** Her mark on that day, as the screen holds it, on the same terms as a day she logs today. */
+  readonly bleedingIsUnexpected?: boolean;
   readonly now: Date;
 }
 
@@ -59,6 +61,13 @@ export function flowOn(db: Database, open: DayToOpen): Flow | undefined {
   return flowLogged(db, open.day);
 }
 
+/** Whether she marked that day as not her period, so a day she reopens carries her own answer. */
+export function unexpectedOn(db: Database, open: DayToOpen): boolean {
+  requireSheCanEdit(open);
+
+  return unexpectedLogged(db, open.day);
+}
+
 /**
  * One press on a day she reopened. The write is the write today takes, because a day she is
  * correcting is a day like any other: it keeps what it already held and its revision rises.
@@ -66,7 +75,12 @@ export function flowOn(db: Database, open: DayToOpen): Flow | undefined {
 export function editFlow(db: Database, edit: DayEdit): DayAndCycles {
   requireSheCanEdit(edit);
 
-  return logFlow(db, { day: edit.day, flow: edit.flow, now: edit.now });
+  return logFlow(db, {
+    day: edit.day,
+    flow: edit.flow,
+    bleedingIsUnexpected: edit.bleedingIsUnexpected,
+    now: edit.now,
+  });
 }
 
 function requireSheCanEdit(open: DayToOpen): void {
