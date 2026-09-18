@@ -136,15 +136,91 @@ function box(node: RenderedNode, extra = ''): string {
   return `<div${attributes([['style', style]])}>${drawnChildren(node)}</div>`;
 }
 
-function svgNode(name: string, node: RenderedNode, pairs: readonly string[]): string {
+/** The ends and corners a stroke takes, which arrive as the numbers the platform passes down. */
+const CAPS: readonly string[] = ['butt', 'round', 'square'];
+const JOINS: readonly string[] = ['miter', 'round', 'bevel'];
+
+function paintFrom(key: string, value: unknown): unknown {
+  if (key === 'stroke' || key === 'fill') {
+    return colourFrom(value);
+  }
+  if (key === 'strokeLinecap' && typeof value === 'number') {
+    return CAPS[value];
+  }
+  if (key === 'strokeLinejoin' && typeof value === 'number') {
+    return JOINS[value];
+  }
+
+  return value;
+}
+
+/**
+ * Which paint an element set itself. React Native names those in `propList`, and an element with no
+ * list of its own set none: what it reads back is a default the browser must not be shown, because
+ * an unset fill reads back as black and turns a stroked outline into a blot.
+ */
+function ownProps(node: RenderedNode): readonly string[] | undefined {
+  const held = node.props?.propList;
+
+  return Array.isArray(held) ? (held as string[]) : undefined;
+}
+
+/** The paint a shape or a group can carry. Geometry is passed in separately and always written. */
+const PAINT: readonly string[] = [
+  'fill',
+  'stroke',
+  'strokeWidth',
+  'strokeLinecap',
+  'strokeLinejoin',
+  'opacity',
+];
+
+function written(
+  node: RenderedNode,
+  keys: readonly string[],
+  onlyOwned: boolean,
+): (readonly [string, unknown])[] {
   const props = node.props ?? {};
-  const written = pairs.flatMap((key) => {
-    const value = key === 'stroke' || key === 'fill' ? colourFrom(props[key]) : props[key];
+  const own = ownProps(node);
+
+  return keys.flatMap((key) => {
+    if (onlyOwned && (own === undefined || !own.includes(key))) {
+      return [];
+    }
+    const value = paintFrom(key, props[key]);
 
     return value === undefined || value === null ? [] : [[hyphenated(key), value] as const];
   });
+}
 
-  return `<${name}${attributes(written)}>${drawnChildren(node)}</${name}>`;
+/**
+ * One shape. Its geometry is always written and its paint only where the shape set it itself, so
+ * what a group above it painted stays painted by the group. A shape that names no fill is filled
+ * black by a browser, which turns a stroked outline into a blot, so the absence is written out.
+ */
+function svgNode(name: string, node: RenderedNode, geometry: readonly string[]): string {
+  const paint = written(node, PAINT, true);
+  const pairs = [...written(node, geometry, false), ...paint];
+  const unfilled: readonly [string, unknown] = ['fill', 'none'];
+  const painted = paint.some(([key]) => key === 'fill') ? pairs : [...pairs, unfilled];
+
+  return `<${name}${attributes(painted)}>${drawnChildren(node)}</${name}>`;
+}
+
+/**
+ * What is inside a scroll, with one wrapper taken off. React Native puts the children of a scroll
+ * inside a plain box of its own, and the style that arranges them is handed to the scroll instead,
+ * so drawing both leaves the arrangement on one box and the children on another. A content
+ * container asking for its children to be spread then spreads a single box holding all of them,
+ * which reads as a screen that ignored the rule it was given.
+ */
+function scrolled(node: RenderedNode): string {
+  const children = node.children;
+  const only = Array.isArray(children) && children.length === 1 ? children[0] : undefined;
+  const wrapper = only as RenderedNode | undefined;
+  const isBare = wrapper?.type === 'View' && Object.keys(wrapper.props ?? {}).length === 0;
+
+  return isBare ? markupOf(wrapper.children) : drawnChildren(node);
 }
 
 /**
@@ -173,29 +249,33 @@ export function markupOf(node: unknown): string {
       return [
         `<div style="${cssFrom(props.style)}; overflow: hidden">`,
         `<div style="${cssFrom(props.contentContainerStyle)}; min-height: 100%">`,
-        drawnChildren(drawn),
+        scrolled(drawn),
         '</div></div>',
       ].join('');
     case 'RNSVGSvgView':
+      // A drawing given its own grid is laid out on that grid and then scaled to the box it was
+      // asked for, so the box and the grid are two different pairs of numbers.
       return `<svg${attributes([
         ['width', props.bbWidth],
         ['height', props.bbHeight],
-        ['viewBox', `0 0 ${String(props.bbWidth)} ${String(props.bbHeight)}`],
+        [
+          'viewBox',
+          [
+            props.minX ?? 0,
+            props.minY ?? 0,
+            props.vbWidth ?? props.bbWidth,
+            props.vbHeight ?? props.bbHeight,
+          ]
+            .map(String)
+            .join(' '),
+        ],
       ])}>${drawnChildren(drawn)}</svg>`;
     case 'RNSVGGroup':
-      return `<g>${drawnChildren(drawn)}</g>`;
+      return `<g${attributes(written(drawn, PAINT, true))}>${drawnChildren(drawn)}</g>`;
     case 'RNSVGPath':
-      // React Native reads an unset fill back as nothing, and a browser fills an unfilled path
-      // black, so the one the component asked for is written out.
-      return svgNode('path', { ...drawn, props: { ...props, fill: props.fill ?? 'none' } }, [
-        'd',
-        'stroke',
-        'strokeWidth',
-        'opacity',
-        'fill',
-      ]);
+      return svgNode('path', drawn, ['d']);
     case 'RNSVGCircle':
-      return svgNode('circle', drawn, ['cx', 'cy', 'r', 'fill', 'stroke', 'strokeWidth']);
+      return svgNode('circle', drawn, ['cx', 'cy', 'r']);
     default:
       return box(drawn);
   }
