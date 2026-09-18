@@ -134,12 +134,16 @@ data "aws_iam_policy_document" "authorizer" {
     resources = ["${aws_cloudwatch_log_group.authorizer.arn}:*"]
   }
 
-  # The authorizer reads one account item to get one public key. It can read nothing else and
-  # write nothing at all.
+  # The authorizer reads one account item to get one public key, and writes one item down: the
+  # signature it just accepted. Refusing a replayed request means remembering the request, and
+  # remembering is a write. It reads nothing else, it writes nothing else, and it deletes nothing.
   statement {
-    sid       = "ReadOneAccountItem"
-    effect    = "Allow"
-    actions   = ["dynamodb:GetItem"]
+    sid    = "ReadOneAccountItemAndRememberOneSignature"
+    effect = "Allow"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+    ]
     resources = [aws_dynamodb_table.vault.arn]
   }
 }
