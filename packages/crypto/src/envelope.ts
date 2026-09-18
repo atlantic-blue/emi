@@ -9,13 +9,26 @@ import { recordBytes, recordFromBytes, type DayRecord } from './record';
  * and read by the service, so a change to the format can only happen in one place.
  */
 export const envelopeVersion = 0x01;
+/** Bytes. The cipher takes one key length and refuses every other. */
 export const keyLength = 32;
+/**
+ * Bytes. A nonce this long can be drawn at random for every write without ever repeating, which is
+ * what lets one key seal every day she logs.
+ */
 export const nonceLength = 24;
+/**
+ * Bytes, at the end of the sealed part. One changed bit anywhere before it fails the tag, so a
+ * record that somebody edited does not open at all.
+ */
 export const tagLength = 16;
 
 /** The version byte and the nonce, before the ciphertext starts. */
 export const headerLength = 1 + nonceLength;
 
+/**
+ * Every way a seal or an open refuses, as a value, so a caller matches on the reason rather than
+ * on the words of a message.
+ */
 export type EnvelopeRefusal =
   | 'key-is-the-wrong-length'
   | 'random-source-is-missing'
@@ -25,6 +38,10 @@ export type EnvelopeRefusal =
   | 'version-is-not-known'
   | 'envelope-is-not-authentic';
 
+/**
+ * Carries the refusal beside the message, so a truncated envelope and a changed one can be told
+ * apart by the code that catches them.
+ */
 export class EnvelopeError extends Error {
   readonly refusal: EnvelopeRefusal;
 
@@ -38,6 +55,10 @@ export class EnvelopeError extends Error {
 /** Where the nonce comes from. The phone passes the platform's generator, a vector passes bytes. */
 export type RandomSource = (byteCount: number) => Uint8Array;
 
+/**
+ * What the service is allowed to see: the version and the nonce, and the sealed bytes that it
+ * holds no key to.
+ */
 export interface EnvelopeParts {
   readonly version: number;
   readonly nonce: Uint8Array;
@@ -45,6 +66,7 @@ export interface EnvelopeParts {
   readonly sealed: Uint8Array;
 }
 
+/** The two seams a test reaches for: where the nonce comes from, and which catalogue is read. */
 export interface SealOptions {
   /** Where the nonce comes from. Left out, it is the platform's own generator. */
   readonly random?: RandomSource;
@@ -52,6 +74,10 @@ export interface SealOptions {
   readonly catalogue?: readonly Symptom[];
 }
 
+/**
+ * The only way to write an envelope, so nothing can be sealed that has not passed the ranges of a
+ * day first.
+ */
 export function sealRecord(
   record: DayRecord,
   key: Uint8Array,
@@ -60,6 +86,10 @@ export function sealRecord(
   return sealBytes(recordBytes(record, options.catalogue), key, options.random ?? systemRandom);
 }
 
+/**
+ * Reads a day back out. The ranges are not checked again here: a day she wrote years ago is hers
+ * to read, whatever the catalogue holds now.
+ */
 export function openRecord(envelope: Uint8Array, key: Uint8Array): DayRecord {
   return recordFromBytes(openBytes(envelope, key));
 }
@@ -78,6 +108,10 @@ function sealBytes(plaintext: Uint8Array, key: Uint8Array, random: RandomSource)
   return envelope;
 }
 
+/**
+ * Refuses the same way whether the bytes were changed or the key is wrong, because telling the two
+ * apart would say which of them somebody got right.
+ */
 export function openBytes(envelope: Uint8Array, key: Uint8Array): Uint8Array {
   const parts = readEnvelope(envelope);
   // The key is checked outside the block below, so a key of the wrong length says so rather
@@ -121,6 +155,10 @@ export function readEnvelope(envelope: Uint8Array): EnvelopeParts {
   };
 }
 
+/**
+ * The platform's own generator, and what a seal draws from when nothing else is handed in. A
+ * runtime that has none refuses here rather than falling back to something weaker.
+ */
 export function systemRandom(byteCount: number): Uint8Array {
   const source = globalThis.crypto;
   if (typeof source?.getRandomValues !== 'function') {

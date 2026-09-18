@@ -4,6 +4,10 @@
  * checked into this repository and still mean something a year from now.
  */
 
+/**
+ * What may go inside an envelope. A date, a map or a class instance is not here, because it would
+ * be written as an empty object and a reader would never know that anything was lost.
+ */
 export type JsonValue =
   | string
   | number
@@ -12,8 +16,16 @@ export type JsonValue =
   | readonly JsonValue[]
   | { readonly [key: string]: JsonValue | undefined };
 
+/**
+ * The two ways this refuses, as values, so a caller matches on the reason rather than on the words
+ * of a message.
+ */
 export type CanonicalRefusal = 'value-is-not-json' | 'number-is-not-finite';
 
+/**
+ * Carries the path to the value that stopped it, such as `the record.symptoms[1]`, because one bad
+ * field in a day is hard to find from a message alone.
+ */
 export class CanonicalError extends Error {
   readonly refusal: CanonicalRefusal;
 
@@ -24,14 +36,23 @@ export class CanonicalError extends Error {
   }
 }
 
+/**
+ * Keys sorted and no whitespace, so one record gives one text on every phone and in every version.
+ * That is what lets a vector checked into this repository still mean something next year.
+ */
 export function canonicalJson(value: JsonValue): string {
   return written(value, 'the record');
 }
 
+/** What the cipher seals. The text is turned into bytes the one way `TextEncoder` turns it. */
 export function canonicalBytes(value: JsonValue): Uint8Array {
   return new TextEncoder().encode(canonicalJson(value));
 }
 
+/**
+ * Reads bytes back as a value, and says `unknown` on purpose: bytes that came out of an envelope
+ * are not a record until something has read them against one.
+ */
 export function fromCanonicalBytes(bytes: Uint8Array): unknown {
   return JSON.parse(new TextDecoder().decode(bytes)) as unknown;
 }

@@ -29,13 +29,22 @@ export const MINIMUM_DAYS_EITHER_SIDE = 1;
 
 /** Design section 8: five days before the estimated ovulation through one day after it. */
 export const FERTILE_DAYS_BEFORE_OVULATION = 5;
+/** The window closes a day after the estimate, because arithmetic can put the estimate a day early. */
 export const FERTILE_DAYS_AFTER_OVULATION = 1;
 
+/**
+ * Two days, and both of them are inside the range. A forecast is never one day, so a range is what
+ * a screen is handed.
+ */
 export interface DayRange {
   readonly from: string;
   readonly to: string;
 }
 
+/**
+ * Everything a screen needs to draw a forecast and to say how sure it is, so that no screen does
+ * arithmetic of its own.
+ */
 export interface Forecast {
   readonly kind: 'forecast';
   /** How many complete cycles the median was taken over, two to six. */
@@ -52,14 +61,23 @@ export interface Forecast {
   readonly lutealLengthDays: number;
 }
 
+/**
+ * What comes back before there are cycles enough to forecast from. It carries both counts, so a
+ * screen can say how many are still wanted rather than saying nothing at all.
+ */
 export interface Learning {
   readonly kind: 'learning';
   readonly completeCycles: number;
   readonly needsCycles: number;
 }
 
+/**
+ * A forecast, or the reason there is not one. A caller reads `kind` first, so an empty history
+ * cannot be drawn as a date.
+ */
 export type ForecastResult = Forecast | Learning;
 
+/** What a later step measures and hands in. Left out, the fixed luteal length is used. */
 export interface ForecastOptions {
   /** Step 3.4 passes the length measured from her own temperature rise. */
   readonly lutealLengthDays?: number;
@@ -97,10 +115,18 @@ export function spread(values: readonly number[]): number {
   return Math.sqrt(squares / (values.length - 1));
 }
 
+/**
+ * Six lengths at most, the oldest first. A cycle from a year ago leaves the window rather than
+ * dragging every forecast after it.
+ */
 export function lastLengths(cycles: readonly Cycle[]): number[] {
   return cycleLengths(cycles).slice(-FORECAST_WINDOW_CYCLES);
 }
 
+/**
+ * The whole forecast, from her cycles and nothing else. No clock is read here, so the same days
+ * give the same answer whenever it is asked for.
+ */
 export function forecastFrom(
   cycles: readonly Cycle[],
   options: ForecastOptions = {},
