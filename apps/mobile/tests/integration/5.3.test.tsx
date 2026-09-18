@@ -1,3 +1,5 @@
+import { join } from 'node:path';
+
 import {
   EnvelopeError,
   envelopeVersion,
@@ -7,6 +9,7 @@ import {
   recordBytes,
 } from '@emi/crypto';
 import { symptoms } from '@emi/cycle';
+import { renderRouter, screen } from 'expo-router/testing-library';
 
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
@@ -20,15 +23,20 @@ import {
 } from '../../src/data/dayLogRepository';
 import { encryptPlainPayloads } from '../../src/data/migrations/004-encrypt-payloads';
 import { migrate } from '../../src/data/schema';
+import { writeSetting } from '../../src/data/settingRepository';
+import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { logDay } from '../../src/features/cycle/rebuild';
 import { flowLogged, logFlow } from '../../src/features/log/logDay';
 import { dayVault } from '../../src/services/vault/dayVault';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { aDayRecord } from '../fixtures/dayRecord';
 import { herDatabase } from '../fixtures/herPhone';
-import { herVault } from '../fixtures/herVault';
+import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { herKeyIsInTheKeychain, herVault } from '../fixtures/herVault';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
+jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
+jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 const theDay = '2026-03-14';
 const sheWroteAt = new Date('2026-03-14T21:05:00.000Z');
@@ -104,6 +112,7 @@ function refusalOf(act: () => unknown): string {
 describe('a raw database read reveals nothing about the day', () => {
   beforeEach(() => {
     resetExpoSqlite();
+    resetExpoSecureStore();
   });
 
   describe('a day she logged', () => {
@@ -420,6 +429,56 @@ describe('a raw database read reveals nothing about the day', () => {
       const somebodyElse = dayVault(new Uint8Array(keyLength).fill(0x2a));
 
       expect(() => somebodyElse.open(payload as Uint8Array)).toThrow(EnvelopeError);
+    });
+  });
+
+  describe('the launch that converts them', () => {
+    const appDirectory = join(__dirname, '..', '..', 'src', 'app');
+    const sheOpenedItAt = new Date('2026-03-15T09:00:00.000Z');
+
+    /**
+     * Her phone as an earlier build left it: plaintext in the payload column, the key already in
+     * the keychain, and the two answers the first run wrote, without which the application sends
+     * her back to the first run and never reaches the home screen.
+     */
+    async function aPhoneOfPlainRowsSheCanOpen(): Promise<Database> {
+      const database = herPhone();
+      await herKeyIsInTheKeychain();
+
+      database.run(
+        `INSERT INTO day_log (id, day, payload, revision, created_at, updated_at, deleted_at,
+           synced_revision)
+         VALUES (?, ?, ?, 1, ?, ?, NULL, NULL)`,
+        [
+          '01950000-0000-7000-8000-000000000001',
+          theDay,
+          asPlaintext(),
+          sheWroteAt.toISOString(),
+          sheWroteAt.toISOString(),
+        ],
+      );
+      writeSetting(database, 'cycleLengthDays', '28');
+      writeSetting(database, 'firstRunCompletedAt', sheWroteAt.toISOString());
+
+      return database;
+    }
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('seals what an earlier build left readable, and still draws her home screen', async () => {
+      const database = await aPhoneOfPlainRowsSheCanOpen();
+      expect(rawPayloads()[0]?.[0]).not.toBe(envelopeVersion);
+
+      jest.useFakeTimers();
+      jest.setSystemTime(sheOpenedItAt);
+      await renderRouter(appDirectory, { initialUrl: '/' });
+
+      expect(rawPayloads()[0]?.[0]).toBe(envelopeVersion);
+      expect(readableIn(rawPayloads()[0] as Uint8Array, 'quarrelsome-marmoset')).toBe(false);
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(readDayLog(database, theDay)?.revision).toBe(2);
     });
   });
 });
