@@ -120,6 +120,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
     <HomeScreen
       cycleLengthDays={sheSaidHerCycleRuns}
       forecast={forecast}
+      onExport={() => undefined}
       onHistory={() => undefined}
       onLogToday={() => undefined}
       onSettings={() => undefined}

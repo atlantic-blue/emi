@@ -4,6 +4,8 @@ import { listCycles } from '../src/data/cycleRepository';
 import { forecastOf } from '../src/features/forecast/fromCache';
 import {
   HomeScreen,
+  exportLabel,
+  exportTestID,
   historyLabel,
   historyTestID,
   homeCopy,
@@ -22,6 +24,7 @@ async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
     <HomeScreen
       cycleLengthDays={28}
       forecast={forecastOf(listCycles(migratedDatabase()))}
+      onExport={() => asked.push('export')}
       onHistory={() => asked.push('history')}
       onLogToday={() => asked.push('log today')}
       onSettings={() => asked.push('settings')}
@@ -37,7 +40,7 @@ describe('the home screen', () => {
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
   });
 
-  it('shows the wordmark, what to do next, and the three ways in', async () => {
+  it('shows the wordmark, what to do next, and the four ways in', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
@@ -50,6 +53,7 @@ describe('the home screen', () => {
       'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',
       logTodayLabel,
       historyLabel,
+      exportLabel,
       settingsLabel,
     ]);
   });
@@ -70,6 +74,15 @@ describe('the home screen', () => {
     await fireEvent.press(screen.getByTestId(historyTestID));
 
     expect(asked).toEqual(['history']);
+  });
+
+  it('sends her to the export when she presses the control that says so', async () => {
+    const asked: string[] = [];
+    await theEmptyHomeScreen(asked);
+
+    await fireEvent.press(screen.getByTestId(exportTestID));
+
+    expect(asked).toEqual(['export']);
   });
 
   it('sends her to the settings when she presses the control that says so', async () => {

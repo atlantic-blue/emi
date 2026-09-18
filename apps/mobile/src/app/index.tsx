@@ -66,6 +66,7 @@ export default function HomeRoute(): ReactNode {
     <HomeScreen
       cycleLengthDays={shown.cycleLengthDays}
       forecast={shown.forecast}
+      onExport={() => router.push('/export')}
       onHistory={() => router.push('/history')}
       onLogToday={() => router.push('/log')}
       onSettings={() => router.push('/settings')}

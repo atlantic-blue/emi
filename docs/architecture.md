@@ -318,6 +318,30 @@ directory and nowhere else, so an export or a support screen cannot read an item
 Nothing writes a day through the key yet. The step that sends every row through the envelope comes
 next.
 
+## The export
+
+Status: built
+
+Her record leaves the phone as two files. One is a document she can read and give to a doctor. The
+other is json that another application could import.
+
+Both come from one walk of the database. The walk asks SQLite for its tables, asks each table for
+its columns, and copies every value it finds. Nothing here names a table or a column, so a column a
+later migration adds reaches the file with no change to this code. A list written out by hand is
+how a field goes missing, and that is the one error contract KEEP-2 names.
+
+A column that holds bytes is a sealed day. The walk opens it with her vault key and carries the day
+that was inside. Bytes that do not open are written as base 64 rather than dropped, because bytes
+nobody can read are still hers.
+
+The document is built from the export and not from the database, so the two files cannot describe
+different phones. It makes no claim about her health, and its words are held to the same claims
+gate as every screen. A day she deleted stays in the json, and the document says so rather than
+listing it.
+
+Both files are written into the cache directory on her phone. She then presses share, and the
+system sheet hands one file to whatever she chooses. Nothing is sent anywhere by Emi.
+
 ## Deleting everything
 
 Status: built
