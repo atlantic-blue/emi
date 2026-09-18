@@ -1,9 +1,15 @@
 import type { Database } from './database';
 
 /** Local only. Nothing here syncs, because none of it is a fact she entered about her body. */
-export type SettingKey = 'cycleLengthDays' | 'firstRunCompletedAt';
+export type SettingKey =
+  'cycleLengthDays' | 'firstRunCompletedAt' | 'temperatureUnit' | 'weightUnit';
 
-export const settingKeys: readonly SettingKey[] = ['cycleLengthDays', 'firstRunCompletedAt'];
+export const settingKeys: readonly SettingKey[] = [
+  'cycleLengthDays',
+  'firstRunCompletedAt',
+  'temperatureUnit',
+  'weightUnit',
+];
 
 export type SettingRefusal = 'value-is-empty';
 

@@ -16,6 +16,10 @@ export function recordFromEntry(entry: LogSheetEntry, pressedSaveAt: Date): DayR
     ...(entry.symptoms.length > 0 ? { symptoms: entry.symptoms } : {}),
     ...(entry.moods.length > 0 ? { moods: entry.moods } : {}),
     ...(entry.energy === undefined ? {} : { energy: entry.energy }),
+    ...(entry.temperatureCelsius === undefined
+      ? {}
+      : { temperatureCelsius: entry.temperatureCelsius }),
+    ...(entry.weightKilograms === undefined ? {} : { weightKilograms: entry.weightKilograms }),
     recordedAt: pressedSaveAt.toISOString(),
   };
 }
