@@ -1,5 +1,5 @@
-/** @jsxImportSource . */
-import { Fragment, Html, raw } from './jsx-runtime';
+/** @jsxImportSource ../jsx */
+import { Fragment, Html, raw } from '../jsx/jsx-runtime.ts';
 
 function markup(element: Html): string {
   return element.html;

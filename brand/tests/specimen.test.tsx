@@ -15,7 +15,7 @@ import {
   specimenDocument,
   specimenPage,
   specimenSentences,
-} from './specimen';
+} from '../specimen/specimen.tsx';
 
 const fontsBase = 'file:///emi/apps/mobile/assets/fonts/';
 const page = specimenDocument(fontsBase);

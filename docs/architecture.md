@@ -33,15 +33,21 @@ device, because there is nowhere for it to go yet.
 flowchart TD
   subgraph Phone["The phone"]
     UI["Screens, through expo-router"]
+    FIRST["First run, three screens"]
     TOK["Design tokens"]
     CAT["Symptom catalogue"]
     DATA["Day log repository"]
+    SET["Setting repository"]
     PORT["Database port: execute, run, all"]
     SQL[("SQLite, through expo-sqlite")]
+    UI --> FIRST
     UI --> TOK
     UI --> CAT
     UI --> DATA
+    FIRST --> DATA
+    FIRST --> SET
     DATA --> PORT
+    SET --> PORT
     PORT --> SQL
   end
   subgraph Pipeline["The pipeline, on every pull request"]
@@ -71,7 +77,8 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.
 - `packages/crypto` holds the encrypted record format: the envelope, the canonical json and the
   ranges a day is checked against.
-- `brand` holds the fonts, the drawn assets and the generators that draw a page from the tokens.
+- `brand` holds the mark, the icons and the fonts, as drawn files and the programs that write
+  them.
 - `tools` holds the checks that guard the repository rather than the product.
 - `docs` holds this document and the documents beside it.
 
@@ -88,6 +95,27 @@ written double, so every constraint is proved against a real database engine.
 
 The `day` column is a copy of the date that also sits inside the payload. It is kept in the clear so
 the application can query by date. It never leaves the phone.
+
+## The first run
+
+Status: built
+
+The home screen has nothing to draw until she has said when her last period started, so a woman who
+has recorded nothing is sent to three screens instead. The first says what Emi is and what it will
+not do. The second asks when her last period started. The third asks roughly how long her cycle
+runs. Those are the two answers a first forecast needs, and the first run asks for nothing else.
+
+There is no account, no email address and no password, and there is no field to type into at all.
+She picks a day from a list of the last ninety one days, and she moves a number between 21 and 45.
+
+Nothing is written until she answers the last screen. The day and both settings are then written in
+one transaction, so a first run she walks away from halfway leaves the database as it was. The
+`setting` table holds the cycle length she stated and the instant she finished. The second reads
+that instant and sends her straight to the home screen.
+
+The day she picks is written as a bleeding day of medium flow. She is never asked how heavy it was,
+because the answer changes no forecast, and a record has no other way to say that a day was a
+bleeding day. She can change it on the day itself.
 
 ## The design tokens
 

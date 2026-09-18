@@ -5,6 +5,9 @@ claim against the code that makes it. These documents are the readable half of t
 
 - `architecture.md` says what runs on the phone, what runs in Amazon Web Services, and what crosses
   between the two.
+- `features.md` names the eight features, the contracts each one builds, and what version 1 refuses
+  to do.
+- `contracts.md` states the input, the output and every error of each contract.
 - `privacy.md` says which keys exist, where each one lives, what one encrypted day looks like, and
   the four attacks Emi does not defend against.
 - `licences.md` names every third party file that ships inside the application, which today is
@@ -12,7 +15,7 @@ claim against the code that makes it. These documents are the readable half of t
 - `brand.md` carries the palette, the measured contrast ratios, the type scale and the spacing. It
   is generated from `packages/tokens`, so nobody edits it by hand.
 
-Each section of each document carries a status line. `Status: built` means the code is here now.
+Each section of `architecture.md` carries a status line. `Status: built` means the code is here now.
 `Status: designed` means the design describes it and nobody wrote it yet. A test refuses a section
 that carries neither.
 
@@ -22,10 +25,15 @@ The pipeline runs one command over this directory and over every other tracked m
 
     npm run check:documents
 
-It does three things. It renders every mermaid diagram through the mermaid command line tool, so a
-diagram that does not parse fails the run. It compares the directory list in `architecture.md`
-against the workspaces in the root `package.json` and against the disk. It reads the status line
-under every heading.
+It renders every mermaid diagram through the mermaid command line tool, so a diagram that does not
+parse fails the run. It compares the directory list in `architecture.md` against the workspaces in
+the root `package.json` and against the disk. It reads the status line under every heading of
+`architecture.md`.
+
+It also reads `features.md` and `contracts.md` together. A contract that one document names and the
+other does not fails the run. A contract that two features both claim fails it too. An empty
+refusal list fails it, because a version 1 that refuses nothing is a version 1 nobody can plan
+around.
 
 The check fails when it finds no diagram at all. A render that finds nothing to render reports
 success just the same, and a green check that ran nothing is worth nothing.
