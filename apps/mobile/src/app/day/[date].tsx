@@ -7,7 +7,7 @@ import { useDatabase } from '../../data/DatabaseProvider';
 import { ringNow } from '../../features/cycle/ringNow';
 import { DayRefused } from '../../features/log/DayRefused';
 import { LogFlow } from '../../features/log/LogFlow';
-import { editFlow, flowOn, refusalFor } from '../../features/log/editDay';
+import { editFlow, flowOn, refusalFor, unexpectedOn } from '../../features/log/editDay';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
 
@@ -39,7 +39,29 @@ export default function DayRoute(): ReactNode {
 
   const pick = useCallback(
     (flow: Flow) => {
-      editFlow(database, { day, flow, now: new Date(), today });
+      editFlow(database, {
+        day,
+        flow,
+        bleedingIsUnexpected: unexpectedOn(database, { day, today }),
+        now: new Date(),
+        today,
+      });
+      sheWrote();
+    },
+    [database, day, today],
+  );
+
+  // The write is the whole day, so a mark needs the flow it belongs to. A day she logged no flow
+  // on has no bleeding to mark.
+  const mark = useCallback(
+    (marked: boolean) => {
+      const flow = flowOn(database, { day, today });
+
+      if (flow === undefined) {
+        return;
+      }
+
+      editFlow(database, { day, flow, bleedingIsUnexpected: marked, now: new Date(), today });
       sheWrote();
     },
     [database, day, today],
@@ -57,7 +79,9 @@ export default function DayRoute(): ReactNode {
     <LogFlow
       chosen={flowOn(database, { day, today })}
       day={day}
+      marked={unexpectedOn(database, { day, today })}
       onDone={leave}
+      onMark={mark}
       onPick={pick}
       ring={ringNow(database, today)}
       today={today}
