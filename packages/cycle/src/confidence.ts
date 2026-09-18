@@ -7,6 +7,10 @@ import { CycleError } from './cycles';
  * what regular means, and it would be presented to her as measurement.
  */
 
+/**
+ * Where a number came from. The figure is quoted in the words the paper reports it in, so a reader
+ * can check an edge against the source rather than trust it.
+ */
 export interface Citation {
   readonly source: string;
   readonly doi: string;
@@ -14,6 +18,10 @@ export interface Citation {
   readonly figure: string;
 }
 
+/**
+ * The one study both band edges are derived from: 612,613 cycles from 124,648 users. Each edge
+ * below is arithmetic on the two figures it reports.
+ */
 export const CYCLE_LENGTH_VARIATION: Citation = {
   source:
     'Bull, Rowland, Berglund Scherwitzl, Scherwitzl, Gemzell Danielsson and Harper 2019, ' +
@@ -39,10 +47,16 @@ export const POPULATION_SPREAD_DEVIATION_DAYS = 2.5;
  * cycles.ts.
  */
 export const HIGH_UP_TO_SPREAD_DAYS = POPULATION_SPREAD_DAYS;
+/** Above this her own cycles vary by more than a standard deviation past the mean of the cohort. */
 export const MEDIUM_UP_TO_SPREAD_DAYS = POPULATION_SPREAD_DAYS + POPULATION_SPREAD_DEVIATION_DAYS;
 
+/** Three words. A percentage would offer a precision that a median over six cycles does not have. */
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
+/**
+ * A band, its two edges, and the reason the edges are where they are. The derivation travels with
+ * the band, so a screen can say why Emi is unsure and not only that it is.
+ */
 export interface ConfidenceBand {
   readonly level: ConfidenceLevel;
   /** Spreads above this, in days. The first band starts at a spread of nothing at all. */
@@ -85,6 +99,10 @@ export const confidenceBands: readonly [ConfidenceBand, ConfidenceBand, Confiden
   },
 ];
 
+/**
+ * Refuses a negative spread rather than reading it as the narrowest band, which is what the first
+ * comparison below would otherwise do with it.
+ */
 export function confidenceFor(spreadDays: number): ConfidenceBand {
   if (!Number.isFinite(spreadDays) || spreadDays < 0) {
     throw new CycleError(

@@ -6,6 +6,10 @@
 /** The flow values of the day record, design section 6.2. */
 export type Flow = 'none' | 'spotting' | 'light' | 'medium' | 'heavy';
 
+/**
+ * The part of a day that decides where a cycle starts. The rest of what she logged says nothing
+ * about that, so this package never reads it.
+ */
 export interface DayRecord {
   readonly day: string;
   readonly flow?: Flow;
@@ -13,6 +17,10 @@ export interface DayRecord {
   readonly bleedingIsUnexpected?: boolean;
 }
 
+/**
+ * What can be known from the days she gave. Three of the four fields are null while this is the
+ * cycle she is in, because each of them needs the cycle after this one.
+ */
 export interface Cycle {
   readonly startedOn: string;
   /** The day before the next cycle starts. Null while this cycle is the one she is in. */
@@ -23,8 +31,16 @@ export interface Cycle {
   readonly periodDays: number | null;
 }
 
+/**
+ * Every way this package refuses, as a value, so a screen matches on the reason rather than on the
+ * words of a message.
+ */
 export type CycleRefusal = 'day-is-not-a-date' | 'day-is-written-twice' | 'spread-is-not-a-length';
 
+/**
+ * Carries the refusal beside the message. The message is for a reader and the refusal is for the
+ * code that catches it.
+ */
 export class CycleError extends Error {
   readonly refusal: CycleRefusal;
 
@@ -56,6 +72,10 @@ export function isBleeding(record: DayRecord): boolean {
   return record.flow !== undefined && BLEEDING.includes(record.flow);
 }
 
+/**
+ * Bleeding she did not mark as unexpected. The mark is hers, so Emi never decides on its own that
+ * a bleed was not a period.
+ */
 export function startsACycle(record: DayRecord): boolean {
   return isBleeding(record) && record.bleedingIsUnexpected !== true;
 }
@@ -82,14 +102,20 @@ export function toDayNumber(day: string): number {
   return number;
 }
 
+/**
+ * The inverse of `toDayNumber`. It reads the number in Coordinated Universal Time, so the answer
+ * does not move when the zone of the phone does.
+ */
 export function toDay(dayNumber: number): string {
   return new Date(dayNumber * MILLISECONDS_IN_A_DAY).toISOString().slice(0, 10);
 }
 
+/** Counts in whole days, so the hour a clock changes in the spring cannot take a day with it. */
 export function addDays(day: string, count: number): string {
   return toDay(toDayNumber(day) + count);
 }
 
+/** Whole days, and negative when the second day is the earlier one. */
 export function daysBetween(from: string, to: string): number {
   return toDayNumber(to) - toDayNumber(from);
 }
@@ -175,6 +201,10 @@ export function completeCycles(cycles: readonly Cycle[]): Cycle[] {
   return cycles.filter((cycle) => cycle.lengthDays !== null);
 }
 
+/**
+ * The lengths that are known, in the order she lived them. A cycle that is still running has none
+ * and is left out rather than guessed at.
+ */
 export function cycleLengths(cycles: readonly Cycle[]): number[] {
   const lengths: number[] = [];
   for (const cycle of cycles) {

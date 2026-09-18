@@ -3,8 +3,16 @@ import type { FaceName } from './type';
 /** Where the font files sit, as a path from the root of the repository. */
 export const fontsRoot = 'apps/mobile/assets/fonts';
 
+/**
+ * The two weights that ship. A style that names a weight no file carries leaves the platform to
+ * imitate it, so a third weight arrives as a file first.
+ */
 export type FontWeightName = 'regular' | 'semiBold';
 
+/**
+ * One file on disk, and the name the application registers it under. The two strings differ, so a
+ * style names the registered name and never the path.
+ */
 export interface FontFile {
   /** The name the application registers the file under, and the one a style names. */
   readonly name: string;
@@ -13,6 +21,10 @@ export interface FontFile {
   readonly path: string;
 }
 
+/**
+ * A face, its files, and the terms they travel under. A test reads the licence fields against the
+ * file on disk, so a face cannot ship without its licence beside it.
+ */
 export interface FontFamily {
   /** What the foundry calls the cut that ships, which can be narrower than the design's name. */
   readonly family: string;
@@ -27,10 +39,16 @@ export interface FontFamily {
   readonly files: Readonly<Record<FontWeightName, FontFile>>;
 }
 
+/**
+ * The only terms Emi accepts for a face, because this repository is public and the files ship
+ * inside the application.
+ */
 export const OPEN_FONT_LICENCE = 'SIL Open Font License, Version 1.1';
 
-// Two weights for each face: one for running text and one for emphasis. A third weight is bytes
-// in the download that no screen in version 1 asks for.
+/**
+ * Two weights for each face: one for running text and one for emphasis. A third weight is bytes
+ * in the download that no screen in version 1 asks for.
+ */
 export const fonts: Readonly<Record<FaceName, FontFamily>> = {
   heading: {
     family: 'Fraunces 72pt Soft',
@@ -94,10 +112,16 @@ export const fonts: Readonly<Record<FaceName, FontFamily>> = {
   },
 };
 
+/** The faces as data. A test walks this to prove each one has its files and its licence on disk. */
 export const faceNames: readonly FaceName[] = ['heading', 'text', 'numeric'];
 
+/** The weights as data, so the list of files is built from the faces rather than typed twice. */
 export const fontWeightNames: readonly FontWeightName[] = ['regular', 'semiBold'];
 
+/**
+ * The six files that ship. A test reads the assets directory against this list, so a file that
+ * nobody names is found rather than carried.
+ */
 export const fontFiles: readonly FontFile[] = faceNames.flatMap((name) =>
   fontWeightNames.map((weight) => fonts[name].files[weight]),
 );

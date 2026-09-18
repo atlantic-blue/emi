@@ -3,6 +3,10 @@
 
 import { stroke } from './space';
 
+/**
+ * The twenty symbols of the first set. The set is closed, so a screen cannot ask for a drawing
+ * nobody made.
+ */
 export type IconName =
   | 'calendar'
   | 'check'
@@ -25,6 +29,10 @@ export type IconName =
   | 'temperature'
   | 'weight';
 
+/**
+ * A drawing and the grid it was laid out on. The body is markup rather than one path, because
+ * several of the twenty are drawn from more than one shape.
+ */
 export interface Icon {
   readonly name: IconName;
   /** The grid the drawing is laid out on, in points, on both axes. */
@@ -34,8 +42,13 @@ export interface Icon {
   readonly body: string;
 }
 
+/**
+ * The grid every drawing shares, in points. A drawing laid out on another grid does not match the
+ * stroke width of the ones beside it.
+ */
 export const ICON_SIZE = 24;
 
+/** The set as data, so a test can walk every drawing without naming them one at a time. */
 export const iconNames: readonly IconName[] = [
   'calendar',
   'check',
@@ -59,6 +72,10 @@ export const iconNames: readonly IconName[] = [
   'weight',
 ];
 
+/**
+ * Generated from the drawings in `brand/icons`. Run the generator again rather than editing a body
+ * here, because the next run writes over it.
+ */
 export const icons: Readonly<Record<IconName, Icon>> = {
   calendar: {
     name: 'calendar',
