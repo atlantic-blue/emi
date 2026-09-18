@@ -1,5 +1,5 @@
 import type { DayRecord } from '@emi/crypto';
-import { type Flow, daysBetween } from '@emi/cycle';
+import { type Flow, addDays, daysBetween } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import { insertDayLog } from '../../data/dayLogRepository';
@@ -14,6 +14,21 @@ export const defaultCycleLengthDays = 28;
 
 /** She picks a start day from this many days back, and can edit any older day once she is inside. */
 export const longestLookBackDays = 90;
+
+/** The oldest day the first run accepts, which is the far end of the calendar she can reach. */
+export function oldestPeriodStart(today: string): string {
+  return addDays(today, -longestLookBackDays);
+}
+
+/**
+ * Whether the first run accepts this day, asked before she picks rather than after. The calendar
+ * draws every day of the month she is looking at, so it needs the same answer one square at a time.
+ */
+export function periodStartIsInRange(day: string, today: string): boolean {
+  const back = daysBetween(day, today);
+
+  return back >= 0 && back <= longestLookBackDays;
+}
 
 /**
  * She is asked when her period started, never how heavy it was, because the heaviness changes no
