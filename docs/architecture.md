@@ -189,6 +189,32 @@ This is arithmetic. It is not intelligence, and calling it intelligence would be
 cannot support. It is also the reason the privacy promise is cheap to keep: there is nothing to send
 anywhere.
 
+## Reading a history back
+
+Status: built
+
+The history screen reads her cycles back and names what came back with them. The arithmetic is
+`packages/cycle/src/patterns.ts`, and it is pure: the days she recorded in, the patterns out.
+
+A symptom is named once it came back in three of her cycles, at the same point in them. Three is the
+smallest count that can tell a repeat from a pair, and it is about three months of her life. The
+number is chosen and it is not measured, because no published distribution says when a symptom stops
+being a coincidence. A reading may sit a day either side of the day it is grouped at. A window wider
+than those three days would cover a fifth of a short cycle, where the same point in her cycle stops
+meaning anything.
+
+The day is counted from whichever end of the cycle holds the symptom still. A symptom before her
+period keeps its distance from the period while her cycles change length, and a symptom at the start
+of one keeps its distance from the start, so one anchor alone would scatter half of what she logs.
+Where both ends explain as many cycles, the distance from her period wins.
+
+Only complete cycles are read, at most the last six, which is the window the forecast takes its
+median over. The cycle she is in has no next period to count back from. Moods count with symptoms,
+because both are slugs of the one catalogue.
+
+Every line on that screen names the cycles behind it, so the count she is trusting is on the screen
+with the answer.
+
 ## The encrypted record
 
 Status: built

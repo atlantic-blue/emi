@@ -4,6 +4,8 @@ import { listCycles } from '../src/data/cycleRepository';
 import { forecastOf } from '../src/features/forecast/fromCache';
 import {
   HomeScreen,
+  historyLabel,
+  historyTestID,
   homeCopy,
   homeNoRingTestID,
   logTodayLabel,
@@ -13,12 +15,13 @@ import { migratedDatabase } from './fixtures/cycleCache';
 import { textIn } from './fixtures/renderedText';
 
 /** A phone with nothing on it yet, which is the screen with the fewest words on it. */
-async function theEmptyHomeScreen(onLogToday: () => void = () => undefined): Promise<void> {
+async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
   await render(
     <HomeScreen
       cycleLengthDays={28}
       forecast={forecastOf(listCycles(migratedDatabase()))}
-      onLogToday={onLogToday}
+      onHistory={() => asked.push('history')}
+      onLogToday={() => asked.push('log today')}
       ring={undefined}
     />,
   );
@@ -31,7 +34,7 @@ describe('the home screen', () => {
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
   });
 
-  it('shows the wordmark, what to do next, and one way in', async () => {
+  it('shows the wordmark, what to do next, and the two ways in', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
@@ -43,15 +46,25 @@ describe('the home screen', () => {
       'Emi needs 2 more complete cycles before it forecasts.',
       'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',
       logTodayLabel,
+      historyLabel,
     ]);
   });
 
-  it('sends her to log the day when she presses the one control on it', async () => {
+  it('sends her to log the day when she presses the control that says so', async () => {
     const asked: string[] = [];
-    await theEmptyHomeScreen(() => asked.push('log today'));
+    await theEmptyHomeScreen(asked);
 
     await fireEvent.press(screen.getByTestId(logTodayTestID));
 
     expect(asked).toEqual(['log today']);
+  });
+
+  it('sends her to her history when she presses the control that says so', async () => {
+    const asked: string[] = [];
+    await theEmptyHomeScreen(asked);
+
+    await fireEvent.press(screen.getByTestId(historyTestID));
+
+    expect(asked).toEqual(['history']);
   });
 });
