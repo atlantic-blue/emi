@@ -34,6 +34,7 @@ flowchart TD
   subgraph Phone["The phone"]
     UI["Screens, through expo-router"]
     FIRST["First run, three screens"]
+    RING["The cycle ring"]
     TOK["Design tokens"]
     CAT["Symptom catalogue"]
     DATA["Day log repository"]
@@ -41,6 +42,8 @@ flowchart TD
     PORT["Database port: execute, run, all"]
     SQL[("SQLite, through expo-sqlite")]
     UI --> FIRST
+    UI --> RING
+    RING --> TOK
     UI --> TOK
     UI --> CAT
     UI --> DATA
