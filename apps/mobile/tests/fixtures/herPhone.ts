@@ -1,4 +1,4 @@
-import { type DayRecord, recordBytes, recordFromBytes } from '@emi/crypto';
+import type { DayRecord } from '@emi/crypto';
 
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
@@ -7,6 +7,7 @@ import { writeSetting } from '../../src/data/settingRepository';
 import { logDay } from '../../src/features/cycle/rebuild';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync } from '../data/expoSqlite';
+import { herKeyIsInTheKeychain, herVault } from './herVault';
 
 /**
  * The phone a rendered test drives. The application opens its own database by name, so a test
@@ -37,17 +38,22 @@ export function aBleedingDay(day: string): DayRecord {
  * Without those answers the application sends her back to the first run and she never reaches the
  * screen under test.
  */
-export function herPhoneHolds(
+export async function herPhoneHolds(
   firstRunFinishedAt: Date,
   records: readonly DayRecord[],
   cycleLengthDays: number = defaultCycleLengthDays,
-): void {
+): Promise<void> {
   const database = herDatabase();
+  const vault = herVault();
   migrate(database);
+
+  // The key is in the keychain before the application looks, so the days seeded below open under
+  // the key the application reads rather than under a second key it would make for itself.
+  await herKeyIsInTheKeychain();
 
   for (const record of records) {
     const when = new Date(record.recordedAt);
-    logDay(database, { day: record.day, payload: recordBytes(record), now: when }, recordFromBytes);
+    logDay(database, { day: record.day, payload: vault.seal(record), now: when }, vault.open);
   }
 
   writeSetting(database, 'cycleLengthDays', String(cycleLengthDays));

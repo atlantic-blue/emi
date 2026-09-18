@@ -2,7 +2,8 @@ import type { Database } from '../../src/data/database';
 import { readDayLog } from '../../src/data/dayLogRepository';
 import { editDay, logDay } from '../../src/features/cycle/rebuild';
 import type { LogSheetEntry } from '../../src/features/log/LogSheet';
-import { type DayRecord, recordBytes, recordFromBytes } from './dayRecord';
+import type { DayRecord } from './dayRecord';
+import { herVault } from './herVault';
 
 /**
  * The write the screen hosting the log sheet performs. The sheet never reaches the database
@@ -27,12 +28,13 @@ export function recordFromEntry(entry: LogSheetEntry, pressedSaveAt: Date): DayR
 /** Every write goes through the rebuild module, so the cycle cache is rebuilt from the whole log. */
 export function savesInto(database: Database, pressedSaveAt: Date): (entry: LogSheetEntry) => void {
   return (entry) => {
-    const payload = recordBytes(recordFromEntry(entry, pressedSaveAt));
+    const vault = herVault();
+    const payload = vault.seal(recordFromEntry(entry, pressedSaveAt));
     const write = { day: entry.day, payload, now: pressedSaveAt };
     if (readDayLog(database, entry.day)) {
-      editDay(database, write, recordFromBytes);
+      editDay(database, write, vault.open);
     } else {
-      logDay(database, write, recordFromBytes);
+      logDay(database, write, vault.open);
     }
   };
 }

@@ -9,9 +9,11 @@ import { LogFlow } from '../../features/log/LogFlow';
 import { flowLogged, logFlow, unexpectedLogged } from '../../features/log/logDay';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
+import { useVault } from '../../services/vault/VaultProvider';
 
 export default function LogFlowRoute(): ReactNode {
   const database = useDatabase();
+  const vault = useVault();
   const router = useRouter();
   const { isDone } = useFirstRun();
   const [today] = useState(() => localDay(new Date()));
@@ -21,31 +23,31 @@ export default function LogFlowRoute(): ReactNode {
 
   const pick = useCallback(
     (flow: Flow) => {
-      logFlow(database, {
+      logFlow(database, vault, {
         day: today,
         flow,
-        bleedingIsUnexpected: unexpectedLogged(database, today),
+        bleedingIsUnexpected: unexpectedLogged(database, vault, today),
         now: new Date(),
       });
       sheWrote();
     },
-    [database, today],
+    [database, today, vault],
   );
 
   // The write is the whole day, so a mark needs the flow it belongs to. A day she logged no flow
   // on has no bleeding to mark.
   const mark = useCallback(
     (marked: boolean) => {
-      const flow = flowLogged(database, today);
+      const flow = flowLogged(database, vault, today);
 
       if (flow === undefined) {
         return;
       }
 
-      logFlow(database, { day: today, flow, bleedingIsUnexpected: marked, now: new Date() });
+      logFlow(database, vault, { day: today, flow, bleedingIsUnexpected: marked, now: new Date() });
       sheWrote();
     },
-    [database, today],
+    [database, today, vault],
   );
 
   if (!isDone) {
@@ -54,13 +56,13 @@ export default function LogFlowRoute(): ReactNode {
 
   return (
     <LogFlow
-      chosen={flowLogged(database, today)}
+      chosen={flowLogged(database, vault, today)}
       day={today}
-      marked={unexpectedLogged(database, today)}
+      marked={unexpectedLogged(database, vault, today)}
       onDone={() => router.back()}
       onMark={mark}
       onPick={pick}
-      ring={ringNow(database, today)}
+      ring={ringNow(database, vault, today)}
       today={today}
     />
   );

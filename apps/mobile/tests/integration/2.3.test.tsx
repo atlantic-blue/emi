@@ -2,7 +2,7 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
-import { recordFromBytes } from '@emi/crypto';
+
 import { startsACycle } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET } from '@emi/tokens';
 import { StyleSheet } from 'react-native';
@@ -25,8 +25,12 @@ import {
   minimumCycleLengthDays,
 } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
+import { theVaultOnHerPhone } from '../fixtures/herVault';
+import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
+jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
+jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 
@@ -133,6 +137,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
     resetExpoSqlite();
+    resetExpoSecureStore();
   });
 
   afterEach(() => {
@@ -187,9 +192,12 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheAnswersEveryScreen();
 
       const row = readDayLog(herDatabase(), herPeriodStarted);
+      // The key is the one the first run drew, read back out of the keychain, because no test
+      // knows it in advance.
+      const vault = await theVaultOnHerPhone();
       expect(row?.day).toBe(herPeriodStarted);
-      expect(row && startsACycle(recordFromBytes(row.payload))).toBe(true);
-      expect(row && recordFromBytes(row.payload)).toEqual({
+      expect(row && startsACycle(vault.open(row.payload))).toBe(true);
+      expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
         recordedAt: whenSheOpensIt.toISOString(),

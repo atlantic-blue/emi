@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { type DayRecord, recordBytes, recordFromBytes } from '@emi/crypto';
+import type { DayRecord } from '@emi/crypto';
 import type { Forecast } from '@emi/cycle';
 import { addDays, daysBetween } from '@emi/cycle';
 import {
@@ -47,11 +47,15 @@ import {
   veryRegular,
 } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
+import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { herKeyIsInTheKeychain, herVault } from '../fixtures/herVault';
 import { daysLogged, migratedDatabase, readDay } from '../fixtures/cycleCache';
 import { asSheLoggedIt, recordedAt } from '../fixtures/forecast';
 import { sizedTextIn } from '../fixtures/renderedText';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
+jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
+jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 
@@ -423,15 +427,16 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       return { day, flow: 'medium', recordedAt: `${day}T08:00:00.000Z` };
     }
 
-    function herPhoneHolds(records: readonly DayRecord[]): void {
+    async function herPhoneHolds(records: readonly DayRecord[]): Promise<void> {
       const database: Database = expoDatabase(openDatabaseSync(databaseFileName));
       migrate(database);
+      await herKeyIsInTheKeychain();
 
       for (const record of records) {
         logDay(
           database,
-          { day: record.day, payload: recordBytes(record), now: new Date(record.recordedAt) },
-          recordFromBytes,
+          { day: record.day, payload: herVault().seal(record), now: new Date(record.recordedAt) },
+          herVault().open,
         );
       }
 
@@ -447,6 +452,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       jest.useFakeTimers();
       jest.setSystemTime(whenSheOpensIt);
       resetExpoSqlite();
+      resetExpoSecureStore();
     });
 
     afterEach(() => {
@@ -454,7 +460,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
     });
 
     it('draws the cycle she wrote to, and not the one she opened the screen on', async () => {
-      herPhoneHolds(herSixCycles());
+      await herPhoneHolds(herSixCycles());
       const app = renderRouter(appDirectory, { initialUrl: '/' });
       await app;
 

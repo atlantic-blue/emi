@@ -10,7 +10,8 @@ import { migrate } from '../../src/data/schema';
 import { energyName, nothingChosen } from '../../src/features/log/EnergyScale';
 import { LogSheet } from '../../src/features/log/LogSheet';
 import { openTestDatabase } from '../data/nodeDatabase';
-import { type DayRecord, recordFromBytes } from '../fixtures/dayRecord';
+import { herVault } from '../fixtures/herVault';
+import { type DayRecord } from '../fixtures/dayRecord';
 import { savesInto } from '../fixtures/sheetSave';
 
 const day = '2026-03-14';
@@ -60,7 +61,7 @@ function dayRecordedFor(database: Database, forDay: string): DayRecord {
   if (!row) {
     throw new Error(`${forDay} was saved and could not be read back`);
   }
-  return recordFromBytes(row.payload);
+  return herVault().open(row.payload);
 }
 
 function revisionOf(database: Database, forDay: string): number {

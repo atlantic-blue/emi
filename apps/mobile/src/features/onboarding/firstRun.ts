@@ -1,9 +1,10 @@
-import { type DayRecord, recordBytes } from '@emi/crypto';
+import type { DayRecord } from '@emi/crypto';
 import { type Flow, daysBetween } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import { insertDayLog } from '../../data/dayLogRepository';
 import { readSetting, writeSetting } from '../../data/settingRepository';
+import type { DayVault } from '../../services/vault/dayVault';
 import { localDay } from './days';
 
 export const minimumCycleLengthDays = 21;
@@ -64,7 +65,12 @@ export function cycleLengthIsInRange(days: number): boolean {
  * send her back to the first screen and then refuse the day she picked there, which is the one
  * shape of half written first run she could not get herself out of.
  */
-export function completeFirstRun(db: Database, answers: FirstRunAnswers, now: Date): void {
+export function completeFirstRun(
+  db: Database,
+  vault: DayVault,
+  answers: FirstRunAnswers,
+  now: Date,
+): void {
   const today = localDay(now);
   const back = daysBetween(answers.periodStartedOn, today);
 
@@ -98,7 +104,7 @@ export function completeFirstRun(db: Database, answers: FirstRunAnswers, now: Da
 
   db.execute('BEGIN');
   try {
-    insertDayLog(db, { day: recorded.day, payload: recordBytes(recorded), now });
+    insertDayLog(db, { day: recorded.day, payload: vault.seal(recorded), now });
     writeSetting(db, 'cycleLengthDays', String(answers.cycleLengthDays));
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
     db.execute('COMMIT');

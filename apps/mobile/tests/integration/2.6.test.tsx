@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { type DayRecord, recordFromBytes } from '@emi/crypto';
+import { type DayRecord } from '@emi/crypto';
 import { type Flow, addDays } from '@emi/cycle';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
@@ -17,10 +17,14 @@ import { logFlowDoneTestID, logFlowSavedTestID } from '../../src/features/log/Lo
 import { logTodayTestID } from '../../src/features/home/HomeScreen';
 import { DayEditError, editFlow, flowOn } from '../../src/features/log/editDay';
 import { resetExpoSqlite } from '../data/expoSqlite';
+import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
+import { herVault } from '../fixtures/herVault';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
+jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
+jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 
@@ -109,7 +113,7 @@ function theRingShape(): { arc: string; bead: { x: number; y: number } } {
 function whatWasRecordedOn(day: string): DayRecord | undefined {
   const row = readDayLog(herDatabase(), day);
 
-  return row ? recordFromBytes(row.payload) : undefined;
+  return row ? herVault().open(row.payload) : undefined;
 }
 
 function theRevisionOf(day: string): number | undefined {
@@ -128,6 +132,7 @@ describe('a past day is edited and a future day is refused', () => {
     // test reads off it is the shape and never a frame of an animation.
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
     resetExpoSqlite();
+    resetExpoSecureStore();
   });
 
   afterEach(() => {
@@ -137,7 +142,7 @@ describe('a past day is edited and a future day is refused', () => {
 
   describe('she opens the Monday she got wrong', () => {
     it('names the day she is looking at, and not today', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
 
       await sheOpens(sheForgot);
 
@@ -145,7 +150,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('opens on the answer that day already holds', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
 
       await sheOpens(sheForgot);
 
@@ -154,7 +159,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('draws the cycle she is in today, because that is what a wrong Monday moved', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
 
       await sheOpens(sheForgot);
 
@@ -164,7 +169,7 @@ describe('a past day is edited and a future day is refused', () => {
 
   describe('she says that Monday was the day her period came back', () => {
     it('writes that Monday, and leaves today alone', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
       await sheOpens(sheForgot);
 
       await shePicks('heavy');
@@ -178,7 +183,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('raises the revision of the day she changed', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
       await sheOpens(sheForgot);
       expect(theRevisionOf(sheForgot)).toBe(1);
 
@@ -188,7 +193,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('keeps the symptoms that day already held', async () => {
-      herPhoneHolds(whenSheOpensIt, [
+      await herPhoneHolds(whenSheOpensIt, [
         ...herSixPeriods(),
         sheSaidNothingHappened({ symptoms: ['cramps', 'low-mood'] }),
       ]);
@@ -205,7 +210,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('redraws the ring, because the cycle she is in now starts on that Monday', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
       await sheOpens(sheForgot);
       const before = theRingShape();
 
@@ -217,7 +222,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('marks what she picked, and says the day is saved on this phone', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
       await sheOpens(sheForgot);
 
       await shePicks('heavy');
@@ -228,7 +233,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('takes her back to the home screen when she is done with it', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
       const app = await sheOpens(sheForgot);
       await shePicks('heavy');
 
@@ -242,7 +247,7 @@ describe('a past day is edited and a future day is refused', () => {
 
   describe('a day she logged nothing on at all', () => {
     it('opens empty rather than failing', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
 
       await sheOpens(sheForgot);
 
@@ -254,7 +259,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('is written the first time she picks a flow, at the first revision', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens(sheForgot);
       expect(theRevisionOf(sheForgot)).toBeUndefined();
 
@@ -268,7 +273,7 @@ describe('a past day is edited and a future day is refused', () => {
 
   describe('a day that has not happened yet', () => {
     it('refuses the editor and says why', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
 
       await sheOpens(aDayAhead);
 
@@ -278,7 +283,7 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('leaves her on the home screen when she presses back, and writes nothing', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       const app = await sheOpens(aDayAhead);
 
       await shePresses(dayRefusedBackTestID);
@@ -288,11 +293,16 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('refuses the write itself, whatever asked for it', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       const database = herDatabase();
 
       const refused = (): unknown =>
-        editFlow(database, { day: aDayAhead, flow: 'heavy', now: whenSheOpensIt, today });
+        editFlow(database, herVault(), {
+          day: aDayAhead,
+          flow: 'heavy',
+          now: whenSheOpensIt,
+          today,
+        });
 
       expect(refused).toThrow(DayEditError);
       expect(refused).toThrow(aDayAhead);
@@ -300,17 +310,17 @@ describe('a past day is edited and a future day is refused', () => {
     });
 
     it('refuses to read one too, so nothing opens a day ahead by reading it first', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       const database = herDatabase();
 
-      expect(() => flowOn(database, { day: aDayAhead, today })).toThrow(DayEditError);
-      expect(flowOn(database, { day: sheForgot, today })).toBeUndefined();
+      expect(() => flowOn(database, herVault(), { day: aDayAhead, today })).toThrow(DayEditError);
+      expect(flowOn(database, herVault(), { day: sheForgot, today })).toBeUndefined();
     });
   });
 
   describe('an address that is not a day in the calendar', () => {
     it('is refused with its own answer rather than an empty editor', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
 
       await sheOpens(notADayAtAll);
 
@@ -322,21 +332,21 @@ describe('a past day is edited and a future day is refused', () => {
 
   describe('every control she can press on these two screens', () => {
     it('is at least 44 points on both axes, and the failure names any that is not', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
       await sheOpens(sheForgot);
 
       expect(controlsTooSmallToPress(everyControlOnTheScreen())).toEqual([]);
     });
 
     it('is at least 44 points on the day she cannot open as well', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens(aDayAhead);
 
       expect(controlsTooSmallToPress(everyControlOnTheScreen())).toEqual([]);
     });
 
     it('is measured against a screen that actually holds controls', async () => {
-      herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
       await sheOpens(sheForgot);
 
       expect(everyControlOnTheScreen().length).toBeGreaterThan(5);

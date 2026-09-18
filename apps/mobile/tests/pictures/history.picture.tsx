@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { type DayRecord, recordBytes, recordFromBytes } from '@emi/crypto';
+import type { DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
 
@@ -15,6 +15,7 @@ import { historyNow } from '../../src/features/history/historyNow';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { pageSize, screenDocument } from '../../../../brand/screens/asHtml';
 import { migratedDatabase } from '../fixtures/cycleCache';
+import { herVault } from '../fixtures/herVault';
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
 const output = join(repositoryRoot, 'brand', 'screens', 'history.png');
@@ -88,8 +89,8 @@ function herPhone(cycles: number): Database {
   for (const record of herDays(cycles)) {
     logDay(
       database,
-      { day: record.day, payload: recordBytes(record), now: recordedAt },
-      recordFromBytes,
+      { day: record.day, payload: herVault().seal(record), now: recordedAt },
+      herVault().open,
     );
   }
 
@@ -118,7 +119,7 @@ const theStates: readonly State[] = [
 async function drawn(state: State): Promise<DrawnScreen> {
   const view = await render(
     <HistoryScreen
-      history={historyNow(herPhone(state.cycles))}
+      history={historyNow(herPhone(state.cycles), herVault())}
       onBack={() => undefined}
       onOpenDay={() => undefined}
     />,

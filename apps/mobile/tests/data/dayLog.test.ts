@@ -14,10 +14,13 @@ import { migrate, migrations, runMigrations, schemaVersion } from '../../src/dat
 import { uuidV7, uuidV7RandomByteCount } from '../../src/data/uuidV7';
 
 import { openTestDatabase } from './nodeDatabase';
+import { aDayRecord } from '../fixtures/dayRecord';
+import { herVault } from '../fixtures/herVault';
 
 const firstDay = '2026-09-14';
-const firstPayload = new Uint8Array([1, 2, 3, 4]);
-const editedPayload = new Uint8Array([9, 9, 9]);
+/** A day is stored as an envelope, so every payload here is one. */
+const firstPayload = herVault().seal(aDayRecord({ day: firstDay, flow: 'medium' }));
+const editedPayload = herVault().seal(aDayRecord({ day: firstDay, flow: 'light' }));
 const wroteAt = new Date('2026-09-14T08:15:00.000Z');
 const editedAt = new Date('2026-09-14T19:40:30.250Z');
 const deletedAt = new Date('2026-09-15T06:00:00.000Z');

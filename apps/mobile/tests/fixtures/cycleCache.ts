@@ -6,7 +6,7 @@ import { logDay } from '../../src/features/cycle/rebuild';
 import { openTestDatabase } from '../data/nodeDatabase';
 import { decodeDay, encodeDay } from './dayPayload';
 
-/** The payload is plaintext until feature 5 puts it inside the envelope. */
+/** A stored day is an envelope, so reading one is opening it. */
 export const readDay = decodeDay;
 
 export function migratedDatabase(): Database {

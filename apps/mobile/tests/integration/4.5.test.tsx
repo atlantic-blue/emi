@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { type DayRecord, recordFromBytes } from '@emi/crypto';
+import { type DayRecord } from '@emi/crypto';
 import { type Flow, addDays } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET } from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
@@ -18,9 +18,13 @@ import {
 } from '../../src/features/log/UnexpectedBleeding';
 import { unexpectedBleedingCopy } from '../../src/features/log/copy';
 import { resetExpoSqlite } from '../data/expoSqlite';
+import { herVault } from '../fixtures/herVault';
+import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
+jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
+jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 
@@ -85,7 +89,7 @@ async function sheMarksIt(): Promise<void> {
 function whatWasRecordedOn(day: string): DayRecord | undefined {
   const row = readDayLog(herDatabase(), day);
 
-  return row ? recordFromBytes(row.payload) : undefined;
+  return row ? herVault().open(row.payload) : undefined;
 }
 
 /** Where Emi says each of her cycles began, read out of the cache every screen reads. */
@@ -184,6 +188,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     // reads off it is the shape and never a frame of an animation.
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
     resetExpoSqlite();
+    resetExpoSecureStore();
   });
 
   afterEach(() => {
@@ -193,7 +198,7 @@ describe('unexpected bleeding never starts a cycle', () => {
 
   describe('she spots on day 14 and says it is not her period', () => {
     it('writes her mark on that day, beside the flow she picked', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
       await shePicks('spotting');
 
@@ -208,7 +213,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     });
 
     it('counts no cycle from it, so her last period is still the one she had', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
       await shePicks('spotting');
 
@@ -219,7 +224,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     });
 
     it('leaves the forecast where it stood before she logged anything', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       const before = whatEmiForecasts();
       await sheOpens('/log');
       await shePicks('spotting');
@@ -236,7 +241,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     });
 
     it('leaves the ring on the day she is on, with the period she actually had', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
       const beforeArc = thePeriodArc();
       await shePicks('spotting');
@@ -248,7 +253,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     });
 
     it('says what her mark did, and leaves the mark pressed', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
       await shePicks('spotting');
 
@@ -263,7 +268,7 @@ describe('unexpected bleeding never starts a cycle', () => {
 
   describe('the same spot, left unmarked', () => {
     it('starts a cycle and moves every forecast after it', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       const before = whatEmiForecasts();
       await sheOpens('/log');
 
@@ -277,7 +282,7 @@ describe('unexpected bleeding never starts a cycle', () => {
 
   describe('she changes her mind about the day', () => {
     it('takes the mark off again, and the day starts a cycle once more', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
       await shePicks('spotting');
       await sheMarksIt();
@@ -290,7 +295,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     });
 
     it('keeps the mark when she corrects the flow underneath it', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
       await shePicks('spotting');
       await sheMarksIt();
@@ -307,7 +312,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     });
 
     it('drops the mark when she says there was no bleeding after all', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
       await shePicks('spotting');
       await sheMarksIt();
@@ -325,7 +330,7 @@ describe('unexpected bleeding never starts a cycle', () => {
 
   describe('a day she did not bleed on', () => {
     it('offers her nothing to mark, because the mark is about bleeding', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
 
       await sheOpens('/log');
 
@@ -339,7 +344,7 @@ describe('unexpected bleeding never starts a cycle', () => {
 
   describe('a day behind her', () => {
     it('takes the mark too, and starts no cycle in the middle of her month', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens(`/day/${lastFriday}`);
       await shePicks('light');
 
@@ -355,7 +360,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     });
 
     it('opens on the mark she left there, when she comes back to it', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens(`/day/${lastFriday}`);
       await shePicks('light');
       await sheMarksIt();
@@ -371,7 +376,7 @@ describe('unexpected bleeding never starts a cycle', () => {
 
   describe('the words she reads while she does it', () => {
     it('carries the line the brand brief sets, word for word', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
 
       await shePicks('spotting');
@@ -413,7 +418,7 @@ describe('unexpected bleeding never starts a cycle', () => {
     });
 
     it('is a control she can hit without looking at it', async () => {
-      herPhoneHolds(whenSheOpensIt, herSixPeriods());
+      await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
 
       await shePicks('spotting');
