@@ -1,11 +1,14 @@
-import { type DayRecord, keyLength, recordBytes, recordFromBytes } from '@emi/crypto';
+import { type DayRecord, keyLength } from '@emi/crypto';
 
 /**
  * The plaintext of a day, from section 6.2 of the design. The shape, the ranges and the canonical
  * bytes all live in `@emi/crypto`, because the service reads the same format and one of them
  * drifting from the other is the failure this package exists to stop.
+ *
+ * Sealing and opening are not re-exported here: a test reaches for `herVault` instead, because a
+ * row written with the plain bytes is a row the table refuses.
  */
-export { type DayRecord, recordBytes, recordFromBytes };
+export type { DayRecord };
 
 export function aDayRecord(overrides: Partial<DayRecord> = {}): DayRecord {
   return {

@@ -1,4 +1,3 @@
-import { recordFromBytes } from '@emi/crypto';
 import { startsACycle } from '@emi/cycle';
 
 import type { Database, SqlValue } from '../../src/data/database';
@@ -16,6 +15,7 @@ import {
   statedCycleLengthDays,
 } from '../../src/features/onboarding/firstRun';
 import { openTestDatabase } from '../data/nodeDatabase';
+import { herVault } from '../fixtures/herVault';
 
 const sheAnswered = new Date('2026-05-14T12:00:00.000Z');
 const herPeriodStarted = '2026-05-09';
@@ -61,14 +61,15 @@ describe('the answers she gives on the first run', () => {
 
       completeFirstRun(
         database,
+        herVault(),
         { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
         sheAnswered,
       );
 
       const row = readDayLog(database, herPeriodStarted);
       expect(row?.revision).toBe(1);
-      expect(row && startsACycle(recordFromBytes(row.payload))).toBe(true);
-      expect(row && recordFromBytes(row.payload)).toEqual({
+      expect(row && startsACycle(herVault().open(row.payload))).toBe(true);
+      expect(row && herVault().open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
         recordedAt: sheAnswered.toISOString(),
@@ -80,6 +81,7 @@ describe('the answers she gives on the first run', () => {
 
       completeFirstRun(
         database,
+        herVault(),
         { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
         sheAnswered,
       );
@@ -105,6 +107,7 @@ describe('the answers she gives on the first run', () => {
         refusalFrom(() =>
           completeFirstRun(
             database,
+            herVault(),
             { periodStartedOn: '2026-05-15', cycleLengthDays: 28 },
             sheAnswered,
           ),
@@ -119,11 +122,21 @@ describe('the answers she gives on the first run', () => {
 
       expect(
         refusalFrom(() =>
-          completeFirstRun(database, { periodStartedOn: tooFar, cycleLengthDays: 28 }, sheAnswered),
+          completeFirstRun(
+            database,
+            herVault(),
+            { periodStartedOn: tooFar, cycleLengthDays: 28 },
+            sheAnswered,
+          ),
         ),
       ).toBe('period-start-is-too-long-ago');
       expect(() =>
-        completeFirstRun(database, { periodStartedOn: tooFar, cycleLengthDays: 28 }, sheAnswered),
+        completeFirstRun(
+          database,
+          herVault(),
+          { periodStartedOn: tooFar, cycleLengthDays: 28 },
+          sheAnswered,
+        ),
       ).toThrow(new RegExp(`${longestLookBackDays}`));
       expect(listDayLogs(database)).toEqual([]);
     });
@@ -138,6 +151,7 @@ describe('the answers she gives on the first run', () => {
           refusalFrom(() =>
             completeFirstRun(
               database,
+              herVault(),
               { periodStartedOn: herPeriodStarted, cycleLengthDays: days },
               sheAnswered,
             ),
@@ -153,6 +167,7 @@ describe('the answers she gives on the first run', () => {
       const database = migrated();
       completeFirstRun(
         database,
+        herVault(),
         { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
         sheAnswered,
       );
@@ -160,6 +175,7 @@ describe('the answers she gives on the first run', () => {
       expect(() =>
         completeFirstRun(
           database,
+          herVault(),
           { periodStartedOn: '2026-05-10', cycleLengthDays: 29 },
           sheAnswered,
         ),
@@ -175,6 +191,7 @@ describe('the answers she gives on the first run', () => {
       expect(() =>
         completeFirstRun(
           refusing(database, 'setting'),
+          herVault(),
           { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
           sheAnswered,
         ),
@@ -183,6 +200,7 @@ describe('the answers she gives on the first run', () => {
 
       completeFirstRun(
         database,
+        herVault(),
         { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
         sheAnswered,
       );

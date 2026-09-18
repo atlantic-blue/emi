@@ -105,7 +105,8 @@ describe('one long cycle does not move the forecast', () => {
       const days = readBack(db);
       const cycles = cyclesFrom(days);
 
-      expect(days).toContainEqual(unexpected);
+      // A stored day also carries the time it was saved, which the arithmetic never reads.
+      expect(days).toContainEqual({ ...unexpected, recordedAt: `${unexpected.day}T12:00:00.000Z` });
       expect(cycles.map((cycle) => cycle.startedOn)).toEqual(startsOf(veryRegular));
       expect(cycles.map((cycle) => cycle.startedOn)).not.toContain('2026-01-20');
     });

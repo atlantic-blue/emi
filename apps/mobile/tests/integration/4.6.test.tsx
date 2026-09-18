@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { type DayRecord, recordFromBytes } from '@emi/crypto';
+import { type DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
 import { colour, phasePalette } from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
@@ -24,12 +24,16 @@ import { historyCopy, patternsWaitingSentence } from '../../src/features/history
 import { historyNeedsCycles } from '../../src/features/history/historyNow';
 import { historyTestID } from '../../src/features/home/HomeScreen';
 import { resetExpoSqlite } from '../data/expoSqlite';
+import { herVault } from '../fixtures/herVault';
+import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { colourOf, textDrawnOnAPhaseFill } from '../fixtures/phaseInk';
 import { textIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
+jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
+jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 
@@ -146,7 +150,7 @@ function everyControlOnTheScreen() {
 function whatWasRecordedOn(day: string): DayRecord | undefined {
   const row = readDayLog(herDatabase(), day);
 
-  return row ? recordFromBytes(row.payload) : undefined;
+  return row ? herVault().open(row.payload) : undefined;
 }
 
 describe('a recurring symptom is named and a one off is not', () => {
@@ -157,6 +161,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     // reads off a screen is the shape and never a frame of an animation.
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
     resetExpoSqlite();
+    resetExpoSecureStore();
   });
 
   afterEach(() => {
@@ -166,7 +171,7 @@ describe('a recurring symptom is named and a one off is not', () => {
 
   describe('the symptom that came back before every period', () => {
     it('names the symptom, the day it lands on and the cycles behind it', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
 
       await sheOpensHerHistory();
 
@@ -176,7 +181,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('opens the day she last logged it, so a pattern she disagrees with is a day she can fix', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
       const app = await sheOpensHerHistory();
 
       await shePresses(historyPatternTestID('cramps'));
@@ -190,7 +195,7 @@ describe('a recurring symptom is named and a one off is not', () => {
 
   describe('the symptom that happened once', () => {
     it('is not named on the screen at all, because once is not a pattern', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
 
       await sheOpensHerHistory();
 
@@ -199,7 +204,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('is still not named after it came back a second time, one short of the floor', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
 
       await sheOpensHerHistory();
 
@@ -209,7 +214,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('says how many of her cycles are complete while there are too few to read', async () => {
-      herPhoneHolds(whenSheOpensIt, herFirstWeeks());
+      await herPhoneHolds(whenSheOpensIt, herFirstWeeks());
 
       await sheOpensHerHistory();
 
@@ -222,7 +227,7 @@ describe('a recurring symptom is named and a one off is not', () => {
 
   describe('six cycles, read back', () => {
     it('lists the cycles she recorded, most recent first, with their lengths', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
 
       await sheOpensHerHistory();
 
@@ -238,7 +243,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('draws the period she is having in the cycle she is still in', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
 
       await sheOpensHerHistory();
 
@@ -246,7 +251,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('opens the day a cycle began when she presses that cycle', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
       const app = await sheOpensHerHistory();
       const started = herCompleteCyclesNewestFirst[0] as string;
 
@@ -257,7 +262,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('comes back to the history when she leaves the day she opened', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
       const app = await sheOpensHerHistory();
       const started = herCompleteCyclesNewestFirst[0] as string;
       await shePresses(historyCycleTestID(started));
@@ -269,7 +274,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('takes her back to the ring from the history', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
       const app = await sheOpensHerHistory();
 
       await shePresses(historyBackTestID);
@@ -280,7 +285,7 @@ describe('a recurring symptom is named and a one off is not', () => {
 
   describe('the colour and the words next to it', () => {
     it('draws no text on a phase fill, because a fill fails the contrast floor', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
 
       await sheOpensHerHistory();
 
@@ -289,7 +294,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('writes the phase name in the ink partner of the phase it names', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
 
       await sheOpensHerHistory();
 
@@ -299,7 +304,7 @@ describe('a recurring symptom is named and a one off is not', () => {
     });
 
     it('leaves nothing on the screen too small to press', async () => {
-      herPhoneHolds(whenSheOpensIt, herYear());
+      await herPhoneHolds(whenSheOpensIt, herYear());
 
       await sheOpensHerHistory();
 
