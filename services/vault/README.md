@@ -16,4 +16,20 @@ stops a captured request being sent again. An account that does not exist is ref
 a bad signature is refused with, and it pays for the same Ed25519 verification first, so the time
 the answer takes tells a caller nothing about who holds an account.
 
-The storage is a port. The DynamoDB implementation behind it arrives with the record endpoints.
+The storage is a port, and the implementation behind it writes the items DynamoDB holds. It takes
+the request shapes DynamoDB takes, so the item this service writes is the item a test reads, and
+the test that reads one is the point of the whole service: it writes a day whose note carries a
+rare word, then reads every attribute of the item that reached the table and finds the word in
+none of them.
+
+A record is written under an identifier of version 7 and nothing else, because the identifier is
+the one part of a record that travels in the clear and a free text one would be somewhere to write
+a date. A write whose revision is not higher than the stored one is refused with the revision that
+is held, so two phones converge on the higher one rather than on whichever arrived last. A pull
+reads one account's records in write order and stops before a page costs a megabyte, answering
+with a cursor rather than cutting the answer short in silence.
+
+Nothing here can open an envelope. The service takes one function from the envelope, the one that
+reads its shape, and a test walks these files from the entry point to prove it: no decrypting
+function is imported, nothing comes from the cipher library, and no word for a key appears that is
+not a key to the table or a public key.

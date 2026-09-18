@@ -89,3 +89,17 @@ export function signedRequest(
     forAuthorizer: authorizerEvent(parts, headers),
   };
 }
+
+/**
+ * The event as the api sends it to the function behind the authorizer, which is the same event
+ * with the account the authorizer allowed carried beside it.
+ */
+export function authorizedEvent(event: HttpRequestEvent, accountId: string): HttpRequestEvent {
+  return {
+    ...event,
+    requestContext: {
+      ...event.requestContext,
+      authorizer: { lambda: { accountId } },
+    },
+  };
+}
