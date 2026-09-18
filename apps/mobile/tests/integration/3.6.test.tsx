@@ -11,7 +11,7 @@ import {
   phaseLabel,
   ringGeometry,
 } from '@emi/tokens';
-import { render, screen } from '@testing-library/react-native';
+import { render, screen, within } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
@@ -31,6 +31,7 @@ import { forecastOf } from '../../src/features/forecast/fromCache';
 import {
   HomeScreen,
   homeCopy,
+  homeForecastTestID,
   homeNoRingTestID,
   logTodayTestID,
 } from '../../src/features/home/HomeScreen';
@@ -285,9 +286,9 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       expect(screen.getByTestId(ringBeadTestID)).toBeTruthy();
       expect(screen.getByText(String(theDaySheOpensIt))).toBeTruthy();
       expect(screen.getByText(phaseLabel.follicular)).toBeTruthy();
-      expect(screen.getByTestId(nextPeriodRangeTestID)).toHaveTextContent(
-        rangeSentence(her.forecast.start),
-      );
+      expect(
+        within(screen.getByTestId(homeForecastTestID)).getByTestId(nextPeriodRangeTestID),
+      ).toHaveTextContent(rangeSentence(her.forecast.start));
     });
 
     for (const has of theFourSets) {
