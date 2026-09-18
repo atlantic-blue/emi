@@ -78,7 +78,11 @@ export function LogSheet({ day, symptoms = [], onSave, catalogue }: LogSheetProp
           sections.map((section) => (
             <SymptomGroupSection
               key={section.group ?? 'found'}
-              heading={section.group === null ? found(section.symptoms.length) : groupHeadings[section.group]}
+              heading={
+                section.group === null
+                  ? found(section.symptoms.length)
+                  : groupHeadings[section.group]
+              }
               onToggle={toggle}
               picked={picked}
               symptoms={section.symptoms}
@@ -111,7 +115,12 @@ function found(count: number): string {
 }
 
 const styles = StyleSheet.create({
-  sheet: { backgroundColor: colour.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, flex: 1 },
+  sheet: {
+    backgroundColor: colour.surface,
+    borderTopLeftRadius: radius.sheet,
+    borderTopRightRadius: radius.sheet,
+    flex: 1,
+  },
   scrolled: { gap: space.base, padding: space.base },
   search: {
     backgroundColor: colour.sunk,

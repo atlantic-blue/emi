@@ -1,4 +1,10 @@
-import { type Symptom, type SymptomGroup, loggableSymptoms, symptomGroups, symptoms } from '@emi/cycle';
+import {
+  type Symptom,
+  type SymptomGroup,
+  loggableSymptoms,
+  symptomGroups,
+  symptoms,
+} from '@emi/cycle';
 
 /**
  * Search reads the display name and the slug, because an export shows her a slug and she then
