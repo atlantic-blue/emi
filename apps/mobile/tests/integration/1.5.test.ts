@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { ICON_SIZE, type IconName, icon, iconNames, icons, radius, stroke } from '@emi/tokens';
+import { ICON_CORNER, ICON_SIZE, type IconName, icon, iconNames, icons, stroke } from '@emi/tokens';
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
 const drawingDirectory = join(repositoryRoot, 'brand', 'icons');
@@ -163,12 +163,12 @@ describe('every icon in the set shares one stroke weight', () => {
       expect(fileFor(name)).not.toMatch(/#[0-9a-fA-F]{3,8}/);
     });
 
-    it('a rectangle is rounded to the icon radius', () => {
+    it('a rectangle is rounded to the corner the icon grid draws', () => {
       const rectangles = everyName.flatMap((name) => [...fileFor(name).matchAll(/<rect[^>]*>/g)]);
 
       expect(rectangles.length).toBeGreaterThan(0);
       for (const [rectangle] of rectangles) {
-        expect(attributeOf(rectangle, 'rx')).toBe(String(radius.icon));
+        expect(attributeOf(rectangle, 'rx')).toBe(String(ICON_CORNER));
       }
     });
   });

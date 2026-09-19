@@ -274,10 +274,10 @@ function wordmarkDrawing(gapDegrees: number, air: number, ground: boolean): Draw
   const svg =
     open(width, height) +
     (ground
-      ? `<rect width="${number(width)}" height="${number(height)}" fill="${colour.stone}"/>`
+      ? `<rect width="${number(width)}" height="${number(height)}" fill="${colour.surfaceContainerLowest}"/>`
       : '') +
-    `<path d="${letterPathData(place)}" fill="${colour.ember}"/>` +
-    `<path d="${ringPathData(subject, place)}" fill="none" stroke="${colour.ember}" ` +
+    `<path d="${letterPathData(place)}" fill="${colour.primary}"/>` +
+    `<path d="${ringPathData(subject, place)}" fill="none" stroke="${colour.primary}" ` +
     `stroke-width="${number(subject.stroke)}"/>` +
     '</svg>\n';
   return {
@@ -312,7 +312,7 @@ export function ringAlone(gapDegrees: number = GAP_DEGREES): Drawing {
   };
   const svg =
     open(size, size) +
-    `<path d="${ringPathData(subject, place)}" fill="none" stroke="${colour.ember}" ` +
+    `<path d="${ringPathData(subject, place)}" fill="none" stroke="${colour.primary}" ` +
     `stroke-width="${number(subject.stroke)}"/>` +
     '</svg>\n';
   const drawn = ringPlaced(subject, place);

@@ -314,9 +314,9 @@ const STYLE = `
 * { box-sizing: border-box; }
 body {
   margin: 0;
-  padding: ${space.base}px;
-  background: ${colour.stone};
-  color: ${colour.ink};
+  padding: ${space.spaceLg}px;
+  background: ${colour.surfaceContainerLowest};
+  color: ${colour.onSurface};
   font-family: system-ui, sans-serif;
   font-size: ${typeScale['body-lg'].size}px;
   line-height: ${typeScale['body-lg'].lineHeight}px;
@@ -326,25 +326,25 @@ h1 { font-size: ${typeScale['headline-xl'].size}px; line-height: ${typeScale['he
 h2 {
   font-size: ${typeScale['headline-md'].size}px;
   line-height: ${typeScale['headline-md'].lineHeight}px;
-  margin: ${space.roomy}px 0 ${space.snug}px;
-  padding-bottom: ${space.hair}px;
-  border-bottom: 1px solid ${colour.hairline};
+  margin: ${space.spaceXl}px 0 ${space.spaceMd}px;
+  padding-bottom: ${space.spaceXs}px;
+  border-bottom: 1px solid ${colour.outlineVariant};
 }
-h3 { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin: 0 0 ${space.hair}px; color: ${colour.ember}; }
-p { margin: ${space.hair}px 0 0; }
-.taken { color: ${colour.body}; }
-.what { color: ${colour.body}; margin-top: ${space.snug}px; }
-.note { color: ${colour.muted}; font-size: ${typeScale['body-sm'].size}px; margin-top: ${space.snug}px; }
+h3 { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin: 0 0 ${space.spaceXs}px; color: ${colour.primary}; }
+p { margin: ${space.spaceXs}px 0 0; }
+.taken { color: ${colour.onSurfaceVariant}; }
+.what { color: ${colour.onSurfaceVariant}; margin-top: ${space.spaceMd}px; }
+.note { color: ${colour.onSurfaceVariant}; font-size: ${typeScale['body-sm'].size}px; margin-top: ${space.spaceMd}px; }
 article {
-  background: ${colour.surface};
-  border: 1px solid ${colour.hairline};
-  border-radius: ${radius.card}px;
-  padding: ${space.snug}px;
-  margin-bottom: ${space.tight}px;
+  background: ${colour.surfaceContainerLowest};
+  border: 1px solid ${colour.outlineVariant};
+  border-radius: ${radius.lg}px;
+  padding: ${space.spaceMd}px;
+  margin-bottom: ${space.spaceSm}px;
   break-inside: avoid;
 }
-.line { display: flex; gap: ${space.snug}px; padding: 2px 0; }
-.label { color: ${colour.muted}; flex: 0 0 200px; }
-.value { color: ${colour.ink}; flex: 1 1 auto; }
-@media print { body { background: ${colour.surface}; } article { break-inside: avoid; } }
+.line { display: flex; gap: ${space.spaceMd}px; padding: 2px 0; }
+.label { color: ${colour.onSurfaceVariant}; flex: 0 0 200px; }
+.value { color: ${colour.onSurface}; flex: 1 1 auto; }
+@media print { body { background: ${colour.surfaceContainerLowest}; } article { break-inside: avoid; } }
 `;

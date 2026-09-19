@@ -11,6 +11,7 @@ import {
   blurOf,
   drawingOf,
   fileOf,
+  fillOf,
   phaseColours,
   pictureOf,
   pieces,
@@ -160,7 +161,7 @@ describe('an illustration carrying a forbidden subject is refused', () => {
       '%s draws in the phase colours, on the stone ground, and in no other colour',
       (_name, piece) => {
         const fills = fillsIn(fileIn(fileOf(piece)));
-        const approved = phaseColours.map((phase) => colour[phase]);
+        const approved = phaseColours.map((phase) => colour[fillOf(phase)]);
 
         expect(fills[0]).toBe(colour[GROUND]);
         for (const fill of fills.slice(1)) {
@@ -169,7 +170,11 @@ describe('an illustration carrying a forbidden subject is refused', () => {
         for (const shape of piece.shapes) {
           expect(phaseColours).toContain(shape.colour);
         }
-        expect(fills).not.toContain(colour.ember);
+        // Every fill is the ground or one of the four phase fills, and nothing else: the brand
+        // red reaches a piece only as the ovulation fill the phase palette names.
+        expect(fills.filter((fill) => fill !== colour[GROUND] && !approved.includes(fill))).toEqual(
+          [],
+        );
       },
     );
 

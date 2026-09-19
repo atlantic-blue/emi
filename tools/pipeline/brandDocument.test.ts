@@ -43,7 +43,10 @@ const counts = brandCounts();
 // One colour moved to the value of another, which is what a token change looks like from here.
 const moved: BrandSources = {
   ...shippedSources,
-  palette: { ...colours, ember: { ...colours.ember, value: colours.emberPressed.value } },
+  palette: {
+    ...colours,
+    primary: { ...colours.primary, value: colours.onPrimaryFixedVariant.value },
+  },
 };
 
 function run(...args: string[]): { status: number | null; output: string } {
@@ -97,9 +100,11 @@ describe('a changed token leaves the brand document stale and the run red', () =
       expect(finished.output).toContain(`${brandDocumentPath} is stale`);
       expect(finished.output).toContain('disagree at line');
       expect(finished.output).toContain(
-        `committed: "- \`ember\` is \`${colours.emberPressed.value}\``,
+        `committed: "- \`primary\` is \`${colours.onPrimaryFixedVariant.value}\``,
       );
-      expect(finished.output).toContain(`generated: "- \`ember\` is \`${colours.ember.value}\``);
+      expect(finished.output).toContain(
+        `generated: "- \`primary\` is \`${colours.primary.value}\``,
+      );
       expect(finished.output).toContain(`Run ${generateCommand}.`);
     });
 
@@ -180,8 +185,8 @@ describe('a changed token leaves the brand document stale and the run red', () =
     it('measures the pairs it refuses instead of leaving them unexplained', () => {
       const refused = refusedPairs();
 
-      expect(committed).toContain('- muted on sunk is 4.43 to 1');
-      expect(committed).toContain('- muted on emberTint is 4.36 to 1');
+      expect(committed).toContain('- inverseOnSurface on primaryContainer is 4.10 to 1');
+      expect(committed).toContain('- inverseOnSurface on tertiaryContainer is 4.07 to 1');
       expect(refused.every((pair) => pair.ratio < CONTRAST_FLOOR)).toBe(true);
       expect(refused.filter((pair) => !committed.includes(`- ${report(pair)}`))).toEqual([]);
       expect(refused.length).toBeGreaterThan(0);
@@ -191,40 +196,42 @@ describe('a changed token leaves the brand document stale and the run red', () =
       const fills = fillPairs();
       const unnamed = fills.filter(
         (pair) =>
-          !committed.includes(`- ${report(pair)}, so \`${pair.text}Ink\` carries the text.`),
+          !committed.includes(
+            `- ${report(pair)}, so \`${inkPartnerOf(shippedSources, pair.text)}\` carries the text.`,
+          ),
       );
 
       expect(fills.map((pair) => pair.text)).toEqual([
-        'period',
-        'follicular',
-        'ovulation',
-        'luteal',
+        'primary',
+        'primaryContainer',
+        'secondaryContainer',
+        'tertiaryContainer',
       ]);
       expect(unnamed).toEqual([]);
     });
 
-    it('takes ember for a fill and not for a phase, because no colour is named emberInk', () => {
+    it('takes a fill for a phase only where the phase palette pairs it with an ink', () => {
       const fills = fillPairs().map((pair) => pair.text);
 
-      expect(inkPartnerOf(shippedSources, 'period')).toBe('periodInk');
-      expect(inkPartnerOf(shippedSources, 'ember')).toBeNull();
-      expect(inkPartnerOf(shippedSources, 'emberPressed')).toBeNull();
-      expect(fills).not.toContain('ember');
-      expect(fills).not.toContain('emberPressed');
+      expect(inkPartnerOf(shippedSources, 'primaryContainer')).toBe('onPrimaryFixedVariant');
+      expect(inkPartnerOf(shippedSources, 'surfaceTint')).toBeNull();
+      expect(inkPartnerOf(shippedSources, 'errorContainer')).toBeNull();
+      expect(fills).not.toContain('surfaceTint');
+      expect(fills).not.toContain('errorContainer');
     });
 
     it('says which fill measures above the floor and is refused as text anyway', () => {
       const passing = fillPairs().filter((pair) => pair.ratio >= CONTRAST_FLOOR);
 
-      expect(passing.map((pair) => pair.text)).toEqual(['luteal']);
-      expect(committed).toContain('The fill `luteal` measures above the floor.');
+      expect(passing.map((pair) => pair.text)).toEqual(['primary']);
+      expect(committed).toContain('The fill `primary` measures above the floor.');
     });
 
     it('moves the ratio it prints when the colour under it moves', () => {
       const before = report({
-        text: 'ember',
-        ground: 'stone',
-        ratio: contrastRatio(colours.ember.value, colours.stone.value),
+        text: 'primary',
+        ground: 'surface',
+        ratio: contrastRatio(colours.primary.value, colours.surface.value),
       });
       const after = brandDocument(moved);
 

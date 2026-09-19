@@ -42,5 +42,5 @@ export function Screen({ testID, children }: Props): ReactNode {
 }
 
 const styles = StyleSheet.create({
-  screen: { backgroundColor: colour.stone, flex: 1 },
+  screen: { backgroundColor: colour.surface, flex: 1 },
 });

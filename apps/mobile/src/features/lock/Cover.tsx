@@ -27,10 +27,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    padding: space.base,
+    padding: space.spaceLg,
   },
   wordmark: {
-    color: colour.ember,
+    color: colour.primary,
     ...textStyle('headline-xl'),
   },
 });

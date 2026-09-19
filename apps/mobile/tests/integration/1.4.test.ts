@@ -25,7 +25,7 @@ const RING_FRACTION_OF_WIDTH = 0.56;
 const OPTICAL_RISE_OF_WIDTH = 0.02;
 const ADAPTIVE_CANVAS = 108;
 const ADAPTIVE_VISIBLE = 72;
-const stone = colourFromHex(colour.stone);
+const stone = colourFromHex(colour.surfaceContainerLowest);
 
 interface Run {
   readonly status: number | null;
@@ -148,7 +148,7 @@ describe('one source generates every icon both stores ask for', () => {
       const onTheStroke = pixelAt(image, box.left + 12, Math.round(box.top + box.height / 2));
 
       expect(corner).toEqual({ ...stone, alpha: 255 });
-      expect(onTheStroke).toEqual({ ...colourFromHex(colour.ember), alpha: 255 });
+      expect(onTheStroke).toEqual({ ...colourFromHex(colour.primary), alpha: 255 });
     });
 
     it('sits it above the geometric centre, so it does not read low', () => {
@@ -311,7 +311,7 @@ describe('one source generates every icon both stores ask for', () => {
       expect(box.width / image.width).toBeCloseTo(RING_FRACTION_OF_WIDTH, 2);
       expect(pixelAt(image, 0, 0)).toEqual({ ...stone, alpha: 255 });
       expect(pixelAt(image, box.left + 20, Math.round(box.top + box.height / 2))).toEqual({
-        ...colourFromHex(colour.ember),
+        ...colourFromHex(colour.primary),
         alpha: 255,
       });
     });

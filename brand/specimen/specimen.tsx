@@ -84,8 +84,8 @@ function styleSheet(fontsBase: string): string {
     fontRules(fontsBase),
     sizeRules(),
     `body {
-  background: ${colour.stone};
-  color: ${colour.ink};
+  background: ${colour.surfaceContainerLowest};
+  color: ${colour.onSurface};
   margin: 0;
   padding: 56px 64px;
   width: ${specimenPage.width - 128}px;
@@ -93,7 +93,7 @@ function styleSheet(fontsBase: string): string {
   box-sizing: border-box;
 }`,
     `.label {
-  color: ${colour.muted};
+  color: ${colour.onSurfaceVariant};
   width: 200px;
   flex: none;
 }`,
@@ -104,7 +104,7 @@ function styleSheet(fontsBase: string): string {
   margin-bottom: 8px;
 }`,
     `.section {
-  border-top: 1px solid ${colour.hairline};
+  border-top: 1px solid ${colour.outlineVariant};
   padding-top: 20px;
   margin-top: 28px;
 }`,
@@ -115,11 +115,11 @@ function styleSheet(fontsBase: string): string {
   margin-bottom: 4px;
 }`,
     `.files {
-  color: ${colour.muted};
+  color: ${colour.onSurfaceVariant};
   margin-bottom: 18px;
 }`,
     `.scale {
-  color: ${colour.ember};
+  color: ${colour.primary};
 }`,
   ].join('\n');
 }

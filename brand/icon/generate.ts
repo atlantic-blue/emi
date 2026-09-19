@@ -56,7 +56,7 @@ function inkOfRing(ring: RingSource): Box {
 
 function measuredFraction(icon: string): number {
   const rendered = decodePng(renderPng(icon, CANVAS));
-  const box = inkBox(rendered, colourFromHex(colour.stone));
+  const box = inkBox(rendered, colourFromHex(colour.surfaceContainerLowest));
 
   return Math.max(box.width, box.height) / rendered.width;
 }
@@ -83,7 +83,7 @@ export function generate(ringSourcePath: string, outputPath: string): Report {
 
   const icons = new Map<Artwork, string>();
   for (const artwork of ['icon', 'adaptiveForeground', 'adaptiveBackground'] as const) {
-    icons.set(artwork, composeIcon(ring, artwork, ink, colour.stone));
+    icons.set(artwork, composeIcon(ring, artwork, ink, colour.surfaceContainerLowest));
   }
 
   const square = icons.get('icon') ?? '';

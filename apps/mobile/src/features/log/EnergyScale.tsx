@@ -71,31 +71,31 @@ export function EnergyScale({ level, onChoose }: EnergyScaleProps) {
 }
 
 const styles = StyleSheet.create({
-  section: { gap: space.snug },
-  headings: { alignItems: 'baseline', flexDirection: 'row', gap: space.tight },
+  section: { gap: space.spaceMd },
+  headings: { alignItems: 'baseline', flexDirection: 'row', gap: space.spaceSm },
   heading: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-md'),
   },
   chosen: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
   },
-  steps: { flexDirection: 'row', flexWrap: 'wrap', gap: space.tight },
+  steps: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
   step: {
     alignItems: 'center',
-    borderRadius: radius.chip,
+    borderRadius: radius.md,
     borderWidth: 1,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.snug,
+    paddingHorizontal: space.spaceMd,
   },
-  stepPlain: { backgroundColor: colour.sunk, borderColor: colour.sunk },
-  stepChosen: { backgroundColor: colour.emberTint, borderColor: colour.ember },
+  stepPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
+  stepChosen: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
   stepLabel: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
   },
-  stepLabelChosen: { color: colour.ink },
+  stepLabelChosen: { color: colour.onSurface },
 });

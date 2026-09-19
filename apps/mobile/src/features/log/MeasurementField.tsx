@@ -51,7 +51,7 @@ export function MeasurementField<Unit extends string>({
           keyboardType="decimal-pad"
           onChangeText={(text) => onRead(readingOf(measurement, text, unit))}
           placeholder={placeholder}
-          placeholderTextColor={colour.body}
+          placeholderTextColor={colour.onSurfaceVariant}
           style={styles.field}
           testID={`${testID}-value`}
           value={shown.typed}
@@ -88,46 +88,46 @@ export function MeasurementField<Unit extends string>({
 }
 
 const styles = StyleSheet.create({
-  section: { gap: space.snug },
-  headings: { alignItems: 'baseline', flexDirection: 'row', flexWrap: 'wrap', gap: space.tight },
+  section: { gap: space.spaceMd },
+  headings: { alignItems: 'baseline', flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
   heading: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-md'),
   },
   hint: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
   },
-  row: { alignItems: 'center', flexDirection: 'row', gap: space.tight },
+  row: { alignItems: 'center', flexDirection: 'row', gap: space.spaceSm },
   field: {
-    backgroundColor: colour.sunk,
-    borderRadius: radius.chip,
-    color: colour.ink,
+    backgroundColor: colour.surfaceContainer,
+    borderRadius: radius.md,
+    color: colour.onSurface,
     flex: 1,
     ...textStyle('body-lg'),
     minHeight: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.snug,
-    paddingVertical: space.tight,
+    paddingHorizontal: space.spaceMd,
+    paddingVertical: space.spaceSm,
   },
-  units: { flexDirection: 'row', gap: space.tight },
+  units: { flexDirection: 'row', gap: space.spaceSm },
   unit: {
     alignItems: 'center',
-    borderRadius: radius.chip,
+    borderRadius: radius.md,
     borderWidth: 1,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.tight,
+    paddingHorizontal: space.spaceSm,
   },
-  unitPlain: { backgroundColor: colour.sunk, borderColor: colour.sunk },
-  unitChosen: { backgroundColor: colour.emberTint, borderColor: colour.ember },
+  unitPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
+  unitChosen: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
   unitLabel: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
   },
-  unitLabelChosen: { color: colour.ink },
+  unitLabelChosen: { color: colour.onSurface },
   refusal: {
-    color: colour.ember,
+    color: colour.primary,
     ...textStyle('body-sm'),
   },
 });

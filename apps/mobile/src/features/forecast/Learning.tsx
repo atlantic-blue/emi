@@ -58,21 +58,21 @@ export function NextPeriodOrLearning({ result, cycleLengthDays }: Props): ReactN
 }
 
 const styles = StyleSheet.create({
-  block: { paddingHorizontal: space.base, paddingVertical: space.snug },
+  block: { paddingHorizontal: space.spaceLg, paddingVertical: space.spaceMd },
   label: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     ...textStyle('label-sm'),
-    marginBottom: space.hair,
+    marginBottom: space.spaceXs,
   },
   length: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
   },
   // The learning state is quieter than the forecast it will become: the sentence takes the body
   // size rather than the heading size the two days carry, because there is no date to lead with.
   wanted: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('body-lg'),
-    marginBottom: space.hair,
+    marginBottom: space.spaceXs,
   },
 });

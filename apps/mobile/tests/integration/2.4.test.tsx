@@ -181,7 +181,7 @@ describe('the ring renders a short cycle and a long cycle correctly', () => {
       expect(elapsed.props.opacity).toBeUndefined();
       expect(ahead.props.opacity).toBeLessThan(1);
       expect(screen.queryByTestId(ringArcTestID('luteal', 'elapsed'))).toBeNull();
-      expect(colour.ovulation).toBeTruthy();
+      expect(colour.primary).toBeTruthy();
     });
   });
 });
