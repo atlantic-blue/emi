@@ -190,6 +190,17 @@ data "aws_iam_policy_document" "apply" {
     resources = ["arn:aws:logs:*:${var.account_id}:log-group:/aws/*/${var.project_name}-*"]
   }
 
+  # Listing the groups takes no resource. The account evaluates logs:DescribeLogGroups against a
+  # log group with no name in it, which the denial writes as log-group::log-stream:, so the pattern
+  # above can never match and every apply is refused while it reads. The statement above stays
+  # scoped, because a write that changes one group still names one.
+  statement {
+    sid       = "ListTheLogGroups"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
+    resources = ["*"]
+  }
+
   statement {
     sid    = "TheProjectRoles"
     effect = "Allow"
