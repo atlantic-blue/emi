@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -41,6 +42,8 @@ function browser(): string {
 const theCaveat = [
   'Rendered from the tree the flow screen produced under the test runner, at 390 by 844 points,',
   'and not captured from a phone. No screen names a font family yet.',
+  'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
+  'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
 
 const theDaySheOpensIt = 14;
@@ -90,18 +93,20 @@ async function drawn(state: State): Promise<DrawnScreen> {
   });
 
   const view = await render(
-    <LogFlow
-      chosen={state.chosen}
-      day={today}
-      marked={state.marked}
-      onDone={() => undefined}
-      onMark={() => undefined}
-      onPick={() => undefined}
-      ring={ring}
-      today={today}
-    />,
+    <OnAPhone>
+      <LogFlow
+        chosen={state.chosen}
+        day={today}
+        marked={state.marked}
+        onDone={() => undefined}
+        onMark={() => undefined}
+        onPick={() => undefined}
+        ring={ring}
+        today={today}
+      />
+    </OnAPhone>,
   );
-  const tree: unknown = JSON.parse(JSON.stringify(view.toJSON()));
+  const tree: unknown = theScreenIn(view);
 
   view.unmount();
 

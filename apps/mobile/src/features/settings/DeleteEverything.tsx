@@ -2,6 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@e
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Screen } from '../../components/Screen';
 import { settingsCopy } from './copy';
 
 export const deleteScreenTestID = 'delete-screen';
@@ -40,7 +41,7 @@ interface Props {
 export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Props): ReactNode {
   if (stage === 'deleted' || stage === 'deleted-without-the-server') {
     return (
-      <View style={styles.screen} testID={deletedScreenTestID}>
+      <Screen testID={deletedScreenTestID}>
         <ScrollView contentContainerStyle={styles.body}>
           <Text accessibilityRole="header" style={styles.title}>
             {settingsCopy.deleted.title}
@@ -60,14 +61,14 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
             <Text style={styles.actionLabel}>{settingsCopy.deleted.action}</Text>
           </Pressable>
         </ScrollView>
-      </View>
+      </Screen>
     );
   }
 
   const working = stage === 'working';
 
   return (
-    <View style={styles.screen} testID={deleteScreenTestID}>
+    <Screen testID={deleteScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
         <Text accessibilityRole="header" style={styles.title}>
           {settingsCopy.delete.title}
@@ -111,7 +112,7 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
           <Text style={styles.backLabel}>{settingsCopy.delete.back}</Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 
@@ -169,7 +170,6 @@ const styles = StyleSheet.create({
     ...textStyle('body-lg'),
     marginTop: space.snug,
   },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   title: {
     color: colour.ink,
     ...textStyle('headline-lg'),

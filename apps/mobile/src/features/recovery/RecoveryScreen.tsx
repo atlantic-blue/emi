@@ -1,7 +1,8 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
+import { Screen } from '../../components/Screen';
 import { type RecoveryScreen as Which, recoveryStepLabel } from './copy';
 
 /**
@@ -31,7 +32,7 @@ export function RecoveryScreen({
   children,
 }: Props): ReactNode {
   return (
-    <View style={styles.screen} testID={`recovery-${screen}`}>
+    <Screen testID={`recovery-${screen}`}>
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.step}>{recoveryStepLabel(screen)}</Text>
         <Text accessibilityRole="header" style={styles.title}>
@@ -54,7 +55,7 @@ export function RecoveryScreen({
       >
         <Text style={styles.actionLabel}>{actionLabel}</Text>
       </Pressable>
-    </View>
+    </Screen>
   );
 }
 
@@ -80,7 +81,6 @@ const styles = StyleSheet.create({
     ...textStyle('body-lg'),
     marginBottom: space.snug,
   },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   step: {
     color: colour.muted,
     ...textStyle('label-sm'),

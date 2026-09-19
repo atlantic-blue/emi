@@ -78,12 +78,15 @@ export const serviceRoot = join('services', 'vault', 'src');
 export const recoveryCodeWord = /recovery[_ -]?code/i;
 
 /**
- * The only two directories in the application that may name it. The first shows it to her. The
- * second turns it into a key and forgets it. Nothing else has any business with it, and the
- * service is deliberately absent from this list rather than given an empty one.
+ * The only three directories in the application that may name it. The first shows it to her. The
+ * second turns it into a key and forgets it. The third is the catalogue, which holds the sentences
+ * the first one reads out, because every word she reads lives under a key rather than in a screen.
+ * Nothing else has any business with it, and the service is deliberately absent from this list
+ * rather than given an empty one.
  */
 export const recoveryCodeHomes: readonly string[] = [
   join(interfaceRoot, 'features', 'recovery'),
+  join(interfaceRoot, 'language'),
   join(interfaceRoot, 'services', 'vault'),
 ];
 

@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { OnAPhone } from '../fixtures/theSafeArea';
 
 import type { DayRecord } from '@emi/crypto';
 import type { Forecast } from '@emi/cycle';
@@ -22,6 +23,7 @@ import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
+import { cycleCopy } from '../../src/features/cycle/copy';
 import { logDay, recordedDays } from '../../src/features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../src/features/cycle/ringInput';
 import { learningCyclesWantedTestID, learningTestID } from '../../src/features/forecast/Learning';
@@ -30,7 +32,6 @@ import { rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import {
   HomeScreen,
-  homeCopy,
   homeForecastTestID,
   homeNoRingTestID,
   logTodayTestID,
@@ -164,15 +165,17 @@ function theDaysOf(phase: PhaseName, ring: RingInput): DrawnDays {
 
 async function sheOpensHerHomeScreen(her: HerPhone): Promise<void> {
   await render(
-    <HomeScreen
-      cycleLengthDays={sheSaidHerCycleRuns}
-      forecast={her.forecast}
-      onExport={() => undefined}
-      onHistory={() => undefined}
-      onLogToday={() => undefined}
-      onSettings={() => undefined}
-      ring={her.ring}
-    />,
+    <OnAPhone>
+      <HomeScreen
+        cycleLengthDays={sheSaidHerCycleRuns}
+        forecast={her.forecast}
+        onExport={() => undefined}
+        onHistory={() => undefined}
+        onLogToday={() => undefined}
+        onSettings={() => undefined}
+        ring={her.ring}
+      />
+    </OnAPhone>,
   );
 }
 
@@ -322,20 +325,22 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       }
 
       await render(
-        <HomeScreen
-          cycleLengthDays={sheSaidHerCycleRuns}
-          forecast={forecastOf(cycles)}
-          onExport={() => undefined}
-          onHistory={() => undefined}
-          onLogToday={() => undefined}
-          onSettings={() => undefined}
-          ring={ringInputFor({
-            cycles,
-            records: recordedDays(database, readDay),
-            today: addDays(open.startedOn, theDaySheOpensIt - 1),
-            statedCycleLengthDays: sheSaidHerCycleRuns,
-          })}
-        />,
+        <OnAPhone>
+          <HomeScreen
+            cycleLengthDays={sheSaidHerCycleRuns}
+            forecast={forecastOf(cycles)}
+            onExport={() => undefined}
+            onHistory={() => undefined}
+            onLogToday={() => undefined}
+            onSettings={() => undefined}
+            ring={ringInputFor({
+              cycles,
+              records: recordedDays(database, readDay),
+              today: addDays(open.startedOn, theDaySheOpensIt - 1),
+              statedCycleLengthDays: sheSaidHerCycleRuns,
+            })}
+          />
+        </OnAPhone>,
       );
 
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
@@ -348,20 +353,22 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
     it('draws no ring at all, and says what to do, before she has recorded a day', async () => {
       await render(
-        <HomeScreen
-          cycleLengthDays={sheSaidHerCycleRuns}
-          forecast={forecastOf(listCycles(migratedDatabase()))}
-          onExport={() => undefined}
-          onHistory={() => undefined}
-          onLogToday={() => undefined}
-          onSettings={() => undefined}
-          ring={undefined}
-        />,
+        <OnAPhone>
+          <HomeScreen
+            cycleLengthDays={sheSaidHerCycleRuns}
+            forecast={forecastOf(listCycles(migratedDatabase()))}
+            onExport={() => undefined}
+            onHistory={() => undefined}
+            onLogToday={() => undefined}
+            onSettings={() => undefined}
+            ring={undefined}
+          />
+        </OnAPhone>,
       );
 
       expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
       expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
-      expect(screen.getByText(homeCopy.noRing.line)).toBeTruthy();
+      expect(screen.getByText(cycleCopy.noRing.line)).toBeTruthy();
     });
   });
 
@@ -387,18 +394,20 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
     it('keeps them small on the screen that has nothing to draw', async () => {
       await render(
-        <HomeScreen
-          cycleLengthDays={sheSaidHerCycleRuns}
-          forecast={forecastOf(listCycles(migratedDatabase()))}
-          onExport={() => undefined}
-          onHistory={() => undefined}
-          onLogToday={() => undefined}
-          onSettings={() => undefined}
-          ring={undefined}
-        />,
+        <OnAPhone>
+          <HomeScreen
+            cycleLengthDays={sheSaidHerCycleRuns}
+            forecast={forecastOf(listCycles(migratedDatabase()))}
+            onExport={() => undefined}
+            onHistory={() => undefined}
+            onLogToday={() => undefined}
+            onSettings={() => undefined}
+            ring={undefined}
+          />
+        </OnAPhone>,
       );
 
-      expect(theWordsAStrangerCouldRead().map((run) => run.text)).toContain(homeCopy.noRing.line);
+      expect(theWordsAStrangerCouldRead().map((run) => run.text)).toContain(cycleCopy.noRing.line);
       expect(drawnTooLarge()).toEqual([]);
     });
 

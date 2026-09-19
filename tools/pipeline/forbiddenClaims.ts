@@ -3,9 +3,13 @@ import { readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
 /**
- * The wording Emi may never use about itself. Each entry is matched without regard to case, over
- * text whose whitespace has been collapsed, so a phrase still matches when a document wraps it
- * across two lines.
+ * The wording Emi may never use about itself, in every language it is written in. Each entry is
+ * matched without regard to case, over text whose whitespace has been collapsed, so a phrase still
+ * matches when a document wraps it across two lines.
+ *
+ * One list rather than one per language, because a claim is a claim wherever it is written and a
+ * file is never asked which language it is in. A Spanish sentence is held to the Spanish entries
+ * and to the English ones at the same time.
  */
 export const forbiddenWording: readonly string[] = [
   'contraception',
@@ -32,6 +36,57 @@ export const forbiddenWording: readonly string[] = [
   'fda approved',
   'ce marked',
   'gdpr compliant',
+  // Spanish. A plural and a feminine ending are caught by the search, which matches a substring.
+  'anticoncepcion',
+  'anticoncepción',
+  'anticonceptiv',
+  'control de natalidad',
+  'prevenir el embarazo',
+  'previene el embarazo',
+  'evitar el embarazo',
+  'lograr el embarazo',
+  'conseguir el embarazo',
+  'dia seguro',
+  'día seguro',
+  'dias seguros',
+  'días seguros',
+  'certificad',
+  'dispositivo medico',
+  'dispositivo médico',
+  'aprobado medicamente',
+  'aprobado médicamente',
+  'clinicamente probado',
+  'clínicamente probado',
+  'aprobado por un medico',
+  'aprobado por un médico',
+  // Russian. Every entry is a stem rather than a word, because a Russian noun changes its ending
+  // with its case and a search for one ending would miss the other five. Cyrillic is matched here
+  // rather than on the whole word list below, because a word boundary is written for the Latin
+  // alphabet and asserts nothing between two Cyrillic letters.
+  'контрацепт',
+  'контрацепц',
+  'противозачаточ',
+  'предотвращает беременность',
+  'предотвратить беременность',
+  'наступление беременности',
+  'безопасный день',
+  'безопасные дни',
+  'безопасных дней',
+  'безопасный',
+  'безопасная',
+  'безопасное',
+  'безопасные',
+  'безопасных',
+  'защищена',
+  'защищён',
+  'защищен',
+  'защита',
+  'сертифицирован',
+  'сертификац',
+  'медицинск',
+  'издели',
+  'одобрено врачом',
+  'клинически доказан',
 ];
 
 /**
@@ -40,7 +95,23 @@ export const forbiddenWording: readonly string[] = [
  * reads the word on its own and takes it as the claim Emi does not make. They are refused in the
  * application and in the store listing, and allowed in a document that argues.
  */
-export const interfaceOnlyWording: readonly string[] = ['safe', 'protected', 'protection'];
+export const interfaceOnlyWording: readonly string[] = [
+  'safe',
+  'protected',
+  'protection',
+  // Spanish. Each ending is named, because these are matched as whole words rather than as a
+  // substring, so that an ordinary name built around one survives.
+  'segura',
+  'seguras',
+  'seguro',
+  'seguros',
+  'protegida',
+  'protegidas',
+  'protegido',
+  'protegidos',
+  'proteccion',
+  'protección',
+];
 
 /** What a screen and a store listing are held to: the list above, and the three words beside it. */
 export const interfaceWording: readonly string[] = [...forbiddenWording, ...interfaceOnlyWording];
@@ -56,6 +127,14 @@ export const approvedDenials: readonly string[] = [
   'Emi makes no claim to prevent or achieve a pregnancy, and it carries no certification badge that an auditor did not sign.',
   'Emi never says a day is safe, because no day is.',
   'No auditor has looked at Emi, so no standard is named here and no certification badge appears anywhere in the product.',
+  // Spanish, word for word as the catalogue writes them.
+  'Emi no es un anticonceptivo.',
+  'Emi no es un dispositivo médico.',
+  'Emi nunca dice que un día es seguro, porque ninguno lo es.',
+  // Russian, word for word as the catalogue writes them.
+  'Emi не является средством контрацепции.',
+  'Emi не является медицинским изделием.',
+  'Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
 ];
 
 /** The files the scan reads. An extension nobody can read as text is left out. */

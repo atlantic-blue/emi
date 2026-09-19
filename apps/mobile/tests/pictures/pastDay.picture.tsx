@@ -10,6 +10,7 @@ import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { DayRefused } from '../../src/features/log/DayRefused';
 import { LogFlow } from '../../src/features/log/LogFlow';
 import { refusalFor } from '../../src/features/log/editDay';
+import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { daysOf, veryRegular } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
@@ -29,6 +30,8 @@ const theCaveat = [
   'Rendered from the tree the day screen produced under the test runner, at 390 by 844 points, and',
   'not captured from a phone. The page loads the same font files the application loads, so the',
   'words are drawn in Plus Jakarta Sans. Reproduce with: npm run generate:past-day-picture.',
+  'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
+  'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
 
 /** The day of her cycle she opens Emi on, and the day behind it she goes back to. */
@@ -103,24 +106,26 @@ async function drawn(state: State): Promise<DrawnScreen> {
   const refusal =
     state.refused === undefined ? undefined : refusalFor({ day: state.refused, today });
   const view = await render(
-    refusal === undefined ? (
-      <LogFlow
-        chosen={state.chosen}
-        day={thatDay}
-        marked={false}
-        onDone={() => undefined}
-        onMark={() => undefined}
-        onPick={() => undefined}
-        ring={ringFrom(state.days)}
-        today={today}
-      />
-    ) : (
-      <DayRefused onBack={() => undefined} refusal={refusal} />
-    ),
+    <OnAPhone>
+      {refusal === undefined ? (
+        <LogFlow
+          chosen={state.chosen}
+          day={thatDay}
+          marked={false}
+          onDone={() => undefined}
+          onMark={() => undefined}
+          onPick={() => undefined}
+          ring={ringFrom(state.days)}
+          today={today}
+        />
+      ) : (
+        <DayRefused onBack={() => undefined} refusal={refusal} />
+      )}
+    </OnAPhone>,
   );
   // A copy, taken before the screen is torn down. The runner holds one screen at a time, so a tree
   // kept by reference is the tree of whatever was rendered last.
-  const tree: unknown = JSON.parse(JSON.stringify(view.toJSON()));
+  const tree: unknown = theScreenIn(view);
 
   view.unmount();
 

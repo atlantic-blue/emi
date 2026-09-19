@@ -10,6 +10,8 @@ import { bytesFromBase64 } from '@emi/crypto';
 export interface HttpRequestEvent {
   readonly rawPath: string;
   readonly rawQueryString?: string;
+  /** What the route template named, so a path parameter is read as the platform parsed it. */
+  readonly pathParameters?: Readonly<Record<string, string | undefined>>;
   readonly headers: Readonly<Record<string, string | undefined>>;
   readonly requestContext: {
     readonly http: { readonly method: string };

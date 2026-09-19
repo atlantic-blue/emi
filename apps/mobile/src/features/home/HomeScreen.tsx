@@ -4,8 +4,11 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CycleRing } from '../../components/CycleRing';
+import { Screen } from '../../components/Screen';
+import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
 import { NextPeriodOrLearning } from '../forecast/Learning';
+import { homeCopy } from './copy';
 
 /**
  * The one screen she opens. The ring carries the meaning and the words underneath it stay small,
@@ -16,28 +19,20 @@ import { NextPeriodOrLearning } from '../forecast/Learning';
  */
 
 export const logTodayTestID = 'home-log-today';
-export const logTodayLabel = 'Log today';
+export const logTodayLabel = homeCopy.logToday;
 
 export const historyTestID = 'home-history';
-export const historyLabel = 'History';
+export const historyLabel = homeCopy.history;
 
 export const exportTestID = 'home-export';
-export const exportLabel = 'Export';
+export const exportLabel = homeCopy.export;
 
 export const settingsTestID = 'home-settings';
-export const settingsLabel = 'Settings';
+export const settingsLabel = homeCopy.settings;
 
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
-
-export const homeCopy = {
-  wordmark: 'Emi',
-  noRing: {
-    title: 'Nothing to draw yet',
-    line: 'The ring needs a period. Log a day you bled and it appears.',
-  },
-} as const;
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -63,7 +58,7 @@ export function HomeScreen({
   onSettings,
 }: Props): ReactNode {
   return (
-    <View style={styles.screen} testID={homeScreenTestID}>
+    <Screen testID={homeScreenTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <Text accessibilityRole="header" style={styles.wordmark}>
           {homeCopy.wordmark}
@@ -74,9 +69,9 @@ export function HomeScreen({
         ) : (
           <View style={styles.noRing} testID={homeNoRingTestID}>
             <Text accessibilityRole="header" style={styles.noRingTitle}>
-              {homeCopy.noRing.title}
+              {cycleCopy.noRing.title}
             </Text>
-            <Text style={styles.noRingLine}>{homeCopy.noRing.line}</Text>
+            <Text style={styles.noRingLine}>{cycleCopy.noRing.line}</Text>
           </View>
         )}
 
@@ -122,7 +117,7 @@ export function HomeScreen({
           </Pressable>
         </View>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 
@@ -173,7 +168,6 @@ const styles = StyleSheet.create({
     ...textStyle('headline-md'),
     marginBottom: space.hair,
   },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   // The scroll fills the screen so the block inside it sits in the middle of the glass rather than
   // against the top of it, which is where a container sized to its own content would leave it.
   scroll: { flex: 1 },

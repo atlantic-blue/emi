@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -69,6 +70,8 @@ const theCaveat = [
   'Rendered from the tree the home screen produced under the test runner, at 390 by 844 points,',
   'and not captured from a phone. No screen names a font family yet, so the browser uses its own',
   'face where the phone would use the system face. Reproduce with: npm run generate:home-picture.',
+  'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
+  'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
 
 interface Recorded {
@@ -117,19 +120,21 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
         });
 
   const view = await render(
-    <HomeScreen
-      cycleLengthDays={sheSaidHerCycleRuns}
-      forecast={forecast}
-      onExport={() => undefined}
-      onHistory={() => undefined}
-      onLogToday={() => undefined}
-      onSettings={() => undefined}
-      ring={ring}
-    />,
+    <OnAPhone>
+      <HomeScreen
+        cycleLengthDays={sheSaidHerCycleRuns}
+        forecast={forecast}
+        onExport={() => undefined}
+        onHistory={() => undefined}
+        onLogToday={() => undefined}
+        onSettings={() => undefined}
+        ring={ring}
+      />
+    </OnAPhone>,
   );
   // A copy, taken before the screen is torn down. The runner holds one screen at a time, so a tree
   // kept by reference is the tree of whatever was rendered last.
-  const tree: unknown = JSON.parse(JSON.stringify(view.toJSON()));
+  const tree: unknown = theScreenIn(view);
 
   view.unmount();
 

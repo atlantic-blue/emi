@@ -4,7 +4,10 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CycleRing } from '../../components/CycleRing';
+import { Screen } from '../../components/Screen';
+import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
+import { words } from '../../language';
 import { dayLabel } from '../onboarding/days';
 import { FlowPicker } from './FlowPicker';
 import { UnexpectedBleeding } from './UnexpectedBleeding';
@@ -14,13 +17,10 @@ import { UnexpectedBleeding } from './UnexpectedBleeding';
  * while she answers. Design section 9.7 sets the words: say what happens, and never congratulate.
  */
 export const logFlowCopy = {
-  title: 'Your flow',
-  saved: 'Saved on this phone.',
-  noRing: {
-    title: 'Nothing to draw yet',
-    line: 'The ring needs a period. Log a day you bled and it appears.',
-  },
-  done: 'Done',
+  title: words('log.flow.title'),
+  saved: words('log.flow.saved'),
+  noRing: cycleCopy.noRing,
+  done: words('log.flow.done'),
 } as const;
 
 export const logFlowTestID = 'log-flow';
@@ -54,7 +54,7 @@ export function LogFlow({
   const sheBled = chosen !== undefined && isBleeding({ day, flow: chosen });
 
   return (
-    <View style={styles.screen} testID={logFlowTestID}>
+    <Screen testID={logFlowTestID}>
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.ring}>
           {ring ? (
@@ -90,7 +90,7 @@ export function LogFlow({
       >
         <Text style={styles.doneLabel}>{logFlowCopy.done}</Text>
       </Pressable>
-    </View>
+    </Screen>
   );
 }
 
@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
     marginBottom: space.tight,
   },
   ring: { alignItems: 'center', marginBottom: space.snug },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   title: {
     color: colour.ink,
     ...textStyle('headline-lg'),

@@ -169,17 +169,20 @@ function importGraph(): { files: string[]; taken: TakenFrom[] } {
 }
 
 /**
- * What the service may take from the crypto package. Every name here reads a signature, a digest
- * or the shape of an envelope. Adding a line is a deliberate act a reviewer sees, which is the
- * point of writing the list out rather than counting the imports.
+ * What the service may take from the crypto package. Every name here reads a signature, a digest,
+ * the shape of an envelope, or the name of a header. Adding a line is a deliberate act a reviewer
+ * sees, which is the point of writing the list out rather than counting the imports.
  */
 const allowedFromCrypto: readonly string[] = [
+  'accountHeader',
   'accountIdFor',
   'base64Of',
+  'bodyHashHeader',
   'bodyHashOf',
   'bytesFromBase64',
   'decoyPublicKey',
   'deviceKeyLength',
+  'instantHeader',
   'instantIsFresh',
   'instantWindowSeconds',
   'presentedSignatureIn',
@@ -187,6 +190,7 @@ const allowedFromCrypto: readonly string[] = [
   'readWrappedVaultKey',
   'recoverySaltLength',
   'refusalMessages',
+  'signatureHeader',
   'signatureVerifies',
   'wrappedVaultKeyLength',
 ];
@@ -227,6 +231,7 @@ const allowedKeyWords: readonly string[] = [
   'KeyConditionExpression',
   'LastEvaluatedKey',
   'accountSortKey',
+  'articleSortKeyFor',
   'decoyPublicKey',
   'deviceKeyLength',
   'everyKeyUnder',

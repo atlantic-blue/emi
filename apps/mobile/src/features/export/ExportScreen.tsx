@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Screen } from '../../components/Screen';
 import type { WrittenFile } from './destination';
 import type { ExportOutcome } from './exportNow';
 import { exportCopy, heldSentence } from './copy';
@@ -57,7 +58,7 @@ export function ExportScreen({ onBack, onExport, onShare, canShare }: Props): Re
   const made = state.at === 'made' ? state.outcome : undefined;
 
   return (
-    <View style={styles.screen} testID={exportScreenTestID}>
+    <Screen testID={exportScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
         <Pressable
           accessibilityRole="button"
@@ -117,7 +118,7 @@ export function ExportScreen({ onBack, onExport, onShare, canShare }: Props): Re
           </View>
         ) : null}
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 
@@ -176,7 +177,6 @@ const styles = StyleSheet.create({
     marginTop: space.tight,
   },
   made: { marginTop: space.base },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   share: {
     alignItems: 'center',
     justifyContent: 'center',

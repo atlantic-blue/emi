@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Icon } from '../../components/Icon';
+import { Screen } from '../../components/Screen';
 import { type FirstRunScreen, firstRunScreens, stepLabel } from './copy';
 
 interface Props {
@@ -70,7 +71,7 @@ export function OnboardingScreen({
   const [lead, ...rest] = lines;
 
   return (
-    <View style={styles.screen} testID={`onboarding-${screen}`}>
+    <Screen testID={`onboarding-${screen}`}>
       <View style={styles.header}>
         <Icon colour={colour.ember} name="ring" size={MARK_SIZE} testID={onboardingMarkTestID} />
         <Text style={styles.step}>{stepLabel(screen)}</Text>
@@ -110,7 +111,7 @@ export function OnboardingScreen({
           <Text style={styles.actionLabel}>{actionLabel}</Text>
         </Pressable>
       </View>
-    </View>
+    </Screen>
   );
 }
 
@@ -183,7 +184,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.base,
     paddingTop: space.snug,
   },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   // The middle takes whatever the two ends leave, so the button sits on the bottom edge of the
   // glass on a screen with one line and on a screen with ninety days on it alike.
   scroll: { flex: 1 },

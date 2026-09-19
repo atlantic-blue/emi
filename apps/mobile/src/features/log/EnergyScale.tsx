@@ -2,6 +2,8 @@ import { highestEnergy, lowestEnergy } from '@emi/crypto';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { words } from '../../language';
+
 /**
  * One number a day, from one to five. The ends of the range come from the record format rather
  * than from a number typed here, so a scale that offers a level the envelope refuses cannot exist.
@@ -13,18 +15,18 @@ export const energyLevels: readonly number[] = Array.from(
 
 /** A number on its own tells her nothing, so each level carries the word she would use for it. */
 export const energyNames: Readonly<Record<number, string>> = {
-  1: 'Very low',
-  2: 'Low',
-  3: 'Steady',
-  4: 'Good',
-  5: 'High',
+  1: words('log.energy.name.1'),
+  2: words('log.energy.name.2'),
+  3: words('log.energy.name.3'),
+  4: words('log.energy.name.4'),
+  5: words('log.energy.name.5'),
 };
 
-export const energyHeading = 'Energy, one to five';
-export const nothingChosen = 'Not logged';
+export const energyHeading = words('log.energy.heading');
+export const nothingChosen = words('log.energy.nothingChosen');
 
 export function energyName(level: number): string {
-  return energyNames[level] ?? `Level ${level}`;
+  return energyNames[level] ?? words('log.energy.level', undefined, { level });
 }
 
 export interface EnergyScaleProps {
@@ -50,7 +52,7 @@ export function EnergyScale({ level, onChoose }: EnergyScaleProps) {
           const isChosen = step === level;
           return (
             <Pressable
-              accessibilityHint="Press the one you chose again to clear it"
+              accessibilityHint={words('log.energy.hint')}
               accessibilityLabel={`${step} of ${highestEnergy}, ${energyName(step)}`}
               accessibilityRole="radio"
               accessibilityState={{ checked: isChosen, selected: isChosen }}

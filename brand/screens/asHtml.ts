@@ -275,6 +275,22 @@ export function markupOf(node: unknown): string {
       return `<g${attributes(written(drawn, PAINT, true))}>${drawnChildren(drawn)}</g>`;
     case 'RNSVGPath':
       return svgNode('path', drawn, ['d']);
+    case 'TextInput': {
+      // A field draws what she typed, or the placeholder when she has typed nothing. Without this
+      // a picture of a sheet full of fields shows empty boxes and says she typed nothing.
+      const typed = typeof props.value === 'string' && props.value.length > 0;
+      const shown = typed ? String(props.value) : String(props.placeholder ?? '');
+      const faint = typed ? undefined : colourFrom(props.placeholderTextColor);
+      const style = [
+        cssFrom(props.style),
+        'justify-content: center',
+        faint === undefined ? '' : `color: ${faint}`,
+      ]
+        .filter(Boolean)
+        .join('; ');
+
+      return `<div${attributes([['style', style]])}>${escaped(shown)}</div>`;
+    }
     case 'RNSVGCircle':
       return svgNode('circle', drawn, ['cx', 'cy', 'r']);
     default:

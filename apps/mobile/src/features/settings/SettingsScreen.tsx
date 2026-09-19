@@ -1,7 +1,8 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
+import { Screen } from '../../components/Screen';
 import { settingsCopy } from './copy';
 
 export const settingsScreenTestID = 'settings-screen';
@@ -16,7 +17,7 @@ interface Props {
 /** The way to the one thing in here, and the way back out of it. */
 export function SettingsScreen({ onDelete, onBack }: Props): ReactNode {
   return (
-    <View style={styles.screen} testID={settingsScreenTestID}>
+    <Screen testID={settingsScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
         <Text accessibilityRole="header" style={styles.title}>
           {settingsCopy.settings.title}
@@ -40,7 +41,7 @@ export function SettingsScreen({ onDelete, onBack }: Props): ReactNode {
           <Text style={styles.backLabel}>{settingsCopy.settings.back}</Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 
@@ -70,7 +71,6 @@ const styles = StyleSheet.create({
     color: colour.ink,
     ...textStyle('body-lg'),
   },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   title: {
     color: colour.ink,
     ...textStyle('headline-lg'),

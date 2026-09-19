@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import RootLayout from '../../src/app/_layout';
 import OnboardingLayout from '../../src/app/onboarding/_layout';
+import { OnAPhone } from '../fixtures/theSafeArea';
 
 /**
  * How the first run moves: between its three screens, and at the two ends where it arrives and
@@ -92,21 +93,35 @@ describe('the first run moves the way the repository chose, and not the way it i
     });
   });
 
+  // The root layout stands its own safe area provider up, and a provider with no insets yet
+  // draws nothing at all. A provider above it hands them down, so the navigator is reached.
   describe('at the two ends, where the root navigator replaces one screen with another', () => {
     it('brings the first question in as a step forward, and not as a swap', async () => {
-      await render(<RootLayout />);
+      await render(
+        <OnAPhone>
+          <RootLayout />
+        </OnAPhone>,
+      );
 
       expect(optionsOf('onboarding').animationTypeForReplace).toBe('push');
     });
 
     it('brings her home as a step forward, so the finish does not read as a retreat', async () => {
-      await render(<RootLayout />);
+      await render(
+        <OnAPhone>
+          <RootLayout />
+        </OnAPhone>,
+      );
 
       expect(optionsOf('index').animationTypeForReplace).toBe('push');
     });
 
     it('names those two screens and no others, so leaving a screen stays a step back', async () => {
-      await render(<RootLayout />);
+      await render(
+        <OnAPhone>
+          <RootLayout />
+        </OnAPhone>,
+      );
 
       expect(mockScreens.map((screen) => screen.name).sort()).toEqual(['index', 'onboarding']);
     });

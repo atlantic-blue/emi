@@ -80,6 +80,8 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.
 - `packages/crypto` holds the encrypted record format: the envelope, the canonical json and the
   ranges a day is checked against.
+- `packages/content` holds the article feed: the shape of an article, the client that reads one
+  from the endpoint, and the rule for how long an answer is held.
 - `brand` holds the mark, the icons and the fonts, as drawn files and the programs that write
   them.
 - `services/vault` holds the service behind the api: the account, the request signature and the
@@ -177,10 +179,12 @@ also refuses when the drawn source is absent, and the refusal names the step tha
 
 ## The cycle arithmetic
 
-Status: designed
+Status: built
 
-The prediction arithmetic arrives beside the catalogue, in `packages/cycle`. It will be pure
-functions. No input, no output, no clock.
+The prediction arithmetic sits beside the catalogue, in `packages/cycle`. It is pure functions.
+No input, no output, no clock. `confidence.ts`, `cycles.ts`, `forecast.ts`, `moods.ts`,
+`patterns.ts`, `symptoms.ts` and `units.ts` each carry their own tests, and the home screen draws
+the median, the range and the confidence band from them.
 
 A cycle starts on the first day of bleeding that is not marked unexpected. The predicted start of
 the next period is the last start plus the median of the last six cycle lengths. The median, not the
@@ -431,12 +435,32 @@ open an envelope.
 
 The dotted line is the product. The key never crosses it.
 
+## The article catalogue
+
+Status: built
+
+Emi writes about what a phase does to a body, and the phone reads that writing from the api rather
+than from the bundle. `GET /v1/articles/{phase}` answers every article written for one of the four
+phases. It is the one route in the service that stands behind no authorizer, because a request says
+which phase is being read and never who is reading it.
+
+It reads a second table, `emi-articles`, through a role that holds one action and no write at all.
+That role cannot reach the vault table, so a route anybody may call cannot reach her partition. The
+access log writes the route template and never the filled path, so no line of it can say which
+phase was read.
+
+`docs/design/data-model.md` has the item, the query and the five things that keep a read untied to
+a reader.
+
 ## What crosses between the phone and the cloud
 
 Status: designed
 
 The phone sends the envelope, a record identifier and a revision number. The section above says how
 it signs each request.
+
+One thing crosses the other way and carries nothing of hers: the phone asks for the articles of a
+cycle phase, and that request is signed by nobody and names no account.
 
 The server stores the bytes. It refuses a revision that is not greater than the one it holds.
 

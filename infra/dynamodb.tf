@@ -56,3 +56,32 @@ resource "aws_dynamodb_table" "vault" {
   # turning this off first, on purpose.
   deletion_protection_enabled = true
 }
+
+# The article catalogue, which is public writing about a cycle phase. It is a second table rather
+# than a second partition of the vault, because the function that reads it stands behind no
+# authorizer: one that could reach the vault table would be one mistake away from her partition.
+#
+# Nothing here names a reader. There is no read count, no last read instant and no rating, because
+# each one would be a place to write down who read what.
+resource "aws_dynamodb_table" "articles" {
+  name = "${var.project_name}-articles"
+
+  billing_mode = "PAY_PER_REQUEST"
+
+  hash_key  = "pk"
+  range_key = "sk"
+
+  attribute {
+    name = "pk"
+    type = "S"
+  }
+
+  attribute {
+    name = "sk"
+    type = "S"
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+}

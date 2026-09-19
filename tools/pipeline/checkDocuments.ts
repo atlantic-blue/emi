@@ -30,5 +30,6 @@ process.stdout.write(
     `${result.contracts} contract(s) mapped to a feature in ${featureDocument}, ` +
     `${result.refusals} refusal(s) named there, ` +
     `${result.longTerm} item(s) on the long term list, ` +
-    `and every section of ${architectureDocument} says built or designed.\n`,
+    `and every section of ${architectureDocument} says built or designed, ` +
+    `read against the packages it names.\n`,
 );

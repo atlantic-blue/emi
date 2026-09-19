@@ -124,12 +124,14 @@ describe('an export with no documentation comment fails the pipeline', () => {
   describe('the surface the reference is generated from', () => {
     it('is every workspace that offers an index, and no other', () => {
       expect(shipped.surfaces.map((surface) => surface.name)).toEqual([
+        '@emi/content',
         '@emi/crypto',
         '@emi/cycle',
         '@emi/tokens',
         '@emi/vault',
       ]);
       expect(shipped.surfaces.map((surface) => surface.page)).toEqual([
+        'docs/reference/content.md',
         'docs/reference/crypto.md',
         'docs/reference/cycle.md',
         'docs/reference/tokens.md',
@@ -153,7 +155,7 @@ describe('an export with no documentation comment fails the pipeline', () => {
     });
 
     it('counted a surface worth reading, rather than nothing at all', () => {
-      expect(counts.packages).toBe(4);
+      expect(counts.packages).toBe(5);
       expect(counts.files).toBeGreaterThan(12);
       expect(counts.symbols).toBeGreaterThan(100);
     });

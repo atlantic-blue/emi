@@ -62,6 +62,23 @@ export function requestEvent(
   };
 }
 
+/**
+ * A read of the article catalogue, as the api sends it: a phase in the path, no body, no signature
+ * and no authorizer. A test that wants one of those adds it, so every addition is visible.
+ */
+export function articleEvent(
+  phase: string,
+  headers: Readonly<Record<string, string | undefined>> = {},
+): HttpRequestEvent {
+  return {
+    rawPath: `/v1/articles/${phase}`,
+    rawQueryString: '',
+    pathParameters: { phase },
+    headers,
+    requestContext: { http: { method: 'GET' } },
+  };
+}
+
 /** The same event without its body, as the api sends it to the authorizer. */
 export function authorizerEvent(
   parts: RequestParts,

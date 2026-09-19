@@ -1,9 +1,9 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { OnboardingScreen } from './OnboardingScreen';
-import { firstRunCopy } from './copy';
+import { cycleLengthDaysLabel, firstRunCopy } from './copy';
 import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
 
 export const shorterTestID = 'cycle-length-shorter';
@@ -21,22 +21,31 @@ interface Props {
  *
  * The number is the largest thing on the screen because it is the answer, and it is set in the
  * monospaced face so a digit does not shift sideways as she presses.
+ *
+ * Done is the one control of the first run that writes, so it takes one press. It goes out as
+ * she presses it and stays out. The home screen takes a moment to arrive, and her thumb is
+ * already on the glass.
  */
 export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
+  const [pressed, setPressed] = useState(false);
   const canShorten = days > minimumCycleLengthDays;
   const canLengthen = days < maximumCycleLengthDays;
 
   return (
     <OnboardingScreen
+      actionIsReady={!pressed}
       actionLabel={firstRunCopy.cycleLength.action}
       lines={firstRunCopy.cycleLength.lines}
-      onAction={onDone}
+      onAction={() => {
+        setPressed(true);
+        onDone();
+      }}
       screen="cycleLength"
       title={firstRunCopy.cycleLength.title}
     >
       <View style={styles.stepper}>
         <Pressable
-          accessibilityLabel="One day shorter"
+          accessibilityLabel={firstRunCopy.shorter}
           accessibilityRole="button"
           accessibilityState={{ disabled: !canShorten }}
           disabled={!canShorten}
@@ -47,10 +56,10 @@ export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
           <Text style={styles.stepMark}>-</Text>
         </Pressable>
         <Text style={styles.days} testID={cycleLengthTestID}>
-          {days} days
+          {cycleLengthDaysLabel(days)}
         </Text>
         <Pressable
-          accessibilityLabel="One day longer"
+          accessibilityLabel={firstRunCopy.longer}
           accessibilityRole="button"
           accessibilityState={{ disabled: !canLengthen }}
           disabled={!canLengthen}

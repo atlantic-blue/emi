@@ -7,6 +7,7 @@ import {
   typeScale,
 } from '@emi/tokens';
 import { render, screen } from '@testing-library/react-native';
+import { OnAPhone } from '../fixtures/theSafeArea';
 import { StyleSheet } from 'react-native';
 
 import { CycleLength } from '../../src/features/onboarding/CycleLength';
@@ -47,26 +48,34 @@ const threeDaysBack = '2026-05-11';
 
 async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
   if (at === 'welcome') {
-    await render(<WhatEmiIs onContinue={() => undefined} />);
+    await render(
+      <OnAPhone>
+        <WhatEmiIs onContinue={() => undefined} />
+      </OnAPhone>,
+    );
     return;
   }
   if (at === 'lastPeriod') {
     await render(
-      <LastPeriod
-        chosen={threeDaysBack}
-        now={whenSheOpensIt}
-        onChoose={() => undefined}
-        onContinue={() => undefined}
-      />,
+      <OnAPhone>
+        <LastPeriod
+          chosen={threeDaysBack}
+          now={whenSheOpensIt}
+          onChoose={() => undefined}
+          onContinue={() => undefined}
+        />
+      </OnAPhone>,
     );
     return;
   }
   await render(
-    <CycleLength
-      days={defaultCycleLengthDays}
-      onChange={() => undefined}
-      onDone={() => undefined}
-    />,
+    <OnAPhone>
+      <CycleLength
+        days={defaultCycleLengthDays}
+        onChange={() => undefined}
+        onDone={() => undefined}
+      />
+    </OnAPhone>,
   );
 }
 
@@ -185,12 +194,14 @@ describe('the first run carries the design system', () => {
   describe('the two answers she presses most often', () => {
     it('marks the one she chose by a tick as well as by a ground', async () => {
       await render(
-        <LastPeriod
-          chosen={today}
-          now={whenSheOpensIt}
-          onChoose={() => undefined}
-          onContinue={() => undefined}
-        />,
+        <OnAPhone>
+          <LastPeriod
+            chosen={today}
+            now={whenSheOpensIt}
+            onChoose={() => undefined}
+            onContinue={() => undefined}
+          />
+        </OnAPhone>,
       );
 
       const chosen = flattened(namedDayTestID(today));
@@ -202,12 +213,14 @@ describe('the first run carries the design system', () => {
 
     it('leaves the one she did not choose on the quiet ground, with no tick', async () => {
       await render(
-        <LastPeriod
-          chosen={today}
-          now={whenSheOpensIt}
-          onChoose={() => undefined}
-          onContinue={() => undefined}
-        />,
+        <OnAPhone>
+          <LastPeriod
+            chosen={today}
+            now={whenSheOpensIt}
+            onChoose={() => undefined}
+            onContinue={() => undefined}
+          />
+        </OnAPhone>,
       );
 
       expect(flattened(namedDayTestID('2026-05-13')).backgroundColor).toBe(colour.surface);

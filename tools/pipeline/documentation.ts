@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -83,6 +83,147 @@ export function statusProblems(file: string, markdown: string): string[] {
 
       return `${file}: the section "${section.title}" says ${said} where it must say built or designed`;
     });
+}
+
+/**
+ * A status nobody can check is a sentence rather than a status. The check above reads that every
+ * section carries one of the two words. This one reads whether the word is true.
+ *
+ * The first section of the architecture document defines designed as a thing nobody wrote yet. A
+ * directory listing alone cannot hold a section to that, because a section can name a package whose
+ * source exists while the thing the section describes is a deployment that has not happened. What
+ * separates the two is a promise: a section that says a package is still to come, while that
+ * package holds source and the tests the pipeline runs on it, describes a repository somebody
+ * changed and nobody came back to.
+ */
+
+/** The wording a section uses to say a thing is still to come, matched without regard to case. */
+export const promiseWording: readonly string[] = [
+  'will be',
+  'will hold',
+  'will run',
+  'will arrive',
+  'will come',
+  'arrives',
+  'is to come',
+  'are to come',
+];
+
+/** One section with everything under its heading, so a check can read what the section claims. */
+export interface SectionBody {
+  readonly title: string;
+  readonly status: string | null;
+  readonly body: string;
+}
+
+/** Every section, each carrying its own lines, with a heading inside a fence left as text. */
+export function sectionBodiesIn(markdown: string): SectionBody[] {
+  const lines = linesOf(markdown);
+  const sections: SectionBody[] = [];
+  let title: string | null = null;
+  let body: string[] = [];
+
+  const close = (): void => {
+    if (title === null) {
+      return;
+    }
+
+    const text = body.join('\n');
+    const said = text.match(/^Status: (.+)$/m);
+
+    sections.push({ title, status: said?.[1]?.trim() ?? null, body: text });
+  };
+
+  for (const line of lines) {
+    if (!line.fenced && line.text.startsWith('## ')) {
+      close();
+      title = line.text.slice(3).trim();
+      body = [];
+      continue;
+    }
+
+    if (title !== null) {
+      body.push(line.text);
+    }
+  }
+
+  close();
+
+  return sections;
+}
+
+/** Every repository path a section names, which this document always writes between backticks. */
+export function pathsNamedIn(body: string): string[] {
+  const found = new Set<string>();
+
+  for (const match of body.matchAll(/`([^`\n]+)`/g)) {
+    const named = match[1] ?? '';
+
+    if (named.includes('/') && !named.includes(' ')) {
+      found.add(named);
+    }
+  }
+
+  return [...found].sort();
+}
+
+function filesUnder(directory: string, keep: (name: string) => boolean): number {
+  if (!existsSync(directory)) {
+    return 0;
+  }
+
+  let count = 0;
+
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    count += entry.isDirectory()
+      ? filesUnder(join(directory, entry.name), keep)
+      : Number(keep(entry.name));
+  }
+
+  return count;
+}
+
+/**
+ * Whether a directory holds code that runs: source, and the tests the pipeline runs over it. A
+ * directory of source with no test is code nobody proved, and the document may still call that
+ * designed.
+ */
+export function holdsWorkingCode(root: string, directory: string): boolean {
+  const source = filesUnder(join(root, directory, 'src'), (name) => /\.tsx?$/.test(name));
+  const tests = filesUnder(join(root, directory, 'tests'), (name) => /\.test\.tsx?$/.test(name));
+
+  return source > 0 && tests > 0;
+}
+
+/** A section that says designed while promising a package the repository already holds. */
+export function staleStatusProblems(root: string, file: string, markdown: string): string[] {
+  const problems: string[] = [];
+
+  for (const section of sectionBodiesIn(markdown)) {
+    if (section.status !== 'designed') {
+      continue;
+    }
+
+    const said = section.body.replace(/\s+/g, ' ').toLowerCase();
+    const promised = promiseWording.find((wording) => said.includes(wording));
+
+    if (promised === undefined) {
+      continue;
+    }
+
+    for (const named of pathsNamedIn(section.body)) {
+      if (!holdsWorkingCode(root, named)) {
+        continue;
+      }
+
+      problems.push(
+        `${file}: the section "${section.title}" says designed and says "${promised}" of ` +
+          `\`${named}\`, which holds source and the tests that run it`,
+      );
+    }
+  }
+
+  return problems;
 }
 
 export function diagramsIn(markdown: string): string[] {
@@ -453,6 +594,7 @@ export function documentProblems(root: string, tooling: string): DocumentResult 
   );
 
   const marked = statusProblems(architectureDocument, architecture);
+  const stale = staleStatusProblems(root, architectureDocument, architecture);
   const features = documentIn(root, featureDocument);
   const contracts = documentIn(root, contractDocument);
 
@@ -480,6 +622,7 @@ export function documentProblems(root: string, tooling: string): DocumentResult 
     problems: [
       ...drift,
       ...marked,
+      ...stale,
       ...features.problems,
       ...contracts.problems,
       ...agreement,

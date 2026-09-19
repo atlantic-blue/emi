@@ -1,4 +1,5 @@
 import { drawRecoveryCode, openRecord, recoveryCodeLength, sealRecord } from '@emi/crypto';
+import { OnAPhone } from '../fixtures/theSafeArea';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import {
@@ -68,12 +69,14 @@ describe('the vault key is recovered from the code alone', () => {
       const { store, recovery } = await herPhone();
 
       await render(
-        <RecoverySetup
-          now={() => sheConfirmedAt}
-          onDone={() => undefined}
-          recovery={recovery}
-          store={store}
-        />,
+        <OnAPhone>
+          <RecoverySetup
+            now={() => sheConfirmedAt}
+            onDone={() => undefined}
+            recovery={recovery}
+            store={store}
+          />
+        </OnAPhone>,
       );
 
       expect(
@@ -88,12 +91,14 @@ describe('the vault key is recovered from the code alone', () => {
       const { store, recovery } = await herPhone();
 
       await render(
-        <RecoverySetup
-          now={() => sheConfirmedAt}
-          onDone={() => undefined}
-          recovery={recovery}
-          store={store}
-        />,
+        <OnAPhone>
+          <RecoverySetup
+            now={() => sheConfirmedAt}
+            onDone={() => undefined}
+            recovery={recovery}
+            store={store}
+          />
+        </OnAPhone>,
       );
       await press(recoveryActionTestID);
 
@@ -106,12 +111,14 @@ describe('the vault key is recovered from the code alone', () => {
       const { store, recovery } = await herPhone();
 
       await render(
-        <RecoverySetup
-          now={() => sheConfirmedAt}
-          onDone={() => undefined}
-          recovery={recovery}
-          store={store}
-        />,
+        <OnAPhone>
+          <RecoverySetup
+            now={() => sheConfirmedAt}
+            onDone={() => undefined}
+            recovery={recovery}
+            store={store}
+          />
+        </OnAPhone>,
       );
       await press(recoveryActionTestID);
 
@@ -129,12 +136,14 @@ describe('the vault key is recovered from the code alone', () => {
       const done: string[] = [];
 
       await render(
-        <RecoverySetup
-          now={() => sheConfirmedAt}
-          onDone={() => done.push('done')}
-          recovery={phone.recovery}
-          store={phone.store}
-        />,
+        <OnAPhone>
+          <RecoverySetup
+            now={() => sheConfirmedAt}
+            onDone={() => done.push('done')}
+            recovery={phone.recovery}
+            store={phone.store}
+          />
+        </OnAPhone>,
       );
       await press(recoveryActionTestID);
       await press(recoveryActionTestID);
@@ -229,12 +238,14 @@ describe('the vault key is recovered from the code alone', () => {
       const phone = await herPhone();
 
       await render(
-        <RecoverySetup
-          now={() => sheConfirmedAt}
-          onDone={() => undefined}
-          recovery={phone.recovery}
-          store={phone.store}
-        />,
+        <OnAPhone>
+          <RecoverySetup
+            now={() => sheConfirmedAt}
+            onDone={() => undefined}
+            recovery={phone.recovery}
+            store={phone.store}
+          />
+        </OnAPhone>,
       );
       await press(recoveryActionTestID);
       await press(recoveryActionTestID);

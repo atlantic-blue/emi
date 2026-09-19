@@ -11,6 +11,7 @@ import {
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Screen } from '../../components/Screen';
 import type { History, HistoryCycle, HistoryPattern } from './historyNow';
 import { historyNeedsCycles } from './historyNow';
 import {
@@ -135,7 +136,7 @@ function PatternRow({
 
 export function HistoryScreen({ history, onOpenDay, onBack }: Props): ReactNode {
   return (
-    <View style={styles.screen} testID={historyScreenTestID}>
+    <Screen testID={historyScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
         <Text accessibilityRole="header" style={styles.title}>
           {historyCopy.title}
@@ -182,7 +183,7 @@ export function HistoryScreen({ history, onOpenDay, onBack }: Props): ReactNode 
           <Text style={styles.backLabel}>{historyCopy.back}</Text>
         </Pressable>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 
@@ -243,7 +244,6 @@ const styles = StyleSheet.create({
     color: colour.ink,
     ...textStyle('body-lg'),
   },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   title: {
     color: colour.ink,
     ...textStyle('headline-lg'),

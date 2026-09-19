@@ -1,6 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { OnAPhone } from './fixtures/theSafeArea';
 
 import { listCycles } from '../src/data/cycleRepository';
+import { cycleCopy } from '../src/features/cycle/copy';
+import { homeCopy } from '../src/features/home/copy';
 import { forecastOf } from '../src/features/forecast/fromCache';
 import {
   HomeScreen,
@@ -8,7 +11,6 @@ import {
   exportTestID,
   historyLabel,
   historyTestID,
-  homeCopy,
   homeNoRingTestID,
   logTodayLabel,
   logTodayTestID,
@@ -21,15 +23,17 @@ import { textIn } from './fixtures/renderedText';
 /** A phone with nothing on it yet, which is the screen with the fewest words on it. */
 async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
   await render(
-    <HomeScreen
-      cycleLengthDays={28}
-      forecast={forecastOf(listCycles(migratedDatabase()))}
-      onExport={() => asked.push('export')}
-      onHistory={() => asked.push('history')}
-      onLogToday={() => asked.push('log today')}
-      onSettings={() => asked.push('settings')}
-      ring={undefined}
-    />,
+    <OnAPhone>
+      <HomeScreen
+        cycleLengthDays={28}
+        forecast={forecastOf(listCycles(migratedDatabase()))}
+        onExport={() => asked.push('export')}
+        onHistory={() => asked.push('history')}
+        onLogToday={() => asked.push('log today')}
+        onSettings={() => asked.push('settings')}
+        ring={undefined}
+      />
+    </OnAPhone>,
   );
 }
 
@@ -46,8 +50,8 @@ describe('the home screen', () => {
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
     expect(textIn(screen.toJSON())).toEqual([
       homeCopy.wordmark,
-      homeCopy.noRing.title,
-      homeCopy.noRing.line,
+      cycleCopy.noRing.title,
+      cycleCopy.noRing.line,
       'Still learning',
       'Emi needs 2 more complete cycles before it forecasts.',
       'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',
