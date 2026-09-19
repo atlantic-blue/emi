@@ -7,6 +7,7 @@ import {
   type FeatureFile,
   type MappedFeature,
   contractNamedIn,
+  coverageOf,
   coverageProblems,
   featureFileIn,
   featuresMappedIn,
@@ -260,11 +261,66 @@ describe('the report reads the long term list beside the map', () => {
     expect(result.longTermItems).toBe(3);
   });
 
+  it('refuses an item whose state is not one of the three, and names what it carried', () => {
+    const mistyped = aLongTermList.replace('State: planned.', 'State: maybe one day.');
+
+    expect(coverageProblems(featuresOf(), [fileOf()], longTermOf(mistyped)).problems).toEqual([
+      'the long term list says "Premenstrual syndrome prediction." carries the state "maybe one day.", and an item carries one of in version 1, planned, conditional',
+    ]);
+  });
+
+  it('refuses an item that carries no state at all, and says so', () => {
+    const bare = aLongTermList.replace(
+      '- Premenstrual syndrome prediction. State: planned.',
+      '- Premenstrual syndrome prediction.',
+    );
+
+    expect(coverageProblems(featuresOf(), [fileOf()], longTermOf(bare)).problems).toEqual([
+      'the long term list says "Premenstrual syndrome prediction." carries the state nothing, and an item carries one of in version 1, planned, conditional',
+    ]);
+  });
+
+  it('leaves an item with an unrecognised state out of all three counts, which is why it fails', () => {
+    const mistyped = aLongTermList.replace('State: planned.', 'State: maybe one day.');
+
+    const result = coverageProblems(featuresOf(), [fileOf()], longTermOf(mistyped));
+
+    expect(result.longTermItems).toBe(3);
+    expect(result.longTermInVersionOne + result.longTermPlanned + result.longTermConditional).toBe(
+      2,
+    );
+    expect(result.problems).not.toEqual([]);
+  });
+
+  it('adds the three states up to the total it prints, on a list it passes', () => {
+    const result = coverageProblems(featuresOf(), [fileOf()], longTermOf());
+
+    expect(result.problems).toEqual([]);
+    expect(result.longTermInVersionOne + result.longTermPlanned + result.longTermConditional).toBe(
+      result.longTermItems,
+    );
+  });
+
   it('counts nothing where the map carries no long term list', () => {
     expect(coverageProblems(featuresOf(), [fileOf()])).toMatchObject({
       longTermItems: 0,
       longTermGroups: 0,
     });
+  });
+});
+
+describe('the long term list in this repository', () => {
+  const result = coverageOf(repositoryRoot);
+
+  it('passes the check the pipeline runs', () => {
+    expect(result.problems).toEqual([]);
+  });
+
+  it('adds the three states up to the total the report prints', () => {
+    expect(result.longTermItems).toBeGreaterThan(40);
+    expect(result.longTermInVersionOne + result.longTermPlanned + result.longTermConditional).toBe(
+      result.longTermItems,
+    );
   });
 });
 

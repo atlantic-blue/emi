@@ -2,7 +2,12 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { LongTermItem } from './documentation.ts';
-import { contractsMappedIn, featureDocument, longTermItemsIn } from './documentation.ts';
+import {
+  contractsMappedIn,
+  featureDocument,
+  longTermItemsIn,
+  longTermStates,
+} from './documentation.ts';
 
 /**
  * The behaviour tier against the map of features. `docs/features.md` says which contract each
@@ -216,6 +221,18 @@ export function coverageProblems(
   const owned = new Set(features.flatMap((feature) => feature.contracts));
 
   for (const item of longTerm) {
+    // The counts below are the whole point of the report, and a state nothing recognises drops an
+    // item out of all three of them while the total still counts it. So the state is refused here
+    // rather than only in the document check, which is a different command somebody can skip.
+    if (item.state === null || !longTermStates.includes(item.state)) {
+      const said = item.said.length === 0 ? 'nothing' : `"${item.said}"`;
+
+      problems.push(
+        `the long term list says "${item.text}" carries the state ${said}, and an item carries one of ${longTermStates.join(', ')}`,
+      );
+      continue;
+    }
+
     if (item.state === 'planned') {
       notes.push(
         `the long term list says "${item.text}" is planned, so no file under ${featureDirectory}/ covers it`,
