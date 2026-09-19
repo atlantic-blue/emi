@@ -1,0 +1,8 @@
+{
+  "presets": [["@babel/preset-typescript", { "allExtensions": true }]],
+  "plugins": [
+    "@babel/plugin-transform-modules-commonjs",
+    "@babel/plugin-transform-class-properties",
+    "@babel/plugin-transform-classes"
+  ]
+}

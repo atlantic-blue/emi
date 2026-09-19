@@ -27,4 +27,7 @@ jobs:
       - run: npm run check:brand
       - run: npm run check:reference
       - run: npm run check:sheet
+      # Ahead of npm test, which runs it again at the end. Two seconds buys a line of its own in
+      # the log and a failure that lands before the long tiers do.
+      - run: npm run test:hermes
       - run: npm test

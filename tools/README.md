@@ -25,13 +25,20 @@ an export carries no comment, or when a comment holds no word its own declaratio
 `documentation/exports.ts` reads a file and `documentation/wording.ts` measures a comment against a
 signature, so both can be run against a source written in a test.
 
+`hermes/run.ts` is the command behind `npm run test:hermes`, the third test tier. It bundles
+`hermes/entry.ts` with metro and runs it on Hermes, the engine a phone runs, because the other two
+tiers run on Node and Node carries globals a phone does not. `hermes/README.md` says what runs
+there, what cannot, and what the tier does not promise.
+
 The tests beside them run under the workspace jest project. `documentation.test.ts` covers the
 documents, the feature map, the contracts and the readmes. `forbiddenClaims.test.ts` reads every
 tracked text file for wording Emi may never use about itself. `colourLeak.test.ts` proves a hex
 value outside `packages/tokens` is refused. `licence.test.ts` reads the licence and every manifest
 that names one. `reference.test.ts` covers the three rules
 of the reference and watches each one go red and green again. `emptyTestRun.test.ts` proves a run
-that finds no test fails.
+that finds no test fails. `hermes/hermesTier.test.ts` covers the three rules of the third tier: it
+refuses an empty run, it refuses an unknown platform rather than falling back to Node, and it is
+wired into both `npm test` and the pipeline.
 
 ## How to run them
 
@@ -41,6 +48,7 @@ From the root of the repository:
     npm run check:brand
     npm run check:reference
     npm run test:workspace
+    npm run test:hermes
 
 The mermaid tool draws through Chrome, and `npm ci` fetches one on the pipeline runner. On a machine
 that already has a browser, point the tool at it:
