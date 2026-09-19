@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -128,8 +128,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     color: colour.surface,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   back: {
     alignItems: 'center',
@@ -141,8 +140,7 @@ const styles = StyleSheet.create({
   },
   backLabel: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   body: {
     flexGrow: 1,
@@ -158,26 +156,22 @@ const styles = StyleSheet.create({
   },
   goesLine: {
     color: colour.body,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
     marginTop: space.hair,
   },
   refused: {
     color: colour.ink,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     marginTop: space.snug,
   },
   line: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     marginTop: space.snug,
   },
   screen: { backgroundColor: colour.stone, flex: 1 },
   title: {
     color: colour.ink,
-    fontSize: typeScale.title.size,
-    lineHeight: typeScale.title.lineHeight,
+    ...textStyle('headline-lg'),
   },
 });

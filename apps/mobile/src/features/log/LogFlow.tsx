@@ -1,5 +1,5 @@
 import { type Flow, isBleeding } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -108,31 +108,25 @@ const styles = StyleSheet.create({
   },
   doneLabel: {
     color: colour.surface,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   line: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   noRingTitle: {
     color: colour.ink,
-    fontSize: typeScale.heading.size,
-    lineHeight: typeScale.heading.lineHeight,
+    ...textStyle('headline-md'),
     marginBottom: space.tight,
   },
   ring: { alignItems: 'center', marginBottom: space.snug },
   screen: { backgroundColor: colour.stone, flex: 1 },
   title: {
     color: colour.ink,
-    fontSize: typeScale.title.size,
-    lineHeight: typeScale.title.lineHeight,
+    ...textStyle('headline-lg'),
   },
   when: {
     color: colour.muted,
-    fontSize: typeScale.label.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.label.lineHeight,
+    ...textStyle('label-sm'),
   },
 });

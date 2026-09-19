@@ -1,4 +1,4 @@
-import type { FaceName } from './type';
+import type { TypeWeight } from './type';
 
 /** Where the font files sit, as a path from the root of the repository. */
 export const fontsRoot = 'apps/mobile/assets/fonts';
@@ -22,8 +22,15 @@ export interface FontFile {
 }
 
 /**
- * A face, its files, and the terms they travel under. A test reads the licence fields against the
- * file on disk, so a face cannot ship without its licence beside it.
+ * The families this repository redistributes. Only the first one is drawn: step 9.1 put the whole
+ * product in one face. The other two keep their files and their licence records, because they are
+ * still here and a reader of a public repository is owed the terms of everything in it.
+ */
+export type FontFamilyName = 'plusJakartaSans' | 'fraunces' | 'ibmPlexMono';
+
+/**
+ * A family, its files, and the terms they travel under. A test reads the licence fields against the
+ * file on disk, so a family cannot ship without its licence beside it.
  */
 export interface FontFamily {
   /** What the foundry calls the cut that ships, which can be narrower than the design's name. */
@@ -49,28 +56,8 @@ export const OPEN_FONT_LICENCE = 'SIL Open Font License, Version 1.1';
  * Two weights for each face: one for running text and one for emphasis. A third weight is bytes
  * in the download that no screen in version 1 asks for.
  */
-export const fonts: Readonly<Record<FaceName, FontFamily>> = {
-  heading: {
-    family: 'Fraunces 72pt Soft',
-    licence: OPEN_FONT_LICENCE,
-    licencePath: 'fraunces/OFL.txt',
-    copyright:
-      'Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)',
-    source: 'https://github.com/undercasetype/Fraunces',
-    files: {
-      regular: {
-        name: 'Fraunces72ptSoft-Regular',
-        weight: 400,
-        path: 'fraunces/Fraunces72ptSoft-Regular.ttf',
-      },
-      semiBold: {
-        name: 'Fraunces72ptSoft-SemiBold',
-        weight: 600,
-        path: 'fraunces/Fraunces72ptSoft-SemiBold.ttf',
-      },
-    },
-  },
-  text: {
+export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
+  plusJakartaSans: {
     family: 'Plus Jakarta Sans',
     licence: OPEN_FONT_LICENCE,
     licencePath: 'plus-jakarta-sans/OFL.txt',
@@ -90,7 +77,27 @@ export const fonts: Readonly<Record<FaceName, FontFamily>> = {
       },
     },
   },
-  numeric: {
+  fraunces: {
+    family: 'Fraunces 72pt Soft',
+    licence: OPEN_FONT_LICENCE,
+    licencePath: 'fraunces/OFL.txt',
+    copyright:
+      'Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)',
+    source: 'https://github.com/undercasetype/Fraunces',
+    files: {
+      regular: {
+        name: 'Fraunces72ptSoft-Regular',
+        weight: 400,
+        path: 'fraunces/Fraunces72ptSoft-Regular.ttf',
+      },
+      semiBold: {
+        name: 'Fraunces72ptSoft-SemiBold',
+        weight: 600,
+        path: 'fraunces/Fraunces72ptSoft-SemiBold.ttf',
+      },
+    },
+  },
+  ibmPlexMono: {
     family: 'IBM Plex Mono',
     licence: OPEN_FONT_LICENCE,
     licencePath: 'ibm-plex-mono/OFL.txt',
@@ -112,8 +119,15 @@ export const fonts: Readonly<Record<FaceName, FontFamily>> = {
   },
 };
 
-/** The faces as data. A test walks this to prove each one has its files and its licence on disk. */
-export const faceNames: readonly FaceName[] = ['heading', 'text', 'numeric'];
+/** The families as data. A test walks this to prove each has its files and its licence on disk. */
+export const fontFamilyNames: readonly FontFamilyName[] = [
+  'plusJakartaSans',
+  'fraunces',
+  'ibmPlexMono',
+];
+
+/** The one family every screen is drawn in. */
+export const DRAWN_FAMILY: FontFamilyName = 'plusJakartaSans';
 
 /** The weights as data, so the list of files is built from the faces rather than typed twice. */
 export const fontWeightNames: readonly FontWeightName[] = ['regular', 'semiBold'];
@@ -122,11 +136,32 @@ export const fontWeightNames: readonly FontWeightName[] = ['regular', 'semiBold'
  * The six files that ship. A test reads the assets directory against this list, so a file that
  * nobody names is found rather than carried.
  */
-export const fontFiles: readonly FontFile[] = faceNames.flatMap((name) =>
+export const fontFiles: readonly FontFile[] = fontFamilyNames.flatMap((name) =>
   fontWeightNames.map((weight) => fonts[name].files[weight]),
 );
 
-/** The name a style uses to reach one face at one weight. */
-export function fontNameFor(face: FaceName, weight: FontWeightName = 'regular'): string {
-  return fonts[face].files[weight].name;
+/**
+ * The files the application loads, which is the drawn family and nothing else. Two files rather
+ * than six is four fewer in the download, and four fewer faces a screen could reach for.
+ */
+export const applicationFontFiles: readonly FontFile[] = fontWeightNames.map(
+  (weight) => fonts[DRAWN_FAMILY].files[weight],
+);
+
+/**
+ * Which file carries a weight. The design system asks for 400, 500, 600 and 700, and this
+ * repository holds the regular and the semibold cut, so 500 and 700 are drawn in the semibold file
+ * rather than left to the renderer to thicken. The two missing files are named in
+ * docs/licences.md.
+ */
+export const weightFiles: Readonly<Record<TypeWeight, FontWeightName>> = {
+  400: 'regular',
+  500: 'semiBold',
+  600: 'semiBold',
+  700: 'semiBold',
+};
+
+/** The name a style uses to reach the drawn family at the weight a role asks for. */
+export function fontNameFor(weight: TypeWeight): string {
+  return fonts[DRAWN_FAMILY].files[weightFiles[weight]].name;
 }

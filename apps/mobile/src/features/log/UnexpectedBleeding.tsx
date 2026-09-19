@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -53,8 +53,7 @@ const styles = StyleSheet.create({
   },
   line: {
     color: colour.body,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   mark: {
     alignItems: 'center',
@@ -70,8 +69,7 @@ const styles = StyleSheet.create({
   markChosen: { backgroundColor: colour.emberTint, borderColor: colour.ember },
   markLabel: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   markLabelChosen: { color: colour.ink },
   markPlain: { backgroundColor: colour.sunk, borderColor: colour.sunk },

@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -218,8 +218,7 @@ const styles = StyleSheet.create({
   dayChosen: { backgroundColor: colour.ember, borderColor: colour.emberPressed },
   dayNumber: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   dayNumberChosen: { color: colour.surface },
   dayOutOfReach: { backgroundColor: colour.surface, borderColor: colour.surface, opacity: 0.4 },
@@ -232,8 +231,7 @@ const styles = StyleSheet.create({
   },
   month: {
     color: colour.ink,
-    fontSize: typeScale.heading.size,
-    lineHeight: typeScale.heading.lineHeight,
+    ...textStyle('headline-md'),
   },
   name: {
     alignItems: 'center',
@@ -253,8 +251,7 @@ const styles = StyleSheet.create({
   nameChosenLabel: { color: colour.surface },
   nameLabel: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   named: { flexDirection: 'row', gap: space.tight, marginTop: space.tight },
   // A handle she can still press is a pill she can see. A spent one keeps its words and loses the
@@ -272,8 +269,7 @@ const styles = StyleSheet.create({
   },
   pageLabel: {
     color: colour.ember,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   pageSpent: {
     backgroundColor: colour.surface,
@@ -285,9 +281,7 @@ const styles = StyleSheet.create({
   weekday: {
     color: colour.muted,
     flex: 1,
-    fontSize: typeScale.label.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.label.lineHeight,
+    ...textStyle('label-sm'),
     textAlign: 'center',
   },
 });

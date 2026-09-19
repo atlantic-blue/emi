@@ -3,15 +3,14 @@ import {
   BEAD_HALO_WIDTH,
   BEAD_RADIUS,
   DAYS_AHEAD_STRENGTH,
-  FaceName,
   FontWeightName,
   PhaseSpan,
   RING_DIAMETER,
   RING_TRACK_WIDTH,
   RingGeometry,
   arcPath,
+  DRAWN_FAMILY,
   colour,
-  faceNames,
   fontWeightNames,
   fonts,
   phaseLabel,
@@ -117,25 +116,23 @@ export function arcsOf(geometry: RingGeometry): DrawnArc[] {
   return drawn;
 }
 
-function faceClass(face: FaceName, weight: FontWeightName): string {
-  return `face-${face}-${weight}`;
+function faceClass(weight: FontWeightName): string {
+  return `face-${weight}`;
 }
 
 function fontRules(fontsBase: string): string {
-  return faceNames
-    .flatMap((face) =>
-      fontWeightNames.map((weight) => {
-        const file = fonts[face].files[weight];
+  return fontWeightNames
+    .map((weight) => {
+      const file = fonts[DRAWN_FAMILY].files[weight];
 
-        return [
-          '@font-face {',
-          `  font-family: "${file.name}";`,
-          `  src: url("${fontsBase}${file.path}") format("truetype");`,
-          '}',
-          `.${faceClass(face, weight)} { font-family: "${file.name}"; }`,
-        ].join('\n');
-      }),
-    )
+      return [
+        '@font-face {',
+        `  font-family: "${file.name}";`,
+        `  src: url("${fontsBase}${file.path}") format("truetype");`,
+        '}',
+        `.${faceClass(weight)} { font-family: "${file.name}"; }`,
+      ].join('\n');
+    })
     .join('\n');
 }
 
@@ -162,12 +159,12 @@ function styleSheet(fontsBase: string): string {
   align-items: center;
   justify-content: center;
 }`,
-    `.day { font-size: ${typeScale.display.size}px; line-height: ${typeScale.display.lineHeight}px; }`,
-    `.phase { font-size: ${typeScale.heading.size}px; line-height: ${typeScale.heading.lineHeight}px; }`,
-    `.title { font-size: ${typeScale.small.size}px; line-height: ${typeScale.small.lineHeight}px; margin-top: 12px; }`,
-    `.note { color: ${colour.muted}; font-size: ${typeScale.small.size}px; line-height: ${typeScale.small.lineHeight}px; }`,
-    `.heading { font-size: ${typeScale.title.size}px; line-height: ${typeScale.title.lineHeight}px; }`,
-    `.standfirst { color: ${colour.body}; font-size: ${typeScale.small.size}px; line-height: ${typeScale.small.lineHeight}px; }`,
+    `.day { font-size: ${typeScale['headline-xl'].size}px; line-height: ${typeScale['headline-xl'].lineHeight}px; }`,
+    `.phase { font-size: ${typeScale['headline-md'].size}px; line-height: ${typeScale['headline-md'].lineHeight}px; }`,
+    `.title { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin-top: 12px; }`,
+    `.note { color: ${colour.muted}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
+    `.heading { font-size: ${typeScale['headline-lg'].size}px; line-height: ${typeScale['headline-lg'].lineHeight}px; }`,
+    `.standfirst { color: ${colour.body}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
   ].join('\n');
 }
 
@@ -198,17 +195,17 @@ function Ring({ ring }: { ring: DrawnRing }): Html {
           />
         </svg>
         <div class="middle">
-          <div class={`day ${faceClass('numeric', 'regular')}`}>{ring.day}</div>
+          <div class={`day ${faceClass('regular')}`}>{ring.day}</div>
           <div
-            class={`phase ${faceClass('heading', 'regular')}`}
+            class={`phase ${faceClass('regular')}`}
             style={`color: ${colour[phasePalette[geometry.phase].ink]}`}
           >
             {phaseLabel[geometry.phase]}
           </div>
         </div>
       </div>
-      <div class={`title ${faceClass('text', 'semiBold')}`}>{ring.title}</div>
-      <div class={`note ${faceClass('text', 'regular')}`}>{ring.note}</div>
+      <div class={`title ${faceClass('semiBold')}`}>{ring.title}</div>
+      <div class={`note ${faceClass('regular')}`}>{ring.note}</div>
     </div>
   );
 }
@@ -221,8 +218,8 @@ export function RingSheet({ fontsBase }: { fontsBase: string }): Html {
         <title>Emi cycle ring</title>
         <style>{raw(styleSheet(fontsBase))}</style>
       </head>
-      <body class={faceClass('text', 'regular')}>
-        <div class={`heading ${faceClass('heading', 'semiBold')}`}>The ring, at three lengths</div>
+      <body class={faceClass('regular')}>
+        <div class={`heading ${faceClass('semiBold')}`}>The ring, at three lengths</div>
         <div class="standfirst">
           Each arc is sized by the days of that phase. Three degrees of ground sit at every
           boundary, the days she has had are solid and the days ahead are at a fifth, and the ember

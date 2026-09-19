@@ -1,5 +1,5 @@
 import type { ForecastResult, Learning as LearningState } from '@emi/cycle';
-import { colour, space, typeScale } from '@emi/tokens';
+import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -61,22 +61,18 @@ const styles = StyleSheet.create({
   block: { paddingHorizontal: space.base, paddingVertical: space.snug },
   label: {
     color: colour.muted,
-    fontSize: typeScale.label.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.label.lineHeight,
+    ...textStyle('label-sm'),
     marginBottom: space.hair,
   },
   length: {
     color: colour.muted,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   // The learning state is quieter than the forecast it will become: the sentence takes the body
   // size rather than the heading size the two days carry, because there is no date to lead with.
   wanted: {
     color: colour.ink,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     marginBottom: space.hair,
   },
 });

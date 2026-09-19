@@ -11,7 +11,7 @@ import {
   typedFor,
   weight,
 } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -245,16 +245,14 @@ const styles = StyleSheet.create({
     backgroundColor: colour.sunk,
     borderRadius: radius.chip,
     color: colour.ink,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     minHeight: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.snug,
     paddingVertical: space.tight,
   },
   nothing: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   foot: {
     alignItems: 'center',
@@ -268,8 +266,7 @@ const styles = StyleSheet.create({
   },
   count: {
     color: colour.muted,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   save: {
     alignItems: 'center',
@@ -282,7 +279,6 @@ const styles = StyleSheet.create({
   },
   saveLabel: {
     color: colour.surface,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
 });

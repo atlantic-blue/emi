@@ -1,5 +1,5 @@
 import { type Symptom, loggableMoods } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { groupHeadings } from './SymptomGroup';
@@ -64,8 +64,7 @@ const styles = StyleSheet.create({
   section: { gap: space.snug },
   heading: {
     color: colour.ink,
-    fontSize: typeScale.heading.size,
-    lineHeight: typeScale.heading.lineHeight,
+    ...textStyle('headline-md'),
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.tight },
   chip: {
@@ -83,8 +82,7 @@ const styles = StyleSheet.create({
   chipPicked: { backgroundColor: colour.emberTint, borderColor: colour.ember },
   chipLabel: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     textAlign: 'center',
   },
   chipLabelPicked: { color: colour.ink },

@@ -1,54 +1,86 @@
 /**
- * Three faces, each with a job: the serif carries a heading, the humanist sans carries running
- * text, and the monospaced face carries a number so a digit does not shift as it changes.
+ * One face, and the eleven roles the design system names for it. The roles keep the names the
+ * design system gives them, so a reader can hold the two open side by side and a test can read one
+ * against the other.
+ *
+ * The design system is `docs/design/prototype-design-system.md`.
  */
-export type FaceName = 'heading' | 'text' | 'numeric';
+export type FaceName = 'text';
 
-/**
- * The family the design names. The cut that ships can be a narrower one, and `fonts` carries that
- * name, so the two are not the same string.
- */
+/** One family. A screen has no second face to reach for, which is the whole of step 9.1. */
 export const face: Readonly<Record<FaceName, string>> = {
-  heading: 'Fraunces',
   text: 'Plus Jakarta Sans',
-  numeric: 'IBM Plex Mono',
 };
 
-/** Six sizes. A screen that wants a seventh is saying something one of the six already says. */
-export type TypeSizeName = 'display' | 'title' | 'heading' | 'body' | 'small' | 'label';
+/** The four weights the design system asks for. Two of them have a file in this repository. */
+export type TypeWeight = 400 | 500 | 600 | 700;
+
+/** The eleven roles the design system names, in its own words. */
+export type TypeRoleName =
+  | 'headline-xl'
+  | 'headline-xl-mobile'
+  | 'headline-lg'
+  | 'headline-md'
+  | 'headline-sm'
+  | 'body-lg'
+  | 'body-md'
+  | 'body-sm'
+  | 'label-lg'
+  | 'label-md'
+  | 'label-sm';
 
 /**
- * A size never travels without its line height and its face, because a line height chosen at the
- * call site is the one that drifts.
+ * A role never travels without its line height, its tracking and its weight, because each of those
+ * chosen at the call site is one that drifts.
  */
-export interface TypeStyle {
-  readonly size: number;
-  readonly lineHeight: number;
+export interface TypeRole {
   readonly face: FaceName;
-  readonly letterSpacing: number;
+  /** Points. */
+  readonly size: number;
+  /** Points. */
+  readonly lineHeight: number;
+  /** The design system measures tracking in em, which is a multiple of the size. */
+  readonly letterSpacingEm: number;
+  readonly weight: TypeWeight;
 }
 
 /**
- * Points. Every line height is at least `LINE_HEIGHT_FLOOR` times its size, and a test holds it
- * there.
+ * The eleven roles, copied from the design system's own table. A role that drifts from it fails
+ * `packages/tokens/tests/designSystem.test.ts`, which reads the document.
  */
-export const typeScale: Readonly<Record<TypeSizeName, TypeStyle>> = {
-  display: { size: 34, lineHeight: 41, face: 'heading', letterSpacing: 0 },
-  title: { size: 26, lineHeight: 32, face: 'heading', letterSpacing: 0 },
-  heading: { size: 20, lineHeight: 26, face: 'heading', letterSpacing: 0 },
-  body: { size: 16, lineHeight: 24, face: 'text', letterSpacing: 0 },
-  small: { size: 14, lineHeight: 20, face: 'text', letterSpacing: 0 },
-  label: { size: 12, lineHeight: 16, face: 'numeric', letterSpacing: 0.48 },
+export const typeScale: Readonly<Record<TypeRoleName, TypeRole>> = {
+  'headline-xl': { face: 'text', size: 36, lineHeight: 44, letterSpacingEm: -0.03, weight: 700 },
+  'headline-xl-mobile': {
+    face: 'text',
+    size: 30,
+    lineHeight: 38,
+    letterSpacingEm: -0.025,
+    weight: 700,
+  },
+  'headline-lg': { face: 'text', size: 26, lineHeight: 34, letterSpacingEm: -0.02, weight: 600 },
+  'headline-md': { face: 'text', size: 20, lineHeight: 28, letterSpacingEm: -0.015, weight: 600 },
+  'headline-sm': { face: 'text', size: 18, lineHeight: 24, letterSpacingEm: -0.01, weight: 600 },
+  'body-lg': { face: 'text', size: 17, lineHeight: 26, letterSpacingEm: -0.005, weight: 400 },
+  'body-md': { face: 'text', size: 15, lineHeight: 22, letterSpacingEm: 0, weight: 400 },
+  'body-sm': { face: 'text', size: 13, lineHeight: 18, letterSpacingEm: 0, weight: 400 },
+  'label-lg': { face: 'text', size: 15, lineHeight: 20, letterSpacingEm: 0.01, weight: 600 },
+  'label-md': { face: 'text', size: 13, lineHeight: 16, letterSpacingEm: 0.02, weight: 600 },
+  'label-sm': { face: 'text', size: 11, lineHeight: 14, letterSpacingEm: 0.04, weight: 600 },
 };
 
-/** The scale as data, from the largest size to the smallest. */
-export const typeSizeNames: readonly TypeSizeName[] = [
-  'display',
-  'title',
-  'heading',
-  'body',
-  'small',
-  'label',
+/** The roles as data, in the order the design system prints them. */
+export const typeRoleNames: readonly TypeRoleName[] = [
+  'headline-xl',
+  'headline-xl-mobile',
+  'headline-lg',
+  'headline-md',
+  'headline-sm',
+  'body-lg',
+  'body-md',
+  'body-sm',
+  'label-lg',
+  'label-md',
+  'label-sm',
 ];
 
 /**
@@ -56,3 +88,11 @@ export const typeSizeNames: readonly TypeSizeName[] = [
  * text is where it is felt first.
  */
 export const LINE_HEIGHT_FLOOR = 1.2;
+
+/**
+ * React Native measures letter spacing in points and the design system measures it in em, which is
+ * a multiple of the size. Two decimal places, because a third is below what a screen can draw.
+ */
+export function letterSpacingOf(size: number, em: number): number {
+  return Math.round(size * em * 100) / 100;
+}

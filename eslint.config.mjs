@@ -16,6 +16,18 @@ const hexColourInSource = [
   },
 ];
 
+// A font size set with no face beside it draws in whatever the platform offers, which is how
+// every heading and every paragraph came to ignore the six files the application ships. The
+// size and the face travel together, out of textStyle in @emi/tokens.
+const sizeWithoutAFace = [
+  {
+    selector:
+      'ObjectExpression:has(> Property[key.name="fontSize"]):not(:has(> Property[key.name="fontFamily"]))',
+    message:
+      'A font size belongs with its face. Spread textStyle from @emi/tokens rather than setting a size on its own.',
+  },
+];
+
 export default defineConfig([
   globalIgnores([
     '**/node_modules/**',
@@ -35,7 +47,7 @@ export default defineConfig([
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.mjs', '**/*.cjs'],
     ignores: ['packages/tokens/**'],
     rules: {
-      'no-restricted-syntax': ['error', ...hexColourInSource],
+      'no-restricted-syntax': ['error', ...hexColourInSource, ...sizeWithoutAFace],
     },
   },
   {

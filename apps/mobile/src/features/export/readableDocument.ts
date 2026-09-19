@@ -312,23 +312,23 @@ body {
   background: ${colour.stone};
   color: ${colour.ink};
   font-family: system-ui, sans-serif;
-  font-size: ${typeScale.body.size}px;
-  line-height: ${typeScale.body.lineHeight}px;
+  font-size: ${typeScale['body-lg'].size}px;
+  line-height: ${typeScale['body-lg'].lineHeight}px;
 }
 main { max-width: 720px; margin: 0 auto; }
-h1 { font-size: ${typeScale.display.size}px; line-height: ${typeScale.display.lineHeight}px; margin: 0; }
+h1 { font-size: ${typeScale['headline-xl'].size}px; line-height: ${typeScale['headline-xl'].lineHeight}px; margin: 0; }
 h2 {
-  font-size: ${typeScale.heading.size}px;
-  line-height: ${typeScale.heading.lineHeight}px;
+  font-size: ${typeScale['headline-md'].size}px;
+  line-height: ${typeScale['headline-md'].lineHeight}px;
   margin: ${space.roomy}px 0 ${space.snug}px;
   padding-bottom: ${space.hair}px;
   border-bottom: 1px solid ${colour.hairline};
 }
-h3 { font-size: ${typeScale.small.size}px; line-height: ${typeScale.small.lineHeight}px; margin: 0 0 ${space.hair}px; color: ${colour.ember}; }
+h3 { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin: 0 0 ${space.hair}px; color: ${colour.ember}; }
 p { margin: ${space.hair}px 0 0; }
 .taken { color: ${colour.body}; }
 .what { color: ${colour.body}; margin-top: ${space.snug}px; }
-.note { color: ${colour.muted}; font-size: ${typeScale.small.size}px; margin-top: ${space.snug}px; }
+.note { color: ${colour.muted}; font-size: ${typeScale['body-sm'].size}px; margin-top: ${space.snug}px; }
 article {
   background: ${colour.surface};
   border: 1px solid ${colour.hairline};

@@ -62,7 +62,7 @@ describe('the picture of the ring', () => {
     expect(page.match(/<circle /g)).toHaveLength(drawnRings.length);
 
     for (const ring of drawnRings) {
-      expect(page).toContain(`<div class="day face-numeric-regular">${ring.day}</div>`);
+      expect(page).toContain(`<div class="day face-regular">${ring.day}</div>`);
       expect(page).toContain(ring.title);
     }
   });

@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, fonts, radius, space, stroke, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -68,10 +68,7 @@ export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
 const styles = StyleSheet.create({
   days: {
     color: colour.ink,
-    fontFamily: fonts.numeric.family,
-    fontSize: typeScale.display.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.display.lineHeight,
+    ...textStyle('headline-xl'),
   },
   step: {
     alignItems: 'center',
@@ -85,8 +82,7 @@ const styles = StyleSheet.create({
   },
   stepMark: {
     color: colour.ember,
-    fontSize: typeScale.heading.size,
-    lineHeight: typeScale.heading.lineHeight,
+    ...textStyle('headline-md'),
   },
   stepSpent: { opacity: 0.4 },
   stepper: {

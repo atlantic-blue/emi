@@ -1,5 +1,5 @@
 import { readRecoveryCode } from '@emi/crypto';
-import { colour, fonts, radius, space, typeScale } from '@emi/tokens';
+import { colour, radius, space, textStyle, typeScale } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput } from 'react-native';
@@ -93,16 +93,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.card,
     borderWidth: 1,
     color: colour.ink,
-    fontFamily: fonts.numeric.family,
-    fontSize: typeScale.body.size,
+    ...textStyle('body-lg'),
     letterSpacing: 2,
-    lineHeight: typeScale.title.lineHeight,
+    lineHeight: typeScale['headline-lg'].lineHeight,
     padding: space.snug,
   },
   wrong: {
     color: colour.ember,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     marginTop: space.snug,
   },
 });

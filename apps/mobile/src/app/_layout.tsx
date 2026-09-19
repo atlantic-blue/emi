@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { DatabaseProvider } from '../data/DatabaseProvider';
 import { LockGate } from '../features/lock/LockGate';
 import { FirstRunProvider } from '../features/onboarding/FirstRunProvider';
+import { Fonts } from '../features/type/Fonts';
 import { VaultProvider } from '../services/vault/VaultProvider';
 
 /**
@@ -19,17 +20,19 @@ import { VaultProvider } from '../services/vault/VaultProvider';
  */
 export default function RootLayout(): ReactNode {
   return (
-    <DatabaseProvider>
-      <LockGate>
-        <VaultProvider>
-          <FirstRunProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" options={{ animationTypeForReplace: 'push' }} />
-              <Stack.Screen name="onboarding" options={{ animationTypeForReplace: 'push' }} />
-            </Stack>
-          </FirstRunProvider>
-        </VaultProvider>
-      </LockGate>
-    </DatabaseProvider>
+    <Fonts>
+      <DatabaseProvider>
+        <LockGate>
+          <VaultProvider>
+            <FirstRunProvider>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" options={{ animationTypeForReplace: 'push' }} />
+                <Stack.Screen name="onboarding" options={{ animationTypeForReplace: 'push' }} />
+              </Stack>
+            </FirstRunProvider>
+          </VaultProvider>
+        </LockGate>
+      </DatabaseProvider>
+    </Fonts>
   );
 }

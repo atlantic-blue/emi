@@ -1,5 +1,5 @@
 import type { Forecast } from '@emi/cycle';
-import { colour, space, typeScale } from '@emi/tokens';
+import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -40,22 +40,18 @@ const styles = StyleSheet.create({
   block: { paddingHorizontal: space.base, paddingVertical: space.snug },
   estimate: {
     color: colour.muted,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   label: {
     color: colour.muted,
-    fontSize: typeScale.label.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.label.lineHeight,
+    ...textStyle('label-sm'),
     marginBottom: space.hair,
   },
   // The window is the quieter of the two blocks, so it takes the body size and the ring's own
   // ovulation ink rather than the heading size the next period carries.
   range: {
     color: colour.ovulationInk,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     marginBottom: space.hair,
   },
 });

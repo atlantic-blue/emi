@@ -13,7 +13,7 @@ import {
   phasePalette,
   pointOnRing,
   ringGeometry,
-  typeScale,
+  textStyle,
 } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
@@ -187,9 +187,7 @@ const OPENS_FROM = 0.94;
 const styles = StyleSheet.create({
   day: {
     color: colour.ink,
-    fontSize: typeScale.display.size,
-    letterSpacing: typeScale.display.letterSpacing,
-    lineHeight: typeScale.display.lineHeight,
+    ...textStyle('headline-xl'),
   },
   middle: {
     alignItems: 'center',
@@ -203,9 +201,7 @@ const styles = StyleSheet.create({
   // Contract SCREEN-2 refuses the four words of the cycle above 14 points, and the phase name is
   // one of them, so the ring writes it at the small size wherever it is drawn.
   phase: {
-    fontSize: typeScale.small.size,
-    letterSpacing: typeScale.small.letterSpacing,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   ring: { alignItems: 'center', justifyContent: 'center' },
 });
