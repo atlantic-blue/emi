@@ -16,13 +16,20 @@ import {
   longerTestID,
   shorterTestID,
 } from '../../src/features/onboarding/CycleLength';
-import { dayTestID } from '../../src/features/onboarding/LastPeriod';
+import {
+  dayTestID,
+  earlierMonthTestID,
+  laterMonthTestID,
+  monthTestID,
+} from '../../src/features/onboarding/LastPeriod';
 import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy } from '../../src/features/onboarding/copy';
 import {
   defaultCycleLengthDays,
+  longestLookBackDays,
   maximumCycleLengthDays,
   minimumCycleLengthDays,
+  oldestPeriodStart,
 } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { theVaultOnHerPhone } from '../fixtures/herVault';
@@ -48,7 +55,12 @@ function dayOf(date: Date): string {
 }
 
 const today = dayOf(whenSheOpensIt);
+const tomorrow = dayOf(new Date(whenSheOpensIt.getTime() + millisecondsInADay));
 const herPeriodStarted = dayOf(new Date(whenSheOpensIt.getTime() - 5 * millisecondsInADay));
+const theOldestDaySheMayPick = oldestPeriodStart(today);
+const oneDayTooFarBack = dayOf(
+  new Date(whenSheOpensIt.getTime() - (longestLookBackDays + 1) * millisecondsInADay),
+);
 const herCycleLengthDays = defaultCycleLengthDays + 2;
 
 interface OpenApp {
@@ -88,6 +100,32 @@ async function sheAnswersEveryScreen(): Promise<void> {
     await shePresses(longerTestID);
   }
   await sheAnswers('cycleLength');
+}
+
+/**
+ * Back a month at a time until the heading says the month named. It presses rather than counting,
+ * so a calendar that stops paging is a test that fails rather than one that loops.
+ */
+async function shePagesBackTo(month: string): Promise<void> {
+  for (let pressed = 0; pressed < 12; pressed += 1) {
+    if (theScreen('lastPeriod').queryByText(month) !== null) {
+      return;
+    }
+    await shePresses(earlierMonthTestID);
+  }
+  throw new Error(`the calendar never reached ${month}`);
+}
+
+/** The thirty one handles the month she opens on holds, in the order the grid draws them. */
+function everyDayOfMay(): string[] {
+  return Array.from({ length: 31 }, (_unused, index) =>
+    dayTestID(`2026-05-${(index + 1).toString().padStart(2, '0')}`),
+  );
+}
+
+/** Every day square drawn right now, which is one month of them rather than the whole reach. */
+function everyDayOnTheScreen(): string[] {
+  return screen.queryAllByTestId(/^day-\d{4}-\d{2}-\d{2}$/).map((day) => String(day.props.testID));
 }
 
 function herDatabase(): Database {
@@ -130,6 +168,25 @@ function controlsTooSmallToPress(): string[] {
         ),
     )
     .map(({ name, style }) => `${name} is ${style.minWidth} by ${style.minHeight}`);
+}
+
+/**
+ * React Native runs on Hermes, which has no `globalThis.crypto`. Node has one, which is why the
+ * cases above pass while her first run threw on the phone. This takes the global away for the
+ * length of one walk and puts it back, so what she presses is measured against the runtime she
+ * actually holds.
+ */
+async function onARuntimeWithNoGlobalCrypto(walk: () => Promise<void>): Promise<void> {
+  const held = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+
+  Reflect.deleteProperty(globalThis, 'crypto');
+  try {
+    await walk();
+  } finally {
+    if (held !== undefined) {
+      Object.defineProperty(globalThis, 'crypto', held);
+    }
+  }
 }
 
 describe('the first run ends on the home screen with her period recorded', () => {
@@ -241,6 +298,23 @@ describe('the first run ends on the home screen with her period recorded', () =>
     });
   });
 
+  describe('she answers all three screens on a runtime with no generator of its own', () => {
+    it('records her day, because the vault draws from the phone and not from the runtime', async () => {
+      const app = await sheOpensEmi();
+
+      await onARuntimeWithNoGlobalCrypto(sheAnswersEveryScreen);
+
+      expect(app.pathname()).toBe('/');
+      const row = readDayLog(herDatabase(), herPeriodStarted);
+      const vault = await theVaultOnHerPhone();
+      expect(row && vault.open(row.payload)).toEqual({
+        day: herPeriodStarted,
+        flow: 'medium',
+        recordedAt: whenSheOpensIt.toISOString(),
+      });
+    });
+  });
+
   describe('before she has answered', () => {
     it('does not move on from the day she has not picked', async () => {
       const app = await sheOpensEmi();
@@ -272,17 +346,80 @@ describe('the first run ends on the home screen with her period recorded', () =>
       );
     });
 
-    it('offers every day back to the one she picked, and none after today', async () => {
+    it('offers every day of the month she is in, and no day of any other month', async () => {
       await sheOpensEmi();
       await sheAnswers('welcome');
 
+      expect(theScreen('lastPeriod').getByTestId(monthTestID)).toHaveTextContent('May 2026');
+      expect(everyDayOnTheScreen()).toEqual(everyDayOfMay());
       expect(screen.getByTestId(dayTestID(today))).toBeTruthy();
       expect(screen.getByTestId(dayTestID(herPeriodStarted))).toBeTruthy();
+    });
+  });
+
+  describe('the calendar she picks the day from', () => {
+    it('does not take a day after today, so the first run is never asked to refuse one', async () => {
+      const app = await sheOpensEmi();
+      await sheAnswers('welcome');
+
+      await shePresses(dayTestID(tomorrow));
+      await sheAnswers('lastPeriod');
+
+      expect(app.pathname()).toBe('/onboarding/last-period');
+    });
+
+    it('does not take a day further back than the first run reaches', async () => {
+      const app = await sheOpensEmi();
+      await sheAnswers('welcome');
+      await shePagesBackTo('February 2026');
+
+      await shePresses(dayTestID(oneDayTooFarBack));
+      await sheAnswers('lastPeriod');
+
+      expect(app.pathname()).toBe('/onboarding/last-period');
+    });
+
+    it('takes the oldest day it does reach, and records that day', async () => {
+      const app = await sheOpensEmi();
+      await sheAnswers('welcome');
+      await shePagesBackTo('February 2026');
+
+      await shePresses(dayTestID(theOldestDaySheMayPick));
+      await sheAnswers('lastPeriod');
+      for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
+        await shePresses(longerTestID);
+      }
+      await sheAnswers('cycleLength');
+
+      expect(app.pathname()).toBe('/');
+      expect(readDayLog(herDatabase(), theOldestDaySheMayPick)?.day).toBe(theOldestDaySheMayPick);
+    });
+
+    it('goes back no further than the month holding that day', async () => {
+      await sheOpensEmi();
+      await sheAnswers('welcome');
+      await shePagesBackTo('February 2026');
+
+      await shePresses(earlierMonthTestID);
+
+      expect(theScreen('lastPeriod').getByTestId(monthTestID)).toHaveTextContent('February 2026');
+    });
+
+    it('keeps the day she chose when she pages away from its month and back', async () => {
+      const app = await sheOpensEmi();
+      await sheAnswers('welcome');
+      await shePresses(dayTestID(herPeriodStarted));
+
+      await shePresses(earlierMonthTestID);
+      expect(screen.queryByTestId(dayTestID(herPeriodStarted))).toBeNull();
+      await shePresses(laterMonthTestID);
+
       expect(
-        screen.queryByTestId(
-          dayTestID(dayOf(new Date(whenSheOpensIt.getTime() + millisecondsInADay))),
-        ),
-      ).toBeNull();
+        screen.getByTestId(dayTestID(herPeriodStarted)).props.accessibilityState,
+      ).toMatchObject({ selected: true });
+
+      await sheAnswers('lastPeriod');
+      expect(app.pathname()).toBe('/onboarding/cycle-length');
     });
   });
 

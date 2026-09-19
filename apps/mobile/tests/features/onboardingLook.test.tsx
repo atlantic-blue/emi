@@ -1,4 +1,11 @@
-import { CONTRAST_FLOOR, MINIMUM_TAP_TARGET, colour, contrastRatio, icons } from '@emi/tokens';
+import {
+  CONTRAST_FLOOR,
+  MINIMUM_TAP_TARGET,
+  colour,
+  contrastRatio,
+  icons,
+  typeScale,
+} from '@emi/tokens';
 import { render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
@@ -6,7 +13,12 @@ import { CycleLength } from '../../src/features/onboarding/CycleLength';
 import {
   LastPeriod,
   chosenDayMarkTestID,
+  chosenNameMarkTestID,
   dayTestID,
+  earlierMonthTestID,
+  laterMonthTestID,
+  monthTestID,
+  namedDayTestID,
 } from '../../src/features/onboarding/LastPeriod';
 import {
   onboardingMarkTestID,
@@ -28,7 +40,7 @@ import { controlsTooSmallToPress } from '../fixtures/tapTargets';
  * a rendered screen.
  */
 
-/** Midday, and away from any summer time change, so the day list reads the same in any timezone. */
+/** Midday, and away from any summer time change, so the calendar reads the same in any timezone. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = '2026-05-14';
 const threeDaysBack = '2026-05-11';
@@ -137,21 +149,105 @@ describe('the first run carries the design system', () => {
   });
 
   describe('the day she picked', () => {
-    it('is marked by a tick as well as by a colour', async () => {
+    it('is marked three ways, so colour is never the only cue', async () => {
       await sheIsLookingAt('lastPeriod');
 
+      const square = flattened(dayTestID(threeDaysBack));
+
+      expect(square.backgroundColor).toBe(colour.ember);
+      expect(square.borderColor).toBe(colour.emberPressed);
       expect(screen.getByTestId(chosenDayMarkTestID)).toBeTruthy();
-      expect(flattened(dayTestID(threeDaysBack)).borderColor).toBe(colour.ember);
-      expect(flattened(dayTestID(threeDaysBack)).backgroundColor).toBe(colour.emberTint);
     });
 
-    it('leaves every other day unmarked, so one day is chosen and not two', async () => {
+    it('is the only square marked, so one day is chosen and not two', async () => {
       await sheIsLookingAt('lastPeriod');
 
+      const others = [today, '2026-05-12'].map((day) => flattened(dayTestID(day)));
+
       expect(screen.queryAllByTestId(chosenDayMarkTestID)).toHaveLength(1);
-      expect(flattened(dayTestID(today)).borderColor).toBe(colour.hairline);
+      expect(others.map((each) => each.backgroundColor)).toEqual([colour.sunk, colour.sunk]);
+      expect(others.map((each) => each.borderColor)).toEqual([colour.sunk, colour.sunk]);
       expect(screen.getByTestId(dayTestID(threeDaysBack))).toBeSelected();
       expect(screen.getByTestId(dayTestID(today))).not.toBeSelected();
+    });
+
+    it('keeps a day she may not choose on the screen, drawn back rather than taken away', async () => {
+      await sheIsLookingAt('lastPeriod');
+
+      const after = flattened(dayTestID('2026-05-20'));
+
+      expect(screen.getByTestId(dayTestID('2026-05-20'))).toBeTruthy();
+      expect(after.opacity).toBeLessThan(1);
+      expect(after.backgroundColor).not.toBe(colour.sunk);
+    });
+  });
+
+  describe('the two answers she presses most often', () => {
+    it('marks the one she chose by a tick as well as by a ground', async () => {
+      await render(
+        <LastPeriod
+          chosen={today}
+          now={whenSheOpensIt}
+          onChoose={() => undefined}
+          onContinue={() => undefined}
+        />,
+      );
+
+      const chosen = flattened(namedDayTestID(today));
+
+      expect(chosen.backgroundColor).toBe(colour.ember);
+      expect(chosen.borderColor).toBe(colour.emberPressed);
+      expect(screen.getByTestId(chosenNameMarkTestID)).toBeTruthy();
+    });
+
+    it('leaves the one she did not choose on the quiet ground, with no tick', async () => {
+      await render(
+        <LastPeriod
+          chosen={today}
+          now={whenSheOpensIt}
+          onChoose={() => undefined}
+          onContinue={() => undefined}
+        />,
+      );
+
+      expect(flattened(namedDayTestID('2026-05-13')).backgroundColor).toBe(colour.surface);
+      expect(screen.queryAllByTestId(chosenNameMarkTestID)).toHaveLength(1);
+    });
+  });
+
+  describe('the month she is looking at', () => {
+    it('is named above the squares, at the size a heading takes', async () => {
+      await sheIsLookingAt('lastPeriod');
+
+      const heading = flattened(monthTestID);
+
+      expect(screen.getByTestId(monthTestID)).toHaveTextContent('May 2026');
+      expect(heading.color).toBe(colour.ink);
+      expect(heading.fontSize).toBe(typeScale.heading.size);
+    });
+
+    it('draws a handle she can still press as a pill, and a spent one without it', async () => {
+      await sheIsLookingAt('lastPeriod');
+
+      const live = flattened(earlierMonthTestID);
+      const spent = flattened(laterMonthTestID);
+
+      expect(live.backgroundColor).toBe(colour.emberTint);
+      expect(live.borderColor).toBe(colour.ember);
+      expect(spent.backgroundColor).not.toBe(live.backgroundColor);
+      expect(spent.borderColor).not.toBe(live.borderColor);
+      expect(Number(spent.opacity)).toBeLessThan(Number(live.opacity ?? 1));
+    });
+
+    it('says the same thing to a screen reader, on the handle that is spent', async () => {
+      await sheIsLookingAt('lastPeriod');
+
+      expect(screen.getByTestId(laterMonthTestID).props.accessibilityState).toMatchObject({
+        disabled: true,
+      });
+      expect(screen.getByTestId(earlierMonthTestID).props.accessibilityState).toMatchObject({
+        disabled: false,
+      });
     });
   });
 

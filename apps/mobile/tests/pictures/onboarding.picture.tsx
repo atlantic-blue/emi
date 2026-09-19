@@ -64,7 +64,7 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Two of three',
-    note: 'She picks the day her last period started. The third day back is chosen.',
+    note: 'She picks the day her last period started from the month she is in. The eleventh is\n      chosen, and the days after today take no press.',
     element: (
       <LastPeriod
         chosen="2026-05-11"

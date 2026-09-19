@@ -28,7 +28,7 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
       if (!stillMounted) {
         return;
       }
-      const opened = dayVault(key);
+      const opened = dayVault(key, phoneRandom);
       encryptPlainPayloads(database, opened, new Date());
       setVault(opened);
     });
@@ -46,7 +46,7 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
    */
   const renew = useCallback(async () => {
     const key = await vaultKey(expoKeychain(), phoneRandom);
-    setVault(dayVault(key));
+    setVault(dayVault(key, phoneRandom));
   }, []);
 
   if (!vault) {

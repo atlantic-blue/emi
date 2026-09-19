@@ -1,4 +1,4 @@
-import { type DayRecord, openRecord, sealRecord } from '@emi/crypto';
+import { type DayRecord, type RandomSource, openRecord, sealRecord } from '@emi/crypto';
 
 /**
  * The vault key, bound to the two things the application does with it. Every day she writes is
@@ -12,9 +12,15 @@ export interface DayVault {
   open(payload: Uint8Array): DayRecord;
 }
 
-export function dayVault(key: Uint8Array): DayVault {
+/**
+ * The random source is a required argument because React Native runs on Hermes, and Hermes has no
+ * `globalThis.crypto` for the envelope to fall back to. Node has one, so a vault built without a
+ * source seals in every test and refuses on her phone. A required argument makes the compiler name
+ * a call site that forgets it.
+ */
+export function dayVault(key: Uint8Array, random: RandomSource): DayVault {
   return {
-    seal: (record) => sealRecord(record, key),
+    seal: (record) => sealRecord(record, key, { random }),
     open: (payload) => openRecord(payload, key),
   };
 }
