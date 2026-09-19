@@ -7,12 +7,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * The ground every screen stands on, and the only place the inset is read.
  *
  * A phone keeps part of its glass for itself: the clock and the island at the top, the home
- * indicator at the bottom, and a rounded corner or a camera at the sides in landscape. Anything
- * drawn there is drawn under something else. The numbers come from the operating system through
- * the provider, so they follow the phone she holds rather than a measurement taken from one.
+ * indicator at the bottom, and a rounded corner at each side when it is turned. Anything drawn
+ * there is drawn under something else. The numbers arrive from the operating system through the
+ * provider, so they follow the phone she holds rather than a measurement taken from one of them.
  *
- * It is one component rather than eight copies because a ninth screen is written by copying an
- * eighth, and a rule that lives in eight places is a rule that is already broken somewhere.
+ * Twelve screens stand on this one component, because a rule kept in twelve places is a rule that
+ * is already broken in one of them.
  */
 
 interface Props {
