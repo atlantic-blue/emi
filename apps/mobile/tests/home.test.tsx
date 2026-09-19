@@ -16,22 +16,52 @@ import {
   settingsTestID,
 } from '../src/features/home/HomeScreen';
 import { migratedDatabase } from './fixtures/cycleCache';
+import { herWeek } from './fixtures/herWeek';
 import { textIn } from './fixtures/renderedText';
+
+/** The day the empty screen is opened on, so the week it draws is the same week every run. */
+const today = '2026-09-17';
 
 /** A phone with nothing on it yet, which is the screen with the fewest words on it. */
 async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
+  const database = migratedDatabase();
+
   await render(
     <HomeScreen
       cycleLengthDays={28}
-      forecast={forecastOf(listCycles(migratedDatabase()))}
+      forecast={forecastOf(listCycles(database))}
       onExport={() => asked.push('export')}
       onHistory={() => asked.push('history')}
       onLogToday={() => asked.push('log today')}
+      onOpenDay={(day) => asked.push(`day ${day}`)}
       onSettings={() => asked.push('settings')}
       ring={undefined}
+      today={today}
+      week={herWeek(database, today)}
     />,
   );
 }
+
+/**
+ * The seven columns of a phone with nothing recorded: a weekday letter and a date, and no cycle
+ * day above either, because no cycle of hers has started.
+ */
+const theWeekWithNothingOnIt = [
+  'F',
+  '11',
+  'S',
+  '12',
+  'S',
+  '13',
+  'M',
+  '14',
+  'T',
+  '15',
+  'W',
+  '16',
+  'T',
+  '17',
+];
 
 describe('the home screen', () => {
   it('shows the word Emi', async () => {
@@ -40,12 +70,13 @@ describe('the home screen', () => {
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
   });
 
-  it('shows the wordmark, what to do next, and the four ways in', async () => {
+  it('shows the wordmark, her week, what to do next, and the four ways in', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
     expect(textIn(screen.toJSON())).toEqual([
       homeCopy.wordmark,
+      ...theWeekWithNothingOnIt,
       homeCopy.noRing.title,
       homeCopy.noRing.line,
       'Still learning',

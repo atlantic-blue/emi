@@ -36,6 +36,7 @@ import {
   logTodayTestID,
 } from '../../src/features/home/HomeScreen';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
+import { localDay } from '../../src/features/onboarding/days';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
 import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import {
@@ -49,7 +50,9 @@ import {
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herKeyIsInTheKeychain, herVault } from '../fixtures/herVault';
+import type { StripDay } from '../../src/features/home/weekStrip';
 import { daysLogged, migratedDatabase, readDay } from '../fixtures/cycleCache';
+import { herWeek } from '../fixtures/herWeek';
 import { asSheLoggedIt, recordedAt } from '../fixtures/forecast';
 import { sizedTextIn } from '../fixtures/renderedText';
 
@@ -64,6 +67,9 @@ const sheSaidHerCycleRuns = 31;
 
 /** The day of the cycle she is in when she opens Emi. Every set below is mid follicular on it. */
 const theDaySheOpensIt = 8;
+
+/** A day to open an empty phone on, where no cycle of hers decides one. */
+const theDaySheOpensItOn = localDay(recordedAt);
 
 /** A cycle running five days past the day the forecast named, which every set below can reach. */
 const theDaySheIsLateOn = 33;
@@ -106,6 +112,7 @@ interface HerPhone {
   readonly open: CycleRow;
   readonly ring: RingInput;
   readonly forecast: Forecast;
+  readonly week: readonly StripDay[];
 }
 
 /**
@@ -134,7 +141,7 @@ function herPhone(set: RecordedSet, dayOfCycle: number = theDaySheOpensIt): HerP
     throw new Error(`${set.lengths.length} recorded cycles drew no ring and left no forecast`);
   }
 
-  return { today, open, ring, forecast };
+  return { today, open, ring, forecast, week: herWeek(database, today) };
 }
 
 /** The cycle day a date falls on, counting the first day of the cycle she is in as one. */
@@ -170,8 +177,11 @@ async function sheOpensHerHomeScreen(her: HerPhone): Promise<void> {
       onExport={() => undefined}
       onHistory={() => undefined}
       onLogToday={() => undefined}
+      onOpenDay={() => undefined}
       onSettings={() => undefined}
       ring={her.ring}
+      today={her.today}
+      week={her.week}
     />,
   );
 }
@@ -328,6 +338,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
           onExport={() => undefined}
           onHistory={() => undefined}
           onLogToday={() => undefined}
+          onOpenDay={() => undefined}
           onSettings={() => undefined}
           ring={ringInputFor({
             cycles,
@@ -335,6 +346,8 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             today: addDays(open.startedOn, theDaySheOpensIt - 1),
             statedCycleLengthDays: sheSaidHerCycleRuns,
           })}
+          today={addDays(open.startedOn, theDaySheOpensIt - 1)}
+          week={herWeek(database, addDays(open.startedOn, theDaySheOpensIt - 1))}
         />,
       );
 
@@ -354,8 +367,11 @@ describe('the ring shows the forecast the arithmetic produced', () => {
           onExport={() => undefined}
           onHistory={() => undefined}
           onLogToday={() => undefined}
+          onOpenDay={() => undefined}
           onSettings={() => undefined}
           ring={undefined}
+          today={theDaySheOpensItOn}
+          week={herWeek(migratedDatabase(), theDaySheOpensItOn)}
         />,
       );
 
@@ -393,8 +409,11 @@ describe('the ring shows the forecast the arithmetic produced', () => {
           onExport={() => undefined}
           onHistory={() => undefined}
           onLogToday={() => undefined}
+          onOpenDay={() => undefined}
           onSettings={() => undefined}
           ring={undefined}
+          today={theDaySheOpensItOn}
+          week={herWeek(migratedDatabase(), theDaySheOpensItOn)}
         />,
       );
 

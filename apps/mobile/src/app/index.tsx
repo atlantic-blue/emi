@@ -9,6 +9,7 @@ import { recordedDays } from '../features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../features/cycle/ringInput';
 import { forecastOf } from '../features/forecast/fromCache';
 import { HomeScreen } from '../features/home/HomeScreen';
+import { type StripDay, weekEndingOn } from '../features/home/weekStrip';
 import { useFirstRun } from '../features/onboarding/FirstRunProvider';
 import { localDay } from '../features/onboarding/days';
 import type { DayVault } from '../services/vault/dayVault';
@@ -17,6 +18,7 @@ import { defaultCycleLengthDays, statedCycleLengthDays } from '../features/onboa
 
 interface Shown {
   readonly ring: RingInput | undefined;
+  readonly week: readonly StripDay[];
   readonly forecast: ReturnType<typeof forecastOf>;
   readonly cycleLengthDays: number;
 }
@@ -27,15 +29,18 @@ interface Shown {
  */
 function whatSheIsLookingAt(database: Database, vault: DayVault, today: string): Shown {
   const cycles = listCycles(database);
+  const records = recordedDays(database, vault.open);
+  const forecast = forecastOf(cycles);
 
   return {
     ring: ringInputFor({
       cycles,
-      records: recordedDays(database, vault.open),
+      records,
       today,
       statedCycleLengthDays: statedCycleLengthDays(database) ?? defaultCycleLengthDays,
     }),
-    forecast: forecastOf(cycles),
+    week: weekEndingOn({ cycles, records, forecast, today }),
+    forecast,
     cycleLengthDays: statedCycleLengthDays(database) ?? defaultCycleLengthDays,
   };
 }
@@ -69,8 +74,11 @@ export default function HomeRoute(): ReactNode {
       onExport={() => router.push('/export')}
       onHistory={() => router.push('/history')}
       onLogToday={() => router.push('/log')}
+      onOpenDay={(day) => router.push(`/day/${day}`)}
       onSettings={() => router.push('/settings')}
       ring={shown.ring}
+      today={today}
+      week={shown.week}
     />
   );
 }

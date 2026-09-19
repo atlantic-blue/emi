@@ -6,6 +6,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CycleRing } from '../../components/CycleRing';
 import type { RingInput } from '../cycle/ringInput';
 import { NextPeriodOrLearning } from '../forecast/Learning';
+import { WeekStrip } from './WeekStrip';
+import type { StripDay } from './weekStrip';
 
 /**
  * The one screen she opens. The ring carries the meaning and the words underneath it stay small,
@@ -42,6 +44,10 @@ export const homeCopy = {
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
   readonly ring: RingInput | undefined;
+  /** The seven days ending on today, worked out before the screen is handed them. */
+  readonly week: readonly StripDay[];
+  /** The day she is living in, so the strip names today and yesterday as she reads them. */
+  readonly today: string;
   readonly forecast: ForecastResult;
   /** The length she gave at the first run, which the learning state counts by. */
   readonly cycleLengthDays: number;
@@ -51,16 +57,21 @@ interface Props {
   /** The way out, because a record she cannot take with her is not hers. */
   readonly onExport: () => void;
   readonly onSettings: () => void;
+  /** She presses a day of the week and opens that day at its own address. */
+  readonly onOpenDay: (day: string) => void;
 }
 
 export function HomeScreen({
   ring,
+  week,
+  today,
   forecast,
   cycleLengthDays,
   onLogToday,
   onHistory,
   onExport,
   onSettings,
+  onOpenDay,
 }: Props): ReactNode {
   return (
     <View style={styles.screen} testID={homeScreenTestID}>
@@ -68,6 +79,8 @@ export function HomeScreen({
         <Text accessibilityRole="header" style={styles.wordmark}>
           {homeCopy.wordmark}
         </Text>
+
+        <WeekStrip onOpenDay={onOpenDay} today={today} week={week} />
 
         {ring ? (
           <CycleRing {...ring} />
