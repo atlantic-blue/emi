@@ -19,6 +19,8 @@ check: ## everything the pipeline runs, in the pipeline's order, stopping at the
 	npm run check:brand
 	npm run check:reference
 	npm run check:sheet
+	npm run check:story
+	npm run check:pictures
 	npm test
 
 format: ## write the formatting the pipeline checks

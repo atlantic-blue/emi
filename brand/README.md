@@ -36,6 +36,10 @@ own paths are the ones in the picture, so the page cannot show a ring the applic
 component under the test runner, reads the tree that came back, and turns it into markup, so no
 layout is restated here and a change to the screen changes the picture. It is drawn only when it is
 asked for, because the runner picks up a file named for a test and this one is named for a picture.
+A picture drawn through `screens/picture.ts` also commits the markup it drew, so
+`npm run check:pictures` can render the screens again and compare the markup without a browser. The
+comparison is on the markup and never on the image, because two browsers draw one page into
+different bytes. `docs/story.md` shows these pictures to a reader.
 
 `jsx/` is the markup a page is written in. A generator writes a page as markup and gets a string of
 html back, which a browser then draws. `jsx/register.ts` is what lets Node read a `.tsx` file at all,
