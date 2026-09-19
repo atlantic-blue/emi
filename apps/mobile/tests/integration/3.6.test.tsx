@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { OnAPhone } from '../fixtures/theSafeArea';
 
 import type { DayRecord } from '@emi/crypto';
 import type { Forecast } from '@emi/cycle';
@@ -164,15 +165,17 @@ function theDaysOf(phase: PhaseName, ring: RingInput): DrawnDays {
 
 async function sheOpensHerHomeScreen(her: HerPhone): Promise<void> {
   await render(
-    <HomeScreen
-      cycleLengthDays={sheSaidHerCycleRuns}
-      forecast={her.forecast}
-      onExport={() => undefined}
-      onHistory={() => undefined}
-      onLogToday={() => undefined}
-      onSettings={() => undefined}
-      ring={her.ring}
-    />,
+    <OnAPhone>
+      <HomeScreen
+        cycleLengthDays={sheSaidHerCycleRuns}
+        forecast={her.forecast}
+        onExport={() => undefined}
+        onHistory={() => undefined}
+        onLogToday={() => undefined}
+        onSettings={() => undefined}
+        ring={her.ring}
+      />
+    </OnAPhone>,
   );
 }
 
@@ -322,20 +325,22 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       }
 
       await render(
-        <HomeScreen
-          cycleLengthDays={sheSaidHerCycleRuns}
-          forecast={forecastOf(cycles)}
-          onExport={() => undefined}
-          onHistory={() => undefined}
-          onLogToday={() => undefined}
-          onSettings={() => undefined}
-          ring={ringInputFor({
-            cycles,
-            records: recordedDays(database, readDay),
-            today: addDays(open.startedOn, theDaySheOpensIt - 1),
-            statedCycleLengthDays: sheSaidHerCycleRuns,
-          })}
-        />,
+        <OnAPhone>
+          <HomeScreen
+            cycleLengthDays={sheSaidHerCycleRuns}
+            forecast={forecastOf(cycles)}
+            onExport={() => undefined}
+            onHistory={() => undefined}
+            onLogToday={() => undefined}
+            onSettings={() => undefined}
+            ring={ringInputFor({
+              cycles,
+              records: recordedDays(database, readDay),
+              today: addDays(open.startedOn, theDaySheOpensIt - 1),
+              statedCycleLengthDays: sheSaidHerCycleRuns,
+            })}
+          />
+        </OnAPhone>,
       );
 
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
@@ -348,15 +353,17 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
     it('draws no ring at all, and says what to do, before she has recorded a day', async () => {
       await render(
-        <HomeScreen
-          cycleLengthDays={sheSaidHerCycleRuns}
-          forecast={forecastOf(listCycles(migratedDatabase()))}
-          onExport={() => undefined}
-          onHistory={() => undefined}
-          onLogToday={() => undefined}
-          onSettings={() => undefined}
-          ring={undefined}
-        />,
+        <OnAPhone>
+          <HomeScreen
+            cycleLengthDays={sheSaidHerCycleRuns}
+            forecast={forecastOf(listCycles(migratedDatabase()))}
+            onExport={() => undefined}
+            onHistory={() => undefined}
+            onLogToday={() => undefined}
+            onSettings={() => undefined}
+            ring={undefined}
+          />
+        </OnAPhone>,
       );
 
       expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
@@ -387,15 +394,17 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
     it('keeps them small on the screen that has nothing to draw', async () => {
       await render(
-        <HomeScreen
-          cycleLengthDays={sheSaidHerCycleRuns}
-          forecast={forecastOf(listCycles(migratedDatabase()))}
-          onExport={() => undefined}
-          onHistory={() => undefined}
-          onLogToday={() => undefined}
-          onSettings={() => undefined}
-          ring={undefined}
-        />,
+        <OnAPhone>
+          <HomeScreen
+            cycleLengthDays={sheSaidHerCycleRuns}
+            forecast={forecastOf(listCycles(migratedDatabase()))}
+            onExport={() => undefined}
+            onHistory={() => undefined}
+            onLogToday={() => undefined}
+            onSettings={() => undefined}
+            ring={undefined}
+          />
+        </OnAPhone>,
       );
 
       expect(theWordsAStrangerCouldRead().map((run) => run.text)).toContain(homeCopy.noRing.line);

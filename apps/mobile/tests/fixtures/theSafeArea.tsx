@@ -9,15 +9,18 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
  * `initialMetrics` is how a run with no operating system under it supplies them instead.
  *
  * The runner draws at 390 by 844 points with nothing reserved, which is why a screen drawn under
- * the clock passed every test it had. These insets are the ones an iPhone with a dynamic island
- * reports, so a screen measured against them is measured against a phone she might hold.
+ * the clock passed every test it had.
+ *
+ * These are the insets an iPhone with a dynamic island reports. Nothing here read them off a
+ * device, so every case asserts the relationship between what the provider hands down and what the
+ * screen reserves, and never the numbers themselves.
  */
 export const aPhoneWithAnIsland: Metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
   insets: { bottom: 34, left: 0, right: 0, top: 59 },
 };
 
-/** A phone that reserves nothing, which is every simulator with no notch and the runner's default. */
+/** A phone that keeps none of its glass, which is what the runner reports when nothing supplies it. */
 export const aPhoneWithNoIsland: Metrics = {
   frame: { x: 0, y: 0, width: 390, height: 844 },
   insets: { bottom: 0, left: 0, right: 0, top: 0 },
