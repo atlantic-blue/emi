@@ -8,10 +8,21 @@ data "aws_iam_openid_connect_provider" "github" {
 }
 
 locals {
-  # The subject a GitHub token carries. Verified against the live sava-mix role on 2026-09-17,
-  # whose merge run assumed successfully with this same plain form.
-  main_subject         = "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"
-  pull_request_subject = "repo:${var.github_org}/${var.github_repo}:pull_request"
+  # The subject a GitHub token carries. This account shows two spellings of it.
+  #
+  # On 2026-09-18 the plan job could not assume its role. CloudTrail in eu-central-1 recorded the
+  # subject of that token: repo:atlantic-blue@140661232/emi@1374431048:pull_request. GitHub writes a
+  # numeric identifier after the organisation and after the repository.
+  #
+  # An older role in the same account accepted a token on 2026-08-22. That token carried the plain
+  # form repo:atlantic-blue/website:ref:refs/heads/main. Both spellings are real here, so each
+  # condition accepts the two. A list under StringEquals means any one value. Each value stays an
+  # exact match, so a branch with the name main-something assumes nothing.
+  main_subject_by_name = "repo:${var.github_org}/${var.github_repo}:ref:refs/heads/main"
+  main_subject_by_id   = "repo:${var.github_org}@${var.github_org_id}/${var.github_repo}@${var.github_repo_id}:ref:refs/heads/main"
+
+  pull_request_subject_by_name = "repo:${var.github_org}/${var.github_repo}:pull_request"
+  pull_request_subject_by_id   = "repo:${var.github_org}@${var.github_org_id}/${var.github_repo}@${var.github_repo_id}:pull_request"
 
   state_bucket_arn = "arn:aws:s3:::abs-terraform"
   state_key_arn    = "arn:aws:s3:::abs-terraform/${var.project_name}/*"
@@ -38,7 +49,7 @@ data "aws_iam_policy_document" "plan_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [local.pull_request_subject]
+      values   = [local.pull_request_subject_by_name, local.pull_request_subject_by_id]
     }
   }
 }
@@ -119,7 +130,7 @@ data "aws_iam_policy_document" "apply_trust" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = [local.main_subject]
+      values   = [local.main_subject_by_name, local.main_subject_by_id]
     }
   }
 }
