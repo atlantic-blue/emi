@@ -2,19 +2,21 @@ import type { Symptom, SymptomGroup as GroupName } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { words } from '../../language';
+
 /**
  * The heading a woman reads. The catalogue holds the slug, which never changes, and this is the
  * only place the group is given words, so renaming one touches nothing she has already recorded.
  */
 export const groupHeadings: Readonly<Record<GroupName, string>> = {
-  mood: 'Mood',
-  energy: 'Energy',
-  pain: 'Pain',
-  digestion: 'Digestion',
-  skin: 'Skin and hair',
-  sleep: 'Sleep',
-  head: 'Head',
-  libido: 'Libido',
+  mood: words('log.group.mood'),
+  energy: words('log.group.energy'),
+  pain: words('log.group.pain'),
+  digestion: words('log.group.digestion'),
+  skin: words('log.group.skin'),
+  sleep: words('log.group.sleep'),
+  head: words('log.group.head'),
+  libido: words('log.group.libido'),
 };
 
 export interface SymptomChipProps {

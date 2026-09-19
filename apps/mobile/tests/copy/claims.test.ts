@@ -22,6 +22,7 @@ const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
 
 const aScreen = 'apps/mobile/src/features/forecast/FertileWindow.tsx';
 const aDocument = 'docs/privacy.md';
+const theCatalogue = 'apps/mobile/src/language/english.ts';
 
 // Every example below is taken from the lists themselves rather than written out, so this file
 // holds no claim of its own and the repository wide scan can read it with everything else.
@@ -52,6 +53,20 @@ describe('the words a screen may not use', () => {
       expect(scanned).toContain(aScreen);
       expect(scanned).toContain('apps/mobile/src/features/forecast/copy.ts');
       expect(scanned).toContain('apps/mobile/src/app/index.tsx');
+    });
+
+    // The words moved into the catalogue, so the scan reads them there or it reads nothing she
+    // sees. Both files are named, because one holds the words and the other holds the lookup.
+    it('reads the catalogue the words moved into', () => {
+      expect(scanned).toContain(theCatalogue);
+      expect(scanned).toContain('apps/mobile/src/language/words.ts');
+    });
+
+    it('reads the catalogue whole, and it carries most of the words in the product', () => {
+      const held = readFileSync(join(repositoryRoot, theCatalogue), 'utf8');
+
+      expect(interfaceClaimsIn(theCatalogue, held)).toEqual([]);
+      expect(held.length).toBeGreaterThan(8000);
     });
 
     it('is read whole, and not only the words a screen renders', () => {

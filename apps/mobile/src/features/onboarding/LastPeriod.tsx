@@ -137,7 +137,7 @@ export function LastPeriod({ now, chosen, onChoose, onContinue }: Props): ReactN
       <View style={styles.calendar}>
         <View style={styles.heading}>
           <Pressable
-            accessibilityLabel="Earlier month"
+            accessibilityLabel={firstRunCopy.earlierMonth}
             accessibilityRole="button"
             accessibilityState={{ disabled: !canGoEarlier }}
             disabled={!canGoEarlier}
@@ -148,14 +148,14 @@ export function LastPeriod({ now, chosen, onChoose, onContinue }: Props): ReactN
             <Text
               style={canGoEarlier ? styles.pageLabel : [styles.pageLabel, styles.pageSpentLabel]}
             >
-              Earlier
+              {firstRunCopy.earlier}
             </Text>
           </Pressable>
           <Text style={styles.month} testID={monthTestID}>
             {monthLabel(month)}
           </Text>
           <Pressable
-            accessibilityLabel="Later month"
+            accessibilityLabel={firstRunCopy.laterMonth}
             accessibilityRole="button"
             accessibilityState={{ disabled: !canGoLater }}
             disabled={!canGoLater}
@@ -164,7 +164,7 @@ export function LastPeriod({ now, chosen, onChoose, onContinue }: Props): ReactN
             testID={laterMonthTestID}
           >
             <Text style={canGoLater ? styles.pageLabel : [styles.pageLabel, styles.pageSpentLabel]}>
-              Later
+              {firstRunCopy.later}
             </Text>
           </Pressable>
         </View>
