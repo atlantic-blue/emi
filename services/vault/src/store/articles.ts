@@ -5,17 +5,19 @@
 
 /** An article item of the data model, as the service holds it. */
 export interface StoredArticle {
-  /** The slug, which is the sort key of the item and the only identifier an article has. */
+  /** The slug, which is the sort key of the item and the identifier the answer carries. */
   readonly slug: string;
   readonly title: string;
   /** Text. An article carries no url and no image, so reading one is one request and not two. */
   readonly body: string;
+  /** Who wrote it, and who read it after them. A screen draws this under the body. */
+  readonly attribution: string;
   /** A language tag, for example `en-GB`. */
   readonly language: string;
   readonly publishedAt: string;
   readonly revision: number;
-  /** Where the wording came from, where anybody said. */
-  readonly attribution: string | null;
+  /** The whole piece, where there is a page to open, and nothing where there is not. */
+  readonly link: string | null;
 }
 
 /**

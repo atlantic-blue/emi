@@ -345,8 +345,8 @@ kept in a type and in a search over bytes.
 
 Status: built
 
-`GET /v1/articles/{phase}` answers the articles written for a cycle phase. The request carries the
-phase and no account identifier, and it carries no signature. This section says where the catalogue
+`GET /v1/articles/{phase}` answers one article for a cycle phase. The request carries the phase and
+no account identifier, and it carries no signature. This section says where the catalogue
 lives, and why a read of it cannot be tied to a reader.
 
 The code and the configuration are in this repository. Nothing is deployed yet, so the function is
@@ -388,10 +388,14 @@ written in the key and nowhere else, the same way a record identifier is.
 
 - `title`, a string, required.
 - `body`, a string, required.
+- `attribution`, a string, required. Who wrote it, and who read it after them. A card draws it
+  under the body, and `@emi/content` refuses an article without one, so an item missing it is
+  passed over rather than answered.
 - `language`, a string, required. A language tag, for example `en-GB`.
-- `publishedAt`, an instant string, required.
+- `publishedAt`, an instant string, required. It is what the newest of a phase is chosen by.
 - `revision`, a number, required.
-- `attribution`, a string, optional. Where the wording came from.
+- `link`, a string, optional. The whole piece, where there is a page to open. A link that does not
+  begin with `https://` is answered as no link, because a browser would refuse it anyway.
 
 The body is text. It carries no url and no image, because an image inside an article is a second
 request, and a second request is a third party that learns a woman opened that article.
@@ -402,12 +406,25 @@ those would be a place to write down who read what.
 ### The query
 
 One query answers a phase: `pk = :pk` on `emi-articles`, where the value is `PHASE#` and the phase.
-It reads one partition, which is every article of that phase, and the phone chooses which to show.
-
-The server chooses nothing, and that is deliberate. A server that picked the article would need to
-know more about her than the phase.
+It reads one partition, which is every article of that phase.
 
 There is no scan. A catalogue small enough to scan today is a catalogue that grows.
+
+### What the answer carries
+
+The answer is one article, in the shape `@emi/content` reads, and that package is the only caller:
+`id`, which is the slug, `phase`, `title`, `body`, `attribution` and `link`. It carries no
+`language`, no `publishedAt` and no `revision`, because nothing draws them. The table holds more
+than the answer carries.
+
+The article is the newest of the phase, and the first slug where two were published in the same
+instant. Every reader of a phase is handed the same one. A server that chose between them would
+need to know something about her to choose with, and the only thing it knows is the phase.
+
+A phase nobody has written for yet is answered with no article, not with an empty one, because an
+empty article is a card drawn blank. It says that the phase holds nothing, where an unknown phase is
+told it is not a phase, so whoever stocks the catalogue can tell a gap from a mistake. The
+application reads both the same way, which is that there is no card to draw.
 
 ### Why a read cannot be tied to a reader
 

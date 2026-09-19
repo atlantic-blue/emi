@@ -24,16 +24,17 @@ const numberOf = (value: AttributeValue | undefined): number =>
   value !== undefined && 'N' in value ? Number(value.N) : 0;
 
 function articleFrom(item: Item): StoredArticle {
-  const attribution = item.attribution;
-
   return {
     slug: textOf(item.sk).slice('ART#'.length),
     title: textOf(item.title),
     body: textOf(item.body),
+    attribution: textOf(item.attribution),
     language: textOf(item.language),
     publishedAt: textOf(item.publishedAt),
     revision: numberOf(item.revision),
-    attribution: attribution === undefined ? null : textOf(attribution),
+    // A link the catalogue never wrote reads as no link rather than as an empty one, because a
+    // screen draws the control that opens a piece only where there is a piece to open.
+    link: 'link' in item ? textOf(item.link) : null,
   };
 }
 

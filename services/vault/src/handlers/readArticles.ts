@@ -5,13 +5,16 @@ import { answer, type HttpRequestEvent, type HttpResponse, refusal } from '../ap
 import type { ArticleStore, StoredArticle } from '../store/articles';
 
 /**
- * The articles written for one cycle phase. A request says which phase is being read and never who
+ * The article written for one cycle phase. A request says which phase is being read and never who
  * is reading it, so this is the one endpoint in the service that takes no signature, reads no
  * account and stands behind no authorizer.
  *
- * The three refusals below exist so that staying that way is not a matter of remembering. A header
+ * The two refusals below exist so that staying that way is not a matter of remembering. A header
  * that names an account, or an authorizer attached to the route, fails the request loudly instead
  * of quietly telling the server who asked.
+ *
+ * The answer is the shape `@emi/content` reads, because that package is the one caller and it
+ * refuses anything else. Every field it draws is required here for the same reason.
  */
 
 /** The name of the one parameter the route takes, which the route template also writes. */
@@ -32,6 +35,19 @@ export const identityHeaders: readonly string[] = [
 /** How long an answer may be held. Every reader of a phase gets the same one, so it caches. */
 export const cacheSeconds = 3600;
 
+/** A link is opened in a browser, so a scheme a browser refuses is not a link. */
+export const linkScheme = 'https://';
+
+/** One article, as the endpoint answers it and as `@emi/content` reads it. */
+export interface AnsweredArticle {
+  readonly id: string;
+  readonly phase: PhaseName;
+  readonly title: string;
+  readonly body: string;
+  readonly attribution: string;
+  readonly link: string | null;
+}
+
 /** The identity headers a request carries, which for this endpoint must be none. */
 export function identityHeadersIn(event: HttpRequestEvent): string[] {
   return identityHeaders.filter((header) => event.headers[header] !== undefined);
@@ -49,8 +65,48 @@ export function phaseIn(event: HttpRequestEvent): PhaseName | null {
   return phaseNames.find((phase) => phase === given) ?? null;
 }
 
-function articleAnswer(phase: PhaseName, articles: readonly StoredArticle[]): HttpResponse {
-  const body = answer(200, { phase, articles });
+/**
+ * True where every field a card draws is there. A screen refuses an article missing one, so an
+ * item the catalogue left half written is passed over here rather than answered and dropped there.
+ */
+export function drawable(article: StoredArticle): boolean {
+  return [article.slug, article.title, article.body, article.attribution].every(
+    (field) => field.trim().length > 0,
+  );
+}
+
+/**
+ * The one article a phase is answered with: the newest the catalogue holds, and the first slug
+ * where two were published in the same instant.
+ *
+ * The same article goes to every reader of that phase. A server that chose between them would need
+ * to know something about her to choose with, and the only thing it knows is the phase.
+ */
+export function newestOf(articles: readonly StoredArticle[]): StoredArticle | null {
+  return (
+    [...articles.filter(drawable)].sort((one, other) =>
+      one.publishedAt === other.publishedAt
+        ? one.slug.localeCompare(other.slug)
+        : other.publishedAt.localeCompare(one.publishedAt),
+    )[0] ?? null
+  );
+}
+
+function answeredArticle(phase: PhaseName, article: StoredArticle): AnsweredArticle {
+  return {
+    id: article.slug,
+    phase,
+    title: article.title,
+    body: article.body,
+    attribution: article.attribution,
+    // A link a browser would refuse is answered as no link, because a card drawn with a control
+    // that opens nothing is worse than a card drawn without one.
+    link: article.link !== null && article.link.startsWith(linkScheme) ? article.link : null,
+  };
+}
+
+function articleAnswer(phase: PhaseName, article: StoredArticle): HttpResponse {
+  const body = answer(200, answeredArticle(phase, article));
 
   return {
     ...body,
@@ -59,9 +115,9 @@ function articleAnswer(phase: PhaseName, articles: readonly StoredArticle[]): Ht
 }
 
 /**
- * She asks what Emi has written about the phase she is in. The answer carries every article of that
- * phase and the phone chooses which to show, because a server that chose would need to know more
- * about her than the phase.
+ * She asks what Emi has written about the phase she is in. The answer is one article and nothing
+ * about her, and a phase nobody has written for yet is answered with no article rather than with
+ * an empty one a screen would draw.
  */
 export async function articlesFor(
   event: HttpRequestEvent,
@@ -86,9 +142,15 @@ export async function articlesFor(
     return refusal(404, `a cycle phase is one of ${phaseNames.join(', ')}`);
   }
 
-  // An empty catalogue is a phase nobody has written for yet, and it answers with an empty list
-  // rather than the refusal an unknown phase gets. The two say different things to the phone.
-  return articleAnswer(phase, await store.readArticlesFor(phase));
+  const article = newestOf(await store.readArticlesFor(phase));
+
+  // An empty catalogue and an unknown phase are both answered with nothing to read, and they say
+  // different things, so whoever stocks the catalogue can tell a gap from a mistake.
+  if (article === null) {
+    return refusal(404, `nothing is written about ${phase} yet`);
+  }
+
+  return articleAnswer(phase, article);
 }
 
 /** The route the api calls, with its catalogue bound to it. */

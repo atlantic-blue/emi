@@ -1,4 +1,5 @@
 import { accountHeader, bodyHashHeader, instantHeader, signatureHeader } from '@emi/crypto';
+import { articleFrom, articlePath } from '@emi/content';
 import { phaseNames } from '@emi/tokens';
 
 import type { HttpRequestEvent, HttpResponse } from '../src/api';
@@ -9,12 +10,12 @@ import {
   readArticles,
 } from '../src/handlers/readArticles';
 import type { ArticleStore } from '../src/store/articles';
+import type { Item } from '../src/store/dynamo';
 import {
   articlePartitionFor,
   articleSortKeyFor,
   dynamoArticleStore,
 } from '../src/store/dynamoArticles';
-import type { Item } from '../src/store/dynamo';
 import { articleTableName, type FakeTable, fakeTable, tableName } from './fixtures/dynamoTable';
 import { articleEvent } from './fixtures/requests';
 
@@ -25,6 +26,9 @@ import { articleEvent } from './fixtures/requests';
  *
  * The endpoint stands behind no authorizer and a request names no reader, so most of what is
  * checked here is what the server is unable to learn.
+ *
+ * The answer is read back through `@emi/content`, which is the one caller. A shape these cases
+ * agreed on and that package refused would be a feature that ships and delivers nothing.
  */
 
 function anArticle(phase: string, slug: string, held: Readonly<Record<string, string>> = {}): Item {
@@ -33,6 +37,7 @@ function anArticle(phase: string, slug: string, held: Readonly<Record<string, st
     sk: { S: articleSortKeyFor(slug) },
     title: { S: `About ${slug}` },
     body: { S: 'Progesterone rises after ovulation, and that is what tires you out.' },
+    attribution: { S: 'Written by Emi, read by a midwife' },
     language: { S: 'en-GB' },
     publishedAt: { S: '2026-09-19T09:00:00.000Z' },
     revision: { N: '1' },
@@ -54,12 +59,8 @@ function storeOver(table: FakeTable): ArticleStore {
   return dynamoArticleStore(table, articleTableName);
 }
 
-function bodyOf(response: HttpResponse): {
-  phase?: string;
-  articles?: { slug: string; title: string; attribution: string | null }[];
-  error?: string;
-} {
-  return JSON.parse(response.body) as ReturnType<typeof bodyOf>;
+function bodyOf(response: HttpResponse): Record<string, unknown> {
+  return JSON.parse(response.body) as Record<string, unknown>;
 }
 
 async function answerFor(event: HttpRequestEvent, table: FakeTable): Promise<HttpResponse> {
@@ -68,47 +69,84 @@ async function answerFor(event: HttpRequestEvent, table: FakeTable): Promise<Htt
 
 describe('the article catalogue answers a phase and never a reader', () => {
   describe('a phase she is in', () => {
-    it('answers every article written for it, and none written for another phase', async () => {
-      const table = await aCatalogue(
-        anArticle('luteal', 'the-tired-week'),
-        anArticle('luteal', 'why-you-crave-sugar'),
-        anArticle('period', 'cramps-and-what-helps'),
-      );
+    it('answers an article the application reads back as one', async () => {
+      const table = await aCatalogue(anArticle('luteal', 'the-tired-week'));
 
       const response = await answerFor(articleEvent('luteal'), table);
 
       expect(response.statusCode).toBe(200);
-      expect(bodyOf(response).phase).toBe('luteal');
-      expect(bodyOf(response).articles?.map((article) => article.slug)).toEqual([
-        'the-tired-week',
-        'why-you-crave-sugar',
-      ]);
-    });
-
-    it('answers the fields the catalogue holds, with the slug read off the key', async () => {
-      const table = await aCatalogue(
-        anArticle('period', 'cramps-and-what-helps', { attribution: 'A midwife wrote this' }),
-      );
-
-      const [article] = bodyOf(await answerFor(articleEvent('period'), table)).articles ?? [];
-
-      expect(article).toEqual({
-        slug: 'cramps-and-what-helps',
-        title: 'About cramps-and-what-helps',
+      expect(articleFrom(bodyOf(response), 'luteal')).toEqual({
+        id: 'the-tired-week',
+        phase: 'luteal',
+        title: 'About the-tired-week',
         body: 'Progesterone rises after ovulation, and that is what tires you out.',
-        language: 'en-GB',
-        publishedAt: '2026-09-19T09:00:00.000Z',
-        revision: 1,
-        attribution: 'A midwife wrote this',
+        attribution: 'Written by Emi, read by a midwife',
+        link: null,
       });
     });
 
-    it('answers nothing where the catalogue said nothing, rather than a null', async () => {
-      const table = await aCatalogue(anArticle('ovulation', 'the-fertile-days'));
+    it('answers the article written for the phase asked for, and never another', async () => {
+      const table = await aCatalogue(
+        anArticle('luteal', 'the-tired-week'),
+        anArticle('period', 'cramps-and-what-helps'),
+      );
 
-      const [article] = bodyOf(await answerFor(articleEvent('ovulation'), table)).articles ?? [];
+      const read = articleFrom(bodyOf(await answerFor(articleEvent('period'), table)), 'period');
 
-      expect(article?.attribution).toBeNull();
+      expect(read?.id).toBe('cramps-and-what-helps');
+    });
+
+    it('answers the newest of a phase, so every reader of it is handed the same one', async () => {
+      const table = await aCatalogue(
+        anArticle('follicular', 'the-old-one', { publishedAt: '2026-01-01T00:00:00.000Z' }),
+        anArticle('follicular', 'the-new-one', { publishedAt: '2026-09-01T00:00:00.000Z' }),
+      );
+
+      const first = bodyOf(await answerFor(articleEvent('follicular'), table));
+      const second = bodyOf(await answerFor(articleEvent('follicular'), table));
+
+      expect(first.id).toBe('the-new-one');
+      expect(second).toEqual(first);
+    });
+
+    it('carries a link where the catalogue wrote one', async () => {
+      const table = await aCatalogue(
+        anArticle('ovulation', 'the-fertile-days', { link: 'https://emi.example/ovulation' }),
+      );
+
+      const read = articleFrom(
+        bodyOf(await answerFor(articleEvent('ovulation'), table)),
+        'ovulation',
+      );
+
+      expect(read?.link).toBe('https://emi.example/ovulation');
+    });
+
+    it('answers no link where the catalogue wrote one a browser would refuse', async () => {
+      const table = await aCatalogue(
+        anArticle('ovulation', 'the-fertile-days', { link: 'javascript:alert(1)' }),
+      );
+
+      const read = articleFrom(
+        bodyOf(await answerFor(articleEvent('ovulation'), table)),
+        'ovulation',
+      );
+
+      expect(read?.link).toBeNull();
+    });
+
+    it('passes over an article the catalogue left half written', async () => {
+      const table = await aCatalogue(
+        anArticle('period', 'the-whole-one', { publishedAt: '2026-01-01T00:00:00.000Z' }),
+        anArticle('period', 'the-half-one', {
+          attribution: '   ',
+          publishedAt: '2026-09-01T00:00:00.000Z',
+        }),
+      );
+
+      const read = articleFrom(bodyOf(await answerFor(articleEvent('period'), table)), 'period');
+
+      expect(read?.id).toBe('the-whole-one');
     });
 
     it('lets the answer be held, because every reader of a phase gets the same one', async () => {
@@ -135,37 +173,45 @@ describe('the article catalogue answers a phase and never a reader', () => {
 
     it('follows a catalogue the table hands back a page at a time', async () => {
       const table = fakeTable({ name: articleTableName, itemsPerPage: 1 });
+      const published = ['2026-01-01', '2026-02-01', '2026-03-01'];
 
-      for (const slug of ['one', 'two', 'three']) {
-        await table.putItem({ TableName: articleTableName, Item: anArticle('luteal', slug) });
+      for (const [at, slug] of ['one', 'two', 'three'].entries()) {
+        await table.putItem({
+          TableName: articleTableName,
+          Item: anArticle('luteal', slug, { publishedAt: `${published[at]}T00:00:00.000Z` }),
+        });
       }
 
-      const response = await answerFor(articleEvent('luteal'), table);
+      expect(bodyOf(await answerFor(articleEvent('luteal'), table)).id).toBe('three');
+    });
 
-      expect(bodyOf(response).articles?.map((article) => article.slug)).toEqual([
-        'one',
-        'three',
-        'two',
-      ]);
+    it('answers the path the application asks for', () => {
+      expect(articlePath('luteal')).toBe(articleEvent('luteal').rawPath);
     });
   });
 
   describe('a phase nobody has written for yet', () => {
-    it('answers an empty catalogue rather than a refusal', async () => {
+    it('answers no article, and says the phase has nothing rather than that it is wrong', async () => {
       const response = await answerFor(articleEvent('follicular'), await aCatalogue());
 
-      expect(response.statusCode).toBe(200);
-      expect(bodyOf(response)).toEqual({ phase: 'follicular', articles: [] });
+      expect(response.statusCode).toBe(404);
+      expect(bodyOf(response).error).toBe('nothing is written about follicular yet');
     });
 
     it('is told apart from a phase this product does not have', async () => {
       const table = await aCatalogue();
 
-      const empty = await answerFor(articleEvent('follicular'), table);
-      const unknown = await answerFor(articleEvent('flowering'), table);
+      const empty = bodyOf(await answerFor(articleEvent('follicular'), table));
+      const unknown = bodyOf(await answerFor(articleEvent('flowering'), table));
 
-      expect(empty.statusCode).toBe(200);
-      expect(unknown.statusCode).toBe(404);
+      expect(empty.error).not.toEqual(unknown.error);
+    });
+
+    it('leaves the screen with no article, which is what it draws nothing from', async () => {
+      const response = await answerFor(articleEvent('follicular'), await aCatalogue());
+
+      expect(response.statusCode).not.toBe(200);
+      expect(articleFrom(bodyOf(response), 'follicular')).toBeNull();
     });
   });
 
@@ -267,7 +313,7 @@ describe('the article catalogue answers a phase and never a reader', () => {
       const response = await answerFor(event, table);
 
       expect(response.statusCode).toBe(200);
-      expect(bodyOf(response).articles).toHaveLength(1);
+      expect(articleFrom(bodyOf(response), 'period')).not.toBeNull();
     });
 
     it('never reaches the vault table, which holds another table name entirely', async () => {

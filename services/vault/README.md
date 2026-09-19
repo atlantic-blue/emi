@@ -30,8 +30,8 @@ reads one account's records in write order and stops before a page costs a megab
 with a cursor rather than cutting the answer short in silence.
 
 One endpoint here takes no signature at all, and it is deliberate. The article catalogue answers
-the writing for a cycle phase, so a request says which phase is being read and never who is reading
-it. It stands behind no authorizer, it reads a table of its own through a role that cannot reach
+one article for a cycle phase, so a request says which phase is being read and never who is reading
+it. The article is the newest of that phase, which is the same one for every reader. It stands behind no authorizer, it reads a table of its own through a role that cannot reach
 the vault table, and it refuses any request that carries one of the four signed headers or that an
 authorizer answered for. A caller who names herself to it is refused rather than served.
 
