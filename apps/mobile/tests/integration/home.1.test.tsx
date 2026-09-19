@@ -6,8 +6,16 @@ import { colour } from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo, StyleSheet } from 'react-native';
 
+import { render } from '@testing-library/react-native';
+
 import { cycleRingTestID } from '../../src/components/CycleRing';
-import { weekDayTestID, weekDiscTestID, weekStripTestID } from '../../src/features/home/WeekStrip';
+import {
+  WeekStrip,
+  weekDayTestID,
+  weekDiscTestID,
+  weekStripTestID,
+} from '../../src/features/home/WeekStrip';
+import type { StripDay } from '../../src/features/home/weekStrip';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -115,7 +123,8 @@ describe('a week strip above the ring', () => {
 
       // The period started three days back, so today is the fourth day of her cycle.
       expect(theColumn(today)).toContain('4');
-      expect(theColumn(addDays(today, -4))).toContain('26');
+      // Four days back is the day before her period, which is the last day of the cycle before it.
+      expect(theColumn(addDays(today, -4))).toContain('28');
     });
 
     it('fills the disc of a day she bled and puts its period day number in it', async () => {
@@ -165,6 +174,38 @@ describe('a week strip above the ring', () => {
 
       expect(app.pathname()).toBe(`/day/${yesterday}`);
       expect(screen.getByTestId(flowOptionTestID('medium'))).toBeTruthy();
+    });
+  });
+
+  describe('a day she has not lived', () => {
+    /**
+     * The strip ends on today, so nothing it is handed today can be a day ahead. The rule is here
+     * rather than in the week it is given, so a later section that widens the window cannot make
+     * the screen take a press on a day she has not reached.
+     */
+    const tomorrow: StripDay = {
+      day: addDays(today, 1),
+      letter: 'F',
+      dateNumber: 15,
+      cycleDay: 5,
+      periodDay: undefined,
+      forecastPeriod: false,
+      isToday: false,
+      lived: false,
+    };
+
+    it('takes no press', async () => {
+      const opened: string[] = [];
+
+      await render(
+        <WeekStrip onOpenDay={(day) => opened.push(day)} today={today} week={[tomorrow]} />,
+      );
+      await fireEvent.press(screen.getByTestId(weekDayTestID(tomorrow.day)));
+
+      expect(opened).toEqual([]);
+      expect(screen.getByTestId(weekDayTestID(tomorrow.day)).props.accessibilityState).toEqual({
+        disabled: true,
+      });
     });
   });
 
