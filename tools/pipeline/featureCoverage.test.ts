@@ -11,6 +11,7 @@ import {
   featureFileIn,
   featuresMappedIn,
 } from './featureCoverage';
+import { type LongTermItem, longTermItemsIn } from './documentation';
 
 const repositoryRoot = resolve(__dirname, '..', '..');
 const command = join(repositoryRoot, 'tools', 'pipeline', 'checkFeatureCoverage.ts');
@@ -188,6 +189,85 @@ describe('the coverage report', () => {
   });
 });
 
+const aLongTermList = `## The long term list
+
+### Core cycle tracking
+
+- Period start and end logging. State: in version 1, \`TABLE-1\`.
+- Premenstrual syndrome prediction. State: planned.
+
+### Insight
+
+- A conversational assistant. State: conditional. A model must answer on the phone.
+`;
+
+describe('the report reads the long term list beside the map', () => {
+  const longTermOf = (markdown = aLongTermList): LongTermItem[] => longTermItemsIn(markdown);
+
+  it('counts the items, the groups and each of the three states', () => {
+    const result = coverageProblems(featuresOf(), [fileOf()], longTermOf());
+
+    expect(result).toMatchObject({
+      longTermItems: 3,
+      longTermGroups: 2,
+      longTermInVersionOne: 1,
+      longTermPlanned: 1,
+      longTermConditional: 1,
+    });
+    expect(result.problems).toEqual([]);
+  });
+
+  it('names every planned item as having no feature file, and does not fail for it', () => {
+    const result = coverageProblems(featuresOf(), [fileOf()], longTermOf());
+
+    expect(result.notes).toContain(
+      'the long term list says "Premenstrual syndrome prediction." is planned, so no file under features/ covers it',
+    );
+    expect(result.problems).toEqual([]);
+  });
+
+  it('says nothing about a conditional item, because nobody agreed to build it', () => {
+    const notes = coverageProblems(featuresOf(), [fileOf()], longTermOf()).notes.join(' ');
+
+    expect(notes).not.toContain('A conversational assistant.');
+  });
+
+  it('fails an item in version 1 whose contract the map gives to no feature', () => {
+    const borrowed = aLongTermList.replace('`TABLE-1`', '`WIRE-1`');
+
+    expect(coverageProblems(featuresOf(), [fileOf()], longTermOf(borrowed)).problems).toEqual([
+      'the long term list says "Period start and end logging." is in version 1 and names "WIRE-1", and docs/features.md gives that contract to no feature',
+    ]);
+  });
+
+  it('keeps an item in version 1 whose contract no scenario names a failure', () => {
+    const missing = aFeatureFile.replace(/\n  Scenario: TABLE-1[\s\S]*?(?=\n  Scenario)/, '\n');
+
+    const result = coverageProblems(featuresOf(), [fileOf(missing)], longTermOf());
+
+    expect(result.problems).toEqual([
+      'docs/features.md gives "TABLE-1" to feature 2, and features/2-she-logs-her-first-period.feature holds no scenario named for it',
+    ]);
+    expect(result.notes.join(' ')).not.toContain('Period start and end logging.');
+  });
+
+  it('refuses an empty tier even when the long term list is full', () => {
+    const result = coverageProblems(featuresOf(), [], longTermOf());
+
+    expect(result.problems).toEqual([
+      'features/ holds no feature file, so the behaviour tier proves nothing and a run of it is empty',
+    ]);
+    expect(result.longTermItems).toBe(3);
+  });
+
+  it('counts nothing where the map carries no long term list', () => {
+    expect(coverageProblems(featuresOf(), [fileOf()])).toMatchObject({
+      longTermItems: 0,
+      longTermGroups: 0,
+    });
+  });
+});
+
 describe('the command the pipeline runs', () => {
   let root: string;
 
@@ -227,5 +307,19 @@ describe('the command the pipeline runs', () => {
 
     expect(run.output).toContain('holds no feature file');
     expect(run.status).toBe(1);
+  }, 60_000);
+
+  it('prints the long term counts beside the coverage counts', () => {
+    root = aRepositoryHolding(`${aMap}\n${aLongTermList}`, {
+      '2-she-logs-her-first-period.feature': aFeatureFile,
+    });
+
+    const run = runTheCommandIn(root);
+
+    expect(run.output).toContain(
+      'the long term list holds 3 item(s) in 2 group(s): 1 in version 1, 1 planned, 1 conditional.',
+    );
+    expect(run.output).toContain('is planned, so no file under features/ covers it');
+    expect(run.status).toBe(0);
   }, 60_000);
 });

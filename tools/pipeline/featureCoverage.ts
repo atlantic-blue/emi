@@ -1,7 +1,8 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { contractsMappedIn, featureDocument } from './documentation.ts';
+import type { LongTermItem } from './documentation.ts';
+import { contractsMappedIn, featureDocument, longTermItemsIn } from './documentation.ts';
 
 /**
  * The behaviour tier against the map of features. `docs/features.md` says which contract each
@@ -11,6 +12,11 @@ import { contractsMappedIn, featureDocument } from './documentation.ts';
  * A feature with no file of its own is a note here and a failure at the end of the path. A
  * contract inside a feature that does have a file is a failure now, because a covered feature that
  * skips one of its contracts is the drift this report exists to catch.
+ *
+ * The same document carries the long term list, which is the whole product rather than version 1.
+ * An item of it that is planned is a note, for the same reason a feature with no file is: nobody
+ * agreed to build it yet. An item that says version 1 builds it is held to the map like anything
+ * else in version 1.
  */
 
 export const featureDirectory = 'features';
@@ -48,6 +54,11 @@ export interface CoverageResult {
   readonly featuresTotal: number;
   readonly scenarios: number;
   readonly contractsNamed: number;
+  readonly longTermItems: number;
+  readonly longTermGroups: number;
+  readonly longTermInVersionOne: number;
+  readonly longTermPlanned: number;
+  readonly longTermConditional: number;
 }
 
 /** Every feature the map names, with the contracts it owns, in the order the document lists them. */
@@ -126,7 +137,11 @@ export function contractNamedIn(scenario: string): string | null {
   return found === null ? null : (found[1] as string);
 }
 
-export function coverageProblems(features: MappedFeature[], files: FeatureFile[]): CoverageResult {
+export function coverageProblems(
+  features: MappedFeature[],
+  files: FeatureFile[],
+  longTerm: readonly LongTermItem[] = [],
+): CoverageResult {
   const problems: string[] = [];
   const notes: string[] = [];
   const scenarios = files.flatMap((file) => file.scenarios);
@@ -198,9 +213,34 @@ export function coverageProblems(features: MappedFeature[], files: FeatureFile[]
     }
   }
 
+  const owned = new Set(features.flatMap((feature) => feature.contracts));
+
+  for (const item of longTerm) {
+    if (item.state === 'planned') {
+      notes.push(
+        `the long term list says "${item.text}" is planned, so no file under ${featureDirectory}/ covers it`,
+      );
+      continue;
+    }
+
+    // A contract of a covered feature that no scenario names is already a failure above, and a
+    // contract of a feature with no file at all is already a note. What is left for the list to
+    // catch is an item that says version 1 builds it while the map gives that contract to nobody.
+    if (item.state === 'in version 1' && item.contract !== null && !owned.has(item.contract)) {
+      problems.push(
+        `the long term list says "${item.text}" is in version 1 and names "${item.contract}", and ${featureDocument} gives that contract to no feature`,
+      );
+    }
+  }
+
   return {
     problems,
     notes,
+    longTermItems: longTerm.length,
+    longTermGroups: new Set(longTerm.map((item) => item.group)).size,
+    longTermInVersionOne: longTerm.filter((item) => item.state === 'in version 1').length,
+    longTermPlanned: longTerm.filter((item) => item.state === 'planned').length,
+    longTermConditional: longTerm.filter((item) => item.state === 'conditional').length,
     featuresCovered: files.filter((file) =>
       features.some((feature) => feature.number === file.number),
     ).length,
@@ -213,7 +253,7 @@ export function coverageProblems(features: MappedFeature[], files: FeatureFile[]
 }
 
 export function coverageOf(root: string): CoverageResult {
-  const features = featuresMappedIn(readFileSync(join(root, featureDocument), 'utf8'));
+  const map = readFileSync(join(root, featureDocument), 'utf8');
 
-  return coverageProblems(features, featureFilesOf(root));
+  return coverageProblems(featuresMappedIn(map), featureFilesOf(root), longTermItemsIn(map));
 }

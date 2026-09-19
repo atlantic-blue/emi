@@ -15,6 +15,25 @@ Emi is not a contraceptive. Emi is not a medical device.
     brand               the logo, the specimen and the generators that draw them
     docs                the licences of everything Emi redistributes
 
+## Where Emi goes
+
+Version 1 is a part of the product. `docs/features.md` carries the long term list, which is the
+whole of it. Each item there says whether version 1 builds it, whether it is planned, or whether it
+waits on something outside the code.
+
+    core cycle tracking     period, flow, ovulation, the fertile window and cycle length
+    symptoms and health     more than 70 symptoms, and a mode for each condition
+    medication tracking     doses, injection days, side effects and reminders
+    sex and relationships   an intimacy log, more than one partner, and a calendar a partner reads
+    weight                  daily weight, and the trend under the cycle phase
+    privacy and security    encryption, arithmetic on the phone, export and deletion
+    insight                 forecasting, patterns across six cycles, and a report for a doctor
+    arriving here           import, a questionnaire, and a profile built in under five minutes
+    integrations            the watches, the health platforms, Garmin and Fitbit
+    notifications           the period, the fertile window, bleeding and medication
+    content                 guides for each condition, and reports a specialist reads
+    money                   29.99 pounds a year, and no free tier paid for with her data
+
 ## How to run it
 
 You need Node 22 or later.

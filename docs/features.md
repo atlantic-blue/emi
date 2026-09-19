@@ -4,8 +4,8 @@ Emi is a period and cycle tracker. Seven features build version 1. An eighth fea
 documents you are reading now.
 
 This document is the map. It names each feature, and it names every contract that the feature
-builds. It also names what version 1 refuses to do, because a reader who knows what is absent can
-plan around it.
+builds. It also carries the long term list, which is the whole product the operator wants, and it
+names what version 1 refuses to do. A reader who knows what is absent can plan around it.
 
 ## How to read this document
 
@@ -189,10 +189,134 @@ The architecture, the privacy claim, the brand, this map and a readme in every p
 This feature builds no contract of its own. It writes down what the other seven build, and it adds
 the pipeline checks that stop these documents drifting from the code.
 
+## The long term list
+
+This is the whole product the operator wants. Version 1 builds a part of it. The rest is written
+here, so a reader sees where Emi goes and what it does not do yet.
+
+Each item carries one of three states, and never a fourth.
+
+- In version 1. Version 1 builds the item, and the line names the contract that builds it.
+- Planned. The operator agreed the item. Nobody built it.
+- Conditional. Nobody can write the item as a fact until something outside the code happens. The
+  line says what that something is.
+
+Every item writes `State:` and then its state. A contract named here is a contract that
+`contracts.md` declares. Where one entry covers two things that arrive at different times, this
+list carries it as two lines. A test reads this section and fails on an item that carries no state,
+on an item in version 1 whose contract does not exist, and on a conditional item that does not say
+its condition.
+
+### Core cycle tracking
+
+- Period start and end logging, with flow intensity of spotting, light, medium and heavy. State: in
+  version 1, `SCREEN-3`.
+- Unexpected bleeding and mid cycle bleeding, logged and marked. The alert for it is under
+  Notifications. State: in version 1, `CYCLE-1`.
+- Ovulation prediction. State: in version 1, `CYCLE-4`.
+- Fertile window tracking. State: in version 1, `CYCLE-4`.
+- Premenstrual syndrome prediction. State: planned.
+- Cycle length history and trend analysis. State: in version 1, `TABLE-2`.
+- Basal body temperature logging. State: in version 1, `SCREEN-3`.
+
+### Symptoms and health
+
+- More than 70 loggable symptoms, which include mood, energy, pain, cramps, bloating, headaches,
+  breast tenderness, acne, libido and brain fog. State: in version 1, `SCREEN-3`.
+- A daily charting mode for premenstrual dysphoric disorder. State: planned.
+- Symptom tracking for polycystic ovary syndrome. State: planned.
+- A perimenopause mode, which carries hot flushes, irregular cycles, sleep disruption and brain fog.
+  State: planned.
+- A medication and supplement log. State: planned.
+
+### Medication tracking
+
+- Dose logging and injection day reminders for semaglutide and tirzepatide. State: planned.
+- Notes on what those medications do to a cycle, which include period stabilisation for polycystic
+  ovary syndrome. State: planned.
+- Side effect logging, tied to the medication schedule. State: planned.
+- General medication and supplement tracking, with daily reminders. State: planned.
+
+### Sex and relationships
+
+- An intimacy log, with protection tracking. State: planned.
+- Tracking of more than one partner, named or unnamed, without judgement. State: planned.
+- A read only calendar a partner can see. It carries the cycle phase. It never carries a symptom or
+  an intimacy entry. State: planned.
+- Notification settings for each partner, for a period that approaches and for the fertile window.
+  State: planned.
+- A pregnancy risk indicator for each encounter. State: planned.
+
+### Weight
+
+- Daily weight logging. State: in version 1, `SCREEN-3`.
+- A weight trend chart, with the cycle phase drawn over it, which shows the luteal rise and the
+  follicular fall. State: planned.
+- Plain language for what the phase does to weight. State: planned.
+- Markers for the low and the peak of a cycle. State: planned.
+
+### Privacy and security
+
+- End to end encryption. State: in version 1, `ENVELOPE-1`.
+- Predictions computed on the phone, with nothing sent to a server. State: in version 1, `CYCLE-2`.
+- No advertising, no sale of data and no third party. State: in version 1, `KEEP-4`.
+- A full export, as a document she can read and as machine readable data. State: in version 1,
+  `KEEP-2`.
+- Account deletion in one action. State: in version 1, `KEEP-3`.
+- A badge from an auditor. State: conditional. An auditor must read Emi and sign the badge. No
+  auditor has looked at Emi, so no standard is named here and no certification badge appears
+  anywhere in the product.
+
+### Insight
+
+- Energy and mood forecasting by cycle phase. State: planned.
+- A fitness recovery score aware of the cycle, which reads heart rate variability and sleep. State:
+  conditional. The score reads a wearable device, so the wearable work under Integrations must
+  arrive first.
+- Pattern recognition across six cycles or more. State: in version 1, `SCREEN-3`.
+- A health report for a doctor. State: planned.
+- A conversational assistant for questions about a cycle. State: conditional. A question sent to a
+  model on a server is a question sent to a server, so the assistant arrives in one form only,
+  which is a model that answers on the phone.
+
+### Arriving from another application
+
+- A guided first run. State: in version 1, `SCREEN-1`.
+- Import from Flo, from Clue and from Apple Health. State: planned.
+- A questionnaire that reconstructs a history. State: planned.
+- A photograph of records, or of screens from another application. State: planned.
+- An estimated cycle profile, built from her answers in under five minutes. State: planned.
+
+### Integrations
+
+- Apple Watch and Wear OS. State: planned.
+- Apple Health, Google Fit and Samsung Health. State: planned.
+- Garmin and Fitbit. State: planned.
+
+### Notifications
+
+- A period prediction three days ahead. State: planned.
+- An ovulation window alert. State: planned.
+- A prompt for unexpected bleeding. State: planned.
+- Medication and supplement reminders. State: planned.
+- A push to a partner, which she turns on for each partner. State: planned.
+
+### Content
+
+- Guides for premenstrual dysphoric disorder, for polycystic ovary syndrome, for perimenopause, for
+  fertility, and for what those medications do to a cycle. State: planned.
+- Health reports a specialist can read. State: planned.
+
+### Money
+
+- 29.99 pounds a year. State: in version 1, `PAY-1`.
+- No free tier paid for with her data. State: in version 1, `KEEP-4`.
+- The price is the trust signal. State: in version 1, `PAY-1`.
+
 ## What version 1 does not do
 
-Each item below is out of version 1. Each one is a candidate for version 2. Nothing here is a
-promise about when.
+Each item below is out of version 1. The long term list above names every one of them, with the
+state it carries. Nothing here is a promise about when.
 
 - Partner sharing, and tracking more than one partner.
 - Medication tracking of every kind.
@@ -209,15 +333,19 @@ promise about when.
 - The condition guides.
 - Any badge from an auditor.
 
-Two of these refusals need a reason.
+Three of these items need more than a line.
 
-The conversational assistant is out because it cannot exist at the same time as the promise. A
-model that answers a question about a cycle is a call to a server, and the call carries the
-question. Emi keeps the promise and drops the assistant.
+The conversational assistant is out of version 1 because, in the shape everybody else ships, it
+cannot exist at the same time as the promise. A model that answers a question about a cycle runs on
+a server, and the call carries the question. Emi keeps the promise. The long term list holds the
+assistant as conditional, and it names the one form Emi can ever ship, which is a model that
+answers on the phone.
 
 The badge is out because nobody has audited Emi. A badge that no auditor signed is a claim the code
 cannot support. Emi is not a contraceptive. Emi is not a medical device. Emi makes no claim to
 prevent or achieve a pregnancy, and it carries no certification badge that an auditor did not sign.
+The long term list holds the badge as conditional, on an audit that an auditor signs.
 
 The export in feature 5 covers the plainer half of the doctor's report. She can take every field out
-of Emi and hand it to a doctor. It is a file and not a formatted document.
+of Emi and hand it to a doctor. It is a file and not a formatted document. The long term list holds
+the formatted report as planned.

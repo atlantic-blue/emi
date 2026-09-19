@@ -26,3 +26,9 @@ process.stdout.write(
   `${result.featuresCovered} of ${result.featuresTotal} feature(s) covered, ` +
     `${result.scenarios} scenario(s) naming ${result.contractsNamed} contract(s).\n`,
 );
+
+process.stdout.write(
+  `the long term list holds ${result.longTermItems} item(s) in ${result.longTermGroups} group(s): ` +
+    `${result.longTermInVersionOne} in version 1, ${result.longTermPlanned} planned, ` +
+    `${result.longTermConditional} conditional.\n`,
+);
