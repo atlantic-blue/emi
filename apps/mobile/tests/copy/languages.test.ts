@@ -8,11 +8,13 @@ import {
   languageOf,
   languages,
 } from '../../src/language/language';
+import { russian } from '../../src/language/russian';
 import { spanish } from '../../src/language/spanish';
 import {
   type Words,
   catalogueOf,
   forgetLanguage,
+  pluralCategories,
   pluralCategory,
   wordKeys,
   words,
@@ -110,6 +112,65 @@ describe('every language says the same things', () => {
       expect(pluralCategory('es', 0)).toBe('other');
       expect(pluralCategory('es', 2)).toBe('other');
     });
+
+    // Russian follows the last digit, unless the last two digits are the teens, which are all
+    // many. These five readings are what separate its three groups from each other.
+    it('counts in three groups in Russian, and the count picks which', () => {
+      expect(pluralCategory('ru', 1)).toBe('one');
+      expect(pluralCategory('ru', 2)).toBe('few');
+      expect(pluralCategory('ru', 5)).toBe('many');
+      expect(pluralCategory('ru', 11)).toBe('many');
+      expect(pluralCategory('ru', 21)).toBe('one');
+      expect(pluralCategory('ru', 0)).toBe('many');
+    });
+
+    it('carries all three Russian forms on every key that takes a count', () => {
+      const missingAForm = pluralKeys.filter((key) => {
+        const held = russian[key];
+
+        return (
+          typeof held === 'string' ||
+          held.one === undefined ||
+          held.few === undefined ||
+          held.many === undefined
+        );
+      });
+
+      expect(missingAForm).toEqual([]);
+      expect(pluralCategories.ru).toEqual(['one', 'few', 'many']);
+    });
+
+    it('carries exactly the forms its own language uses, and no form it never reads', () => {
+      for (const language of languages) {
+        const wanted = [...pluralCategories[language]].sort();
+        const wrong = pluralKeys.filter((key) => {
+          const held = catalogueOf(language)[key];
+
+          return (
+            typeof held === 'string' || Object.keys(held).sort().join('|') !== wanted.join('|')
+          );
+        });
+
+        expect(wrong).toEqual([]);
+      }
+    });
+
+    it('gives back a different Russian word at one, at two and at five', () => {
+      readingIn('ru');
+
+      expect(words('export.dayCount', 1)).toBe('1 день');
+      expect(words('export.dayCount', 2)).toBe('2 дня');
+      expect(words('export.dayCount', 5)).toBe('5 дней');
+      expect(words('export.dayCount', 11)).toBe('11 дней');
+      expect(words('export.dayCount', 21)).toBe('21 день');
+      expect(words('export.dayCount', 0)).toBe('0 дней');
+    });
+
+    it('refuses a count Russian writes no form for, rather than answering with the wrong words', () => {
+      readingIn('ru');
+
+      expect(() => words('export.dayCount', 1.5)).toThrow(/no other form/);
+    });
   });
 
   describe('the language her phone asks for', () => {
@@ -119,13 +180,20 @@ describe('every language says the same things', () => {
       expect(languageOf(['ES-419'])).toBe('es');
     });
 
+    it('is Russian where she asks for Russian, whatever region she is in', () => {
+      expect(languageOf(['ru'])).toBe('ru');
+      expect(languageOf(['ru-RU'])).toBe('ru');
+      expect(languageOf(['RU-BY'])).toBe('ru');
+    });
+
     it('is English where Emi does not hold what she asked for', () => {
-      expect(languageOf(['ru-RU'])).toBe(fallbackLanguage);
+      expect(languageOf(['pl-PL'])).toBe(fallbackLanguage);
       expect(languageOf([])).toBe('en');
     });
 
     it('is the first one on her list that Emi holds', () => {
-      expect(languageOf(['ru-RU', 'es-ES', 'en-GB'])).toBe('es');
+      expect(languageOf(['pl-PL', 'es-ES', 'en-GB'])).toBe('es');
+      expect(languageOf(['pl-PL', 'ru-RU', 'en-GB'])).toBe('ru');
     });
   });
 
@@ -189,6 +257,8 @@ function aPhoneSetTo(tag: string): Locale {
 
 /** Hands the lookup a phone set to one language, rather than the one the runner reports. */
 function readingIn(language: Language): void {
-  asAPhone.mockReturnValue([aPhoneSetTo(language === 'es' ? 'es-ES' : 'en-GB')]);
+  const tags: Readonly<Record<Language, string>> = { en: 'en-GB', es: 'es-ES', ru: 'ru-RU' };
+
+  asAPhone.mockReturnValue([aPhoneSetTo(tags[language])]);
   forgetLanguage();
 }

@@ -167,9 +167,9 @@ describe(`a ${aPregnancyClaim} claim anywhere in the repository fails the pipeli
   });
 
   // A sentence is only approved because it denies the claim its words would otherwise make, and it
-  // denies it in the language it is written in. Spanish denies with nunca and with ninguno where
-  // English denies with not and with no.
-  const negating = [' not ', ' no ', ' nunca ', ' ningun', ' ningún'];
+  // denies it in the language it is written in. Spanish denies with nunca and with ninguno, and
+  // Russian denies with не, where English denies with not and with no.
+  const negating = [' not ', ' no ', ' nunca ', ' ningun', ' ningún', ' не '];
 
   it('carries no approved sentence that denies nothing, in either language', () => {
     const asserting = approvedDenials.filter(
