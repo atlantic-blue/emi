@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, fonts, radius, space, stroke, typeScale } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -16,7 +16,12 @@ interface Props {
   readonly onDone: () => void;
 }
 
-/** Screen three of three. The last answer she gives, and the one the first forecast is made from. */
+/**
+ * Screen three of three. The last answer she gives, and the one the first forecast is made from.
+ *
+ * The number is the largest thing on the screen because it is the answer, and it is set in the
+ * monospaced face so a digit does not shift sideways as she presses.
+ */
 export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
   const canShorten = days > minimumCycleLengthDays;
   const canLengthen = days < maximumCycleLengthDays;
@@ -63,29 +68,37 @@ export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
 const styles = StyleSheet.create({
   days: {
     color: colour.ink,
+    fontFamily: fonts.numeric.family,
     fontSize: typeScale.display.size,
     letterSpacing: typeScale.label.letterSpacing,
     lineHeight: typeScale.display.lineHeight,
   },
   step: {
     alignItems: 'center',
-    backgroundColor: colour.sunk,
+    backgroundColor: colour.emberTint,
+    borderColor: colour.ember,
     borderRadius: radius.round,
+    borderWidth: stroke.hairline,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
   },
   stepMark: {
-    color: colour.ink,
+    color: colour.ember,
     fontSize: typeScale.heading.size,
     lineHeight: typeScale.heading.lineHeight,
   },
   stepSpent: { opacity: 0.4 },
   stepper: {
     alignItems: 'center',
+    backgroundColor: colour.surface,
+    borderColor: colour.hairline,
+    borderRadius: radius.card,
+    borderWidth: stroke.hairline,
     flexDirection: 'row',
     gap: space.base,
-    marginBottom: space.base,
-    marginTop: space.snug,
+    justifyContent: 'center',
+    paddingHorizontal: space.base,
+    paddingVertical: space.roomy,
   },
 });

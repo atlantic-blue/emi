@@ -1,7 +1,8 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, typeScale } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Icon } from '../../components/Icon';
 import { OnboardingScreen } from './OnboardingScreen';
 import { firstRunCopy } from './copy';
 import {
@@ -29,6 +30,14 @@ export const monthTestID = 'calendar-month';
 export const earlierMonthTestID = 'calendar-earlier-month';
 export const laterMonthTestID = 'calendar-later-month';
 
+/** The tick the chosen day carries. It is the cue that survives a screen read in grey. */
+export const chosenDayMarkTestID = 'calendar-chosen-mark';
+export const chosenNameMarkTestID = 'named-day-chosen-mark';
+
+/** The tick sits under a number in a square, and beside a word in a pill, so it takes two sizes. */
+const SQUARE_MARK_SIZE = 12;
+const NAME_MARK_SIZE = 16;
+
 interface Props {
   readonly now: Date;
   readonly chosen: string | undefined;
@@ -46,6 +55,9 @@ interface DayProps {
 /**
  * One square of the grid. A day the first run would refuse stays on the screen and takes no press,
  * because a month drawn with holes in it cannot be read as a month.
+ *
+ * The day she picked is marked three ways: the ground fills, a line is drawn around it, and a tick
+ * is added under the number. Colour is never the only cue, which is design section 3.
  */
 function Day({ day, today, chosen, onChoose }: DayProps): ReactNode {
   const isChosen = day === chosen;
@@ -64,6 +76,11 @@ function Day({ day, today, chosen, onChoose }: DayProps): ReactNode {
       <Text style={isChosen ? [styles.dayNumber, styles.dayNumberChosen] : styles.dayNumber}>
         {Number(day.slice(8, 10))}
       </Text>
+      {isChosen ? (
+        <View testID={chosenDayMarkTestID}>
+          <Icon colour={colour.surface} name="check" size={SQUARE_MARK_SIZE} />
+        </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -107,87 +124,111 @@ export function LastPeriod({ now, chosen, onChoose, onContinue }: Props): ReactN
               >
                 {dayLabel(day, today)}
               </Text>
+              {isChosen ? (
+                <View testID={chosenNameMarkTestID}>
+                  <Icon colour={colour.surface} name="check" size={NAME_MARK_SIZE} />
+                </View>
+              ) : null}
             </Pressable>
           );
         })}
       </View>
 
-      <View style={styles.heading}>
-        <Pressable
-          accessibilityLabel="Earlier month"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canGoEarlier }}
-          disabled={!canGoEarlier}
-          onPress={() => setMonth(addMonths(month, -1))}
-          style={canGoEarlier ? styles.page : [styles.page, styles.pageSpent]}
-          testID={earlierMonthTestID}
-        >
-          <Text style={styles.pageLabel}>Earlier</Text>
-        </Pressable>
-        <Text style={styles.month} testID={monthTestID}>
-          {monthLabel(month)}
-        </Text>
-        <Pressable
-          accessibilityLabel="Later month"
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canGoLater }}
-          disabled={!canGoLater}
-          onPress={() => setMonth(addMonths(month, 1))}
-          style={canGoLater ? styles.page : [styles.page, styles.pageSpent]}
-          testID={laterMonthTestID}
-        >
-          <Text style={styles.pageLabel}>Later</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.week}>
-        {weekdayColumnNames.map((weekday) => (
-          <Text accessibilityLabel={weekday} key={weekday} style={styles.weekday}>
-            {weekday.slice(0, 1)}
+      <View style={styles.calendar}>
+        <View style={styles.heading}>
+          <Pressable
+            accessibilityLabel="Earlier month"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canGoEarlier }}
+            disabled={!canGoEarlier}
+            onPress={() => setMonth(addMonths(month, -1))}
+            style={canGoEarlier ? styles.page : [styles.page, styles.pageSpent]}
+            testID={earlierMonthTestID}
+          >
+            <Text
+              style={canGoEarlier ? styles.pageLabel : [styles.pageLabel, styles.pageSpentLabel]}
+            >
+              Earlier
+            </Text>
+          </Pressable>
+          <Text style={styles.month} testID={monthTestID}>
+            {monthLabel(month)}
           </Text>
+          <Pressable
+            accessibilityLabel="Later month"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canGoLater }}
+            disabled={!canGoLater}
+            onPress={() => setMonth(addMonths(month, 1))}
+            style={canGoLater ? styles.page : [styles.page, styles.pageSpent]}
+            testID={laterMonthTestID}
+          >
+            <Text style={canGoLater ? styles.pageLabel : [styles.pageLabel, styles.pageSpentLabel]}>
+              Later
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.week}>
+          {weekdayColumnNames.map((weekday) => (
+            <Text accessibilityLabel={weekday} key={weekday} style={styles.weekday}>
+              {weekday.slice(0, 1)}
+            </Text>
+          ))}
+        </View>
+
+        {monthWeeks(month).map((week) => (
+          <View key={week.join()} style={styles.week}>
+            {week.map((day, column) =>
+              day === undefined ? (
+                <View key={`${month} ${column}`} style={styles.empty} />
+              ) : (
+                <Day chosen={chosen} day={day} key={day} onChoose={onChoose} today={today} />
+              ),
+            )}
+          </View>
         ))}
       </View>
-
-      {monthWeeks(month).map((week) => (
-        <View key={week.join()} style={styles.week}>
-          {week.map((day, column) =>
-            day === undefined ? (
-              <View key={`${month} ${column}`} style={styles.empty} />
-            ) : (
-              <Day chosen={chosen} day={day} key={day} onChoose={onChoose} today={today} />
-            ),
-          )}
-        </View>
-      ))}
     </OnboardingScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  calendar: {
+    backgroundColor: colour.surface,
+    borderColor: colour.hairline,
+    borderRadius: radius.card,
+    borderWidth: stroke.hairline,
+    marginTop: space.snug,
+    padding: space.snug,
+  },
+  // Every square carries the line the chosen one carries, drawn in its own ground where it is not
+  // chosen, so nothing moves by a point and a half when she presses one.
   day: {
     alignItems: 'center',
     backgroundColor: colour.sunk,
+    borderColor: colour.sunk,
     borderRadius: radius.chip,
+    borderWidth: stroke.icon,
     flex: 1,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
   },
-  dayChosen: { backgroundColor: colour.ember },
+  dayChosen: { backgroundColor: colour.ember, borderColor: colour.emberPressed },
   dayNumber: {
     color: colour.body,
     fontSize: typeScale.body.size,
     lineHeight: typeScale.body.lineHeight,
   },
   dayNumberChosen: { color: colour.surface },
-  dayOutOfReach: { backgroundColor: colour.stone, opacity: 0.4 },
+  dayOutOfReach: { backgroundColor: colour.surface, borderColor: colour.surface, opacity: 0.4 },
   empty: { flex: 1, minHeight: MINIMUM_TAP_TARGET, minWidth: MINIMUM_TAP_TARGET },
   heading: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: space.tight,
-    marginTop: space.snug,
+    marginBottom: space.snug,
   },
   month: {
     color: colour.ink,
@@ -196,15 +237,19 @@ const styles = StyleSheet.create({
   },
   name: {
     alignItems: 'center',
-    backgroundColor: colour.sunk,
+    backgroundColor: colour.surface,
+    borderColor: colour.hairline,
     borderRadius: radius.round,
+    borderWidth: stroke.icon,
     flex: 1,
+    flexDirection: 'row',
+    gap: space.tight,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.snug,
   },
-  nameChosen: { backgroundColor: colour.ember },
+  nameChosen: { backgroundColor: colour.ember, borderColor: colour.emberPressed },
   nameChosenLabel: { color: colour.surface },
   nameLabel: {
     color: colour.body,
@@ -212,9 +257,14 @@ const styles = StyleSheet.create({
     lineHeight: typeScale.body.lineHeight,
   },
   named: { flexDirection: 'row', gap: space.tight, marginTop: space.tight },
+  // A handle she can still press is a pill she can see. A spent one keeps its words and loses the
+  // pill, so the difference is a shape and not only a strength of colour.
   page: {
     alignItems: 'center',
+    backgroundColor: colour.emberTint,
+    borderColor: colour.ember,
     borderRadius: radius.chip,
+    borderWidth: stroke.hairline,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
@@ -222,10 +272,15 @@ const styles = StyleSheet.create({
   },
   pageLabel: {
     color: colour.ember,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    fontSize: typeScale.small.size,
+    lineHeight: typeScale.small.lineHeight,
   },
-  pageSpent: { opacity: 0.4 },
+  pageSpent: {
+    backgroundColor: colour.surface,
+    borderColor: colour.surface,
+    opacity: 0.4,
+  },
+  pageSpentLabel: { color: colour.muted },
   week: { flexDirection: 'row', gap: space.hair, marginBottom: space.hair },
   weekday: {
     color: colour.muted,
