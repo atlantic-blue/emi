@@ -1,282 +1,635 @@
-# The account, and what it may never do
+# The account: Google, Apple, and the code that is not an account
 
-An account tells the vault which partition of ciphertext belongs to her. It does nothing else.
+Emi has a vault account today, and nobody signs in to it. The phone makes an Ed25519 key pair, the
+account identifier falls out of the public key, and every request carries a signature. This document
+designs a sign in on top of that, through Amazon Cognito, with Google and Apple and nothing else.
 
-The server holds ciphertext and no key. A sign in proves who may reach a partition. It never opens a
-record. The vault key is made on the phone. It stays in the keychain. It is wrapped under the key
-that her recovery code derives. Nothing in this design moves a key to a place the service can read.
+Two sentences hold the whole design up.
 
-This document answers the account questions. It gives a data model at field level. It gives a
-numbered path. Nobody has written any of the code in it.
+A sign in proves who may reach a partition of the vault. The recovery code of contract VAULT-2 is
+the only thing that wraps the vault key, and it stays the only way to open a history on a second
+phone.
+
+So a woman who signs in and has no recovery code reaches her own ciphertext and cannot read one day
+of it. That is the design working. It is also the moment the product feels broken, so a large part
+of this document is about what she sees in that moment.
+
+Nothing here is built. The pull request that carries this document builds no product code.
 
 ## How to read this document
 
-Status: built
+Status: designed
 
-Every section carries one status line, the same as `architecture.md` and `privacy.md`.
+Every section carries one status line, the same as `architecture.md` and `privacy.md`. `Status:
+built` means the code is in this repository now. `Status: designed` means this document describes it
+and nobody wrote it yet.
 
-`Status: built` means the code is in this repository now. You can read it.
+Three sections say built. They report what the repository and the cloud account hold on 2026-09-19.
+Everything else is a proposal.
 
-`Status: designed` means this document describes it and nobody wrote it yet. There is no code and no
-infrastructure.
-
-On 2026-09-19 every account section is `designed`. The sections that describe the vault as it stands
-are `built`, and they are here because this design rests on them.
-
-## The decision the operator made
+## The decisions this design starts from
 
 Status: designed
 
-The identity claims the account that already exists. The account identifier stays the identifier
-that the device public key derives. A link item holds the mapping from the identity to that
-identifier.
+The operator settled four things. They are written here as given. This document builds them and does
+not argue with them.
 
-This document designs that. It does not offer an alternative to it.
+Google and Apple only. There is no email address and no password anywhere in this feature. Amazon
+Cognito holds federated identities alone, so there is no password to reset and no reset path to
+design.
+
+Nothing about signing in opens a record. The recovery code stays the only thing that wraps the vault
+key.
+
+Emi has an account and it carries an email address, so Emi can write to her. Both providers hand the
+address over at sign in, so no screen asks her to type one.
+
+She signs in later, never in the first run. Contract SCREEN-1 stays exactly as it is, and so do its
+tests.
 
 ## What I read
 
 Status: built
 
-I read these in the repository, on 2026-09-19, at commit `f2828b4`.
+Each line names the fact taken from the source.
 
-- `docs/contracts.md`, the contracts `WIRE-1` to `WIRE-5`, `AUTH-1`, `VAULT-1`, `VAULT-2`,
-  `SCREEN-1`, and the `TABLE`, `ENVELOPE`, `PAY` and `KEEP` groups around them.
-- `docs/architecture.md`, the sections "The account and the request signature", "The vault key on
-  the phone", "Deleting everything" and "The vault in Amazon Web Services".
-- `docs/privacy.md`, the five keys and the four attacks it does not answer.
-- `services/vault`, the whole service: `api.ts`, `auth/authorizer.ts`, `auth/signedBody.ts`, the
-  four handlers, `store/accounts.ts`, `store/records.ts` and `store/dynamo.ts`.
-- `apps/mobile/src/services/sync`, which is `deviceKey.ts`, `sign.ts`, `vaultAddress.ts` and
-  `deleteAccount.ts`, and `apps/mobile/src/services/vault/wrapKey.ts` beside them.
-- `infra`, which is `api.tf`, `dynamodb.tf`, `lambda.tf`, `github-oidc.tf`, `main.tf` and
-  `variables.tf`, and `.github/workflows/deploy.yml`.
-- `packages/crypto/src/signature.ts` and `packages/crypto/src/recovery.ts`.
+- `docs/contracts.md`. WIRE-1 registers a public key, a wrapped vault key and a recovery salt.
+  AUTH-1 signs the method, the path, an instant and the digest of the body. VAULT-2 makes the
+  recovery code the one way back. SCREEN-1 names an account, an email address or a password asked
+  for as an error of the first run. WIRE-5 and PAY-4 keep reading open through a lapse.
+- `docs/architecture.md`, the account and the request signature, the vault key on the phone, and the
+  vault in Amazon Web Services. The account identifier is the first 16 bytes of the SHA-256 of the
+  public key, in Crockford base 32.
+- `services/vault`, the whole service. Four handlers, one authorizer, one storage port and one
+  DynamoDB implementation. The authorizer reads the account item, verifies the signature against the
+  stored public key, and writes the signature down to refuse a replay.
+- `apps/mobile/src/services/sync`. `deviceKey.ts` makes the key pair once and keeps it in the
+  keychain. `sign.ts` puts four headers on every request. `deleteAccount.ts` takes the server half
+  first, because the key that proves the account is about to be destroyed.
+- `apps/mobile/src/services/vault` and `packages/crypto/src/recovery.ts`. The recovery code derives
+  one key through Argon2id, and that key wraps the vault key. It derives nothing else today.
+- `infra`. One HTTP api, four routes, two functions, one table, four roles. The pipeline validates
+  on a pull request and applies on a merge.
+- `apps/mobile/tests/integration/6.2.test.ts` and `apps/mobile/tests/integration/2.3.test.tsx`. Two
+  cases pin what the product may hold and ask for. The section "What this design moves" names them.
 
-I read these outside the repository, on 2026-09-19.
+I read these outside the repository on 2026-09-19.
 
-- Apple, App Store Review Guidelines, guideline 4.8 Login Services, and guideline 5.1.1 part five.
-  `https://developer.apple.com/app-store/review/guidelines/`
-- Amazon, Cognito pricing, the three tiers and the definition of a monthly active user.
-  `https://aws.amazon.com/cognito/pricing/`
-- Amazon, using social identity providers with a user pool, and what Sign in with Apple asks for.
-  `https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-social-idp.html`
-- Amazon, understanding the identity token, and the `nonce`, `auth_time`, `sub`, `iss`, `aud` and
-  `token_use` claims.
-  `https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-using-the-id-token.html`
-- Amazon, the `DeleteUser` operation, which a signed in user calls for herself.
-  `https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_DeleteUser.html`
-- Amazon, control access to an http api with a token authorizer, and one authorizer for each route.
-  `https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html`
+- Apple, App Store Review Guidelines, guideline 4.8 and guideline 5.1.1(v), at
+  `https://developer.apple.com/app-store/review/guidelines/`. Quoted in the section on Sign in with
+  Apple.
+- Apple, "Communicating using the private email relay service", at
+  `https://developer.apple.com/documentation/signinwithapple/communicating-using-the-private-email-relay-service`.
+  The page body is drawn by a script and I could not read it. I took the requirement from two other
+  readings and say so where I use it.
+- Amazon Web Services, the Amazon Cognito pricing page, the social identity provider guide, and the
+  json web token authorizer guide for an HTTP api. A route takes one authorizer.
+- Amazon Web Services, "Request production access" for Amazon Simple Email Service, and the
+  reputation alarm guide. The sandbox allows 200 messages in 24 hours, one a second, to verified
+  addresses only. The service recommends a bounce rate under 5 percent and a complaint rate under
+  0.1 percent, and it may pause an account above 10 percent and 0.5 percent.
 
-## What is built today
+I also read the cloud account, read only, on 2026-09-19, with the credentials this machine holds.
 
-Status: built
+- `aws sesv2 get-account --region eu-central-1` answers `ProductionAccessEnabled: true`,
+  `SendingEnabled: true`, `EnforcementStatus: HEALTHY`, a quota of 50,000 messages in 24 hours at 14
+  a second, and 0 sent in the last 24 hours. So account 230345688874 is already out of the sandbox
+  in the region the vault runs in.
+- `aws sesv2 list-email-identities --region eu-central-1` answers one identity, `datexpats.com`,
+  with `VerificationStatus: FAILED` and sending disabled. So no domain in that account can send
+  today, and Emi needs its own.
+- `aws sesv2 list-configuration-sets --region eu-central-1` answers an empty list.
 
-The phone makes an Ed25519 key pair. It writes the private half into the keychain as
-`emi.deviceKey.v1`. The account identifier is the first 16 bytes of the SHA-256 of the public half,
-written in Crockford base 32. That is 26 characters.
-
-Every request but registration carries four headers. `emi-account` names the account. `emi-instant`
-is the moment of signing. `emi-body-sha256` is the digest of the body. `emi-signature` covers the
-method, the path, the instant and that digest.
-
-The authorizer reads the account item, takes the stored public key, and verifies the signature. It
-refuses an instant more than 300 seconds from now. It writes the signature down and refuses it a
-second time. It verifies an unknown account against a decoy key, so the time an answer takes says
-nothing about which accounts exist.
-
-The table is one table, `emi-vault`. One account holds one partition, `ACC#` and the account
-identifier. The account item is `META`. A record item is `REC#` and the record identifier. A
-remembered signature is `SIG#` and the signature. An index named `byUpdated` sorts records by their
-write time.
-
-Four routes exist: register, put a record, pull records, delete the account.
-
-## The hole this design lands in
+## What is built today, and the hole this design lands in
 
 Status: built
 
-I found one gap while reading, and the account design has to answer it.
+The service registers an account, writes a record, reads a page of records and deletes everything.
+The phone makes the keys, signs every request, wraps the vault key under the recovery code and sends
+the wrapped bytes with the registration.
 
-A second phone makes its own device key. That key derives a different account identifier. So the
-second phone is a different account. Nothing today lets it reach the first account. There is no
-endpoint that reads the wrapped vault key and the salt back, and `registerAccount` is the only
-writer of them. The test at `services/vault/tests/register.test.ts` line 281 says the bytes are
-written down "so a second phone can ask for them back", and no code asks.
+One gap sits in the middle of it.
 
-So feature 6 step 7, the restore onto a second phone, cannot run today. The link this design builds
-is the thing that names the old partition. The device binding at the end of the path is the thing
-that lets the new phone sign for it.
+A second phone makes its own device key, so it derives a different account identifier. It cannot
+name the first account and it cannot sign for it. There is also no endpoint that reads the wrapped
+vault key and the salt back: `registerAccount` writes them and no handler returns them. The case at
+`services/vault/tests/register.test.ts` line 281 says the bytes are written down "so a second phone
+can ask for them back", and nothing asks.
 
-## The promise, and why each part keeps it
+So feature 6 step 7, the restore onto a second phone, cannot run today. The sign in is what names
+the old partition. The device binding is what lets the new phone sign for it. The recovery code is
+what opens the days, and it always was.
 
-Status: designed
-
-The vault key is 32 random bytes in the keychain. Nothing in this design reads it, sends it or
-derives anything from it.
-
-The link holds an account identifier and a digest. Neither one opens an envelope.
-
-The identity token is verified and then dropped. The service writes no part of it to the table.
-
-The password is a Cognito password. It wraps no key. It derives no key.
-
-A woman who signs in and holds no recovery code gets ciphertext she cannot read. That is the design
-working, and the next sections state it as a cost rather than hide it.
-
-## The sign in path
+## What a sign in does, and what it never does
 
 Status: designed
 
-The phone opens managed login in the system browser. It uses the authorization code grant with
-Proof Key for Code Exchange. The app client is a public client and carries no secret.
+It does three things.
 
-The phone puts a `nonce` on the authorize request. The nonce is the lowercase hexadecimal SHA-256 of
-the device public key. Cognito writes that value into the identity token. The vault checks it. So
-one token is usable by one phone.
+1. It names her vault partition from a phone that holds neither her device key nor her recovery
+   code.
+2. It binds a new device key to that partition, so the new phone can sign.
+3. It gives Emi an email address, and it carries her subscription between the two stores.
+
+It never does these.
+
+It never wraps a key, and no key is derived from anything a provider returns. It never decrypts. It
+never reads a day. A person who takes her Google account reaches ciphertext, a count of records and
+a write time, and stops there.
+
+The identity token is verified and dropped. No part of it is written to the table.
+
+## Question 1: the identity beside the account identifier
+
+Status: designed
+
+Both run, and the signature stays the proof on every request. The identity authorizes two calls
+only: link an identity to the account, and claim an account from a new phone.
+
+The account identifier is derived and not chosen. `accountIdFor` cuts it from the public key, so two
+women cannot land on one and the service never trusts a caller to name herself. A Cognito subject as
+the partition key would give that property away and rewrite WIRE-1, AUTH-1, the table and every
+test.
+
+An identity token is a bearer token. Whoever holds it can act while it lives. The signature is a
+proof of possession, bound to the method, the path, the instant and the digest of the body, and it
+is refused the second time it arrives. Moving every request onto a bearer token would weaken every
+request for the sake of two calls.
+
+A route takes one authorizer, so the signature authorizer cannot share a route with a json web token
+authorizer. The two new calls verify the token inside the handler, against the key set the pool
+publishes.
+
+## Where the sign in is offered
+
+Status: designed
+
+Status of the first run: unchanged. Nothing in this feature adds a screen, a field or a question to
+it. Contract SCREEN-1 keeps its three screens and its error for an account, an email address or a
+password asked for.
+
+The sign in is offered in two places, and she is doing something related in both.
+
+The first is the screen that follows the recovery code, in feature 6. She has just written 26
+characters on paper, so the question of losing this phone is already in her head. Emi says what the
+sign in is for and offers it there, with a control to skip that is as easy to press as the one to
+take it.
+
+The second is settings, under an entry that says what it does rather than what it is called: Emi on
+another phone. That entry is where she goes on the day the question becomes real. A woman who
+skipped the first offer finds it here, and a woman on a new phone finds it here as well.
+
+A third place arrives with feature 7, because a subscription that follows her needs an identity to
+follow. That is out of this design and named in the path as a dependency.
+
+The words at the first offer, which are hers to read in one breath.
+
+Title: Use Emi on another phone.
+
+Lines: Sign in with Google or Apple, and a new phone can find this vault. Your days stay locked to
+your recovery code either way. Signing in does not open them, and Emi still cannot read them.
+
+Actions: Sign in, and Not now.
+
+## What works before she ever signs in
+
+Status: designed
+
+Everything. The whole product runs on one phone with no sign in: the first run, logging, the ring,
+the forecast, the history, the export, the lock, the delete, the encrypted vault in the cloud and
+the subscription.
+
+A woman who never signs in still has a vault account. It is made by her device key when the phone
+first registers, under contract WIRE-1, with no email address and no sign in of any kind. Her
+account identifier is the 26 characters derived from her public key, and every record she has is
+already filed under it.
+
+So a sign in adds an identity to an account that exists. It never makes a second one. The words in
+the product keep the two apart: the vault account is what her records are filed under, and the sign
+in is the thing that finds it again.
+
+## The sign in path, on a second phone
+
+Status: designed
+
+She installs Emi on a new phone. She answers the first run, because nothing here changes it. Then
+she opens settings, and this happens.
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    participant P as Emi on her phone
-    participant B as The system browser
-    participant C as Amazon Cognito
-    participant G as The api and the authorizer
-    participant T as The vault table
-    P->>B: open managed login with the nonce
-    B->>C: she signs in
-    C-->>B: an authorization code
-    B-->>P: the code, on the redirect address
-    P->>C: exchange the code
-    C-->>P: an identity token carrying the nonce
-    P->>G: POST /v1/account/identity, signed by the device key
-    G->>T: read the account item for the public key
-    T-->>G: the public key
-    G->>G: verify the signature, then remember it
-    G->>G: verify the token, the nonce and the times
-    G->>T: write both link items in one transaction
-    T-->>G: written
-    G-->>P: the account identifier and the provider
+  autonumber
+  participant W as She
+  participant P as Emi on the new phone
+  participant B as The system browser
+  participant C as Amazon Cognito
+  participant A as The api
+  participant D as The vault table
+  W->>P: settings, Emi on another phone
+  P->>B: opens managed login with a code challenge and a nonce
+  B->>C: Google, or Apple
+  C-->>B: an authorization code
+  B-->>P: the code, on the redirect address
+  P->>C: exchanges the code with the code verifier
+  C-->>P: an identity token carrying the subject and the email address
+  P->>A: claim, carrying the token, signed by this phone device key
+  A->>D: reads the link item for the digest of issuer and subject
+  D-->>A: the account identifier
+  A->>D: writes the device item and the device lookup item
+  A-->>P: the account identifier, the record count, the last write instant
+  P->>A: reads the wrapped vault key and the salt
+  A-->>P: the wrapped key and the salt
+  P-->>W: 1,284 days are in this account, and they are locked
+  W->>P: types the 26 character recovery code
+  P->>P: derives the key, opens the wrapped key, writes it to the keychain
+  P->>P: seals the days written on this phone under the recovered key
+  P->>A: pulls every record
+  A-->>P: ciphertext
+  P->>P: opens each day and draws the ring
 ```
 
-## How the claim is proved
+Read the answer at the claim. It carries a count and an instant and no day. Read the two lines after
+it. The wrapped key and the salt cross the wire, and neither opens without the code she has not
+typed yet.
+
+## Between the sign in and the recovery code
 
 Status: designed
 
-The claim is a signed request to the vault. It is `POST /v1/account/identity`. The identity token
-travels in the body. The route uses the signature authorizer that already exists.
+This is the moment the product feels broken, so it is designed at field level and at screen level.
 
-Four checks stand between a stranger and a partition. Each one refuses on its own.
-
-First, the authorizer verifies the Ed25519 signature over the method, the path, the instant and the
-body digest, against the public key stored for that account. That proves the caller holds the device
-private key of that account, at that moment. A stranger with a Google account holds no such key.
-
-Second, the authorizer refuses an instant outside 300 seconds, and refuses a signature it saw
-before. So a captured claim stops working quickly, and it never works twice.
-
-Third, the handler compares the body against the `emi-body-sha256` header, the way every other
-handler does. So the identity token in the body is the token that was signed. A token swapped in
-flight fails.
-
-Fourth, the handler verifies the identity token itself. It checks the signature against the user
-pool key set, `iss` against the configured issuer, `aud` against the configured app client,
-`token_use` equal to `id`, `exp` in the future, `auth_time` within 300 seconds of the request
-instant, and `nonce` equal to the digest of the device public key that signed the request.
-
-The request signature alone is enough to stop a stranger attaching an identity to her account,
-because the stranger cannot make one. The token checks stop the other direction. Without the nonce
-and `auth_time`, somebody who captured her token could attach her identity to their own account.
-That does not read her days, and it does take her identity away from her, because one identity links
-to one account. The nonce makes the token useless on any phone but the one that asked for it.
-
-The cost of the design, stated plainly. After the link exists, the identity alone is enough to bind
-a new phone and pull ciphertext. Whoever controls her Google account can reach her ciphertext. They
-cannot read one day of it without her recovery code.
-
-## One account, more than one identity
+### Whether the pull happens before the code, or after it
 
 Status: designed
 
-Yes. One account carries up to three identities, one for each provider: a password, Google and
-Apple. She signs in with Google today and with Apple next year, and both reach the same vault.
+After. Three reasons, and the third is the one that decides it.
 
-Two items hold each link, and the key shape enforces both rules with no query and no count.
+A record pulled before the code is ciphertext the phone cannot open, sitting in a local database
+whose every reader expects a row to open. The history screen, the export and the ring would each
+need a second state for unreadable rows, and that is the state that looks like loss.
 
-The account side item is keyed `ACC#` with the account identifier, and `IDY#` with the provider. So
-a second Google link on one account meets an item that exists, and a conditional write refuses it.
+It costs her a download she may never use. A woman with no recovery code would spend her data
+allowance on bytes that will never open for anybody.
 
-The lookup item is keyed `IDY#` with the identity digest, and `META`. So an identity already linked
-to another account meets an item that exists, and a conditional write refuses it.
+The merge needs the key. A day she wrote on this phone before signing in is sealed under this
+phone's key, and the pulled days are sealed under the recovered key. One of the two has to be
+sealed again, and nothing can be sealed again until the code arrives.
 
-An identity that is already linked and tries to claim a second account is refused with status 409.
-The message says the identity is linked to an Emi vault already. It never names the account. She
-unlinks it from the phone that holds the first account, or she deletes that account. Then the link
-succeeds.
+The wrapped vault key and the salt are read before the code, at the claim. They are two small values
+and they open nothing, so fetching them early costs nothing and buys a great deal: the code she
+types is checked on the phone, against her own wrapped key, with no request and no wait. A wrong
+code is refused instantly and offline.
 
-The two writes go in one transaction, with a condition on each. Two separate writes can half
-succeed, and a half written link takes an identity that points at nothing. She could then never link
-that identity anywhere. So the store gains one operation, `transactWriteItems`, and the double in
-`services/vault/tests/fixtures/dynamoTable.ts` refuses the whole transaction when either condition
-fails.
+### What the screen shows, and what it says
+
+Status: designed
+
+The locked screen appears the moment the claim answers. It carries three facts from the claim
+answer, and no day.
+
+It names the number of days the account holds, written as a number. It names when the last one was
+written, as a plain interval, for example three days ago. It names the provider she signed in with
+and the email address it handed over.
+
+The words.
+
+Title: Your days are here. They are locked.
+
+Lines: This account holds 1,284 days, and the last one was written three days ago. Emi cannot open
+one of them without your recovery code. The code is the 26 characters Emi showed you on your other
+phone, and Emi keeps no copy of it.
+
+Actions: Enter my recovery code, and I do not have my code.
+
+Three rules make that screen impossible to misread, and each one is a case.
+
+The word lost never appears, and neither does missing, gone, empty or error, because none of them is
+true. The screen is held to that list by the copy test that already reads every string in the
+application.
+
+The count is never zero on this screen. An account that holds no record skips the locked screen and
+goes to the home screen, because there is nothing to unlock and a locked screen over nothing is the
+scariest screen in the product.
+
+The history screen may never show its empty state while the vault is locked and the account holds
+records. It shows the locked state, the count and the control that asks for the code. A woman who
+presses past the locked screen and goes looking for her history finds the same answer there.
+
+While the code runs, the screen says Opening 1,284 days, and it does not say Loading. When it
+finishes, the ring is on the screen and the words are Your cycle is back.
+
+### The woman who has no recovery code
+
+Status: designed
+
+She presses I do not have my code. This screen says the thing plainly, once, and offers her a way
+forward rather than a way round.
+
+Title: Without the code, these days cannot be opened.
+
+Lines: Emi cannot open them, and nobody at Emi can. There is no reset, because a reset would mean
+Emi could read your days, and Emi cannot. The days stay in your account as bytes nobody can read
+until you delete them.
+
+Actions: Start again on this phone, and Delete what is in my account.
+
+Start again keeps the sign in and leaves the old account alone. She logs from today, on a new vault
+key, and the old ciphertext sits there. Emi says that in one line before she confirms, because a
+woman who finds the code in a drawer next month can still use it.
+
+Delete what is in my account is the existing delete, pointed at the account she just claimed. It is
+one press, it has no cooling off period, and it says what it took.
+
+No screen in this path offers to email her the code, to answer a security question, or to talk to
+anybody. Each of those would be a claim that somebody at Emi can get her days back.
+
+## The days she wrote before she signed in
+
+Status: designed
+
+They are all hers, they stay under one account, and the sign in never makes a second one.
+
+Two cases, and the second is the one with an order that matters.
+
+She signed in before the phone ever registered. The phone holds days sealed under the vault key it
+made at first run, and the server holds nothing for this device key. The claim binds the device key
+to her account. She types the code, the phone takes the recovered vault key, seals every local
+row again under it and raises each revision, and then pulls. Her new days and her old days are one history
+under one account.
+
+She registered first and signed in afterwards. Now two accounts exist: the one her identity names,
+and the one this phone registered for itself. The phone deletes its own account first, while its
+device key still names it, and only then claims hers. The order is the same one the delete already
+uses, and for the same reason: a device key names one account, so after the claim this phone can
+never sign for the account it left behind.
+
+The second sealing is the part a test has to watch. Every local row is opened with the key in the keychain,
+sealed again under the recovered key, and written back with its revision raised by one. The keychain
+item is replaced last. A phone that stops halfway holds rows under two keys, so the step writes a
+marker first and finishes the sealing on the next launch before it draws anything.
+
+Contract VAULT-1 refuses a second creation of the vault key. Replacing it with a recovered key is
+not a creation, and this design gives that path its own call, so the refusal stays exactly as strict
+for every other caller.
+
+## One sign in, one account, and what a person may hold
+
+Status: designed
+
+An identity belongs to one vault account. A vault account holds at most one identity for each
+provider, and at most two.
+
+A link is refused when that identity already names another account. The refusal says the identity is
+already in use and never which account, because an answer that named one would let anybody test who
+uses Emi.
+
+She may link both providers to one account, and that is the recommended state: two ways back rather
+than one. The account screen shows which providers are linked and offers the other.
+
+Unlinking is hers to do. It removes the link and the address it carried, and it never touches a
+record.
+
+## What Google and Apple learn
+
+Status: designed
+
+Both learn that she uses Emi. Google records the grant, and she can read it and withdraw it under
+the third party access page of her Google account. Apple lists Emi under Settings, her name, Sign in
+with Apple, where she can stop it. Neither company sees a day, a symptom or a date, because neither
+one ever receives a payload.
+
+She is told this on the screen where she chooses, above the two buttons, in her words.
+
+Google tells Google that you use Emi. Apple tells Apple that you use Emi, and Apple can hide your
+email address from us.
+
+Emi gets your email address from whichever you choose, so there is nothing to type. Emi writes to
+you about your account. Emi writes to you about anything else only if you ask for it.
+
+The same cost goes in `privacy.md`, beside the one already there about the store knowing she bought
+a subscription.
+
+## Sign in with Apple, and the review rule
+
+Status: designed
+
+I read guideline 4.8 on 2026-09-19 at `https://developer.apple.com/app-store/review/guidelines/`. It
+says that an app which uses a third party or social login service, and it names Google Sign-In among
+them, to set up or authenticate the user's primary account must also offer as an equivalent option
+another login service with three features: the service limits data collection to the user's name and
+email address, it allows users to keep their email address private as part of setting up their
+account, and it does not collect interactions with the app for advertising purposes without consent.
+
+Offering both providers satisfies it. Sign in with Apple has all three features, and it sits beside
+Google on the same screen, in the same release.
+
+The same page carries guideline 5.1.1(v). An app that supports account creation must also offer
+account deletion inside the app. Emi deletes everything in one action already, and the path extends
+that action to remove the identity and the Cognito user.
+
+One risk, stated because I did not test it. A Cognito user pool federates with Apple through its
+managed login pages, which the phone opens in an authentication session owned by the operating
+system. That is the system browser and not a web view, and the Apple page inside it is Apple's own
+page rather than the native sheet. The guide describes an address carrying
+`identity_provider=SignInWithApple` that goes straight to the provider, which is what the path uses.
+If review asks for the native sheet, the way to give it is a custom authentication flow in the pool
+that accepts a token from Apple's own framework, which is three more functions and a bigger change.
+I have not put a build through review.
+
+## The email address
+
+Status: designed
+
+### What Emi sends, and under what permission
+
+Status: designed
+
+Two kinds, kept apart because the permission, the wording and the way to stop them are different.
+
+Transactional mail goes to her because she has an account. There are four messages and no more in
+version 1. A new phone was bound to your account, which is the one that matters if somebody else
+signs in as her. Your subscription renewed, or it did not. Your recovery code is the only way back,
+sent once, a week after she signs in, and never again. Your account and everything in it was
+deleted, sent as the last act of a delete.
+
+Each transactional message carries no day, no symptom, no date from her records and no count of
+them. A message says that something happened to the account and never what is in it. That rule is a
+case: the sender is handed a record identifier by no code path at all.
+
+Marketing mail goes to her only if she asked for it. She is asked once, on the account screen, with
+the box clear and empty. One press stops it forever, from a link in the mail and from the account
+screen, and stopping it never affects the transactional mail.
+
+### The service that sends them
+
+Status: designed
+
+Amazon Simple Email Service, in eu-central-1, in the account the vault already uses.
+
+The reason is the account state I measured rather than a preference. Production access is granted in
+that region already, sending is enabled, the enforcement status is healthy, and the quota is 50,000
+messages in 24 hours at 14 a second. So Emi does not have to leave the sandbox, which is the part of
+a new sender that takes days and can fail.
+
+It costs nothing while nobody is sent anything. The Essentials plan carries no monthly fee, and mail
+is 0.10 United States dollars for each 1,000 messages. The plans above it carry a fixed monthly
+charge, so the cost rule refuses them until a measurement asks for one.
+
+One cost to state. Sender reputation belongs to the account and the region, not to the product, and
+that account sends for another product. A complaint rate earned anywhere in it pauses Emi as well.
+Emi gets its own configuration set so its own bounce and complaint rates are visible on their own,
+and the alarm on each rate names Emi. If the two products ever pull in different directions, the
+answer is an account of its own, and this document says so now rather than after the pause.
+
+### The sender domain, and what a relay address needs
+
+Status: designed
+
+Emi has no domain yet, and that is an open decision. This section says what the domain must carry
+whenever it is chosen.
+
+It is verified as an identity in the region, with DomainKeys Identified Mail signing turned on and
+its own mail from subdomain, so the envelope sender and the visible sender are both Emi. It
+publishes a Sender Policy Framework record and a Domain based Message Authentication record.
+
+Apple needs one more thing, and it is the step that is easy to miss. A private relay address only
+receives mail from a sender Apple knows. The sending domain and each sending address are registered
+in the Apple developer account, under Certificates, Identifiers and Profiles, in the Sign in with
+Apple configuration, and Apple matches the mail against them by Sender Policy Framework on the
+visible sender domain and by the DomainKeys signature. Mail from a source Apple does not hold is
+rejected. I could not read Apple's own page, because it is drawn by a script, so I took this from
+Apple's documentation title, a deliverability guide that describes the same registration, and a
+developer forum thread about mail to relay addresses bouncing. Treat it as read and not as measured,
+and prove it by sending to a relay address before the feature ships.
+
+That gives a rule worth a case: the sender refuses to send to an address at
+`privaterelay.appleid.com` unless the sending address it is configured with is one of the registered
+ones. A silent bounce to every Apple user is the failure this prevents.
+
+### Bounces and complaints
+
+Status: designed
+
+A configuration set named for Emi carries an event destination to a notification topic, and a small
+function writes the outcome onto the account item. A hard bounce sets the address to undeliverable.
+A complaint sets it to complained and stops every marketing message immediately.
+
+The account level suppression list is already on for bounces and complaints in that region, which I
+measured, so a suppressed address is refused by the service before Emi spends anything on it.
+
+An undeliverable address is shown to her in the account screen, in one line, with the way to fix it:
+sign in again with the other provider, or turn the relay forwarding back on in her Apple account. A
+relay address that she switches off looks exactly like a hard bounce, so the line says both causes.
+
+Two alarms, one on the bounce rate at 5 percent and one on the complaint rate at 0.1 percent, which
+are the rates the service recommends staying under. The service may pause an account above 10
+percent and 0.5 percent, so the alarms are set at half the rate that matters and not at the rate
+that hurts.
+
+### What the server then holds, and for how long
+
+Status: designed
+
+This is the honest change, and it is a real one.
+
+Before this feature, the vault table held no personal datum at all. A person reading it saw an
+account identifier derived from a public key, ciphertext, revisions and write times. After it, an
+account that has signed in also holds an email address. So a person reading the table learns that a
+named inbox has a period tracker, and how many days it holds, and when the last one was written.
+They still learn nothing about a single day.
+
+That is stated in `privacy.md` as a cost, in these terms. What is stored: the email address the
+provider handed over, which provider it came from, whether it is an Apple relay address, and whether
+it is deliverable. What it is used for: the four transactional messages, and marketing only with her
+consent. How long it is kept: as long as the link. Unlinking removes the address. Deleting the
+account removes it with everything else, in the same press, with no retention period.
+
+What a relay address changes. Apple's relay hides her real address from Emi, so the table holds an
+address that identifies her to Apple and to nobody else. It still ties an inbox to a partition. She
+can switch the forwarding off at any time and Emi stops being able to reach her, which the account
+screen explains rather than treating as an error.
+
+A woman who wants no company to learn that she uses Emi does not sign in. Everything except the
+second phone works without it, and this document says that on the screen where she chooses.
+
+## The money
+
+Status: designed
+
+The store owns the purchase. The identity carries it between the two stores. The vault account holds
+the answer the write gate reads.
+
+Contract PAY-3 already has the server check the receipt with Apple or with Google, and the date the
+subscription runs to lands on the account item. Contract PAY-2 reads the store on launch and keeps
+the last known answer when the store cannot be reached. Neither changes.
+
+The identity makes it portable. A receipt is filed against the vault account that presented it, and
+the identity names that vault account from any phone in either store. So a woman who buys on one
+platform and moves to the other keeps her year, as long as she signs in.
+
+Three rules for a disagreement, each one a case.
+
+The store says subscribed and the account item says lapsed. The phone shows the subscribed state and
+sends the receipt again. Writes stay refused until the server has checked it. She sees no paywall
+she already paid for.
+
+The account item says subscribed and the store cannot be reached. The phone keeps the last known
+answer and writes keep working until the date passes.
+
+The receipt is already filed against another vault. The write is refused and the screen says the
+subscription belongs to another Emi account. One receipt pays for one vault, and a lock item keyed
+by a digest of the original transaction identifier makes that a conditional write rather than a
+search.
+
+Contracts WIRE-5 and PAY-4 are untouched. A pull, an export and a delete work whatever any of this
+says.
 
 ## The data model, at field level
 
 Status: designed
 
-One table, `emi-vault`. The partition key is `pk` and the sort key is `sk`, both strings. The index
-`byUpdated` sorts on `updatedAt`. This design adds no index.
+One table, as today. It is `emi-vault`, with a partition key `pk` and a sort key `sk`, both strings,
+and a local index `byUpdated` that sorts records by their write time. None of that changes.
 
 ```mermaid
 flowchart TD
-  subgraph Table["The vault table, one partition for each account"]
-    ACC["ACC#accountId / META: publicKey, wrappedVaultKey, recoverySalt, createdAt, recordCount"]
+  subgraph Table["One table: emi-vault"]
+    ACC["ACC#accountId / META: publicKey, wrappedVaultKey, recoverySalt, createdAt, recordCount, deviceCount, identityCount, email, emailProvider, emailIsRelay, emailStatus, emailUpdatedAt, marketingConsentAt, marketingConsentWording, marketingStoppedAt, subscribedUntil, subscriptionStore, subscriptionTransaction, subscriptionCheckedAt"]
     REC["ACC#accountId / REC#recordId: payload, revision, updatedAt"]
     SIG["ACC#accountId / SIG#signature: ttl"]
-    LNK["ACC#accountId / IDY#provider: identityDigest, linkedAt"]
-    DEV["ACC#accountId / DEV#deviceId: publicKey, addedAt, addedBy"]
-  end
-  subgraph Lookup["Items read by something other than the account"]
+    ADEV["ACC#accountId / DEV#deviceId: addedBy, addedAt"]
+    AIDY["ACC#accountId / IDY#identityDigest: provider, linkedAt"]
+    DEV["DEV#deviceId / META: publicKey, accountId, addedBy, addedAt"]
     IDY["IDY#identityDigest / META: accountId, provider, linkedAt"]
-    DVL["DEV#deviceId / META: accountId, publicKey, addedAt"]
+    TXN["TXN#transactionDigest / META: accountId, store, firstSeenAt"]
   end
-  LNK -->|"one for one, deleted together"| IDY
-  DEV -->|"one for one, deleted together"| DVL
-  IDY -->|"names"| ACC
-  DVL -->|"names"| ACC
+  POOL["Amazon Cognito user pool: subject, email address, the provider she used"]
+  ACC --> REC
+  ACC --> SIG
+  ACC --> ADEV
+  ACC --> AIDY
+  DEV -->|"names the account"| ACC
+  IDY -->|"names the account"| ACC
+  TXN -->|"holds the account it paid for"| ACC
+  ADEV -->|"one for one"| DEV
+  AIDY -->|"one for one"| IDY
+  POOL -.->|"a digest of the issuer and the subject"| IDY
+  POOL -.->|"the address, copied once at the link"| ACC
 ```
 
-### The account item, which exists today
+### The items that exist today
 
 Status: built
 
-`pk` is `ACC#` and the 26 character account identifier. `sk` is `META`.
+The account item is `ACC#<accountId>` and `META`. It holds `publicKey` as 32 bytes,
+`wrappedVaultKey` as bytes, `recoverySalt` as 16 bytes, `createdAt` as an instant string and
+`recordCount` as a number.
 
-`publicKey` is 32 bytes. `wrappedVaultKey` is 73 bytes. `recoverySalt` is 16 bytes. `createdAt` is
-an instant as a string. `recordCount` is a number.
+The record item is `ACC#<accountId>` and `REC#<recordId>`. It holds `payload` as bytes, `revision`
+as a number and `updatedAt` as an instant string. The identifier is a universally unique identifier
+of version 7.
 
-This design adds no attribute to it.
-
-### The identity link item, on the account side
-
-Status: designed
-
-`pk` is `ACC#` and the account identifier. `sk` is `IDY#` and the provider.
-
-`provider` is one of `password`, `google` and `apple`. It sits in the sort key, so one account holds
-at most one of each.
-
-`identityDigest` is a string. It is the lowercase hexadecimal SHA-256 of the issuer, a newline, and
-the subject claim.
-
-`linkedAt` is an instant as a string.
-
-The item carries no email address, no name, no telephone number, no picture, no token and no
-subject in the clear.
-
-This item exists for the delete. The delete reads every key under the partition. It finds this item,
-it reads the digest off it, and it removes the lookup item that the digest names. Without it, a
-lookup item survives a delete, and she could never link that identity again.
+The remembered signature is `ACC#<accountId>` and `SIG#<signature>`, with `ttl` as a number of
+seconds.
 
 ### The identity lookup item
 
@@ -284,542 +637,514 @@ Status: designed
 
 `pk` is `IDY#` and the identity digest. `sk` is `META`.
 
-`accountId` is the 26 character account identifier. This is the whole point of the item.
+The identity digest is 26 characters of Crockford base 32, cut from the first 16 bytes of the
+SHA-256 of the issuer, a newline and the subject. The helper that makes an account identifier makes
+this one, so there is one implementation of that shape.
 
-`provider` is one of the three values above. The screen tells her which one she signed in with.
+`accountId` is the 26 character account identifier, and finding it is the whole purpose of the item.
+
+`provider` is `google` or `apple`. There is no third value, because there is no third provider and
+no local user.
 
 `linkedAt` is an instant as a string.
 
-Why a digest, and what it buys. The subject is an identifier that Cognito chose, and it is not a
-secret. The digest keeps the provider identifier out of the table, so a copy of the table cannot be
-read against a copy of a user pool by eye. Anybody who holds the subject computes the same digest
-and finds the same item, so the digest defends against a reader who does not hold the subject, and
-against nobody else. The issuer is inside the digest, so a new user pool makes new digests, which is
-correct: a new pool issues new subjects too.
+The subject is not written in the clear and no token is written at all. Anybody who holds the
+subject computes the same digest and finds the same item, so the digest defends against a reader who
+holds the table and not the pool, and against nobody else.
 
-What a reader of the table would learn from this item. An account exists. It has one identity of a
-named provider. The link was made at a stated moment. The reader learns nothing about who she is,
-unless the reader already holds the subject. A reader who holds the subject learns which partition
-is hers. No item here says anything about a day.
-
-### The record item and the remembered signature, which exist today
-
-Status: built
-
-A record item is `ACC#` with the account identifier, and `REC#` with the record identifier. It
-carries `payload`, `revision` and `updatedAt`.
-
-A remembered signature is `ACC#` with the account identifier, and `SIG#` with the signature. It
-carries `ttl` and nothing else.
-
-### The device items, which the second half of the path adds
+### The identity item on the account side
 
 Status: designed
 
-A device item is `ACC#` with the account identifier, and `DEV#` with the device identifier. It
-carries `publicKey`, `addedAt`, and `addedBy`, which is one of `registration`, `claim` and
-`recovery`.
+`pk` is `ACC#` and the account identifier. `sk` is `IDY#` and the identity digest. It holds
+`provider` and `linkedAt`.
 
-A device lookup item is `DEV#` with the device identifier, and `META`. It carries `accountId`,
-`publicKey` and `addedAt`.
+It exists for the delete. The delete reads every key under the partition, finds this item, reads the
+digest from the sort key and removes the lookup item that the digest names. Without it a lookup item
+survives a delete, and she could never link that identity again.
 
-The device identifier is what `accountIdFor` derives from that device public key. For the first
-phone it equals the account identifier, so nothing about the first phone changes.
-
-## Where the link lives, and why
+### The device lookup item
 
 Status: designed
 
-The link lives in the vault table, as two item kinds of its own. It does not get a table of its own.
+`pk` is `DEV#` and the device identifier. `sk` is `META`.
 
-Three reasons, in order of weight.
+The device identifier is 26 characters, and it equals `accountIdFor(publicKey)`, so a device cannot
+choose its own name any more than an account can.
 
-The delete decides it. `WIRE-4` removes every item under the partition, and a test reads the table
-back to prove it. An item in a second table is a second place to forget, and a delete that misses it
-leaves an identity that points at an account that is gone.
+It holds `publicKey` as 32 bytes, `accountId` as 26 characters, `addedBy` as one of `registration`,
+`claim` or `recovery`, and `addedAt` as an instant string.
 
-Contract `TABLE-4` decides the second part. A test reads every attribute of every written item and
-looks for a date, a symptom, a flow or a note. Items in the vault table are inside that test. Items
-in a second table would need their own, and the one test that the whole product rests on would stop
-covering everything the service writes.
+This is the one item the authorizer reads. It carries no wrapped key, no salt, no email address and
+no count.
 
-Cost decides nothing here. Both tables would bill on demand, and both cost only storage while
-nobody uses them.
+### The device item on the account side
 
-The read is by identity and never by account, which is why the lookup item is keyed by the digest
-and sits outside the account partition. That is one `GetItem` on the whole key. It needs no index
-and no scan.
+Status: designed
+
+`pk` is `ACC#` and the account identifier. `sk` is `DEV#` and the device identifier. It holds
+`addedBy` and `addedAt`. It exists for the delete, the same as the identity item, and the public key
+is written once so the two copies cannot disagree.
+
+### The receipt lock item
+
+Status: designed
+
+`pk` is `TXN#` and the transaction digest. `sk` is `META`. It holds `accountId`, `store` and
+`firstSeenAt`.
+
+The transaction digest is 26 characters, cut from the first 16 bytes of the SHA-256 of the store
+name, a newline and the original transaction identifier. The receipt is never stored and the
+transaction identifier never travels past the digest.
+
+### The new attributes of the account item
+
+Status: designed
+
+`deviceCount` and `identityCount` are numbers, so a cap is a conditional write rather than a count
+of items.
+
+`email` is the address the provider handed over, as a string. It is absent until she links an
+identity.
+
+`emailProvider` is `google` or `apple`. `emailIsRelay` is a boolean, true when the address ends in
+`privaterelay.appleid.com`, worked out once at the link and written down so no sender has to parse
+an address.
+
+`emailStatus` is `deliverable`, `bounced` or `complained`. `emailUpdatedAt` is an instant string.
+
+`marketingConsentAt` is an instant string and it is absent until she asks for marketing mail. Its
+presence is the consent, so nothing has to read a boolean that somebody could default to true.
+
+`marketingConsentWording` is the identifier of the exact sentence she agreed to, for example
+`marketing-2026-09-19`. A change to the wording makes a new identifier, so an old consent can never
+stand for a new promise.
+
+`marketingStoppedAt` is an instant string, written the moment she stops. Both fields present means
+she agreed and then stopped, and every sender reads stopped over agreed.
+
+`subscribedUntil`, `subscriptionStore`, `subscriptionTransaction` and `subscriptionCheckedAt` carry
+the money, and feature 7 writes them.
+
+### What the user pool holds
+
+Status: designed
+
+The subject, the email address the provider returned, and which provider it was.
+
+The app client lists Google and Sign in with Apple as its only identity providers. It does not list
+the pool itself, so there is no local user, no password, no sign up form and no forgotten password
+path anywhere in the product. There is no custom attribute, so the pool carries no account
+identifier, no device identifier and no record count.
 
 ## What the authorizer reads on a request
 
 Status: designed
 
-Today it reads the account item at `ACC#` and the header value, sort key `META`, and takes
-`publicKey` from it.
+The four headers do not change: `emi-account`, `emi-instant`, `emi-body-sha256` and `emi-signature`.
+The first three stay the identity sources of the api.
 
-After the device step it reads the device lookup item at `DEV#` and the header value, sort key
-`META`, and takes `publicKey` and `accountId` from it. It verifies, remembers the signature under
-the account partition, and hands on two values: the account identifier and the device identifier.
+`emi-account` carries the device identifier. For a phone that registered, the device identifier and
+the account identifier are the same 26 characters, so nothing a phone sends changes on the day this
+lands.
 
-One trap, named here because it costs a red pipeline. `authorizedAccountIn` in
-`services/vault/src/auth/authorizer.ts` compares the value the authorizer handed on against the
-`emi-account` header, and refuses when they differ. After the indirection those two differ on every
-phone but the first. The same step changes both, or every authorized request fails.
+The authorizer reads the headers and refuses an instant more than 300 seconds from now. It reads one
+item, `DEV#<emi-account>` and `META`, with a consistent read. It verifies the signature against
+`publicKey`, or against the decoy public key when the item is absent, so an unknown device costs the
+same time as a bad signature. It writes the signature item under `ACC#<accountId>` with the
+condition that it does not exist. It hands the function `accountId` and `deviceId`.
 
-The link endpoint changes none of this. It is a signed request like any other.
+One trap, named because it fails at run time and not at compile time. `authorizedAccountIn` compares
+the account identifier in the context against the account identifier in the header today. Those two
+values differ the moment a second device exists. The handler must compare the device identifier
+against the header and read the account identifier from the context alone. A step that changes the
+authorizer and forgets this refuses every authorized request.
 
-## What a delete does
-
-Status: designed
-
-`WIRE-4` stands as it is. One request, no confirmation on the server, no delay.
-
-The delete reads every key under the partition. It already does. The read carries `pk` and `sk`
-only, so the step that adds the link widens it to carry `identityDigest` as well. Then, for each
-`IDY#` item it finds, it removes the lookup item that the digest names. The order is the lookup
-item first, then the account side item, so a delete that stops half way leaves no lookup item
-pointing at an account that is gone.
-
-The same shape holds for a device item and its lookup item.
-
-A delete that does not widen the projection is the failure this section exists to stop. It removes
-the account side item, the lookup item stays, and that identity can never be linked to anything
-again. The test is plain: delete, then link the same identity to a new account, and expect it to
-succeed.
-
-What happens when she signs in again with the same identity. The user pool user is a separate thing
-from the vault account, so she signs in and the token verifies. The vault finds no lookup item and
-answers 404. The phone says there is no Emi vault for this sign in. She may start again, which makes
-a new device key, a new account identifier and a new vault, and the same identity links to it
-cleanly, because both link items went with the delete.
-
-The Cognito user itself. Apple's guideline 5.1.1 part five says an app that supports account
-creation must offer account deletion in the app, so leaving the user behind is not an option. The
-phone deletes it, not the server: `DeleteUser` takes the signed in user's own access token and the
-scope `aws.cognito.signin.user.admin`, which means the server never needs the subject and the table
-never has to hold it. The phone keeps the refresh token in the keychain as `emi.identityRefresh.v1`,
-named in the account directory and nowhere else.
-
-The refresh token has a cost and a failure. It is a credential that mints tokens for her user pool
-user while it is valid. It reaches no vault, because the vault takes signatures and not tokens, and
-it opens no day. The proposal is a validity of 365 days, and the number is the operator's. When the
-token is gone or the call fails, the vault account still goes, and the screen says the one true
-thing: the Emi vault is gone, the sign in account may still exist, and signing in once and pressing
-delete again removes it.
-
-The rejected option, with the reason. The server could delete the user, if the delete request
-carried a fresh identity token. That puts a sign in inside a delete. Contract `KEEP-3` refuses a
-delay and a cooling off period, and the phone half of the delete never waits on the network. So the
-phone carries the token instead.
-
-## The rules, written so a test can fail them
+## The rules a test can fail
 
 Status: designed
 
-Each line below is one case.
-
-- A link request with no signature is refused, and writes nothing.
-- A link request whose signature does not verify is refused, and writes nothing.
-- A link request signed more than 300 seconds from now is refused, and writes nothing.
-- A link request whose signature arrived before is refused, and writes nothing.
-- A link request whose body does not match `emi-body-sha256` is refused, and writes nothing.
-- A link request whose token fails its signature, `iss`, `aud`, `token_use` or `exp` is refused.
-- A link request whose token has an `auth_time` more than 300 seconds from the request instant is
-  refused.
-- A link request whose token nonce is not the digest of the signing device public key is refused.
-- A second link for one provider on one account is refused with 409, and the first link is
-  unchanged.
-- A link of an identity that is linked to another account is refused with 409, and neither item is
-  written.
-- A link that is refused by either condition writes neither item.
-- A successful link writes both items, and changes no other item of the account.
-- No attribute of either link item holds the subject, the email address or any part of the token. A
-  test reads every attribute of both items and looks for each.
-- A delete removes both link items, proved by reading the table.
-- After a delete, the same identity links to a new account.
-- A log line from any of these carries a request identifier and a duration, and nothing else. That
-  is contract `KEEP-1`, and the subject and the token join the list it greps for.
-
-## Her password, and what a reset costs
-
-Status: designed
-
-The password wraps no key and derives no key. The recovery code stays the only way back into the
-days.
-
-A forgotten password costs her nothing. She resets it by email through the user pool. She signs in.
-She reaches her own ciphertext again. Her days open if she still holds her recovery code, and they
-stay closed if she does not.
-
-The other design, written here so the choice is visible. A password that wrapped the vault key would
-make a reset destroy every day, because nothing else would open the wrapped key. The only escape
-from that is a second copy of the key that the service can reach, and that is the one thing this
-product refuses. So the password stays away from every key.
-
-Say it on the screen, in the same words: the password gets her back to her vault, and the recovery
-code is what opens it.
-
-## The account is optional
-
-Status: designed
-
-Optional, and offered later.
-
-Contract `SCREEN-1` says the first run asks for no account, no email address and no password, and
-names an error for each. That contract is built and tested. This design keeps it word for word: the
-first run does not change.
-
-The account is offered in three places. It is offered after the recovery code is confirmed. It is
-offered on the settings screen. It is offered on the new phone, at the moment she asks for her
-history back.
-
-A required account would change `SCREEN-1`, the store listing answers and the privacy claim, because
-an email address is a personal datum that the model does not hold today. Nothing in the research
-makes it necessary, so the answer is no.
-
-One warning about the word optional. An optional account has to stay optional on the day it matters,
-which is the day she opens a new phone. The path keeps a way back that needs no account, and the
-operator may drop it. Dropping it makes the account required in practice for a restore, and this
-document says so rather than letting it happen quietly.
-
-## What Google and Apple learn
-
-Status: designed
-
-They learn that she uses Emi. That is the cost, and it is stated here and on the screen.
-
-Google records the grant. She sees it under the third party applications of her Google account. The
-consent screen names Emi before she taps.
-
-Apple records the sign in. She sees it under her name in Settings, then Sign in with Apple. Apple's
-own page says she can turn off email forwarding for an app that she hid her address from, and it
-says she can remove the app from that list.
-
-Apple lets her keep her address private with Hide My Email. Google does not.
-
-Emi learns her email address, which is new. It lives in the user pool in eu-central-1, and it never
-reaches the vault table. A woman who wants no company to learn that she uses Emi uses no account at
-all, and every day she writes stays on her phone.
-
-Where she is told. One sentence on the screen that offers the account, above the buttons, not behind
-a link. One section in `docs/privacy.md`, beside the four attacks it already states.
-
-## Sign in with Apple
-
-Status: designed
-
-Offer it, on iOS, in the same release as Google.
-
-I read guideline 4.8, Login Services, on 2026-09-19. It says that an app which uses a third party or
-social login service "to set up or authenticate the user's primary account with the app must also
-offer as an equivalent option another login service" with three features: the service limits data
-collection to the name and the email address, it lets the user keep the email address private, and
-it does not collect interactions with the app for advertising without consent.
-
-The guideline lists five cases where another login service is not required. The first is an app that
-"exclusively uses your company's own account setup and sign-in systems". Emi would offer Google, so
-it is not exclusive, and the exception does not hold. None of the other four fits a period tracker.
-
-Sign in with Apple has the three features. So it ships with Google, never after it.
-
-The same guideline page carries 5.1.1 part five, which says an app that supports account creation
-must offer account deletion in the app. Emi deletes everything in one action already, and the delete
-section above extends it to the user pool user.
-
-Two practical points from the Cognito documentation. Sign in with Apple through a user pool needs an
-Apple developer account, an app identifier, a Services identifier, a key and a team identifier. The
-operator has not decided the Apple developer account, so step 12 waits for it. And the authorize
-endpoint takes an `identity_provider` parameter that goes straight to the provider page, so the
-button in Emi can open Apple's own page without an Emi page in between.
-
-## The money
-
-Status: designed
-
-The store account owns the purchase. The identity carries it between stores. Both, with one rule for
-a disagreement.
-
-The store is the source of truth for whether she bought a year. Contract `PAY-2` reads it on launch
-and keeps the last known answer when the store cannot be reached. That does not change.
-
-The server holds its own answer on the account item, from the receipt check of `PAY-3`, as a date
-the subscription runs to. The write gate of `WIRE-2` reads that date and nothing else.
-
-The identity makes it portable. A receipt is filed against the vault account that presented it, and
-the identity names that vault account from any phone, in either store. So a woman who buys on one
-platform and moves to the other keeps her subscription, as long as she signs in.
-
-When the two disagree, three rules, each one testable.
-
-The store says subscribed and the server says lapsed. The phone shows her the subscribed state and
-sends the receipt again. Writes stay refused until the server has checked it. She never sees a
-paywall she already paid for.
-
-The server says subscribed and the store says nothing. The phone keeps the last known answer, which
-`PAY-2` already requires, and writes keep working until the server's date passes.
-
-One receipt, one vault. A receipt already filed against another account is refused, and the screen
-says the subscription belongs to another Emi vault. The account item holds a digest of the original
-transaction identifier for this, never the receipt, and a lock item keyed by that digest makes the
-rule a conditional write rather than a search.
-
-Contracts `WIRE-5` and `PAY-4` are untouched. A pull, an export and a delete work whatever any of
-this says.
-
-## What this costs to run
-
-Status: designed
-
-Nothing bills while nobody uses it. I read the Cognito pricing page on 2026-09-19.
-
-A user pool with no active users costs nothing. Billing counts a monthly active user, which the page
-defines as a user for whom the application generated an identity operation in the calendar month,
-such as a sign up, a sign in, a token refresh or a password change.
-
-The Lite tier carries 10,000 monthly active users a month for each account at no charge. Above that
-it costs $0.0055 for each one, for the first 90,000, and $0.0046 for each one after that. The
-Essentials tier carries the same free allowance at $0.015 for each one. The Plus tier has no free
-allowance at $0.020.
-
-Users who sign in with a social identity provider are billed at the tier rate above. The separate
-allowance of 50 users a month is for federation through SAML and OpenID Connect, which Emi does not
-use.
-
-Take Lite. Emi needs a password sign in, Google, Apple, a password reset and a token refresh, and
-Lite carries all of it. The Plus tier buys threat detection at nearly four times the price for each
-user, and this design does not need it.
-
-The pool adds no resource that bills at rest. The managed login prefix domain is part of the pool.
-Emi has no domain of its own yet, so the prefix domain is what step 2 creates.
+1. The first run asks for no account, no email address and no password. The cases of contract
+   SCREEN-1 stay green with no edit to them.
+2. A device lookup item whose device identifier is not `accountIdFor(publicKey)` is refused at the
+   write.
+3. A request naming a device with no lookup item is refused, and it costs the same time as a bad
+   signature, measured the way the existing timing case measures it.
+4. An identity token is refused when the issuer is not the pool, when the audience is not the app
+   client, when it is expired, when the nonce does not equal the digest of the device public key,
+   when the signature does not verify, or when the use is not identity.
+5. The token reader returns a digest and the email address. It never returns the subject.
+6. A link is written only for the account in the authorizer context. The handler cannot create an
+   account.
+7. An identity already linked to another account is refused, and the refusal names no account.
+8. An account holds at most one identity for each provider and at most two in total.
+9. The two link items are written in one transaction, so neither can exist without the other.
+10. A claim answers with the account identifier, the record count and the last write instant, and
+    with no record.
+11. A claim for an identity with no link is refused in the words a bad token is refused with.
+12. The recovery material endpoint answers a bound device with the wrapped key and the salt, and
+    with no third value.
+13. The bytes it returns do not open with a wrong code, and the refusal is raised on the phone with
+    no request.
+14. No record is pulled before the vault key is in the keychain. A case drives the claim and asserts
+    the local database is still empty.
+15. The locked screen shows the count and never the words lost, missing, gone, empty or error. The
+    copy test reads the strings.
+16. An account with no record never shows the locked screen.
+17. The history screen shows the locked state, and never its empty state, while the vault is locked
+    and the count is above zero.
+18. Every local row is sealed again under the recovered key and its revision rises by one. A case
+    writes a day before the sign in and reads it back after the restore.
+19. A phone that registered its own account deletes that account before it claims another, and a
+    case reads the table and finds no item under the abandoned one.
+20. A transactional message carries no day, no symptom, no date from her records and no count of
+    them.
+21. Marketing mail is sent only when the consent instant exists, the stop instant is absent and the
+    address is deliverable. A case sets each of the three the wrong way and asserts nothing is sent.
+22. A message to an address at `privaterelay.appleid.com` is refused unless the configured sender
+    address is one registered with Apple.
+23. A hard bounce sets the address to undeliverable, and the account screen says so in one line.
+24. The delete removes every item under the account partition, every device lookup item, every
+    identity lookup item, the receipt lock, the email address and the Cognito user. A case reads the
+    table and the pool double afterwards.
+25. No log line carries an email address, a subject, an identity token, a device identifier or a
+    transaction identifier. The existing logging case drives the new endpoints as well.
+26. No module under the account directory of the application names a keychain item that belongs to
+    the vault, and the key leak gate fails the pipeline on one.
 
 ## The path
 
 Status: designed
 
-Eighteen steps. Each one is a pull request. Each one reverts on its own.
+Twenty two steps. Each one is one intention, one pull request, and it reverts on its own. Each names
+what it depends on, the files it touches, the behaviour it changes, what proves it, and why the
+promise still holds after it.
 
-The first twelve build the link. The last six make it worth having, and the operator may stop after
-step 12 and take them later. The whole path is written for somebody who was not in this
-conversation.
+Each step ships its behaviour test in the repository shape, in the file named for the step. The
+feature number is the one the operator gives these steps, so the file names take that number.
 
-Each step adds its own behaviour test in the repository shape, at
-`apps/mobile/tests/integration/9.<step>.test.ts` for a phone step, or beside the service for a
-service step. The feature number is 9 here as a placeholder. The operator decides which feature
-these steps belong to, and the file names take that number.
+### 1. The contracts for the sign in
 
-### 1. The contracts for the account
-
-Depends on: the other session's feature list, which is in flight now.
+Depends on: the other session's feature list, which is in flight now. No code step waits for this
+one, because the pipeline reads the two documents against each other and never against the code.
 Files: `docs/contracts.md`, `docs/features.md`.
-Behaviour: declares `ACCOUNT-1` the link, `ACCOUNT-2` the claim proof, and `ACCOUNT-3` the delete of
-the link, each with its errors, and maps them under one feature.
-Proof: `npm run check:documents` passes, which fails on a contract that one document names and the
-other does not.
+Behaviour: declares the contracts for the link, the claim proof, the locked state, the email address
+and its consent, and the delete of all of it, each with its errors, mapped under one feature.
+Proof: `npm run check:documents`, which fails on a contract that one document names and the other
+does not.
 The promise: a document holds no key.
 
 ### 2. The user pool, in Terraform
 
 Depends on: nothing.
-Files: `infra/cognito.tf`, `infra/variables.tf`, `tools/pipeline/infrastructure.test.ts`.
-Behaviour: one user pool on the Lite tier, email as the sign in attribute, a public app client with
-the authorization code grant and no secret, a managed login prefix domain, and no identity provider
-yet.
-Proof: the infrastructure test reads the Terraform text and asserts the tier, the absence of a client
-secret, the grant, and that the pool requires a verified email address. The pipeline applies it.
-The promise: a user pool holds an email address and a password. It holds no vault key and no record.
+Files: `infra/cognito.tf`, `infra/variables.tf`, `tools/pipeline/infrastructure.test.ts`,
+`infra/README.md`.
+Behaviour: one user pool on the Lite tier, a managed login prefix domain, and one public app client
+with the authorization code grant and no client secret. The app client lists no identity provider
+yet and never lists the pool itself.
+Proof: the infrastructure test reads the Terraform text and asserts the tier, the absent client
+secret, the grant, the absent custom attribute, and that the pool itself is not a provider of the
+app client, so no password can exist.
+The promise: a pool holds an email address and a subject. It holds no vault key and no record.
 
 ### 3. The identity token reader
 
 Depends on: nothing.
 Files: `services/vault/src/identity/token.ts`, `services/vault/tests/identity.test.ts`.
-Behaviour: verifies a token against a key set, and checks `iss`, `aud`, `token_use`, `exp`,
-`auth_time` and `nonce`. It is a module with no route.
-Proof: a test signs tokens with its own key pair and asserts one refusal for each check, by name. A
-mutation that drops the nonce check is watched failing.
-The promise: the reader returns a digest of the issuer and the subject. It never returns the subject.
+Behaviour: verifies a token against the key set and checks the issuer, the audience, the use, the
+expiry and the nonce. It returns the digest and the email address. It is a module with no route.
+Proof: rules 4 and 5, one case for each refusal, by name. A mutation that drops the nonce check is
+watched failing and then passing again.
+The promise: the reader returns a digest and an address. It returns no subject and holds no key.
 
 ### 4. The link endpoint
 
 Depends on: 3.
 Files: `services/vault/src/handlers/linkIdentity.ts`, `services/vault/src/store/identities.ts`,
 `services/vault/src/store/dynamo.ts`, `infra/api.tf`, `services/vault/tests/link.test.ts`.
-Behaviour: `POST /v1/account/identity` writes both link items in one transaction, behind the
-signature authorizer that exists.
-Proof: every line of the rules section above, as one case each. The double refuses the transaction
-when either condition fails.
-The promise: the handler writes an account identifier and a digest. It holds no key.
+Behaviour: `POST /v1/account/identity` writes both link items and the email attributes in one
+transaction, behind the signature authorizer that exists.
+Proof: rules 6 to 9. The table double refuses the transaction when either condition fails.
+The promise: the handler writes an account identifier, a digest and an address. It holds no key.
 
 ### 5. The unlink endpoint
 
 Depends on: 4.
 Files: `services/vault/src/handlers/unlinkIdentity.ts`, `infra/api.tf`,
 `services/vault/tests/link.test.ts`.
-Behaviour: `DELETE /v1/account/identity/{provider}` removes both items, signed by a device key of
-that account.
-Proof: a test unlinks, then links the same identity to another account, and expects it to succeed. A
-test asserts that an unlink of a provider with no link answers 404 and removes nothing.
+Behaviour: `DELETE /v1/account/identity/{provider}` removes both items and the email attributes,
+signed by a device key of that account.
+Proof: a case unlinks and then links the same identity to another account and expects it to work. A
+case asserts that an unlink with no link answers 404 and removes nothing. A case asserts the address
+is gone from the item.
 The promise: an unlink moves no key and touches no record.
 
-### 6. The delete takes the lookup item
+### 6. The delete takes the identity and the address
 
 Depends on: 4.
-Files: `services/vault/src/store/dynamo.ts`, `services/vault/tests/delete.test.ts`.
-Behaviour: the partition read carries `identityDigest`, and the delete removes each lookup item
-before its account side item.
-Proof: a test seeds an account with two identities, deletes, reads the table, and asserts no item of
-either kind remains. A mutation that narrows the projection again is watched failing.
-The promise: a delete removes bytes. It reads none of them.
+Files: `services/vault/src/store/dynamo.ts`, `services/vault/src/handlers/deleteAccount.ts`,
+`services/vault/src/identity/pool.ts`, `infra/lambda.tf`, `services/vault/tests/delete.test.ts`.
+Behaviour: the partition read carries the identity digest, the delete removes each lookup item
+before its account side item, and the service deletes the Cognito user. The role gains the one
+Cognito action on that pool alone.
+Proof: rule 24. A mutation that narrows the projection again is watched failing.
+The promise: a delete removes bytes and reads none of them.
 
-### 7. Managed login on the phone
+### 7. The sign in on the phone
 
 Depends on: 2.
 Files: `apps/mobile/src/services/account/signIn.ts`,
-`apps/mobile/src/services/account/identityStore.ts`,
-`apps/mobile/tests/integration/9.7.test.ts`.
-Behaviour: opens the browser with a code challenge and the nonce, exchanges the code, and keeps the
-refresh token in the keychain as `emi.identityRefresh.v1`.
-Proof: a test drives the real module against a stub token endpoint, and asserts the nonce equals the
-digest of the device public key. A test asserts a mismatched state value is refused.
-The promise: the vault key is not read by this module, and the key leak rule of step 9 enforces it.
+`apps/mobile/src/services/account/identityStore.ts`, and the integration test for this step.
+Behaviour: opens managed login in the authentication session the operating system owns, with a code
+challenge and a nonce equal to the digest of the device public key, exchanges the code, and keeps
+the refresh token in the keychain as `emi.identityRefresh.v1`.
+Proof: a case drives the real module against a stub token endpoint and asserts the nonce. A case
+asserts a mismatched state value is refused.
+The promise: this module never reads the vault key, and step 9 makes that a rule the pipeline holds.
 
-### 8. The account screen
+### 8. Where the sign in is offered
 
 Depends on: 7, 4.
 Files: `apps/mobile/src/features/account/`, `apps/mobile/src/app/settings/account.tsx`,
-`apps/mobile/tests/integration/9.8.test.tsx`.
-Behaviour: she creates an account, signs in, links, sees which provider is linked, and signs out.
-The screen carries the sentence about what an account does not do.
-Proof: the test presses the control, lets the link happen, and reads the screen again. The claims
-test reads the copy.
-The promise: the screen shows a provider and an instant. It shows no key.
+`apps/mobile/src/features/recovery/`, and the integration test for this step.
+Behaviour: the entry in settings, the offer after the recovery code, the screen that names what each
+provider learns, and the account screen that shows which providers are linked.
+Proof: a case presses the control, lets the link happen and reads the screen again. A case asserts
+the first run is untouched, by running the existing first run cases unchanged. The copy test reads
+the new strings.
+The promise: the screen shows a provider, an address and an instant. It shows no key.
 
 ### 9. The key leak rule for the account directory
 
 Depends on: 7.
 Files: `tools/pipeline/keyLeak.ts`, `tools/pipeline/keyLeak.test.ts`.
 Behaviour: `emi.identityRefresh.v1` may be named only under `src/services/account`, and that
-directory may name no vault key item and no device key item.
-Proof: the test moves each name into the wrong directory and watches the rule fail, then passes.
-The promise: the rule is the promise, held over the sink.
+directory may not name the vault key item or import the vault key module.
+Proof: rule 26, watched going red on a deliberate import and green again once it is removed.
+The promise: this step is the promise, written as a gate nobody can forget.
 
-### 10. The delete removes the Cognito user
+### 10. The device item, read by the authorizer
 
-Depends on: 7, 6.
-Files: `apps/mobile/src/features/settings/DeleteEverything.tsx`,
-`apps/mobile/src/services/account/deleteUser.ts`, `apps/mobile/tests/integration/9.10.test.tsx`.
-Behaviour: the phone calls `DeleteUser` with its own access token, and the screen states the outcome
-when it cannot.
-Proof: a test with no refresh token asserts the vault account still goes and the screen names what
-is left. A test with one asserts the call was made before the screen said everything was gone.
-The promise: the delete removes an account. It never sends a key anywhere.
-
-### 11. Google as an identity provider
-
-Depends on: 8. Waiting on the Google client identifier and secret, which the operator holds.
-Files: `infra/cognito.tf`, `apps/mobile/src/features/account/`,
-`apps/mobile/tests/integration/9.11.test.tsx`.
-Behaviour: a Google button opens the provider page directly.
-Proof: the infrastructure test asserts the provider and the scopes. The screen test asserts the
-button opens the authorize address with the provider parameter.
-The promise: Google returns a subject and an email address. Neither reaches the vault table.
-
-### 12. Sign in with Apple as an identity provider
-
-Depends on: 11. Waiting on the Apple developer account, which the operator has not decided.
-Files: `infra/cognito.tf`, `apps/mobile/src/features/account/`,
-`apps/mobile/tests/integration/9.12.test.tsx`.
-Behaviour: an Apple button beside the Google one, in the same release.
-Proof: the same two assertions as step 11, plus a test that both buttons appear on iOS.
-The promise: Apple returns a subject and a private relay address. Neither reaches the vault table.
-
-### 13. The device item, read by the authorizer
-
-Depends on: nothing, and it is where the second half starts.
-Files: `services/vault/src/auth/authorizer.ts`, `services/vault/src/store/devices.ts`,
-`services/vault/src/handlers/register.ts`, `services/vault/tests/auth.test.ts`.
+Depends on: nothing, and it is the first step of the second phone half.
+Files: `services/vault/src/store/devices.ts`, `services/vault/src/store/dynamo.ts`,
+`services/vault/src/auth/authorizer.ts`, `services/vault/src/handlers/register.ts`,
+`services/vault/tests/auth.test.ts`, `services/vault/tests/register.test.ts`.
 Behaviour: registration writes a device item and a device lookup item beside the account item, and
-the authorizer resolves the lookup item instead of the account item.
-Proof: a test signs as the first phone and asserts nothing changed for it. A test with a missing
-lookup item asserts the refusal and the timing. `authorizedAccountIn` changes in the same step, and
-a test asserts a request whose context and header disagree is refused.
-The promise: the authorizer verifies one signature against one public key, as it does today.
+the authorizer reads the lookup item instead of the account item.
+Proof: rules 2 and 3, and a phone that registered writes and pulls with no change to what it sends.
+A mutation that reads the account item again is watched failing.
+The promise: the authorizer verifies a signature and reads a public key. A public key opens nothing.
 
-### 14. The claim endpoint for a new phone
+### 11. The claim endpoint
 
-Depends on: 13, 4.
+Depends on: 10, 4.
 Files: `services/vault/src/handlers/claimAccount.ts`, `infra/api.tf`,
 `services/vault/tests/claim.test.ts`.
 Behaviour: `POST /v1/account/claim` takes an identity token and a self signed new device key, reads
-the lookup item, and writes the two device items for the new phone.
-Proof: a test claims with a valid token and asserts the new phone can then sign. A test with an
-unlinked identity asserts 404 and no write. A test asserts a claim writes no record and reads none.
-The promise: the claim binds a public key. The vault key is not in the request or the answer.
+the lookup item, writes the device items, and answers with the account identifier, the record count
+and the last write instant.
+Proof: rules 10 and 11. A case asserts the answer carries no record and no wrapped key.
+The promise: the claim writes a public key. It reads no record and it moves no key.
 
-### 15. The recovery material endpoint
+### 12. The recovery material endpoint
+
+Depends on: 10.
+Files: `services/vault/src/handlers/recoveryMaterial.ts`, `infra/api.tf`,
+`services/vault/tests/recovery.test.ts`.
+Behaviour: `GET /v1/account/recovery` answers a bound device with the wrapped vault key and the
+salt.
+Proof: rules 12 and 13.
+The promise: the service hands out bytes it cannot open. What opens them is on paper.
+
+### 13. The locked state and the code
+
+Depends on: 11, 12.
+Files: `apps/mobile/src/features/restore/`, `apps/mobile/src/features/history/`, and the integration
+test for this step.
+Behaviour: the locked screen with the count, the code screen, the offline check of the code, the
+pull after it, and the history screen that says locked rather than empty.
+Proof: rules 14 to 17. A case signs in, asserts the local database is still empty, types a wrong
+code and asserts no request was made, then types the right one and reads the ring off the screen.
+The promise: the pull waits for the key, so no unreadable row ever reaches her database.
+
+### 14. The screen for a woman with no code
 
 Depends on: 13.
-Files: `services/vault/src/handlers/readRecovery.ts`, `infra/api.tf`,
-`services/vault/tests/recovery.test.ts`.
-Behaviour: `GET /v1/account/recovery` answers with the wrapped vault key and the salt, to a bound
-device.
-Proof: a test asserts the bytes equal the bytes registered. A test asserts a device of another
-account is refused. A test asserts the answer opens with the right code and refuses a wrong one.
-The promise: the bytes are the wrapped key. Opening them needs 26 characters that the service has
-never seen.
+Files: `apps/mobile/src/features/restore/NoCode.tsx`, and the integration test for this step.
+Behaviour: the plain screen, the way to start again on this phone, and the way to delete what is in
+the account.
+Proof: a case asserts both controls and asserts the words. A case presses start again and asserts
+the old account is untouched. A case presses delete and asserts the table is empty afterwards.
+The promise: nothing on this screen suggests anybody can open her days, because nobody can.
 
-### 16. The restore screens
+### 15. The days she wrote before she signed in
 
-Depends on: 14, 15.
-Files: `apps/mobile/src/features/recovery/`, `apps/mobile/src/services/sync/restore.ts`,
-`apps/mobile/tests/integration/9.16.test.tsx`.
-Behaviour: on a new phone she signs in, types her recovery code, and her days come back.
-Proof: the test drives the whole path against the service doubles and reads the history screen at
-the end, not the call in the middle.
-The promise: the phone opens the wrapped key locally. The key stays in the keychain.
+Depends on: 13.
+Files: `apps/mobile/src/features/restore/sealAgain.ts`, `apps/mobile/src/services/vault/vaultKey.ts`,
+`apps/mobile/src/services/sync/claim.ts`, and the integration test for this step.
+Behaviour: the second sealing under the recovered key, with the marker that survives a stop halfway, and the
+delete of an account this phone registered before it claims another.
+Proof: rules 18 and 19. A case writes a day before the sign in and reads that same day back after
+the restore. A case kills the process halfway and asserts the next launch finishes the sealing.
+The promise: the vault key is replaced by one derived on this phone from her code. It crosses no
+wire either way.
 
-### 17. A way back with no account
+### 16. Google as an identity provider
 
-Depends on: 14. The operator may drop this step, and the account then becomes required for a
-restore.
-Files: `packages/crypto/src/recovery.ts`, `services/vault/src/handlers/register.ts`,
-`services/vault/src/handlers/claimAccount.ts`, `packages/crypto/tests/recovery.test.ts`.
-Behaviour: the recovery code derives an Ed25519 key pair as well as the wrapping key. Registration
-sends its public half. A claim signed by that key binds a new phone with no identity at all.
-Proof: a test derives the pair twice from one code and asserts they match. A test claims with it. A
-test asserts a wrong code derives a key that the claim refuses.
-The promise: the derived key comes from her code. The service stores the public half only.
+Depends on: 8. It needs a Google client identifier and secret, which the operator creates.
+Files: `infra/cognito.tf`, `apps/mobile/src/features/account/SignIn.tsx`,
+`tools/pipeline/infrastructure.test.ts`.
+Behaviour: the provider, the scopes, the attribute mapping for the email address, and the button
+that opens the provider page directly.
+Proof: the infrastructure test asserts the provider reads its secret from a parameter and never from
+a literal in the repository.
+The promise: Google returns a subject and an address. It never sees a payload.
 
-### 18. The documents
+### 17. Sign in with Apple as an identity provider
 
-Depends on: 4, and on this document.
-Files: `docs/architecture.md`, `docs/privacy.md`.
-Behaviour: architecture gains an account section with its status line. Privacy gains the section on
-what Google and Apple learn, beside the four attacks.
-Proof: `npm run check:documents` passes, and the wording gate reads both files.
-The promise: the documents say what the code does, which is the point of a public repository.
+Depends on: 16, and it ships in the same release. It needs the Apple developer account, a Services
+identifier, a team identifier, a key identifier and a private key.
+Files: `infra/cognito.tf`, `apps/mobile/src/features/account/SignIn.tsx`,
+`tools/pipeline/infrastructure.test.ts`.
+Behaviour: the provider, and the Apple button beside the Google one on the same screen.
+Proof: the infrastructure test asserts the provider reads its private key from a parameter. A case
+asserts that every screen offering Google offers Apple as well, so the two cannot drift apart and
+leave guideline 4.8 unmet.
+The promise: Apple returns a subject and an address, which may be a relay address. It never sees a
+payload.
 
-## What this design does not do
+### 18. The sender, and the domain that may write to a relay address
+
+Depends on: the domain decision, which is the operator's.
+Files: `infra/email.tf`, `tools/pipeline/infrastructure.test.ts`, `infra/README.md`.
+Behaviour: the verified domain identity with DomainKeys Identified Mail signing and its own mail
+from subdomain, the configuration set, the event destination to a notification topic, the two
+reputation alarms, and the readme step that registers the domain and the sending address with Apple.
+Proof: the infrastructure test asserts the signing, the mail from subdomain, the configuration set
+and both alarm thresholds. The readme names the manual Apple step, because no test can see the Apple
+developer account.
+The promise: a mail server holds an address. It holds no key and no day.
+
+### 19. The transactional messages
+
+Depends on: 18, 4.
+Files: `services/vault/src/email/send.ts`, `services/vault/src/email/messages.ts`,
+`services/vault/tests/email.test.ts`.
+Behaviour: the four messages, each one rendered from the account item alone, and the refusal to
+write to a relay address from an unregistered sender.
+Proof: rules 20 and 22. A case asserts the sender is handed no record identifier by any code path.
+The promise: a message says something happened to the account. It never says what is in it.
+
+### 20. The bounce and the complaint
+
+Depends on: 18, 19.
+Files: `services/vault/src/email/events.ts`, `infra/email.tf`,
+`services/vault/tests/email.test.ts`, `apps/mobile/src/features/account/`.
+Behaviour: the function behind the topic writes the outcome onto the account item, and the account
+screen says an undeliverable address in one line, with both causes.
+Proof: rule 23, driven from a real notification payload.
+The promise: an event carries an address and a reason. It carries nothing about her days.
+
+### 21. The marketing consent
+
+Depends on: 19.
+Files: `apps/mobile/src/features/account/`, `services/vault/src/handlers/consent.ts`,
+`services/vault/src/email/send.ts`, `services/vault/tests/consent.test.ts`.
+Behaviour: the empty box on the account screen, the wording identifier written with the consent, the
+one press that stops it, and the unsubscribe link in every marketing message.
+Proof: rule 21, and a case that asserts stopping marketing mail leaves the transactional mail
+working.
+The promise: consent is an instant and a wording identifier. Neither one is a key.
+
+### 22. The documents
+
+Depends on: 17, 21.
+Files: `docs/architecture.md`, `docs/privacy.md`, `docs/design/accounts.md`.
+Behaviour: architecture gains the sign in section with its status line. Privacy gains what the
+server holds, for how long, and what a relay address changes. This document turns its designed lines
+into built ones.
+Proof: `npm run check:documents` reads every status line, and the claims gate reads the new words.
+The promise: a document that described an empty pool as though it guarded something would be worse
+than no document.
+
+## What this design moves, and what it may not touch
 
 Status: designed
 
-It does not make the account a way into her days. An account with no recovery code reaches ciphertext
-and stops there.
+Decision D keeps the first run still, so this list is short and every line is a file I read.
 
-It does not hold a second copy of any key anywhere, for any reason, including for support.
+It moves one test. `apps/mobile/tests/integration/6.2.test.ts`, in the case "leaves the server
+holding her public key and nothing else about her", asserts
+`expect(JSON.stringify(held)).not.toContain('@')`. An account that has signed in holds an email
+address, so that assertion becomes false. It moves to the registration path, where it stays true and
+says more: an account that has never signed in holds nothing about her.
 
-It does not add an identity provider beyond Google and Apple, and it adds no telephone number.
+It moves one string. `apps/mobile/src/features/onboarding/copy.ts` line 11 reads "There is no
+account. Emi never asks for your email address or a password." The second sentence stays true, and
+Google and Apple hand the address over so no screen ever asks her to type one. The first sentence
+becomes false once a sign in exists. A line that stays true reads: there is no account to start, and
+Emi never asks you to type an email address or a password.
 
-It does not change `SCREEN-1`, `AUTH-1`, `WIRE-1`, `WIRE-2`, `WIRE-3` or `WIRE-5`.
+It moves one line of the architecture. `docs/architecture.md` line 439 reads "There is no email
+address, no password and no telephone number in the model." The password and the telephone number
+stay out. The email address arrives with a link.
 
-It does not say which feature these steps belong to, and it does not open a pull request for any of
-them.
+It adds sections rather than moving them, in `docs/architecture.md` and `docs/privacy.md`, and it
+adds contracts in `docs/contracts.md` and their map in `docs/features.md`.
 
-## What the operator still decides
+It reaches the store listing, which does not exist in this repository yet. Feature 7 step 6 writes
+it, and it says no account to start rather than no account ever.
+
+It may not touch these, and a pull request that does is wrong. Contract SCREEN-1 keeps its words.
+`apps/mobile/tests/integration/2.3.test.tsx` keeps its case "asks her for no account, no email
+address and no password", and that case keeps passing without an edit. The first run keeps three
+screens and no field to type into.
+
+Nothing above is changed in this pull request. This document names them so the operator can see the
+whole cost of the decision in one place.
+
+## How sure I am
 
 Status: designed
 
-- Whether step 17 ships, which decides whether a restore can happen with no account.
-- The refresh token validity, proposed at 365 days.
-- The Google client identifier and secret.
-- The Apple developer account, which step 12 cannot start without.
-- The feature number these steps belong to.
+The plan overall: 80 percent. The parts differ.
+
+The locked state, the ordering of the pull and the second sealing: 90 percent. It follows from the keys and
+from what a phone can hold, and each rule is a case.
+
+The data model and the authorizer change: 90 percent. The indirection costs one read that the
+authorizer already performs.
+
+The email service: 85 percent, and higher than I expected because I read the account rather than the
+documentation. Production access is granted, sending is enabled and the quota is 50,000 a day. The
+part I did not measure is a message actually arriving at a relay address.
+
+The Apple relay registration: 60 percent. Apple's own page would not open for me, so I took the
+requirement from two other readings. It is the one thing in this design that can fail silently for
+every Apple user at once, so step 18 proves it by sending to a relay address before the feature
+ships.
+
+Sign in with Apple through managed login: 60 percent. The guideline text is quoted and the path is
+documented, and I have not put a build through review.
+
+The money: 70 percent. Feature 7 is not built, so the three rules are designed against contracts
+rather than against a receipt I watched arrive.
+
+## What this design does not answer
+
+Status: designed
+
+The operator holds each of these, and the path names the step that waits for it.
+
+The domain, which step 18 cannot start without, and which also decides the sending address that Apple
+must know.
+
+The Apple developer account, which step 17 cannot start without.
+
+The Google client, which step 16 cannot start without.
+
+The name. A trademark search is still not run, and the pool, both providers and the sending domain
+all carry the name.
+
+The feature number these steps belong to, which decides the name of every behaviour test file in the
+path.
