@@ -69,6 +69,15 @@ range with a confidence only once it has two.
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
 with `npm run generate:home-picture`.
 
+Her week sits above the ring. Seven columns end on today. Each column says which day of her cycle
+it was. A day she bled is filled and carries the day of her period. A day her next period can start
+on has a dotted outline. She presses a column to open that day and correct it.
+
+![The week above the ring, on six recorded histories](../brand/screens/home-screen.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:home-picture`.
+
 She bleeds, so she logs the day. She presses one of five flow values and the ring redraws around
 her. A day she marks as not her period is kept and never starts a cycle.
 

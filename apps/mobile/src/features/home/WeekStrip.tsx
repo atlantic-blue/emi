@@ -137,6 +137,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderColor: colour.stone,
     borderRadius: radius.round,
+    borderStyle: 'solid',
     borderWidth: stroke.icon,
     height: DISC_SIZE,
     justifyContent: 'center',

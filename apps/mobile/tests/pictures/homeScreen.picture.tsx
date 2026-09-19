@@ -15,6 +15,7 @@ import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { HomeScreen } from '../../src/features/home/HomeScreen';
+import { weekEndingOn } from '../../src/features/home/weekStrip';
 import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import {
   daysOf,
@@ -63,6 +64,9 @@ function browser(): string {
 
 /** The day of the cycle each screen is drawn on, and the length she gave at the first run. */
 const theDaySheOpensIt = 8;
+
+/** The day an empty phone is drawn on, so the same week is drawn every run. */
+const recordedOn = '2026-09-17';
 const sheSaidHerCycleRuns = 31;
 
 const theCaveat = [
@@ -106,13 +110,17 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
   const cycles = listCycles(database);
   const open = cycles[cycles.length - 1];
   const forecast = forecastOf(cycles);
+  const records = recordedDays(database, readDay);
+  // A phone with nothing on it has no cycle to count a day from, so the week is drawn around the
+  // day the picture is taken instead.
+  const today = open === undefined ? recordedOn : addDays(open.startedOn, theDaySheOpensIt - 1);
   const ring =
     open === undefined
       ? undefined
       : ringInputFor({
           cycles,
-          records: recordedDays(database, readDay),
-          today: addDays(open.startedOn, theDaySheOpensIt - 1),
+          records,
+          today,
           statedCycleLengthDays: sheSaidHerCycleRuns,
         });
 
@@ -123,8 +131,11 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       onExport={() => undefined}
       onHistory={() => undefined}
       onLogToday={() => undefined}
+      onOpenDay={() => undefined}
       onSettings={() => undefined}
       ring={ring}
+      today={today}
+      week={weekEndingOn({ cycles, records, forecast, today })}
     />,
   );
   // A copy, taken before the screen is torn down. The runner holds one screen at a time, so a tree
