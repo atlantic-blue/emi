@@ -17,6 +17,12 @@ import {
   stroke,
 } from '../../packages/tokens/src/space.ts';
 import {
+  type PhaseName,
+  type PhasePalette,
+  phaseNames,
+  phasePalette,
+} from '../../packages/tokens/src/ring.ts';
+import {
   type FaceName,
   LINE_HEIGHT_FLOOR,
   type TypeRole,
@@ -48,7 +54,12 @@ export interface BrandSources {
   readonly corners: Readonly<Record<RadiusName, number>>;
   readonly strokes: Readonly<Record<string, number>>;
   readonly tapTarget: number;
+  /** Which fill each phase takes, and the ink that carries its name. */
+  readonly phases: Readonly<Record<PhaseName, PhasePalette>>;
 }
+
+/** The ground every measured pair is read against, which is the ground a screen sits on. */
+export const GROUND: ColourName = 'surface';
 
 export const shippedSources: BrandSources = {
   palette: colours,
@@ -61,6 +72,7 @@ export const shippedSources: BrandSources = {
   corners: radius,
   strokes: stroke,
   tapTarget: MINIMUM_TAP_TARGET,
+  phases: phasePalette,
 };
 
 export interface Pair {
@@ -124,15 +136,15 @@ export function refusedPairs(sources: BrandSources = shippedSources): Pair[] {
  * fill cannot carry text, and that relation is in the palette rather than in a list here.
  */
 export function inkPartnerOf(sources: BrandSources, fill: ColourName): ColourName | null {
-  const partner = `${fill}Ink`;
+  const phase = phaseNames.find((name) => sources.phases[name].fill === fill);
 
-  return sources.paletteOrder.find((name) => name === partner) ?? null;
+  return phase === undefined ? null : sources.phases[phase].ink;
 }
 
 export function fillPairs(sources: BrandSources = shippedSources): Pair[] {
   return sources.paletteOrder
     .filter((name) => carries(sources, name, 'fill') && inkPartnerOf(sources, name) !== null)
-    .map((fill) => measure(sources, fill, 'stone'));
+    .map((fill) => measure(sources, fill, GROUND));
 }
 
 export function brandCounts(sources: BrandSources = shippedSources): BrandCounts {
@@ -279,7 +291,7 @@ export function brandDocument(sources: BrandSources = shippedSources): string {
     '',
     ...paragraph(
       `These ${counts.refused} pairs are refused, in order of ratio. A text colour is approved only on
-       the grounds above. The two near misses come first.`,
+       the grounds above. The nearest misses come first.`,
     ),
     '',
     ...refused.map((pair) => `- ${report(pair)}`),

@@ -140,8 +140,8 @@ function styleSheet(fontsBase: string): string {
   return [
     fontRules(fontsBase),
     `body {
-  background: ${colour.stone};
-  color: ${colour.ink};
+  background: ${colour.surfaceContainerLowest};
+  color: ${colour.onSurface};
   margin: 0;
   padding: 48px 56px;
   width: ${ringPage.width - 112}px;
@@ -162,9 +162,9 @@ function styleSheet(fontsBase: string): string {
     `.day { font-size: ${typeScale['headline-xl'].size}px; line-height: ${typeScale['headline-xl'].lineHeight}px; }`,
     `.phase { font-size: ${typeScale['headline-md'].size}px; line-height: ${typeScale['headline-md'].lineHeight}px; }`,
     `.title { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin-top: 12px; }`,
-    `.note { color: ${colour.muted}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
+    `.note { color: ${colour.onSurfaceVariant}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
     `.heading { font-size: ${typeScale['headline-lg'].size}px; line-height: ${typeScale['headline-lg'].lineHeight}px; }`,
-    `.standfirst { color: ${colour.body}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
+    `.standfirst { color: ${colour.onSurfaceVariant}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
   ].join('\n');
 }
 
@@ -188,9 +188,9 @@ function Ring({ ring }: { ring: DrawnRing }): Html {
           <circle
             cx={bead.x}
             cy={bead.y}
-            fill={colour.ember}
+            fill={colour.primary}
             r={BEAD_RADIUS}
-            stroke={colour.stone}
+            stroke={colour.surfaceContainerLowest}
             stroke-width={BEAD_HALO_WIDTH}
           />
         </svg>

@@ -8,7 +8,8 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 
 const theCaveat = [
   'Rendered from the tree the last period screen produced under the test runner, at 390 by 844',
-  'points, and not captured from a phone. No screen names a font family yet.',
+  'points, and not captured from a phone. The page loads the same font files the application',
+  'loads, so the words are drawn in Plus Jakarta Sans.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');

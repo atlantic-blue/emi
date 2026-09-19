@@ -61,29 +61,29 @@ function MoodChip({ mood, isPicked, onToggle }: MoodChipProps) {
 }
 
 const styles = StyleSheet.create({
-  section: { gap: space.snug },
+  section: { gap: space.spaceMd },
   heading: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-md'),
   },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.tight },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
   chip: {
     alignItems: 'center',
-    borderRadius: radius.chip,
+    borderRadius: radius.md,
     borderWidth: 1,
     justifyContent: 'center',
     maxWidth: '100%',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.snug,
-    paddingVertical: space.tight,
+    paddingHorizontal: space.spaceMd,
+    paddingVertical: space.spaceSm,
   },
-  chipPlain: { backgroundColor: colour.sunk, borderColor: colour.sunk },
-  chipPicked: { backgroundColor: colour.emberTint, borderColor: colour.ember },
+  chipPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
+  chipPicked: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
   chipLabel: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
     textAlign: 'center',
   },
-  chipLabelPicked: { color: colour.ink },
+  chipLabelPicked: { color: colour.onSurface },
 });

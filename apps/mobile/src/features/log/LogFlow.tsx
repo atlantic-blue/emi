@@ -95,37 +95,37 @@ export function LogFlow({
 }
 
 const styles = StyleSheet.create({
-  body: { gap: space.snug, padding: space.base, paddingTop: space.loose },
+  body: { gap: space.spaceMd, padding: space.spaceLg, paddingTop: space.spaceXl },
   done: {
     alignItems: 'center',
-    backgroundColor: colour.ember,
-    borderRadius: radius.chip,
+    backgroundColor: colour.surfaceTint,
+    borderRadius: radius.md,
     justifyContent: 'center',
-    margin: space.base,
+    margin: space.spaceLg,
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.base,
+    paddingHorizontal: space.spaceLg,
   },
   doneLabel: {
-    color: colour.surface,
+    color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
   line: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
   },
   noRingTitle: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-md'),
-    marginBottom: space.tight,
+    marginBottom: space.spaceSm,
   },
-  ring: { alignItems: 'center', marginBottom: space.snug },
+  ring: { alignItems: 'center', marginBottom: space.spaceMd },
   title: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-lg'),
   },
   when: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     ...textStyle('label-sm'),
   },
 });

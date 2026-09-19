@@ -180,7 +180,7 @@ export function LogSheet({
             setQuery(typed);
           }}
           placeholder={searchLabel}
-          placeholderTextColor={colour.body}
+          placeholderTextColor={colour.onSurfaceVariant}
           style={styles.search}
           testID="symptom-search"
           value={query}
@@ -241,50 +241,50 @@ function countOf(count: number): string {
 
 const styles = StyleSheet.create({
   sheet: {
-    backgroundColor: colour.surface,
-    borderTopLeftRadius: radius.sheet,
-    borderTopRightRadius: radius.sheet,
+    backgroundColor: colour.surfaceContainerLowest,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     flex: 1,
   },
-  scrolled: { gap: space.base, padding: space.base },
+  scrolled: { gap: space.spaceLg, padding: space.spaceLg },
   search: {
-    backgroundColor: colour.sunk,
-    borderRadius: radius.chip,
-    color: colour.ink,
+    backgroundColor: colour.surfaceContainer,
+    borderRadius: radius.md,
+    color: colour.onSurface,
     ...textStyle('body-lg'),
     minHeight: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.snug,
-    paddingVertical: space.tight,
+    paddingHorizontal: space.spaceMd,
+    paddingVertical: space.spaceSm,
   },
   nothing: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
   },
   foot: {
     alignItems: 'center',
-    borderTopColor: colour.hairline,
+    borderTopColor: colour.outlineVariant,
     borderTopWidth: 1,
     flexDirection: 'row',
-    gap: space.snug,
+    gap: space.spaceMd,
     justifyContent: 'space-between',
-    paddingHorizontal: space.base,
-    paddingVertical: space.snug,
+    paddingHorizontal: space.spaceLg,
+    paddingVertical: space.spaceMd,
   },
   count: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
   },
   save: {
     alignItems: 'center',
-    backgroundColor: colour.ember,
-    borderRadius: radius.chip,
+    backgroundColor: colour.surfaceTint,
+    borderRadius: radius.md,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: 120,
-    paddingHorizontal: space.base,
+    paddingHorizontal: space.spaceLg,
   },
   saveLabel: {
-    color: colour.surface,
+    color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
 });

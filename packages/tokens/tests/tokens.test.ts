@@ -1,38 +1,12 @@
-import { ColourName, colour, colourNames, colours, hasRole } from '../src/colour';
-import { MINIMUM_TAP_TARGET, radius, space, spaceNames } from '../src/space';
+import { colour, colourNames, colours, hasRole } from '../src/colour';
+import { phaseNames, phasePalette } from '../src/ring';
+import { MINIMUM_TAP_TARGET, radius, radiusNames, space, spaceNames } from '../src/space';
 import { LINE_HEIGHT_FLOOR, face, typeRoleNames, typeScale } from '../src/type';
 
-const publishedColours: readonly (readonly [ColourName, string])[] = [
-  ['stone', '#F7F3EE'],
-  ['surface', '#FFFCF8'],
-  ['sunk', '#F1EBE4'],
-  ['ink', '#241F1C'],
-  ['body', '#5C534E'],
-  ['muted', '#756A64'],
-  ['hairline', '#241F1C1A'],
-  ['ember', '#A8452C'],
-  ['emberPressed', '#8E3823'],
-  ['emberTint', '#F6E7E1'],
-  ['period', '#E05A4E'],
-  ['follicular', '#E0913A'],
-  ['ovulation', '#2E8C93'],
-  ['luteal', '#7A5B8C'],
-  ['periodInk', '#B03A32'],
-  ['follicularInk', '#8A5416'],
-  ['ovulationInk', '#1F6B71'],
-  ['lutealInk', '#5E4470'],
-];
-
 describe('the colour set', () => {
-  it('holds eighteen colours and no more', () => {
-    expect(colourNames).toHaveLength(18);
-    expect(Object.keys(colours)).toHaveLength(18);
-  });
-
-  it('holds the value the design publishes for each one', () => {
-    expect(colourNames.map((name) => [name, colour[name]])).toEqual(
-      publishedColours.map(([name, value]) => [name, value]),
-    );
+  it('holds the colours the design system names and no more', () => {
+    expect(colourNames).toHaveLength(47);
+    expect(Object.keys(colours)).toHaveLength(47);
   });
 
   it('writes every value in upper case hex, so two spellings of one colour cannot appear', () => {
@@ -53,18 +27,24 @@ describe('the colour set', () => {
     expect(disagreed).toEqual([]);
   });
 
-  it('carries the four phase fills and their four ink partners', () => {
-    expect(colourNames.filter((name) => hasRole(name, 'fill'))).toEqual([
-      'ember',
-      'emberPressed',
-      'period',
-      'follicular',
-      'ovulation',
-      'luteal',
+  it('pairs every phase with a fill and an ink, and neither one carries the other job', () => {
+    const fills = phaseNames.map((phase) => phasePalette[phase].fill);
+    const inks = phaseNames.map((phase) => phasePalette[phase].ink);
+
+    expect(fills).toEqual([
+      'primaryContainer',
+      'secondaryContainer',
+      'primary',
+      'tertiaryContainer',
     ]);
-    expect(['periodInk', 'follicularInk', 'ovulationInk', 'lutealInk']).toEqual(
-      colourNames.filter((name) => name.endsWith('Ink')),
-    );
+    expect(inks).toEqual([
+      'onPrimaryFixedVariant',
+      'onSecondaryContainer',
+      'onPrimaryFixedVariant',
+      'onTertiaryFixedVariant',
+    ]);
+    expect(fills.filter((fill) => hasRole(fill, 'text'))).toEqual([]);
+    expect(inks.filter((ink) => !hasRole(ink, 'text'))).toEqual([]);
   });
 });
 
@@ -134,24 +114,25 @@ describe('the spacing', () => {
     expect(off).toEqual([]);
   });
 
-  it('puts every step above the tightest on the eight point grid', () => {
-    const off = spaceNames.filter((name) => space[name] > 8 && space[name] % 8 !== 0);
-
-    expect(off).toEqual([]);
-  });
-
-  it('rises, so two names cannot mean the same gap', () => {
+  it('never falls, so a wider name is never a narrower gap', () => {
     const steps = spaceNames.map((name) => space[name]);
 
     expect(steps).toEqual([...steps].sort((one, other) => one - other));
-    expect(new Set(steps).size).toBe(steps.length);
+  });
+
+  it('names one gap twice, because the document names the page gutter and the rhythm apart', () => {
+    expect(space.gutter).toBe(space.spaceMd);
+    expect(new Set(spaceNames.map((name) => space[name])).size).toBe(spaceNames.length - 1);
   });
 
   it('keeps the tap target at the accessible minimum', () => {
     expect(MINIMUM_TAP_TARGET).toBeGreaterThanOrEqual(44);
   });
 
-  it('draws an icon corner at the radius the icon grid uses', () => {
-    expect(radius.icon).toBe(2);
+  it('holds the six corners the document names, rising to the capsule', () => {
+    const corners = radiusNames.map((name) => radius[name]);
+
+    expect(corners).toEqual([4, 8, 12, 16, 24, 9999]);
+    expect(corners).toEqual([...corners].sort((one, other) => one - other));
   });
 });

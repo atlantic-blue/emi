@@ -10,7 +10,7 @@ const hexAnywhere = /#[0-9a-fA-F]{3,8}\b/;
 
 // The probe is built from a real token rather than written out, so this file holds no hex of its
 // own and the repository wide check below can cover every file without an exception for itself.
-const probe = `export const brand = '${colour.stone}';\n`;
+const probe = `export const brand = '${colour.surfaceContainerLowest}';\n`;
 
 // The source is fed through standard input under a made up path, so the real configuration
 // decides the answer and no probe file is ever left behind in the tree.
@@ -62,13 +62,13 @@ describe('a colour cannot be written outside the token package', () => {
   });
 
   it('refuses a hex value hidden inside a longer string', () => {
-    const buried = `export const rule = 'border: 1px solid ${colour.hairline}';\n`;
+    const buried = `export const rule = 'border: 1px solid ${colour.outlineVariant}';\n`;
 
     expect(messagesFor('apps/mobile/src/app/probe.ts', buried)).toHaveLength(1);
   });
 
   it('refuses a hex value written into a template', () => {
-    const templated = 'export const rule = `color: ' + colour.ember + '`;\n';
+    const templated = 'export const rule = `color: ' + colour.primary + '`;\n';
 
     expect(messagesFor('apps/mobile/src/app/probe.ts', templated)).toHaveLength(1);
   });

@@ -78,7 +78,7 @@ function Day({ day, today, chosen, onChoose }: DayProps): ReactNode {
       </Text>
       {isChosen ? (
         <View testID={chosenDayMarkTestID}>
-          <Icon colour={colour.surface} name="check" size={SQUARE_MARK_SIZE} />
+          <Icon colour={colour.surfaceContainerLowest} name="check" size={SQUARE_MARK_SIZE} />
         </View>
       ) : null}
     </Pressable>
@@ -126,7 +126,7 @@ export function LastPeriod({ now, chosen, onChoose, onContinue }: Props): ReactN
               </Text>
               {isChosen ? (
                 <View testID={chosenNameMarkTestID}>
-                  <Icon colour={colour.surface} name="check" size={NAME_MARK_SIZE} />
+                  <Icon colour={colour.surfaceContainerLowest} name="check" size={NAME_MARK_SIZE} />
                 </View>
               ) : null}
             </Pressable>
@@ -195,91 +195,95 @@ export function LastPeriod({ now, chosen, onChoose, onContinue }: Props): ReactN
 
 const styles = StyleSheet.create({
   calendar: {
-    backgroundColor: colour.surface,
-    borderColor: colour.hairline,
-    borderRadius: radius.card,
+    backgroundColor: colour.surfaceContainerLowest,
+    borderColor: colour.outlineVariant,
+    borderRadius: radius.lg,
     borderWidth: stroke.hairline,
-    marginTop: space.snug,
-    padding: space.snug,
+    marginTop: space.spaceMd,
+    padding: space.spaceMd,
   },
   // Every square carries the line the chosen one carries, drawn in its own ground where it is not
   // chosen, so nothing moves by a point and a half when she presses one.
   day: {
     alignItems: 'center',
-    backgroundColor: colour.sunk,
-    borderColor: colour.sunk,
-    borderRadius: radius.chip,
+    backgroundColor: colour.surfaceContainer,
+    borderColor: colour.surfaceContainer,
+    borderRadius: radius.md,
     borderWidth: stroke.icon,
     flex: 1,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
   },
-  dayChosen: { backgroundColor: colour.ember, borderColor: colour.emberPressed },
+  dayChosen: { backgroundColor: colour.surfaceTint, borderColor: colour.onPrimaryFixedVariant },
   dayNumber: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
   },
-  dayNumberChosen: { color: colour.surface },
-  dayOutOfReach: { backgroundColor: colour.surface, borderColor: colour.surface, opacity: 0.4 },
+  dayNumberChosen: { color: colour.surfaceContainerLowest },
+  dayOutOfReach: {
+    backgroundColor: colour.surfaceContainerLowest,
+    borderColor: colour.surfaceContainerLowest,
+    opacity: 0.4,
+  },
   empty: { flex: 1, minHeight: MINIMUM_TAP_TARGET, minWidth: MINIMUM_TAP_TARGET },
   heading: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: space.snug,
+    marginBottom: space.spaceMd,
   },
   month: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-md'),
   },
   name: {
     alignItems: 'center',
-    backgroundColor: colour.surface,
-    borderColor: colour.hairline,
-    borderRadius: radius.round,
+    backgroundColor: colour.surfaceContainerLowest,
+    borderColor: colour.outlineVariant,
+    borderRadius: radius.full,
     borderWidth: stroke.icon,
     flex: 1,
     flexDirection: 'row',
-    gap: space.tight,
+    gap: space.spaceSm,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.snug,
+    paddingHorizontal: space.spaceMd,
   },
-  nameChosen: { backgroundColor: colour.ember, borderColor: colour.emberPressed },
-  nameChosenLabel: { color: colour.surface },
+  nameChosen: { backgroundColor: colour.surfaceTint, borderColor: colour.onPrimaryFixedVariant },
+  nameChosenLabel: { color: colour.surfaceContainerLowest },
   nameLabel: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
   },
-  named: { flexDirection: 'row', gap: space.tight, marginTop: space.tight },
+  named: { flexDirection: 'row', gap: space.spaceSm, marginTop: space.spaceSm },
   // A handle she can still press is a pill she can see. A spent one keeps its words and loses the
   // pill, so the difference is a shape and not only a strength of colour.
   page: {
     alignItems: 'center',
-    backgroundColor: colour.emberTint,
-    borderColor: colour.ember,
-    borderRadius: radius.chip,
+    backgroundColor: colour.primaryFixed,
+    borderColor: colour.primary,
+    borderRadius: radius.md,
     borderWidth: stroke.hairline,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.snug,
+    paddingHorizontal: space.spaceMd,
   },
   pageLabel: {
-    color: colour.ember,
+    color: colour.primary,
     ...textStyle('body-sm'),
   },
   pageSpent: {
-    backgroundColor: colour.surface,
-    borderColor: colour.surface,
+    backgroundColor: colour.surfaceContainerLowest,
+    borderColor: colour.surfaceContainerLowest,
     opacity: 0.4,
   },
-  pageSpentLabel: { color: colour.muted },
-  week: { flexDirection: 'row', gap: space.hair, marginBottom: space.hair },
+  pageSpentLabel: { color: colour.onSurfaceVariant },
+  week: { flexDirection: 'row', gap: space.spaceXs, marginBottom: space.spaceXs },
   weekday: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     flex: 1,
     ...textStyle('label-sm'),
     textAlign: 'center',

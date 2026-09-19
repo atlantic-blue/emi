@@ -25,10 +25,10 @@ export interface PhasePalette {
 
 /** Which pair each phase takes. Section 9.3 of the design measured every one of them. */
 export const phasePalette: Readonly<Record<PhaseName, PhasePalette>> = {
-  period: { fill: 'period', ink: 'periodInk' },
-  follicular: { fill: 'follicular', ink: 'follicularInk' },
-  ovulation: { fill: 'ovulation', ink: 'ovulationInk' },
-  luteal: { fill: 'luteal', ink: 'lutealInk' },
+  period: { fill: 'primaryContainer', ink: 'onPrimaryFixedVariant' },
+  follicular: { fill: 'secondaryContainer', ink: 'onSecondaryContainer' },
+  ovulation: { fill: 'primary', ink: 'onPrimaryFixedVariant' },
+  luteal: { fill: 'tertiaryContainer', ink: 'onTertiaryFixedVariant' },
 };
 
 /** The name the ring writes inside the track, which is the cue colour cannot carry. */

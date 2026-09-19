@@ -7,6 +7,7 @@ import {
   hasRole,
   relativeLuminance,
 } from '../src/colour';
+import { phaseNames, phasePalette } from '../src/ring';
 
 interface Pair {
   readonly text: ColourName;
@@ -36,16 +37,17 @@ describe('a colour that fails the contrast floor cannot be added', () => {
   });
 
   it('names the token and the ratio when a colour is moved below the floor', () => {
-    const moved = { ...colours.muted, value: '#7A6F69' };
+    // The value of outline, which the document names and the floor refuses as text.
+    const moved = { ...colours.onSurfaceVariant, value: colours.outline.value };
     const pairs = moved.textOn.map((ground) => ({
-      text: 'muted' as ColourName,
+      text: 'onSurfaceVariant' as ColourName,
       ground,
       ratio: contrastRatio(moved.value, colours[ground].value),
     }));
 
-    expect(pairs.filter((pair) => pair.ratio < CONTRAST_FLOOR).map(report)).toEqual([
-      'muted on stone is 4.42 to 1',
-    ]);
+    expect(pairs.filter((pair) => pair.ratio < CONTRAST_FLOOR).map(report)).toContain(
+      'onSurfaceVariant on surface is 4.27 to 1',
+    );
   });
 
   it('gives every text colour at least one ground to be measured against', () => {
@@ -62,55 +64,58 @@ describe('a colour that fails the contrast floor cannot be added', () => {
     expect(notGrounds).toEqual([]);
   });
 
-  it('holds the ratios the design publishes, to two places', () => {
+  it('holds the ratios the design system values measure, to two places', () => {
     const published = [
-      measure('ink', 'stone'),
-      measure('body', 'stone'),
-      measure('muted', 'stone'),
-      measure('ember', 'stone'),
-      measure('periodInk', 'stone'),
-      measure('follicularInk', 'stone'),
-      measure('ovulationInk', 'stone'),
-      measure('lutealInk', 'stone'),
-      measure('surface', 'ember'),
+      measure('onSurface', 'surface'),
+      measure('onSurfaceVariant', 'surface'),
+      measure('onPrimaryFixedVariant', 'surface'),
+      measure('onSecondaryContainer', 'surface'),
+      measure('onTertiaryFixedVariant', 'surface'),
+      measure('onPrimary', 'primary'),
     ];
 
     expect(published.map(report)).toEqual([
-      'ink on stone is 14.76 to 1',
-      'body on stone is 6.78 to 1',
-      'muted on stone is 4.75 to 1',
-      'ember on stone is 5.35 to 1',
-      'periodInk on stone is 5.44 to 1',
-      'follicularInk on stone is 5.66 to 1',
-      'ovulationInk on stone is 5.59 to 1',
-      'lutealInk on stone is 7.49 to 1',
-      'surface on ember is 5.78 to 1',
+      'onSurface on surface is 16.26 to 1',
+      'onSurfaceVariant on surface is 8.91 to 1',
+      'onPrimaryFixedVariant on surface is 8.90 to 1',
+      'onSecondaryContainer on surface is 7.85 to 1',
+      'onTertiaryFixedVariant on surface is 8.94 to 1',
+      'onPrimary on primary is 6.70 to 1',
     ]);
   });
 
-  it('keeps muted off the two grounds it cannot carry', () => {
-    const refused = [measure('muted', 'sunk'), measure('muted', 'emberTint')];
+  it('keeps outline off every ground, because it carries no word above the floor', () => {
+    const refused = colourNames
+      .filter((name) => hasRole(name, 'ground'))
+      .map((ground) => measure('outline', ground))
+      .filter((pair) => pair.ratio >= CONTRAST_FLOOR);
 
-    expect(refused.every((pair) => pair.ratio < CONTRAST_FLOOR)).toBe(true);
-    expect(refused.map(report)).toEqual([
-      'muted on sunk is 4.43 to 1',
-      'muted on emberTint is 4.36 to 1',
-    ]);
-    expect(colours.muted.textOn).toEqual(['stone', 'surface']);
+    expect(refused.map(report)).toEqual([]);
+    expect(colours.outline.textOn).toEqual([]);
+    expect(hasRole('outline', 'text')).toBe(false);
+    expect(hasRole('outline', 'line')).toBe(true);
   });
 
-  it('measures a phase fill as unfit for text, which is why each one has an ink partner', () => {
-    const fills: readonly ColourName[] = ['period', 'follicular', 'ovulation', 'luteal'];
-    const unfit = fills.filter(
-      (fill) => contrastRatio(colours[fill].value, colours.stone.value) < CONTRAST_FLOOR,
+  it('refuses every phase fill as text, whatever it measures, which is why each has an ink', () => {
+    const fills = phaseNames.map((phase) => phasePalette[phase].fill);
+    const fit = fills.filter(
+      (fill) => contrastRatio(colours[fill].value, colours.surface.value) >= CONTRAST_FLOOR,
     );
 
-    expect(unfit).toEqual(['period', 'follicular', 'ovulation']);
+    // Three of the four fail the floor outright. The fourth passes it and is refused anyway,
+    // because contract SEE-2 covers every fill rather than the ones that measure badly.
+    expect(fit).toEqual(['primary']);
     expect(fills.flatMap((fill) => colours[fill].textOn)).toEqual([]);
+    expect(phaseNames.map((phase) => colours[phasePalette[phase].ink].textOn.length > 0)).toEqual([
+      true,
+      true,
+      true,
+      true,
+    ]);
   });
 
   it('refuses a colour that carries transparency, because its ratio depends on what is behind it', () => {
-    expect(() => relativeLuminance(colours.hairline.value)).toThrow(
+    expect(() => relativeLuminance(`${colours.onSurface.value}1A`)).toThrow(
       'is not a six digit hex colour',
     );
   });

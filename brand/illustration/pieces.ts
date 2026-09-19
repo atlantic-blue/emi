@@ -5,6 +5,7 @@
  */
 
 import { colour, type ColourName } from '../../packages/tokens/src/colour.ts';
+import { type PhaseName, phaseNames, phasePalette } from '../../packages/tokens/src/ring.ts';
 
 import { refusalsIn, sentenceFor } from './refusals.ts';
 
@@ -14,15 +15,20 @@ export interface Point {
 }
 
 /** The four phase colours, the only colours a piece is drawn in. */
-export type PhaseColour = 'period' | 'follicular' | 'ovulation' | 'luteal';
+export type PhaseColour = PhaseName;
 
-export const phaseColours: readonly PhaseColour[] = ['period', 'follicular', 'ovulation', 'luteal'];
+export const phaseColours: readonly PhaseColour[] = [...phaseNames];
+
+/** The fill each phase is drawn in, which the token package pairs with the ink that names it. */
+export function fillOf(phase: PhaseColour): ColourName {
+  return phasePalette[phase].fill;
+}
 
 /** The range a shape is laid down at. Below the floor it disappears; above the ceiling it states. */
 export const TRANSLUCENT_FLOOR = 0.2;
 export const TRANSLUCENT_CEILING = 0.3;
 
-export const GROUND: ColourName = 'stone';
+export const GROUND: ColourName = 'surface';
 
 export const PIECE_WIDTH = 320;
 export const PIECE_HEIGHT = 220;
@@ -243,7 +249,7 @@ function markupOf(piece: Piece): string {
   const shapes = piece.shapes
     .map(
       (shape) =>
-        `  <path d="${pathOf(shape)}" fill="${colour[shape.colour]}" ` +
+        `  <path d="${pathOf(shape)}" fill="${colour[fillOf(shape.colour)]}" ` +
         `fill-opacity="${shape.opacity}" filter="url(#${blurOf(piece, shape)})" />`,
     )
     .join('\n');
@@ -295,8 +301,26 @@ export function problemsWith(piece: Piece, markup: string): readonly string[] {
   return problems;
 }
 
-/** The drawing, or nothing at all. A piece that breaks the style is never written. */
+/**
+ * The drawing, or nothing at all. A piece that breaks the style is never written.
+ *
+ * A colour that is not a phase is caught before the markup is built, because the markup asks the
+ * phase palette for a fill and a phase it does not know has none to give.
+ */
 export function drawingOf(piece: Piece): string {
+  const unknown = piece.shapes.filter((shape) => !phaseColours.includes(shape.colour));
+
+  if (unknown.length > 0) {
+    throw new Error(
+      unknown
+        .map(
+          (shape) =>
+            `${fileOf(piece)} draws ${shape.name} in ${shape.colour}, which is not a phase colour.`,
+        )
+        .join(String.fromCharCode(10)),
+    );
+  }
+
   const markup = markupOf(piece);
   const problems = problemsWith(piece, markup);
 

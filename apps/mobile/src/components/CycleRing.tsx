@@ -110,9 +110,9 @@ export function CycleRing({
           <Circle
             cx={bead.x}
             cy={bead.y}
-            fill={colour.ember}
+            fill={colour.primary}
             r={BEAD_RADIUS}
-            stroke={colour.stone}
+            stroke={colour.surfaceContainerLowest}
             strokeWidth={BEAD_HALO_WIDTH}
             testID={ringBeadTestID}
           />
@@ -188,7 +188,7 @@ const OPENS_FROM = 0.94;
 
 const styles = StyleSheet.create({
   day: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-xl'),
   },
   middle: {

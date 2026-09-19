@@ -11,6 +11,7 @@ import {
   colour,
   coveredDegrees,
   phaseLabel,
+  phasePalette,
   phaseNames,
   ringGeometry,
 } from '@emi/tokens';
@@ -221,13 +222,13 @@ describe('the ring on the screen', () => {
         screen.queryByTestId(ringArcTestID(phase, 'elapsed')) ??
         screen.queryByTestId(ringArcTestID(phase, 'ahead'));
 
-      expect(colourOf(drawn?.props.stroke)).toBe(colour[phase]);
+      expect(colourOf(drawn?.props.stroke)).toBe(colour[phasePalette[phase].fill]);
     }
     expect(colourOf(screen.getByTestId(ringArcTestID('period', 'elapsed')).props.stroke)).toBe(
-      colour.period,
+      colour.primaryContainer,
     );
     expect(colourOf(screen.getByTestId(ringArcTestID('luteal', 'ahead')).props.stroke)).toBe(
-      colour.luteal,
+      colour.tertiaryContainer,
     );
   });
 
@@ -283,8 +284,8 @@ describe('the ring on the screen', () => {
 
     const style = StyleSheetFlat(screen.getByText(phaseLabel.period).props.style);
 
-    expect(style.color).toBe(colour.periodInk);
-    expect(style.color).not.toBe(colour.period);
+    expect(style.color).toBe(colour.onPrimaryFixedVariant);
+    expect(style.color).not.toBe(colour.primaryContainer);
   });
 
   it('puts the bead where the geometry puts today', async () => {
@@ -293,8 +294,8 @@ describe('the ring on the screen', () => {
 
     const bead = screen.getByTestId(ringBeadTestID);
 
-    expect(colourOf(bead.props.fill)).toBe(colour.ember);
-    expect(colourOf(bead.props.stroke)).toBe(colour.stone);
+    expect(colourOf(bead.props.fill)).toBe(colour.primary);
+    expect(colourOf(bead.props.stroke)).toBe(colour.surfaceContainerLowest);
     expect(bead.props.cy).toBeLessThan(RING_DIAMETER / 2);
     expect(bead.props.cx).toBeGreaterThan(RING_DIAMETER / 2);
   });

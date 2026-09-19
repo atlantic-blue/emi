@@ -277,7 +277,7 @@ describe('every screen respects the safe area', () => {
       const painting = sourceFiles(root).filter((file) => {
         const source = readFileSync(file, 'utf8');
 
-        return /backgroundColor: colour\.stone/.test(source) && /flex: 1/.test(source);
+        return /backgroundColor: colour\.surface\b/.test(source) && /flex: 1/.test(source);
       });
 
       expect(painting.map((file) => file.slice(root.length + 1))).toEqual([

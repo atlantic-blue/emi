@@ -73,7 +73,7 @@ export function OnboardingScreen({
   return (
     <Screen testID={`onboarding-${screen}`}>
       <View style={styles.header}>
-        <Icon colour={colour.ember} name="ring" size={MARK_SIZE} testID={onboardingMarkTestID} />
+        <Icon colour={colour.primary} name="ring" size={MARK_SIZE} testID={onboardingMarkTestID} />
         <Text style={styles.step}>{stepLabel(screen)}</Text>
       </View>
       <Progress screen={screen} />
@@ -118,89 +118,89 @@ export function OnboardingScreen({
 const styles = StyleSheet.create({
   action: {
     alignItems: 'center',
-    backgroundColor: colour.ember,
-    borderRadius: radius.chip,
+    backgroundColor: colour.surfaceTint,
+    borderRadius: radius.md,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.base,
-    paddingVertical: space.snug,
+    paddingHorizontal: space.spaceLg,
+    paddingVertical: space.spaceMd,
   },
   actionLabel: {
-    color: colour.surface,
+    color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
   actionWaiting: { opacity: 0.4 },
   // What she is asked to do takes the room the words leave, so the control she came here to press
   // sits in the middle of the glass rather than under the last paragraph.
-  asked: { flexGrow: 1, justifyContent: 'center', paddingVertical: space.roomy },
+  asked: { flexGrow: 1, justifyContent: 'center', paddingVertical: space.spaceXl },
   // The middle grows into whatever is left, and what is in it is pushed apart rather than stacked
   // against the top, which is where the empty half of the screen was.
   body: {
     flexGrow: 1,
     justifyContent: 'space-between',
-    paddingBottom: space.base,
-    paddingHorizontal: space.base,
-    paddingTop: space.roomy,
+    paddingBottom: space.spaceLg,
+    paddingHorizontal: space.spaceLg,
+    paddingTop: space.spaceXl,
   },
   card: {
-    backgroundColor: colour.surface,
-    borderColor: colour.hairline,
-    borderRadius: radius.card,
+    backgroundColor: colour.surfaceContainerLowest,
+    borderColor: colour.outlineVariant,
+    borderRadius: radius.lg,
     borderWidth: stroke.hairline,
-    padding: space.base,
+    padding: space.spaceLg,
   },
   footer: {
-    borderTopColor: colour.hairline,
+    borderTopColor: colour.outlineVariant,
     borderTopWidth: stroke.hairline,
-    padding: space.base,
+    padding: space.spaceLg,
   },
   header: {
     alignItems: 'center',
     flexDirection: 'row',
-    gap: space.snug,
-    paddingHorizontal: space.base,
-    paddingTop: space.roomy,
+    gap: space.spaceMd,
+    paddingHorizontal: space.spaceLg,
+    paddingTop: space.spaceXl,
   },
   // The lead line answers the title, so it carries the strongest text colour. The lines under it
   // keep the same size, because two of them say what Emi is not and nothing there is a footnote.
   lead: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('body-lg'),
   },
   line: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
   },
   lineAfter: {
-    borderTopColor: colour.hairline,
+    borderTopColor: colour.outlineVariant,
     borderTopWidth: stroke.hairline,
-    marginTop: space.snug,
-    paddingTop: space.snug,
+    marginTop: space.spaceMd,
+    paddingTop: space.spaceMd,
   },
   progress: {
     flexDirection: 'row',
-    gap: space.hair,
-    paddingHorizontal: space.base,
-    paddingTop: space.snug,
+    gap: space.spaceXs,
+    paddingHorizontal: space.spaceLg,
+    paddingTop: space.spaceMd,
   },
   // The middle takes whatever the two ends leave, so the button sits on the bottom edge of the
   // glass on a screen with one line and on a screen with ninety days on it alike.
   scroll: { flex: 1 },
   segment: {
-    backgroundColor: colour.sunk,
-    borderRadius: radius.round,
+    backgroundColor: colour.surfaceContainer,
+    borderRadius: radius.full,
     flex: 1,
     height: PROGRESS_HEIGHT,
   },
-  segmentReached: { backgroundColor: colour.ember },
+  segmentReached: { backgroundColor: colour.surfaceTint },
   step: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     ...textStyle('label-sm'),
   },
   title: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-lg'),
-    marginBottom: space.snug,
+    marginBottom: space.spaceMd,
   },
 });

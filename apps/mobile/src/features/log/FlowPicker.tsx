@@ -56,14 +56,14 @@ export function FlowPicker({ chosen, onPick }: Props): ReactNode {
 
 const styles = StyleSheet.create({
   label: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
     textAlign: 'center',
   },
-  labelChosen: { color: colour.ink },
+  labelChosen: { color: colour.onSurface },
   option: {
     alignItems: 'center',
-    borderRadius: radius.chip,
+    borderRadius: radius.md,
     borderWidth: 1,
     justifyContent: 'center',
     // SEE-3. The option itself is the tap target, so the floor decides its size and the padding
@@ -71,10 +71,10 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.snug,
-    paddingVertical: space.tight,
+    paddingHorizontal: space.spaceMd,
+    paddingVertical: space.spaceSm,
   },
-  optionChosen: { backgroundColor: colour.emberTint, borderColor: colour.ember },
-  optionPlain: { backgroundColor: colour.sunk, borderColor: colour.sunk },
-  options: { flexDirection: 'row', flexWrap: 'wrap', gap: space.tight },
+  optionChosen: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
+  optionPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
+  options: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
 });

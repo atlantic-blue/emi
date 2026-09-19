@@ -90,7 +90,7 @@ export function iconSquare(ring: string): string {
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${APPLICATION_ICON_SIZE} ${APPLICATION_ICON_SIZE}"`,
     ` width="${APPLICATION_ICON_SIZE}" height="${APPLICATION_ICON_SIZE}">`,
-    `<rect width="${APPLICATION_ICON_SIZE}" height="${APPLICATION_ICON_SIZE}" fill="${colour.stone}" />`,
+    `<rect width="${APPLICATION_ICON_SIZE}" height="${APPLICATION_ICON_SIZE}" fill="${colour.surfaceContainerLowest}" />`,
     `<g transform="translate(${round(left)} ${round(top)}) scale(${round(scale)})">`,
     insideOf(ring),
     '</g></svg>',
