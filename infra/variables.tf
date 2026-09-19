@@ -28,6 +28,18 @@ variable "github_repo" {
   default     = "emi"
 }
 
+variable "github_org_id" {
+  description = "Numeric identifier GitHub writes after the organisation in a token subject. Read from the CloudTrail record of the refused assume on 2026-09-18"
+  type        = string
+  default     = "140661232"
+}
+
+variable "github_repo_id" {
+  description = "Numeric identifier GitHub writes after the repository in a token subject. Read from the same CloudTrail record"
+  type        = string
+  default     = "1374431048"
+}
+
 variable "log_retention_days" {
   description = "Days a log line is kept. Nothing about her reaches a log, and what does reach one is thrown away"
   type        = number
