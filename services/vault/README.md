@@ -29,6 +29,12 @@ is held, so two phones converge on the higher one rather than on whichever arriv
 reads one account's records in write order and stops before a page costs a megabyte, answering
 with a cursor rather than cutting the answer short in silence.
 
+One endpoint here takes no signature at all, and it is deliberate. The article catalogue answers
+one article for a cycle phase, so a request says which phase is being read and never who is reading
+it. The article is the newest of that phase, which is the same one for every reader. It stands behind no authorizer, it reads a table of its own through a role that cannot reach
+the vault table, and it refuses any request that carries one of the four signed headers or that an
+authorizer answered for. A caller who names herself to it is refused rather than served.
+
 Nothing here can open an envelope. The service takes one function from the envelope, the one that
 reads its shape, and a test walks these files from the entry point to prove it: no decrypting
 function is imported, nothing comes from the cipher library, and no word for a key appears that is

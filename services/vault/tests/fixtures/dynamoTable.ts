@@ -24,6 +24,9 @@ export const maximumItemBytes = 400 * 1024;
 /** The name the tests write under, so a wrong table name in the store is visible. */
 export const tableName = 'emi-vault';
 
+/** The second table, which holds the article catalogue and nothing of hers. */
+export const articleTableName = 'emi-articles';
+
 /** What a fake table offers a test beyond the four operations: the items themselves. */
 export interface FakeTable extends DynamoDbTable {
   /** Every item written, in key order, as the table holds it. */
@@ -47,6 +50,8 @@ export interface FakeTableOptions {
   readonly itemsPerPage?: number;
   /** A key this table will not let go of, so a delete that leaves something can be driven. */
   readonly refusesToDelete?: string;
+  /** The table this one stands for. The vault, unless a test names the other one. */
+  readonly name?: string;
 }
 
 function refusedByCondition(): Error {
@@ -165,8 +170,10 @@ export function fakeTable(options: FakeTableOptions = {}): FakeTable {
     query: 0,
   };
 
+  const stands = options.name ?? tableName;
+
   const checkedTable = (given: string): void => {
-    if (given !== tableName) {
+    if (given !== stands) {
       throw new Error(`there is no table called ${given}`);
     }
   };

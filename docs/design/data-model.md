@@ -343,11 +343,14 @@ kept in a type and in a search over bytes.
 
 ## The article catalogue
 
-Status: designed
+Status: built
 
-Step 10.2 answers an article for a cycle phase. The request carries the phase and no account
-identifier, and it carries no signature. This section says where the catalogue lives, and why a read
-of it cannot be tied to a reader.
+`GET /v1/articles/{phase}` answers one article for a cycle phase. The request carries the phase and
+no account identifier, and it carries no signature. This section says where the catalogue
+lives, and why a read of it cannot be tied to a reader.
+
+The code and the configuration are in this repository. Nothing is deployed yet, so the function is
+still a placeholder bundle in the account, the same as the other two.
 
 ```mermaid
 flowchart LR
@@ -374,6 +377,9 @@ answers an article stands behind no authorizer. A function like that which could
 would be one mistake away from reading her partition. Its role names one table and one action,
 `dynamodb:Query`. It carries no write, so a read cannot leave a trace behind it.
 
+The function is `emi-articles`, it runs as the role of the same name, and it holds the table name
+in `EMI_ARTICLES_TABLE`. It never holds the name of the vault table.
+
 ### The item
 
 `pk` is `PHASE#` and the phase, one of `period`, `follicular`, `ovulation` and `luteal`, which are
@@ -382,10 +388,14 @@ written in the key and nowhere else, the same way a record identifier is.
 
 - `title`, a string, required.
 - `body`, a string, required.
+- `attribution`, a string, required. Who wrote it, and who read it after them. A card draws it
+  under the body, and `@emi/content` refuses an article without one, so an item missing it is
+  passed over rather than answered.
 - `language`, a string, required. A language tag, for example `en-GB`.
-- `publishedAt`, an instant string, required.
+- `publishedAt`, an instant string, required. It is what the newest of a phase is chosen by.
 - `revision`, a number, required.
-- `attribution`, a string, optional. Where the wording came from.
+- `link`, a string, optional. The whole piece, where there is a page to open. A link that does not
+  begin with `https://` is answered as no link, because a browser would refuse it anyway.
 
 The body is text. It carries no url and no image, because an image inside an article is a second
 request, and a second request is a third party that learns a woman opened that article.
@@ -395,21 +405,35 @@ those would be a place to write down who read what.
 
 ### The query
 
-One query answers a phase: `pk = :phase` on `emi-articles`. It reads one partition, which is every
-article of that phase, and the phone chooses which to show.
-
-The server chooses nothing, and that is deliberate. A server that picked the article would need to
-know more about her than the phase.
+One query answers a phase: `pk = :pk` on `emi-articles`, where the value is `PHASE#` and the phase.
+It reads one partition, which is every article of that phase.
 
 There is no scan. A catalogue small enough to scan today is a catalogue that grows.
+
+### What the answer carries
+
+The answer is one article, in the shape `@emi/content` reads, and that package is the only caller:
+`id`, which is the slug, `phase`, `title`, `body`, `attribution` and `link`. It carries no
+`language`, no `publishedAt` and no `revision`, because nothing draws them. The table holds more
+than the answer carries.
+
+The article is the newest of the phase, and the first slug where two were published in the same
+instant. Every reader of a phase is handed the same one. A server that chose between them would
+need to know something about her to choose with, and the only thing it knows is the phase.
+
+A phase nobody has written for yet is answered with no article, not with an empty one, because an
+empty article is a card drawn blank. It says that the phase holds nothing, where an unknown phase is
+told it is not a phase, so whoever stocks the catalogue can tell a gap from a mistake. The
+application reads both the same way, which is that there is no card to draw.
 
 ### Why a read cannot be tied to a reader
 
 Five things, and each one can be checked.
 
 1. The route has no authorizer. There is no `emi-account` header, no signature and no session, so
-   the request carries nothing that names an account. A request that carries an account header is
-   refused rather than ignored, so a phone cannot start naming her by accident.
+   the request carries nothing that names an account. A request that carries one of the four signed
+   headers is refused rather than ignored, so a phone cannot start naming her by accident. A request
+   an authorizer answered for is refused too, so attaching one to this route breaks it loudly.
 2. The phase travels in the path, and the access log format in `infra/api.tf` writes
    `$context.routeKey`, which is the route template, and not `$context.path`. The log records that a
    request reached the articles route. It cannot record which phase.
@@ -451,6 +475,9 @@ of them, and no `dynamodb:Scan` in any policy.
   delete it.
 - Delete everything. `DeleteItem` by whole key, 25 at a time, then the query above again to prove
   nothing is left.
+- Read the articles of a phase. `Query` with `pk = :pk` on `emi-articles`, where the value is
+  `PHASE#` and the phase. It is followed page by page, so a partition larger than one page is read
+  whole rather than cut.
 
 ## The access patterns the designs add
 
@@ -477,10 +504,6 @@ The partner link:
 - Check he may read a share. `GetItem` on `ACC#<partnerAccountId>` and `FROM#<shareId>`.
 - Read a calendar. `GetItem` on `SHR#<shareId>` and `CAL`, after the check above.
 - Revoke a share. Three `DeleteItem` by whole key.
-
-The articles:
-
-- Read the articles of a phase. `Query` with `pk = :phase` on `emi-articles`.
 
 Every one of these reads by a whole key, or along one partition. None of them reads the whole table,
 and none of them reads more than it needs and filters afterwards.

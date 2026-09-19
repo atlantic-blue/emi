@@ -109,6 +109,11 @@ const planPolicy = bodyOf('data "aws_iam_policy_document" "plan"');
 const planTrust = bodyOf('data "aws_iam_policy_document" "plan_trust"');
 const applyTrust = bodyOf('data "aws_iam_policy_document" "apply_trust"');
 const authorizerPolicy = bodyOf('data "aws_iam_policy_document" "authorizer"');
+const articlesPolicy = bodyOf('data "aws_iam_policy_document" "articles"');
+const articlesTable = bodyOf('resource "aws_dynamodb_table" "articles"');
+const articlesRoute = bodyOf('resource "aws_apigatewayv2_route" "read_articles"');
+const articlesFunction = bodyOf('resource "aws_lambda_function" "articles"');
+const logFormat = bodyOf('access_log_settings');
 
 describe('the infrastructure is applied only by the pipeline', () => {
   describe('the merge is the only thing that applies', () => {
@@ -302,7 +307,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         (match) => (match[1] ? [match[1]] : []),
       );
 
-      expect(groups).toHaveLength(3);
+      expect(groups).toHaveLength(4);
       expect(new Set(groups)).toEqual(new Set(['var.log_retention_days']));
       expect(bodyOf('variable "log_retention_days"')).toContain('default     = 30');
     });
@@ -327,6 +332,52 @@ describe('the infrastructure is applied only by the pipeline', () => {
     it('reaches no other table, so one account cannot be read through another', () => {
       expect(authorizerPolicy).toContain('resources = [aws_dynamodb_table.vault.arn]');
       expect(authorizerPolicy).not.toContain('/index/');
+    });
+  });
+
+  describe('the article catalogue, which is read by phase and never by reader', () => {
+    it('takes no authorizer, so a request carries nothing that names an account', () => {
+      expect(articlesRoute).toContain('authorization_type = "NONE"');
+      expect(articlesRoute).not.toContain('authorizer_id');
+    });
+
+    it('reads the phase out of the path, so the route key the log writes is a template', () => {
+      expect(articlesRoute).toContain('route_key          = "GET /v1/articles/{phase}"');
+      expect(logFormat).toContain('$context.routeKey');
+    });
+
+    it('logs no variable that carries the filled path, so no line can say which phase was read', () => {
+      const named = [...logFormat.matchAll(/\$context\.([A-Za-z]+)/g)].map((match) => match[1]);
+
+      expect(named.sort()).toEqual([
+        'httpMethod',
+        'requestId',
+        'responseLatency',
+        'routeKey',
+        'status',
+      ]);
+    });
+
+    it('gives the function one action on one table, and no write', () => {
+      expect(actionsIn(articlesPolicy).sort()).toEqual([
+        'dynamodb:Query',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+      ]);
+    });
+
+    it('cannot reach the vault table, so a route with no authorizer cannot reach her partition', () => {
+      expect(articlesPolicy).toContain('resources = [aws_dynamodb_table.articles.arn]');
+      expect(articlesPolicy).not.toContain('aws_dynamodb_table.vault');
+      expect(articlesFunction).toContain('role          = aws_iam_role.articles.arn');
+      expect(articlesFunction).toContain('EMI_ARTICLES_TABLE');
+      expect(articlesFunction).not.toContain('EMI_VAULT_TABLE');
+    });
+
+    it('bills per request and keeps its writing encrypted', () => {
+      expect(articlesTable).toContain('billing_mode = "PAY_PER_REQUEST"');
+      expect(articlesTable).toContain('hash_key  = "pk"');
+      expect(articlesTable).toContain('range_key = "sk"');
     });
   });
 
