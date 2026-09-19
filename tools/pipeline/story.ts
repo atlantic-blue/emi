@@ -36,6 +36,30 @@ export interface StorySection {
   readonly number: number;
   readonly title: string;
   readonly beats: readonly Beat[];
+  /** Each paragraph of the section's prose, so the reason a section shows nothing reads whole. */
+  readonly paragraphs: readonly string[];
+}
+
+/**
+ * How a section says it has nothing to show. Two features can honestly show no picture: one that
+ * nobody has built yet, and one that draws no screen at all. Neither is something this check can
+ * work out for itself, so the section states it and the run names every section that does, on every
+ * run, where a reviewer reads it.
+ */
+export const NOTHING_TO_SHOW = 'Nothing to show:';
+
+const SHORTEST_REASON = 20;
+
+export function reasonToShowNothing(section: StorySection): string | null {
+  const said = section.paragraphs.find((paragraph) => paragraph.startsWith(NOTHING_TO_SHOW));
+
+  if (said === undefined) {
+    return null;
+  }
+
+  const reason = said.slice(NOTHING_TO_SHOW.length).trim();
+
+  return reason.length >= SHORTEST_REASON ? reason : null;
 }
 
 const featureHeading = /^## Feature (\d+): (.+)$/;
@@ -109,7 +133,12 @@ export function sectionsIn(markdown: string): StorySection[] {
     const heading = featureHeading.exec(line);
 
     if (heading !== null) {
-      sections.push({ number: Number(heading[1]), title: String(heading[2]).trim(), beats: [] });
+      sections.push({
+        number: Number(heading[1]),
+        title: String(heading[2]).trim(),
+        beats: [],
+        paragraphs: [],
+      });
       paragraph = [];
       closed = [];
       continue;
@@ -121,6 +150,9 @@ export function sectionsIn(markdown: string): StorySection[] {
       if (line.trim().length === 0 || line.startsWith('#')) {
         if (paragraph.length > 0) {
           closed = paragraph;
+          (sections[sections.length - 1]?.paragraphs as string[] | undefined)?.push(
+            paragraph.join(' '),
+          );
         }
         paragraph = [];
       } else {
@@ -141,6 +173,10 @@ export function sectionsIn(markdown: string): StorySection[] {
 
     paragraph = [];
     closed = [];
+  }
+
+  if (paragraph.length > 0) {
+    (sections[sections.length - 1]?.paragraphs as string[] | undefined)?.push(paragraph.join(' '));
   }
 
   return sections;
@@ -315,9 +351,17 @@ export function storyProblems(root: string): StoryResult {
     }
 
     if (section.beats.length === 0) {
-      problems.push(
-        `${storyDocument}: the section "Feature ${section.number}: ${section.title}" shows no picture, so it tells nobody what the product looks like`,
-      );
+      const said = reasonToShowNothing(section);
+
+      if (said === null) {
+        problems.push(
+          `${storyDocument}: the section "Feature ${section.number}: ${section.title}" shows no picture and does not say why. Show one, or write a line beginning "${NOTHING_TO_SHOW}" with the reason.`,
+        );
+      } else {
+        notes.push(
+          `${storyDocument}: feature ${section.number} shows no picture, and says why: ${said}`,
+        );
+      }
     }
   }
 
@@ -340,7 +384,9 @@ export function storyProblems(root: string): StoryResult {
   const shownScreens = shown.filter((each) => kindOf(each) === 'screen');
 
   for (const feature of untold) {
-    notes.push(`${storyDocument} tells no story for feature ${feature.number}: ${feature.title}`);
+    problems.push(
+      `${storyDocument} tells no story for feature ${feature.number}: ${feature.title}`,
+    );
   }
 
   for (const file of unnamed) {
