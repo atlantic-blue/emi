@@ -179,10 +179,12 @@ also refuses when the drawn source is absent, and the refusal names the step tha
 
 ## The cycle arithmetic
 
-Status: designed
+Status: built
 
-The prediction arithmetic arrives beside the catalogue, in `packages/cycle`. It will be pure
-functions. No input, no output, no clock.
+The prediction arithmetic sits beside the catalogue, in `packages/cycle`. It is pure functions.
+No input, no output, no clock. `confidence.ts`, `cycles.ts`, `forecast.ts`, `moods.ts`,
+`patterns.ts`, `symptoms.ts` and `units.ts` each carry their own tests, and the home screen draws
+the median, the range and the confidence band from them.
 
 A cycle starts on the first day of bleeding that is not marked unexpected. The predicted start of
 the next period is the last start plus the median of the last six cycle lengths. The median, not the

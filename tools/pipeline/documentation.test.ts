@@ -15,6 +15,7 @@ import {
   documentedDirectoriesOf,
   driftProblems,
   featureDocument,
+  holdsWorkingCode,
   nameOf,
   readmeFloor,
   readmeProblems,
@@ -25,7 +26,11 @@ import {
   refusalHeading,
   refusalProblems,
   refusalsIn,
+  pathsNamedIn,
+  promiseWording,
+  sectionBodiesIn,
   sectionsIn,
+  staleStatusProblems,
   statusProblems,
   workspaceDirectoriesOf,
 } from './documentation';
@@ -289,6 +294,144 @@ describe('every section of the architecture document says built or designed', ()
     const fenced = '# A\n\n## One\n\nStatus: built\n\n```\n## Two\n```\n';
 
     expect(sectionsIn(fenced).map((section) => section.title)).toEqual(['One']);
+  });
+});
+
+describe('a status the repository disagrees with', () => {
+  const aPromise = promiseWording[0] as string;
+
+  function sectionSaying(status: string, body: string): string {
+    return `# A\n\n## The thing\n\nStatus: ${status}\n\n${body}\n`;
+  }
+
+  function repositoryHolding(entries: readonly { path: string; contents: string }[]): string {
+    const root = mkdtempSync(join(tmpdir(), 'emi-status-'));
+
+    made.push(root);
+
+    for (const entry of entries) {
+      mkdirSync(join(root, dirname(entry.path)), { recursive: true });
+      writeFileSync(join(root, entry.path), entry.contents);
+    }
+
+    return root;
+  }
+
+  const workingCode = [
+    { path: 'packages/one/src/one.ts', contents: 'export const one = 1;\n' },
+    { path: 'packages/one/tests/one.test.ts', contents: 'it("runs", () => undefined);\n' },
+  ];
+
+  describe('the architecture document as it stands today', () => {
+    it('carries no section the repository disagrees with', () => {
+      expect(staleStatusProblems(repositoryRoot, architectureDocument, architecture)).toEqual([]);
+    });
+
+    it('leaves a designed section that names built source and promises nothing', () => {
+      const vault = sectionBodiesIn(architecture).find(
+        (section) => section.status === 'designed' && section.body.includes('services/vault'),
+      );
+
+      expect(vault).toBeDefined();
+      expect(holdsWorkingCode(repositoryRoot, 'services/vault')).toBe(true);
+      expect(
+        staleStatusProblems(repositoryRoot, architectureDocument, architecture).join(' '),
+      ).not.toContain(vault?.title ?? 'a section that is absent');
+    });
+  });
+
+  describe('a designed section that promises a package the repository holds', () => {
+    it('names the section, the promise and the package', () => {
+      const root = repositoryHolding(workingCode);
+      const document = sectionSaying('designed', `The code ${aPromise} in \`packages/one\`.`);
+
+      expect(staleStatusProblems(root, 'x.md', document)).toEqual([
+        `x.md: the section "The thing" says designed and says "${aPromise}" of \`packages/one\`, ` +
+          'which holds source and the tests that run it',
+      ]);
+    });
+
+    it('reads the promise across a line that wrapped', () => {
+      const root = repositoryHolding(workingCode);
+      const wrapped = sectionSaying('designed', 'The code will\nbe in `packages/one`.');
+
+      expect(staleStatusProblems(root, 'x.md', wrapped)).toHaveLength(1);
+    });
+  });
+
+  describe('what it leaves alone', () => {
+    it('a designed section that promises nothing', () => {
+      const root = repositoryHolding(workingCode);
+      const document = sectionSaying('designed', 'The code is in `packages/one`, undeployed.');
+
+      expect(staleStatusProblems(root, 'x.md', document)).toEqual([]);
+    });
+
+    it('a built section, whatever it promises', () => {
+      const root = repositoryHolding(workingCode);
+      const document = sectionSaying('built', `More ${aPromise} in \`packages/one\`.`);
+
+      expect(staleStatusProblems(root, 'x.md', document)).toEqual([]);
+    });
+
+    it('a promise about a directory that is not there', () => {
+      const root = repositoryHolding(workingCode);
+      const document = sectionSaying('designed', `The code ${aPromise} in \`packages/later\`.`);
+
+      expect(staleStatusProblems(root, 'x.md', document)).toEqual([]);
+    });
+
+    it('a promise about source nobody wrote a test for', () => {
+      const root = repositoryHolding([
+        { path: 'packages/two/src/two.ts', contents: 'export const two = 2;\n' },
+      ]);
+      const document = sectionSaying('designed', `The code ${aPromise} in \`packages/two\`.`);
+
+      expect(holdsWorkingCode(root, 'packages/two')).toBe(false);
+      expect(staleStatusProblems(root, 'x.md', document)).toEqual([]);
+    });
+
+    it('a promise about a test directory holding no test', () => {
+      const root = repositoryHolding([
+        { path: 'packages/three/src/three.ts', contents: 'export const three = 3;\n' },
+        { path: 'packages/three/tests/fixtures/a.ts', contents: 'export const a = 1;\n' },
+      ]);
+
+      expect(holdsWorkingCode(root, 'packages/three')).toBe(false);
+    });
+  });
+
+  describe('the paths a section names', () => {
+    it('reads what is written between backticks and holds a slash', () => {
+      expect(pathsNamedIn('Read `packages/one` and `apps/mobile`, never `built`.')).toEqual([
+        'apps/mobile',
+        'packages/one',
+      ]);
+    });
+
+    it('reads a sentence with no path as naming none', () => {
+      expect(pathsNamedIn('It is `built` today.')).toEqual([]);
+    });
+  });
+
+  describe('the body each section carries', () => {
+    it('gives every section its own lines and its own status', () => {
+      const two =
+        '# A\n\n## One\n\nStatus: built\n\nFirst.\n\n## Two\n\nStatus: designed\n\nSecond.\n';
+
+      expect(sectionBodiesIn(two).map((section) => [section.title, section.status])).toEqual([
+        ['One', 'built'],
+        ['Two', 'designed'],
+      ]);
+      expect(sectionBodiesIn(two)[0]?.body).toContain('First.');
+      expect(sectionBodiesIn(two)[0]?.body).not.toContain('Second.');
+    });
+
+    it('does not read a heading inside a fenced block as a section', () => {
+      const fenced = '# A\n\n## One\n\nStatus: built\n\n```\n## Two\n```\n';
+
+      expect(sectionBodiesIn(fenced).map((section) => section.title)).toEqual(['One']);
+    });
   });
 });
 
