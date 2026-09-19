@@ -7,6 +7,8 @@ claim against the code that makes it. These documents are the readable half of t
   between the two.
 - `features.md` names the eight features, the contracts each one builds, and what version 1 refuses
   to do.
+- `story.md` shows what the product looks like: one section per feature, told as what she does,
+  with a rendered picture under each beat.
 - `contracts.md` states the input, the output and every error of each contract.
 - `privacy.md` says which keys exist, where each one lives, what one encrypted day looks like, and
   the four attacks Emi does not defend against.
@@ -53,6 +55,29 @@ Each one regenerates its pages in memory and compares them against the committed
 difference of one character fails the run, names the line, and says which generator to run. So a
 colour that changes in `packages/tokens` changes `brand.md` or stops the pipeline, and a signature
 that changes in any package changes its reference page or stops it.
+
+## The check on the story
+
+`story.md` is written by hand and its pictures are not, so two things drift: a picture the document
+names can leave the disk, and a feature can arrive with no section. The pipeline runs two more
+commands.
+
+    npm run check:story
+    npm run check:pictures
+
+`check:story` reads `features.md` and `story.md` together. It fails when the story names a picture
+that is not on disk, when a section shows no picture at all, when a section names a feature the map
+does not carry, and when the line under a picture does not say that it was rendered under the test
+runner, at what size, and not captured from a phone. It reports, without failing, every feature that
+has no section and every picture in `brand/screens` that no section shows. A later step turns the
+first of those reports into a failure. A run that finds no section and no picture fails, because a
+check that read nothing reports success just the same.
+
+`check:pictures` renders the screens again and compares the markup each one produced against the
+copy committed beside its image. It compares the markup and never the image, because two browsers
+draw one page into different bytes. A screen that changed and a picture that was not redrawn
+therefore fail the run, which names the character the two copies part at and the command that draws
+the picture again.
 
 `check:reference` carries two rules the brand check does not. An exported symbol with no
 documentation comment fails the run, named with its file and its line. So does a comment that holds
