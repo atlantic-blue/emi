@@ -11,7 +11,8 @@
     "web": "expo start --web",
     "export:web": "expo export --platform web",
     "typecheck": "tsc --noEmit",
-    "test": "jest --ci"
+    "test": "jest --ci",
+    "test:behaviour": "jest --ci --config ../../jest.behaviour.config.js"
   },
   "dependencies": {
     "@emi/crypto": "*",
