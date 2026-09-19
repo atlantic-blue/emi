@@ -4,14 +4,33 @@ import { type ReactNode, useState } from 'react';
 import { useDatabase } from '../../data/DatabaseProvider';
 import { DeleteEverything, type DeleteStage } from '../../features/settings/DeleteEverything';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
+import { serverAccountDelete } from '../../services/sync/deleteAccount';
 import { expoKeychain } from '../../services/vault/keychain';
 import { useRenewVault } from '../../services/vault/VaultProvider';
-import { deleteEverything, nothingIsLeft } from '../../services/vault/wipe';
+import {
+  deleteEverything,
+  nothingIsLeft,
+  theServerCopyWentToo,
+  type WipeOutcome,
+} from '../../services/vault/wipe';
 
 /**
- * One press empties the database and the keychain. Nothing is queued, scheduled or held back for a
- * grace period, so there is no state here between asking and it being done other than the wait on
- * the keychain, which is the only asynchronous part.
+ * What the delete left her with, read from the storage rather than from the calls that ran. A
+ * keychain that kept an item comes first, because that is the one she can do something about by
+ * pressing again, and an unreached server is not: her key has gone with her days.
+ */
+function whatSheIsLeftWith(outcome: WipeOutcome): DeleteStage {
+  if (!nothingIsLeft(outcome)) {
+    return 'refused';
+  }
+
+  return theServerCopyWentToo(outcome) ? 'deleted' : 'deleted-without-the-server';
+}
+
+/**
+ * One press takes the account off the server and empties the database and the keychain. Nothing is
+ * queued, scheduled or held back for a grace period, so there is no state here between asking and
+ * it being done other than the two waits, on the network and on the keychain.
  *
  * What it says afterwards is read back off the storage rather than taken from the call returning,
  * because the application reporting that it deleted something is not evidence that it did.
@@ -27,9 +46,11 @@ export default function DeleteRoute(): ReactNode {
   const [stage, setStage] = useState<DeleteStage>('ready');
 
   const onDelete = (): void => {
+    const keychain = expoKeychain();
+
     setStage('working');
-    void deleteEverything(database, expoKeychain())
-      .then((outcome) => setStage(nothingIsLeft(outcome) ? 'deleted' : 'refused'))
+    void deleteEverything(database, keychain, serverAccountDelete(keychain))
+      .then((outcome) => setStage(whatSheIsLeftWith(outcome)))
       // A delete that raised is a delete that did not finish, and a screen still reading Deleting
       // would leave her with no way to tell and nothing to press.
       .catch(() => setStage('refused'));

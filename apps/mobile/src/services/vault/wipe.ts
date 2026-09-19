@@ -1,12 +1,13 @@
 import type { Database } from '../../data/database';
+import type { ServerDelete, ServerDeleteOutcome } from '../sync/deleteAccount';
 import { syncKeychainItems } from '../sync/deviceKey';
 import type { SecureStore } from './keychain';
 import { recoveryConfirmedItem } from './recoveryConfirmed';
 import { vaultKeyItem } from './vaultKey';
 
 /**
- * Contract KEEP-3, the half that runs on her phone. Every row she wrote, and every item that would
- * open one, removed in a single action with nothing kept back.
+ * Contract KEEP-3. Every row she wrote, every item that would open one, and the account on the
+ * server, removed in a single action with nothing kept back.
  *
  * The tables are read out of the database rather than written down here, because a table added by
  * a later migration and forgotten in a hand written list is a table that survives a delete. The
@@ -25,6 +26,8 @@ export const wipedKeychainItems: readonly string[] = [
 export type KeychainRemover = Pick<SecureStore, 'remove'>;
 
 export interface WipeOutcome {
+  /** What the account on the server came to, which is asked for before anything here is touched. */
+  readonly serverAccount: ServerDeleteOutcome;
   /** The tables emptied, in the order they were read. */
   readonly tables: readonly string[];
   /** The keychain items removed. Every one is asked for, held or not. */
@@ -140,17 +143,25 @@ export async function emptyTheKeychain(
 /**
  * The one call the screen makes.
  *
- * Her days go before the keys do. Either order leaves her data unreadable, and this one leaves
- * nothing readable at any moment in between.
+ * The server goes first, because the signing key that proves the account is hers is one of the
+ * items this call is about to destroy. Then her days, then the keys. Either order of the last two
+ * leaves her data unreadable, and this one leaves nothing readable at any moment in between.
  *
- * What it returns is counted from the storage rather than assumed from the calls it made, which is
- * the whole reason the screen can say it is gone.
+ * A server that cannot be reached does not stop any of it. What it returns is counted from the
+ * storage rather than assumed from the calls it made, which is the whole reason the screen can say
+ * it is gone.
  */
-export async function deleteEverything(db: Database, store: KeychainRemover): Promise<WipeOutcome> {
+export async function deleteEverything(
+  db: Database,
+  store: KeychainRemover,
+  server: ServerDelete,
+): Promise<WipeOutcome> {
+  const serverAccount = await whatTheServerSaid(server);
   const tables = emptyTheDatabase(db);
   const keychain = await emptyTheKeychain(store);
 
   return {
+    serverAccount,
     tables,
     keychainItems: keychain.removed,
     keychainItemsRefused: keychain.refused,
@@ -160,7 +171,27 @@ export async function deleteEverything(db: Database, store: KeychainRemover): Pr
   };
 }
 
-/** Whether the delete finished, read from what the storage now holds. */
+/**
+ * What the server half came to, with a raise read as not reached. Nothing about a network may stop
+ * her days going, so the one call that can fail from outside the phone cannot throw out of here.
+ */
+async function whatTheServerSaid(server: ServerDelete): Promise<ServerDeleteOutcome> {
+  try {
+    return await server();
+  } catch {
+    return 'not-reached';
+  }
+}
+
+/** Whether the delete finished on this phone, read from what the storage now holds. */
 export function nothingIsLeft(outcome: WipeOutcome): boolean {
   return outcome.rowsLeft === 0 && outcome.keychainItemsRefused.length === 0;
+}
+
+/**
+ * Whether the account on the server went too. A phone that never had an address to talk to never
+ * made an account, so there was nothing there and nothing is left there.
+ */
+export function theServerCopyWentToo(outcome: WipeOutcome): boolean {
+  return outcome.serverAccount !== 'not-reached';
 }

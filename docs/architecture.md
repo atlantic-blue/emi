@@ -348,9 +348,10 @@ system sheet hands one file to whatever she chooses. Nothing is sent anywhere by
 
 Status: built
 
-One press on the delete screen empties the database and the keychain. Nothing is queued and nothing
-is held back, so there is no window in which she has asked and Emi still holds her days. Contract
-KEEP-3 names a delay or a cooling off period as the error, not only a row that survives.
+One press on the delete screen takes the account off the server and empties the database and the
+keychain. Nothing is queued and nothing is held back, so there is no window in which she has asked
+and Emi still holds her days. Contract KEEP-3 names a delay or a cooling off period as the error,
+not only a row that survives.
 
 The tables are read out of `sqlite_master` rather than written down in the code. A table a later
 migration adds is emptied by the same call, with nobody having to remember it. The keychain cannot
@@ -368,8 +369,24 @@ Afterwards the phone holds no key, so the screen says so and offers one thing: s
 it reads the keychain, finds nothing, makes a key, and the first run asks her the two questions it
 asked the first time.
 
-The server half is feature 6 step 6. Until it lands, this empties the phone and nothing else, and
-the screen says on this phone rather than everywhere.
+The server goes first, and the order is not a preference. Her signing key proves the account is
+hers, and that key is one of the items this press is about to destroy, so a delete that emptied the
+keychain first could never ask for the account again. The endpoint it calls is one request and no
+confirmation, and it removes every item under her partition: the account item, every record, and
+every signature the authorizer remembered, including the signature on the request that asked. A test
+reads the table back item by item, because a service reporting that it deleted something is the one
+claim in this product that cannot check itself.
+
+A server that cannot be reached does not stop any of it. A woman who presses delete wants her days
+gone now, and a radio she cannot use is no reason to leave readable days on the phone in her hand.
+So the phone is emptied either way and the screen says what happened: Emi could not reach the server,
+and nothing can open what is up there, because the only key was on this phone and it went with her
+days. A refusal from the api is read the same way, since an unknown account and a signature that
+does not verify are answered identically by design, and the honest reading of a refusal is that the
+delete did not happen.
+
+A build carrying no vault address sends nothing. Registering needs the same address, so a build
+without one never made an account for there to be anything to take.
 
 ## The vault in Amazon Web Services
 

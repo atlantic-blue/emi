@@ -11,12 +11,15 @@ export const deletedScreenTestID = 'delete-done';
 export const startAgainTestID = 'delete-start-again';
 export const goesTestID = (at: number): string => `delete-goes-${at}`;
 export const deleteRefusedTestID = 'delete-refused';
+export const serverNotReachedTestID = 'delete-server-not-reached';
 
 /**
- * Where she is: reading it, waiting on it, looking at a phone that holds nothing, or looking at
- * the one case where the platform kept something and she is owed the truth about it.
+ * Where she is: reading it, waiting on it, looking at a phone that holds nothing, looking at a
+ * phone that holds nothing while the server was never told, or looking at the one case where the
+ * platform kept something and she is owed the truth about it.
  */
-export type DeleteStage = 'ready' | 'working' | 'deleted' | 'refused';
+export type DeleteStage =
+  'ready' | 'working' | 'deleted' | 'deleted-without-the-server' | 'refused';
 
 interface Props {
   readonly stage: DeleteStage;
@@ -35,7 +38,7 @@ interface Props {
  * than staying would be arguing with her, and this screen does not argue.
  */
 export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Props): ReactNode {
-  if (stage === 'deleted') {
+  if (stage === 'deleted' || stage === 'deleted-without-the-server') {
     return (
       <View style={styles.screen} testID={deletedScreenTestID}>
         <ScrollView contentContainerStyle={styles.body}>
@@ -43,6 +46,11 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
             {settingsCopy.deleted.title}
           </Text>
           <Text style={styles.line}>{settingsCopy.deleted.line}</Text>
+          {stage === 'deleted-without-the-server' ? (
+            <Text style={styles.line} testID={serverNotReachedTestID}>
+              {settingsCopy.deleted.withoutTheServer}
+            </Text>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             onPress={onStartAgain}

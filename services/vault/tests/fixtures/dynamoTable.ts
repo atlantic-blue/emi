@@ -1,5 +1,6 @@
 import type {
   AttributeValue,
+  DeleteItemInput,
   DynamoDbTable,
   GetItemInput,
   Item,
@@ -36,6 +37,7 @@ export interface TableCalls {
   putItem: number;
   getItem: number;
   updateItem: number;
+  deleteItem: number;
   query: number;
 }
 
@@ -43,6 +45,8 @@ export interface TableCalls {
 export interface FakeTableOptions {
   /** Items one query answers with before it hands back a key to start again from. */
   readonly itemsPerPage?: number;
+  /** A key this table will not let go of, so a delete that leaves something can be driven. */
+  readonly refusesToDelete?: string;
 }
 
 function refusedByCondition(): Error {
@@ -90,6 +94,24 @@ function startKeyOf(item: Item, onTheIndex: boolean): Item {
   return key;
 }
 
+/**
+ * The attributes a read asked for. A projection the table does not understand throws rather than
+ * being ignored, because a store that asked for less than it reads would pass here and fail there.
+ */
+function projected(item: Item, expression: string | undefined): Item {
+  if (expression === undefined) {
+    return item;
+  }
+
+  const wanted = expression.split(',').map((name) => name.trim());
+
+  if (wanted.some((name) => !/^[A-Za-z][A-Za-z0-9]*$/.test(name))) {
+    throw new Error(`this table does not understand the projection "${expression}"`);
+  }
+
+  return Object.fromEntries(Object.entries(item).filter(([name]) => wanted.includes(name)));
+}
+
 const keyText = (item: Item): string => `${textOf(item.pk)} ${textOf(item.sk)}`;
 
 function named(name: string, names: Readonly<Record<string, string>> | undefined): string {
@@ -135,7 +157,13 @@ function conditionHolds(
 /** A table that answers the way the deployed one answers, for everything the vault asks it. */
 export function fakeTable(options: FakeTableOptions = {}): FakeTable {
   const items = new Map<string, Item>();
-  const counted: TableCalls = { putItem: 0, getItem: 0, updateItem: 0, query: 0 };
+  const counted: TableCalls = {
+    putItem: 0,
+    getItem: 0,
+    updateItem: 0,
+    deleteItem: 0,
+    query: 0,
+  };
 
   const checkedTable = (given: string): void => {
     if (given !== tableName) {
@@ -211,6 +239,21 @@ export function fakeTable(options: FakeTableOptions = {}): FakeTable {
       return Promise.resolve();
     },
 
+    deleteItem: (input: DeleteItemInput): Promise<void> => {
+      checkedTable(input.TableName);
+      counted.deleteItem += 1;
+
+      const key = keyText(input.Key);
+
+      // The real table answers a delete of an item that was never there with a success, so this
+      // one does too: a delete is the same request whether the item is held or not.
+      if (key !== options.refusesToDelete) {
+        items.delete(key);
+      }
+
+      return Promise.resolve();
+    },
+
     query: (input: QueryInput): Promise<QueryOutput> => {
       checkedTable(input.TableName);
       counted.query += 1;
@@ -260,7 +303,7 @@ export function fakeTable(options: FakeTableOptions = {}): FakeTable {
       const more = found.length > page.length && last !== undefined;
 
       return Promise.resolve({
-        Items: page.map(copyOfItem),
+        Items: page.map((item) => projected(copyOfItem(item), input.ProjectionExpression)),
         // The key a query hands back carries the index sort key beside the table key, which is
         // what the caller passes straight back as the place to start again.
         LastEvaluatedKey: more ? startKeyOf(last, onTheIndex) : undefined,

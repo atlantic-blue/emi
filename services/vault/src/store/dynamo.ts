@@ -1,4 +1,11 @@
-import type { AccountStore, CreateOutcome, RememberOutcome, StoredAccount } from './accounts';
+import type {
+  AccountDeletion,
+  AccountDeleteStore,
+  AccountStore,
+  CreateOutcome,
+  RememberOutcome,
+  StoredAccount,
+} from './accounts';
 import {
   pageCostOf,
   type RecordPage,
@@ -54,12 +61,21 @@ export interface UpdateItemInput extends ExpressionParts {
   readonly ConditionExpression?: string;
 }
 
+/** A removal of one item by its whole key. */
+export interface DeleteItemInput extends ExpressionParts {
+  readonly TableName: string;
+  readonly Key: Item;
+  readonly ConditionExpression?: string;
+}
+
 /** A read along a key, inside one partition. */
 export interface QueryInput extends ExpressionParts {
   readonly TableName: string;
   readonly IndexName?: string;
   readonly KeyConditionExpression: string;
   readonly ExclusiveStartKey?: Item;
+  /** The attributes to read, as a comma separated list. Everything, when it is absent. */
+  readonly ProjectionExpression?: string;
 }
 
 /** What a query answers: the items it read, and where to start again when it stopped early. */
@@ -69,13 +85,14 @@ export interface QueryOutput {
 }
 
 /**
- * The four operations the vault uses. Every one of them is the shape DynamoDB takes, so the client
+ * The five operations the vault uses. Every one of them is the shape DynamoDB takes, so the client
  * that binds this to the real table adds no behaviour of its own and can hide no difference.
  */
 export interface DynamoDbTable {
   putItem(input: PutItemInput): Promise<void>;
   getItem(input: GetItemInput): Promise<Item | undefined>;
   updateItem(input: UpdateItemInput): Promise<void>;
+  deleteItem(input: DeleteItemInput): Promise<void>;
   query(input: QueryInput): Promise<QueryOutput>;
 }
 
@@ -107,6 +124,12 @@ export function signatureSortKeyFor(signature: string): string {
 
 /** The index a pull reads: one account's records, in the order they were written. */
 export const byUpdatedIndex = 'byUpdated';
+
+/**
+ * How many items one round of a delete removes at a time. It is DynamoDB's own batch size, which
+ * is the number the table is built to take in one breath.
+ */
+export const deleteGroupSize = 25;
 
 const textOf = (value: AttributeValue | undefined): string =>
   value !== undefined && 'S' in value ? value.S : '';
@@ -156,7 +179,10 @@ async function refusedByItsCondition(write: Promise<void>): Promise<boolean> {
  * the one it was asked for, and nothing here holds a key: the payload goes in and comes out as the
  * bytes the phone sealed.
  */
-export function dynamoStore(table: DynamoDbTable, tableName: string): AccountStore & RecordStore {
+export function dynamoStore(
+  table: DynamoDbTable,
+  tableName: string,
+): AccountStore & RecordStore & AccountDeleteStore {
   const keyOf = (accountId: string, sortKey: string): Item => ({
     pk: { S: partitionFor(accountId) },
     sk: { S: sortKey },
@@ -174,6 +200,66 @@ export function dynamoStore(table: DynamoDbTable, tableName: string): AccountSto
         ExpressionAttributeValues: { ':one': { N: '1' } },
       }),
     );
+  }
+
+  /**
+   * Every key under one account, read a page at a time. The read carries the two key attributes and
+   * nothing else: a delete has no use for a payload, and reading back six years of ciphertext it
+   * never looks at would be the one thing that made this slow.
+   */
+  async function everyKeyUnder(accountId: string, onlyTheFirstPage = false): Promise<Item[]> {
+    const found: Item[] = [];
+    let startAt: Item | undefined = undefined;
+
+    do {
+      const answered: QueryOutput = await table.query({
+        TableName: tableName,
+        KeyConditionExpression: 'pk = :pk',
+        ExpressionAttributeValues: { ':pk': { S: partitionFor(accountId) } },
+        ProjectionExpression: 'pk, sk',
+        ExclusiveStartKey: startAt,
+      });
+
+      found.push(...answered.Items);
+      startAt = onlyTheFirstPage ? undefined : answered.LastEvaluatedKey;
+    } while (startAt !== undefined);
+
+    return found;
+  }
+
+  async function deleteEvery(items: readonly Item[]): Promise<void> {
+    // Grouped rather than one at a time, because a delete that runs out of time part way through
+    // is a delete that leaves items, and six years of days is a few thousand of them. The group
+    // is small enough that a burst of them does not have the table refusing any.
+    for (let from = 0; from < items.length; from += deleteGroupSize) {
+      await Promise.all(
+        items.slice(from, from + deleteGroupSize).map(async (item) =>
+          table.deleteItem({
+            TableName: tableName,
+            Key: keyOf(textOf(item.pk).slice('ACC#'.length), textOf(item.sk)),
+          }),
+        ),
+      );
+    }
+  }
+
+  /**
+   * Reads the partition back and raises unless what is left is what was meant to be left. The
+   * store says a delete finished only after reading the table, because the caller of a store that
+   * reported success from its own calls would have nothing to check that report against.
+   */
+  async function nothingIsLeftUnder(accountId: string, allowed?: string): Promise<void> {
+    const left = (await everyKeyUnder(accountId, true)).filter(
+      (item) => textOf(item.sk) !== allowed,
+    );
+
+    if (left.length > 0) {
+      throw new Error(
+        `the table still holds ${left.length} item(s) under this account, starting at ${textOf(
+          left[0]?.sk,
+        )}`,
+      );
+    }
   }
 
   return {
@@ -223,6 +309,25 @@ export function dynamoStore(table: DynamoDbTable, tableName: string): AccountSto
       );
 
       return refused ? 'seen-before' : 'remembered';
+    },
+
+    deleteEverything: async (accountId: string): Promise<AccountDeletion> => {
+      // Every key first, then the removals, then a read that proves it. Nothing here loops until
+      // the partition looks empty: a table that would not let go of an item would have that loop
+      // reading for ever, and a function that spins until it is killed says nothing about why.
+      const held = await everyKeyUnder(accountId);
+      const account = held.filter((item) => textOf(item.sk) === accountSortKey);
+
+      await deleteEvery(held.filter((item) => textOf(item.sk) !== accountSortKey));
+      await nothingIsLeftUnder(accountId, accountSortKey);
+
+      // The account item goes last, because it is the item the authorizer reads to know she owns
+      // this partition. A delete that stopped half way has left her the one thing she needs to ask
+      // again; a delete that took it first would leave her records with nobody able to reach them.
+      await deleteEvery(account);
+      await nothingIsLeftUnder(accountId);
+
+      return { itemsRemoved: held.length };
     },
 
     writeRecord: async (accountId: string, record: StoredRecord): Promise<WriteOutcome> => {

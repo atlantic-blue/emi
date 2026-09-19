@@ -7,6 +7,7 @@ export const packageName = '@emi/vault';
 export * from './api';
 export * from './auth/authorizer';
 export * from './auth/signedBody';
+export * from './handlers/deleteAccount';
 export * from './handlers/pullRecords';
 export * from './handlers/putRecord';
 export * from './handlers/register';
