@@ -18,6 +18,10 @@ import {
   nameOf,
   readmeFloor,
   readmeProblems,
+  longTermHeading,
+  longTermItemsIn,
+  longTermProblems,
+  longTermStates,
   refusalHeading,
   refusalProblems,
   refusalsIn,
@@ -44,13 +48,29 @@ function documentOf(directories: string[], body: string): string {
   return `# The architecture\n\n## ${directoryHeading}\n\nStatus: built\n\n${list}\n\n## The shape\n\nStatus: designed\n\n${body}\n`;
 }
 
-const featuresOf = (mapped: string[], refusals: string[] = ['Partner sharing.']): string =>
+const aLongTermList = [
+  '### Core cycle tracking',
+  '',
+  '- Period logging. State: in version 1, \`TOKEN-1\`.',
+  '- Premenstrual syndrome prediction. State: planned.',
+  '- A badge from an auditor. State: conditional. An auditor has to read Emi and sign it.',
+];
+
+const featuresOf = (
+  mapped: string[],
+  refusals: string[] = ['Partner sharing.'],
+  longTerm: string[] = aLongTermList,
+): string =>
   [
     '# The features',
     '',
     '## Feature 1: The brand exists',
     '',
     ...mapped.map((line) => `- ${line}`),
+    '',
+    `## ${longTermHeading}`,
+    '',
+    ...longTerm,
     '',
     `## ${refusalHeading}`,
     '',
@@ -487,6 +507,156 @@ describe('the feature map names what version 1 refuses, and names each one once'
 
     expect(refusalsIn(document)).toEqual(['Every wearable device.']);
   });
+});
+
+describe('the long term list carries one of three states on every item, and never a fourth', () => {
+  const items = longTermItemsIn(features);
+  const declared = contractsDeclaredIn(contracts);
+
+  const brokenBy = (change: (markdown: string) => string): string[] =>
+    longTermProblems(featureDocument, longTermItemsIn(change(features)), declared);
+
+  it('reads every item under the group the operator grouped it in', () => {
+    expect(items.length).toBeGreaterThan(40);
+    expect(new Set(items.map((item) => item.group)).size).toBe(12);
+    expect(items.filter((item) => item.text.length === 0)).toEqual([]);
+  });
+
+  it('takes nothing from the bullets that explain how to read the list', () => {
+    expect(items.map((item) => item.text)).not.toContain('Planned. The operator agreed the item.');
+  });
+
+  it('gives every item one of the three states, and uses all three', () => {
+    expect(items.filter((item) => item.state === null)).toEqual([]);
+    expect([...new Set(items.map((item) => item.state))].sort()).toEqual(
+      [...longTermStates].sort(),
+    );
+  });
+
+  it('names a contract that the contract document declares on every item in version 1', () => {
+    const inVersionOne = items.filter((item) => item.state === 'in version 1');
+
+    expect(inVersionOne.length).toBeGreaterThan(0);
+    expect(inVersionOne.filter((item) => item.contract === null)).toEqual([]);
+    expect(inVersionOne.filter((item) => !declared.includes(item.contract ?? ''))).toEqual([]);
+  });
+
+  it('says the condition on each of the three items that carry one', () => {
+    const conditional = items.filter((item) => item.state === 'conditional');
+
+    expect(conditional.map((item) => item.text)).toEqual([
+      'A badge from an auditor.',
+      'A fitness recovery score aware of the cycle, which reads heart rate variability and sleep.',
+      'A conversational assistant for questions about a cycle.',
+    ]);
+    expect(conditional.filter((item) => item.condition === null)).toEqual([]);
+  });
+
+  it('holds the document in this repository to all three rules', () => {
+    expect(longTermProblems(featureDocument, items, declared)).toEqual([]);
+  });
+
+  it('fails an item that carries no state at all', () => {
+    const problems = brokenBy((markdown) =>
+      markdown.replace(
+        '- Ovulation prediction. State: in version 1, `CYCLE-4`.',
+        '- Ovulation prediction.',
+      ),
+    );
+
+    expect(problems).toEqual([
+      `${featureDocument}: the item "Ovulation prediction." under "${longTermHeading}" says nothing where it must say ${longTermStates.join(', ')}`,
+    ]);
+  });
+
+  it('fails an item that invents a fourth state', () => {
+    const problems = brokenBy((markdown) =>
+      markdown.replace(
+        '- Ovulation prediction. State: in version 1, `CYCLE-4`.',
+        '- Ovulation prediction. State: soon.',
+      ),
+    );
+
+    expect(problems).toEqual([
+      `${featureDocument}: the item "Ovulation prediction." under "${longTermHeading}" says "soon." where it must say ${longTermStates.join(', ')}`,
+    ]);
+  });
+
+  it('fails an item in version 1 that names no contract', () => {
+    const problems = brokenBy((markdown) =>
+      markdown.replace(
+        '- Ovulation prediction. State: in version 1, `CYCLE-4`.',
+        '- Ovulation prediction. State: in version 1.',
+      ),
+    );
+
+    expect(problems).toEqual([
+      `${featureDocument}: the item "Ovulation prediction." is in version 1 and names no contract, so nobody can get from it to ${contractDocument}`,
+    ]);
+  });
+
+  it('fails an item in version 1 whose contract the contract document does not declare', () => {
+    const problems = brokenBy((markdown) =>
+      markdown.replace(
+        '- Ovulation prediction. State: in version 1, `CYCLE-4`.',
+        '- Ovulation prediction. State: in version 1, `CYCLE-9`.',
+      ),
+    );
+
+    expect(problems).toEqual([
+      `${featureDocument}: the item "Ovulation prediction." names "CYCLE-9", and ${contractDocument} declares no such contract`,
+    ]);
+  });
+
+  it('fails a conditional item that does not say what has to happen first', () => {
+    const list = [
+      `## ${longTermHeading}`,
+      '',
+      '### Insight',
+      '',
+      '- A fitness recovery score aware of the cycle. State: conditional.',
+    ].join('\n');
+
+    expect(longTermProblems(featureDocument, longTermItemsIn(list), declared)).toEqual([
+      `${featureDocument}: the item "A fitness recovery score aware of the cycle." is conditional and does not say what has to happen before it can be written as a fact`,
+    ]);
+  });
+
+  it('refuses a document that carries no long term list at all', () => {
+    expect(longTermProblems(featureDocument, [], declared)).toEqual([
+      `${featureDocument} carries no item under "${longTermHeading}", so nothing says where Emi goes`,
+    ]);
+  });
+
+  it('fails the whole run when an item carries no state', () => {
+    const root = fixture(documentOf(['packages/one'], goodDiagram), ['packages/one'], {
+      features: featuresOf(
+        ['`TOKEN-1` the colour set.'],
+        ['Partner sharing.'],
+        ['### Core cycle tracking', '', '- Period logging.'],
+      ),
+    });
+
+    const run = check(root);
+
+    expect(run.output).toContain(
+      `the item "Period logging." under "${longTermHeading}" says nothing`,
+    );
+    expect(run.status).not.toBe(0);
+  }, 180_000);
+
+  it('fails the whole run when the long term list is empty', () => {
+    const root = fixture(documentOf(['packages/one'], goodDiagram), ['packages/one'], {
+      features: featuresOf(['`TOKEN-1` the colour set.'], ['Partner sharing.'], []),
+    });
+
+    const run = check(root);
+
+    expect(run.output).toContain(
+      `${featureDocument} carries no item under "${longTermHeading}", so nothing says where Emi goes`,
+    );
+    expect(run.status).not.toBe(0);
+  }, 180_000);
 });
 
 describe('a new package without a readme fails the pipeline', () => {

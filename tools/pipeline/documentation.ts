@@ -430,6 +430,7 @@ export interface DocumentResult {
   readonly diagrams: number;
   readonly contracts: number;
   readonly refusals: number;
+  readonly longTerm: number;
   readonly problems: string[];
 }
 
@@ -458,11 +459,16 @@ export function documentProblems(root: string, tooling: string): DocumentResult 
   const declared = contractsDeclaredIn(contracts.markdown);
   const mapped = contractsMappedIn(features.markdown);
   const refusals = refusalsIn(features.markdown);
+  const longTerm = longTermItemsIn(features.markdown);
 
   const agreement =
     features.problems.length + contracts.problems.length > 0
       ? []
-      : [...contractProblems(declared, mapped), ...refusalProblems(featureDocument, refusals)];
+      : [
+          ...contractProblems(declared, mapped),
+          ...refusalProblems(featureDocument, refusals),
+          ...longTermProblems(featureDocument, longTerm, declared),
+        ];
 
   const rendered = renderProblems(root, files, tooling);
 
@@ -470,6 +476,7 @@ export function documentProblems(root: string, tooling: string): DocumentResult 
     diagrams: rendered.diagrams,
     contracts: mapped.length,
     refusals: refusals.length,
+    longTerm: longTerm.length,
     problems: [
       ...drift,
       ...marked,
@@ -531,6 +538,146 @@ export function readmeProblems(root: string, directories: string[]): string[] {
     if (readme.length < readmeFloor) {
       problems.push(
         `${file} is ${readme.length} characters, under the floor of ${readmeFloor}, so it answers nothing`,
+      );
+    }
+  }
+
+  return problems;
+}
+
+export const longTermHeading = 'The long term list';
+
+/** The three states an item of the long term list may carry, and never a fourth. */
+export const longTermStates: readonly string[] = ['in version 1', 'planned', 'conditional'];
+
+export interface LongTermItem {
+  /** The heading the item sits under, as the operator grouped the product. */
+  readonly group: string;
+  /** The item itself, with the state taken off the end of the line. */
+  readonly text: string;
+  /** What the line says after `State:`, whether or not this document allows it. */
+  readonly said: string;
+  /** One of longTermStates, or null where the line says something else or says nothing. */
+  readonly state: string | null;
+  /** The contract that builds the item, where the item is in version 1, and null otherwise. */
+  readonly contract: string | null;
+  /** What has to happen outside the code, where the item is conditional, and null otherwise. */
+  readonly condition: string | null;
+}
+
+const markerPattern = /^(.*?)\s*State:\s*(.*)$/;
+
+const statedPattern = /^(in version 1|planned|conditional)\b[.,]?\s*(.*)$/i;
+
+const namedContractPattern = /^`([A-Z]+-\d+)`\.?$/;
+
+function itemOf(group: string, bullet: string): LongTermItem {
+  const marked = markerPattern.exec(bullet);
+  const said = marked === null ? '' : (marked[2] as string).trim();
+  const text = marked === null ? bullet : (marked[1] as string).trim();
+  const stated = statedPattern.exec(said);
+
+  if (stated === null) {
+    return { group, text, said, state: null, contract: null, condition: null };
+  }
+
+  const state = (stated[1] as string).toLowerCase();
+  const rest = (stated[2] as string).trim();
+  const named = namedContractPattern.exec(rest);
+
+  return {
+    group,
+    text,
+    said,
+    state,
+    contract: state === 'in version 1' && named !== null ? (named[1] as string) : null,
+    condition: state === 'conditional' && rest.length > 0 ? rest : null,
+  };
+}
+
+/**
+ * The long term list, read as items under the group headings the operator wrote. A bullet outside a
+ * group is prose about how to read the list rather than an item of it, so the reader takes nothing
+ * until a group heading has opened.
+ */
+export function longTermItemsIn(markdown: string): LongTermItem[] {
+  const bullets: { group: string; text: string }[] = [];
+  let inside = false;
+  let group = '';
+
+  for (const line of linesOf(markdown)) {
+    if (!line.fenced && line.text.startsWith('## ')) {
+      inside = line.text.slice(3).trim() === longTermHeading;
+      group = '';
+      continue;
+    }
+
+    if (!inside || line.fenced) {
+      continue;
+    }
+
+    if (line.text.startsWith('### ')) {
+      group = line.text.slice(4).trim();
+      continue;
+    }
+
+    if (group === '') {
+      continue;
+    }
+
+    if (line.text.startsWith('- ')) {
+      bullets.push({ group, text: line.text.slice(2).trim() });
+      continue;
+    }
+
+    const last = bullets.at(-1);
+
+    if (last !== undefined && line.text.startsWith('  ') && line.text.trim().length > 0) {
+      bullets[bullets.length - 1] = { ...last, text: `${last.text} ${line.text.trim()}` };
+    }
+  }
+
+  return bullets.map((bullet) => itemOf(bullet.group, bullet.text));
+}
+
+export function longTermProblems(
+  file: string,
+  items: readonly LongTermItem[],
+  declared: readonly string[],
+): string[] {
+  if (items.length === 0) {
+    return [`${file} carries no item under "${longTermHeading}", so nothing says where Emi goes`];
+  }
+
+  const problems: string[] = [];
+  const allowed = longTermStates.join(', ');
+
+  for (const item of items) {
+    if (item.state === null) {
+      const said = item.said.length === 0 ? 'nothing' : `"${item.said}"`;
+
+      problems.push(
+        `${file}: the item "${item.text}" under "${longTermHeading}" says ${said} where it must say ${allowed}`,
+      );
+      continue;
+    }
+
+    if (item.state === 'in version 1' && item.contract === null) {
+      problems.push(
+        `${file}: the item "${item.text}" is in version 1 and names no contract, so nobody can get from it to ${contractDocument}`,
+      );
+      continue;
+    }
+
+    if (item.contract !== null && !declared.includes(item.contract)) {
+      problems.push(
+        `${file}: the item "${item.text}" names "${item.contract}", and ${contractDocument} declares no such contract`,
+      );
+    }
+
+    if (item.state === 'conditional' && item.condition === null) {
+      problems.push(
+        `${file}: the item "${item.text}" is conditional and does not say what has to happen before it can be written as a fact`,
       );
     }
   }
