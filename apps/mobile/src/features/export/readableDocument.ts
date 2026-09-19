@@ -10,7 +10,8 @@ import {
 } from '@emi/cycle';
 import { colour, radius, space, typeScale } from '@emi/tokens';
 
-import { counted, deletedSentence, exportCopy, fullDate, fullInstant, wordsOf } from './copy';
+import { words } from '../../language';
+import { dayCount, deletedSentence, exportCopy, fullDate, fullInstant, wordsOf } from './copy';
 import type { Everything, ExportedRow, ExportedValue } from './everything';
 
 /**
@@ -43,18 +44,18 @@ const dayFieldOrder: readonly string[] = [
 
 /** Wording for the fields this version knows. `wordsOf` names anything else from the field itself. */
 const labels: Readonly<Record<string, string>> = {
-  bleedingIsUnexpected: 'Unexpected bleeding',
-  cycleLengthDays: 'Cycle length you stated',
-  firstRunCompletedAt: 'First opened',
-  is_predicted: 'Predicted',
-  length_days: 'Length',
-  lockOnReturn: 'Lock on return',
-  period_length_days: 'Period',
-  recordedAt: 'Saved',
-  temperatureCelsius: 'Temperature',
-  temperatureUnit: 'Temperature unit',
-  weightKilograms: 'Weight',
-  weightUnit: 'Weight unit',
+  bleedingIsUnexpected: words('export.document.label.unexpectedBleeding'),
+  cycleLengthDays: words('export.document.label.statedCycleLength'),
+  firstRunCompletedAt: words('export.document.label.firstOpened'),
+  is_predicted: words('export.document.label.predicted'),
+  length_days: words('export.document.label.length'),
+  lockOnReturn: words('export.document.label.lockOnReturn'),
+  period_length_days: words('export.document.label.period'),
+  recordedAt: words('export.document.label.saved'),
+  temperatureCelsius: words('export.document.label.temperature'),
+  temperatureUnit: words('export.document.label.temperatureUnit'),
+  weightKilograms: words('export.document.label.weight'),
+  weightUnit: words('export.document.label.weightUnit'),
 };
 
 export function labelOf(field: string): string {
@@ -104,7 +105,7 @@ function page(everything: Everything, body: string): string {
     `<title>${escaped(`${exportCopy.document.title}, ${taken}`)}</title>`,
     `<style>${STYLE}</style></head><body><main>`,
     `<h1>${escaped(exportCopy.document.title)}</h1>`,
-    `<p class="taken">${escaped(`Taken on ${taken}.`)}</p>`,
+    `<p class="taken">${escaped(words('export.document.taken', undefined, { taken }))}</p>`,
     `<p class="what">${escaped(exportCopy.document.what)}</p>`,
     body,
     '</main></body></html>',
@@ -147,7 +148,12 @@ function cycleBlock(row: ExportedRow): string {
   const started = text(row.started_on);
   const ended = text(row.ended_on);
   const heading =
-    ended.length > 0 ? `${fullDate(started)} to ${fullDate(ended)}` : `From ${fullDate(started)}`;
+    ended.length > 0
+      ? words('export.document.cycleRange', undefined, {
+          from: fullDate(started),
+          to: fullDate(ended),
+        })
+      : words('export.document.from', undefined, { day: fullDate(started) });
 
   const written = Object.keys(row)
     .filter((column) => !['id', 'started_on', 'ended_on'].includes(column))
@@ -224,7 +230,7 @@ function cycleValue(column: string, value: ExportedValue | undefined): string {
     return value === 1 ? exportCopy.document.predicted : '';
   }
   if (typeof value === 'number' && column.endsWith('_days')) {
-    return counted(value, 'day');
+    return dayCount(value);
   }
 
   return plainly(value);
@@ -233,7 +239,7 @@ function cycleValue(column: string, value: ExportedValue | undefined): string {
 /** Anything with no rule of its own: a word she picked reads as a sentence starts, a list joins. */
 function plainly(value: unknown): string {
   if (typeof value === 'boolean') {
-    return value ? 'Yes' : 'No';
+    return value ? words('export.document.yes') : words('export.document.no');
   }
   if (Array.isArray(value)) {
     return value.map(plainly).filter(Boolean).join(', ');
