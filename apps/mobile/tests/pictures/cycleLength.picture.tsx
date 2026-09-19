@@ -18,8 +18,8 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 
 const theCaveat = [
   'Rendered from the tree the cycle length screen produced under the test runner, at 390 by 844',
-  'points, and not captured from a phone. No screen names a font family yet, so the browser uses',
-  'its own face where the phone would use the system face. Reproduce with: npm run',
+  'points, and not captured from a phone. The step label and the number name the monospaced face,',
+  'which no screen loads yet, so both fall back here and on a phone. Reproduce with: npm run',
   'generate:cycle-length-picture.',
 ].join(' ');
 

@@ -15,8 +15,8 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 
 const theCaveat = [
   'Rendered from the tree the welcome screen produced under the test runner, at 390 by 844 points,',
-  'and not captured from a phone. No screen names a font family yet, so the browser uses its own',
-  'face where the phone would use the system face. Reproduce with: npm run generate:welcome-picture.',
+  'and not captured from a phone. The step label names the monospaced face, which no screen loads',
+  'yet, so it falls back here and on a phone. Reproduce with: npm run generate:welcome-picture.',
 ].join(' ');
 
 const screens: DrawnScreen[] = [];
