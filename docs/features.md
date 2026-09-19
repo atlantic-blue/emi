@@ -1,7 +1,7 @@
 # The features of Emi, and what version 1 does not do
 
-Emi is a period and cycle tracker. Seven features build version 1. An eighth feature writes the
-documents you are reading now.
+Emi is a period and cycle tracker. Emi stands for Every Month Insights. Seven features build
+version 1. An eighth feature writes the documents you are reading now.
 
 This document is the map. It names each feature, and it names every contract that the feature
 builds. It also carries the long term list, which is the whole product the operator wants, and it

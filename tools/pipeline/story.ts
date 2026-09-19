@@ -164,22 +164,67 @@ export function pictureAt(root: string, named: string): string {
   return resolve(root, dirname(storyDocument), named);
 }
 
-const caveatParts: readonly { readonly held: RegExp; readonly missing: string }[] = [
+/**
+ * How a picture was made. A screen is mounted under the test runner and the tree it produced is
+ * drawn; a drawing is written by a generator of its own. The two are worth different amounts to a
+ * reader, so the line under each one has to say which it is.
+ */
+export type PictureKind = 'screen' | 'drawing';
+
+export function kindOf(picture: string): PictureKind {
+  return picture.includes(`${pictureDirectory}/`) ? 'screen' : 'drawing';
+}
+
+interface CaveatPart {
+  readonly held: RegExp;
+  readonly missing: string;
+}
+
+const screenParts: readonly CaveatPart[] = [
   { held: /under the test runner/i, missing: 'that it was rendered under the test runner' },
   { held: /\b\d+ by \d+ points\b/, missing: 'the size it was rendered at, as "390 by 844 points"' },
   { held: /not captured from a phone/i, missing: 'that it was not captured from a phone' },
 ];
 
-export function caveatProblems(beat: Beat): string[] {
-  if (beat.caveat === null) {
+const drawingParts: readonly CaveatPart[] = [
+  { held: /generator/i, missing: 'that a generator drew it' },
+  {
+    held: /(not|rather than) under the test runner/i,
+    missing: 'that the test runner did not draw it, which is how the screens are drawn',
+  },
+];
+
+/** A command in the line, written between backticks, which is how a reader copies it. */
+const npmCommand = /`npm run ([a-z][a-z:-]*)`/;
+const nodeCommand = /`node [^`]+`/;
+
+export function caveatProblems(beat: Beat, scripts: readonly string[] = []): string[] {
+  const said = beat.caveat;
+
+  if (said === null) {
     return [
       `${storyDocument}: the picture ${beat.picture} carries no line under it saying where it came from`,
     ];
   }
 
-  return caveatParts
-    .filter((part) => !part.held.test(beat.caveat ?? ''))
+  const parts = kindOf(beat.picture) === 'screen' ? screenParts : drawingParts;
+  const problems = parts
+    .filter((part) => !part.held.test(said))
     .map((part) => `${storyDocument}: the line under ${beat.picture} does not say ${part.missing}`);
+
+  const named = npmCommand.exec(said);
+
+  if (named === null && !nodeCommand.test(said)) {
+    problems.push(
+      `${storyDocument}: the line under ${beat.picture} names no command that makes the picture again`,
+    );
+  } else if (named !== null && !scripts.includes(String(named[1]))) {
+    problems.push(
+      `${storyDocument}: the line under ${beat.picture} names \`npm run ${String(named[1])}\`, and package.json carries no such script`,
+    );
+  }
+
+  return problems;
 }
 
 export interface StoryResult {
@@ -189,6 +234,8 @@ export interface StoryResult {
   readonly beats: number;
   /** The pictures the story shows, each named once however many beats show it. */
   readonly shown: readonly string[];
+  /** Of those, the screens under `brand/screens`, which is the directory the unnamed scan reads. */
+  readonly shownScreens: readonly string[];
   readonly onDisk: readonly string[];
   /** Named by no section, which is how a picture nobody removed stays visible. */
   readonly unnamed: readonly string[];
@@ -197,6 +244,19 @@ export interface StoryResult {
   /** What the run says out loud and does not fail on. Step 8 turns the untold features into
    * problems, once every feature has a section to turn. */
   readonly notes: readonly string[];
+}
+
+/** The scripts package.json carries, so a line naming one that does not exist fails. */
+export function scriptsOf(root: string): string[] {
+  const manifest = join(root, 'package.json');
+
+  if (!existsSync(manifest)) {
+    return [];
+  }
+
+  const read = JSON.parse(readFileSync(manifest, 'utf8')) as { scripts?: Record<string, string> };
+
+  return Object.keys(read.scripts ?? {});
 }
 
 function read(root: string, file: string): string | null {
@@ -211,6 +271,7 @@ export function storyProblems(root: string): StoryResult {
   const features = featureText === null ? [] : featuresIn(featureText);
   const sections = storyText === null ? [] : sectionsIn(storyText);
   const onDisk = picturesOnDisk(root);
+  const scripts = scriptsOf(root);
   const problems: string[] = [];
   const notes: string[] = [];
 
@@ -268,7 +329,7 @@ export function storyProblems(root: string): StoryResult {
       continue;
     }
 
-    problems.push(...caveatProblems(beat));
+    problems.push(...caveatProblems(beat, scripts));
   }
 
   const shown = [...new Set(beats.map((beat) => beat.picture))].sort();
@@ -276,6 +337,7 @@ export function storyProblems(root: string): StoryResult {
     shown.map((each) => relative(join(root, pictureDirectory), pictureAt(root, each))),
   );
   const unnamed = onDisk.filter((file) => !named.has(file));
+  const shownScreens = shown.filter((each) => kindOf(each) === 'screen');
 
   for (const feature of untold) {
     notes.push(`${storyDocument} tells no story for feature ${feature.number}: ${feature.title}`);
@@ -291,6 +353,7 @@ export function storyProblems(root: string): StoryResult {
     untold,
     beats: beats.length,
     shown,
+    shownScreens,
     onDisk,
     unnamed,
     problems,
