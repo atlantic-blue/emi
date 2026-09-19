@@ -4,6 +4,8 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/token
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { words } from '../../language';
+
 /**
  * The five values of design section 6.2, in the order she reads them, from nothing to the heaviest
  * day. One press is the whole action: there is no save button here, because the most common thing
@@ -11,11 +13,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
  */
 
 export const flowLabel: Readonly<Record<Flow, string>> = {
-  none: 'None',
-  spotting: 'Spotting',
-  light: 'Light',
-  medium: 'Medium',
-  heavy: 'Heavy',
+  none: words('log.flow.none'),
+  spotting: words('log.flow.spotting'),
+  light: words('log.flow.light'),
+  medium: words('log.flow.medium'),
+  heavy: words('log.flow.heavy'),
 };
 
 export const flowPickerTestID = 'flow-picker';

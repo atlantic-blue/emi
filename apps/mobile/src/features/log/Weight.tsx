@@ -1,5 +1,6 @@
 import { type MeasurementReading, type WeightUnit, weight } from '@emi/cycle';
 
+import { words } from '../../language';
 import { MeasurementField } from './MeasurementField';
 
 /**
@@ -7,8 +8,8 @@ import { MeasurementField } from './MeasurementField';
  * range is wide enough to catch a stray digit and nothing narrower, because a field that argued
  * with her would be a field she stopped filling in.
  */
-export const weightHeading = 'Weight';
-export const weightHint = 'One number a day';
+export const weightHeading = words('log.weight.heading');
+export const weightHint = words('log.weight.hint');
 
 export interface WeightProps {
   readonly reading: MeasurementReading<WeightUnit>;

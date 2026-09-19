@@ -2,6 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/token
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { words } from '../../language';
 import { Screen } from '../../components/Screen';
 import type { DayRefusal } from './editDay';
 
@@ -11,16 +12,16 @@ import type { DayRefusal } from './editDay';
  */
 export const dayRefusedCopy: Readonly<Record<DayRefusal, { title: string; line: string }>> = {
   'day-is-in-the-future': {
-    title: 'Not yet',
-    line: 'That day has not happened. You can log today and any day behind it.',
+    title: words('log.day.notYet.title'),
+    line: words('log.day.notYet.line'),
   },
   'day-is-not-a-date': {
-    title: 'Not a day',
-    line: 'That address does not name a day in the calendar.',
+    title: words('log.day.notADay.title'),
+    line: words('log.day.notADay.line'),
   },
 };
 
-export const dayRefusedBackLabel = 'Back';
+export const dayRefusedBackLabel = words('log.day.back');
 export const dayRefusedTestID = 'day-refused';
 export const dayRefusedBackTestID = 'day-refused-back';
 
