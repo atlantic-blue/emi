@@ -289,12 +289,35 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(app.pathname()).toBe('/');
     });
 
-    it('has exactly three screens to route to', () => {
-      expect(readdirSync(join(appDirectory, 'onboarding')).sort()).toEqual([
+    it('has exactly three screens to route to, and one layout that is not one of them', () => {
+      const held = readdirSync(join(appDirectory, 'onboarding')).sort();
+
+      // A name opening with an underscore is a layout rather than a route, so she is never sent
+      // to it. Both halves are named, so a deleted layout fails here as loudly as a fourth screen.
+      expect(held.filter((name) => !name.startsWith('_'))).toEqual([
         'cycle-length.tsx',
         'last-period.tsx',
         'welcome.tsx',
       ]);
+      expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
+    });
+  });
+
+  describe('she steps forward through the three screens', () => {
+    it('leaves each screen behind and puts the next one in front of her', async () => {
+      await sheOpensEmi();
+      expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
+
+      await sheAnswers('welcome');
+
+      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-welcome')).toBeNull();
+
+      await shePresses(dayTestID(herPeriodStarted));
+      await sheAnswers('lastPeriod');
+
+      expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
     });
   });
 
