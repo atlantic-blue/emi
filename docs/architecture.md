@@ -89,6 +89,8 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `features` holds the behaviour tier: one file for each feature, written as scenarios a
   reader can follow, and each scenario named for the contract it proves.
 - `tools` holds the checks that guard the repository rather than the product.
+- `patches` holds the changes this repository makes to a package it installs. The install
+  applies them and `npm run check:patches` reads them back.
 - `docs` holds this document and the documents beside it.
 
 ## The phone
