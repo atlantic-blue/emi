@@ -95,14 +95,14 @@ export function wordsInScreensUnder(root: string, files: readonly string[]): Scr
   return files.flatMap((file) => wordsInTextElements(file, readFileSync(join(root, file), 'utf8')));
 }
 
-/** The name of the lookup, and the type a list of keys is annotated with. */
+/** The name of the lookup, and the type that marks a value as holding keys rather than words. */
 const lookupName = 'words';
-const keyListType = 'readonly WordKey[]';
+const keyTypeName = 'WordKey';
 
 /**
- * Every key the source names: the first argument of each lookup, and each member of a list a
- * screen walks rather than calling one by one. Nothing else counts, so a key inside a comment or a
- * sentence is not mistaken for one that is read.
+ * Every key the source names: the first argument of each lookup, and every key inside a value the
+ * type says holds keys, whether that is a list a screen walks or a table it looks a key up in.
+ * Nothing else counts, so a key inside a comment or a sentence is not mistaken for one that is read.
  */
 export function keysReadIn(file: string, source: string): string[] {
   const tree = parsed(file, source);
@@ -123,15 +123,17 @@ export function keysReadIn(file: string, source: string): string[] {
 
     if (
       ts.isVariableDeclaration(node) &&
-      node.type?.getText(tree) === keyListType &&
-      node.initializer !== undefined &&
-      ts.isArrayLiteralExpression(node.initializer)
+      node.type !== undefined &&
+      new RegExp(`\\b${keyTypeName}\\b`).test(node.type.getText(tree)) &&
+      node.initializer !== undefined
     ) {
-      for (const member of node.initializer.elements) {
-        if (ts.isStringLiteral(member)) {
-          found.push(member.text);
+      node.initializer.forEachChild(function inside(held: ts.Node): void {
+        if (ts.isStringLiteral(held)) {
+          found.push(held.text);
         }
-      }
+
+        held.forEachChild(inside);
+      });
     }
 
     node.forEachChild(visit);

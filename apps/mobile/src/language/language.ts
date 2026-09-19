@@ -1,15 +1,14 @@
 import { getLocales } from 'expo-localization';
 
 /**
- * Every language Emi is written in. English is the only one here. Spanish and Russian arrive in
- * their own steps, and each one adds a catalogue beside the English one rather than a branch in
- * any screen.
+ * Every language Emi is written in. Russian arrives in its own step, and it adds a catalogue
+ * beside these two rather than a branch in any screen.
  */
-export const languages = ['en'] as const;
+export const languages = ['en', 'es'] as const;
 
 export type Language = (typeof languages)[number];
 
-/** What she reads when her phone asks for a language Emi does not hold yet. */
+/** What she reads when her phone asks for a language Emi does not hold. */
 export const fallbackLanguage: Language = 'en';
 
 function isLanguage(tag: string): tag is Language {
