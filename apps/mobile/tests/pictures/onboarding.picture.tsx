@@ -1,9 +1,4 @@
-import { spawnSync } from 'node:child_process';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
-import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 import { render } from '@testing-library/react-native';
 
@@ -12,7 +7,7 @@ import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
-import { pageSize, screenDocument } from '../../../../brand/screens/asHtml';
+import { drawOrCheck } from '../../../../brand/screens/picture';
 
 /**
  * The three screens of the first run, drawn for somebody to look at. They are the first thing she
@@ -22,27 +17,8 @@ import { pageSize, screenDocument } from '../../../../brand/screens/asHtml';
  * runner is pointed at it by `npm run generate:onboarding-picture`.
  */
 
-const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
-const output = join(repositoryRoot, 'brand', 'screens', 'onboarding.png');
-
 /** Midday, and away from any summer time change, so the day list reads the same anywhere. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
-
-const browsers = [
-  process.env.EMI_BROWSER,
-  '/opt/playwright/chromium_headless_shell-1234/chrome-linux/headless_shell',
-  '/usr/bin/chromium',
-];
-
-function browser(): string {
-  const found = browsers.find((path) => path !== undefined && existsSync(path));
-
-  if (found === undefined) {
-    throw new Error('No browser to draw with.');
-  }
-
-  return found;
-}
 
 const theCaveat = [
   'Rendered from the trees the three first run screens produced under the test runner, at 390 by',
@@ -111,32 +87,14 @@ describe('the first run, drawn for somebody to look at', () => {
   it('draws them into one picture', () => {
     expect(drawnScreens).toHaveLength(theScreens.length);
 
-    const size = pageSize(drawnScreens.length);
-    const directory = mkdtempSync(join(tmpdir(), 'emi-onboarding-'));
-    const page = join(directory, 'onboarding.html');
+    const result = drawOrCheck({
+      name: 'onboarding',
+      screens: drawnScreens,
+      caveat: theCaveat,
+      script: 'generate:onboarding-picture',
+    });
 
-    writeFileSync(page, screenDocument(drawnScreens, theCaveat), 'utf8');
-
-    const run = spawnSync(
-      browser(),
-      [
-        '--headless',
-        '--no-sandbox',
-        '--disable-gpu',
-        '--hide-scrollbars',
-        `--screenshot=${output}`,
-        `--window-size=${size.width},${size.height}`,
-        pathToFileURL(page).href,
-      ],
-      { encoding: 'utf8' },
-    );
-
-    rmSync(directory, { force: true, recursive: true });
-
-    expect(run.status).toBe(0);
-    expect(existsSync(output)).toBe(true);
-    console.log(
-      `drew ${drawnScreens.length} screens into ${output} (${statSync(output).size} bytes)`,
-    );
+    expect(result.problems).toEqual([]);
+    console.log(result.said);
   });
 });

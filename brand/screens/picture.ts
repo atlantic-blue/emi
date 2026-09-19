@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -17,6 +17,21 @@ import { pageSize, screenDocument } from './asHtml';
 
 /** The name the pipeline sets to ask for a comparison instead of a drawing. */
 export const CHECK_VARIABLE = 'EMI_PICTURE_CHECK';
+
+/**
+ * The file each comparison writes its name into. The check counts the lines against the picture
+ * files on disk, so a picture that drew instead of comparing leaves the count short and the run
+ * fails. Without the name set, nothing is written and a drawing stays a drawing.
+ */
+export const LEDGER_VARIABLE = 'EMI_PICTURE_LEDGER';
+
+function recordTheComparison(name: string): void {
+  const ledger = process.env.EMI_PICTURE_LEDGER;
+
+  if (ledger !== undefined && ledger !== '') {
+    appendFileSync(ledger, `${name}\n`, 'utf8');
+  }
+}
 
 const browsers = [
   process.env.EMI_BROWSER,
@@ -45,6 +60,21 @@ export interface Picture {
   readonly caveat: string;
   /** The script that writes this picture, named in the message a stale picture prints. */
   readonly script: string;
+}
+
+/**
+ * A page drawn from markup the caller holds rather than from a list of screens, which is how the
+ * document she hands to a doctor is pictured: the markup there is the file the application writes.
+ */
+export interface DrawnPage {
+  /** The file name both the markup and the image take, without an extension. */
+  readonly name: string;
+  readonly markup: string;
+  readonly size: PhoneSize;
+  /** The script that writes this picture, named in the message a stale picture prints. */
+  readonly script: string;
+  /** What the page holds, as the one line the run prints names it. */
+  readonly holds: string;
 }
 
 export interface PictureResult {
@@ -76,7 +106,7 @@ function around(text: string, at: number): string {
 }
 
 export function driftProblems(
-  picture: Picture,
+  picture: { readonly name: string; readonly script: string },
   committed: string | null,
   generated: string,
 ): readonly string[] {
@@ -125,8 +155,7 @@ function windowFor(count: number, caveat: string): PhoneSize {
  * The page is drawn where it is committed rather than from a copy in a temporary directory, because
  * it declares the font files by a path of its own and a copy somewhere else cannot reach them.
  */
-function draw(name: string, page: string, count: number, caveat: string): number {
-  const size = windowFor(count, caveat);
+function drawPage(name: string, page: string, size: PhoneSize): number {
   const output = join(repositoryRoot(), picturePath(name));
 
   const run = spawnSync(
@@ -151,48 +180,63 @@ function draw(name: string, page: string, count: number, caveat: string): number
 }
 
 /**
- * Draws the picture, or says how it drifted. The picture is drawn by default and compared when
+ * Draws the page, or says how it drifted. The page is drawn by default and compared when
  * `EMI_PICTURE_CHECK` is set, which is the mode the pipeline runs, because comparing needs no
  * browser and drawing does.
+ *
+ * Every picture in the repository comes through here, so each one writes its markup beside its
+ * image and each one is read back. A picture that drew and never compared leaves the ledger short
+ * and `npm run check:pictures` fails on the count.
  */
-export function drawOrCheck(picture: Picture): PictureResult {
+export function drawOrCheckPage(page: DrawnPage): PictureResult {
   const root = repositoryRoot();
-  const markup = screenDocument(picture.screens, picture.caveat);
-  const file = join(root, markupPath(picture.name));
+  const file = join(root, markupPath(page.name));
 
   const asked = process.env.EMI_PICTURE_CHECK;
 
   if (asked !== undefined && asked !== '') {
     const committed = existsSync(file) ? readFileSync(file, 'utf8') : null;
+    const problems = driftProblems(page, committed, page.markup);
 
-    const problems = driftProblems(picture, committed, markup);
+    recordTheComparison(page.name);
 
     return {
-      markup: markupPath(picture.name),
-      picture: picturePath(picture.name),
-      characters: markup.length,
+      markup: markupPath(page.name),
+      picture: picturePath(page.name),
+      characters: page.markup.length,
       bytes: null,
       said:
         problems.length > 0
-          ? `${markupPath(picture.name)} is not what the ${picture.screens.length} screen(s) render now`
-          : `${markupPath(picture.name)} is what the ${picture.screens.length} screen(s) render now, ` +
-            `${markup.length} characters, and no picture was drawn`,
+          ? `${markupPath(page.name)} is not what ${page.holds} draws now`
+          : `${markupPath(page.name)} is what ${page.holds} draws now, ` +
+            `${page.markup.length} characters, and no picture was drawn`,
       problems,
     };
   }
 
-  writeFileSync(file, markup, 'utf8');
+  writeFileSync(file, page.markup, 'utf8');
 
-  const bytes = draw(picture.name, file, picture.screens.length, picture.caveat);
+  const bytes = drawPage(page.name, file, page.size);
 
   return {
-    markup: markupPath(picture.name),
-    picture: picturePath(picture.name),
-    characters: markup.length,
+    markup: markupPath(page.name),
+    picture: picturePath(page.name),
+    characters: page.markup.length,
     bytes,
     said:
-      `drew ${picture.screens.length} screen(s) into ${picturePath(picture.name)} (${bytes} bytes), ` +
-      `from ${markupPath(picture.name)} (${markup.length} characters)`,
+      `drew ${page.holds} into ${picturePath(page.name)} (${bytes} bytes), ` +
+      `from ${markupPath(page.name)} (${page.markup.length} characters)`,
     problems: [],
   };
+}
+
+/** The same, for a picture made of screens, which is all of them but the export document. */
+export function drawOrCheck(picture: Picture): PictureResult {
+  return drawOrCheckPage({
+    name: picture.name,
+    markup: screenDocument(picture.screens, picture.caveat),
+    size: windowFor(picture.screens.length, picture.caveat),
+    script: picture.script,
+    holds: `the ${picture.screens.length} screen(s)`,
+  });
 }
