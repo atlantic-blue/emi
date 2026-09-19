@@ -10,6 +10,10 @@ interface FirstRun {
   readonly cycleLengthDays: number;
   readonly setPeriodStartedOn: (day: string) => void;
   readonly setCycleLengthDays: (days: number) => void;
+  /**
+   * Writes her two answers, once. A second press of Done arrives before the screen goes away.
+   * The write refuses a first run that is already done, so this answers the second call itself.
+   */
   readonly finish: () => void;
   /**
    * Reads the database again. A delete empties the table this answer comes from, and without this
@@ -33,6 +37,11 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
 
   const finish = useCallback(() => {
+    // Read the database, and not the isDone state. Both presses run before anything redraws,
+    // so what the first press set has not reached the second.
+    if (firstRunIsDone(database)) {
+      return;
+    }
     if (periodStartedOn === undefined) {
       throw new Error('the first run cannot finish before she has said when her period started');
     }

@@ -10,7 +10,7 @@ import {
   RING_TRACK_WIDTH,
   phaseLabel,
 } from '@emi/tokens';
-import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { AccessibilityInfo, Animated, StyleSheet } from 'react-native';
 import { waitFor } from '@testing-library/react-native';
@@ -25,6 +25,7 @@ import type { Database } from '../apps/mobile/src/data/database';
 import {
   DayLogError,
   insertDayLog,
+  listDayLogs,
   readDayLog,
   updateDayLog,
 } from '../apps/mobile/src/data/dayLogRepository';
@@ -72,6 +73,9 @@ const today = dayOf(whenSheOpensIt);
 /** The day she names at her first run, which is five days behind the day she opens Emi. */
 const herPeriodStarted = addDays(today, -5);
 const sheSaysHerCycleRuns = defaultCycleLengthDays + 2;
+
+/** When her second press lands. The clock moves, so a second write would read as a later time. */
+const whenShePressesAgain = new Date(whenSheOpensIt.getTime() + 2000);
 
 /** Thursday. The day she did not log is the Monday three days behind her. */
 const sheForgot = addDays(today, -3);
@@ -344,6 +348,56 @@ defineFeature(feature, (test) => {
 
     and('her phone holds the cycle length she gave', () => {
       expect(readSetting(herDatabase(), 'cycleLengthDays')).toBe(String(sheSaysHerCycleRuns));
+    });
+  });
+
+  test('SCREEN-1, she presses Done twice and her first run is written once', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and(
+      'she answers all three screens, and presses Done a second time before the screen goes',
+      async () => {
+        await shePresses(onboardingActionTestID);
+        await shePresses(dayTestID(herPeriodStarted));
+        await shePresses(onboardingActionTestID);
+
+        for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
+          await shePresses(longerTestID);
+        }
+
+        // Both presses land before the screen redraws. That is what her second press meets
+        // while the home screen is still on its way.
+        const done = screen.getByTestId(onboardingActionTestID);
+        await act(async () => {
+          fireEvent.press(done);
+          jest.setSystemTime(whenShePressesAgain);
+          fireEvent.press(done);
+        });
+      },
+    );
+
+    then('she is looking at the home screen', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+    });
+
+    and('her phone holds one day, the day she said her period started', () => {
+      expect(listDayLogs(herDatabase()).map((row) => row.day)).toEqual([herPeriodStarted]);
+    });
+
+    and('her phone holds the time of her first press, and not the time of her second', () => {
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
     });
   });
 
