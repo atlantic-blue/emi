@@ -29,7 +29,7 @@ the frame than it does on a phone. The first run names the monospaced face, whic
 yet, so it falls back here and on a phone alike. And a screen that names no face at all takes the
 browser's own where a phone takes the system one.
 
-Four features have a section today. The pipeline runs `npm run check:story`, which names every
+Five features have a section today. The pipeline runs `npm run check:story`, which names every
 feature with no section, names every picture in `brand/screens` that no section shows, and fails
 when the story names a picture that is not there or when the line under a picture does not say how
 it was made. A later step turns the first of those into a failure as well. Feature 7 is not built
@@ -246,3 +246,51 @@ Two things this feature does not have yet. `SCREEN-3` names a note beside the re
 no note field is built. And no screen opens the sheet: `/log` reaches the flow row, the sheet is
 driven by its own tests, and the picture above is rendered from the component rather than from a
 route she can walk to.
+
+## Feature 5: Her data cannot be read by anybody else
+
+Every day she logs is encrypted on her phone before it reaches the database, with a key made once
+on that phone and kept in the keychain. Nobody at Emi can read a row, which is why nobody at Emi can
+recover one either. This feature is that promise, and the three places she meets it.
+
+She comes back to Emi and the phone asks who she is. Emi decides to lock on the way out rather than
+on the way back, because asking the phone a question takes a moment and a screen drawn during that
+moment is a screen a stranger reads. The lock is on by default, and what the task switcher keeps of
+Emi is the wordmark and nothing she wrote.
+
+![The lock screen as she returns, the same screen after she cancelled the prompt, and the cover the task switcher keeps](../brand/screens/lock.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:lock-picture`.
+
+She takes her record out. One press writes two files: a page she can read and hand to a doctor, and
+a JSON file a machine can read. Both hold everything she logged, in the wording Emi uses on screen,
+and neither one is sent anywhere.
+
+![The readable export, opened: her cycles, then each day with its flow, symptoms, moods, energy, temperature, weight and note](../brand/screens/export-document.png)
+
+Rendered under the test runner at 860 by 1400 points, and not captured from a phone. It is the file
+the application writes, opened in a browser. Draw it again with `npm run generate:export-picture`.
+
+She decides to leave, and one press is the whole of it. The screen lists what goes before she
+presses it, the way back out is an ordinary button beside the one that deletes, and there is no
+cooling off period and no undo. What comes back is an empty ring, because nobody at Emi can put any
+of it back.
+
+![The delete screen before she presses, and the screen after: it is gone](../brand/screens/delete-everything.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:delete-picture`.
+
+Under all three there is nothing to photograph. A stored day is a version byte, a 24 byte nonce and
+then the ciphertext with its tag, and the plaintext inside it is canonical JSON whose every field is
+refused at the edge if it is out of range. Fixed vectors are checked in, so a change to that format
+turns a test red rather than turning her old days into noise. The key lives in the keychain and is
+never transmitted, and a scan of the dependency list refuses an analytics library, an advertising
+identifier and any crash reporter that would carry her content off the phone.
+
+One line on the delete screen is ahead of the product. It says her account on the server goes too,
+and the vault in Amazon Web Services is designed rather than running: `docs/architecture.md` says so,
+and a build carrying no vault address never made an account for there to be anything to take. The
+code for that half is written and feature 6 is where it arrives. Until then the delete has nothing
+up there to reach, and the screen has a second sentence for the case where it cannot.
