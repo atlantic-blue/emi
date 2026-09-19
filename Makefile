@@ -12,6 +12,7 @@ install: ## install every dependency from the lock file
 	npm ci
 
 check: ## everything the pipeline runs, in the pipeline's order, stopping at the first failure
+	npm run check:patches
 	npm run format:check
 	npm run lint
 	npm run typecheck

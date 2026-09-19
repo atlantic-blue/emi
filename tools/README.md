@@ -18,6 +18,15 @@ feature with no section and every picture in `brand/screens` that no section sho
 `pipeline/story.ts` holds its readers, so each one runs against a fixture repository as well as
 against this one.
 
+`pipeline/checkPatches.ts` is the command behind `npm run check:patches`. It reads the copy of
+`expo-modules-jsi` that the install wrote, and it fails when any of the three changes in
+`patches/expo-modules-jsi+57.1.0.patch` is absent. An install rewrites `node_modules`, and
+patch-package reports a patch it cannot match as a warning and still leaves with a zero status, so
+the check reads the files rather than the status. The changes make the iOS build compile. The
+pipeline runs on Linux and cannot build the application, so reading the files is the only proof it
+can give. `pipeline/nativePatches.ts` holds the list of changes and the readers, so each one runs
+against a fixture tree as well as against this one.
+
 `tools/brand/writeBrandDocument.ts` writes `docs/brand.md` from `packages/tokens`. The drawings
 themselves live in the top level `brand` directory, which is a different thing. `npm run
 generate:brand` writes the document and `npm run check:brand` fails when the committed copy differs
@@ -37,8 +46,9 @@ tracked text file for wording Emi may never use about itself. `colourLeak.test.t
 value outside `packages/tokens` is refused. `licence.test.ts` reads the licence and every manifest
 that names one. `reference.test.ts` covers the three rules
 of the reference and watches each one go red and green again. `emptyTestRun.test.ts` proves a run
-that finds no test fails. `story.test.ts` covers the story check, renames a real picture to watch it
-go red, and puts it back.
+that finds no test fails. `nativePatches.test.ts` copies the three installed files into a
+fixture, takes one change back out to watch the check go red, and puts it back. `story.test.ts`
+covers the story check, renames a real picture to watch it go red, and puts it back.
 
 ## How to run them
 
@@ -48,6 +58,7 @@ From the root of the repository:
     npm run check:brand
     npm run check:reference
     npm run check:story
+    npm run check:patches
     npm run test:workspace
 
 The mermaid tool draws through Chrome, and `npm ci` fetches one on the pipeline runner. On a machine
