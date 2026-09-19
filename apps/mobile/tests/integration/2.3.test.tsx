@@ -1,14 +1,14 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
 
 import { startsACycle } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET } from '@emi/tokens';
 import { StyleSheet } from 'react-native';
 
 import type { Database } from '../../src/data/database';
-import { readDayLog } from '../../src/data/dayLogRepository';
+import { listDayLogs, readDayLog } from '../../src/data/dayLogRepository';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { readSetting } from '../../src/data/settingRepository';
 import {
@@ -62,6 +62,9 @@ const oneDayTooFarBack = dayOf(
   new Date(whenSheOpensIt.getTime() - (longestLookBackDays + 1) * millisecondsInADay),
 );
 const herCycleLengthDays = defaultCycleLengthDays + 2;
+
+/** When her second press lands. The clock moves, so a second write would read as a later time. */
+const twoSecondsLater = new Date(whenSheOpensIt.getTime() + 2000);
 
 interface OpenApp {
   /** The route she is looking at. It is read from the router rather than from the screen. */
@@ -289,12 +292,35 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(app.pathname()).toBe('/');
     });
 
-    it('has exactly three screens to route to', () => {
-      expect(readdirSync(join(appDirectory, 'onboarding')).sort()).toEqual([
+    it('has exactly three screens to route to, and one layout that is not one of them', () => {
+      const held = readdirSync(join(appDirectory, 'onboarding')).sort();
+
+      // A name opening with an underscore is a layout rather than a route, so she is never sent
+      // to it. Both halves are named, so a deleted layout fails here as loudly as a fourth screen.
+      expect(held.filter((name) => !name.startsWith('_'))).toEqual([
         'cycle-length.tsx',
         'last-period.tsx',
         'welcome.tsx',
       ]);
+      expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
+    });
+  });
+
+  describe('she steps forward through the three screens', () => {
+    it('leaves each screen behind and puts the next one in front of her', async () => {
+      await sheOpensEmi();
+      expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
+
+      await sheAnswers('welcome');
+
+      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-welcome')).toBeNull();
+
+      await shePresses(dayTestID(herPeriodStarted));
+      await sheAnswers('lastPeriod');
+
+      expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
     });
   });
 
@@ -434,6 +460,68 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
       expect(controlsTooSmallToPress()).toEqual([]);
+    });
+  });
+
+  describe('the index route, which is where both ends of the first run begin', () => {
+    it('shows a woman who has not answered the welcome screen, and nothing of her home', async () => {
+      await sheOpensEmi();
+
+      expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
+      expect(screen.queryByTestId('home-screen')).toBeNull();
+    });
+
+    it('shows a woman who has answered her home screen, and nothing of the first run', async () => {
+      const first = await sheOpensEmi();
+      await sheAnswersEveryScreen();
+      await first.close();
+
+      await sheOpensEmi();
+
+      expect(screen.getByTestId('home-screen')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-welcome')).toBeNull();
+    });
+  });
+
+  describe('she presses Done twice, because the first press looked like nothing', () => {
+    it('leaves her on the home screen with one day written, at its first revision', async () => {
+      const app = await sheOpensEmi();
+      await sheAnswers('welcome');
+      await shePresses(dayTestID(herPeriodStarted));
+      await sheAnswers('lastPeriod');
+      for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
+        await shePresses(longerTestID);
+      }
+      const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
+
+      // Both presses go out before either settles, which is what her second press meets while
+      // the home screen is still on its way. What the second press does to her is the subject of
+      // another pull request, so both outcomes are settled here rather than judged. What this
+      // case holds is the write: a second press adds no row and raises no revision.
+      await act(async () => {
+        const first = fireEvent.press(done);
+        jest.setSystemTime(twoSecondsLater);
+        const second = fireEvent.press(done);
+
+        await Promise.allSettled([first, second]);
+      });
+
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId('home-screen')).toBeTruthy();
+      expect(listDayLogs(herDatabase()).map((row) => [row.day, row.revision])).toEqual([
+        [herPeriodStarted, 1],
+      ]);
+
+      // The clock moved between the presses, so a second write would carry the later time in
+      // both of these. They are the assertion that a second press wrote nothing.
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
+      const vault = await theVaultOnHerPhone();
+      const row = readDayLog(herDatabase(), herPeriodStarted);
+      expect(row && vault.open(row.payload)).toEqual({
+        day: herPeriodStarted,
+        flow: 'medium',
+        recordedAt: whenSheOpensIt.toISOString(),
+      });
     });
   });
 
