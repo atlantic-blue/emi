@@ -26,8 +26,6 @@ export interface StripDay {
   /** A day inside the range her next period is expected to start in, which she has not bled on. */
   readonly forecastPeriod: boolean;
   readonly isToday: boolean;
-  /** A day she has not lived yet, which takes no press. */
-  readonly lived: boolean;
 }
 
 export interface WeekStripFrom {
@@ -101,7 +99,6 @@ export function weekEndingOn(from: WeekStripFrom): StripDay[] {
       periodDay,
       forecastPeriod: periodDay === undefined && forecastPeriodOn(from.forecast, day),
       isToday: day === from.today,
-      lived: day <= from.today,
     };
   });
 }

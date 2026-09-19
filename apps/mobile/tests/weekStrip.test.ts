@@ -135,9 +135,10 @@ describe('the week she is handed', () => {
     ]);
   });
 
-  it('holds every day of the week as one she has lived, because the week ends on today', () => {
-    const week = theWeek(herSixPeriods(lastStarted), addDays(lastStarted, 3));
+  it('ends on today, so it never holds a day she has not lived', () => {
+    const today = addDays(lastStarted, 3);
+    const week = theWeek(herSixPeriods(lastStarted), today);
 
-    expect(week.every((column) => column.lived)).toBe(true);
+    expect(week.filter((column) => column.day > today)).toEqual([]);
   });
 });

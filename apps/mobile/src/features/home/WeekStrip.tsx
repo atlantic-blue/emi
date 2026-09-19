@@ -69,13 +69,16 @@ interface ColumnProps {
 
 function Column({ column, today, onOpenDay }: ColumnProps): ReactNode {
   const isPeriod = column.periodDay !== undefined;
+  // A day she has not reached takes no press, whatever week the screen is handed. The past day
+  // screen refuses such a day at the write, and a control that leads nowhere should not be live.
+  const lived = column.day <= today;
 
   return (
     <Pressable
       accessibilityLabel={columnLabel(column, today)}
       accessibilityRole="button"
-      accessibilityState={{ disabled: !column.lived }}
-      disabled={!column.lived}
+      accessibilityState={{ disabled: !lived }}
+      disabled={!lived}
       onPress={() => onOpenDay(column.day)}
       style={styles.column}
       testID={weekDayTestID(column.day)}

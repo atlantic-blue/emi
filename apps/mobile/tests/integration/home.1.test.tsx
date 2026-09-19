@@ -191,7 +191,6 @@ describe('a week strip above the ring', () => {
       periodDay: undefined,
       forecastPeriod: false,
       isToday: false,
-      lived: false,
     };
 
     it('takes no press', async () => {
@@ -221,7 +220,7 @@ describe('a week strip above the ring', () => {
       const mayStart = addDays(theCycleSheIsLateIn, 28);
 
       expect(discStyle(mayStart).borderStyle).toBe('dotted');
-      expect(discStyle(addDays(theCycleSheIsLateIn, 25)).borderStyle).toBeUndefined();
+      expect(discStyle(addDays(theCycleSheIsLateIn, 25)).borderStyle).toBe('solid');
     });
   });
 });

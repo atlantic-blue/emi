@@ -301,8 +301,12 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
       expect(screen.getByTestId(ringBeadTestID)).toBeTruthy();
-      expect(screen.getByText(String(theDaySheOpensIt))).toBeTruthy();
-      expect(screen.getByText(phaseLabel.follicular)).toBeTruthy();
+      // The day is read off the ring rather than off the screen, because the week above it also
+      // carries that number.
+      const ring = within(screen.getByTestId(cycleRingTestID));
+
+      expect(ring.getByText(String(theDaySheOpensIt))).toBeTruthy();
+      expect(ring.getByText(phaseLabel.follicular)).toBeTruthy();
       expect(
         within(screen.getByTestId(homeForecastTestID)).getByTestId(nextPeriodRangeTestID),
       ).toHaveTextContent(rangeSentence(her.forecast.start));
