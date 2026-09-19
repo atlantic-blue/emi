@@ -48,3 +48,25 @@ export interface AccountStore {
     expiresAt: number,
   ): Promise<RememberOutcome>;
 }
+
+/**
+ * What a delete took. The count is what storage removed, and it is an outcome rather than a proof:
+ * contract WIRE-4 is proved by reading the table afterwards, because a service saying it deleted
+ * something is the one claim that cannot check itself.
+ */
+export interface AccountDeletion {
+  readonly itemsRemoved: number;
+}
+
+/**
+ * The one thing a delete asks of storage. It is a port of its own rather than a fourth method on
+ * `AccountStore`, so the authorizer, which is handed an `AccountStore` on every single request,
+ * cannot reach a call that empties a partition.
+ */
+export interface AccountDeleteStore {
+  /**
+   * Everything under one account, gone: the account item, every record, and every signature the
+   * authorizer remembered, including the signature on the request that asked for this.
+   */
+  deleteEverything(accountId: string): Promise<AccountDeletion>;
+}

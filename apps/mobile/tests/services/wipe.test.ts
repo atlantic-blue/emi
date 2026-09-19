@@ -5,6 +5,7 @@ import { DatabaseSync } from 'node:sqlite';
 
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
+import type { ServerDelete, ServerDeleteOutcome } from '../../src/services/sync/deleteAccount';
 import {
   deleteEverything,
   emptyTheDatabase,
@@ -14,6 +15,7 @@ import {
   freePagesHeld,
   pagesHeld,
   rowsHeld,
+  theServerCopyWentToo,
   wipedKeychainItems,
 } from '../../src/services/vault/wipe';
 import { nodeDatabase, openTestDatabase } from '../data/nodeDatabase';
@@ -48,6 +50,18 @@ function aPhoneWithASettingAndALaterTable(rows = 400) {
  * question is what the bytes on the disk still say after a delete.
  */
 const aWordSheWrote = 'marmaladeSky';
+
+/** A server that took the account, so a case about the phone is about the phone alone. */
+const aServerThatTookIt: ServerDelete = () => Promise.resolve('gone');
+
+/** A server that answers what it is told to, and says when it was asked. */
+function aServerThatSays(outcome: ServerDeleteOutcome, asked: () => void = () => undefined) {
+  return (): Promise<ServerDeleteOutcome> => {
+    asked();
+
+    return Promise.resolve(outcome);
+  };
+}
 
 describe('the local delete', () => {
   describe('which tables it empties', () => {
@@ -119,7 +133,7 @@ describe('the local delete', () => {
     it('asks for every one of them, whether this phone held it or not', async () => {
       const store = memorySecureStore({ [wipedKeychainItems[0] as string]: 'held' });
 
-      await deleteEverything(aPhoneWithASettingAndALaterTable(), store);
+      await deleteEverything(aPhoneWithASettingAndALaterTable(), store, aServerThatTookIt);
 
       expect(store.removals()).toEqual([...wipedKeychainItems]);
       expect(store.items()).toEqual({});
@@ -162,7 +176,11 @@ describe('the local delete', () => {
       const theKeptOne = wipedKeychainItems[1] as string;
       const { remover } = aKeychainThatKeeps(theKeptOne);
 
-      const outcome = await deleteEverything(aPhoneWithASettingAndALaterTable(), remover);
+      const outcome = await deleteEverything(
+        aPhoneWithASettingAndALaterTable(),
+        remover,
+        aServerThatTookIt,
+      );
 
       expect(outcome.rowsLeft).toBe(0);
       expect(outcome.keychainItemsRefused).toEqual([theKeptOne]);
@@ -173,8 +191,66 @@ describe('the local delete', () => {
       const outcome = await deleteEverything(
         aPhoneWithASettingAndALaterTable(),
         memorySecureStore(),
+        aServerThatTookIt,
       );
 
+      expect(nothingIsLeft(outcome)).toBe(true);
+    });
+  });
+
+  describe('the account on the server', () => {
+    it('is asked for before a single row or item of hers has gone', async () => {
+      const db = aPhoneWithASettingAndALaterTable();
+      const store = memorySecureStore({ [wipedKeychainItems[0] as string]: 'held' });
+      let heldWhenAsked = { rows: -1, items: -1 };
+
+      await deleteEverything(
+        db,
+        store,
+        aServerThatSays('gone', () => {
+          heldWhenAsked = {
+            rows: rowsHeld(db),
+            items: Object.keys(store.items()).length,
+          };
+        }),
+      );
+
+      expect(heldWhenAsked).toEqual({ rows: 401, items: 1 });
+    });
+
+    it('carries what the server said back with the rest of the outcome', async () => {
+      const outcome = await deleteEverything(
+        aPhoneWithASettingAndALaterTable(),
+        memorySecureStore(),
+        aServerThatSays('no-account'),
+      );
+
+      expect(outcome.serverAccount).toBe('no-account');
+      expect(theServerCopyWentToo(outcome)).toBe(true);
+    });
+
+    it('takes her days anyway when it could not be reached, and says the copy is not accounted for', async () => {
+      const store = memorySecureStore({ [wipedKeychainItems[0] as string]: 'held' });
+      const outcome = await deleteEverything(
+        aPhoneWithASettingAndALaterTable(),
+        store,
+        aServerThatSays('not-reached'),
+      );
+
+      expect(outcome.rowsLeft).toBe(0);
+      expect(store.items()).toEqual({});
+      expect(nothingIsLeft(outcome)).toBe(true);
+      expect(theServerCopyWentToo(outcome)).toBe(false);
+    });
+
+    it('takes her days anyway when the call raises, rather than stopping on it', async () => {
+      const db = aPhoneWithASettingAndALaterTable();
+      const outcome = await deleteEverything(db, memorySecureStore(), () =>
+        Promise.reject(new Error('there is no network here')),
+      );
+
+      expect(rowsHeld(db)).toBe(0);
+      expect(outcome.serverAccount).toBe('not-reached');
       expect(nothingIsLeft(outcome)).toBe(true);
     });
   });
@@ -183,7 +259,7 @@ describe('the local delete', () => {
     it('counts the rows and the pages left by reading the database, never by assuming', async () => {
       const db = aPhoneWithASettingAndALaterTable();
       const before = pagesHeld(db);
-      const outcome = await deleteEverything(db, memorySecureStore());
+      const outcome = await deleteEverything(db, memorySecureStore(), aServerThatTookIt);
 
       expect(outcome.rowsLeft).toBe(0);
       expect(outcome.freePagesLeft).toBe(0);
