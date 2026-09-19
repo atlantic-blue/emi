@@ -155,8 +155,6 @@ describe('a past day, drawn for somebody to look at', () => {
     });
 
     expect(result.problems).toEqual([]);
-    console.log(
-      `${result.markup}: ${result.characters} characters, ${result.picture}: ${result.bytes ?? 'not drawn'} bytes`,
-    );
+    console.log(result.said);
   });
 });

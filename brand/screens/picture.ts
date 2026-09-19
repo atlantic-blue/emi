@@ -54,6 +54,8 @@ export interface PictureResult {
   readonly characters: number;
   /** The size of the image on disk, and null when the run only compared the markup. */
   readonly bytes: number | null;
+  /** The one line the run prints, so a reader of a pipeline log sees that it did work. */
+  readonly said: string;
   readonly problems: readonly string[];
 }
 
@@ -160,12 +162,19 @@ export function drawOrCheck(picture: Picture): PictureResult {
   if (asked !== undefined && asked !== '') {
     const committed = existsSync(file) ? readFileSync(file, 'utf8') : null;
 
+    const problems = driftProblems(picture, committed, markup);
+
     return {
       markup: markupPath(picture.name),
       picture: picturePath(picture.name),
       characters: markup.length,
       bytes: null,
-      problems: driftProblems(picture, committed, markup),
+      said:
+        problems.length > 0
+          ? `${markupPath(picture.name)} is not what the ${picture.screens.length} screen(s) render now`
+          : `${markupPath(picture.name)} is what the ${picture.screens.length} screen(s) render now, ` +
+            `${markup.length} characters, and no picture was drawn`,
+      problems,
     };
   }
 
@@ -177,11 +186,16 @@ export function drawOrCheck(picture: Picture): PictureResult {
   writeFileSync(page, markup, 'utf8');
 
   try {
+    const bytes = draw(picture.name, page, picture.screens.length, picture.caveat);
+
     return {
       markup: markupPath(picture.name),
       picture: picturePath(picture.name),
       characters: markup.length,
-      bytes: draw(picture.name, page, picture.screens.length, picture.caveat),
+      bytes,
+      said:
+        `drew ${picture.screens.length} screen(s) into ${picturePath(picture.name)} (${bytes} bytes), ` +
+        `from ${markupPath(picture.name)} (${markup.length} characters)`,
       problems: [],
     };
   } finally {
