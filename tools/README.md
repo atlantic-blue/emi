@@ -40,6 +40,18 @@ an export carries no comment, or when a comment holds no word its own declaratio
 `documentation/exports.ts` reads a file and `documentation/wording.ts` measures a comment against a
 signature, so both can be run against a source written in a test.
 
+`hermes/engine.ts` and `hermes/bundle.ts` are the second test tier, and they are not a check of
+their own: `apps/mobile/tests/language/plural.hermes.test.ts` drives them. Node carries
+internationalisation, a crypto object and a module loader that the engine on the phone does not, so
+a suite that is green on node can sit over an application that cannot draw a screen. `engine.ts`
+fetches a pinned Hermes for the platform it is running on, checks its digest and runs a program
+on it. Linux and macOS each have their own archive and their own digest, and a platform with
+neither is refused by name rather than handed the wrong binary. A run that did not run is refused
+with its status and whatever the engine said, because a binary built for another platform answers
+nothing at all and an empty answer reads like a quiet one. `bundle.ts` writes one source
+file and everything it imports into a single program, because Hermes has no module loader, and it
+refuses a package rather than guessing: a test names what each one stands for.
+
 The tests beside them run under the workspace jest project. `documentation.test.ts` covers the
 documents, the feature map, the contracts and the readmes. `forbiddenClaims.test.ts` reads every
 tracked text file for wording Emi may never use about itself. `colourLeak.test.ts` proves a hex
@@ -60,6 +72,9 @@ From the root of the repository:
     npm run check:story
     npm run check:patches
     npm run test:workspace
+
+The Hermes tier runs inside the mobile suite and fetches the engine once, into
+`node_modules/.cache`. It needs curl and a network the first time, and nothing after that.
 
 The mermaid tool draws through Chrome, and `npm ci` fetches one on the pipeline runner. On a machine
 that already has a browser, point the tool at it:

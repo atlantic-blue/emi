@@ -74,11 +74,46 @@ export function forgetLanguage(): void {
 }
 
 /**
- * Which form of a plural key the count takes. `Intl` picks it, because it already holds the rule
- * for every language and a rule written here would be a second copy of it that drifts.
+ * Which form of a plural key the count takes, written out here rather than asked of the platform.
+ *
+ * `Intl.PluralRules` was the obvious way and the phone does not have it. The engine the
+ * application runs on carries `Intl.Collator`, `Intl.DateTimeFormat` and `Intl.NumberFormat` and
+ * no more, so the call was undefined and the first screen that asked for a plural stopped the
+ * product. Node has the constructor, which is why every test stayed green.
+ *
+ * A copy of a standard drifts, so two tiers hold this one. On node it is compared against
+ * `Intl.PluralRules` for every count in the range Emi counts, so a rule that disagrees with the
+ * standard fails. On Hermes it is read on the engine the phone runs.
+ *
+ * The rule is the standard's, for the three languages Emi ships. English and Spanish: one is one.
+ * Russian: one for a number ending in 1 except 11, few for 2, 3 and 4 except 12, 13 and 14, and
+ * many for everything else, which is why 11 is many and 101 is one. A count with a fraction is
+ * `other` in every language, which Russian does not use, so it is refused by the caller rather
+ * than answered with the wrong words.
  */
 export function pluralCategory(language: Language, count: number): PluralCategory {
-  return new Intl.PluralRules(language).select(count) as PluralCategory;
+  const size = Math.abs(count);
+
+  if (!Number.isInteger(size)) {
+    return 'other';
+  }
+
+  if (language !== 'ru') {
+    return size === 1 ? 'one' : 'other';
+  }
+
+  const last = size % 10;
+  const lastTwo = size % 100;
+
+  if (last === 1 && lastTwo !== 11) {
+    return 'one';
+  }
+
+  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) {
+    return 'few';
+  }
+
+  return 'many';
 }
 
 function formOf(held: Words, language: Language, count: number | undefined): string {
