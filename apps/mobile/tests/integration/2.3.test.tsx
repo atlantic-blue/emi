@@ -1,14 +1,14 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
 
 import { startsACycle } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET } from '@emi/tokens';
 import { StyleSheet } from 'react-native';
 
 import type { Database } from '../../src/data/database';
-import { readDayLog } from '../../src/data/dayLogRepository';
+import { listDayLogs, readDayLog } from '../../src/data/dayLogRepository';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { readSetting } from '../../src/data/settingRepository';
 import {
@@ -62,6 +62,9 @@ const oneDayTooFarBack = dayOf(
   new Date(whenSheOpensIt.getTime() - (longestLookBackDays + 1) * millisecondsInADay),
 );
 const herCycleLengthDays = defaultCycleLengthDays + 2;
+
+/** When her second press lands. The clock moves, so a second write would read as a later time. */
+const twoSecondsLater = new Date(whenSheOpensIt.getTime() + 2000);
 
 interface OpenApp {
   /** The route she is looking at. It is read from the router rather than from the screen. */
@@ -457,6 +460,68 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
       expect(controlsTooSmallToPress()).toEqual([]);
+    });
+  });
+
+  describe('the index route, which is where both ends of the first run begin', () => {
+    it('shows a woman who has not answered the welcome screen, and nothing of her home', async () => {
+      await sheOpensEmi();
+
+      expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
+      expect(screen.queryByTestId('home-screen')).toBeNull();
+    });
+
+    it('shows a woman who has answered her home screen, and nothing of the first run', async () => {
+      const first = await sheOpensEmi();
+      await sheAnswersEveryScreen();
+      await first.close();
+
+      await sheOpensEmi();
+
+      expect(screen.getByTestId('home-screen')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-welcome')).toBeNull();
+    });
+  });
+
+  describe('she presses Done twice, because the first press looked like nothing', () => {
+    it('leaves her on the home screen with one day written, at its first revision', async () => {
+      const app = await sheOpensEmi();
+      await sheAnswers('welcome');
+      await shePresses(dayTestID(herPeriodStarted));
+      await sheAnswers('lastPeriod');
+      for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
+        await shePresses(longerTestID);
+      }
+      const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
+
+      // Both presses go out before either settles, which is what her second press meets while
+      // the home screen is still on its way. What the second press does to her is the subject of
+      // another pull request, so both outcomes are settled here rather than judged. What this
+      // case holds is the write: a second press adds no row and raises no revision.
+      await act(async () => {
+        const first = fireEvent.press(done);
+        jest.setSystemTime(twoSecondsLater);
+        const second = fireEvent.press(done);
+
+        await Promise.allSettled([first, second]);
+      });
+
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId('home-screen')).toBeTruthy();
+      expect(listDayLogs(herDatabase()).map((row) => [row.day, row.revision])).toEqual([
+        [herPeriodStarted, 1],
+      ]);
+
+      // The clock moved between the presses, so a second write would carry the later time in
+      // both of these. They are the assertion that a second press wrote nothing.
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
+      const vault = await theVaultOnHerPhone();
+      const row = readDayLog(herDatabase(), herPeriodStarted);
+      expect(row && vault.open(row.payload)).toEqual({
+        day: herPeriodStarted,
+        flow: 'medium',
+        recordedAt: whenSheOpensIt.toISOString(),
+      });
     });
   });
 
