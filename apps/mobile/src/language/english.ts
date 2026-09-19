@@ -24,6 +24,12 @@ export const english = {
   'calendar.month.november': 'November',
   'calendar.month.october': 'October',
   'calendar.month.september': 'September',
+  // English writes a day of the month as an ordinal and Spanish writes it as a plain number, so
+  // the suffix is a word like any other. A language that adds none carries the empty string.
+  'calendar.ordinal.first': 'st',
+  'calendar.ordinal.other': 'th',
+  'calendar.ordinal.second': 'nd',
+  'calendar.ordinal.third': 'rd',
   'calendar.today': 'Today',
   'calendar.weekday.friday': 'Friday',
   'calendar.weekday.monday': 'Monday',

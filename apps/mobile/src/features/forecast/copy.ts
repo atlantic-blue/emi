@@ -46,17 +46,25 @@ const monthKeys: readonly WordKey[] = [
 
 export const monthNames: readonly string[] = monthKeys.map((key) => words(key));
 
-const ordinalSuffixes: Readonly<Record<number, string>> = { 1: 'st', 2: 'nd', 3: 'rd' };
+const ordinalKeys: Readonly<Record<number, WordKey>> = {
+  1: 'calendar.ordinal.first',
+  2: 'calendar.ordinal.second',
+  3: 'calendar.ordinal.third',
+};
 
-/** The eleventh, the twelfth and the thirteenth take th, and so does every hundredth of them. */
+/**
+ * The eleventh, the twelfth and the thirteenth take the last suffix, and so does every hundredth
+ * of them. Which letters those are is the language's answer rather than this function's: English
+ * writes the 14th and Spanish writes the 14.
+ */
 export function ordinal(dayOfMonth: number): string {
   const lastTwo = dayOfMonth % 100;
 
   if (lastTwo >= 11 && lastTwo <= 13) {
-    return `${dayOfMonth}th`;
+    return `${dayOfMonth}${words('calendar.ordinal.other')}`;
   }
 
-  return `${dayOfMonth}${ordinalSuffixes[dayOfMonth % 10] ?? 'th'}`;
+  return `${dayOfMonth}${words(ordinalKeys[dayOfMonth % 10] ?? 'calendar.ordinal.other')}`;
 }
 
 interface CalendarDay {

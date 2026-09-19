@@ -1,5 +1,6 @@
 import { english } from './english';
 import { type Language, phoneLanguage } from './language';
+import { spanish } from './spanish';
 
 /**
  * The plural categories a language can use. English uses two of them and Russian uses four, which
@@ -20,7 +21,7 @@ export type Catalogue = Readonly<Record<WordKey, Words>>;
 /** What a name inside braces is filled with. */
 export type WordValues = Readonly<Record<string, string | number>>;
 
-const catalogues: Readonly<Record<Language, Catalogue>> = { en: english };
+const catalogues: Readonly<Record<Language, Catalogue>> = { en: english, es: spanish };
 
 export const wordKeys: readonly WordKey[] = Object.keys(english).sort() as WordKey[];
 
