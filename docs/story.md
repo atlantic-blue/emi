@@ -14,19 +14,108 @@ A section tells one feature. The sections are in the order `features.md` gives.
 A beat is a sentence and a picture. The sentence says what she does. The picture shows the screen
 she does it on.
 
-Every picture here was rendered under the test runner. The runner mounts the screen the application
-ships, reads the tree it produced, and draws that tree in a browser. No picture was captured from a
-phone. The line under each picture says so, and it names the command that draws the picture again.
+No picture here was captured from a phone, and none is a mockup. Every one comes from the code, in
+one of two ways, and the line under each picture says which way and names the command that makes it
+again.
 
-Two things a rendered picture does not carry. No screen names a font family yet, so the browser
-draws the words in its own face where a phone draws them in the system face. And a browser lays a
-screen out in rows where a phone lays it out in columns, which the renderer restores by hand, so a
-control can sit a little higher up the frame than it does on a phone.
+A picture of a screen is rendered under the test runner. The runner mounts the screen the
+application ships, reads the tree it produced, and draws that tree in a browser. A picture of a
+drawing, which is everything in feature 1, is written by a generator of its own from the numbers in
+the token package.
 
-One feature has a section today. The pipeline runs `npm run check:story`, which names every feature
-with no section, names every picture in `brand/screens` that no section shows, and fails when the
-story names a picture that is not there. A later step turns the first of those into a failure as
-well. Feature 7 is not built yet, so there is nothing of it to show.
+Three things a rendered screen does not carry. A browser lays a screen out in rows where a phone
+lays it out in columns, which the renderer restores by hand, so a control can sit a little higher up
+the frame than it does on a phone. The first run names the monospaced face, which no screen loads
+yet, so it falls back here and on a phone alike. And a screen that names no face at all takes the
+browser's own where a phone takes the system one.
+
+Two features have a section today. The pipeline runs `npm run check:story`, which names every
+feature with no section, names every picture in `brand/screens` that no section shows, and fails
+when the story names a picture that is not there or when the line under a picture does not say how
+it was made. A later step turns the first of those into a failure as well. Feature 7 is not built
+yet, so there is nothing of it to show.
+
+## Feature 1: The brand exists
+
+She sees the mark before she sees a screen: on the home screen of her phone, in the store, and on
+the first screen of the first run. This feature is everything that is drawn rather than written.
+Every number in it is measured and not chosen by eye, and the whole of it sits on one sheet.
+
+The pictures in this section are made differently from the rest of the story. Each one is written by
+a generator of its own rather than under the test runner, so the line under each names the command
+that writes it again.
+
+She reads the name first. The mark is `emi` in lowercase Fraunces, and the dot of the `i` is a ring
+with a gap of 40 degrees opening at the upper left, which is the same open ring her cycle is drawn
+on.
+
+![The wordmark, with the open ring in place of the dot of the i](../brand/logo/emi-lockup.svg)
+
+Drawn by its own generator, rather than under the test runner. `npm run generate:logo` writes this
+file from the numbers in `brand/logo/geometry.ts`, and a test redraws it and refuses a file edited by
+hand.
+
+On the home screen of her phone the mark is the ring alone, at 56 percent of the width and sitting a
+little above the middle so it reads as centred. One program writes all 24 files the two stores ask
+for from that one drawing.
+
+![The application icon, drawn at 1024 points](../apps/mobile/assets/icon/apple-1024.png)
+
+Drawn by its own generator, rather than under the test runner. `npm run generate:app-icon` writes
+every size from `brand/logo/emi-ring.svg`, and a test refuses a size a store asks for and nobody
+wrote.
+
+She can read every word on every ground, because the palette is measured rather than chosen.
+Eighteen colours, each text colour carrying the ground it sits on and the ratio it was measured at,
+and a pair below 4.5 to 1 fails the build. Text never sits on a phase fill: each phase colour has a
+darker ink partner that carries the words.
+
+![The brand sheet: the mark, the measured palette, the type scale, the ring, the icons and the illustrations](../brand/sheet/brand-sheet.png)
+
+Drawn by its own generator, rather than under the test runner. `npm run generate:sheet` writes the
+page from `packages/tokens`, and `npm run check:sheet` fails when the committed page and the tokens
+disagree by one character.
+
+She reads Emi in three faces. Fraunces carries the headings and the wordmark, Plus Jakarta Sans
+carries what she reads at length, and IBM Plex Mono carries a number, a unit or a label. Six sizes,
+each with the line height the token package fixes, and every sentence on the page is one Emi writes.
+
+![The type specimen: three faces at six sizes, in two weights](../brand/specimen/specimen.png)
+
+Drawn by its own generator, rather than under the test runner. `npm run generate:specimen` reads the
+type scale and the font files from `packages/tokens`, so the page cannot name a size the application
+does not have.
+
+The ring carries the meaning, so the words do not have to. Each arc is sized by the days of that
+phase, three degrees of ground sit at every boundary, the days she has had are solid where the days
+ahead are at a fifth, and the ember bead is today. Feature 2 draws it from her own cycle.
+
+![The ring at a short cycle of 21 days, a usual one of 28 and a long one of 45](../brand/ring/cycle-ring.png)
+
+Drawn by its own generator, rather than under the test runner. `npm run generate:ring-picture` draws
+it from the geometry in `packages/tokens/src/ring.ts`, which is the arithmetic the screen draws
+with.
+
+Every symbol she presses comes from one set. Twenty drawings, one weight, on a 24 point grid and
+shown at it. Each one leaves its colour as `currentColor`, so the screen that uses it decides the
+colour and nobody writes a value into the drawing.
+
+![The icon set: twenty line symbols on the contact sheet](../brand/icons/contact-sheet.png)
+
+Drawn by its own generator, rather than under the test runner. Run
+`node --experimental-strip-types brand/icons/generate.ts`, which reads the directory and writes the
+token module that names them.
+
+An illustration is two or three soft shapes in the phase colours, and never a picture of a thing.
+The style refuses a body, a face, a flower, a droplet and blood, because a stranger at arm's length
+must learn nothing from her screen, and a test reads every drawing and every file name for those
+five subjects.
+
+![One of the three illustration pieces: soft shapes in the phase colours](../brand/illustration/welcome.png)
+
+Drawn by its own generator, rather than under the test runner. Run
+`node --experimental-strip-types brand/illustration/render.ts`, which draws each piece into the
+picture beside it.
 
 ## Feature 2: She opens Emi and logs her first period
 
