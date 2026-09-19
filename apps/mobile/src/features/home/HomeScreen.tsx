@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CycleRing } from '../../components/CycleRing';
+import { Screen } from '../../components/Screen';
 import type { RingInput } from '../cycle/ringInput';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 
@@ -63,7 +64,7 @@ export function HomeScreen({
   onSettings,
 }: Props): ReactNode {
   return (
-    <View style={styles.screen} testID={homeScreenTestID}>
+    <Screen testID={homeScreenTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <Text accessibilityRole="header" style={styles.wordmark}>
           {homeCopy.wordmark}
@@ -122,7 +123,7 @@ export function HomeScreen({
           </Pressable>
         </View>
       </ScrollView>
-    </View>
+    </Screen>
   );
 }
 
@@ -177,7 +178,6 @@ const styles = StyleSheet.create({
     lineHeight: typeScale.heading.lineHeight,
     marginBottom: space.hair,
   },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   // The scroll fills the screen so the block inside it sits in the middle of the glass rather than
   // against the top of it, which is where a container sized to its own content would leave it.
   scroll: { flex: 1 },

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { OnAPhone } from '../fixtures/theSafeArea';
 
 import {
   LastPeriod,
@@ -29,7 +30,9 @@ async function sheOpensTheCalendar(chosen?: string): Promise<Painted> {
   const continued = jest.fn();
 
   await render(
-    <LastPeriod chosen={chosen} now={whenSheOpensIt} onChoose={chose} onContinue={continued} />,
+    <OnAPhone>
+      <LastPeriod chosen={chosen} now={whenSheOpensIt} onChoose={chose} onContinue={continued} />
+    </OnAPhone>,
   );
 
   return { chose, continued };

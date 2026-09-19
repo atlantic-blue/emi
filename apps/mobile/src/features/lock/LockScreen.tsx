@@ -2,6 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/token
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Screen } from '../../components/Screen';
 import { lockCopy } from './copy';
 
 export const lockScreenTestID = 'lock-screen';
@@ -20,21 +21,25 @@ interface Props {
  */
 export function LockScreen({ wasRefused, onUnlock }: Props): ReactNode {
   return (
-    <View style={styles.screen} testID={lockScreenTestID}>
-      <Text style={styles.wordmark}>{lockCopy.locked.wordmark}</Text>
-      <Text accessibilityRole="header" style={styles.title}>
-        {lockCopy.locked.title}
-      </Text>
-      <Text style={styles.line}>{wasRefused ? lockCopy.locked.refused : lockCopy.locked.line}</Text>
-      <Pressable
-        accessibilityRole="button"
-        onPress={onUnlock}
-        style={styles.action}
-        testID={unlockTestID}
-      >
-        <Text style={styles.actionLabel}>{lockCopy.locked.action}</Text>
-      </Pressable>
-    </View>
+    <Screen testID={lockScreenTestID}>
+      <View style={styles.middle}>
+        <Text style={styles.wordmark}>{lockCopy.locked.wordmark}</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          {lockCopy.locked.title}
+        </Text>
+        <Text style={styles.line}>
+          {wasRefused ? lockCopy.locked.refused : lockCopy.locked.line}
+        </Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onUnlock}
+          style={styles.action}
+          testID={unlockTestID}
+        >
+          <Text style={styles.actionLabel}>{lockCopy.locked.action}</Text>
+        </Pressable>
+      </View>
+    </Screen>
   );
 }
 
@@ -60,9 +65,8 @@ const styles = StyleSheet.create({
     lineHeight: typeScale.body.lineHeight,
     textAlign: 'center',
   },
-  screen: {
+  middle: {
     alignItems: 'center',
-    backgroundColor: colour.stone,
     flex: 1,
     justifyContent: 'center',
     padding: space.base,
