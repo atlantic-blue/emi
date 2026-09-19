@@ -104,8 +104,94 @@ function subjectOf(name: string): string {
   );
 }
 
+/**
+ * An action that acts on no single resource. The account evaluates each one against an account
+ * level resource, which carries no name: the error a denial gives for the log groups names it as
+ * `log-group::log-stream:`. A statement whose resource pattern requires a name can never match
+ * that, so the action is denied however many resources the role owns.
+ *
+ * The list is knowledge about the services this account uses, and it is deliberately wider than
+ * what the project reads with today, so the rule below meets a new one already written down.
+ */
+const collectionLevelActions: readonly string[] = [
+  'dynamodb:ListTables',
+  'iam:ListOpenIDConnectProviders',
+  'iam:ListRoles',
+  'lambda:ListFunctions',
+  'logs:DescribeLogGroups',
+  's3:ListAllMyBuckets',
+];
+
+interface PolicyStatement {
+  readonly sid: string;
+  readonly actions: readonly string[];
+  readonly resources: readonly string[];
+}
+
+function listedIn(body: string, field: string): string[] {
+  const found = new RegExp(`${field}\\s*=\\s*\\[([^\\]]*)\\]`).exec(body);
+
+  if (found?.[1] === undefined) {
+    return [];
+  }
+
+  return found[1]
+    .split(',')
+    .map((entry) => entry.trim().replace(/^"|"$/g, ''))
+    .filter((entry) => entry.length > 0 && !entry.startsWith('#'));
+}
+
+/** Every statement of one policy document, read as the account reads it. */
+function statementsIn(policy: string): PolicyStatement[] {
+  return policy
+    .split(/\bstatement\s*\{/)
+    .slice(1)
+    .map((body) => ({
+      sid: /sid\s*=\s*"([^"]*)"/.exec(body)?.[1] ?? '',
+      actions: listedIn(body, 'actions'),
+      resources: listedIn(body, 'resources'),
+    }));
+}
+
+/**
+ * True where a statement stands on every resource. Anything else names one, whether it names it
+ * as an address pattern or through a local, and naming one is what denies a collection.
+ */
+function standsOnEveryResource(statement: PolicyStatement): boolean {
+  return statement.resources.length === 1 && statement.resources[0] === '*';
+}
+
+/** True where a statement's actions reach the given one, by name or through a wildcard. */
+function reaches(statement: PolicyStatement, action: string): boolean {
+  return statement.actions.some(
+    (granted) =>
+      granted === action ||
+      granted === '*' ||
+      (granted.endsWith('*') && action.startsWith(granted.slice(0, -1))),
+  );
+}
+
+function grantedOnEveryResource(statements: readonly PolicyStatement[], action: string): boolean {
+  return statements.filter(standsOnEveryResource).some((statement) => reaches(statement, action));
+}
+
+/** Each collection level action a statement names while standing on a named resource. */
+function deniedByItsScope(statements: readonly PolicyStatement[], role: string): string[] {
+  return statements
+    .filter((statement) => !standsOnEveryResource(statement))
+    .flatMap((statement) =>
+      statement.actions
+        .filter((action) => collectionLevelActions.includes(action))
+        .map(
+          (action) =>
+            `the ${role} role names ${action} in the statement ${statement.sid}, which stands on ${statement.resources.join(' and ')}, and that action acts on no single resource`,
+        ),
+    );
+}
+
 const table = bodyOf('resource "aws_dynamodb_table" "vault"');
 const planPolicy = bodyOf('data "aws_iam_policy_document" "plan"');
+const applyPolicy = bodyOf('data "aws_iam_policy_document" "apply"');
 const planTrust = bodyOf('data "aws_iam_policy_document" "plan_trust"');
 const applyTrust = bodyOf('data "aws_iam_policy_document" "apply_trust"');
 const authorizerPolicy = bodyOf('data "aws_iam_policy_document" "authorizer"');
@@ -378,6 +464,113 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(articlesTable).toContain('billing_mode = "PAY_PER_REQUEST"');
       expect(articlesTable).toContain('hash_key  = "pk"');
       expect(articlesTable).toContain('range_key = "sk"');
+    });
+  });
+
+  describe('an action that acts on no single resource, which is the deploy of 2026-09-19', () => {
+    const planStatements = statementsIn(planPolicy);
+    const applyStatements = statementsIn(applyPolicy);
+
+    it('reads both policies, so the rules below stand on statements and not on a file', () => {
+      expect(planStatements.map((statement) => statement.sid)).toEqual([
+        'ReadTheState',
+        'ReadTheStateObject',
+        'DescribeWhatExists',
+      ]);
+      expect(applyStatements.length).toBeGreaterThan(5);
+      expect(applyStatements.every((statement) => statement.actions.length > 0)).toBe(true);
+    });
+
+    it('names no such action in a statement that stands on a named resource', () => {
+      expect([
+        ...deniedByItsScope(planStatements, 'plan'),
+        ...deniedByItsScope(applyStatements, 'apply'),
+      ]).toEqual([]);
+    });
+
+    it('grants the apply role every such action the plan role reads the account with', () => {
+      const read = collectionLevelActions.filter((action) =>
+        grantedOnEveryResource(planStatements, action),
+      );
+      const denied = read.filter((action) => !grantedOnEveryResource(applyStatements, action));
+
+      expect(read).toContain('logs:DescribeLogGroups');
+      expect(
+        denied.map(
+          (action) =>
+            `the apply role reads with ${action}, and grants it only where a resource is named`,
+        ),
+      ).toEqual([]);
+    });
+
+    it('refuses a statement that names one of them beside a resource pattern', () => {
+      const written = `
+  statement {
+    sid       = "TheLogGroups"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups", "logs:PutLogEvents"]
+    resources = ["arn:aws:logs:*:1:log-group:/aws/*/emi-*"]
+  }
+`;
+      const [said] = deniedByItsScope(statementsIn(written), 'apply');
+
+      expect(said).toContain('logs:DescribeLogGroups');
+      expect(said).toContain('TheLogGroups');
+      expect(said).toContain('arn:aws:logs:*:1:log-group:/aws/*/emi-*');
+    });
+
+    it('accepts the same action once it stands on every resource', () => {
+      const written = `
+  statement {
+    sid       = "ListTheLogGroups"
+    effect    = "Allow"
+    actions   = ["logs:DescribeLogGroups"]
+    resources = ["*"]
+  }
+`;
+      const statements = statementsIn(written);
+
+      expect(deniedByItsScope(statements, 'apply')).toEqual([]);
+      expect(grantedOnEveryResource(statements, 'logs:DescribeLogGroups')).toBe(true);
+    });
+
+    it('reads a wildcard on a named resource as no grant at all, because the name denies it', () => {
+      const written = `
+  statement {
+    sid       = "TheLogGroups"
+    effect    = "Allow"
+    actions   = ["logs:*"]
+    resources = ["arn:aws:logs:*:1:log-group:/aws/*/emi-*"]
+  }
+`;
+
+      expect(grantedOnEveryResource(statementsIn(written), 'logs:DescribeLogGroups')).toBe(false);
+    });
+
+    it('reads a wildcard on every resource as a grant, because that is how the account reads it', () => {
+      const written = `
+  statement {
+    sid       = "Everything"
+    effect    = "Allow"
+    actions   = ["logs:Describe*"]
+    resources = ["*"]
+  }
+`;
+
+      expect(grantedOnEveryResource(statementsIn(written), 'logs:DescribeLogGroups')).toBe(true);
+    });
+
+    it('reads a local as a named resource, so a state bucket does not stand for every bucket', () => {
+      const written = `
+  statement {
+    sid       = "ListTheStateBucket"
+    effect    = "Allow"
+    actions   = ["s3:ListAllMyBuckets"]
+    resources = [local.state_bucket_arn]
+  }
+`;
+
+      expect(deniedByItsScope(statementsIn(written), 'apply')).toHaveLength(1);
     });
   });
 
