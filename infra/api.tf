@@ -96,6 +96,33 @@ resource "aws_apigatewayv2_route" "delete_account" {
   authorizer_id      = aws_apigatewayv2_authorizer.signature.id
 }
 
+resource "aws_apigatewayv2_integration" "articles" {
+  api_id                 = aws_apigatewayv2_api.vault.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.articles.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 5000
+}
+
+# The article catalogue takes no authorizer, because a request says which phase is being read and
+# never who is reading it. The phase is a path parameter, so the route key the access log writes is
+# this template and not the filled path: the log records that somebody read an article and cannot
+# record which phase it was.
+resource "aws_apigatewayv2_route" "read_articles" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "GET /v1/articles/{phase}"
+  target             = "integrations/${aws_apigatewayv2_integration.articles.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_lambda_permission" "articles" {
+  statement_id  = "AllowInvokeFromTheApi"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.articles.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
+}
+
 resource "aws_lambda_permission" "vault" {
   statement_id  = "AllowInvokeFromTheApi"
   action        = "lambda:InvokeFunction"
@@ -120,4 +147,9 @@ output "api_endpoint" {
 output "vault_table_name" {
   description = "Name of the table the vault reads and writes"
   value       = aws_dynamodb_table.vault.name
+}
+
+output "articles_table_name" {
+  description = "Name of the table the article catalogue is written into"
+  value       = aws_dynamodb_table.articles.name
 }

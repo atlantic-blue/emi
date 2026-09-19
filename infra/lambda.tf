@@ -179,3 +179,68 @@ resource "aws_lambda_function" "authorizer" {
 
   depends_on = [aws_cloudwatch_log_group.authorizer]
 }
+
+# ── The article function ─────────────────────────────────────────────────────
+#
+# It answers a read only catalogue to anybody who asks, so it is the one function whose requests
+# carry no account. It runs as a role of its own for that reason: one table, one action, no write.
+
+resource "aws_iam_role" "articles" {
+  name               = "${var.project_name}-articles"
+  assume_role_policy = data.aws_iam_policy_document.lambda_trust.json
+}
+
+data "aws_iam_policy_document" "articles" {
+  statement {
+    sid    = "WriteItsOwnLogs"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = ["${aws_cloudwatch_log_group.articles.arn}:*"]
+  }
+
+  # One query over one partition of one table. No write, so a read cannot leave a trace behind it,
+  # and no reach into the vault table at all.
+  statement {
+    sid       = "ReadOnePhaseOfTheCatalogue"
+    effect    = "Allow"
+    actions   = ["dynamodb:Query"]
+    resources = [aws_dynamodb_table.articles.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "articles" {
+  name   = "${var.project_name}-articles"
+  role   = aws_iam_role.articles.id
+  policy = data.aws_iam_policy_document.articles.json
+}
+
+resource "aws_cloudwatch_log_group" "articles" {
+  name              = "/aws/lambda/${var.project_name}-articles"
+  retention_in_days = var.log_retention_days
+}
+
+# The placeholder answers 501 until the bundle from services/vault is built and uploaded, which is
+# the same wait the other two functions are in.
+resource "aws_lambda_function" "articles" {
+  function_name = "${var.project_name}-articles"
+  role          = aws_iam_role.articles.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 256
+  timeout       = 5
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  environment {
+    variables = {
+      EMI_ARTICLES_TABLE = aws_dynamodb_table.articles.name
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.articles]
+}

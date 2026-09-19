@@ -109,19 +109,27 @@ describe('the data model document is the source, and the code follows it', () =>
   });
 
   describe('every table, key and index the infrastructure declares is named in the document', () => {
-    it('finds none the document leaves out, and reads one table', () => {
+    it('finds none the document leaves out, and reads both tables', () => {
       expect(undeclaredInTheDocument(declarationsIn(configuration), namesIn(document))).toEqual([]);
-      expect(tableBodiesIn(configuration)).toHaveLength(1);
+      expect(tableBodiesIn(configuration)).toHaveLength(2);
     });
 
-    it('reads the table, both keys, the index and the time to live attribute', () => {
-      expect(declarationsIn(configuration)).toEqual([
+    it('reads the vault table, both keys, the index and the time to live attribute', () => {
+      expect(declarationsIn(configuration).slice(0, 6)).toEqual([
         { kind: 'table', value: 'emi-vault' },
         { kind: 'key', value: 'pk' },
         { kind: 'key', value: 'sk' },
         { kind: 'key', value: 'updatedAt' },
         { kind: 'index', value: 'byUpdated' },
         { kind: 'attribute', value: 'ttl' },
+      ]);
+    });
+
+    it('reads the article table and its two keys, and no index, because it has none', () => {
+      expect(declarationsIn(configuration).slice(6)).toEqual([
+        { kind: 'table', value: 'emi-articles' },
+        { kind: 'key', value: 'pk' },
+        { kind: 'key', value: 'sk' },
       ]);
     });
 

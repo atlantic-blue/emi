@@ -431,12 +431,32 @@ open an envelope.
 
 The dotted line is the product. The key never crosses it.
 
+## The article catalogue
+
+Status: built
+
+Emi writes about what a phase does to a body, and the phone reads that writing from the api rather
+than from the bundle. `GET /v1/articles/{phase}` answers every article written for one of the four
+phases. It is the one route in the service that stands behind no authorizer, because a request says
+which phase is being read and never who is reading it.
+
+It reads a second table, `emi-articles`, through a role that holds one action and no write at all.
+That role cannot reach the vault table, so a route anybody may call cannot reach her partition. The
+access log writes the route template and never the filled path, so no line of it can say which
+phase was read.
+
+`docs/design/data-model.md` has the item, the query and the five things that keep a read untied to
+a reader.
+
 ## What crosses between the phone and the cloud
 
 Status: designed
 
 The phone sends the envelope, a record identifier and a revision number. The section above says how
 it signs each request.
+
+One thing crosses the other way and carries nothing of hers: the phone asks for the articles of a
+cycle phase, and that request is signed by nobody and names no account.
 
 The server stores the bytes. It refuses a revision that is not greater than the one it holds.
 
