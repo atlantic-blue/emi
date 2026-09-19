@@ -138,19 +138,15 @@ The aesthetic philosophy bridges **Warm Editorial Minimalism** with **Organic Ta
 
 ## Colors
 
-The palette draws entirely from natural minerals, unbleached fibers, terracotta clays, and sun-warmed linen. It treats biological cycles with sophistication, allocating specific functional accents to the four hormonal phases without resorting to jarring neon indicators.
+The palette draws entirely from natural minerals, unbleached fibers, terracotta clays, and sun-warmed linen. Every colour it holds is named in the front matter above, and every paragraph below names one of those roles rather than a value of its own, so this document describes one palette and not two.
 
 ### Application Guidelines
 
-- **Primary Terracotta Rose (`#D96B52` / `#E07A5F`)**: Applied deliberately to focal interactions, primary actions, current day indicators, and confident brand moments.
-- **Secondary Peach & Blush (`#E8998D` / `#F4A261`)**: Utilized for supportive graphical highlights, trend visualizations, and micro-interactions.
-- **Cycle Phase Tones**:
-  - _Menstrual (Muted Cranberry, `#D65A68`)_: Grounded deep berry, treated with care and dignity.
-  - _Follicular (Soft Apricot, `#EE964B`)_: Uplifting, warm citrus tone denoting early-cycle energy.
-  - _Ovulation (Sunlight Gold, `#F4A261`)_: Luminous, high-energy warm glow.
-  - _Luteal (Dusty Lavender Mauve, `#9A8C98`)_: Restorative, calming muted mineral tone.
-- **Neutrals & Canvas Layers**: The application is strictly light-first to emulate tactile stationery. The canvas sits on Warm Ivory Linen (`#FAF7F2`), moving to Pure Paper Cream (`#FFFDF9`) for cards and floating sheets, with border structural delineations relying on `rgba(224, 122, 95, 0.12)`.
-- **Text & Hierarchy**: Contrast adheres strictly to WCAG AA/AAA against ivory backings using Deep Warm Charcoal (`#2B2523`) for headings, Muted Warm Taupe (`#6E6460`) for body narratives, and Gentle Tertiary Taupe (`#9B8F8B`) for metadata and captions.
+- **Primary (`primary`)**: Applied deliberately to focal interactions, primary actions, current day indicators, and confident brand moments. Anything sitting on it carries `on-primary`.
+- **Secondary (`secondary`, `secondary-container`)**: Utilized for supportive graphical highlights, trend visualizations, and micro-interactions, with `on-secondary-container` for words on the container.
+- **Cycle Phase Tones**: The palette holds no colour for a cycle phase, and this paragraph used to name four that are drawn nowhere. The prototype does not colour the four phases at all: it marks the one she is in with `primary-fixed` and leaves the rest on `surface-container-low`. The application draws them from four roles it chose for itself in `packages/tokens/src/ring.ts`. Which of those the design system means is a decision nobody has taken, and it is https://github.com/atlantic-blue/emi/issues/157.
+- **Neutrals & Canvas Layers**: The application is strictly light-first to emulate tactile stationery. The canvas sits on `surface`, moving to `surface-container-lowest` for cards and floating sheets, with the containers between them stepping through `surface-container-low`, `surface-container` and `surface-container-high`. Structural delineations rely on `outline-variant`.
+- **Text & Hierarchy**: Contrast adheres strictly to WCAG AA/AAA against the canvas, using `on-surface` for headings and `on-surface-variant` for body narratives. Metadata and captions take the same `on-surface-variant` at the smaller label roles, because the palette names no third text colour.
 
 ## Typography
 
@@ -159,7 +155,7 @@ The typography uses **Plus Jakarta Sans** uniformly across display, body, and UI
 ### Typographic Principles
 
 - **Editorial Proportioning**: Generous line-heights are maintained on all running narrative and clinical insights (`1.5x` to `1.6x` line height) to prevent visual fatigue and support relaxed scanning.
-- **Restrained Headings**: Never use pure black. Deep Warm Charcoal (`#2B2523`) ensures that even large display headers feel organic, like ink on warm handmade paper.
+- **Restrained Headings**: Never use pure black. `on-surface` ensures that even large display headers feel organic, like ink on warm handmade paper.
 - **Numerics & Cycle Telemetry**: Key health statistics, cycle day counts, and timeline days utilize medium and semibold weights with tabular alignment properties enabled to maintain symmetry within circular trackers and calendar matrices.
 
 ## Layout & Spacing
@@ -179,10 +175,10 @@ Visual hierarchy rejects heavy, industrial drop-shadows and skeuomorphic bevels.
 
 ### Surface Strategy
 
-- **Layer 0 (Canvas Base)**: `#FAF7F2` (Warm Ivory Linen). Static background for the global application shell.
-- **Layer 1 (Cards & Modules)**: `#FFFDF9` (Pure Paper Cream) paired with a 1px structural outline: `border: 1px solid rgba(224, 122, 95, 0.12)`. This provides tactile definition on OLED and LCD screens without visual harshness.
-- **Layer 2 (Interactive Floating Elements & Modals)**: `#FFFFFF` resting on an extra-diffuse warm shadow: `box-shadow: 0 12px 32px -4px rgba(43, 37, 35, 0.05), 0 4px 12px -2px rgba(217, 107, 82, 0.06)`. The inclusion of a terracotta tint in the ambient shadow keeps the component tied to the natural color spectrum.
-- **Sheet Overlays**: Contextual health logging drawers and deep-dive analytics utilize an organic backdrop blur: `backdrop-filter: blur(16px)` combined with a `rgba(250, 247, 242, 0.8)` tint.
+- **Layer 0 (Canvas Base)**: `surface`. Static background for the global application shell.
+- **Layer 1 (Cards & Modules)**: `surface-container-lowest` paired with a 1px structural outline in `outline-variant`. This provides tactile definition on OLED and LCD screens without visual harshness.
+- **Layer 2 (Interactive Floating Elements & Modals)**: `surface-container-lowest` resting on an extra-diffuse warm shadow: `box-shadow: 0 12px 32px -4px rgba(43, 37, 35, 0.05), 0 4px 12px -2px rgba(217, 107, 82, 0.06)`. Those two tints are the one colour written as a value anywhere below the front matter, because the front matter holds no shadow block and the prototype draws this shadow exactly as it is written here. The warm tint in the ambient shadow keeps the component tied to the natural color spectrum.
+- **Sheet Overlays**: Contextual health logging drawers and deep-dive analytics utilize an organic backdrop blur: `backdrop-filter: blur(16px)` over `surface` at 80 per cent.
 
 ## Shapes
 
@@ -198,36 +194,36 @@ The interface embraces generous, organic curves that feel soft and inviting to t
 
 ### Buttons
 
-- **Primary**: Solid Warm Terracotta (`#D96B52`) background with pure white typography, 52px height for accessibility, full pill radius (`rounded-full`). Soft inner highlight on active press.
-- **Secondary / Ghost**: Unfilled with a warm border (`1.5px solid rgba(217, 107, 82, 0.3)`), colored in Deep Warm Charcoal (`#2B2523`). Background shifts to `rgba(217, 107, 82, 0.06)` on press.
-- **Tertiary Utility**: Borderless, subtle Taupe text (`#6E6460`) with `0.5rem` padding for auxiliary operations.
+- **Primary**: Solid `primary` ground with `on-primary` typography, 52px height for accessibility, full pill radius (`rounded-full`). Soft inner highlight on active press.
+- **Secondary / Ghost**: `surface-container-low` ground with `on-surface` typography and no border, stepping to `surface-container` on press.
+- **Tertiary Utility**: Borderless, subtle `on-surface-variant` text with `0.5rem` padding for auxiliary operations.
 
 ### Cycle Wheel & Phase Ring (Specialized)
 
-- A prominent circular visualization that sits centered on the dashboard. Employs soft, fluid segment boundaries between the four phases. The current day sits within an elevated ceramic bead with an ambient Terracotta glow.
+- A prominent circular visualization that sits centered on the dashboard. Employs soft, fluid segment boundaries between the four phases, which take the colours named under Cycle Phase Tones above. The current day sits within an elevated ceramic bead with an ambient `primary` glow.
 
 ### Cards & Content Containers
 
-- Background `#FFFDF9`, border `1px solid rgba(224, 122, 95, 0.12)`, radius `1.5rem`. Internal padding is fixed at `1.25rem` (20px). Content sections within cards are delineated by hairline dividers tinted with `rgba(224, 122, 95, 0.08)`.
+- Ground `surface-container-lowest`, a 1px outline in `outline-variant`, radius `1.5rem`. Internal padding is fixed at `1.25rem` (20px). Content sections within cards are delineated by hairline dividers in `outline-variant`.
 
 ### Chips & Symptom Tags
 
 - Pill-shaped (`rounded-full`), minimum tap target 40px height.
-- **Unselected**: `#F4EFEB` background, `#6E6460` text, no border.
-- **Selected**: Tinted based on current cycle phase or primary terracotta (`#D96B52`), text transitions to `#FFFFFF`, subtle scale transformation (`transform: scale(1.02)`).
+- **Unselected**: `surface-container-high` ground, `on-surface-variant` text, no border.
+- **Selected**: `primary` ground, text transitions to `on-primary`, subtle scale transformation (`transform: scale(1.02)`).
 
 ### Form Inputs & Text Fields
 
-- Minimum height 48px, background `#F8F4EE`, border `1px solid rgba(110, 100, 96, 0.15)`. Text sits in Deep Warm Charcoal (`#2B2523`) with placeholder in `#9B8F8B`. Active focus state transitions the border to `#D96B52` with zero harsh box-shadows.
+- Minimum height 48px, ground `surface-container-low`, a 1px outline in `outline-variant`. Text sits in `on-surface` with the placeholder in `on-surface-variant`. Active focus state transitions the outline to `primary` with zero harsh box-shadows.
 
 ### Lists & Symptom Rows
 
-- Flat, seamless stack styling. Rows feature 56px minimum height, separated by gentle inset divider rules. Right-aligned affordances use subdued chevron icons in Gentle Taupe (`#9B8F8B`).
+- Flat, seamless stack styling. Rows feature 56px minimum height, separated by gentle inset divider rules. Right-aligned affordances use subdued chevron icons in `on-surface-variant`.
 
 ### Checkboxes & Segmented Selectors
 
-- Custom circular selectors in place of boxy checkmarks. Selection state fills smoothly with Terracotta Rose (`#D96B52`) featuring a warm ivory centered dot.
+- Custom circular selectors in place of boxy checkmarks. Selection state fills smoothly with `primary`, featuring a centered dot in `on-primary`.
 
 ### Bottom Navigation Bar
 
-- Elevated translucent dock suspended 16px above the home indicator. Background `rgba(255, 253, 249, 0.92)` with `backdrop-filter: blur(20px)`, rounded-full pill silhouette, bordered by `1px solid rgba(224, 122, 95, 0.12)`. Icons dynamically shift from `#9B8F8B` (inactive) to `#D96B52` (active), accompanied by a micro dot indicator underneath.
+- Elevated translucent dock suspended 16px above the home indicator. Ground `surface-container-lowest` at 92 per cent with `backdrop-filter: blur(20px)`, rounded-full pill silhouette, outlined by 1px of `outline-variant`. Icons dynamically shift from `on-surface-variant` (inactive) to `primary` (active), accompanied by a micro dot indicator underneath.
