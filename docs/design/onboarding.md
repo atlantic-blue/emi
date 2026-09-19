@@ -213,7 +213,8 @@ One screen, four card bodies, in the shape `OnboardingScreen.tsx` already uses.
 The header carries the mark, the words `1 of 4`, and the skip control at the right edge. It does not
 say `Step`, so the tour is never read as a fourth step of a first run that SCREEN-1 holds to three.
 
-Under the header, a progress bar of four segments.
+The tour carries no progress bar. It asks her for nothing, and the rule for when a bar shows is in
+the section on how it looks and how it moves. The count in the header says how far through she is.
 
 The footer carries the action button. On cards 2, 3 and 4 a `Back` control sits under it, in the
 shape the delete screen uses, so she can read a card again. Card 1 has no `Back`, because on a first
@@ -222,8 +223,8 @@ launch there is nothing behind the tour.
 The four cards live in one route and not four. The cards ask her nothing, so there is nothing to
 lose by moving between them, and one route keeps the skip control in one place.
 
-The section on how it looks and how it moves carries the token for every surface of this frame, the
-band and the sheet it is drawn on, the safe area, and each movement between one card and the next.
+The section on how it looks and how it moves carries the ground this frame is drawn on, the shape of
+its empty space, the safe area, and every movement between one card and the next.
 
 ## The skip
 
@@ -371,103 +372,113 @@ which is a woman who deleted every bleeding day she had.
 
 Status: designed
 
-The operator walked another product's onboarding and captured 85 screens of it. The captures are
-1290 by 2796 pixels, which is 430 by 932 points at three times scale. Every number below that says
-measured comes from those pixels.
+Two sets of measurements decide this section. The first is Emi's own rendered screens in
+`brand/screens`. The second is 85 captured screens of another product's onboarding. The other
+product is not named here, and no screen of it is reproduced.
 
-They are a reference for the quality and the shape. They are not a thing to reproduce. Emi copies no
-screen, and the product is not named here.
+The palette, the type scale, the spacing steps and the radii are not restated here. They are in
+`docs/brand.md`, generated from `packages/tokens`, and contract TOKEN-1 keeps the palette closed.
+This design writes no colour value. Where it needs a colour it names the token.
 
-### The tokens the onboarding uses
-
-Status: designed
-
-Emi has one design system and this adds no second palette. Every value below is a token that
-`packages/tokens` holds today, except the three named as additions at the end.
-
-The colours, by the surface each one paints.
-
-- The band the drawing stands in, which is the screen ground: `colour.stone`.
-- The sheet the words sit on: `colour.surface`.
-- An answer row she has not chosen: `colour.sunk`, with its label in `colour.ink`.
-- An answer row she has chosen: `colour.ember`, with its label in `colour.surface`. The palette
-  approves that pair, because `surface` names `ember` in its `textOn` list.
-- The action: `colour.ember` filled, with its label in `colour.surface`.
-- The progress track: `colour.sunk`. The part of it she has reached: `colour.ember`.
-- The rule above the footer: `colour.hairline`.
-
-Two measured values are answered by a token rather than taken. The measured grey of an unchosen row
-is `#F2F2F2`. Emi's `sunk` is `#F1EBE4`, which is the same lightness carrying the warmth the rest of
-the application carries. The measured band is a vertical gradient from `#FFEBF7` to `#FFF0F7`. Emi's
-band is `colour.stone`, flat, for the reason the refusals below give.
-
-The corners.
-
-- The top two corners of the sheet: `radius.sheet`, which is 24 points.
-- An answer row: `radius.card`, which is 16 points. The measured radius is about 12. Emi rounds
-  every card at 16, and one radius for one kind of thing is worth more than four points.
-- The action: `radius.chip`, which is 10 points, and which is what the first run draws today.
-
-The spacing. Every step is a multiple of four, which is what `space` already promises.
-
-- The margin down both sides of the sheet: `space.base`.
-- Between a title and the line under it: `space.snug`.
-- Between two answer rows: `space.snug`, which is 16 points against a measured gap of about 13.
-- Between the segments of the progress bar: `space.hair`.
-- Inside the footer, around the action: `space.base`.
-
-The type.
-
-- A card title: `typeScale.title`, 26 points over 32.
-- A line of a card, and the label of an answer row: `typeScale.body`, 16 over 24.
-- The sentence revealed inside a chosen row: `typeScale.small`, 14 over 20.
-- The count `1 of 4`: `typeScale.label`, 12 over 16, in the numeric face.
-
-Two values are neither tokens nor measured. The height of the progress bar is 6 points, and it is a
-constant named `PROGRESS_HEIGHT` inside `OnboardingScreen.tsx`. The drawing is 320 by 220 points,
-which is `PIECE_WIDTH` and `PIECE_HEIGHT` in `brand/illustration/pieces.ts`. The tour reuses both
-rather than adding a second bar height or a second drawing size.
-
-The palette needs no new colour. Every surface the onboarding paints is answered by a colour that
-`packages/tokens` already holds and the contrast test already measures. Contract TOKEN-1 keeps the
-palette closed, and this design does not open it.
-
-### The additions the system does not hold yet
+### What the measurements say
 
 Status: designed
 
-Three durations, added to `packages/tokens` beside `RING_OPEN_MILLISECONDS`, so that no screen
-writes a number of its own.
+Emi is not cramped, and Emi does not show too much. Emi is quiet on 68.6 per cent of its rows,
+against 71.8 per cent for the other walk. Emi shows 4.2 separate blocks on a screen, against 7.2.
+Emi already puts less in front of her.
 
-- `TOUR_CARD_MILLISECONDS`, for the card turning.
-- `TOUR_REVEAL_MILLISECONDS`, for an answer row growing.
-- `TOUR_CIRCLE_MILLISECONDS`, for the circle filling the screen.
+The difference is the shape of the empty space, not the amount of it. The other walk banks its
+emptiness into one void: its largest single gap averages 33 per cent of the screen height. Emi
+spreads the same emptiness thinly between every element, and its largest single gap averages 14.8
+per cent. So the other walk reads as one block of content, then a void, then one action at the
+bottom. Emi reads as an evenly spaced list, which is the shape of a form.
 
-Adding a token means regenerating `docs/brand.md` in the same change, because `npm run check:brand`
-compares that document against the token package and fails on a difference of one character.
+Emi has one ground. I counted `backgroundColor: colour.stone` in `apps/mobile/src` and found it in
+eleven places. The other walk used five distinct grounds across an eighteen screen sample, and it
+changes the ground when the subject changes, so a person can feel which part of the walk she is in.
 
-Four drawings are added to `brand/illustration/pieces.ts`, one for each card, and drawn by the
-generator that directory already carries. Each one follows the style that is written down there:
-two or three soft edged shapes, in the phase colours only, never in ember, on the stone ground.
-Contract BRAND-4 refuses a body, a face, a flower, a droplet and blood, and the generator refuses a
-drawing whose name carries one of those words before the pipeline ever reads it.
+Emi has almost no movement. `react-native-reanimated` at 4.5.1 is declared in
+`apps/mobile/package.json` and no file in this repository imports it. Every animation line in the
+application, ten of them, sits in `src/components/CycleRing.tsx`, and that file uses React Native's
+own `Animated` rather than the declared library. The ring fades and scales open on the home screen.
+Every other screen appears with no movement at all.
+
+I read the last two of those in the repository at the commit this branch started from. The first
+three were measured for me and I did not see the captures.
+
+### The rule for empty space
+
+Status: designed
+
+A reviewer can apply this rule by looking at one screen.
+
+1. One primary action on a screen, and one only. It is pinned above the bottom safe area inset. It
+   is never a row in the middle of a list and it never scrolls.
+2. The content starts at the top of the sheet and stops where it stops. It does not stretch to fill
+   the height.
+3. Everything left over collects in one gap, between the last line of content and the top of the
+   action. That gap is the screen's void, and it is the largest gap on the screen by a wide margin.
+4. The void is at least 25 per cent of the screen height. The measurement above is where that
+   number came from: the other walk averages 33 per cent and Emi averages 14.8, and 25 is the point
+   where the shape changes from a list into a statement without Emi copying a screen it did not
+   design.
+5. No other gap on the screen is larger than `space.roomy`.
+6. A card that cannot hold a void of 25 per cent has too many words in it. The fix is fewer words,
+   never less space.
+
+What this changes in the code. `OnboardingScreen.tsx` today gives its scroll body
+`justifyContent: 'space-between'` and gives the block she answers in `flexGrow: 1` with
+`justifyContent: 'center'`. Those two lines are what spreads the emptiness evenly, and they are the
+measured 14.8 per cent. The content stacks from the top instead, and the leftover height collects
+above the pinned footer.
+
+### The rule for backgrounds
+
+Status: designed
+
+The design system already holds more than one ground. Six colours carry the `ground` role in
+`packages/tokens`, and `docs/brand.md` prints each one. The application uses one of them. So this
+work adds no colour. It assigns the grounds the system already holds to the parts of the walk.
+
+- The tour is drawn on `colour.emberTint`. That ground says Emi is talking.
+- The three questions are drawn on `colour.stone`. That ground says she is answering, and it is the
+  ground the rest of the product uses.
+- The sheet over either ground is `colour.surface`, on every screen of both parts.
+
+One boundary, once. The ground changes when the tour ends and the questions begin, and the circle
+of movement 5 covers the screen at exactly that moment, so the change is never seen as a flash.
+
+Two consequences follow from the palette, and both are rules a test can fail.
+
+The count in the header cannot stay `colour.muted` on the tour. Muted reaches 4.36 against
+`emberTint`, and the contrast floor is 4.5, so the palette refuses that pair. On the tour the count
+takes `colour.body`, which reaches 6.22. I measured both with `contrastRatio` from the token
+package.
+
+Every drawing in `brand/illustration` paints its own ground as the first element of the file. I read
+`welcome.svg` and the rect is there, filled with the stone value. So a drawing placed on the tint
+would show a stone rectangle around itself. `pieces.ts` holds `GROUND` as one constant for every
+piece, and it becomes a property of a piece instead. The four tour pieces are generated on the tint.
+The three pieces that exist keep stone, so their committed files and pictures do not change by one
+character.
 
 ### The screen frame
 
 Status: designed
 
 One frame, from the top of the glass to the bottom, on every card of the tour and on every screen of
-the first run.
+the first run. Only the ground under it changes between the two parts.
 
 1. The safe area inset at the top.
 2. The header: the mark at the left, the count beside it, and the skip control at the right edge.
-3. The progress bar, full width inside `space.base`.
-4. The band, on `colour.stone`, holding the drawing.
+3. The progress bar, full width inside `space.base`, on the three questions only.
+4. The band, on the ground of that part of the walk, holding the drawing.
 5. The sheet, filled `colour.surface`, rounded at `radius.sheet` on its top two corners only, and
    running to the bottom of the screen. It holds the title, the lines, and anything she presses.
-6. The footer, inside the sheet, above a `colour.hairline` rule: the action, and `Back` under it
-   from card 2.
-7. The safe area inset at the bottom.
+6. The void, inside the sheet, which is the rule for empty space above.
+7. The footer, inside the sheet: the action, and `Back` under it from card 2.
+8. The safe area inset at the bottom.
 
 The drawing stands in the band and the sheet starts under it, so the drawing reads as standing
 behind the words rather than sitting inside them.
@@ -478,116 +489,162 @@ whatever it reports at the bottom. No inset value is written in this document or
 two reasons: the number is the phone's, and a fix for the inset is in flight on another branch. On a
 phone that reports zero the screen draws what it draws today.
 
-### The movements
+### Which library builds the movement
 
 Status: designed
 
-Every duration and every curve below is chosen and not observed. A photograph carries neither. Each
-one takes the platform's own value where the platform has one, and says so.
+Every movement below is built on `react-native-reanimated`, and none on React Native's `Animated`.
 
-What would prove any of them is a recording of the built screen, watched by a person. No test reads
-a duration and concludes that a screen feels right.
+Three reasons, in order of weight. The library is already a declared dependency, so the application
+already carries its cost and uses none of it. It animates a layout change, which is what movement 3
+needs, and `Animated` cannot animate the height of a row and push the rows under it down. It runs
+the movement off the JavaScript thread, so a movement does not stutter while the first run writes
+to the database, which is the one moment in the onboarding where both happen at once.
 
-**1. The card turns.** She presses `Next` or `Back`. The content inside the sheet leaves to one side
-and the next card's content arrives from the other. The header, the bar and the drawing band do not
-move. She is left looking at the next card. Chosen: 300 milliseconds on an ease in and ease out
-curve, which is `LayoutAnimation.Presets.easeInEaseOut` as React Native ships it. I read the 300 in
-`node_modules/react-native/Libraries/LayoutAnimation/LayoutAnimation.js`. Still fallback: the
-content is replaced with no movement.
+It also exports `useReducedMotion`, which answers the reduced motion rule in one hook rather than in
+an effect for each screen. I read that export in `node_modules/react-native-reanimated/src/index.ts`
+at 4.5.1.
 
-**2. The bar advances.** The card turns. The segment for the card she is arriving at fills with
-`colour.ember`. She is left looking at a bar one segment further along. Chosen: the same 300, so
-that the bar and the card arrive together rather than one after the other. Still fallback: the
-segment is filled with no movement.
+`CycleRing.tsx` is left alone. It is built, it is proved by a test, and contract SEE-4 holds it. One
+file on the other library is a smaller cost than a rewrite that this work does not need, and moving
+it across is named in what this design does not answer.
 
-**3. The answer grows.** She chooses an answer on a question that offers a short list of them. The
-row turns from `colour.sunk` to `colour.ember`, its label turns to `colour.surface`, and the row
-grows downward to hold one sentence at `typeScale.small`. The rows under it are pushed down. Nothing
-navigates. She is left looking at the same question, with her own answer explained inside it.
-Chosen: 300 milliseconds, the same preset, because this is the same kind of move as a card turning
-and two speeds would read as two systems. Still fallback: the row changes colour and the sentence
-appears, with no growth.
+### The movement catalogue
+
+Status: designed
+
+Nine movements. Each one says what starts it, what moves, how far, what she is left looking at, and
+what happens when reduced motion is on.
+
+**1. The screen changes, going forward.** She presses the action. The content inside the sheet
+leaves to the left by a third of the screen width while it fades out, and the content of the next
+screen arrives from a third of the screen width to the right while it fades in. The header, the
+ground and the drawing band hold still. She is left looking at the next screen with its action
+already in place. Reduced motion: the content is replaced, with no movement and no fade.
+
+**2. The screen changes, going back.** She presses `Back`. The same movement runs with the two
+directions swapped, so the walk has a direction she can feel. She is left looking at the screen she
+read before. Reduced motion: the content is replaced.
+
+**3. The progress bar advances.** The screen changes. The segment for the screen she is arriving at
+fills from its left edge to its full width. Nothing else on the bar moves, and the bar never runs
+backwards, so going back leaves the filled segments filled. She is left looking at a bar one segment
+further along. Reduced motion: the segment is filled with no movement.
+
+**4. A chosen answer fills and grows.** She presses an answer on a question that offers a short list
+of them. The row fills from `colour.sunk` to `colour.ember`, its label turns to `colour.surface`,
+and the row grows downward by the height of one sentence at the small size plus `space.snug`. The
+rows below it move down by exactly that distance. Nothing navigates. She is left looking at the same
+question, with her own answer explained inside it. Reduced motion: the row changes colour and the
+sentence appears at its full height, with no growth and no push.
 
 Neither question asks for a short list today. The last period question is a calendar and the cycle
 length question is a number she steps. So the cycle length screen takes this movement in its own
 shape: the card under the stepper grows in place to hold one more sentence, naming what the length
-she just set means for her first forecast. The stack of rows is specified here so that the first
-question that does offer a short list draws it the same way.
+she just set means for her first forecast. The stack of rows is specified here so the first question
+that does offer a short list draws it the same way.
 
-**4. The circle fills.** She presses `Continue` on card 4 of the tour. A circle of `colour.ember`
-grows out of the action until it covers the screen, with the ring mark held in the centre at a
-constant size. She is left looking at the first question, drawn under the circle as it clears.
-Chosen: 600 milliseconds, which is the value `RING_OPEN_MILLISECONDS` already holds, because this is
-the same mark arriving and one mark may not have two speeds. Still fallback: no circle, and the
-first question is drawn at once.
+**5. A press and hold grows a shape until it covers the screen.** She presses and holds the action
+on the last card of the tour, which says so in its label. A circle of `colour.ember` grows out of
+the control, from the radius of the control to a radius that reaches the furthest corner of the
+screen, and the ring mark is held in the centre at a constant size while it grows. She is left
+looking at the first question, drawn under the circle as it clears. Releasing before it completes
+abandons it: the circle shrinks back into the control and nothing else happens. Reduced motion: no
+circle, and a single press begins the questions at once.
 
-**5. The day fills.** She presses a day on the calendar of the last period question. That day's
-square fills with `colour.ember` and its number turns to `colour.surface`. The day she pressed
-before empties. She is left looking at the same calendar with one day chosen and the action ready.
-Chosen: 300 milliseconds, the same preset. Still fallback: the two squares change colour with no
-movement.
+The hold can never trap anybody. `Skip` sits in the header of the same card and reaches the same
+first question with a single press. The control also declares an accessibility action, so an
+assistive technology completes it without a hold.
 
-**6. The ring arrives.** She answers the last question and the home screen opens. The ring fades up
+**6. The primary action arrives, and answers a press.** The screen changes. The action fades in and
+rises 8 points into its pinned place, a little after the content, so the eye reads the words before
+it finds the button. While she holds it down it scales to 0.97 and returns when she lifts. She is
+left looking at a control that answered her. Reduced motion: the action is drawn in place, and the
+press is answered by the pressed fill alone, which is `colour.emberPressed`.
+
+**7. The drawing arrives.** A screen opens. The drawing fades in and rises 12 points in the band
+above the sheet. It moves once, on arrival, and never again while she is on that screen. She is left
+looking at a drawing that settled rather than one that appeared. Reduced motion: the drawing is
+drawn in place.
+
+**8. A wait that advances.** A computation starts that takes long enough to see. An indicator
+advances while it runs. It never sits still, and it never restarts from empty once it has advanced,
+because an indicator that goes backwards reads as work that failed. She is left looking at the
+result of the computation, never at the indicator. Reduced motion: the indicator does not spin or
+travel; it redraws in steps as the work reports progress.
+
+No screen of the tour and no screen of the first run draws this. Nothing there takes long enough:
+the end of the first run is one transaction of three writes and one cache rebuild over a single day.
+There is one genuine computation in the product, and it is the recovery code. `deriveRecoveryKey` in
+`packages/crypto/src/recovery.ts` runs Argon2id over 19,456 kibibytes for two passes. The comment
+above the parameters records about 106 milliseconds on the machine they were written on, and says a
+phone is slower. Contract VAULT-2 puts a ceiling on that unlock and feature 6 step 8 measures it on
+the slowest phone available. `RecoveryFlow.tsx` is built and no route renders it yet, so this
+movement is specified here and drawn when that flow is routed.
+
+**9. The ring arrives.** She answers the last question and the home screen opens. The ring fades up
 from 0.94 of its size. She is left looking at her own ring, on the day of her cycle she is on.
-Chosen: nothing. This movement is built, it is `useOpeningMotion` in `CycleRing.tsx`, its duration
-is `RING_OPEN_MILLISECONDS`, and contract SEE-4 already holds it still under reduced motion.
+Reduced motion: the ring arrives already open. This one movement is built, it is `useOpeningMotion`
+in `CycleRing.tsx`, and contract SEE-4 already holds it.
 
-**7. The ones that move nothing.** `Skip` and `Close` leave the tour. `How Emi works` in Settings
-opens it. `Done` on card 4 returns to Settings. Each one is a route change and carries no movement
-of its own, so each one is named here rather than left out.
+Three things in the onboarding move nothing, and they are named so nobody looks for them. `Skip` and
+`Close` leave the tour. `How Emi works` in Settings opens it. Each is a route change and carries no
+movement of its own.
 
-**8. The wait Emi does not show.** Nothing starts it, because nothing may. Emi computes nothing in
-the onboarding that takes long enough to show. What happens when she answers the last question is
-one transaction of three writes and one cache rebuild over a single day. This movement is named so
-that nobody adds one later: a screen that says it is working may only be drawn while something is
-genuinely working. The one place in the product where that will be true is the restore of her
-history onto a second phone in feature 6, which waits on a network pull and on the key unwrap that
-contract VAULT-2 measures.
-
-### Reduced motion
+### The timings and the curves
 
 Status: designed
 
-Every movement above carries its still fallback, written beside it.
+Every duration and every curve below is chosen and not measured. A still photograph carries no
+timing, so nothing in this list was observed. What would prove any of them is a recording of the
+built screen, watched by a person. No test reads a duration and concludes that a screen feels right.
 
-Success criterion 2.3.3 of the Web Content Accessibility Guidelines, which is called Animation from
-Interactions, asks that motion started by an interaction can be turned off. It sits at level AAA,
-and the contrast floor Emi already enforces is level AA. So this is Emi holding itself above its own
-floor rather than meeting it.
+- The screen changing, forward or back: 300 milliseconds, ease in and ease out. That is the duration
+  React Native ships for `LayoutAnimation.Presets.easeInEaseOut`, which I read in
+  `node_modules/react-native/Libraries/LayoutAnimation/LayoutAnimation.js`, so it is the platform's
+  own number rather than an invented one.
+- The bar advancing: 300 milliseconds, ease in and ease out, so the bar and the screen arrive
+  together rather than one after the other.
+- An answer filling and growing: 300 milliseconds, ease in and ease out. It is the same kind of move
+  as a screen changing, and two speeds for one kind of move read as two systems.
+- The action arriving: 250 milliseconds, ease out, beginning 100 milliseconds after the content.
+- The action answering a press: 100 milliseconds, ease out, both ways.
+- The hold completing: 700 milliseconds. Long enough that a brush of the thumb does not complete it,
+  short enough that she does not wonder whether it is working. Abandoning it: 200 milliseconds.
+- The drawing arriving: 400 milliseconds, ease out.
+- The wait indicator: one turn every 1,200 milliseconds while it has no progress to report.
+- The ring arriving: 600 milliseconds, which is `RING_OPEN_MILLISECONDS` and is already in
+  `packages/tokens`.
 
-The rule is one rule, and the application already holds it. `AccessibilityInfo.isReduceMotionEnabled`
-is asked before the first frame is drawn. A phone that asks for less motion gets the end state at
-once rather than a movement stopped halfway. A phone that will not answer is treated as a phone that
-asked for less motion, which is the `catch` in `useOpeningMotion`.
+These live in `packages/tokens` as named durations beside `RING_OPEN_MILLISECONDS`, so that no
+screen writes a number of its own, and one named easing travels with them. Adding a token means
+regenerating `docs/brand.md` in the same change, because `npm run check:brand` compares that
+document against the token package and fails on a difference of one character.
 
-Contract SEE-4 states this for the ring. Contract SCREEN-5 states it for the tour, and the rules a
-test can fail hold it.
-
-### Which screens carry a progress bar
+### When the progress bar shows
 
 Status: designed
 
-A bar appears on a screen that belongs to a counted set, and it counts its own set alone.
+The bar shows on a screen that asks her for something. It does not show on a screen that gives her
+something.
 
-- The four cards of the tour carry a bar of four segments, and the words `1 of 4`.
-- The three screens of the first run carry a bar of three segments, and the words `Step 1 of 3`,
-  which is built today.
-- The two bars never join into one bar of seven. The tour can be skipped, and a bar that jumped from
-  two of seven to five of seven would read as progress lost.
-- A bar never goes backwards inside its set, and it reaches full on the last screen of its set.
-- Nothing else carries one. The circle fill carries no bar, and the home screen carries no bar.
+- The three screens of the first run carry the bar, and the words `Step 1 of 3`. They ask.
+- The four cards of the tour carry no bar. They give. The header carries the words `1 of 4`, which
+  is enough to say how far through she is without borrowing the shape of a question.
+- No other screen in the product carries one.
+- A bar counts one set and never joins another. There is one set, and it is the three questions.
+- A bar never runs backwards, and it is full on the last screen of its set.
 
-The measured reference carries a bar on 28 of its 85 screens. Read in order it climbs from 18 per
-cent to 75 per cent and never goes backwards. The screens with no bar there are the ones that tell
-her something between the questions, and the closing sequence before the price. Emi's rule says the
-same thing by set rather than by screen. Emi's bars reach full, because each of Emi's two sets is
-complete.
+The other walk carries a bar on 28 of its 85 screens, and never on the screens that give something
+back between the questions. Read in order, that bar climbs from 18 per cent to 75 per cent and never
+falls. Emi states the same rule by what a screen does rather than by counting screens, and Emi's bar
+reaches full, because Emi's one counted set is complete.
 
 ### What Emi does not copy
 
 Status: designed
 
-Seven things, each with the reason.
+Four things, each with the reason.
 
 1. Social proof. Emi has no ratings to show, no count of women tracking with it, and no panel of
    experts to name. A screen carrying any of those would make a claim the product cannot support,
@@ -596,19 +653,8 @@ Seven things, each with the reason.
 2. A tracking consent. Emi asks for none, because nothing leaves the phone. Contract KEEP-4 holds
    the dependency list to no analytics, no advertising identifier and no crash reporter that ships
    her content, so there is nothing to consent to.
-3. A wait Emi is not performing. The movements above name it and refuse it.
-4. The tap and hold. Emi takes the circle and leaves the gesture. A hold is a barrier for a person
-   with limited control of her hands, and Emi's one irreversible act, which is `Delete everything`,
-   is settled as a single press with no second confirmation. A hold on the tour would also give one
-   button two ways to press it.
-5. The gradient band. Every drawing in `brand/illustration` is generated on the stone ground, so a
-   gradient behind one would show its edge. Emi's band is `colour.stone`, flat.
-6. The shape and the width of the action. The measured action is a full pill, about 149 points wide
-   by 49 tall, centred, about 50 points above the bottom edge. Emi's action runs the width of the
-   sheet inside `space.base`, at `radius.chip`, with a minimum height of 44 points, which is what
-   the first run draws today. A wider target is easier to reach, and the tour and the questions may
-   not carry two different buttons.
-7. The length. 85 screens is not a target. Emi's onboarding is four cards and three questions, and
+3. A wait Emi is not performing. Movement 8 names where the rule bites.
+4. The length. 85 screens is not a target. Emi's onboarding is four cards and three questions, and
    the count of cards is argued where the cards are named.
 
 ### The walk
@@ -625,17 +671,21 @@ flowchart TD
   Q2["Step 2 of 3: when did your last period start"]
   Q3["Step 3 of 3: how long is your cycle"]
   H["Home: her ring, and what Emi is still learning"]
-  C1 -->|"Next: the card turns, the bar advances"| C2
-  C2 -->|"Next"| C3
-  C3 -->|"Next"| C4
+  TINT["The tour, on the tint ground, no bar, the count in the header"]
+  ASK["The questions, on the stone ground, the bar of three"]
+  C1 -->|"the screen changes"| C2
+  C2 -->|"the screen changes"| C3
+  C3 -->|"the screen changes"| C4
   C2 -->|"Back"| C1
   C3 -->|"Back"| C2
   C4 -->|"Back"| C3
   C1 -->|"Skip: nothing moves"| Q1
-  C4 -->|"Continue: the circle fills"| Q1
-  Q1 -->|"Continue"| Q2
-  Q2 -->|"a day fills, then Continue"| Q3
-  Q3 -->|"the answer grows, then Done: the ring arrives"| H
+  C4 -->|"press and hold: the circle covers the screen"| Q1
+  Q1 -->|"the bar advances"| Q2
+  Q2 -->|"a day fills, the bar advances"| Q3
+  Q3 -->|"the answer grows, then Done"| H
+  TINT -.-> C1
+  ASK -.-> Q1
 ```
 
 ## The flow
@@ -699,18 +749,28 @@ Status: designed
 21. No file under `apps/mobile/src` and none under `brand/` carries a hex colour. The lint rule of
     contract TOKEN-1 already refuses one, and the tour adds no exception.
 22. Every colour, radius, space and type size the tour draws with is read from `@emi/tokens`.
-23. The three duration tokens exist in `packages/tokens`, and `docs/brand.md` is regenerated, so
-    `npm run check:brand` passes.
+23. Every duration and every easing the onboarding uses is read from `packages/tokens`, and
+    `docs/brand.md` is regenerated, so `npm run check:brand` passes. No duration is written in a
+    screen.
 24. The four drawings exist in `brand/illustration`, each with a picture beside it, and none of
-    their names carries a refused word.
+    their names carries a refused word. The three drawings that exist today are unchanged, byte for
+    byte, and so are their pictures.
 25. The header padding is the token plus the reported top inset, and the footer padding is the
     token plus the reported bottom inset. A case reports an inset of 0 and one above 0, and reads
     the padding both times. No inset number appears in the source.
-26. Every movement of the tour is still when `AccessibilityInfo.isReduceMotionEnabled` answers
-    true, and still again when it refuses to answer at all.
-27. The tour bar has four segments and the first run bar has three. Neither counts the other.
-28. The bar of a set never goes backwards, and it is full on the last screen of its set.
-29. No screen of the onboarding says it is working.
+26. Every movement carries its still form when reduced motion is on, and every one of them is
+    driven by `react-native-reanimated`. No file of the onboarding imports `Animated` from React
+    Native.
+27. The tour carries no progress bar. The three questions carry one of three segments.
+28. The bar never runs backwards, and it is full on the last question.
+29. No screen of the tour and no screen of the first run says it is working.
+30. The largest gap on an onboarding screen is the one above the action, and it is at least a
+    quarter of the screen height. A case measures every gap on each of the seven screens.
+31. The tour is drawn on `colour.emberTint` and the three questions on `colour.stone`. The count in
+    the header is `colour.body` on the tour, because the palette refuses `colour.muted` on that
+    ground.
+32. Releasing the hold before it completes begins nothing, and the skip control reaches the first
+    question with one press.
 
 ## The contract this needs
 
@@ -724,7 +784,8 @@ skippable from any card, seen once and reachable again from Settings.
 Errors: a card that names a promise no feature builds. A skip that reaches the home screen. A tour
 shown twice without her asking for it. A card counted among the three screens of SCREEN-1. A
 movement that keeps moving while the operating system asks for reduced motion. A screen that says
-it is working while nothing is working.
+it is working while nothing is working. A hold with no way past it for a person who cannot hold. A
+progress bar on a screen that asks her for nothing.
 
 Declaring it means one edit to `docs/contracts.md` and one to `docs/features.md`, in the same
 change, because `npm run check:documents` fails on a contract that one document names and the other
@@ -759,16 +820,17 @@ Files: `apps/mobile/src/features/onboarding/copy.ts` for `tourCopy`,
 `apps/mobile/src/features/onboarding/TourScreen.tsx`,
 `apps/mobile/src/app/onboarding/tour.tsx`, `apps/mobile/src/app/index.tsx` for the redirect,
 `apps/mobile/src/features/onboarding/FirstRunProvider.tsx` for the marker and for `reread`,
-`apps/mobile/src/data/settingRepository.ts` for the key, `packages/tokens/src/ring.ts` for the three
-duration tokens, `brand/illustration/pieces.ts` for the four drawings, `docs/brand.md` regenerated,
-`docs/contracts.md` and `docs/features.md` for SCREEN-5, and
+`apps/mobile/src/data/settingRepository.ts` for the key, `packages/tokens` for the named durations
+and the easing, `brand/illustration/pieces.ts` for the ground of a piece and the four drawings,
+`docs/brand.md` regenerated, `docs/contracts.md` and `docs/features.md` for SCREEN-5, and
 `apps/mobile/tests/integration/2.8.test.tsx`.
 
-Behaviour: a first launch shows four cards, on the band and sheet frame, each with its drawing. She
-moves through them, or she skips from any of them. Either way `tourSeenAt` is written and she lands
-on the first question. A second launch goes straight to the first question.
+Behaviour: a first launch shows four cards on the tint ground, each with its drawing, each with its
+void above the pinned action, and none with a progress bar. She moves through them, or she skips
+from any of them. Either way `tourSeenAt` is written and she lands on the first question. A second
+launch goes straight to the first question.
 
-Proof: rules 1 to 13, 17, and 21 to 29 of the rules a test can fail. The two questions are answered
+Proof: rules 1 to 13, 17, and 21 to 32 of the rules a test can fail. The two questions are answered
 in the same test, so the case ends on her home screen and not on a route name.
 
 Mutation: make `markTourSeen` write nothing, and watch the second launch case go red because it
@@ -828,12 +890,13 @@ Files: `apps/mobile/src/features/onboarding/OnboardingScreen.tsx` for the band a
 `apps/mobile/src/features/onboarding/copy.ts` for the sentence that card reveals, and
 `apps/mobile/tests/integration/2.11.test.tsx`.
 
-Behaviour: the three screens of the first run are drawn on the same band and sheet the tour is drawn
-on. A day she presses on the calendar fills. The card under the cycle length stepper grows in place
-to say what the length she set means for her first forecast.
+Behaviour: the three screens of the first run keep the stone ground and take the rest of the frame
+from the tour: the void above the pinned action, the drawing in the band, and the bar of three. A
+day she presses on the calendar fills. The card under the cycle length stepper grows in place to say
+what the length she set means for her first forecast.
 
-Proof: rules 21, 22, 25, 26, 27 and 28 of the rules a test can fail, read against the three screens
-rather than the four cards. The test walks the whole first run and ends on the home screen.
+Proof: rules 21, 22, 25, 26, 27, 28, 30 and 31 of the rules a test can fail, read against the three
+screens rather than the four cards. The test walks the whole first run and ends on the home screen.
 
 Mutation: return true from the reduced motion reader and watch the case that asserts the card grew
 go red, then watch it pass again with the reader restored.
@@ -858,10 +921,17 @@ is a judgement and not a measurement.
 
 The way back in from Settings: 90 percent. It is one row and one return value.
 
-The tokens and the frame: 90 percent. Every surface is answered by a token the palette already
-holds, and I read the palette, the scale and the contrast rules rather than assuming them. The 10
-percent is the safe area, which I described as a relationship because the fix for it is on another
+The frame and the grounds: 90 percent. Every ground is a token the palette already holds, and I
+measured the two contrast ratios that decide the colour of the count rather than assuming them. The
+10 percent is the safe area, which I wrote as a relationship because the fix for it is on another
 branch I did not read.
+
+The rule for empty space: 75 percent. The rule is clear and a reviewer can apply it. The number in
+it, a quarter of the screen height, is a judgement between two measurements and not a measurement of
+its own.
+
+The choice of library: 85 percent. The three reasons are read off the repository. I have not built a
+layout movement on it here, so I have not seen it work in this application.
 
 The movements: 60 percent, and that is the lowest number in this document. The shapes come from
 still photographs. Every duration and every curve is chosen. Only a recording of the built screen,
@@ -871,7 +941,8 @@ watched by a person, moves this number.
 
 Status: designed
 
-I ran nothing on a phone. Every reading under what is built today comes from the test runner on this machine.
+I ran nothing on a phone. Every reading under what is built today comes from the test runner on this
+machine.
 
 I did not render the four cards. The lines of the cards are counted in words, not in points, and a
 line that wraps to four rows on a small screen is a thing only a picture shows.
@@ -883,7 +954,13 @@ I did not check the two store review guidelines for anything they say about a to
 run.
 
 I did not see the 85 captures. I worked from the measurements handed to me, and I have no way to
-check a pixel in them.
+check a pixel in them. I did not measure the rendered Emi screens either: the share of quiet rows,
+the blocks per screen and the size of the largest gap were all handed to me. The two readings I took
+myself are the count of grounds in the application and the state of the animation code, and both say
+so where they appear.
+
+I did not build a movement on `react-native-reanimated` in this repository, so I have not seen the
+library run here. Nothing imports it yet, which is the whole reason it is named.
 
 I observed no timing at all. A still photograph carries none. Every duration and every curve in the
 movements is chosen, and each one says so where it is written.
@@ -910,6 +987,14 @@ between the tour and the questions or after them, and that is an order only the 
 Whether the tour gets a rendered picture in `docs/story.md`. Every other screen of feature 2 has
 one, and `check:story` reports a missing section without failing the run.
 
-Whether the three durations belong in `packages/tokens/src/ring.ts` beside `RING_OPEN_MILLISECONDS`
-or in a file of their own. Four durations is the point at which a motion file starts to earn its
+Whether the named durations live beside `RING_OPEN_MILLISECONDS` in `packages/tokens/src/ring.ts`
+or in a motion file of their own. Nine of them is past the point where a file of their own earns its
 place, and this design does not make that call.
+
+Whether `CycleRing.tsx` is brought across to `react-native-reanimated`. It is the one file on the
+other library, it is built and proved, and leaving it there means the product carries two animation
+systems. Moving it is its own pull request and it is not one of the four here.
+
+Whether the tour keeps a second drawing style. The four tour pieces are generated on the tint ground
+and the three first run pieces on stone, so the set holds two grounds from that point on. Nobody has
+looked at the seven together.
