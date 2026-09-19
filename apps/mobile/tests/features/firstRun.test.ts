@@ -12,6 +12,8 @@ import {
   longestLookBackDays,
   maximumCycleLengthDays,
   minimumCycleLengthDays,
+  oldestPeriodStart,
+  periodStartIsInRange,
   statedCycleLengthDays,
 } from '../../src/features/onboarding/firstRun';
 import { openTestDatabase } from '../data/nodeDatabase';
@@ -139,6 +141,43 @@ describe('the answers she gives on the first run', () => {
         ),
       ).toThrow(new RegExp(`${longestLookBackDays}`));
       expect(listDayLogs(database)).toEqual([]);
+    });
+  });
+
+  describe('the reach the calendar asks about before she picks', () => {
+    const today = '2026-05-14';
+
+    /** Whether the write path takes a day, so its answer can be held against the screen's. */
+    function theWritePathTakes(day: string): boolean {
+      try {
+        completeFirstRun(
+          migrated(),
+          herVault(),
+          { periodStartedOn: day, cycleLengthDays: 28 },
+          sheAnswered,
+        );
+
+        return true;
+      } catch (error) {
+        if (error instanceof FirstRunError) {
+          return false;
+        }
+        throw error;
+      }
+    }
+
+    it('names the oldest day the write path accepts', () => {
+      expect(oldestPeriodStart(today)).toBe('2026-02-13');
+      expect(theWritePathTakes(oldestPeriodStart(today))).toBe(true);
+    });
+
+    it('gives the same answer as the write path on every day around the two edges', () => {
+      for (const day of ['2026-05-16', '2026-05-15', today, '2026-05-13']) {
+        expect(periodStartIsInRange(day, today)).toBe(theWritePathTakes(day));
+      }
+      for (const day of ['2026-02-14', '2026-02-13', '2026-02-12', '2026-02-11']) {
+        expect(periodStartIsInRange(day, today)).toBe(theWritePathTakes(day));
+      }
     });
   });
 
