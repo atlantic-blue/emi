@@ -1,24 +1,38 @@
 import { addDays, daysBetween, toDayNumber } from '@emi/cycle';
 
+import { type WordKey, words } from '../../language';
+
 const MILLISECONDS_IN_A_DAY = 86_400_000;
 const MONTHS_IN_A_YEAR = 12;
 
-const weekdayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-const monthNames = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+const weekdayKeys: readonly WordKey[] = [
+  'calendar.weekday.sunday',
+  'calendar.weekday.monday',
+  'calendar.weekday.tuesday',
+  'calendar.weekday.wednesday',
+  'calendar.weekday.thursday',
+  'calendar.weekday.friday',
+  'calendar.weekday.saturday',
 ];
+
+const monthKeys: readonly WordKey[] = [
+  'calendar.month.january',
+  'calendar.month.february',
+  'calendar.month.march',
+  'calendar.month.april',
+  'calendar.month.may',
+  'calendar.month.june',
+  'calendar.month.july',
+  'calendar.month.august',
+  'calendar.month.september',
+  'calendar.month.october',
+  'calendar.month.november',
+  'calendar.month.december',
+];
+
+const weekdayNames = weekdayKeys.map((key) => words(key));
+
+const monthNames = monthKeys.map((key) => words(key));
 
 /**
  * The calendar day she is living in, read from her own clock. Day arithmetic belongs to
@@ -49,10 +63,10 @@ export function daysBackFrom(day: string, count: number): string[] {
 export function dayLabel(day: string, today: string): string {
   const back = daysBetween(day, today);
   if (back === 0) {
-    return 'Today';
+    return words('calendar.today');
   }
   if (back === 1) {
-    return 'Yesterday';
+    return words('calendar.yesterday');
   }
 
   const date = new Date(toDayNumber(day) * MILLISECONDS_IN_A_DAY);
@@ -106,13 +120,13 @@ export function daysInMonth(month: string): number {
  * grid expects her weekend at the end of the row rather than split across two.
  */
 export const weekdayColumnNames: readonly string[] = [
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-  'Sunday',
+  words('calendar.weekday.monday'),
+  words('calendar.weekday.tuesday'),
+  words('calendar.weekday.wednesday'),
+  words('calendar.weekday.thursday'),
+  words('calendar.weekday.friday'),
+  words('calendar.weekday.saturday'),
+  words('calendar.weekday.sunday'),
 ];
 
 /** Which column a day sits in, counting from Monday. */

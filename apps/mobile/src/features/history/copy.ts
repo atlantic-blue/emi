@@ -1,24 +1,24 @@
 import type { PatternAnchor } from '@emi/cycle';
 
+import { words } from '../../language';
 import { monthNames, ordinal } from '../forecast/copy';
 
 /**
- * The words of the history screen, in one place, so a test can read them without rendering
- * anything. Section 9.7 of the design sets the rules: say what happens, never congratulate, no
- * exclamation mark, and write the number rather than a vague quantity.
+ * The words of the history screen. Section 9.7 of the design sets the rules: say what happens,
+ * never congratulate, no exclamation mark, and write the number rather than a vague quantity.
  *
  * Every sentence here names its own evidence. A screen that says a symptom comes back before her
  * period, without saying in how many cycles, is asking her to take Emi's word for it.
  */
 
 export const historyCopy = {
-  title: 'History',
-  back: 'Back',
-  cycles: 'Your cycles',
-  patterns: 'What comes back',
-  running: 'Still running',
-  noCycles: 'No cycle is recorded yet. Log a day you bled and this fills in.',
-  nothingRepeats: 'Nothing has come back in 3 cycles yet.',
+  title: words('history.title'),
+  back: words('history.back'),
+  cycles: words('history.cycles'),
+  patterns: words('history.patterns'),
+  running: words('history.running'),
+  noCycles: words('history.noCycles'),
+  nothingRepeats: words('history.nothingRepeats'),
 } as const;
 
 /** The day as she reads it: the 14th of May. */
@@ -29,7 +29,10 @@ export function dayReads(day: string): string {
     throw new Error(`${day} names no month of the year`);
   }
 
-  return `the ${ordinal(Number(day.slice(8, 10)))} of ${month}`;
+  return words('history.dayReads', undefined, {
+    month,
+    ordinal: ordinal(Number(day.slice(8, 10))),
+  });
 }
 
 /** A sentence opens with a capital, and a day is written the same way wherever it sits in one. */
@@ -40,14 +43,16 @@ function opening(sentence: string): string {
 /** One cycle, by the days it covers. A cycle she is still in has a start and no end to name. */
 export function cycleSentence(startedOn: string, endedOn: string | null): string {
   if (endedOn === null) {
-    return `From ${dayReads(startedOn)}`;
+    return words('history.cycleFrom', undefined, { day: dayReads(startedOn) });
   }
 
-  return opening(`${dayReads(startedOn)} to ${dayReads(endedOn)}`);
+  return opening(
+    words('history.cycleRange', undefined, { from: dayReads(startedOn), to: dayReads(endedOn) }),
+  );
 }
 
 function days(count: number): string {
-  return `${count} ${count === 1 ? 'day' : 'days'}`;
+  return words('history.cycleDayCount', count);
 }
 
 /** How long the cycle ran and how much of it she bled, which is what she compares month to month. */
@@ -58,28 +63,37 @@ export function cycleLengthSentence(
   if (lengthDays === null) {
     return periodLengthDays === null
       ? historyCopy.running
-      : `${historyCopy.running}, ${days(periodLengthDays)} of bleeding so far`;
+      : words('history.runningWithPeriod', undefined, {
+          periodDays: days(periodLengthDays),
+          running: historyCopy.running,
+        });
   }
 
   if (periodLengthDays === null) {
     return days(lengthDays);
   }
 
-  return `${days(lengthDays)}, ${periodLengthDays} of them bleeding`;
+  return words('history.cycleLengthAndPeriod', undefined, {
+    length: days(lengthDays),
+    periodDays: periodLengthDays,
+  });
 }
 
 /** Where in her cycle it keeps landing, said the way the arithmetic anchored it. */
 export function patternDaySentence(anchor: PatternAnchor, day: number): string {
   if (anchor === 'cycle-day') {
-    return `About day ${day} of your cycle`;
+    return words('history.pattern.cycleDay', undefined, { day });
   }
 
-  return `About ${days(day)} before your period`;
+  return words('history.pattern.beforePeriod', undefined, { days: days(day) });
 }
 
 /** The evidence, beside the answer, so the count she is trusting is on the screen with it. */
 export function patternEvidenceSentence(cyclesWithIt: number, cyclesRead: number): string {
-  return `in ${cyclesWithIt} of your last ${cyclesRead} cycles`;
+  return words('history.pattern.evidence', undefined, {
+    read: cyclesRead,
+    withIt: cyclesWithIt,
+  });
 }
 
 /** The whole line she reads about one symptom. */
@@ -89,7 +103,10 @@ export function patternSentence(
   cyclesWithIt: number,
   cyclesRead: number,
 ): string {
-  return `${patternDaySentence(anchor, day)}, ${patternEvidenceSentence(cyclesWithIt, cyclesRead)}`;
+  return words('history.pattern.line', undefined, {
+    evidence: patternEvidenceSentence(cyclesWithIt, cyclesRead),
+    when: patternDaySentence(anchor, day),
+  });
 }
 
 /**
@@ -97,5 +114,5 @@ export function patternSentence(
  * because a woman who is told to wait deserves to know how long.
  */
 export function patternsWaitingSentence(completeCycles: number, needsCycles: number): string {
-  return `Emi names a symptom once it has come back in ${needsCycles} cycles. ${completeCycles} of yours ${completeCycles === 1 ? 'is' : 'are'} complete.`;
+  return words('history.patternsWaiting', completeCycles, { needs: needsCycles });
 }

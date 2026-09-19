@@ -2,6 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { OnAPhone } from './fixtures/theSafeArea';
 
 import { listCycles } from '../src/data/cycleRepository';
+import { cycleCopy } from '../src/features/cycle/copy';
+import { homeCopy } from '../src/features/home/copy';
 import { forecastOf } from '../src/features/forecast/fromCache';
 import {
   HomeScreen,
@@ -9,7 +11,6 @@ import {
   exportTestID,
   historyLabel,
   historyTestID,
-  homeCopy,
   homeNoRingTestID,
   logTodayLabel,
   logTodayTestID,
@@ -49,8 +50,8 @@ describe('the home screen', () => {
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
     expect(textIn(screen.toJSON())).toEqual([
       homeCopy.wordmark,
-      homeCopy.noRing.title,
-      homeCopy.noRing.line,
+      cycleCopy.noRing.title,
+      cycleCopy.noRing.line,
       'Still learning',
       'Emi needs 2 more complete cycles before it forecasts.',
       'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',

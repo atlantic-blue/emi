@@ -1,10 +1,11 @@
 import type { ConfidenceLevel, DayRange, Forecast, Learning } from '@emi/cycle';
 import { toDayNumber } from '@emi/cycle';
 
+import { type WordKey, words } from '../../language';
+
 /**
- * The words of the forecast, in one place, so a test can read them without rendering a screen.
- * Section 9.7 of the design sets the rules they follow: say what happens, never congratulate, no
- * exclamation mark, write the number.
+ * The words of the forecast. Section 9.7 of the design sets the rules they follow: say what
+ * happens, never congratulate, no exclamation mark, write the number.
  *
  * Nothing here can write a single day. The only function that turns days into words takes a range
  * and refuses one whose ends are the same day, because a range of no width is a date, and a date is
@@ -12,8 +13,8 @@ import { toDayNumber } from '@emi/cycle';
  */
 
 export const forecastCopy = {
-  nextPeriod: 'Next period',
-  fertileWindow: 'Fertile window',
+  nextPeriod: words('forecast.nextPeriod'),
+  fertileWindow: words('forecast.fertileWindow'),
 } as const;
 
 export type ForecastCopyRefusal = 'range-is-one-day' | 'range-ends-before-it-starts';
@@ -28,20 +29,22 @@ export class ForecastCopyError extends Error {
   }
 }
 
-export const monthNames: readonly string[] = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+const monthKeys: readonly WordKey[] = [
+  'calendar.month.january',
+  'calendar.month.february',
+  'calendar.month.march',
+  'calendar.month.april',
+  'calendar.month.may',
+  'calendar.month.june',
+  'calendar.month.july',
+  'calendar.month.august',
+  'calendar.month.september',
+  'calendar.month.october',
+  'calendar.month.november',
+  'calendar.month.december',
 ];
+
+export const monthNames: readonly string[] = monthKeys.map((key) => words(key));
 
 const ordinalSuffixes: Readonly<Record<number, string>> = { 1: 'st', 2: 'nd', 3: 'rd' };
 
@@ -108,26 +111,39 @@ export function rangeSentence(range: DayRange): string {
   }
 
   if (from.year !== to.year) {
-    return `Between the ${ordinal(from.dayOfMonth)} of ${monthName(from)} ${from.year} and the ${ordinal(to.dayOfMonth)} of ${monthName(to)} ${to.year}`;
+    return words('forecast.range.spansYears', undefined, {
+      from: ordinal(from.dayOfMonth),
+      fromMonth: monthName(from),
+      fromYear: from.year,
+      to: ordinal(to.dayOfMonth),
+      toMonth: monthName(to),
+      toYear: to.year,
+    });
   }
 
   if (from.month !== to.month) {
-    return `Between the ${ordinal(from.dayOfMonth)} of ${monthName(from)} and the ${ordinal(to.dayOfMonth)} of ${monthName(to)}`;
+    return words('forecast.range.spansMonths', undefined, {
+      from: ordinal(from.dayOfMonth),
+      fromMonth: monthName(from),
+      to: ordinal(to.dayOfMonth),
+      toMonth: monthName(to),
+    });
   }
 
-  return `Between the ${ordinal(from.dayOfMonth)} and the ${ordinal(to.dayOfMonth)} of ${monthName(to)}`;
+  return words('forecast.range.sameMonth', undefined, {
+    from: ordinal(from.dayOfMonth),
+    month: monthName(to),
+    to: ordinal(to.dayOfMonth),
+  });
 }
 
 /**
  * What the window is worth, said on the screen that shows it. The design asks every screen that
  * carries the window to call it an estimate, and the denial is the operator's fourth decision
  * written where a woman reads it rather than only in a document.
- *
- * Both sentences are one string because the wording check reads a denial only where a full stop
- * comes before it, and a string literal on its own puts a quotation mark there instead.
  */
 export function fertileWindowSentence(forecast: Forecast): string {
-  return `An estimate from your last ${forecast.fromCycles} cycles. Emi never says a day is safe, because no day is.`;
+  return words('forecast.fertileWindow.sentence', undefined, { cycles: forecast.fromCycles });
 }
 
 /**
@@ -135,14 +151,17 @@ export function fertileWindowSentence(forecast: Forecast): string {
  * cycles of one woman would read as a precision none of it has.
  */
 export const confidenceWords: Readonly<Record<ConfidenceLevel, string>> = {
-  high: 'High',
-  medium: 'Medium',
-  low: 'Low',
+  high: words('forecast.confidence.high'),
+  medium: words('forecast.confidence.medium'),
+  low: words('forecast.confidence.low'),
 };
 
 /** The word, and the count the median was taken over, because the count is what the word rests on. */
 export function confidenceSentence(forecast: Forecast): string {
-  return `${confidenceWords[forecast.confidence.level]} confidence, from your last ${forecast.fromCycles} cycles`;
+  return words('forecast.confidence.sentence', undefined, {
+    cycles: forecast.fromCycles,
+    word: confidenceWords[forecast.confidence.level],
+  });
 }
 
 /**
@@ -152,7 +171,7 @@ export function confidenceSentence(forecast: Forecast): string {
  * confident about.
  */
 export const learningCopy = {
-  stillLearning: 'Still learning',
+  stillLearning: words('forecast.stillLearning'),
 } as const;
 
 /**
@@ -160,12 +179,10 @@ export const learningCopy = {
  * woman with one cycle behind her reads that one more is wanted and not that two are.
  */
 export function cyclesWantedSentence(learning: Learning): string {
-  const wanted = learning.needsCycles - learning.completeCycles;
-
-  return `Emi needs ${wanted} more complete ${wanted === 1 ? 'cycle' : 'cycles'} before it forecasts.`;
+  return words('forecast.cyclesWanted', learning.needsCycles - learning.completeCycles);
 }
 
 /** The length she gave at the first run, which is all Emi counts by until her own cycles arrive. */
 export function statedLengthSentence(cycleLengthDays: number): string {
-  return `Until then Emi counts a cycle of ${cycleLengthDays} days, the length you gave at the first run.`;
+  return words('forecast.statedLength', undefined, { days: cycleLengthDays });
 }
