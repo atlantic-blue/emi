@@ -3,17 +3,20 @@
 Everything here is applied by the pipeline, on a merge into `main`. Nobody applies it from a
 machine. See `.github/workflows/deploy.yml`.
 
-There is one exception, and it is the first apply. It is below.
+There was one exception, and it was the first apply. It ran on 2026-09-18. The record is below.
 
 ## What this builds
 
-One DynamoDB table, `emi-vault`. It holds ciphertext, a revision and a write time. It holds no
-key, no date, no symptom, no flow and no note.
+One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
+time. It holds no key, no date, no symptom, no flow and no note.
 
-One HTTP api, `emi-vault`, with four routes.
+One HTTP api, `emi-vault`, with four routes. It answers at
+`https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
-Two functions, `emi-vault` and `emi-authorizer`, on Node 22 and arm64. Both ship a placeholder
-today. Feature 6 steps 2 and 3 replace them.
+Two functions, `emi-vault` and `emi-authorizer`, on Node 22 and arm64. Both deployed functions
+are the placeholders that `infra/lambda.tf` holds inline. The real handlers exist, in
+`services/vault/src`, and they merged with feature 6 steps 2 and 3. No step in the path packages
+`services/vault` into either function, so the placeholders are what runs.
 
 Three log groups, each with a retention of 30 days.
 
@@ -26,13 +29,34 @@ that can apply.
 Almost nothing. The table bills per request, so an idle table pays for storage only. The api and
 the functions bill per call. No resource here bills by the hour.
 
-## The bootstrap, which only the operator can run
+## The bootstrap, which ran on 2026-09-18
 
-The two roles do not exist yet, so the pipeline cannot assume either one. Somebody must create
-them once, with a credential that can write to this account. Until that happens, both cloud jobs
-skip every step and report success, and their logs say they are waiting for this.
+The bootstrap is done. It ran once, from a machine, with an account credential, because the
+pipeline had no role to assume yet. It added 24 resources and it changed nothing. Nobody runs it
+again.
 
-Run this once, from the repository root:
+The state is at `s3://abs-terraform/emi/terraform.tfstate`. Terraform 1.10.5 wrote it, which is
+the version `.github/workflows/deploy.yml` pins.
+
+The two repository variables hold the two role addresses:
+
+```
+AWS_PLAN_ROLE_ARN   arn:aws:iam::230345688874:role/emi-github-actions-plan
+AWS_APPLY_ROLE_ARN  arn:aws:iam::230345688874:role/emi-github-actions
+```
+
+So a pull request that touches `infra/` gets a plan, and a merge applies.
+
+The api answered on 2026-09-18. `POST /v1/accounts` carries no authorizer. It answered 501, which
+is what the vault placeholder answers, so that route reaches its function. `GET /v1/records` and
+`DELETE /v1/account` carry the authorizer. Both answered 401, so the authorizer runs and refuses.
+It refuses every request, because the placeholder answers `isAuthorized: false` whatever the
+request carries. Nothing measured here says anything about a signature.
+
+### Building this account again from nothing
+
+The commands below already ran, on the account above. Read them as a record of what was done. Run
+them only against an account that holds none of this yet.
 
 ```
 terraform -chdir=infra init && terraform -chdir=infra apply
@@ -48,8 +72,6 @@ gh variable set AWS_PLAN_ROLE_ARN --repo atlantic-blue/emi \
 gh variable set AWS_APPLY_ROLE_ARN --repo atlantic-blue/emi \
   --body "$(terraform -chdir=infra output -raw apply_role_arn)"
 ```
-
-The next pull request that touches `infra/` then gets a plan, and the next merge applies.
 
 ## Check the first pipeline run, do not assume it
 
