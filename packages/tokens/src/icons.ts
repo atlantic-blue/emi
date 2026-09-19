@@ -48,6 +48,13 @@ export interface Icon {
  */
 export const ICON_SIZE = 24;
 
+/**
+ * The corner a rectangle inside an icon is rounded to, on the 24 unit grid the set is drawn on.
+ * The design system's smallest corner is 4, which is a box on a screen rather than a detail inside
+ * a drawing, so the grid keeps its own.
+ */
+export const ICON_CORNER = 2;
+
 /** The set as data, so a test can walk every drawing without naming them one at a time. */
 export const iconNames: readonly IconName[] = [
   'calendar',

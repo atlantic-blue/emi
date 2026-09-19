@@ -1,36 +1,42 @@
-/** The spacing scale, named rather than measured, so a screen asks for `snug` and never for 16. */
-export type SpaceName = 'hair' | 'tight' | 'snug' | 'base' | 'roomy' | 'loose' | 'section';
-
 /**
- * Points. Every step is a multiple of four, so a layout built from these lands on the grid the
- * design draws on.
+ * The spacing and the corners of the design system, name for name and value for value. The
+ * document is `docs/design/prototype-design-system.md` and `tests/designSystem.test.ts` reads
+ * this file against it. The document measures in rem for a browser and a screen measures in
+ * points, so every value here is its rem multiplied by ${REM_IN_POINTS}.
  */
+
+/** What one rem of the document is worth on a phone. */
+export const REM_IN_POINTS = 16;
+
+/** The seven steps the document names. A screen asks for `spaceMd` and never for 16. */
+export type SpaceName =
+  'gutter' | 'margin' | 'spaceXs' | 'spaceSm' | 'spaceMd' | 'spaceLg' | 'spaceXl';
+
+/** Points. */
 export const space: Readonly<Record<SpaceName, number>> = {
-  hair: 4,
-  tight: 8,
-  snug: 16,
-  base: 24,
-  roomy: 32,
-  loose: 48,
-  section: 64,
+  gutter: 16,
+  margin: 20,
+  spaceXs: 4,
+  spaceSm: 8,
+  spaceMd: 16,
+  spaceLg: 24,
+  spaceXl: 36,
 };
 
 /**
- * The corners, from an icon to a sheet. A radius is named for what it goes on, so two things of
- * the same kind cannot round differently.
+ * The corners the document names. `DEFAULT` keeps the document's own key, so the two can be read
+ * against each other without a table in between.
  */
-export type RadiusName = 'icon' | 'chip' | 'card' | 'sheet' | 'round';
+export type RadiusName = 'sm' | 'DEFAULT' | 'md' | 'lg' | 'xl' | 'full';
 
-/**
- * Points. `round` is larger than any box Emi draws, which is how a capsule is made: a corner that
- * can never be reached.
- */
+/** Points. `full` is larger than any box Emi draws, which is how a capsule is made. */
 export const radius: Readonly<Record<RadiusName, number>> = {
-  icon: 2,
-  chip: 10,
-  card: 16,
-  sheet: 24,
-  round: 999,
+  sm: 4,
+  DEFAULT: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  full: 9999,
 };
 
 /** Two widths only: a hairline for a rule, and the one stroke every drawing in the set is made at. */
@@ -47,11 +53,14 @@ export const MINIMUM_TAP_TARGET = 44;
 
 /** The scale as data, from the smallest step to the largest. */
 export const spaceNames: readonly SpaceName[] = [
-  'hair',
-  'tight',
-  'snug',
-  'base',
-  'roomy',
-  'loose',
-  'section',
+  'spaceXs',
+  'spaceSm',
+  'gutter',
+  'spaceMd',
+  'margin',
+  'spaceLg',
+  'spaceXl',
 ];
+
+/** The corners as data, from the tightest to the capsule. */
+export const radiusNames: readonly RadiusName[] = ['sm', 'DEFAULT', 'md', 'lg', 'xl', 'full'];

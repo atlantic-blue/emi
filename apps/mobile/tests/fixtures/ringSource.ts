@@ -38,7 +38,7 @@ export function ringSource(drawing: Partial<RingDrawing> = {}): string {
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${side.toFixed(4)} ${side.toFixed(4)}">`,
-    `  <path d="${path}" fill="none" stroke="${colour.ember}" stroke-width="${stroke}" stroke-linecap="round"/>`,
+    `  <path d="${path}" fill="none" stroke="${colour.primary}" stroke-width="${stroke}" stroke-linecap="round"/>`,
     '</svg>',
   ].join('\n');
 }

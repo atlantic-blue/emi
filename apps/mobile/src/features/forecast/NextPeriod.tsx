@@ -34,19 +34,19 @@ export function NextPeriod({ forecast }: Props): ReactNode {
 }
 
 const styles = StyleSheet.create({
-  block: { paddingHorizontal: space.base, paddingVertical: space.snug },
+  block: { paddingHorizontal: space.spaceLg, paddingVertical: space.spaceMd },
   confidence: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
   },
   label: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     ...textStyle('label-sm'),
-    marginBottom: space.hair,
+    marginBottom: space.spaceXs,
   },
   range: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-md'),
-    marginBottom: space.hair,
+    marginBottom: space.spaceXs,
   },
 });

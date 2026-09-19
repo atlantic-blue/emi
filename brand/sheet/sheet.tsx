@@ -119,9 +119,17 @@ function ratio(pair: Pair): string {
  * prints the text it carries. A fill prints its own ratio and the partner that carries the text
  * instead. Every line is measured by the same function the contrast test refuses a colour with.
  */
+export const LINE_NOTE = 'draws a line, so it carries no word and no ratio of its own';
+
 export function measurementsFor(sources: BrandSources, name: ColourName): readonly string[] {
   if (!SIX_DIGIT_HEX.test(sources.palette[name].value)) {
     return [TRANSPARENT_NOTE];
+  }
+
+  const roles = sources.palette[name].roles;
+
+  if (roles.length === 1 && roles[0] === 'line') {
+    return [LINE_NOTE];
   }
 
   const approved = approvedPairs(sources);
@@ -198,24 +206,24 @@ function styleSheet(fontsBase: string): string {
     sizeRules(),
     markRules(),
     `body {
-  background: ${colour.stone};
-  color: ${colour.ink};
+  background: ${colour.surfaceContainerLowest};
+  color: ${colour.onSurface};
   margin: 0;
   padding: ${PAGE_PADDING}px;
   width: ${sheetPage.width}px;
   height: ${sheetPage.height}px;
   box-sizing: border-box;
 }`,
-    `.standfirst { color: ${colour.body}; max-width: 780px; margin-top: 8px; }`,
-    `.stamp { color: ${colour.muted}; }`,
+    `.standfirst { color: ${colour.onSurfaceVariant}; max-width: 780px; margin-top: 8px; }`,
+    `.stamp { color: ${colour.onSurfaceVariant}; }`,
     `.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; }`,
-    `.section { border-top: 1px solid ${colour.hairline}; margin-top: 44px; padding-top: 20px; }`,
+    `.section { border-top: 1px solid ${colour.outlineVariant}; margin-top: 44px; padding-top: 20px; }`,
     `.section-head { display: flex; align-items: baseline; gap: 20px; margin-bottom: 20px; }`,
-    `.section-note { color: ${colour.muted}; }`,
+    `.section-note { color: ${colour.onSurfaceVariant}; }`,
     `.marks { display: flex; gap: 32px; }`,
     `.mark-card {
-  background: ${colour.surface};
-  border: 1px solid ${colour.hairline};
+  background: ${colour.surfaceContainerLowest};
+  border: 1px solid ${colour.outlineVariant};
   border-radius: 16px;
   padding: 24px;
   width: 296px;
@@ -226,7 +234,7 @@ function styleSheet(fontsBase: string): string {
     `.mark-name { margin-bottom: 16px; }`,
     `.mark-row { display: flex; align-items: flex-end; gap: 20px; height: 136px; }`,
     `.mark-small { display: flex; align-items: flex-end; gap: 20px; margin-top: 16px; }`,
-    `.mark-label { color: ${colour.muted}; margin-top: 12px; }`,
+    `.mark-label { color: ${colour.onSurfaceVariant}; margin-top: 12px; }`,
     `.mark-row + .mark-small { margin-top: auto; }`,
     `.icon-card { width: 360px; }`,
     `.icon-shown svg { display: block; width: ${ICON_SHOWN_AT}px; height: ${ICON_SHOWN_AT}px; }`,
@@ -241,14 +249,14 @@ function styleSheet(fontsBase: string): string {
   width: 96px;
   height: 96px;
   border-radius: 12px;
-  border: 1px solid ${colour.hairline};
+  border: 1px solid ${colour.outlineVariant};
   flex: none;
 }`,
     `.swatch-name { display: flex; align-items: baseline; gap: 12px; }`,
-    `.roles { color: ${colour.muted}; margin-bottom: 6px; }`,
-    `.measured { color: ${colour.body}; }`,
+    `.roles { color: ${colour.onSurfaceVariant}; margin-bottom: 6px; }`,
+    `.measured { color: ${colour.onSurfaceVariant}; }`,
     `.type-row { display: flex; align-items: baseline; gap: 28px; margin-bottom: 10px; }`,
-    `.type-label { color: ${colour.muted}; width: 260px; flex: none; }`,
+    `.type-label { color: ${colour.onSurfaceVariant}; width: 260px; flex: none; }`,
     `.rings { display: flex; gap: 56px; }`,
     `.ring { width: ${RING_DIAMETER}px; }`,
     `.drawing { position: relative; height: ${RING_DIAMETER}px; }`,
@@ -260,7 +268,7 @@ function styleSheet(fontsBase: string): string {
   align-items: center;
   justify-content: center;
 }`,
-    `.ring-note { color: ${colour.muted}; margin-top: 6px; }`,
+    `.ring-note { color: ${colour.onSurfaceVariant}; margin-top: 6px; }`,
     `.icon-grid { display: flex; flex-wrap: wrap; gap: 16px 24px; }`,
     `.icon-cell {
   width: 116px;
@@ -269,10 +277,10 @@ function styleSheet(fontsBase: string): string {
   align-items: center;
   gap: 8px;
 }`,
-    `.icon-name { color: ${colour.muted}; }`,
+    `.icon-name { color: ${colour.onSurfaceVariant}; }`,
     `.pieces { display: flex; gap: 40px; }`,
-    `.piece-says { color: ${colour.muted}; margin-top: 10px; width: 320px; }`,
-    `.foot { color: ${colour.muted}; margin-top: 44px; }`,
+    `.piece-says { color: ${colour.onSurfaceVariant}; margin-top: 10px; width: 320px; }`,
+    `.foot { color: ${colour.onSurfaceVariant}; margin-top: 44px; }`,
   ].join('\n');
 }
 
@@ -399,9 +407,9 @@ function Ring({ ring }: { ring: DrawnRing }): Html {
           <circle
             cx={bead.x}
             cy={bead.y}
-            fill={colour.ember}
+            fill={colour.primary}
             r={BEAD_RADIUS}
-            stroke={colour.stone}
+            stroke={colour.surfaceContainerLowest}
             stroke-width={BEAD_HALO_WIDTH}
           />
         </svg>
@@ -429,7 +437,7 @@ function IconCell({ icon }: { icon: Icon }): Html {
         height={icon.size}
         viewBox={`0 0 ${icon.size} ${icon.size}`}
         fill="none"
-        stroke={colour.ink}
+        stroke={colour.onSurface}
         stroke-width={icon.strokeWidth}
         stroke-linecap="round"
         stroke-linejoin="round"

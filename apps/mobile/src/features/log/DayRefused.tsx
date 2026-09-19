@@ -57,32 +57,32 @@ export function DayRefused({ refusal, onBack }: Props): ReactNode {
 const styles = StyleSheet.create({
   back: {
     alignItems: 'center',
-    backgroundColor: colour.ember,
-    borderRadius: radius.chip,
+    backgroundColor: colour.surfaceTint,
+    borderRadius: radius.md,
     justifyContent: 'center',
-    marginTop: space.roomy,
+    marginTop: space.spaceXl,
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.base,
+    paddingHorizontal: space.spaceLg,
   },
   backLabel: {
-    color: colour.surface,
+    color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
   line: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
     textAlign: 'center',
   },
   middle: {
     flex: 1,
     justifyContent: 'center',
-    padding: space.base,
+    padding: space.spaceLg,
   },
   title: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-lg'),
-    marginBottom: space.tight,
+    marginBottom: space.spaceSm,
     textAlign: 'center',
   },
 });

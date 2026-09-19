@@ -120,7 +120,7 @@ describe('the first run carries the design system', () => {
         await sheIsLookingAt(where);
 
         const filled = firstRunScreens.filter(
-          (each) => flattened(stepTestID(each)).backgroundColor === colour.ember,
+          (each) => flattened(stepTestID(each)).backgroundColor === colour.surfaceTint,
         );
 
         expect(filled).toEqual(firstRunScreens.slice(0, at + 1));
@@ -140,7 +140,7 @@ describe('the first run carries the design system', () => {
     it('leaves a segment she has not reached in the ground colour', async () => {
       await sheIsLookingAt('welcome');
 
-      expect(flattened(stepTestID('cycleLength')).backgroundColor).toBe(colour.sunk);
+      expect(flattened(stepTestID('cycleLength')).backgroundColor).toBe(colour.surfaceContainer);
     });
   });
 
@@ -152,7 +152,7 @@ describe('the first run carries the design system', () => {
         const drawn = String(screen.getByTestId(onboardingMarkTestID).props.xml);
 
         expect(drawn).toContain(icons.ring.body);
-        expect(drawn).toContain(colour.ember);
+        expect(drawn).toContain(colour.primary);
       });
     }
   });
@@ -163,8 +163,8 @@ describe('the first run carries the design system', () => {
 
       const square = flattened(dayTestID(threeDaysBack));
 
-      expect(square.backgroundColor).toBe(colour.ember);
-      expect(square.borderColor).toBe(colour.emberPressed);
+      expect(square.backgroundColor).toBe(colour.surfaceTint);
+      expect(square.borderColor).toBe(colour.onPrimaryFixedVariant);
       expect(screen.getByTestId(chosenDayMarkTestID)).toBeTruthy();
     });
 
@@ -174,8 +174,14 @@ describe('the first run carries the design system', () => {
       const others = [today, '2026-05-12'].map((day) => flattened(dayTestID(day)));
 
       expect(screen.queryAllByTestId(chosenDayMarkTestID)).toHaveLength(1);
-      expect(others.map((each) => each.backgroundColor)).toEqual([colour.sunk, colour.sunk]);
-      expect(others.map((each) => each.borderColor)).toEqual([colour.sunk, colour.sunk]);
+      expect(others.map((each) => each.backgroundColor)).toEqual([
+        colour.surfaceContainer,
+        colour.surfaceContainer,
+      ]);
+      expect(others.map((each) => each.borderColor)).toEqual([
+        colour.surfaceContainer,
+        colour.surfaceContainer,
+      ]);
       expect(screen.getByTestId(dayTestID(threeDaysBack))).toBeSelected();
       expect(screen.getByTestId(dayTestID(today))).not.toBeSelected();
     });
@@ -187,7 +193,7 @@ describe('the first run carries the design system', () => {
 
       expect(screen.getByTestId(dayTestID('2026-05-20'))).toBeTruthy();
       expect(after.opacity).toBeLessThan(1);
-      expect(after.backgroundColor).not.toBe(colour.sunk);
+      expect(after.backgroundColor).not.toBe(colour.surfaceContainer);
     });
   });
 
@@ -206,8 +212,8 @@ describe('the first run carries the design system', () => {
 
       const chosen = flattened(namedDayTestID(today));
 
-      expect(chosen.backgroundColor).toBe(colour.ember);
-      expect(chosen.borderColor).toBe(colour.emberPressed);
+      expect(chosen.backgroundColor).toBe(colour.surfaceTint);
+      expect(chosen.borderColor).toBe(colour.onPrimaryFixedVariant);
       expect(screen.getByTestId(chosenNameMarkTestID)).toBeTruthy();
     });
 
@@ -223,7 +229,9 @@ describe('the first run carries the design system', () => {
         </OnAPhone>,
       );
 
-      expect(flattened(namedDayTestID('2026-05-13')).backgroundColor).toBe(colour.surface);
+      expect(flattened(namedDayTestID('2026-05-13')).backgroundColor).toBe(
+        colour.surfaceContainerLowest,
+      );
       expect(screen.queryAllByTestId(chosenNameMarkTestID)).toHaveLength(1);
     });
   });
@@ -235,7 +243,7 @@ describe('the first run carries the design system', () => {
       const heading = flattened(monthTestID);
 
       expect(screen.getByTestId(monthTestID)).toHaveTextContent('May 2026');
-      expect(heading.color).toBe(colour.ink);
+      expect(heading.color).toBe(colour.onSurface);
       expect(heading.fontSize).toBe(typeScale['headline-md'].size);
     });
 
@@ -245,8 +253,8 @@ describe('the first run carries the design system', () => {
       const live = flattened(earlierMonthTestID);
       const spent = flattened(laterMonthTestID);
 
-      expect(live.backgroundColor).toBe(colour.emberTint);
-      expect(live.borderColor).toBe(colour.ember);
+      expect(live.backgroundColor).toBe(colour.primaryFixed);
+      expect(live.borderColor).toBe(colour.primary);
       expect(spent.backgroundColor).not.toBe(live.backgroundColor);
       expect(spent.borderColor).not.toBe(live.borderColor);
       expect(Number(spent.opacity)).toBeLessThan(Number(live.opacity ?? 1));
@@ -278,13 +286,13 @@ describe('the first run carries the design system', () => {
 
     it('holds every pair of words and ground above the contrast floor', () => {
       const pairs = [
-        [colour.muted, colour.stone],
-        [colour.ink, colour.stone],
-        [colour.body, colour.surface],
-        [colour.ink, colour.surface],
-        [colour.ink, colour.emberTint],
-        [colour.ember, colour.emberTint],
-        [colour.surface, colour.ember],
+        [colour.onSurfaceVariant, colour.surfaceContainerLowest],
+        [colour.onSurface, colour.surfaceContainerLowest],
+        [colour.onSurfaceVariant, colour.surfaceContainerLowest],
+        [colour.onSurface, colour.surfaceContainerLowest],
+        [colour.onSurface, colour.primaryFixed],
+        [colour.primary, colour.primaryFixed],
+        [colour.surfaceContainerLowest, colour.primary],
       ] as const;
 
       for (const [text, ground] of pairs) {

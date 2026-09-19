@@ -36,6 +36,7 @@ import {
   iconNames,
   icons,
   phaseLabel,
+  phasePalette,
   ringGeometry,
   typeScale,
   letterSpacingOf,
@@ -56,10 +57,10 @@ const committed = committedSheet(root);
  * The palette with muted taken to the value body carries. A real token rather than a typed hex,
  * and a different ratio, which is the drift the pipeline job exists to catch.
  */
-const movedValue = colours.body.value;
+const movedValue = colours.outline.value;
 const movedPalette = {
   ...colours,
-  muted: { ...colours.muted, value: movedValue },
+  onSurfaceVariant: { ...colours.onSurfaceVariant, value: movedValue },
 };
 const moved = { ...sources, brand: { ...shippedSources, palette: movedPalette } };
 
@@ -108,13 +109,13 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
       }
     });
 
-    it('prints a measurement beside every one of the eighteen', () => {
+    it('prints a measurement beside every one of the forty seven', () => {
       const silent = colourNames.filter(
         (name) => measurementsFor(shippedSources, name).length === 0,
       );
 
       expect(silent).toEqual([]);
-      expect(colourNames).toHaveLength(18);
+      expect(colourNames).toHaveLength(47);
     });
 
     it('prints the ratio contrastRatio computes, and not a number typed by hand', () => {
@@ -127,20 +128,22 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
       expect(wrong).toEqual([]);
     });
 
-    it('names the one colour that has no ratio of its own, and says why', () => {
+    it('holds no colour that carries transparency, so every swatch has a ratio of its own', () => {
       const silent = colourNames.filter((name) =>
         measurementsFor(shippedSources, name).includes(TRANSPARENT_NOTE),
       );
 
-      expect(silent).toEqual<ColourName[]>(['hairline']);
-      expect(page).toContain(TRANSPARENT_NOTE);
+      expect(silent).toEqual<ColourName[]>([]);
+      expect(page).not.toContain(TRANSPARENT_NOTE);
     });
 
     it('says what a fill is measured at and which partner carries its text', () => {
-      const measured = measurementsFor(shippedSources, 'period');
+      const measured = measurementsFor(shippedSources, phasePalette.period.fill);
+      const said =
+        'primaryContainer on surface is 4.44 to 1, so onPrimaryFixedVariant carries the text';
 
-      expect(measured).toContain('period on stone is 3.31 to 1, so periodInk carries the text');
-      expect(page).toContain('period on stone is 3.31 to 1, so periodInk carries the text');
+      expect(measured).toContain(said);
+      expect(page).toContain(said);
     });
 
     it('prints every ratio to two places, so nothing reads as rounder than it was measured', () => {
@@ -273,20 +276,20 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
 
     it('changes when a colour moves, and prints the ratio the new value measures', () => {
       const after = sheetDocument(moved);
-      const measured = contrastRatio(movedValue, colours.stone.value).toFixed(2);
+      const measured = contrastRatio(movedValue, colours.surface.value).toFixed(2);
 
       expect(after).not.toEqual(page);
-      expect(page).toContain('muted on stone is 4.75 to 1');
-      expect(after).not.toContain('muted on stone is 4.75 to 1');
-      expect(after).toContain(`muted on stone is ${measured} to 1`);
+      expect(page).toContain('onSurfaceVariant on surface is 8.91 to 1');
+      expect(after).not.toContain('onSurfaceVariant on surface is 8.91 to 1');
+      expect(after).toContain(`onSurfaceVariant on surface is ${measured} to 1`);
     });
 
     it('changes the measurement beside the swatch, not only the patch of colour', () => {
-      const before = measurementsFor(shippedSources, 'muted');
-      const after = measurementsFor(moved.brand, 'muted');
+      const before = measurementsFor(shippedSources, 'onSurfaceVariant');
+      const after = measurementsFor(moved.brand, 'onSurfaceVariant');
 
       expect(after).not.toEqual(before);
-      expect(after[0]).toContain(contrastRatio(movedValue, colours.stone.value).toFixed(2));
+      expect(after[0]).toContain(contrastRatio(movedValue, colours.surface.value).toFixed(2));
     });
 
     it('refuses the committed copy when a token has moved, naming the line', () => {

@@ -46,20 +46,20 @@ export function LockScreen({ wasRefused, onUnlock }: Props): ReactNode {
 const styles = StyleSheet.create({
   action: {
     alignItems: 'center',
-    backgroundColor: colour.ember,
-    borderRadius: radius.chip,
+    backgroundColor: colour.surfaceTint,
+    borderRadius: radius.md,
     justifyContent: 'center',
-    marginTop: space.base,
+    marginTop: space.spaceLg,
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.base,
+    paddingHorizontal: space.spaceLg,
   },
   actionLabel: {
-    color: colour.surface,
+    color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
   line: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
     textAlign: 'center',
   },
@@ -67,16 +67,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    padding: space.base,
+    padding: space.spaceLg,
   },
   title: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-lg'),
-    marginBottom: space.snug,
-    marginTop: space.base,
+    marginBottom: space.spaceMd,
+    marginTop: space.spaceLg,
   },
   wordmark: {
-    color: colour.ember,
+    color: colour.primary,
     ...textStyle('headline-xl'),
   },
 });

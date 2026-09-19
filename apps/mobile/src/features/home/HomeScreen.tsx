@@ -124,56 +124,56 @@ export function HomeScreen({
 const styles = StyleSheet.create({
   action: {
     alignItems: 'center',
-    backgroundColor: colour.ember,
-    borderRadius: radius.chip,
+    backgroundColor: colour.surfaceTint,
+    borderRadius: radius.md,
     justifyContent: 'center',
-    marginTop: space.roomy,
+    marginTop: space.spaceXl,
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.base,
+    paddingHorizontal: space.spaceLg,
   },
   actionLabel: {
-    color: colour.surface,
+    color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
   body: {
     alignItems: 'center',
     flexGrow: 1,
     justifyContent: 'center',
-    paddingVertical: space.roomy,
+    paddingVertical: space.spaceXl,
   },
-  forecast: { marginTop: space.base },
+  forecast: { marginTop: space.spaceLg },
   history: {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.base,
+    paddingHorizontal: space.spaceLg,
   },
   historyLabel: {
-    color: colour.body,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
   },
-  links: { flexDirection: 'row', gap: space.snug, marginTop: space.tight },
-  noRing: { alignItems: 'center', paddingHorizontal: space.base },
+  links: { flexDirection: 'row', gap: space.spaceMd, marginTop: space.spaceSm },
+  noRing: { alignItems: 'center', paddingHorizontal: space.spaceLg },
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
   // takes the small size rather than the body size a sentence would otherwise get.
   noRingLine: {
-    color: colour.muted,
+    color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
     textAlign: 'center',
   },
   noRingTitle: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-md'),
-    marginBottom: space.hair,
+    marginBottom: space.spaceXs,
   },
   // The scroll fills the screen so the block inside it sits in the middle of the glass rather than
   // against the top of it, which is where a container sized to its own content would leave it.
   scroll: { flex: 1 },
   wordmark: {
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('headline-lg'),
-    marginBottom: space.base,
+    marginBottom: space.spaceLg,
   },
 });

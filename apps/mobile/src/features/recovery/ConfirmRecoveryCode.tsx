@@ -88,19 +88,19 @@ export function ConfirmRecoveryCode({ opensTheVault, onConfirmed }: Props): Reac
 
 const styles = StyleSheet.create({
   entry: {
-    backgroundColor: colour.surface,
-    borderColor: colour.hairline,
-    borderRadius: radius.card,
+    backgroundColor: colour.surfaceContainerLowest,
+    borderColor: colour.outlineVariant,
+    borderRadius: radius.lg,
     borderWidth: 1,
-    color: colour.ink,
+    color: colour.onSurface,
     ...textStyle('body-lg'),
     letterSpacing: 2,
     lineHeight: typeScale['headline-lg'].lineHeight,
-    padding: space.snug,
+    padding: space.spaceMd,
   },
   wrong: {
-    color: colour.ember,
+    color: colour.primary,
     ...textStyle('body-lg'),
-    marginTop: space.snug,
+    marginTop: space.spaceMd,
   },
 });
