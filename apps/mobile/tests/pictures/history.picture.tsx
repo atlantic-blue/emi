@@ -15,6 +15,7 @@ import { historyNow } from '../../src/features/history/historyNow';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { pageSize, screenDocument } from '../../../../brand/screens/asHtml';
 import { migratedDatabase } from '../fixtures/cycleCache';
+import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { herVault } from '../fixtures/herVault';
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
@@ -39,6 +40,8 @@ function browser(): string {
 const theCaveat = [
   'Rendered from the tree the history screen produced under the test runner, at 390 by 844 points,',
   'and not captured from a phone. No screen names a font family yet.',
+  'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
+  'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
 
 const recordedAt = new Date('2026-05-14T20:00:00.000Z');
@@ -118,13 +121,15 @@ const theStates: readonly State[] = [
 
 async function drawn(state: State): Promise<DrawnScreen> {
   const view = await render(
-    <HistoryScreen
-      history={historyNow(herPhone(state.cycles), herVault())}
-      onBack={() => undefined}
-      onOpenDay={() => undefined}
-    />,
+    <OnAPhone>
+      <HistoryScreen
+        history={historyNow(herPhone(state.cycles), herVault())}
+        onBack={() => undefined}
+        onOpenDay={() => undefined}
+      />
+    </OnAPhone>,
   );
-  const tree: unknown = JSON.parse(JSON.stringify(view.toJSON()));
+  const tree: unknown = theScreenIn(view);
 
   view.unmount();
 
