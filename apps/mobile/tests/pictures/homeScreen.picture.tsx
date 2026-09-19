@@ -1,9 +1,4 @@
-import { spawnSync } from 'node:child_process';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
-import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 import type { ForecastResult } from '@emi/cycle';
 import { addDays } from '@emi/cycle';
@@ -26,7 +21,7 @@ import {
   veryRegular,
 } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
-import { pageSize, screenDocument } from '../../../../brand/screens/asHtml';
+import { drawOrCheck } from '../../../../brand/screens/picture';
 import { daysLogged, migratedDatabase, readDay } from '../fixtures/cycleCache';
 import { recordedAt } from '../fixtures/forecast';
 
@@ -38,29 +33,6 @@ import { recordedAt } from '../fixtures/forecast';
  * It is not part of the suite: the file is named for a picture rather than for a test, and the
  * runner is pointed at it by `npm run generate:home-picture`.
  */
-
-const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
-const output = join(repositoryRoot, 'brand', 'screens', 'home-screen.png');
-
-const browsers = [
-  process.env.EMI_BROWSER,
-  '/opt/playwright/chromium_headless_shell-1234/chrome-linux/headless_shell',
-  '/usr/bin/chromium',
-  '/usr/bin/google-chrome',
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-];
-
-function browser(): string {
-  const found = browsers.find((path) => path !== undefined && existsSync(path));
-
-  if (found === undefined) {
-    throw new Error(
-      'No browser to draw with. Set EMI_BROWSER to a Chromium or Chrome binary and run this again.',
-    );
-  }
-
-  return found;
-}
 
 /** The day of the cycle each screen is drawn on, and the length she gave at the first run. */
 const theDaySheOpensIt = 8;
@@ -167,32 +139,14 @@ describe('the home screen, drawn for somebody to look at', () => {
   it('draws them into one picture', async () => {
     expect(screens).toHaveLength(theFourSets.length);
 
-    const size = pageSize(screens.length);
-    const directory = mkdtempSync(join(tmpdir(), 'emi-home-'));
-    const page = join(directory, 'home.html');
+    const result = drawOrCheck({
+      name: 'home-screen',
+      screens: screens,
+      caveat: theCaveat,
+      script: 'generate:home-picture',
+    });
 
-    writeFileSync(page, screenDocument(screens, theCaveat), 'utf8');
-
-    const run = spawnSync(
-      browser(),
-      [
-        '--headless',
-        '--no-sandbox',
-        '--disable-gpu',
-        '--hide-scrollbars',
-        `--screenshot=${output}`,
-        `--window-size=${size.width},${size.height}`,
-        pathToFileURL(page).href,
-      ],
-      { encoding: 'utf8' },
-    );
-
-    rmSync(directory, { force: true, recursive: true });
-
-    expect(run.status).toBe(0);
-    expect(existsSync(output)).toBe(true);
-    console.log(
-      `drew ${screens.length} screens at ${size.width} by ${size.height}, into ${output} (${statSync(output).size} bytes)`,
-    );
+    expect(result.problems).toEqual([]);
+    console.log(result.said);
   });
 });

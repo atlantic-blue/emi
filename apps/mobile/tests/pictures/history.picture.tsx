@@ -1,9 +1,3 @@
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
-
 import type { DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
@@ -13,33 +7,15 @@ import { logDay } from '../../src/features/cycle/rebuild';
 import { HistoryScreen } from '../../src/features/history/HistoryScreen';
 import { historyNow } from '../../src/features/history/historyNow';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
-import { pageSize, screenDocument } from '../../../../brand/screens/asHtml';
+import { drawOrCheck } from '../../../../brand/screens/picture';
 import { migratedDatabase } from '../fixtures/cycleCache';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { herVault } from '../fixtures/herVault';
 
-const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
-const output = join(repositoryRoot, 'brand', 'screens', 'history.png');
-
-const browsers = [
-  process.env.EMI_BROWSER,
-  '/opt/playwright/chromium_headless_shell-1234/chrome-linux/headless_shell',
-  '/usr/bin/chromium',
-];
-
-function browser(): string {
-  const found = browsers.find((path) => path !== undefined && existsSync(path));
-
-  if (found === undefined) {
-    throw new Error('No browser to draw with.');
-  }
-
-  return found;
-}
-
 const theCaveat = [
   'Rendered from the tree the history screen produced under the test runner, at 390 by 844 points,',
-  'and not captured from a phone. No screen names a font family yet.',
+  'and not captured from a phone. The page loads the same font files the application loads, so the',
+  'words are drawn in Plus Jakarta Sans.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
@@ -148,30 +124,14 @@ describe('the history screen, drawn for somebody to look at', () => {
   it('draws them into one picture', async () => {
     expect(screens).toHaveLength(theStates.length);
 
-    const size = pageSize(screens.length);
-    const directory = mkdtempSync(join(tmpdir(), 'emi-history-'));
-    const page = join(directory, 'history.html');
+    const result = drawOrCheck({
+      name: 'history',
+      screens: screens,
+      caveat: theCaveat,
+      script: 'generate:history-picture',
+    });
 
-    writeFileSync(page, screenDocument(screens, theCaveat), 'utf8');
-
-    const run = spawnSync(
-      browser(),
-      [
-        '--headless',
-        '--no-sandbox',
-        '--disable-gpu',
-        '--hide-scrollbars',
-        `--screenshot=${output}`,
-        `--window-size=${size.width},${size.height}`,
-        pathToFileURL(page).href,
-      ],
-      { encoding: 'utf8' },
-    );
-
-    rmSync(directory, { force: true, recursive: true });
-
-    expect(run.status).toBe(0);
-    expect(existsSync(output)).toBe(true);
-    console.log(`drew ${screens.length} screens into ${output} (${statSync(output).size} bytes)`);
+    expect(result.problems).toEqual([]);
+    console.log(result.said);
   });
 });

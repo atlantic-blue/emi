@@ -1,9 +1,3 @@
-import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
-
 import type { DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
 
@@ -13,6 +7,7 @@ import { readableFile } from '../../src/features/export/files';
 import { chooseUnits } from '../../src/features/log/units';
 import { migratedDatabase } from '../fixtures/cycleCache';
 import { herVault } from '../fixtures/herVault';
+import { drawOrCheckPage } from '../../../../brand/screens/picture';
 
 /**
  * The document she can hand to a doctor, drawn as it opens. The markup is the file the application
@@ -20,25 +15,6 @@ import { herVault } from '../fixtures/herVault';
  *
  * The suite never picks it up. It is drawn on demand by npm run generate:export-picture.
  */
-
-const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
-const output = join(repositoryRoot, 'brand', 'screens', 'export-document.png');
-
-const browsers = [
-  process.env.EMI_BROWSER,
-  '/opt/playwright/chromium_headless_shell-1234/chrome-linux/headless_shell',
-  '/usr/bin/chromium',
-];
-
-function browser(): string {
-  const found = browsers.find((path) => path !== undefined && existsSync(path));
-
-  if (found === undefined) {
-    throw new Error('No browser to draw with.');
-  }
-
-  return found;
-}
 
 const whenSheExported = new Date('2026-05-14T20:00:00.000Z');
 const today = '2026-05-14';
@@ -93,29 +69,16 @@ describe('the document she can hand to a doctor', () => {
     chooseUnits(database, { temperature: 'celsius', weight: 'kilograms' });
 
     const file = readableFile(everythingIn(database, vault, whenSheExported), whenSheExported);
-    const directory = mkdtempSync(join(tmpdir(), 'emi-export-'));
-    const page = join(directory, file.name);
 
-    writeFileSync(page, file.text, 'utf8');
+    const result = drawOrCheckPage({
+      name: 'export-document',
+      markup: file.text,
+      size: { width: 860, height: 1400 },
+      script: 'generate:export-picture',
+      holds: `the document she opens, ${file.name}`,
+    });
 
-    const run = spawnSync(
-      browser(),
-      [
-        '--headless',
-        '--no-sandbox',
-        '--disable-gpu',
-        '--hide-scrollbars',
-        `--screenshot=${output}`,
-        '--window-size=860,1400',
-        pathToFileURL(page).href,
-      ],
-      { encoding: 'utf8' },
-    );
-
-    rmSync(directory, { force: true, recursive: true });
-
-    expect(run.status).toBe(0);
-    expect(existsSync(output)).toBe(true);
-    console.log(`drew ${file.name} into ${output} (${statSync(output).size} bytes)`);
+    expect(result.problems).toEqual([]);
+    console.log(result.said);
   });
 });
