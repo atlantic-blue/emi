@@ -12,6 +12,12 @@ under every heading, and holds `docs/features.md` and `docs/contracts.md` to eac
 contract cannot sit in one and not the other. `pipeline/documentation.ts` holds the readers it
 calls, so each one can be run against a fixture repository rather than against this one.
 
+`pipeline/checkStory.ts` is the command behind `npm run check:story`. It reads `docs/features.md`
+and `docs/story.md` together, fails on a picture the story names and nobody drew, and names every
+feature with no section and every picture in `brand/screens` that no section shows.
+`pipeline/story.ts` holds its readers, so each one runs against a fixture repository as well as
+against this one.
+
 `tools/brand/writeBrandDocument.ts` writes `docs/brand.md` from `packages/tokens`. The drawings
 themselves live in the top level `brand` directory, which is a different thing. `npm run
 generate:brand` writes the document and `npm run check:brand` fails when the committed copy differs
@@ -31,7 +37,8 @@ tracked text file for wording Emi may never use about itself. `colourLeak.test.t
 value outside `packages/tokens` is refused. `licence.test.ts` reads the licence and every manifest
 that names one. `reference.test.ts` covers the three rules
 of the reference and watches each one go red and green again. `emptyTestRun.test.ts` proves a run
-that finds no test fails.
+that finds no test fails. `story.test.ts` covers the story check, renames a real picture to watch it
+go red, and puts it back.
 
 ## How to run them
 
@@ -40,6 +47,7 @@ From the root of the repository:
     npm run check:documents
     npm run check:brand
     npm run check:reference
+    npm run check:story
     npm run test:workspace
 
 The mermaid tool draws through Chrome, and `npm ci` fetches one on the pipeline runner. On a machine

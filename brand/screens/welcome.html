@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8" /><style>
+* { box-sizing: border-box; }
+body { margin: 0; padding: 40px; background: #F1EBE4; font-family: system-ui, sans-serif; }
+div {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+svg { flex-shrink: 0; }
+.screens { display: flex; flex-direction: row; gap: 32px; align-items: flex-start; }
+.screen { display: flex; flex-direction: column; width: 390px; }
+.phone {
+  width: 390px;
+  height: 844px;
+  border-radius: 36px;
+  overflow: hidden;
+  border: 1px solid #241F1C1A;
+}
+.phone > div { height: 100%; }
+.title { font-size: 15px; font-weight: 600; color: #241F1C; margin: 0 0 2px; }
+.note { font-size: 13px; color: #5C534E; margin: 0 0 12px; min-height: 34px; }
+.caveat { font-size: 13px; color: #5C534E; margin: 20px 0 0; max-width: 1200px; }
+</style></head><body><div class="screens"><section class="screen"><p class="title">Step 1 of 3, and it asks her nothing</p><p class="note">No account, no email address, and the two refusals stated on the first screen.</p><div class="phone"><div style="background-color: #F7F3EE; flex: 1"><div style="align-items: center; flex-direction: row; gap: 16px; padding-left: 24px; padding-right: 24px; padding-top: 32px"><svg width="28" height="28" viewBox="0 0 24 24"><g stroke="#a8452c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4.75 8.62A8 8 0 1 0 8.62 4.75" fill="none"></path></g></svg><div style="color: #756A64; font-family: IBM Plex Mono; font-size: 12px; letter-spacing: 0.48px; line-height: 16px">Step 1 of 3</div></div><div style="flex-direction: row; gap: 4px; padding-left: 24px; padding-right: 24px; padding-top: 16px"><div style="background-color: #F1EBE4; border-radius: 999px; flex: 1; height: 6px; background-color: #A8452C"></div><div style="background-color: #F1EBE4; border-radius: 999px; flex: 1; height: 6px"></div><div style="background-color: #F1EBE4; border-radius: 999px; flex: 1; height: 6px"></div></div><div style="flex: 1; overflow: hidden"><div style="flex-grow: 1; justify-content: space-between; padding-bottom: 24px; padding-left: 24px; padding-right: 24px; padding-top: 32px; min-height: 100%"><div><div style="color: #241F1C; font-size: 26px; line-height: 32px; margin-bottom: 16px">Emi learns your cycle. You keep your data.</div><div style="color: #241F1C; font-size: 16px; line-height: 24px">Your cycle is worked out on this phone. Nothing is sent anywhere.</div></div><div style="flex-grow: 1; justify-content: center; padding-top: 32px; padding-bottom: 32px"></div><div style="background-color: #FFFCF8; border-color: #241F1C1A; border-radius: 16px; border-width: 1px; padding: 24px"><div style="color: #5C534E; font-size: 16px; line-height: 24px">There is no account. Emi never asks for your email address or a password.</div><div style="color: #5C534E; font-size: 16px; line-height: 24px; border-top-color: #241F1C1A; border-top-width: 1px; margin-top: 16px; padding-top: 16px">Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.</div></div></div></div><div style="border-top-color: #241F1C1A; border-top-width: 1px; padding: 24px"><div style="align-items: center; background-color: #A8452C; border-radius: 10px; justify-content: center; min-height: 44px; min-width: 44px; padding-left: 24px; padding-right: 24px; padding-top: 16px; padding-bottom: 16px"><div style="color: #FFFCF8; font-size: 16px; line-height: 24px">Continue</div></div></div></div></div></section></div><p class="caveat">Rendered from the tree the welcome screen produced under the test runner, at 390 by 844 points, and not captured from a phone. The step label names the monospaced face, which no screen loads yet, so it falls back here and on a phone. Reproduce with: npm run generate:welcome-picture.</p></body></html>
