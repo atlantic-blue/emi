@@ -45,7 +45,7 @@ const theStates: readonly State[] = [
   },
   {
     title: 'How she feels today',
-    note: 'Two moods, energy at four, a temperature and a weight. The foot counts what one save writes.',
+    note: 'Two moods, energy at four, a temperature and a weight, and two symptoms below the fold.',
     moods: ['irritable', 'anxious'],
     energy: 4,
     symptoms: ['cramps', 'lower-back-pain'],
@@ -59,7 +59,7 @@ const theStates: readonly State[] = [
   },
   {
     title: 'A temperature nobody has',
-    note: 'One save writes the whole day, so a measurement the record refuses stops the save rather than being dropped out of it.',
+    note: 'The record refuses the number and names the range it takes. Save stays out of reach until she fixes it.',
     types: tooCold,
   },
 ];

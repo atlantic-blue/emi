@@ -29,7 +29,7 @@ the frame than it does on a phone. The first run names the monospaced face, whic
 yet, so it falls back here and on a phone alike. And a screen that names no face at all takes the
 browser's own where a phone takes the system one.
 
-Two features have a section today. The pipeline runs `npm run check:story`, which names every
+Three features have a section today. The pipeline runs `npm run check:story`, which names every
 feature with no section, names every picture in `brand/screens` that no section shows, and fails
 when the story names a picture that is not there or when the line under a picture does not say how
 it was made. A later step turns the first of those into a failure as well. Feature 7 is not built
@@ -175,3 +175,42 @@ screen.
 
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
 with `npm run generate:past-day-picture`.
+
+## Feature 4: She logs how she feels
+
+A period tracker that only holds bleeding days tells her what she already knows. This feature is
+everything else about a day: her mood, her energy, a waking temperature, a weight, and seventy
+symptoms she can look through or search. One press of save writes the whole day.
+
+She says how she feels. The sheet opens with the ten moods, then energy from one to five, then the
+two measurements, then the other sixty symptoms in seven groups. Nothing here is typed twice: a
+symptom is a slug that never changes, so six cycles of her history still point at it after the
+wording on the chip is rewritten.
+
+![The log sheet: empty, filled in, searched, and refusing a temperature nobody has](../brand/screens/log-sheet.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:log-sheet-picture`.
+
+She bleeds on a day she did not expect to, and says so. A day she marks that way is kept in full and
+never starts a cycle, so one odd day does not move every forecast behind it.
+
+![The flow screen, where a bleed she did not expect is marked](../brand/screens/log-flow.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:flow-picture`.
+
+Months later the logging pays. The history lists her last six cycles and names the symptoms that
+came back at the same point in three or more of them, with the count beside each one. A symptom she
+logged once is not named, because calling a coincidence a pattern is the one failure this screen can
+have, and Emi says how many cycles it still wants rather than guessing early.
+
+![The history: six cycles with three named patterns, and the same screen with one cycle recorded](../brand/screens/history.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:history-picture`.
+
+Two things this feature does not have yet. `SCREEN-3` names a note beside the rest of the day, and
+no note field is built. And no screen opens the sheet: `/log` reaches the flow row, the sheet is
+driven by its own tests, and the picture above is rendered from the component rather than from a
+route she can walk to.
