@@ -1,4 +1,5 @@
 import { render } from '@testing-library/react-native';
+import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
 import { CycleLength } from '../../src/features/onboarding/CycleLength';
 import {
@@ -21,6 +22,8 @@ const theCaveat = [
   'points, and not captured from a phone. The step label and the number name the monospaced face,',
   'which no screen loads yet, so both fall back here and on a phone. Reproduce with: npm run',
   'generate:cycle-length-picture.',
+  'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
+  'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
 
 interface State {
@@ -49,11 +52,13 @@ const theStates: readonly State[] = [
 
 async function drawn(state: State): Promise<DrawnScreen> {
   const view = await render(
-    <CycleLength days={state.days} onChange={() => undefined} onDone={() => undefined} />,
+    <OnAPhone>
+      <CycleLength days={state.days} onChange={() => undefined} onDone={() => undefined} />
+    </OnAPhone>,
   );
   // A copy, taken before the screen is torn down. The runner holds one screen at a time, so a tree
   // kept by reference is the tree of whatever was rendered last.
-  const tree: unknown = JSON.parse(JSON.stringify(view.toJSON()));
+  const tree: unknown = theScreenIn(view);
 
   view.unmount();
 
