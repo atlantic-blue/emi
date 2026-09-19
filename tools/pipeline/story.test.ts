@@ -7,6 +7,8 @@ import { driftProblems } from '../../brand/screens/picture';
 import {
   type Beat,
   caveatProblems,
+  kindOf,
+  scriptsOf,
   featuresIn,
   pictureAt,
   picturesOnDisk,
@@ -57,7 +59,19 @@ afterAll(() => {
 });
 
 const theCaveat =
-  'Rendered under the test runner at 390 by 844 points, and not captured from a phone.';
+  'Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it ' +
+  'again with `npm run generate:welcome-picture`.';
+
+const theDrawingCaveat =
+  'Drawn by its own generator, rather than under the test runner. Run ' +
+  '`npm run generate:logo`.';
+
+/** A fixture carries the scripts its lines name, because a line naming a script nobody has fails. */
+const fixtureScripts = ['generate:welcome-picture', 'generate:logo'];
+
+const fixtureManifest = JSON.stringify({
+  scripts: Object.fromEntries(fixtureScripts.map((script) => [script, 'echo'])),
+});
 
 const twoFeatures = [
   '# The features',
@@ -93,6 +107,7 @@ const oneBeat = [
 
 function repositoryWith(beats: readonly string[], pictures: readonly string[]): string {
   return fixtureHolding([
+    { path: 'package.json', contents: fixtureManifest },
     { path: 'docs/features.md', contents: twoFeatures },
     { path: 'docs/story.md', contents: storyTelling(beats) },
     ...pictures.map((name) => ({ path: join('brand', 'screens', name), contents: 'a picture' })),
@@ -101,13 +116,16 @@ function repositoryWith(beats: readonly string[], pictures: readonly string[]): 
 
 describe('the story of Emi is a document, and a picture it names that nobody drew fails the pipeline', () => {
   describe('the story this repository ships', () => {
-    it('tells feature 2 in beats, each one a sentence and a picture', () => {
-      const [only] = sectionsIn(readFileSync(join(repositoryRoot, storyDocument), 'utf8'));
+    it('tells each feature in beats, each one a sentence and a picture', () => {
+      const sections = sectionsIn(readFileSync(join(repositoryRoot, storyDocument), 'utf8'));
+      const firstRun = sections.find((section) => section.number === 2);
 
-      expect(only?.number).toBe(2);
-      expect(only?.beats.length).toBeGreaterThanOrEqual(6);
-      expect(only?.beats.map((beat) => beat.picture)).toContain('../brand/screens/welcome.png');
-      expect(only?.beats.every((beat) => beat.sentence.length > 20)).toBe(true);
+      expect(sections.map((section) => section.number)).toEqual([1, 2]);
+      expect(firstRun?.beats.length).toBeGreaterThanOrEqual(6);
+      expect(firstRun?.beats.map((beat) => beat.picture)).toContain('../brand/screens/welcome.png');
+      expect(
+        sections.every((section) => section.beats.every((beat) => beat.sentence.length > 20)),
+      ).toBe(true);
     });
 
     it('names a picture that is on disk every time, and carries no problem at all', () => {
@@ -126,7 +144,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
         `${storyDocument} tells ${shipped.told.length} of the ${shipped.features.length} feature(s)`,
       );
       expect(shipped.features.length).toBeGreaterThanOrEqual(8);
-      expect(shipped.told.map((feature) => feature.number)).toEqual([2]);
+      expect(shipped.told.map((feature) => feature.number)).toEqual([1, 2]);
     });
 
     it('names every picture under a line saying it was rendered and not photographed', () => {
@@ -135,24 +153,21 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
       );
 
       for (const beat of beats) {
-        expect(caveatProblems(beat)).toEqual([]);
+        expect(caveatProblems(beat, scriptsOf(repositoryRoot))).toEqual([]);
       }
     });
 
-    it('names, under each picture, a script that package.json actually carries', () => {
-      const scripts: Record<string, string> = JSON.parse(
-        readFileSync(join(repositoryRoot, 'package.json'), 'utf8'),
-      ).scripts;
+    it('names, under each picture, a command a reader can run', () => {
       const beats = sectionsIn(readFileSync(join(repositoryRoot, storyDocument), 'utf8')).flatMap(
         (section) => section.beats,
       );
-      const named = beats.map((beat) => /npm run (generate:[a-z-]+)/.exec(beat.caveat ?? '')?.[1]);
+      const commanded = beats.filter((beat) =>
+        /`(npm run [a-z:-]+|node [^`]+)`/.test(beat.caveat ?? ''),
+      );
 
-      expect(named.filter((script) => script === undefined)).toEqual([]);
-
-      for (const script of named) {
-        expect(Object.keys(scripts)).toContain(script);
-      }
+      expect(commanded).toHaveLength(beats.length);
+      expect(beats.filter((beat) => kindOf(beat.picture) === 'drawing').length).toBeGreaterThan(0);
+      expect(beats.filter((beat) => kindOf(beat.picture) === 'screen').length).toBeGreaterThan(0);
     });
   });
 
@@ -169,7 +184,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
     });
 
     it('is named in this repository too, for every feature but the one that is told', () => {
-      expect(shipped.untold.map((feature) => feature.number)).toEqual([1, 3, 4, 5, 6, 7, 8]);
+      expect(shipped.untold.map((feature) => feature.number)).toEqual([3, 4, 5, 6, 7, 8]);
       expect(run().output).toContain('tells no story for feature 7');
     });
   });
@@ -220,6 +235,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
   describe('a run that read nothing', () => {
     it('fails rather than reporting success on an empty document', () => {
       const root = fixtureHolding([
+        { path: 'package.json', contents: fixtureManifest },
         { path: 'docs/features.md', contents: twoFeatures },
         { path: 'docs/story.md', contents: '# The story\n' },
       ]);
@@ -232,47 +248,147 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
     });
 
     it('fails when the story is not there at all', () => {
-      const root = fixtureHolding([{ path: 'docs/features.md', contents: twoFeatures }]);
+      const root = fixtureHolding([
+        { path: 'package.json', contents: fixtureManifest },
+        { path: 'docs/features.md', contents: twoFeatures },
+      ]);
 
       expect(storyProblems(root).problems[0]).toContain(`${storyDocument} is missing`);
     });
   });
 
-  describe('the line under a picture', () => {
+  describe('the line under a picture of a screen', () => {
+    const screen = '../brand/screens/welcome.png';
+
     function caveated(line: string | null): Beat {
-      return { sentence: 'She opens it.', picture: 'welcome.png', caveat: line };
+      return { sentence: 'She opens it.', picture: screen, caveat: line };
     }
 
     it('is missing altogether, and the picture is named', () => {
-      expect(caveatProblems(caveated(null))).toEqual([
-        `${storyDocument}: the picture welcome.png carries no line under it saying where it came from`,
+      expect(caveatProblems(caveated(null), fixtureScripts)).toEqual([
+        `${storyDocument}: the picture ${screen} carries no line under it saying where it came from`,
       ]);
     });
 
     it('does not say the size it was rendered at', () => {
       expect(
-        caveatProblems(caveated('Rendered under the test runner, and not captured from a phone.')),
+        caveatProblems(
+          caveated(
+            'Rendered under the test runner, and not captured from a phone. Draw it again with ' +
+              '`npm run generate:welcome-picture`.',
+          ),
+          fixtureScripts,
+        ),
       ).toEqual([
-        `${storyDocument}: the line under welcome.png does not say the size it was rendered at, as "390 by 844 points"`,
+        `${storyDocument}: the line under ${screen} does not say the size it was rendered at, as "390 by 844 points"`,
       ]);
     });
 
     it('lets a reader think somebody photographed a phone', () => {
       expect(
-        caveatProblems(caveated('Rendered under the test runner at 390 by 844 points.')),
+        caveatProblems(
+          caveated(
+            'Rendered under the test runner at 390 by 844 points. Draw it again with ' +
+              '`npm run generate:welcome-picture`.',
+          ),
+          fixtureScripts,
+        ),
       ).toEqual([
-        `${storyDocument}: the line under welcome.png does not say that it was not captured from a phone`,
+        `${storyDocument}: the line under ${screen} does not say that it was not captured from a phone`,
       ]);
     });
 
-    it('is quiet when the line says all three things', () => {
-      expect(caveatProblems(caveated(theCaveat))).toEqual([]);
+    it('names no command, so a reader cannot make the picture again', () => {
+      expect(
+        caveatProblems(
+          caveated(
+            'Rendered under the test runner at 390 by 844 points, and not captured from a phone.',
+          ),
+          fixtureScripts,
+        ),
+      ).toEqual([
+        `${storyDocument}: the line under ${screen} names no command that makes the picture again`,
+      ]);
+    });
+
+    it('names a script package.json does not carry', () => {
+      expect(
+        caveatProblems(
+          caveated(
+            'Rendered under the test runner at 390 by 844 points, and not captured from a phone. ' +
+              'Draw it again with `npm run generate:nothing`.',
+          ),
+          fixtureScripts,
+        ),
+      ).toEqual([
+        `${storyDocument}: the line under ${screen} names \`npm run generate:nothing\`, and package.json carries no such script`,
+      ]);
+    });
+
+    it('is quiet when the line says all three things and names its command', () => {
+      expect(caveatProblems(caveated(theCaveat), fixtureScripts)).toEqual([]);
+    });
+  });
+
+  describe('the line under a drawing, which no test runner made', () => {
+    const drawing = '../brand/logo/emi-lockup.svg';
+
+    function caveated(line: string): Beat {
+      return { sentence: 'She reads the name.', picture: drawing, caveat: line };
+    }
+
+    it('reads a picture outside brand/screens as a drawing', () => {
+      expect(kindOf(drawing)).toBe('drawing');
+      expect(kindOf('../brand/screens/welcome.png')).toBe('screen');
+    });
+
+    it('claims the test runner drew it, which is the wrong half of the story', () => {
+      expect(
+        caveatProblems(
+          caveated(
+            'Rendered under the test runner at 390 by 844 points, and not captured from a phone. ' +
+              'Draw it again with `npm run generate:logo`.',
+          ),
+          fixtureScripts,
+        ),
+      ).toEqual([
+        `${storyDocument}: the line under ${drawing} does not say that a generator drew it`,
+        `${storyDocument}: the line under ${drawing} does not say that the test runner did not draw it, which is how the screens are drawn`,
+      ]);
+    });
+
+    it('says a generator drew it and never says which runner did not', () => {
+      expect(
+        caveatProblems(
+          caveated('Written by its own generator. Run `npm run generate:logo`.'),
+          fixtureScripts,
+        ),
+      ).toEqual([
+        `${storyDocument}: the line under ${drawing} does not say that the test runner did not draw it, which is how the screens are drawn`,
+      ]);
+    });
+
+    it('is quiet when the line says a generator drew it and names the command', () => {
+      expect(caveatProblems(caveated(theDrawingCaveat), fixtureScripts)).toEqual([]);
+    });
+
+    it('takes a command that is not an npm script, because two generators have none', () => {
+      expect(
+        caveatProblems(
+          caveated(
+            'Drawn by its own generator, rather than under the test runner. Run ' +
+              '`node --experimental-strip-types brand/icons/generate.ts`.',
+          ),
+          fixtureScripts,
+        ),
+      ).toEqual([]);
     });
   });
 
   describe('a section that no feature answers', () => {
     it('fails when the story names a feature the map does not carry', () => {
       const root = fixtureHolding([
+        { path: 'package.json', contents: fixtureManifest },
         { path: 'docs/features.md', contents: twoFeatures },
         {
           path: 'docs/story.md',
@@ -290,6 +406,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
 
     it('fails when a feature is renamed in one document and not the other', () => {
       const root = fixtureHolding([
+        { path: 'package.json', contents: fixtureManifest },
         { path: 'docs/features.md', contents: twoFeatures },
         {
           path: 'docs/story.md',

@@ -1,8 +1,8 @@
 # emi
 
-Emi is a period and cycle tracker. She pays 29.99 pounds a year. Nobody sells her data, because
-nobody can read it. The predictions are arithmetic on her own phone. The cloud holds ciphertext and
-no key.
+Emi is a period and cycle tracker. Emi stands for Every Month Insights. She pays 29.99 pounds a
+year. Nobody sells her data, because nobody can read it. The predictions are arithmetic on her own
+phone. The cloud holds ciphertext and no key.
 
 Emi is not a contraceptive. Emi is not a medical device.
 

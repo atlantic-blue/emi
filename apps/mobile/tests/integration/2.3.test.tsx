@@ -292,12 +292,35 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(app.pathname()).toBe('/');
     });
 
-    it('has exactly three screens to route to', () => {
-      expect(readdirSync(join(appDirectory, 'onboarding')).sort()).toEqual([
+    it('has exactly three screens to route to, and one layout that is not one of them', () => {
+      const held = readdirSync(join(appDirectory, 'onboarding')).sort();
+
+      // A name opening with an underscore is a layout rather than a route, so she is never sent
+      // to it. Both halves are named, so a deleted layout fails here as loudly as a fourth screen.
+      expect(held.filter((name) => !name.startsWith('_'))).toEqual([
         'cycle-length.tsx',
         'last-period.tsx',
         'welcome.tsx',
       ]);
+      expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
+    });
+  });
+
+  describe('she steps forward through the three screens', () => {
+    it('leaves each screen behind and puts the next one in front of her', async () => {
+      await sheOpensEmi();
+      expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
+
+      await sheAnswers('welcome');
+
+      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-welcome')).toBeNull();
+
+      await shePresses(dayTestID(herPeriodStarted));
+      await sheAnswers('lastPeriod');
+
+      expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
     });
   });
 
@@ -440,6 +463,26 @@ describe('the first run ends on the home screen with her period recorded', () =>
     });
   });
 
+  describe('the index route, which is where both ends of the first run begin', () => {
+    it('shows a woman who has not answered the welcome screen, and nothing of her home', async () => {
+      await sheOpensEmi();
+
+      expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
+      expect(screen.queryByTestId('home-screen')).toBeNull();
+    });
+
+    it('shows a woman who has answered her home screen, and nothing of the first run', async () => {
+      const first = await sheOpensEmi();
+      await sheAnswersEveryScreen();
+      await first.close();
+
+      await sheOpensEmi();
+
+      expect(screen.getByTestId('home-screen')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-welcome')).toBeNull();
+    });
+  });
+
   describe('she presses Done a second time, because the first press looked like nothing', () => {
     it('writes her first run once, and the second press writes nothing and fails nothing', async () => {
       const app = await sheOpensEmi();
@@ -452,7 +495,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
 
       // Both presses land before the screen redraws. That is what her second press meets while
-      // the home screen is still on its way.
+      // the home screen is still on its way. Neither press is settled away here, so a second
+      // press that raises anything fails this case.
       await act(async () => {
         fireEvent.press(done);
         jest.setSystemTime(twoSecondsLater);
@@ -464,8 +508,18 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(listDayLogs(herDatabase()).map((row) => [row.day, row.revision])).toEqual([
         [herPeriodStarted, 1],
       ]);
+
+      // The clock moved between the presses, so a second write would carry the later time in
+      // all three of these. They are the assertion that a second press wrote nothing.
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
       expect(readSetting(herDatabase(), 'cycleLengthDays')).toBe(String(herCycleLengthDays));
+      const vault = await theVaultOnHerPhone();
+      const row = readDayLog(herDatabase(), herPeriodStarted);
+      expect(row && vault.open(row.payload)).toEqual({
+        day: herPeriodStarted,
+        flow: 'medium',
+        recordedAt: whenSheOpensIt.toISOString(),
+      });
     });
 
     it('takes Done out of her reach from the press, so a second press finds it spent', async () => {

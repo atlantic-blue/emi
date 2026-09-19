@@ -22,8 +22,11 @@ if (result.problems.length > 0) {
   process.exit(1);
 }
 
+const drawings = result.shown.length - result.shownScreens.length;
+
 process.stdout.write(
   `${storyDocument} tells ${result.told.length} of the ${result.features.length} feature(s) in ` +
-    `${featureDocument}, in ${result.beats} beat(s), showing ${result.shown.length} of the ` +
-    `${result.onDisk.length} picture(s) in brand/screens.\n`,
+    `${featureDocument}, in ${result.beats} beat(s), showing ${result.shown.length} picture(s): ` +
+    `${result.shownScreens.length} of the ${result.onDisk.length} in brand/screens, and ` +
+    `${drawings} drawn elsewhere.\n`,
 );
