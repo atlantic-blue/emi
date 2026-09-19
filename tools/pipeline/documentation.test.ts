@@ -541,10 +541,11 @@ describe('a new package without a readme fails the pipeline', () => {
   describe('every directory in this repository carries one today', () => {
     const directories = documentedDirectoriesOf(repositoryRoot);
 
-    it('reads the seven directories somebody can open on their own', () => {
+    it('reads the eight directories somebody can open on their own', () => {
       expect(directories).toEqual([
         'apps/mobile',
         'brand',
+        'features',
         'packages/crypto',
         'packages/cycle',
         'packages/tokens',
@@ -561,6 +562,7 @@ describe('a new package without a readme fails the pipeline', () => {
       expect(directories.map((directory) => nameOf(repositoryRoot, directory))).toEqual([
         '@emi/mobile',
         'brand',
+        'features',
         '@emi/crypto',
         '@emi/cycle',
         '@emi/tokens',
