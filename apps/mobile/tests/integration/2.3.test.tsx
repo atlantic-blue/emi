@@ -483,8 +483,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
     });
   });
 
-  describe('she presses Done twice, because the first press looked like nothing', () => {
-    it('leaves her on the home screen with one day written, at its first revision', async () => {
+  describe('she presses Done a second time, because the first press looked like nothing', () => {
+    it('writes her first run once, and the second press writes nothing and fails nothing', async () => {
       const app = await sheOpensEmi();
       await sheAnswers('welcome');
       await shePresses(dayTestID(herPeriodStarted));
@@ -494,16 +494,13 @@ describe('the first run ends on the home screen with her period recorded', () =>
       }
       const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
 
-      // Both presses go out before either settles, which is what her second press meets while
-      // the home screen is still on its way. What the second press does to her is the subject of
-      // another pull request, so both outcomes are settled here rather than judged. What this
-      // case holds is the write: a second press adds no row and raises no revision.
+      // Both presses land before the screen redraws. That is what her second press meets while
+      // the home screen is still on its way. Neither press is settled away here, so a second
+      // press that raises anything fails this case.
       await act(async () => {
-        const first = fireEvent.press(done);
+        fireEvent.press(done);
         jest.setSystemTime(twoSecondsLater);
-        const second = fireEvent.press(done);
-
-        await Promise.allSettled([first, second]);
+        fireEvent.press(done);
       });
 
       expect(app.pathname()).toBe('/');
@@ -513,8 +510,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       ]);
 
       // The clock moved between the presses, so a second write would carry the later time in
-      // both of these. They are the assertion that a second press wrote nothing.
+      // all three of these. They are the assertion that a second press wrote nothing.
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
+      expect(readSetting(herDatabase(), 'cycleLengthDays')).toBe(String(herCycleLengthDays));
       const vault = await theVaultOnHerPhone();
       const row = readDayLog(herDatabase(), herPeriodStarted);
       expect(row && vault.open(row.payload)).toEqual({
@@ -522,6 +520,21 @@ describe('the first run ends on the home screen with her period recorded', () =>
         flow: 'medium',
         recordedAt: whenSheOpensIt.toISOString(),
       });
+    });
+
+    it('takes Done out of her reach from the press, so a second press finds it spent', async () => {
+      await sheOpensEmi();
+      await sheAnswers('welcome');
+      await shePresses(dayTestID(herPeriodStarted));
+      await sheAnswers('lastPeriod');
+      const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
+      expect(done.props.accessibilityState).toMatchObject({ disabled: false });
+
+      await fireEvent.press(done);
+
+      // Read off the button she pressed. The home screen replaces this screen straight after,
+      // so the handle is what holds the state her second press would meet.
+      expect(done.props.accessibilityState).toMatchObject({ disabled: true });
     });
   });
 
