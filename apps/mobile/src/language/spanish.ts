@@ -1,4 +1,4 @@
-import type { Catalogue } from './words';
+import type { CatalogueIn } from './words';
 
 /**
  * Every word she reads, in Spanish, under the same key as the English word. The type holds the two
@@ -15,7 +15,7 @@ import type { Catalogue } from './words';
  * The honesty scan reads this file with the English one, against a list that holds both languages,
  * so a Spanish sentence cannot claim what the English sentence may not.
  */
-export const spanish: Catalogue = {
+export const spanish: CatalogueIn<'es'> = {
   'calendar.month.april': 'abril',
   'calendar.month.august': 'agosto',
   'calendar.month.december': 'diciembre',

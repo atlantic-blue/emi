@@ -1,4 +1,6 @@
 export { english } from './english';
+export { russian } from './russian';
+export { spanish } from './spanish';
 export {
   type Language,
   fallbackLanguage,
@@ -9,12 +11,15 @@ export {
 } from './language';
 export {
   type Catalogue,
+  type CatalogueIn,
   type PluralCategory,
-  type PluralWords,
+  type PluralWordsIn,
   type WordKey,
   type WordValues,
   type Words,
+  type WordsIn,
   catalogueOf,
+  pluralCategories,
   forgetLanguage,
   pluralCategory,
   readingLanguage,
