@@ -19,19 +19,17 @@ Emi is not a contraceptive. Emi is not a medical device.
 
 You need Node 22 or later.
 
-    npm ci
-    npm start --workspace apps/mobile
+    make install
+    make ios
 
-Press `i` for the iOS simulator. Press `w` for the browser.
+`make android` runs it on an Android emulator. `make web` runs it in a browser.
 
 ## The gates
 
-The pipeline runs these four commands, in this order, on every pull request.
+    make check
 
-    npm run format:check
-    npm run lint
-    npm run typecheck
-    npm test
+It runs what the pipeline runs, in the pipeline order, and it stops at the first failure. Type
+`make` on its own for every other command this repository answers to.
 
 A test run that finds no test fails. It does not report success.
 
