@@ -14,6 +14,14 @@ Feature: She opens Emi and logs her first period
     And her phone holds the day she said her period started
     And her phone holds the cycle length she gave
 
+  Scenario: SCREEN-1, she presses Done twice and her first run is written once
+    Given she has never opened Emi before
+    When she opens Emi
+    And she answers all three screens, and presses Done a second time before the screen goes
+    Then she is looking at the home screen
+    And her phone holds one day, the day she said her period started
+    And her phone holds the time of her first press, and not the time of her second
+
   Scenario: SCREEN-1, the first run asks three screens and no fourth
     Given she has never opened Emi before
     When she opens Emi
