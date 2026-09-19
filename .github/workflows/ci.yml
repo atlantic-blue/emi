@@ -27,6 +27,7 @@ jobs:
       - run: npm run check:brand
       - run: npm run check:reference
       - run: npm run check:sheet
+      - run: npm run check:features
       - run: npm run check:story
       - run: npm run check:pictures
       - run: npm test

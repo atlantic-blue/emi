@@ -3,7 +3,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install check format lint typecheck test test-workspace test-mobile ios android web pictures clean
+.PHONY: help install check format lint typecheck test test-workspace test-mobile test-behaviour ios android web pictures clean
 
 help: ## print the targets, and this is the default goal
 	@awk 'match($$0, /^[a-z][a-z-]*:[^#]*## /) { printf "  %-15s %s\n", substr($$0, 1, index($$0, ":") - 1), substr($$0, RLENGTH + 1) }' $(MAKEFILE_LIST)
@@ -19,6 +19,7 @@ check: ## everything the pipeline runs, in the pipeline's order, stopping at the
 	npm run check:brand
 	npm run check:reference
 	npm run check:sheet
+	npm run check:features
 	npm run check:story
 	npm run check:pictures
 	npm test
@@ -40,6 +41,9 @@ test-workspace: ## run the tests of the packages, the tools and the brand
 
 test-mobile: ## run the tests of the application
 	npm run test:mobile
+
+test-behaviour: ## run the scenarios, one feature file for each feature
+	npm run test:behaviour
 
 ios: ## run the application on an iOS simulator
 	npm run ios --workspace apps/mobile
