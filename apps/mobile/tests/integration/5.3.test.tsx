@@ -32,7 +32,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { aDayRecord } from '../fixtures/dayRecord';
 import { herDatabase } from '../fixtures/herPhone';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
-import { herKeyIsInTheKeychain, herVault } from '../fixtures/herVault';
+import { herKeyIsInTheKeychain, herRandom, herVault } from '../fixtures/herVault';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -426,7 +426,7 @@ describe('a raw database read reveals nothing about the day', () => {
       logFlow(database, vault, { day: theDay, flow: 'heavy', now: sheWroteAt });
 
       const [payload] = rawPayloads();
-      const somebodyElse = dayVault(new Uint8Array(keyLength).fill(0x2a));
+      const somebodyElse = dayVault(new Uint8Array(keyLength).fill(0x2a), herRandom);
 
       expect(() => somebodyElse.open(payload as Uint8Array)).toThrow(EnvelopeError);
     });
