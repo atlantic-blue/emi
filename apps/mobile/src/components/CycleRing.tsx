@@ -20,6 +20,8 @@ import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
+import { ringSpokenLabel } from '../features/cycle/copy';
+
 /**
  * The ring of design section 9.5, drawn from the days of her own cycle. It carries the meaning so
  * the words can stay small, which is what lets her open Emi with somebody sitting beside her.
@@ -93,7 +95,7 @@ export function CycleRing({
 
   return (
     <View
-      accessibilityLabel={`Day ${day} of ${cycleLengthDays}, ${phaseLabel[geometry.phase].toLowerCase()}`}
+      accessibilityLabel={ringSpokenLabel(day, cycleLengthDays, phaseLabel[geometry.phase])}
       accessibilityRole="image"
       accessible
       style={[styles.ring, { height: diameter, width: diameter }]}

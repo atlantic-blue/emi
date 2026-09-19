@@ -1,5 +1,6 @@
 import { type MeasurementReading, type TemperatureUnit, temperature } from '@emi/cycle';
 
+import { words } from '../../language';
 import { MeasurementField } from './MeasurementField';
 
 /**
@@ -7,8 +8,8 @@ import { MeasurementField } from './MeasurementField';
  * from the 13 days the forecast assumes until then. She takes it before she gets up, so the field
  * asks for one number and asks for nothing else.
  */
-export const temperatureHeading = 'Waking temperature';
-export const temperatureHint = 'Before you get up';
+export const temperatureHeading = words('log.temperature.heading');
+export const temperatureHint = words('log.temperature.hint');
 
 export interface TemperatureProps {
   readonly reading: MeasurementReading<TemperatureUnit>;

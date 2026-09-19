@@ -1,42 +1,37 @@
 import { recoveryCodeLength } from '@emi/crypto';
 
+import { words } from '../../language';
+
 /**
- * The words of the recovery code, in one place, so a test reads them without rendering a screen.
- * Section 9.7 of the design sets the rules: say what happens, never congratulate, no exclamation
- * mark, write the number.
- *
- * The sentence that matters is the second one on the first screen. Section 7.4 of the design says
- * she is told, before she sees the code, that nobody can recover it for her. That is not a
- * disclaimer. It is the same fact as the one on the front of the product, said from the other
- * side: an Emi that could recover her code is an Emi that could read her days.
+ * The words of the recovery code. The sentence that matters is the second one on the first screen.
+ * Section 7.4 of the design says she is told, before she sees the code, that nobody can recover it
+ * for her. That is not a disclaimer. It is the same fact as the one on the front of the product,
+ * said from the other side: an Emi that could recover her code is an Emi that could read her days.
  */
 export const recoveryCopy = {
   before: {
-    title: 'Your data is locked to this phone',
+    title: words('recovery.before.title'),
     lines: [
-      'Emi is about to show you a recovery code. It is the only way back to your cycles if you lose this phone.',
-      'Nobody at Emi can recover it for you. An Emi that could recover your code would be an Emi that could read your days.',
-      'Write it on paper. Keep the paper where you keep other paper that matters.',
+      words('recovery.before.line.onlyWay'),
+      words('recovery.before.line.nobody'),
+      words('recovery.before.line.paper'),
     ],
-    action: 'Show my code',
+    action: words('recovery.before.action'),
   },
   code: {
-    title: 'Your recovery code',
+    title: words('recovery.code.title'),
     lines: [
-      `${recoveryCodeLength} characters. Emi shows them once and stores them nowhere.`,
-      'Write them down now. The next screen asks you to type them back.',
+      words('recovery.code.line.once', recoveryCodeLength),
+      words('recovery.code.line.writeDown'),
     ],
-    action: 'I have written it down',
+    action: words('recovery.code.action'),
   },
   confirm: {
-    title: 'Type the code back',
-    lines: [
-      'Emi checks what you type against the code it showed you.',
-      'Emi reads upper case and lower case the same way, and ignores the spaces you put in.',
-    ],
-    action: 'Done',
-    label: `Your ${recoveryCodeLength} character recovery code`,
-    wrong: 'That is not the code Emi showed you. Read it off the paper and type it again.',
+    title: words('recovery.confirm.title'),
+    lines: [words('recovery.confirm.line.checks'), words('recovery.confirm.line.case')],
+    action: words('recovery.confirm.action'),
+    label: words('recovery.confirm.label', recoveryCodeLength),
+    wrong: words('recovery.confirm.wrong'),
   },
 } as const;
 
@@ -47,7 +42,10 @@ export type RecoveryScreen = (typeof recoveryScreens)[number];
 export const recoveryScreenCount = recoveryScreens.length;
 
 export function recoveryStepLabel(screen: RecoveryScreen): string {
-  return `Step ${recoveryScreens.indexOf(screen) + 1} of ${recoveryScreenCount}`;
+  return words('recovery.step', undefined, {
+    step: recoveryScreens.indexOf(screen) + 1,
+    of: recoveryScreenCount,
+  });
 }
 
 /**

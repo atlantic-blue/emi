@@ -5,7 +5,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CycleRing } from '../../components/CycleRing';
 import { Screen } from '../../components/Screen';
+import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
+import { words } from '../../language';
 import { dayLabel } from '../onboarding/days';
 import { FlowPicker } from './FlowPicker';
 import { UnexpectedBleeding } from './UnexpectedBleeding';
@@ -15,13 +17,10 @@ import { UnexpectedBleeding } from './UnexpectedBleeding';
  * while she answers. Design section 9.7 sets the words: say what happens, and never congratulate.
  */
 export const logFlowCopy = {
-  title: 'Your flow',
-  saved: 'Saved on this phone.',
-  noRing: {
-    title: 'Nothing to draw yet',
-    line: 'The ring needs a period. Log a day you bled and it appears.',
-  },
-  done: 'Done',
+  title: words('log.flow.title'),
+  saved: words('log.flow.saved'),
+  noRing: cycleCopy.noRing,
+  done: words('log.flow.done'),
 } as const;
 
 export const logFlowTestID = 'log-flow';

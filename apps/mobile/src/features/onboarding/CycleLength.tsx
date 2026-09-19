@@ -3,7 +3,7 @@ import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { OnboardingScreen } from './OnboardingScreen';
-import { firstRunCopy } from './copy';
+import { cycleLengthDaysLabel, firstRunCopy } from './copy';
 import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
 
 export const shorterTestID = 'cycle-length-shorter';
@@ -45,7 +45,7 @@ export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
     >
       <View style={styles.stepper}>
         <Pressable
-          accessibilityLabel="One day shorter"
+          accessibilityLabel={firstRunCopy.shorter}
           accessibilityRole="button"
           accessibilityState={{ disabled: !canShorten }}
           disabled={!canShorten}
@@ -56,10 +56,10 @@ export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
           <Text style={styles.stepMark}>-</Text>
         </Pressable>
         <Text style={styles.days} testID={cycleLengthTestID}>
-          {days} days
+          {cycleLengthDaysLabel(days)}
         </Text>
         <Pressable
-          accessibilityLabel="One day longer"
+          accessibilityLabel={firstRunCopy.longer}
           accessibilityRole="button"
           accessibilityState={{ disabled: !canLengthen }}
           disabled={!canLengthen}

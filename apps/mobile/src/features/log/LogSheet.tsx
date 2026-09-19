@@ -12,6 +12,8 @@ import {
   weight,
 } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+
+import { words } from '../../language';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
@@ -171,13 +173,13 @@ export function LogSheet({
         />
 
         <TextInput
-          accessibilityLabel="Search symptoms"
+          accessibilityLabel={searchLabel}
           autoCorrect={false}
           onChangeText={(typed) => {
             setIsSaved(false);
             setQuery(typed);
           }}
-          placeholder="Search symptoms"
+          placeholder={searchLabel}
           placeholderTextColor={colour.body}
           style={styles.search}
           testID="symptom-search"
@@ -186,7 +188,7 @@ export function LogSheet({
 
         {sections.length === 0 ? (
           <Text style={styles.nothing} testID="no-symptom-found">
-            No symptom matches {query.trim()}
+            {words('log.sheet.noMatch', undefined, { query: query.trim() })}
           </Text>
         ) : (
           sections.map((section) => (
@@ -218,19 +220,23 @@ export function LogSheet({
           style={styles.save}
           testID="log-sheet-save"
         >
-          <Text style={styles.saveLabel}>{isSaved ? 'Saved' : 'Save'}</Text>
+          <Text style={styles.saveLabel}>
+            {isSaved ? words('log.sheet.saved') : words('log.sheet.save')}
+          </Text>
         </Pressable>
       </View>
     </View>
   );
 }
 
+const searchLabel = words('log.sheet.search');
+
 function found(count: number): string {
-  return count === 1 ? '1 found' : `${count} found`;
+  return words('log.sheet.found', count);
 }
 
 function countOf(count: number): string {
-  return count === 1 ? '1 picked' : `${count} picked`;
+  return words('log.sheet.picked', count);
 }
 
 const styles = StyleSheet.create({
