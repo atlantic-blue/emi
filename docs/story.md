@@ -29,7 +29,7 @@ the frame than it does on a phone. The first run names the monospaced face, whic
 yet, so it falls back here and on a phone alike. And a screen that names no face at all takes the
 browser's own where a phone takes the system one.
 
-Three features have a section today. The pipeline runs `npm run check:story`, which names every
+Four features have a section today. The pipeline runs `npm run check:story`, which names every
 feature with no section, names every picture in `brand/screens` that no section shows, and fails
 when the story names a picture that is not there or when the line under a picture does not say how
 it was made. A later step turns the first of those into a failure as well. Feature 7 is not built
@@ -175,6 +175,38 @@ screen.
 
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
 with `npm run generate:past-day-picture`.
+
+## Feature 3: Emi predicts, and says how sure it is
+
+Emi works out when her next period is likely to start, and it says so as a range with a confidence
+beside it. The arithmetic runs on her phone, on her own last six cycles, and nothing is sent
+anywhere to produce it. A woman told the fourteenth who bleeds on the sixteenth was told something
+false, so the forecast is a range and never a single day.
+
+She reads it in the same place she reads the ring. Before two cycles are complete Emi says it is
+still learning, names how many more it wants, and counts by the length she gave at the first run,
+with no confidence shown, because a confidence is a statement about the spread of her own cycles and
+one cycle has no spread. Once she has two, the same place carries two dates and how sure Emi is of
+them: high when her cycles sit close together, low when they do not.
+
+![The home screen at six recorded histories: nothing yet, still learning, and four forecasts from high to low confidence](../brand/screens/home-screen.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:home-picture`.
+
+Three things behind that sentence have nothing to show, because they are arithmetic rather than
+screens. The next start is the last start plus the median of her last six cycle lengths, the median
+rather than the mean so one long cycle after an illness does not drag every forecast behind it. The
+width of the range comes from how far her own lengths sit from each other. The confidence band
+edges come from one published study of 612,613 cycles from 124,648 users, quoted in
+`packages/cycle/src/confidence.ts` with its identifier, so a reader can check an edge against the
+source rather than trust it.
+
+Two things this feature names that no screen shows today. The fertile window is built and tested:
+it runs from five days before the estimated ovulation day to one day after it, it is never drawn as
+a single date, and the estimate says what it is worth. No screen renders it, so there is no picture
+of it here. Emi never says a day is safe, because no day is. And the cycle table is a cache rebuilt
+from her day log rather than written by hand, which is a table and not a thing to look at.
 
 ## Feature 4: She logs how she feels
 

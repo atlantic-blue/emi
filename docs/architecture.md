@@ -80,6 +80,8 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.
 - `packages/crypto` holds the encrypted record format: the envelope, the canonical json and the
   ranges a day is checked against.
+- `packages/content` holds the article feed: the shape of an article, the client that reads one
+  from the endpoint, and the rule for how long an answer is held.
 - `brand` holds the mark, the icons and the fonts, as drawn files and the programs that write
   them.
 - `services/vault` holds the service behind the api: the account, the request signature and the
