@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -48,6 +49,8 @@ const theCaveat = [
   '844 points, and not captured from a phone. The step label and the number name the monospaced',
   'face, which no screen loads yet, so both fall back here and on a phone. Reproduce with:',
   'npm run generate:onboarding-picture.',
+  'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
+  'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
 
 interface Screen {
@@ -88,8 +91,8 @@ const theScreens: readonly Screen[] = [
 ];
 
 async function drawn(screen: Screen): Promise<DrawnScreen> {
-  const view = await render(screen.element);
-  const tree: unknown = JSON.parse(JSON.stringify(view.toJSON()));
+  const view = await render(<OnAPhone>{screen.element}</OnAPhone>);
+  const tree: unknown = theScreenIn(view);
 
   await view.unmount();
 

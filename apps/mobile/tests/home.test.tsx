@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { OnAPhone } from './fixtures/theSafeArea';
 
 import { listCycles } from '../src/data/cycleRepository';
 import { forecastOf } from '../src/features/forecast/fromCache';
@@ -21,15 +22,17 @@ import { textIn } from './fixtures/renderedText';
 /** A phone with nothing on it yet, which is the screen with the fewest words on it. */
 async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
   await render(
-    <HomeScreen
-      cycleLengthDays={28}
-      forecast={forecastOf(listCycles(migratedDatabase()))}
-      onExport={() => asked.push('export')}
-      onHistory={() => asked.push('history')}
-      onLogToday={() => asked.push('log today')}
-      onSettings={() => asked.push('settings')}
-      ring={undefined}
-    />,
+    <OnAPhone>
+      <HomeScreen
+        cycleLengthDays={28}
+        forecast={forecastOf(listCycles(migratedDatabase()))}
+        onExport={() => asked.push('export')}
+        onHistory={() => asked.push('history')}
+        onLogToday={() => asked.push('log today')}
+        onSettings={() => asked.push('settings')}
+        ring={undefined}
+      />
+    </OnAPhone>,
   );
 }
 

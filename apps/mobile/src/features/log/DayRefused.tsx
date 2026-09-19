@@ -2,6 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/token
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Screen } from '../../components/Screen';
 import type { DayRefusal } from './editDay';
 
 /**
@@ -32,21 +33,23 @@ export function DayRefused({ refusal, onBack }: Props): ReactNode {
   const said = dayRefusedCopy[refusal];
 
   return (
-    <View style={styles.screen} testID={dayRefusedTestID}>
-      <Text accessibilityRole="header" style={styles.title}>
-        {said.title}
-      </Text>
-      <Text style={styles.line}>{said.line}</Text>
+    <Screen testID={dayRefusedTestID}>
+      <View style={styles.middle}>
+        <Text accessibilityRole="header" style={styles.title}>
+          {said.title}
+        </Text>
+        <Text style={styles.line}>{said.line}</Text>
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={onBack}
-        style={styles.back}
-        testID={dayRefusedBackTestID}
-      >
-        <Text style={styles.backLabel}>{dayRefusedBackLabel}</Text>
-      </Pressable>
-    </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onBack}
+          style={styles.back}
+          testID={dayRefusedBackTestID}
+        >
+          <Text style={styles.backLabel}>{dayRefusedBackLabel}</Text>
+        </Pressable>
+      </View>
+    </Screen>
   );
 }
 
@@ -72,8 +75,7 @@ const styles = StyleSheet.create({
     lineHeight: typeScale.body.lineHeight,
     textAlign: 'center',
   },
-  screen: {
-    backgroundColor: colour.stone,
+  middle: {
     flex: 1,
     justifyContent: 'center',
     padding: space.base,

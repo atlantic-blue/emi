@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react-native';
+import { OnAPhone } from '../../fixtures/theSafeArea';
 
 import {
   ExportScreen,
@@ -42,14 +43,16 @@ async function theScreen(make: () => Promise<ExportOutcome>, canShare = true): P
   const shared: WrittenFile[] = [];
 
   await render(
-    <ExportScreen
-      canShare={canShare}
-      onBack={() => undefined}
-      onExport={make}
-      onShare={async (file) => {
-        shared.push(file);
-      }}
-    />,
+    <OnAPhone>
+      <ExportScreen
+        canShare={canShare}
+        onBack={() => undefined}
+        onExport={make}
+        onShare={async (file) => {
+          shared.push(file);
+        }}
+      />
+    </OnAPhone>,
   );
 
   return { shared };

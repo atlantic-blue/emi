@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { CycleRing } from '../../components/CycleRing';
+import { Screen } from '../../components/Screen';
 import type { RingInput } from '../cycle/ringInput';
 import { dayLabel } from '../onboarding/days';
 import { FlowPicker } from './FlowPicker';
@@ -54,7 +55,7 @@ export function LogFlow({
   const sheBled = chosen !== undefined && isBleeding({ day, flow: chosen });
 
   return (
-    <View style={styles.screen} testID={logFlowTestID}>
+    <Screen testID={logFlowTestID}>
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.ring}>
           {ring ? (
@@ -90,7 +91,7 @@ export function LogFlow({
       >
         <Text style={styles.doneLabel}>{logFlowCopy.done}</Text>
       </Pressable>
-    </View>
+    </Screen>
   );
 }
 
@@ -123,7 +124,6 @@ const styles = StyleSheet.create({
     marginBottom: space.tight,
   },
   ring: { alignItems: 'center', marginBottom: space.snug },
-  screen: { backgroundColor: colour.stone, flex: 1 },
   title: {
     color: colour.ink,
     fontSize: typeScale.title.size,
