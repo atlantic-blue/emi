@@ -15,6 +15,7 @@
     "test:behaviour": "jest --ci --config ../../jest.behaviour.config.js"
   },
   "dependencies": {
+    "@emi/content": "*",
     "@emi/crypto": "*",
     "@emi/cycle": "*",
     "@emi/tokens": "*",
