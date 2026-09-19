@@ -111,6 +111,69 @@ export function rolesIn(document: string): Record<string, RoleInTheDocument> {
   return roles as unknown as Record<string, RoleInTheDocument>;
 }
 
+/** One colour as the document writes it, with where it sits, so a failure names the paragraph. */
+export interface ColourInTheDocument {
+  readonly written: string;
+  readonly line: number;
+  readonly context: string;
+}
+
+const hexPattern = /#[0-9a-fA-F]{3,8}\b/g;
+
+const functionPattern = /rgba?\([^)]*\)/gi;
+
+/** One spelling for one colour: lower case, and no spaces inside a function. */
+export function sameColour(written: string): string {
+  return written.toLowerCase().replace(/\s+/g, '');
+}
+
+/**
+ * Every colour written anywhere in the document, the front matter and the prose alike.
+ *
+ * The prose is the half nothing read. The type scale, the palette, the corners and the spacing are
+ * all checked against the front matter, and for as long as that was the whole check the prose could
+ * name a different palette and the suite stayed green, which is what it did.
+ */
+export function coloursWrittenIn(document: string): ColourInTheDocument[] {
+  const found: ColourInTheDocument[] = [];
+
+  document.split('\n').forEach((text, at) => {
+    for (const pattern of [hexPattern, functionPattern]) {
+      for (const match of text.matchAll(pattern)) {
+        found.push({ written: match[0], line: at + 1, context: text.trim() });
+      }
+    }
+  });
+
+  return found;
+}
+
+/**
+ * The shadow values the prose may keep, named one at a time. The front matter holds no shadow
+ * block, so these two are the only place the elevation is written down, and both are drawn by the
+ * prototype. A rule that allowed any `rgba` instead would let a whole second palette back in
+ * wearing different clothes.
+ */
+export const shadowTints: readonly string[] = [
+  'rgba(43, 37, 35, 0.05)',
+  'rgba(217, 107, 82, 0.06)',
+];
+
+export function coloursOutsideThePalette(
+  written: readonly ColourInTheDocument[],
+  palette: readonly string[],
+  allowed: readonly string[] = shadowTints,
+): string[] {
+  const held = new Set([...palette, ...allowed].map(sameColour));
+
+  return written
+    .filter((colour) => !held.has(sameColour(colour.written)))
+    .map(
+      (colour) =>
+        `${designSystemDocument} line ${colour.line} writes ${colour.written}, which the palette does not hold: ${colour.context}`,
+    );
+}
+
 const document = readFileSync(join(repositoryRoot, designSystemDocument), 'utf8');
 const inTheDocument = rolesIn(document);
 
@@ -210,5 +273,56 @@ describe('the corners and the spacing say what the design system says', () => {
     const held = space[camelCase(name) as keyof typeof space];
 
     expect(held).toBe(pointsOf(String(spacingInTheDocument[name])));
+  });
+});
+
+describe('the whole document names one palette', () => {
+  const written = coloursWrittenIn(document);
+  const palette = Object.values(coloursInTheDocument);
+
+  it('reads past the front matter, which is the half nothing read before', () => {
+    const frontMatterEnds =
+      document.split('\n').findIndex((line, at) => at > 0 && line === '---') + 1;
+
+    expect(frontMatterEnds).toBeGreaterThan(100);
+    expect(written.filter((colour) => colour.line > frontMatterEnds).length).toBeGreaterThan(0);
+    expect(written.length).toBeGreaterThan(palette.length);
+  });
+
+  it('writes no colour the palette does not hold', () => {
+    expect(coloursOutsideThePalette(written, palette)).toEqual([]);
+  });
+
+  it('keeps both shadow tints, so the list of what is allowed cannot rot unnoticed', () => {
+    const spellings = written.map((colour) => sameColour(colour.written));
+
+    for (const tint of shadowTints) {
+      expect(spellings).toContain(sameColour(tint));
+    }
+  });
+
+  it('refuses a colour of its own, and names the line and the paragraph', () => {
+    const [said] = coloursOutsideThePalette(
+      coloursWrittenIn('# One\n\nThe primary button is #D96B52 on press.\n'),
+      palette,
+    );
+
+    expect(said).toContain('line 3');
+    expect(said).toContain('#D96B52');
+    expect(said).toContain('The primary button is');
+  });
+
+  it('refuses a tint that is not one of the two, so the allowance is by name and not by shape', () => {
+    const other = 'rgba(217, 107, 82, 0.3)';
+
+    expect(coloursOutsideThePalette(coloursWrittenIn(other), palette)).toHaveLength(1);
+    expect(coloursOutsideThePalette(coloursWrittenIn(shadowTints[0] as string), palette)).toEqual(
+      [],
+    );
+  });
+
+  it('reads one colour under either spelling, so a capital is not a second palette', () => {
+    expect(coloursOutsideThePalette(coloursWrittenIn('#FCF9F4'), palette)).toEqual([]);
+    expect(sameColour('RGBA(43, 37, 35, 0.05)')).toBe('rgba(43,37,35,0.05)');
   });
 });
