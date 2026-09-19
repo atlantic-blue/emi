@@ -59,6 +59,34 @@ export const forbiddenWording: readonly string[] = [
   'clínicamente probado',
   'aprobado por un medico',
   'aprobado por un médico',
+  // Russian. Every entry is a stem rather than a word, because a Russian noun changes its ending
+  // with its case and a search for one ending would miss the other five. Cyrillic is matched here
+  // rather than on the whole word list below, because a word boundary is written for the Latin
+  // alphabet and asserts nothing between two Cyrillic letters.
+  'контрацепт',
+  'контрацепц',
+  'противозачаточ',
+  'предотвращает беременность',
+  'предотвратить беременность',
+  'наступление беременности',
+  'безопасный день',
+  'безопасные дни',
+  'безопасных дней',
+  'безопасный',
+  'безопасная',
+  'безопасное',
+  'безопасные',
+  'безопасных',
+  'защищена',
+  'защищён',
+  'защищен',
+  'защита',
+  'сертифицирован',
+  'сертификац',
+  'медицинск',
+  'издели',
+  'одобрено врачом',
+  'клинически доказан',
 ];
 
 /**
@@ -103,6 +131,10 @@ export const approvedDenials: readonly string[] = [
   'Emi no es un anticonceptivo.',
   'Emi no es un dispositivo médico.',
   'Emi nunca dice que un día es seguro, porque ninguno lo es.',
+  // Russian, word for word as the catalogue writes them.
+  'Emi не является средством контрацепции.',
+  'Emi не является медицинским изделием.',
+  'Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
 ];
 
 /** The files the scan reads. An extension nobody can read as text is left out. */

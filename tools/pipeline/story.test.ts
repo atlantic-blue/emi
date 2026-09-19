@@ -6,6 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 import { driftProblems } from '../../brand/screens/picture';
 import {
   type Beat,
+  NOTHING_TO_SHOW,
   caveatProblems,
   kindOf,
   scriptsOf,
@@ -86,6 +87,19 @@ const twoFeatures = [
   '',
 ].join('\n');
 
+function storyTellingBoth(beats: readonly string[]): string {
+  return [
+    '# The story',
+    '',
+    '## Feature 1: The brand exists',
+    '',
+    ...beats,
+    '## Feature 2: She opens Emi and logs her first period',
+    '',
+    ...beats,
+  ].join('\n');
+}
+
 function storyTelling(beats: readonly string[]): string {
   return [
     '# The story',
@@ -105,6 +119,15 @@ const oneBeat = [
   '',
 ];
 
+function repositoryTellingBoth(beats: readonly string[], pictures: readonly string[]): string {
+  return fixtureHolding([
+    { path: 'package.json', contents: fixtureManifest },
+    { path: 'docs/features.md', contents: twoFeatures },
+    { path: 'docs/story.md', contents: storyTellingBoth(beats) },
+    ...pictures.map((name) => ({ path: join('brand', 'screens', name), contents: 'a picture' })),
+  ]);
+}
+
 function repositoryWith(beats: readonly string[], pictures: readonly string[]): string {
   return fixtureHolding([
     { path: 'package.json', contents: fixtureManifest },
@@ -120,7 +143,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
       const sections = sectionsIn(readFileSync(join(repositoryRoot, storyDocument), 'utf8'));
       const firstRun = sections.find((section) => section.number === 2);
 
-      expect(sections.map((section) => section.number)).toEqual([1, 2, 3, 4, 5]);
+      expect(sections.map((section) => section.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
       expect(firstRun?.beats.length).toBeGreaterThanOrEqual(6);
       expect(firstRun?.beats.map((beat) => beat.picture)).toContain('../brand/screens/welcome.png');
       expect(
@@ -144,7 +167,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
         `${storyDocument} tells ${shipped.told.length} of the ${shipped.features.length} feature(s)`,
       );
       expect(shipped.features.length).toBeGreaterThanOrEqual(8);
-      expect(shipped.told.map((feature) => feature.number)).toEqual([1, 2, 3, 4, 5]);
+      expect(shipped.told.map((feature) => feature.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
     });
 
     it('names every picture under a line saying it was rendered and not photographed', () => {
@@ -172,29 +195,127 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
   });
 
   describe('a feature with no section', () => {
-    it('is named out loud and does not fail, which is what step 8 changes', () => {
+    it('fails the run and names the feature', () => {
       const root = repositoryWith(oneBeat, ['welcome.png']);
       const result = storyProblems(root);
 
-      expect(result.problems).toEqual([]);
-      expect(result.untold.map((feature) => feature.number)).toEqual([1]);
-      expect(result.notes).toContain(
+      expect(result.problems).toEqual([
         `${storyDocument} tells no story for feature 1: The brand exists`,
+      ]);
+      expect(result.untold.map((feature) => feature.number)).toEqual([1]);
+    });
+
+    it('leaves this repository with nothing to name, because every feature is told', () => {
+      const checked = run();
+
+      expect(shipped.untold).toEqual([]);
+      expect(shipped.told).toHaveLength(shipped.features.length);
+      expect(checked.status).toBe(0);
+      expect(checked.output).not.toContain('tells no story for feature');
+    });
+
+    it('fails the moment a ninth feature arrives with no section', () => {
+      const root = fixtureHolding([
+        { path: 'package.json', contents: fixtureManifest },
+        {
+          path: 'docs/features.md',
+          contents: `${twoFeatures}## Feature 9: She reads it on a watch\n\nLater.\n`,
+        },
+        { path: 'docs/story.md', contents: storyTellingBoth(oneBeat) },
+        { path: 'brand/screens/welcome.png', contents: 'a picture' },
+      ]);
+
+      expect(storyProblems(root).problems).toEqual([
+        `${storyDocument} tells no story for feature 9: She reads it on a watch`,
+      ]);
+    });
+  });
+
+  describe('a section that shows no picture', () => {
+    const reason = 'nothing of this feature is built, so there is no screen to draw.';
+
+    function sectionSaying(said: readonly string[]): string {
+      return [
+        '# The story',
+        '',
+        '## Feature 1: The brand exists',
+        '',
+        ...oneBeat,
+        '## Feature 2: She opens Emi and logs her first period',
+        '',
+        ...said,
+      ].join('\n');
+    }
+
+    function fixtureSaying(said: readonly string[]): string {
+      return fixtureHolding([
+        { path: 'package.json', contents: fixtureManifest },
+        { path: 'docs/features.md', contents: twoFeatures },
+        { path: 'docs/story.md', contents: sectionSaying(said) },
+        { path: 'brand/screens/welcome.png', contents: 'a picture' },
+      ]);
+    }
+
+    it('fails when it does not say why, and says what to write', () => {
+      const result = storyProblems(fixtureSaying(['She will pay for a year.', '']));
+
+      expect(result.problems).toEqual([
+        `${storyDocument}: the section "Feature 2: She opens Emi and logs her first period" shows no picture and does not say why. Show one, or write a line beginning "${NOTHING_TO_SHOW}" with the reason.`,
+      ]);
+    });
+
+    it('passes when it says why, and the reason is read back on every run', () => {
+      const result = storyProblems(
+        fixtureSaying(['She will pay for a year.', '', `${NOTHING_TO_SHOW} ${reason}`, '']),
+      );
+
+      expect(result.problems).toEqual([]);
+      expect(result.notes).toContain(
+        `${storyDocument}: feature 2 shows no picture, and says why: ${reason}`,
       );
     });
 
-    it('is named in this repository too, for every feature but the one that is told', () => {
-      expect(shipped.untold.map((feature) => feature.number)).toEqual([6, 7, 8]);
-      expect(run().output).toContain('tells no story for feature 7');
+    it('refuses the words without a reason after them', () => {
+      const result = storyProblems(fixtureSaying([`${NOTHING_TO_SHOW} nothing.`, '']));
+
+      expect(result.problems).toHaveLength(1);
+      expect(result.problems[0]).toContain('shows no picture and does not say why');
+    });
+
+    it('reads the reason whole, across the lines the document wraps it onto', () => {
+      const wrapped = storyProblems(
+        fixtureSaying([
+          `${NOTHING_TO_SHOW} nothing of this feature is built, so there is no`,
+          'screen to draw.',
+          '',
+        ]),
+      );
+
+      expect(wrapped.problems).toEqual([]);
+      expect(wrapped.notes).toContain(
+        `${storyDocument}: feature 2 shows no picture, and says why: ${reason}`,
+      );
+    });
+
+    it('names the three sections of this repository that show nothing, with their reasons', () => {
+      const shownNothing = shipped.notes.filter((note) => note.includes('shows no picture'));
+
+      expect(shownNothing).toHaveLength(3);
+      expect(shownNothing.join(' ')).toContain('feature 6 shows no picture');
+      expect(shownNothing.join(' ')).toContain('feature 7 shows no picture');
+      expect(shownNothing.join(' ')).toContain('feature 8 shows no picture');
     });
   });
 
   describe('a picture the story names and nobody drew', () => {
     it('fails, and says which picture and which document', () => {
-      const root = repositoryWith(oneBeat, []);
+      const root = repositoryTellingBoth(oneBeat, []);
       const result = storyProblems(root);
 
+      // Both sections show the same picture in this fixture, so the missing file is named twice,
+      // once for each beat that asked for it.
       expect(result.problems).toEqual([
+        `${storyDocument}: the picture ../brand/screens/welcome.png is named there and is not on disk`,
         `${storyDocument}: the picture ../brand/screens/welcome.png is named there and is not on disk`,
       ]);
     });
@@ -221,7 +342,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
 
   describe('a picture nobody shows', () => {
     it('is named out loud, so one left behind by a rename is visible', () => {
-      const root = repositoryWith(oneBeat, ['welcome.png', 'nobody-shows-this.png']);
+      const root = repositoryTellingBoth(oneBeat, ['welcome.png', 'nobody-shows-this.png']);
       const result = storyProblems(root);
 
       expect(result.problems).toEqual([]);
@@ -241,10 +362,10 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
       ]);
       const result = storyProblems(root);
 
-      expect(result.problems).toEqual([
+      expect(result.problems).toContain(
         `${storyDocument} tells no feature and shows no picture, so this check read nothing. ` +
           'A check that finds nothing to check reports success, which is worth nothing.',
-      ]);
+      );
     });
 
     it('fails when the story is not there at all', () => {
@@ -419,14 +540,6 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
 
       expect(storyProblems(root).problems).toContain(
         `${storyDocument}: feature 2 is called "She logs a period" here and "She opens Emi and logs her first period" in docs/features.md`,
-      );
-    });
-
-    it('fails when a section tells a feature and shows nothing', () => {
-      const root = repositoryWith(['She opens Emi and it asks her nothing.', ''], ['welcome.png']);
-
-      expect(storyProblems(root).problems).toContain(
-        `${storyDocument}: the section "Feature 2: She opens Emi and logs her first period" shows no picture, so it tells nobody what the product looks like`,
       );
     });
   });

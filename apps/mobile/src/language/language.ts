@@ -1,10 +1,10 @@
 import { getLocales } from 'expo-localization';
 
 /**
- * Every language Emi is written in. Russian arrives in its own step, and it adds a catalogue
- * beside these two rather than a branch in any screen.
+ * Every language Emi is written in. Each one is a catalogue beside the others rather than a
+ * branch in any screen.
  */
-export const languages = ['en', 'es'] as const;
+export const languages = ['en', 'es', 'ru'] as const;
 
 export type Language = (typeof languages)[number];
 

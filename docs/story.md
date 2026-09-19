@@ -29,11 +29,15 @@ the frame than it does on a phone. The first run names the monospaced face, whic
 yet, so it falls back here and on a phone alike. And a screen that names no face at all takes the
 browser's own where a phone takes the system one.
 
-Five features have a section today. The pipeline runs `npm run check:story`, which names every
-feature with no section, names every picture in `brand/screens` that no section shows, and fails
-when the story names a picture that is not there or when the line under a picture does not say how
-it was made. A later step turns the first of those into a failure as well. Feature 7 is not built
-yet, so there is nothing of it to show.
+Every feature in `features.md` has a section here. The pipeline runs `npm run check:story`, and a
+feature with no section now stops it, because a story that quietly tells less than the product does
+is the thing this check exists to catch. It fails too when the story names a picture that is not
+there, and when the line under a picture does not say how the picture was made. It names, without
+failing, every picture in `brand/screens` that no section shows.
+
+Three sections show no picture, and each one says why on its own line, beginning `Nothing to show:`.
+The run repeats those reasons every time, so a section that has quietly stopped being true is read
+by whoever runs the check rather than by nobody.
 
 ## Feature 1: The brand exists
 
@@ -294,3 +298,50 @@ and the vault in Amazon Web Services is designed rather than running: `docs/arch
 and a build carrying no vault address never made an account for there to be anything to take. The
 code for that half is written and feature 6 is where it arrives. Until then the delete has nothing
 up there to reach, and the screen has a second sentence for the case where it cannot.
+
+## Feature 6: Her cycle survives a new phone
+
+She loses her phone, buys another one, and her history is still hers. That is the whole of this
+feature, and it is the one place a cloud exists at all: an encrypted vault in Amazon Web Services
+that holds ciphertext and no key, so it can store a day and never read one.
+
+The half that runs on the phone is written. Her phone makes a device key, keeps it in the keychain,
+and signs every request over the method, the path, the instant and a hash of the body. The recovery
+code, which is the only thing that can unwrap her vault key on a second phone, has its screens:
+`RecoverySetup`, `ShowRecoveryCode` and `ConfirmRecoveryCode`. The service that answers is written
+too, with one handler each to register an account from a public key, to put a record, to pull the
+records after a cursor and to delete every item of an account.
+
+Nothing to show: the vault is not running, `docs/architecture.md` says so, no route opens the
+recovery screens, and nothing yet sends a day up or pulls one down. A second phone cannot restore
+her history today, so there is no screen of this to photograph.
+
+## Feature 7: She pays for a year, and the price is the promise
+
+One month free, then 29.99 pounds a year, and no free tier at all, because a free tier is paid for
+with her data. If she stops paying she keeps what she wrote: reading her history and exporting it
+stay open forever, and only new writes stop.
+
+None of that is built. There is no product in either store, nothing reads an entitlement on launch,
+no receipt is checked anywhere, and no screen asks her for money. The design is in `features.md` as
+five contracts and nothing in the application answers to them yet.
+
+Nothing to show: not one line of this feature is built, so every screen it will have is a design
+rather than a picture, and drawing one here would be an illustration of a product that does not
+exist.
+
+## Feature 8: Anybody can read how it works
+
+The repository is public so that a reader can check the privacy claim against the code that makes
+it. This feature is the readable half of that: the architecture, the privacy document, the feature
+map, the contracts, the brand sheet, the reference pages, the licences and the document you are
+reading now.
+
+It builds no contract of its own. What it does build is the set of checks that stop these documents
+drifting from the code, and the pipeline runs all of them: the documents check renders every
+diagram and holds `features.md` and `contracts.md` to each other, the brand and reference and sheet
+checks regenerate their pages and fail on a difference of one character, the feature check reads the
+scenarios, and `check:story` holds this document to the features and to the pictures on disk.
+
+Nothing to show: this feature writes documents and checks rather than screens, so there is nothing
+in the application to draw. The documents themselves are the artefact, and they are in `docs/`.
