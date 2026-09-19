@@ -13,7 +13,7 @@ import {
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { AccessibilityInfo, Animated, StyleSheet } from 'react-native';
-import { waitFor } from '@testing-library/react-native';
+import { waitFor, within } from '@testing-library/react-native';
 
 import {
   cycleRingTestID,
@@ -451,9 +451,13 @@ defineFeature(feature, (test) => {
     });
 
     and('the ring says she is on day 2 of 28, in the period phase', () => {
+      // The day and the phase are read off the ring, because the week above it carries her cycle
+      // day as well.
+      const ring = within(screen.getByTestId(cycleRingTestID));
+
       expect(theRingSays()).toBe('Day 2 of 28, period');
-      expect(screen.getByText('2')).toBeTruthy();
-      expect(screen.getByText(phaseLabel.period)).toBeTruthy();
+      expect(ring.getByText('2')).toBeTruthy();
+      expect(ring.getByText(phaseLabel.period)).toBeTruthy();
     });
 
     and('the ring is drawn on the screen she is looking at', () => {
