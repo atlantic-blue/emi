@@ -29,7 +29,7 @@
     "check:sheet": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/sheet/writeSheet.ts --check",
     "check:features": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkFeatureCoverage.ts",
     "check:story": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkStory.ts",
-    "check:pictures": "EMI_PICTURE_CHECK=1 jest --ci --config brand/screens/jest.config.js --testPathPattern '(welcome|cycleLength|pastDay|logSheet|lock).picture'",
+    "check:pictures": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkPictures.ts",
     "generate:logo": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/logo/generate.ts",
     "generate:specimen": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/specimen/render.ts",
     "generate:ring-picture": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/ring/render.ts",

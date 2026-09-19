@@ -1,34 +1,10 @@
-import { spawnSync } from 'node:child_process';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
-import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 import { render } from '@testing-library/react-native';
 
 import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
-import { pageSize, screenDocument } from '../../../../brand/screens/asHtml';
-
-const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
-const output = join(repositoryRoot, 'brand', 'screens', 'last-period.png');
-
-const browsers = [
-  process.env.EMI_BROWSER,
-  '/opt/playwright/chromium_headless_shell-1234/chrome-linux/headless_shell',
-  '/usr/bin/chromium',
-];
-
-function browser(): string {
-  const found = browsers.find((path) => path !== undefined && existsSync(path));
-
-  if (found === undefined) {
-    throw new Error('No browser to draw with.');
-  }
-
-  return found;
-}
+import { drawOrCheck } from '../../../../brand/screens/picture';
 
 const theCaveat = [
   'Rendered from the tree the last period screen produced under the test runner, at 390 by 844',
@@ -89,30 +65,14 @@ describe('the last period screen, drawn for somebody to look at', () => {
   it('draws them into one picture', async () => {
     expect(screens).toHaveLength(theStates.length);
 
-    const size = pageSize(screens.length);
-    const directory = mkdtempSync(join(tmpdir(), 'emi-last-period-'));
-    const page = join(directory, 'last-period.html');
+    const result = drawOrCheck({
+      name: 'last-period',
+      screens: screens,
+      caveat: theCaveat,
+      script: 'generate:last-period-picture',
+    });
 
-    writeFileSync(page, screenDocument(screens, theCaveat), 'utf8');
-
-    const run = spawnSync(
-      browser(),
-      [
-        '--headless',
-        '--no-sandbox',
-        '--disable-gpu',
-        '--hide-scrollbars',
-        `--screenshot=${output}`,
-        `--window-size=${size.width},${size.height}`,
-        pathToFileURL(page).href,
-      ],
-      { encoding: 'utf8' },
-    );
-
-    rmSync(directory, { force: true, recursive: true });
-
-    expect(run.status).toBe(0);
-    expect(existsSync(output)).toBe(true);
-    console.log(`drew ${screens.length} screens into ${output} (${statSync(output).size} bytes)`);
+    expect(result.problems).toEqual([]);
+    console.log(result.said);
   });
 });
