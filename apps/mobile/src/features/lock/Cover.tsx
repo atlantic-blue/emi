@@ -2,6 +2,7 @@ import { colour, space, typeScale } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { Screen } from '../../components/Screen';
 import { lockCopy } from './copy';
 
 export const coverTestID = 'lock-cover';
@@ -13,16 +14,17 @@ export const coverTestID = 'lock-cover';
  */
 export function Cover(): ReactNode {
   return (
-    <View style={styles.cover} testID={coverTestID}>
-      <Text style={styles.wordmark}>{lockCopy.cover.wordmark}</Text>
-    </View>
+    <Screen testID={coverTestID}>
+      <View style={styles.middle}>
+        <Text style={styles.wordmark}>{lockCopy.cover.wordmark}</Text>
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  cover: {
+  middle: {
     alignItems: 'center',
-    backgroundColor: colour.stone,
     flex: 1,
     justifyContent: 'center',
     padding: space.base,
