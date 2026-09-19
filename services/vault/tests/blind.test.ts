@@ -213,8 +213,9 @@ const namesThatOpenOrSeal: readonly string[] = [
 
 /**
  * Words ending in key that the service is allowed to write. A partition key, a sort key and a
- * public key are keys to a table and to a signature, and none of them opens anything. A word that
- * is not on this list arrives with a reader asking what it unlocks.
+ * public key are keys to a table and to a signature, and none of them opens anything. The one the
+ * delete adds reads the key attributes of every item under one account, to say which to remove. A
+ * word that is not on this list arrives with a reader asking what it unlocks.
  */
 const allowedKeyWords: readonly string[] = [
   'ExclusiveStartKey',
@@ -228,6 +229,7 @@ const allowedKeyWords: readonly string[] = [
   'accountSortKey',
   'decoyPublicKey',
   'deviceKeyLength',
+  'everyKeyUnder',
   'key',
   'keyOf',
   'publicKey',

@@ -43,8 +43,11 @@ function keyOf(privateKey: Uint8Array): DeviceKey {
   return { ...pair, accountId: accountIdFor(pair.publicKey) };
 }
 
-/** The key she already has, or nothing when this phone has never made one. */
-export async function readDeviceKey(store: SecureStore): Promise<DeviceKey | null> {
+/**
+ * The key she already has, or nothing when this phone has never made one. It is handed a reader
+ * and not the whole keychain, so the delete can pass it one without passing it a way to write.
+ */
+export async function readDeviceKey(store: Pick<SecureStore, 'read'>): Promise<DeviceKey | null> {
   const held = await store.read(deviceKeyItem);
 
   return held === null ? null : keyOf(bytesFromBase64(held));
