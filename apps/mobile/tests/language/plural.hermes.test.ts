@@ -1,8 +1,14 @@
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { bundleForHermes } from '../../../../tools/hermes/bundle';
 import {
   compileForThePhone,
+  compilerDirectories,
+  hermesArchiveFor,
+  hermesArchiveUrl,
+  hermesArchives,
+  hermesPath,
   hermesVersion,
   runOnHermes,
   theEngine,
@@ -228,6 +234,78 @@ print([typeof Intl.Collator, typeof Intl.DateTimeFormat, typeof Intl.NumberForma
 
     expect(compiled.stderr).toBe('');
     expect(compiled.status).toBe(0);
+  });
+
+  describe('the machine this runs on', () => {
+    it('takes the archive its own platform can execute', () => {
+      expect(hermesArchiveFor('linux').file).toBe('hermes-cli-linux.tar.gz');
+      expect(hermesArchiveFor('darwin').file).toBe('hermes-cli-darwin.tar.gz');
+      expect(hermesArchiveUrl('darwin')).toContain(`${hermesVersion}/hermes-cli-darwin`);
+    });
+
+    it('pins a digest for every platform it offers, and each one is a sha256', () => {
+      const named = Object.entries(hermesArchives);
+
+      expect(named.length).toBeGreaterThan(1);
+
+      for (const [platform, archive] of named) {
+        expect(archive.digest).toMatch(/^[0-9a-f]{64}$/);
+        expect(archive.file).toContain(platform === 'darwin' ? 'darwin' : platform);
+      }
+    });
+
+    it('refuses a platform it has no engine for, and says what it wanted', () => {
+      expect(() => hermesArchiveFor('sunos')).toThrow(/no engine for sunos/);
+      expect(() => hermesArchiveFor('sunos')).toThrow(/darwin and linux/);
+      expect(() => hermesArchiveFor('win32')).toThrow(/sha256/);
+    });
+
+    it('keeps each platform engine under its own name, so one cannot be read as another', () => {
+      expect(hermesPath(repositoryRoot, 'darwin')).toContain('darwin');
+      expect(hermesPath(repositoryRoot, 'linux')).not.toEqual(hermesPath(repositoryRoot, 'darwin'));
+      expect(binary).toEqual(hermesPath(repositoryRoot));
+    });
+
+    it('takes the compiler its own platform can execute, out of the three installed', () => {
+      expect(thePhonesCompiler(repositoryRoot, 'linux')).toContain('linux64-bin');
+      expect(thePhonesCompiler(repositoryRoot, 'darwin')).toContain('osx-bin');
+      expect(thePhonesCompiler(repositoryRoot, 'win32')).toContain('win64-bin');
+      expect(thePhonesCompiler(repositoryRoot, 'win32')).toContain('hermesc.exe');
+    });
+
+    it('finds every compiler it names on disk, because the install carries all three', () => {
+      const missing = Object.keys(compilerDirectories).filter(
+        (platform) => !existsSync(thePhonesCompiler(repositoryRoot, platform)),
+      );
+
+      expect(missing).toEqual([]);
+    });
+
+    it('refuses a platform the install has no compiler for, and names the three it has', () => {
+      expect(() => thePhonesCompiler(repositoryRoot, 'sunos')).toThrow(/no build for sunos/);
+      expect(() => thePhonesCompiler(repositoryRoot, 'sunos')).toThrow(/linux64-bin/);
+    });
+  });
+
+  describe('an engine that cannot run', () => {
+    it('is refused rather than read as an empty answer', () => {
+      expect(() => runOnHermes('/dev/null', 'print(1);')).toThrow(/\/dev\/null/);
+      expect(() => runOnHermes('/dev/null', 'print(1);')).toThrow(/status/);
+    });
+
+    it('names the status and what the engine said, when the engine itself refuses', () => {
+      let said = '';
+
+      try {
+        runOnHermes(binary, 'this is not a program(');
+      } catch (thrown) {
+        said = thrown instanceof Error ? thrown.message : String(thrown);
+      }
+
+      expect(said).toContain('status 2');
+      expect(said).toContain('error:');
+      expect(said).toContain(binary);
+    });
   });
 
   it('draws the sentence that stopped the product, in both of its forms', () => {

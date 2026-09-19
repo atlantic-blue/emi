@@ -44,7 +44,11 @@ signature, so both can be run against a source written in a test.
 their own: `apps/mobile/tests/language/plural.hermes.test.ts` drives them. Node carries
 internationalisation, a crypto object and a module loader that the engine on the phone does not, so
 a suite that is green on node can sit over an application that cannot draw a screen. `engine.ts`
-fetches a pinned Hermes, checks its digest and runs a program on it. `bundle.ts` writes one source
+fetches a pinned Hermes for the platform it is running on, checks its digest and runs a program
+on it. Linux and macOS each have their own archive and their own digest, and a platform with
+neither is refused by name rather than handed the wrong binary. A run that did not run is refused
+with its status and whatever the engine said, because a binary built for another platform answers
+nothing at all and an empty answer reads like a quiet one. `bundle.ts` writes one source
 file and everything it imports into a single program, because Hermes has no module loader, and it
 refuses a package rather than guessing: a test names what each one stands for.
 
