@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
@@ -56,8 +56,7 @@ const styles = StyleSheet.create({
   },
   backLabel: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   body: { flexGrow: 1, paddingHorizontal: space.base, paddingVertical: space.roomy },
   row: {
@@ -70,12 +69,10 @@ const styles = StyleSheet.create({
   },
   rowLabel: {
     color: colour.ink,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   title: {
     color: colour.ink,
-    fontSize: typeScale.title.size,
-    lineHeight: typeScale.title.lineHeight,
+    ...textStyle('headline-lg'),
   },
 });

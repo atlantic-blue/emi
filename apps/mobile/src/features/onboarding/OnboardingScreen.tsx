@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, fonts, radius, space, stroke, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -128,8 +128,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     color: colour.surface,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   actionWaiting: { opacity: 0.4 },
   // What she is asked to do takes the room the words leave, so the control she came here to press
@@ -167,13 +166,11 @@ const styles = StyleSheet.create({
   // keep the same size, because two of them say what Emi is not and nothing there is a footnote.
   lead: {
     color: colour.ink,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   line: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   lineAfter: {
     borderTopColor: colour.hairline,
@@ -199,15 +196,11 @@ const styles = StyleSheet.create({
   segmentReached: { backgroundColor: colour.ember },
   step: {
     color: colour.muted,
-    fontFamily: fonts.numeric.family,
-    fontSize: typeScale.label.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.label.lineHeight,
+    ...textStyle('label-sm'),
   },
   title: {
     color: colour.ink,
-    fontSize: typeScale.title.size,
-    lineHeight: typeScale.title.lineHeight,
+    ...textStyle('headline-lg'),
     marginBottom: space.snug,
   },
 });

@@ -1,5 +1,5 @@
 import { type Measurement, type MeasurementReading, readingIn, readingOf } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 /**
@@ -92,13 +92,11 @@ const styles = StyleSheet.create({
   headings: { alignItems: 'baseline', flexDirection: 'row', flexWrap: 'wrap', gap: space.tight },
   heading: {
     color: colour.ink,
-    fontSize: typeScale.heading.size,
-    lineHeight: typeScale.heading.lineHeight,
+    ...textStyle('headline-md'),
   },
   hint: {
     color: colour.body,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   row: { alignItems: 'center', flexDirection: 'row', gap: space.tight },
   field: {
@@ -106,8 +104,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.chip,
     color: colour.ink,
     flex: 1,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     minHeight: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.snug,
     paddingVertical: space.tight,
@@ -126,13 +123,11 @@ const styles = StyleSheet.create({
   unitChosen: { backgroundColor: colour.emberTint, borderColor: colour.ember },
   unitLabel: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   unitLabelChosen: { color: colour.ink },
   refusal: {
     color: colour.ember,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
 });

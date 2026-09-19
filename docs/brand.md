@@ -113,15 +113,20 @@ fill.
 
 Status: built
 
-The scale has 6 sizes. The three faces are Fraunces, Plus Jakarta Sans and IBM Plex Mono. A line
-height below 1.2 times the size fails the token test.
+The scale has 11 roles, and every one of them is set in Plus Jakarta Sans. A line height below 1.2
+times the size fails the token test.
 
-- `display` is 34 points over 41, in Fraunces, which is 1.21 times the size.
-- `title` is 26 points over 32, in Fraunces, which is 1.23 times the size.
-- `heading` is 20 points over 26, in Fraunces, which is 1.30 times the size.
-- `body` is 16 points over 24, in Plus Jakarta Sans, which is 1.50 times the size.
-- `small` is 14 points over 20, in Plus Jakarta Sans, which is 1.43 times the size.
-- `label` is 12 points over 16, in IBM Plex Mono, letter spacing 0.48, which is 1.33 times the size.
+- `headline-xl` is 36 points over 44 at weight 700, letter spacing -1.08, which is 1.22 times the size.
+- `headline-xl-mobile` is 30 points over 38 at weight 700, letter spacing -0.75, which is 1.27 times the size.
+- `headline-lg` is 26 points over 34 at weight 600, letter spacing -0.52, which is 1.31 times the size.
+- `headline-md` is 20 points over 28 at weight 600, letter spacing -0.3, which is 1.40 times the size.
+- `headline-sm` is 18 points over 24 at weight 600, letter spacing -0.18, which is 1.33 times the size.
+- `body-lg` is 17 points over 26 at weight 400, letter spacing -0.08, which is 1.53 times the size.
+- `body-md` is 15 points over 22 at weight 400, which is 1.47 times the size.
+- `body-sm` is 13 points over 18 at weight 400, which is 1.38 times the size.
+- `label-lg` is 15 points over 20 at weight 600, letter spacing 0.15, which is 1.33 times the size.
+- `label-md` is 13 points over 16 at weight 600, letter spacing 0.26, which is 1.23 times the size.
+- `label-sm` is 11 points over 14 at weight 600, letter spacing 0.44, which is 1.27 times the size.
 
 ## Space, radius and stroke
 

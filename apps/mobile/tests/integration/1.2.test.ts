@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 
-import { OPEN_FONT_LICENCE, faceNames, fontFiles, fonts, fontsRoot } from '@emi/tokens';
+import { OPEN_FONT_LICENCE, fontFamilyNames, fontFiles, fonts, fontsRoot } from '@emi/tokens';
 
 const applicationRoot = join(__dirname, '..', '..');
 const repositoryRoot = join(applicationRoot, '..', '..');
@@ -42,12 +42,17 @@ describe('every shipped font carries its licence', () => {
   });
 
   describe('the licence travels with the files the application bundles', () => {
-    it.each(faceNames)('keeps the licence for %s in the directory the fonts sit in', (face) => {
-      const family = fonts[face];
+    it.each(fontFamilyNames)(
+      'keeps the licence for %s in the directory the fonts sit in',
+      (name) => {
+        const family = fonts[name];
 
-      expect(dirname(family.licencePath)).toBe(dirname(family.files.regular.path));
-      expect(readFileSync(inApplication(family.licencePath), 'utf8')).toContain(OPEN_FONT_LICENCE);
-    });
+        expect(dirname(family.licencePath)).toBe(dirname(family.files.regular.path));
+        expect(readFileSync(inApplication(family.licencePath), 'utf8')).toContain(
+          OPEN_FONT_LICENCE,
+        );
+      },
+    );
 
     it('leaves no font directory without a licence in it', () => {
       const directories = readdirSync(fontsDirectory, { withFileTypes: true })
@@ -57,7 +62,7 @@ describe('every shipped font carries its licence', () => {
         (directory) => !existsSync(join(fontsDirectory, directory, 'OFL.txt')),
       );
 
-      expect(directories).toHaveLength(faceNames.length);
+      expect(directories).toHaveLength(fontFamilyNames.length);
       expect(bare).toEqual([]);
     });
   });

@@ -1,4 +1,4 @@
-import { colour, fonts, radius, space, typeScale } from '@emi/tokens';
+import { colour, radius, space, textStyle, typeScale } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -45,11 +45,10 @@ const styles = StyleSheet.create({
   },
   code: {
     color: colour.ink,
-    // The one value in Emi a woman copies character by character, so it is set in the face whose
-    // digits and letters cannot be read as each other.
-    fontFamily: fonts.numeric.family,
-    fontSize: typeScale.body.size,
+    ...textStyle('body-lg'),
+    // She copies this one value character by character, so the letters are spaced further apart
+    // than the scale spaces running text, and the lines are spaced further apart than that.
     letterSpacing: 2,
-    lineHeight: typeScale.title.lineHeight,
+    lineHeight: typeScale['headline-lg'].lineHeight,
   },
 });

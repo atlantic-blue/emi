@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DatabaseProvider } from '../data/DatabaseProvider';
 import { LockGate } from '../features/lock/LockGate';
 import { FirstRunProvider } from '../features/onboarding/FirstRunProvider';
+import { Fonts } from '../features/type/Fonts';
 import { VaultProvider } from '../services/vault/VaultProvider';
 
 /**
@@ -30,19 +31,21 @@ export default function RootLayout(): ReactNode {
   }, []);
 
   return (
-    <SafeAreaProvider>
-      <DatabaseProvider>
-        <LockGate>
-          <VaultProvider>
-            <FirstRunProvider>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" options={{ animationTypeForReplace: 'push' }} />
-                <Stack.Screen name="onboarding" options={{ animationTypeForReplace: 'push' }} />
-              </Stack>
-            </FirstRunProvider>
-          </VaultProvider>
-        </LockGate>
-      </DatabaseProvider>
-    </SafeAreaProvider>
+    <Fonts>
+      <SafeAreaProvider>
+        <DatabaseProvider>
+          <LockGate>
+            <VaultProvider>
+              <FirstRunProvider>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" options={{ animationTypeForReplace: 'push' }} />
+                  <Stack.Screen name="onboarding" options={{ animationTypeForReplace: 'push' }} />
+                </Stack>
+              </FirstRunProvider>
+            </VaultProvider>
+          </LockGate>
+        </DatabaseProvider>
+      </SafeAreaProvider>
+    </Fonts>
   );
 }

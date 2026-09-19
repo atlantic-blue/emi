@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
@@ -72,28 +72,23 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     color: colour.surface,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   actionWaiting: { opacity: 0.4 },
   body: { padding: space.base, paddingTop: space.loose },
   line: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     marginBottom: space.snug,
   },
   step: {
     color: colour.muted,
-    fontSize: typeScale.label.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.label.lineHeight,
+    ...textStyle('label-sm'),
     marginBottom: space.snug,
   },
   title: {
     color: colour.ink,
-    fontSize: typeScale.title.size,
-    lineHeight: typeScale.title.lineHeight,
+    ...textStyle('headline-lg'),
     marginBottom: space.base,
   },
 });

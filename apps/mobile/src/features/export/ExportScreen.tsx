@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -135,8 +135,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     color: colour.surface,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   back: {
     alignItems: 'flex-start',
@@ -146,14 +145,12 @@ const styles = StyleSheet.create({
   },
   backLabel: {
     color: colour.body,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   body: { paddingBottom: space.roomy, paddingHorizontal: space.base, paddingTop: space.snug },
   failed: {
     color: colour.ember,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
     marginTop: space.snug,
   },
   file: {
@@ -168,18 +165,15 @@ const styles = StyleSheet.create({
   },
   fileName: {
     color: colour.ink,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   held: {
     color: colour.body,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   line: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     marginTop: space.tight,
   },
   made: { marginTop: space.base },
@@ -192,14 +186,11 @@ const styles = StyleSheet.create({
   },
   shareLabel: {
     color: colour.ember,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   title: {
     color: colour.ink,
-    fontSize: typeScale.title.size,
-    letterSpacing: typeScale.title.letterSpacing,
-    lineHeight: typeScale.title.lineHeight,
+    ...textStyle('headline-lg'),
     marginTop: space.tight,
   },
 });

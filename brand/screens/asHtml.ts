@@ -1,13 +1,14 @@
-import { colour } from '@emi/tokens';
+import { applicationFontFiles, colour } from '@emi/tokens';
 
 /**
  * A rendered React Native tree, turned into the markup a browser can draw. The tree comes from the
  * screen the application ships, so every word, size, colour and arc in the picture is the one the
  * component produced rather than one this file chose.
  *
- * Two things the browser does not share with the phone, and both are stated on the page itself: no
- * screen names a font family yet, so the picture takes the browser's own face, and a browser lays
- * out in rows where React Native lays out in columns, which the rule below restores.
+ * The page loads the same font files the application loads, under the same names, so the words are
+ * drawn in the face that ships. One thing the browser still does not share with the phone, and it
+ * is stated on the page itself: a browser lays out in rows where React Native lays out in columns,
+ * which the rule below restores.
  */
 
 export interface RenderedNode {
@@ -297,6 +298,20 @@ export function markupOf(node: unknown): string {
   }
 }
 
+/**
+ * Where the font files sit, written from brand/screens, because the page is drawn from that
+ * directory and a path of its own is what keeps the file portable to another machine.
+ */
+const FONTS_FROM_HERE = '../../apps/mobile/assets/fonts';
+
+/** The files the application loads, declared under the names it registers them under. */
+const FACES = applicationFontFiles
+  .map(
+    (file) =>
+      `@font-face { font-family: '${file.name}'; src: url('${FONTS_FROM_HERE}/${file.path}') format('truetype'); }`,
+  )
+  .join('\n');
+
 const RESET = `
 * { box-sizing: border-box; }
 body { margin: 0; padding: 40px; background: ${colour.sunk}; font-family: system-ui, sans-serif; }
@@ -337,7 +352,7 @@ export function screenDocument(screens: readonly DrawnScreen[], caveat: string):
 
   return [
     '<!doctype html><html><head><meta charset="utf-8" />',
-    `<style>${RESET}</style></head><body>`,
+    `<style>${FACES}\n${RESET}</style></head><body>`,
     `<div class="screens">${drawn}</div>`,
     `<p class="caveat">${escaped(caveat)}</p>`,
     '</body></html>',

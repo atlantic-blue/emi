@@ -1,6 +1,6 @@
 import { flowValues } from '@emi/crypto';
 import type { Flow } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -57,8 +57,7 @@ export function FlowPicker({ chosen, onPick }: Props): ReactNode {
 const styles = StyleSheet.create({
   label: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
     textAlign: 'center',
   },
   labelChosen: { color: colour.ink },

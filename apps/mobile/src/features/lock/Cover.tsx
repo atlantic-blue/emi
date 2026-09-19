@@ -1,4 +1,4 @@
-import { colour, space, typeScale } from '@emi/tokens';
+import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -31,7 +31,6 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     color: colour.ember,
-    fontSize: typeScale.display.size,
-    lineHeight: typeScale.display.lineHeight,
+    ...textStyle('headline-xl'),
   },
 });

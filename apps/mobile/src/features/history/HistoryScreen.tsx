@@ -6,7 +6,7 @@ import {
   phasePalette,
   radius,
   space,
-  typeScale,
+  textStyle,
 } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -204,8 +204,7 @@ const styles = StyleSheet.create({
   },
   backLabel: {
     color: colour.body,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   bar: {
     borderRadius: radius.icon,
@@ -218,16 +217,13 @@ const styles = StyleSheet.create({
   body: { padding: space.base },
   heading: {
     color: colour.ink,
-    fontSize: typeScale.heading.size,
-    lineHeight: typeScale.heading.lineHeight,
+    ...textStyle('headline-md'),
     marginBottom: space.tight,
     marginTop: space.base,
   },
   list: { gap: space.tight },
   phaseName: {
-    fontSize: typeScale.label.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.label.lineHeight,
+    ...textStyle('label-sm'),
     marginTop: space.hair,
   },
   row: {
@@ -242,18 +238,14 @@ const styles = StyleSheet.create({
   },
   rowLine: {
     color: colour.body,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   rowTitle: {
     color: colour.ink,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   title: {
     color: colour.ink,
-    fontSize: typeScale.title.size,
-    letterSpacing: typeScale.title.letterSpacing,
-    lineHeight: typeScale.title.lineHeight,
+    ...textStyle('headline-lg'),
   },
 });

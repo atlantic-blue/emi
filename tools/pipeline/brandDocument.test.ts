@@ -16,7 +16,7 @@ import {
   spaceNames,
   stroke,
 } from '../../packages/tokens/src/space';
-import { face, typeScale, typeSizeNames } from '../../packages/tokens/src/type';
+import { face, letterSpacingOf, typeRoleNames, typeScale } from '../../packages/tokens/src/type';
 import {
   type BrandSources,
   approvedPairs,
@@ -235,17 +235,22 @@ describe('a changed token leaves the brand document stale and the run red', () =
   });
 
   describe('the type, the space and the markers the other checks read', () => {
-    it('names every size with its line height and its face', () => {
-      const absent = typeSizeNames.filter((name) => {
+    it('names every role with its line height and its weight', () => {
+      const absent = typeRoleNames.filter((name) => {
         const style = typeScale[name];
 
         return !committed.includes(
-          `- \`${name}\` is ${style.size} points over ${style.lineHeight}, in ${face[style.face]}`,
+          `- \`${name}\` is ${style.size} points over ${style.lineHeight} at weight ${style.weight}`,
         );
       });
 
       expect(absent).toEqual([]);
-      expect(typeSizeNames).toHaveLength(counts.sizes);
+      expect(typeRoleNames).toHaveLength(counts.sizes);
+    });
+
+    it('says the one family every role is set in', () => {
+      expect(committed).toContain(`every one of them is set in ${face.text}`);
+      expect(letterSpacingOf(11, 0.04)).toBe(0.44);
     });
 
     it('names every space, every radius and every stroke', () => {

@@ -23,11 +23,10 @@ application ships, reads the tree it produced, and draws that tree in a browser.
 drawing, which is everything in feature 1, is written by a generator of its own from the numbers in
 the token package.
 
-Three things a rendered screen does not carry. A browser lays a screen out in rows where a phone
+One thing a rendered screen does not carry. A browser lays a screen out in rows where a phone
 lays it out in columns, which the renderer restores by hand, so a control can sit a little higher up
-the frame than it does on a phone. The first run names the monospaced face, which no screen loads
-yet, so it falls back here and on a phone alike. And a screen that names no face at all takes the
-browser's own where a phone takes the system one.
+the frame than it does on a phone. The face is the one that ships: the page loads the same font
+files the application loads, under the same names, so every word is drawn in Plus Jakarta Sans.
 
 Every feature in `features.md` has a section here. The pipeline runs `npm run check:story`, and a
 feature with no section now stops it, because a story that quietly tells less than the product does

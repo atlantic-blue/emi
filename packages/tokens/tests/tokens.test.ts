@@ -1,6 +1,6 @@
 import { ColourName, colour, colourNames, colours, hasRole } from '../src/colour';
 import { MINIMUM_TAP_TARGET, radius, space, spaceNames } from '../src/space';
-import { LINE_HEIGHT_FLOOR, face, typeScale, typeSizeNames } from '../src/type';
+import { LINE_HEIGHT_FLOOR, face, typeRoleNames, typeScale } from '../src/type';
 
 const publishedColours: readonly (readonly [ColourName, string])[] = [
   ['stone', '#F7F3EE'],
@@ -69,47 +69,61 @@ describe('the colour set', () => {
 });
 
 describe('the type scale', () => {
-  it('holds six sizes', () => {
-    expect(typeSizeNames).toHaveLength(6);
-    expect(Object.keys(typeScale)).toHaveLength(6);
+  it('holds the eleven roles the design system names', () => {
+    expect(typeRoleNames).toHaveLength(11);
+    expect(Object.keys(typeScale)).toHaveLength(11);
   });
 
-  it('holds the size and the line height the design publishes for each one', () => {
+  it('holds the size and the line height of each role', () => {
     expect(
-      typeSizeNames.map((name) => `${name} ${typeScale[name].size}/${typeScale[name].lineHeight}`),
+      typeRoleNames.map((name) => `${name} ${typeScale[name].size}/${typeScale[name].lineHeight}`),
     ).toEqual([
-      'display 34/41',
-      'title 26/32',
-      'heading 20/26',
-      'body 16/24',
-      'small 14/20',
-      'label 12/16',
+      'headline-xl 36/44',
+      'headline-xl-mobile 30/38',
+      'headline-lg 26/34',
+      'headline-md 20/28',
+      'headline-sm 18/24',
+      'body-lg 17/26',
+      'body-md 15/22',
+      'body-sm 13/18',
+      'label-lg 15/20',
+      'label-md 13/16',
+      'label-sm 11/14',
     ]);
   });
 
   it('keeps every line height at or above the floor, naming any that is not', () => {
-    const cramped = typeSizeNames
+    const cramped = typeRoleNames
       .filter((name) => typeScale[name].lineHeight < typeScale[name].size * LINE_HEIGHT_FLOOR)
       .map((name) => `${name} is ${typeScale[name].lineHeight} on ${typeScale[name].size}`);
 
     expect(cramped).toEqual([]);
   });
 
-  it('names a face that exists for every size', () => {
-    const unnamed = typeSizeNames.filter((name) => face[typeScale[name].face] === undefined);
-
-    expect(unnamed).toEqual([]);
-    expect(Object.values(face)).toEqual(['Fraunces', 'Plus Jakarta Sans', 'IBM Plex Mono']);
+  it('names one face, and every role takes it', () => {
+    expect(Object.values(face)).toEqual(['Plus Jakarta Sans']);
+    expect([...new Set(typeRoleNames.map((name) => typeScale[name].face))]).toEqual(['text']);
   });
 
-  it('sets the numbers in the monospaced face, so a changing digit does not shift the line', () => {
-    expect(typeScale.label.face).toBe('numeric');
-    expect(face.numeric).toBe('IBM Plex Mono');
+  it('carries the weight of each role, so no call site chooses one', () => {
+    expect(typeRoleNames.map((name) => typeScale[name].weight)).toEqual([
+      700, 700, 600, 600, 600, 400, 400, 400, 600, 600, 600,
+    ]);
   });
 
-  it('letter spaces the label by four hundredths of its own size', () => {
-    expect(typeScale.label.letterSpacing).toBeCloseTo(0.04 * typeScale.label.size, 5);
-    expect(typeSizeNames.filter((name) => typeScale[name].letterSpacing !== 0)).toEqual(['label']);
+  it('tracks the headlines tighter and the labels wider, in em', () => {
+    const tighter = typeRoleNames.filter((name) => typeScale[name].letterSpacingEm < 0);
+    const wider = typeRoleNames.filter((name) => typeScale[name].letterSpacingEm > 0);
+
+    expect(tighter).toEqual([
+      'headline-xl',
+      'headline-xl-mobile',
+      'headline-lg',
+      'headline-md',
+      'headline-sm',
+      'body-lg',
+    ]);
+    expect(wider).toEqual(['label-lg', 'label-md', 'label-sm']);
   });
 });
 

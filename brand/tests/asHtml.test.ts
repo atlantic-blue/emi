@@ -1,4 +1,4 @@
-import { colour } from '@emi/tokens';
+import { colour, textStyle } from '@emi/tokens';
 
 import { markupOf } from '../screens/asHtml.ts';
 
@@ -20,7 +20,7 @@ function field({ value, placeholder }: Field): unknown {
       value,
       placeholder,
       placeholderTextColor: colour.body,
-      style: { color: colour.ink, fontSize: 16 },
+      style: { color: colour.ink, ...textStyle('body-lg') },
     },
     children: null,
   };

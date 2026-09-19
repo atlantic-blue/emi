@@ -19,9 +19,9 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 
 const theCaveat = [
   'Rendered from the tree the cycle length screen produced under the test runner, at 390 by 844',
-  'points, and not captured from a phone. The step label and the number name the monospaced face,',
-  'which no screen loads yet, so both fall back here and on a phone. Reproduce with: npm run',
-  'generate:cycle-length-picture.',
+  'points, and not captured from a phone. The page loads the same font files the application loads,',
+  'so the number and the step label are drawn in Plus Jakarta Sans like everything else. Reproduce',
+  'with: npm run generate:cycle-length-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');

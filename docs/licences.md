@@ -22,7 +22,9 @@ Every font here is redistributed unmodified. Nothing is subset, renamed or re-hi
 
 Status: built
 
-Headings, and the wordmark.
+Nothing. The design system names one typeface for all eleven of its type roles, so step 9.1 put the
+whole product in Plus Jakarta Sans and the application stopped drawing in this one. The files and
+this record stay, because the files are still in the repository and a reader is owed their terms.
 
 Licence: SIL Open Font License, Version 1.1, in `apps/mobile/assets/fonts/fraunces/OFL.txt`.
 Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)
@@ -44,7 +46,8 @@ same two weights.
 
 Status: built
 
-The interface and running text.
+Every heading, every sentence, every label and every number. It is the one face the application
+loads and the only one it draws in.
 
 Licence: SIL Open Font License, Version 1.1, in
 `apps/mobile/assets/fonts/plus-jakarta-sans/OFL.txt`.
@@ -60,7 +63,8 @@ Files:
 
 Status: built
 
-Numbers, units and labels.
+Nothing, for the same reason as Fraunces above. What it used to carry, the recovery code and the
+cycle length number, is now set in Plus Jakarta Sans.
 
 Licence: SIL Open Font License, Version 1.1, in `apps/mobile/assets/fonts/ibm-plex-mono/OFL.txt`.
 Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"

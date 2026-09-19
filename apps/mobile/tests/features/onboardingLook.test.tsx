@@ -236,7 +236,7 @@ describe('the first run carries the design system', () => {
 
       expect(screen.getByTestId(monthTestID)).toHaveTextContent('May 2026');
       expect(heading.color).toBe(colour.ink);
-      expect(heading.fontSize).toBe(typeScale.heading.size);
+      expect(heading.fontSize).toBe(typeScale['headline-md'].size);
     });
 
     it('draws a handle she can still press as a pill, and a spent one without it', async () => {

@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -122,6 +121,10 @@ function windowFor(count: number, caveat: string): PhoneSize {
   return { width: size.width, height: size.height + Math.max(0, lines - 1) * LINE };
 }
 
+/**
+ * The page is drawn where it is committed rather than from a copy in a temporary directory, because
+ * it declares the font files by a path of its own and a copy somewhere else cannot reach them.
+ */
 function draw(name: string, page: string, count: number, caveat: string): number {
   const size = windowFor(count, caveat);
   const output = join(repositoryRoot(), picturePath(name));
@@ -180,25 +183,16 @@ export function drawOrCheck(picture: Picture): PictureResult {
 
   writeFileSync(file, markup, 'utf8');
 
-  const directory = mkdtempSync(join(tmpdir(), `emi-${picture.name}-`));
-  const page = join(directory, `${picture.name}.html`);
+  const bytes = draw(picture.name, file, picture.screens.length, picture.caveat);
 
-  writeFileSync(page, markup, 'utf8');
-
-  try {
-    const bytes = draw(picture.name, page, picture.screens.length, picture.caveat);
-
-    return {
-      markup: markupPath(picture.name),
-      picture: picturePath(picture.name),
-      characters: markup.length,
-      bytes,
-      said:
-        `drew ${picture.screens.length} screen(s) into ${picturePath(picture.name)} (${bytes} bytes), ` +
-        `from ${markupPath(picture.name)} (${markup.length} characters)`,
-      problems: [],
-    };
-  } finally {
-    rmSync(directory, { force: true, recursive: true });
-  }
+  return {
+    markup: markupPath(picture.name),
+    picture: picturePath(picture.name),
+    characters: markup.length,
+    bytes,
+    said:
+      `drew ${picture.screens.length} screen(s) into ${picturePath(picture.name)} (${bytes} bytes), ` +
+      `from ${markupPath(picture.name)} (${markup.length} characters)`,
+    problems: [],
+  };
 }

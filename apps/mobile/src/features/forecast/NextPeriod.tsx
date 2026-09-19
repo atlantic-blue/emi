@@ -1,5 +1,5 @@
 import type { Forecast } from '@emi/cycle';
-import { colour, space, typeScale } from '@emi/tokens';
+import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -37,20 +37,16 @@ const styles = StyleSheet.create({
   block: { paddingHorizontal: space.base, paddingVertical: space.snug },
   confidence: {
     color: colour.muted,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   label: {
     color: colour.muted,
-    fontSize: typeScale.label.size,
-    letterSpacing: typeScale.label.letterSpacing,
-    lineHeight: typeScale.label.lineHeight,
+    ...textStyle('label-sm'),
     marginBottom: space.hair,
   },
   range: {
     color: colour.ink,
-    fontSize: typeScale.heading.size,
-    lineHeight: typeScale.heading.lineHeight,
+    ...textStyle('headline-md'),
     marginBottom: space.hair,
   },
 });

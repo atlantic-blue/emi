@@ -32,13 +32,14 @@ import {
   colourNames,
   colours,
   contrastRatio,
-  fontFiles,
+  applicationFontFiles,
   iconNames,
   icons,
   phaseLabel,
   ringGeometry,
   typeScale,
-  typeSizeNames,
+  letterSpacingOf,
+  typeRoleNames,
 } from '../../packages/tokens/src/index.ts';
 import { arcsOf, drawnRings } from '../ring/ringPage.tsx';
 import { pieces } from '../illustration/pieces.ts';
@@ -80,7 +81,7 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
       expect(page).toContain(`height: ${sheetPage.height}px`);
     });
 
-    it.each(fontFiles.map((file) => [file.path, file] as const))(
+    it.each(applicationFontFiles.map((file) => [file.path, file] as const))(
       'reaches %s through a path that is the same on every machine',
       (_path, file) => {
         expect(relativeFontsBase.startsWith('../../')).toBe(true);
@@ -196,18 +197,19 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
   });
 
   describe('the type scale', () => {
-    it.each(typeSizeNames)('sets %s at its own size over its own line height', (size) => {
-      const style = typeScale[size];
+    it.each(typeRoleNames)('sets %s at its own size over its own line height', (role) => {
+      const style = typeScale[role];
+      const tracking = letterSpacingOf(style.size, style.letterSpacingEm);
 
       expect(page).toContain(
-        `.size-${size} { font-size: ${style.size}px; line-height: ${style.lineHeight}px; letter-spacing: ${style.letterSpacing}px; }`,
+        `.size-${role} { font-size: ${style.size}px; line-height: ${style.lineHeight}px; letter-spacing: ${tracking}px; }`,
       );
-      expect(page).toContain(`${size} ${style.size}/${style.lineHeight}`);
+      expect(page).toContain(`${role} ${style.size}/${style.lineHeight}`);
     });
 
     it('writes the sentence the specimen writes, so the two pages cannot disagree', () => {
-      for (const size of typeSizeNames) {
-        expect(page).toContain(specimenSentences[size]);
+      for (const role of typeRoleNames) {
+        expect(page).toContain(specimenSentences[role]);
       }
     });
   });

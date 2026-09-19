@@ -19,11 +19,12 @@ import {
 import {
   type FaceName,
   LINE_HEIGHT_FLOOR,
-  type TypeSizeName,
-  type TypeStyle,
+  type TypeRole,
+  type TypeRoleName,
   face,
+  letterSpacingOf,
+  typeRoleNames,
   typeScale,
-  typeSizeNames,
 } from '../../packages/tokens/src/type.ts';
 
 export const brandDocumentPath = 'docs/brand.md';
@@ -39,8 +40,8 @@ export const checkCommand = 'npm run check:brand';
 export interface BrandSources {
   readonly palette: Readonly<Record<ColourName, ColourToken>>;
   readonly paletteOrder: readonly ColourName[];
-  readonly scale: Readonly<Record<TypeSizeName, TypeStyle>>;
-  readonly scaleOrder: readonly TypeSizeName[];
+  readonly scale: Readonly<Record<TypeRoleName, TypeRole>>;
+  readonly scaleOrder: readonly TypeRoleName[];
   readonly faces: Readonly<Record<FaceName, string>>;
   readonly spacing: Readonly<Record<SpaceName, number>>;
   readonly spacingOrder: readonly SpaceName[];
@@ -53,7 +54,7 @@ export const shippedSources: BrandSources = {
   palette: colours,
   paletteOrder: colourNames,
   scale: typeScale,
-  scaleOrder: typeSizeNames,
+  scaleOrder: typeRoleNames,
   faces: face,
   spacing: space,
   spacingOrder: spaceNames,
@@ -164,10 +165,10 @@ function typeLines(sources: BrandSources): string[] {
   return sources.scaleOrder.map((name) => {
     const style = sources.scale[name];
     const multiple = (style.lineHeight / style.size).toFixed(2);
-    const spacing = style.letterSpacing === 0 ? '' : `, letter spacing ${style.letterSpacing}`;
-    const family = sources.faces[style.face];
+    const tracking = letterSpacingOf(style.size, style.letterSpacingEm);
+    const spacing = tracking === 0 ? '' : `, letter spacing ${tracking}`;
 
-    return `- \`${name}\` is ${style.size} points over ${style.lineHeight}, in ${family}${spacing}, which is ${multiple} times the size.`;
+    return `- \`${name}\` is ${style.size} points over ${style.lineHeight} at weight ${style.weight}${spacing}, which is ${multiple} times the size.`;
   });
 }
 
@@ -236,7 +237,7 @@ function aboveTheFloor(sources: BrandSources): string[] {
 export function brandDocument(sources: BrandSources = shippedSources): string {
   const counts = brandCounts(sources);
   const floor = CONTRAST_FLOOR.toFixed(1);
-  const faces = sentenceList([sources.faces.heading, sources.faces.text, sources.faces.numeric]);
+  const faces = sources.faces.text;
   const refused = refusedPairs(sources).sort((one, other) => other.ratio - one.ratio);
 
   const lines = [
@@ -296,8 +297,8 @@ export function brandDocument(sources: BrandSources = shippedSources): string {
     'Status: built',
     '',
     ...paragraph(
-      `The scale has ${counts.sizes} sizes. The three faces are ${faces}. A line height below
-       ${LINE_HEIGHT_FLOOR.toFixed(1)} times the size fails the token test.`,
+      `The scale has ${counts.sizes} roles, and every one of them is set in ${faces}. A line height
+       below ${LINE_HEIGHT_FLOOR.toFixed(1)} times the size fails the token test.`,
     ),
     '',
     ...typeLines(sources),

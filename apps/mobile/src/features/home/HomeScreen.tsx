@@ -1,5 +1,5 @@
 import type { ForecastResult } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, radius, space, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -134,8 +134,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     color: colour.surface,
-    fontSize: typeScale.body.size,
-    lineHeight: typeScale.body.lineHeight,
+    ...textStyle('body-lg'),
   },
   body: {
     alignItems: 'center',
@@ -153,8 +152,7 @@ const styles = StyleSheet.create({
   },
   historyLabel: {
     color: colour.body,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
   },
   links: { flexDirection: 'row', gap: space.snug, marginTop: space.tight },
   noRing: { alignItems: 'center', paddingHorizontal: space.base },
@@ -162,14 +160,12 @@ const styles = StyleSheet.create({
   // takes the small size rather than the body size a sentence would otherwise get.
   noRingLine: {
     color: colour.muted,
-    fontSize: typeScale.small.size,
-    lineHeight: typeScale.small.lineHeight,
+    ...textStyle('body-sm'),
     textAlign: 'center',
   },
   noRingTitle: {
     color: colour.ink,
-    fontSize: typeScale.heading.size,
-    lineHeight: typeScale.heading.lineHeight,
+    ...textStyle('headline-md'),
     marginBottom: space.hair,
   },
   // The scroll fills the screen so the block inside it sits in the middle of the glass rather than
@@ -177,9 +173,7 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   wordmark: {
     color: colour.ink,
-    fontSize: typeScale.title.size,
-    letterSpacing: typeScale.title.letterSpacing,
-    lineHeight: typeScale.title.lineHeight,
+    ...textStyle('headline-lg'),
     marginBottom: space.base,
   },
 });
