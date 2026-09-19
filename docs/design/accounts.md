@@ -576,9 +576,10 @@ A user pool with no active users costs nothing. Billing counts a monthly active 
 defines as a user for whom the application generated an identity operation in the calendar month,
 such as a sign up, a sign in, a token refresh or a password change.
 
-The Lite tier carries 10,000 monthly active users a month for each account at no charge, then
-$0.0055 for each one, and $0.0046 above 90,000. The Essentials tier carries the same free allowance
-at $0.015 for each one. The Plus tier has no free allowance at $0.020.
+The Lite tier carries 10,000 monthly active users a month for each account at no charge. Above that
+it costs $0.0055 for each one, for the first 90,000, and $0.0046 for each one after that. The
+Essentials tier carries the same free allowance at $0.015 for each one. The Plus tier has no free
+allowance at $0.020.
 
 Users who sign in with a social identity provider are billed at the tier rate above. The separate
 allowance of 50 users a month is for federation through SAML and OpenID Connect, which Emi does not
