@@ -35,9 +35,22 @@ the write path: `logDay`, `editDay` and `deleteDay`.
 From the root of the repository:
 
     npm ci
-    npm start --workspace apps/mobile
+    make ios
 
-Press `i` for the iOS simulator. Press `w` for the browser.
+`make ios` builds the application and starts it on an iOS simulator. The first run generates the
+native project, installs the pods and compiles, so it takes several minutes. Every run after that
+is quick.
+
+    make iphone
+
+`make iphone` runs the application on an iPhone plugged into the machine. A build for a phone must
+be signed, so the first run asks which device to use and which Apple development team to sign with.
+Expo writes both answers into the generated Xcode project, which this repository does not track.
+That is why no team identifier is held in any file here.
+
+Expo Go is not used, and cannot be. `patches/expo-modules-jsi+57.1.0.patch` changes native sources
+that are compiled into the binary, and Expo Go is a binary Expo built, so no download of it carries
+them. The application needs a build of its own.
 
     npm test --workspace apps/mobile
 

@@ -59,6 +59,33 @@ const pipelineCommands = (pipeline.jobs?.check?.steps ?? [])
   .map((step) => step.run?.trim())
   .filter((command): command is string => command !== undefined);
 
+/**
+ * An npm script a recipe runs, with the workspace it names. The expression is anchored at the start
+ * of the line, so a name a shell builds at run time is read by nothing and claimed by nothing.
+ */
+const npmScript = /^npm (?:run ([a-z][a-z:-]*)|(test))\b(?:.*--workspace (\S+))?/;
+
+type ScriptRun = { target: string; script: string; workspace: string };
+
+const scriptRuns: ScriptRun[] = phony.flatMap((target) =>
+  recipeOf(target)
+    .map((line) => npmScript.exec(line))
+    .filter((found): found is RegExpExecArray => found !== null)
+    .map((found) => ({
+      target,
+      script: found[1] ?? found[2] ?? '',
+      workspace: found[3] ?? '.',
+    })),
+);
+
+function scriptsOf(workspace: string): Record<string, string> {
+  const manifest = JSON.parse(read(join(workspace, 'package.json'))) as {
+    scripts?: Record<string, string>;
+  };
+
+  return manifest.scripts ?? {};
+}
+
 describe('one word runs what somebody needs', () => {
   describe('the check target and the pipeline run the same commands', () => {
     it('reads commands out of both files, so agreement is never two empty lists', () => {
@@ -96,6 +123,22 @@ describe('one word runs what somebody needs', () => {
 
       expect(descriptions.filter((description) => description === '')).toEqual([]);
       expect(new Set(descriptions).size).toBe(descriptions.length);
+    });
+  });
+
+  describe('every target runs a script somebody wrote', () => {
+    it('reads a run out of the targets that run one, so agreement is never two empty lists', () => {
+      expect(scriptRuns.length).toBeGreaterThan(1);
+      expect(scriptRuns.filter((run) => run.workspace !== '.').length).toBeGreaterThan(0);
+      expect(scriptRuns.map((run) => run.target)).toContain('ios');
+    });
+
+    it('names a script that exists in the workspace it names', () => {
+      const missing = scriptRuns
+        .filter((run) => scriptsOf(run.workspace)[run.script] === undefined)
+        .map((run) => `${run.target} runs ${run.script} in ${run.workspace}`);
+
+      expect(missing).toEqual([]);
     });
   });
 });

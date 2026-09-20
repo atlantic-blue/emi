@@ -41,7 +41,8 @@ You need Node 22 or later.
     make install
     make ios
 
-`make android` runs it on an Android emulator. `make web` runs it in a browser.
+`make iphone` runs it on an iPhone plugged in. `make android` runs it on an Android emulator.
+`make web` runs it in a browser.
 
 ## The gates
 
