@@ -1,11 +1,12 @@
 import { GluestackUIProvider } from '@emi/ui';
-import { Stack } from 'expo-router';
+import { Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactNode } from 'react';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { DatabaseProvider } from '../data/DatabaseProvider';
+import { theNavigatorGround } from '../features/chrome/theme';
 import { LockGate } from '../features/lock/LockGate';
 import { FirstRunProvider } from '../features/onboarding/FirstRunProvider';
 import { Fonts } from '../features/type/Fonts';
@@ -45,10 +46,15 @@ export default function RootLayout(): ReactNode {
             <LockGate>
               <VaultProvider>
                 <FirstRunProvider>
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(tabs)" options={{ animationTypeForReplace: 'push' }} />
-                    <Stack.Screen name="onboarding" options={{ animationTypeForReplace: 'push' }} />
-                  </Stack>
+                  <ThemeProvider value={theNavigatorGround}>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="(tabs)" options={{ animationTypeForReplace: 'push' }} />
+                      <Stack.Screen
+                        name="onboarding"
+                        options={{ animationTypeForReplace: 'push' }}
+                      />
+                    </Stack>
+                  </ThemeProvider>
                 </FirstRunProvider>
               </VaultProvider>
             </LockGate>

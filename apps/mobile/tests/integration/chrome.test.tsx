@@ -93,6 +93,32 @@ function theLabelStyleOf(name: string): Record<string, unknown> {
   return theLabelIn(name).props.style ?? {};
 }
 
+/**
+ * The colour behind the dock, which is the first thing above it that paints one.
+ *
+ * The dock is a capsule with air around it, so what shows beside it and under it is whatever the
+ * navigator painted. A navigator fills the glass with a ground of its own before a screen draws
+ * over it, and a screen stops where the tab bar begins, so this is the only thing standing between
+ * her and a band of another colour across the bottom of every screen.
+ */
+function theGroundUnder(testID: string): unknown {
+  let node: { parent: unknown; props: { style?: unknown } } | null = screen.getByTestId(
+    testID,
+  ) as unknown as { parent: unknown; props: { style?: unknown } } | null;
+
+  while (node !== null) {
+    const painted = (StyleSheet.flatten(node.props.style) ?? {}) as Record<string, unknown>;
+
+    if (painted['backgroundColor'] !== undefined) {
+      return painted['backgroundColor'];
+    }
+
+    node = node.parent as typeof node;
+  }
+
+  return undefined;
+}
+
 function theStyleOf(testID: string): Record<string, unknown> {
   return (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<
     string,
@@ -225,6 +251,22 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       await theDockOnAPhone();
 
       expect(theStyleOf(tabTestID('index'))).toMatchObject({ height: 48, minWidth: 52 });
+    });
+  });
+
+  describe('the ground the dock stands on', () => {
+    it('runs her own surface under the dock, so no band of another colour crosses the glass', async () => {
+      await sheOpens('/');
+
+      expect(theGroundUnder(bottomNavigationTestID)).toBe(colour.surface);
+    });
+
+    it('runs it under the dock on every tab she picks, and not only the one she opens on', async () => {
+      await sheOpens('/');
+
+      await fireEvent.press(screen.getByTestId(tabTestID('history')));
+
+      expect(theGroundUnder(bottomNavigationTestID)).toBe(colour.surface);
     });
   });
 

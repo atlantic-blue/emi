@@ -45,7 +45,14 @@ jest.mock('expo-router', () => {
   };
   Stack.Screen = Screen;
 
-  return { Stack };
+  // The layout hands the navigator a ground of its own, built from the default theme. Neither the
+  // ground nor the provider decides a movement, so both are stood up with the least that lets the
+  // layout render. What the ground is set to is proved in the integration tier.
+  return {
+    DefaultTheme: { colors: {} },
+    Stack,
+    ThemeProvider: ({ children }: { children?: ReactNode }): ReactNode => children ?? null,
+  };
 });
 
 // The providers reach a database, a keychain and a lock, and none of them decide a movement.
