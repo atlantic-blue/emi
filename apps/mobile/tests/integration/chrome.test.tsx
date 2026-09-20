@@ -2,7 +2,14 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { colour } from '@emi/tokens';
-import { BottomNavigation, bottomNavigationTestID, capsuleTestID, tabTestID } from '@emi/ui';
+import {
+  BottomNavigation,
+  bottomNavigationTestID,
+  capsuleTestID,
+  dockRoom,
+  standOffTestID,
+  tabTestID,
+} from '@emi/ui';
 import { render } from '@testing-library/react-native';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo, StyleSheet } from 'react-native';
@@ -11,6 +18,7 @@ import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { historyScreenTestID } from '../../src/features/history/HistoryScreen';
 import { logFlowTestID } from '../../src/features/log/LogFlow';
 import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
+import { deleteScreenTestID } from '../../src/features/settings/DeleteEverything';
 import { settingsScreenTestID } from '../../src/features/settings/SettingsScreen';
 import { tabs } from '../../src/features/chrome/tabs';
 import { resetExpoSqlite } from '../data/expoSqlite';
@@ -251,6 +259,64 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       await theDockOnAPhone();
 
       expect(theStyleOf(tabTestID('index'))).toMatchObject({ height: 48, minWidth: 52 });
+    });
+  });
+
+  describe('the dock hangs over the screen rather than standing beside it', () => {
+    /** What a node was told about touches, which is what lets a press through or stops it. */
+    function theTouchesOn(testID: string): unknown {
+      return screen.getByTestId(testID).props['pointerEvents'];
+    }
+
+    it('lets a tab screen reach the bottom edge of the glass, with the dock over it', async () => {
+      await sheOpens('/');
+
+      // The runner lays nothing out, so what is read here is the reason the screen reaches the
+      // edge: the dock is out of the flow, so the screens beside it are measured without it.
+      expect(theStyleOf(bottomNavigationTestID)).toMatchObject({ bottom: 0, position: 'absolute' });
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+    });
+
+    it('lets a press on the air beside the capsule through, and still moves her on a tab', async () => {
+      await sheOpens('/');
+
+      expect(theTouchesOn(bottomNavigationTestID)).toBe('box-none');
+      expect(theTouchesOn(capsuleTestID)).toBe('auto');
+
+      await fireEvent.press(screen.getByTestId(tabTestID('history')));
+
+      expect(screen.getByTestId(historyScreenTestID)).toBeTruthy();
+    });
+
+    it('clears the dock at the foot of a tab screen, so nothing she can read is covered', async () => {
+      await sheOpens('/');
+
+      expect(theStyleOf(homeScreenTestID)['paddingBottom']).toBe(dockRoom);
+    });
+
+    it('reserves more than the dock draws, on a phone that keeps room of its own', async () => {
+      // Read on a phone with an island, because the dock pads itself by what the phone keeps and
+      // the router hands the screens no insets at all.
+      await render(
+        <OnAPhone>
+          <BottomNavigation chosen="index" onChoose={() => undefined} tabs={tabs} />
+        </OnAPhone>,
+      );
+
+      const drawn =
+        Number(theStyleOf(bottomNavigationTestID)['paddingBottom']) +
+        Number(theStyleOf(standOffTestID)['paddingBottom']) +
+        Number(theStyleOf(capsuleTestID)['height']);
+
+      expect(drawn).toBeGreaterThan(0);
+      expect(dockRoom).toBeGreaterThanOrEqual(drawn);
+    });
+
+    it('leaves no room at the foot of a screen no dock reaches', async () => {
+      await sheOpens('/settings/delete');
+
+      expect(screen.queryByTestId(bottomNavigationTestID)).toBeNull();
+      expect(theStyleOf(deleteScreenTestID)['paddingBottom']).not.toBe(dockRoom);
     });
   });
 

@@ -1,4 +1,5 @@
 import { colour } from '@emi/tokens';
+import { useRoomAtTheFoot } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +14,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  *
  * Twelve screens stand on this one component, because a rule kept in twelve places is a rule that
  * is already broken in one of them.
+ *
+ * The dock is the other thing that takes room at the foot. It hangs over the screen rather than
+ * standing beside it, so a screen it covers leaves room for it instead of the inset: the dock pads
+ * itself by what the phone keeps, and its room is measured from the bottom edge of the glass. A
+ * screen no dock reaches, the first run and the two screens pushed over the tabs, reserves the
+ * inset alone and gains no gap.
  */
 
 interface Props {
@@ -22,13 +29,14 @@ interface Props {
 
 export function Screen({ testID, children }: Props): ReactNode {
   const insets = useSafeAreaInsets();
+  const roomForTheDock = useRoomAtTheFoot();
 
   return (
     <View
       style={[
         styles.screen,
         {
-          paddingBottom: insets.bottom,
+          paddingBottom: roomForTheDock ?? insets.bottom,
           paddingLeft: insets.left,
           paddingRight: insets.right,
           paddingTop: insets.top,

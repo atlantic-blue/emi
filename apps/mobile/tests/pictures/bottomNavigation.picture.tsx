@@ -21,18 +21,14 @@ const theCaveat = [
   'Rendered from the tree the dock produced under the test runner, at 390 by 844 points, and not',
   'captured from a phone. The class names are turned into these points by the real Tailwind, run',
   'over apps/mobile/tailwind.config.js. The blur behind the capsule is drawn by the phone and',
-  'cannot be drawn here, so the glass reads as flat. The dock is a strip and the navigator stands',
-  'it at the foot of the glass, which is where the picture stands it. The room kept under the dock',
-  'is the room an',
-  'iPhone with a dynamic island keeps for itself, which is 34 points.',
+  'cannot be drawn here, so the glass reads as flat, and on a phone her screen runs under it. The',
+  'dock pins itself to the foot of the glass, and the room it keeps beneath is the room an iPhone',
+  'with a dynamic island keeps for itself, which is 34 points.',
   'Reproduce with: npm run generate:dock-picture.',
 ].join(' ');
 
-const theFootOfTheGlass = {
-  backgroundColor: colour.surface,
-  height: '100%',
-  justifyContent: 'flex-end',
-} as const;
+/** Her surface, filling the glass, because the dock pins itself over it rather than sitting under it. */
+const theGlass = { backgroundColor: colour.surface, height: '100%' } as const;
 
 interface Standing {
   readonly title: string;
@@ -54,11 +50,11 @@ const theStates: readonly Standing[] = [
 ];
 
 async function drawn(standing: Standing): Promise<DrawnScreen> {
-  // The dock is a strip, and the navigator stands it at the foot of the glass. The picture stands
-  // it in the same place so it is looked at where she will see it.
+  // The dock takes no room in the flow, so it is drawn over a glass of her own surface, which is
+  // what a screen puts under it.
   const view = await render(
     <OnAPhone>
-      <View style={theFootOfTheGlass}>
+      <View style={theGlass}>
         <BottomNavigation chosen={standing.chosen} onChoose={() => undefined} tabs={tabs} />
       </View>
     </OnAPhone>,

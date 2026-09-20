@@ -1,6 +1,7 @@
-import { type IconName, colour, radius } from '@emi/tokens';
+import { REM_IN_POINTS, type IconName, colour, radius } from '@emi/tokens';
 import { BlurView } from 'expo-blur';
 import type { ReactNode } from 'react';
+import { createContext, useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -21,6 +22,11 @@ import { Text } from './gluestack/text';
  * The chrome knows nothing about routing or about words. It is handed the tabs, told which one she
  * is on, and calls back when she picks another, so the one list of tabs lives with the screens it
  * names rather than in here.
+ *
+ * It hangs over the screen rather than standing beside it. The prototype's nav is fixed to the
+ * bottom of the page and out of the flow, so her screen fills the glass to the bottom edge and the
+ * capsule floats over it. That is what the blur behind the capsule is for: something has to pass
+ * under it. The air around the capsule lets a press through, and only the capsule takes one.
  */
 
 /** One column of the dock. */
@@ -45,9 +51,36 @@ export const bottomNavigationTestID = 'bottom-navigation';
 /** The capsule inside it, which carries the height, the corner and the fill. */
 export const capsuleTestID = 'bottom-navigation-capsule';
 
+/** The box that stands the capsule off the edges of the glass and off the foot. */
+export const standOffTestID = 'bottom-navigation-stand-off';
+
 /** One column, by the name of the route it reaches. */
 export function tabTestID(name: string): string {
   return `bottom-navigation-${name}`;
+}
+
+/**
+ * The room a screen leaves at its foot so the dock covers nothing she can read.
+ *
+ * It is the prototype's own `pb-28`, which is twenty eight steps of Tailwind's quarter rem scale
+ * at sixteen points to the rem. The dock pads itself by the room the phone keeps, so this is
+ * measured from the bottom edge of the glass and stands in for that inset rather than adding to it.
+ */
+export const dockRoom = 28 * 0.25 * REM_IN_POINTS;
+
+const RoomAtTheFoot = createContext<number | undefined>(undefined);
+
+/**
+ * Says that a dock hangs over the screens inside it, so each of them leaves room at its foot.
+ * A screen the dock never reaches asks and is told nothing, and reserves nothing.
+ */
+export function TheDockHangsOver({ children }: { readonly children: ReactNode }): ReactNode {
+  return <RoomAtTheFoot.Provider value={dockRoom}>{children}</RoomAtTheFoot.Provider>;
+}
+
+/** The room at the foot of this screen, or nothing where no dock hangs over it. */
+export function useRoomAtTheFoot(): number | undefined {
+  return useContext(RoomAtTheFoot);
 }
 
 /**
@@ -71,6 +104,12 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
   },
+  overTheScreen: {
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+  },
 });
 
 const BLUR_AMOUNT = 40;
@@ -80,12 +119,25 @@ export function BottomNavigation({ tabs, chosen, onChoose }: Props): ReactNode {
   const insets = useSafeAreaInsets();
 
   return (
-    <Box style={{ paddingBottom: insets.bottom }} testID={bottomNavigationTestID}>
-      <Box className="px-margin pb-3">
-        <Box className={`mx-auto h-16 w-full max-w-md rounded-full ${capsuleShadow}`}>
-          <BlurView intensity={BLUR_AMOUNT} style={styles.glass} tint="light" />
+    <Box
+      pointerEvents="box-none"
+      style={[styles.overTheScreen, { paddingBottom: insets.bottom }]}
+      testID={bottomNavigationTestID}
+    >
+      <Box className="px-margin pb-3" pointerEvents="box-none" testID={standOffTestID}>
+        <Box
+          className={`mx-auto h-16 w-full max-w-md rounded-full ${capsuleShadow}`}
+          pointerEvents="box-none"
+        >
+          <BlurView
+            intensity={BLUR_AMOUNT}
+            pointerEvents="none"
+            style={styles.glass}
+            tint="light"
+          />
           <HStack
             className="h-16 items-center justify-around rounded-full bg-surface-container-lowest/90 px-2"
+            pointerEvents="auto"
             testID={capsuleTestID}
           >
             {tabs.map((tab) => {
