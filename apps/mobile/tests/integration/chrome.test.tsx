@@ -102,6 +102,17 @@ function theLabelColourOf(name: string): unknown {
   return theLabelStyleOf(name)['color'];
 }
 
+/**
+ * The colour the drawing is stroked in, read off the drawing itself. The word beside it takes its
+ * colour from a class and the drawing takes it from a prop, so one of them can go muted while the
+ * other stays lit and only reading both catches it.
+ */
+function theIconColourOf(name: string): unknown {
+  const [drawing] = screen.getByTestId(tabTestID(name)).children;
+
+  return (drawing as unknown as { props: { stroke?: unknown } }).props.stroke;
+}
+
 function theLabelWeightOf(name: string): unknown {
   return theLabelStyleOf(name)['fontWeight'];
 }
@@ -138,10 +149,12 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
     it('draws the tab she is on in primary and the other three in on surface variant', async () => {
       await sheOpens('/');
 
+      expect(theIconColourOf('index')).toBe(colour.primary);
       expect(theLabelColourOf('index')).toBe(colour.primary.toLowerCase());
       expect(theLabelWeightOf('index')).toBe(600);
 
       for (const tab of theFourTabs.filter((each) => each.name !== 'index')) {
+        expect(theIconColourOf(tab.name)).toBe(colour.onSurfaceVariant);
         expect(theLabelColourOf(tab.name)).toBe(colour.onSurfaceVariant.toLowerCase());
       }
     });
@@ -167,7 +180,9 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
 
       await fireEvent.press(screen.getByTestId(tabTestID('history')));
 
+      expect(theIconColourOf('history')).toBe(colour.primary);
       expect(theLabelColourOf('history')).toBe(colour.primary.toLowerCase());
+      expect(theIconColourOf('index')).toBe(colour.onSurfaceVariant);
       expect(theLabelColourOf('index')).toBe(colour.onSurfaceVariant.toLowerCase());
     });
   });
