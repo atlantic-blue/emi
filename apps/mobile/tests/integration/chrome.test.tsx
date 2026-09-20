@@ -18,6 +18,11 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herPhoneHolds } from '../fixtures/herPhone';
 import { OnAPhone } from '../fixtures/theSafeArea';
 import { theThemeIsLoaded } from '../fixtures/theTheme';
+import {
+  configuredIn,
+  prototypeDirectory,
+  sourceScreen,
+} from '../../../../tools/pipeline/prototype';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -28,16 +33,13 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 /** Midday, and well away from any summer time change, so her calendar reads the same anywhere. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
-/** The role the label is set in, read from the prototype's own configuration rather than typed. */
-const [labelSize, labelRest] = JSON.parse(
-  readFileSync(
-    join(__dirname, '..', '..', '..', '..', 'docs/design/prototype-tailwind-config.json'),
-    'utf8',
-  ),
-).theme.extend.fontSize['label-sm'] as [string, Record<string, string>];
+/** The role the label is set in, read off the screen the prototype renders with rather than typed. */
+const labelRole = configuredIn(
+  readFileSync(join(__dirname, '..', '..', '..', '..', prototypeDirectory, sourceScreen), 'utf8'),
+).type['label-sm'];
 
-function points(measured: string): number {
-  return Number(measured.replace('px', ''));
+function points(measured: string | undefined): number {
+  return Number((measured ?? '').replace('px', ''));
 }
 
 /** The four columns, in the order the prototype draws them. */
@@ -166,12 +168,13 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       // not told about Emi's own scale, and the leading is the one that goes to 154.
       const drawn = theLabelStyleOf('index');
 
-      expect(drawn['fontSize']).toBe(points(labelSize));
-      expect(drawn['lineHeight']).toBe(points(labelRest['lineHeight'] ?? ''));
-      expect(drawn['fontWeight']).toBe(Number(labelRest['fontWeight']));
+      expect(drawn['fontSize']).toBe(points(labelRole?.fontSize));
+      expect(drawn['lineHeight']).toBe(points(labelRole?.lineHeight));
+      expect(drawn['fontWeight']).toBe(Number(labelRole?.fontWeight));
       expect(drawn['letterSpacing']).toBe(
-        Math.round(points(labelSize) * Number.parseFloat(labelRest['letterSpacing'] ?? '') * 100) /
-          100,
+        Math.round(
+          points(labelRole?.fontSize) * Number.parseFloat(labelRole?.letterSpacing ?? '') * 100,
+        ) / 100,
       );
     });
 

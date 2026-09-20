@@ -8,7 +8,7 @@ module.exports = {
   // gluestack packages and the react-aria family they are built on ship the same way, and
   // react-native-css is read from source by the babel plugin that rewrites the imports.
   transformIgnorePatterns: [
-    '/node_modules/(?!(@noble|@gluestack-ui|@react-aria|@react-stately|@react-types|@internationalized|react-aria|react-stately|react-native-css|nativewind|tailwind-variants|@legendapp|clsx|tailwind-merge|.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation))',
+    '/node_modules/(?!(@noble|yaml|@gluestack-ui|@react-aria|@react-stately|@react-types|@internationalized|react-aria|react-stately|react-native-css|nativewind|tailwind-variants|@legendapp|clsx|tailwind-merge|.pnpm|react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|standard-navigation))',
     '/node_modules/react-native-reanimated/plugin/',
     '/node_modules/@react-native/babel-preset/',
   ],
