@@ -5,3 +5,7 @@ coverage/
 package-lock.json
 brand/sheet/brand-sheet.html
 brand/screens/*.html
+
+# The prototype is committed as the tool wrote it, so its markup is compared with the design
+# system byte for byte rather than after a formatter moved the lines about.
+docs/design/prototype/*.html

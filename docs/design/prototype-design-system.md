@@ -130,6 +130,8 @@ spacing:
   space-xl: 2.25rem
 ---
 
+The prototype this document describes is in `docs/design/prototype/`. The front matter is read out of `today-dashboard.html`, which carries the configuration all five screens draw with, and it is not written by hand. `tools/pipeline/prototype.test.ts` holds the two together. The corners are the one block they do not agree about yet, and that decision is https://github.com/atlantic-blue/emi/issues/159.
+
 ## Brand & Style
 
 The design system embodies the presence of an intelligent, discerning companion: grounded, discreet, warm, and unapologetically adult. Built specifically for privacy-conscious European women, it completely rejects the paternalistic cliches of typical femtech—eliminating cartoonish pastels, glitter accents, baby-talk microcopy, and clinical starkness. Instead, the design language communicates intimate health through biological honesty, tactile elegance, and thoughtful restraint.
