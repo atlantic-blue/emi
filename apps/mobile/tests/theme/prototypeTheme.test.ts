@@ -1,12 +1,14 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { type ColourName, colour, colourNames, typeRoleNames } from '@emi/tokens';
+import { REM_IN_POINTS, type ColourName, colour, colourNames, typeRoleNames } from '@emi/tokens';
+import { dockRoom } from '@emi/ui';
 
 import { emiClasses } from '../../../../packages/ui/src/gluestack/emiClasses';
 import { textStyle } from '../../../../packages/ui/src/gluestack/text/styles';
 import {
   configuredIn,
+  footRoomIn,
   prototypeDirectory,
   sourceScreen,
 } from '../../../../tools/pipeline/prototype';
@@ -141,6 +143,35 @@ describe('the theme the application draws in is the prototype, and its palette i
       expect(compiled).toContain(`.rounded-full {\n  border-radius: ${prototype.radii['full']};`);
       expect(compiled).toContain(`.px-margin {\n  padding-inline: ${prototype.spacing['margin']};`);
     });
+  });
+});
+
+describe('the room the chrome leaves at the foot of a screen is the one the prototype writes', () => {
+  const screens = readdirSync(join(repositoryRoot, prototypeDirectory))
+    .sort()
+    .filter((file) => file.endsWith('.html'));
+
+  /** What each screen of the prototype reserves, in points. */
+  const reserved = screens.map((file) => ({
+    file,
+    points: footRoomIn(
+      readFileSync(join(repositoryRoot, prototypeDirectory, file), 'utf8'),
+      REM_IN_POINTS,
+    ),
+  }));
+
+  it('is the number the prototype writes, and not one typed beside the code', () => {
+    // A comment saying a number came from somewhere agrees with the code whatever either one is
+    // changed to. This reads the class off the screen and holds the constant against it.
+    expect(reserved).not.toHaveLength(0);
+    for (const screen of reserved) {
+      expect([screen.file, dockRoom]).toEqual([screen.file, screen.points]);
+    }
+  });
+
+  it('is the same on every screen of the prototype, so one of them speaks for the set', () => {
+    expect(screens).toHaveLength(5);
+    expect(new Set(reserved.map((screen) => screen.points)).size).toBe(1);
   });
 });
 
