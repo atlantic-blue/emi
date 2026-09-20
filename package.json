@@ -5,7 +5,7 @@
   "description": "A private period and cycle tracker.",
   "license": "MIT",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.18.0"
   },
   "workspaces": [
     "apps/*",
