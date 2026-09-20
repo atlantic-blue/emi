@@ -14,7 +14,7 @@ stone ground at 56 percent of the width, and writes every size both stores ask f
 `apps/mobile/assets/icon`. `icon/sizes.ts` holds the two lists, with the reason beside each size.
 It measures its own result and refuses to write when the ring misses the fraction.
 
-`icons/` holds the first twenty line symbols and the contact sheet. `icons/README.md` says the rules
+`icons/` holds the twenty four line symbols and the contact sheet. `icons/README.md` says the rules
 every drawing follows. Running `icons/generate.ts` reads the directory and writes
 `packages/tokens/src/icons.ts`, so adding an icon means adding one file and running it again.
 

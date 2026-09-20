@@ -257,7 +257,13 @@ export function reExportsIn(file: string, contents: string): string[] {
 
     const specifier = statement.moduleSpecifier;
 
-    if (specifier === undefined || !ts.isStringLiteral(specifier)) {
+    // `export { Box };` names what this file itself exports rather than handing on another file,
+    // so there is nothing to follow. The reader of the symbols picks it up where it is declared.
+    if (specifier === undefined) {
+      continue;
+    }
+
+    if (!ts.isStringLiteral(specifier)) {
       throw new Error(
         `${file} re-exports in a shape this reader does not know: ${statement.getText(source)}`,
       );

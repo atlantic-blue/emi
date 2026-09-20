@@ -103,7 +103,7 @@ Every symbol she presses comes from one set. Twenty drawings, one weight, on a 2
 shown at it. Each one leaves its colour as `currentColor`, so the screen that uses it decides the
 colour and nobody writes a value into the drawing.
 
-![The icon set: twenty line symbols on the contact sheet](../brand/icons/contact-sheet.png)
+![The icon set: twenty four line symbols on the contact sheet](../brand/icons/contact-sheet.png)
 
 Drawn by its own generator, rather than under the test runner. Run
 `node --experimental-strip-types brand/icons/generate.ts`, which reads the directory and writes the

@@ -33,8 +33,38 @@ export interface Surface {
 
 export type ReadFile = (file: string) => string;
 
+/** The two extensions a package's source is written in. A component is markup, so it is a .tsx. */
+const sourceExtensions: readonly string[] = ['.ts', '.tsx'];
+
 export function fileReader(root: string): ReadFile {
   return (file) => readFileSync(join(root, file), 'utf8');
+}
+
+/**
+ * The file a re-export points at, which is written without an extension. A package of components
+ * holds a .tsx as well as a .ts, and holds directories with an index in them, so the candidates
+ * are tried in turn and the one on disk is the one read.
+ */
+export function readEither(file: string, read: ReadFile): { file: string; contents: string } {
+  const withoutExtension = sourceExtensions.reduce(
+    (name, extension) => (name.endsWith(extension) ? name.slice(0, -extension.length) : name),
+    file,
+  );
+
+  const candidates = sourceExtensions.flatMap((extension) => [
+    `${withoutExtension}${extension}`,
+    `${withoutExtension}/index${extension}`,
+  ]);
+
+  for (const candidate of candidates) {
+    try {
+      return { contents: read(candidate), file: candidate };
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error(`${file} is re-exported and no file of that name is on disk`);
 }
 
 export function entryOf(directory: string): string {
@@ -95,14 +125,17 @@ export function surfaceOf(held: Package, read: ReadFile): Surface {
       continue;
     }
 
+    const found = readEither(file, read);
+
     alreadyRead.add(file);
+    alreadyRead.add(found.file);
 
-    const contents = read(file);
+    const contents = found.contents;
 
-    files.push({ file, exports: exportsIn(file, contents) });
+    files.push({ file: found.file, exports: exportsIn(found.file, contents) });
 
-    for (const specifier of reExportsIn(file, contents)) {
-      waiting.push(resolvedFrom(file, specifier));
+    for (const specifier of reExportsIn(found.file, contents)) {
+      waiting.push(resolvedFrom(found.file, specifier));
     }
   }
 

@@ -13,7 +13,7 @@ import {
   colour,
   letterSpacingOf,
   fontWeightNames,
-  fonts,
+  fontFile,
   fontsRoot,
   iconNames,
   icons,
@@ -170,7 +170,7 @@ export function sizeClass(role: TypeRoleName): string {
 function fontRules(fontsBase: string): string {
   return fontWeightNames
     .map((weight) => {
-      const file = fonts[DRAWN_FAMILY].files[weight];
+      const file = fontFile(DRAWN_FAMILY, weight);
 
       return [
         '@font-face {',

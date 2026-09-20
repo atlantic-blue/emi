@@ -57,7 +57,12 @@ Source: https://github.com/tokotype/PlusJakartaSans
 Files:
 
 - `plus-jakarta-sans/PlusJakartaSans-Regular.ttf`
+- `plus-jakarta-sans/PlusJakartaSans-Medium.ttf`
 - `plus-jakarta-sans/PlusJakartaSans-SemiBold.ttf`
+- `plus-jakarta-sans/PlusJakartaSans-Bold.ttf`
+
+The design system names four weights, 400, 500, 600 and 700, so the family ships a static cut for
+each of them. Nothing is left to the renderer to thicken.
 
 ## IBM Plex Mono
 

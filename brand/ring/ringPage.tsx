@@ -12,7 +12,7 @@ import {
   DRAWN_FAMILY,
   colour,
   fontWeightNames,
-  fonts,
+  fontFile,
   phaseLabel,
   phasePalette,
   pointOnRing,
@@ -123,7 +123,7 @@ function faceClass(weight: FontWeightName): string {
 function fontRules(fontsBase: string): string {
   return fontWeightNames
     .map((weight) => {
-      const file = fonts[DRAWN_FAMILY].files[weight];
+      const file = fontFile(DRAWN_FAMILY, weight);
 
       return [
         '@font-face {',

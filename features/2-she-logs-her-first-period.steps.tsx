@@ -898,6 +898,19 @@ defineFeature(feature, (test) => {
     });
   });
 
+  /**
+   * Every movement the runner saw, less the ones that take no time.
+   *
+   * The tab navigator asks the same animation to carry a screen in, and the dock is set to move
+   * nothing, so those arrive as transitions of zero milliseconds. They are not a movement she can
+   * see, and reading them would make this a test of the navigator rather than of the ring.
+   */
+  function durationsOf(spy: jest.SpyInstance): number[] {
+    return spy.mock.calls
+      .map((call) => (call[1] as { duration?: number }).duration ?? 0)
+      .filter((duration) => duration > 0);
+  }
+
   test('SEE-4, the ring moves once when she opens it', ({ given, and, when, then }) => {
     let timing: jest.SpyInstance;
 
@@ -920,8 +933,11 @@ defineFeature(feature, (test) => {
     then('the ring moves once, over six hundred milliseconds', async () => {
       await waitFor(() => expect(timing).toHaveBeenCalled());
 
-      for (const call of timing.mock.calls) {
-        expect((call[1] as { duration: number }).duration).toBe(RING_OPEN_MILLISECONDS);
+      const moved = durationsOf(timing);
+
+      expect(moved.length).toBeGreaterThan(0);
+      for (const duration of moved) {
+        expect(duration).toBe(RING_OPEN_MILLISECONDS);
       }
     });
   });
@@ -954,7 +970,7 @@ defineFeature(feature, (test) => {
       await waitFor(() =>
         expect(styleOf(ringTrackTestID)).toMatchObject({ opacity: 1, transform: [{ scale: 1 }] }),
       );
-      expect(timing).not.toHaveBeenCalled();
+      expect(durationsOf(timing)).toEqual([]);
     });
   });
 

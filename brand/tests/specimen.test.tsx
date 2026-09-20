@@ -2,8 +2,10 @@
 import {
   DRAWN_FAMILY,
   applicationFontFiles,
+  fontFile,
   fontWeightNames,
   fonts,
+  weightFiles,
   letterSpacingOf,
   typeRoleNames,
   typeScale,
@@ -45,8 +47,8 @@ describe('the type specimen a person looks at', () => {
     },
   );
 
-  it('loads the two files the application draws in, and no third face', () => {
-    expect(page.match(/@font-face/g)).toHaveLength(2);
+  it('loads the four files the application draws in, and no second family', () => {
+    expect(page.match(/@font-face/g)).toHaveLength(4);
     expect(page).not.toContain('Fraunces');
     expect(page).not.toContain('IBMPlexMono');
   });
@@ -56,8 +58,9 @@ describe('the type specimen a person looks at', () => {
 
     expect(page).toContain(family.family);
     expect(page).toContain(familyRole);
-    expect(page).toContain(family.files.regular.path);
-    expect(page).toContain(family.files.semiBold.path);
+    for (const weight of family.weights) {
+      expect(page).toContain(fontFile(DRAWN_FAMILY, weight).path);
+    }
     expect(page).toContain(family.licence);
   });
 
@@ -79,7 +82,7 @@ describe('the type specimen a person looks at', () => {
   it('draws every role at the weight the design system asks for', () => {
     const missing = typeRoleNames
       .filter((role) => {
-        const weight = typeScale[role].weight === 400 ? 'regular' : 'semiBold';
+        const weight = weightFiles[typeScale[role].weight];
 
         return !page.includes(`class="${faceClass(weight)} ${sizeClass(role)}"`);
       })
@@ -87,7 +90,7 @@ describe('the type specimen a person looks at', () => {
 
     expect(missing).toEqual([]);
     expect(typeRoleNames).toHaveLength(11);
-    expect(fontWeightNames).toHaveLength(2);
+    expect(fontWeightNames).toHaveLength(4);
   });
 
   it('writes the size and the line height beside each sample, so the picture names what it shows', () => {

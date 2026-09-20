@@ -85,10 +85,16 @@ describe('a colour cannot be written outside the token package', () => {
 
   it('finds no hex value in any tracked source or configuration file today', () => {
     const watched = ['.ts', '.tsx', '.js', '.mjs', '.cjs', '.json'];
+    // The prototype's own Tailwind configuration is a record of what the prototype renders with,
+    // the way docs/design/prototype-design-system.md is. Nothing reads a colour out of it: the
+    // application's configuration reads the palette from @emi/tokens, and
+    // apps/mobile/tests/theme/prototypeTheme.test.ts holds the two together for every role.
+    const theRecordOfThePrototype = 'docs/design/prototype-tailwind-config.json';
     const files = trackedFiles().filter(
       (file) =>
         watched.includes(extname(file)) &&
         file !== 'package-lock.json' &&
+        file !== theRecordOfThePrototype &&
         !file.startsWith('packages/tokens/'),
     );
 

@@ -1,7 +1,14 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 
-import { OPEN_FONT_LICENCE, fontFamilyNames, fontFiles, fonts, fontsRoot } from '@emi/tokens';
+import {
+  OPEN_FONT_LICENCE,
+  fontFamilyNames,
+  fontFile,
+  fontFiles,
+  fonts,
+  fontsRoot,
+} from '@emi/tokens';
 
 const applicationRoot = join(__dirname, '..', '..');
 const repositoryRoot = join(applicationRoot, '..', '..');
@@ -47,7 +54,7 @@ describe('every shipped font carries its licence', () => {
       (name) => {
         const family = fonts[name];
 
-        expect(dirname(family.licencePath)).toBe(dirname(family.files.regular.path));
+        expect(dirname(family.licencePath)).toBe(dirname(fontFile(name, 'regular').path));
         expect(readFileSync(inApplication(family.licencePath), 'utf8')).toContain(
           OPEN_FONT_LICENCE,
         );

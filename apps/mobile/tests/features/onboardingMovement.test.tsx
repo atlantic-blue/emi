@@ -113,7 +113,9 @@ describe('the first run moves the way the repository chose, and not the way it i
         </OnAPhone>,
       );
 
-      expect(optionsOf('index').animationTypeForReplace).toBe('push');
+      // Home is the first screen of the group the dock reaches. The group carries no segment of
+      // its own, so the address she arrives at is still the index route.
+      expect(optionsOf('(tabs)').animationTypeForReplace).toBe('push');
     });
 
     it('names those two screens and no others, so leaving a screen stays a step back', async () => {
@@ -123,7 +125,7 @@ describe('the first run moves the way the repository chose, and not the way it i
         </OnAPhone>,
       );
 
-      expect(mockScreens.map((screen) => screen.name).sort()).toEqual(['index', 'onboarding']);
+      expect(mockScreens.map((screen) => screen.name).sort()).toEqual(['(tabs)', 'onboarding']);
     });
   });
 });

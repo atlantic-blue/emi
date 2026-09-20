@@ -2,11 +2,11 @@ import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
-import { useDatabase } from '../data/DatabaseProvider';
-import { HistoryScreen } from '../features/history/HistoryScreen';
-import { historyNow } from '../features/history/historyNow';
-import { useFirstRun } from '../features/onboarding/FirstRunProvider';
-import { useVault } from '../services/vault/VaultProvider';
+import { useDatabase } from '../../data/DatabaseProvider';
+import { HistoryScreen } from '../../features/history/HistoryScreen';
+import { historyNow } from '../../features/history/historyNow';
+import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
+import { useVault } from '../../services/vault/VaultProvider';
 
 /**
  * Her cycles read back, and the symptoms that came back with them. A day she corrects from here

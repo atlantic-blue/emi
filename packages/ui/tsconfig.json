@@ -1,0 +1,8 @@
+{
+  "extends": ["expo/tsconfig.base", "../../tsconfig.base.json"],
+  "compilerOptions": {
+    "types": ["jest", "node", "nativewind/types"],
+    "noEmit": true
+  },
+  "include": ["src", "tests", "../../apps/mobile/nativewind-env.d.ts"]
+}

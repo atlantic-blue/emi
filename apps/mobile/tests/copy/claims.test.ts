@@ -52,7 +52,7 @@ describe('the words a screen may not use', () => {
     it('is read screen by screen, the forecast among them', () => {
       expect(scanned).toContain(aScreen);
       expect(scanned).toContain('apps/mobile/src/features/forecast/copy.ts');
-      expect(scanned).toContain('apps/mobile/src/app/index.tsx');
+      expect(scanned).toContain('apps/mobile/src/app/(tabs)/index.tsx');
     });
 
     // The words moved into the catalogue, so the scan reads them there or it reads nothing she

@@ -1,3 +1,4 @@
+import { GluestackUIProvider } from '@emi/ui';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import type { ReactNode } from 'react';
@@ -10,6 +11,8 @@ import { FirstRunProvider } from '../features/onboarding/FirstRunProvider';
 import { Fonts } from '../features/type/Fonts';
 import { VaultProvider } from '../services/vault/VaultProvider';
 
+import '../../global.css';
+
 /**
  * Both ends of the first run are a replace performed by this navigator rather than by the one
  * under onboarding/. The redirect on the index route replaces it with the onboarding screens, and
@@ -20,6 +23,10 @@ import { VaultProvider } from '../services/vault/VaultProvider';
  * The two screens are named one by one rather than in screenOptions, because four other screens
  * fall back to a replace of the index route when there is nothing to go back to, and leaving a
  * screen is a step back.
+ *
+ * `(tabs)` is the group holding the four screens the dock reaches. The group carries no segment,
+ * so the screens inside it keep their addresses, and the screens named beside it are pushed on top
+ * of the dock rather than beside it, which is what gives a day and the delete screen a way back.
  */
 export default function RootLayout(): ReactNode {
   // Stone is a light ground, so the clock and the battery are drawn in dark ink over it. The style
@@ -33,18 +40,20 @@ export default function RootLayout(): ReactNode {
   return (
     <Fonts>
       <SafeAreaProvider>
-        <DatabaseProvider>
-          <LockGate>
-            <VaultProvider>
-              <FirstRunProvider>
-                <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="index" options={{ animationTypeForReplace: 'push' }} />
-                  <Stack.Screen name="onboarding" options={{ animationTypeForReplace: 'push' }} />
-                </Stack>
-              </FirstRunProvider>
-            </VaultProvider>
-          </LockGate>
-        </DatabaseProvider>
+        <GluestackUIProvider mode="light">
+          <DatabaseProvider>
+            <LockGate>
+              <VaultProvider>
+                <FirstRunProvider>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="(tabs)" options={{ animationTypeForReplace: 'push' }} />
+                    <Stack.Screen name="onboarding" options={{ animationTypeForReplace: 'push' }} />
+                  </Stack>
+                </FirstRunProvider>
+              </VaultProvider>
+            </LockGate>
+          </DatabaseProvider>
+        </GluestackUIProvider>
       </SafeAreaProvider>
     </Fonts>
   );

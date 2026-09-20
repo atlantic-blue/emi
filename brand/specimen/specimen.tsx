@@ -4,8 +4,10 @@ import {
   FontWeightName,
   TypeRoleName,
   colour,
+  fontFile,
   fontWeightNames,
   fonts,
+  weightFiles,
   letterSpacingOf,
   typeRoleNames,
   typeScale,
@@ -39,7 +41,9 @@ export const familyRole = 'Every heading, every sentence, every label and every 
 
 const weightLabels: Readonly<Record<FontWeightName, string>> = {
   regular: 'regular',
+  medium: 'medium',
   semiBold: 'semi bold',
+  bold: 'bold',
 };
 
 const stackedDigits = ['1111111111', '0000000000'];
@@ -55,7 +59,7 @@ export function sizeClass(role: TypeRoleName): string {
 function fontRules(fontsBase: string): string {
   return fontWeightNames
     .map((weight) => {
-      const file = fonts[DRAWN_FAMILY].files[weight];
+      const file = fontFile(DRAWN_FAMILY, weight);
 
       return [
         '@font-face {',
@@ -126,7 +130,7 @@ function styleSheet(fontsBase: string): string {
 
 function Sample({ role }: { role: TypeRoleName }): Html {
   const style = typeScale[role];
-  const weight: FontWeightName = style.weight === 400 ? 'regular' : 'semiBold';
+  const weight: FontWeightName = weightFiles[style.weight];
 
   return (
     <div class="row">
@@ -153,7 +157,7 @@ function Family(): Html {
         <div class={`${faceClass('regular')} ${sizeClass('body-sm')}`}>{familyRole}</div>
       </div>
       <div class={`files ${faceClass('regular')} ${sizeClass('label-sm')}`}>
-        {`${family.files.regular.path} / ${family.files.semiBold.path} / ${family.licence}`}
+        {`${family.weights.map((weight) => fontFile(DRAWN_FAMILY, weight).path).join(' / ')} / ${family.licence}`}
       </div>
       {typeRoleNames.map((role) => (
         <Sample role={role} />
@@ -193,8 +197,8 @@ export function Specimen({ fontsBase }: { fontsBase: string }): Html {
       <body class={`${faceClass('regular')} ${sizeClass('body-lg')}`}>
         <div class={`${faceClass('semiBold')} ${sizeClass('headline-xl')}`}>Emi type specimen</div>
         <div class={`${faceClass('regular')} ${sizeClass('body-sm')}`}>
-          One face, eleven roles, two weights. Every sentence is one Emi writes. A point is drawn as
-          a pixel, and the sizes are the ones in the token package.
+          One face, eleven roles, four weights. Every sentence is one Emi writes. A point is drawn
+          as a pixel, and the sizes are the ones in the token package.
         </div>
         <Family />
         <Numbers />

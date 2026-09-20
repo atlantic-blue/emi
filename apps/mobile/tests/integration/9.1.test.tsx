@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { applicationFontFiles, face, fonts, typeRoleNames, typeScale } from '@emi/tokens';
+import { applicationFontFiles, face, fontFile, typeRoleNames, typeScale } from '@emi/tokens';
 import { render, screen } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import { Text } from 'react-native';
@@ -42,10 +42,12 @@ beforeEach(() => {
 
 describe('one typeface across the whole product', () => {
   describe('the files the application loads', () => {
-    it('loads the one family the design system names, at both weights it ships', () => {
+    it('loads the one family the design system names, at every weight it ships', () => {
       expect(applicationFontFiles.map((file) => file.name)).toEqual([
         'PlusJakartaSans-Regular',
+        'PlusJakartaSans-Medium',
         'PlusJakartaSans-SemiBold',
+        'PlusJakartaSans-Bold',
       ]);
       expect(face.text).toBe('Plus Jakarta Sans');
     });
@@ -69,9 +71,9 @@ describe('one typeface across the whole product', () => {
 
       const handed = Object.keys(mockLoaderWasHanded[0] ?? {}).join(' ');
 
-      expect(handed).not.toContain(fonts.fraunces.files.regular.name);
-      expect(handed).not.toContain(fonts.ibmPlexMono.files.regular.name);
-      expect(Object.keys(fontsToLoad)).toHaveLength(2);
+      expect(handed).not.toContain(fontFile('fraunces', 'regular').name);
+      expect(handed).not.toContain(fontFile('ibmPlexMono', 'regular').name);
+      expect(Object.keys(fontsToLoad)).toHaveLength(4);
     });
   });
 
