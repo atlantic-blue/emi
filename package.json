@@ -45,6 +45,7 @@
     "generate:past-day-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern pastDay.picture",
     "generate:log-sheet-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern logSheet.picture",
     "generate:lock-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern lock.picture",
+    "generate:dock-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern bottomNavigation.picture",
     "test": "npm run test:workspace && npm run test:mobile && npm run test:behaviour",
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile",
@@ -70,5 +71,8 @@
     "prettier": "3.9.7",
     "typescript": "~6.0.3",
     "yaml": "2.9.1"
+  },
+  "overrides": {
+    "lightningcss": "1.30.1"
   }
 }

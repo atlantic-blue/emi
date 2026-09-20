@@ -27,6 +27,44 @@ export const designSystemDocument = join('docs', 'design', 'prototype-design-sys
 /** The element each screen carries, holding the configuration the page draws itself with. */
 export const configurationElement = 'tailwind-config';
 
+/** The element each screen wraps its content in, which is where the room at the foot is written. */
+export const contentElement = 'main';
+
+/**
+ * Tailwind's own spacing scale, as a multiple of a rem. A class like `pb-28` is twenty eight of
+ * these, and it is the scale Tailwind ships rather than one the prototype configures.
+ */
+export const SPACING_STEP_IN_REM = 0.25;
+
+/**
+ * The room a screen reserves at its foot, in steps of Tailwind's spacing scale.
+ *
+ * The dock hangs over the screen rather than standing beside it, so a screen leaves room for it at
+ * its foot and the prototype writes that room as a padding class on the content element. It is
+ * read here rather than typed anywhere, because a number typed beside the code it describes agrees
+ * with it whatever either one is changed to.
+ */
+export function footStepsIn(html: string): number {
+  const element = new RegExp(`<${contentElement} class="([^"]*)"`).exec(html);
+
+  if (element?.[1] === undefined) {
+    throw new Error(`the screen carries no ${contentElement} element, so it reserves nothing`);
+  }
+
+  const reserved = /(?:^| )pb-(\d+)(?: |$)/.exec(element[1]);
+
+  if (reserved?.[1] === undefined) {
+    throw new Error(`the ${contentElement} element reserves no room at its foot: ${element[1]}`);
+  }
+
+  return Number(reserved[1]);
+}
+
+/** The same room in points, at the size a rem is drawn on a phone. */
+export function footRoomIn(html: string, remInPoints: number): number {
+  return footStepsIn(html) * SPACING_STEP_IN_REM * remInPoints;
+}
+
 /** One type role, as both sides write it. A role the design system does not track has no tracking. */
 export interface TypeRole {
   readonly fontFamily: string;

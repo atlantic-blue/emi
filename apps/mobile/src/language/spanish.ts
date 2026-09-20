@@ -284,4 +284,8 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.settings.back': 'Atrás',
   'settings.settings.delete': 'Borrarlo todo',
   'settings.settings.title': 'Ajustes',
+  'tab.insights': 'Análisis',
+  'tab.log': 'Registro',
+  'tab.privacy': 'Privacidad',
+  'tab.today': 'Hoy',
 };

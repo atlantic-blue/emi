@@ -4,10 +4,10 @@ import type { TypeWeight } from './type';
 export const fontsRoot = 'apps/mobile/assets/fonts';
 
 /**
- * The two weights that ship. A style that names a weight no file carries leaves the platform to
- * imitate it, so a third weight arrives as a file first.
+ * The weights that ship. A style that names a weight no file carries leaves the platform to
+ * imitate it, so a weight arrives as a file first.
  */
-export type FontWeightName = 'regular' | 'semiBold';
+export type FontWeightName = 'regular' | 'medium' | 'semiBold' | 'bold';
 
 /**
  * One file on disk, and the name the application registers it under. The two strings differ, so a
@@ -43,7 +43,9 @@ export interface FontFamily {
   /** A name the licence reserves, which a modified build may not keep. Absent when it reserves none. */
   readonly reservedName?: string;
   readonly source: string;
-  readonly files: Readonly<Record<FontWeightName, FontFile>>;
+  /** The weights this family ships, lightest first. A family carries the cuts a screen asks of it. */
+  readonly weights: readonly FontWeightName[];
+  readonly files: Readonly<Partial<Record<FontWeightName, FontFile>>>;
 }
 
 /**
@@ -53,8 +55,9 @@ export interface FontFamily {
 export const OPEN_FONT_LICENCE = 'SIL Open Font License, Version 1.1';
 
 /**
- * Two weights for each face: one for running text and one for emphasis. A third weight is bytes
- * in the download that no screen in version 1 asks for.
+ * The drawn family ships the four weights the design system names. The two families nothing draws
+ * in keep the two cuts they arrived with, because a weight nobody asks for is bytes in the
+ * download.
  */
 export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
   plusJakartaSans: {
@@ -64,16 +67,27 @@ export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
     copyright:
       'Copyright 2020 The Plus Jakarta Sans Project Authors (https://github.com/tokotype/PlusJakartaSans)',
     source: 'https://github.com/tokotype/PlusJakartaSans',
+    weights: ['regular', 'medium', 'semiBold', 'bold'],
     files: {
       regular: {
         name: 'PlusJakartaSans-Regular',
         weight: 400,
         path: 'plus-jakarta-sans/PlusJakartaSans-Regular.ttf',
       },
+      medium: {
+        name: 'PlusJakartaSans-Medium',
+        weight: 500,
+        path: 'plus-jakarta-sans/PlusJakartaSans-Medium.ttf',
+      },
       semiBold: {
         name: 'PlusJakartaSans-SemiBold',
         weight: 600,
         path: 'plus-jakarta-sans/PlusJakartaSans-SemiBold.ttf',
+      },
+      bold: {
+        name: 'PlusJakartaSans-Bold',
+        weight: 700,
+        path: 'plus-jakarta-sans/PlusJakartaSans-Bold.ttf',
       },
     },
   },
@@ -84,6 +98,7 @@ export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
     copyright:
       'Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)',
     source: 'https://github.com/undercasetype/Fraunces',
+    weights: ['regular', 'semiBold'],
     files: {
       regular: {
         name: 'Fraunces72ptSoft-Regular',
@@ -104,6 +119,7 @@ export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
     copyright: 'Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"',
     reservedName: 'Plex',
     source: 'https://github.com/google/fonts/tree/main/ofl/ibmplexmono',
+    weights: ['regular', 'semiBold'],
     files: {
       regular: {
         name: 'IBMPlexMono-Regular',
@@ -129,39 +145,51 @@ export const fontFamilyNames: readonly FontFamilyName[] = [
 /** The one family every screen is drawn in. */
 export const DRAWN_FAMILY: FontFamilyName = 'plusJakartaSans';
 
-/** The weights as data, so the list of files is built from the faces rather than typed twice. */
-export const fontWeightNames: readonly FontWeightName[] = ['regular', 'semiBold'];
+/** The weights the drawn family ships, as data, lightest first. */
+export const fontWeightNames: readonly FontWeightName[] = fonts[DRAWN_FAMILY].weights;
 
 /**
- * The six files that ship. A test reads the assets directory against this list, so a file that
+ * One file of one family, by name. A family carries only the cuts it ships, so asking it for a
+ * weight it never had is a mistake worth stopping on rather than an empty answer to carry forward.
+ */
+export function fontFile(family: FontFamilyName, weight: FontWeightName): FontFile {
+  const file = fonts[family].files[weight];
+
+  if (file === undefined) {
+    throw new Error(`${fonts[family].family} ships no ${weight} cut`);
+  }
+
+  return file;
+}
+
+/**
+ * The eight files that ship. A test reads the assets directory against this list, so a file that
  * nobody names is found rather than carried.
  */
 export const fontFiles: readonly FontFile[] = fontFamilyNames.flatMap((name) =>
-  fontWeightNames.map((weight) => fonts[name].files[weight]),
+  fonts[name].weights.map((weight) => fontFile(name, weight)),
 );
 
 /**
- * The files the application loads, which is the drawn family and nothing else. Two files rather
- * than six is four fewer in the download, and four fewer faces a screen could reach for.
+ * The files the application loads, which is the drawn family and nothing else. Four files rather
+ * than eight is four fewer in the download, and four fewer faces a screen could reach for.
  */
-export const applicationFontFiles: readonly FontFile[] = fontWeightNames.map(
-  (weight) => fonts[DRAWN_FAMILY].files[weight],
+export const applicationFontFiles: readonly FontFile[] = fonts[DRAWN_FAMILY].weights.map((weight) =>
+  fontFile(DRAWN_FAMILY, weight),
 );
 
 /**
- * Which file carries a weight. The design system asks for 400, 500, 600 and 700, and this
- * repository holds the regular and the semibold cut, so 500 and 700 are drawn in the semibold file
- * rather than left to the renderer to thicken. The two missing files are named in
- * docs/licences.md.
+ * Which file carries a weight. The design system asks for 400, 500, 600 and 700, and the drawn
+ * family ships a cut for each, so nothing is left to the renderer to thicken.
  */
 export const weightFiles: Readonly<Record<TypeWeight, FontWeightName>> = {
   400: 'regular',
-  500: 'semiBold',
+  500: 'medium',
   600: 'semiBold',
-  700: 'semiBold',
+  700: 'bold',
 };
 
 /** The name a style uses to reach the drawn family at the weight a role asks for. */
 export function fontNameFor(weight: TypeWeight): string {
-  return fonts[DRAWN_FAMILY].files[weightFiles[weight]].name;
+  return fontFile(DRAWN_FAMILY, weightFiles[weight]).name;
 }

@@ -161,7 +161,7 @@ describe('the forecast is never shown as a single day', () => {
     it('reads the forecast beside the rest of the application', () => {
       expect(files).toContain('apps/mobile/src/features/forecast/NextPeriod.tsx');
       expect(files).toContain('apps/mobile/src/features/forecast/copy.ts');
-      expect(files).toContain('apps/mobile/src/app/index.tsx');
+      expect(files).toContain('apps/mobile/src/app/(tabs)/index.tsx');
     });
   });
 });

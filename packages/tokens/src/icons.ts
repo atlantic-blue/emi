@@ -4,16 +4,17 @@
 import { stroke } from './space';
 
 /**
- * The twenty symbols of the first set. The set is closed, so a screen cannot ask for a drawing
- * nobody made.
+ * The symbols of the set. The set is closed, so a screen cannot ask for a drawing nobody made.
  */
 export type IconName =
   | 'calendar'
+  | 'chart'
   | 'check'
   | 'chevron'
   | 'close'
   | 'delete'
   | 'drop'
+  | 'edit'
   | 'energy'
   | 'export'
   | 'lock'
@@ -24,14 +25,16 @@ export type IconName =
   | 'ring'
   | 'search'
   | 'settings'
+  | 'shield'
   | 'sleep'
   | 'spotting'
+  | 'sun'
   | 'temperature'
   | 'weight';
 
 /**
  * A drawing and the grid it was laid out on. The body is markup rather than one path, because
- * several of the twenty are drawn from more than one shape.
+ * several of them are drawn from more than one shape.
  */
 export interface Icon {
   readonly name: IconName;
@@ -58,11 +61,13 @@ export const ICON_CORNER = 2;
 /** The set as data, so a test can walk every drawing without naming them one at a time. */
 export const iconNames: readonly IconName[] = [
   'calendar',
+  'chart',
   'check',
   'chevron',
   'close',
   'delete',
   'drop',
+  'edit',
   'energy',
   'export',
   'lock',
@@ -73,8 +78,10 @@ export const iconNames: readonly IconName[] = [
   'ring',
   'search',
   'settings',
+  'shield',
   'sleep',
   'spotting',
+  'sun',
   'temperature',
   'weight',
 ];
@@ -89,6 +96,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<rect x="3.5" y="5.25" width="17" height="15.25" rx="2" /> <path d="M3.5 10h17" /> <path d="M8.25 3.5v3.5" /> <path d="M15.75 3.5v3.5" />',
+  },
+  chart: {
+    name: 'chart',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<path d="M3.25 17.5h3.5V9.75h3.5v7.75h3.5V6.5h3.5v11h3.5" />',
   },
   check: {
     name: 'check',
@@ -119,6 +132,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<path d="M12 3.2c0 0-6.6 6.9-6.6 11.15a6.6 6.6 0 0 0 13.2 0C18.6 10.1 12 3.2 12 3.2Z" />',
+  },
+  edit: {
+    name: 'edit',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<path d="M4.25 7.25h10.5" /> <path d="M4.25 12h6.5" /> <path d="M4.25 16.75h4.5" /> <path d="m18.9 10.85 2.25 2.25-5.6 5.6-2.85.6.6-2.85z" /> <path d="m17.25 12.5 2.25 2.25" />',
   },
   energy: {
     name: 'energy',
@@ -180,6 +199,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     strokeWidth: stroke.icon,
     body: '<path d="M3.75 8.25h11" /> <path d="M18.5 8.25h1.75" /> <path d="M3.75 15.75h5" /> <path d="M12.5 15.75h7.75" /> <circle cx="16.6" cy="8.25" r="1.9" /> <circle cx="10.6" cy="15.75" r="1.9" />',
   },
+  shield: {
+    name: 'shield',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<path d="M12 3.25 4.75 6v6.25c0 4.35 3 7.35 7.25 8.5 4.25-1.15 7.25-4.15 7.25-8.5V6z" /> <path d="m8.75 12.25 2.25 2.25 4.25-4.5" />',
+  },
   sleep: {
     name: 'sleep',
     size: ICON_SIZE,
@@ -191,6 +216,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<path d="M9 4.5c0 0-3.9 4.1-3.9 6.6a3.9 3.9 0 0 0 7.8 0C12.9 8.6 9 4.5 9 4.5Z" /> <circle cx="17.25" cy="9.75" r="1.5" /> <circle cx="14.25" cy="17.5" r="1.5" /> <circle cx="19" cy="16" r="1.1" />',
+  },
+  sun: {
+    name: 'sun',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<circle cx="12" cy="12" r="4" /> <path d="M12 5.75V3.25" /> <path d="M16.42 7.58 18.19 5.81" /> <path d="M18.25 12h2.5" /> <path d="m16.42 16.42 1.77 1.77" /> <path d="M12 18.25v2.5" /> <path d="M7.58 16.42 5.81 18.19" /> <path d="M5.75 12h-2.5" /> <path d="M7.58 7.58 5.81 5.81" />',
   },
   temperature: {
     name: 'temperature',

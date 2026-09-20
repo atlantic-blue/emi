@@ -18,6 +18,7 @@ const tokenModule = join(repositoryRoot, 'packages', 'tokens', 'src', 'icons.ts'
 const contactSheet = join(here, 'contact-sheet.svg');
 
 const ICON_SIZE = 24;
+const ICON_CORNER = 2;
 const SHEET_COLUMNS = 5;
 const SHEET_CELL = 96;
 
@@ -74,9 +75,16 @@ function moduleSource(drawings: readonly Drawing[]): string {
 
 import { stroke } from './space';
 
+/**
+ * The symbols of the set. The set is closed, so a screen cannot ask for a drawing nobody made.
+ */
 export type IconName =
 ${union};
 
+/**
+ * A drawing and the grid it was laid out on. The body is markup rather than one path, because
+ * several of them are drawn from more than one shape.
+ */
 export interface Icon {
   readonly name: IconName;
   /** The grid the drawing is laid out on, in points, on both axes. */
@@ -86,12 +94,28 @@ export interface Icon {
   readonly body: string;
 }
 
+/**
+ * The grid every drawing shares, in points. A drawing laid out on another grid does not match the
+ * stroke width of the ones beside it.
+ */
 export const ICON_SIZE = ${ICON_SIZE};
 
+/**
+ * The corner a rectangle inside an icon is rounded to, on the 24 unit grid the set is drawn on.
+ * The design system's smallest corner is 4, which is a box on a screen rather than a detail inside
+ * a drawing, so the grid keeps its own.
+ */
+export const ICON_CORNER = ${ICON_CORNER};
+
+/** The set as data, so a test can walk every drawing without naming them one at a time. */
 export const iconNames: readonly IconName[] = [
 ${list}
 ];
 
+/**
+ * Generated from the drawings in \`brand/icons\`. Run the generator again rather than editing a body
+ * here, because the next run writes over it.
+ */
 export const icons: Readonly<Record<IconName, Icon>> = {
 ${entries}
 };

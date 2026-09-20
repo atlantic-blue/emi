@@ -2,7 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@e
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Icon } from '../../components/Icon';
+import { Icon } from '@emi/ui';
 import { Screen } from '../../components/Screen';
 import { type FirstRunScreen, firstRunScreens, stepLabel } from './copy';
 

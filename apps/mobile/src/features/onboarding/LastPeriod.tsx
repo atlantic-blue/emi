@@ -2,7 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@e
 import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Icon } from '../../components/Icon';
+import { Icon } from '@emi/ui';
 import { OnboardingScreen } from './OnboardingScreen';
 import { firstRunCopy } from './copy';
 import {

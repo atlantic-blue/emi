@@ -818,7 +818,7 @@ Depends on: nothing.
 Files: `apps/mobile/src/features/onboarding/copy.ts` for `tourCopy`,
 `apps/mobile/src/features/onboarding/tour.ts` for `markTourSeen` and `tourIsSeen`,
 `apps/mobile/src/features/onboarding/TourScreen.tsx`,
-`apps/mobile/src/app/onboarding/tour.tsx`, `apps/mobile/src/app/index.tsx` for the redirect,
+`apps/mobile/src/app/onboarding/tour.tsx`, `apps/mobile/src/app/(tabs)/index.tsx` for the redirect,
 `apps/mobile/src/features/onboarding/FirstRunProvider.tsx` for the marker and for `reread`,
 `apps/mobile/src/data/settingRepository.ts` for the key, `packages/tokens` for the named durations
 and the easing, `brand/illustration/pieces.ts` for the ground of a piece and the four drawings,
@@ -843,7 +843,7 @@ The scenario that proves it: she sees what Emi offers before Emi asks her anythi
 Depends on: nothing. It can ship before step 1 or after it.
 
 Files: `apps/mobile/src/features/onboarding/firstRun.ts` for the rebuild after the commit,
-`apps/mobile/src/app/index.tsx` for the repair when the cache is empty,
+`apps/mobile/src/app/(tabs)/index.tsx` for the repair when the cache is empty,
 `apps/mobile/src/features/forecast/copy.ts` for the new sentence,
 `apps/mobile/src/features/forecast/Learning.tsx`, and
 `apps/mobile/tests/integration/2.9.test.tsx`.
@@ -865,7 +865,7 @@ Depends on: step 1.
 
 Files: `apps/mobile/src/features/settings/copy.ts` for the row,
 `apps/mobile/src/features/settings/SettingsScreen.tsx`,
-`apps/mobile/src/app/settings/index.tsx`, `apps/mobile/src/app/onboarding/tour.tsx` for the return
+`apps/mobile/src/app/(tabs)/settings/index.tsx`, `apps/mobile/src/app/onboarding/tour.tsx` for the return
 it takes, and `apps/mobile/tests/integration/2.10.test.tsx`.
 
 Behaviour: Settings carries `How Emi works`. It opens the tour. The skip control says `Close`, the

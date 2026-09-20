@@ -290,4 +290,8 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.settings.back': 'Назад',
   'settings.settings.delete': 'Удалить всё',
   'settings.settings.title': 'Настройки',
+  'tab.insights': 'Обзор',
+  'tab.log': 'Запись',
+  'tab.privacy': 'Приватность',
+  'tab.today': 'Сегодня',
 };

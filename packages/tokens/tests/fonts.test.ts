@@ -7,6 +7,7 @@ import {
   OPEN_FONT_LICENCE,
   applicationFontFiles,
   fontFamilyNames,
+  fontFile,
   fontFiles,
   fontNameFor,
   fontWeightNames,
@@ -53,22 +54,36 @@ describe('every shipped font carries its licence', () => {
         'Fraunces 72pt Soft',
         'IBM Plex Mono',
       ]);
-      expect(fontFiles).toHaveLength(6);
+      expect(fontFiles).toHaveLength(8);
       expect(applicationFontFiles.map((file) => file.name)).toEqual([
         'PlusJakartaSans-Regular',
+        'PlusJakartaSans-Medium',
         'PlusJakartaSans-SemiBold',
+        'PlusJakartaSans-Bold',
       ]);
     });
 
-    it('ships one file for running text and one for emphasis in each family', () => {
-      expect(fontWeightNames).toEqual(['regular', 'semiBold']);
-      expect(new Set(fontFiles.map((file) => file.path)).size).toBe(6);
-      expect(fontFamilyNames.map((name) => fonts[name].files.regular.weight)).toEqual([
-        400, 400, 400,
+    it('ships a cut of the drawn family for each weight the design system names', () => {
+      expect(fontWeightNames).toEqual(['regular', 'medium', 'semiBold', 'bold']);
+      expect(new Set(fontFiles.map((file) => file.path)).size).toBe(8);
+      expect(fontWeightNames.map((weight) => fontFile(DRAWN_FAMILY, weight).weight)).toEqual([
+        400, 500, 600, 700,
       ]);
-      expect(fontFamilyNames.map((name) => fonts[name].files.semiBold.weight)).toEqual([
-        600, 600, 600,
+    });
+
+    it('keeps the two cuts of each family the application stopped drawing in', () => {
+      const quiet = fontFamilyNames.filter((name) => name !== DRAWN_FAMILY);
+
+      expect(quiet.map((name) => fonts[name].weights)).toEqual([
+        ['regular', 'semiBold'],
+        ['regular', 'semiBold'],
       ]);
+      expect(quiet.map((name) => fontFile(name, 'regular').weight)).toEqual([400, 400]);
+      expect(quiet.map((name) => fontFile(name, 'semiBold').weight)).toEqual([600, 600]);
+    });
+
+    it('refuses a cut a family never shipped, rather than answering with a lighter one', () => {
+      expect(() => fontFile('fraunces', 'bold')).toThrow('Fraunces 72pt Soft ships no bold cut');
     });
 
     it('names each file by the name a style will ask for', () => {
@@ -76,9 +91,9 @@ describe('every shipped font carries its licence', () => {
       expect(fontNameFor(600)).toBe('PlusJakartaSans-SemiBold');
     });
 
-    it('draws a weight with no file of its own in the nearest file that ships', () => {
-      expect(fontNameFor(500)).toBe('PlusJakartaSans-SemiBold');
-      expect(fontNameFor(700)).toBe('PlusJakartaSans-SemiBold');
+    it('draws every weight in its own file, so nothing is left to the renderer to thicken', () => {
+      expect(fontNameFor(500)).toBe('PlusJakartaSans-Medium');
+      expect(fontNameFor(700)).toBe('PlusJakartaSans-Bold');
     });
 
     it.each(fontFiles.map((file) => [file.path, file] as const))(
@@ -142,9 +157,8 @@ describe('every shipped font carries its licence', () => {
     it('keeps the licence in the same directory as the files it covers', () => {
       const apart = fontFamilyNames
         .filter((name) =>
-          fontWeightNames.some(
-            (weight) =>
-              dirname(fonts[name].files[weight].path) !== dirname(fonts[name].licencePath),
+          fonts[name].weights.some(
+            (weight) => dirname(fontFile(name, weight).path) !== dirname(fonts[name].licencePath),
           ),
         )
         .map((name) => `${name} keeps its licence at ${fonts[name].licencePath}`);
@@ -235,6 +249,6 @@ describe('the roles are bound to the family that ships', () => {
     const answered = typeRoleNames.map((name) => fontNameFor(typeScale[name].weight));
 
     expect(answered.filter((name) => name === undefined)).toEqual([]);
-    expect(new Set(answered).size).toBe(2);
+    expect(new Set(answered).size).toBe(3);
   });
 });

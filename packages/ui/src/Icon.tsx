@@ -19,6 +19,7 @@ interface Props {
   readonly testID?: string;
 }
 
+/** One drawing from the set, at the size and the colour the screen asks for. */
 export function Icon({ name, size = ICON_SIZE, colour, testID }: Props): ReactNode {
   const drawing = icons[name];
   const xml = [

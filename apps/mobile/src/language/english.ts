@@ -278,4 +278,8 @@ export const english = {
   'settings.settings.back': 'Back',
   'settings.settings.delete': 'Delete everything',
   'settings.settings.title': 'Settings',
+  'tab.insights': 'Insights',
+  'tab.log': 'Log',
+  'tab.privacy': 'Privacy',
+  'tab.today': 'Today',
 } as const;

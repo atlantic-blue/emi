@@ -88,7 +88,7 @@ describe(`a ${aPregnancyClaim} claim anywhere in the repository fails the pipeli
     expect(scanned).toContain(privacyDocument);
     expect(scanned).toContain('docs/architecture.md');
     expect(scanned).toContain('README.md');
-    expect(scanned).toContain('apps/mobile/src/app/index.tsx');
+    expect(scanned).toContain('apps/mobile/src/app/(tabs)/index.tsx');
     expect(scanned).toContain('apps/mobile/app.json');
 
     // The store listing copy is written in feature 7 and lands in docs as markdown, so it joins
