@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { OnboardingScreen } from './OnboardingScreen';
 import { birthYearLabel, firstRunCopy } from './copy';
-import { birthYearsOffered } from './firstRun';
+import { birthYearsOffered, middleBirthYear } from './firstRun';
 
 export function yearTestID(year: number): string {
   return `year-${year}`;
@@ -17,6 +17,11 @@ export const YEAR_ROW_HEIGHT = MINIMUM_TAP_TARGET;
 
 /** Points. Six years are in front of her at once, which is what the document draws. */
 const WHEEL_HEIGHT = 6 * YEAR_ROW_HEIGHT;
+
+/** Points. The travel that leaves the year in place `at` in the middle of the six she is shown. */
+function travelToTheMiddle(at: number): number {
+  return Math.max(0, at * YEAR_ROW_HEIGHT + YEAR_ROW_HEIGHT / 2 - WHEEL_HEIGHT / 2);
+}
 
 interface Props {
   readonly now: Date;
@@ -54,10 +59,11 @@ function Year({ year, chosen, onChoose }: YearProps): ReactNode {
 
 /**
  * The year she was born, and the one question in Emi whose answer nothing reads. Contract
- * SCREEN-1 names it as the exception, so the screen says so rather than inventing a use for it.
+ * SCREEN-1 names it as the exception.
  *
- * The wheel runs newest first. A list that opened on 1940 would ask every woman to travel eighty
- * years before she reached one she could have been born in.
+ * The wheel runs newest first and opens part way down, on the year thirty years back from this
+ * one. A list that opened on 1940, or on the newest year it offers, would ask most women to travel
+ * a long way before they reached a year they could have been born in.
  *
  * Nothing is chosen when she arrives, so Continue waits for a year. The Skip above it is the way
  * past, and it writes nothing.
@@ -71,7 +77,9 @@ export function YearOfBirth({
   onBack,
 }: Props): ReactNode {
   const years = birthYearsOffered(now);
-  const chosenAt = chosen === undefined ? 0 : years.indexOf(chosen);
+  const openedAt = years.indexOf(chosen ?? middleBirthYear(now));
+  const travelled =
+    chosen === undefined ? travelToTheMiddle(openedAt) : Math.max(0, openedAt) * YEAR_ROW_HEIGHT;
 
   return (
     <OnboardingScreen
@@ -88,7 +96,7 @@ export function YearOfBirth({
         {/* The wheel opens on the year she already picked, so coming back to this question does
             not send her down the list a second time to find it. */}
         <ScrollView
-          contentOffset={{ x: 0, y: chosenAt * YEAR_ROW_HEIGHT }}
+          contentOffset={{ x: 0, y: travelled }}
           style={styles.wheel}
           testID={yearWheelTestID}
         >

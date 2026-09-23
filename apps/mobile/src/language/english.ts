@@ -209,7 +209,6 @@ export const english = {
 
   'onboarding.back': 'Back',
   'onboarding.birthYear.action': 'Continue',
-  'onboarding.birthYear.line.noReader': 'Nothing in Emi reads this yet.',
   'onboarding.birthYear.line.sealed': 'Emi encrypts this on the phone before it goes anywhere.',
   'onboarding.birthYear.title': 'What year were you born?',
   'onboarding.birthYear.year': 'Born in {year}',

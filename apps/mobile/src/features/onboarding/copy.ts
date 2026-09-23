@@ -26,7 +26,7 @@ export const firstRunCopy = {
   },
   birthYear: {
     title: words('onboarding.birthYear.title'),
-    lines: [words('onboarding.birthYear.line.noReader'), words('onboarding.birthYear.line.sealed')],
+    lines: [words('onboarding.birthYear.line.sealed')],
     action: words('onboarding.birthYear.action'),
   },
   lastPeriod: {

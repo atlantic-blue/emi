@@ -224,7 +224,6 @@ export const russian: CatalogueIn<'ru'> = {
 
   'onboarding.back': 'Назад',
   'onboarding.birthYear.action': 'Дальше',
-  'onboarding.birthYear.line.noReader': 'Emi пока это не читает.',
   'onboarding.birthYear.line.sealed':
     'Emi шифрует это на телефоне, прежде чем что-то куда-то отправится.',
   'onboarding.birthYear.title': 'В каком году вы родились?',
