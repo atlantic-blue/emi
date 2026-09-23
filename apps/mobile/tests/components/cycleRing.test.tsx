@@ -8,6 +8,7 @@ import {
   RING_TRACK_WIDTH,
   RingError,
   arcPath,
+  beadPalette,
   colour,
   coveredDegrees,
   phaseLabel,
@@ -294,8 +295,11 @@ describe('the ring on the screen', () => {
 
     const bead = screen.getByTestId(ringBeadTestID);
 
-    expect(colourOf(bead.props.fill)).toBe(colour.primary);
-    expect(colourOf(bead.props.stroke)).toBe(colour.surfaceContainerLowest);
+    expect(colourOf(bead.props.fill)).toBe(colour[beadPalette.fill]);
+    // The design system gives the active bead on the ring to the container, and keeps the deeper
+    // primary for a control she is pressing. The bead is never pressed.
+    expect(colourOf(bead.props.fill)).not.toBe(colour.primary);
+    expect(colourOf(bead.props.stroke)).toBe(colour[beadPalette.halo]);
     expect(bead.props.cy).toBeLessThan(RING_DIAMETER / 2);
     expect(bead.props.cx).toBeGreaterThan(RING_DIAMETER / 2);
   });
