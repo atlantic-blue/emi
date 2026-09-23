@@ -79,16 +79,24 @@ function rawPayloads(): Uint8Array[] {
     .map((row) => row.payload);
 }
 
-/** Every spelling a leak could arrive in, so a payload is searched as text and as bytes. */
+/**
+ * Whether a word survived into the payload, in any spelling a leak could arrive in: the word
+ * itself, and the two encodings something that wrote it encoded would have used.
+ *
+ * The word is spelled every way and the payload is read once, never the other way round. Reading
+ * the whole payload back as base64 and looking for a plain word finds a coincidence and calls it a
+ * leak: three letters of the base64 alphabet fall into that order in about one payload in two
+ * thousand, which is how the slug below turned a merge red.
+ */
 function readableIn(payload: Uint8Array, word: string): boolean {
+  const held = Buffer.from(payload).toString('latin1');
   const spellings = [
-    Buffer.from(payload).toString('utf8'),
-    Buffer.from(payload).toString('latin1'),
-    Buffer.from(payload).toString('base64'),
-    Buffer.from(payload).toString('hex'),
+    word,
+    Buffer.from(word, 'utf8').toString('base64'),
+    Buffer.from(word, 'utf8').toString('hex'),
   ];
 
-  return spellings.some((spelling) => spelling.includes(word));
+  return spellings.some((spelling) => held.includes(spelling));
 }
 
 /** What a plain payload looked like before this step: canonical json, readable by anybody. */
@@ -140,6 +148,31 @@ describe('a raw database read reveals nothing about the day', () => {
           readable: false,
         });
       }
+    });
+
+    it('is read by a search that finds a word a plain payload does hold', () => {
+      // The search itself, held to finding something, because a search that finds nothing passes
+      // every case above it and proves none of them.
+      expect(readableIn(asPlaintext(), 'quarrelsome-marmoset')).toBe(true);
+      expect(readableIn(asPlaintext(), 'cramps')).toBe(true);
+      expect(readableIn(asPlaintext(), theDay)).toBe(true);
+    });
+
+    it('is read by a search that finds a word encoded into the payload', () => {
+      const encoded = Buffer.from(Buffer.from('cramps', 'utf8').toString('base64'), 'utf8');
+
+      expect(readableIn(encoded, 'cramps')).toBe(true);
+      expect(readableIn(Buffer.from('636d6170', 'utf8'), 'cmap')).toBe(true);
+    });
+
+    it('is read by a search that reads no coincidence of the base64 alphabet as a leak', () => {
+      // These three bytes are not the word gas and hold no letter of it. They read as "Agas" when
+      // the whole payload is rendered back as base64, which is the coincidence that turned a merge
+      // red on the shortest slug of the catalogue.
+      const aCoincidence = Uint8Array.from([2, 6, 172]);
+
+      expect(Buffer.from(aCoincidence).toString('base64')).toContain('gas');
+      expect(readableIn(aCoincidence, 'gas')).toBe(false);
     });
 
     it('leaves no symptom slug of the catalogue readable', () => {
