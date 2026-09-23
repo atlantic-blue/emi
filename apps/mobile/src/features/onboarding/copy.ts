@@ -27,6 +27,14 @@ export const firstRunCopy = {
     ],
     action: words('onboarding.cycleLength.action'),
   },
+  hold: {
+    title: words('onboarding.hold.title'),
+    instruction: words('onboarding.hold.instruction'),
+    sealed: words('onboarding.hold.sealed'),
+    action: words('onboarding.hold.action'),
+    held: words('onboarding.hold.held'),
+    refused: words('onboarding.hold.refused'),
+  },
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
   earlier: words('onboarding.lastPeriod.earlier'),
@@ -35,6 +43,11 @@ export const firstRunCopy = {
   laterMonth: words('onboarding.lastPeriod.laterMonth'),
 } as const;
 
+/**
+ * The screens that ask her something, which is what the step counter counts. The hold is not one
+ * of them: it asks nothing, it is the moment her answers are written, and screen 19 of the
+ * prototype carries no counter for that reason.
+ */
 export const firstRunScreens = ['welcome', 'lastPeriod', 'cycleLength'] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];

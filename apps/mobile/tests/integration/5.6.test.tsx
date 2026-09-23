@@ -48,6 +48,7 @@ import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/her
 import { herProfileVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn, visibleTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
+import { sheHoldsTheRing } from '../fixtures/theHold';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -286,6 +287,7 @@ describe('after deleting, the database and the keychain are both empty', () => {
       await shePresses(onboardingActionTestID);
       await shePresses(longerTestID);
       await shePresses(onboardingActionTestID);
+      await sheHoldsTheRing();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(screen.getByTestId(historyTestID)).toBeTruthy();

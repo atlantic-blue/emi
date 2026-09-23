@@ -123,8 +123,9 @@ picture beside it.
 
 ## Feature 2: She opens Emi and logs her first period
 
-She installs Emi and opens it. Three screens ask her two things, and then she is on her own ring
-with her own period on it. Nothing leaves the phone, and she is never asked who she is.
+She installs Emi and opens it. Three screens ask her two things, she presses and holds the ring,
+and then she is on her own ring with her own period on it. Nothing leaves the phone, and she is
+never asked who she is.
 
 She opens Emi for the first time and it asks her nothing about herself. It says what Emi does, what
 it never does, and the two things it refuses to be.
@@ -151,6 +152,17 @@ says so.
 
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
 with `npm run generate:cycle-length-picture`.
+
+Then it asks her to press and hold the ring. That hold is the only moment the first run writes: her
+key is made if this phone has none, and the day she gave, her answers and the marker go in one
+transaction. A woman who walks away at any question leaves nothing behind, and a write that fails
+half way leaves nothing behind either. A phone asking for less motion draws no filling arc, and the
+words in the ring say she is holding instead.
+
+![The hold, before her thumb goes down and half way through](../brand/screens/hold-to-begin.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:hold-picture`.
 
 Her answers make the ring, and the ring is the product. It carries the day of her cycle and the
 phase she is in, so she can read it across a room and nobody beside her can. It draws what her own

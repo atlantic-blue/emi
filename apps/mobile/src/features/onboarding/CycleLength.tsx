@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import {
   Stepper,
@@ -22,27 +22,20 @@ interface Props {
 }
 
 /**
- * Screen three of three. The last answer she gives, and the one the first forecast is made from.
+ * The last of the three questions, and the answer the first forecast is made from.
  *
  * The number is the largest thing on the screen because it is the answer, and it is set in the
  * monospaced face so a digit does not shift sideways as she presses.
  *
- * Done is the one control of the first run that writes, so it takes one press. It goes out as
- * she presses it and stays out. The home screen takes a moment to arrive, and her thumb is
- * already on the glass.
+ * Done writes nothing. It carries her to the hold, which is the one moment the first run writes,
+ * so Done stays available: she can come back to this question from the hold and go on again.
  */
 export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
-  const [pressed, setPressed] = useState(false);
-
   return (
     <OnboardingScreen
-      actionIsReady={!pressed}
       actionLabel={firstRunCopy.cycleLength.action}
       lines={firstRunCopy.cycleLength.lines}
-      onAction={() => {
-        setPressed(true);
-        onDone();
-      }}
+      onAction={onDone}
       screen="cycleLength"
       title={firstRunCopy.cycleLength.title}
     >

@@ -6,16 +6,13 @@ import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 
 export default function CycleLengthRoute(): ReactNode {
   const router = useRouter();
-  const { cycleLengthDays, setCycleLengthDays, finish } = useFirstRun();
+  const { cycleLengthDays, setCycleLengthDays } = useFirstRun();
 
   return (
     <CycleLength
       days={cycleLengthDays}
       onChange={setCycleLengthDays}
-      onDone={() => {
-        finish();
-        router.replace('/');
-      }}
+      onDone={() => router.push('/onboarding/hold')}
     />
   );
 }

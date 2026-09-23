@@ -30,7 +30,7 @@ import {
   updateDayLog,
 } from '../apps/mobile/src/data/dayLogRepository';
 import { migrate } from '../apps/mobile/src/data/schema';
-import { readProfile } from '../apps/mobile/src/data/profileRepository';
+import { profileRow, readProfile } from '../apps/mobile/src/data/profileRepository';
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
 import { flowOptionTestID } from '../apps/mobile/src/features/log/FlowPicker';
@@ -40,6 +40,7 @@ import {
   longerTestID,
 } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { dayTestID } from '../apps/mobile/src/features/onboarding/LastPeriod';
+import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldToBegin';
 import { onboardingActionTestID } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { firstRunCopy } from '../apps/mobile/src/features/onboarding/copy';
@@ -48,6 +49,7 @@ import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
 import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
 import { aDayRecord } from '../apps/mobile/tests/fixtures/dayRecord';
 import { resetExpoSecureStore } from '../apps/mobile/tests/fixtures/expoSecureStore';
+import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
 import {
   aBleedingDay,
   dayOf,
@@ -80,8 +82,8 @@ const today = dayOf(whenSheOpensIt);
 const herPeriodStarted = addDays(today, -5);
 const sheSaysHerCycleRuns = defaultCycleLengthDays + 2;
 
-/** When her second press lands. The clock moves, so a second write would read as a later time. */
-const whenShePressesAgain = new Date(whenSheOpensIt.getTime() + 2000);
+/** When the hold ends, which is the instant everything she answered is written at. */
+const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
 
 /** Thursday. The day she did not log is the Monday three days behind her. */
 const sheForgot = addDays(today, -3);
@@ -147,24 +149,26 @@ function herSixPeriodsAndAWrongMonday(): DayRecord[] {
 
 interface OpenApp {
   readonly pathname: () => string;
+  /** She puts the phone down and the application goes away. Her phone keeps what was written. */
+  readonly close: () => Promise<void>;
 }
 
 /**
  * renderRouter hangs its own readers on the promise it returns, so the promise is kept and the
- * resolved view is never put in its place.
+ * resolved view is kept beside it.
  */
 async function sheOpens(at: string): Promise<OpenApp> {
   const app = renderRouter(appDirectory, { initialUrl: at });
-  await app;
+  const view = await app;
 
-  return { pathname: () => app.getPathname() };
+  return { pathname: () => app.getPathname(), close: () => view.unmount() };
 }
 
 async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
-async function sheAnswersEveryScreenOfTheFirstRun(): Promise<void> {
+async function sheAnswersEveryQuestionOfTheFirstRun(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(dayTestID(herPeriodStarted));
   await shePresses(onboardingActionTestID);
@@ -339,8 +343,12 @@ defineFeature(feature, (test) => {
       await sheSkipsTheTour();
     });
 
-    and('she answers all three screens of the first run', async () => {
-      await sheAnswersEveryScreenOfTheFirstRun();
+    and('she answers every question of the first run', async () => {
+      await sheAnswersEveryQuestionOfTheFirstRun();
+    });
+
+    and('she presses and holds the ring', async () => {
+      await sheHoldsTheRing();
     });
 
     then('she is looking at the home screen', () => {
@@ -357,7 +365,7 @@ defineFeature(feature, (test) => {
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheOpensIt.toISOString(),
+        recordedAt: whenSheFinishesTheHold.toISOString(),
       });
     });
 
@@ -365,6 +373,46 @@ defineFeature(feature, (test) => {
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         sheSaysHerCycleRuns,
       );
+    });
+  });
+
+  test('SCREEN-1, she answers everything, leaves before the hold, and nothing is written', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
+    });
+
+    and('she answers every question of the first run', async () => {
+      await sheAnswersEveryQuestionOfTheFirstRun();
+      expect(app.pathname()).toBe('/onboarding/hold');
+    });
+
+    and('she closes Emi at the hold, without holding the ring', async () => {
+      await app.close();
+    });
+
+    then('her phone holds no day, no answers and no marker', () => {
+      expect(listDayLogs(herDatabase())).toEqual([]);
+      expect(profileRow(herDatabase())).toBeUndefined();
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
+    });
+
+    and('opening Emi again asks her the same questions', async () => {
+      const again = await sheOpens('/');
+
+      expect(again.pathname()).toBe('/onboarding/welcome');
     });
   });
 
@@ -387,7 +435,7 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'she answers all three screens, and presses Done a second time before the screen goes',
+      'she answers every question, and presses Done a second time before the screen goes',
       async () => {
         await shePresses(onboardingActionTestID);
         await shePresses(dayTestID(herPeriodStarted));
@@ -398,15 +446,18 @@ defineFeature(feature, (test) => {
         }
 
         // Both presses land before the screen redraws. That is what her second press meets
-        // while the home screen is still on its way.
+        // while the hold is still on its way.
         const done = screen.getByTestId(onboardingActionTestID);
         await act(async () => {
           fireEvent.press(done);
-          jest.setSystemTime(whenShePressesAgain);
           fireEvent.press(done);
         });
       },
     );
+
+    and('she presses and holds the ring', async () => {
+      await sheHoldsTheRing();
+    });
 
     then('she is looking at the home screen', () => {
       expect(app.pathname()).toBe('/');
@@ -417,12 +468,32 @@ defineFeature(feature, (test) => {
       expect(listDayLogs(herDatabase()).map((row) => row.day)).toEqual([herPeriodStarted]);
     });
 
-    and('her phone holds the time of her first press, and not the time of her second', () => {
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
-    });
+    and(
+      'her phone holds the time of the hold, and one instant on all three of her answers',
+      async () => {
+        const row = readDayLog(herDatabase(), herPeriodStarted);
+        const vault = await theVaultOnHerPhone();
+
+        expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
+          whenSheFinishesTheHold.toISOString(),
+        );
+        expect(row && vault.open(row.payload).recordedAt).toBe(
+          whenSheFinishesTheHold.toISOString(),
+        );
+        expect(
+          (await theProfileVaultOnHerPhone()) &&
+            readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.recordedAt,
+        ).toBe(whenSheFinishesTheHold.toISOString());
+      },
+    );
   });
 
-  test('SCREEN-1, the first run asks three screens and no fourth', ({ given, when, and, then }) => {
+  test('SCREEN-1, the first run asks three questions and the hold after them', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
     let app: OpenApp;
     const visited: string[] = [];
     const whatEachScreenSaid: string[] = [];
@@ -439,13 +510,18 @@ defineFeature(feature, (test) => {
       whatEachScreenSaid.push(screen.getByText(firstRunCopy.welcome.title).props.children);
     });
 
-    and('she answers all three screens of the first run', async () => {
+    and('she answers every question of the first run', async () => {
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
       await shePresses(onboardingActionTestID);
+      visited.push(app.pathname());
+    });
+
+    and('she presses and holds the ring', async () => {
+      await sheHoldsTheRing();
     });
 
     then(
@@ -455,12 +531,13 @@ defineFeature(feature, (test) => {
           '/onboarding/welcome',
           '/onboarding/last-period',
           '/onboarding/cycle-length',
+          '/onboarding/hold',
         ]);
         expect(whatEachScreenSaid).toEqual([firstRunCopy.welcome.title]);
       },
     );
 
-    and('there was no fourth screen to answer', () => {
+    and('there was no fourth question to answer', () => {
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
     });
@@ -485,7 +562,7 @@ defineFeature(feature, (test) => {
       await sheSkipsTheTour();
     });
 
-    and('she answers all three screens of the first run', async () => {
+    and('she answers every question of the first run', async () => {
       await shePresses(onboardingActionTestID);
       everyKindOfNodeShePassed.push(...nodeTypesIn(screen.toJSON()));
       await shePresses(dayTestID(herPeriodStarted));
@@ -497,13 +574,18 @@ defineFeature(feature, (test) => {
       }
 
       await shePresses(onboardingActionTestID);
+      everyKindOfNodeShePassed.push(...nodeTypesIn(screen.toJSON()));
+    });
+
+    and('she presses and holds the ring', async () => {
+      await sheHoldsTheRing();
     });
 
     then('nothing on the way gave her anything to type into', () => {
       expect(everyKindOfNodeShePassed).not.toContain('TextInput');
       expect(everyKindOfNodeShePassed.length).toBeGreaterThan(0);
       // She reached the home screen, so the run is finished, and the only two answers her
-      // phone holds are the two the three screens asked her for.
+      // phone holds are the two the questions asked her for.
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(settingKeys.filter((key) => /account|email|password|sign.?in/i.test(key))).toEqual([]);
     });

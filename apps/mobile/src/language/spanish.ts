@@ -220,6 +220,13 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.cycleLength.longer': 'Un día más',
   'onboarding.cycleLength.shorter': 'Un día menos',
   'onboarding.cycleLength.title': '¿Cuánto dura tu ciclo, más o menos?',
+  'onboarding.hold.action': 'Mantén para empezar',
+  'onboarding.hold.held': 'Manteniendo',
+  'onboarding.hold.instruction': 'Mantén pulsado el anillo para empezar.',
+  'onboarding.hold.refused': 'Emi no guardó nada. Mantén pulsado el anillo otra vez.',
+  'onboarding.hold.sealed':
+    'Al mantener el anillo se guardan tus respuestas, cifradas con tu clave. Emi crea la clave y la guarda en el llavero de este teléfono.',
+  'onboarding.hold.title': 'Tu ciclo, tus datos, tu clave.',
   'onboarding.lastPeriod.action': 'Continuar',
   'onboarding.lastPeriod.earlier': 'Anterior',
   'onboarding.lastPeriod.earlierMonth': 'Mes anterior',

@@ -1,7 +1,7 @@
 Feature: She opens Emi and logs her first period
 
-  She arrives knowing nothing about Emi and Emi knows nothing about her. Three screens later her
-  last period is recorded and the ring is drawn from her own days.
+  She arrives knowing nothing about Emi and Emi knows nothing about her. Three questions and one
+  hold later her last period is recorded and the ring is drawn from her own days.
 
   Every scenario below is named for the contract it proves. The contracts are in
   docs/contracts.md and the map from feature to contract is in docs/features.md.
@@ -10,33 +10,46 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she skips the tour Emi opens with
-    And she answers all three screens of the first run
+    And she answers every question of the first run
+    And she presses and holds the ring
     Then she is looking at the home screen
     And her phone holds the day she said her period started
     And her phone holds the cycle length she gave
+
+  Scenario: SCREEN-1, she answers everything, leaves before the hold, and nothing is written
+    Given she has never opened Emi before
+    When she opens Emi
+    And she skips the tour Emi opens with
+    And she answers every question of the first run
+    And she closes Emi at the hold, without holding the ring
+    Then her phone holds no day, no answers and no marker
+    And opening Emi again asks her the same questions
 
   Scenario: SCREEN-1, she presses Done twice and her first run is written once
     Given she has never opened Emi before
     When she opens Emi
     And she skips the tour Emi opens with
-    And she answers all three screens, and presses Done a second time before the screen goes
+    And she answers every question, and presses Done a second time before the screen goes
+    And she presses and holds the ring
     Then she is looking at the home screen
     And her phone holds one day, the day she said her period started
-    And her phone holds the time of her first press, and not the time of her second
+    And her phone holds the time of the hold, and one instant on all three of her answers
 
-  Scenario: SCREEN-1, the first run asks three screens and no fourth
+  Scenario: SCREEN-1, the first run asks three questions and the hold after them
     Given she has never opened Emi before
     When she opens Emi
     And she skips the tour Emi opens with
-    And she answers all three screens of the first run
+    And she answers every question of the first run
+    And she presses and holds the ring
     Then she was asked what Emi is, when her last period started, and how long her cycle runs
-    And there was no fourth screen to answer
+    And there was no fourth question to answer
 
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
     Given she has never opened Emi before
     When she opens Emi
     And she skips the tour Emi opens with
-    And she answers all three screens of the first run
+    And she answers every question of the first run
+    And she presses and holds the ring
     Then nothing on the way gave her anything to type into
 
   Scenario: SCREEN-2, the home screen shows the ring, the day of her cycle and the phase she is in

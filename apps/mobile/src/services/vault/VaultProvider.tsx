@@ -8,8 +8,11 @@ import { expoKeychain } from './keychain';
 import { type ProfileVault, profileVault } from './profileVault';
 import { phoneRandom, vaultKey } from './vaultKey';
 
+/** Her vaults, asked for rather than held, so the key they carry is the key the keychain holds. */
+export type MakeHerVaults = () => Promise<HerVaults>;
+
 /** Her one key, bound to the two shapes it seals. Both are made here so both hold the same key. */
-interface HerVaults {
+export interface HerVaults {
   readonly day: DayVault;
   readonly profile: ProfileVault;
 }
@@ -19,7 +22,7 @@ function vaultsFor(key: Uint8Array): HerVaults {
 }
 
 const VaultContext = createContext<HerVaults | undefined>(undefined);
-const RenewalContext = createContext<(() => Promise<void>) | undefined>(undefined);
+const MakingContext = createContext<MakeHerVaults | undefined>(undefined);
 
 /**
  * The key reaches the screens from here. Reading the keychain is asynchronous, so nothing under
@@ -54,14 +57,21 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
   }, [database]);
 
   /**
-   * After a delete the keychain holds nothing, so the key in memory here opens rows that no longer
-   * exist and seals new ones under a key her next launch cannot find. This reads the keychain
-   * again and takes whatever it now holds, which after a delete is a key made on the spot. It
-   * resolves once the swap is done, so nothing writes a day in the gap.
+   * Her vaults, built from whatever the keychain holds at the moment they are asked for, and from
+   * a key made on the spot when it holds none.
+   *
+   * Two moments need that. After a delete the keychain is empty, so the key in memory here opens
+   * rows that no longer exist and seals new ones under a key her next launch cannot find. At the
+   * hold, the first run seals her answers, and it seals them under the key this hands back rather
+   * than under the one this component happened to start with.
    */
-  const renew = useCallback(async () => {
+  const makeHerVaults = useCallback(async () => {
     const key = await vaultKey(expoKeychain(), phoneRandom);
-    setVaults(vaultsFor(key));
+    const made = vaultsFor(key);
+
+    setVaults(made);
+
+    return made;
   }, []);
 
   if (!vaults) {
@@ -69,9 +79,9 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
   }
 
   return (
-    <RenewalContext.Provider value={renew}>
+    <MakingContext.Provider value={makeHerVaults}>
       <VaultContext.Provider value={vaults}>{children}</VaultContext.Provider>
-    </RenewalContext.Provider>
+    </MakingContext.Provider>
   );
 }
 
@@ -92,11 +102,14 @@ function useHerVaults(): HerVaults {
   return vaults;
 }
 
-/** What the delete screen calls once the keychain is empty, and nothing else has any use for. */
-export function useRenewVault(): () => Promise<void> {
-  const renew = useContext(RenewalContext);
-  if (!renew) {
-    throw new Error('a screen renewed the vault from outside the vault provider');
+/**
+ * What the hold and the delete screen call. The first run writes under the vaults this returns,
+ * and the delete screen throws away the ones it was holding.
+ */
+export function useHerVaultsMade(): MakeHerVaults {
+  const make = useContext(MakingContext);
+  if (!make) {
+    throw new Error('a screen made her vaults from outside the vault provider');
   }
-  return renew;
+  return make;
 }

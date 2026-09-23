@@ -27,6 +27,7 @@ import {
   unlocked,
 } from '../fixtures/expoLocalAuthentication';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { sheHoldsTheRing } from '../fixtures/theHold';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { visibleTextIn } from '../fixtures/renderedText';
 import {
@@ -140,6 +141,7 @@ describe('the lock shows when she comes back to the application', () => {
       await shePresses(onboardingActionTestID);
       await shePresses(longerTestID);
       await shePresses(onboardingActionTestID);
+      await sheHoldsTheRing();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(readSettings(herDatabase()).lockOnReturn).toBe(lockOn);

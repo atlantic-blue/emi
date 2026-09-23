@@ -1,8 +1,16 @@
-import { type ReactNode, createContext, useCallback, useContext, useMemo, useState } from 'react';
+import {
+  type ReactNode,
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
-import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
-import { completeFirstRun, defaultCycleLengthDays, firstRunIsDone } from './firstRun';
+import { useHerVaultsMade } from '../../services/vault/VaultProvider';
+import { defaultCycleLengthDays, firstRunIsDone, writeEverythingAtTheHold } from './firstRun';
 import { markTourSeen, tourIsSeen } from './tour';
 
 interface FirstRun {
@@ -14,10 +22,14 @@ interface FirstRun {
   readonly setPeriodStartedOn: (day: string) => void;
   readonly setCycleLengthDays: (days: number) => void;
   /**
-   * Writes her two answers, once. A second press of Done arrives before the screen goes away.
-   * The write refuses a first run that is already done, so this answers the second call itself.
+   * The hold, and the one thing in the first run that writes. It makes her key if this phone
+   * holds none, then writes her day, her answers and the marker in one transaction.
+   *
+   * A second hold is answered here. The database is asked again rather than the state above,
+   * because both holds land before anything redraws, and a hold that is still writing is held
+   * off as well, because the first write has not reached the database for the second to find.
    */
-  readonly finish: () => void;
+  readonly writeEverything: () => Promise<void>;
   /**
    * Leaves the tour, by the action of the last card or by the way out on any of them. The
    * instant is written once, so a second visit keeps the first one.
@@ -33,36 +45,42 @@ interface FirstRun {
 const FirstRunContext = createContext<FirstRun | undefined>(undefined);
 
 /**
- * Her two answers are held here and written together on the last screen, so a first run she walks
- * away from halfway leaves nothing behind. Whether the first run is done is the database's answer
- * and never this component's, on the launch after it as much as on the write itself.
+ * Her answers are held here and written at the hold, so a first run she walks away from at any
+ * question leaves nothing behind. Whether the first run is done is the database's answer and never
+ * this component's, on the launch after it as much as on the write itself.
  */
 export function FirstRunProvider({ children }: { readonly children: ReactNode }): ReactNode {
   const database = useDatabase();
-  const vault = useVault();
-  const profiles = useProfileVault();
+  const makeHerVaults = useHerVaultsMade();
   const [isDone, setIsDone] = useState(() => firstRunIsDone(database));
   const [tourIsDone, setTourIsDone] = useState(() => tourIsSeen(database));
   const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
   const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
+  const writing = useRef(false);
 
-  const finish = useCallback(() => {
-    // Read the database, and not the isDone state. Both presses run before anything redraws,
-    // so what the first press set has not reached the second.
-    if (firstRunIsDone(database)) {
+  const writeEverything = useCallback(async () => {
+    if (writing.current || firstRunIsDone(database)) {
       return;
     }
     if (periodStartedOn === undefined) {
-      throw new Error('the first run cannot finish before she has said when her period started');
+      throw new Error(
+        'the first run cannot be written before she has said when her period started',
+      );
     }
-    completeFirstRun(
-      database,
-      { day: vault, profile: profiles },
-      { periodStartedOn, cycleLengthDays },
-      new Date(),
-    );
+
+    writing.current = true;
+    try {
+      await writeEverythingAtTheHold(
+        database,
+        makeHerVaults,
+        { periodStartedOn, cycleLengthDays },
+        new Date(),
+      );
+    } finally {
+      writing.current = false;
+    }
     setIsDone(firstRunIsDone(database));
-  }, [cycleLengthDays, database, periodStartedOn, profiles, vault]);
+  }, [cycleLengthDays, database, makeHerVaults, periodStartedOn]);
 
   const leaveTheTour = useCallback(() => {
     markTourSeen(database, new Date());
@@ -85,10 +103,10 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       setPeriodStartedOn,
       setCycleLengthDays,
       leaveTheTour,
-      finish,
+      writeEverything,
       reread,
     }),
-    [cycleLengthDays, finish, isDone, leaveTheTour, periodStartedOn, reread, tourIsDone],
+    [cycleLengthDays, isDone, leaveTheTour, periodStartedOn, reread, tourIsDone, writeEverything],
   );
 
   return <FirstRunContext.Provider value={held}>{children}</FirstRunContext.Provider>;
