@@ -7,6 +7,7 @@ export const packageName = '@emi/crypto';
 export * from './base64';
 export * from './canonical';
 export * from './envelope';
+export * from './profile';
 export * from './record';
 export * from './recovery';
 export * from './signature';
