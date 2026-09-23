@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;-webkit-font-smoothing:antialiased;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary-fixed": "#1e1b17", "on-primary-container": "#ffd8ce", "secondary": "#625e58", "on-secondary-fixed-variant": "#4a4641", "tertiary-fixed-dim": "#ffb4a8", "surface-container-high": "#efe6e3", "on-secondary-container": "#68645e", "surface-container": "#f5ece8", "on-background": "#1f1b19", "surface-container-low": "#fbf2ee", "background": "#fff8f5", "error-container": "#ffdad6", "primary-container": "#a3482c", "tertiary-fixed": "#ffdad4", "error": "#ba1a1a", "secondary-fixed-dim": "#ccc5be", "on-tertiary": "#ffffff", "surface-container-highest": "#eae1dd", "on-primary-fixed-variant": "#7d2c12", "on-secondary": "#ffffff", "primary": "#843117", "surface-tint": "#9c4327", "surface-dim": "#e1d8d5", "primary-fixed": "#ffdbd1", "surface-bright": "#fff8f5", "tertiary": "#921f12", "inverse-on-surface": "#f8efeb", "on-tertiary-fixed-variant": "#8b190e", "on-primary-fixed": "#3a0a00", "on-surface": "#1f1b19", "on-tertiary-container": "#ffd8d2", "on-tertiary-fixed": "#410100", "on-error-container": "#93000a", "secondary-fixed": "#e8e1d9", "inverse-surface": "#342f2d", "on-surface-variant": "#56423d", "outline": "#89726c", "surface": "#fff8f5", "on-error": "#ffffff", "primary-fixed-dim": "#ffb59f", "secondary-container": "#e8e1d9", "surface-variant": "#eae1dd", "on-primary": "#ffffff", "outline-variant": "#dcc1b9", "tertiary-container": "#b43727", "surface-container-lowest": "#ffffff", "inverse-primary": "#ffb59f" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin": "1rem", "gutter-md": "1.5rem", "margin-md": "2rem", "space-md": "1rem", "margin-lg": "3.5rem", "gutter-lg": "2rem", "gutter": "1rem", "space-lg": "1.5rem", "space-xl": "2.5rem", "space-xs": "0.25rem", "space-sm": "0.5rem" }, fontFamily: { "headline-sm": ["Newsreader"], "display-lg": ["Newsreader"], "label-sm": ["Plus Jakarta Sans"], "headline-lg": ["Newsreader"], "data-sm": ["JetBrains Mono"], "display-lg-mobile": ["Newsreader"], "body-sm": ["Plus Jakarta Sans"], "label-md": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Newsreader"], "data-lg": ["JetBrains Mono"], "body-lg": ["Plus Jakarta Sans"], "data-md": ["JetBrains Mono"] }, fontSize: { "headline-sm": ["1.25rem", { "lineHeight": "1.75rem", "fontWeight": "500" }], "display-lg": ["3rem", { "lineHeight": "3.5rem", "letterSpacing": "-0.02em", "fontWeight": "400" }], "label-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-lg": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.01em", "fontWeight": "400" }], "data-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "500" }], "display-lg-mobile": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.015em", "fontWeight": "400" }], "body-sm": ["0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" }], "label-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["1rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "headline-md": ["1.5rem", { "lineHeight": "2rem", "fontWeight": "500" }], "data-lg": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.03em", "fontWeight": "500" }], "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" }], "data-md": ["1rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.02em", "fontWeight": "400" }] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.03)] pt-safe"><div class="w-full h-1 bg-surface-container-high relative overflow-hidden"><div class="h-full bg-primary-container transition-all duration-300" style="width: 45%;"></div></div><div class="h-16 px-margin flex items-center justify-between"><button aria-label="Go back" class="w-11 h-11 flex items-center justify-center text-on-surface hover:text-primary transition-colors focus:outline-none" onclick="history.back()" type="button"><svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewbox="0 0 24 24" width="22" xmlns="http://www.w3.org/2000/svg"><path d="m15 18-6-6 6-6"></path></svg></button><div class="flex-1 text-center px-space-xs"><span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Last Period Date</span></div><div class="flex items-center justify-end gap-space-sm min-w-[44px]"><button class="min-h-[44px] px-space-xs flex items-center justify-center font-label-md text-label-md text-secondary hover:text-primary transition-colors focus:outline-none" type="button">Skip</button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-28 px-margin bg-surface"><div class="flex flex-col w-full max-w-md mx-auto space-y-space-lg select-none">
+<!-- Editorial Intro & Header -->
+<header class="flex flex-col space-y-space-xs text-left">
+<div class="inline-flex items-center space-x-space-xs">
+<span class="font-data-sm text-data-sm text-primary-container tracking-wider uppercase">06 · 15</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+<span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase">Essential Baseline</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-space-xs">
+      When did your last period start?
+    </h1>
+<p class="font-body-md text-body-md text-secondary leading-relaxed pt-space-xs">
+      The first day you bled. The nearest day you remember is close enough.
+    </p>
+</header>
+<!-- Quick Selection Pills -->
+<div class="flex items-center gap-space-sm pt-space-xs">
+<button class="chip-button flex-1 min-h-[44px] px-space-md py-space-sm rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center transition-all active:scale-[0.98] hover:bg-surface-container-high" id="chip-today" onclick="selectQuickDate('today')" type="button">
+<span class="material-symbols-outlined text-[18px] mr-1.5 text-secondary">history_toggle_off</span>
+      Today
+    </button>
+<button class="chip-button flex-1 min-h-[44px] px-space-md py-space-sm rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center transition-all active:scale-[0.98] hover:bg-surface-container-high" id="chip-yesterday" onclick="selectQuickDate('yesterday')" type="button">
+<span class="material-symbols-outlined text-[18px] mr-1.5 text-secondary">event_repeat</span>
+      Yesterday
+    </button>
+</div>
+<!-- Editorial Calendar Card -->
+<div class="rounded-xl bg-surface-container-low p-space-lg shadow-sm">
+<!-- Month Navigation -->
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">May 2026</span>
+<span class="font-label-sm text-label-sm text-secondary">Follicular Rhythm</span>
+</div>
+<div class="flex items-center space-x-1 bg-surface-container rounded-xl p-0.5">
+<button aria-label="Previous Month" class="w-9 h-9 min-h-[36px] flex items-center justify-center rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button aria-label="Next Month" class="w-9 h-9 min-h-[36px] flex items-center justify-center rounded-lg text-secondary hover:text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Weekday Header -->
+<div class="grid grid-cols-7 gap-1 text-center mb-space-sm">
+<span class="font-data-sm text-data-sm text-secondary py-1">M</span>
+<span class="font-data-sm text-data-sm text-secondary py-1">T</span>
+<span class="font-data-sm text-data-sm text-secondary py-1">W</span>
+<span class="font-data-sm text-data-sm text-secondary py-1">T</span>
+<span class="font-data-sm text-data-sm text-secondary py-1">F</span>
+<span class="font-data-sm text-data-sm text-secondary py-1">S</span>
+<span class="font-data-sm text-data-sm text-secondary py-1">S</span>
+</div>
+<!-- Calendar Grid (May 2026 starts on Friday: 4 leading blank/previous slots) -->
+<div class="grid grid-cols-7 gap-y-2 gap-x-1 text-center items-center" id="calendar-grid">
+<!-- Off-month days -->
+<span class="font-data-md text-data-md text-outline-variant py-2">27</span>
+<span class="font-data-md text-data-md text-outline-variant py-2">28</span>
+<span class="font-data-md text-data-md text-outline-variant py-2">29</span>
+<span class="font-data-md text-data-md text-outline-variant py-2">30</span>
+<!-- May 1 to 8: Past selectable days -->
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(1)" type="button">1</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(2)" type="button">2</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(3)" type="button">3</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(4)" type="button">4</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(5)" type="button">5</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(6)" type="button">6</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(7)" type="button">7</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(8)" type="button">8</button>
+<!-- May 9: Selected Default Day (Tactile Terracotta Sienna) -->
+<button class="cal-day h-11 w-full rounded-xl flex flex-col items-center justify-center font-data-md text-data-md bg-primary-container text-surface-container-lowest shadow-sm transition-transform active:scale-95" id="day-selected-default" onclick="selectDay(9)" type="button">
+<span class="leading-none">9</span>
+<span class="w-1 h-1 rounded-full bg-surface mt-1"></span>
+</button>
+<!-- May 10 to 14: Selectable past/recent days (Today is set to May 14) -->
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(10)" type="button">10</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(11)" type="button">11</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(12)" type="button">12</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors" onclick="selectDay(13)" type="button">13</button>
+<button class="cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors relative" onclick="selectDay(14)" type="button">
+        14
+        <span class="absolute bottom-1 w-1 h-1 rounded-full bg-secondary"></span>
+</button>
+<!-- May 15 to 31: Disabled / Future dates -->
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">15</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">16</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">17</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">18</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">19</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">20</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">21</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">22</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">23</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">24</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">25</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">26</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">27</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">28</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">29</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">30</span>
+<span class="font-data-md text-data-md text-outline-variant/60 py-2 cursor-not-allowed">31</span>
+</div>
+<!-- Active Selection Summary Inset -->
+<div class="mt-space-md pt-space-md flex items-center justify-between bg-surface rounded-xl p-space-md">
+<div class="flex items-center space-x-space-sm">
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-secondary uppercase block">Logged Day 1</span>
+<span class="font-headline-sm text-headline-sm text-on-surface" id="selected-summary-text">Saturday, May 9</span>
+</div>
+</div>
+<span class="font-data-sm text-data-sm text-primary bg-primary-fixed/50 px-2 py-1 rounded">5 days ago</span>
+</div>
+</div>
+<!-- Reassurance Card / Privacy Note -->
+<div class="rounded-xl bg-surface-container-high/60 p-space-md flex items-start space-x-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px] mt-0.5 flex-shrink-0" style="font-variation-settings: 'FILL' 1;">lock</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-snug">
+      Saved strictly on this device. Never transmitted or stored on remote servers.
+    </p>
+</div>
+<!-- Botanical / Warm Ambient Accent -->
+<div class="flex items-center justify-center py-space-xs opacity-75">
+<svg class="text-outline-variant" fill="none" height="12" viewbox="0 0 48 12" width="48">
+<path d="M0 6C12 6 12 1 24 1C36 1 36 11 48 11" stroke="currentColor" stroke-linecap="round" stroke-width="1.25"></path>
+</svg>
+</div>
+</div>
+<script>
+  let activeSelectedDay = 9;
+
+  function selectDay(dayNumber) {
+    activeSelectedDay = dayNumber;
+    updateCalendarDisplay();
+  }
+
+  function selectQuickDate(type) {
+    if (type === 'today') {
+      activeSelectedDay = 14;
+    } else if (type === 'yesterday') {
+      activeSelectedDay = 13;
+    }
+    updateCalendarDisplay();
+  }
+
+  function updateCalendarDisplay() {
+    const summary = document.getElementById('selected-summary-text');
+    if (summary) {
+      summary.textContent = 'May ' + activeSelectedDay + ', 2026';
+    }
+
+    const dayButtons = document.querySelectorAll('.cal-day');
+    dayButtons.forEach((btn) => {
+      const dayVal = parseInt(btn.innerText.trim(), 10);
+      if (dayVal === activeSelectedDay) {
+        btn.className = 'cal-day h-11 w-full rounded-xl flex flex-col items-center justify-center font-data-md text-data-md bg-primary-container text-surface-container-lowest shadow-sm transition-transform active:scale-95';
+        btn.innerHTML = `<span class="leading-none">${dayVal}</span><span class="w-1 h-1 rounded-full bg-surface mt-1"></span>`;
+      } else {
+        btn.className = 'cal-day h-11 w-full rounded-xl flex items-center justify-center font-data-md text-data-md text-on-surface hover:bg-surface-container transition-colors';
+        btn.innerHTML = `${dayVal}`;
+      }
+    });
+
+    const chipToday = document.getElementById('chip-today');
+    const chipYesterday = document.getElementById('chip-yesterday');
+
+    if (chipToday && chipYesterday) {
+      if (activeSelectedDay === 14) {
+        chipToday.className = 'chip-button flex-1 min-h-[44px] px-space-md py-space-sm rounded-xl bg-primary text-on-primary font-label-md text-label-md flex items-center justify-center transition-all shadow-sm';
+        chipYesterday.className = 'chip-button flex-1 min-h-[44px] px-space-md py-space-sm rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center transition-all hover:bg-surface-container-high';
+      } else if (activeSelectedDay === 13) {
+        chipYesterday.className = 'chip-button flex-1 min-h-[44px] px-space-md py-space-sm rounded-xl bg-primary text-on-primary font-label-md text-label-md flex items-center justify-center transition-all shadow-sm';
+        chipToday.className = 'chip-button flex-1 min-h-[44px] px-space-md py-space-sm rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center transition-all hover:bg-surface-container-high';
+      } else {
+        chipToday.className = 'chip-button flex-1 min-h-[44px] px-space-md py-space-sm rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center transition-all hover:bg-surface-container-high';
+        chipYesterday.className = 'chip-button flex-1 min-h-[44px] px-space-md py-space-sm rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center transition-all hover:bg-surface-container-high';
+      }
+    }
+  }
+</script></main><footer class="fixed bottom-0 inset-x-0 z-40 bg-surface/90 backdrop-blur-xl pb-safe shadow-[0_-4px_20px_-2px_rgba(38,34,32,0.04)]"><div class="p-margin flex flex-col w-full max-w-md mx-auto"><button class="w-full h-12 min-h-[48px] px-space-lg rounded-xl bg-primary-container text-surface hover:bg-primary font-label-md text-label-md transition-colors flex items-center justify-center shadow-sm" type="button">Continue</button></div></footer></body></html>

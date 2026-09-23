@@ -325,3 +325,160 @@ export function coloursInTheProse(document: string): string[] {
     ),
   );
 }
+
+/** Where the copy review of screens 6 to 22 sits, word for word as it was written. */
+export const copyReviewDocument = join(prototypeDirectory, 'copy-review.md');
+
+/** The readme that records what the export says and Emi never builds. */
+export const prototypeReadme = join(prototypeDirectory, 'README.md');
+
+/** The heading in that readme the false copy is recorded under. */
+export const claimsHeading =
+  '## Copy on these screens that must never be built, because it is false';
+
+/**
+ * The parts of a screen a browser paints from: every tag with its attributes, and the body of every
+ * style and script element.
+ *
+ * The text between the tags is left out, and so is every comment. The style sheet screen prints
+ * colour values as labels a reader reads, and a value printed as a word is not a value drawn. A
+ * reader that took those for paint would report a fault on a screen that draws the palette
+ * correctly, and the fix for it would be to edit the export.
+ */
+export function drawnParts(markup: string): string[] {
+  const withoutComments = markup.replace(/<!--[\s\S]*?-->/g, ' ');
+
+  return [
+    ...[...withoutComments.matchAll(/<[a-zA-Z][^>]*>/g)].map((found) => found[0]),
+    ...[...withoutComments.matchAll(/<(style|script)\b[^>]*>([\s\S]*?)<\/\1>/gi)].map(
+      (found) => found[2] ?? '',
+    ),
+  ];
+}
+
+/**
+ * A value drawn at full strength. A translucent one is a shadow, and the front matter names no
+ * shadow: the screens write their shadows as a black or an ink at a few per cent, which is a depth
+ * and not a colour of the palette.
+ */
+function opaque(value: string): boolean {
+  if (value.startsWith('#')) {
+    return true;
+  }
+
+  const inside = value.slice(value.indexOf('(') + 1, -1);
+  const alpha = inside.split(/[,/]/)[3];
+
+  return alpha === undefined || Number.parseFloat(alpha) >= 1;
+}
+
+/**
+ * Every colour a screen paints with that the palette does not hold, one value each and sorted.
+ *
+ * The configuration comparison above reads the block the screens share, so a screen that paints a
+ * value straight into an attribute passes it untouched. That is the route the retired canvas took
+ * into four screens: it never reached the configuration, so nothing read it.
+ */
+export function coloursDrawnOutsideThePalette(palette: Iterable<string>, markup: string): string[] {
+  const held = new Set([...palette].map((value) => value.toLowerCase()));
+  const found = new Set<string>();
+
+  for (const part of drawnParts(markup)) {
+    for (const [written] of part.matchAll(valuePattern)) {
+      const value = written.toLowerCase().replace(/\s+/g, '');
+
+      if (opaque(value) && !held.has(value)) {
+        found.add(written);
+      }
+    }
+  }
+
+  return [...found].sort();
+}
+
+/**
+ * The claims the copy review refuses because they are untrue, each written as the review writes it.
+ *
+ * The review is the reading and this is the index of it, so the readme carries every one under the
+ * heading that says what is never built. Both documents are read against this list, so a claim
+ * dropped from either one is named rather than quietly lost.
+ */
+export const falseClaimsOfTheCopyReview: readonly string[] = [
+  'Never write AES, enclave, hardware key, audited, zero knowledge or zero cloud.',
+  'Never write "never leaves this phone" about a day.',
+  'Saved strictly on this device. Never transmitted or stored on remote servers.',
+  'Cycle rhythm, Regular pattern',
+  'Global average 26 to 30 days',
+  'Adaptive Calibration',
+  'Most periods last between 3 and 7 days',
+  'Rhythm waveform preview',
+  'We will broaden windows into softer horizon ranges',
+  'toxic positivity and actionable physiology',
+  'Encrypted and Stored Privately in Journal',
+  'No health profiling data leaves your device.',
+  'stored only in your local key vault',
+  '±2 days tolerance',
+  'Calibration complete',
+  'Model version 1.0-local',
+  'Zero Cloud Inference',
+  'hardware enclave',
+  'Not even our engineers',
+  'No mandatory email',
+  'zero residual backups',
+  'Audited cryptographic baseline',
+  'Zero cloud telemetry',
+  'No lockscreen leak',
+  'Zero server push',
+  'Cycle Calibration Model',
+  'AES-256 · Local Enclave',
+  'Encrypted offline repository ready',
+  'Generates your private cryptographic key in local enclave storage.',
+  'Private enclave',
+  'Local Key Generation · 256-bit AES',
+  'Stored on device, encrypted in transit',
+  'We never hold your health history hostage',
+  'Vault Setup Complete',
+  'Device enclave locked',
+  'Hardware key verified · Local storage only',
+  'Estrogen gently rising',
+  'Light social capacity',
+  'Balanced and calm',
+  'Zero knowledge local vault, Key active',
+];
+
+/** One run of spaces, so a claim wrapped over two lines of a document still reads as one phrase. */
+function flowed(document: string): string {
+  return document.replace(/\s+/g, ' ');
+}
+
+/** The part of a document under one heading, which ends where the next heading of that depth opens. */
+export function sectionUnder(document: string, heading: string): string {
+  const opened = document.indexOf(heading);
+
+  if (opened < 0) {
+    return '';
+  }
+
+  const rest = document.slice(opened + heading.length);
+  const closed = rest.indexOf('\n## ');
+
+  return closed < 0 ? rest : rest.slice(0, closed);
+}
+
+/**
+ * Every claim one of the two documents does not carry, one sentence each.
+ *
+ * A claim has to be in the review, because the review is where it was found, and under the heading
+ * of the readme, because the readme is the one file a person building a screen reads.
+ */
+export function claimsNotRecorded(review: string, readme: string): string[] {
+  const written = flowed(review);
+  const recorded = flowed(sectionUnder(readme, claimsHeading));
+
+  return falseClaimsOfTheCopyReview.flatMap((claim) => [
+    ...(written.includes(flowed(claim)) ? [] : [`${copyReviewDocument} does not name ${claim}`]),
+    ...(recorded.includes(flowed(claim))
+      ? []
+      : [`${prototypeReadme} does not record ${claim} under ${claimsHeading.slice(3)}`]),
+  ]);
+}
