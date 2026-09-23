@@ -13,7 +13,7 @@ import {
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { AccessibilityInfo, Animated, StyleSheet } from 'react-native';
-import { waitFor } from '@testing-library/react-native';
+import { waitFor, within } from '@testing-library/react-native';
 
 import {
   cycleRingTestID,
@@ -37,7 +37,11 @@ import { flowOptionTestID } from '../apps/mobile/src/features/log/FlowPicker';
 import { homeScreenTestID } from '../apps/mobile/src/features/home/HomeScreen';
 import { longerTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { periodLengthTestID } from '../apps/mobile/src/features/onboarding/PeriodLength';
-import { dayTestID } from '../apps/mobile/src/features/onboarding/Calendar';
+import {
+  dayTestID,
+  weekCellTestIDs,
+  weekTestID,
+} from '../apps/mobile/src/features/onboarding/Calendar';
 import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
@@ -65,6 +69,12 @@ import {
 } from '../apps/mobile/tests/fixtures/herVault';
 import { sizedTextIn } from '../apps/mobile/tests/fixtures/renderedText';
 import { controlsTooSmallToPress } from '../apps/mobile/tests/fixtures/tapTargets';
+import {
+  type Box,
+  aSmallIPhone,
+  anIPhone16,
+  theRow,
+} from '../apps/mobile/tests/fixtures/theWidthOfARow';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../apps/mobile/tests/data/expoSqlite'));
 jest.mock('expo-secure-store', () =>
@@ -270,6 +280,24 @@ async function sheSkipsTheTour(): Promise<void> {
 
 function everyControlOnTheScreen() {
   return [...screen.queryAllByRole('radio'), ...screen.queryAllByRole('button')];
+}
+
+/**
+ * A week of the month she is looking at, with the seven boxes that stand in it. The grid keeps a
+ * box for a day the month has no room for, so a week holds seven of them whatever month it is.
+ */
+function aWeekOfTheMonth(): { row: Box; cells: Box[] } {
+  const rows = screen.getAllByTestId(weekTestID);
+  const last = rows.at(-1);
+
+  if (last === undefined) {
+    throw new Error('the calendar drew no weeks, so there was no row to measure');
+  }
+
+  return {
+    row: last as unknown as Box,
+    cells: within(last).getAllByTestId(weekCellTestIDs) as unknown as Box[],
+  };
 }
 
 function whatWasRecordedOn(day: string): DayRecord | undefined {
@@ -1018,6 +1046,56 @@ defineFeature(feature, (test) => {
     then('every control on each screen of the first run is at least 44 points on both axes', () => {
       expect(measured).toEqual([[], [], [], [], [], []]);
       expect(screen.getByTestId(periodLengthTestID)).toBeTruthy();
+    });
+  });
+
+  test('SEE-3, a square of the calendar keeps its height and takes its width from the month', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    and('she reaches the question about her last period', async () => {
+      await sheSkipsTheTour();
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+    });
+
+    then('every square of the month is as high as a thumb needs', () => {
+      for (const square of screen.getAllByTestId(/^day-\d/)) {
+        expect(StyleSheet.flatten(square.props.style)).toMatchObject({
+          minHeight: MINIMUM_TAP_TARGET,
+        });
+      }
+    });
+
+    and(
+      'the seven squares of a week fill the width the calendar gives them on an iPhone 16',
+      () => {
+        const { row, cells } = aWeekOfTheMonth();
+
+        expect(cells).toHaveLength(7);
+        expect(theRow(row, cells, anIPhone16.width).rightEdge).toBe(
+          theRow(row, cells, anIPhone16.width).width,
+        );
+      },
+    );
+
+    and('no square ends past the right edge of the calendar', () => {
+      const { row, cells } = aWeekOfTheMonth();
+
+      for (const phone of [anIPhone16, aSmallIPhone]) {
+        const measured = theRow(row, cells, phone.width);
+
+        expect(measured.rightEdge).toBeLessThanOrEqual(measured.width);
+      }
     });
   });
 

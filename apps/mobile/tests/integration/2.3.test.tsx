@@ -43,7 +43,11 @@ import {
   oldestPeriodStart,
 } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
-import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
+import {
+  type Control,
+  controlsSizedByTheirRow as sizedByTheirRow,
+  controlsTooSmallToPress as tooSmallToPress,
+} from '../fixtures/tapTargets';
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
@@ -216,8 +220,28 @@ function fieldsDrawn(): string[] {
  * press. The measurement itself is the shared one, which reads a fixed size as well as a minimum,
  * because a control given its size outright is no smaller than one given a floor.
  */
+function everyControlOnTheScreen(): Control[] {
+  return [...screen.queryAllByRole('button'), ...screen.queryAllByRole('radio')];
+}
+
 function controlsTooSmallToPress(): string[] {
-  return tooSmallToPress([...screen.queryAllByRole('button'), ...screen.queryAllByRole('radio')]);
+  return tooSmallToPress(everyControlOnTheScreen());
+}
+
+/**
+ * The controls whose width the row they stand in decides. Only the squares of the calendar do, and
+ * the width they are left with is measured in `11.13`, so this names them to keep a second one
+ * from arriving unnoticed.
+ */
+function controlsSizedByTheRowTheyStandIn(): string[] {
+  return sizedByTheirRow(everyControlOnTheScreen());
+}
+
+/** The thirty one squares the grid draws for the month she opens her last period question on. */
+function theSquaresOfMay(): string[] {
+  return Array.from({ length: 31 }, (_unused, at) =>
+    dayTestID(`2026-05-${String(at + 1).padStart(2, '0')}`),
+  );
 }
 
 /**
@@ -587,6 +611,15 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsTheRegularity();
       expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
+    });
+
+    it('takes its width from its row on the squares of the month and nowhere else', async () => {
+      await sheOpensEmi();
+      expect(controlsSizedByTheRowTheyStandIn()).toEqual([]);
+
+      await sheReachesTheLastPeriod();
+
+      expect(controlsSizedByTheRowTheyStandIn()).toEqual(theSquaresOfMay());
     });
   });
 

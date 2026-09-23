@@ -15,6 +15,7 @@ import {
   defaultPeriodLengthDays,
 } from '../../src/features/onboarding/firstRun';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
+import { iPhone16Size } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 
 /**
@@ -29,8 +30,9 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
 const theCaveat = [
-  'Rendered from the trees the eight first run screens produced under the test runner, at 390 by',
-  '844 points, and not captured from a phone. The number names the monospaced',
+  'Rendered from the trees the eight first run screens produced under the test runner, at 393 by',
+  '852 points, which is the glass of an iPhone 16, and not captured from a phone.',
+  'The number names the monospaced',
   'face, which no screen loads yet, so it falls back here and on a phone. Reproduce with:',
   'npm run generate:onboarding-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
@@ -170,6 +172,7 @@ describe('the first run, drawn for somebody to look at', () => {
       screens: drawnScreens,
       caveat: theCaveat,
       script: 'generate:onboarding-picture',
+      size: iPhone16Size,
     });
 
     expect(result.problems).toEqual([]);

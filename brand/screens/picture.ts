@@ -60,6 +60,8 @@ export interface Picture {
   readonly caveat: string;
   /** The script that writes this picture, named in the message a stale picture prints. */
   readonly script: string;
+  /** The glass each screen is drawn on. Left out where an ordinary phone is the point. */
+  readonly size?: PhoneSize;
 }
 
 /**
@@ -141,8 +143,8 @@ export function driftProblems(
  * not on a page of one: the same sentence wraps onto four lines at a third of the width, and the
  * last of them is drawn below the window and lost. The lines it wraps onto are added back here.
  */
-function windowFor(count: number, caveat: string): PhoneSize {
-  const size = pageSize(count);
+function windowFor(count: number, caveat: string, phone?: PhoneSize): PhoneSize {
+  const size = pageSize(count, phone);
   const CHARACTER = 6.6;
   const LINE = 18;
   const perLine = Math.floor((size.width - 80) / CHARACTER);
@@ -234,8 +236,8 @@ export function drawOrCheckPage(page: DrawnPage): PictureResult {
 export function drawOrCheck(picture: Picture): PictureResult {
   return drawOrCheckPage({
     name: picture.name,
-    markup: screenDocument(picture.screens, picture.caveat),
-    size: windowFor(picture.screens.length, picture.caveat),
+    markup: screenDocument(picture.screens, picture.caveat, picture.size),
+    size: windowFor(picture.screens.length, picture.caveat, picture.size),
     script: picture.script,
     holds: `the ${picture.screens.length} screen(s)`,
   });

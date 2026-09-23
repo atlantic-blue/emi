@@ -32,6 +32,12 @@ export interface PhoneSize {
 /** A phone of ordinary size, in points, which is what a React Native style is measured in. */
 export const phoneSize: PhoneSize = { width: 390, height: 844 };
 
+/**
+ * The glass of an iPhone 16. A screen that has to fit seven squares across it is drawn on this
+ * one, because three points decide whether the month fits and 390 is not the phone it was seen on.
+ */
+export const iPhone16Size: PhoneSize = { width: 393, height: 852 };
+
 const UNITLESS: readonly string[] = [
   'flex',
   'flexGrow',
@@ -314,7 +320,7 @@ const FACES = applicationFontFiles
   )
   .join('\n');
 
-const RESET = `
+const resetFor = (size: PhoneSize): string => `
 * { box-sizing: border-box; }
 body { margin: 0; padding: 40px; background: ${colour.surfaceContainer}; font-family: system-ui, sans-serif; }
 div {
@@ -326,10 +332,10 @@ div {
 }
 svg { flex-shrink: 0; }
 .screens { display: flex; flex-direction: row; gap: 32px; align-items: flex-start; }
-.screen { display: flex; flex-direction: column; width: ${phoneSize.width}px; }
+.screen { display: flex; flex-direction: column; width: ${size.width}px; }
 .phone {
-  width: ${phoneSize.width}px;
-  height: ${phoneSize.height}px;
+  width: ${size.width}px;
+  height: ${size.height}px;
   border-radius: 36px;
   overflow: hidden;
   border: 1px solid ${colour.outlineVariant};
@@ -344,7 +350,11 @@ svg { flex-shrink: 0; }
  * The page, with each screen under the days it was drawn from. The caveat is printed on the picture
  * rather than left to whoever passes it on, because a picture travels away from its description.
  */
-export function screenDocument(screens: readonly DrawnScreen[], caveat: string): string {
+export function screenDocument(
+  screens: readonly DrawnScreen[],
+  caveat: string,
+  size: PhoneSize = phoneSize,
+): string {
   const drawn = screens
     .map(
       (screen) =>
@@ -354,7 +364,7 @@ export function screenDocument(screens: readonly DrawnScreen[], caveat: string):
 
   return [
     '<!doctype html><html><head><meta charset="utf-8" />',
-    `<style>${FACES}\n${RESET}</style></head><body>`,
+    `<style>${FACES}\n${resetFor(size)}</style></head><body>`,
     `<div class="screens">${drawn}</div>`,
     `<p class="caveat">${escaped(caveat)}</p>`,
     '</body></html>',
@@ -362,6 +372,6 @@ export function screenDocument(screens: readonly DrawnScreen[], caveat: string):
 }
 
 /** How wide and tall the browser window has to be to hold the whole picture. */
-export function pageSize(count: number): PhoneSize {
-  return { width: 80 + count * phoneSize.width + (count - 1) * 32, height: phoneSize.height + 190 };
+export function pageSize(count: number, size: PhoneSize = phoneSize): PhoneSize {
+  return { width: 80 + count * size.width + (count - 1) * 32, height: size.height + 190 };
 }

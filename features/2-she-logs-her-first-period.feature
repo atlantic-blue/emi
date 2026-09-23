@@ -131,6 +131,14 @@ Feature: She opens Emi and logs her first period
     And she skips the tour Emi opens with
     Then every control on each screen of the first run is at least 44 points on both axes
 
+  Scenario: SEE-3, a square of the calendar keeps its height and takes its width from the month
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the question about her last period
+    Then every square of the month is as high as a thumb needs
+    And the seven squares of a week fill the width the calendar gives them on an iPhone 16
+    And no square ends past the right edge of the calendar
+
   Scenario: SEE-3, a control below the floor is named with the size it was drawn at
     Given a control drawn at 40 points by 44
     When the controls on the screen are measured
