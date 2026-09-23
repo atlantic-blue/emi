@@ -7,16 +7,19 @@ import { stroke } from './space';
  * The symbols of the set. The set is closed, so a screen cannot ask for a drawing nobody made.
  */
 export type IconName =
+  | 'bloating'
   | 'calendar'
   | 'chart'
   | 'check'
   | 'chevron'
   | 'close'
   | 'delete'
+  | 'digestion'
   | 'drop'
   | 'edit'
   | 'energy'
   | 'export'
+  | 'headache'
   | 'lock'
   | 'mood'
   | 'note'
@@ -26,6 +29,7 @@ export type IconName =
   | 'search'
   | 'settings'
   | 'shield'
+  | 'skin'
   | 'sleep'
   | 'spotting'
   | 'sun'
@@ -60,16 +64,19 @@ export const ICON_CORNER = 2;
 
 /** The set as data, so a test can walk every drawing without naming them one at a time. */
 export const iconNames: readonly IconName[] = [
+  'bloating',
   'calendar',
   'chart',
   'check',
   'chevron',
   'close',
   'delete',
+  'digestion',
   'drop',
   'edit',
   'energy',
   'export',
+  'headache',
   'lock',
   'mood',
   'note',
@@ -79,6 +86,7 @@ export const iconNames: readonly IconName[] = [
   'search',
   'settings',
   'shield',
+  'skin',
   'sleep',
   'spotting',
   'sun',
@@ -91,6 +99,12 @@ export const iconNames: readonly IconName[] = [
  * here, because the next run writes over it.
  */
 export const icons: Readonly<Record<IconName, Icon>> = {
+  bloating: {
+    name: 'bloating',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<ellipse cx="12" cy="12" rx="6" ry="5.25" /> <path d="M3.4 9.1a7 7 0 0 0 0 5.8" /> <path d="M20.6 9.1a7 7 0 0 1 0 5.8" />',
+  },
   calendar: {
     name: 'calendar',
     size: ICON_SIZE,
@@ -127,6 +141,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     strokeWidth: stroke.icon,
     body: '<path d="M4.5 6.75h15" /> <path d="M9.5 6.75V4.5h5v2.25" /> <path d="M6.75 6.75 7.6 19.4a1.6 1.6 0 0 0 1.6 1.35h5.6a1.6 1.6 0 0 0 1.6-1.35l.85-12.65" /> <path d="M10.5 10.5v6.5" /> <path d="M13.5 10.5v6.5" />',
   },
+  digestion: {
+    name: 'digestion',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<path d="M8.5 5h7a2.5 2.5 0 0 1 0 5h-7a2.5 2.5 0 0 0 0 5h7a2.5 2.5 0 0 1 0 5h-7" />',
+  },
   drop: {
     name: 'drop',
     size: ICON_SIZE,
@@ -150,6 +170,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<path d="M12 15V3.25" /> <path d="M8.25 7 12 3.25 15.75 7" /> <path d="M5 13.75v4.75a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4.75" />',
+  },
+  headache: {
+    name: 'headache',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<circle cx="12" cy="12" r="8.25" /> <path d="m11.2 3.9 2.2 3.6-2.8 2.9 2.6 3.4-2.4 2.9 1.8 3.1" />',
   },
   lock: {
     name: 'lock',
@@ -204,6 +230,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<path d="M12 3.25 4.75 6v6.25c0 4.35 3 7.35 7.25 8.5 4.25-1.15 7.25-4.15 7.25-8.5V6z" /> <path d="m8.75 12.25 2.25 2.25 4.25-4.5" />',
+  },
+  skin: {
+    name: 'skin',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<rect x="3.75" y="3.75" width="16.5" height="16.5" rx="2" /> <path d="m7.5 13.5 3.5-3.5" /> <path d="m11 13.5 3.5-3.5" /> <path d="m7.5 17 3.5-3.5" /> <path d="m11 17 3.5-3.5" />',
   },
   sleep: {
     name: 'sleep',
