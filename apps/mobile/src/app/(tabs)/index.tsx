@@ -45,7 +45,7 @@ export default function HomeRoute(): ReactNode {
   const database = useDatabase();
   const vault = useVault();
   const router = useRouter();
-  const { isDone } = useFirstRun();
+  const { isDone, tourIsDone } = useFirstRun();
   const [today] = useState(() => localDay(new Date()));
   const [shown, setShown] = useState(() => whatSheIsLookingAt(database, vault, today));
 
@@ -57,6 +57,12 @@ export default function HomeRoute(): ReactNode {
       setShown(whatSheIsLookingAt(database, vault, today));
     }, [database, today, vault]),
   );
+
+  // The tour comes first, because a woman asked for the day her last period started has been
+  // told nothing about what the answer buys her.
+  if (!tourIsDone) {
+    return <Redirect href="/onboarding/tour" />;
+  }
 
   if (!isDone) {
     return <Redirect href="/onboarding/welcome" />;
