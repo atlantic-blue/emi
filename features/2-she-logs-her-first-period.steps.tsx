@@ -30,6 +30,7 @@ import {
   updateDayLog,
 } from '../apps/mobile/src/data/dayLogRepository';
 import { migrate } from '../apps/mobile/src/data/schema';
+import { readProfile } from '../apps/mobile/src/data/profileRepository';
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
 import { flowOptionTestID } from '../apps/mobile/src/features/log/FlowPicker';
@@ -53,7 +54,11 @@ import {
   herDatabase,
   herPhoneHolds,
 } from '../apps/mobile/tests/fixtures/herPhone';
-import { herVault, theVaultOnHerPhone } from '../apps/mobile/tests/fixtures/herVault';
+import {
+  herVault,
+  theProfileVaultOnHerPhone,
+  theVaultOnHerPhone,
+} from '../apps/mobile/tests/fixtures/herVault';
 import { sizedTextIn } from '../apps/mobile/tests/fixtures/renderedText';
 import { controlsTooSmallToPress } from '../apps/mobile/tests/fixtures/tapTargets';
 
@@ -356,8 +361,10 @@ defineFeature(feature, (test) => {
       });
     });
 
-    and('her phone holds the cycle length she gave', () => {
-      expect(readSetting(herDatabase(), 'cycleLengthDays')).toBe(String(sheSaysHerCycleRuns));
+    and('her phone holds the cycle length she gave', async () => {
+      expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
+        sheSaysHerCycleRuns,
+      );
     });
   });
 

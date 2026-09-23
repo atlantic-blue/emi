@@ -58,8 +58,8 @@ describe('the walk that builds an export', () => {
 
       database.execute('ALTER TABLE setting ADD COLUMN written_at TEXT');
       database.run('INSERT INTO setting (key, value, written_at) VALUES (?, ?, ?)', [
-        'cycleLengthDays',
-        '28',
+        'temperatureUnit',
+        'celsius',
         '2026-05-14T20:00:00.000Z',
       ]);
 

@@ -10,7 +10,7 @@ import { LogFlow } from '../../features/log/LogFlow';
 import { editFlow, flowOn, refusalFor, unexpectedOn } from '../../features/log/editDay';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
-import { useVault } from '../../services/vault/VaultProvider';
+import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
 
 /**
  * A day she already lived, opened from its own address. The ring beside the picker is the cycle she
@@ -20,6 +20,7 @@ import { useVault } from '../../services/vault/VaultProvider';
 export default function DayRoute(): ReactNode {
   const database = useDatabase();
   const vault = useVault();
+  const profiles = useProfileVault();
   const router = useRouter();
   const { isDone } = useFirstRun();
   const { date } = useLocalSearchParams<{ date: string }>();
@@ -91,7 +92,7 @@ export default function DayRoute(): ReactNode {
       onDone={leave}
       onMark={mark}
       onPick={pick}
-      ring={ringNow(database, vault, today)}
+      ring={ringNow(database, vault, profiles, today)}
       today={today}
     />
   );

@@ -9,6 +9,7 @@ import { cycleRingTestID } from '../../src/components/CycleRing';
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
+import { readProfile } from '../../src/data/profileRepository';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
 import { longerTestID } from '../../src/features/onboarding/CycleLength';
 import { dayTestID } from '../../src/features/onboarding/LastPeriod';
@@ -32,6 +33,7 @@ import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { markTourSeen, tourIsSeen } from '../../src/features/onboarding/tour';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -319,8 +321,8 @@ describe('Skip on any card lands on the welcome screen and the tour does not com
 
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId('home-screen')).toBeTruthy();
-      expect(readSetting(herDatabase(), 'cycleLengthDays')).toBe(
-        String(defaultCycleLengthDays + 1),
+      expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
+        defaultCycleLengthDays + 1,
       );
     });
   });

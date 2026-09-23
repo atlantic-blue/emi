@@ -2,11 +2,23 @@ import { type ReactNode, createContext, useCallback, useContext, useEffect, useS
 
 import { useDatabase } from '../../data/DatabaseProvider';
 import { encryptPlainPayloads } from '../../data/migrations/004-encrypt-payloads';
+import { moveCycleLengthIntoProfile } from '../../data/migrations/006-cycle-length-into-profile';
 import { type DayVault, dayVault } from './dayVault';
 import { expoKeychain } from './keychain';
+import { type ProfileVault, profileVault } from './profileVault';
 import { phoneRandom, vaultKey } from './vaultKey';
 
-const VaultContext = createContext<DayVault | undefined>(undefined);
+/** Her one key, bound to the two shapes it seals. Both are made here so both hold the same key. */
+interface HerVaults {
+  readonly day: DayVault;
+  readonly profile: ProfileVault;
+}
+
+function vaultsFor(key: Uint8Array): HerVaults {
+  return { day: dayVault(key, phoneRandom), profile: profileVault(key, phoneRandom) };
+}
+
+const VaultContext = createContext<HerVaults | undefined>(undefined);
 const RenewalContext = createContext<(() => Promise<void>) | undefined>(undefined);
 
 /**
@@ -15,11 +27,12 @@ const RenewalContext = createContext<(() => Promise<void>) | undefined>(undefine
  * days without it, and there is no way to read a day without the key.
  *
  * The days she wrote before the envelope existed are sealed here too, on the first launch that
- * holds a key, because this is the first moment both the key and the database are open.
+ * holds a key, because this is the first moment both the key and the database are open. The cycle
+ * length she stated moves out of the setting table here for the same reason.
  */
 export function VaultProvider({ children }: { readonly children: ReactNode }): ReactNode {
   const database = useDatabase();
-  const [vault, setVault] = useState<DayVault | undefined>(undefined);
+  const [vaults, setVaults] = useState<HerVaults | undefined>(undefined);
 
   useEffect(() => {
     let stillMounted = true;
@@ -28,9 +41,11 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
       if (!stillMounted) {
         return;
       }
-      const opened = dayVault(key, phoneRandom);
-      encryptPlainPayloads(database, opened, new Date());
-      setVault(opened);
+      const opened = vaultsFor(key);
+      const now = new Date();
+      encryptPlainPayloads(database, opened.day, now);
+      moveCycleLengthIntoProfile(database, opened.profile, now);
+      setVaults(opened);
     });
 
     return () => {
@@ -46,26 +61,35 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
    */
   const renew = useCallback(async () => {
     const key = await vaultKey(expoKeychain(), phoneRandom);
-    setVault(dayVault(key, phoneRandom));
+    setVaults(vaultsFor(key));
   }, []);
 
-  if (!vault) {
+  if (!vaults) {
     return null;
   }
 
   return (
     <RenewalContext.Provider value={renew}>
-      <VaultContext.Provider value={vault}>{children}</VaultContext.Provider>
+      <VaultContext.Provider value={vaults}>{children}</VaultContext.Provider>
     </RenewalContext.Provider>
   );
 }
 
 export function useVault(): DayVault {
-  const vault = useContext(VaultContext);
-  if (!vault) {
+  return useHerVaults().day;
+}
+
+/** What a screen reads her answers through, which is the same key her days are sealed with. */
+export function useProfileVault(): ProfileVault {
+  return useHerVaults().profile;
+}
+
+function useHerVaults(): HerVaults {
+  const vaults = useContext(VaultContext);
+  if (!vaults) {
     throw new Error('a screen read the vault from outside the vault provider');
   }
-  return vault;
+  return vaults;
 }
 
 /** What the delete screen calls once the keychain is empty, and nothing else has any use for. */

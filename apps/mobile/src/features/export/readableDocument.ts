@@ -25,6 +25,7 @@ import type { Everything, ExportedRow, ExportedValue } from './everything';
 export const dayLogTable = 'day_log';
 export const cycleTable = 'cycle';
 export const settingTable = 'setting';
+export const profileTable = 'profile';
 
 /**
  * The order a day is read in. A field outside it still reaches the page, after these and in its
@@ -71,7 +72,7 @@ export function readableHtml(everything: Everything): string {
   const units = unitsIn(everything);
   const days = liveDays(everything);
   const cycles = [...(everything.tables[cycleTable] ?? [])].sort(byStart);
-  const settings = everything.tables[settingTable] ?? [];
+  const settings = settingLines(everything);
   const deleted = (everything.tables[dayLogTable] ?? []).length - days.length;
 
   const body = [
@@ -84,10 +85,7 @@ export function readableHtml(everything: Everything): string {
       days.map((day) => dayBlock(day, units)),
       deleted > 0 ? deletedSentence(deleted) : undefined,
     ),
-    section(
-      exportCopy.document.settings,
-      settings.length > 0 ? [lines(settings.map(settingLine))] : [],
-    ),
+    section(exportCopy.document.settings, settings.length > 0 ? [lines(settings)] : []),
   ].join('');
 
   const held = days.length + cycles.length === 0 ? paragraph(exportCopy.document.nothing) : body;
@@ -165,6 +163,32 @@ function cycleBlock(row: ExportedRow): string {
 
 function settingLine(row: ExportedRow): Line {
   return { label: labelOf(text(row.key)), value: text(row.value) };
+}
+
+/**
+ * The settings she holds, and the length she stated. That length is a fact about her body, so it
+ * is sealed in the profile rather than written in the setting table, and the page reads it from
+ * there to keep the line a doctor has always seen.
+ */
+function settingLines(everything: Everything): Line[] {
+  const written = (everything.tables[settingTable] ?? []).map(settingLine);
+  const stated = statedCycleLengthLine(everything);
+
+  return stated === undefined ? written : [...written, stated];
+}
+
+function statedCycleLengthLine(everything: Everything): Line | undefined {
+  const payload = (everything.tables[profileTable] ?? [])[0]?.payload;
+
+  if (typeof payload !== 'object' || payload === null) {
+    return undefined;
+  }
+
+  const days = (payload as Readonly<Record<string, unknown>>).cycleLengthDays;
+
+  return typeof days === 'number'
+    ? { label: labelOf('cycleLengthDays'), value: String(days) }
+    : undefined;
 }
 
 function block(heading: string, body: string): string {

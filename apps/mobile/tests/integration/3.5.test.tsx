@@ -23,6 +23,7 @@ import {
 } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import { asSheLoggedIt } from '../fixtures/forecast';
+import { herProfileVault } from '../fixtures/herVault';
 import { daysNamedIn, textIn } from '../fixtures/renderedText';
 
 /**
@@ -69,7 +70,7 @@ function herDatabase(has: WhatSheHasLogged): Database {
 /** Her own screen: the cycles the cache holds, the length she gave, and nothing typed out here. */
 async function sheOpensEmi(has: WhatSheHasLogged): Promise<void> {
   const database = herDatabase(has);
-  const stated = statedCycleLengthDays(database);
+  const stated = statedCycleLengthDays(database, herProfileVault());
 
   if (stated === undefined) {
     throw new Error('the first run wrote no cycle length, so the screen has no length to count by');

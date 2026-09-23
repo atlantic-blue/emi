@@ -46,11 +46,20 @@ export async function herKeyIsInTheKeychain(): Promise<void> {
  * application drew that key itself and no test knows it in advance.
  */
 export async function theVaultOnHerPhone(): Promise<DayVault> {
+  return dayVault(await theKeyOnHerPhone(), herRandom);
+}
+
+/** The same key, bound to her answers, which is how a test reads a profile the first run wrote. */
+export async function theProfileVaultOnHerPhone(): Promise<ProfileVault> {
+  return profileVault(await theKeyOnHerPhone(), herRandom);
+}
+
+async function theKeyOnHerPhone(): Promise<Uint8Array> {
   const held = await expoKeychain().read(vaultKeyItem);
 
   if (held === null) {
     throw new Error('this phone holds no vault key, so nothing it wrote can be read');
   }
 
-  return dayVault(bytesFromBase64(held), herRandom);
+  return bytesFromBase64(held);
 }

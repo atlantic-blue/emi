@@ -6,7 +6,8 @@ import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { keyholdingItems } from '../../../../tools/pipeline/keyLeak';
 import { listDayLogs } from '../../src/data/dayLogRepository';
-import { readSettings } from '../../src/data/settingRepository';
+import { readProfile } from '../../src/data/profileRepository';
+
 import {
   historyTestID,
   homeScreenTestID,
@@ -44,7 +45,7 @@ import {
   theKeychainRefusesToRemove,
 } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
-import { theVaultOnHerPhone } from '../fixtures/herVault';
+import { herProfileVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn, visibleTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 
@@ -181,7 +182,9 @@ describe('after deleting, the database and the keychain are both empty', () => {
 
     it('starts from six cycles of her life, so the delete has something to take', () => {
       expect(listDayLogs(herDatabase())).toHaveLength(herCycleCount * herPeriodDays);
-      expect(readSettings(herDatabase()).cycleLengthDays).toBe(String(herCycleLengthDays));
+      expect(readProfile(herDatabase(), herProfileVault())?.cycleLengthDays).toBe(
+        herCycleLengthDays,
+      );
     });
 
     it('leaves no row in any table, read from the database rather than from Emi', async () => {

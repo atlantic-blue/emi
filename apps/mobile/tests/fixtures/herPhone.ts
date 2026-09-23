@@ -2,12 +2,13 @@ import type { DayRecord } from '@emi/crypto';
 
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
+import { writeProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import { logDay } from '../../src/features/cycle/rebuild';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync } from '../data/expoSqlite';
-import { herKeyIsInTheKeychain, herVault } from './herVault';
+import { herKeyIsInTheKeychain, herProfileVault, herVault } from './herVault';
 
 /**
  * The phone a rendered test drives. The application opens its own database by name, so a test
@@ -34,7 +35,8 @@ export function aBleedingDay(day: string): DayRecord {
 }
 
 /**
- * Her phone before she opens it: the days she recorded, and the two answers the first run wrote.
+ * Her phone before she opens it: the days she recorded, her sealed profile, and the markers the
+ * first run wrote.
  * Without those answers the application sends her back to the first run and she never reaches the
  * screen under test.
  */
@@ -56,7 +58,12 @@ export async function herPhoneHolds(
     logDay(database, { day: record.day, payload: vault.seal(record), now: when }, vault.open);
   }
 
-  writeSetting(database, 'cycleLengthDays', String(cycleLengthDays));
+  // The length she stated is a fact about her body, so it is sealed in her profile and not in
+  // the setting table beside the two markers below.
+  writeProfile(database, herProfileVault(), {
+    profile: { kind: 'profile', cycleLengthDays, recordedAt: firstRunFinishedAt.toISOString() },
+    now: firstRunFinishedAt,
+  });
   writeSetting(database, 'firstRunCompletedAt', firstRunFinishedAt.toISOString());
   // The tour runs before the two questions, so a phone that answered them has been through it.
   // Without this the application sends her to card 1 and the screen under test is never reached.

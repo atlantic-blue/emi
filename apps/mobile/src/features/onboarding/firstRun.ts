@@ -3,8 +3,10 @@ import { type Flow, addDays, daysBetween } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import { insertDayLog } from '../../data/dayLogRepository';
+import { readProfile, writeProfile } from '../../data/profileRepository';
 import { readSetting, writeSetting } from '../../data/settingRepository';
 import type { DayVault } from '../../services/vault/dayVault';
+import type { ProfileVault } from '../../services/vault/profileVault';
 import { setLockOnReturn } from '../lock/lockSetting';
 import { localDay } from './days';
 
@@ -62,28 +64,32 @@ export function firstRunIsDone(db: Database): boolean {
   return readSetting(db, 'firstRunCompletedAt') !== undefined;
 }
 
-export function statedCycleLengthDays(db: Database): number | undefined {
-  const held = readSetting(db, 'cycleLengthDays');
-  if (held === undefined) {
-    return undefined;
-  }
-  const length = Number(held);
-
-  return Number.isInteger(length) ? length : undefined;
+/**
+ * How long she said her cycle runs, read from the sealed profile. It is a fact about her body, so
+ * the setting table does not hold it and migration 006 moved the phones that once did.
+ */
+export function statedCycleLengthDays(db: Database, vault: ProfileVault): number | undefined {
+  return readProfile(db, vault)?.cycleLengthDays;
 }
 
 export function cycleLengthIsInRange(days: number): boolean {
   return Number.isInteger(days) && days >= minimumCycleLengthDays && days <= maximumCycleLengthDays;
 }
 
+/** Her day is sealed under one of these and her answers under the other, both under her one key. */
+export interface FirstRunVaults {
+  readonly day: DayVault;
+  readonly profile: ProfileVault;
+}
+
 /**
- * The two answers land together or not at all. A day written without the settings beside it would
+ * Her two answers land together or not at all. A day written without her profile beside it would
  * send her back to the first screen and then refuse the day she picked there, which is the one
  * shape of half written first run she could not get herself out of.
  */
 export function completeFirstRun(
   db: Database,
-  vault: DayVault,
+  vaults: FirstRunVaults,
   answers: FirstRunAnswers,
   now: Date,
 ): void {
@@ -120,8 +126,15 @@ export function completeFirstRun(
 
   db.execute('BEGIN');
   try {
-    insertDayLog(db, { day: recorded.day, payload: vault.seal(recorded), now });
-    writeSetting(db, 'cycleLengthDays', String(answers.cycleLengthDays));
+    insertDayLog(db, { day: recorded.day, payload: vaults.day.seal(recorded), now });
+    writeProfile(db, vaults.profile, {
+      profile: {
+        kind: 'profile',
+        cycleLengthDays: answers.cycleLengthDays,
+        recordedAt: now.toISOString(),
+      },
+      now,
+    });
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
     setLockOnReturn(db, true);
     db.execute('COMMIT');
