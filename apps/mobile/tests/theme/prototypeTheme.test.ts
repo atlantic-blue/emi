@@ -9,6 +9,9 @@ import { textStyle } from '../../../../packages/ui/src/gluestack/text/styles';
 import {
   configuredIn,
   footRoomIn,
+  phaseColourNames,
+  prototypeDirectory,
+  sourceScreen,
   supersededDirectory,
   supersededScreen,
 } from '../../../../tools/pipeline/prototype';
@@ -16,17 +19,26 @@ import theme from '../../tailwind.config';
 import { theCompiledTheme, theThemeWithEveryTextRole } from '../fixtures/theTheme';
 
 /**
- * The application is drawn in the prototype's own Tailwind configuration, and the colours in it are
- * the token package's. Two files, one palette, and this is the test that keeps them one.
+ * The application is drawn in a Tailwind configuration, and the colours in it are the token
+ * package's. Two files, one palette, and this is the test that keeps them one.
  *
- * The prototype's values are read out of the screen it renders with, through the reader the
- * pipeline already uses, so there is one reading of one file and nothing here restates a number.
+ * The palette is the Warm Editorial Journal one, because the tokens moved to it. The corners, the
+ * spacing and the type roles are still read from the superseded screen, and the step that moves the
+ * components moves those and deletes that directory.
+ *
+ * Each side is read out of the screen it renders with, through the reader the pipeline already
+ * uses, so there is one reading of each file and nothing here restates a number.
  */
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
 
 const prototype = configuredIn(
   readFileSync(join(repositoryRoot, supersededDirectory, supersededScreen), 'utf8'),
+);
+
+/** The style the palette now comes from. Its configuration names every colour but the eight. */
+const journal = configuredIn(
+  readFileSync(join(repositoryRoot, prototypeDirectory, sourceScreen), 'utf8'),
 );
 
 const extended = theme.theme.extend;
@@ -50,16 +62,32 @@ describe('the theme the application draws in is the prototype, and its palette i
     it.each(everyRole)('%s is the same colour in the configuration as in the tokens', (name) => {
       const role = hyphenated(name);
 
+      // The four phase fills and the four inks are drawn inside the ring rather than configured,
+      // so the configuration names neither them nor a colour in their place.
+      if (phaseColourNames.includes(role)) {
+        expect(extended.colors[role]).toBeUndefined();
+        return;
+      }
+
       expect(extended.colors[role]).toBe(colour[name]);
     });
 
-    it('names every role the prototype names, and no role it does not', () => {
-      expect(Object.keys(extended.colors).sort()).toEqual(Object.keys(prototype.colours).sort());
-      expect(everyRole).toHaveLength(Object.keys(prototype.colours).length);
+    it('names every role the configuration names, and no role it does not', () => {
+      expect(Object.keys(extended.colors).sort()).toEqual(Object.keys(journal.colours).sort());
+      expect(Object.keys(journal.colours)).toHaveLength(47);
+    });
+
+    it('holds the eight the configuration never names, because the ring draws them itself', () => {
+      const unconfigured = everyRole
+        .map(hyphenated)
+        .filter((role) => journal.colours[role] === undefined);
+
+      expect(unconfigured.sort()).toEqual([...phaseColourNames].sort());
+      expect(everyRole).toHaveLength(Object.keys(journal.colours).length + phaseColourNames.length);
     });
 
     it('carries the prototype’s own values, so reading them from the tokens changed nothing', () => {
-      const drifted = Object.entries(prototype.colours)
+      const drifted = Object.entries(journal.colours)
         .filter(([role, value]) => extended.colors[role]?.toLowerCase() !== value.toLowerCase())
         .map(([role]) => role);
 

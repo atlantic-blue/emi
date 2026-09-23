@@ -225,10 +225,10 @@ describe('the ring on the screen', () => {
       expect(colourOf(drawn?.props.stroke)).toBe(colour[phasePalette[phase].fill]);
     }
     expect(colourOf(screen.getByTestId(ringArcTestID('period', 'elapsed')).props.stroke)).toBe(
-      colour.primaryContainer,
+      colour.period,
     );
     expect(colourOf(screen.getByTestId(ringArcTestID('luteal', 'ahead')).props.stroke)).toBe(
-      colour.tertiaryContainer,
+      colour.luteal,
     );
   });
 
@@ -284,8 +284,8 @@ describe('the ring on the screen', () => {
 
     const style = StyleSheetFlat(screen.getByText(phaseLabel.period).props.style);
 
-    expect(style.color).toBe(colour.onPrimaryFixedVariant);
-    expect(style.color).not.toBe(colour.primaryContainer);
+    expect(style.color).toBe(colour.periodInk);
+    expect(style.color).not.toBe(colour.period);
   });
 
   it('puts the bead where the geometry puts today', async () => {

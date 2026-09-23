@@ -1,8 +1,8 @@
 /**
  * The palette of the design system, name for name and value for value. The document is
- * `docs/design/warm-humanist-editorial/design-system.md`, the style this package still
- * holds, and `tests/designSystem.test.ts` reads this file against it, so
- * a value that drifts from the document fails the run.
+ * `docs/design/prototype-design-system.md`, written from the Warm Editorial Journal prototype, and
+ * `tests/designSystem.test.ts` reads this file against it, so a value that drifts from the document
+ * fails the run.
  *
  * The set is closed. A screen that wants a colour the document does not name asks for it in the
  * document first, because the contrast test can only measure what is here.
@@ -54,7 +54,15 @@ export type ColourName =
   | 'onTertiaryFixedVariant'
   | 'background'
   | 'onBackground'
-  | 'surfaceVariant';
+  | 'surfaceVariant'
+  | 'period'
+  | 'periodInk'
+  | 'follicular'
+  | 'follicularInk'
+  | 'ovulation'
+  | 'ovulationInk'
+  | 'luteal'
+  | 'lutealInk';
 
 /**
  * What a colour is allowed to do. A fill and a text colour are separate roles because a phase fill
@@ -121,6 +129,14 @@ const ALL: readonly ColourName[] = [
   'background',
   'onBackground',
   'surfaceVariant',
+  'period',
+  'periodInk',
+  'follicular',
+  'follicularInk',
+  'ovulation',
+  'ovulationInk',
+  'luteal',
+  'lutealInk',
 ];
 
 /** Every light ground the document draws a screen on, which is where running text sits. */
@@ -138,96 +154,112 @@ const ON_LIGHT: readonly ColourName[] = [
 ];
 
 /**
- * The action colour is `surfaceTint`, the document's own tint of primary, and not `primary`
- * itself: `primary` is the ovulation fill, and contract SEE-2 keeps a word off a phase fill
- * whatever that fill measures. The two are one step apart and read as the same terracotta.
+ * The same grounds without the dimmed one. `surfaceDim` is the darkest ground in the set, and
+ * `onSecondaryContainer` reaches 4.19 to 1 on it against 4.53 on every other, so the one colour
+ * that misses the floor there names the nine rather than the ten.
  */
+const ON_LIGHT_BUT_DIM: readonly ColourName[] = ON_LIGHT.filter((name) => name !== 'surfaceDim');
 
 /**
  * The palette. Every value is the document's own, and every `textOn` entry was measured at or
- * above the floor. `outline` carries no text anywhere: it reaches 4.27 to 1 on `surface` and
- * 4.48 on `surfaceContainerLowest`, so it draws a line and never a word.
+ * above the floor. `outline` carries no text anywhere: its best reading is 3.20 to 1 on the
+ * lightest ground in the set, so it draws a line and never a word.
+ *
+ * The four phase fills carry no text at any size. Three of the four inks fail the floor on their
+ * own fill, and contract SEE-2 covers all four rather than the three that measure badly.
  */
 export const colours: Readonly<Record<ColourName, ColourToken>> = {
-  surface: { value: '#FCF9F4', roles: ['ground'], textOn: [] },
-  surfaceDim: { value: '#DCDAD5', roles: ['ground'], textOn: [] },
-  surfaceBright: { value: '#FCF9F4', roles: ['ground'], textOn: [] },
+  surface: { value: '#FFF8F5', roles: ['ground'], textOn: [] },
+  surfaceDim: { value: '#E1D8D5', roles: ['ground'], textOn: [] },
+  surfaceBright: { value: '#FFF8F5', roles: ['ground'], textOn: [] },
   surfaceContainerLowest: { value: '#FFFFFF', roles: ['ground'], textOn: [] },
-  surfaceContainerLow: { value: '#F6F3EE', roles: ['ground'], textOn: [] },
-  surfaceContainer: { value: '#F0EDE9', roles: ['ground'], textOn: [] },
-  surfaceContainerHigh: { value: '#EBE8E3', roles: ['ground'], textOn: [] },
-  surfaceContainerHighest: { value: '#E5E2DD', roles: ['ground'], textOn: [] },
-  onSurface: { value: '#1C1C19', roles: ['text'], textOn: ON_LIGHT },
-  onSurfaceVariant: { value: '#56423E', roles: ['text'], textOn: ON_LIGHT },
-  inverseSurface: { value: '#31302D', roles: ['ground'], textOn: [] },
-  inverseOnSurface: { value: '#F3F0EB', roles: ['text'], textOn: ['inverseSurface'] },
+  surfaceContainerLow: { value: '#FBF2EE', roles: ['ground'], textOn: [] },
+  surfaceContainer: { value: '#F5ECE8', roles: ['ground'], textOn: [] },
+  surfaceContainerHigh: { value: '#EFE6E3', roles: ['ground'], textOn: [] },
+  surfaceContainerHighest: { value: '#EAE1DD', roles: ['ground'], textOn: [] },
+  onSurface: { value: '#1F1B19', roles: ['text'], textOn: ON_LIGHT },
+  onSurfaceVariant: { value: '#56423D', roles: ['text'], textOn: ON_LIGHT },
+  inverseSurface: { value: '#342F2D', roles: ['ground'], textOn: [] },
+  inverseOnSurface: { value: '#F8EFEB', roles: ['text'], textOn: ['inverseSurface'] },
   outline: { value: '#89726C', roles: ['line'], textOn: [] },
-  outlineVariant: { value: '#DDC0BA', roles: ['line'], textOn: [] },
-  surfaceTint: { value: '#9F402A', roles: ['ground', 'fill'], textOn: [] },
-  primary: { value: '#9C3E28', roles: ['ground', 'fill'], textOn: [] },
+  outlineVariant: { value: '#DCC1B9', roles: ['line'], textOn: [] },
+  surfaceTint: { value: '#9C4327', roles: ['ground', 'fill'], textOn: [] },
+  primary: { value: '#843117', roles: ['ground', 'fill'], textOn: [] },
   onPrimary: {
     value: '#FFFFFF',
     roles: ['text'],
     textOn: ['primary', 'primaryContainer', 'surfaceTint'],
   },
-  primaryContainer: { value: '#BC553E', roles: ['ground', 'fill'], textOn: [] },
-  onPrimaryContainer: { value: '#FFFBFF', roles: ['text'], textOn: ['primaryContainer'] },
-  inversePrimary: { value: '#FFB4A3', roles: ['text'], textOn: ['inverseSurface'] },
-  secondary: { value: '#8C4D43', roles: ['ground', 'text', 'fill'], textOn: ON_LIGHT },
-  onSecondary: { value: '#FFFFFF', roles: ['text'], textOn: ['secondary'] },
-  secondaryContainer: { value: '#FEACA0', roles: ['ground', 'fill'], textOn: [] },
-  onSecondaryContainer: {
-    value: '#7A3D35',
+  primaryContainer: { value: '#A3482C', roles: ['ground', 'fill'], textOn: [] },
+  onPrimaryContainer: {
+    value: '#FFD8CE',
     roles: ['text'],
-    textOn: ['secondaryContainer', ...ON_LIGHT],
+    textOn: ['primaryContainer', 'primary'],
   },
-  tertiary: { value: '#645863', roles: ['ground', 'text', 'fill'], textOn: ON_LIGHT },
+  inversePrimary: { value: '#FFB59F', roles: ['text'], textOn: ['inverseSurface'] },
+  secondary: { value: '#625E58', roles: ['ground', 'text', 'fill'], textOn: ON_LIGHT },
+  onSecondary: { value: '#FFFFFF', roles: ['text'], textOn: ['secondary'] },
+  secondaryContainer: { value: '#E8E1D9', roles: ['ground', 'fill'], textOn: [] },
+  onSecondaryContainer: {
+    value: '#68645E',
+    roles: ['text'],
+    textOn: ['secondaryContainer', ...ON_LIGHT_BUT_DIM],
+  },
+  tertiary: { value: '#921F12', roles: ['ground', 'text', 'fill'], textOn: ON_LIGHT },
   onTertiary: { value: '#FFFFFF', roles: ['text'], textOn: ['tertiary', 'tertiaryContainer'] },
-  tertiaryContainer: { value: '#7E717C', roles: ['ground', 'fill'], textOn: [] },
-  onTertiaryContainer: { value: '#FFFBFF', roles: ['text'], textOn: ['tertiaryContainer'] },
+  tertiaryContainer: { value: '#B43727', roles: ['ground', 'fill'], textOn: [] },
+  onTertiaryContainer: { value: '#FFD8D2', roles: ['text'], textOn: ['tertiaryContainer'] },
   error: { value: '#BA1A1A', roles: ['ground', 'text', 'fill'], textOn: ON_LIGHT },
   onError: { value: '#FFFFFF', roles: ['text'], textOn: ['error'] },
   errorContainer: { value: '#FFDAD6', roles: ['ground', 'fill'], textOn: [] },
   onErrorContainer: { value: '#93000A', roles: ['text'], textOn: ['errorContainer', ...ON_LIGHT] },
-  primaryFixed: { value: '#FFDAD2', roles: ['ground', 'fill'], textOn: [] },
-  primaryFixedDim: { value: '#FFB4A3', roles: ['ground', 'fill'], textOn: [] },
+  primaryFixed: { value: '#FFDBD1', roles: ['ground', 'fill'], textOn: [] },
+  primaryFixedDim: { value: '#FFB59F', roles: ['ground', 'fill'], textOn: [] },
   onPrimaryFixed: {
-    value: '#3D0600',
+    value: '#3A0A00',
     roles: ['text'],
     textOn: ['primaryFixed', 'primaryFixedDim', ...ON_LIGHT],
   },
   onPrimaryFixedVariant: {
-    value: '#802916',
+    value: '#7D2C12',
     roles: ['text'],
     textOn: ['primaryFixed', 'primaryFixedDim', ...ON_LIGHT],
   },
-  secondaryFixed: { value: '#FFDAD5', roles: ['ground', 'fill'], textOn: [] },
-  secondaryFixedDim: { value: '#FFB4A8', roles: ['ground', 'fill'], textOn: [] },
+  secondaryFixed: { value: '#E8E1D9', roles: ['ground', 'fill'], textOn: [] },
+  secondaryFixedDim: { value: '#CCC5BE', roles: ['ground', 'fill'], textOn: [] },
   onSecondaryFixed: {
-    value: '#390C07',
+    value: '#1E1B17',
     roles: ['text'],
     textOn: ['secondaryFixed', 'secondaryFixedDim', ...ON_LIGHT],
   },
   onSecondaryFixedVariant: {
-    value: '#70362D',
+    value: '#4A4641',
     roles: ['text'],
     textOn: ['secondaryFixed', 'secondaryFixedDim', ...ON_LIGHT],
   },
-  tertiaryFixed: { value: '#EEDEEB', roles: ['ground', 'fill'], textOn: [] },
-  tertiaryFixedDim: { value: '#D2C2CF', roles: ['ground', 'fill'], textOn: [] },
+  tertiaryFixed: { value: '#FFDAD4', roles: ['ground', 'fill'], textOn: [] },
+  tertiaryFixedDim: { value: '#FFB4A8', roles: ['ground', 'fill'], textOn: [] },
   onTertiaryFixed: {
-    value: '#221922',
+    value: '#410100',
     roles: ['text'],
     textOn: ['tertiaryFixed', 'tertiaryFixedDim', ...ON_LIGHT],
   },
   onTertiaryFixedVariant: {
-    value: '#4E434E',
+    value: '#8B190E',
     roles: ['text'],
     textOn: ['tertiaryFixed', 'tertiaryFixedDim', ...ON_LIGHT],
   },
-  background: { value: '#FCF9F4', roles: ['ground'], textOn: [] },
-  onBackground: { value: '#1C1C19', roles: ['text'], textOn: ON_LIGHT },
-  surfaceVariant: { value: '#E5E2DD', roles: ['ground', 'fill'], textOn: [] },
+  background: { value: '#FFF8F5', roles: ['ground'], textOn: [] },
+  onBackground: { value: '#1F1B19', roles: ['text'], textOn: ON_LIGHT },
+  surfaceVariant: { value: '#EAE1DD', roles: ['ground', 'fill'], textOn: [] },
+  period: { value: '#D97D6E', roles: ['ground', 'fill'], textOn: [] },
+  periodInk: { value: '#5C2018', roles: ['text'], textOn: ON_LIGHT },
+  follicular: { value: '#E5A96D', roles: ['ground', 'fill'], textOn: [] },
+  follicularInk: { value: '#5E3B10', roles: ['text'], textOn: ON_LIGHT },
+  ovulation: { value: '#A8A663', roles: ['ground', 'fill'], textOn: [] },
+  ovulationInk: { value: '#404218', roles: ['text'], textOn: ON_LIGHT },
+  luteal: { value: '#9B849E', roles: ['ground', 'fill'], textOn: [] },
+  lutealInk: { value: '#433246', roles: ['text'], textOn: ON_LIGHT },
 };
 
 /** The palette as data, in the order the brand document prints. A type cannot be read at run time. */

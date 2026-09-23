@@ -36,6 +36,11 @@ describe('a colour that fails the contrast floor cannot be added', () => {
     expect(failed.map(report)).toEqual([]);
   });
 
+  it('measures something, so an empty set of pairs is not read as a pass', () => {
+    expect(approved.length).toBeGreaterThan(50);
+    expect(textNames.length).toBeGreaterThan(20);
+  });
+
   it('names the token and the ratio when a colour is moved below the floor', () => {
     // The value of outline, which the document names and the floor refuses as text.
     const moved = { ...colours.onSurfaceVariant, value: colours.outline.value };
@@ -48,6 +53,26 @@ describe('a colour that fails the contrast floor cannot be added', () => {
     expect(pairs.filter((pair) => pair.ratio < CONTRAST_FLOOR).map(report)).toContain(
       'onSurfaceVariant on surface is 4.27 to 1',
     );
+  });
+
+  it('names the phase and the ratio when an ink is written on its own fill', () => {
+    // Three of the four inks sit under the floor on their own fill, and the luteal pair is the
+    // furthest under it. This is the failure SEE-2 exists to make impossible.
+    const onItsOwnFill = phaseNames.map((phase) =>
+      measure(phasePalette[phase].ink, phasePalette[phase].fill),
+    );
+
+    expect(onItsOwnFill.filter((pair) => pair.ratio < CONTRAST_FLOOR).map(report)).toEqual([
+      'periodInk on period is 4.24 to 1',
+      'ovulationInk on ovulation is 4.13 to 1',
+      'lutealInk on luteal is 3.47 to 1',
+    ]);
+    expect(onItsOwnFill.map((pair) => pair.ground)).toEqual([
+      'period',
+      'follicular',
+      'ovulation',
+      'luteal',
+    ]);
   });
 
   it('gives every text colour at least one ground to be measured against', () => {
@@ -66,21 +91,23 @@ describe('a colour that fails the contrast floor cannot be added', () => {
 
   it('holds the ratios the design system values measure, to two places', () => {
     const published = [
-      measure('onSurface', 'surface'),
-      measure('onSurfaceVariant', 'surface'),
-      measure('onPrimaryFixedVariant', 'surface'),
-      measure('onSecondaryContainer', 'surface'),
-      measure('onTertiaryFixedVariant', 'surface'),
-      measure('onPrimary', 'primary'),
+      measure('onSurface', 'background'),
+      measure('onSurfaceVariant', 'background'),
+      measure('onPrimary', 'primaryContainer'),
+      measure('periodInk', 'background'),
+      measure('follicularInk', 'background'),
+      measure('ovulationInk', 'background'),
+      measure('lutealInk', 'background'),
     ];
 
     expect(published.map(report)).toEqual([
-      'onSurface on surface is 16.26 to 1',
-      'onSurfaceVariant on surface is 8.91 to 1',
-      'onPrimaryFixedVariant on surface is 8.90 to 1',
-      'onSecondaryContainer on surface is 7.85 to 1',
-      'onTertiaryFixedVariant on surface is 8.94 to 1',
-      'onPrimary on primary is 6.70 to 1',
+      'onSurface on background is 16.27 to 1',
+      'onSurfaceVariant on background is 8.92 to 1',
+      'onPrimary on primaryContainer is 5.96 to 1',
+      'periodInk on background is 11.94 to 1',
+      'follicularInk on background is 9.48 to 1',
+      'ovulationInk on background is 9.95 to 1',
+      'lutealInk on background is 11.21 to 1',
     ]);
   });
 
@@ -96,16 +123,15 @@ describe('a colour that fails the contrast floor cannot be added', () => {
     expect(hasRole('outline', 'line')).toBe(true);
   });
 
-  it('refuses every phase fill as text, whatever it measures, which is why each has an ink', () => {
+  it('refuses every phase fill as text, and not one of the four could carry a word anyway', () => {
     const fills = phaseNames.map((phase) => phasePalette[phase].fill);
     const fit = fills.filter(
       (fill) => contrastRatio(colours[fill].value, colours.surface.value) >= CONTRAST_FLOOR,
     );
 
-    // Three of the four fail the floor outright. The fourth passes it and is refused anyway,
-    // because contract SEE-2 covers every fill rather than the ones that measure badly.
-    expect(fit).toEqual(['primary']);
+    expect(fit).toEqual([]);
     expect(fills.flatMap((fill) => colours[fill].textOn)).toEqual([]);
+    expect(fills.filter((fill) => hasRole(fill, 'text'))).toEqual([]);
     expect(phaseNames.map((phase) => colours[phasePalette[phase].ink].textOn.length > 0)).toEqual([
       true,
       true,

@@ -322,7 +322,7 @@ body {
   line-height: ${typeScale['body-lg'].lineHeight}px;
 }
 main { max-width: 720px; margin: 0 auto; }
-h1 { font-size: ${typeScale['headline-xl'].size}px; line-height: ${typeScale['headline-xl'].lineHeight}px; margin: 0; }
+h1 { font-size: ${typeScale['display-lg-mobile'].size}px; line-height: ${typeScale['display-lg-mobile'].lineHeight}px; margin: 0; }
 h2 {
   font-size: ${typeScale['headline-md'].size}px;
   line-height: ${typeScale['headline-md'].lineHeight}px;

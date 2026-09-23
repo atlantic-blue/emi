@@ -31,6 +31,6 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     color: colour.primary,
-    ...textStyle('headline-xl'),
+    ...textStyle('display-lg-mobile'),
   },
 });

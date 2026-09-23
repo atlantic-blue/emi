@@ -1,27 +1,40 @@
 /**
  * The spacing and the corners of the design system, name for name and value for value. The
- * document is `docs/design/warm-humanist-editorial/design-system.md`, the style this package still
- * holds, and `tests/designSystem.test.ts` reads this file
- * against it. The document measures in rem for a browser and a screen measures in points, so every
- * value here is its rem multiplied by ${REM_IN_POINTS}.
+ * document is `docs/design/prototype-design-system.md`, and `tests/designSystem.test.ts` reads this
+ * file against it. The document measures in rem for a browser and a screen measures in points, so
+ * every value here is its rem multiplied by ${REM_IN_POINTS}.
  */
 
 /** What one rem of the document is worth on a phone. */
 export const REM_IN_POINTS = 16;
 
-/** The seven steps the document names. A screen asks for `spaceMd` and never for 16. */
+/** The eleven steps the document names. A screen asks for `spaceMd` and never for 16. */
 export type SpaceName =
-  'gutter' | 'margin' | 'spaceXs' | 'spaceSm' | 'spaceMd' | 'spaceLg' | 'spaceXl';
+  | 'gutter'
+  | 'gutterMd'
+  | 'gutterLg'
+  | 'margin'
+  | 'marginMd'
+  | 'marginLg'
+  | 'spaceXs'
+  | 'spaceSm'
+  | 'spaceMd'
+  | 'spaceLg'
+  | 'spaceXl';
 
 /** Points. */
 export const space: Readonly<Record<SpaceName, number>> = {
   gutter: 16,
-  margin: 20,
+  gutterMd: 24,
+  gutterLg: 32,
+  margin: 16,
+  marginMd: 32,
+  marginLg: 56,
   spaceXs: 4,
   spaceSm: 8,
   spaceMd: 16,
   spaceLg: 24,
-  spaceXl: 36,
+  spaceXl: 40,
 };
 
 /**
@@ -57,10 +70,14 @@ export const spaceNames: readonly SpaceName[] = [
   'spaceXs',
   'spaceSm',
   'gutter',
-  'spaceMd',
   'margin',
+  'spaceMd',
   'spaceLg',
+  'gutterMd',
+  'gutterLg',
+  'marginMd',
   'spaceXl',
+  'marginLg',
 ];
 
 /** The corners as data, from the tightest to the capsule. */

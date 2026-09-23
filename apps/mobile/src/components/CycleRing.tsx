@@ -189,7 +189,7 @@ const OPENS_FROM = 0.94;
 const styles = StyleSheet.create({
   day: {
     color: colour.onSurface,
-    ...textStyle('headline-xl'),
+    ...textStyle('data-lg'),
   },
   middle: {
     alignItems: 'center',

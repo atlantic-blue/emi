@@ -16,12 +16,12 @@ export interface TextStyle {
   readonly lineHeight: number;
 }
 
-/** The whole style for one role of the design system. The weight picks the file. */
+/** The whole style for one role of the design system. The face and the weight pick the file. */
 export function textStyle(role: TypeRoleName): TextStyle {
   const step = typeScale[role];
 
   return {
-    fontFamily: fontNameFor(step.weight),
+    fontFamily: fontNameFor(step.face, step.weight),
     fontSize: step.size,
     letterSpacing: letterSpacingOf(step.size, step.letterSpacingEm),
     lineHeight: step.lineHeight,
