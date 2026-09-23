@@ -16,7 +16,10 @@ export const firstRunCopy = {
   },
   lastPeriod: {
     title: words('onboarding.lastPeriod.title'),
-    lines: [words('onboarding.lastPeriod.line')],
+    lines: [
+      words('onboarding.lastPeriod.line.remember'),
+      words('onboarding.lastPeriod.line.privacy'),
+    ],
     action: words('onboarding.lastPeriod.action'),
   },
   cycleLength: {
@@ -35,6 +38,8 @@ export const firstRunCopy = {
     held: words('onboarding.hold.held'),
     refused: words('onboarding.hold.refused'),
   },
+  back: words('onboarding.back'),
+  skip: words('onboarding.skip'),
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
   earlier: words('onboarding.lastPeriod.earlier'),
@@ -44,9 +49,9 @@ export const firstRunCopy = {
 } as const;
 
 /**
- * The screens that ask her something, which is what the step counter counts. The hold is not one
- * of them: it asks nothing, it is the moment her answers are written, and screen 19 of the
- * prototype carries no counter for that reason.
+ * The screens that ask her something, which is what the bar counts. The hold is not one of them:
+ * it asks nothing, it is the moment her answers are written, and screen 19 of the prototype
+ * carries no position for that reason.
  */
 export const firstRunScreens = ['welcome', 'lastPeriod', 'cycleLength'] as const;
 
@@ -54,6 +59,11 @@ export type FirstRunScreen = (typeof firstRunScreens)[number];
 
 export const firstRunScreenCount = firstRunScreens.length;
 
+/**
+ * How far along she is, said in words. Nothing draws it: the bar carries the position on the
+ * screen and this is what it says to a screen reader, because a fraction of a line reads as
+ * nothing and a counter beside it reads as a form to fill in.
+ */
 export function stepLabel(screen: FirstRunScreen): string {
   return words('onboarding.step', undefined, {
     step: firstRunScreens.indexOf(screen) + 1,

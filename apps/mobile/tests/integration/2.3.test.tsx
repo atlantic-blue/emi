@@ -25,7 +25,7 @@ import {
 } from '../../src/features/onboarding/LastPeriod';
 import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
 import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
-import { firstRunCopy } from '../../src/features/onboarding/copy';
+import { firstRunCopy, stepLabel } from '../../src/features/onboarding/copy';
 import {
   defaultCycleLengthDays,
   longestLookBackDays,
@@ -218,7 +218,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       const app = await sheOpensEmi();
 
       expect(app.pathname()).toBe('/onboarding/welcome');
-      expect(theScreen('welcome').getByText('Step 1 of 3')).toBeTruthy();
+      expect(theScreen('welcome').getByLabelText(stepLabel('welcome'))).toBeTruthy();
     });
 
     it('tells her what Emi is and what it will not do', async () => {

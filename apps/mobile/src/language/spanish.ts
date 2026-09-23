@@ -212,11 +212,13 @@ export const spanish: CatalogueIn<'es'> = {
   'log.weight.heading': 'Peso',
   'log.weight.hint': 'Un número al día',
 
+  'onboarding.back': 'Atrás',
   'onboarding.cycleLength.action': 'Hecho',
   'onboarding.cycleLength.days': '{count} días',
   'onboarding.cycleLength.line.count':
     'Cuenta desde el primer día de un periodo hasta el día anterior al siguiente.',
-  'onboarding.cycleLength.line.corrects': 'Emi lo corrige en cuanto ha visto dos ciclos tuyos.',
+  'onboarding.cycleLength.line.corrects':
+    'Emi lo sustituye por tu propio número en cuanto ha visto dos ciclos.',
   'onboarding.cycleLength.longer': 'Un día más',
   'onboarding.cycleLength.shorter': 'Un día menos',
   'onboarding.cycleLength.title': '¿Cuánto dura tu ciclo, más o menos?',
@@ -232,9 +234,12 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.lastPeriod.earlierMonth': 'Mes anterior',
   'onboarding.lastPeriod.later': 'Siguiente',
   'onboarding.lastPeriod.laterMonth': 'Mes siguiente',
-  'onboarding.lastPeriod.line':
+  'onboarding.lastPeriod.line.privacy':
+    'Emi cifra esto en el teléfono antes de que salga a ningún sitio.',
+  'onboarding.lastPeriod.line.remember':
     'El primer día que sangraste. El día más cercano que recuerdes es suficiente.',
   'onboarding.lastPeriod.title': '¿Cuándo empezó tu último periodo?',
+  'onboarding.skip': 'Omitir',
   'onboarding.step': 'Paso {step} de {of}',
   'onboarding.tour.back': 'Atrás',
   'onboarding.tour.count': '{step} de {of}',

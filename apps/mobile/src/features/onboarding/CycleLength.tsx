@@ -19,6 +19,7 @@ interface Props {
   readonly days: number;
   readonly onChange: (days: number) => void;
   readonly onDone: () => void;
+  readonly onBack: () => void;
 }
 
 /**
@@ -30,12 +31,13 @@ interface Props {
  * Done writes nothing. It carries her to the hold, which is the one moment the first run writes,
  * so Done stays available: she can come back to this question from the hold and go on again.
  */
-export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
+export function CycleLength({ days, onChange, onDone, onBack }: Props): ReactNode {
   return (
     <OnboardingScreen
       actionLabel={firstRunCopy.cycleLength.action}
       lines={firstRunCopy.cycleLength.lines}
       onAction={onDone}
+      onBack={onBack}
       screen="cycleLength"
       title={firstRunCopy.cycleLength.title}
     >

@@ -17,7 +17,7 @@ import { LogFlow, logFlowDoneTestID, logFlowTestID } from '../../src/features/lo
 import {
   OnboardingScreen,
   onboardingActionTestID,
-  onboardingMarkTestID,
+  onboardingBackTestID,
   onboardingProgressTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { RecoveryScreen } from '../../src/features/recovery/RecoveryScreen';
@@ -64,6 +64,7 @@ const theFirstRun = (): ReactElement => (
     actionLabel="Continue"
     lines={['It asks for no account and no email address.']}
     onAction={nothing}
+    onBack={nothing}
     screen="welcome"
     title="Emi"
   />
@@ -214,11 +215,11 @@ describe('every screen respects the safe area', () => {
   });
 
   describe('the first run, where she saw it', () => {
-    it('holds the mark and the step label below the top of the reserved room', async () => {
+    it('holds the bar and the way back below the top of the reserved room', async () => {
       const root = await drawnOn(theFirstRun);
 
-      expect(within(root).getByTestId(onboardingMarkTestID)).toBeTruthy();
       expect(within(root).getByTestId(onboardingProgressTestID)).toBeTruthy();
+      expect(within(root).getByTestId(onboardingBackTestID)).toBeTruthy();
       expect(screensDrawingUnderTheIsland([root])).toEqual([]);
     });
 

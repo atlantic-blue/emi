@@ -11,6 +11,7 @@ export default function CycleLengthRoute(): ReactNode {
   return (
     <CycleLength
       days={cycleLengthDays}
+      onBack={() => router.back()}
       onChange={setCycleLengthDays}
       onDone={() => router.push('/onboarding/hold')}
     />

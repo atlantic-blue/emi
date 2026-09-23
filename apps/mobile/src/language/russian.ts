@@ -220,11 +220,13 @@ export const russian: CatalogueIn<'ru'> = {
   'log.weight.heading': 'Вес',
   'log.weight.hint': 'Одно число в день',
 
+  'onboarding.back': 'Назад',
   'onboarding.cycleLength.action': 'Готово',
   'onboarding.cycleLength.days': '{count} дней',
   'onboarding.cycleLength.line.count':
     'Считайте от первого дня одних месячных до дня перед следующими.',
-  'onboarding.cycleLength.line.corrects': 'Emi поправит это, как только увидит два ваших цикла.',
+  'onboarding.cycleLength.line.corrects':
+    'Emi заменит это вашим собственным числом, как только увидит два цикла.',
   'onboarding.cycleLength.longer': 'На день больше',
   'onboarding.cycleLength.shorter': 'На день меньше',
   'onboarding.cycleLength.title': 'Какой у вас цикл, примерно?',
@@ -240,9 +242,12 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.lastPeriod.earlierMonth': 'Предыдущий месяц',
   'onboarding.lastPeriod.later': 'Позже',
   'onboarding.lastPeriod.laterMonth': 'Следующий месяц',
-  'onboarding.lastPeriod.line':
+  'onboarding.lastPeriod.line.privacy':
+    'Emi шифрует это на телефоне, прежде чем что-то куда-то отправится.',
+  'onboarding.lastPeriod.line.remember':
     'Первый день, когда шла кровь. Ближайший день, который вы помните, вполне подойдёт.',
   'onboarding.lastPeriod.title': 'Когда начались ваши последние месячные?',
+  'onboarding.skip': 'Пропустить',
   'onboarding.step': 'Шаг {step} из {of}',
   'onboarding.tour.back': 'Назад',
   'onboarding.tour.count': '{step} из {of}',

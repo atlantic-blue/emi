@@ -1,12 +1,5 @@
-import {
-  CONTRAST_FLOOR,
-  MINIMUM_TAP_TARGET,
-  colour,
-  contrastRatio,
-  icons,
-  typeScale,
-} from '@emi/tokens';
-import { render, screen } from '@testing-library/react-native';
+import { CONTRAST_FLOOR, MINIMUM_TAP_TARGET, colour, contrastRatio, typeScale } from '@emi/tokens';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import { OnAPhone } from '../fixtures/theSafeArea';
 import { StyleSheet } from 'react-native';
 
@@ -23,16 +16,20 @@ import {
 } from '../../src/features/onboarding/LastPeriod';
 import { progressFillTestID } from '../../src/components/ProgressBar';
 import {
-  onboardingMarkTestID,
+  OnboardingScreen,
+  onboardingBackTestID,
   onboardingProgressTestID,
+  onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import {
   type FirstRunScreen,
+  firstRunCopy,
   firstRunScreens,
   stepLabel,
 } from '../../src/features/onboarding/copy';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
+import { sizedTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 
 /**
@@ -61,6 +58,7 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
         <LastPeriod
           chosen={threeDaysBack}
           now={whenSheOpensIt}
+          onBack={() => undefined}
           onChoose={() => undefined}
           onContinue={() => undefined}
         />
@@ -72,6 +70,7 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
     <OnAPhone>
       <CycleLength
         days={defaultCycleLengthDays}
+        onBack={() => undefined}
         onChange={() => undefined}
         onDone={() => undefined}
       />
@@ -118,13 +117,13 @@ describe('the first run carries the design system', () => {
     const theFill = progressFillTestID(onboardingProgressTestID);
 
     for (const [at, where] of firstRunScreens.entries()) {
-      it(`fills ${String(at + 1)} of 3 of the bar on ${where}, and says so in words`, async () => {
+      it(`fills ${String(at + 1)} of 3 of the bar on ${where}, and says so out loud`, async () => {
         await sheIsLookingAt(where);
 
         const filled = ((at + 1) / firstRunScreens.length) * 100;
 
         expect(flattened(theFill).width).toBe(`${String(filled)}%`);
-        expect(screen.getByText(stepLabel(where))).toBeTruthy();
+        expect(screen.getByLabelText(stepLabel(where))).toBeTruthy();
       });
     }
 
@@ -144,17 +143,118 @@ describe('the first run carries the design system', () => {
       expect(bar.props['accessibilityValue']).toEqual({ max: 3, min: 0, now: 2 });
       expect(bar.props['accessibilityLabel']).toBe(stepLabel('lastPeriod'));
     });
-  });
 
-  describe('the mark', () => {
     for (const where of firstRunScreens) {
-      it(`is drawn on ${where}, in the brand colour and from the set`, async () => {
+      it(`writes no counter on ${where}, because a counter reads as a form to fill in`, async () => {
         await sheIsLookingAt(where);
 
-        const drawn = String(screen.getByTestId(onboardingMarkTestID).props.xml);
+        const drawn = sizedTextIn(screen.toJSON()).map((run) => run.text);
 
-        expect(drawn).toContain(icons.ring.body);
-        expect(drawn).toContain(colour.primary);
+        expect(drawn.length).toBeGreaterThan(0);
+        expect(drawn).not.toContain(stepLabel(where));
+        expect(drawn.filter((run) => /\d+\s*(of|\/|·)\s*\d+/.test(run))).toEqual([]);
+      });
+    }
+  });
+
+  describe('the way back', () => {
+    it('is drawn at the top of a question that has one behind it', async () => {
+      await sheIsLookingAt('lastPeriod');
+
+      expect(screen.getByTestId(onboardingBackTestID)).toBeTruthy();
+      expect(screen.getByTestId(onboardingBackTestID).props.accessibilityLabel).toBe(
+        firstRunCopy.back,
+      );
+    });
+
+    it('is drawn on the cycle length screen too, so every answered question can be undone', async () => {
+      await sheIsLookingAt('cycleLength');
+
+      expect(screen.getByTestId(onboardingBackTestID)).toBeTruthy();
+    });
+
+    it('takes her back when she presses it', async () => {
+      const stepsBack = jest.fn();
+
+      await render(
+        <OnAPhone>
+          <LastPeriod
+            chosen={threeDaysBack}
+            now={whenSheOpensIt}
+            onBack={stepsBack}
+            onChoose={() => undefined}
+            onContinue={() => undefined}
+          />
+        </OnAPhone>,
+      );
+      await fireEvent.press(screen.getByTestId(onboardingBackTestID));
+
+      expect(stepsBack).toHaveBeenCalledTimes(1);
+    });
+
+    it('is left off the welcome screen, because nothing sits behind it', async () => {
+      await sheIsLookingAt('welcome');
+
+      expect(screen.queryByTestId(onboardingBackTestID)).toBeNull();
+    });
+  });
+
+  describe('the way past a question', () => {
+    const anAnsweredQuestion = {
+      actionLabel: firstRunCopy.cycleLength.action,
+      lines: firstRunCopy.cycleLength.lines,
+      screen: 'cycleLength',
+      title: firstRunCopy.cycleLength.title,
+    } as const;
+
+    it('is drawn at the top right where the frame is given one', async () => {
+      const skips = jest.fn();
+
+      await render(
+        <OnAPhone>
+          <OnboardingScreen {...anAnsweredQuestion} onAction={() => undefined} onSkip={skips} />
+        </OnAPhone>,
+      );
+      await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+
+      expect(screen.getByTestId(onboardingSkipTestID)).toHaveTextContent(firstRunCopy.skip);
+      expect(skips).toHaveBeenCalledTimes(1);
+    });
+
+    it('is drawn nowhere at all where the frame is given none', async () => {
+      await render(
+        <OnAPhone>
+          <OnboardingScreen {...anAnsweredQuestion} onAction={() => undefined} />
+        </OnAPhone>,
+      );
+
+      expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
+    });
+
+    for (const where of firstRunScreens) {
+      it(`is offered on none of the three questions she is asked today, ${where} among them`, async () => {
+        await sheIsLookingAt(where);
+
+        expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
+      });
+    }
+  });
+
+  describe('the question she is being asked', () => {
+    for (const where of firstRunScreens) {
+      it(`is the largest thing the frame writes on ${where}`, async () => {
+        await sheIsLookingAt(where);
+
+        const asked = String(screen.getByRole('header').props.children);
+        const runs = sizedTextIn(screen.toJSON());
+        const question = runs.find((run) => run.text === asked);
+        const beside = runs.filter((run) => run.text !== asked && run.points !== undefined);
+
+        expect(question?.points).toBe(typeScale['headline-lg'].size);
+        expect(beside.length).toBeGreaterThan(0);
+        expect(beside.filter((run) => Number(run.points) > typeScale['headline-lg'].size)).toEqual(
+          [],
+        );
       });
     }
   });
@@ -206,6 +306,7 @@ describe('the first run carries the design system', () => {
           <LastPeriod
             chosen={today}
             now={whenSheOpensIt}
+            onBack={() => undefined}
             onChoose={() => undefined}
             onContinue={() => undefined}
           />
@@ -225,6 +326,7 @@ describe('the first run carries the design system', () => {
           <LastPeriod
             chosen={today}
             now={whenSheOpensIt}
+            onBack={() => undefined}
             onChoose={() => undefined}
             onContinue={() => undefined}
           />
