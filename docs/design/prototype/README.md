@@ -10,8 +10,11 @@ Each screen carries the configuration it draws with, in a script element with th
 `tailwind-config`. All six carry the same one. `tools/pipeline/prototype.test.ts` reads it out of
 `screen-0-style-sheet.html` and compares it with the front matter of the design system document,
 value for value: the colours, the spacing and the thirteen type roles with their sizes, line
-heights, tracking and weights. The corners do not agree yet, and the decision is
-https://github.com/atlantic-blue/emi/issues/159.
+heights, tracking and weights. The corners are the one block the two sides do not agree about. The
+token package took the design system's scale and `apps/mobile/tailwind.config.js` reads the token
+package, so the application draws that one. That answers
+https://github.com/atlantic-blue/emi/issues/159, and the difference stays recorded in
+`tools/pipeline/prototype.ts` rather than edited out of the export.
 
 The eight phase colours are the one thing the configuration does not name. The screens draw the four
 arcs and the four labels beside them as plain values inside the ring, so the front matter names the

@@ -1,42 +1,48 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve, join } from 'node:path';
 
-import { REM_IN_POINTS, type ColourName, colour, colourNames, typeRoleNames } from '@emi/tokens';
-import { dockRoom } from '@emi/ui';
+import {
+  type ColourName,
+  colour,
+  colourNames,
+  fontFiles,
+  fontNameFor,
+  letterSpacingOf,
+  radius,
+  radiusNames,
+  space,
+  spaceNames,
+  typeRoleNames,
+  typeScale,
+} from '@emi/tokens';
 
 import { emiClasses } from '../../../../packages/ui/src/gluestack/emiClasses';
 import { textStyle } from '../../../../packages/ui/src/gluestack/text/styles';
 import {
   configuredIn,
-  footRoomIn,
   phaseColourNames,
   prototypeDirectory,
   sourceScreen,
-  supersededDirectory,
-  supersededScreen,
 } from '../../../../tools/pipeline/prototype';
 import theme from '../../tailwind.config';
 import { theCompiledTheme, theThemeWithEveryTextRole } from '../fixtures/theTheme';
 
 /**
- * The application is drawn in a Tailwind configuration, and the colours in it are the token
- * package's. Two files, one palette, and this is the test that keeps them one.
+ * The application is drawn in a Tailwind configuration, and every value in it is the token
+ * package's. Two files, one design system, and this is the test that keeps them one.
  *
- * The palette is the Warm Editorial Journal one, because the tokens moved to it. The corners, the
- * spacing and the type roles are still read from the superseded screen, and the step that moves the
- * components moves those and deletes that directory.
+ * The tokens are held to the front matter of the design system document by
+ * `packages/tokens/tests/designSystem.test.ts`, and that front matter is read out of the prototype
+ * itself. So nothing here restates a measurement: it reads the configuration against the tokens
+ * and lets that chain carry the rest.
  *
- * Each side is read out of the screen it renders with, through the reader the pipeline already
- * uses, so there is one reading of each file and nothing here restates a number.
+ * The corners are the one block where the front matter and the prototype's own configuration
+ * disagree. The tokens took the front matter, so the application draws that scale.
  */
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
 
-const prototype = configuredIn(
-  readFileSync(join(repositoryRoot, supersededDirectory, supersededScreen), 'utf8'),
-);
-
-/** The style the palette now comes from. Its configuration names every colour but the eight. */
+/** The style the palette comes from. Its configuration names every colour but the eight. */
 const journal = configuredIn(
   readFileSync(join(repositoryRoot, prototypeDirectory, sourceScreen), 'utf8'),
 );
@@ -57,7 +63,7 @@ function rulesFor(compiled: string, selector: string): string[] {
   );
 }
 
-describe('the theme the application draws in is the prototype, and its palette is the token package', () => {
+describe('the theme the application draws in is the token package, in the shape Tailwind reads', () => {
   describe('one palette, read from @emi/tokens', () => {
     it.each(everyRole)('%s is the same colour in the configuration as in the tokens', (name) => {
       const role = hyphenated(name);
@@ -72,12 +78,12 @@ describe('the theme the application draws in is the prototype, and its palette i
       expect(extended.colors[role]).toBe(colour[name]);
     });
 
-    it('names every role the configuration names, and no role it does not', () => {
+    it('names every role the prototype names, and no role it does not', () => {
       expect(Object.keys(extended.colors).sort()).toEqual(Object.keys(journal.colours).sort());
       expect(Object.keys(journal.colours)).toHaveLength(47);
     });
 
-    it('holds the eight the configuration never names, because the ring draws them itself', () => {
+    it('holds the eight the prototype never names, because the ring draws them itself', () => {
       const unconfigured = everyRole
         .map(hyphenated)
         .filter((role) => journal.colours[role] === undefined);
@@ -104,102 +110,98 @@ describe('the theme the application draws in is the prototype, and its palette i
     });
   });
 
-  describe('everything else is the prototype, value for value', () => {
-    it('takes the radii unrounded and unrenamed', () => {
-      expect(extended.borderRadius).toEqual(prototype.radii);
-      expect(Object.keys(extended.borderRadius)).toHaveLength(4);
+  describe('the corners, the spacing and the faces are the tokens too', () => {
+    it('takes all six corners, at the scale the front matter names', () => {
+      expect(extended.borderRadius).toEqual(
+        Object.fromEntries(radiusNames.map((name) => [name, `${String(radius[name])}px`])),
+      );
+      expect(Object.keys(extended.borderRadius)).toHaveLength(6);
     });
 
-    it('takes the spacing steps unrounded and unrenamed', () => {
-      expect(extended.spacing).toEqual(prototype.spacing);
-      expect(Object.keys(extended.spacing)).toHaveLength(7);
+    it('takes all eleven spacing steps, under the names Tailwind writes them with', () => {
+      expect(extended.spacing).toEqual(
+        Object.fromEntries(
+          spaceNames.map((name) => [hyphenated(name), `${String(space[name])}px`]),
+        ),
+      );
+      expect(Object.keys(extended.spacing)).toHaveLength(11);
     });
 
-    it('declares the eleven text roles itself rather than through Tailwind’s own scale', () => {
+    it('declares the thirteen text roles itself rather than through Tailwind’s own scale', () => {
       // Given a size and a line height together, Tailwind writes the line height as a variable
       // fallback, which react-native-css reads as a multiple of the font size. So the roles are
       // written as plain declarations by a plugin and the values are asserted on what compiles.
       expect('fontSize' in extended).toBe(false);
-      expect(Object.keys(prototype.type)).toHaveLength(11);
+      expect(typeRoleNames).toHaveLength(13);
     });
 
-    it('sets every role in the one face the design system names', () => {
-      const faces = new Set(Object.values(extended.fontFamily).map((family) => family.join(', ')));
+    it('sets every role in the file the application registers, never in the family’s own name', () => {
+      expect(extended.fontFamily).toEqual(
+        Object.fromEntries(
+          typeRoleNames.map((role) => [
+            role,
+            [fontNameFor(typeScale[role].face, typeScale[role].weight)],
+          ]),
+        ),
+      );
 
-      expect([...faces]).toEqual(['Plus Jakarta Sans']);
-      expect(Object.keys(extended.fontFamily)).toHaveLength(11);
+      // A role that named the design's own family would draw in none of the files that ship, so
+      // every name here is one of the six the application registers.
+      const registered = new Set(fontFiles.map((file) => file.name));
+      const named = Object.values(extended.fontFamily).flat();
+
+      expect(named.filter((family) => !registered.has(family))).toEqual([]);
     });
   });
 
   describe('what Tailwind compiles from it', () => {
     const compiled = theCompiledTheme();
-    const everyRoleCompiled = theThemeWithEveryTextRole(Object.keys(prototype.type));
+    const everyRoleCompiled = theThemeWithEveryTextRole([...typeRoleNames]);
 
-    it.each(Object.entries(prototype.type))(
-      'writes %s at the size, the tracking and the weight the prototype gives it',
-      (role, written) => {
+    it.each([...typeRoleNames])(
+      'writes %s at the size, the tracking and the weight the tokens give it',
+      (role) => {
+        const step = typeScale[role];
         const rules = rulesFor(everyRoleCompiled, `.text-${role}`);
+        const tracking = letterSpacingOf(step.size, step.letterSpacingEm);
 
         expect(rules).toHaveLength(1);
-        expect(rules[0]).toContain(`font-size: ${written.fontSize};`);
-        expect(rules[0]).toContain(`font-weight: ${written.fontWeight};`);
-        if (written.letterSpacing !== undefined) {
-          expect(rules[0]).toContain(`letter-spacing: ${written.letterSpacing};`);
+        expect(rules[0]).toContain(`font-size: ${String(step.size)}px;`);
+        expect(rules[0]).toContain(`font-weight: ${String(step.weight)};`);
+        if (tracking !== 0) {
+          expect(rules[0]).toContain(`letter-spacing: ${String(tracking)}px;`);
         }
       },
     );
 
-    it.each(Object.entries(prototype.type))(
+    it.each([...typeRoleNames])(
       'gives %s a line height in points rather than a variable a phone reads as a multiple',
-      (role, written) => {
+      (role) => {
         const rule = rulesFor(everyRoleCompiled, `.text-${role}`).join(' ');
 
         // react-native-css reads a length inside a variable fallback as a multiple of the font
         // size, so `line-height: var(--tw-leading, 14px)` on eleven point text draws at 154.
-        expect(rule).toContain(`line-height: ${written.lineHeight};`);
+        expect(rule).toContain(`line-height: ${String(typeScale[role].lineHeight)}px;`);
         expect(rule).not.toContain('var(--tw-leading');
       },
     );
 
-    it('draws the capsule in the colour the prototype fills it with, at nine tenths', () => {
+    it('draws the dock on the card ground, at the corner every container takes', () => {
       expect(compiled).toContain(
-        `.bg-surface-container-lowest\\/90 {\n  background-color: color-mix(in oklab, ${colour.surfaceContainerLowest} 90%, transparent);`,
+        `.bg-surface-container-lowest {\n  background-color: ${colour.surfaceContainerLowest};`,
+      );
+      expect(compiled).toContain(`.rounded-xl {\n  border-radius: ${String(radius.xl)}px;`);
+      expect(compiled).toContain(
+        `.border-outline-variant {\n  border-color: ${colour.outlineVariant};`,
       );
     });
 
-    it('writes the corner and the margin the dock stands on', () => {
-      expect(compiled).toContain(`.rounded-full {\n  border-radius: ${prototype.radii['full']};`);
-      expect(compiled).toContain(`.px-margin {\n  padding-inline: ${prototype.spacing['margin']};`);
+    it('writes the margin the dock stands on, and the face its words are drawn in', () => {
+      expect(compiled).toContain(`.px-margin {\n  padding-inline: ${String(space.margin)}px;`);
+      expect(compiled).toContain(
+        `.font-label-sm {\n  font-family: ${fontNameFor(typeScale['label-sm'].face, typeScale['label-sm'].weight)};`,
+      );
     });
-  });
-});
-
-describe('the room the chrome leaves at the foot of a screen is the one the prototype writes', () => {
-  const screens = readdirSync(join(repositoryRoot, supersededDirectory))
-    .sort()
-    .filter((file) => file.endsWith('.html'));
-
-  /** What each screen of the prototype reserves, in points. */
-  const reserved = screens.map((file) => ({
-    file,
-    points: footRoomIn(
-      readFileSync(join(repositoryRoot, supersededDirectory, file), 'utf8'),
-      REM_IN_POINTS,
-    ),
-  }));
-
-  it('is the number the prototype writes, and not one typed beside the code', () => {
-    // A comment saying a number came from somewhere agrees with the code whatever either one is
-    // changed to. This reads the class off the screen and holds the constant against it.
-    expect(reserved).not.toHaveLength(0);
-    for (const screen of reserved) {
-      expect([screen.file, dockRoom]).toEqual([screen.file, screen.points]);
-    }
-  });
-
-  it('is the same on every screen of the prototype, so one of them speaks for the set', () => {
-    expect(screens).toHaveLength(5);
-    expect(new Set(reserved.map((screen) => screen.points)).size).toBe(1);
   });
 });
 

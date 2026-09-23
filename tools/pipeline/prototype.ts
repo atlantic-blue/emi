@@ -25,57 +25,8 @@ export const sourceScreen = 'screen-0-style-sheet.html';
 /** The document written from that configuration. */
 export const designSystemDocument = join('docs', 'design', 'prototype-design-system.md');
 
-/**
- * The style Emi was drawn in before the Warm Editorial Journal export of 2026-09-23, kept because
- * `apps/mobile/tailwind.config.js` still reads the corners, the spacing and the type roles out of
- * this screen. The palette left with the tokens. The step that moves the components moves the rest
- * and deletes the directory. `docs/design/warm-humanist-editorial/README.md` says which.
- */
-export const supersededDirectory = join('docs', 'design', 'warm-humanist-editorial');
-
-/** The screen the application's theme is still read from. */
-export const supersededScreen = 'today-dashboard.html';
-
 /** The element each screen carries, holding the configuration the page draws itself with. */
 export const configurationElement = 'tailwind-config';
-
-/** The element each screen wraps its content in, which is where the room at the foot is written. */
-export const contentElement = 'main';
-
-/**
- * Tailwind's own spacing scale, as a multiple of a rem. A class like `pb-28` is twenty eight of
- * these, and it is the scale Tailwind ships rather than one the prototype configures.
- */
-export const SPACING_STEP_IN_REM = 0.25;
-
-/**
- * The room a screen reserves at its foot, in steps of Tailwind's spacing scale.
- *
- * The dock hangs over the screen rather than standing beside it, so a screen leaves room for it at
- * its foot and the prototype writes that room as a padding class on the content element. It is
- * read here rather than typed anywhere, because a number typed beside the code it describes agrees
- * with it whatever either one is changed to.
- */
-export function footStepsIn(html: string): number {
-  const element = new RegExp(`<${contentElement} class="([^"]*)"`).exec(html);
-
-  if (element?.[1] === undefined) {
-    throw new Error(`the screen carries no ${contentElement} element, so it reserves nothing`);
-  }
-
-  const reserved = /(?:^| )pb-(\d+)(?: |$)/.exec(element[1]);
-
-  if (reserved?.[1] === undefined) {
-    throw new Error(`the ${contentElement} element reserves no room at its foot: ${element[1]}`);
-  }
-
-  return Number(reserved[1]);
-}
-
-/** The same room in points, at the size a rem is drawn on a phone. */
-export function footRoomIn(html: string, remInPoints: number): number {
-  return footStepsIn(html) * SPACING_STEP_IN_REM * remInPoints;
-}
 
 /** One type role, as both sides write it. A role the design system does not track has no tracking. */
 export interface TypeRole {
@@ -258,15 +209,19 @@ function spelt(value: string | undefined): string {
  *
  * The prototype names four corners, and all four carry the value Tailwind already gives that name.
  * The document names six under a scale one step wider, so three of the four shared names hold a
- * different value and the document names two corners the prototype never sets. The corner the markup
- * reaches for most is `xl`, 54 times, and the two sides are a factor of two apart on it. Which
- * scale Emi means is a decision nobody has taken, and it is
- * https://github.com/atlantic-blue/emi/issues/159.
+ * different value and the document names two corners the prototype never sets. The corner the
+ * markup reaches for most is `xl`, 54 times, and the two sides are a factor of two apart on it.
  *
- * It is recorded here one sentence at a time rather than by allowing the block, so a move on
- * either side, the decision included, reddens the check that reads them.
+ * Emi draws the document's scale. The tokens took the front matter, and
+ * `apps/mobile/tailwind.config.js` reads the tokens, which answers
+ * https://github.com/atlantic-blue/emi/issues/159. The export keeps its own corners because it is an
+ * export: a value that moves in there moves everything, so the difference is recorded rather than
+ * edited away.
+ *
+ * It is recorded one sentence at a time rather than by allowing the block, so a move on either
+ * side reddens the check that reads them.
  */
-export const radiiNobodyHasDecided: readonly string[] = [
+export const radiiTheExportKeeps: readonly string[] = [
   'radius DEFAULT: the prototype says 0.25rem and the design system says 0.5rem',
   'radius lg: the prototype says 0.5rem and the design system says 1rem',
   'radius md: the prototype says nothing and the design system says 0.75rem',
