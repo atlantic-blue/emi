@@ -73,8 +73,9 @@ type ColourName =
 ```
 
 The palette of the design system, name for name and value for value. The document is
-`docs/design/prototype-design-system.md` and `tests/designSystem.test.ts` reads this file
-against it, so a value that drifts from the document fails the run.
+`docs/design/warm-humanist-editorial/design-system.md`, the style this package still
+holds, and `tests/designSystem.test.ts` reads this file against it, so
+a value that drifts from the document fails the run.
 
 The set is closed. A screen that wants a colour the document does not name asks for it in the
 document first, because the contrast test can only measure what is here.
@@ -767,7 +768,8 @@ One face, and the eleven roles the design system names for it. The roles keep th
 design system gives them, so a reader can hold the two open side by side and a test can read one
 against the other.
 
-The design system is `docs/design/prototype-design-system.md`.
+The design system is `docs/design/warm-humanist-editorial/design-system.md`, the style this
+package still holds.
 
 ### `face`
 

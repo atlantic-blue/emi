@@ -1,8 +1,9 @@
 /**
  * The spacing and the corners of the design system, name for name and value for value. The
- * document is `docs/design/prototype-design-system.md` and `tests/designSystem.test.ts` reads
- * this file against it. The document measures in rem for a browser and a screen measures in
- * points, so every value here is its rem multiplied by ${REM_IN_POINTS}.
+ * document is `docs/design/warm-humanist-editorial/design-system.md`, the style this package still
+ * holds, and `tests/designSystem.test.ts` reads this file
+ * against it. The document measures in rem for a browser and a screen measures in points, so every
+ * value here is its rem multiplied by ${REM_IN_POINTS}.
  */
 
 /** What one rem of the document is worth on a phone. */

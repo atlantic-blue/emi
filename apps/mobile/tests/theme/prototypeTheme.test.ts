@@ -9,8 +9,8 @@ import { textStyle } from '../../../../packages/ui/src/gluestack/text/styles';
 import {
   configuredIn,
   footRoomIn,
-  prototypeDirectory,
-  sourceScreen,
+  supersededDirectory,
+  supersededScreen,
 } from '../../../../tools/pipeline/prototype';
 import theme from '../../tailwind.config';
 import { theCompiledTheme, theThemeWithEveryTextRole } from '../fixtures/theTheme';
@@ -26,7 +26,7 @@ import { theCompiledTheme, theThemeWithEveryTextRole } from '../fixtures/theThem
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
 
 const prototype = configuredIn(
-  readFileSync(join(repositoryRoot, prototypeDirectory, sourceScreen), 'utf8'),
+  readFileSync(join(repositoryRoot, supersededDirectory, supersededScreen), 'utf8'),
 );
 
 const extended = theme.theme.extend;
@@ -147,7 +147,7 @@ describe('the theme the application draws in is the prototype, and its palette i
 });
 
 describe('the room the chrome leaves at the foot of a screen is the one the prototype writes', () => {
-  const screens = readdirSync(join(repositoryRoot, prototypeDirectory))
+  const screens = readdirSync(join(repositoryRoot, supersededDirectory))
     .sort()
     .filter((file) => file.endsWith('.html'));
 
@@ -155,7 +155,7 @@ describe('the room the chrome leaves at the foot of a screen is the one the prot
   const reserved = screens.map((file) => ({
     file,
     points: footRoomIn(
-      readFileSync(join(repositoryRoot, prototypeDirectory, file), 'utf8'),
+      readFileSync(join(repositoryRoot, supersededDirectory, file), 'utf8'),
       REM_IN_POINTS,
     ),
   }));

@@ -3,7 +3,8 @@
  * design system gives them, so a reader can hold the two open side by side and a test can read one
  * against the other.
  *
- * The design system is `docs/design/prototype-design-system.md`.
+ * The design system is `docs/design/warm-humanist-editorial/design-system.md`, the style this
+ * package still holds.
  */
 export type FaceName = 'text';
 
