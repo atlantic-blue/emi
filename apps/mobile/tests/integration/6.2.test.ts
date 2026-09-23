@@ -65,11 +65,18 @@ function pullHeaders(key: DeviceKey, at: Date) {
   return signRequestHeaders(key, { method: 'GET', path: '/v1/records' }, at);
 }
 
-function median(times: number[]): number {
-  const sorted = [...times].sort((first, second) => first - second);
+/**
+ * How many times each refusal is measured. The two are still alternated round by round, so a
+ * runner that slows down part way through slows both of them by the same amount.
+ */
+const ROUNDS_MEASURED = 60;
 
-  return sorted[Math.floor(sorted.length / 2)] as number;
-}
+/**
+ * The floor a measurement has to clear before the comparison says anything. `performance.now()`
+ * moves in whole milliseconds under this runner, so a run below this is a handful of ticks and
+ * the ratio of two of them carries no information about the code.
+ */
+const THE_TIMERS_OWN_RESOLUTION_MILLISECONDS = 10;
 
 describe('a replayed request is refused', () => {
   describe('she opens Emi and the phone makes her an account', () => {
@@ -257,21 +264,26 @@ describe('a replayed request is refused', () => {
         'emi-account': hers.accountId,
       });
 
-      const unknownTimes: number[] = [];
-      const badTimes: number[] = [];
+      let unknownMilliseconds = 0;
+      let badMilliseconds = 0;
 
-      for (let round = 0; round < 60; round += 1) {
+      for (let round = 0; round < ROUNDS_MEASURED; round += 1) {
         const beforeUnknown = performance.now();
         await authorizeRequest(unknownAccount, store, firstLaunch);
-        unknownTimes.push(performance.now() - beforeUnknown);
-
-        const beforeBad = performance.now();
+        const betweenThem = performance.now();
         await authorizeRequest(badSignature, store, firstLaunch);
-        badTimes.push(performance.now() - beforeBad);
+
+        unknownMilliseconds += betweenThem - beforeUnknown;
+        badMilliseconds += performance.now() - betweenThem;
       }
 
-      const ratio = median(unknownTimes) / median(badTimes);
+      const ratio = unknownMilliseconds / badMilliseconds;
 
+      // The whole run of each kind is added up rather than one call being taken as the measure.
+      // One call takes about one tick of the clock, so a middle value is one tick wide: a single
+      // tick of jitter reads as a ratio of two and reports a leak that is not there.
+      expect(unknownMilliseconds).toBeGreaterThan(THE_TIMERS_OWN_RESOLUTION_MILLISECONDS);
+      expect(badMilliseconds).toBeGreaterThan(THE_TIMERS_OWN_RESOLUTION_MILLISECONDS);
       expect(ratio).toBeGreaterThan(0.5);
       expect(ratio).toBeLessThan(2);
     });
