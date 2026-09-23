@@ -1,7 +1,7 @@
 # The brand sheet
 
 One page carrying the whole brand: the mark, the application icon, every colour with the ratio
-somebody measured it at, the type scale, the ring in three states, the twenty icons and the three
+somebody measured it at, the type scale, the ring in three states, the twenty eight icons and the three
 onboarding pieces.
 
 Two files are committed here.

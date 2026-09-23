@@ -1,24 +1,45 @@
 #!/usr/bin/env -S node --experimental-strip-types
 /**
- * The drawings are the source. This reads every file in this directory and writes the token module
- * that names them, so adding an icon is adding one file and running this again.
+ * The drawings are the source. This reads every drawing, holds each one to the rules in README.md,
+ * and writes the token module that names them, so adding an icon is adding one file and running
+ * this again. A drawing that breaks a rule is refused before anything is written.
  */
 
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { colours } from '../../packages/tokens/src/colour.ts';
 import { stroke } from '../../packages/tokens/src/space.ts';
 
+import { ICON_CORNER, ICON_GRID as ICON_SIZE, problemsWith } from './rules.ts';
+
 const here = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = join(here, '..', '..');
-const tokenModule = join(repositoryRoot, 'packages', 'tokens', 'src', 'icons.ts');
-const contactSheet = join(here, 'contact-sheet.svg');
 
-const ICON_SIZE = 24;
-const ICON_CORNER = 2;
+/**
+ * Where the drawings are read from, and where the two generated files go. A run that says
+ * nothing gets the set this repository ships. A run that says all three gets a directory of its
+ * own, so a drawing that breaks a rule can be shown to be refused without touching the set.
+ */
+function pathArgument(name: string, fallback: string): string {
+  const at = process.argv.indexOf(`--${name}`);
+  const given = at === -1 ? undefined : process.argv[at + 1];
+
+  if (at !== -1 && given === undefined) {
+    throw new Error(`--${name} names no path`);
+  }
+
+  return given === undefined ? fallback : resolve(given);
+}
+
+const drawingsFrom = pathArgument('from', here);
+const tokenModule = pathArgument(
+  'module',
+  join(repositoryRoot, 'packages', 'tokens', 'src', 'icons.ts'),
+);
+const contactSheet = pathArgument('sheet', join(here, 'contact-sheet.svg'));
 const SHEET_COLUMNS = 5;
 const SHEET_CELL = 96;
 
@@ -159,11 +180,31 @@ ${placed}
 `;
 }
 
-const drawings = readDrawings(here);
+/** Every rule broken by any drawing in the directory, in the order the files are read. */
+function problemsIn(directory: string): readonly string[] {
+  return drawingFiles(directory).flatMap((file) =>
+    problemsWith(file, readFileSync(join(directory, file), 'utf8')),
+  );
+}
+
+const refused = problemsIn(drawingsFrom);
+
+if (refused.length > 0) {
+  for (const problem of refused) {
+    process.stderr.write(`${problem}\n`);
+  }
+  process.stderr.write(
+    `${refused.length} drawing rule(s) broken, so nothing was written. The rules are in ` +
+      `brand/icons/README.md.\n`,
+  );
+  process.exit(1);
+}
+
+const drawings = readDrawings(drawingsFrom);
 writeFileSync(tokenModule, moduleSource(drawings), 'utf8');
 writeFileSync(contactSheet, contactSheetSource(drawings), 'utf8');
 execFileSync('npx', ['prettier', '--write', tokenModule], {
   cwd: repositoryRoot,
   stdio: 'inherit',
 });
-process.stdout.write(`${drawings.length} drawings, written to packages/tokens/src/icons.ts\n`);
+process.stdout.write(`${drawings.length} drawings, written to ${tokenModule}\n`);

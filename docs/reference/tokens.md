@@ -338,16 +338,19 @@ The name a style uses to reach that file. A style names the registered name and 
 
 ```
 type IconName =
+  | 'bloating'
   | 'calendar'
   | 'chart'
   | 'check'
   | 'chevron'
   | 'close'
   | 'delete'
+  | 'digestion'
   | 'drop'
   | 'edit'
   | 'energy'
   | 'export'
+  | 'headache'
   | 'lock'
   | 'mood'
   | 'note'
@@ -357,6 +360,7 @@ type IconName =
   | 'search'
   | 'settings'
   | 'shield'
+  | 'skin'
   | 'sleep'
   | 'spotting'
   | 'sun'
