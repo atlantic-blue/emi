@@ -77,7 +77,7 @@ export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
 const styles = StyleSheet.create({
   days: {
     color: colour.onSurface,
-    ...textStyle('headline-xl'),
+    ...textStyle('data-lg'),
   },
   step: {
     alignItems: 'center',

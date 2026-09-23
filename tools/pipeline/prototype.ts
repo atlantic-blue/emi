@@ -27,18 +27,14 @@ export const designSystemDocument = join('docs', 'design', 'prototype-design-sys
 
 /**
  * The style Emi was drawn in before the Warm Editorial Journal export of 2026-09-23, kept because
- * the application still draws its whole theme from it: `packages/tokens` holds this palette and
- * this type scale, and `apps/mobile/tailwind.config.js` reads the corners, the spacing and the
- * type roles out of this screen. Two later steps move both and delete the directory.
- * `docs/design/warm-humanist-editorial/README.md` says which.
+ * `apps/mobile/tailwind.config.js` still reads the corners, the spacing and the type roles out of
+ * this screen. The palette left with the tokens. The step that moves the components moves the rest
+ * and deletes the directory. `docs/design/warm-humanist-editorial/README.md` says which.
  */
 export const supersededDirectory = join('docs', 'design', 'warm-humanist-editorial');
 
 /** The screen the application's theme is still read from. */
 export const supersededScreen = 'today-dashboard.html';
-
-/** The document `packages/tokens` is still held to. */
-export const supersededDocument = join(supersededDirectory, 'design-system.md');
 
 /** The element each screen carries, holding the configuration the page draws itself with. */
 export const configurationElement = 'tailwind-config';

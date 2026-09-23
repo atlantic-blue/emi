@@ -23,12 +23,19 @@ export interface PhasePalette {
   readonly ink: ColourName;
 }
 
-/** Which pair each phase takes. Section 9.3 of the design measured every one of them. */
+/**
+ * Which pair each phase takes. Each phase has a fill and an ink of its own in the palette, so a
+ * phase colour can no longer be mistaken for a button or a container.
+ *
+ * Measured against the canvas: the inks read at 11.94, 9.48, 9.95 and 11.21 to 1. On their own
+ * fill they read at 4.24, 4.85, 4.13 and 3.47, and three of those are under the floor, which is
+ * why contract SEE-2 keeps a word off a fill whatever the fill measures.
+ */
 export const phasePalette: Readonly<Record<PhaseName, PhasePalette>> = {
-  period: { fill: 'primaryContainer', ink: 'onPrimaryFixedVariant' },
-  follicular: { fill: 'secondaryContainer', ink: 'onSecondaryContainer' },
-  ovulation: { fill: 'primary', ink: 'onPrimaryFixedVariant' },
-  luteal: { fill: 'tertiaryContainer', ink: 'onTertiaryFixedVariant' },
+  period: { fill: 'period', ink: 'periodInk' },
+  follicular: { fill: 'follicular', ink: 'follicularInk' },
+  ovulation: { fill: 'ovulation', ink: 'ovulationInk' },
+  luteal: { fill: 'luteal', ink: 'lutealInk' },
 };
 
 /** The name the ring writes inside the track, which is the cue colour cannot carry. */

@@ -180,7 +180,7 @@ function typeLines(sources: BrandSources): string[] {
     const tracking = letterSpacingOf(style.size, style.letterSpacingEm);
     const spacing = tracking === 0 ? '' : `, letter spacing ${tracking}`;
 
-    return `- \`${name}\` is ${style.size} points over ${style.lineHeight} at weight ${style.weight}${spacing}, which is ${multiple} times the size.`;
+    return `- \`${name}\` is ${style.size} points over ${style.lineHeight} at weight ${style.weight}${spacing}, which is ${multiple} times the size, set in ${sources.faces[style.face]}.`;
   });
 }
 
@@ -226,12 +226,18 @@ function paragraph(prose: string, width = 100): string[] {
 }
 
 // A fill that measures above the floor is still refused as text, because the rule covers all four.
-// The sentence only appears while that is true of one of them.
+// The sentence says which way round it is today, because a reader cannot tell from the list.
 function aboveTheFloor(sources: BrandSources): string[] {
   const passing = fillPairs(sources).filter((pair) => pair.ratio >= CONTRAST_FLOOR);
 
   if (passing.length === 0) {
-    return [];
+    return [
+      ...paragraph(
+        `No phase fill measures above the floor. The rule that a fill carries no text is the same
+         either way: it covers every fill rather than the ones that measure badly.`,
+      ),
+      '',
+    ];
   }
 
   const named = sentenceList(passing.map((pair) => `\`${pair.text}\``));
@@ -249,7 +255,7 @@ function aboveTheFloor(sources: BrandSources): string[] {
 export function brandDocument(sources: BrandSources = shippedSources): string {
   const counts = brandCounts(sources);
   const floor = CONTRAST_FLOOR.toFixed(1);
-  const faces = sources.faces.text;
+  const faces = sources.faces;
   const refused = refusedPairs(sources).sort((one, other) => other.ratio - one.ratio);
 
   const lines = [
@@ -309,8 +315,10 @@ export function brandDocument(sources: BrandSources = shippedSources): string {
     'Status: built',
     '',
     ...paragraph(
-      `The scale has ${counts.sizes} roles, and every one of them is set in ${faces}. A line height
-       below ${LINE_HEIGHT_FLOOR.toFixed(1)} times the size fails the token test.`,
+      `The scale has ${counts.sizes} roles in three faces. The headings are set in ${faces.display},
+       the words she reads at length are set in ${faces.text}, and every number is set in
+       ${faces.data}. A line height below ${LINE_HEIGHT_FLOOR.toFixed(1)} times the size fails the
+       token test, and the role that sits under it is named with the rest.`,
     ),
     '',
     ...typeLines(sources),

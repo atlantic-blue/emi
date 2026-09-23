@@ -4,18 +4,17 @@ This is the style Emi was drawn in before 2026-09-23. The Warm Editorial Journal
 and that one is in `docs/design/prototype/` with its document in
 `docs/design/prototype-design-system.md`.
 
-Nothing new is drawn from here. It stays in the repository for two steps only, because the
-application still draws its whole theme from it:
+Nothing new is drawn from here. It stays in the repository for one step only, because
+`apps/mobile/tailwind.config.js` still reads `today-dashboard.html` for the type roles, the corners
+and the spacing, and `apps/mobile/tests/theme/prototypeTheme.test.ts` holds it there. The dock also
+measures the room at the foot of a screen off these five screens, and the new prototype reserves no
+such room because it has no dock. The step that moves the components deletes this directory.
 
-- `packages/tokens` holds this palette, this type scale and these spacing steps, and
-  `packages/tokens/tests/designSystem.test.ts` holds the two together value for value. The step that
-  moves the tokens to the new front matter deletes `design-system.md`.
-- `apps/mobile/tailwind.config.js` reads `today-dashboard.html` for the type roles, the corners and
-  the spacing, and `apps/mobile/tests/theme/prototypeTheme.test.ts` holds it there. The dock also
-  measures the room at the foot of a screen off these five screens, and the new prototype reserves
-  no such room because it has no dock. The step that moves the components deletes this directory.
+`packages/tokens` left in the step that moved the palette, the type scale and the spacing onto the
+new front matter. That step deleted `design-system.md`, which was the document the tokens were held
+to, so nothing here describes a value any more.
 
-Until both of those land, deleting anything here turns the application's theme into an empty read,
+Until the components move, deleting anything here turns the application's theme into an empty read,
 which is why it was moved rather than removed.
 
 ## The five screens
