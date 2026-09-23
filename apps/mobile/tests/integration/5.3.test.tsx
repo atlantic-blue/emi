@@ -457,7 +457,9 @@ describe('a raw database read reveals nothing about the day', () => {
           sheWroteAt.toISOString(),
         ],
       );
-      writeSetting(database, 'cycleLengthDays', '28');
+      // Written straight in, because that build held the stated cycle length in the setting table
+      // and no `SettingKey` names it any more.
+      database.run('INSERT INTO setting (key, value) VALUES (?, ?)', ['cycleLengthDays', '28']);
       writeSetting(database, 'firstRunCompletedAt', sheWroteAt.toISOString());
       // The tour runs before the two questions, so a phone that answered them has been through
       // it. Without this the application sends her to card 1 and this screen is never reached.

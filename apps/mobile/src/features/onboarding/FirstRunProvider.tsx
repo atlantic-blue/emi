@@ -1,7 +1,7 @@
 import { type ReactNode, createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
-import { useVault } from '../../services/vault/VaultProvider';
+import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
 import { completeFirstRun, defaultCycleLengthDays, firstRunIsDone } from './firstRun';
 import { markTourSeen, tourIsSeen } from './tour';
 
@@ -40,6 +40,7 @@ const FirstRunContext = createContext<FirstRun | undefined>(undefined);
 export function FirstRunProvider({ children }: { readonly children: ReactNode }): ReactNode {
   const database = useDatabase();
   const vault = useVault();
+  const profiles = useProfileVault();
   const [isDone, setIsDone] = useState(() => firstRunIsDone(database));
   const [tourIsDone, setTourIsDone] = useState(() => tourIsSeen(database));
   const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
@@ -54,9 +55,14 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     if (periodStartedOn === undefined) {
       throw new Error('the first run cannot finish before she has said when her period started');
     }
-    completeFirstRun(database, vault, { periodStartedOn, cycleLengthDays }, new Date());
+    completeFirstRun(
+      database,
+      { day: vault, profile: profiles },
+      { periodStartedOn, cycleLengthDays },
+      new Date(),
+    );
     setIsDone(firstRunIsDone(database));
-  }, [cycleLengthDays, database, periodStartedOn, vault]);
+  }, [cycleLengthDays, database, periodStartedOn, profiles, vault]);
 
   const leaveTheTour = useCallback(() => {
     markTourSeen(database, new Date());

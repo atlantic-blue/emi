@@ -7,6 +7,7 @@ import { readSetting } from '../../src/data/settingRepository';
 import {
   FirstRunError,
   type FirstRunRefusal,
+  type FirstRunVaults,
   completeFirstRun,
   firstRunIsDone,
   longestLookBackDays,
@@ -17,9 +18,14 @@ import {
   statedCycleLengthDays,
 } from '../../src/features/onboarding/firstRun';
 import { openTestDatabase } from '../data/nodeDatabase';
-import { herVault } from '../fixtures/herVault';
+import { herProfileVault, herVault } from '../fixtures/herVault';
 
 const sheAnswered = new Date('2026-05-14T12:00:00.000Z');
+
+/** Her day is sealed under one of these and her answers under the other, both under her one key. */
+function herVaults(): FirstRunVaults {
+  return { day: herVault(), profile: herProfileVault() };
+}
 const herPeriodStarted = '2026-05-09';
 
 function migrated(): Database {
@@ -63,7 +69,7 @@ describe('the answers she gives on the first run', () => {
 
       completeFirstRun(
         database,
-        herVault(),
+        herVaults(),
         { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
         sheAnswered,
       );
@@ -83,12 +89,12 @@ describe('the answers she gives on the first run', () => {
 
       completeFirstRun(
         database,
-        herVault(),
+        herVaults(),
         { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
         sheAnswered,
       );
 
-      expect(statedCycleLengthDays(database)).toBe(30);
+      expect(statedCycleLengthDays(database, herProfileVault())).toBe(30);
       expect(readSetting(database, 'firstRunCompletedAt')).toBe(sheAnswered.toISOString());
       expect(firstRunIsDone(database)).toBe(true);
     });
@@ -97,7 +103,7 @@ describe('the answers she gives on the first run', () => {
       const database = migrated();
 
       expect(firstRunIsDone(database)).toBe(false);
-      expect(statedCycleLengthDays(database)).toBeUndefined();
+      expect(statedCycleLengthDays(database, herProfileVault())).toBeUndefined();
     });
   });
 
@@ -109,7 +115,7 @@ describe('the answers she gives on the first run', () => {
         refusalFrom(() =>
           completeFirstRun(
             database,
-            herVault(),
+            herVaults(),
             { periodStartedOn: '2026-05-15', cycleLengthDays: 28 },
             sheAnswered,
           ),
@@ -126,7 +132,7 @@ describe('the answers she gives on the first run', () => {
         refusalFrom(() =>
           completeFirstRun(
             database,
-            herVault(),
+            herVaults(),
             { periodStartedOn: tooFar, cycleLengthDays: 28 },
             sheAnswered,
           ),
@@ -135,7 +141,7 @@ describe('the answers she gives on the first run', () => {
       expect(() =>
         completeFirstRun(
           database,
-          herVault(),
+          herVaults(),
           { periodStartedOn: tooFar, cycleLengthDays: 28 },
           sheAnswered,
         ),
@@ -152,7 +158,7 @@ describe('the answers she gives on the first run', () => {
       try {
         completeFirstRun(
           migrated(),
-          herVault(),
+          herVaults(),
           { periodStartedOn: day, cycleLengthDays: 28 },
           sheAnswered,
         );
@@ -190,7 +196,7 @@ describe('the answers she gives on the first run', () => {
           refusalFrom(() =>
             completeFirstRun(
               database,
-              herVault(),
+              herVaults(),
               { periodStartedOn: herPeriodStarted, cycleLengthDays: days },
               sheAnswered,
             ),
@@ -206,7 +212,7 @@ describe('the answers she gives on the first run', () => {
       const database = migrated();
       completeFirstRun(
         database,
-        herVault(),
+        herVaults(),
         { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
         sheAnswered,
       );
@@ -214,7 +220,7 @@ describe('the answers she gives on the first run', () => {
       expect(() =>
         completeFirstRun(
           database,
-          herVault(),
+          herVaults(),
           { periodStartedOn: '2026-05-10', cycleLengthDays: 29 },
           sheAnswered,
         ),
@@ -230,7 +236,7 @@ describe('the answers she gives on the first run', () => {
       expect(() =>
         completeFirstRun(
           refusing(database, 'setting'),
-          herVault(),
+          herVaults(),
           { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
           sheAnswered,
         ),
@@ -239,7 +245,7 @@ describe('the answers she gives on the first run', () => {
 
       completeFirstRun(
         database,
-        herVault(),
+        herVaults(),
         { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
         sheAnswered,
       );

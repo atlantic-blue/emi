@@ -9,11 +9,12 @@ import { LogFlow } from '../../../features/log/LogFlow';
 import { flowLogged, logFlow, unexpectedLogged } from '../../../features/log/logDay';
 import { useFirstRun } from '../../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../../features/onboarding/days';
-import { useVault } from '../../../services/vault/VaultProvider';
+import { useProfileVault, useVault } from '../../../services/vault/VaultProvider';
 
 export default function LogFlowRoute(): ReactNode {
   const database = useDatabase();
   const vault = useVault();
+  const profiles = useProfileVault();
   const router = useRouter();
   const { isDone } = useFirstRun();
   const [today] = useState(() => localDay(new Date()));
@@ -62,7 +63,7 @@ export default function LogFlowRoute(): ReactNode {
       onDone={() => router.back()}
       onMark={mark}
       onPick={pick}
-      ring={ringNow(database, vault, today)}
+      ring={ringNow(database, vault, profiles, today)}
       today={today}
     />
   );

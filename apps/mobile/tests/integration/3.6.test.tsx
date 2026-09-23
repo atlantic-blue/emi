@@ -22,6 +22,7 @@ import { listCycles } from '../../src/data/cycleRepository';
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
+import { writeProfile } from '../../src/data/profileRepository';
 import { writeSetting } from '../../src/data/settingRepository';
 import { cycleCopy } from '../../src/features/cycle/copy';
 import { logDay, recordedDays } from '../../src/features/cycle/rebuild';
@@ -49,7 +50,7 @@ import {
 } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
-import { herKeyIsInTheKeychain, herVault } from '../fixtures/herVault';
+import { herKeyIsInTheKeychain, herProfileVault, herVault } from '../fixtures/herVault';
 import { daysLogged, migratedDatabase, readDay } from '../fixtures/cycleCache';
 import { asSheLoggedIt, recordedAt } from '../fixtures/forecast';
 import { sizedTextIn } from '../fixtures/renderedText';
@@ -457,7 +458,14 @@ describe('the ring shows the forecast the arithmetic produced', () => {
         );
       }
 
-      writeSetting(database, 'cycleLengthDays', String(sheSaidHerCycleRuns));
+      writeProfile(database, herProfileVault(), {
+        profile: {
+          kind: 'profile',
+          cycleLengthDays: sheSaidHerCycleRuns,
+          recordedAt: whenSheOpensIt.toISOString(),
+        },
+        now: whenSheOpensIt,
+      });
       writeSetting(database, 'firstRunCompletedAt', whenSheOpensIt.toISOString());
       // The tour runs before the two questions, so a phone that answered them has been through
       // it. Without this the application sends her to card 1 and this screen is never reached.

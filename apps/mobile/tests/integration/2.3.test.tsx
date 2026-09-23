@@ -9,6 +9,7 @@ import type { Database } from '../../src/data/database';
 import { listDayLogs, readDayLog } from '../../src/data/dayLogRepository';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
+import { readProfile } from '../../src/data/profileRepository';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
 import {
   cycleLengthTestID,
@@ -32,7 +33,7 @@ import {
 } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
-import { theVaultOnHerPhone } from '../fixtures/herVault';
+import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -265,7 +266,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       await sheAnswersEveryScreen();
 
-      expect(readSetting(herDatabase(), 'cycleLengthDays')).toBe(String(herCycleLengthDays));
+      expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
+        herCycleLengthDays,
+      );
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
     });
 
@@ -511,7 +514,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       // The clock moved between the presses, so a second write would carry the later time in
       // all three of these. They are the assertion that a second press wrote nothing.
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
-      expect(readSetting(herDatabase(), 'cycleLengthDays')).toBe(String(herCycleLengthDays));
+      expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
+        herCycleLengthDays,
+      );
       const vault = await theVaultOnHerPhone();
       const row = readDayLog(herDatabase(), herPeriodStarted);
       expect(row && vault.open(row.payload)).toEqual({

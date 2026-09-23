@@ -9,7 +9,7 @@ import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/reco
 import { daysOf } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import { daysLogged, migratedDatabase, readDay } from './cycleCache';
 import { encodeDay } from './dayPayload';
-import { herVault } from './herVault';
+import { herProfileVault, herVault } from './herVault';
 
 export const recordedAt = new Date('2026-09-17T08:00:00.000Z');
 
@@ -35,7 +35,7 @@ export function atNoonOn(day: string): Date {
 
 /**
  * Her database as it stands after the first run and every day she logged since, which is the only
- * way the stated cycle length reaches the settings. The first run writes the day she gave, so the
+ * way the stated cycle length reaches her profile. The first run writes the day she gave, so the
  * rest of the set is logged behind it, one day at a time, each write stamped on the day it happened.
  */
 export function asSheLoggedIt(set: RecordedSet, cycleLengthDays: number): Database {
@@ -49,7 +49,7 @@ export function asSheLoggedIt(set: RecordedSet, cycleLengthDays: number): Databa
   const database = migratedDatabase();
   completeFirstRun(
     database,
-    herVault(),
+    { day: herVault(), profile: herProfileVault() },
     { periodStartedOn: firstDay.day, cycleLengthDays },
     atNoonOn(firstDay.day),
   );

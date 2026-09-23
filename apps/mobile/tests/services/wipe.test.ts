@@ -31,7 +31,7 @@ import { memorySecureStore } from '../fixtures/secureStore';
 function aPhoneWithASettingAndALaterTable(rows = 400) {
   const db = openTestDatabase();
   migrate(db);
-  writeSetting(db, 'cycleLengthDays', '29');
+  writeSetting(db, 'temperatureUnit', 'celsius');
   db.execute('CREATE TABLE a_later_migration (id TEXT NOT NULL PRIMARY KEY, kept BLOB) STRICT');
 
   for (let at = 0; at < rows; at += 1) {
@@ -89,7 +89,7 @@ describe('the local delete', () => {
       emptyTheDatabase(db);
 
       expect(everyTable(db)).toContain('day_log');
-      expect(() => writeSetting(db, 'cycleLengthDays', '31')).not.toThrow();
+      expect(() => writeSetting(db, 'temperatureUnit', 'fahrenheit')).not.toThrow();
     });
 
     it('leaves no free page holding what it deleted, and gives the pages back', () => {

@@ -1,9 +1,11 @@
 import type { Database } from './database';
 
-/** Local only. Nothing here syncs, because none of it is a fact she entered about her body. */
+/**
+ * Local only. Nothing here syncs, because none of it is a fact she entered about her body: a fact
+ * about her body is sealed in the profile under her vault key, and this table is plain text.
+ */
 export type SettingKey =
   | 'articleAnswer'
-  | 'cycleLengthDays'
   | 'firstRunCompletedAt'
   | 'lockOnReturn'
   | 'temperatureUnit'
@@ -12,7 +14,6 @@ export type SettingKey =
 
 export const settingKeys: readonly SettingKey[] = [
   'articleAnswer',
-  'cycleLengthDays',
   'firstRunCompletedAt',
   'lockOnReturn',
   'temperatureUnit',

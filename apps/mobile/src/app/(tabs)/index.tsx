@@ -12,7 +12,8 @@ import { HomeScreen } from '../../features/home/HomeScreen';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
 import type { DayVault } from '../../services/vault/dayVault';
-import { useVault } from '../../services/vault/VaultProvider';
+import type { ProfileVault } from '../../services/vault/profileVault';
+import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
 import { defaultCycleLengthDays, statedCycleLengthDays } from '../../features/onboarding/firstRun';
 
 interface Shown {
@@ -25,18 +26,24 @@ interface Shown {
  * What she is looking at, read back out of the cycle cache. The ring and the sentence under it are
  * built from one read of the same rows, so the screen cannot draw one cycle and name another.
  */
-function whatSheIsLookingAt(database: Database, vault: DayVault, today: string): Shown {
+function whatSheIsLookingAt(
+  database: Database,
+  vault: DayVault,
+  profiles: ProfileVault,
+  today: string,
+): Shown {
   const cycles = listCycles(database);
+  const stated = statedCycleLengthDays(database, profiles) ?? defaultCycleLengthDays;
 
   return {
     ring: ringInputFor({
       cycles,
       records: recordedDays(database, vault.open),
       today,
-      statedCycleLengthDays: statedCycleLengthDays(database) ?? defaultCycleLengthDays,
+      statedCycleLengthDays: stated,
     }),
     forecast: forecastOf(cycles),
-    cycleLengthDays: statedCycleLengthDays(database) ?? defaultCycleLengthDays,
+    cycleLengthDays: stated,
   };
 }
 
@@ -44,18 +51,19 @@ function whatSheIsLookingAt(database: Database, vault: DayVault, today: string):
 export default function HomeRoute(): ReactNode {
   const database = useDatabase();
   const vault = useVault();
+  const profiles = useProfileVault();
   const router = useRouter();
   const { isDone, tourIsDone } = useFirstRun();
   const [today] = useState(() => localDay(new Date()));
-  const [shown, setShown] = useState(() => whatSheIsLookingAt(database, vault, today));
+  const [shown, setShown] = useState(() => whatSheIsLookingAt(database, vault, profiles, today));
 
   // She logs a day and comes back to this screen rather than to a new one, so the rows are read
   // again every time it is looked at. Reading them once at the first render would leave the ring
   // drawing the cycle she was in before she wrote to it.
   useFocusEffect(
     useCallback(() => {
-      setShown(whatSheIsLookingAt(database, vault, today));
-    }, [database, today, vault]),
+      setShown(whatSheIsLookingAt(database, vault, profiles, today));
+    }, [database, profiles, today, vault]),
   );
 
   // The tour comes first, because a woman asked for the day her last period started has been
