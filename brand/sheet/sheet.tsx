@@ -2,13 +2,16 @@
 import {
   BEAD_HALO_WIDTH,
   BEAD_RADIUS,
+  CYCLE_DAY_ROLE,
   type ColourName,
   type FontFile,
   type Icon,
   type IconName,
+  PHASE_NAME_ROLE,
   RING_DIAMETER,
   RING_TRACK_WIDTH,
   type TypeRoleName,
+  beadPalette,
   colour,
   letterSpacingOf,
   faceFamily,
@@ -279,6 +282,7 @@ function styleSheet(fontsBase: string): string {
   align-items: center;
   justify-content: center;
 }`,
+    `.ring-phase { text-transform: uppercase; }`,
     `.ring-note { color: ${colour.onSurfaceVariant}; margin-top: 6px; }`,
     `.icon-grid { display: flex; flex-wrap: wrap; gap: 16px 24px; }`,
     `.icon-cell {
@@ -417,16 +421,16 @@ function Ring({ ring }: { ring: DrawnRing }): Html {
           <circle
             cx={bead.x}
             cy={bead.y}
-            fill={colour.primary}
+            fill={colour[beadPalette.fill]}
             r={BEAD_RADIUS}
-            stroke={colour.surfaceContainerLowest}
+            stroke={colour[beadPalette.halo]}
             stroke-width={BEAD_HALO_WIDTH}
           />
         </svg>
         <div class="middle">
-          <div class={`${roleClass('data-lg')}`}>{ring.day}</div>
+          <div class={`${roleClass(CYCLE_DAY_ROLE)}`}>{ring.day}</div>
           <div
-            class={`${roleClass('headline-md')}`}
+            class={`ring-phase ${roleClass(PHASE_NAME_ROLE)}`}
             style={`color: ${colour[phasePalette[geometry.phase].ink]}`}
           >
             {phaseLabel[geometry.phase]}

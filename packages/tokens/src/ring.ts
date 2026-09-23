@@ -1,4 +1,5 @@
 import type { ColourName } from './colour';
+import type { TypeRoleName } from './type';
 
 /**
  * The ring of design section 9.5. One continuous circular track, divided into four arcs sized by
@@ -46,6 +47,16 @@ export const phaseLabel: Readonly<Record<PhaseName, string>> = {
   luteal: 'Luteal',
 };
 
+/**
+ * The role the written phase name takes. It is a label rather than a headline because contract
+ * SCREEN-2 keeps the four words a stranger could read under 14 points, and the export writes it
+ * uppercase at the label size inside the ring.
+ */
+export const PHASE_NAME_ROLE: TypeRoleName = 'label-sm';
+
+/** The role the cycle day takes, which is the monospaced face the design system gives a figure. */
+export const CYCLE_DAY_ROLE: TypeRoleName = 'data-lg';
+
 /** A whole turn of the ring, which the arcs and the gaps between them share. */
 export const FULL_TURN_DEGREES = 360;
 
@@ -69,6 +80,18 @@ export const RING_TRACK_WIDTH = 16;
 export const BEAD_RADIUS = 9;
 /** Ground drawn around the bead, in points, so it reads against whichever phase is behind it. */
 export const BEAD_HALO_WIDTH = 2;
+
+/**
+ * The two colours the bead is drawn in. The design system gives the active bead on the ring to
+ * `primaryContainer` and keeps `primary` for the pressed state, and the bead is never pressed.
+ *
+ * They are named here because the phone and the brand picture both draw this bead, and a colour
+ * written at each of the two places is a colour that can disagree with itself.
+ */
+export const beadPalette: Readonly<Record<'fill' | 'halo', ColourName>> = {
+  fill: 'primaryContainer',
+  halo: 'surfaceContainerLowest',
+};
 
 /** How long one phase runs in the cycle being drawn, in whole days. */
 export interface PhaseSpan {
