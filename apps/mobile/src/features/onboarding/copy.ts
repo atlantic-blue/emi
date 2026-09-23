@@ -1,3 +1,5 @@
+import { type Regularity, regularityValues } from '@emi/crypto';
+
 import { words } from '../../language';
 import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
 
@@ -65,6 +67,11 @@ export const firstRunCopy = {
     action: words('onboarding.periodLength.action'),
     skip: words('onboarding.periodLength.skip'),
   },
+  regularity: {
+    title: words('onboarding.regularity.title'),
+    lines: [words('onboarding.regularity.line.explains')],
+    action: words('onboarding.regularity.action'),
+  },
   hold: {
     title: words('onboarding.hold.title'),
     instruction: words('onboarding.hold.instruction'),
@@ -98,11 +105,26 @@ export const firstRunScreens = [
   'periodBefore',
   'cycleLength',
   'periodLength',
+  'regularity',
 ] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];
 
 export const firstRunScreenCount = firstRunScreens.length;
+
+/**
+ * The words of the three answers. A map rather than a list, so a fourth value arriving in
+ * `Regularity` leaves this file failing to compile instead of leaving her an answer she cannot
+ * choose.
+ */
+export const regularityLabels: Readonly<Record<Regularity, string>> = {
+  regular: words('onboarding.regularity.choice.regular'),
+  moves: words('onboarding.regularity.choice.moves'),
+  unknown: words('onboarding.regularity.choice.unknown'),
+};
+
+/** The order the screen offers them in, which the record above cannot carry. */
+export const regularityChoices: readonly Regularity[] = regularityValues;
 
 /**
  * How far along she is, said in words. Nothing draws it: the bar carries the position on the

@@ -20,11 +20,11 @@ export default function PeriodLengthRoute(): ReactNode {
       onChange={setPeriodLengthDays}
       onDone={() => {
         setPeriodLengthDays(shown);
-        router.push('/onboarding/hold');
+        router.push('/onboarding/regularity');
       }}
       onNotSure={() => {
         setPeriodLengthDays(undefined);
-        router.push('/onboarding/hold');
+        router.push('/onboarding/regularity');
       }}
     />
   );

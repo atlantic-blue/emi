@@ -125,9 +125,14 @@ async function sheSkipsThePeriodBefore(): Promise<void> {
   await fireEvent.press(theScreen('periodBefore').getByTestId(onboardingSkipTestID));
 }
 
-/** The way past the period length, which is the last question and says she is not sure. */
+/** The way past the period length, which says she is not sure. */
 async function sheSkipsThePeriodLength(): Promise<void> {
   await fireEvent.press(theScreen('periodLength').getByTestId(onboardingSkipTestID));
+}
+
+/** The way past the regularity, which is the last question and leaves her profile without it. */
+async function sheSkipsTheRegularity(): Promise<void> {
+  await fireEvent.press(theScreen('regularity').getByTestId(onboardingSkipTestID));
 }
 
 /** The whole first run: every question answered, and the hold that writes the answers. */
@@ -335,7 +340,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       );
     });
 
-    it('asks her seven questions, holds once, and asks nothing else', async () => {
+    it('asks her eight questions, holds once, and asks nothing else', async () => {
       const app = await sheOpensEmi();
       const visited = [app.pathname()];
 
@@ -354,6 +359,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
       await sheHoldsTheRing();
 
       expect(visited).toEqual([
@@ -364,6 +371,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/period-before',
         '/onboarding/cycle-length',
         '/onboarding/period-length',
+        '/onboarding/regularity',
         '/onboarding/hold',
       ]);
       expect(app.pathname()).toBe('/');
@@ -386,6 +394,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'name.tsx',
         'period-before.tsx',
         'period-length.tsx',
+        'regularity.tsx',
         'welcome.tsx',
         'year-of-birth.tsx',
       ]);
@@ -514,6 +523,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       }
       await sheAnswers('cycleLength');
       await sheSkipsThePeriodLength();
+      await sheSkipsTheRegularity();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');
@@ -572,6 +582,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await sheSkipsThePeriodLength();
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await sheSkipsTheRegularity();
       expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
@@ -616,6 +629,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         fireEvent.press(done);
         fireEvent.press(done);
       });
+      await sheSkipsTheRegularity();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');

@@ -1,3 +1,4 @@
+import type { Regularity } from '@emi/crypto';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
@@ -23,6 +24,8 @@ interface Shown {
   readonly cycleLengthDays: number;
   /** Her name, where she gave one, which is the only thing the home screen greets her by. */
   readonly name: string | undefined;
+  /** How steady she said her cycle is, where she answered, which adds one sentence and no more. */
+  readonly regularity: Regularity | undefined;
 }
 
 /**
@@ -52,6 +55,7 @@ function whatSheIsLookingAt(
     forecast: forecastOf(cycles),
     cycleLengthDays: stated,
     name: herAnswers?.name,
+    regularity: herAnswers?.regularity,
   };
 }
 
@@ -93,6 +97,7 @@ export default function HomeRoute(): ReactNode {
       onHistory={() => router.push('/history')}
       onLogToday={() => router.push('/log')}
       onSettings={() => router.push('/settings')}
+      regularity={shown.regularity}
       ring={shown.ring}
     />
   );

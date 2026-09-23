@@ -1,3 +1,4 @@
+import type { Regularity } from '@emi/crypto';
 import {
   type ReactNode,
   createContext,
@@ -28,6 +29,8 @@ interface FirstRun {
   readonly cycleLengthDays: number;
   /** Nothing at all where she said she is not sure, which is that question's way past it. */
   readonly periodLengthDays: number | undefined;
+  /** Nothing at all where she skipped the question, which leaves the forecast saying nothing. */
+  readonly regularity: Regularity | undefined;
   /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
   readonly nameTyped: string;
   readonly birthYear: number | undefined;
@@ -37,6 +40,8 @@ interface FirstRun {
   readonly setCycleLengthDays: (days: number) => void;
   /** Nothing is the answer "I am not sure" leaves behind, so the setter takes it as well. */
   readonly setPeriodLengthDays: (days: number | undefined) => void;
+  /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as an answer. */
+  readonly setRegularity: (answer: Regularity | undefined) => void;
   readonly setNameTyped: (typed: string) => void;
   /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as a year. */
   readonly setBirthYear: (year: number | undefined) => void;
@@ -77,6 +82,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [periodBeforeStartedOn, setPeriodBeforeStartedOn] = useState<string | undefined>(undefined);
   const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
   const [periodLengthDays, setPeriodLengthDays] = useState<number | undefined>(undefined);
+  const [regularity, setRegularity] = useState<Regularity | undefined>(undefined);
   const [nameTyped, setNameTyped] = useState('');
   const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
   const writing = useRef(false);
@@ -101,6 +107,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
           periodBeforeStartedOn,
           cycleLengthDays,
           periodLengthDays,
+          regularity,
           name: nameSheGave(nameTyped),
           birthYear,
         },
@@ -119,6 +126,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     periodBeforeStartedOn,
     periodLengthDays,
     periodStartedOn,
+    regularity,
   ]);
 
   const leaveTheTour = useCallback(() => {
@@ -131,6 +139,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setPeriodBeforeStartedOn(undefined);
     setCycleLengthDays(defaultCycleLengthDays);
     setPeriodLengthDays(undefined);
+    setRegularity(undefined);
     setNameTyped('');
     setBirthYear(undefined);
     setIsDone(firstRunIsDone(database));
@@ -145,12 +154,14 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       periodBeforeStartedOn,
       cycleLengthDays,
       periodLengthDays,
+      regularity,
       nameTyped,
       birthYear,
       setPeriodStartedOn,
       setPeriodBeforeStartedOn,
       setCycleLengthDays,
       setPeriodLengthDays,
+      setRegularity,
       setNameTyped,
       setBirthYear,
       leaveTheTour,
@@ -166,6 +177,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       periodBeforeStartedOn,
       periodLengthDays,
       periodStartedOn,
+      regularity,
       reread,
       tourIsDone,
       writeEverything,

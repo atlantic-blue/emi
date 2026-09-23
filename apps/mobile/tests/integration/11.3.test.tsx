@@ -344,6 +344,7 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
       await sheHoldsTheRing();
 
       expect((await herSealedDays()).map((day) => day.day)).toEqual([herPeriodStarted]);

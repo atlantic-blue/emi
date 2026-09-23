@@ -258,6 +258,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
       await sheHoldsTheRing();
 
       expect((await herProfile())?.birthYear).toBeUndefined();
@@ -275,6 +276,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await sheHoldsTheRing();
 

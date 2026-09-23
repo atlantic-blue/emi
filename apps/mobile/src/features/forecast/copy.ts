@@ -15,6 +15,12 @@ import { type WordKey, words } from '../../language';
 export const forecastCopy = {
   nextPeriod: words('forecast.nextPeriod'),
   fertileWindow: words('forecast.fertileWindow'),
+  /**
+   * What a cycle that moves costs her: a range she reads as wider than a steadier woman's. It says
+   * what the arithmetic already did rather than promising anything, because her answer widens
+   * nothing. The spread of her own logged cycles is the only thing the two ends are taken from.
+   */
+  cycleMoves: words('forecast.cycleMoves'),
 } as const;
 
 export type ForecastCopyRefusal = 'range-is-one-day' | 'range-ends-before-it-starts';
