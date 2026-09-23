@@ -62,6 +62,31 @@ describe('a picture of a screen draws what a field holds', () => {
     });
   });
 
+  describe('a rounded box inside a drawing', () => {
+    // The lock of the icon set is a rectangle and a path. Without a case for the rectangle the
+    // drawing came out as the shackle alone, hanging over nothing, and the picture said the
+    // application drew a lock with no body.
+    const aRoundedBox = {
+      type: 'RNSVGRect',
+      props: { x: 4.5, y: 10.25, width: 15, height: 10.25, rx: 2 },
+      children: [],
+    };
+
+    it('is drawn with its own geometry, and its corner', () => {
+      const drawn = markupOf(aRoundedBox);
+
+      expect(drawn).toContain('<rect');
+      expect(drawn).toContain('x="4.5"');
+      expect(drawn).toContain('width="15"');
+      expect(drawn).toContain('height="10.25"');
+      expect(drawn).toContain('rx="2"');
+    });
+
+    it('is left unfilled, so a stroked outline is not drawn as a blot', () => {
+      expect(markupOf(aRoundedBox)).toContain('fill="none"');
+    });
+  });
+
   describe('a node the renderer has no case for', () => {
     it('still keeps its children on the page', () => {
       const unknown = { type: 'RCTSomethingElse', props: {}, children: ['a word'] };

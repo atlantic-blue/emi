@@ -58,4 +58,7 @@ export async function herPhoneHolds(
 
   writeSetting(database, 'cycleLengthDays', String(cycleLengthDays));
   writeSetting(database, 'firstRunCompletedAt', firstRunFinishedAt.toISOString());
+  // The tour runs before the two questions, so a phone that answered them has been through it.
+  // Without this the application sends her to card 1 and the screen under test is never reached.
+  writeSetting(database, 'tourSeenAt', firstRunFinishedAt.toISOString());
 }

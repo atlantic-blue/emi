@@ -8,7 +8,8 @@ import { startsACycle } from '@emi/cycle';
 import type { Database } from '../../src/data/database';
 import { listDayLogs, readDayLog } from '../../src/data/dayLogRepository';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
-import { readSetting } from '../../src/data/settingRepository';
+import { migrate } from '../../src/data/schema';
+import { readSetting, writeSetting } from '../../src/data/settingRepository';
 import {
   cycleLengthTestID,
   longerTestID,
@@ -134,6 +135,18 @@ function herDatabase(): Database {
   return expoDatabase(openDatabaseSync(databaseFileName));
 }
 
+/**
+ * The four cards of the tour, already read. Every case below is about the three screens that come
+ * after them, so the marker is written before she opens Emi and the first thing she sees is the
+ * first question. The tour itself is proven in 9.5.
+ */
+function theTourIsBehindHer(): void {
+  const database = herDatabase();
+
+  migrate(database);
+  writeSetting(database, 'tourSeenAt', whenSheOpensIt.toISOString());
+}
+
 function nodeTypesIn(node: unknown): string[] {
   if (Array.isArray(node)) {
     return node.flatMap(nodeTypesIn);
@@ -180,6 +193,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
     jest.setSystemTime(whenSheOpensIt);
     resetExpoSqlite();
     resetExpoSecureStore();
+    theTourIsBehindHer();
   });
 
   afterEach(() => {
@@ -274,12 +288,15 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(app.pathname()).toBe('/');
     });
 
-    it('has exactly three screens to route to, and one layout that is not one of them', () => {
+    it('has three screens to answer, the tour beside them, and one layout that is neither', () => {
       const held = readdirSync(join(appDirectory, 'onboarding')).sort();
 
       // A name opening with an underscore is a layout rather than a route, so she is never sent
       // to it. Both halves are named, so a deleted layout fails here as loudly as a fourth screen.
-      expect(held.filter((name) => !name.startsWith('_'))).toEqual([
+      // The tour is named on its own and taken out before the three are counted, so it is the one
+      // route beside them and a fourth question still fails here.
+      expect(held).toContain('tour.tsx');
+      expect(held.filter((name) => !name.startsWith('_') && name !== 'tour.tsx')).toEqual([
         'cycle-length.tsx',
         'last-period.tsx',
         'welcome.tsx',

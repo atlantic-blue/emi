@@ -16,6 +16,7 @@ import { lockOn, setLockOnReturn } from '../../src/features/lock/lockSetting';
 import { longerTestID } from '../../src/features/onboarding/CycleLength';
 import { dayTestID } from '../../src/features/onboarding/LastPeriod';
 import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
+import { tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import {
   cancelled,
@@ -132,6 +133,8 @@ describe('the lock shows when she comes back to the application', () => {
     it('holds the lock on, read from the settings the first run wrote', async () => {
       await sheOpensEmi();
 
+      // A fresh install opens on the tour, so the way out of it comes before the first question.
+      await shePresses(tourSkipTestID);
       await shePresses(onboardingActionTestID);
       await shePresses(dayTestID(addDays(today, -2)));
       await shePresses(onboardingActionTestID);
