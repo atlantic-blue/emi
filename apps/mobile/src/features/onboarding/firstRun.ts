@@ -186,9 +186,19 @@ export function latestBirthYear(now: Date): number {
   return now.getFullYear() - youngestBirthYears;
 }
 
+/** Years back from now to the year the wheel opens on. */
+const yearsBackToTheMiddle = 30;
+
 /**
- * Every year the wheel offers, newest first. A wheel that opened on 1940 would ask every woman
- * using Emi to travel the whole list before she reached a year she might have been born in.
+ * The year the wheel opens on, which is not an answer: nothing is chosen until she presses a year.
+ * It moves with the clock, so the wheel always opens the same distance into the list of years.
+ */
+export function middleBirthYear(now: Date): number {
+  return now.getFullYear() - yearsBackToTheMiddle;
+}
+
+/**
+ * Every year the wheel offers, newest first, from the newest year Emi is built for down to 1940.
  */
 export function birthYearsOffered(now: Date): readonly number[] {
   const latest = latestBirthYear(now);

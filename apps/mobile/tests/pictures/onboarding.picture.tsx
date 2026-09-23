@@ -66,7 +66,7 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Three of eight',
-    note: 'The year she was born, as she finds the wheel: newest year first, nothing picked yet.\n      Nothing in Emi reads this answer, and the screen says so.',
+    note: 'The year she was born, with nothing picked for her. The wheel opens on 1996, thirty\n      years back, which the drawing cannot show: it draws every list from the top.',
     element: (
       <YearOfBirth
         chosen={undefined}

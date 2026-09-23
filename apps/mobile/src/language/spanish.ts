@@ -216,7 +216,6 @@ export const spanish: CatalogueIn<'es'> = {
 
   'onboarding.back': 'Atrás',
   'onboarding.birthYear.action': 'Continuar',
-  'onboarding.birthYear.line.noReader': 'Emi todavía no lee esto.',
   'onboarding.birthYear.line.sealed':
     'Emi cifra esto en el teléfono antes de que salga a ningún sitio.',
   'onboarding.birthYear.title': '¿En qué año naciste?',
