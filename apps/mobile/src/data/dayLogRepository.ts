@@ -1,7 +1,7 @@
 import { EnvelopeError, readEnvelope } from '@emi/crypto';
 
 import type { Database } from './database';
-import { uuidV7, uuidV7RandomByteCount } from './uuidV7';
+import { newIdentifier } from './identifier';
 
 export interface DayLogRow {
   readonly id: string;
@@ -198,17 +198,6 @@ function requireLive(db: Database, day: string): DayLogRow {
     throw new DayLogError('day-is-deleted', `${day} is deleted`);
   }
   return row;
-}
-
-function newIdentifier(db: Database, now: Date): string {
-  const rows = db.all<{ bytes: Uint8Array }>('SELECT randomblob(?) AS bytes', [
-    uuidV7RandomByteCount,
-  ]);
-  const bytes = rows[0]?.bytes;
-  if (!bytes) {
-    throw new Error('SQLite returned no random bytes');
-  }
-  return uuidV7(now.getTime(), bytes);
 }
 
 const dayShape = /^\d{4}-\d{2}-\d{2}$/;

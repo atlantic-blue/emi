@@ -68,7 +68,13 @@ describe('the local delete', () => {
     it('reads them out of the database rather than from a list written here', () => {
       const db = aPhoneWithASettingAndALaterTable();
 
-      expect(everyTable(db)).toEqual(['a_later_migration', 'cycle', 'day_log', 'setting']);
+      expect(everyTable(db)).toEqual([
+        'a_later_migration',
+        'cycle',
+        'day_log',
+        'profile',
+        'setting',
+      ]);
     });
 
     it('empties a table a later migration added, which a written list would have missed', () => {

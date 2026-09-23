@@ -38,7 +38,7 @@ describe('the walk that builds an export', () => {
     it('finds every table the database declares, and none of the ones SQLite keeps', () => {
       const database = herPhone();
 
-      expect(tableNames(database)).toEqual(['cycle', 'day_log', 'setting']);
+      expect(tableNames(database)).toEqual(['cycle', 'day_log', 'profile', 'setting']);
       expect(tableNames(database).some((name) => name.startsWith('sqlite_'))).toBe(false);
     });
 
@@ -100,7 +100,7 @@ describe('the walk that builds an export', () => {
 
       expect(everything.format).toBe('emi.export.v1');
       expect(everything.writtenAt).toBe(whenSheExported.toISOString());
-      expect(everything.schemaVersion).toBe(3);
+      expect(everything.schemaVersion).toBe(5);
     });
 
     it('names both files by the day they were taken', () => {

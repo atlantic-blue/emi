@@ -114,7 +114,7 @@ describe('deleting a bleeding day rebuilds every cycle after it', () => {
 
       const unsent = unsentDayLogs(database);
 
-      expect(tablesThatSync(database)).toEqual(['day_log']);
+      expect(tablesThatSync(database)).toEqual(['day_log', 'profile']);
       expect(unsent).toHaveLength(listDayLogs(database).length + 1);
       expect(unsent.map((row) => row.day)).toContain(theDaySheDeletes);
     });
