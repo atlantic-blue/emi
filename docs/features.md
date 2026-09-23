@@ -80,7 +80,8 @@ The contracts it builds:
 
 - `TABLE-1` the day log table, its eight columns, its unique day and the revision that rises on
   every write.
-- `SCREEN-1` the first run, in three screens, with no account and no email address.
+- `SCREEN-1` the first run, with no account and no email address, ending at the hold that writes
+  every answer at once.
 - `SCREEN-2` the home screen, with the ring, the cycle day and the phase name. Feature 3 adds the
   forecast range.
 - `SCREEN-4` a past day, opened, read and edited, with the ring redrawn.
@@ -132,11 +133,18 @@ action that deletes everything. Six steps.
 Until this feature, the payload column holds plain bytes. After it, every write goes through the
 envelope and every read comes back through it.
 
+The answers she gives at the first run are held to the same rule. A cycle length or a year of birth
+says as much about her body as a logged day does, so the profile record travels in the same
+envelope and lands in a table of its own.
+
 The contracts it builds:
 
 - `ENVELOPE-1` the record format: a version byte, a 24 byte nonce, then the ciphertext and its tag.
 - `ENVELOPE-2` the plaintext shape, as canonical JSON, with every field range refused at the edge.
+  It carries the day record and the profile record.
 - `ENVELOPE-3` fixed vectors, checked in, so a change to the format goes red.
+- `TABLE-5` the profile table, one sealed row, holding every answer of the first run that is not a
+  day.
 - `VAULT-1` the vault key, made once, kept in the keychain, and never transmitted.
 - `VAULT-3` the biometric lock on return from the background, on by default.
 - `KEEP-2` the export, as a file she can read and a file a machine can read.

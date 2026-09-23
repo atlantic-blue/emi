@@ -58,7 +58,11 @@ tracked text file for wording Emi may never use about itself. `colourLeak.test.t
 value outside `packages/tokens` is refused. `licence.test.ts` reads the licence and every manifest
 that names one. `reference.test.ts` covers the three rules
 of the reference and watches each one go red and green again. `emptyTestRun.test.ts` proves a run
-that finds no test fails. `nativePatches.test.ts` copies the three installed files into a
+that finds no test fails. `firstRunContract.test.ts` holds SCREEN-1 in `docs/contracts.md` to the
+copy `docs/design/first-run.md` writes out, word for word, and reads that it names the hold as the
+only moment the first run writes. `pipeline/firstRunContract.ts` holds its readers, and it counts
+the contracts each document wrote out, so a read of nothing is not taken for agreement.
+`nativePatches.test.ts` copies the three installed files into a
 fixture, takes one change back out to watch the check go red, and puts it back. `story.test.ts`
 covers the story check, renames a real picture to watch it go red, and puts it back.
 
