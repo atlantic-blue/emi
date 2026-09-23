@@ -1,6 +1,14 @@
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 import type { Symptom } from '@emi/cycle';
 
+import {
+  profileBytes,
+  profileFromBytes,
+  pulledFromBytes,
+  type ProfileOptions,
+  type ProfileRecord,
+  type PulledRecord,
+} from './profile';
 import { recordBytes, recordFromBytes, type DayRecord } from './record';
 
 /**
@@ -75,8 +83,8 @@ export interface SealOptions {
 }
 
 /**
- * The only way to write an envelope, so nothing can be sealed that has not passed the ranges of a
- * day first.
+ * The only way to seal a day, so nothing can be sealed that has not passed the ranges of a day
+ * first.
  */
 export function sealRecord(
   record: DayRecord,
@@ -94,8 +102,46 @@ export function openRecord(envelope: Uint8Array, key: Uint8Array): DayRecord {
   return recordFromBytes(openBytes(envelope, key));
 }
 
-// Not exported: `sealRecord` and `sealVaultKey` are the only two ways to write an envelope, so
-// nothing can seal a day that has not passed the ranges of section 6.2 first.
+/** The two seams a profile seal reaches for: where the nonce comes from, and what the clock says. */
+export interface SealProfileOptions extends ProfileOptions {
+  /** Where the nonce comes from. Left out, it is the platform's own generator. */
+  readonly random?: RandomSource;
+}
+
+/**
+ * The only way to seal a profile, so nothing can be sealed that has not passed the bounds of
+ * section 2 of the design of the longer first run.
+ */
+export function sealProfile(
+  profile: ProfileRecord,
+  key: Uint8Array,
+  options: SealProfileOptions = {},
+): Uint8Array {
+  return sealBytes(
+    profileBytes(profile, { now: options.now }),
+    key,
+    options.random ?? systemRandom,
+  );
+}
+
+/**
+ * Reads a profile back out. The bounds are not checked again here: answers she gave years ago are
+ * hers to read, whatever the bounds say now.
+ */
+export function openProfile(envelope: Uint8Array, key: Uint8Array): ProfileRecord {
+  return profileFromBytes(openBytes(envelope, key));
+}
+
+/**
+ * Opens one record off the server and says which of the two shapes it holds. The kind travels
+ * inside the ciphertext, so this is the first moment anybody can tell a profile from a day.
+ */
+export function openPulledRecord(envelope: Uint8Array, key: Uint8Array): PulledRecord {
+  return pulledFromBytes(openBytes(envelope, key));
+}
+
+// Not exported: `sealRecord`, `sealProfile` and `sealVaultKey` are the only three ways to write an
+// envelope, so nothing can seal a day or a profile that has not passed its ranges first.
 function sealBytes(plaintext: Uint8Array, key: Uint8Array, random: RandomSource): Uint8Array {
   const nonce = drawNonce(random);
   const sealed = xchacha20poly1305(checkedKey(key), nonce).encrypt(plaintext);
@@ -110,8 +156,8 @@ function sealBytes(plaintext: Uint8Array, key: Uint8Array, random: RandomSource)
 
 /**
  * The one other thing Emi seals: a vault key, under the key her recovery code derives. Thirty two
- * bytes exactly, so this cannot become a second way to write a day that skipped the ranges of
- * section 6.2. Those two are the whole list of what an envelope may carry.
+ * bytes exactly, so this cannot become another way to write a day that skipped the ranges of
+ * section 6.2. Those three are the whole list of what an envelope may carry.
  */
 export function sealVaultKey(
   vaultKey: Uint8Array,
