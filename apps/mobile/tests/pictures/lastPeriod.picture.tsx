@@ -42,6 +42,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
       <LastPeriod
         chosen={state.chosen}
         now={whenSheOpensIt}
+        onBack={() => undefined}
         onChoose={() => undefined}
         onContinue={() => undefined}
       />

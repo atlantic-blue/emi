@@ -36,7 +36,7 @@ describe('the welcome screen, drawn for somebody to look at', () => {
     view.unmount();
 
     screens.push({
-      title: 'Step 1 of 3, and it asks her nothing',
+      title: 'The first question screen, and it asks her nothing',
       note: 'No account, no email address, and the two refusals stated on the first screen.',
       tree,
     });

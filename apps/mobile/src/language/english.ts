@@ -205,6 +205,7 @@ export const english = {
   'log.weight.heading': 'Weight',
   'log.weight.hint': 'One number a day',
 
+  'onboarding.back': 'Back',
   'onboarding.cycleLength.action': 'Done',
   // The stepper runs from 21 to 45, so the count never reaches one and the screen said days
   // whatever she set. Moving the words kept it that way.
@@ -212,7 +213,7 @@ export const english = {
   'onboarding.cycleLength.line.count':
     'Count the first day of one period to the day before the next.',
   'onboarding.cycleLength.line.corrects':
-    'Emi corrects this once it has seen two cycles of your own.',
+    'Emi replaces this with your own number once it has seen two cycles.',
   'onboarding.cycleLength.longer': 'One day longer',
   'onboarding.cycleLength.shorter': 'One day shorter',
   'onboarding.cycleLength.title': 'How long is your cycle, roughly?',
@@ -232,9 +233,11 @@ export const english = {
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
   'onboarding.lastPeriod.later': 'Later',
   'onboarding.lastPeriod.laterMonth': 'Later month',
-  'onboarding.lastPeriod.line':
+  'onboarding.lastPeriod.line.privacy': 'Emi encrypts this on the phone before it goes anywhere.',
+  'onboarding.lastPeriod.line.remember':
     'The first day you bled. The nearest day you remember is close enough.',
   'onboarding.lastPeriod.title': 'When did your last period start?',
+  'onboarding.skip': 'Skip',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.tour.back': 'Back',
   'onboarding.tour.count': '{step} of {of}',

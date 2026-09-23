@@ -31,7 +31,13 @@ async function sheOpensTheCalendar(chosen?: string): Promise<Painted> {
 
   await render(
     <OnAPhone>
-      <LastPeriod chosen={chosen} now={whenSheOpensIt} onChoose={chose} onContinue={continued} />
+      <LastPeriod
+        chosen={chosen}
+        now={whenSheOpensIt}
+        onBack={() => undefined}
+        onChoose={chose}
+        onContinue={continued}
+      />
     </OnAPhone>,
   );
 

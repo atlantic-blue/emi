@@ -22,8 +22,8 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
 const theCaveat = [
   'Rendered from the trees the three first run screens produced under the test runner, at 390 by',
-  '844 points, and not captured from a phone. The step label and the number name the monospaced',
-  'face, which no screen loads yet, so both fall back here and on a phone. Reproduce with:',
+  '844 points, and not captured from a phone. The number names the monospaced',
+  'face, which no screen loads yet, so it falls back here and on a phone. Reproduce with:',
   'npm run generate:onboarding-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
@@ -48,6 +48,7 @@ const theScreens: readonly Screen[] = [
       <LastPeriod
         chosen="2026-05-11"
         now={whenSheOpensIt}
+        onBack={() => undefined}
         onChoose={() => undefined}
         onContinue={() => undefined}
       />
@@ -59,6 +60,7 @@ const theScreens: readonly Screen[] = [
     element: (
       <CycleLength
         days={defaultCycleLengthDays}
+        onBack={() => undefined}
         onChange={() => undefined}
         onDone={() => undefined}
       />

@@ -20,7 +20,7 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const theCaveat = [
   'Rendered from the tree the cycle length screen produced under the test runner, at 390 by 844',
   'points, and not captured from a phone. The page loads the same font files the application loads,',
-  'so the number and the step label are drawn in Plus Jakarta Sans like everything else. Reproduce',
+  'so the number is drawn in Plus Jakarta Sans like everything else. Reproduce',
   'with: npm run generate:cycle-length-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
@@ -53,7 +53,12 @@ const theStates: readonly State[] = [
 async function drawn(state: State): Promise<DrawnScreen> {
   const view = await render(
     <OnAPhone>
-      <CycleLength days={state.days} onChange={() => undefined} onDone={() => undefined} />
+      <CycleLength
+        days={state.days}
+        onBack={() => undefined}
+        onChange={() => undefined}
+        onDone={() => undefined}
+      />
     </OnAPhone>,
   );
   // A copy, taken before the screen is torn down. The runner holds one screen at a time, so a tree

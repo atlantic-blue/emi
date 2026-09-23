@@ -43,6 +43,7 @@ interface Props {
   readonly chosen: string | undefined;
   readonly onChoose: (day: string) => void;
   readonly onContinue: () => void;
+  readonly onBack: () => void;
 }
 
 interface DayProps {
@@ -88,8 +89,11 @@ function Day({ day, today, chosen, onChoose }: DayProps): ReactNode {
 /**
  * Screen two of three. She picks a day from a calendar rather than typing one, so the first run
  * holds to its own promise that she is never asked to fill a field in.
+ *
+ * It is the one question with no way past it. SCREEN-1 makes this answer the one the first run
+ * cannot do without, so the frame is given no Skip and the button waits until she has picked a day.
  */
-export function LastPeriod({ now, chosen, onChoose, onContinue }: Props): ReactNode {
+export function LastPeriod({ now, chosen, onChoose, onContinue, onBack }: Props): ReactNode {
   const today = localDay(now);
   const earliestMonth = startOfMonth(oldestPeriodStart(today));
   const latestMonth = startOfMonth(today);
@@ -103,6 +107,7 @@ export function LastPeriod({ now, chosen, onChoose, onContinue }: Props): ReactN
       actionLabel={firstRunCopy.lastPeriod.action}
       lines={firstRunCopy.lastPeriod.lines}
       onAction={onContinue}
+      onBack={onBack}
       screen="lastPeriod"
       title={firstRunCopy.lastPeriod.title}
     >
