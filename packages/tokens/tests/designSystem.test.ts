@@ -12,7 +12,17 @@ import { face, typeRoleNames, typeScale } from '../src/type';
  */
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..');
-export const designSystemDocument = join('docs', 'design', 'prototype-design-system.md');
+/**
+ * The style the token package still holds. The Warm Editorial Journal export of 2026-09-23 replaced
+ * it as the design Emi is drawn in, and the step that moves these tokens to the new front matter
+ * deletes this document. Until then the two agree with each other, which is what this file reads.
+ */
+export const designSystemDocument = join(
+  'docs',
+  'design',
+  'warm-humanist-editorial',
+  'design-system.md',
+);
 
 interface RoleInTheDocument {
   readonly fontFamily: string;

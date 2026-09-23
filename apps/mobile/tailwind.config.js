@@ -6,8 +6,8 @@ const plugin = require('tailwindcss/plugin');
 
 const {
   configuredIn,
-  prototypeDirectory,
-  sourceScreen,
+  supersededDirectory,
+  supersededScreen,
 } = require('../../tools/pipeline/prototype.ts');
 
 /**
@@ -26,7 +26,7 @@ const {
 const repositoryRoot = join(__dirname, '..', '..');
 
 const prototype = configuredIn(
-  readFileSync(join(repositoryRoot, prototypeDirectory, sourceScreen), 'utf8'),
+  readFileSync(join(repositoryRoot, supersededDirectory, supersededScreen), 'utf8'),
 );
 
 function hyphenated(name) {

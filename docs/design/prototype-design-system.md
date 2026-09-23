@@ -1,118 +1,135 @@
 ---
-name: Warm Humanist Editorial
+name: Warm Editorial Journal
 colors:
-  surface: '#fcf9f4'
-  surface-dim: '#dcdad5'
-  surface-bright: '#fcf9f4'
+  surface: '#fff8f5'
+  surface-dim: '#e1d8d5'
+  surface-bright: '#fff8f5'
   surface-container-lowest: '#ffffff'
-  surface-container-low: '#f6f3ee'
-  surface-container: '#f0ede9'
-  surface-container-high: '#ebe8e3'
-  surface-container-highest: '#e5e2dd'
-  on-surface: '#1c1c19'
-  on-surface-variant: '#56423e'
-  inverse-surface: '#31302d'
-  inverse-on-surface: '#f3f0eb'
+  surface-container-low: '#fbf2ee'
+  surface-container: '#f5ece8'
+  surface-container-high: '#efe6e3'
+  surface-container-highest: '#eae1dd'
+  on-surface: '#1f1b19'
+  on-surface-variant: '#56423d'
+  inverse-surface: '#342f2d'
+  inverse-on-surface: '#f8efeb'
   outline: '#89726c'
-  outline-variant: '#ddc0ba'
-  surface-tint: '#9f402a'
-  primary: '#9c3e28'
+  outline-variant: '#dcc1b9'
+  surface-tint: '#9c4327'
+  primary: '#843117'
   on-primary: '#ffffff'
-  primary-container: '#bc553e'
-  on-primary-container: '#fffbff'
-  inverse-primary: '#ffb4a3'
-  secondary: '#8c4d43'
+  primary-container: '#a3482c'
+  on-primary-container: '#ffd8ce'
+  inverse-primary: '#ffb59f'
+  secondary: '#625e58'
   on-secondary: '#ffffff'
-  secondary-container: '#feaca0'
-  on-secondary-container: '#7a3d35'
-  tertiary: '#645863'
+  secondary-container: '#e8e1d9'
+  on-secondary-container: '#68645e'
+  tertiary: '#921f12'
   on-tertiary: '#ffffff'
-  tertiary-container: '#7e717c'
-  on-tertiary-container: '#fffbff'
+  tertiary-container: '#b43727'
+  on-tertiary-container: '#ffd8d2'
   error: '#ba1a1a'
   on-error: '#ffffff'
   error-container: '#ffdad6'
   on-error-container: '#93000a'
-  primary-fixed: '#ffdad2'
-  primary-fixed-dim: '#ffb4a3'
-  on-primary-fixed: '#3d0600'
-  on-primary-fixed-variant: '#802916'
-  secondary-fixed: '#ffdad5'
-  secondary-fixed-dim: '#ffb4a8'
-  on-secondary-fixed: '#390c07'
-  on-secondary-fixed-variant: '#70362d'
-  tertiary-fixed: '#eedeeb'
-  tertiary-fixed-dim: '#d2c2cf'
-  on-tertiary-fixed: '#221922'
-  on-tertiary-fixed-variant: '#4e434e'
-  background: '#fcf9f4'
-  on-background: '#1c1c19'
-  surface-variant: '#e5e2dd'
+  primary-fixed: '#ffdbd1'
+  primary-fixed-dim: '#ffb59f'
+  on-primary-fixed: '#3a0a00'
+  on-primary-fixed-variant: '#7d2c12'
+  secondary-fixed: '#e8e1d9'
+  secondary-fixed-dim: '#ccc5be'
+  on-secondary-fixed: '#1e1b17'
+  on-secondary-fixed-variant: '#4a4641'
+  tertiary-fixed: '#ffdad4'
+  tertiary-fixed-dim: '#ffb4a8'
+  on-tertiary-fixed: '#410100'
+  on-tertiary-fixed-variant: '#8b190e'
+  background: '#fff8f5'
+  on-background: '#1f1b19'
+  surface-variant: '#eae1dd'
+  period: '#d97d6e'
+  period-ink: '#5c2018'
+  follicular: '#e5a96d'
+  follicular-ink: '#5e3b10'
+  ovulation: '#a8a663'
+  ovulation-ink: '#404218'
+  luteal: '#9b849e'
+  luteal-ink: '#433246'
 typography:
-  headline-xl:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 36px
-    fontWeight: '700'
-    lineHeight: 44px
-    letterSpacing: -0.03em
-  headline-xl-mobile:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 30px
-    fontWeight: '700'
-    lineHeight: 38px
-    letterSpacing: -0.025em
-  headline-lg:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 26px
-    fontWeight: '600'
-    lineHeight: 34px
+  display-lg:
+    fontFamily: Newsreader
+    fontSize: 3rem
+    fontWeight: '400'
+    lineHeight: 3.5rem
     letterSpacing: -0.02em
-  headline-md:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 20px
-    fontWeight: '600'
-    lineHeight: 28px
+  display-lg-mobile:
+    fontFamily: Newsreader
+    fontSize: 2.25rem
+    fontWeight: '400'
+    lineHeight: 2.75rem
     letterSpacing: -0.015em
-  headline-sm:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 18px
-    fontWeight: '600'
-    lineHeight: 24px
+  headline-lg:
+    fontFamily: Newsreader
+    fontSize: 2rem
+    fontWeight: '400'
+    lineHeight: 2.5rem
     letterSpacing: -0.01em
+  headline-md:
+    fontFamily: Newsreader
+    fontSize: 1.5rem
+    fontWeight: '500'
+    lineHeight: 2rem
+  headline-sm:
+    fontFamily: Newsreader
+    fontSize: 1.25rem
+    fontWeight: '500'
+    lineHeight: 1.75rem
   body-lg:
     fontFamily: Plus Jakarta Sans
-    fontSize: 17px
+    fontSize: 1.125rem
     fontWeight: '400'
-    lineHeight: 26px
-    letterSpacing: -0.005em
+    lineHeight: 1.75rem
   body-md:
     fontFamily: Plus Jakarta Sans
-    fontSize: 15px
+    fontSize: 1rem
     fontWeight: '400'
-    lineHeight: 22px
+    lineHeight: 1.5rem
   body-sm:
     fontFamily: Plus Jakarta Sans
-    fontSize: 13px
+    fontSize: 0.875rem
     fontWeight: '400'
-    lineHeight: 18px
-  label-lg:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 15px
-    fontWeight: '600'
-    lineHeight: 20px
-    letterSpacing: 0.01em
+    lineHeight: 1.25rem
   label-md:
     fontFamily: Plus Jakarta Sans
-    fontSize: 13px
+    fontSize: 0.875rem
     fontWeight: '600'
-    lineHeight: 16px
-    letterSpacing: 0.02em
+    lineHeight: 1.25rem
+    letterSpacing: 0.01em
   label-sm:
     fontFamily: Plus Jakarta Sans
-    fontSize: 11px
+    fontSize: 0.75rem
     fontWeight: '600'
-    lineHeight: 14px
-    letterSpacing: 0.04em
+    lineHeight: 1rem
+    letterSpacing: 0.02em
+  data-lg:
+    fontFamily: JetBrains Mono
+    fontSize: 1.75rem
+    fontWeight: '500'
+    lineHeight: 2.25rem
+    letterSpacing: -0.03em
+  data-md:
+    fontFamily: JetBrains Mono
+    fontSize: 1rem
+    fontWeight: '400'
+    lineHeight: 1.5rem
+    letterSpacing: -0.02em
+  data-sm:
+    fontFamily: JetBrains Mono
+    fontSize: 0.75rem
+    fontWeight: '500'
+    lineHeight: 1rem
+    letterSpacing: 0.02em
 rounded:
   sm: 0.25rem
   DEFAULT: 0.5rem
@@ -122,110 +139,175 @@ rounded:
   full: 9999px
 spacing:
   gutter: 1rem
-  margin: 1.25rem
+  gutter-md: 1.5rem
+  gutter-lg: 2rem
+  margin: 1rem
+  margin-md: 2rem
+  margin-lg: 3.5rem
   space-xs: 0.25rem
   space-sm: 0.5rem
   space-md: 1rem
   space-lg: 1.5rem
-  space-xl: 2.25rem
+  space-xl: 2.5rem
 ---
 
-The prototype this document describes is in `docs/design/prototype/`. The front matter is read out of `today-dashboard.html`, which carries the configuration all five screens draw with, and it is not written by hand. `tools/pipeline/prototype.test.ts` holds the two together. The corners are the one block they do not agree about yet, and that decision is https://github.com/atlantic-blue/emi/issues/159.
+The prototype this document describes is in `docs/design/prototype/`. The front matter is read out of
+`screen-0-style-sheet.html`, which carries the configuration all six screens draw with, and it is not
+written by hand. The four phase fills and the four inks beside them are the one addition: the screens
+draw those eight as plain values inside the ring rather than through the configuration, so the front
+matter names them and `tools/pipeline/prototype.test.ts` reads them back out of the style sheet
+screen. That check also holds every other value the two sides share. The corners are the one block
+they do not agree about yet, and that decision is https://github.com/atlantic-blue/emi/issues/159.
 
-## Brand & Style
+Every paragraph below names a role. None of them names a value. The front matter above is the only
+place a colour, a size or a step is written, so this document describes one palette.
 
-The design system embodies the presence of an intelligent, discerning companion: grounded, discreet, warm, and unapologetically adult. Built specifically for privacy-conscious European women, it completely rejects the paternalistic cliches of typical femtech—eliminating cartoonish pastels, glitter accents, baby-talk microcopy, and clinical starkness. Instead, the design language communicates intimate health through biological honesty, tactile elegance, and thoughtful restraint.
+## Brand and style
 
-The aesthetic philosophy bridges **Warm Editorial Minimalism** with **Organic Tactility**. Visual hierarchy is governed by deliberate proportions, generous breathing space, and an editorial rhythm reminiscent of contemporary independent health journals. The interface respects the user's emotional state across shifting hormonal landscapes, using reassuring earthy undertones, soothing ceramic surfaces, and subtle, tactile transitions to foster emotional sovereignty and privacy peace of mind.
+This design system is a calm, warm, adult private journal. It rejects the hyper feminine and
+cartoonish habits of the category: no bodies, no floral pastels, no droplets. It treats cyclical
+health as an intimate editorial practice. The tone is reassuring, dignified and private, closer to
+writing in a linen bound notebook than to using an application.
 
-## Colors
+The movement is warm editorial minimalism with the refinement of good stationery.
 
-The palette draws entirely from natural minerals, unbleached fibers, terracotta clays, and sun-warmed linen. Every colour it holds is named in the front matter above, and every paragraph below names one of those roles rather than a value of its own, so this document describes one palette and not two.
+- Generous space, on a paper toned ground.
+- Bookish serif headings, with a legible geometric body face and monospaced figures for data.
+- Low contrast hairlines and soft card surfaces, rather than dramatic shadows.
+- A lowercase wordmark, `emi`, which reads as quiet rather than institutional.
+- Abstract continuous line work and circular phase ribbons. No anatomical or floral drawing.
 
-### Application Guidelines
+## Colours
 
-- **Primary (`primary`)**: Applied deliberately to focal interactions, primary actions, current day indicators, and confident brand moments. Anything sitting on it carries `on-primary`.
-- **Secondary (`secondary`, `secondary-container`)**: Utilized for supportive graphical highlights, trend visualizations, and micro-interactions, with `on-secondary-container` for words on the container.
-- **Cycle Phase Tones**: The palette holds no colour for a cycle phase, and this paragraph used to name four that are drawn nowhere. The prototype does not colour the four phases at all: it marks the one she is in with `primary-fixed` and leaves the rest on `surface-container-low`. The application draws them from four roles it chose for itself in `packages/tokens/src/ring.ts`. Which of those the design system means is a decision nobody has taken, and it is https://github.com/atlantic-blue/emi/issues/157.
-- **Neutrals & Canvas Layers**: The application is strictly light-first to emulate tactile stationery. The canvas sits on `surface`, moving to `surface-container-lowest` for cards and floating sheets, with the containers between them stepping through `surface-container-low`, `surface-container` and `surface-container-high`. Structural delineations rely on `outline-variant`.
-- **Text & Hierarchy**: Contrast adheres strictly to WCAG AA/AAA against the canvas, using `on-surface` for headings and `on-surface-variant` for body narratives. Metadata and captions take the same `on-surface-variant` at the smaller label roles, because the palette names no third text colour.
+The palette comes from unbleached paper, earth pigments and natural textiles.
+
+### The canvas and the surfaces
+
+- **Canvas**: `surface`. The ground the whole application sits on.
+- **Card**: `surface-container-lowest`. Panels and the focused entry card.
+- **Recessed surface**: `surface-container`. Inset metrics, inactive day wells and secondary cards.
+- **Containers between them**: `surface-container-low` and `surface-container-high`. The step
+  between a card and the ground it sits on.
+- **Body text**: `on-surface`. Editorial headings and interface words alike. It is never pure black.
+- **Secondary text**: `on-surface-variant`. Metadata, footnotes and supporting lines.
+- **Hairline**: `outline-variant`. A one point border that defines structure without a shadow.
+
+### The accents and the states
+
+- **Primary action**: `primary-container`, with `on-primary` on top of it. Affirmative actions,
+  primary chips and the active bead on the ring. The pressed state steps to `primary`.
+- **Selected well**: `surface-container-high`, with `on-surface` on top of it. Selected dates,
+  active toggle chips and pressed states.
+- **Alert**: `error`, with `on-error` on top of it, and `error-container` behind a longer message.
+
+### The four phases, and the ink beside each one
+
+A phase is drawn in its own fill. The words about that phase are written in the ink beside it,
+because a fill is too light to carry text. Colour alone never carries the meaning: the ring also
+leaves a gap of ground at every boundary and writes the phase name in words.
+
+- **Period**: fill `period`, ink `period-ink`.
+- **Follicular**: fill `follicular`, ink `follicular-ink`.
+- **Ovulation**: fill `ovulation`, ink `ovulation-ink`.
+- **Luteal**: fill `luteal`, ink `luteal-ink`.
+
+An ink is measured against the surface it is written on, never against its own fill. Three of the
+four inks fail the contrast floor on their own fill, which is why no text is ever drawn on a fill.
 
 ## Typography
 
-The typography uses **Plus Jakarta Sans** uniformly across display, body, and UI labeling. Its wide geometric foundation, blended with warm humanist letter terminals, provides clarity and an approachable, unhurried cadence.
+Three faces, and the front matter names the size, the line height, the tracking and the weight of
+every role.
 
-### Typographic Principles
+- **Display and headlines**: Newsreader. An editorial serif with warmth. It carries the daily
+  reflection, the entry date, a cycle milestone and a section title. The roles are `display-lg`,
+  `display-lg-mobile`, `headline-lg`, `headline-md` and `headline-sm`.
+- **Body and controls**: Plus Jakarta Sans. A geometric sans with open tracking, for symptom notes,
+  insights and button text. The roles are `body-lg`, `body-md`, `body-sm`, `label-md` and
+  `label-sm`.
+- **Numbers and measurements**: JetBrains Mono. Monospaced figures for a cycle day, a calendar grid,
+  a temperature and a duration. The roles are `data-lg`, `data-md` and `data-sm`. A figure that is
+  monospaced does not move as it changes.
+- **The wordmark**: always lowercase, `emi`, set in Newsreader. Never in capitals.
 
-- **Editorial Proportioning**: Generous line-heights are maintained on all running narrative and clinical insights (`1.5x` to `1.6x` line height) to prevent visual fatigue and support relaxed scanning.
-- **Restrained Headings**: Never use pure black. `on-surface` ensures that even large display headers feel organic, like ink on warm handmade paper.
-- **Numerics & Cycle Telemetry**: Key health statistics, cycle day counts, and timeline days utilize medium and semibold weights with tabular alignment properties enabled to maintain symmetry within circular trackers and calendar matrices.
+## Layout and spacing
 
-## Layout & Spacing
+The layout sits on an eight point grid. The front matter names every step.
 
-The layout is architected iOS-first, built upon a single-column fluid card layout anchored to a 4pt/8pt harmonic baseline.
+- **Phone**: one column, fluid cards, `margin` around the canvas, and `gutter` between cards. Every
+  interactive element is at least 44 points on both axes.
+- **Tablet**: six columns, with `margin-md` around the canvas. The ring and the journal entry sit
+  side by side or stack.
+- **Desktop**: twelve columns, with `margin-lg` around the canvas, held to a reading width so the
+  page does not spread.
 
-### Screen Structure & Safe Areas
+Space between components is `space-xs` through `space-xl`. The scale prefers room over density.
 
-- **Top Canvas & Status Area**: An integrated 48px to 56px top clearance ensures breathing room below the iOS dynamic island/status indicator. Navigation headers sit embedded inside fluid page titles rather than boxed native bars.
-- **Side Margins**: Strict `1.25rem` (20px) outer margins on mobile devices prevent edge crowding while keeping cards comfortably actionable with single-handed thumb interaction.
-- **Bottom Navigation Clearance**: All scrollable views terminate with an explicit `6rem` (96px) padding reserve to ensure full clearance above the floating bottom navigation bar.
-- **Vertical Rhythm**: Content blocks cluster into cohesive modular cards separated by `space-lg` (24px), preserving a calm, uncluttered scroll experience without sensory overload.
+## Elevation and depth
 
-## Elevation & Depth
+There are no deep shadows, no blur and no glass. Depth comes from a tonal step and a hairline.
 
-Visual hierarchy rejects heavy, industrial drop-shadows and skeuomorphic bevels. Instead, elevation relies on **chromatic layering** and **warm ambient halos**.
+- **Layer 0, the canvas**: `surface`.
+- **Layer 1, cards and inset containers**: `surface-container-lowest` or `surface-container`, each
+  bound by a one point border in `outline-variant`.
+- **Layer 2, a floating sheet**: `surface-container-lowest`, a one point border in `outline-variant`,
+  and one ambient shadow: `on-surface` at 5 per cent, offset 4 points down, blurred 20 points, drawn
+  2 points inside the edge.
 
-### Surface Strategy
-
-- **Layer 0 (Canvas Base)**: `surface`. Static background for the global application shell.
-- **Layer 1 (Cards & Modules)**: `surface-container-lowest` paired with a 1px structural outline in `outline-variant`. This provides tactile definition on OLED and LCD screens without visual harshness.
-- **Layer 2 (Interactive Floating Elements & Modals)**: `surface-container-lowest` resting on an extra-diffuse warm shadow: `box-shadow: 0 12px 32px -4px rgba(43, 37, 35, 0.05), 0 4px 12px -2px rgba(217, 107, 82, 0.06)`. Those two tints are the one colour written as a value anywhere below the front matter, because the front matter holds no shadow block and the prototype draws this shadow exactly as it is written here. The warm tint in the ambient shadow keeps the component tied to the natural color spectrum.
-- **Sheet Overlays**: Contextual health logging drawers and deep-dive analytics utilize an organic backdrop blur: `backdrop-filter: blur(16px)` over `surface` at 80 per cent.
+Focus is commanded by contrast and by a change of surface tone, never by an artificial light.
 
 ## Shapes
 
-The interface embraces generous, organic curves that feel soft and inviting to the touch. The baseline token system anchors at level `2` (8px base), with interactive surface containers expanding outward to `rounded-2xl` (16px) and `rounded-3xl` (24px).
+Two corners carry the interface, and both are named in the `rounded` block of the front matter.
 
-### Curvature Architecture
-
-- **Interactive Badges & Phase Indicators**: Full pill geometry (`rounded-full`, 9999px) to communicate self-contained states and continuous flow.
-- **Cards, Logging Blocks, and Dialogs**: Sculpted with `1.25rem` (20px) to `1.5rem` (24px) corner radii (`rounded-2xl` / `rounded-3xl`), evoking ceramic dishes or polished river stones.
-- **Action Buttons & Form Controls**: Standardized at `0.875rem` (14px) or continuous pill contours, preventing sharp apexes anywhere in the primary user path.
+- **Cards and containers**: the `xl` corner.
+- **Buttons, fields and chips**: the `lg` corner.
+- **The ring and any circular node**: a true circle, drawn in a single stroke.
+- **Illustration**: never representational. Looping continuous paths, orbital rings and lunar
+  geometry. No anatomical drawing, no droplets, no botanical pastels.
 
 ## Components
 
 ### Buttons
 
-- **Primary**: Solid `primary` ground with `on-primary` typography, 52px height for accessibility, full pill radius (`rounded-full`). Soft inner highlight on active press.
-- **Secondary / Ghost**: `surface-container-low` ground with `on-surface` typography and no border, stepping to `surface-container` on press.
-- **Tertiary Utility**: Borderless, subtle `on-surface-variant` text with `0.5rem` padding for auxiliary operations.
+- **Primary**: a `primary-container` ground with `on-primary` words, the `lg` corner, at least 48
+  points high and at least 44 points of tap target. The pressed state steps to `primary`.
+- **Secondary**: a `surface-container-lowest` ground, a one point border in `outline-variant`, and
+  `on-surface` words. The pressed state steps to `surface-container`.
+- **Text button**: `on-surface` words with an underline four points below them. No ground and no
+  border.
 
-### Cycle Wheel & Phase Ring (Specialized)
+### The four phase ring
 
-- A prominent circular visualization that sits centered on the dashboard. Employs soft, fluid segment boundaries between the four phases, which take the colours named under Cycle Phase Tones above. The current day sits within an elevated ceramic bead with an ambient `primary` glow.
+- One continuous vector ring, divided into four arcs.
+- Each arc is stroked in its own phase fill, at a stroke the front matter does not name and the
+  component holds.
+- A metric or a label inside or beside an arc is written in that phase's ink.
+- The cycle day at the centre is set in `data-lg`.
 
-### Cards & Content Containers
+### Cards and inset panels
 
-- Ground `surface-container-lowest`, a 1px outline in `outline-variant`, radius `1.5rem`. Internal padding is fixed at `1.25rem` (20px). Content sections within cards are delineated by hairline dividers in `outline-variant`.
+- **Card**: a `surface-container-lowest` ground, the `xl` corner, a one point border in
+  `outline-variant`, and `space-lg` of padding inside it.
+- **Recessed card**: a `surface-container` ground, for a historical day and a supplementary note.
 
-### Chips & Symptom Tags
+### Chips and symptom selectors
 
-- Pill-shaped (`rounded-full`), minimum tap target 40px height.
-- **Unselected**: `surface-container-high` ground, `on-surface-variant` text, no border.
-- **Selected**: `primary` ground, text transitions to `on-primary`, subtle scale transformation (`transform: scale(1.02)`).
+- **Resting**: a `surface-container` ground, a one point border in `outline-variant`, `on-surface`
+  words, the `lg` corner, and padding of `space-sm` by `space-md`.
+- **Selected**: a `surface-container-high` ground, a border in `primary-container`, and `on-surface`
+  words.
 
-### Form Inputs & Text Fields
+### Fields and journal text areas
 
-- Minimum height 48px, ground `surface-container-low`, a 1px outline in `outline-variant`. Text sits in `on-surface` with the placeholder in `on-surface-variant`. Active focus state transitions the outline to `primary` with zero harsh box-shadows.
+- A `surface-container-lowest` ground, the `lg` corner, a one point border in `outline-variant`, and
+  `space-md` of padding inside it.
+- The focused state draws a one point ring in `primary-container`.
+- The text she types is `body-md`. The prompt above it is a headline role, so it is set in
+  Newsreader.
 
-### Lists & Symptom Rows
+### Checkboxes and radio controls
 
-- Flat, seamless stack styling. Rows feature 56px minimum height, separated by gentle inset divider rules. Right-aligned affordances use subdued chevron icons in `on-surface-variant`.
-
-### Checkboxes & Segmented Selectors
-
-- Custom circular selectors in place of boxy checkmarks. Selection state fills smoothly with `primary`, featuring a centered dot in `on-primary`.
-
-### Bottom Navigation Bar
-
-- Elevated translucent dock suspended 16px above the home indicator. Ground `surface-container-lowest` at 92 per cent with `backdrop-filter: blur(20px)`, rounded-full pill silhouette, outlined by 1px of `outline-variant`. Icons dynamically shift from `on-surface-variant` (inactive) to `primary` (active), accompanied by a micro dot indicator underneath.
+- A radio control is two circles, 20 points across, inside a 44 point tap target. The selected core
+  is `primary-container`.
+- A checkbox is a rounded square at the `sm` corner, with its mark in `primary-container`.

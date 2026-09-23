@@ -6,23 +6,39 @@ import { parse } from 'yaml';
 /**
  * The prototype and the document that describes it, read against each other.
  *
- * The five screens under `docs/design/prototype` are what Emi is meant to look like, and
+ * The six screens under `docs/design/prototype` are what Emi is meant to look like, and
  * `docs/design/prototype-design-system.md` is written from them. A description and the thing it
  * describes drift the moment nothing reads the two together, and the drift is invisible, because
  * each side is internally consistent and every test downstream reads the description.
  */
 
-/** Where the five screens and their pictures sit. */
+/** Where the six screens and their pictures sit. */
 export const prototypeDirectory = join('docs', 'design', 'prototype');
 
 /**
- * The screen the front matter is read from. All five carry the same configuration, byte for byte,
- * and one of them is named here so a failure points at a file rather than at a set.
+ * The screen the front matter is read from. All six carry the same configuration, byte for byte,
+ * and one of them is named here so a failure points at a file rather than at a set. It is the
+ * style sheet, because that is also the one screen that draws all eight phase colours.
  */
-export const sourceScreen = 'today-dashboard.html';
+export const sourceScreen = 'screen-0-style-sheet.html';
 
 /** The document written from that configuration. */
 export const designSystemDocument = join('docs', 'design', 'prototype-design-system.md');
+
+/**
+ * The style Emi was drawn in before the Warm Editorial Journal export of 2026-09-23, kept because
+ * the application still draws its whole theme from it: `packages/tokens` holds this palette and
+ * this type scale, and `apps/mobile/tailwind.config.js` reads the corners, the spacing and the
+ * type roles out of this screen. Two later steps move both and delete the directory.
+ * `docs/design/warm-humanist-editorial/README.md` says which.
+ */
+export const supersededDirectory = join('docs', 'design', 'warm-humanist-editorial');
+
+/** The screen the application's theme is still read from. */
+export const supersededScreen = 'today-dashboard.html';
+
+/** The document `packages/tokens` is still held to. */
+export const supersededDocument = join(supersededDirectory, 'design-system.md');
 
 /** The element each screen carries, holding the configuration the page draws itself with. */
 export const configurationElement = 'tailwind-config';
@@ -199,7 +215,7 @@ const typeProperties: readonly (keyof TypeRole)[] = [
  */
 export function disagreements(prototype: Theme, document: Theme): string[] {
   return [
-    ...valuesApart('colour', prototype.colours, document.colours),
+    ...valuesApart('colour', prototype.colours, withoutPhases(document.colours)),
     ...valuesApart('radius', prototype.radii, document.radii),
     ...valuesApart('spacing', prototype.spacing, document.spacing),
     ...typeApart(prototype.type, document.type),
@@ -245,10 +261,10 @@ function spelt(value: string | undefined): string {
  * The one block the two sides do not agree about, written out value for value.
  *
  * The prototype names four corners, and all four carry the value Tailwind already gives that name.
- * The document names six under a different scale, so three of the four shared names hold a
- * different value, the document names two corners the prototype never sets, and the corner the
- * markup reaches for 25 times, `rounded-md`, is drawn at a value neither list holds. Which scale
- * Emi means is a decision nobody has taken, and it is
+ * The document names six under a scale one step wider, so three of the four shared names hold a
+ * different value and the document names two corners the prototype never sets. The corner the markup
+ * reaches for most is `xl`, 54 times, and the two sides are a factor of two apart on it. Which
+ * scale Emi means is a decision nobody has taken, and it is
  * https://github.com/atlantic-blue/emi/issues/159.
  *
  * It is recorded here one sentence at a time rather than by allowing the block, so a move on
@@ -261,3 +277,100 @@ export const radiiNobodyHasDecided: readonly string[] = [
   'radius sm: the prototype says nothing and the design system says 0.25rem',
   'radius xl: the prototype says 0.75rem and the design system says 1.5rem',
 ];
+
+/**
+ * The four phase fills and the ink beside each one, in the order a cycle runs.
+ *
+ * These eight are the one part of the palette the Tailwind configuration does not name. The screens
+ * draw the four arcs and the four labels as plain values inside the ring, so the front matter names
+ * them and they are read back out of the markup rather than out of the configuration. A phase whose
+ * fill is named and never drawn is the failure this exists to catch: the ring would then be
+ * described in a colour the prototype does not use.
+ */
+export const phaseColourNames: readonly string[] = [
+  'period',
+  'period-ink',
+  'follicular',
+  'follicular-ink',
+  'ovulation',
+  'ovulation-ink',
+  'luteal',
+  'luteal-ink',
+];
+
+/** The palette without the eight, which is the part the configuration is held against. */
+function withoutPhases(colours: Readonly<Record<string, string>>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(colours).filter(([name]) => !phaseColourNames.includes(name)),
+  );
+}
+
+/** The eight as the document names them, in the order above, so a missing one is not a skip. */
+export function phaseColoursIn(document: Theme): Record<string, string | undefined> {
+  return Object.fromEntries(phaseColourNames.map((name) => [name, document.colours[name]]));
+}
+
+/**
+ * Every phase colour the front matter names and the screen does not draw, one sentence each. The
+ * screen writes them in capitals and the front matter writes them in lower case, so both sides are
+ * put into one spelling before they are compared.
+ */
+export function phaseColoursNotDrawn(document: Theme, markup: string): string[] {
+  const drawn = markup.toLowerCase();
+
+  return phaseColourNames
+    .map((name) => {
+      const value = document.colours[name];
+
+      if (value === undefined) {
+        return `phase colour ${name}: the design system names nothing`;
+      }
+      if (!drawn.includes(value.toLowerCase())) {
+        return `phase colour ${name}: the design system says ${value} and ${sourceScreen} draws it nowhere`;
+      }
+
+      return '';
+    })
+    .filter((said) => said.length > 0);
+}
+
+/** One line of the document, with the number a reader would find it on. */
+export interface Line {
+  readonly number: number;
+  readonly text: string;
+}
+
+/**
+ * Everything below the front matter. The front matter is the one place a value is written, so the
+ * prose is read separately and held to naming roles alone.
+ */
+export function proseOf(document: string): Line[] {
+  const lines = document.split('\n');
+  const closed = lines.findIndex((line, at) => at > 0 && line === '---');
+
+  if (closed < 0) {
+    throw new Error(`${designSystemDocument} has no front matter, so it has no prose beneath one`);
+  }
+
+  return lines.slice(closed + 1).map((text, at) => ({ number: closed + 2 + at, text }));
+}
+
+/** A colour written as a value: a hex code, or a function that mixes one. */
+const valuePattern = /#[0-9a-fA-F]{3,8}\b|rgba?\([^)]*\)|hsla?\([^)]*\)/gi;
+
+/**
+ * Every colour the prose writes as a value, one sentence each.
+ *
+ * The prose is the half nothing read on the style before this one, and it named a whole second
+ * palette in its own values while the front matter named the first. So the rule here is not that
+ * the prose agrees with the palette, it is that the prose holds no value at all: it names a role,
+ * and the front matter is the only place a value is written.
+ */
+export function coloursInTheProse(document: string): string[] {
+  return proseOf(document).flatMap((line) =>
+    [...line.text.matchAll(valuePattern)].map(
+      (found) =>
+        `${designSystemDocument} line ${line.number} writes ${found[0]}, and the prose names a role rather than a value: ${line.text.trim()}`,
+    ),
+  );
+}

@@ -28,8 +28,8 @@ import { OnAPhone } from '../fixtures/theSafeArea';
 import { theThemeIsLoaded } from '../fixtures/theTheme';
 import {
   configuredIn,
-  prototypeDirectory,
-  sourceScreen,
+  supersededDirectory,
+  supersededScreen,
 } from '../../../../tools/pipeline/prototype';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -43,7 +43,10 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
 /** The role the label is set in, read off the screen the prototype renders with rather than typed. */
 const labelRole = configuredIn(
-  readFileSync(join(__dirname, '..', '..', '..', '..', prototypeDirectory, sourceScreen), 'utf8'),
+  readFileSync(
+    join(__dirname, '..', '..', '..', '..', supersededDirectory, supersededScreen),
+    'utf8',
+  ),
 ).type['label-sm'];
 
 function points(measured: string | undefined): number {
