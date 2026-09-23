@@ -183,6 +183,24 @@ Output: the account item and the record item of the design, with the index on th
 Errors: an item carrying a date, a symptom, a flow or a note in any attribute. The whole product
 rests on this one, so a test reads every attribute of a written item to prove it.
 
+### TABLE-5, the profile table
+
+Verified by a test.
+
+Output: one table that holds at most one row, with seven columns: the identifier, the column that
+holds the table to a single row, the sealed payload, the revision, the creation time, the update
+time, and the revision the server has confirmed. The payload is one sealed profile record.
+
+Errors: a second row. A revision that does not rise on a write. A revision below 1. An empty
+payload. A creation time or an update time that is not written as an instant. An update time behind
+the creation time. A confirmed revision above the revision. Any field of the profile written in
+plain text, in this table or in any other. A row left behind after delete everything.
+
+The record inside the payload carries the kind, the name, the year of birth, the cycle length in
+days, the period length in days, the regularity, the feeling, the goals, the focus, and the time of
+the write. The kind and the time of the write are required. Every other field is optional, and an
+absent field is an answer she skipped. `ENVELOPE-2` refuses a value outside its range.
+
 ## ENVELOPE, the encrypted record format
 
 ### ENVELOPE-1, the format
@@ -201,13 +219,21 @@ anywhere, which the reader must refuse rather than decrypt.
 
 Verified by a test.
 
-Input: the fields of the design, as canonical JSON with sorted keys and no whitespace.
+Input: the fields of the design, as canonical JSON with sorted keys and no whitespace. Two records
+travel in this shape: the day record, and the profile record the first run writes. A profile record
+names its kind inside the ciphertext and a day record names none, so a reader tells the two apart
+after it opens them and the server cannot tell them apart at all.
 
 Output: the same bytes every time, for the same record.
 
-Errors: a temperature outside 34.0 to 42.0 degrees Celsius. A weight outside 20.0 to 400.0
-kilograms. An energy outside 1 to 5. A note longer than 2000 characters. A symptom slug that is not
-in the catalogue. A missing day.
+Errors: a key the shape does not name, in either record. In a day record, a temperature outside
+34.0 to 42.0 degrees Celsius. A weight outside 20.0 to 400.0 kilograms. An energy outside 1 to 5. A
+note longer than 2000 characters. A symptom slug that is not in the catalogue. A missing day. In a
+profile record, a name longer than 40 characters once the spaces at each end are taken off, or a
+name carrying a line break. A year of birth outside 1940 to the current year less nine. A cycle
+length outside 21 to 45 days. A period length outside 1 to 15 days. A regularity, a feeling, a goal
+or a focus that the design does not list. The same goal or the same focus twice. A missing kind. A
+missing time of the write.
 
 ### ENVELOPE-3, fixed vectors
 
@@ -328,10 +354,12 @@ provisional.
 
 Verified by a test.
 
-Output: three screens, ending with her last period recorded and one cycle length estimated.
+Output: at most eleven questions and five other screens between the welcome and the home screen.
+Only the last period is required. It ends with her answers written in one transaction at the hold.
 
-Errors: more than three screens. A question that a first forecast does not need. An account, an
-email address or a password asked for.
+Errors: a question whose answer nothing in the product reads, except the year of birth. A question
+with no Skip, other than the last period. An answer written to the database or the server in plain
+text. An account, an email address or a password asked for. Anything written before the hold.
 
 ### SCREEN-2, the home screen
 
