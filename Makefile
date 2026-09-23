@@ -3,7 +3,7 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install check format lint typecheck test test-workspace test-mobile test-behaviour ios android web pictures clean
+.PHONY: help install check format lint typecheck test test-workspace test-mobile test-behaviour ios iphone android web pictures clean
 
 help: ## print the targets, and this is the default goal
 	@awk 'match($$0, /^[a-z][a-z-]*:[^#]*## /) { printf "  %-15s %s\n", substr($$0, 1, index($$0, ":") - 1), substr($$0, RLENGTH + 1) }' $(MAKEFILE_LIST)
@@ -48,6 +48,9 @@ test-behaviour: ## run the scenarios, one feature file for each feature
 
 ios: ## run the application on an iOS simulator
 	npm run ios --workspace apps/mobile
+
+iphone: ## run the application on an iPhone plugged into this machine
+	npm run iphone --workspace apps/mobile
 
 android: ## run the application on an Android emulator
 	npm run android --workspace apps/mobile
