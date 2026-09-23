@@ -10,3 +10,7 @@ brand/screens/*.html
 # system byte for byte rather than after a formatter moved the lines about.
 docs/design/prototype/*.html
 docs/design/warm-humanist-editorial/*.html
+
+# The copy review is committed word for word as it was written, and the formatter would put a
+# blank line under each of its seventeen headings.
+docs/design/prototype/copy-review.md
