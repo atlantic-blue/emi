@@ -253,6 +253,17 @@ export const english = {
     one: 'A name holds at most {count} character.',
     other: 'A name holds at most {count} characters.',
   },
+  'onboarding.periodBefore.action': 'Add it',
+  'onboarding.periodBefore.between': {
+    one: '{count} day between them',
+    other: '{count} days between them',
+  },
+  'onboarding.periodBefore.line.remember': 'Do you remember when the period before that started?',
+  'onboarding.periodBefore.line.surer': 'Each one you add makes the first forecast surer.',
+  'onboarding.periodBefore.outOfRange':
+    'A cycle runs from {minimum} to {maximum} days. Pick a day in that range.',
+  'onboarding.periodBefore.skip': 'I do not remember',
+  'onboarding.periodBefore.title': 'The period before',
   'onboarding.skip': 'Skip',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.tour.back': 'Back',

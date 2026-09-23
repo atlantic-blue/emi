@@ -23,11 +23,15 @@ interface FirstRun {
   /** Whether she has already been shown the four cards, which is the database's answer. */
   readonly tourIsDone: boolean;
   readonly periodStartedOn: string | undefined;
+  /** The start before that one, and nothing at all where she does not remember it. */
+  readonly periodBeforeStartedOn: string | undefined;
   readonly cycleLengthDays: number;
   /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
   readonly nameTyped: string;
   readonly birthYear: number | undefined;
   readonly setPeriodStartedOn: (day: string) => void;
+  /** Nothing is the answer "I do not remember" leaves behind, so the setter takes it as well. */
+  readonly setPeriodBeforeStartedOn: (day: string | undefined) => void;
   readonly setCycleLengthDays: (days: number) => void;
   readonly setNameTyped: (typed: string) => void;
   /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as a year. */
@@ -66,6 +70,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [isDone, setIsDone] = useState(() => firstRunIsDone(database));
   const [tourIsDone, setTourIsDone] = useState(() => tourIsSeen(database));
   const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
+  const [periodBeforeStartedOn, setPeriodBeforeStartedOn] = useState<string | undefined>(undefined);
   const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
   const [nameTyped, setNameTyped] = useState('');
   const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
@@ -86,14 +91,28 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       await writeEverythingAtTheHold(
         database,
         makeHerVaults,
-        { periodStartedOn, cycleLengthDays, name: nameSheGave(nameTyped), birthYear },
+        {
+          periodStartedOn,
+          periodBeforeStartedOn,
+          cycleLengthDays,
+          name: nameSheGave(nameTyped),
+          birthYear,
+        },
         new Date(),
       );
     } finally {
       writing.current = false;
     }
     setIsDone(firstRunIsDone(database));
-  }, [birthYear, cycleLengthDays, database, makeHerVaults, nameTyped, periodStartedOn]);
+  }, [
+    birthYear,
+    cycleLengthDays,
+    database,
+    makeHerVaults,
+    nameTyped,
+    periodBeforeStartedOn,
+    periodStartedOn,
+  ]);
 
   const leaveTheTour = useCallback(() => {
     markTourSeen(database, new Date());
@@ -102,6 +121,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
 
   const reread = useCallback(() => {
     setPeriodStartedOn(undefined);
+    setPeriodBeforeStartedOn(undefined);
     setCycleLengthDays(defaultCycleLengthDays);
     setNameTyped('');
     setBirthYear(undefined);
@@ -114,10 +134,12 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       isDone,
       tourIsDone,
       periodStartedOn,
+      periodBeforeStartedOn,
       cycleLengthDays,
       nameTyped,
       birthYear,
       setPeriodStartedOn,
+      setPeriodBeforeStartedOn,
       setCycleLengthDays,
       setNameTyped,
       setBirthYear,
@@ -131,6 +153,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       isDone,
       leaveTheTour,
       nameTyped,
+      periodBeforeStartedOn,
       periodStartedOn,
       reread,
       tourIsDone,

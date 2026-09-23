@@ -22,7 +22,7 @@ import {
   earlierMonthTestID,
   laterMonthTestID,
   monthTestID,
-} from '../../src/features/onboarding/LastPeriod';
+} from '../../src/features/onboarding/Calendar';
 import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
@@ -118,6 +118,11 @@ async function sheReachesTheLastPeriod(): Promise<void> {
   await sheAnswers('welcome');
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
+}
+
+/** The way past the period before, which is the question she may leave unanswered. */
+async function sheSkipsThePeriodBefore(): Promise<void> {
+  await fireEvent.press(theScreen('periodBefore').getByTestId(onboardingSkipTestID));
 }
 
 /** The whole first run: every question answered, and the hold that writes the answers. */
@@ -274,6 +279,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
       everyFieldShePassed.push(...fieldsDrawn());
+      await sheSkipsThePeriodBefore();
+      everyFieldShePassed.push(...fieldsDrawn());
       await sheAnswers('cycleLength');
       everyFieldShePassed.push(...fieldsDrawn());
 
@@ -323,7 +330,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       );
     });
 
-    it('asks her five questions, holds once, and asks nothing else', async () => {
+    it('asks her six questions, holds once, and asks nothing else', async () => {
       const app = await sheOpensEmi();
       const visited = [app.pathname()];
 
@@ -336,6 +343,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
       visited.push(app.pathname());
+      await sheSkipsThePeriodBefore();
+      visited.push(app.pathname());
       await sheAnswers('cycleLength');
       visited.push(app.pathname());
       await sheHoldsTheRing();
@@ -345,6 +354,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/name',
         '/onboarding/year-of-birth',
         '/onboarding/last-period',
+        '/onboarding/period-before',
         '/onboarding/cycle-length',
         '/onboarding/hold',
       ]);
@@ -366,6 +376,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'cycle-length.tsx',
         'last-period.tsx',
         'name.tsx',
+        'period-before.tsx',
         'welcome.tsx',
         'year-of-birth.tsx',
       ]);
@@ -392,6 +403,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await shePresses(onboardingSkipTestID);
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
+      await sheSkipsThePeriodBefore();
 
       expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
       expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
@@ -430,6 +442,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
+      await sheSkipsThePeriodBefore();
 
       for (let press = 0; press < maximumCycleLengthDays + 5; press += 1) {
         await shePresses(shorterTestID);
@@ -486,6 +499,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       await shePresses(dayTestID(theOldestDaySheMayPick));
       await sheAnswers('lastPeriod');
+      await sheSkipsThePeriodBefore();
       for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
         await shePresses(longerTestID);
       }
@@ -520,6 +534,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       ).toMatchObject({ selected: true });
 
       await sheAnswers('lastPeriod');
+      await sheSkipsThePeriodBefore();
       expect(app.pathname()).toBe('/onboarding/cycle-length');
     });
   });
@@ -538,6 +553,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await shePresses(onboardingSkipTestID);
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await sheSkipsThePeriodBefore();
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await sheAnswers('cycleLength');
@@ -572,6 +590,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
+      await sheSkipsThePeriodBefore();
       for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
         await shePresses(longerTestID);
       }
@@ -610,6 +629,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
+      await sheSkipsThePeriodBefore();
       const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
       expect(done.props.accessibilityState).toMatchObject({ disabled: false });
 

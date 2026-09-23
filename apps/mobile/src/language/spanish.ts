@@ -256,6 +256,18 @@ export const spanish: CatalogueIn<'es'> = {
     one: 'Un nombre tiene como máximo {count} carácter.',
     other: 'Un nombre tiene como máximo {count} caracteres.',
   },
+  'onboarding.periodBefore.action': 'Añadirlo',
+  'onboarding.periodBefore.between': {
+    one: '{count} día entre ellos',
+    other: '{count} días entre ellos',
+  },
+  'onboarding.periodBefore.line.remember': '¿Recuerdas cuándo empezó el periodo anterior a ese?',
+  'onboarding.periodBefore.line.surer':
+    'Cada uno que añadas hace más certera la primera previsión.',
+  'onboarding.periodBefore.outOfRange':
+    'Un ciclo dura de {minimum} a {maximum} días. Elige un día en ese rango.',
+  'onboarding.periodBefore.skip': 'No me acuerdo',
+  'onboarding.periodBefore.title': 'El periodo anterior',
   'onboarding.skip': 'Omitir',
   'onboarding.step': 'Paso {step} de {of}',
   'onboarding.tour.back': 'Atrás',

@@ -2,7 +2,7 @@ import { fireEvent, screen } from '@testing-library/react-native';
 
 import { longerTestID } from '../../src/features/onboarding/CycleLength';
 import { nameFieldTestID } from '../../src/features/onboarding/HerName';
-import { dayTestID } from '../../src/features/onboarding/LastPeriod';
+import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -12,6 +12,8 @@ import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 
 export interface HerAnswers {
   readonly periodStartedOn: string;
+  /** Left out where she does not remember the period before, which is that question's Skip. */
+  readonly periodBeforeStartedOn?: string;
   /** Left out where the walk does not care, and then the number the screen offers is kept. */
   readonly cycleLengthDays?: number;
   /** Left out where she skips the question, which is what a walk that is about something else does. */
@@ -47,6 +49,13 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
 
   await fireEvent.press(screen.getByTestId(dayTestID(answers.periodStartedOn)));
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+
+  if (answers.periodBeforeStartedOn === undefined) {
+    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+  } else {
+    await fireEvent.press(screen.getByTestId(dayTestID(answers.periodBeforeStartedOn)));
+    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  }
 
   const asked = answers.cycleLengthDays ?? defaultCycleLengthDays;
   for (let pressed = defaultCycleLengthDays; pressed < asked; pressed += 1) {

@@ -26,6 +26,8 @@ interface Props {
   readonly onBack?: () => void;
   /** Left out where the answer is required, and then no way past it is drawn. */
   readonly onSkip?: () => void;
+  /** Left out where the way past is the plain one, and then the frame writes its own word. */
+  readonly skipLabel?: string;
   readonly children?: ReactNode;
 }
 
@@ -60,6 +62,7 @@ export function OnboardingScreen({
   onAction,
   onBack,
   onSkip,
+  skipLabel,
   children,
 }: Props): ReactNode {
   const [lead, ...rest] = lines;
@@ -96,7 +99,7 @@ export function OnboardingScreen({
             style={styles.skip}
             testID={onboardingSkipTestID}
           >
-            <Text style={styles.skipLabel}>{firstRunCopy.skip}</Text>
+            <Text style={styles.skipLabel}>{skipLabel ?? firstRunCopy.skip}</Text>
           </Pressable>
         )}
       </View>

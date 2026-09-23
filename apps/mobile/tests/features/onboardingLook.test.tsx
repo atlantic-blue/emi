@@ -6,15 +6,18 @@ import { StyleSheet } from 'react-native';
 import { CycleLength } from '../../src/features/onboarding/CycleLength';
 import { HerName } from '../../src/features/onboarding/HerName';
 import {
-  LastPeriod,
   chosenDayMarkTestID,
-  chosenNameMarkTestID,
   dayTestID,
   earlierMonthTestID,
   laterMonthTestID,
   monthTestID,
+} from '../../src/features/onboarding/Calendar';
+import {
+  LastPeriod,
+  chosenNameMarkTestID,
   namedDayTestID,
 } from '../../src/features/onboarding/LastPeriod';
+import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
 import { progressFillTestID } from '../../src/components/ProgressBar';
 import {
   OnboardingScreen,
@@ -43,7 +46,11 @@ import { controlsTooSmallToPress } from '../fixtures/tapTargets';
  * The questions she may pass by today. The last period is the one answer the first run cannot do
  * without, and the cycle length takes its own way past in a later step of feature 11.
  */
-const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = ['name', 'birthYear'];
+const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = [
+  'name',
+  'birthYear',
+  'periodBefore',
+];
 
 /** Midday, and away from any summer time change, so the calendar reads the same in any timezone. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
@@ -82,6 +89,22 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
           onBack={() => undefined}
           onChoose={() => undefined}
           onContinue={() => undefined}
+          onSkip={() => undefined}
+        />
+      </OnAPhone>,
+    );
+    return;
+  }
+  if (at === 'periodBefore') {
+    await render(
+      <OnAPhone>
+        <PeriodBefore
+          chosen={undefined}
+          lastPeriodStartedOn={threeDaysBack}
+          now={whenSheOpensIt}
+          onAdd={() => undefined}
+          onBack={() => undefined}
+          onChoose={() => undefined}
           onSkip={() => undefined}
         />
       </OnAPhone>,

@@ -266,6 +266,18 @@ export const russian: CatalogueIn<'ru'> = {
     few: 'В имени не больше {count} символов.',
     many: 'В имени не больше {count} символов.',
   },
+  'onboarding.periodBefore.action': 'Добавить',
+  'onboarding.periodBefore.between': {
+    one: '{count} день между ними',
+    few: '{count} дня между ними',
+    many: '{count} дней между ними',
+  },
+  'onboarding.periodBefore.line.remember': 'Помните, когда начались месячные перед этими?',
+  'onboarding.periodBefore.line.surer': 'Каждые добавленные месячные делают первый прогноз точнее.',
+  'onboarding.periodBefore.outOfRange':
+    'Цикл длится от {minimum} до {maximum} дней. Выберите день в этом диапазоне.',
+  'onboarding.periodBefore.skip': 'Не помню',
+  'onboarding.periodBefore.title': 'Предыдущие месячные',
   'onboarding.skip': 'Пропустить',
   'onboarding.step': 'Шаг {step} из {of}',
   'onboarding.tour.back': 'Назад',
