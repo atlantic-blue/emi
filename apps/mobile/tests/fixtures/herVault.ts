@@ -3,6 +3,7 @@ import { randomFillSync } from 'node:crypto';
 import { base64Of, bytesFromBase64, keyLength, type RandomSource } from '@emi/crypto';
 
 import { type DayVault, dayVault } from '../../src/services/vault/dayVault';
+import { type ProfileVault, profileVault } from '../../src/services/vault/profileVault';
 import { expoKeychain } from '../../src/services/vault/keychain';
 import { vaultKeyItem } from '../../src/services/vault/vaultKey';
 
@@ -24,6 +25,11 @@ export const herRandom: RandomSource = (byteCount) => randomFillSync(new Uint8Ar
 /** The vault a test seals and opens with. */
 export function herVault(): DayVault {
   return dayVault(herKey(), herRandom);
+}
+
+/** The vault a test seals and opens her answers with, under the same key her days are sealed with. */
+export function herProfileVault(): ProfileVault {
+  return profileVault(herKey(), herRandom);
 }
 
 /**

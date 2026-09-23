@@ -309,7 +309,7 @@ describe('nothing in the cache syncs', () => {
   it('is not among the tables the sync may send', () => {
     const database = migratedDatabase();
 
-    expect(tablesThatSync(database)).toEqual(['day_log']);
+    expect(tablesThatSync(database)).toEqual(['day_log', 'profile']);
   });
 });
 
