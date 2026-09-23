@@ -42,6 +42,7 @@ export function LastPeriod({ now, chosen, onChoose, onContinue, onBack }: Props)
       actionIsReady={chosen !== undefined}
       actionLabel={firstRunCopy.lastPeriod.action}
       lines={firstRunCopy.lastPeriod.lines}
+      linesComeFirst
       onAction={onContinue}
       onBack={onBack}
       screen="lastPeriod"

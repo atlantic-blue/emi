@@ -28,6 +28,13 @@ interface Props {
   readonly onSkip?: () => void;
   /** Left out where the way past is the plain one, and then the frame writes its own word. */
   readonly skipLabel?: string;
+  /**
+   * The lines stand above what she is asked rather than under it. A screen whose question is tall
+   * enough to fill the glass puts the lines under it out of sight, and a line she has to scroll to
+   * reach is a line she reads after she has answered, which is too late for a line about what Emi
+   * does with the answer.
+   */
+  readonly linesComeFirst?: boolean;
   readonly children?: ReactNode;
 }
 
@@ -63,9 +70,20 @@ export function OnboardingScreen({
   onBack,
   onSkip,
   skipLabel,
+  linesComeFirst = false,
   children,
 }: Props): ReactNode {
   const [lead, ...rest] = lines;
+  const said =
+    rest.length === 0 ? null : (
+      <Card>
+        {rest.map((line, at) => (
+          <Text key={line} style={at === 0 ? styles.line : [styles.line, styles.lineAfter]}>
+            {line}
+          </Text>
+        ))}
+      </Card>
+    );
 
   return (
     <Screen testID={`onboarding-${screen}`}>
@@ -112,17 +130,11 @@ export function OnboardingScreen({
           {lead === undefined ? null : <Text style={styles.lead}>{lead}</Text>}
         </View>
 
+        {linesComeFirst ? said : null}
+
         <View style={styles.asked}>{children}</View>
 
-        {rest.length === 0 ? null : (
-          <Card>
-            {rest.map((line, at) => (
-              <Text key={line} style={at === 0 ? styles.line : [styles.line, styles.lineAfter]}>
-                {line}
-              </Text>
-            ))}
-          </Card>
-        )}
+        {linesComeFirst ? null : said}
       </ScrollView>
 
       <View style={styles.footer}>
