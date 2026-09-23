@@ -1,4 +1,5 @@
 import type { Database } from '../../data/database';
+import { rebuildTheFile, writeOverWhatIsRemoved } from '../../data/freePages';
 import type { ServerDelete, ServerDeleteOutcome } from '../sync/deleteAccount';
 import { syncKeychainItems } from '../sync/deviceKey';
 import type { SecureStore } from './keychain';
@@ -84,15 +85,14 @@ export function pagesHeld(db: Database): number {
 /**
  * Every row of every table, gone.
  *
- * `secure_delete` writes zeroes over what it removes instead of leaving it on a free page, and the
- * vacuum afterwards rebuilds the file out of the pages still in use. Without the two, her days are
- * off the index and still in the file, which is a delete she cannot see the difference from and an
- * attacker can.
+ * The rows are written over as they go and the file is rebuilt afterwards, which is what takes
+ * them out of the file and not only out of the tables. Without the two, her days are off the index
+ * and still in the file, which is a delete she cannot see the difference from and an attacker can.
  */
 export function emptyTheDatabase(db: Database): string[] {
   const tables = everyTable(db);
 
-  db.execute('PRAGMA secure_delete = ON');
+  writeOverWhatIsRemoved(db);
   db.execute('BEGIN');
   try {
     for (const table of tables) {
@@ -103,8 +103,7 @@ export function emptyTheDatabase(db: Database): string[] {
     db.execute('ROLLBACK');
     throw error;
   }
-  // A vacuum cannot run inside a transaction, so it follows the commit rather than joining it.
-  db.execute('VACUUM');
+  rebuildTheFile(db);
 
   return tables;
 }

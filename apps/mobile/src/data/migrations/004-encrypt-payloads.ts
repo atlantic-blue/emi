@@ -1,6 +1,7 @@
 import { EnvelopeError, readEnvelope, recordFromBytes } from '@emi/crypto';
 
 import type { Database } from '../database';
+import { writeOverWhatIsRemoved } from '../freePages';
 import type { DayVault } from '../../services/vault/dayVault';
 
 /**
@@ -38,6 +39,10 @@ export function encryptPlainPayloads(db: Database, vault: DayVault, now: Date): 
   }
 
   const instant = now.toISOString();
+
+  // Her day is about to be replaced by its sealed self, and the plain copy the update lets go of
+  // would otherwise stay in the file.
+  writeOverWhatIsRemoved(db);
 
   db.execute('BEGIN');
   try {

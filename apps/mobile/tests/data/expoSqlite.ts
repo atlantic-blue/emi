@@ -1,5 +1,7 @@
-import type { SQLiteDatabase } from 'expo-sqlite';
+import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 /**
  * The application opens its database through expo-sqlite, which has no implementation off a phone.
@@ -9,13 +11,23 @@ import { DatabaseSync } from 'node:sqlite';
  */
 const held = new Map<string, DatabaseSync>();
 
+/**
+ * Where the databases are written. A test that asks what the file itself holds names a directory,
+ * because a database held in memory has no bytes to read, and every other test leaves it unnamed.
+ */
+let writtenInto: string | undefined;
+
+export function expoSqliteWritesInto(directory: string): void {
+  writtenInto = directory;
+}
+
 export function openDatabaseSync(name: string): SQLiteDatabase {
   const already = held.get(name);
   if (already) {
     return statements(already);
   }
 
-  const opened = new DatabaseSync(':memory:');
+  const opened = new DatabaseSync(writtenInto ? join(writtenInto, name) : ':memory:');
   held.set(name, opened);
 
   return statements(opened);
@@ -27,6 +39,7 @@ export function resetExpoSqlite(): void {
     database.close();
   }
   held.clear();
+  writtenInto = undefined;
 }
 
 // Three synchronous methods are all the application asks of expo-sqlite, so three are all this
