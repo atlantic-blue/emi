@@ -14,6 +14,7 @@ export function namedDayTestID(day: string): string {
   return `named-day-${day}`;
 }
 
+export const namedDaysTestID = 'named-days';
 export const chosenNameMarkTestID = 'named-day-chosen-mark';
 
 /** Points. The tick sits beside a word in a pill, so it is drawn at the size of the word. */
@@ -46,7 +47,7 @@ export function LastPeriod({ now, chosen, onChoose, onContinue, onBack }: Props)
       screen="lastPeriod"
       title={firstRunCopy.lastPeriod.title}
     >
-      <View style={styles.named}>
+      <View style={styles.named} testID={namedDaysTestID}>
         {daysBackFrom(today, 2).map((day) => {
           const isChosen = day === chosen;
 

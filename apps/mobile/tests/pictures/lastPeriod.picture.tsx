@@ -4,12 +4,13 @@ import { render } from '@testing-library/react-native';
 
 import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
+import { iPhone16Size } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 
 const theCaveat = [
-  'Rendered from the tree the last period screen produced under the test runner, at 390 by 844',
-  'points, and not captured from a phone. The page loads the same font files the application',
-  'loads, so the words are drawn in Plus Jakarta Sans.',
+  'Rendered from the tree the last period screen produced under the test runner, at 393 by 852',
+  'points, which is the glass of an iPhone 16, and not captured from a phone. The page loads the',
+  'same font files the application loads, so the words are drawn in Plus Jakarta Sans.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
@@ -72,6 +73,7 @@ describe('the last period screen, drawn for somebody to look at', () => {
       screens: screens,
       caveat: theCaveat,
       script: 'generate:last-period-picture',
+      size: iPhone16Size,
     });
 
     expect(result.problems).toEqual([]);

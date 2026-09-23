@@ -17,15 +17,37 @@ export function dayTestID(day: string): string {
   return `day-${day}`;
 }
 
+export const calendarTestID = 'calendar';
+export const weekTestID = 'calendar-week';
+export const emptyCellTestID = 'calendar-empty';
 export const monthTestID = 'calendar-month';
 export const earlierMonthTestID = 'calendar-earlier-month';
 export const laterMonthTestID = 'calendar-later-month';
+
+/** The seven boxes a week row sizes: the days it holds, and a box where the month has no day. */
+export const weekCellTestIDs = new RegExp(`^(${dayTestID('\\d')}|${emptyCellTestID})`);
 
 /** The tick the chosen day carries. It is the cue that survives a screen read in grey. */
 export const chosenDayMarkTestID = 'calendar-chosen-mark';
 
 /** Points. The tick sits under a number in a square, so it is drawn smaller than the number. */
 const SQUARE_MARK_SIZE = 12;
+
+/**
+ * Seven squares of 44 points, a gutter each side and the padding of the calendar want 414 points
+ * across, and an iPhone 16 has 393. So a square takes the width the row leaves it rather than a
+ * width of its own, and keeps the height a thumb needs.
+ *
+ * What it takes a touch on is widened by half the gap on each side, so every point between two
+ * squares belongs to the nearer one and no part of the row is dead.
+ */
+const HALF_THE_GAP_BETWEEN_SQUARES = space.spaceXs / 2;
+const SQUARE_TOUCH = {
+  bottom: 0,
+  left: HALF_THE_GAP_BETWEEN_SQUARES,
+  right: HALF_THE_GAP_BETWEEN_SQUARES,
+  top: 0,
+} as const;
 
 interface Props {
   /** Her own day, which is what the weekday names in a square's spoken label are measured from. */
@@ -66,6 +88,7 @@ function Day({ day, today, chosen, onChoose, canBeChosen }: DayProps): ReactNode
       accessibilityRole="radio"
       accessibilityState={{ disabled: !canBeChosen, selected: isChosen }}
       disabled={!canBeChosen}
+      hitSlop={SQUARE_TOUCH}
       onPress={() => onChoose(day)}
       style={[styles.day, isChosen && styles.dayChosen, !canBeChosen && styles.dayOutOfReach]}
       testID={dayTestID(day)}
@@ -105,7 +128,7 @@ export function Calendar({
   const canGoLater = month < latestMonth;
 
   return (
-    <View style={styles.calendar}>
+    <View style={styles.calendar} testID={calendarTestID}>
       <View style={styles.heading}>
         <Pressable
           accessibilityLabel={firstRunCopy.earlierMonth}
@@ -138,7 +161,7 @@ export function Calendar({
         </Pressable>
       </View>
 
-      <View style={styles.week}>
+      <View style={styles.week} testID={weekTestID}>
         {weekdayColumnNames.map((weekday) => (
           <Text accessibilityLabel={weekday} key={weekday} style={styles.weekday}>
             {weekday.slice(0, 1)}
@@ -147,10 +170,10 @@ export function Calendar({
       </View>
 
       {monthWeeks(month).map((week) => (
-        <View key={week.join()} style={styles.week}>
+        <View key={week.join()} style={styles.week} testID={weekTestID}>
           {week.map((day, column) =>
             day === undefined ? (
-              <View key={`${month} ${column}`} style={styles.empty} />
+              <View key={`${month} ${column}`} style={styles.empty} testID={emptyCellTestID} />
             ) : (
               <Day
                 canBeChosen={canChoose(day)}
@@ -188,7 +211,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
   },
   dayChosen: { backgroundColor: colour.surfaceTint, borderColor: colour.onPrimaryFixedVariant },
   dayNumber: {
@@ -201,7 +223,7 @@ const styles = StyleSheet.create({
     borderColor: colour.surfaceContainerLowest,
     opacity: 0.4,
   },
-  empty: { flex: 1, minHeight: MINIMUM_TAP_TARGET, minWidth: MINIMUM_TAP_TARGET },
+  empty: { flex: 1, minHeight: MINIMUM_TAP_TARGET },
   heading: {
     alignItems: 'center',
     flexDirection: 'row',
