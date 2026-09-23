@@ -147,6 +147,7 @@ export const spanish: CatalogueIn<'es'> = {
   'history.title': 'Historial',
 
   'home.export': 'Exportar',
+  'home.greeting': 'Hola, {name}',
   'home.history': 'Historial',
   'home.logToday': 'Registrar hoy',
   'home.settings': 'Ajustes',
@@ -213,6 +214,12 @@ export const spanish: CatalogueIn<'es'> = {
   'log.weight.hint': 'Un número al día',
 
   'onboarding.back': 'Atrás',
+  'onboarding.birthYear.action': 'Continuar',
+  'onboarding.birthYear.line.noReader': 'Emi todavía no lee esto.',
+  'onboarding.birthYear.line.sealed':
+    'Emi cifra esto en el teléfono antes de que salga a ningún sitio.',
+  'onboarding.birthYear.title': '¿En qué año naciste?',
+  'onboarding.birthYear.year': 'Año {year}',
   'onboarding.cycleLength.action': 'Hecho',
   'onboarding.cycleLength.days': '{count} días',
   'onboarding.cycleLength.line.count':
@@ -239,6 +246,16 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.lastPeriod.line.remember':
     'El primer día que sangraste. El día más cercano que recuerdes es suficiente.',
   'onboarding.lastPeriod.title': '¿Cuándo empezó tu último periodo?',
+  'onboarding.name.action': 'Continuar',
+  'onboarding.name.hint': 'Un nombre, o nada',
+  'onboarding.name.label': 'Tu nombre',
+  'onboarding.name.line.greets': 'Emi te saluda con él. Nada más lo usa.',
+  'onboarding.name.line.sealed': 'Emi cifra esto en el teléfono antes de que salga a ningún sitio.',
+  'onboarding.name.title': '¿Cómo quieres que Emi te llame?',
+  'onboarding.name.tooLong': {
+    one: 'Un nombre tiene como máximo {count} carácter.',
+    other: 'Un nombre tiene como máximo {count} caracteres.',
+  },
   'onboarding.skip': 'Omitir',
   'onboarding.step': 'Paso {step} de {of}',
   'onboarding.tour.back': 'Atrás',

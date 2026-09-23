@@ -27,9 +27,6 @@ import {
   settingsScreenTestID,
 } from '../../src/features/settings/SettingsScreen';
 import { settingsCopy } from '../../src/features/settings/copy';
-import { longerTestID } from '../../src/features/onboarding/CycleLength';
-import { dayTestID } from '../../src/features/onboarding/LastPeriod';
-import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
 import { tourScreenTestID, tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import {
   everyTable,
@@ -48,6 +45,8 @@ import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/her
 import { herProfileVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn, visibleTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
+import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
+import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -282,11 +281,10 @@ describe('after deleting, the database and the keychain are both empty', () => {
       await shePresses(startAgainTestID);
 
       await shePresses(tourSkipTestID);
-      await shePresses(onboardingActionTestID);
-      await shePresses(dayTestID(addDays(today, -2)));
-      await shePresses(onboardingActionTestID);
-      await shePresses(longerTestID);
-      await shePresses(onboardingActionTestID);
+      await sheAnswersEveryQuestion({
+        periodStartedOn: addDays(today, -2),
+        cycleLengthDays: defaultCycleLengthDays + 1,
+      });
       await sheHoldsTheRing();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();

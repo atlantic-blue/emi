@@ -6,5 +6,5 @@ import { WhatEmiIs } from '../../features/onboarding/WhatEmiIs';
 export default function WelcomeRoute(): ReactNode {
   const router = useRouter();
 
-  return <WhatEmiIs onContinue={() => router.push('/onboarding/last-period')} />;
+  return <WhatEmiIs onContinue={() => router.push('/onboarding/name')} />;
 }

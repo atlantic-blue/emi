@@ -4,6 +4,7 @@ import { OnAPhone } from '../fixtures/theSafeArea';
 import { StyleSheet } from 'react-native';
 
 import { CycleLength } from '../../src/features/onboarding/CycleLength';
+import { HerName } from '../../src/features/onboarding/HerName';
 import {
   LastPeriod,
   chosenDayMarkTestID,
@@ -22,6 +23,7 @@ import {
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
+import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
 import {
   type FirstRunScreen,
   firstRunCopy,
@@ -33,10 +35,15 @@ import { sizedTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 
 /**
- * What the three screens of the first run look like. They ask her for the same three answers they
- * always did, so nothing here presses anything: it reads the shapes, the colours and the marks off
- * a rendered screen.
+ * What the screens of the first run look like. Nothing here presses anything: it reads the shapes,
+ * the colours and the marks off a rendered screen, one screen at a time.
  */
+
+/**
+ * The questions she may pass by today. The last period is the one answer the first run cannot do
+ * without, and the cycle length takes its own way past in a later step of feature 11.
+ */
+const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = ['name', 'birthYear'];
 
 /** Midday, and away from any summer time change, so the calendar reads the same in any timezone. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
@@ -48,6 +55,35 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
     await render(
       <OnAPhone>
         <WhatEmiIs onContinue={() => undefined} />
+      </OnAPhone>,
+    );
+    return;
+  }
+  if (at === 'name') {
+    await render(
+      <OnAPhone>
+        <HerName
+          onBack={() => undefined}
+          onContinue={() => undefined}
+          onSkip={() => undefined}
+          onType={() => undefined}
+          typed=""
+        />
+      </OnAPhone>,
+    );
+    return;
+  }
+  if (at === 'birthYear') {
+    await render(
+      <OnAPhone>
+        <YearOfBirth
+          chosen={undefined}
+          now={whenSheOpensIt}
+          onBack={() => undefined}
+          onChoose={() => undefined}
+          onContinue={() => undefined}
+          onSkip={() => undefined}
+        />
       </OnAPhone>,
     );
     return;
@@ -117,7 +153,7 @@ describe('the first run carries the design system', () => {
     const theFill = progressFillTestID(onboardingProgressTestID);
 
     for (const [at, where] of firstRunScreens.entries()) {
-      it(`fills ${String(at + 1)} of 3 of the bar on ${where}, and says so out loud`, async () => {
+      it(`fills ${String(at + 1)} of ${String(firstRunScreens.length)} of the bar on ${where}`, async () => {
         await sheIsLookingAt(where);
 
         const filled = ((at + 1) / firstRunScreens.length) * 100;
@@ -140,7 +176,11 @@ describe('the first run carries the design system', () => {
 
       const bar = screen.getByTestId(onboardingProgressTestID);
 
-      expect(bar.props['accessibilityValue']).toEqual({ max: 3, min: 0, now: 2 });
+      expect(bar.props['accessibilityValue']).toEqual({
+        max: firstRunScreens.length,
+        min: 0,
+        now: firstRunScreens.indexOf('lastPeriod') + 1,
+      });
       expect(bar.props['accessibilityLabel']).toBe(stepLabel('lastPeriod'));
     });
 
@@ -232,10 +272,14 @@ describe('the first run carries the design system', () => {
     });
 
     for (const where of firstRunScreens) {
-      it(`is offered on none of the three questions she is asked today, ${where} among them`, async () => {
+      const offered = theQuestionsSheMaySkipToday.includes(where);
+
+      it(`is ${offered ? 'offered' : 'not offered'} on ${where}`, async () => {
         await sheIsLookingAt(where);
 
-        expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
+        const skip = screen.queryByTestId(onboardingSkipTestID);
+
+        expect(skip === null).toBe(!offered);
       });
     }
   });

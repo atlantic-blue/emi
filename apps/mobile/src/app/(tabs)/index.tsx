@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
 import { listCycles } from '../../data/cycleRepository';
+import { readProfile } from '../../data/profileRepository';
 import type { Database } from '../../data/database';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../features/cycle/ringInput';
@@ -14,12 +15,14 @@ import { localDay } from '../../features/onboarding/days';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
 import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
-import { defaultCycleLengthDays, statedCycleLengthDays } from '../../features/onboarding/firstRun';
+import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
 
 interface Shown {
   readonly ring: RingInput | undefined;
   readonly forecast: ReturnType<typeof forecastOf>;
   readonly cycleLengthDays: number;
+  /** Her name, where she gave one, which is the only thing the home screen greets her by. */
+  readonly name: string | undefined;
 }
 
 /**
@@ -33,7 +36,10 @@ function whatSheIsLookingAt(
   today: string,
 ): Shown {
   const cycles = listCycles(database);
-  const stated = statedCycleLengthDays(database, profiles) ?? defaultCycleLengthDays;
+  // One read of the sealed profile, so the length the ring is drawn from and the name at the top
+  // of the screen are the same answers opened once rather than twice.
+  const herAnswers = readProfile(database, profiles);
+  const stated = herAnswers?.cycleLengthDays ?? defaultCycleLengthDays;
 
   return {
     ring: ringInputFor({
@@ -44,6 +50,7 @@ function whatSheIsLookingAt(
     }),
     forecast: forecastOf(cycles),
     cycleLengthDays: stated,
+    name: herAnswers?.name,
   };
 }
 
@@ -80,6 +87,7 @@ export default function HomeRoute(): ReactNode {
     <HomeScreen
       cycleLengthDays={shown.cycleLengthDays}
       forecast={shown.forecast}
+      name={shown.name}
       onExport={() => router.push('/export')}
       onHistory={() => router.push('/history')}
       onLogToday={() => router.push('/log')}

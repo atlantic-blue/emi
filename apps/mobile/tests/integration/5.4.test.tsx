@@ -13,9 +13,6 @@ import { coverTestID } from '../../src/features/lock/Cover';
 import { lockScreenTestID, unlockTestID } from '../../src/features/lock/LockScreen';
 import { lockCopy } from '../../src/features/lock/copy';
 import { lockOn, setLockOnReturn } from '../../src/features/lock/lockSetting';
-import { longerTestID } from '../../src/features/onboarding/CycleLength';
-import { dayTestID } from '../../src/features/onboarding/LastPeriod';
-import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import {
@@ -27,6 +24,8 @@ import {
   unlocked,
 } from '../fixtures/expoLocalAuthentication';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
+import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { visibleTextIn } from '../fixtures/renderedText';
@@ -136,11 +135,10 @@ describe('the lock shows when she comes back to the application', () => {
 
       // A fresh install opens on the tour, so the way out of it comes before the first question.
       await shePresses(tourSkipTestID);
-      await shePresses(onboardingActionTestID);
-      await shePresses(dayTestID(addDays(today, -2)));
-      await shePresses(onboardingActionTestID);
-      await shePresses(longerTestID);
-      await shePresses(onboardingActionTestID);
+      await sheAnswersEveryQuestion({
+        periodStartedOn: addDays(today, -2),
+        cycleLengthDays: defaultCycleLengthDays + 1,
+      });
       await sheHoldsTheRing();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();

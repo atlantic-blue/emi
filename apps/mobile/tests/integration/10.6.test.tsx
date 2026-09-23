@@ -19,9 +19,6 @@ import {
   holdProgressTestID,
   holdRefusedTestID,
 } from '../../src/features/onboarding/HoldToBegin';
-import { longerTestID } from '../../src/features/onboarding/CycleLength';
-import { dayTestID } from '../../src/features/onboarding/LastPeriod';
-import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy } from '../../src/features/onboarding/copy';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { expoKeychain } from '../../src/services/vault/keychain';
@@ -29,6 +26,7 @@ import { vaultKeyItem } from '../../src/services/vault/vaultKey';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { sheAnswersEveryQuestion as sheWalksTheFirstRun } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import { theVaultOnHerPhone, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { OnAPhone } from '../fixtures/theSafeArea';
@@ -77,19 +75,12 @@ async function sheOpensEmi(): Promise<OpenApp> {
   return { pathname: () => app.getPathname(), close: () => view.unmount() };
 }
 
-async function shePresses(testID: string): Promise<void> {
-  await fireEvent.press(screen.getByTestId(testID));
-}
-
 /** Every question of the first run, answered, which leaves her looking at the hold. */
 async function sheAnswersEveryQuestion(): Promise<void> {
-  await shePresses(onboardingActionTestID);
-  await shePresses(dayTestID(herPeriodStarted));
-  await shePresses(onboardingActionTestID);
-  for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
-    await shePresses(longerTestID);
-  }
-  await shePresses(onboardingActionTestID);
+  await sheWalksTheFirstRun({
+    periodStartedOn: herPeriodStarted,
+    cycleLengthDays: herCycleLengthDays,
+  });
 }
 
 describe('she answers everything, leaves before the hold, and nothing is written', () => {

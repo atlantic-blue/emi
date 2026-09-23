@@ -41,7 +41,10 @@ import {
 } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { dayTestID } from '../apps/mobile/src/features/onboarding/LastPeriod';
 import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldToBegin';
-import { onboardingActionTestID } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
+import {
+  onboardingActionTestID,
+  onboardingSkipTestID,
+} from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { firstRunCopy } from '../apps/mobile/src/features/onboarding/copy';
 import { defaultCycleLengthDays } from '../apps/mobile/src/features/onboarding/firstRun';
@@ -49,6 +52,7 @@ import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
 import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
 import { aDayRecord } from '../apps/mobile/tests/fixtures/dayRecord';
 import { resetExpoSecureStore } from '../apps/mobile/tests/fixtures/expoSecureStore';
+import { sheAnswersEveryQuestion } from '../apps/mobile/tests/fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
 import {
   aBleedingDay,
@@ -169,15 +173,10 @@ async function shePresses(testID: string): Promise<void> {
 }
 
 async function sheAnswersEveryQuestionOfTheFirstRun(): Promise<void> {
-  await shePresses(onboardingActionTestID);
-  await shePresses(dayTestID(herPeriodStarted));
-  await shePresses(onboardingActionTestID);
-
-  for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
-    await shePresses(longerTestID);
-  }
-
-  await shePresses(onboardingActionTestID);
+  await sheAnswersEveryQuestion({
+    periodStartedOn: herPeriodStarted,
+    cycleLengthDays: sheSaysHerCycleRuns,
+  });
 }
 
 /** What the ring says about the day she is on, read off the ring and not off the arithmetic. */
@@ -438,6 +437,8 @@ defineFeature(feature, (test) => {
       'she answers every question, and presses Done a second time before the screen goes',
       async () => {
         await shePresses(onboardingActionTestID);
+        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingSkipTestID);
         await shePresses(dayTestID(herPeriodStarted));
         await shePresses(onboardingActionTestID);
 
@@ -488,7 +489,7 @@ defineFeature(feature, (test) => {
     );
   });
 
-  test('SCREEN-1, the first run asks three questions and the hold after them', ({
+  test('SCREEN-1, the first run asks its questions and the hold after them', ({
     given,
     when,
     and,
@@ -513,6 +514,10 @@ defineFeature(feature, (test) => {
     and('she answers every question of the first run', async () => {
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
@@ -525,10 +530,12 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she was asked what Emi is, when her last period started, and how long her cycle runs',
+      'she was asked what Emi is, her name, the year she was born, when her last period started, and how long her cycle runs',
       () => {
         expect(visited).toEqual([
           '/onboarding/welcome',
+          '/onboarding/name',
+          '/onboarding/year-of-birth',
           '/onboarding/last-period',
           '/onboarding/cycle-length',
           '/onboarding/hold',
@@ -537,7 +544,7 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('there was no fourth question to answer', () => {
+    and('there was no further question to answer', () => {
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
     });
@@ -549,13 +556,13 @@ defineFeature(feature, (test) => {
     and,
     then,
   }) => {
-    const everyKindOfNodeShePassed: string[] = [];
+    const everyFieldShePassed: string[] = [];
 
     given('she has never opened Emi before', () => undefined);
 
     when('she opens Emi', async () => {
       await sheOpens('/');
-      everyKindOfNodeShePassed.push(...nodeTypesIn(screen.toJSON()));
+      everyFieldShePassed.push(...fieldsDrawn());
     });
 
     and('she skips the tour Emi opens with', async () => {
@@ -564,26 +571,29 @@ defineFeature(feature, (test) => {
 
     and('she answers every question of the first run', async () => {
       await shePresses(onboardingActionTestID);
-      everyKindOfNodeShePassed.push(...nodeTypesIn(screen.toJSON()));
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(onboardingSkipTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(onboardingSkipTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
-      everyKindOfNodeShePassed.push(...nodeTypesIn(screen.toJSON()));
+      everyFieldShePassed.push(...fieldsDrawn());
 
       for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
         await shePresses(longerTestID);
       }
 
       await shePresses(onboardingActionTestID);
-      everyKindOfNodeShePassed.push(...nodeTypesIn(screen.toJSON()));
+      everyFieldShePassed.push(...fieldsDrawn());
     });
 
     and('she presses and holds the ring', async () => {
       await sheHoldsTheRing();
     });
 
-    then('nothing on the way gave her anything to type into', () => {
-      expect(everyKindOfNodeShePassed).not.toContain('TextInput');
-      expect(everyKindOfNodeShePassed.length).toBeGreaterThan(0);
+    then('the only thing she could type into was her name', () => {
+      expect([...new Set(everyFieldShePassed)]).toEqual([firstRunCopy.name.label]);
       // She reached the home screen, so the run is finished, and the only two answers her
       // phone holds are the two the questions asked her for.
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
@@ -973,13 +983,17 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingActionTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
+      await shePresses(onboardingSkipTestID);
+      measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
+
+      await shePresses(onboardingSkipTestID);
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
     });
 
-    then('every control on each of the three screens is at least 44 points on both axes', () => {
-      expect(measured).toEqual([[], [], []]);
+    then('every control on each screen of the first run is at least 44 points on both axes', () => {
+      expect(measured).toEqual([[], [], [], []]);
       expect(screen.getByTestId(cycleLengthTestID)).toBeTruthy();
     });
   });
@@ -1293,17 +1307,29 @@ defineFeature(feature, (test) => {
   });
 });
 
-/** Every kind of node a rendered screen drew, so a text field cannot hide inside one. */
-function nodeTypesIn(node: unknown): string[] {
+interface Drawn {
+  readonly type?: string;
+  readonly props?: Record<string, unknown>;
+  readonly children?: unknown;
+}
+
+/** Every field a rendered screen drew, so a field cannot hide inside anything else. */
+function fieldsIn(node: unknown): Drawn[] {
   if (Array.isArray(node)) {
-    return node.flatMap(nodeTypesIn);
+    return node.flatMap(fieldsIn);
   }
   if (node === null || typeof node !== 'object') {
     return [];
   }
-  const element = node as { type?: string; children?: unknown };
+  const element = node as Drawn;
+  const below = fieldsIn(element.children ?? []);
 
-  return [element.type ?? '', ...nodeTypesIn(element.children ?? [])];
+  return element.type === 'TextInput' ? [element, ...below] : below;
+}
+
+/** The question above each field, which is the sentence a screen reader reads out for it. */
+function fieldsDrawn(): string[] {
+  return fieldsIn(screen.toJSON()).map((field) => String(field.props?.accessibilityLabel));
 }
 
 /** The value an animated style holds right now, which is what she is looking at. */
