@@ -2,6 +2,7 @@ import { longestCycleLengthDays, shortestCycleLengthDays } from '@emi/crypto';
 
 import type { ProfileVault } from '../../services/vault/profileVault';
 import type { Database } from '../database';
+import { writeOverWhatIsRemoved } from '../freePages';
 import { readProfile, writeProfile } from '../profileRepository';
 
 /**
@@ -52,6 +53,9 @@ export function moveCycleLengthIntoProfile(
   if (!isASealableCycleLength(days)) {
     return { move: 'not-a-cycle-length' };
   }
+
+  // The plain key is about to go, and a row SQLite unlinks stays in the file unless this is on.
+  writeOverWhatIsRemoved(db);
 
   const stated = readProfile(db, vault);
 

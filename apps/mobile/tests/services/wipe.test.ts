@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 
+import type { Database } from '../../src/data/database';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import type { ServerDelete, ServerDeleteOutcome } from '../../src/services/sync/deleteAccount';
@@ -113,10 +114,18 @@ describe('the local delete', () => {
       rmSync(directory, { force: true, recursive: true });
     });
 
-    it('holds no word she wrote, read from the bytes rather than through a query', () => {
+    /** Four hundred rows carry the file past the page they start on, so there is somewhere for a
+     * deleted row to be left behind. */
+    function aFileHoldingWhatSheWrote(journal: 'delete' | 'wal'): {
+      readonly db: Database;
+      readonly path: string;
+      readonly close: () => void;
+    } {
       const path = join(directory, 'emi.db');
       const sqlite = new DatabaseSync(path);
       const db = nodeDatabase(sqlite);
+
+      sqlite.exec(`PRAGMA journal_mode = ${journal}`);
       db.execute('CREATE TABLE a_later_migration (id TEXT NOT NULL PRIMARY KEY, kept TEXT) STRICT');
 
       for (let at = 0; at < 400; at += 1) {
@@ -126,12 +135,33 @@ describe('the local delete', () => {
         ]);
       }
 
-      expect(readFileSync(path).includes(Buffer.from(aWordSheWrote))).toBe(true);
+      // A phone that has been running for months has long since folded its log into the file, and
+      // a log still holding her rows is a question about the seeding rather than about the delete.
+      sqlite.exec('PRAGMA wal_checkpoint(TRUNCATE)');
 
-      emptyTheDatabase(db);
+      return { db, path, close: () => sqlite.close() };
+    }
 
-      expect(readFileSync(path).includes(Buffer.from(aWordSheWrote))).toBe(false);
-      sqlite.close();
+    it('holds no word she wrote, read from the bytes rather than through a query', () => {
+      const phone = aFileHoldingWhatSheWrote('delete');
+      expect(readFileSync(phone.path).includes(Buffer.from(aWordSheWrote))).toBe(true);
+
+      emptyTheDatabase(phone.db);
+
+      expect(readFileSync(phone.path).includes(Buffer.from(aWordSheWrote))).toBe(false);
+      phone.close();
+    });
+
+    it('holds none of it on a phone that keeps a write ahead log either', () => {
+      const phone = aFileHoldingWhatSheWrote('wal');
+      expect(readFileSync(phone.path).includes(Buffer.from(aWordSheWrote))).toBe(true);
+
+      emptyTheDatabase(phone.db);
+
+      // Read while the database is still open, because the application never closes its own, and
+      // a log that has not been folded back leaves every word of hers in the file behind it.
+      expect(readFileSync(phone.path).includes(Buffer.from(aWordSheWrote))).toBe(false);
+      phone.close();
     });
   });
 

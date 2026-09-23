@@ -1,8 +1,7 @@
 import { type ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
-import { encryptPlainPayloads } from '../../data/migrations/004-encrypt-payloads';
-import { moveCycleLengthIntoProfile } from '../../data/migrations/006-cycle-length-into-profile';
+import { type HerVaults, runTheLaunchPasses } from '../../data/launchPasses';
 import { type DayVault, dayVault } from './dayVault';
 import { expoKeychain } from './keychain';
 import { type ProfileVault, profileVault } from './profileVault';
@@ -11,11 +10,7 @@ import { phoneRandom, vaultKey } from './vaultKey';
 /** Her vaults, asked for rather than held, so the key they carry is the key the keychain holds. */
 export type MakeHerVaults = () => Promise<HerVaults>;
 
-/** Her one key, bound to the two shapes it seals. Both are made here so both hold the same key. */
-export interface HerVaults {
-  readonly day: DayVault;
-  readonly profile: ProfileVault;
-}
+export type { HerVaults };
 
 function vaultsFor(key: Uint8Array): HerVaults {
   return { day: dayVault(key, phoneRandom), profile: profileVault(key, phoneRandom) };
@@ -29,9 +24,10 @@ const MakingContext = createContext<MakeHerVaults | undefined>(undefined);
  * this renders until the key is in hand: a screen that drew her ring first would have to read her
  * days without it, and there is no way to read a day without the key.
  *
- * The days she wrote before the envelope existed are sealed here too, on the first launch that
- * holds a key, because this is the first moment both the key and the database are open. The cycle
- * length she stated moves out of the setting table here for the same reason.
+ * The two passes that need her key run here too, on the first launch that holds one, because this
+ * is the first moment both the key and the database are open. The days she wrote before the
+ * envelope existed are sealed, the cycle length she stated leaves the setting table, and the file
+ * is written again so neither plain copy is left in it.
  */
 export function VaultProvider({ children }: { readonly children: ReactNode }): ReactNode {
   const database = useDatabase();
@@ -45,9 +41,7 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
         return;
       }
       const opened = vaultsFor(key);
-      const now = new Date();
-      encryptPlainPayloads(database, opened.day, now);
-      moveCycleLengthIntoProfile(database, opened.profile, now);
+      runTheLaunchPasses(database, opened, new Date());
       setVaults(opened);
     });
 
