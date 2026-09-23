@@ -13,7 +13,7 @@ export default function CycleLengthRoute(): ReactNode {
       days={cycleLengthDays}
       onBack={() => router.back()}
       onChange={setCycleLengthDays}
-      onDone={() => router.push('/onboarding/hold')}
+      onDone={() => router.push('/onboarding/period-length')}
     />
   );
 }

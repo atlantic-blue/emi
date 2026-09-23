@@ -125,6 +125,11 @@ async function sheSkipsThePeriodBefore(): Promise<void> {
   await fireEvent.press(theScreen('periodBefore').getByTestId(onboardingSkipTestID));
 }
 
+/** The way past the period length, which is the last question and says she is not sure. */
+async function sheSkipsThePeriodLength(): Promise<void> {
+  await fireEvent.press(theScreen('periodLength').getByTestId(onboardingSkipTestID));
+}
+
 /** The whole first run: every question answered, and the hold that writes the answers. */
 async function sheAnswersEveryScreen(): Promise<void> {
   await sheAnswersEveryQuestion({
@@ -330,7 +335,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       );
     });
 
-    it('asks her six questions, holds once, and asks nothing else', async () => {
+    it('asks her seven questions, holds once, and asks nothing else', async () => {
       const app = await sheOpensEmi();
       const visited = [app.pathname()];
 
@@ -347,6 +352,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await sheAnswers('cycleLength');
       visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
       await sheHoldsTheRing();
 
       expect(visited).toEqual([
@@ -356,6 +363,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/last-period',
         '/onboarding/period-before',
         '/onboarding/cycle-length',
+        '/onboarding/period-length',
         '/onboarding/hold',
       ]);
       expect(app.pathname()).toBe('/');
@@ -377,6 +385,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'last-period.tsx',
         'name.tsx',
         'period-before.tsx',
+        'period-length.tsx',
         'welcome.tsx',
         'year-of-birth.tsx',
       ]);
@@ -504,6 +513,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         await shePresses(longerTestID);
       }
       await sheAnswers('cycleLength');
+      await sheSkipsThePeriodLength();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');
@@ -559,6 +569,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await sheAnswers('cycleLength');
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await sheSkipsThePeriodLength();
       expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
@@ -594,7 +607,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
         await shePresses(longerTestID);
       }
-      const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
+      await sheAnswers('cycleLength');
+      const done = theScreen('periodLength').getByTestId(onboardingActionTestID);
 
       // Both presses land before the screen redraws. That is what her second press meets while
       // the hold is still on its way.

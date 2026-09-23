@@ -47,6 +47,7 @@ function whatSheIsLookingAt(
       records: recordedDays(database, vault.open),
       today,
       statedCycleLengthDays: stated,
+      statedPeriodLengthDays: herAnswers?.periodLengthDays,
     }),
     forecast: forecastOf(cycles),
     cycleLengthDays: stated,
