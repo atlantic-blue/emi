@@ -18,6 +18,10 @@ claim against the code that makes it. These documents are the readable half of t
   is generated from `packages/tokens`, so nobody edits it by hand.
 - `reference/` holds one page for each package: every exported symbol, its signature, and the
   comment that sits on it in the source. It is generated too.
+- `design/` holds the designs and the reviews that are not part of the eight documents above.
+  `design/structure-review-2026-09-20.md` reads the shape of the code on one day: the
+  measurements, eight findings, and a numbered path the operator chooses from. It changes no
+  code.
 
 Each section of `architecture.md` carries a status line. `Status: built` means the code is here now.
 `Status: designed` means the design describes it and nobody wrote it yet. A test refuses a section

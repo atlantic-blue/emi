@@ -36,12 +36,13 @@ waits on something outside the code.
 
 ## How to run it
 
-You need Node 22 or later.
+You need the Node version in `.nvmrc`. The pipeline reads the same file.
 
     make install
     make ios
 
-`make android` runs it on an Android emulator. `make web` runs it in a browser.
+`make iphone` runs it on an iPhone plugged in. `make android` runs it on an Android emulator.
+`make web` runs it in a browser.
 
 ## The gates
 
