@@ -9,6 +9,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, her first run ends on the home screen with her period recorded
     Given she has never opened Emi before
     When she opens Emi
+    And she skips the tour Emi opens with
     And she answers all three screens of the first run
     Then she is looking at the home screen
     And her phone holds the day she said her period started
@@ -17,6 +18,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she presses Done twice and her first run is written once
     Given she has never opened Emi before
     When she opens Emi
+    And she skips the tour Emi opens with
     And she answers all three screens, and presses Done a second time before the screen goes
     Then she is looking at the home screen
     And her phone holds one day, the day she said her period started
@@ -25,6 +27,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the first run asks three screens and no fourth
     Given she has never opened Emi before
     When she opens Emi
+    And she skips the tour Emi opens with
     And she answers all three screens of the first run
     Then she was asked what Emi is, when her last period started, and how long her cycle runs
     And there was no fourth screen to answer
@@ -32,6 +35,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
     Given she has never opened Emi before
     When she opens Emi
+    And she skips the tour Emi opens with
     And she answers all three screens of the first run
     Then nothing on the way gave her anything to type into
 
@@ -111,6 +115,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SEE-3, every control of the first run is at least 44 points on both axes
     Given she has never opened Emi before
     When she opens Emi
+    And she skips the tour Emi opens with
     Then every control on each of the three screens is at least 44 points on both axes
 
   Scenario: SEE-3, a control below the floor is named with the size it was drawn at

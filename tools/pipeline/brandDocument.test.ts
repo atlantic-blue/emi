@@ -45,7 +45,7 @@ const moved: BrandSources = {
   ...shippedSources,
   palette: {
     ...colours,
-    primary: { ...colours.primary, value: colours.onPrimaryFixedVariant.value },
+    periodInk: { ...colours.periodInk, value: colours.onSurfaceVariant.value },
   },
 };
 
@@ -100,10 +100,10 @@ describe('a changed token leaves the brand document stale and the run red', () =
       expect(finished.output).toContain(`${brandDocumentPath} is stale`);
       expect(finished.output).toContain('disagree at line');
       expect(finished.output).toContain(
-        `committed: "- \`primary\` is \`${colours.onPrimaryFixedVariant.value}\``,
+        `committed: "- \`periodInk\` is \`${colours.onSurfaceVariant.value}\``,
       );
       expect(finished.output).toContain(
-        `generated: "- \`primary\` is \`${colours.primary.value}\``,
+        `generated: "- \`periodInk\` is \`${colours.periodInk.value}\``,
       );
       expect(finished.output).toContain(`Run ${generateCommand}.`);
     });
@@ -185,8 +185,10 @@ describe('a changed token leaves the brand document stale and the run red', () =
     it('measures the pairs it refuses instead of leaving them unexplained', () => {
       const refused = refusedPairs();
 
-      expect(committed).toContain('- inverseOnSurface on primaryContainer is 4.10 to 1');
-      expect(committed).toContain('- inverseOnSurface on tertiaryContainer is 4.07 to 1');
+      // The nearest misses are three of the four inks on their own fill, which is the measurement
+      // contract SEE-2 exists to answer.
+      expect(committed).toContain('- periodInk on period is 4.24 to 1');
+      expect(committed).toContain('- lutealInk on luteal is 3.47 to 1');
       expect(refused.every((pair) => pair.ratio < CONTRAST_FLOOR)).toBe(true);
       expect(refused.filter((pair) => !committed.includes(`- ${report(pair)}`))).toEqual([]);
       expect(refused.length).toBeGreaterThan(0);
@@ -202,10 +204,10 @@ describe('a changed token leaves the brand document stale and the run red', () =
       );
 
       expect(fills.map((pair) => pair.text)).toEqual([
-        'primary',
-        'primaryContainer',
-        'secondaryContainer',
-        'tertiaryContainer',
+        'period',
+        'follicular',
+        'ovulation',
+        'luteal',
       ]);
       expect(unnamed).toEqual([]);
     });
@@ -213,25 +215,25 @@ describe('a changed token leaves the brand document stale and the run red', () =
     it('takes a fill for a phase only where the phase palette pairs it with an ink', () => {
       const fills = fillPairs().map((pair) => pair.text);
 
-      expect(inkPartnerOf(shippedSources, 'primaryContainer')).toBe('onPrimaryFixedVariant');
+      expect(inkPartnerOf(shippedSources, 'period')).toBe('periodInk');
       expect(inkPartnerOf(shippedSources, 'surfaceTint')).toBeNull();
       expect(inkPartnerOf(shippedSources, 'errorContainer')).toBeNull();
       expect(fills).not.toContain('surfaceTint');
       expect(fills).not.toContain('errorContainer');
     });
 
-    it('says which fill measures above the floor and is refused as text anyway', () => {
+    it('says that no phase fill reaches the floor, which is why each one has an ink', () => {
       const passing = fillPairs().filter((pair) => pair.ratio >= CONTRAST_FLOOR);
 
-      expect(passing.map((pair) => pair.text)).toEqual(['primary']);
-      expect(committed).toContain('The fill `primary` measures above the floor.');
+      expect(passing.map((pair) => pair.text)).toEqual([]);
+      expect(committed).toContain('No phase fill measures above the floor.');
     });
 
     it('moves the ratio it prints when the colour under it moves', () => {
       const before = report({
-        text: 'primary',
+        text: 'periodInk',
         ground: 'surface',
-        ratio: contrastRatio(colours.primary.value, colours.surface.value),
+        ratio: contrastRatio(colours.periodInk.value, colours.surface.value),
       });
       const after = brandDocument(moved);
 
@@ -255,8 +257,13 @@ describe('a changed token leaves the brand document stale and the run red', () =
       expect(typeRoleNames).toHaveLength(counts.sizes);
     });
 
-    it('says the one family every role is set in', () => {
-      expect(committed).toContain(`every one of them is set in ${face.text}`);
+    it('says which family each of the three jobs is set in', () => {
+      // The paragraph is wrapped to a width, so the sentence is read without its line breaks.
+      const unwrapped = committed.replace(/\s+/g, ' ');
+
+      expect(unwrapped).toContain(`The headings are set in ${face.display}`);
+      expect(unwrapped).toContain(`the words she reads at length are set in ${face.text}`);
+      expect(unwrapped).toContain(`every number is set in ${face.data}`);
       expect(letterSpacingOf(11, 0.04)).toBe(0.44);
     });
 

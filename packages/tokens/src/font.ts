@@ -1,4 +1,4 @@
-import type { TypeWeight } from './type';
+import type { FaceName, TypeWeight } from './type';
 
 /** Where the font files sit, as a path from the root of the repository. */
 export const fontsRoot = 'apps/mobile/assets/fonts';
@@ -7,7 +7,7 @@ export const fontsRoot = 'apps/mobile/assets/fonts';
  * The weights that ship. A style that names a weight no file carries leaves the platform to
  * imitate it, so a weight arrives as a file first.
  */
-export type FontWeightName = 'regular' | 'medium' | 'semiBold' | 'bold';
+export type FontWeightName = 'regular' | 'medium' | 'semiBold';
 
 /**
  * One file on disk, and the name the application registers it under. The two strings differ, so a
@@ -21,12 +21,8 @@ export interface FontFile {
   readonly path: string;
 }
 
-/**
- * The families this repository redistributes. Only the first one is drawn: step 9.1 put the whole
- * product in one face. The other two keep their files and their licence records, because they are
- * still here and a reader of a public repository is owed the terms of everything in it.
- */
-export type FontFamilyName = 'plusJakartaSans' | 'fraunces' | 'ibmPlexMono';
+/** The three families this repository redistributes, one for each face of the design system. */
+export type FontFamilyName = 'newsreader' | 'plusJakartaSans' | 'jetBrainsMono';
 
 /**
  * A family, its files, and the terms they travel under. A test reads the licence fields against the
@@ -55,11 +51,37 @@ export interface FontFamily {
 export const OPEN_FONT_LICENCE = 'SIL Open Font License, Version 1.1';
 
 /**
- * The drawn family ships the four weights the design system names. The two families nothing draws
- * in keep the two cuts they arrived with, because a weight nobody asks for is bytes in the
- * download.
+ * Each family ships the cuts its own roles ask for and no others, because a weight nobody asks for
+ * is bytes in the download.
+ *
+ * Newsreader carries an optical size axis and the repository ships one static cut of it. The cut is
+ * `16pt`. The display roles run from 20 to 48 points, and the 72pt cut is drawn for sizes far above
+ * that, so it reads thin where most of Emi's headlines sit. The two cuts were not compared on a
+ * device; if the 16pt cut reads heavy at 48 points, the replacement is the 72pt cut at the same two
+ * weights.
  */
 export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
+  newsreader: {
+    family: 'Newsreader 16pt',
+    licence: OPEN_FONT_LICENCE,
+    licencePath: 'newsreader/OFL.txt',
+    copyright:
+      'Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)',
+    source: 'https://github.com/productiontype/Newsreader',
+    weights: ['regular', 'medium'],
+    files: {
+      regular: {
+        name: 'Newsreader16pt-Regular',
+        weight: 400,
+        path: 'newsreader/Newsreader16pt-Regular.ttf',
+      },
+      medium: {
+        name: 'Newsreader16pt-Medium',
+        weight: 500,
+        path: 'newsreader/Newsreader16pt-Medium.ttf',
+      },
+    },
+  },
   plusJakartaSans: {
     family: 'Plus Jakarta Sans',
     licence: OPEN_FONT_LICENCE,
@@ -67,69 +89,38 @@ export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
     copyright:
       'Copyright 2020 The Plus Jakarta Sans Project Authors (https://github.com/tokotype/PlusJakartaSans)',
     source: 'https://github.com/tokotype/PlusJakartaSans',
-    weights: ['regular', 'medium', 'semiBold', 'bold'],
+    weights: ['regular', 'semiBold'],
     files: {
       regular: {
         name: 'PlusJakartaSans-Regular',
         weight: 400,
         path: 'plus-jakarta-sans/PlusJakartaSans-Regular.ttf',
       },
-      medium: {
-        name: 'PlusJakartaSans-Medium',
-        weight: 500,
-        path: 'plus-jakarta-sans/PlusJakartaSans-Medium.ttf',
-      },
       semiBold: {
         name: 'PlusJakartaSans-SemiBold',
         weight: 600,
         path: 'plus-jakarta-sans/PlusJakartaSans-SemiBold.ttf',
       },
-      bold: {
-        name: 'PlusJakartaSans-Bold',
-        weight: 700,
-        path: 'plus-jakarta-sans/PlusJakartaSans-Bold.ttf',
-      },
     },
   },
-  fraunces: {
-    family: 'Fraunces 72pt Soft',
+  jetBrainsMono: {
+    family: 'JetBrains Mono',
     licence: OPEN_FONT_LICENCE,
-    licencePath: 'fraunces/OFL.txt',
+    licencePath: 'jetbrains-mono/OFL.txt',
     copyright:
-      'Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)',
-    source: 'https://github.com/undercasetype/Fraunces',
-    weights: ['regular', 'semiBold'],
+      'Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)',
+    source: 'https://github.com/JetBrains/JetBrainsMono',
+    weights: ['regular', 'medium'],
     files: {
       regular: {
-        name: 'Fraunces72ptSoft-Regular',
+        name: 'JetBrainsMono-Regular',
         weight: 400,
-        path: 'fraunces/Fraunces72ptSoft-Regular.ttf',
+        path: 'jetbrains-mono/JetBrainsMono-Regular.ttf',
       },
-      semiBold: {
-        name: 'Fraunces72ptSoft-SemiBold',
-        weight: 600,
-        path: 'fraunces/Fraunces72ptSoft-SemiBold.ttf',
-      },
-    },
-  },
-  ibmPlexMono: {
-    family: 'IBM Plex Mono',
-    licence: OPEN_FONT_LICENCE,
-    licencePath: 'ibm-plex-mono/OFL.txt',
-    copyright: 'Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"',
-    reservedName: 'Plex',
-    source: 'https://github.com/google/fonts/tree/main/ofl/ibmplexmono',
-    weights: ['regular', 'semiBold'],
-    files: {
-      regular: {
-        name: 'IBMPlexMono-Regular',
-        weight: 400,
-        path: 'ibm-plex-mono/IBMPlexMono-Regular.ttf',
-      },
-      semiBold: {
-        name: 'IBMPlexMono-SemiBold',
-        weight: 600,
-        path: 'ibm-plex-mono/IBMPlexMono-SemiBold.ttf',
+      medium: {
+        name: 'JetBrainsMono-Medium',
+        weight: 500,
+        path: 'jetbrains-mono/JetBrainsMono-Medium.ttf',
       },
     },
   },
@@ -137,16 +128,17 @@ export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
 
 /** The families as data. A test walks this to prove each has its files and its licence on disk. */
 export const fontFamilyNames: readonly FontFamilyName[] = [
+  'newsreader',
   'plusJakartaSans',
-  'fraunces',
-  'ibmPlexMono',
+  'jetBrainsMono',
 ];
 
-/** The one family every screen is drawn in. */
-export const DRAWN_FAMILY: FontFamilyName = 'plusJakartaSans';
-
-/** The weights the drawn family ships, as data, lightest first. */
-export const fontWeightNames: readonly FontWeightName[] = fonts[DRAWN_FAMILY].weights;
+/** Which family draws each face of the design system. Every face has one and every family is drawn. */
+export const faceFamily: Readonly<Record<FaceName, FontFamilyName>> = {
+  display: 'newsreader',
+  text: 'plusJakartaSans',
+  data: 'jetBrainsMono',
+};
 
 /**
  * One file of one family, by name. A family carries only the cuts it ships, so asking it for a
@@ -163,33 +155,40 @@ export function fontFile(family: FontFamilyName, weight: FontWeightName): FontFi
 }
 
 /**
- * The eight files that ship. A test reads the assets directory against this list, so a file that
+ * The six files that ship. A test reads the assets directory against this list, so a file that
  * nobody names is found rather than carried.
  */
 export const fontFiles: readonly FontFile[] = fontFamilyNames.flatMap((name) =>
   fonts[name].weights.map((weight) => fontFile(name, weight)),
 );
 
-/**
- * The files the application loads, which is the drawn family and nothing else. Four files rather
- * than eight is four fewer in the download, and four fewer faces a screen could reach for.
- */
-export const applicationFontFiles: readonly FontFile[] = fonts[DRAWN_FAMILY].weights.map((weight) =>
-  fontFile(DRAWN_FAMILY, weight),
-);
+/** The files the application loads, which is every file that ships, because every face is drawn. */
+export const applicationFontFiles: readonly FontFile[] = fontFiles;
 
-/**
- * Which file carries a weight. The design system asks for 400, 500, 600 and 700, and the drawn
- * family ships a cut for each, so nothing is left to the renderer to thicken.
- */
+/** Which file carries a weight, for any family. The three weights map onto the three cuts. */
 export const weightFiles: Readonly<Record<TypeWeight, FontWeightName>> = {
   400: 'regular',
   500: 'medium',
   600: 'semiBold',
-  700: 'bold',
 };
 
-/** The name a style uses to reach the drawn family at the weight a role asks for. */
-export function fontNameFor(weight: TypeWeight): string {
-  return fontFile(DRAWN_FAMILY, weightFiles[weight]).name;
+/**
+ * The file one face draws at the weight a role asks for.
+ *
+ * This took a weight alone while the product was drawn in one family. A call that still passes one
+ * would have reached whatever family sorted first, so it is refused by name rather than answered.
+ */
+export function fontFileFor(faceName: FaceName, weight: TypeWeight): FontFile {
+  if (typeof faceName !== 'string') {
+    throw new TypeError(
+      'a font is asked for by face and then weight, as in fontFileFor("text", 400). Emi draws in three families, so a weight on its own names no file.',
+    );
+  }
+
+  return fontFile(faceFamily[faceName], weightFiles[weight]);
+}
+
+/** The name a style uses to reach that file. A style names the registered name and never the path. */
+export function fontNameFor(faceName: FaceName, weight: TypeWeight): string {
+  return fontFileFor(faceName, weight).name;
 }

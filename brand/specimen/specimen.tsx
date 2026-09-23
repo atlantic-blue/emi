@@ -1,13 +1,15 @@
 /** @jsxImportSource ../jsx */
 import {
-  DRAWN_FAMILY,
-  FontWeightName,
+  FaceName,
+  FontFile,
   TypeRoleName,
   colour,
+  face,
+  faceFamily,
   fontFile,
-  fontWeightNames,
+  fontFileFor,
+  fontFiles,
   fonts,
-  weightFiles,
   letterSpacingOf,
   typeRoleNames,
   typeScale,
@@ -19,56 +21,58 @@ import { Html, raw } from '../jsx/jsx-runtime';
  * The page is a poster of a fixed size, so a picture of it is the whole page and never a viewport
  * that happens to cut the last face off.
  */
-export const specimenPage = { width: 1240, height: 1420 } as const;
+export const specimenPage = { width: 1240, height: 1960 } as const;
 
 /** Every sentence is one Emi writes, because filler tells nobody how a face reads in the product. */
 export const specimenSentences: Readonly<Record<TypeRoleName, string>> = {
-  'headline-xl': 'Between the 14th and the 17th.',
-  'headline-xl-mobile': 'Emi learns your cycle.',
+  'display-lg': 'Between the 14th and the 17th.',
+  'display-lg-mobile': 'Emi learns your cycle.',
   'headline-lg': 'You keep your data.',
   'headline-md': 'Nothing to draw yet.',
   'headline-sm': 'Your cycle is worked out on this phone.',
   'body-lg': 'Predicted on your phone. Encrypted at rest. Shared with nobody.',
   'body-md': 'Emi tells you what it actually knows.',
   'body-sm': 'The ring needs a period. Log a day you bled and it appears.',
-  'label-lg': 'LOG TODAY',
   'label-md': 'DAY 14 / CYCLE 29 DAYS',
   'label-sm': 'STEP 1 OF 3',
+  'data-lg': '14',
+  'data-md': '36.7 °C  29 days  14:02',
+  'data-sm': '2026-05-14',
 };
 
-/** What the one family is asked to do, which is everything. */
-export const familyRole = 'Every heading, every sentence, every label and every number';
-
-const weightLabels: Readonly<Record<FontWeightName, string>> = {
-  regular: 'regular',
-  medium: 'medium',
-  semiBold: 'semi bold',
-  bold: 'bold',
+/** What each face is asked to do, in the design system's own words. */
+export const familyRoles: Readonly<Record<FaceName, string>> = {
+  display: 'Every display role and every headline',
+  text: 'Every sentence and every label',
+  data: 'Every number and every measurement',
 };
 
 const stackedDigits = ['1111111111', '0000000000'];
 
-export function faceClass(weight: FontWeightName): string {
-  return `face-${weight}`;
+/** A class per file rather than per weight, because three families share the same three weights. */
+export function faceClass(file: FontFile): string {
+  return `face-${file.name}`;
 }
 
 export function sizeClass(role: TypeRoleName): string {
   return `size-${role}`;
 }
 
-function fontRules(fontsBase: string): string {
-  return fontWeightNames
-    .map((weight) => {
-      const file = fontFile(DRAWN_FAMILY, weight);
+function fileFor(role: TypeRoleName): FontFile {
+  return fontFileFor(typeScale[role].face, typeScale[role].weight);
+}
 
-      return [
+function fontRules(fontsBase: string): string {
+  return fontFiles
+    .map((file) =>
+      [
         '@font-face {',
         `  font-family: "${file.name}";`,
         `  src: url("${fontsBase}${file.path}") format("truetype");`,
         '}',
-        `.${faceClass(weight)} { font-family: "${file.name}"; }`,
-      ].join('\n');
-    })
+        `.${faceClass(file)} { font-family: "${file.name}"; }`,
+      ].join('\n'),
+    )
     .join('\n');
 }
 
@@ -82,6 +86,9 @@ function sizeRules(): string {
     })
     .join('\n');
 }
+
+const interfaceFace = fontFile(faceFamily.text, 'regular');
+const interfaceBold = fontFile(faceFamily.text, 'semiBold');
 
 function styleSheet(fontsBase: string): string {
   return [
@@ -98,7 +105,7 @@ function styleSheet(fontsBase: string): string {
 }`,
     `.label {
   color: ${colour.onSurfaceVariant};
-  width: 200px;
+  width: 240px;
   flex: none;
 }`,
     `.row {
@@ -130,36 +137,43 @@ function styleSheet(fontsBase: string): string {
 
 function Sample({ role }: { role: TypeRoleName }): Html {
   const style = typeScale[role];
-  const weight: FontWeightName = weightFiles[style.weight];
+  const file = fileFor(role);
 
   return (
     <div class="row">
-      <div class={`label ${faceClass('regular')} ${sizeClass('label-sm')}`}>
-        {`${role} ${style.size}/${style.lineHeight} ${weightLabels[weight]}`}
+      <div class={`label ${faceClass(interfaceFace)} ${sizeClass('label-sm')}`}>
+        {`${role} ${style.size}/${style.lineHeight} ${file.name}`}
         <span class="scale"> {`${style.weight}`}</span>
       </div>
-      <div class={`${faceClass(weight)} ${sizeClass(role)}`}>{specimenSentences[role]}</div>
+      <div class={`${faceClass(file)} ${sizeClass(role)}`}>{specimenSentences[role]}</div>
     </div>
   );
 }
 
 function Title({ children }: { children: Html | string }): Html {
-  return <div class={`${faceClass('semiBold')} ${sizeClass('headline-lg')}`}>{children}</div>;
+  return (
+    <div class={`${faceClass(fontFile(faceFamily.display, 'medium'))} ${sizeClass('headline-md')}`}>
+      {children}
+    </div>
+  );
 }
 
-function Family(): Html {
-  const family = fonts[DRAWN_FAMILY];
+function Family({ faceName }: { faceName: FaceName }): Html {
+  const family = fonts[faceFamily[faceName]];
+  const roles = typeRoleNames.filter((role) => typeScale[role].face === faceName);
 
   return (
     <div class="section">
       <div class="family">
         <Title>{family.family}</Title>
-        <div class={`${faceClass('regular')} ${sizeClass('body-sm')}`}>{familyRole}</div>
+        <div class={`${faceClass(interfaceFace)} ${sizeClass('body-sm')}`}>
+          {familyRoles[faceName]}
+        </div>
       </div>
-      <div class={`files ${faceClass('regular')} ${sizeClass('label-sm')}`}>
-        {`${family.weights.map((weight) => fontFile(DRAWN_FAMILY, weight).path).join(' / ')} / ${family.licence}`}
+      <div class={`files ${faceClass(interfaceFace)} ${sizeClass('label-sm')}`}>
+        {`${family.weights.map((weight) => fontFile(faceFamily[faceName], weight).path).join(' / ')} / ${family.licence}`}
       </div>
-      {typeRoleNames.map((role) => (
+      {roles.map((role) => (
         <Sample role={role} />
       ))}
     </div>
@@ -167,16 +181,18 @@ function Family(): Html {
 }
 
 function Numbers(): Html {
+  const figures = fontFile(faceFamily.data, 'regular');
+
   return (
     <div class="section">
       <div class="family">
         <Title>Numbers, stacked so a shifting digit shows</Title>
       </div>
       <div class="row">
-        <div class={`label ${faceClass('regular')} ${sizeClass('label-sm')}`}>
-          {fonts[DRAWN_FAMILY].family}
+        <div class={`label ${faceClass(interfaceFace)} ${sizeClass('label-sm')}`}>
+          {fonts[faceFamily.data].family}
         </div>
-        <div class={`${faceClass('regular')} ${sizeClass('body-lg')}`}>
+        <div class={`${faceClass(figures)} ${sizeClass('body-lg')}`}>
           {stackedDigits.map((digits) => (
             <div>{digits}</div>
           ))}
@@ -194,13 +210,17 @@ export function Specimen({ fontsBase }: { fontsBase: string }): Html {
         <title>Emi type specimen</title>
         <style>{raw(styleSheet(fontsBase))}</style>
       </head>
-      <body class={`${faceClass('regular')} ${sizeClass('body-lg')}`}>
-        <div class={`${faceClass('semiBold')} ${sizeClass('headline-xl')}`}>Emi type specimen</div>
-        <div class={`${faceClass('regular')} ${sizeClass('body-sm')}`}>
-          One face, eleven roles, four weights. Every sentence is one Emi writes. A point is drawn
-          as a pixel, and the sizes are the ones in the token package.
+      <body class={`${faceClass(interfaceFace)} ${sizeClass('body-lg')}`}>
+        <div class={`${faceClass(interfaceBold)} ${sizeClass('display-lg-mobile')}`}>
+          Emi type specimen
         </div>
-        <Family />
+        <div class={`${faceClass(interfaceFace)} ${sizeClass('body-sm')}`}>
+          Three faces, thirteen roles, two weights each. Every sentence is one Emi writes. A point
+          is drawn as a pixel, and the sizes are the ones in the token package.
+        </div>
+        {(Object.keys(face) as FaceName[]).map((faceName) => (
+          <Family faceName={faceName} />
+        ))}
         <Numbers />
       </body>
     </html>

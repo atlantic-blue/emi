@@ -1,14 +1,19 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import {
+  Stepper,
+  stepperDownTestID,
+  stepperReadingTestID,
+  stepperUpTestID,
+} from '../../components/Stepper';
 import { OnboardingScreen } from './OnboardingScreen';
 import { cycleLengthDaysLabel, firstRunCopy } from './copy';
 import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
 
-export const shorterTestID = 'cycle-length-shorter';
-export const longerTestID = 'cycle-length-longer';
-export const cycleLengthTestID = 'cycle-length-days';
+export const cycleLengthStepperTestID = 'cycle-length';
+export const shorterTestID = stepperDownTestID(cycleLengthStepperTestID);
+export const longerTestID = stepperUpTestID(cycleLengthStepperTestID);
+export const cycleLengthTestID = stepperReadingTestID(cycleLengthStepperTestID);
 
 interface Props {
   readonly days: number;
@@ -28,8 +33,6 @@ interface Props {
  */
 export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
   const [pressed, setPressed] = useState(false);
-  const canShorten = days > minimumCycleLengthDays;
-  const canLengthen = days < maximumCycleLengthDays;
 
   return (
     <OnboardingScreen
@@ -43,67 +46,20 @@ export function CycleLength({ days, onChange, onDone }: Props): ReactNode {
       screen="cycleLength"
       title={firstRunCopy.cycleLength.title}
     >
-      <View style={styles.stepper}>
-        <Pressable
-          accessibilityLabel={firstRunCopy.shorter}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canShorten }}
-          disabled={!canShorten}
-          onPress={() => onChange(days - 1)}
-          style={canShorten ? styles.step : [styles.step, styles.stepSpent]}
-          testID={shorterTestID}
-        >
-          <Text style={styles.stepMark}>-</Text>
-        </Pressable>
-        <Text style={styles.days} testID={cycleLengthTestID}>
-          {cycleLengthDaysLabel(days)}
-        </Text>
-        <Pressable
-          accessibilityLabel={firstRunCopy.longer}
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !canLengthen }}
-          disabled={!canLengthen}
-          onPress={() => onChange(days + 1)}
-          style={canLengthen ? styles.step : [styles.step, styles.stepSpent]}
-          testID={longerTestID}
-        >
-          <Text style={styles.stepMark}>+</Text>
-        </Pressable>
-      </View>
+      <Stepper
+        canGoDown={days > minimumCycleLengthDays}
+        canGoUp={days < maximumCycleLengthDays}
+        downLabel={firstRunCopy.shorter}
+        onDown={() => {
+          onChange(days - 1);
+        }}
+        onUp={() => {
+          onChange(days + 1);
+        }}
+        reading={cycleLengthDaysLabel(days)}
+        testID={cycleLengthStepperTestID}
+        upLabel={firstRunCopy.longer}
+      />
     </OnboardingScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  days: {
-    color: colour.onSurface,
-    ...textStyle('headline-xl'),
-  },
-  step: {
-    alignItems: 'center',
-    backgroundColor: colour.primaryFixed,
-    borderColor: colour.primary,
-    borderRadius: radius.full,
-    borderWidth: stroke.hairline,
-    justifyContent: 'center',
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-  },
-  stepMark: {
-    color: colour.primary,
-    ...textStyle('headline-md'),
-  },
-  stepSpent: { opacity: 0.4 },
-  stepper: {
-    alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
-    borderRadius: radius.lg,
-    borderWidth: stroke.hairline,
-    flexDirection: 'row',
-    gap: space.spaceLg,
-    justifyContent: 'center',
-    paddingHorizontal: space.spaceLg,
-    paddingVertical: space.spaceXl,
-  },
-});

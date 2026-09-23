@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary-fixed": "#1e1b17", "secondary-fixed-dim": "#ccc5be", "on-primary-fixed-variant": "#7d2c12", "surface-container-low": "#fbf2ee", "on-tertiary-fixed-variant": "#8b190e", "background": "#fff8f5", "tertiary-fixed-dim": "#ffb4a8", "tertiary-fixed": "#ffdad4", "on-primary-container": "#ffd8ce", "error-container": "#ffdad6", "surface-container": "#f5ece8", "on-background": "#1f1b19", "primary-container": "#a3482c", "surface-dim": "#e1d8d5", "on-secondary": "#ffffff", "on-primary-fixed": "#3a0a00", "secondary-container": "#e8e1d9", "surface-variant": "#eae1dd", "on-tertiary": "#ffffff", "primary-fixed": "#ffdbd1", "surface-container-lowest": "#ffffff", "outline-variant": "#dcc1b9", "on-primary": "#ffffff", "surface-tint": "#9c4327", "surface-container-high": "#efe6e3", "inverse-on-surface": "#f8efeb", "inverse-primary": "#ffb59f", "tertiary": "#921f12", "surface": "#fff8f5", "on-tertiary-fixed": "#410100", "on-error-container": "#93000a", "on-surface-variant": "#56423d", "error": "#ba1a1a", "on-secondary-fixed-variant": "#4a4641", "surface-container-highest": "#eae1dd", "secondary-fixed": "#e8e1d9", "primary-fixed-dim": "#ffb59f", "outline": "#89726c", "on-surface": "#1f1b19", "inverse-surface": "#342f2d", "surface-bright": "#fff8f5", "on-error": "#ffffff", "on-secondary-container": "#68645e", "primary": "#843117", "tertiary-container": "#b43727", "on-tertiary-container": "#ffd8d2", "secondary": "#625e58" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "gutter": "1rem", "space-md": "1rem", "margin-lg": "3.5rem", "gutter-lg": "2rem", "space-sm": "0.5rem", "margin": "1rem", "space-xl": "2.5rem", "space-xs": "0.25rem", "gutter-md": "1.5rem", "margin-md": "2rem", "space-lg": "1.5rem" }, fontFamily: { "label-md": ["Plus Jakarta Sans"], "headline-lg": ["Newsreader"], "headline-sm": ["Newsreader"], "display-lg": ["Newsreader"], "body-sm": ["Plus Jakarta Sans"], "headline-md": ["Newsreader"], "data-sm": ["JetBrains Mono"], "data-md": ["JetBrains Mono"], "label-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Newsreader"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "data-lg": ["JetBrains Mono"] }, fontSize: { "label-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-lg": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.01em", "fontWeight": "400" }], "headline-sm": ["1.25rem", { "lineHeight": "1.75rem", "fontWeight": "500" }], "display-lg": ["3rem", { "lineHeight": "3.5rem", "letterSpacing": "-0.02em", "fontWeight": "400" }], "body-sm": ["0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" }], "headline-md": ["1.5rem", { "lineHeight": "2rem", "fontWeight": "500" }], "data-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "500" }], "data-md": ["1rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.02em", "fontWeight": "400" }], "label-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "600" }], "display-lg-mobile": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.015em", "fontWeight": "400" }], "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" }], "body-md": ["1rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "data-lg": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.03em", "fontWeight": "500" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><button aria-label="Go back" class="w-11 h-11 -ml-space-xs flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[22px]">arrow_back</span></button><div class="flex-1 text-center px-space-xs"><span class="font-headline-sm text-headline-sm italic text-on-surface tracking-normal">Cycle Regularity</span></div><div class="flex items-center justify-end min-w-[44px] gap-space-sm"><a class="h-11 px-space-xs flex items-center justify-center font-label-md text-label-md text-secondary hover:text-on-surface transition-colors underline-offset-4 hover:underline" data-path="cycle-length" href="#">Skip</a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div><div class="w-full h-[2px] bg-secondary-container overflow-hidden"><div class="h-full bg-primary-container transition-all duration-300 ease-out" style="width: 20%;"></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe px-gutter bg-surface"><div class="flex flex-col w-full pb-6">
+<!-- Interactive Progress Bar Synchronizer for Shell -->
+<script>
+    (function() {
+      const topBar = document.querySelector('header .bg-primary-container');
+      if (topBar) {
+        topBar.style.width = '73%';
+      }
+    })();
+  </script>
+<!-- Editorial Chapter & Title Section -->
+<div class="pt-4 pb-6 flex flex-col gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<p class="font-data-sm text-data-sm text-secondary tracking-widest uppercase">
+        Journal Step 11 · 15 • Personal Perspective
+      </p>
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface leading-tight tracking-tight">
+      How do you feel about your period?
+    </h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+      A thoughtful grounding for our tone together.
+    </p>
+</div>
+<!-- Perspective Choices Section -->
+<div aria-label="Perspective on period" class="flex flex-col gap-3 py-2" role="radiogroup">
+<!-- Option 1 -->
+<label class="group relative flex items-center justify-between p-4 min-h-[64px] rounded-xl bg-surface-container-low transition-all duration-200 cursor-pointer active:scale-[0.99] select-none hover:bg-surface-container">
+<div class="flex items-center gap-3.5 pr-2">
+<span class="material-symbols-outlined text-[20px] text-secondary">sentiment_neutral</span>
+<span class="font-body-lg text-body-lg text-on-surface font-normal">I am fine with it</span>
+</div>
+<div class="relative flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-highest transition-colors">
+<div class="w-2.5 h-2.5 rounded-full bg-transparent transition-all dot-indicator"></div>
+</div>
+<input class="sr-only" name="feeling_perspective" onchange="handleSelect(this)" type="radio" value="fine"/>
+</label>
+<!-- Option 2 -->
+<label class="group relative flex items-center justify-between p-4 min-h-[64px] rounded-xl bg-surface-container-low transition-all duration-200 cursor-pointer active:scale-[0.99] select-none hover:bg-surface-container">
+<div class="flex items-center gap-3.5 pr-2">
+<span class="material-symbols-outlined text-[20px] text-secondary">cloud_queue</span>
+<span class="font-body-lg text-body-lg text-on-surface font-normal">It is hard, most months</span>
+</div>
+<div class="relative flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-highest transition-colors">
+<div class="w-2.5 h-2.5 rounded-full bg-transparent transition-all dot-indicator"></div>
+</div>
+<input class="sr-only" name="feeling_perspective" onchange="handleSelect(this)" type="radio" value="hard"/>
+</label>
+<!-- Option 3 (Selected State Default) -->
+<label class="group relative flex items-center justify-between p-4 min-h-[64px] rounded-xl bg-secondary-container transition-all duration-200 cursor-pointer active:scale-[0.99] select-none shadow-sm" id="option-understand">
+<div class="flex items-center gap-3.5 pr-2">
+<span class="material-symbols-outlined text-[20px] text-primary" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="font-body-lg text-body-lg text-on-surface font-medium">I want to understand it</span>
+</div>
+<div class="relative flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-lowest shadow-sm">
+<div class="w-2.5 h-2.5 rounded-full bg-primary-container transition-all dot-indicator"></div>
+</div>
+<input checked="" class="sr-only" name="feeling_perspective" onchange="handleSelect(this)" type="radio" value="understand"/>
+</label>
+</div>
+<!-- Editorial Still Life Sensory Placeholders (Quiet Linen Atmosphere) -->
+<div class="grid grid-cols-2 gap-3 pt-4 pb-2">
+<div class="relative h-24 rounded-xl overflow-hidden bg-surface-container shadow-sm">
+<img class="w-full h-full object-cover opacity-85 hover:opacity-100 transition-opacity" data-alt="Editorial close-up of a textured cream linen notebook open with soft graphite notes, warm soft afternoon sunlight slanting across handmade paper, muted terracotta tones, adult minimalist calm aesthetic, no faces or people." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZg7RGI26BmSceS6X4Zf37Xy4gIjjbTsDUiP9Ow4fu9gT_E1WPHN31eiXbwS_b8I65qdRZQJgup2ciddU3mAeeHBdLqlzdIV5sgUfuW9mI6YEEzWQZi49WJt6iczEL38xolIK9xbjVGTFvx6dXNxm0H5WlX8aJjGXcQZujIXA1iaX3R_aga5E0swDMWbSqlCbYpcfsYUvxmXw7qX5dSqVJLozocREKlHSm9Bcf5-8goENuHhCp027u"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high/60 to-transparent"></div>
+<span class="absolute bottom-2 left-2.5 font-data-sm text-data-sm text-on-surface-variant font-medium">Reflection</span>
+</div>
+<div class="relative h-24 rounded-xl overflow-hidden bg-surface-container shadow-sm">
+<img class="w-full h-full object-cover opacity-85 hover:opacity-100 transition-opacity" data-alt="Minimalist architectural still life showing warm textured earthenware ceramic cup next to dry pressed botanical branch on a raw sandstone surface, muted warm earth tones, serene and quietly grounded." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApFdXgN__Sgio2bVAK58qzjLWBwaWzSEWYr-8sNU_9wrs019xNUB98ZLKp5a8bDkz4BLGnXp-LsMN6t23OxcRyKGzmpoDDTR4zGTVXafgB_VI_Ws7RyQLrCfXbEsei7PvicKn215-yvhl2RN1LtP4TqGcIwrMEFVEndkpprj2BfNzCCUzY7l2qKkl_si6-CA8JjfnjHryx_KFbSHP8vdHayerEC8FJ8LqHc1rzP-KwtjeY7MOomX6M"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high/60 to-transparent"></div>
+<span class="absolute bottom-2 left-2.5 font-data-sm text-data-sm text-on-surface-variant font-medium">Tone &amp; Pace</span>
+</div>
+</div>
+<!-- Dignified Informational Footnote Card -->
+<div class="mt-4 p-4 rounded-xl bg-surface-container-low shadow-sm flex flex-col gap-2">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5 shrink-0">info</span>
+<div class="flex flex-col gap-1 min-w-0">
+<p class="font-body-md text-body-md text-on-surface font-medium leading-snug">
+          This changes how Emi talks to you, and nothing else.
+        </p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Emi does not offer unsolicited toxic positivity or dismissive advice. Your language setting determines whether insights prioritize gentle reassurance, objective data, or actionable physiology.
+        </p>
+</div>
+</div>
+</div>
+<!-- Bottom Action Section -->
+<div class="mt-8 flex flex-col gap-3">
+<button class="w-full h-14 rounded-xl bg-primary-container hover:bg-primary active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-sm" onclick="proceedStep()" type="button">
+<span class="font-label-md text-label-md text-surface-container-lowest tracking-wide">Continue</span>
+<span class="material-symbols-outlined text-surface-container-lowest text-[18px]">arrow_forward</span>
+</button>
+<div class="text-center py-1">
+<span class="font-data-sm text-data-sm text-secondary">
+        Encrypted &amp; Stored Privately in Journal
+      </span>
+</div>
+</div>
+</div>
+<script>
+  function handleSelect(radio) {
+    const labels = document.querySelectorAll('[role="radiogroup"] label');
+    labels.forEach(lbl => {
+      lbl.classList.remove('bg-secondary-container', 'shadow-sm');
+      lbl.classList.add('bg-surface-container-low');
+      
+      const textSpan = lbl.querySelector('.font-body-lg');
+      if (textSpan) {
+        textSpan.classList.remove('font-medium');
+        textSpan.classList.add('font-normal');
+      }
+
+      const dotContainer = lbl.querySelector('.dot-indicator')?.parentElement;
+      if (dotContainer) {
+        dotContainer.classList.remove('bg-surface-container-lowest', 'shadow-sm');
+        dotContainer.classList.add('bg-surface-container-highest');
+      }
+
+      const dot = lbl.querySelector('.dot-indicator');
+      if (dot) {
+        dot.classList.remove('bg-primary-container');
+        dot.classList.add('bg-transparent');
+      }
+    });
+
+    const activeLabel = radio.closest('label');
+    if (activeLabel) {
+      activeLabel.classList.remove('bg-surface-container-low');
+      activeLabel.classList.add('bg-secondary-container', 'shadow-sm');
+
+      const textSpan = activeLabel.querySelector('.font-body-lg');
+      if (textSpan) {
+        textSpan.classList.remove('font-normal');
+        textSpan.classList.add('font-medium');
+      }
+
+      const dotContainer = activeLabel.querySelector('.dot-indicator')?.parentElement;
+      if (dotContainer) {
+        dotContainer.classList.remove('bg-surface-container-highest');
+        dotContainer.classList.add('bg-surface-container-lowest', 'shadow-sm');
+      }
+
+      const dot = activeLabel.querySelector('.dot-indicator');
+      if (dot) {
+        dot.classList.remove('bg-transparent');
+        dot.classList.add('bg-primary-container');
+      }
+    }
+  }
+
+  function proceedStep() {
+    const selected = document.querySelector('input[name="feeling_perspective"]:checked');
+    const value = selected ? selected.value : 'understand';
+    const skipLink = document.querySelector('header a[data-path="cycle-length"]');
+    if (skipLink) {
+      skipLink.click();
+    }
+  }
+</script></main></body></html>

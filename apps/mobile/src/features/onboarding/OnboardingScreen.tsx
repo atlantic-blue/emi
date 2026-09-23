@@ -1,10 +1,13 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
-import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-
+import { colour, space, stroke, textStyle } from '@emi/tokens';
 import { Icon } from '@emi/ui';
+import type { ReactNode } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { PrimaryButton } from '../../components/Button';
+import { Card } from '../../components/Card';
+import { ProgressBar } from '../../components/ProgressBar';
 import { Screen } from '../../components/Screen';
-import { type FirstRunScreen, firstRunScreens, stepLabel } from './copy';
+import { type FirstRunScreen, firstRunScreenCount, firstRunScreens, stepLabel } from './copy';
 
 interface Props {
   readonly screen: FirstRunScreen;
@@ -22,34 +25,6 @@ export const onboardingMarkTestID = 'onboarding-mark';
 
 /** The mark sits at the size the drawings in the set are read at, which is the grid they share. */
 const MARK_SIZE = 28;
-
-/** The progress track, in points. It is a bar rather than a line, so it reads from across a room. */
-const PROGRESS_HEIGHT = 6;
-
-export function stepTestID(screen: FirstRunScreen): string {
-  return `onboarding-step-${screen}`;
-}
-
-/**
- * How far along she is, drawn as one segment per screen. The words beside it say the same thing,
- * because a shape alone cannot be read out and a colour alone is not a cue section 3 of the design
- * accepts.
- */
-function Progress({ screen }: { readonly screen: FirstRunScreen }): ReactNode {
-  const reached = firstRunScreens.indexOf(screen);
-
-  return (
-    <View style={styles.progress} testID={onboardingProgressTestID}>
-      {firstRunScreens.map((each, at) => (
-        <View
-          key={each}
-          style={at <= reached ? [styles.segment, styles.segmentReached] : styles.segment}
-          testID={stepTestID(each)}
-        />
-      ))}
-    </View>
-  );
-}
 
 /**
  * The frame the three screens of the first run share. Every one of them is the same shape: the
@@ -76,7 +51,14 @@ export function OnboardingScreen({
         <Icon colour={colour.primary} name="ring" size={MARK_SIZE} testID={onboardingMarkTestID} />
         <Text style={styles.step}>{stepLabel(screen)}</Text>
       </View>
-      <Progress screen={screen} />
+      <View style={styles.progress}>
+        <ProgressBar
+          label={stepLabel(screen)}
+          step={firstRunScreens.indexOf(screen) + 1}
+          testID={onboardingProgressTestID}
+          total={firstRunScreenCount}
+        />
+      </View>
 
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <View>
@@ -89,48 +71,29 @@ export function OnboardingScreen({
         <View style={styles.asked}>{children}</View>
 
         {rest.length === 0 ? null : (
-          <View style={styles.card}>
+          <Card>
             {rest.map((line, at) => (
               <Text key={line} style={at === 0 ? styles.line : [styles.line, styles.lineAfter]}>
                 {line}
               </Text>
             ))}
-          </View>
+          </Card>
         )}
       </ScrollView>
 
       <View style={styles.footer}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ disabled: !actionIsReady }}
-          disabled={!actionIsReady}
+        <PrimaryButton
+          isReady={actionIsReady}
+          label={actionLabel}
           onPress={onAction}
-          style={actionIsReady ? styles.action : [styles.action, styles.actionWaiting]}
           testID={onboardingActionTestID}
-        >
-          <Text style={styles.actionLabel}>{actionLabel}</Text>
-        </Pressable>
+        />
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  action: {
-    alignItems: 'center',
-    backgroundColor: colour.surfaceTint,
-    borderRadius: radius.md,
-    justifyContent: 'center',
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceLg,
-    paddingVertical: space.spaceMd,
-  },
-  actionLabel: {
-    color: colour.surfaceContainerLowest,
-    ...textStyle('body-lg'),
-  },
-  actionWaiting: { opacity: 0.4 },
   // What she is asked to do takes the room the words leave, so the control she came here to press
   // sits in the middle of the glass rather than under the last paragraph.
   asked: { flexGrow: 1, justifyContent: 'center', paddingVertical: space.spaceXl },
@@ -142,13 +105,6 @@ const styles = StyleSheet.create({
     paddingBottom: space.spaceLg,
     paddingHorizontal: space.spaceLg,
     paddingTop: space.spaceXl,
-  },
-  card: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
-    borderRadius: radius.lg,
-    borderWidth: stroke.hairline,
-    padding: space.spaceLg,
   },
   footer: {
     borderTopColor: colour.outlineVariant,
@@ -178,22 +134,10 @@ const styles = StyleSheet.create({
     marginTop: space.spaceMd,
     paddingTop: space.spaceMd,
   },
-  progress: {
-    flexDirection: 'row',
-    gap: space.spaceXs,
-    paddingHorizontal: space.spaceLg,
-    paddingTop: space.spaceMd,
-  },
+  progress: { paddingHorizontal: space.spaceLg, paddingTop: space.spaceMd },
   // The middle takes whatever the two ends leave, so the button sits on the bottom edge of the
   // glass on a screen with one line and on a screen with ninety days on it alike.
   scroll: { flex: 1 },
-  segment: {
-    backgroundColor: colour.surfaceContainer,
-    borderRadius: radius.full,
-    flex: 1,
-    height: PROGRESS_HEIGHT,
-  },
-  segmentReached: { backgroundColor: colour.surfaceTint },
   step: {
     color: colour.onSurfaceVariant,
     ...textStyle('label-sm'),

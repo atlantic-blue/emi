@@ -11,8 +11,7 @@
   "dependencies": {
     "@emi/tokens": "*",
     "@gluestack-ui/core": "5.0.15",
-    "@gluestack-ui/utils": "5.0.6",
-    "expo-blur": "~57.0.3"
+    "@gluestack-ui/utils": "5.0.6"
   },
   "peerDependencies": {
     "nativewind": "*",
