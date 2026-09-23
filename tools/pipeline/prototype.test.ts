@@ -2,17 +2,25 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import {
+  claimsHeading,
+  claimsNotRecorded,
+  coloursDrawnOutsideThePalette,
   coloursInTheProse,
   configuredIn,
+  copyReviewDocument,
   describedIn,
   designSystemDocument,
   disagreements,
+  drawnParts,
+  falseClaimsOfTheCopyReview,
   phaseColourNames,
   phaseColoursIn,
   phaseColoursNotDrawn,
   prototypeDirectory,
+  prototypeReadme,
   proseOf,
   radiiTheExportKeeps,
+  sectionUnder,
   sourceScreen,
   type Theme,
 } from './prototype.ts';
@@ -250,10 +258,10 @@ describe('a value that moves is named', () => {
 describe('the prototype in the repository', () => {
   const held = readdirSync(join(root, prototypeDirectory)).sort();
 
-  it('holds six screens, each with a picture beside it', () => {
+  it('holds twenty three screens, each with a picture beside it', () => {
     const markup = held.filter((file) => file.endsWith('.html'));
 
-    expect(markup).toHaveLength(6);
+    expect(markup).toHaveLength(23);
     expect(markup.map((file) => file.replace('.html', '.png'))).toEqual(
       held.filter((file) => file.endsWith('.png')),
     );
@@ -278,16 +286,139 @@ describe('the prototype in the repository', () => {
 });
 
 describe('the room a screen reserves at its foot', () => {
-  it('is reserved by no screen of the prototype, which has no dock to leave room for', () => {
-    const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
-      name.endsWith('.html'),
-    );
+  const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
+    name.endsWith('.html'),
+  );
 
-    expect(screens.length).toBeGreaterThan(0);
-    for (const file of screens) {
-      expect(readFileSync(join(root, prototypeDirectory, file), 'utf8')).not.toMatch(
-        /<main class="[^"]*\bpb-\d+\b/,
+  const reserved = (file: string): string | undefined =>
+    /<main class="[^"]*\b(pb-\d+)\b/.exec(
+      readFileSync(join(root, prototypeDirectory, file), 'utf8'),
+    )?.[1];
+
+  it('is reserved by the six screens that carry something fixed at the foot, and by no other', () => {
+    expect(screens).toHaveLength(23);
+    expect(
+      Object.fromEntries(
+        screens
+          .filter((file) => reserved(file) !== undefined)
+          .map((file) => [file, reserved(file)]),
+      ),
+    ).toEqual({
+      'cycle-length.html': 'pb-28',
+      'cycle-regularity.html': 'pb-28',
+      'home.html': 'pb-24',
+      'last-period.html': 'pb-28',
+      'period-before.html': 'pb-28',
+      'period-length.html': 'pb-28',
+    });
+  });
+});
+
+describe('a screen of the prototype that draws a colour outside the palette fails the pipeline', () => {
+  const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
+    name.endsWith('.html'),
+  );
+  const palette = Object.values(described.colours);
+  const markupOf = (file: string): string =>
+    readFileSync(join(root, prototypeDirectory, file), 'utf8');
+
+  describe('every screen paints from the front matter and from nowhere else', () => {
+    it('reads twenty three screens and a palette of fifty five, so an empty read is not silence', () => {
+      expect(screens).toHaveLength(23);
+      expect(palette).toHaveLength(47 + phaseColourNames.length);
+      expect(drawnParts(markupOf(sourceScreen)).length).toBeGreaterThan(400);
+    });
+
+    it.each(screens)('paints %s with no colour the palette does not hold', (file) => {
+      expect(coloursDrawnOutsideThePalette(palette, markupOf(file))).toEqual([]);
+    });
+
+    it('names the value and reads it out of an attribute, a class and a style alike', () => {
+      const value = aColourTheScreenDoesNotDraw;
+
+      expect(palette).not.toContain(value);
+
+      expect(coloursDrawnOutsideThePalette(palette, `<circle fill="${value}"></circle>`)).toEqual([
+        value,
+      ]);
+      expect(coloursDrawnOutsideThePalette(palette, `<div class="bg-[${value}]"></div>`)).toEqual([
+        value,
+      ]);
+      expect(coloursDrawnOutsideThePalette(palette, `<div style="color: ${value}"></div>`)).toEqual(
+        [value],
       );
-    }
+      expect(
+        coloursDrawnOutsideThePalette(palette, `<style>.ring { fill: ${value}; }</style>`),
+      ).toEqual([value]);
+    });
+
+    it('reads a value a screen writes as a word as no colour at all', () => {
+      const value = aColourTheScreenDoesNotDraw;
+
+      expect(coloursDrawnOutsideThePalette(palette, `<span>${value}</span>`)).toEqual([]);
+      expect(coloursDrawnOutsideThePalette(palette, `<!-- the band is ${value} -->`)).toEqual([]);
+    });
+
+    it('reads a shadow as a depth rather than as a colour, and an opaque function as a colour', () => {
+      expect(
+        coloursDrawnOutsideThePalette(palette, '<div class="shadow-[0_1px_8px_rgba(0,0,0,0.03)]">'),
+      ).toEqual([]);
+      expect(coloursDrawnOutsideThePalette(palette, '<div style="color: rgb(0,0,0)">')).toEqual([
+        'rgb(0,0,0)',
+      ]);
+    });
+
+    it('refuses the retired canvas, which is the value four screens drew before this ran', () => {
+      const retired = (described.colours['surface'] as string).replace(/^#ff/, '#fa');
+
+      expect(retired).toMatch(/^#[0-9a-f]{6}$/);
+      expect(palette).not.toContain(retired);
+      expect(
+        coloursDrawnOutsideThePalette(palette, `<circle stroke="${retired}"></circle>`),
+      ).toEqual([retired]);
+    });
+  });
+
+  describe('the copy review of screens 6 to 22', () => {
+    const review = readFileSync(join(root, copyReviewDocument), 'utf8');
+    const readme = readFileSync(join(root, prototypeReadme), 'utf8');
+
+    it('reads both documents, so an empty read is not taken for agreement', () => {
+      expect(falseClaimsOfTheCopyReview.length).toBeGreaterThan(30);
+      expect(review.split('\n').length).toBeGreaterThan(100);
+      expect(sectionUnder(readme, claimsHeading).length).toBeGreaterThan(2000);
+    });
+
+    it('is recorded in the readme, claim for claim, under the heading that says it is never built', () => {
+      expect(claimsNotRecorded(review, readme)).toEqual([]);
+    });
+
+    it('says which document lost a claim, rather than passing on a missing one', () => {
+      const dropped = falseClaimsOfTheCopyReview[0] as string;
+
+      expect(claimsNotRecorded(review.replace(dropped, ''), readme)).toEqual([
+        `${copyReviewDocument} does not name ${dropped}`,
+      ]);
+      expect(claimsNotRecorded(review, readme.replace(dropped, ''))).toEqual([
+        `${prototypeReadme} does not record ${dropped} under ${claimsHeading.slice(3)}`,
+      ]);
+    });
+
+    it('reads the claims under that heading alone, so a claim named elsewhere is not recorded', () => {
+      const claim = falseClaimsOfTheCopyReview[1] as string;
+      const elsewhere = `${claimsHeading}\n\nNothing.\n\n## Later\n\n${claim}\n`;
+
+      expect(claimsNotRecorded(claim, elsewhere)).toContain(
+        `${prototypeReadme} does not record ${claim} under ${claimsHeading.slice(3)}`,
+      );
+    });
+
+    it('reads a claim wrapped over two lines as one phrase', () => {
+      const claim = 'We will broaden windows into softer horizon ranges';
+
+      expect(falseClaimsOfTheCopyReview).toContain(claim);
+      expect(review).not.toContain(claim);
+      expect(claimsNotRecorded(review, readme)).toEqual([]);
+    });
   });
 });
