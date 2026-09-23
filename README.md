@@ -36,7 +36,7 @@ waits on something outside the code.
 
 ## How to run it
 
-You need Node 22 or later.
+You need the Node version in `.nvmrc`. The pipeline reads the same file.
 
     make install
     make ios
