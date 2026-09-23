@@ -40,6 +40,7 @@ import {
 } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { dayTestID } from '../apps/mobile/src/features/onboarding/LastPeriod';
 import { onboardingActionTestID } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
+import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { firstRunCopy } from '../apps/mobile/src/features/onboarding/copy';
 import { defaultCycleLengthDays } from '../apps/mobile/src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
@@ -256,6 +257,11 @@ function theBeadDegrees(): number {
   return degreesAt(Number(bead.props.cx), Number(bead.props.cy));
 }
 
+/** The way out of the tour, which is on every card and leaves her on the first question. */
+async function sheSkipsTheTour(): Promise<void> {
+  await shePresses(tourSkipTestID);
+}
+
 function everyControlOnTheScreen() {
   return [...screen.queryAllByRole('radio'), ...screen.queryAllByRole('button')];
 }
@@ -324,6 +330,10 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
+    });
+
     and('she answers all three screens of the first run', async () => {
       await sheAnswersEveryScreenOfTheFirstRun();
     });
@@ -363,6 +373,10 @@ defineFeature(feature, (test) => {
 
     when('she opens Emi', async () => {
       app = await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
     });
 
     and(
@@ -410,6 +424,10 @@ defineFeature(feature, (test) => {
 
     when('she opens Emi', async () => {
       app = await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
       visited.push(app.pathname());
       whatEachScreenSaid.push(screen.getByText(firstRunCopy.welcome.title).props.children);
     });
@@ -454,6 +472,10 @@ defineFeature(feature, (test) => {
     when('she opens Emi', async () => {
       await sheOpens('/');
       everyKindOfNodeShePassed.push(...nodeTypesIn(screen.toJSON()));
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
     });
 
     and('she answers all three screens of the first run', async () => {
@@ -844,6 +866,7 @@ defineFeature(feature, (test) => {
   test('SEE-3, every control of the first run is at least 44 points on both axes', ({
     given,
     when,
+    and,
     then,
   }) => {
     const measured: string[][] = [];
@@ -852,6 +875,10 @@ defineFeature(feature, (test) => {
 
     when('she opens Emi', async () => {
       await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
       await shePresses(onboardingActionTestID);

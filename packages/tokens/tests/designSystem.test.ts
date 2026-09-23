@@ -3,15 +3,27 @@ import { join, resolve } from 'node:path';
 
 import { colour, colourNames } from '../src/colour';
 import { REM_IN_POINTS, radius, radiusNames, space, spaceNames } from '../src/space';
-import { face, typeRoleNames, typeScale } from '../src/type';
+import {
+  LINE_HEIGHT_FLOOR,
+  face,
+  lineHeightsNobodyHasDecided,
+  typeRoleNames,
+  typeScale,
+} from '../src/type';
 
 /**
- * The type scale against the document it was copied from. The token package is the only place a
- * screen reads a size from, so a role that drifts from the design system drifts everywhere at once
- * and nothing else would notice.
+ * The token package against the document it was copied from. The token package is the only place a
+ * screen reads a colour or a size from, so a value that drifts from the design system drifts
+ * everywhere at once and nothing else would notice.
+ *
+ * The document is held to the prototype it was written from by
+ * `tools/pipeline/prototype.test.ts`, which also refuses a colour value anywhere in its prose. So
+ * the chain runs from the markup, through the front matter, to here, and every link is read.
  */
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..');
+
+/** The design system Emi is drawn in, written from the Warm Editorial Journal prototype. */
 export const designSystemDocument = join('docs', 'design', 'prototype-design-system.md');
 
 interface RoleInTheDocument {
@@ -19,7 +31,7 @@ interface RoleInTheDocument {
   readonly fontSize: string;
   readonly fontWeight: string;
   readonly lineHeight: string;
-  /** Absent in the document for a role the design system does not track. */
+  /** Absent in the document for a role it sets no tracking on. */
   readonly letterSpacing?: string;
 }
 
@@ -111,113 +123,8 @@ export function rolesIn(document: string): Record<string, RoleInTheDocument> {
   return roles as unknown as Record<string, RoleInTheDocument>;
 }
 
-/** One colour as the document writes it, with where it sits, so a failure names the paragraph. */
-export interface ColourInTheDocument {
-  readonly written: string;
-  readonly line: number;
-  readonly context: string;
-}
-
-const hexPattern = /#[0-9a-fA-F]{3,8}\b/g;
-
-const functionPattern = /rgba?\([^)]*\)/gi;
-
-/** One spelling for one colour: lower case, and no spaces inside a function. */
-export function sameColour(written: string): string {
-  return written.toLowerCase().replace(/\s+/g, '');
-}
-
-/**
- * Every colour written anywhere in the document, the front matter and the prose alike.
- *
- * The prose is the half nothing read. The type scale, the palette, the corners and the spacing are
- * all checked against the front matter, and for as long as that was the whole check the prose could
- * name a different palette and the suite stayed green, which is what it did.
- */
-export function coloursWrittenIn(document: string): ColourInTheDocument[] {
-  const found: ColourInTheDocument[] = [];
-
-  document.split('\n').forEach((text, at) => {
-    for (const pattern of [hexPattern, functionPattern]) {
-      for (const match of text.matchAll(pattern)) {
-        found.push({ written: match[0], line: at + 1, context: text.trim() });
-      }
-    }
-  });
-
-  return found;
-}
-
-/**
- * The shadow values the prose may keep, named one at a time. The front matter holds no shadow
- * block, so these two are the only place the elevation is written down, and both are drawn by the
- * prototype. A rule that allowed any `rgba` instead would let a whole second palette back in
- * wearing different clothes.
- */
-export const shadowTints: readonly string[] = [
-  'rgba(43, 37, 35, 0.05)',
-  'rgba(217, 107, 82, 0.06)',
-];
-
-export function coloursOutsideThePalette(
-  written: readonly ColourInTheDocument[],
-  palette: readonly string[],
-  allowed: readonly string[] = shadowTints,
-): string[] {
-  const held = new Set([...palette, ...allowed].map(sameColour));
-
-  return written
-    .filter((colour) => !held.has(sameColour(colour.written)))
-    .map(
-      (colour) =>
-        `${designSystemDocument} line ${colour.line} writes ${colour.written}, which the palette does not hold: ${colour.context}`,
-    );
-}
-
 const document = readFileSync(join(repositoryRoot, designSystemDocument), 'utf8');
 const inTheDocument = rolesIn(document);
-
-describe('the type scale says what the design system says', () => {
-  it('reads the document, so an empty read is not taken for agreement', () => {
-    expect(Object.keys(inTheDocument)).toHaveLength(11);
-    expect(inTheDocument['headline-xl']?.fontSize).toBe('36px');
-  });
-
-  it('holds the same eleven roles, under the same names', () => {
-    expect([...typeRoleNames].sort()).toEqual(Object.keys(inTheDocument).sort());
-  });
-
-  it.each(typeRoleNames)('sets %s to the size, line height and weight of the document', (name) => {
-    const written = inTheDocument[name];
-    const held = typeScale[name];
-
-    expect(written).toBeDefined();
-    expect(`${held.size}px`).toBe(written?.fontSize);
-    expect(`${held.lineHeight}px`).toBe(written?.lineHeight);
-    expect(String(held.weight)).toBe(written?.fontWeight);
-  });
-
-  it.each(typeRoleNames)('tracks %s by what the document names, in em', (name) => {
-    const written = inTheDocument[name]?.letterSpacing;
-    const held = typeScale[name].letterSpacingEm;
-
-    expect(written === undefined ? 0 : Number(written.replace('em', ''))).toBe(held);
-  });
-
-  it.each(typeRoleNames)('draws %s in the one family the document names', (name) => {
-    expect(face[typeScale[name].face]).toBe(inTheDocument[name]?.fontFamily);
-  });
-
-  it('names one family across the whole document, which is why there is one face', () => {
-    const families = new Set(Object.values(inTheDocument).map((role) => role.fontFamily));
-
-    expect([...families]).toEqual(['Plus Jakarta Sans']);
-  });
-});
-
-const coloursInTheDocument = valuesIn(document, 'colors');
-const cornersInTheDocument = valuesIn(document, 'rounded');
-const spacingInTheDocument = valuesIn(document, 'spacing');
 
 /** A length the document writes in rem or in px, as the points a screen measures in. */
 function pointsOf(written: string): number {
@@ -230,10 +137,69 @@ function pointsOf(written: string): number {
   throw new Error(`${written} is neither rem nor px, so it has no length in points`);
 }
 
+describe('the type scale says what the design system says', () => {
+  it('reads the document, so an empty read is not taken for agreement', () => {
+    expect(Object.keys(inTheDocument)).toHaveLength(13);
+    expect(inTheDocument['display-lg']?.fontSize).toBe('3rem');
+  });
+
+  it('holds the same thirteen roles, under the same names', () => {
+    expect([...typeRoleNames].sort()).toEqual(Object.keys(inTheDocument).sort());
+  });
+
+  it.each(typeRoleNames)('sets %s to the size, line height and weight of the document', (name) => {
+    const written = inTheDocument[name];
+    const held = typeScale[name];
+
+    expect(written).toBeDefined();
+    expect(held.size).toBe(pointsOf(String(written?.fontSize)));
+    expect(held.lineHeight).toBe(pointsOf(String(written?.lineHeight)));
+    expect(String(held.weight)).toBe(written?.fontWeight);
+  });
+
+  it.each(typeRoleNames)('tracks %s by what the document names, in em', (name) => {
+    const written = inTheDocument[name]?.letterSpacing;
+    const held = typeScale[name].letterSpacingEm;
+
+    expect(written === undefined ? 0 : Number(written.replace('em', ''))).toBe(held);
+  });
+
+  it.each(typeRoleNames)('draws %s in the family the document names for it', (name) => {
+    expect(face[typeScale[name].face]).toBe(inTheDocument[name]?.fontFamily);
+  });
+
+  it('names three families across the document, one for each job', () => {
+    const families = new Set(Object.values(inTheDocument).map((role) => role.fontFamily));
+
+    expect([...families].sort()).toEqual(['JetBrains Mono', 'Newsreader', 'Plus Jakarta Sans']);
+    expect(Object.values(face).sort()).toEqual([...families].sort());
+  });
+
+  it('keeps every role at or above the line height floor, apart from the one nobody has decided', () => {
+    const cramped = typeRoleNames.filter(
+      (name) => typeScale[name].lineHeight < typeScale[name].size * LINE_HEIGHT_FLOOR,
+    );
+
+    expect(cramped).toEqual([...lineHeightsNobodyHasDecided]);
+  });
+
+  it('holds the undecided role at the ratio the document draws it, so the fix reddens this too', () => {
+    const [undecided] = lineHeightsNobodyHasDecided;
+    const role = typeScale[undecided ?? 'display-lg'];
+
+    expect(undecided).toBe('display-lg');
+    expect(role.lineHeight / role.size).toBeCloseTo(1.167, 3);
+  });
+});
+
+const coloursInTheDocument = valuesIn(document, 'colors');
+const cornersInTheDocument = valuesIn(document, 'rounded');
+const spacingInTheDocument = valuesIn(document, 'spacing');
+
 describe('the palette says what the design system says', () => {
   it('reads the document, so an empty read is not taken for agreement', () => {
-    expect(Object.keys(coloursInTheDocument)).toHaveLength(47);
-    expect(coloursInTheDocument['primary']).toBe('#9c3e28');
+    expect(Object.keys(coloursInTheDocument)).toHaveLength(55);
+    expect(coloursInTheDocument['primary']).toBe('#843117');
   });
 
   it('holds the same colours, under the same names', () => {
@@ -252,7 +218,7 @@ describe('the palette says what the design system says', () => {
 describe('the corners and the spacing say what the design system says', () => {
   it('reads both blocks, so an empty read is not taken for agreement', () => {
     expect(Object.keys(cornersInTheDocument)).toHaveLength(6);
-    expect(Object.keys(spacingInTheDocument)).toHaveLength(7);
+    expect(Object.keys(spacingInTheDocument)).toHaveLength(11);
   });
 
   it('holds the same corner names and the same steps', () => {
@@ -273,56 +239,5 @@ describe('the corners and the spacing say what the design system says', () => {
     const held = space[camelCase(name) as keyof typeof space];
 
     expect(held).toBe(pointsOf(String(spacingInTheDocument[name])));
-  });
-});
-
-describe('the whole document names one palette', () => {
-  const written = coloursWrittenIn(document);
-  const palette = Object.values(coloursInTheDocument);
-
-  it('reads past the front matter, which is the half nothing read before', () => {
-    const frontMatterEnds =
-      document.split('\n').findIndex((line, at) => at > 0 && line === '---') + 1;
-
-    expect(frontMatterEnds).toBeGreaterThan(100);
-    expect(written.filter((colour) => colour.line > frontMatterEnds).length).toBeGreaterThan(0);
-    expect(written.length).toBeGreaterThan(palette.length);
-  });
-
-  it('writes no colour the palette does not hold', () => {
-    expect(coloursOutsideThePalette(written, palette)).toEqual([]);
-  });
-
-  it('keeps both shadow tints, so the list of what is allowed cannot rot unnoticed', () => {
-    const spellings = written.map((colour) => sameColour(colour.written));
-
-    for (const tint of shadowTints) {
-      expect(spellings).toContain(sameColour(tint));
-    }
-  });
-
-  it('refuses a colour of its own, and names the line and the paragraph', () => {
-    const [said] = coloursOutsideThePalette(
-      coloursWrittenIn('# One\n\nThe primary button is #D96B52 on press.\n'),
-      palette,
-    );
-
-    expect(said).toContain('line 3');
-    expect(said).toContain('#D96B52');
-    expect(said).toContain('The primary button is');
-  });
-
-  it('refuses a tint that is not one of the two, so the allowance is by name and not by shape', () => {
-    const other = 'rgba(217, 107, 82, 0.3)';
-
-    expect(coloursOutsideThePalette(coloursWrittenIn(other), palette)).toHaveLength(1);
-    expect(coloursOutsideThePalette(coloursWrittenIn(shadowTints[0] as string), palette)).toEqual(
-      [],
-    );
-  });
-
-  it('reads one colour under either spelling, so a capital is not a second palette', () => {
-    expect(coloursOutsideThePalette(coloursWrittenIn('#FCF9F4'), palette)).toEqual([]);
-    expect(sameColour('RGBA(43, 37, 35, 0.05)')).toBe('rgba(43,37,35,0.05)');
   });
 });

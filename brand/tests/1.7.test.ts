@@ -109,13 +109,13 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
       }
     });
 
-    it('prints a measurement beside every one of the forty seven', () => {
+    it('prints a measurement beside every one of the fifty five', () => {
       const silent = colourNames.filter(
         (name) => measurementsFor(shippedSources, name).length === 0,
       );
 
       expect(silent).toEqual([]);
-      expect(colourNames).toHaveLength(47);
+      expect(colourNames).toHaveLength(55);
     });
 
     it('prints the ratio contrastRatio computes, and not a number typed by hand', () => {
@@ -139,8 +139,7 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
 
     it('says what a fill is measured at and which partner carries its text', () => {
       const measured = measurementsFor(shippedSources, phasePalette.period.fill);
-      const said =
-        'primaryContainer on surface is 4.44 to 1, so onPrimaryFixedVariant carries the text';
+      const said = 'period on surface is 2.81 to 1, so periodInk carries the text';
 
       expect(measured).toContain(said);
       expect(page).toContain(said);
@@ -279,8 +278,8 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
       const measured = contrastRatio(movedValue, colours.surface.value).toFixed(2);
 
       expect(after).not.toEqual(page);
-      expect(page).toContain('onSurfaceVariant on surface is 8.91 to 1');
-      expect(after).not.toContain('onSurfaceVariant on surface is 8.91 to 1');
+      expect(page).toContain('onSurfaceVariant on surface is 8.92 to 1');
+      expect(after).not.toContain('onSurfaceVariant on surface is 8.92 to 1');
       expect(after).toContain(`onSurfaceVariant on surface is ${measured} to 1`);
     });
 

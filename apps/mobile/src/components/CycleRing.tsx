@@ -1,13 +1,16 @@
 import {
   BEAD_HALO_WIDTH,
   BEAD_RADIUS,
+  CYCLE_DAY_ROLE,
   DAYS_AHEAD_STRENGTH,
+  PHASE_NAME_ROLE,
   type PhaseName,
   type PhaseSpan,
   RING_DIAMETER,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
   arcPath,
+  beadPalette,
   colour,
   phaseLabel,
   phasePalette,
@@ -110,9 +113,9 @@ export function CycleRing({
           <Circle
             cx={bead.x}
             cy={bead.y}
-            fill={colour.primary}
+            fill={colour[beadPalette.fill]}
             r={BEAD_RADIUS}
-            stroke={colour.surfaceContainerLowest}
+            stroke={colour[beadPalette.halo]}
             strokeWidth={BEAD_HALO_WIDTH}
             testID={ringBeadTestID}
           />
@@ -189,7 +192,7 @@ const OPENS_FROM = 0.94;
 const styles = StyleSheet.create({
   day: {
     color: colour.onSurface,
-    ...textStyle('headline-xl'),
+    ...textStyle(CYCLE_DAY_ROLE),
   },
   middle: {
     alignItems: 'center',
@@ -201,9 +204,10 @@ const styles = StyleSheet.create({
     top: 0,
   },
   // Contract SCREEN-2 refuses the four words of the cycle above 14 points, and the phase name is
-  // one of them, so the ring writes it at the small size wherever it is drawn.
+  // one of them, so the ring writes it at the label size wherever it is drawn.
   phase: {
-    ...textStyle('body-sm'),
+    ...textStyle(PHASE_NAME_ROLE),
+    textTransform: 'uppercase',
   },
   ring: { alignItems: 'center', justifyContent: 'center' },
 });

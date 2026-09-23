@@ -1,6 +1,13 @@
 import { join } from 'node:path';
 
-import { applicationFontFiles, face, fontFile, typeRoleNames, typeScale } from '@emi/tokens';
+import {
+  applicationFontFiles,
+  face,
+  faceFamily,
+  fonts,
+  typeRoleNames,
+  typeScale,
+} from '@emi/tokens';
 import { render, screen } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import { Text } from 'react-native';
@@ -40,16 +47,20 @@ beforeEach(() => {
   resetExpoSecureStore();
 });
 
-describe('one typeface across the whole product', () => {
+describe('three typefaces across the whole product', () => {
   describe('the files the application loads', () => {
-    it('loads the one family the design system names, at every weight it ships', () => {
+    it('loads each family the design system names, at every weight it ships', () => {
       expect(applicationFontFiles.map((file) => file.name)).toEqual([
+        'Newsreader16pt-Regular',
+        'Newsreader16pt-Medium',
         'PlusJakartaSans-Regular',
-        'PlusJakartaSans-Medium',
         'PlusJakartaSans-SemiBold',
-        'PlusJakartaSans-Bold',
+        'JetBrainsMono-Regular',
+        'JetBrainsMono-Medium',
       ]);
+      expect(face.display).toBe('Newsreader');
       expect(face.text).toBe('Plus Jakarta Sans');
+      expect(face.data).toBe('JetBrains Mono');
     });
 
     it('hands the loader those files and no others', async () => {
@@ -62,7 +73,7 @@ describe('one typeface across the whole product', () => {
       expect(Object.keys(mockLoaderWasHanded[0] ?? {})).toEqual([...registeredFaces]);
     });
 
-    it('loads neither of the two families the application stopped drawing in', async () => {
+    it('loads no file of the two families the design system replaced', async () => {
       await render(
         <Fonts>
           <Text>anything at all</Text>
@@ -71,9 +82,14 @@ describe('one typeface across the whole product', () => {
 
       const handed = Object.keys(mockLoaderWasHanded[0] ?? {}).join(' ');
 
-      expect(handed).not.toContain(fontFile('fraunces', 'regular').name);
-      expect(handed).not.toContain(fontFile('ibmPlexMono', 'regular').name);
-      expect(Object.keys(fontsToLoad)).toHaveLength(4);
+      expect(handed).not.toContain('Fraunces');
+      expect(handed).not.toContain('IBMPlexMono');
+      expect(Object.keys(fontsToLoad)).toHaveLength(6);
+      expect(Object.values(faceFamily).map((name) => fonts[name].family)).toEqual([
+        'Newsreader 16pt',
+        'Plus Jakarta Sans',
+        'JetBrains Mono',
+      ]);
     });
   });
 
@@ -132,7 +148,7 @@ describe('one typeface across the whole product', () => {
       expect(runsDrawnInAnUnloadedFace(screen.toJSON())).toEqual([]);
     });
 
-    it('draws every size it draws at one of the eleven roles', async () => {
+    it('draws every size it draws at one of the thirteen roles', async () => {
       const app = renderRouter(appDirectory, { initialUrl: '/' });
       await app;
 

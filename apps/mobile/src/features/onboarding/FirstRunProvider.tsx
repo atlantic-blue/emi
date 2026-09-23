@@ -3,9 +3,12 @@ import { type ReactNode, createContext, useCallback, useContext, useMemo, useSta
 import { useDatabase } from '../../data/DatabaseProvider';
 import { useVault } from '../../services/vault/VaultProvider';
 import { completeFirstRun, defaultCycleLengthDays, firstRunIsDone } from './firstRun';
+import { markTourSeen, tourIsSeen } from './tour';
 
 interface FirstRun {
   readonly isDone: boolean;
+  /** Whether she has already been shown the four cards, which is the database's answer. */
+  readonly tourIsDone: boolean;
   readonly periodStartedOn: string | undefined;
   readonly cycleLengthDays: number;
   readonly setPeriodStartedOn: (day: string) => void;
@@ -15,6 +18,11 @@ interface FirstRun {
    * The write refuses a first run that is already done, so this answers the second call itself.
    */
   readonly finish: () => void;
+  /**
+   * Leaves the tour, by the action of the last card or by the way out on any of them. The
+   * instant is written once, so a second visit keeps the first one.
+   */
+  readonly leaveTheTour: () => void;
   /**
    * Reads the database again. A delete empties the table this answer comes from, and without this
    * she would be sent to her own home screen with nothing on it.
@@ -33,6 +41,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const database = useDatabase();
   const vault = useVault();
   const [isDone, setIsDone] = useState(() => firstRunIsDone(database));
+  const [tourIsDone, setTourIsDone] = useState(() => tourIsSeen(database));
   const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
   const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
 
@@ -49,23 +58,31 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setIsDone(firstRunIsDone(database));
   }, [cycleLengthDays, database, periodStartedOn, vault]);
 
+  const leaveTheTour = useCallback(() => {
+    markTourSeen(database, new Date());
+    setTourIsDone(tourIsSeen(database));
+  }, [database]);
+
   const reread = useCallback(() => {
     setPeriodStartedOn(undefined);
     setCycleLengthDays(defaultCycleLengthDays);
     setIsDone(firstRunIsDone(database));
+    setTourIsDone(tourIsSeen(database));
   }, [database]);
 
   const held = useMemo(
     () => ({
       isDone,
+      tourIsDone,
       periodStartedOn,
       cycleLengthDays,
       setPeriodStartedOn,
       setCycleLengthDays,
+      leaveTheTour,
       finish,
       reread,
     }),
-    [cycleLengthDays, finish, isDone, periodStartedOn, reread],
+    [cycleLengthDays, finish, isDone, leaveTheTour, periodStartedOn, reread, tourIsDone],
   );
 
   return <FirstRunContext.Provider value={held}>{children}</FirstRunContext.Provider>;

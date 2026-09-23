@@ -1,12 +1,15 @@
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { colour } from '@emi/tokens';
+import { colour, letterSpacingOf, radius, space, typeScale } from '@emi/tokens';
 import {
   BottomNavigation,
   bottomNavigationTestID,
-  capsuleTestID,
+  deepestHomeIndicator,
+  dockHeight,
+  dockPanelTestID,
   dockRoom,
+  dockStandOff,
+  floatingShadow,
   standOffTestID,
   tabTestID,
 } from '@emi/ui';
@@ -24,13 +27,8 @@ import { tabs } from '../../src/features/chrome/tabs';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herPhoneHolds } from '../fixtures/herPhone';
-import { OnAPhone } from '../fixtures/theSafeArea';
+import { OnAPhone, aPhoneWithAnIsland } from '../fixtures/theSafeArea';
 import { theThemeIsLoaded } from '../fixtures/theTheme';
-import {
-  configuredIn,
-  prototypeDirectory,
-  sourceScreen,
-} from '../../../../tools/pipeline/prototype';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -41,14 +39,8 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 /** Midday, and well away from any summer time change, so her calendar reads the same anywhere. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
-/** The role the label is set in, read off the screen the prototype renders with rather than typed. */
-const labelRole = configuredIn(
-  readFileSync(join(__dirname, '..', '..', '..', '..', prototypeDirectory, sourceScreen), 'utf8'),
-).type['label-sm'];
-
-function points(measured: string | undefined): number {
-  return Number((measured ?? '').replace('px', ''));
-}
+/** The role the label is set in, read off the token package rather than typed here. */
+const labelRole = typeScale['label-sm'];
 
 /** The four columns, in the order the prototype draws them. */
 const theFourTabs = [
@@ -90,7 +82,7 @@ function theLabelIn(name: string): Drawn {
  * rather than asked for by name, because asking for them by name reads back the order of the ask.
  */
 function theLabelsInTheDock(): string[] {
-  return screen.getByTestId(capsuleTestID).children.map((column) => {
+  return screen.getByTestId(dockPanelTestID).children.map((column) => {
     const [, label] = (column as unknown as { children: unknown[] }).children;
 
     return String((label as Drawn).props.children);
@@ -125,6 +117,17 @@ function theGroundUnder(testID: string): unknown {
   }
 
   return undefined;
+}
+
+/**
+ * The compiler shortens a six digit hex to three where every pair of digits repeats. Both spell
+ * the same colour, and a test that reads one of the two spellings is reading the compiler.
+ */
+function theSameColourAs(value: string): string {
+  const short = value.toLowerCase();
+  const [, red, green, blue] = /^#(.)\1(.)\2(.)\3$/.exec(short) ?? [];
+
+  return red === undefined ? short : `#${red}${green ?? ''}${blue ?? ''}`;
 }
 
 function theStyleOf(testID: string): Record<string, unknown> {
@@ -195,20 +198,18 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       }
     });
 
-    it('sets the label in label small, at the size, leading and tracking the prototype gives it', async () => {
+    it('sets the label in label small, at the size, leading and tracking the tokens give it', async () => {
       await sheOpens('/');
 
       // The size and the tracking are the ones that go missing when the class merge in @emi/ui is
       // not told about Emi's own scale, and the leading is the one that goes to 154.
       const drawn = theLabelStyleOf('index');
 
-      expect(drawn['fontSize']).toBe(points(labelRole?.fontSize));
-      expect(drawn['lineHeight']).toBe(points(labelRole?.lineHeight));
-      expect(drawn['fontWeight']).toBe(Number(labelRole?.fontWeight));
+      expect(drawn['fontSize']).toBe(labelRole.size);
+      expect(drawn['lineHeight']).toBe(labelRole.lineHeight);
+      expect(drawn['fontWeight']).toBe(labelRole.weight);
       expect(drawn['letterSpacing']).toBe(
-        Math.round(
-          points(labelRole?.fontSize) * Number.parseFloat(labelRole?.letterSpacing ?? '') * 100,
-        ) / 100,
+        letterSpacingOf(labelRole.size, labelRole.letterSpacingEm),
       );
     });
 
@@ -235,23 +236,29 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       );
     }
 
-    it('keeps the room under it the phone keeps for itself, and twelve points above that', async () => {
+    it('keeps the room under it the phone keeps for itself, and stands off above that', async () => {
       await theDockOnAPhone();
 
-      expect(theStyleOf(bottomNavigationTestID)).toMatchObject({ paddingBottom: 34 });
-      expect(theStyleOf(capsuleTestID)).toBeTruthy();
+      expect(theStyleOf(bottomNavigationTestID)).toMatchObject({
+        paddingBottom: aPhoneWithAnIsland.insets.bottom,
+      });
+      expect(theStyleOf(standOffTestID)).toMatchObject({ paddingBottom: dockStandOff });
     });
 
-    it('draws a capsule of sixty four points, filled at nine tenths, spaced evenly', async () => {
+    it('draws the panel on the card ground, at the corner and the hairline layer 2 takes', async () => {
       await theDockOnAPhone();
 
-      // Nine tenths of the colour the prototype fills the capsule with, which is e5 of 255.
-      expect(theStyleOf(capsuleTestID)).toMatchObject({
-        backgroundColor: `${colour.surfaceContainerLowest.toLowerCase()}e5`,
-        borderRadius: 9999,
-        height: 64,
+      // Layer 2 of the design system, which is the one thing here that floats over a screen: a
+      // solid fill, because this style has no glass, and the single shadow the document allows.
+      expect(theStyleOf(dockPanelTestID)).toMatchObject({
+        backgroundColor: theSameColourAs(colour.surfaceContainerLowest),
+        borderColor: colour.outlineVariant.toLowerCase(),
+        borderRadius: radius.xl,
+        borderWidth: 1,
+        boxShadow: floatingShadow,
+        height: dockHeight,
         justifyContent: 'space-around',
-        paddingInline: 8,
+        paddingInline: space.spaceSm,
       });
     });
 
@@ -259,6 +266,16 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       await theDockOnAPhone();
 
       expect(theStyleOf(tabTestID('index'))).toMatchObject({ height: 48, minWidth: 52 });
+    });
+
+    it('sits the tab she is on in the selected well, so the cue is not colour alone', async () => {
+      await theDockOnAPhone();
+
+      expect(theStyleOf(tabTestID('index'))).toMatchObject({
+        backgroundColor: colour.surfaceContainerHigh,
+        borderRadius: radius.lg,
+      });
+      expect(theStyleOf(tabTestID('history'))['backgroundColor']).toBeUndefined();
     });
   });
 
@@ -281,7 +298,7 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       await sheOpens('/');
 
       expect(theTouchesOn(bottomNavigationTestID)).toBe('box-none');
-      expect(theTouchesOn(capsuleTestID)).toBe('auto');
+      expect(theTouchesOn(dockPanelTestID)).toBe('auto');
 
       await fireEvent.press(screen.getByTestId(tabTestID('history')));
 
@@ -306,10 +323,13 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       const drawn =
         Number(theStyleOf(bottomNavigationTestID)['paddingBottom']) +
         Number(theStyleOf(standOffTestID)['paddingBottom']) +
-        Number(theStyleOf(capsuleTestID)['height']);
+        Number(theStyleOf(dockPanelTestID)['height']);
 
-      expect(drawn).toBeGreaterThan(0);
-      expect(dockRoom).toBeGreaterThanOrEqual(drawn);
+      // The room is the sum of the three the dock draws, on the phone that keeps the most glass
+      // for itself, rather than a number typed beside the code it describes.
+      expect(drawn).toBe(dockHeight + dockStandOff + aPhoneWithAnIsland.insets.bottom);
+      expect(deepestHomeIndicator).toBe(aPhoneWithAnIsland.insets.bottom);
+      expect(dockRoom).toBe(drawn);
     });
 
     it('leaves no room at the foot of a screen no dock reaches', async () => {

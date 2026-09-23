@@ -229,6 +229,39 @@ export const spanish: CatalogueIn<'es'> = {
     'El primer día que sangraste. El día más cercano que recuerdes es suficiente.',
   'onboarding.lastPeriod.title': '¿Cuándo empezó tu último periodo?',
   'onboarding.step': 'Paso {step} de {of}',
+  'onboarding.tour.back': 'Atrás',
+  'onboarding.tour.count': '{step} de {of}',
+  'onboarding.tour.range.action': 'Siguiente',
+  'onboarding.tour.range.line.arithmetic':
+    'Esto es aritmética sobre tus propios registros. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
+  'onboarding.tour.range.line.confidence':
+    'Junto al rango escribe confianza alta, media o baja, y cuántos ciclos tuyos contó.',
+  'onboarding.tour.range.line.learning':
+    'Emi necesita 2 ciclos completos antes de hacer un pronóstico. Hasta entonces dice que todavía está aprendiendo, y cuenta con la duración de ciclo que le des.',
+  'onboarding.tour.range.line.range':
+    'Emi dice que tu próximo periodo cae entre dos días. Nunca nombra un solo día, porque un día que nombra es un día en el que puede equivocarse.',
+  'onboarding.tour.range.title': 'Un rango, y cuánta certeza tiene Emi.',
+  'onboarding.tour.records.action': 'Siguiente',
+  'onboarding.tour.records.line.log':
+    'Registra flujo, ánimo, energía, temperatura, peso y más de 70 síntomas, en una sola hoja.',
+  'onboarding.tour.records.line.patterns':
+    'Después de seis ciclos Emi nombra los síntomas que volvieron en el mismo punto en 3 de ellos o más. Un síntoma que registraste una vez no es un patrón, y Emi no lo llama así.',
+  'onboarding.tour.records.title': 'Lo que escribes, leído de vuelta.',
+  'onboarding.tour.ring.action': 'Siguiente',
+  'onboarding.tour.ring.line.arcs':
+    'Cuatro arcos dividen el anillo: los días que sangras, los días que vienen después, los días alrededor de la ovulación, y los días antes de tu próximo periodo.',
+  'onboarding.tour.ring.line.ring':
+    'El anillo es tu ciclo. Una cuenta marca hoy, y el número que hay dentro es el día en el que estás.',
+  'onboarding.tour.ring.title': 'Tu ciclo, en un solo anillo.',
+  'onboarding.tour.skip': 'Omitir',
+  'onboarding.tour.yours.action': 'Continuar',
+  'onboarding.tour.yours.line.encrypted':
+    'Cada día que registras se cifra en este teléfono, con una clave que nunca sale de él. El servidor guarda el resultado y no puede leer ni un solo día.',
+  'onboarding.tour.yours.line.price':
+    'Un mes gratis, después 29,99 libras al año. No hay versión gratuita, porque una versión gratuita se paga con tus datos.',
+  'onboarding.tour.yours.line.recovery':
+    'Un código de recuperación que guardas lleva tu historial a un teléfono nuevo. Nadie en Emi puede abrir tu historial, así que nadie en Emi puede entregarlo.',
+  'onboarding.tour.yours.title': 'Tuyo, y sigue siendo tuyo.',
   'onboarding.welcome.action': 'Continuar',
   'onboarding.welcome.line.noAccount':
     'No hay ninguna cuenta. Emi nunca te pide tu correo electrónico ni una contraseña.',

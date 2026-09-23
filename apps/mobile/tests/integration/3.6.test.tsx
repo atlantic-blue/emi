@@ -459,6 +459,9 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
       writeSetting(database, 'cycleLengthDays', String(sheSaidHerCycleRuns));
       writeSetting(database, 'firstRunCompletedAt', whenSheOpensIt.toISOString());
+      // The tour runs before the two questions, so a phone that answered them has been through
+      // it. Without this the application sends her to card 1 and this screen is never reached.
+      writeSetting(database, 'tourSeenAt', whenSheOpensIt.toISOString());
     }
 
     function theRingSays(): string {

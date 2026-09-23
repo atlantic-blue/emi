@@ -1,4 +1,5 @@
 import { colour } from '../../packages/tokens/src/colour.ts';
+import { faceFamily, fontFile } from '../../packages/tokens/src/font.ts';
 import {
   DAYS_AHEAD_STRENGTH,
   FULL_TURN_DEGREES,
@@ -62,7 +63,9 @@ describe('the picture of the ring', () => {
     expect(page.match(/<circle /g)).toHaveLength(drawnRings.length);
 
     for (const ring of drawnRings) {
-      expect(page).toContain(`<div class="day face-regular">${ring.day}</div>`);
+      expect(page).toContain(
+        `<div class="day face-${fontFile(faceFamily.data, 'medium').name}">${ring.day}</div>`,
+      );
       expect(page).toContain(ring.title);
     }
   });

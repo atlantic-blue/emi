@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary-fixed": "#1e1b17", "secondary-fixed-dim": "#ccc5be", "on-primary-fixed-variant": "#7d2c12", "surface-container-low": "#fbf2ee", "on-tertiary-fixed-variant": "#8b190e", "background": "#fff8f5", "tertiary-fixed-dim": "#ffb4a8", "tertiary-fixed": "#ffdad4", "on-primary-container": "#ffd8ce", "error-container": "#ffdad6", "surface-container": "#f5ece8", "on-background": "#1f1b19", "primary-container": "#a3482c", "surface-dim": "#e1d8d5", "on-secondary": "#ffffff", "on-primary-fixed": "#3a0a00", "secondary-container": "#e8e1d9", "surface-variant": "#eae1dd", "on-tertiary": "#ffffff", "primary-fixed": "#ffdbd1", "surface-container-lowest": "#ffffff", "outline-variant": "#dcc1b9", "on-primary": "#ffffff", "surface-tint": "#9c4327", "surface-container-high": "#efe6e3", "inverse-on-surface": "#f8efeb", "inverse-primary": "#ffb59f", "tertiary": "#921f12", "surface": "#fff8f5", "on-tertiary-fixed": "#410100", "on-error-container": "#93000a", "on-surface-variant": "#56423d", "error": "#ba1a1a", "on-secondary-fixed-variant": "#4a4641", "surface-container-highest": "#eae1dd", "secondary-fixed": "#e8e1d9", "primary-fixed-dim": "#ffb59f", "outline": "#89726c", "on-surface": "#1f1b19", "inverse-surface": "#342f2d", "surface-bright": "#fff8f5", "on-error": "#ffffff", "on-secondary-container": "#68645e", "primary": "#843117", "tertiary-container": "#b43727", "on-tertiary-container": "#ffd8d2", "secondary": "#625e58" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "gutter": "1rem", "space-md": "1rem", "margin-lg": "3.5rem", "gutter-lg": "2rem", "space-sm": "0.5rem", "margin": "1rem", "space-xl": "2.5rem", "space-xs": "0.25rem", "gutter-md": "1.5rem", "margin-md": "2rem", "space-lg": "1.5rem" }, fontFamily: { "label-md": ["Plus Jakarta Sans"], "headline-lg": ["Newsreader"], "headline-sm": ["Newsreader"], "display-lg": ["Newsreader"], "body-sm": ["Plus Jakarta Sans"], "headline-md": ["Newsreader"], "data-sm": ["JetBrains Mono"], "data-md": ["JetBrains Mono"], "label-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Newsreader"], "body-lg": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "data-lg": ["JetBrains Mono"] }, fontSize: { "label-md": ["0.875rem", { "lineHeight": "1.25rem", "letterSpacing": "0.01em", "fontWeight": "600" }], "headline-lg": ["2rem", { "lineHeight": "2.5rem", "letterSpacing": "-0.01em", "fontWeight": "400" }], "headline-sm": ["1.25rem", { "lineHeight": "1.75rem", "fontWeight": "500" }], "display-lg": ["3rem", { "lineHeight": "3.5rem", "letterSpacing": "-0.02em", "fontWeight": "400" }], "body-sm": ["0.875rem", { "lineHeight": "1.25rem", "fontWeight": "400" }], "headline-md": ["1.5rem", { "lineHeight": "2rem", "fontWeight": "500" }], "data-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "500" }], "data-md": ["1rem", { "lineHeight": "1.5rem", "letterSpacing": "-0.02em", "fontWeight": "400" }], "label-sm": ["0.75rem", { "lineHeight": "1rem", "letterSpacing": "0.02em", "fontWeight": "600" }], "display-lg-mobile": ["2.25rem", { "lineHeight": "2.75rem", "letterSpacing": "-0.015em", "fontWeight": "400" }], "body-lg": ["1.125rem", { "lineHeight": "1.75rem", "fontWeight": "400" }], "body-md": ["1rem", { "lineHeight": "1.5rem", "fontWeight": "400" }], "data-lg": ["1.75rem", { "lineHeight": "2.25rem", "letterSpacing": "-0.03em", "fontWeight": "500" }] } } } };</script></head><body class="bg-surface font-body-md text-on-surface antialiased flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-gutter flex items-center justify-between"><button aria-label="Go back" class="w-11 h-11 -ml-space-xs flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[22px]">arrow_back</span></button><div class="flex-1 text-center px-space-xs"><span class="font-headline-sm text-headline-sm italic text-on-surface tracking-normal">Cycle Regularity</span></div><div class="flex items-center justify-end min-w-[44px] gap-space-sm"><a class="h-11 px-space-xs flex items-center justify-center font-label-md text-label-md text-secondary hover:text-on-surface transition-colors underline-offset-4 hover:underline" data-path="cycle-length" href="#">Skip</a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div><div class="w-full h-[2px] bg-secondary-container overflow-hidden"><div class="h-full bg-primary-container transition-all duration-300 ease-out" style="width: 20%;"></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-safe px-gutter bg-surface"><div class="flex flex-col w-full pb-10">
+<!-- Progress Calibration State Sync -->
+<div class="hidden" id="progress-calibrator"></div>
+<script>
+    (function() {
+      const headerBar = document.querySelector('header .bg-primary-container');
+      if (headerBar) {
+        headerBar.style.width = '100%';
+      }
+    })();
+  </script>
+<!-- Editorial Top Kicker & Calibrating Meta -->
+<div class="pt-4 flex flex-col items-center text-center">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+<span class="font-label-sm text-label-sm tracking-widest uppercase">JOURNAL STEP 15 · 15 • INITIAL FORECAST</span>
+</div>
+<!-- Calm Subtitle Kicker -->
+<span class="mt-4 font-label-md text-label-md uppercase tracking-widest text-on-surface-variant opacity-80">
+      Your next period
+    </span>
+<!-- Hero Date Range Display -->
+<div class="mt-2 flex items-center justify-center">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary-container italic select-none">
+        14 to 19 Oct
+      </h1>
+</div>
+<!-- Editorial Soft Observation -->
+<p class="mt-2 max-w-xs font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+      Emi is still learning. After two cycles it says how sure it is.
+    </p>
+</div>
+<!-- Editorial Atmospheric Visual: The Tactile October Timeline Band -->
+<div class="mt-6 w-full bg-surface-container-lowest rounded-xl p-5 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-md text-label-md text-on-surface flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+        October Timeline
+      </span>
+<span class="font-data-sm text-data-sm text-on-surface-variant px-2 py-0.5 rounded bg-surface-container">
+        Day 24 of 28
+      </span>
+</div>
+<!-- Continuous Linear Ribbon Gauge -->
+<div class="relative w-full pt-6 pb-4">
+<!-- Calendar Axis Line -->
+<div class="w-full h-1 bg-surface-container-high rounded-full relative">
+<!-- Range highlight ribbon for Oct 14-19 -->
+<div class="absolute top-0 bottom-0 left-[42%] right-[22%] bg-primary-fixed rounded-full"></div>
+</div>
+<!-- Timeline Scale Markings & Brackets -->
+<div class="relative w-full flex justify-between items-center text-on-surface-variant font-data-sm text-data-sm mt-3">
+<div class="flex flex-col items-center">
+<div class="w-0.5 h-1.5 bg-outline-variant -mt-4 mb-1"></div>
+<span>1 Oct</span>
+</div>
+<!-- Today marker indicator -->
+<div class="absolute left-[30%] -top-7 flex flex-col items-center -translate-x-1/2">
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface font-medium">Today</span>
+<div class="w-2 h-2 rounded-full bg-secondary mt-1"></div>
+<div class="w-0.5 h-3 bg-secondary"></div>
+</div>
+<!-- Highlighted Forecast Window Brackets -->
+<div class="absolute left-[42%] -top-2 flex flex-col items-start -translate-x-1/2">
+<span class="font-data-sm text-data-sm text-primary font-medium">14</span>
+<div class="w-1.5 h-2.5 rounded-l-sm bg-primary-container mt-0.5"></div>
+</div>
+<div class="absolute left-[62%] -top-6 flex flex-col items-center -translate-x-1/2">
+<span class="font-label-sm text-label-sm text-primary-container px-2 py-0.5 rounded-full bg-primary-fixed font-semibold tracking-wide">
+            Predicted Window
+          </span>
+</div>
+<div class="absolute right-[22%] -top-2 flex flex-col items-end translate-x-1/2">
+<span class="font-data-sm text-data-sm text-primary font-medium">19</span>
+<div class="w-1.5 h-2.5 rounded-r-sm bg-primary-container mt-0.5"></div>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-0.5 h-1.5 bg-outline-variant -mt-4 mb-1"></div>
+<span>31 Oct</span>
+</div>
+</div>
+</div>
+<!-- Tactile Context Footnote within Component -->
+<div class="mt-4 pt-3 flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm bg-surface-container-low px-3.5 py-2.5 rounded-lg">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="text-on-surface font-medium">5-day estimated span</span>
+</div>
+<span class="font-data-sm text-data-sm text-secondary">±2 days tolerance</span>
+</div>
+</div>
+<!-- Editorial Companion Imagery Strip -->
+<div class="mt-4 grid grid-cols-2 gap-3 w-full">
+<div class="bg-surface-container-low p-3 rounded-xl flex flex-col gap-2">
+<div class="w-full h-24 rounded-lg overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="A warm, tactile still life of an open linen journal, fountain pen resting on cream deckle-edge paper, warm natural morning light, soft terracotta and sienna ceramic cup nearby, mindful peaceful atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOSiszbDb0bOtizBh6ZPuaWlo_p7yfiN1nEiexIDcQAH6MB0n5zx3gwNOXLcHtVp9oRgcOv0ReaQ9pLAbAGi90dtEhnOak0Z4VIpSA5YLJMXVoeUh3tM7RNfX77jvxPigNQWLDvyOdcKfieEFblnLaPdz4CZWBqRjD9crnhk3ncrYqSHZ4GNtEtt_6IfEUY3y5dinyR573Mb3WcpxGj2B6R6HUU8xpdVVf9LqcdimO27UTn7wah_Gi"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Rhythm over rigidity</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-xl flex flex-col gap-2">
+<div class="w-full h-24 rounded-lg overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Minimalist abstract natural forms with clean botanical silhouette, warm linen parchment texture, earthy terracotta and soft stone hues, peaceful editorial composition" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARcgwtKEPrsA9skhB9EPiOwu0XQcc6VkMGQcKw0fCw01NUzTFGT3Sshb7Gty9fhUMB593wlA8iLt1xzdxPQxA_xaAbdpY0wGYjhBDSSTwbzGKUwiOb5wF7KcQYZmG390CCxpZ3zPrQMuGTmqorU88jPrvFa9eNZT20GkbptgKTZ8ApDOiq25p1E22ZvNxMS9FFasxkkE9WnQwxqnFpMntQTMvh_9wk-uy5qc8y8GSDELITWYZbh1wv"/>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Body-led patterns</span>
+</div>
+</div>
+<!-- Two Quiet Editorial Note Cards -->
+<div class="mt-4 flex flex-col gap-3">
+<!-- Card 1: Why a Range -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm flex items-start gap-3.5">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0 mt-0.5 text-primary">
+<span class="material-symbols-outlined text-[20px]">graphic_eq</span>
+</div>
+<div class="flex flex-col gap-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-medium">
+          Why a range?
+        </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          Cycles naturally shift by 2 to 4 days with stress, travel, or seasonal rhythm. We never promise false algorithmic certainty.
+        </p>
+</div>
+</div>
+<!-- Card 2: Zero Cloud Inference -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm flex items-start gap-3.5">
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center shrink-0 mt-0.5 text-secondary">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-medium">
+            Zero Cloud Inference
+          </h3>
+<span class="font-data-sm text-data-sm text-primary px-1.5 py-0.2 rounded bg-surface-container-high font-medium">
+            On-device
+          </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          This date range was calculated locally on your device processor using simple cycle mathematics. Your biology remains yours alone.
+        </p>
+</div>
+</div>
+</div>
+<!-- Tactile Primary CTA Action -->
+<div class="mt-6 flex flex-col gap-2">
+<button class="w-full h-12 bg-primary-container text-on-primary rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 shadow-sm active:opacity-90 transition-all" id="finish-onboarding-btn" type="button">
+<span>Continue to Your Journal</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<div class="text-center">
+<span class="font-data-sm text-data-sm text-secondary-fixed-dim">Calibration complete · Model version 1.0-local</span>
+</div>
+</div>
+</div>
+<script>
+  // Micro-interaction for feedback
+  const ctaBtn = document.getElementById('finish-onboarding-btn');
+  if (ctaBtn) {
+    ctaBtn.addEventListener('click', () => {
+      ctaBtn.classList.add('scale-[0.98]');
+      setTimeout(() => {
+        ctaBtn.classList.remove('scale-[0.98]');
+      }, 150);
+    });
+  }
+</script></main></body></html>

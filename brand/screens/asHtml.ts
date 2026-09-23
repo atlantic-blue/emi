@@ -293,6 +293,8 @@ export function markupOf(node: unknown): string {
     }
     case 'RNSVGCircle':
       return svgNode('circle', drawn, ['cx', 'cy', 'r']);
+    case 'RNSVGRect':
+      return svgNode('rect', drawn, ['x', 'y', 'width', 'height', 'rx', 'ry']);
     default:
       return box(drawn);
   }
