@@ -3,15 +3,17 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { render } from '@testing-library/react-native';
 
 import { CycleLength } from '../../src/features/onboarding/CycleLength';
+import { HerName } from '../../src/features/onboarding/HerName';
 import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
+import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 
 /**
- * The three screens of the first run, drawn for somebody to look at. They are the first thing she
- * sees of Emi, so the thing worth checking here is whether they look like one product.
+ * The screens of the first run, drawn for somebody to look at. They are the first thing she sees
+ * of Emi, so the thing worth checking here is whether they look like one product.
  *
  * It is not part of the suite. The file is named for a picture rather than for a test, and the
  * runner is pointed at it by `npm run generate:onboarding-picture`.
@@ -21,7 +23,7 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
 const theCaveat = [
-  'Rendered from the trees the three first run screens produced under the test runner, at 390 by',
+  'Rendered from the trees the five first run screens produced under the test runner, at 390 by',
   '844 points, and not captured from a phone. The number names the monospaced',
   'face, which no screen loads yet, so it falls back here and on a phone. Reproduce with:',
   'npm run generate:onboarding-picture.',
@@ -37,12 +39,39 @@ interface Screen {
 
 const theScreens: readonly Screen[] = [
   {
-    title: 'One of three',
+    title: 'One of five',
     note: 'What Emi is, and what it will not do. She is asked for nothing here.',
     element: <WhatEmiIs onContinue={() => undefined} />,
   },
   {
-    title: 'Two of three',
+    title: 'Two of five',
+    note: 'What Emi should call her. The one field in the first run, and it carries a way past it.',
+    element: (
+      <HerName
+        onBack={() => undefined}
+        onContinue={() => undefined}
+        onSkip={() => undefined}
+        onType={() => undefined}
+        typed=""
+      />
+    ),
+  },
+  {
+    title: 'Three of five',
+    note: 'The year she was born, as she finds the wheel: newest year first, nothing picked yet.\n      Nothing in Emi reads this answer, and the screen says so.',
+    element: (
+      <YearOfBirth
+        chosen={undefined}
+        now={whenSheOpensIt}
+        onBack={() => undefined}
+        onChoose={() => undefined}
+        onContinue={() => undefined}
+        onSkip={() => undefined}
+      />
+    ),
+  },
+  {
+    title: 'Four of five',
     note: 'She picks the day her last period started from the month she is in. The eleventh is\n      chosen, and the days after today take no press.',
     element: (
       <LastPeriod
@@ -55,7 +84,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Three of three',
+    title: 'Five of five',
     note: 'The last answer she gives, and the one the first forecast is made from.',
     element: (
       <CycleLength

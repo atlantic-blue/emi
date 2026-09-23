@@ -24,8 +24,17 @@ import {
   monthTestID,
 } from '../../src/features/onboarding/LastPeriod';
 import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
-import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
-import { firstRunCopy, stepLabel } from '../../src/features/onboarding/copy';
+import {
+  onboardingActionTestID,
+  onboardingSkipTestID,
+} from '../../src/features/onboarding/OnboardingScreen';
+import { nameFieldTestID } from '../../src/features/onboarding/HerName';
+import {
+  type FirstRunScreen,
+  firstRunCopy,
+  firstRunScreens,
+  stepLabel,
+} from '../../src/features/onboarding/copy';
 import {
   defaultCycleLengthDays,
   longestLookBackDays,
@@ -37,6 +46,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -87,7 +97,7 @@ async function sheOpensEmi(): Promise<OpenApp> {
   return { pathname: () => app.getPathname(), close: () => view.unmount() };
 }
 
-function theScreen(name: 'welcome' | 'lastPeriod' | 'cycleLength') {
+function theScreen(name: FirstRunScreen) {
   return within(screen.getByTestId(`onboarding-${name}`));
 }
 
@@ -95,23 +105,27 @@ async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
-async function sheAnswers(name: 'welcome' | 'lastPeriod' | 'cycleLength'): Promise<void> {
+async function sheAnswers(name: FirstRunScreen): Promise<void> {
   await fireEvent.press(theScreen(name).getByTestId(onboardingActionTestID));
 }
 
-async function sheAnswersEveryQuestion(): Promise<void> {
+/**
+ * Past the welcome and past the two questions she is free to skip, standing on the calendar.
+ * The cases below are about the day she picks there, so the two before it are skipped rather
+ * than answered.
+ */
+async function sheReachesTheLastPeriod(): Promise<void> {
   await sheAnswers('welcome');
-  await shePresses(dayTestID(herPeriodStarted));
-  await sheAnswers('lastPeriod');
-  for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
-    await shePresses(longerTestID);
-  }
-  await sheAnswers('cycleLength');
+  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingSkipTestID);
 }
 
 /** The whole first run: every question answered, and the hold that writes the answers. */
 async function sheAnswersEveryScreen(): Promise<void> {
-  await sheAnswersEveryQuestion();
+  await sheAnswersEveryQuestion({
+    periodStartedOn: herPeriodStarted,
+    cycleLengthDays: herCycleLengthDays,
+  });
   await sheHoldsTheRing();
 }
 
@@ -157,16 +171,29 @@ function theTourIsBehindHer(): void {
   writeSetting(database, 'tourSeenAt', whenSheOpensIt.toISOString());
 }
 
-function nodeTypesIn(node: unknown): string[] {
+interface Drawn {
+  readonly type?: string;
+  readonly props?: Record<string, unknown>;
+  readonly children?: unknown;
+}
+
+/** Every field she could type into on the screen she is looking at, in the order drawn. */
+function fieldsIn(node: unknown): Drawn[] {
   if (Array.isArray(node)) {
-    return node.flatMap(nodeTypesIn);
+    return node.flatMap(fieldsIn);
   }
   if (node === null || typeof node !== 'object') {
     return [];
   }
-  const element = node as { type?: string; children?: unknown };
+  const element = node as Drawn;
+  const below = fieldsIn(element.children ?? []);
 
-  return [element.type ?? '', ...nodeTypesIn(element.children ?? [])];
+  return element.type === 'TextInput' ? [element, ...below] : below;
+}
+
+/** The question above each field, which is the sentence a screen reader reads out for it. */
+function fieldsDrawn(): string[] {
+  return fieldsIn(screen.toJSON()).map((field) => String(field.props?.accessibilityLabel));
 }
 
 /**
@@ -233,19 +260,29 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
     it('asks her for no account, no email address and no password', async () => {
       await sheOpensEmi();
-
-      expect(nodeTypesIn(screen.toJSON())).not.toContain('TextInput');
+      const everyFieldShePassed = [...fieldsDrawn()];
 
       await sheAnswers('welcome');
-      expect(nodeTypesIn(screen.toJSON())).not.toContain('TextInput');
+      everyFieldShePassed.push(...fieldsDrawn());
+      // Nothing is hidden as she types, because a name is a greeting and not a passcode.
+      expect(screen.getByTestId(nameFieldTestID).props.secureTextEntry).toBeUndefined();
 
+      await shePresses(onboardingSkipTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(onboardingSkipTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
-      expect(nodeTypesIn(screen.toJSON())).not.toContain('TextInput');
+      everyFieldShePassed.push(...fieldsDrawn());
+      await sheAnswers('cycleLength');
+      everyFieldShePassed.push(...fieldsDrawn());
+
+      // One field in the whole first run, and it asks her what Emi should call her.
+      expect([...new Set(everyFieldShePassed)]).toEqual([firstRunCopy.name.label]);
     });
   });
 
-  describe('she answers all three screens and holds the ring', () => {
+  describe('she answers every screen and holds the ring', () => {
     it('leaves her on the home screen', async () => {
       const app = await sheOpensEmi();
 
@@ -286,11 +323,15 @@ describe('the first run ends on the home screen with her period recorded', () =>
       );
     });
 
-    it('asks her three questions, holds once, and asks nothing else', async () => {
+    it('asks her five questions, holds once, and asks nothing else', async () => {
       const app = await sheOpensEmi();
       const visited = [app.pathname()];
 
       await sheAnswers('welcome');
+      visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
@@ -301,6 +342,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       expect(visited).toEqual([
         '/onboarding/welcome',
+        '/onboarding/name',
+        '/onboarding/year-of-birth',
         '/onboarding/last-period',
         '/onboarding/cycle-length',
         '/onboarding/hold',
@@ -308,32 +351,45 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(app.pathname()).toBe('/');
     });
 
-    it('has three screens to answer, the hold and the tour beside them, and one layout', () => {
+    it('has one screen for each question, the hold and the tour beside them, and one layout', () => {
       const held = readdirSync(join(appDirectory, 'onboarding')).sort();
 
       // A name opening with an underscore is a layout rather than a route, so she is never sent
-      // to it. Every half is named, so a deleted layout fails here as loudly as a fourth
+      // to it. Every half is named, so a deleted layout fails here as loudly as an unasked
       // question. The tour and the hold ask her nothing, so they are named on their own and
       // taken out before the questions are counted.
       expect(held).toContain('tour.tsx');
       expect(held).toContain('hold.tsx');
       expect(
         held.filter((name) => !name.startsWith('_') && name !== 'tour.tsx' && name !== 'hold.tsx'),
-      ).toEqual(['cycle-length.tsx', 'last-period.tsx', 'welcome.tsx']);
+      ).toEqual([
+        'cycle-length.tsx',
+        'last-period.tsx',
+        'name.tsx',
+        'welcome.tsx',
+        'year-of-birth.tsx',
+      ]);
+      expect(held).toHaveLength(firstRunScreens.length + 3);
       expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
     });
   });
 
-  describe('she steps forward through the three screens', () => {
+  describe('she steps forward through the screens', () => {
     it('leaves each screen behind and puts the next one in front of her', async () => {
       await sheOpensEmi();
       expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
 
       await sheAnswers('welcome');
 
-      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+      expect(screen.getByTestId('onboarding-name')).toBeTruthy();
       expect(screen.queryByTestId('onboarding-welcome')).toBeNull();
 
+      await shePresses(onboardingSkipTestID);
+
+      expect(screen.getByTestId('onboarding-birthYear')).toBeTruthy();
+      expect(screen.queryByTestId('onboarding-name')).toBeNull();
+
+      await shePresses(onboardingSkipTestID);
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
 
@@ -363,7 +419,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
     it('does not move on from the day she has not picked', async () => {
       const app = await sheOpensEmi();
 
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
       await sheAnswers('lastPeriod');
 
       expect(app.pathname()).toBe('/onboarding/last-period');
@@ -371,7 +427,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
     it('keeps the cycle length she is picking inside 21 and 45 days', async () => {
       await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
 
@@ -392,7 +448,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
     it('offers every day of the month she is in, and no day of any other month', async () => {
       await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
 
       expect(theScreen('lastPeriod').getByTestId(monthTestID)).toHaveTextContent('May 2026');
       expect(everyDayOnTheScreen()).toEqual(everyDayOfMay());
@@ -404,7 +460,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
   describe('the calendar she picks the day from', () => {
     it('does not take a day after today, so the first run is never asked to refuse one', async () => {
       const app = await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
 
       await shePresses(dayTestID(tomorrow));
       await sheAnswers('lastPeriod');
@@ -414,7 +470,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
     it('does not take a day further back than the first run reaches', async () => {
       const app = await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
       await shePagesBackTo('February 2026');
 
       await shePresses(dayTestID(oneDayTooFarBack));
@@ -425,7 +481,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
     it('takes the oldest day it does reach, and records that day', async () => {
       const app = await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
       await shePagesBackTo('February 2026');
 
       await shePresses(dayTestID(theOldestDaySheMayPick));
@@ -442,7 +498,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
     it('goes back no further than the month holding that day', async () => {
       await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
       await shePagesBackTo('February 2026');
 
       await shePresses(earlierMonthTestID);
@@ -452,7 +508,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
     it('keeps the day she chose when she pages away from its month and back', async () => {
       const app = await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
 
       await shePresses(earlierMonthTestID);
@@ -476,6 +532,10 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheAnswers('welcome');
       expect(controlsTooSmallToPress()).toEqual([]);
 
+      await shePresses(onboardingSkipTestID);
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await shePresses(onboardingSkipTestID);
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
       expect(controlsTooSmallToPress()).toEqual([]);
@@ -509,7 +569,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
   describe('she presses Done twice, because the first press looked like nothing', () => {
     it('writes her first run once, whatever her second press did', async () => {
       const app = await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
       for (let pressed = defaultCycleLengthDays; pressed < herCycleLengthDays; pressed += 1) {
@@ -547,7 +607,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
     it('leaves Done where she can reach it, because nothing is written on that screen', async () => {
       await sheOpensEmi();
-      await sheAnswers('welcome');
+      await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
       const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);

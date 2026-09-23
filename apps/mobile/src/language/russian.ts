@@ -146,6 +146,7 @@ export const russian: CatalogueIn<'ru'> = {
   'history.title': 'История',
 
   'home.export': 'Экспорт',
+  'home.greeting': 'Здравствуйте, {name}',
   'home.history': 'История',
   'home.logToday': 'Отметить сегодня',
   'home.settings': 'Настройки',
@@ -221,6 +222,12 @@ export const russian: CatalogueIn<'ru'> = {
   'log.weight.hint': 'Одно число в день',
 
   'onboarding.back': 'Назад',
+  'onboarding.birthYear.action': 'Дальше',
+  'onboarding.birthYear.line.noReader': 'Emi пока это не читает.',
+  'onboarding.birthYear.line.sealed':
+    'Emi шифрует это на телефоне, прежде чем что-то куда-то отправится.',
+  'onboarding.birthYear.title': 'В каком году вы родились?',
+  'onboarding.birthYear.year': '{year} год',
   'onboarding.cycleLength.action': 'Готово',
   'onboarding.cycleLength.days': '{count} дней',
   'onboarding.cycleLength.line.count':
@@ -247,6 +254,18 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.lastPeriod.line.remember':
     'Первый день, когда шла кровь. Ближайший день, который вы помните, вполне подойдёт.',
   'onboarding.lastPeriod.title': 'Когда начались ваши последние месячные?',
+  'onboarding.name.action': 'Дальше',
+  'onboarding.name.hint': 'Имя или ничего',
+  'onboarding.name.label': 'Ваше имя',
+  'onboarding.name.line.greets': 'Emi обращается к вам по нему. Больше его ничто не использует.',
+  'onboarding.name.line.sealed':
+    'Emi шифрует это на телефоне, прежде чем что-то куда-то отправится.',
+  'onboarding.name.title': 'Как Emi вас называть?',
+  'onboarding.name.tooLong': {
+    one: 'В имени не больше {count} символа.',
+    few: 'В имени не больше {count} символов.',
+    many: 'В имени не больше {count} символов.',
+  },
   'onboarding.skip': 'Пропустить',
   'onboarding.step': 'Шаг {step} из {of}',
   'onboarding.tour.back': 'Назад',

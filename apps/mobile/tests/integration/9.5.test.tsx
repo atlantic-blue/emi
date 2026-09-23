@@ -11,9 +11,6 @@ import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
 import { readProfile } from '../../src/data/profileRepository';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
-import { longerTestID } from '../../src/features/onboarding/CycleLength';
-import { dayTestID } from '../../src/features/onboarding/LastPeriod';
-import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
 import {
   tourActionTestID,
   tourBackTestID,
@@ -33,6 +30,7 @@ import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { markTourSeen, tourIsSeen } from '../../src/features/onboarding/tour';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import { theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
@@ -129,13 +127,12 @@ async function sheReadsEveryCard(): Promise<TourCard[]> {
   return read;
 }
 
-/** The two questions of the first run, answered, so a case can end on her home screen. */
-async function sheAnswersBothQuestions(): Promise<void> {
-  await shePresses(onboardingActionTestID);
-  await shePresses(dayTestID(herPeriodStarted));
-  await shePresses(onboardingActionTestID);
-  await shePresses(longerTestID);
-  await shePresses(onboardingActionTestID);
+/** Every question of the first run, answered, so a case can end on her home screen. */
+async function sheAnswersEveryQuestionOfTheFirstRun(): Promise<void> {
+  await sheAnswersEveryQuestion({
+    periodStartedOn: herPeriodStarted,
+    cycleLengthDays: defaultCycleLengthDays + 1,
+  });
   // Her answers are written at the hold and nowhere else, so the walk ends there.
   await sheHoldsTheRing();
 }
@@ -316,11 +313,11 @@ describe('Skip on any card lands on the welcome screen and the tour does not com
       expect(theCardSheIsOn()).toBeUndefined();
     });
 
-    it('shows her home screen once she has answered the two questions', async () => {
+    it('shows her home screen once she has answered every question', async () => {
       const app = await sheOpensEmi();
 
       await shePresses(tourSkipTestID);
-      await sheAnswersBothQuestions();
+      await sheAnswersEveryQuestionOfTheFirstRun();
 
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId('home-screen')).toBeTruthy();

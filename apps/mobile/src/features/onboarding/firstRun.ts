@@ -1,4 +1,10 @@
-import type { DayRecord } from '@emi/crypto';
+import {
+  type DayRecord,
+  type ProfileRecord,
+  earliestBirthYear,
+  longestName,
+  youngestBirthYears,
+} from '@emi/crypto';
 import { type Flow, addDays, daysBetween } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
@@ -42,12 +48,18 @@ export const firstRunFlow: Flow = 'medium';
 export interface FirstRunAnswers {
   readonly periodStartedOn: string;
   readonly cycleLengthDays: number;
+  /** Left out where she skipped the question, and then her profile carries no name at all. */
+  readonly name?: string;
+  /** Left out where she skipped the question. Nothing reads it, which contract SCREEN-1 names. */
+  readonly birthYear?: number;
 }
 
 export type FirstRunRefusal =
   | 'period-start-is-in-the-future'
   | 'period-start-is-too-long-ago'
   | 'cycle-length-is-out-of-range'
+  | 'name-is-out-of-range'
+  | 'birth-year-is-out-of-range'
   | 'first-run-is-already-done';
 
 export class FirstRunError extends Error {
@@ -76,6 +88,48 @@ export function cycleLengthIsInRange(days: number): boolean {
   return Number.isInteger(days) && days >= minimumCycleLengthDays && days <= maximumCycleLengthDays;
 }
 
+/** How long the name she typed is, counted in code points, as the profile counts it. */
+function nameLength(typed: string): number {
+  return [...typed.trim()].length;
+}
+
+/**
+ * The name that goes into her profile, or nothing at all. A field she left empty is the same
+ * answer as the Skip beside it, so it writes no name rather than an empty one.
+ */
+export function nameSheGave(typed: string): string | undefined {
+  const trimmed = typed.trim();
+
+  return trimmed === '' ? undefined : trimmed;
+}
+
+/** Whether the screen lets her go on, asked as she types rather than after she presses. */
+export function nameIsInRange(typed: string): boolean {
+  return nameLength(typed) <= longestName;
+}
+
+/**
+ * The newest year of birth Emi offers, which moves with the clock. Emi is not built for a child,
+ * and a cycle that has not started cannot be tracked.
+ */
+export function latestBirthYear(now: Date): number {
+  return now.getFullYear() - youngestBirthYears;
+}
+
+/**
+ * Every year the wheel offers, newest first. A wheel that opened on 1940 would ask every woman
+ * using Emi to travel the whole list before she reached a year she might have been born in.
+ */
+export function birthYearsOffered(now: Date): readonly number[] {
+  const latest = latestBirthYear(now);
+
+  return Array.from({ length: latest - earliestBirthYear + 1 }, (_unused, at) => latest - at);
+}
+
+export function birthYearIsInRange(year: number, now: Date): boolean {
+  return Number.isInteger(year) && year >= earliestBirthYear && year <= latestBirthYear(now);
+}
+
 /** Her day is sealed under one of these and her answers under the other, both under her one key. */
 export interface FirstRunVaults {
   readonly day: DayVault;
@@ -101,6 +155,21 @@ export async function writeEverythingAtTheHold(
   const vaults = await makeHerVaults();
 
   completeFirstRun(db, vaults, answers, now);
+}
+
+/**
+ * Her answers as the profile record holds them. A question she skipped leaves its key off the
+ * record rather than carrying an empty one, because the canonical bytes are what a later phone
+ * reads back and "she said nothing" and "she said nothing in particular" are different answers.
+ */
+function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
+  return {
+    kind: 'profile',
+    ...(answers.name === undefined ? {} : { name: answers.name }),
+    ...(answers.birthYear === undefined ? {} : { birthYear: answers.birthYear }),
+    cycleLengthDays: answers.cycleLengthDays,
+    recordedAt: now.toISOString(),
+  };
 }
 
 /**
@@ -135,6 +204,18 @@ export function completeFirstRun(
       `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days, this one is ${answers.cycleLengthDays}`,
     );
   }
+  if (answers.name !== undefined && !nameIsInRange(answers.name)) {
+    throw new FirstRunError(
+      'name-is-out-of-range',
+      `a name holds at most ${longestName} characters, this one holds ${nameLength(answers.name)}`,
+    );
+  }
+  if (answers.birthYear !== undefined && !birthYearIsInRange(answers.birthYear, now)) {
+    throw new FirstRunError(
+      'birth-year-is-out-of-range',
+      `a year of birth runs from ${earliestBirthYear} to ${latestBirthYear(now)}, this one is ${answers.birthYear}`,
+    );
+  }
   if (firstRunIsDone(db)) {
     throw new FirstRunError('first-run-is-already-done', 'the first run is already done');
   }
@@ -148,14 +229,7 @@ export function completeFirstRun(
   db.execute('BEGIN');
   try {
     insertDayLog(db, { day: recorded.day, payload: vaults.day.seal(recorded), now });
-    writeProfile(db, vaults.profile, {
-      profile: {
-        kind: 'profile',
-        cycleLengthDays: answers.cycleLengthDays,
-        recordedAt: now.toISOString(),
-      },
-      now,
-    });
+    writeProfile(db, vaults.profile, { profile: herProfile(answers, now), now });
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
     setLockOnReturn(db, true);
     db.execute('COMMIT');

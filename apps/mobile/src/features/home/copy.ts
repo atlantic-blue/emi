@@ -11,3 +11,11 @@ export const homeCopy = {
   export: words('home.export'),
   settings: words('home.settings'),
 } as const;
+
+/**
+ * How Emi says hello to her by the name she gave. A woman who gave none is not greeted at all,
+ * so this is never called with an empty name and never draws an empty line.
+ */
+export function greeting(name: string): string {
+  return words('home.greeting', undefined, { name });
+}

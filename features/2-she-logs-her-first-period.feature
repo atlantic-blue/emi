@@ -1,6 +1,6 @@
 Feature: She opens Emi and logs her first period
 
-  She arrives knowing nothing about Emi and Emi knows nothing about her. Three questions and one
+  She arrives knowing nothing about Emi and Emi knows nothing about her. A few questions and one
   hold later her last period is recorded and the ring is drawn from her own days.
 
   Every scenario below is named for the contract it proves. The contracts are in
@@ -35,14 +35,14 @@ Feature: She opens Emi and logs her first period
     And her phone holds one day, the day she said her period started
     And her phone holds the time of the hold, and one instant on all three of her answers
 
-  Scenario: SCREEN-1, the first run asks three questions and the hold after them
+  Scenario: SCREEN-1, the first run asks its questions and the hold after them
     Given she has never opened Emi before
     When she opens Emi
     And she skips the tour Emi opens with
     And she answers every question of the first run
     And she presses and holds the ring
-    Then she was asked what Emi is, when her last period started, and how long her cycle runs
-    And there was no fourth question to answer
+    Then she was asked what Emi is, her name, the year she was born, when her last period started, and how long her cycle runs
+    And there was no further question to answer
 
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
     Given she has never opened Emi before
@@ -50,7 +50,7 @@ Feature: She opens Emi and logs her first period
     And she skips the tour Emi opens with
     And she answers every question of the first run
     And she presses and holds the ring
-    Then nothing on the way gave her anything to type into
+    Then the only thing she could type into was her name
 
   Scenario: SCREEN-2, the home screen shows the ring, the day of her cycle and the phase she is in
     Given her phone holds six cycles of her own
@@ -129,7 +129,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she skips the tour Emi opens with
-    Then every control on each of the three screens is at least 44 points on both axes
+    Then every control on each screen of the first run is at least 44 points on both axes
 
   Scenario: SEE-3, a control below the floor is named with the size it was drawn at
     Given a control drawn at 40 points by 44

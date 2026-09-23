@@ -140,6 +140,7 @@ export const english = {
   'history.title': 'History',
 
   'home.export': 'Export',
+  'home.greeting': 'Hello, {name}',
   'home.history': 'History',
   'home.logToday': 'Log today',
   'home.settings': 'Settings',
@@ -206,6 +207,11 @@ export const english = {
   'log.weight.hint': 'One number a day',
 
   'onboarding.back': 'Back',
+  'onboarding.birthYear.action': 'Continue',
+  'onboarding.birthYear.line.noReader': 'Nothing in Emi reads this yet.',
+  'onboarding.birthYear.line.sealed': 'Emi encrypts this on the phone before it goes anywhere.',
+  'onboarding.birthYear.title': 'What year were you born?',
+  'onboarding.birthYear.year': 'Born in {year}',
   'onboarding.cycleLength.action': 'Done',
   // The stepper runs from 21 to 45, so the count never reaches one and the screen said days
   // whatever she set. Moving the words kept it that way.
@@ -237,6 +243,16 @@ export const english = {
   'onboarding.lastPeriod.line.remember':
     'The first day you bled. The nearest day you remember is close enough.',
   'onboarding.lastPeriod.title': 'When did your last period start?',
+  'onboarding.name.action': 'Continue',
+  'onboarding.name.hint': 'A first name, or nothing',
+  'onboarding.name.label': 'Your name',
+  'onboarding.name.line.greets': 'Emi greets you by it. Nothing else uses it.',
+  'onboarding.name.line.sealed': 'Emi encrypts this on the phone before it goes anywhere.',
+  'onboarding.name.title': 'What should Emi call you?',
+  'onboarding.name.tooLong': {
+    one: 'A name holds at most {count} character.',
+    other: 'A name holds at most {count} characters.',
+  },
   'onboarding.skip': 'Skip',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.tour.back': 'Back',

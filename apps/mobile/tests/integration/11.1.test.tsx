@@ -14,7 +14,12 @@ import {
   onboardingProgressTestID,
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { firstRunScreens, stepLabel } from '../../src/features/onboarding/copy';
+import {
+  type FirstRunScreen,
+  firstRunCopy,
+  firstRunScreens,
+  stepLabel,
+} from '../../src/features/onboarding/copy';
 import { progressFillTestID } from '../../src/components/ProgressBar';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -58,6 +63,16 @@ async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
+/**
+ * Past the welcome and past the two questions she is free to skip, standing on the calendar,
+ * which is the question every case below is about.
+ */
+async function sheReachesTheLastPeriod(): Promise<void> {
+  await shePresses(onboardingActionTestID);
+  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingSkipTestID);
+}
+
 /** How much of the bar is filled on the screen she is looking at, as the screen drew it. */
 function theBarIsFilled(): unknown {
   const fill = screen.getByTestId(progressFillTestID(onboardingProgressTestID));
@@ -65,8 +80,13 @@ function theBarIsFilled(): unknown {
   return (StyleSheet.flatten(fill.props.style) as { width?: unknown }).width;
 }
 
-function everyWordOnTheScreen(): string[] {
-  return sizedTextIn(screen.toJSON()).map((run) => run.text);
+/**
+ * Every word drawn on the screen she is looking at. It is read off that screen rather than
+ * off the whole tree, because the stack keeps the screens behind it mounted and hidden, and
+ * their words are words she is not being shown.
+ */
+function everyWordOnTheScreen(where: FirstRunScreen): string[] {
+  return sizedTextIn(screen.getByTestId(`onboarding-${where}`)).map((run) => run.text);
 }
 
 describe('the last period is the one question she cannot skip', () => {
@@ -86,17 +106,17 @@ describe('the last period is the one question she cannot skip', () => {
     it('offers her nothing to skip with, because a forecast needs this day', async () => {
       const app = await sheOpensEmi();
 
-      await shePresses(onboardingActionTestID);
+      await sheReachesTheLastPeriod();
 
       expect(app.pathname()).toBe('/onboarding/last-period');
       expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
-      expect(everyWordOnTheScreen()).not.toContain('Skip');
+      expect(everyWordOnTheScreen('lastPeriod')).not.toContain(firstRunCopy.skip);
     });
 
     it('leaves her on the question when she presses on without answering it', async () => {
       const app = await sheOpensEmi();
 
-      await shePresses(onboardingActionTestID);
+      await sheReachesTheLastPeriod();
       await shePresses(onboardingActionTestID);
 
       expect(app.pathname()).toBe('/onboarding/last-period');
@@ -106,7 +126,7 @@ describe('the last period is the one question she cannot skip', () => {
     it('takes her on to the next question once she has picked a day', async () => {
       const app = await sheOpensEmi();
 
-      await shePresses(onboardingActionTestID);
+      await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
 
@@ -124,7 +144,7 @@ describe('the last period is the one question she cannot skip', () => {
     it('carries her back to the day she picked, with the day still picked', async () => {
       const app = await sheOpensEmi();
 
-      await shePresses(onboardingActionTestID);
+      await sheReachesTheLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingBackTestID);
@@ -142,18 +162,21 @@ describe('the last period is the one question she cannot skip', () => {
       const counters: string[] = [];
 
       for (const [at, where] of firstRunScreens.entries()) {
-        expect(everyWordOnTheScreen()).not.toContain(stepLabel(where));
-        counters.push(...everyWordOnTheScreen().filter((word) => /\d+\s*of\s*\d+/.test(word)));
-        if (at === 1) {
+        expect(everyWordOnTheScreen(where)).not.toContain(stepLabel(where));
+        counters.push(...everyWordOnTheScreen(where).filter((word) => /\d+\s*of\s*\d+/.test(word)));
+        if (where === 'lastPeriod') {
           await shePresses(dayTestID(herPeriodStarted));
         }
         if (at + 1 < firstRunScreens.length) {
-          await shePresses(onboardingActionTestID);
+          // The way past a question where it has one, and the answer where it does not, which
+          // is the last period and the welcome.
+          const skip = screen.queryByTestId(onboardingSkipTestID);
+          await fireEvent.press(skip ?? screen.getByTestId(onboardingActionTestID));
           filled.push(theBarIsFilled());
         }
       }
 
-      expect(filled).toEqual(['33.33333333333333%', '66.66666666666666%', '100%']);
+      expect(filled).toEqual(['20%', '40%', '60%', '80%', '100%']);
       expect(counters).toEqual([]);
     });
   });

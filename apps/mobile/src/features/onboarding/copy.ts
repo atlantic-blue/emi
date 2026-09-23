@@ -14,6 +14,18 @@ export const firstRunCopy = {
     ],
     action: words('onboarding.welcome.action'),
   },
+  name: {
+    title: words('onboarding.name.title'),
+    lines: [words('onboarding.name.line.greets'), words('onboarding.name.line.sealed')],
+    label: words('onboarding.name.label'),
+    hint: words('onboarding.name.hint'),
+    action: words('onboarding.name.action'),
+  },
+  birthYear: {
+    title: words('onboarding.birthYear.title'),
+    lines: [words('onboarding.birthYear.line.noReader'), words('onboarding.birthYear.line.sealed')],
+    action: words('onboarding.birthYear.action'),
+  },
   lastPeriod: {
     title: words('onboarding.lastPeriod.title'),
     lines: [
@@ -53,7 +65,13 @@ export const firstRunCopy = {
  * it asks nothing, it is the moment her answers are written, and screen 19 of the prototype
  * carries no position for that reason.
  */
-export const firstRunScreens = ['welcome', 'lastPeriod', 'cycleLength'] as const;
+export const firstRunScreens = [
+  'welcome',
+  'name',
+  'birthYear',
+  'lastPeriod',
+  'cycleLength',
+] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];
 
@@ -74,6 +92,16 @@ export function stepLabel(screen: FirstRunScreen): string {
 /** How she reads the cycle length she is setting, which is a count and takes the form to match. */
 export function cycleLengthDaysLabel(days: number): string {
   return words('onboarding.cycleLength.days', days);
+}
+
+/** Why the name she typed is refused, which names the bound rather than repeating the number. */
+export function nameTooLongLine(characters: number): string {
+  return words('onboarding.name.tooLong', characters);
+}
+
+/** What a screen reader says for one year of the wheel, because a bare number says nothing. */
+export function birthYearLabel(year: number): string {
+  return words('onboarding.birthYear.year', undefined, { year });
 }
 
 /**

@@ -10,7 +10,12 @@ import {
 
 import { useDatabase } from '../../data/DatabaseProvider';
 import { useHerVaultsMade } from '../../services/vault/VaultProvider';
-import { defaultCycleLengthDays, firstRunIsDone, writeEverythingAtTheHold } from './firstRun';
+import {
+  defaultCycleLengthDays,
+  firstRunIsDone,
+  nameSheGave,
+  writeEverythingAtTheHold,
+} from './firstRun';
 import { markTourSeen, tourIsSeen } from './tour';
 
 interface FirstRun {
@@ -19,8 +24,14 @@ interface FirstRun {
   readonly tourIsDone: boolean;
   readonly periodStartedOn: string | undefined;
   readonly cycleLengthDays: number;
+  /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
+  readonly nameTyped: string;
+  readonly birthYear: number | undefined;
   readonly setPeriodStartedOn: (day: string) => void;
   readonly setCycleLengthDays: (days: number) => void;
+  readonly setNameTyped: (typed: string) => void;
+  /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as a year. */
+  readonly setBirthYear: (year: number | undefined) => void;
   /**
    * The hold, and the one thing in the first run that writes. It makes her key if this phone
    * holds none, then writes her day, her answers and the marker in one transaction.
@@ -56,6 +67,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [tourIsDone, setTourIsDone] = useState(() => tourIsSeen(database));
   const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
   const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
+  const [nameTyped, setNameTyped] = useState('');
+  const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
   const writing = useRef(false);
 
   const writeEverything = useCallback(async () => {
@@ -73,14 +86,14 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       await writeEverythingAtTheHold(
         database,
         makeHerVaults,
-        { periodStartedOn, cycleLengthDays },
+        { periodStartedOn, cycleLengthDays, name: nameSheGave(nameTyped), birthYear },
         new Date(),
       );
     } finally {
       writing.current = false;
     }
     setIsDone(firstRunIsDone(database));
-  }, [cycleLengthDays, database, makeHerVaults, periodStartedOn]);
+  }, [birthYear, cycleLengthDays, database, makeHerVaults, nameTyped, periodStartedOn]);
 
   const leaveTheTour = useCallback(() => {
     markTourSeen(database, new Date());
@@ -90,6 +103,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const reread = useCallback(() => {
     setPeriodStartedOn(undefined);
     setCycleLengthDays(defaultCycleLengthDays);
+    setNameTyped('');
+    setBirthYear(undefined);
     setIsDone(firstRunIsDone(database));
     setTourIsDone(tourIsSeen(database));
   }, [database]);
@@ -100,13 +115,27 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       tourIsDone,
       periodStartedOn,
       cycleLengthDays,
+      nameTyped,
+      birthYear,
       setPeriodStartedOn,
       setCycleLengthDays,
+      setNameTyped,
+      setBirthYear,
       leaveTheTour,
       writeEverything,
       reread,
     }),
-    [cycleLengthDays, isDone, leaveTheTour, periodStartedOn, reread, tourIsDone, writeEverything],
+    [
+      birthYear,
+      cycleLengthDays,
+      isDone,
+      leaveTheTour,
+      nameTyped,
+      periodStartedOn,
+      reread,
+      tourIsDone,
+      writeEverything,
+    ],
   );
 
   return <FirstRunContext.Provider value={held}>{children}</FirstRunContext.Provider>;

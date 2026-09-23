@@ -51,12 +51,14 @@ interface Recorded {
   readonly set: RecordedSet;
   /** Left out where she has recorded nothing at all, which draws no ring. */
   readonly recorded?: 'nothing';
+  /** Left out where she gave no name, and then the screen greets her with nothing. */
+  readonly name?: string;
 }
 
 const theFourSets: readonly Recorded[] = [
   { title: 'Her first day, nothing recorded', set: veryRegular, recorded: 'nothing' },
   { title: 'One cycle recorded, still learning', set: oneCycleComplete },
-  { title: 'Six cycles of 28 days', set: veryRegular },
+  { title: 'Six cycles of 28 days, and she gave her name', set: veryRegular, name: 'Ada' },
   { title: 'Six cycles, one of them 40 days', set: oneLongCycle },
   { title: 'Six cycles from 24 to 41 days', set: genuinelyIrregular },
   { title: 'The two cycles she has', set: twoCyclesExactly },
@@ -96,6 +98,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       <HomeScreen
         cycleLengthDays={sheSaidHerCycleRuns}
         forecast={forecast}
+        name={recorded.name}
         onExport={() => undefined}
         onHistory={() => undefined}
         onLogToday={() => undefined}

@@ -8,7 +8,7 @@ import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
 import { NextPeriodOrLearning } from '../forecast/Learning';
-import { homeCopy } from './copy';
+import { greeting, homeCopy } from './copy';
 
 /**
  * The one screen she opens. The ring carries the meaning and the words underneath it stay small,
@@ -33,6 +33,7 @@ export const settingsLabel = homeCopy.settings;
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
+export const homeGreetingTestID = 'home-greeting';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -40,6 +41,11 @@ interface Props {
   readonly forecast: ForecastResult;
   /** The length she gave at the first run, which the learning state counts by. */
   readonly cycleLengthDays: number;
+  /**
+   * The name in her profile, and nothing at all where she skipped the question or gave none. Then
+   * no greeting is drawn, because a woman who kept her name is not greeted by a blank line.
+   */
+  readonly name?: string;
   readonly onLogToday: () => void;
   /** The way into what she has already written, which is what the logging is for. */
   readonly onHistory: () => void;
@@ -52,6 +58,7 @@ export function HomeScreen({
   ring,
   forecast,
   cycleLengthDays,
+  name,
   onLogToday,
   onHistory,
   onExport,
@@ -63,6 +70,12 @@ export function HomeScreen({
         <Text accessibilityRole="header" style={styles.wordmark}>
           {homeCopy.wordmark}
         </Text>
+
+        {name === undefined ? null : (
+          <Text style={styles.greeting} testID={homeGreetingTestID}>
+            {greeting(name)}
+          </Text>
+        )}
 
         {ring ? (
           <CycleRing {...ring} />
@@ -143,6 +156,13 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceXl,
   },
   forecast: { marginTop: space.spaceLg },
+  // Under the wordmark and above the ring, and small, because SCREEN-2 keeps the home screen
+  // unreadable from an arm's length away and her name is the one word on it that is hers.
+  greeting: {
+    color: colour.onSurfaceVariant,
+    ...textStyle('body-sm'),
+    marginBottom: space.spaceLg,
+  },
   history: {
     alignItems: 'center',
     justifyContent: 'center',
