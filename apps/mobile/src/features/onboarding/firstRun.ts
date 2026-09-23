@@ -3,6 +3,8 @@ import {
   type ProfileRecord,
   earliestBirthYear,
   longestName,
+  longestPeriodLengthDays,
+  shortestPeriodLengthDays,
   youngestBirthYears,
 } from '@emi/crypto';
 import { type Flow, addDays, daysBetween } from '@emi/cycle';
@@ -19,6 +21,16 @@ import { localDay } from './days';
 export const minimumCycleLengthDays = 21;
 export const maximumCycleLengthDays = 45;
 export const defaultCycleLengthDays = 28;
+
+/** Days. The bounds a stated period runs between, held where the profile holds them. */
+export const minimumPeriodLengthDays = shortestPeriodLengthDays;
+export const maximumPeriodLengthDays = longestPeriodLengthDays;
+
+/**
+ * Days. The number the stepper opens on, which is the middle of the range most periods fall in
+ * rather than an average Emi has measured.
+ */
+export const defaultPeriodLengthDays = 5;
 
 /** She picks a start day from this many days back, and can edit any older day once she is inside. */
 export const longestLookBackDays = 90;
@@ -68,6 +80,11 @@ export interface FirstRunAnswers {
   readonly name?: string;
   /** Left out where she skipped the question. Nothing reads it, which contract SCREEN-1 names. */
   readonly birthYear?: number;
+  /**
+   * How many days she says her period runs. Left out where she answered that she is not sure, and
+   * then the ring counts the days she logs instead.
+   */
+  readonly periodLengthDays?: number;
 }
 
 export type FirstRunRefusal =
@@ -77,6 +94,7 @@ export type FirstRunRefusal =
   | 'cycle-length-is-out-of-range'
   | 'name-is-out-of-range'
   | 'birth-year-is-out-of-range'
+  | 'period-length-is-out-of-range'
   | 'first-run-is-already-done';
 
 export class FirstRunError extends Error {
@@ -103,6 +121,20 @@ export function statedCycleLengthDays(db: Database, vault: ProfileVault): number
 
 export function cycleLengthIsInRange(days: number): boolean {
   return Number.isInteger(days) && days >= minimumCycleLengthDays && days <= maximumCycleLengthDays;
+}
+
+/**
+ * How long she said her period runs, read from the sealed profile. Nothing at all is the answer
+ * she gave by saying she is not sure, and the ring reads that as a question to leave to her days.
+ */
+export function statedPeriodLengthDays(db: Database, vault: ProfileVault): number | undefined {
+  return readProfile(db, vault)?.periodLengthDays;
+}
+
+export function periodLengthIsInRange(days: number): boolean {
+  return (
+    Number.isInteger(days) && days >= minimumPeriodLengthDays && days <= maximumPeriodLengthDays
+  );
 }
 
 /** How long the name she typed is, counted in code points, as the profile counts it. */
@@ -185,6 +217,9 @@ function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
     ...(answers.name === undefined ? {} : { name: answers.name }),
     ...(answers.birthYear === undefined ? {} : { birthYear: answers.birthYear }),
     cycleLengthDays: answers.cycleLengthDays,
+    ...(answers.periodLengthDays === undefined
+      ? {}
+      : { periodLengthDays: answers.periodLengthDays }),
     recordedAt: now.toISOString(),
   };
 }
@@ -240,6 +275,12 @@ export function completeFirstRun(
     throw new FirstRunError(
       'birth-year-is-out-of-range',
       `a year of birth runs from ${earliestBirthYear} to ${latestBirthYear(now)}, this one is ${answers.birthYear}`,
+    );
+  }
+  if (answers.periodLengthDays !== undefined && !periodLengthIsInRange(answers.periodLengthDays)) {
+    throw new FirstRunError(
+      'period-length-is-out-of-range',
+      `a period runs from ${minimumPeriodLengthDays} to ${maximumPeriodLengthDays} days, this one is ${answers.periodLengthDays}`,
     );
   }
   if (firstRunIsDone(db)) {

@@ -44,6 +44,7 @@ export async function herPhoneHolds(
   firstRunFinishedAt: Date,
   records: readonly DayRecord[],
   cycleLengthDays: number = defaultCycleLengthDays,
+  periodLengthDays?: number,
 ): Promise<void> {
   const database = herDatabase();
   const vault = herVault();
@@ -61,7 +62,12 @@ export async function herPhoneHolds(
   // The length she stated is a fact about her body, so it is sealed in her profile and not in
   // the setting table beside the two markers below.
   writeProfile(database, herProfileVault(), {
-    profile: { kind: 'profile', cycleLengthDays, recordedAt: firstRunFinishedAt.toISOString() },
+    profile: {
+      kind: 'profile',
+      cycleLengthDays,
+      ...(periodLengthDays === undefined ? {} : { periodLengthDays }),
+      recordedAt: firstRunFinishedAt.toISOString(),
+    },
     now: firstRunFinishedAt,
   });
   writeSetting(database, 'firstRunCompletedAt', firstRunFinishedAt.toISOString());

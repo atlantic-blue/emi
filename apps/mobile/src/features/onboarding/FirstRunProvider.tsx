@@ -26,6 +26,8 @@ interface FirstRun {
   /** The start before that one, and nothing at all where she does not remember it. */
   readonly periodBeforeStartedOn: string | undefined;
   readonly cycleLengthDays: number;
+  /** Nothing at all where she said she is not sure, which is that question's way past it. */
+  readonly periodLengthDays: number | undefined;
   /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
   readonly nameTyped: string;
   readonly birthYear: number | undefined;
@@ -33,6 +35,8 @@ interface FirstRun {
   /** Nothing is the answer "I do not remember" leaves behind, so the setter takes it as well. */
   readonly setPeriodBeforeStartedOn: (day: string | undefined) => void;
   readonly setCycleLengthDays: (days: number) => void;
+  /** Nothing is the answer "I am not sure" leaves behind, so the setter takes it as well. */
+  readonly setPeriodLengthDays: (days: number | undefined) => void;
   readonly setNameTyped: (typed: string) => void;
   /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as a year. */
   readonly setBirthYear: (year: number | undefined) => void;
@@ -72,6 +76,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
   const [periodBeforeStartedOn, setPeriodBeforeStartedOn] = useState<string | undefined>(undefined);
   const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
+  const [periodLengthDays, setPeriodLengthDays] = useState<number | undefined>(undefined);
   const [nameTyped, setNameTyped] = useState('');
   const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
   const writing = useRef(false);
@@ -95,6 +100,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
           periodStartedOn,
           periodBeforeStartedOn,
           cycleLengthDays,
+          periodLengthDays,
           name: nameSheGave(nameTyped),
           birthYear,
         },
@@ -111,6 +117,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     makeHerVaults,
     nameTyped,
     periodBeforeStartedOn,
+    periodLengthDays,
     periodStartedOn,
   ]);
 
@@ -123,6 +130,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setPeriodStartedOn(undefined);
     setPeriodBeforeStartedOn(undefined);
     setCycleLengthDays(defaultCycleLengthDays);
+    setPeriodLengthDays(undefined);
     setNameTyped('');
     setBirthYear(undefined);
     setIsDone(firstRunIsDone(database));
@@ -136,11 +144,13 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       periodStartedOn,
       periodBeforeStartedOn,
       cycleLengthDays,
+      periodLengthDays,
       nameTyped,
       birthYear,
       setPeriodStartedOn,
       setPeriodBeforeStartedOn,
       setCycleLengthDays,
+      setPeriodLengthDays,
       setNameTyped,
       setBirthYear,
       leaveTheTour,
@@ -154,6 +164,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       leaveTheTour,
       nameTyped,
       periodBeforeStartedOn,
+      periodLengthDays,
       periodStartedOn,
       reread,
       tourIsDone,

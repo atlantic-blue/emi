@@ -56,6 +56,15 @@ export const firstRunCopy = {
     ],
     action: words('onboarding.cycleLength.action'),
   },
+  periodLength: {
+    title: words('onboarding.periodLength.title'),
+    lines: [
+      words('onboarding.periodLength.line.count'),
+      words('onboarding.periodLength.line.logged'),
+    ],
+    action: words('onboarding.periodLength.action'),
+    skip: words('onboarding.periodLength.skip'),
+  },
   hold: {
     title: words('onboarding.hold.title'),
     instruction: words('onboarding.hold.instruction'),
@@ -68,6 +77,8 @@ export const firstRunCopy = {
   skip: words('onboarding.skip'),
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
+  fewerDays: words('onboarding.periodLength.shorter'),
+  moreDays: words('onboarding.periodLength.longer'),
   earlier: words('onboarding.lastPeriod.earlier'),
   earlierMonth: words('onboarding.lastPeriod.earlierMonth'),
   later: words('onboarding.lastPeriod.later'),
@@ -86,6 +97,7 @@ export const firstRunScreens = [
   'lastPeriod',
   'periodBefore',
   'cycleLength',
+  'periodLength',
 ] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];
@@ -107,6 +119,11 @@ export function stepLabel(screen: FirstRunScreen): string {
 /** How she reads the cycle length she is setting, which is a count and takes the form to match. */
 export function cycleLengthDaysLabel(days: number): string {
   return words('onboarding.cycleLength.days', days);
+}
+
+/** How she reads the period length she is setting, which reaches one day and so takes both forms. */
+export function periodLengthDaysLabel(days: number): string {
+  return words('onboarding.periodLength.days', days);
 }
 
 /** Why the name she typed is refused, which names the bound rather than repeating the number. */

@@ -35,10 +35,8 @@ import { readSetting, settingKeys } from '../apps/mobile/src/data/settingReposit
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
 import { flowOptionTestID } from '../apps/mobile/src/features/log/FlowPicker';
 import { homeScreenTestID } from '../apps/mobile/src/features/home/HomeScreen';
-import {
-  cycleLengthTestID,
-  longerTestID,
-} from '../apps/mobile/src/features/onboarding/CycleLength';
+import { longerTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
+import { periodLengthTestID } from '../apps/mobile/src/features/onboarding/PeriodLength';
 import { dayTestID } from '../apps/mobile/src/features/onboarding/Calendar';
 import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldToBegin';
 import {
@@ -447,8 +445,10 @@ defineFeature(feature, (test) => {
           await shePresses(longerTestID);
         }
 
-        // Both presses land before the screen redraws. That is what her second press meets
-        // while the hold is still on its way.
+        await shePresses(onboardingActionTestID);
+
+        // Both presses land before the screen redraws, on the last question of the first run.
+        // That is what her second press meets while the hold is still on its way.
         const done = screen.getByTestId(onboardingActionTestID);
         await act(async () => {
           fireEvent.press(done);
@@ -526,6 +526,8 @@ defineFeature(feature, (test) => {
       visited.push(app.pathname());
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
     });
 
     and('she presses and holds the ring', async () => {
@@ -533,7 +535,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, and how long her cycle runs',
+      'she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, and how long her period lasts',
       () => {
         expect(visited).toEqual([
           '/onboarding/welcome',
@@ -542,6 +544,7 @@ defineFeature(feature, (test) => {
           '/onboarding/last-period',
           '/onboarding/period-before',
           '/onboarding/cycle-length',
+          '/onboarding/period-length',
           '/onboarding/hold',
         ]);
         expect(whatEachScreenSaid).toEqual([firstRunCopy.welcome.title]);
@@ -591,6 +594,8 @@ defineFeature(feature, (test) => {
       }
 
       await shePresses(onboardingActionTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
     });
 
@@ -999,11 +1004,14 @@ defineFeature(feature, (test) => {
 
       await shePresses(onboardingSkipTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
+
+      await shePresses(onboardingActionTestID);
+      measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
     });
 
     then('every control on each screen of the first run is at least 44 points on both axes', () => {
-      expect(measured).toEqual([[], [], [], [], []]);
-      expect(screen.getByTestId(cycleLengthTestID)).toBeTruthy();
+      expect(measured).toEqual([[], [], [], [], [], []]);
+      expect(screen.getByTestId(periodLengthTestID)).toBeTruthy();
     });
   });
 

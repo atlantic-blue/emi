@@ -33,6 +33,11 @@ export interface RingInputFrom {
   readonly today: string;
   /** Her answer from the first run, used until two cycles of her own exist. */
   readonly statedCycleLengthDays: number;
+  /**
+   * How long she said her period runs at the first run. Nothing at all where she said she is not
+   * sure, and then the arc is the days she logged and nothing else.
+   */
+  readonly statedPeriodLengthDays?: number;
 }
 
 /** The days of one cycle the ring divides into arcs, each counted from the day it began. */
@@ -123,7 +128,7 @@ export function ringInputFor(from: RingInputFrom): RingInput | undefined {
   // A cycle running late is drawn at the length it has reached, so the bead stays on the track
   // rather than falling off the end of a forecast she has already passed.
   const cycleLengthDays = Math.max(day, expectedLengthDays);
-  const periodDays = Math.min(cycleLengthDays, open.periodLengthDays ?? daysBled(from, open));
+  const periodDays = Math.min(cycleLengthDays, periodDaysOf(from, open));
 
   const shape =
     forecast.kind === 'forecast'
@@ -131,6 +136,23 @@ export function ringInputFor(from: RingInputFrom): RingInput | undefined {
       : shapeFromLength(cycleLengthDays, periodDays);
 
   return { cycleLengthDays, day, phases: phasesOf(shape) };
+}
+
+/**
+ * How long the period arc runs. A period she has closed is the days she lived, so it wins over
+ * everything: that number is a record and the rest is an estimate.
+ *
+ * Until she closes one the arc is drawn at the length she gave at the first run, because a period
+ * that began yesterday is not a period of one day. Where she said nothing, or where she has
+ * already bled past what she said, the days she logged carry it instead, so the arc is never
+ * shorter than the bleeding she recorded.
+ */
+function periodDaysOf(from: RingInputFrom, open: CycleRow): number {
+  if (open.periodLengthDays !== null) {
+    return open.periodLengthDays;
+  }
+
+  return Math.max(from.statedPeriodLengthDays ?? 0, daysBled(from, open));
 }
 
 /**

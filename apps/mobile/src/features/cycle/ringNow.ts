@@ -2,7 +2,11 @@ import { listCycles } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
-import { defaultCycleLengthDays, statedCycleLengthDays } from '../onboarding/firstRun';
+import {
+  defaultCycleLengthDays,
+  statedCycleLengthDays,
+  statedPeriodLengthDays,
+} from '../onboarding/firstRun';
 import { recordedDays } from './rebuild';
 import { type RingInput, ringInputFor } from './ringInput';
 
@@ -22,5 +26,6 @@ export function ringNow(
     records: recordedDays(db, vault.open),
     today,
     statedCycleLengthDays: statedCycleLengthDays(db, profiles) ?? defaultCycleLengthDays,
+    statedPeriodLengthDays: statedPeriodLengthDays(db, profiles),
   });
 }

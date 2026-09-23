@@ -1,6 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react-native';
 
 import { longerTestID } from '../../src/features/onboarding/CycleLength';
+import { fewerDaysTestID, moreDaysTestID } from '../../src/features/onboarding/PeriodLength';
 import { nameFieldTestID } from '../../src/features/onboarding/HerName';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
@@ -8,7 +9,10 @@ import {
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { yearTestID } from '../../src/features/onboarding/YearOfBirth';
-import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
+import {
+  defaultCycleLengthDays,
+  defaultPeriodLengthDays,
+} from '../../src/features/onboarding/firstRun';
 
 export interface HerAnswers {
   readonly periodStartedOn: string;
@@ -16,6 +20,8 @@ export interface HerAnswers {
   readonly periodBeforeStartedOn?: string;
   /** Left out where the walk does not care, and then the number the screen offers is kept. */
   readonly cycleLengthDays?: number;
+  /** Left out where she answers that she is not sure, which is that question's way past it. */
+  readonly periodLengthDays?: number;
   /** Left out where she skips the question, which is what a walk that is about something else does. */
   readonly name?: string;
   readonly birthYear?: number;
@@ -60,6 +66,21 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
   const asked = answers.cycleLengthDays ?? defaultCycleLengthDays;
   for (let pressed = defaultCycleLengthDays; pressed < asked; pressed += 1) {
     await fireEvent.press(screen.getByTestId(longerTestID));
+  }
+
+  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+
+  if (answers.periodLengthDays === undefined) {
+    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+
+    return;
+  }
+
+  for (let pressed = defaultPeriodLengthDays; pressed < answers.periodLengthDays; pressed += 1) {
+    await fireEvent.press(screen.getByTestId(moreDaysTestID));
+  }
+  for (let pressed = defaultPeriodLengthDays; pressed > answers.periodLengthDays; pressed -= 1) {
+    await fireEvent.press(screen.getByTestId(fewerDaysTestID));
   }
 
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));

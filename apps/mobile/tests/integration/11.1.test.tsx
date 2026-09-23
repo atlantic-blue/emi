@@ -77,12 +77,13 @@ async function sheReachesTheLastPeriod(): Promise<void> {
  * How much of the bar is filled on each question in turn, written out rather than worked out, so
  * a bar that counts something other than the questions fails here.
  */
-const theSixFractionsOfTheBar = [
-  '16.666666666666664%',
-  '33.33333333333333%',
-  '50%',
-  '66.66666666666666%',
-  '83.33333333333334%',
+const theSevenFractionsOfTheBar = [
+  '14.285714285714285%',
+  '28.57142857142857%',
+  '42.857142857142854%',
+  '57.14285714285714%',
+  '71.42857142857143%',
+  '85.71428571428571%',
   '100%',
 ];
 
@@ -189,7 +190,7 @@ describe('the last period is the one question she cannot skip', () => {
         }
       }
 
-      expect(filled).toEqual(theSixFractionsOfTheBar);
+      expect(filled).toEqual(theSevenFractionsOfTheBar);
       expect(counters).toEqual([]);
     });
   });

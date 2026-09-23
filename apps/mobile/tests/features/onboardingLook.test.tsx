@@ -18,6 +18,7 @@ import {
   namedDayTestID,
 } from '../../src/features/onboarding/LastPeriod';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
+import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
 import { progressFillTestID } from '../../src/components/ProgressBar';
 import {
   OnboardingScreen,
@@ -33,7 +34,10 @@ import {
   firstRunScreens,
   stepLabel,
 } from '../../src/features/onboarding/copy';
-import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
+import {
+  defaultCycleLengthDays,
+  defaultPeriodLengthDays,
+} from '../../src/features/onboarding/firstRun';
 import { sizedTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 
@@ -50,6 +54,7 @@ const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = [
   'name',
   'birthYear',
   'periodBefore',
+  'periodLength',
 ];
 
 /** Midday, and away from any summer time change, so the calendar reads the same in any timezone. */
@@ -106,6 +111,20 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
           onBack={() => undefined}
           onChoose={() => undefined}
           onSkip={() => undefined}
+        />
+      </OnAPhone>,
+    );
+    return;
+  }
+  if (at === 'periodLength') {
+    await render(
+      <OnAPhone>
+        <PeriodLength
+          days={defaultPeriodLengthDays}
+          onBack={() => undefined}
+          onChange={() => undefined}
+          onDone={() => undefined}
+          onNotSure={() => undefined}
         />
       </OnAPhone>,
     );
