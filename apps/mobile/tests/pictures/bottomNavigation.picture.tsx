@@ -20,8 +20,8 @@ import { theThemeIsLoaded } from '../fixtures/theTheme';
 const theCaveat = [
   'Rendered from the tree the dock produced under the test runner, at 390 by 844 points, and not',
   'captured from a phone. The class names are turned into these points by the real Tailwind, run',
-  'over apps/mobile/tailwind.config.js. The blur behind the capsule is drawn by the phone and',
-  'cannot be drawn here, so the glass reads as flat, and on a phone her screen runs under it. The',
+  'over apps/mobile/tailwind.config.js, which reads @emi/tokens. The panel is layer 2 of the',
+  'design system: a solid fill, a hairline and one ambient shadow, with no blur and no glass. The',
   'dock pins itself to the foot of the glass, and the room it keeps beneath is the room an iPhone',
   'with a dynamic island keeps for itself, which is 34 points.',
   'Reproduce with: npm run generate:dock-picture.',
@@ -39,7 +39,7 @@ interface Standing {
 const theStates: readonly Standing[] = [
   {
     title: 'She is on Today',
-    note: 'The tab she is on is terracotta and semi bold. The other three are the muted ink.',
+    note: 'The tab she is on is terracotta. The other three are the muted ink.',
     chosen: 'index',
   },
   {

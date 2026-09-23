@@ -157,7 +157,8 @@ written by hand. The four phase fills and the four inks beside them are the one 
 draw those eight as plain values inside the ring rather than through the configuration, so the front
 matter names them and `tools/pipeline/prototype.test.ts` reads them back out of the style sheet
 screen. That check also holds every other value the two sides share. The corners are the one block
-they do not agree about yet, and that decision is https://github.com/atlantic-blue/emi/issues/159.
+the two sides do not agree about. Emi draws the scale in the front matter here, which answers
+https://github.com/atlantic-blue/emi/issues/159, and the export keeps its own because it is an export.
 
 Every paragraph below names a role. None of them names a value. The front matter above is the only
 place a colour, a size or a step is written, so this document describes one palette.

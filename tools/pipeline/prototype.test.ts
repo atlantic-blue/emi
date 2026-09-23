@@ -7,16 +7,13 @@ import {
   describedIn,
   designSystemDocument,
   disagreements,
-  footRoomIn,
-  footStepsIn,
   phaseColourNames,
   phaseColoursIn,
   phaseColoursNotDrawn,
   prototypeDirectory,
   proseOf,
-  radiiNobodyHasDecided,
+  radiiTheExportKeeps,
   sourceScreen,
-  supersededDirectory,
   type Theme,
 } from './prototype.ts';
 
@@ -95,7 +92,7 @@ describe('the design system says what the prototype draws', () => {
   );
 
   it('agrees about everything, apart from the radii nobody has decided yet', () => {
-    expect(disagreements(prototype, described)).toEqual([...radiiNobodyHasDecided]);
+    expect(disagreements(prototype, described)).toEqual([...radiiTheExportKeeps]);
   });
 
   it('names three faces, because the numbers and the headings are not the body', () => {
@@ -192,15 +189,15 @@ describe('a colour named in the prose of the design document fails the pipeline'
 
     it('keeps the eight out of the comparison with the configuration, which does not name them', () => {
       expect(phaseColourNames.filter((name) => name in prototype.colours)).toEqual([]);
-      expect(disagreements(prototype, described)).toEqual([...radiiNobodyHasDecided]);
+      expect(disagreements(prototype, described)).toEqual([...radiiTheExportKeeps]);
     });
   });
 });
 
 describe('the corners the two sides do not agree about', () => {
   it('keeps the disagreement written out, so the fix reddens this too', () => {
-    expect(radiiNobodyHasDecided.length).toBeGreaterThan(0);
-    expect(radiiNobodyHasDecided.every((said) => said.startsWith('radius '))).toBe(true);
+    expect(radiiTheExportKeeps.length).toBeGreaterThan(0);
+    expect(radiiTheExportKeeps.every((said) => said.startsWith('radius '))).toBe(true);
   });
 
   it('holds the one corner they do agree about, so the block is not waved through whole', () => {
@@ -281,53 +278,16 @@ describe('the prototype in the repository', () => {
 });
 
 describe('the room a screen reserves at its foot', () => {
-  // The room belongs to the style the application still draws, because the dock hangs over a
-  // screen there. The Warm Editorial Journal screens have no dock and reserve no such room, so
-  // this is read off the superseded prototype until the step that moves the components.
-  const held = readdirSync(join(root, supersededDirectory))
-    .sort()
-    .filter((file) => file.endsWith('.html'));
-
-  it('is read off the content element rather than typed anywhere', () => {
-    expect(footStepsIn('<main class="flex-1 pt-16 pb-28 px-margin">')).toBe(28);
-  });
-
-  it('reads the class it is written in and not one that merely contains it', () => {
-    expect(footStepsIn('<main class="pb-2 pt-16">')).toBe(2);
-    expect(footStepsIn('<main class="lg:pb-40 pb-8">')).toBe(8);
-  });
-
-  it('turns the step into points at the size a rem is drawn', () => {
-    expect(footRoomIn('<main class="pb-28">', 16)).toBe(112);
-    expect(footRoomIn('<main class="pb-28">', 10)).toBe(70);
-  });
-
-  it('refuses a screen whose content element reserves nothing', () => {
-    expect(() => footStepsIn('<main class="flex-1 pt-16">')).toThrow(
-      'reserves no room at its foot',
-    );
-  });
-
-  it('refuses a screen with no content element at all, rather than reading it as none', () => {
-    expect(() => footStepsIn('<html></html>')).toThrow('carries no main element');
-  });
-
-  it('is the same room on every screen of the style the application draws', () => {
-    const reserved = held.map((file) =>
-      footStepsIn(readFileSync(join(root, supersededDirectory, file), 'utf8')),
-    );
-
-    expect(reserved).toHaveLength(5);
-    expect(new Set(reserved).size).toBe(1);
-  });
-
-  it('is reserved by no screen of the new prototype, which has no dock to leave room for', () => {
-    for (const file of readdirSync(join(root, prototypeDirectory)).filter((name) =>
+  it('is reserved by no screen of the prototype, which has no dock to leave room for', () => {
+    const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
       name.endsWith('.html'),
-    )) {
-      expect(() =>
-        footStepsIn(readFileSync(join(root, prototypeDirectory, file), 'utf8')),
-      ).toThrow();
+    );
+
+    expect(screens.length).toBeGreaterThan(0);
+    for (const file of screens) {
+      expect(readFileSync(join(root, prototypeDirectory, file), 'utf8')).not.toMatch(
+        /<main class="[^"]*\bpb-\d+\b/,
+      );
     }
   });
 });

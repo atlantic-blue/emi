@@ -4,8 +4,6 @@ import { join } from 'node:path';
 import { act, fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
 
 import { startsACycle } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET } from '@emi/tokens';
-import { StyleSheet } from 'react-native';
 
 import type { Database } from '../../src/data/database';
 import { listDayLogs, readDayLog } from '../../src/data/dayLogRepository';
@@ -32,6 +30,7 @@ import {
   oldestPeriodStart,
 } from '../../src/features/onboarding/firstRun';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
+import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
 import { theVaultOnHerPhone } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 
@@ -149,28 +148,11 @@ function nodeTypesIn(node: unknown): string[] {
 
 /**
  * Every control on the screen she is looking at, named with its size when it is too small to
- * press. A screen with nothing to press is a measurement of nothing, so it fails rather than
- * reporting an empty list.
+ * press. The measurement itself is the shared one, which reads a fixed size as well as a minimum,
+ * because a control given its size outright is no smaller than one given a floor.
  */
 function controlsTooSmallToPress(): string[] {
-  const controls = [...screen.queryAllByRole('button'), ...screen.queryAllByRole('radio')];
-  if (controls.length === 0) {
-    throw new Error('a screen holding nothing to press was measured for tap targets');
-  }
-
-  return controls
-    .map((control) => ({
-      name: String(control.props.testID ?? control.props.accessibilityLabel ?? 'unnamed'),
-      style: StyleSheet.flatten(control.props.style) ?? {},
-    }))
-    .filter(
-      ({ style }) =>
-        !(
-          Number(style.minWidth) >= MINIMUM_TAP_TARGET &&
-          Number(style.minHeight) >= MINIMUM_TAP_TARGET
-        ),
-    )
-    .map(({ name, style }) => `${name} is ${style.minWidth} by ${style.minHeight}`);
+  return tooSmallToPress([...screen.queryAllByRole('button'), ...screen.queryAllByRole('radio')]);
 }
 
 /**

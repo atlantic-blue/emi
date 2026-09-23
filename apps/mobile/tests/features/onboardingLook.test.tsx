@@ -21,10 +21,10 @@ import {
   monthTestID,
   namedDayTestID,
 } from '../../src/features/onboarding/LastPeriod';
+import { progressFillTestID } from '../../src/components/ProgressBar';
 import {
   onboardingMarkTestID,
   onboardingProgressTestID,
-  stepTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import {
@@ -115,32 +115,34 @@ const paletteValues = new Set<string>([...Object.values(colour), NO_GROUND]);
 
 describe('the first run carries the design system', () => {
   describe('how far along she is', () => {
+    const theFill = progressFillTestID(onboardingProgressTestID);
+
     for (const [at, where] of firstRunScreens.entries()) {
-      it(`fills ${String(at + 1)} of the 3 segments on ${where}, and says so in words`, async () => {
+      it(`fills ${String(at + 1)} of 3 of the bar on ${where}, and says so in words`, async () => {
         await sheIsLookingAt(where);
 
-        const filled = firstRunScreens.filter(
-          (each) => flattened(stepTestID(each)).backgroundColor === colour.surfaceTint,
-        );
+        const filled = ((at + 1) / firstRunScreens.length) * 100;
 
-        expect(filled).toEqual(firstRunScreens.slice(0, at + 1));
+        expect(flattened(theFill).width).toBe(`${String(filled)}%`);
         expect(screen.getByText(stepLabel(where))).toBeTruthy();
       });
     }
 
-    it('draws the segments as a bar rather than leaving the words to carry it alone', async () => {
+    it('draws a bar rather than leaving the words to carry it alone', async () => {
       await sheIsLookingAt('welcome');
+
+      expect(flattened(onboardingProgressTestID).height).toBeGreaterThan(0);
+      expect(flattened(onboardingProgressTestID).backgroundColor).toBe(colour.surfaceContainer);
+      expect(flattened(theFill).backgroundColor).toBe(colour.primaryContainer);
+    });
+
+    it('says the whole of it out loud, because a fraction of a line reads as nothing', async () => {
+      await sheIsLookingAt('lastPeriod');
 
       const bar = screen.getByTestId(onboardingProgressTestID);
 
-      expect(bar.children).toHaveLength(firstRunScreens.length);
-      expect(flattened(stepTestID('welcome')).height).toBeGreaterThan(0);
-    });
-
-    it('leaves a segment she has not reached in the ground colour', async () => {
-      await sheIsLookingAt('welcome');
-
-      expect(flattened(stepTestID('cycleLength')).backgroundColor).toBe(colour.surfaceContainer);
+      expect(bar.props['accessibilityValue']).toEqual({ max: 3, min: 0, now: 2 });
+      expect(bar.props['accessibilityLabel']).toBe(stepLabel('lastPeriod'));
     });
   });
 

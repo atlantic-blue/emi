@@ -6,6 +6,7 @@ export const packageName = '@emi/ui';
 
 export * from './BottomNavigation';
 export * from './Icon';
+export * from './floating';
 export * from './gluestack/box';
 export * from './gluestack/gluestack-ui-provider';
 export * from './gluestack/hstack';
