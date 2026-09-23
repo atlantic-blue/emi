@@ -82,6 +82,27 @@ export interface FirstRunVaults {
   readonly profile: ProfileVault;
 }
 
+/** What the hold asks for before it writes: her key, made if this phone holds none. */
+export type MakeFirstRunVaults = () => Promise<FirstRunVaults>;
+
+/**
+ * Everything she answered, written at the moment she presses and holds the ring.
+ *
+ * Her key comes first and the vaults are built from whatever the keychain holds then, because a
+ * row sealed under a key the keychain does not hold is a row nothing opens again. The write is the
+ * call under it, so a first run she walks away from before the hold leaves the database as it was.
+ */
+export async function writeEverythingAtTheHold(
+  db: Database,
+  makeHerVaults: MakeFirstRunVaults,
+  answers: FirstRunAnswers,
+  now: Date,
+): Promise<void> {
+  const vaults = await makeHerVaults();
+
+  completeFirstRun(db, vaults, answers, now);
+}
+
 /**
  * Her two answers land together or not at all. A day written without her profile beside it would
  * send her back to the first screen and then refuse the day she picked there, which is the one

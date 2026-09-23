@@ -33,6 +33,7 @@ import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { markTourSeen, tourIsSeen } from '../../src/features/onboarding/tour';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { sheHoldsTheRing } from '../fixtures/theHold';
 import { theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
 
@@ -135,6 +136,8 @@ async function sheAnswersBothQuestions(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(longerTestID);
   await shePresses(onboardingActionTestID);
+  // Her answers are written at the hold and nowhere else, so the walk ends there.
+  await sheHoldsTheRing();
 }
 
 function everyControlOnTheScreen(): string[] {

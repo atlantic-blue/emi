@@ -228,6 +228,13 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.cycleLength.longer': 'На день больше',
   'onboarding.cycleLength.shorter': 'На день меньше',
   'onboarding.cycleLength.title': 'Какой у вас цикл, примерно?',
+  'onboarding.hold.action': 'Удерживайте, чтобы начать',
+  'onboarding.hold.held': 'Удерживаете',
+  'onboarding.hold.instruction': 'Нажмите и удерживайте кольцо, чтобы начать.',
+  'onboarding.hold.refused': 'Emi ничего не сохранила. Нажмите и удерживайте кольцо ещё раз.',
+  'onboarding.hold.sealed':
+    'Удержание кольца сохраняет ваши ответы, зашифрованные вашим ключом. Emi создаёт ключ и хранит его в связке ключей этого телефона.',
+  'onboarding.hold.title': 'Ваш цикл, ваши данные, ваш ключ.',
   'onboarding.lastPeriod.action': 'Дальше',
   'onboarding.lastPeriod.earlier': 'Раньше',
   'onboarding.lastPeriod.earlierMonth': 'Предыдущий месяц',

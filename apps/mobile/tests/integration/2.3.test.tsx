@@ -2,6 +2,7 @@ import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { act, fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
+import { AccessibilityInfo } from 'react-native';
 
 import { startsACycle } from '@emi/cycle';
 
@@ -22,6 +23,7 @@ import {
   laterMonthTestID,
   monthTestID,
 } from '../../src/features/onboarding/LastPeriod';
+import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
 import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy } from '../../src/features/onboarding/copy';
 import {
@@ -35,6 +37,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { sheHoldsTheRing } from '../fixtures/theHold';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -64,8 +67,8 @@ const oneDayTooFarBack = dayOf(
 );
 const herCycleLengthDays = defaultCycleLengthDays + 2;
 
-/** When her second press lands. The clock moves, so a second write would read as a later time. */
-const twoSecondsLater = new Date(whenSheOpensIt.getTime() + 2000);
+/** The instant the hold ends, which is the instant everything she answered is written at. */
+const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
 
 interface OpenApp {
   /** The route she is looking at. It is read from the router rather than from the screen. */
@@ -96,7 +99,7 @@ async function sheAnswers(name: 'welcome' | 'lastPeriod' | 'cycleLength'): Promi
   await fireEvent.press(theScreen(name).getByTestId(onboardingActionTestID));
 }
 
-async function sheAnswersEveryScreen(): Promise<void> {
+async function sheAnswersEveryQuestion(): Promise<void> {
   await sheAnswers('welcome');
   await shePresses(dayTestID(herPeriodStarted));
   await sheAnswers('lastPeriod');
@@ -104,6 +107,12 @@ async function sheAnswersEveryScreen(): Promise<void> {
     await shePresses(longerTestID);
   }
   await sheAnswers('cycleLength');
+}
+
+/** The whole first run: every question answered, and the hold that writes the answers. */
+async function sheAnswersEveryScreen(): Promise<void> {
+  await sheAnswersEveryQuestion();
+  await sheHoldsTheRing();
 }
 
 /**
@@ -195,9 +204,12 @@ describe('the first run ends on the home screen with her period recorded', () =>
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
+    // The hold draws a ring, and a ring asks the phone about motion before it draws anything.
+    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
     jest.useRealTimers();
   });
 
@@ -233,7 +245,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
     });
   });
 
-  describe('she answers all three screens', () => {
+  describe('she answers all three screens and holds the ring', () => {
     it('leaves her on the home screen', async () => {
       const app = await sheOpensEmi();
 
@@ -257,7 +269,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheOpensIt.toISOString(),
+        recordedAt: whenSheFinishesTheHold.toISOString(),
       });
     });
 
@@ -269,10 +281,12 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         herCycleLengthDays,
       );
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
+        whenSheFinishesTheHold.toISOString(),
+      );
     });
 
-    it('asks her three screens and no fourth', async () => {
+    it('asks her three questions, holds once, and asks nothing else', async () => {
       const app = await sheOpensEmi();
       const visited = [app.pathname()];
 
@@ -282,28 +296,30 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheAnswers('lastPeriod');
       visited.push(app.pathname());
       await sheAnswers('cycleLength');
+      visited.push(app.pathname());
+      await sheHoldsTheRing();
 
       expect(visited).toEqual([
         '/onboarding/welcome',
         '/onboarding/last-period',
         '/onboarding/cycle-length',
+        '/onboarding/hold',
       ]);
       expect(app.pathname()).toBe('/');
     });
 
-    it('has three screens to answer, the tour beside them, and one layout that is neither', () => {
+    it('has three screens to answer, the hold and the tour beside them, and one layout', () => {
       const held = readdirSync(join(appDirectory, 'onboarding')).sort();
 
       // A name opening with an underscore is a layout rather than a route, so she is never sent
-      // to it. Both halves are named, so a deleted layout fails here as loudly as a fourth screen.
-      // The tour is named on its own and taken out before the three are counted, so it is the one
-      // route beside them and a fourth question still fails here.
+      // to it. Every half is named, so a deleted layout fails here as loudly as a fourth
+      // question. The tour and the hold ask her nothing, so they are named on their own and
+      // taken out before the questions are counted.
       expect(held).toContain('tour.tsx');
-      expect(held.filter((name) => !name.startsWith('_') && name !== 'tour.tsx')).toEqual([
-        'cycle-length.tsx',
-        'last-period.tsx',
-        'welcome.tsx',
-      ]);
+      expect(held).toContain('hold.tsx');
+      expect(
+        held.filter((name) => !name.startsWith('_') && name !== 'tour.tsx' && name !== 'hold.tsx'),
+      ).toEqual(['cycle-length.tsx', 'last-period.tsx', 'welcome.tsx']);
       expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
     });
   });
@@ -338,7 +354,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheOpensIt.toISOString(),
+        recordedAt: whenSheFinishesTheHold.toISOString(),
       });
     });
   });
@@ -418,6 +434,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         await shePresses(longerTestID);
       }
       await sheAnswers('cycleLength');
+      await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');
       expect(readDayLog(herDatabase(), theOldestDaySheMayPick)?.day).toBe(theOldestDaySheMayPick);
@@ -452,7 +469,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
   });
 
   describe('every control she presses', () => {
-    it('is at least 44 points on both axes, on all three screens', async () => {
+    it('is at least 44 points on both axes, on every screen of the first run', async () => {
       await sheOpensEmi();
       expect(controlsTooSmallToPress()).toEqual([]);
 
@@ -461,6 +478,10 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       await shePresses(dayTestID(herPeriodStarted));
       await sheAnswers('lastPeriod');
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await sheAnswers('cycleLength');
+      expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
   });
@@ -485,8 +506,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
     });
   });
 
-  describe('she presses Done a second time, because the first press looked like nothing', () => {
-    it('writes her first run once, and the second press writes nothing and fails nothing', async () => {
+  describe('she presses Done twice, because the first press looked like nothing', () => {
+    it('writes her first run once, whatever her second press did', async () => {
       const app = await sheOpensEmi();
       await sheAnswers('welcome');
       await shePresses(dayTestID(herPeriodStarted));
@@ -497,23 +518,21 @@ describe('the first run ends on the home screen with her period recorded', () =>
       const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
 
       // Both presses land before the screen redraws. That is what her second press meets while
-      // the home screen is still on its way. Neither press is settled away here, so a second
-      // press that raises anything fails this case.
+      // the hold is still on its way.
       await act(async () => {
         fireEvent.press(done);
-        jest.setSystemTime(twoSecondsLater);
         fireEvent.press(done);
       });
+      await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId('home-screen')).toBeTruthy();
       expect(listDayLogs(herDatabase()).map((row) => [row.day, row.revision])).toEqual([
         [herPeriodStarted, 1],
       ]);
-
-      // The clock moved between the presses, so a second write would carry the later time in
-      // all three of these. They are the assertion that a second press wrote nothing.
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheOpensIt.toISOString());
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
+        whenSheFinishesTheHold.toISOString(),
+      );
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         herCycleLengthDays,
       );
@@ -522,11 +541,11 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheOpensIt.toISOString(),
+        recordedAt: whenSheFinishesTheHold.toISOString(),
       });
     });
 
-    it('takes Done out of her reach from the press, so a second press finds it spent', async () => {
+    it('leaves Done where she can reach it, because nothing is written on that screen', async () => {
       await sheOpensEmi();
       await sheAnswers('welcome');
       await shePresses(dayTestID(herPeriodStarted));
@@ -536,9 +555,10 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       await fireEvent.press(done);
 
-      // Read off the button she pressed. The home screen replaces this screen straight after,
-      // so the handle is what holds the state her second press would meet.
-      expect(done.props.accessibilityState).toMatchObject({ disabled: true });
+      // Read off the button she pressed. The hold sits on top of this screen rather than
+      // replacing it, so a woman who comes back to the question finds Done as she left it. A
+      // Done spent by a press that writes nothing is a first run she cannot finish.
+      expect(done.props.accessibilityState).toMatchObject({ disabled: false });
     });
   });
 

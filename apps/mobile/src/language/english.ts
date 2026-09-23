@@ -216,6 +216,17 @@ export const english = {
   'onboarding.cycleLength.longer': 'One day longer',
   'onboarding.cycleLength.shorter': 'One day shorter',
   'onboarding.cycleLength.title': 'How long is your cycle, roughly?',
+  'onboarding.hold.action': 'Hold to begin',
+  'onboarding.hold.held': 'Holding',
+  'onboarding.hold.instruction': 'Press and hold the ring to begin.',
+  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
+  // day, the answers and the marker go in one transaction or none of them do.
+  'onboarding.hold.refused': 'Emi kept nothing. Press and hold the ring again.',
+  // The copy review of screen 19 wrote this line, in place of the export's claim about an enclave.
+  // It is true only because the hold is the one moment the first run writes.
+  'onboarding.hold.sealed':
+    "Holding the ring saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  'onboarding.hold.title': 'Your cycle, your data, your key.',
   'onboarding.lastPeriod.action': 'Continue',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',

@@ -6,7 +6,7 @@ import { DeleteEverything, type DeleteStage } from '../../features/settings/Dele
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { serverAccountDelete } from '../../services/sync/deleteAccount';
 import { expoKeychain } from '../../services/vault/keychain';
-import { useRenewVault } from '../../services/vault/VaultProvider';
+import { useHerVaultsMade } from '../../services/vault/VaultProvider';
 import {
   deleteEverything,
   nothingIsLeft,
@@ -40,7 +40,7 @@ function whatSheIsLeftWith(outcome: WipeOutcome): DeleteStage {
  */
 export default function DeleteRoute(): ReactNode {
   const database = useDatabase();
-  const renewVault = useRenewVault();
+  const makeHerVaults = useHerVaultsMade();
   const { reread } = useFirstRun();
   const router = useRouter();
   const [stage, setStage] = useState<DeleteStage>('ready');
@@ -57,7 +57,7 @@ export default function DeleteRoute(): ReactNode {
   };
 
   const onStartAgain = (): void => {
-    void renewVault().then(() => {
+    void makeHerVaults().then(() => {
       reread();
       router.replace('/');
     });
