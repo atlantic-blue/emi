@@ -19,6 +19,7 @@ import {
 } from '../../src/features/onboarding/LastPeriod';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
 import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
+import { Regularity } from '../../src/features/onboarding/Regularity';
 import { progressFillTestID } from '../../src/components/ProgressBar';
 import {
   OnboardingScreen,
@@ -55,6 +56,7 @@ const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = [
   'birthYear',
   'periodBefore',
   'periodLength',
+  'regularity',
 ];
 
 /** Midday, and away from any summer time change, so the calendar reads the same in any timezone. */
@@ -125,6 +127,20 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
           onChange={() => undefined}
           onDone={() => undefined}
           onNotSure={() => undefined}
+        />
+      </OnAPhone>,
+    );
+    return;
+  }
+  if (at === 'regularity') {
+    await render(
+      <OnAPhone>
+        <Regularity
+          chosen={undefined}
+          onBack={() => undefined}
+          onChoose={() => undefined}
+          onContinue={() => undefined}
+          onSkip={() => undefined}
         />
       </OnAPhone>,
     );

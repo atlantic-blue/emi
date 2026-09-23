@@ -1,3 +1,4 @@
+import type { Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
@@ -46,6 +47,11 @@ interface Props {
    * no greeting is drawn, because a woman who kept her name is not greeted by a blank line.
    */
   readonly name?: string;
+  /**
+   * How steady she said her cycle is, and nothing at all where she skipped the question. It moves
+   * one sentence under the forecast and nothing else on this screen.
+   */
+  readonly regularity?: Regularity;
   readonly onLogToday: () => void;
   /** The way into what she has already written, which is what the logging is for. */
   readonly onHistory: () => void;
@@ -59,6 +65,7 @@ export function HomeScreen({
   forecast,
   cycleLengthDays,
   name,
+  regularity,
   onLogToday,
   onHistory,
   onExport,
@@ -89,7 +96,11 @@ export function HomeScreen({
         )}
 
         <View style={styles.forecast} testID={homeForecastTestID}>
-          <NextPeriodOrLearning cycleLengthDays={cycleLengthDays} result={forecast} />
+          <NextPeriodOrLearning
+            cycleLengthDays={cycleLengthDays}
+            regularity={regularity}
+            result={forecast}
+          />
         </View>
 
         <Pressable

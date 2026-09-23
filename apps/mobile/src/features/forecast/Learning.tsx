@@ -1,3 +1,4 @@
+import type { Regularity } from '@emi/crypto';
 import type { ForecastResult, Learning as LearningState } from '@emi/cycle';
 import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
@@ -43,18 +44,23 @@ export function Learning({ learning, cycleLengthDays }: LearningProps): ReactNod
 interface Props {
   readonly result: ForecastResult;
   readonly cycleLengthDays: number;
+  /**
+   * How steady she said her cycle is, which the forecast reads and the learning state does not.
+   * There is no range to explain the width of before two cycles are complete.
+   */
+  readonly regularity?: Regularity;
 }
 
 /**
  * The one place the two states are chosen between, so a screen never decides for itself whether it
  * has enough cycles to draw a date. The arithmetic already answered that question in `kind`.
  */
-export function NextPeriodOrLearning({ result, cycleLengthDays }: Props): ReactNode {
+export function NextPeriodOrLearning({ result, cycleLengthDays, regularity }: Props): ReactNode {
   if (result.kind === 'learning') {
     return <Learning cycleLengthDays={cycleLengthDays} learning={result} />;
   }
 
-  return <NextPeriod forecast={result} />;
+  return <NextPeriod forecast={result} regularity={regularity} />;
 }
 
 const styles = StyleSheet.create({

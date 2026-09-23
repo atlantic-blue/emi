@@ -1,3 +1,4 @@
+import type { Regularity } from '@emi/crypto';
 import { fireEvent, screen } from '@testing-library/react-native';
 
 import { longerTestID } from '../../src/features/onboarding/CycleLength';
@@ -8,6 +9,7 @@ import {
   onboardingActionTestID,
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
+import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import { yearTestID } from '../../src/features/onboarding/YearOfBirth';
 import {
   defaultCycleLengthDays,
@@ -22,6 +24,8 @@ export interface HerAnswers {
   readonly cycleLengthDays?: number;
   /** Left out where she answers that she is not sure, which is that question's way past it. */
   readonly periodLengthDays?: number;
+  /** Left out where she skips the question, which leaves her profile carrying no answer for it. */
+  readonly regularity?: Regularity;
   /** Left out where she skips the question, which is what a walk that is about something else does. */
   readonly name?: string;
   readonly birthYear?: number;
@@ -72,16 +76,23 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
 
   if (answers.periodLengthDays === undefined) {
     await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+  } else {
+    for (let pressed = defaultPeriodLengthDays; pressed < answers.periodLengthDays; pressed += 1) {
+      await fireEvent.press(screen.getByTestId(moreDaysTestID));
+    }
+    for (let pressed = defaultPeriodLengthDays; pressed > answers.periodLengthDays; pressed -= 1) {
+      await fireEvent.press(screen.getByTestId(fewerDaysTestID));
+    }
+
+    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  }
+
+  if (answers.regularity === undefined) {
+    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
 
     return;
   }
 
-  for (let pressed = defaultPeriodLengthDays; pressed < answers.periodLengthDays; pressed += 1) {
-    await fireEvent.press(screen.getByTestId(moreDaysTestID));
-  }
-  for (let pressed = defaultPeriodLengthDays; pressed > answers.periodLengthDays; pressed -= 1) {
-    await fireEvent.press(screen.getByTestId(fewerDaysTestID));
-  }
-
+  await fireEvent.press(screen.getByTestId(regularityTestID(answers.regularity)));
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));
 }

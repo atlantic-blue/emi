@@ -262,13 +262,13 @@ describe('the period arc follows what she said until she logs her own', () => {
       );
     });
 
-    it('is the last question, and hands her to the hold either way she answers it', async () => {
+    it('hands her to the question after it either way she answers it', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesThePeriodLength();
       await shePresses(onboardingSkipTestID);
 
-      expect(app.pathname()).toBe('/onboarding/hold');
+      expect(app.pathname()).toBe('/onboarding/regularity');
     });
   });
 

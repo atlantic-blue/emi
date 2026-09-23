@@ -1,5 +1,6 @@
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
+import type { Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
 import { addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
@@ -53,6 +54,8 @@ interface Recorded {
   readonly recorded?: 'nothing';
   /** Left out where she gave no name, and then the screen greets her with nothing. */
   readonly name?: string;
+  /** Left out where she passed the question by, and then nothing is said about the width. */
+  readonly regularity?: Regularity;
 }
 
 const theFourSets: readonly Recorded[] = [
@@ -62,6 +65,11 @@ const theFourSets: readonly Recorded[] = [
   { title: 'Six cycles, one of them 40 days', set: oneLongCycle },
   { title: 'Six cycles from 24 to 41 days', set: genuinelyIrregular },
   { title: 'The two cycles she has', set: twoCyclesExactly },
+  {
+    title: 'Six cycles of 28 days, and she said her cycle moves',
+    set: veryRegular,
+    regularity: 'moves',
+  },
 ];
 
 /** What the frame is captioned with: the day she is on, and the sentence the screen names. */
@@ -103,6 +111,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
         onHistory={() => undefined}
         onLogToday={() => undefined}
         onSettings={() => undefined}
+        regularity={recorded.regularity}
         ring={ring}
       />
     </OnAPhone>,

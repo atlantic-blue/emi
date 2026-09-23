@@ -1,3 +1,4 @@
+import type { Regularity } from '@emi/crypto';
 import type { Forecast } from '@emi/cycle';
 import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
@@ -14,12 +15,19 @@ import { confidenceSentence, forecastCopy, rangeSentence } from './copy';
 export const nextPeriodTestID = 'next-period';
 export const nextPeriodRangeTestID = 'next-period-range';
 export const nextPeriodConfidenceTestID = 'next-period-confidence';
+export const nextPeriodMovesTestID = 'next-period-moves';
 
 interface Props {
   readonly forecast: Forecast;
+  /**
+   * How steady she said her cycle is, and nothing at all where she skipped the question. It is
+   * read here and nowhere in the arithmetic above: the only thing it changes is the sentence at
+   * the foot of this block.
+   */
+  readonly regularity?: Regularity;
 }
 
-export function NextPeriod({ forecast }: Props): ReactNode {
+export function NextPeriod({ forecast, regularity }: Props): ReactNode {
   return (
     <View accessible style={styles.block} testID={nextPeriodTestID}>
       <Text style={styles.label}>{forecastCopy.nextPeriod}</Text>
@@ -29,6 +37,11 @@ export function NextPeriod({ forecast }: Props): ReactNode {
       <Text style={styles.confidence} testID={nextPeriodConfidenceTestID}>
         {confidenceSentence(forecast)}
       </Text>
+      {regularity === 'moves' ? (
+        <Text style={styles.moves} testID={nextPeriodMovesTestID}>
+          {forecastCopy.cycleMoves}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -43,6 +56,13 @@ const styles = StyleSheet.create({
     color: colour.onSurfaceVariant,
     ...textStyle('label-sm'),
     marginBottom: space.spaceXs,
+  },
+  // Under the confidence rather than beside the range, because it explains the width she is
+  // reading and does not change it.
+  moves: {
+    color: colour.onSurfaceVariant,
+    ...textStyle('body-sm'),
+    marginTop: space.spaceXs,
   },
   range: {
     color: colour.onSurface,

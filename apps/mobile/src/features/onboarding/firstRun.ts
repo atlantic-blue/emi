@@ -1,9 +1,11 @@
 import {
   type DayRecord,
   type ProfileRecord,
+  type Regularity,
   earliestBirthYear,
   longestName,
   longestPeriodLengthDays,
+  regularityValues,
   shortestPeriodLengthDays,
   youngestBirthYears,
 } from '@emi/crypto';
@@ -85,6 +87,11 @@ export interface FirstRunAnswers {
    * then the ring counts the days she logs instead.
    */
   readonly periodLengthDays?: number;
+  /**
+   * How steady she says her cycle is. Left out where she skipped the question. It changes one
+   * sentence under the forecast and never the range, which is arithmetic over the days she logged.
+   */
+  readonly regularity?: Regularity;
 }
 
 export type FirstRunRefusal =
@@ -95,6 +102,7 @@ export type FirstRunRefusal =
   | 'name-is-out-of-range'
   | 'birth-year-is-out-of-range'
   | 'period-length-is-out-of-range'
+  | 'regularity-is-not-one-of-the-three'
   | 'first-run-is-already-done';
 
 export class FirstRunError extends Error {
@@ -129,6 +137,19 @@ export function cycleLengthIsInRange(days: number): boolean {
  */
 export function statedPeriodLengthDays(db: Database, vault: ProfileVault): number | undefined {
   return readProfile(db, vault)?.periodLengthDays;
+}
+
+/**
+ * How steady she said her cycle is, read from the sealed profile. Nothing at all is the answer a
+ * Skip leaves behind, and then the forecast says nothing about how steady her cycle is.
+ */
+export function statedRegularity(db: Database, vault: ProfileVault): Regularity | undefined {
+  return readProfile(db, vault)?.regularity;
+}
+
+/** Whether the answer is one of the three the screen offers, asked of a value from anywhere. */
+export function regularityIsOffered(answer: string): answer is Regularity {
+  return (regularityValues as readonly string[]).includes(answer);
 }
 
 export function periodLengthIsInRange(days: number): boolean {
@@ -220,6 +241,7 @@ function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
     ...(answers.periodLengthDays === undefined
       ? {}
       : { periodLengthDays: answers.periodLengthDays }),
+    ...(answers.regularity === undefined ? {} : { regularity: answers.regularity }),
     recordedAt: now.toISOString(),
   };
 }
@@ -281,6 +303,12 @@ export function completeFirstRun(
     throw new FirstRunError(
       'period-length-is-out-of-range',
       `a period runs from ${minimumPeriodLengthDays} to ${maximumPeriodLengthDays} days, this one is ${answers.periodLengthDays}`,
+    );
+  }
+  if (answers.regularity !== undefined && !regularityIsOffered(answers.regularity)) {
+    throw new FirstRunError(
+      'regularity-is-not-one-of-the-three',
+      `a cycle is one of ${regularityValues.join(', ')}, this one is ${answers.regularity}`,
     );
   }
   if (firstRunIsDone(db)) {

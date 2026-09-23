@@ -1,4 +1,4 @@
-import type { DayRecord } from '@emi/crypto';
+import type { DayRecord, Regularity } from '@emi/crypto';
 
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
@@ -45,6 +45,7 @@ export async function herPhoneHolds(
   records: readonly DayRecord[],
   cycleLengthDays: number = defaultCycleLengthDays,
   periodLengthDays?: number,
+  regularity?: Regularity,
 ): Promise<void> {
   const database = herDatabase();
   const vault = herVault();
@@ -66,6 +67,7 @@ export async function herPhoneHolds(
       kind: 'profile',
       cycleLengthDays,
       ...(periodLengthDays === undefined ? {} : { periodLengthDays }),
+      ...(regularity === undefined ? {} : { regularity }),
       recordedAt: firstRunFinishedAt.toISOString(),
     },
     now: firstRunFinishedAt,
