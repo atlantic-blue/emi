@@ -39,7 +39,7 @@ import {
   cycleLengthTestID,
   longerTestID,
 } from '../apps/mobile/src/features/onboarding/CycleLength';
-import { dayTestID } from '../apps/mobile/src/features/onboarding/LastPeriod';
+import { dayTestID } from '../apps/mobile/src/features/onboarding/Calendar';
 import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
@@ -441,6 +441,7 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
         await shePresses(dayTestID(herPeriodStarted));
         await shePresses(onboardingActionTestID);
+        await shePresses(onboardingSkipTestID);
 
         for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
           await shePresses(longerTestID);
@@ -521,6 +522,8 @@ defineFeature(feature, (test) => {
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
     });
@@ -530,13 +533,14 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she was asked what Emi is, her name, the year she was born, when her last period started, and how long her cycle runs',
+      'she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, and how long her cycle runs',
       () => {
         expect(visited).toEqual([
           '/onboarding/welcome',
           '/onboarding/name',
           '/onboarding/year-of-birth',
           '/onboarding/last-period',
+          '/onboarding/period-before',
           '/onboarding/cycle-length',
           '/onboarding/hold',
         ]);
@@ -578,6 +582,8 @@ defineFeature(feature, (test) => {
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
 
       for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
@@ -990,10 +996,13 @@ defineFeature(feature, (test) => {
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
+
+      await shePresses(onboardingSkipTestID);
+      measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
     });
 
     then('every control on each screen of the first run is at least 44 points on both axes', () => {
-      expect(measured).toEqual([[], [], [], []]);
+      expect(measured).toEqual([[], [], [], [], []]);
       expect(screen.getByTestId(cycleLengthTestID)).toBeTruthy();
     });
   });

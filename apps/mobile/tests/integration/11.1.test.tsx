@@ -7,7 +7,7 @@ import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { dayTestID } from '../../src/features/onboarding/LastPeriod';
+import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
@@ -73,6 +73,19 @@ async function sheReachesTheLastPeriod(): Promise<void> {
   await shePresses(onboardingSkipTestID);
 }
 
+/**
+ * How much of the bar is filled on each question in turn, written out rather than worked out, so
+ * a bar that counts something other than the questions fails here.
+ */
+const theSixFractionsOfTheBar = [
+  '16.666666666666664%',
+  '33.33333333333333%',
+  '50%',
+  '66.66666666666666%',
+  '83.33333333333334%',
+  '100%',
+];
+
 /** How much of the bar is filled on the screen she is looking at, as the screen drew it. */
 function theBarIsFilled(): unknown {
   const fill = screen.getByTestId(progressFillTestID(onboardingProgressTestID));
@@ -130,7 +143,7 @@ describe('the last period is the one question she cannot skip', () => {
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/cycle-length');
+      expect(app.pathname()).toBe('/onboarding/period-before');
     });
   });
 
@@ -176,7 +189,7 @@ describe('the last period is the one question she cannot skip', () => {
         }
       }
 
-      expect(filled).toEqual(['20%', '40%', '60%', '80%', '100%']);
+      expect(filled).toEqual(theSixFractionsOfTheBar);
       expect(counters).toEqual([]);
     });
   });

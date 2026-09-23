@@ -255,6 +255,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(`day-${herPeriodStarted}`);
       await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
       await shePresses(onboardingActionTestID);
       await sheHoldsTheRing();
 
@@ -271,6 +272,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(`day-${herPeriodStarted}`);
       await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
       await shePresses(onboardingActionTestID);
       await sheHoldsTheRing();
 

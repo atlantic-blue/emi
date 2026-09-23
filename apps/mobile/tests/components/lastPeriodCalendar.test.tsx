@@ -2,13 +2,12 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { OnAPhone } from '../fixtures/theSafeArea';
 
 import {
-  LastPeriod,
   dayTestID,
   earlierMonthTestID,
   laterMonthTestID,
   monthTestID,
-  namedDayTestID,
-} from '../../src/features/onboarding/LastPeriod';
+} from '../../src/features/onboarding/Calendar';
+import { LastPeriod, namedDayTestID } from '../../src/features/onboarding/LastPeriod';
 import { longestLookBackDays } from '../../src/features/onboarding/firstRun';
 
 /** Well away from any summer time change, so the grid below reads the same in any timezone. */

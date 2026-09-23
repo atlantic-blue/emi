@@ -1,4 +1,5 @@
 import { words } from '../../language';
+import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
 
 /**
  * The words of the first run. Section 9.7 of the design sets the rules they follow: say what
@@ -33,6 +34,19 @@ export const firstRunCopy = {
       words('onboarding.lastPeriod.line.privacy'),
     ],
     action: words('onboarding.lastPeriod.action'),
+  },
+  periodBefore: {
+    title: words('onboarding.periodBefore.title'),
+    lines: [
+      words('onboarding.periodBefore.line.remember'),
+      words('onboarding.periodBefore.line.surer'),
+    ],
+    action: words('onboarding.periodBefore.action'),
+    skip: words('onboarding.periodBefore.skip'),
+    outOfRange: words('onboarding.periodBefore.outOfRange', undefined, {
+      maximum: maximumCycleLengthDays,
+      minimum: minimumCycleLengthDays,
+    }),
   },
   cycleLength: {
     title: words('onboarding.cycleLength.title'),
@@ -70,6 +84,7 @@ export const firstRunScreens = [
   'name',
   'birthYear',
   'lastPeriod',
+  'periodBefore',
   'cycleLength',
 ] as const;
 
@@ -97,6 +112,11 @@ export function cycleLengthDaysLabel(days: number): string {
 /** Why the name she typed is refused, which names the bound rather than repeating the number. */
 export function nameTooLongLine(characters: number): string {
   return words('onboarding.name.tooLong', characters);
+}
+
+/** The cycle she lived, counted between the two starts she gave. */
+export function daysBetweenSentence(days: number): string {
+  return words('onboarding.periodBefore.between', days);
 }
 
 /** What a screen reader says for one year of the wheel, because a bare number says nothing. */

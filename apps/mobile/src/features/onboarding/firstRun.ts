@@ -39,6 +39,17 @@ export function periodStartIsInRange(day: string, today: string): boolean {
 }
 
 /**
+ * Whether the day she gave can be the period before the one she gave. The two starts are one
+ * cycle, so the distance between them is held to the bounds a cycle runs between: a day nearer
+ * than that is the same period again, and a day further back leaves a cycle nobody recorded.
+ */
+export function periodBeforeIsInRange(periodBefore: string, periodStartedOn: string): boolean {
+  const between = daysBetween(periodBefore, periodStartedOn);
+
+  return between >= minimumCycleLengthDays && between <= maximumCycleLengthDays;
+}
+
+/**
  * She is asked when her period started, never how heavy it was, because the heaviness changes no
  * forecast and the first run asks nothing it does not need. A record has no other way to say a day
  * was a bleeding day, so the first run writes the middle value and she can change it on the day.
@@ -48,6 +59,11 @@ export const firstRunFlow: Flow = 'medium';
 export interface FirstRunAnswers {
   readonly periodStartedOn: string;
   readonly cycleLengthDays: number;
+  /**
+   * The start before that one, left out where she does not remember it. Where she gives it, the
+   * two starts are one cycle she lived, which is worth more than the length she estimated.
+   */
+  readonly periodBeforeStartedOn?: string;
   /** Left out where she skipped the question, and then her profile carries no name at all. */
   readonly name?: string;
   /** Left out where she skipped the question. Nothing reads it, which contract SCREEN-1 names. */
@@ -57,6 +73,7 @@ export interface FirstRunAnswers {
 export type FirstRunRefusal =
   | 'period-start-is-in-the-future'
   | 'period-start-is-too-long-ago'
+  | 'period-before-is-out-of-range'
   | 'cycle-length-is-out-of-range'
   | 'name-is-out-of-range'
   | 'birth-year-is-out-of-range'
@@ -198,6 +215,15 @@ export function completeFirstRun(
       `${answers.periodStartedOn} is ${back} days back, and the first run reaches ${longestLookBackDays}`,
     );
   }
+  if (
+    answers.periodBeforeStartedOn !== undefined &&
+    !periodBeforeIsInRange(answers.periodBeforeStartedOn, answers.periodStartedOn)
+  ) {
+    throw new FirstRunError(
+      'period-before-is-out-of-range',
+      `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days, and ${answers.periodBeforeStartedOn} is ${daysBetween(answers.periodBeforeStartedOn, answers.periodStartedOn)} days before ${answers.periodStartedOn}`,
+    );
+  }
   if (!cycleLengthIsInRange(answers.cycleLengthDays)) {
     throw new FirstRunError(
       'cycle-length-is-out-of-range',
@@ -228,6 +254,15 @@ export function completeFirstRun(
 
   db.execute('BEGIN');
   try {
+    if (answers.periodBeforeStartedOn !== undefined) {
+      const earlier: DayRecord = {
+        day: answers.periodBeforeStartedOn,
+        flow: firstRunFlow,
+        recordedAt: now.toISOString(),
+      };
+
+      insertDayLog(db, { day: earlier.day, payload: vaults.day.seal(earlier), now });
+    }
     insertDayLog(db, { day: recorded.day, payload: vaults.day.seal(recorded), now });
     writeProfile(db, vaults.profile, { profile: herProfile(answers, now), now });
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
