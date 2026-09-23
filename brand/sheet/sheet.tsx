@@ -2,18 +2,22 @@
 import {
   BEAD_HALO_WIDTH,
   BEAD_RADIUS,
+  CYCLE_DAY_ROLE,
   type ColourName,
-  DRAWN_FAMILY,
-  FontWeightName,
+  type FontFile,
   type Icon,
   type IconName,
+  PHASE_NAME_ROLE,
   RING_DIAMETER,
   RING_TRACK_WIDTH,
   type TypeRoleName,
+  beadPalette,
   colour,
   letterSpacingOf,
-  fontWeightNames,
+  faceFamily,
   fontFile,
+  fontFileFor,
+  fontFiles,
   fontsRoot,
   iconNames,
   icons,
@@ -159,27 +163,37 @@ export function measurementsFor(sources: BrandSources, name: ColourName): readon
   return lines;
 }
 
-export function faceClass(weight: FontWeightName): string {
-  return `face-${weight}`;
+/** A class per file rather than per weight, because three families share the same three weights. */
+export function faceClass(file: FontFile): string {
+  return `face-${file.name}`;
 }
+
+/** The class pair for a role, drawn in the face and the weight the design system gives it. */
+export function roleClass(role: TypeRoleName): string {
+  const style = typeScale[role];
+
+  return `${faceClass(fontFileFor(style.face, style.weight))} ${sizeClass(role)}`;
+}
+
+/** The two cuts the sheet writes its own words in. A sample names the file its role asks for. */
+export const sheetFace = fontFile(faceFamily.text, 'regular');
+export const sheetBold = fontFile(faceFamily.text, 'semiBold');
 
 export function sizeClass(role: TypeRoleName): string {
   return `size-${role}`;
 }
 
 function fontRules(fontsBase: string): string {
-  return fontWeightNames
-    .map((weight) => {
-      const file = fontFile(DRAWN_FAMILY, weight);
-
-      return [
+  return fontFiles
+    .map((file) =>
+      [
         '@font-face {',
         `  font-family: "${file.name}";`,
         `  src: url("${fontsBase}${file.path}") format("truetype");`,
         '}',
-        `.${faceClass(weight)} { font-family: "${file.name}"; }`,
-      ].join('\n');
-    })
+        `.${faceClass(file)} { font-family: "${file.name}"; }`,
+      ].join('\n'),
+    )
     .join('\n');
 }
 
@@ -268,6 +282,7 @@ function styleSheet(fontsBase: string): string {
   align-items: center;
   justify-content: center;
 }`,
+    `.ring-phase { text-transform: uppercase; }`,
     `.ring-note { color: ${colour.onSurfaceVariant}; margin-top: 6px; }`,
     `.icon-grid { display: flex; flex-wrap: wrap; gap: 16px 24px; }`,
     `.icon-cell {
@@ -285,7 +300,7 @@ function styleSheet(fontsBase: string): string {
 }
 
 function Label({ children }: { children: Html | string }): Html {
-  return <div class={`${faceClass('regular')} ${sizeClass('label-sm')}`}>{children}</div>;
+  return <div class={`${faceClass(sheetFace)} ${sizeClass('label-sm')}`}>{children}</div>;
 }
 
 function Section({
@@ -300,8 +315,8 @@ function Section({
   return (
     <div class="section">
       <div class="section-head">
-        <div class={`${faceClass('semiBold')} ${sizeClass('headline-lg')}`}>{title}</div>
-        <div class={`section-note ${faceClass('regular')} ${sizeClass('body-sm')}`}>{note}</div>
+        <div class={`${roleClass('headline-lg')}`}>{title}</div>
+        <div class={`section-note ${faceClass(sheetFace)} ${sizeClass('body-sm')}`}>{note}</div>
       </div>
       {children}
     </div>
@@ -313,7 +328,7 @@ function Mark({ name, drawing }: { name: MarkName; drawing: string }): Html {
 
   return (
     <div class="mark-card">
-      <div class={`mark-name ${faceClass('semiBold')} ${sizeClass('body-sm')}`}>{name}</div>
+      <div class={`mark-name ${faceClass(sheetBold)} ${sizeClass('body-sm')}`}>{name}</div>
       <div class="mark-row">
         <div class={`mark-${largest}`}>{raw(drawing)}</div>
       </div>
@@ -321,7 +336,7 @@ function Mark({ name, drawing }: { name: MarkName; drawing: string }): Html {
         <div class={`mark-${middle}`}>{raw(drawing)}</div>
         <div class={`mark-${smallest}`}>{raw(drawing)}</div>
       </div>
-      <div class={`mark-label ${faceClass('regular')} ${sizeClass('label-sm')}`}>
+      <div class={`mark-label ${faceClass(sheetFace)} ${sizeClass('label-sm')}`}>
         {markSizes.join(', ')} points
       </div>
     </div>
@@ -334,14 +349,14 @@ function ApplicationIcon({ drawing }: { drawing: string }): Html {
 
   return (
     <div class="mark-card icon-card">
-      <div class={`mark-name ${faceClass('semiBold')} ${sizeClass('body-sm')}`}>
+      <div class={`mark-name ${faceClass(sheetBold)} ${sizeClass('body-sm')}`}>
         application icon
       </div>
       <div class="icon-shown">{raw(drawing)}</div>
-      <div class={`mark-label ${faceClass('regular')} ${sizeClass('label-sm')}`}>
+      <div class={`mark-label ${faceClass(sheetFace)} ${sizeClass('label-sm')}`}>
         {`${APPLICATION_ICON_SIZE} point square, shown at ${ICON_SHOWN_AT}`}
       </div>
-      <div class={`mark-label ${faceClass('regular')} ${sizeClass('body-sm')}`}>
+      <div class={`mark-label ${faceClass(sheetFace)} ${sizeClass('body-sm')}`}>
         {`The ring alone, at ${share} of the width, sitting ${rise} above the middle so it reads as centred.`}
       </div>
     </div>
@@ -356,14 +371,14 @@ function Swatch({ sources, name }: { sources: BrandSources; name: ColourName }):
       <div class="chip" style={`background: ${token.value}`}></div>
       <div>
         <div class="swatch-name">
-          <div class={`${faceClass('semiBold')} ${sizeClass('body-lg')}`}>{name}</div>
-          <div class={`${faceClass('regular')} ${sizeClass('label-sm')}`}>{token.value}</div>
+          <div class={`${faceClass(sheetBold)} ${sizeClass('body-lg')}`}>{name}</div>
+          <div class={`${faceClass(sheetFace)} ${sizeClass('label-sm')}`}>{token.value}</div>
         </div>
-        <div class={`roles ${faceClass('regular')} ${sizeClass('body-sm')}`}>
+        <div class={`roles ${faceClass(sheetFace)} ${sizeClass('body-sm')}`}>
           {token.roles.join(', ')}
         </div>
         {measurementsFor(sources, name).map((line) => (
-          <div class={`measured ${faceClass('regular')} ${sizeClass('label-sm')}`}>{line}</div>
+          <div class={`measured ${faceClass(sheetFace)} ${sizeClass('label-sm')}`}>{line}</div>
         ))}
       </div>
     </div>
@@ -372,14 +387,13 @@ function Swatch({ sources, name }: { sources: BrandSources; name: ColourName }):
 
 function TypeRow({ sources, role }: { sources: SheetSources; role: TypeRoleName }): Html {
   const style = sources.brand.scale[role];
-  const weight: FontWeightName = style.weight === 400 ? 'regular' : 'semiBold';
 
   return (
     <div class="type-row">
-      <div class={`type-label ${faceClass('regular')} ${sizeClass('label-sm')}`}>
-        {`${role} ${style.size}/${style.lineHeight} ${style.weight}`}
+      <div class={`type-label ${faceClass(sheetFace)} ${sizeClass('label-sm')}`}>
+        {`${role} ${style.size}/${style.lineHeight} ${style.weight} ${style.face}`}
       </div>
-      <div class={`${faceClass(weight)} ${sizeClass(role)}`}>{sources.sentences[role]}</div>
+      <div class={roleClass(role)}>{sources.sentences[role]}</div>
     </div>
   );
 }
@@ -407,24 +421,24 @@ function Ring({ ring }: { ring: DrawnRing }): Html {
           <circle
             cx={bead.x}
             cy={bead.y}
-            fill={colour.primary}
+            fill={colour[beadPalette.fill]}
             r={BEAD_RADIUS}
-            stroke={colour.surfaceContainerLowest}
+            stroke={colour[beadPalette.halo]}
             stroke-width={BEAD_HALO_WIDTH}
           />
         </svg>
         <div class="middle">
-          <div class={`${faceClass('regular')} ${sizeClass('headline-xl')}`}>{ring.day}</div>
+          <div class={`${roleClass(CYCLE_DAY_ROLE)}`}>{ring.day}</div>
           <div
-            class={`${faceClass('regular')} ${sizeClass('headline-md')}`}
+            class={`ring-phase ${roleClass(PHASE_NAME_ROLE)}`}
             style={`color: ${colour[phasePalette[geometry.phase].ink]}`}
           >
             {phaseLabel[geometry.phase]}
           </div>
         </div>
       </div>
-      <div class={`${faceClass('semiBold')} ${sizeClass('body-sm')}`}>{ring.title}</div>
-      <div class={`ring-note ${faceClass('regular')} ${sizeClass('body-sm')}`}>{ring.note}</div>
+      <div class={`${faceClass(sheetBold)} ${sizeClass('body-sm')}`}>{ring.title}</div>
+      <div class={`ring-note ${faceClass(sheetFace)} ${sizeClass('body-sm')}`}>{ring.note}</div>
     </div>
   );
 }
@@ -444,7 +458,7 @@ function IconCell({ icon }: { icon: Icon }): Html {
       >
         {raw(icon.body)}
       </svg>
-      <div class={`icon-name ${faceClass('regular')} ${sizeClass('label-sm')}`}>{icon.name}</div>
+      <div class={`icon-name ${faceClass(sheetFace)} ${sizeClass('label-sm')}`}>{icon.name}</div>
     </div>
   );
 }
@@ -453,8 +467,8 @@ function Illustration({ piece }: { piece: Piece }): Html {
   return (
     <div>
       {raw(drawingOf(piece))}
-      <div class={`${faceClass('semiBold')} ${sizeClass('body-sm')}`}>{piece.name}</div>
-      <div class={`piece-says ${faceClass('regular')} ${sizeClass('body-sm')}`}>{piece.says}</div>
+      <div class={`${faceClass(sheetBold)} ${sizeClass('body-sm')}`}>{piece.name}</div>
+      <div class={`piece-says ${faceClass(sheetFace)} ${sizeClass('body-sm')}`}>{piece.says}</div>
     </div>
   );
 }
@@ -469,11 +483,11 @@ export function Sheet({ sources }: { sources: SheetSources }): Html {
         <title>The Emi brand sheet</title>
         <style>{raw(styleSheet(sources.fontsBase))}</style>
       </head>
-      <body class={`${faceClass('regular')} ${sizeClass('body-lg')}`}>
+      <body class={`${faceClass(sheetFace)} ${sizeClass('body-lg')}`}>
         <div class="head">
           <div>
-            <div class={`${faceClass('semiBold')} ${sizeClass('headline-xl')}`}>The Emi brand</div>
-            <div class={`standfirst ${faceClass('regular')} ${sizeClass('body-lg')}`}>
+            <div class={`${roleClass('display-lg-mobile')}`}>The Emi brand</div>
+            <div class={`standfirst ${faceClass(sheetFace)} ${sizeClass('body-lg')}`}>
               The mark, the icon, {counts} colours with the ratio each one was measured at, the type
               scale, the ring, {sources.iconOrder.length} icons and the three onboarding pieces.
               Every number here is read from the token package the application imports.
@@ -544,7 +558,7 @@ export function Sheet({ sources }: { sources: SheetSources }): Html {
           </div>
         </Section>
 
-        <div class={`foot ${faceClass('regular')} ${sizeClass('label-sm')}`}>
+        <div class={`foot ${faceClass(sheetFace)} ${sizeClass('label-sm')}`}>
           {`${sheetPath} is written by ${generateCommand}. The pipeline runs ${checkCommand} and fails when the committed copy and the tokens disagree.`}
         </div>
       </body>

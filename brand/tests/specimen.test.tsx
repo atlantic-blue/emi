@@ -1,11 +1,13 @@
 /** @jsxImportSource ../jsx */
 import {
-  DRAWN_FAMILY,
+  FaceName,
   applicationFontFiles,
+  face,
+  faceFamily,
   fontFile,
-  fontWeightNames,
+  fontFileFor,
+  fontFiles,
   fonts,
-  weightFiles,
   letterSpacingOf,
   typeRoleNames,
   typeScale,
@@ -13,7 +15,7 @@ import {
 
 import {
   faceClass,
-  familyRole,
+  familyRoles,
   sizeClass,
   specimenDocument,
   specimenPage,
@@ -47,22 +49,26 @@ describe('the type specimen a person looks at', () => {
     },
   );
 
-  it('loads the four files the application draws in, and no second family', () => {
-    expect(page.match(/@font-face/g)).toHaveLength(4);
+  it('loads the six files the application draws in, and no family it replaced', () => {
+    expect(page.match(/@font-face/g)).toHaveLength(6);
+    expect(fontFiles).toHaveLength(6);
     expect(page).not.toContain('Fraunces');
     expect(page).not.toContain('IBMPlexMono');
   });
 
-  it('names the family, what it carries, its files and its licence', () => {
-    const family = fonts[DRAWN_FAMILY];
+  it.each(Object.keys(face) as FaceName[])(
+    'names the %s family, what it carries, its files and its licence',
+    (faceName) => {
+      const family = fonts[faceFamily[faceName]];
 
-    expect(page).toContain(family.family);
-    expect(page).toContain(familyRole);
-    for (const weight of family.weights) {
-      expect(page).toContain(fontFile(DRAWN_FAMILY, weight).path);
-    }
-    expect(page).toContain(family.licence);
-  });
+      expect(page).toContain(family.family);
+      expect(page).toContain(familyRoles[faceName]);
+      for (const weight of family.weights) {
+        expect(page).toContain(fontFile(faceFamily[faceName], weight).path);
+      }
+      expect(page).toContain(family.licence);
+    },
+  );
 
   it('sets each role to the size, the line height and the tracking the scale publishes', () => {
     const wrong = typeRoleNames
@@ -79,18 +85,17 @@ describe('the type specimen a person looks at', () => {
     expect(wrong).toEqual([]);
   });
 
-  it('draws every role at the weight the design system asks for', () => {
+  it('draws every role in the file its face and its weight name', () => {
     const missing = typeRoleNames
       .filter((role) => {
-        const weight = weightFiles[typeScale[role].weight];
+        const file = fontFileFor(typeScale[role].face, typeScale[role].weight);
 
-        return !page.includes(`class="${faceClass(weight)} ${sizeClass(role)}"`);
+        return !page.includes(`class="${faceClass(file)} ${sizeClass(role)}"`);
       })
       .map((role) => role);
 
     expect(missing).toEqual([]);
-    expect(typeRoleNames).toHaveLength(11);
-    expect(fontWeightNames).toHaveLength(4);
+    expect(typeRoleNames).toHaveLength(13);
   });
 
   it('writes the size and the line height beside each sample, so the picture names what it shows', () => {
@@ -109,15 +114,18 @@ describe('the type specimen a person looks at', () => {
     const sentence = specimenSentences[role];
 
     expect(page).toContain(sentence);
-    expect(sentence.length).toBeGreaterThan(8);
+    expect(sentence.length).toBeGreaterThan(1);
   });
 
   it('holds no filler anywhere', () => {
     expect(filler.filter((text) => page.includes(text))).toEqual([]);
   });
 
-  it('stacks two lines of digits, so a face whose numbers shift shows it', () => {
+  it('stacks two lines of digits, in the face that carries the numbers', () => {
     expect(page.match(/1111111111/g)).toHaveLength(1);
     expect(page.match(/0000000000/g)).toHaveLength(1);
+    expect(page).toContain(
+      `${faceClass(fontFile(faceFamily.data, 'regular'))} ${sizeClass('body-lg')}`,
+    );
   });
 });

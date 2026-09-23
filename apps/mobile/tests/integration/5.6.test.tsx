@@ -29,6 +29,7 @@ import { settingsCopy } from '../../src/features/settings/copy';
 import { longerTestID } from '../../src/features/onboarding/CycleLength';
 import { dayTestID } from '../../src/features/onboarding/LastPeriod';
 import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
+import { tourScreenTestID, tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import {
   everyTable,
   freePagesHeld,
@@ -254,11 +255,17 @@ describe('after deleting, the database and the keychain are both empty', () => {
       expect(said).not.toContain(String(new Date(whenSheOpensIt).getFullYear()));
     });
 
-    it('puts her back at the first run when she starts again', async () => {
+    it('puts her back at the tour, and at the first run behind it, when she starts again', async () => {
       await shePresses(startAgainTestID);
 
-      expect(screen.getByTestId(theFirstScreenOfTheFirstRun)).toBeTruthy();
+      // The delete empties the setting table, and the marker of the tour is a row in it, so the
+      // four cards come back with the two questions they exist to explain.
+      expect(screen.getByTestId(tourScreenTestID('ring'))).toBeTruthy();
       expect(screen.queryByTestId(homeScreenTestID)).toBeNull();
+
+      await shePresses(tourSkipTestID);
+
+      expect(screen.getByTestId(theFirstScreenOfTheFirstRun)).toBeTruthy();
     });
 
     it('holds a key again once she starts again, so the day she logs can be sealed', async () => {
@@ -270,6 +277,7 @@ describe('after deleting, the database and the keychain are both empty', () => {
     it('takes her the whole way through the first run and opens the day she wrote', async () => {
       await shePresses(startAgainTestID);
 
+      await shePresses(tourSkipTestID);
       await shePresses(onboardingActionTestID);
       await shePresses(dayTestID(addDays(today, -2)));
       await shePresses(onboardingActionTestID);

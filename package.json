@@ -34,6 +34,7 @@
     "generate:specimen": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/specimen/render.ts",
     "generate:ring-picture": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON brand/ring/render.ts",
     "generate:onboarding-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern onboarding.picture",
+    "generate:tour-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern tour.picture",
     "generate:home-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern homeScreen.picture",
     "generate:flow-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern logFlow.picture",
     "generate:last-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern lastPeriod.picture",

@@ -1,7 +1,16 @@
 const { readFileSync } = require('node:fs');
 const { join } = require('node:path');
 
-const { colour } = require('@emi/tokens');
+const {
+  colour,
+  fontNameFor,
+  letterSpacingOf,
+  radius,
+  space,
+  typeRoleNames,
+  typeScale,
+} = require('@emi/tokens');
+
 const plugin = require('tailwindcss/plugin');
 
 const {
@@ -11,16 +20,19 @@ const {
 } = require('../../tools/pipeline/prototype.ts');
 
 /**
- * The prototype's own Tailwind configuration, with one substitution: the colours are read from
- * @emi/tokens rather than repeated here. The prototype names a role with hyphens and the token
- * package names it in camel case, and the two carry the same value, so one file holds the palette
- * and the other reads it.
+ * The theme the application is drawn in, read from @emi/tokens.
  *
- * Everything else is the prototype's, value for value, read out of the screen it renders with.
- * That reader belongs to the pipeline rather than to the product, and it is borrowed rather than
- * copied on purpose: a second reader of the same file agrees with the first until the day the tool
- * writes the same values in another shape, and then it reads nothing, which looks exactly like
- * agreement.
+ * The token package is held to the front matter of `docs/design/prototype-design-system.md` value
+ * for value by `packages/tokens/tests/designSystem.test.ts`, and that front matter is read out of
+ * the prototype itself. So the palette, the scale, the corners and the spacing have one home, and
+ * this file converts them into the shape Tailwind reads rather than restating any of them.
+ *
+ * The corners are the one block where the front matter and the prototype's own configuration
+ * disagree, and the front matter is the side the tokens took, which is the decision in
+ * https://github.com/atlantic-blue/emi/issues/159.
+ *
+ * The roles the palette is allowed to name are still read from the prototype, so a colour the
+ * screens draw with and the token package does not hold stops the build here.
  */
 
 const repositoryRoot = join(__dirname, '..', '..');
@@ -31,6 +43,10 @@ const prototype = configuredIn(
 
 function hyphenated(name) {
   return name.replace(/[A-Z]/g, (capital) => `-${capital.toLowerCase()}`);
+}
+
+function points(measured) {
+  return `${String(measured)}px`;
 }
 
 const byRole = Object.fromEntries(
@@ -50,36 +66,44 @@ const colors = Object.fromEntries(
   }),
 );
 
+const borderRadius = Object.fromEntries(
+  Object.entries(radius).map(([name, measured]) => [name, points(measured)]),
+);
+
+const spacing = Object.fromEntries(
+  Object.entries(space).map(([name, measured]) => [hyphenated(name), points(measured)]),
+);
+
+/** Every role draws in the file the application registers, never in the family the design calls it. */
 const fontFamily = Object.fromEntries(
-  Object.entries(prototype.type).map(([role, written]) => [role, written.fontFamily.split(', ')]),
+  typeRoleNames.map((role) => [role, [fontNameFor(typeScale[role].face, typeScale[role].weight)]]),
 );
 
 /**
- * The eleven text roles, written as plain declarations.
+ * The thirteen text roles, written as plain declarations.
  *
- * The prototype's values are read from its own screen and not one of them is changed. What changes
- * is the shape Tailwind would write them in: given a size and a line height together, it writes
- * `line-height: var(--tw-leading, 14px)`, and react-native-css 3.1.0-rc.0 reads a length inside a
- * variable fallback as a multiple of the font size, so eleven point text draws at 154 points
- * instead of 14. A length it reads directly is correct.
- *
- * So the roles are declared here instead of under `theme.extend.fontSize`, which would have
- * Tailwind write a second rule for each of them in that shape.
+ * Given a size and a line height together, Tailwind writes `line-height: var(--tw-leading, 14px)`,
+ * and react-native-css 3.1.0-rc.0 reads a length inside a variable fallback as a multiple of the
+ * font size, so eleven point text draws at 154 points instead of 14. A length it reads directly is
+ * correct, so the roles are declared here rather than under `theme.extend.fontSize`.
  */
 const textRoles = plugin(({ addUtilities }) => {
   addUtilities(
     Object.fromEntries(
-      Object.entries(prototype.type).map(([role, written]) => [
-        `.text-${role}`,
-        {
-          'font-size': written.fontSize,
-          'line-height': written.lineHeight,
-          ...(written.letterSpacing === undefined
-            ? {}
-            : { 'letter-spacing': written.letterSpacing }),
-          'font-weight': written.fontWeight,
-        },
-      ]),
+      typeRoleNames.map((role) => {
+        const step = typeScale[role];
+        const tracking = letterSpacingOf(step.size, step.letterSpacingEm);
+
+        return [
+          `.text-${role}`,
+          {
+            'font-size': points(step.size),
+            'line-height': points(step.lineHeight),
+            ...(tracking === 0 ? {} : { 'letter-spacing': points(tracking) }),
+            'font-weight': String(step.weight),
+          },
+        ];
+      }),
     ),
   );
 });
@@ -89,10 +113,10 @@ module.exports = {
   content: ['./src/**/*.{ts,tsx}', '../../packages/ui/src/**/*.{ts,tsx}'],
   theme: {
     extend: {
-      borderRadius: prototype.radii,
+      borderRadius,
       colors,
       fontFamily,
-      spacing: prototype.spacing,
+      spacing,
     },
   },
   plugins: [textRoles],

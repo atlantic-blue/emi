@@ -2,15 +2,15 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
 import {
-  DRAWN_FAMILY,
   FontFile,
   OPEN_FONT_LICENCE,
   applicationFontFiles,
+  faceFamily,
   fontFamilyNames,
   fontFile,
+  fontFileFor,
   fontFiles,
   fontNameFor,
-  fontWeightNames,
   fonts,
   fontsRoot,
 } from '../src/font';
@@ -41,59 +41,80 @@ const fontExtension = /\.(ttf|otf|woff2?)$/i;
 
 describe('every shipped font carries its licence', () => {
   describe('the families the token package names', () => {
-    it('draws every role in the one family the design system names', () => {
-      const facesInScale = [...new Set(typeRoleNames.map((name) => typeScale[name].face))];
-
-      expect(facesInScale).toEqual(['text']);
-      expect(fonts[DRAWN_FAMILY].family).toBe(face.text);
-    });
-
-    it('keeps the two families the application stopped drawing, with their licences', () => {
+    it('ships one family for each face the design system names, and no family it does not', () => {
       expect(fontFamilyNames.map((name) => fonts[name].family)).toEqual([
+        'Newsreader 16pt',
         'Plus Jakarta Sans',
-        'Fraunces 72pt Soft',
-        'IBM Plex Mono',
+        'JetBrains Mono',
       ]);
-      expect(fontFiles).toHaveLength(8);
+      expect([...fontFamilyNames].sort()).toEqual(Object.values(faceFamily).sort());
+      expect(Object.keys(faceFamily).sort()).toEqual(Object.keys(face).sort());
+    });
+
+    it('ships every file it names and loads all of them, because every face is drawn', () => {
+      expect(fontFiles).toHaveLength(6);
       expect(applicationFontFiles.map((file) => file.name)).toEqual([
+        'Newsreader16pt-Regular',
+        'Newsreader16pt-Medium',
         'PlusJakartaSans-Regular',
-        'PlusJakartaSans-Medium',
         'PlusJakartaSans-SemiBold',
-        'PlusJakartaSans-Bold',
+        'JetBrainsMono-Regular',
+        'JetBrainsMono-Medium',
       ]);
     });
 
-    it('ships a cut of the drawn family for each weight the design system names', () => {
-      expect(fontWeightNames).toEqual(['regular', 'medium', 'semiBold', 'bold']);
-      expect(new Set(fontFiles.map((file) => file.path)).size).toBe(8);
-      expect(fontWeightNames.map((weight) => fontFile(DRAWN_FAMILY, weight).weight)).toEqual([
-        400, 500, 600, 700,
-      ]);
-    });
+    it('ships a cut of each family for every weight its own roles ask for, and no other', () => {
+      const asked = new Map<string, Set<number>>();
 
-    it('keeps the two cuts of each family the application stopped drawing in', () => {
-      const quiet = fontFamilyNames.filter((name) => name !== DRAWN_FAMILY);
+      for (const role of typeRoleNames) {
+        const family = faceFamily[typeScale[role].face];
+        asked.set(family, (asked.get(family) ?? new Set()).add(typeScale[role].weight));
+      }
 
-      expect(quiet.map((name) => fonts[name].weights)).toEqual([
-        ['regular', 'semiBold'],
-        ['regular', 'semiBold'],
-      ]);
-      expect(quiet.map((name) => fontFile(name, 'regular').weight)).toEqual([400, 400]);
-      expect(quiet.map((name) => fontFile(name, 'semiBold').weight)).toEqual([600, 600]);
+      const missing = fontFamilyNames.flatMap((name) => {
+        const wanted = [...(asked.get(name) ?? new Set<number>())].sort();
+        const held = fonts[name].weights.map((weight) => fontFile(name, weight).weight).sort();
+
+        return String(wanted) === String(held) ? [] : [`${name} ships ${held} and needs ${wanted}`];
+      });
+
+      expect(missing).toEqual([]);
+      expect(new Set(fontFiles.map((file) => file.path)).size).toBe(6);
     });
 
     it('refuses a cut a family never shipped, rather than answering with a lighter one', () => {
-      expect(() => fontFile('fraunces', 'bold')).toThrow('Fraunces 72pt Soft ships no bold cut');
+      expect(() => fontFile('newsreader', 'semiBold')).toThrow(
+        'Newsreader 16pt ships no semiBold cut',
+      );
+      expect(() => fontFile('plusJakartaSans', 'medium')).toThrow(
+        'Plus Jakarta Sans ships no medium cut',
+      );
     });
 
     it('names each file by the name a style will ask for', () => {
-      expect(fontNameFor(400)).toBe('PlusJakartaSans-Regular');
-      expect(fontNameFor(600)).toBe('PlusJakartaSans-SemiBold');
+      expect(fontNameFor('display', 400)).toBe('Newsreader16pt-Regular');
+      expect(fontNameFor('text', 400)).toBe('PlusJakartaSans-Regular');
+      expect(fontNameFor('data', 500)).toBe('JetBrainsMono-Medium');
     });
 
     it('draws every weight in its own file, so nothing is left to the renderer to thicken', () => {
-      expect(fontNameFor(500)).toBe('PlusJakartaSans-Medium');
-      expect(fontNameFor(700)).toBe('PlusJakartaSans-Bold');
+      expect(fontNameFor('display', 500)).toBe('Newsreader16pt-Medium');
+      expect(fontNameFor('text', 600)).toBe('PlusJakartaSans-SemiBold');
+      expect(fontNameFor('data', 400)).toBe('JetBrainsMono-Regular');
+    });
+
+    it('refuses the weight on its own, which is how a file was asked for in one family', () => {
+      // Three families draw the product now, so a weight alone names no file. Left to answer, it
+      // would have reached whichever family the map happened to hold first. Both ways in are
+      // refused, because a caller reaches for whichever one it already knew.
+      const byWeightAlone = [
+        () => (fontNameFor as unknown as (weight: number) => string)(400),
+        () => (fontFileFor as unknown as (weight: number) => FontFile)(600),
+      ];
+
+      for (const call of byWeightAlone) {
+        expect(call).toThrow('a font is asked for by face and then weight');
+      }
     });
 
     it.each(fontFiles.map((file) => [file.path, file] as const))(
@@ -154,6 +175,21 @@ describe('every shipped font carries its licence', () => {
       expect(declared).toContain(`Reserved Font Name "${reservedName}"`);
     });
 
+    it('reads the reservation off each licence rather than off a list, so a new font is covered', () => {
+      const declared = fontFamilyNames.map((name) => ({
+        name,
+        onTheLicence: /Reserved Font Name "([^"]+)"/.exec(
+          read(fonts[name].licencePath).split('\n')[0] ?? '',
+        )?.[1],
+        recorded: fonts[name].reservedName,
+      }));
+
+      expect(declared.filter((each) => each.onTheLicence !== each.recorded)).toEqual([]);
+      // None of the three reserves one today. A family that does arrives with the word on its
+      // first line, and the case above then holds the token package to it.
+      expect(declared.map((each) => each.recorded)).toEqual([undefined, undefined, undefined]);
+    });
+
     it('keeps the licence in the same directory as the files it covers', () => {
       const apart = fontFamilyNames
         .filter((name) =>
@@ -198,6 +234,14 @@ describe('every shipped font carries its licence', () => {
         shipped.filter((file) => !allowed.has(file)).map((file) => relative(fontsDirectory, file)),
       ).toEqual([]);
     });
+
+    it('keeps no file of the two families the design system replaced', () => {
+      const gone = shipped.filter((file) => /fraunces|ibm-plex-mono/i.test(file));
+
+      expect(gone).toEqual([]);
+      expect(fontFamilyNames).not.toContain('fraunces');
+      expect(fontFamilyNames).not.toContain('ibmPlexMono');
+    });
   });
 
   describe('the document a reader of the repository finds', () => {
@@ -227,28 +271,26 @@ describe('every shipped font carries its licence', () => {
       expect(document).toContain('unmodified');
     });
 
-    it('names the reserved font name the reader may not keep in a modified build', () => {
-      const reserved = fontFamilyNames
-        .map((name) => fonts[name].reservedName)
-        .filter((reservedName): reservedName is string => reservedName !== undefined);
-
-      expect(reserved).toEqual(['Plex']);
-      expect(reserved.filter((reservedName) => !document.includes(reservedName))).toEqual([]);
+    it('names no family the repository stopped shipping', () => {
+      expect(document).not.toContain('Fraunces 72pt Soft');
+      expect(document).not.toContain('IBM Plex Mono');
     });
   });
 });
 
 describe('the roles are bound to the family that ships', () => {
   it.each(typeRoleNames)('%s is drawn in a file that is on disk', (name) => {
-    const file = fontNameFor(typeScale[name].weight);
+    const file = fontNameFor(typeScale[name].face, typeScale[name].weight);
 
     expect(applicationFontFiles.map((each) => each.name)).toContain(file);
   });
 
-  it('asks for no weight the drawn family cannot answer', () => {
-    const answered = typeRoleNames.map((name) => fontNameFor(typeScale[name].weight));
+  it('asks for no weight the face it names cannot answer', () => {
+    const answered = typeRoleNames.map((name) =>
+      fontNameFor(typeScale[name].face, typeScale[name].weight),
+    );
 
     expect(answered.filter((name) => name === undefined)).toEqual([]);
-    expect(new Set(answered).size).toBe(3);
+    expect(new Set(answered).size).toBe(6);
   });
 });
