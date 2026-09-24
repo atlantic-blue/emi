@@ -487,6 +487,7 @@ defineFeature(feature, (test) => {
         });
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingSkipTestID);
       },
     );
 
@@ -565,6 +566,8 @@ defineFeature(feature, (test) => {
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
     });
 
     and('she presses and holds the ring', async () => {
@@ -572,7 +575,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, and how she feels about it',
+      'she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with',
       () => {
         expect(visited).toEqual([
           '/onboarding/welcome',
@@ -584,6 +587,7 @@ defineFeature(feature, (test) => {
           '/onboarding/period-length',
           '/onboarding/regularity',
           '/onboarding/feeling',
+          '/onboarding/goals',
           '/onboarding/hold',
         ]);
         expect(whatEachScreenSaid).toEqual([firstRunCopy.welcome.title]);
@@ -633,6 +637,8 @@ defineFeature(feature, (test) => {
       }
 
       await shePresses(onboardingActionTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());

@@ -140,6 +140,9 @@ export const english = {
   'history.runningWithPeriod': '{running}, {periodDays} of bleeding so far',
   'history.title': 'History',
 
+  // The line a woman who asked for a record for her doctor reads. It names her own answer back
+  // to her, and it says what the press does rather than saying what the record is for.
+  'home.doctorRecord': 'You asked for a record for your doctor. Open the export.',
   'home.export': 'Export',
   'home.greeting': 'Hello, {name}',
   'home.history': 'History',
@@ -234,6 +237,15 @@ export const english = {
   'onboarding.feeling.line.encrypted': 'Encrypted on this phone.',
   'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
   'onboarding.feeling.title': 'How you feel about it',
+  'onboarding.goals.action': 'Continue',
+  'onboarding.goals.choice.doctorRecord': 'Keep a record for my doctor',
+  'onboarding.goals.choice.fertileWindow': 'See my fertile window, as an estimate',
+  'onboarding.goals.choice.forecast': 'Know when my period comes',
+  'onboarding.goals.choice.symptoms': 'Understand my symptoms',
+  'onboarding.goals.line.chooseAll': 'Choose all that apply.',
+  'onboarding.goals.line.encrypted':
+    'Emi encrypts your answers on this phone. Nobody else can read them.',
+  'onboarding.goals.title': 'What do you want Emi to help with?',
   'onboarding.hold.action': 'Hold to begin',
   'onboarding.hold.held': 'Holding',
   'onboarding.hold.instruction': 'Press and hold the ring to begin.',

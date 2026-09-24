@@ -1,4 +1,4 @@
-import type { Feeling, Regularity } from '@emi/crypto';
+import type { Feeling, Goal, Regularity } from '@emi/crypto';
 import {
   type ReactNode,
   createContext,
@@ -14,6 +14,7 @@ import { useHerVaultsMade } from '../../services/vault/VaultProvider';
 import {
   defaultCycleLengthDays,
   firstRunIsDone,
+  goalsAfterPressing,
   nameSheGave,
   writeEverythingAtTheHold,
 } from './firstRun';
@@ -33,6 +34,8 @@ interface FirstRun {
   readonly regularity: Regularity | undefined;
   /** Nothing at all where she skipped the question, which leaves the home screen as it is. */
   readonly feeling: Feeling | undefined;
+  /** What she has pressed so far, in the order she pressed it, and empty until she presses one. */
+  readonly goals: readonly Goal[];
   /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
   readonly nameTyped: string;
   readonly birthYear: number | undefined;
@@ -46,6 +49,10 @@ interface FirstRun {
   readonly setRegularity: (answer: Regularity | undefined) => void;
   /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as an answer. */
   readonly setFeeling: (answer: Feeling | undefined) => void;
+  /** One row pressed: the goal joins the list, or leaves it where she pressed it a second time. */
+  readonly pressGoal: (goal: Goal) => void;
+  /** The way past the question, which empties whatever she pressed before she pressed it. */
+  readonly forgetTheGoals: () => void;
   readonly setNameTyped: (typed: string) => void;
   /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as a year. */
   readonly setBirthYear: (year: number | undefined) => void;
@@ -88,6 +95,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [periodLengthDays, setPeriodLengthDays] = useState<number | undefined>(undefined);
   const [regularity, setRegularity] = useState<Regularity | undefined>(undefined);
   const [feeling, setFeeling] = useState<Feeling | undefined>(undefined);
+  const [goals, setGoals] = useState<readonly Goal[]>([]);
   const [nameTyped, setNameTyped] = useState('');
   const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
   const writing = useRef(false);
@@ -114,6 +122,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
           periodLengthDays,
           regularity,
           feeling,
+          goals,
           name: nameSheGave(nameTyped),
           birthYear,
         },
@@ -128,6 +137,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     cycleLengthDays,
     database,
     feeling,
+    goals,
     makeHerVaults,
     nameTyped,
     periodBeforeStartedOn,
@@ -135,6 +145,14 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     periodStartedOn,
     regularity,
   ]);
+
+  const pressGoal = useCallback((goal: Goal) => {
+    setGoals((chosen) => goalsAfterPressing(chosen, goal));
+  }, []);
+
+  const forgetTheGoals = useCallback(() => {
+    setGoals([]);
+  }, []);
 
   const leaveTheTour = useCallback(() => {
     markTourSeen(database, new Date());
@@ -148,6 +166,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setPeriodLengthDays(undefined);
     setRegularity(undefined);
     setFeeling(undefined);
+    setGoals([]);
     setNameTyped('');
     setBirthYear(undefined);
     setIsDone(firstRunIsDone(database));
@@ -164,6 +183,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       periodLengthDays,
       regularity,
       feeling,
+      goals,
       nameTyped,
       birthYear,
       setPeriodStartedOn,
@@ -172,6 +192,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       setPeriodLengthDays,
       setRegularity,
       setFeeling,
+      pressGoal,
+      forgetTheGoals,
       setNameTyped,
       setBirthYear,
       leaveTheTour,
@@ -182,8 +204,11 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       birthYear,
       cycleLengthDays,
       feeling,
+      forgetTheGoals,
+      goals,
       isDone,
       leaveTheTour,
+      pressGoal,
       nameTyped,
       periodBeforeStartedOn,
       periodLengthDays,

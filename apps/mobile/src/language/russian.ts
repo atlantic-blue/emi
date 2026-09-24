@@ -146,6 +146,7 @@ export const russian: CatalogueIn<'ru'> = {
   'history.runningWithPeriod': '{running}, пока {periodDays} с кровью',
   'history.title': 'История',
 
+  'home.doctorRecord': 'Вы просили запись для врача. Откройте экспорт.',
   'home.export': 'Экспорт',
   'home.greeting': 'Здравствуйте, {name}',
   'home.history': 'История',
@@ -245,6 +246,15 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.feeling.line.encrypted': 'Зашифровано на этом телефоне.',
   'onboarding.feeling.line.talks': 'Это меняет только то, как Emi говорит с вами.',
   'onboarding.feeling.title': 'Как вы к этому относитесь',
+  'onboarding.goals.action': 'Продолжить',
+  'onboarding.goals.choice.doctorRecord': 'Вести запись для врача',
+  'onboarding.goals.choice.fertileWindow': 'Видеть фертильное окно, как оценку',
+  'onboarding.goals.choice.forecast': 'Знать, когда придут месячные',
+  'onboarding.goals.choice.symptoms': 'Понимать свои симптомы',
+  'onboarding.goals.line.chooseAll': 'Выберите всё, что подходит.',
+  'onboarding.goals.line.encrypted':
+    'Emi шифрует ваши ответы на этом телефоне. Никто другой не может их прочитать.',
+  'onboarding.goals.title': 'С чем вы хотите, чтобы Emi помогала?',
   'onboarding.hold.action': 'Удерживайте, чтобы начать',
   'onboarding.hold.held': 'Удерживаете',
   'onboarding.hold.instruction': 'Нажмите и удерживайте кольцо, чтобы начать.',

@@ -1,4 +1,4 @@
-import type { Feeling, Regularity } from '@emi/crypto';
+import type { Feeling, Goal, Regularity } from '@emi/crypto';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
@@ -29,6 +29,8 @@ interface Shown {
   readonly regularity: Regularity | undefined;
   /** How she said her period feels, where she answered, which adds one line and no more. */
   readonly feeling: Feeling | undefined;
+  /** What she asked Emi for, where she answered, which chooses the cards under the forecast. */
+  readonly goals: readonly Goal[] | undefined;
 }
 
 /**
@@ -60,6 +62,7 @@ function whatSheIsLookingAt(
     name: herAnswers?.name,
     regularity: herAnswers?.regularity,
     feeling: herAnswers?.feeling,
+    goals: herAnswers?.goals,
   };
 }
 
@@ -97,6 +100,7 @@ export default function HomeRoute(): ReactNode {
       cycleLengthDays={shown.cycleLengthDays}
       feeling={shown.feeling}
       forecast={shown.forecast}
+      goals={shown.goals}
       name={shown.name}
       onExport={() => router.push('/export')}
       onHistory={() => router.push('/history')}

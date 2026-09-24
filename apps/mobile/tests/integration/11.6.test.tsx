@@ -230,13 +230,13 @@ describe('a hard period day offers the pain log first', () => {
       expect(firstRunCopy.feeling.lines).toHaveLength(2);
     });
 
-    it('hands her to the hold, whether she answers it or passes it by', async () => {
+    it('hands her on to the goals, whether she answers it or passes it by', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheFeeling();
       await shePresses(onboardingSkipTestID);
 
-      expect(app.pathname()).toBe('/onboarding/hold');
+      expect(app.pathname()).toBe('/onboarding/goals');
     });
   });
 

@@ -1,6 +1,6 @@
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
-import type { Feeling, Regularity } from '@emi/crypto';
+import type { Feeling, Goal, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
 import { addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
@@ -58,6 +58,8 @@ interface Recorded {
   readonly regularity?: Regularity;
   /** Left out where she passed the question by, and then no line is offered to her. */
   readonly feeling?: Feeling;
+  /** Left out where she passed the question by, and then neither card is drawn for her. */
+  readonly goals?: readonly Goal[];
   /** The day of the cycle this frame is drawn on, where it is not the day the rest are drawn on. */
   readonly onDay?: number;
 }
@@ -79,6 +81,11 @@ const theFourSets: readonly Recorded[] = [
     set: veryRegular,
     feeling: 'hard',
     onDay: 2,
+  },
+  {
+    title: 'Six cycles, and she asked for both cards',
+    set: veryRegular,
+    goals: ['fertileWindow', 'doctorRecord'],
   },
 ];
 
@@ -118,6 +125,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
         cycleLengthDays={sheSaidHerCycleRuns}
         feeling={recorded.feeling}
         forecast={forecast}
+        goals={recorded.goals}
         name={recorded.name}
         onExport={() => undefined}
         onHistory={() => undefined}
