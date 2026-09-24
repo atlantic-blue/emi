@@ -40,7 +40,7 @@ type Style = Record<string, unknown>;
  * decimals is rounded here rather than by each reader, because the tail of it is arithmetic and
  * never a width, and a comparison against it fails on the tail alone.
  */
-function toATenthOfAPoint(points: number): number {
+export function toATenthOfAPoint(points: number): number {
   return Math.round(points * 10) / 10;
 }
 
@@ -165,5 +165,113 @@ export function theRow(row: Box, cells: readonly Box[], glassWidth: number): Mea
     rightEdge: toATenthOfAPoint(
       cellWidths.reduce((total, one) => total + one, 0) + gap * (cells.length - 1),
     ),
+  };
+}
+
+/** One cell of a row that is as wide as what it holds, and the width of the words it holds. */
+export interface WordCell {
+  readonly box: Box;
+  /** Points. The words alone, before the cell's own border and padding are added to them. */
+  readonly words: number;
+}
+
+export interface MeasuredWordRow {
+  /** The width the cells share, inside the row. */
+  readonly width: number;
+  /** What each cell is drawn at, in the order the cells were handed in. */
+  readonly cellWidths: readonly number[];
+  /** Points between one cell and the next, in the same order. */
+  readonly separations: readonly number[];
+  /** Where the right edge of the last cell falls, measured from the left edge inside the row. */
+  readonly rightEdge: number;
+}
+
+/** A cell as the row has to place it: what it asked for, what it will give up, and its floor. */
+interface Placed {
+  width: number;
+  readonly shrink: number;
+  readonly floor: number;
+}
+
+function placed(cell: WordCell): Placed {
+  const style = styleOf(cell.box);
+  const outside = marginsOf(style);
+
+  return {
+    floor: held(style, ['minWidth']) + outside,
+    shrink: held(style, ['flexShrink']),
+    width: Math.max(held(style, ['minWidth']), cell.words + insidesOf(style)) + outside,
+  };
+}
+
+function widthAcross(cells: readonly Placed[]): number {
+  return cells.reduce((total, cell) => total + cell.width, 0);
+}
+
+/**
+ * Takes the overrun off the cells that declare `flexShrink`, in proportion to what each of them
+ * asked for, and never below the floor a cell declares. A cell that declares none keeps its width,
+ * which is how a row comes to overrun: React Native shrinks nothing unless a style says so.
+ *
+ * A cell that reaches its floor stops giving and the pass runs again, because what it could not
+ * give still has to come off somewhere.
+ */
+function squeeze(cells: readonly Placed[], room: number): void {
+  for (let pass = 0; pass < cells.length; pass += 1) {
+    const overrun = widthAcross(cells) - room;
+    const share = cells.reduce(
+      (total, cell) => total + (cell.width > cell.floor ? cell.shrink * cell.width : 0),
+      0,
+    );
+
+    if (overrun <= 0 || share === 0) {
+      return;
+    }
+
+    for (const cell of cells) {
+      cell.width = Math.max(cell.floor, cell.width - (overrun * cell.shrink * cell.width) / share);
+    }
+  }
+}
+
+/**
+ * A row whose cells are as wide as the words inside them, which is the other shape a row comes in.
+ * `theRow` measures cells that grow into an equal share of what is left; these carry a width of
+ * their own and the row has to find room for all of them.
+ *
+ * Room left over is spread by `justifyContent`. The two the calendar uses are answered and the
+ * others are refused rather than guessed at, because a wrong answer here reads as a measurement.
+ */
+export function theRowOfWords(
+  row: Box,
+  cells: readonly WordCell[],
+  glassWidth: number,
+): MeasuredWordRow {
+  if (cells.length < 2) {
+    throw new Error('a row of fewer than two cells has nothing between its cells to measure');
+  }
+
+  const rowStyle = styleOf(row);
+  const spread = rowStyle.justifyContent ?? 'flex-start';
+
+  if (spread !== 'flex-start' && spread !== 'space-between') {
+    throw new Error(`a row spread with ${String(spread)} is refused, because it moves the gaps`);
+  }
+
+  const gap = held(rowStyle, ['columnGap', 'gap']);
+  const width = widthInside(row, glassWidth);
+  const between = gap * (cells.length - 1);
+  const drawn = cells.map(placed);
+
+  squeeze(drawn, width - between);
+
+  const across = widthAcross(drawn) + between;
+  const spare = spread === 'space-between' ? Math.max(0, width - across) / (cells.length - 1) : 0;
+
+  return {
+    cellWidths: drawn.map((cell) => toATenthOfAPoint(cell.width)),
+    rightEdge: toATenthOfAPoint(across + spare * (cells.length - 1)),
+    separations: cells.slice(1).map(() => toATenthOfAPoint(gap + spare)),
+    width: toATenthOfAPoint(width),
   };
 }

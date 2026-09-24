@@ -20,6 +20,7 @@ export function dayTestID(day: string): string {
 export const calendarTestID = 'calendar';
 export const weekTestID = 'calendar-week';
 export const emptyCellTestID = 'calendar-empty';
+export const monthHeadingTestID = 'calendar-heading';
 export const monthTestID = 'calendar-month';
 export const earlierMonthTestID = 'calendar-earlier-month';
 export const laterMonthTestID = 'calendar-later-month';
@@ -129,7 +130,7 @@ export function Calendar({
 
   return (
     <View style={styles.calendar} testID={calendarTestID}>
-      <View style={styles.heading}>
+      <View style={styles.heading} testID={monthHeadingTestID}>
         <Pressable
           accessibilityLabel={firstRunCopy.earlierMonth}
           accessibilityRole="button"
@@ -143,7 +144,7 @@ export function Calendar({
             {firstRunCopy.earlier}
           </Text>
         </Pressable>
-        <Text style={styles.month} testID={monthTestID}>
+        <Text numberOfLines={1} style={styles.month} testID={monthTestID}>
           {monthLabel(month)}
         </Text>
         <Pressable
@@ -227,11 +228,16 @@ const styles = StyleSheet.create({
   heading: {
     alignItems: 'center',
     flexDirection: 'row',
+    gap: space.spaceSm,
     justifyContent: 'space-between',
     marginBottom: space.spaceMd,
   },
+  // The title is the only box in the row that gives way. A month name is longer in Spanish than
+  // in English and longer again in a face the phone substitutes, and the two pills have a thumb to
+  // hold, so the width comes off the words and never off the way to another month.
   month: {
     color: colour.onSurface,
+    flexShrink: 1,
     ...textStyle('headline-md'),
   },
   // A handle she can still press is a pill she can see. A spent one keeps its words and loses the
