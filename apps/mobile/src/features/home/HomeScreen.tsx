@@ -1,4 +1,4 @@
-import type { Feeling, Regularity } from '@emi/crypto';
+import type { Feeling, Goal, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
@@ -8,8 +8,10 @@ import { CycleRing } from '../../components/CycleRing';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
+import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 import { greeting, homeCopy } from './copy';
+import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
 
 /**
@@ -37,6 +39,8 @@ export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
 export const homeGreetingTestID = 'home-greeting';
 export const homePainLineTestID = 'home-pain-line';
+export const homeFertileWindowTestID = 'home-fertile-window';
+export const homeDoctorRecordTestID = 'home-doctor-record';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -59,6 +63,11 @@ interface Props {
    * here and nowhere in the arithmetic: the only thing it moves is the line below the ring.
    */
   readonly feeling?: Feeling;
+  /**
+   * What she said she came to Emi for, and nothing at all where she skipped the question. Each
+   * goal draws one card, and a woman who asked for neither reads the screen as it was before.
+   */
+  readonly goals?: readonly Goal[];
   readonly onLogToday: () => void;
   /** The way to the pain group of the log, which only the line below the ring takes her by. */
   readonly onLogPain: () => void;
@@ -76,6 +85,7 @@ export function HomeScreen({
   name,
   regularity,
   feeling,
+  goals,
   onLogToday,
   onLogPain,
   onHistory,
@@ -114,14 +124,31 @@ export function HomeScreen({
           />
         </View>
 
+        {theFertileWindowIsOffered(goals, forecast) ? (
+          <View style={styles.card} testID={homeFertileWindowTestID}>
+            <FertileWindow forecast={forecast} />
+          </View>
+        ) : null}
+
+        {theRecordForHerDoctorIsOffered(goals) ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onExport}
+            style={styles.offer}
+            testID={homeDoctorRecordTestID}
+          >
+            <Text style={styles.offerLabel}>{homeCopy.doctorRecord}</Text>
+          </Pressable>
+        ) : null}
+
         {thePainLineIsOffered(feeling, ring) ? (
           <Pressable
             accessibilityRole="button"
             onPress={onLogPain}
-            style={styles.painLine}
+            style={styles.offer}
             testID={homePainLineTestID}
           >
-            <Text style={styles.painLineLabel}>{homeCopy.painLine}</Text>
+            <Text style={styles.offerLabel}>{homeCopy.painLine}</Text>
           </Pressable>
         ) : null}
 
@@ -182,6 +209,9 @@ const styles = StyleSheet.create({
     color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
+  // The card carries the window the ring already draws in colour, said in words, so it sits
+  // under the forecast it is counted back from rather than beside the ways off the screen.
+  card: { marginTop: space.spaceMd },
   body: {
     alignItems: 'center',
     flexGrow: 1,
@@ -216,10 +246,10 @@ const styles = StyleSheet.create({
     ...textStyle('body-sm'),
     textAlign: 'center',
   },
-  // Between the forecast and the way into the log, because it is an offer to log and it belongs
-  // beside the button it stands in front of. It stays at the small size, which SCREEN-2 holds the
-  // whole screen to.
-  painLine: {
+  // Both offers sit between the forecast and the way into the log, because each one takes her
+  // somewhere and belongs beside the button it stands in front of. They stay at the small size,
+  // which SCREEN-2 holds the whole screen to.
+  offer: {
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: space.spaceLg,
@@ -227,7 +257,7 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.spaceLg,
   },
-  painLineLabel: {
+  offerLabel: {
     color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
     textAlign: 'center',

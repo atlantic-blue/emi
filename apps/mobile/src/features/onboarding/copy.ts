@@ -1,4 +1,11 @@
-import { type Feeling, type Regularity, feelingValues, regularityValues } from '@emi/crypto';
+import {
+  type Feeling,
+  type Goal,
+  type Regularity,
+  feelingValues,
+  goalValues,
+  regularityValues,
+} from '@emi/crypto';
 
 import { words } from '../../language';
 import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
@@ -77,6 +84,11 @@ export const firstRunCopy = {
     lines: [words('onboarding.feeling.line.talks'), words('onboarding.feeling.line.encrypted')],
     action: words('onboarding.feeling.action'),
   },
+  goals: {
+    title: words('onboarding.goals.title'),
+    lines: [words('onboarding.goals.line.chooseAll'), words('onboarding.goals.line.encrypted')],
+    action: words('onboarding.goals.action'),
+  },
   hold: {
     title: words('onboarding.hold.title'),
     instruction: words('onboarding.hold.instruction'),
@@ -112,6 +124,7 @@ export const firstRunScreens = [
   'periodLength',
   'regularity',
   'feeling',
+  'goals',
 ] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];
@@ -145,6 +158,21 @@ export const feelingLabels: Readonly<Record<Feeling, string>> = {
 
 /** The order the screen offers them in, which the record above cannot carry. */
 export const feelingChoices: readonly Feeling[] = feelingValues;
+
+/**
+ * The words of the four things she can come to Emi for. A map for the same reason the two above
+ * are maps: a fifth value arriving in `Goal` leaves this file failing to compile rather than
+ * leaving her a row she cannot choose.
+ */
+export const goalLabels: Readonly<Record<Goal, string>> = {
+  forecast: words('onboarding.goals.choice.forecast'),
+  symptoms: words('onboarding.goals.choice.symptoms'),
+  fertileWindow: words('onboarding.goals.choice.fertileWindow'),
+  doctorRecord: words('onboarding.goals.choice.doctorRecord'),
+};
+
+/** The order the screen offers them in, which the record above cannot carry. */
+export const goalChoices: readonly Goal[] = goalValues;
 
 /**
  * How far along she is, said in words. Nothing draws it: the bar carries the position on the

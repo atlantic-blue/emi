@@ -147,6 +147,7 @@ export const spanish: CatalogueIn<'es'> = {
   'history.runningWithPeriod': '{running}, {periodDays} de sangrado hasta ahora',
   'history.title': 'Historial',
 
+  'home.doctorRecord': 'Pediste un registro para tu médico. Abre la exportación.',
   'home.export': 'Exportar',
   'home.greeting': 'Hola, {name}',
   'home.history': 'Historial',
@@ -237,6 +238,15 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.feeling.line.encrypted': 'Cifrado en este teléfono.',
   'onboarding.feeling.line.talks': 'Esto solo cambia cómo Emi te habla, nada más.',
   'onboarding.feeling.title': 'Cómo te sientes con ello',
+  'onboarding.goals.action': 'Continuar',
+  'onboarding.goals.choice.doctorRecord': 'Llevar un registro para mi médico',
+  'onboarding.goals.choice.fertileWindow': 'Ver mi ventana fértil, como estimación',
+  'onboarding.goals.choice.forecast': 'Saber cuándo llega mi regla',
+  'onboarding.goals.choice.symptoms': 'Entender mis síntomas',
+  'onboarding.goals.line.chooseAll': 'Elige todas las que quieras.',
+  'onboarding.goals.line.encrypted':
+    'Emi cifra tus respuestas en este teléfono. Nadie más puede leerlas.',
+  'onboarding.goals.title': '¿Con qué quieres que Emi te ayude?',
   'onboarding.hold.action': 'Mantén para empezar',
   'onboarding.hold.held': 'Manteniendo',
   'onboarding.hold.instruction': 'Mantén pulsado el anillo para empezar.',

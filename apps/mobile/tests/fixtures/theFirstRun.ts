@@ -1,4 +1,4 @@
-import type { Feeling, Regularity } from '@emi/crypto';
+import type { Feeling, Goal, Regularity } from '@emi/crypto';
 import { fireEvent, screen } from '@testing-library/react-native';
 
 import { longerTestID } from '../../src/features/onboarding/CycleLength';
@@ -10,6 +10,7 @@ import {
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
+import { goalTestID } from '../../src/features/onboarding/Goals';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import { yearTestID } from '../../src/features/onboarding/YearOfBirth';
 import {
@@ -29,6 +30,8 @@ export interface HerAnswers {
   readonly regularity?: Regularity;
   /** Left out where she skips the question, which leaves the home screen offering her nothing. */
   readonly feeling?: Feeling;
+  /** Left out where she skips the question, which leaves the home screen drawing no new card. */
+  readonly goals?: readonly Goal[];
   /** Left out where she skips the question, which is what a walk that is about something else does. */
   readonly name?: string;
   readonly birthYear?: number;
@@ -99,10 +102,20 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
 
   if (answers.feeling === undefined) {
     await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+  } else {
+    await fireEvent.press(screen.getByTestId(feelingTestID(answers.feeling)));
+    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  }
+
+  if (answers.goals === undefined || answers.goals.length === 0) {
+    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
 
     return;
   }
 
-  await fireEvent.press(screen.getByTestId(feelingTestID(answers.feeling)));
+  for (const goal of answers.goals) {
+    await fireEvent.press(screen.getByTestId(goalTestID(goal)));
+  }
+
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));
 }

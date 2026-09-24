@@ -13,10 +13,10 @@ export default function FeelingRoute(): ReactNode {
       chosen={feeling}
       onBack={() => router.back()}
       onChoose={setFeeling}
-      onContinue={() => router.push('/onboarding/hold')}
+      onContinue={() => router.push('/onboarding/goals')}
       onSkip={() => {
         setFeeling(undefined);
-        router.push('/onboarding/hold');
+        router.push('/onboarding/goals');
       }}
     />
   );

@@ -139,9 +139,14 @@ async function sheSkipsTheRegularity(): Promise<void> {
   await fireEvent.press(theScreen('regularity').getByTestId(onboardingSkipTestID));
 }
 
-/** The way past the feeling, which is the last question and leaves her profile without it. */
+/** The way past the feeling, which leaves her profile carrying no answer for it. */
 async function sheSkipsTheFeeling(): Promise<void> {
   await fireEvent.press(theScreen('feeling').getByTestId(onboardingSkipTestID));
+}
+
+/** The way past the goals, which is the last question and leaves her home screen as it is. */
+async function sheSkipsTheGoals(): Promise<void> {
+  await fireEvent.press(theScreen('goals').getByTestId(onboardingSkipTestID));
 }
 
 /** The whole first run: every question answered, and the hold that writes the answers. */
@@ -369,7 +374,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       );
     });
 
-    it('asks her nine questions, holds once, and asks nothing else', async () => {
+    it('asks her ten questions, holds once, and asks nothing else', async () => {
       const app = await sheOpensEmi();
       const visited = [app.pathname()];
 
@@ -392,6 +397,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
       await sheHoldsTheRing();
 
       expect(visited).toEqual([
@@ -404,6 +411,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/period-length',
         '/onboarding/regularity',
         '/onboarding/feeling',
+        '/onboarding/goals',
         '/onboarding/hold',
       ]);
       expect(app.pathname()).toBe('/');
@@ -423,6 +431,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       ).toEqual([
         'cycle-length.tsx',
         'feeling.tsx',
+        'goals.tsx',
         'last-period.tsx',
         'name.tsx',
         'period-before.tsx',
@@ -558,6 +567,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsThePeriodLength();
       await sheSkipsTheRegularity();
       await sheSkipsTheFeeling();
+      await sheSkipsTheGoals();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');
@@ -622,6 +632,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await sheSkipsTheFeeling();
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await sheSkipsTheGoals();
       expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
@@ -677,6 +690,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       });
       await sheSkipsTheRegularity();
       await sheSkipsTheFeeling();
+      await sheSkipsTheGoals();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');

@@ -1,10 +1,12 @@
 import {
   type DayRecord,
   type Feeling,
+  type Goal,
   type ProfileRecord,
   type Regularity,
   earliestBirthYear,
   feelingValues,
+  goalValues,
   longestName,
   longestPeriodLengthDays,
   regularityValues,
@@ -99,6 +101,12 @@ export interface FirstRunAnswers {
    * home screen offers her on a day inside her period and nothing about the arithmetic.
    */
   readonly feeling?: Feeling;
+  /**
+   * What she came to Emi for. Left out where she skipped the question, and then the home screen
+   * offers her the cards it offers anybody. An empty list is never written: choosing nothing and
+   * skipping are the same answer, so both leave the key off her profile.
+   */
+  readonly goals?: readonly Goal[];
 }
 
 export type FirstRunRefusal =
@@ -111,6 +119,8 @@ export type FirstRunRefusal =
   | 'period-length-is-out-of-range'
   | 'regularity-is-not-one-of-the-three'
   | 'feeling-is-not-one-of-the-three'
+  | 'goal-is-not-one-of-the-four'
+  | 'goal-is-chosen-twice'
   | 'first-run-is-already-done';
 
 export class FirstRunError extends Error {
@@ -171,6 +181,30 @@ export function statedFeeling(db: Database, vault: ProfileVault): Feeling | unde
 /** Whether the answer is one of the three that screen offers, asked of a value from anywhere. */
 export function feelingIsOffered(answer: string): answer is Feeling {
   return (feelingValues as readonly string[]).includes(answer);
+}
+
+/**
+ * What she said she came to Emi for, read from the sealed profile. Nothing at all is the answer a
+ * Skip leaves behind, and then the home screen draws the cards it draws for everybody.
+ */
+export function statedGoals(db: Database, vault: ProfileVault): readonly Goal[] | undefined {
+  return readProfile(db, vault)?.goals;
+}
+
+/** Whether the answer is one of the four that screen offers, asked of a value from anywhere. */
+export function goalIsOffered(answer: string): answer is Goal {
+  return (goalValues as readonly string[]).includes(answer);
+}
+
+/**
+ * Her list after she presses one row: the goal is added where it was not there, and taken out
+ * where it was. The order is the order she tapped, because the list she built is hers and the two
+ * readers ask only whether a goal is in it.
+ */
+export function goalsAfterPressing(chosen: readonly Goal[], pressed: Goal): readonly Goal[] {
+  return chosen.includes(pressed)
+    ? chosen.filter((goal) => goal !== pressed)
+    : [...chosen, pressed];
 }
 
 export function periodLengthIsInRange(days: number): boolean {
@@ -274,6 +308,7 @@ function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
       : { periodLengthDays: answers.periodLengthDays }),
     ...(answers.regularity === undefined ? {} : { regularity: answers.regularity }),
     ...(answers.feeling === undefined ? {} : { feeling: answers.feeling }),
+    ...(answers.goals === undefined || answers.goals.length === 0 ? {} : { goals: answers.goals }),
     recordedAt: now.toISOString(),
   };
 }
@@ -347,6 +382,21 @@ export function completeFirstRun(
     throw new FirstRunError(
       'feeling-is-not-one-of-the-three',
       `a feeling is one of ${feelingValues.join(', ')}, this one is ${answers.feeling}`,
+    );
+  }
+  const chosenGoals = answers.goals ?? [];
+  const outsideTheFour = chosenGoals.filter((goal) => !goalIsOffered(goal));
+  if (outsideTheFour.length > 0) {
+    throw new FirstRunError(
+      'goal-is-not-one-of-the-four',
+      `a goal is one of ${goalValues.join(', ')}, these are not: ${outsideTheFour.join(', ')}`,
+    );
+  }
+  const chosenTwice = chosenGoals.filter((goal, at) => chosenGoals.indexOf(goal) !== at);
+  if (chosenTwice.length > 0) {
+    throw new FirstRunError(
+      'goal-is-chosen-twice',
+      `a goal is chosen once, these were chosen twice: ${[...new Set(chosenTwice)].join(', ')}`,
     );
   }
   if (firstRunIsDone(db)) {

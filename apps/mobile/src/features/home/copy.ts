@@ -11,6 +11,7 @@ export const homeCopy = {
   export: words('home.export'),
   settings: words('home.settings'),
   painLine: words('home.painLine'),
+  doctorRecord: words('home.doctorRecord'),
 } as const;
 
 /**
