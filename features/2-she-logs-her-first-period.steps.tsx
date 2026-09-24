@@ -68,7 +68,10 @@ import {
   theVaultOnHerPhone,
 } from '../apps/mobile/tests/fixtures/herVault';
 import { sizedTextIn } from '../apps/mobile/tests/fixtures/renderedText';
-import { controlsTooSmallToPress } from '../apps/mobile/tests/fixtures/tapTargets';
+import {
+  controlsTooSmallToPress,
+  daySquaresLeavingTheRowDead,
+} from '../apps/mobile/tests/fixtures/tapTargets';
 import {
   type Box,
   aSmallIPhone,
@@ -1007,7 +1010,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SEE-3, every control of the first run is at least 44 points on both axes', ({
+  test('SEE-3, every control of the first run is at least 44 points on both axes, apart from a day square', ({
     given,
     when,
     and,
@@ -1043,10 +1046,13 @@ defineFeature(feature, (test) => {
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
     });
 
-    then('every control on each screen of the first run is at least 44 points on both axes', () => {
-      expect(measured).toEqual([[], [], [], [], [], []]);
-      expect(screen.getByTestId(periodLengthTestID)).toBeTruthy();
-    });
+    then(
+      'every control on each screen of the first run is at least 44 points on both axes, apart from a day square of the month',
+      () => {
+        expect(measured).toEqual([[], [], [], [], [], []]);
+        expect(screen.getByTestId(periodLengthTestID)).toBeTruthy();
+      },
+    );
   });
 
   test('SEE-3, a square of the calendar keeps its height and takes its width from the month', ({
@@ -1096,6 +1102,16 @@ defineFeature(feature, (test) => {
 
         expect(measured.rightEdge).toBeLessThanOrEqual(measured.width);
       }
+    });
+
+    and('the touch of every square reaches half the gap on each side', () => {
+      const row = screen.getAllByTestId(weekTestID).at(-1);
+
+      if (row === undefined) {
+        throw new Error('the calendar drew no weeks, so there was no row to measure');
+      }
+
+      expect(daySquaresLeavingTheRowDead(row, within(row).getAllByTestId(/^day-\d/))).toEqual([]);
     });
   });
 

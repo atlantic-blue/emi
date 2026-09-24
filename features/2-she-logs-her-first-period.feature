@@ -125,11 +125,11 @@ Feature: She opens Emi and logs her first period
     Then the phase she is in is written inside the ring in words
     And a screen reader is told the day and the phase in the same sentence
 
-  Scenario: SEE-3, every control of the first run is at least 44 points on both axes
+  Scenario: SEE-3, every control of the first run is at least 44 points on both axes, apart from a day square
     Given she has never opened Emi before
     When she opens Emi
     And she skips the tour Emi opens with
-    Then every control on each screen of the first run is at least 44 points on both axes
+    Then every control on each screen of the first run is at least 44 points on both axes, apart from a day square of the month
 
   Scenario: SEE-3, a square of the calendar keeps its height and takes its width from the month
     Given she has never opened Emi before
@@ -138,6 +138,7 @@ Feature: She opens Emi and logs her first period
     Then every square of the month is as high as a thumb needs
     And the seven squares of a week fill the width the calendar gives them on an iPhone 16
     And no square ends past the right edge of the calendar
+    And the touch of every square reaches half the gap on each side
 
   Scenario: SEE-3, a control below the floor is named with the size it was drawn at
     Given a control drawn at 40 points by 44
