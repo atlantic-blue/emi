@@ -14,7 +14,9 @@ import {
   unexpectedLogged,
 } from '../../../features/log/logDay';
 import { groupAskedFor, groupParameter } from '../../../features/log/askedGroup';
+import { groupsUnderTheFlow } from '../../../features/log/herOrder';
 import { useFirstRun } from '../../../features/onboarding/FirstRunProvider';
+import { statedFocus } from '../../../features/onboarding/firstRun';
 import { localDay } from '../../../features/onboarding/days';
 import { useProfileVault, useVault } from '../../../services/vault/VaultProvider';
 
@@ -84,6 +86,7 @@ export default function LogFlowRoute(): ReactNode {
       chosen={flowLogged(database, vault, today)}
       day={today}
       group={group}
+      groups={groupsUnderTheFlow(statedFocus(database, profiles), group)}
       marked={unexpectedLogged(database, vault, today)}
       onDone={() => router.back()}
       onMark={mark}
