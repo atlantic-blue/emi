@@ -172,6 +172,7 @@ async function sheOpensHerHomeScreen(her: HerPhone): Promise<void> {
         forecast={her.forecast}
         onExport={() => undefined}
         onHistory={() => undefined}
+        onLogPain={() => undefined}
         onLogToday={() => undefined}
         onSettings={() => undefined}
         ring={her.ring}
@@ -332,6 +333,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             forecast={forecastOf(cycles)}
             onExport={() => undefined}
             onHistory={() => undefined}
+            onLogPain={() => undefined}
             onLogToday={() => undefined}
             onSettings={() => undefined}
             ring={ringInputFor({
@@ -360,6 +362,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             forecast={forecastOf(listCycles(migratedDatabase()))}
             onExport={() => undefined}
             onHistory={() => undefined}
+            onLogPain={() => undefined}
             onLogToday={() => undefined}
             onSettings={() => undefined}
             ring={undefined}
@@ -401,6 +404,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             forecast={forecastOf(listCycles(migratedDatabase()))}
             onExport={() => undefined}
             onHistory={() => undefined}
+            onLogPain={() => undefined}
             onLogToday={() => undefined}
             onSettings={() => undefined}
             ring={undefined}

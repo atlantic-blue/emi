@@ -1,4 +1,4 @@
-import { type Flow, isBleeding } from '@emi/cycle';
+import { type Flow, type SymptomGroup, isBleeding, symptomsInGroup } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -10,6 +10,7 @@ import type { RingInput } from '../cycle/ringInput';
 import { words } from '../../language';
 import { dayLabel } from '../onboarding/days';
 import { FlowPicker } from './FlowPicker';
+import { SymptomGroupSection, groupHeadings } from './SymptomGroup';
 import { UnexpectedBleeding } from './UnexpectedBleeding';
 
 /**
@@ -28,14 +29,28 @@ export const logFlowDoneTestID = 'log-flow-done';
 export const logFlowNoRingTestID = 'log-flow-no-ring';
 export const logFlowSavedTestID = 'log-flow-saved';
 
+/** The section one group is drawn in, named after the group so a test presses the group it means. */
+export function logFlowGroupTestID(group: SymptomGroup): string {
+  return `symptom-group-${group}`;
+}
+
 interface Props {
   readonly day: string;
   readonly today: string;
   readonly ring: RingInput | undefined;
   readonly chosen?: Flow;
   readonly marked: boolean;
+  /**
+   * The one group the log was asked to open on, and nothing at all where it was asked for none.
+   * It is drawn above the flow, because a woman who came here by a line offering that group came
+   * for it and not for the picker.
+   */
+  readonly group?: SymptomGroup;
+  /** What the day already carries. Empty where it carries nothing, never left out. */
+  readonly symptoms?: readonly string[];
   readonly onPick: (flow: Flow) => void;
   readonly onMark: (marked: boolean) => void;
+  readonly onToggleSymptom?: (slug: string) => void;
   readonly onDone: () => void;
 }
 
@@ -45,8 +60,11 @@ export function LogFlow({
   ring,
   chosen,
   marked,
+  group,
+  symptoms = [],
   onPick,
   onMark,
+  onToggleSymptom,
   onDone,
 }: Props): ReactNode {
   // The mark answers a question about bleeding, so it is offered on the days that carry some. The
@@ -70,6 +88,15 @@ export function LogFlow({
         </View>
 
         <Text style={styles.when}>{dayLabel(day, today)}</Text>
+        {group === undefined ? null : (
+          <SymptomGroupSection
+            heading={groupHeadings[group]}
+            onToggle={(slug) => onToggleSymptom?.(slug)}
+            picked={symptoms}
+            symptoms={symptomsInGroup(group)}
+            testID={logFlowGroupTestID(group)}
+          />
+        )}
         <Text accessibilityRole="header" style={styles.title}>
           {logFlowCopy.title}
         </Text>

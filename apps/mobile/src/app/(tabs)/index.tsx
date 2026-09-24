@@ -1,4 +1,4 @@
-import type { Regularity } from '@emi/crypto';
+import type { Feeling, Regularity } from '@emi/crypto';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
@@ -10,6 +10,7 @@ import type { Database } from '../../data/database';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../features/cycle/ringInput';
 import { forecastOf } from '../../features/forecast/fromCache';
+import { groupParameter, painGroup } from '../../features/log/askedGroup';
 import { HomeScreen } from '../../features/home/HomeScreen';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
@@ -26,6 +27,8 @@ interface Shown {
   readonly name: string | undefined;
   /** How steady she said her cycle is, where she answered, which adds one sentence and no more. */
   readonly regularity: Regularity | undefined;
+  /** How she said her period feels, where she answered, which adds one line and no more. */
+  readonly feeling: Feeling | undefined;
 }
 
 /**
@@ -56,6 +59,7 @@ function whatSheIsLookingAt(
     cycleLengthDays: stated,
     name: herAnswers?.name,
     regularity: herAnswers?.regularity,
+    feeling: herAnswers?.feeling,
   };
 }
 
@@ -91,10 +95,12 @@ export default function HomeRoute(): ReactNode {
   return (
     <HomeScreen
       cycleLengthDays={shown.cycleLengthDays}
+      feeling={shown.feeling}
       forecast={shown.forecast}
       name={shown.name}
       onExport={() => router.push('/export')}
       onHistory={() => router.push('/history')}
+      onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
       onLogToday={() => router.push('/log')}
       onSettings={() => router.push('/settings')}
       regularity={shown.regularity}

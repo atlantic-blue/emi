@@ -68,3 +68,43 @@ function withoutTheMark(record: DayRecord): DayRecord {
 
   return rest;
 }
+
+export interface SymptomLog {
+  readonly day: string;
+  /** Every symptom the day carries after this write, and not the one she just pressed. */
+  readonly symptoms: readonly string[];
+  readonly now: Date;
+}
+
+/**
+ * One write of the symptoms of one day, from the group the log opened on. The day keeps its flow,
+ * its mark and everything else it holds, because the group is one control on a day that carries
+ * the rest of her answers.
+ */
+export function logSymptoms(db: Database, vault: DayVault, log: SymptomLog): DayAndCycles {
+  const held = readDayLog(db, log.day);
+  const record: DayRecord = {
+    ...(held ? withoutTheSymptoms(vault.open(held.payload)) : {}),
+    day: log.day,
+    // An empty list is left off rather than written, so a day she cleared holds nothing at all.
+    ...(log.symptoms.length > 0 ? { symptoms: log.symptoms } : {}),
+    recordedAt: log.now.toISOString(),
+  };
+  const write = { day: log.day, payload: vault.seal(record), now: log.now };
+
+  return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
+}
+
+/** What the day already carries, so the group opens on the answers she gave it before. */
+export function symptomsLogged(db: Database, vault: DayVault, day: string): readonly string[] {
+  const held = readDayLog(db, day);
+
+  return held ? (vault.open(held.payload).symptoms ?? []) : [];
+}
+
+/** The day as it stands, with its symptoms taken off, because this write decides them itself. */
+function withoutTheSymptoms(record: DayRecord): DayRecord {
+  const { symptoms, ...rest } = record;
+
+  return rest;
+}

@@ -1,6 +1,6 @@
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
-import type { Regularity } from '@emi/crypto';
+import type { Feeling, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
 import { addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
@@ -56,6 +56,10 @@ interface Recorded {
   readonly name?: string;
   /** Left out where she passed the question by, and then nothing is said about the width. */
   readonly regularity?: Regularity;
+  /** Left out where she passed the question by, and then no line is offered to her. */
+  readonly feeling?: Feeling;
+  /** The day of the cycle this frame is drawn on, where it is not the day the rest are drawn on. */
+  readonly onDay?: number;
 }
 
 const theFourSets: readonly Recorded[] = [
@@ -69,6 +73,12 @@ const theFourSets: readonly Recorded[] = [
     title: 'Six cycles of 28 days, and she said her cycle moves',
     set: veryRegular,
     regularity: 'moves',
+  },
+  {
+    title: 'Day 2 of a period she said is hard',
+    set: veryRegular,
+    feeling: 'hard',
+    onDay: 2,
   },
 ];
 
@@ -84,6 +94,7 @@ function noteFor(day: number | undefined, forecast: ForecastResult): string {
 }
 
 async function drawn(recorded: Recorded): Promise<DrawnScreen> {
+  const onDay = recorded.onDay ?? theDaySheOpensIt;
   const database =
     recorded.recorded === 'nothing'
       ? migratedDatabase()
@@ -97,7 +108,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       : ringInputFor({
           cycles,
           records: recordedDays(database, readDay),
-          today: addDays(open.startedOn, theDaySheOpensIt - 1),
+          today: addDays(open.startedOn, onDay - 1),
           statedCycleLengthDays: sheSaidHerCycleRuns,
         });
 
@@ -105,10 +116,12 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
     <OnAPhone>
       <HomeScreen
         cycleLengthDays={sheSaidHerCycleRuns}
+        feeling={recorded.feeling}
         forecast={forecast}
         name={recorded.name}
         onExport={() => undefined}
         onHistory={() => undefined}
+        onLogPain={() => undefined}
         onLogToday={() => undefined}
         onSettings={() => undefined}
         regularity={recorded.regularity}
@@ -124,7 +137,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
 
   return {
     title: recorded.title,
-    note: noteFor(ring === undefined ? undefined : theDaySheOpensIt, forecast),
+    note: noteFor(ring === undefined ? undefined : onDay, forecast),
     tree,
   };
 }

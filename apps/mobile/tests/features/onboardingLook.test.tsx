@@ -17,6 +17,7 @@ import {
   chosenNameMarkTestID,
   namedDayTestID,
 } from '../../src/features/onboarding/LastPeriod';
+import { Feeling } from '../../src/features/onboarding/Feeling';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
 import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
 import { Regularity } from '../../src/features/onboarding/Regularity';
@@ -57,6 +58,7 @@ const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = [
   'periodBefore',
   'periodLength',
   'regularity',
+  'feeling',
 ];
 
 /** Midday, and away from any summer time change, so the calendar reads the same in any timezone. */
@@ -127,6 +129,20 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
           onChange={() => undefined}
           onDone={() => undefined}
           onNotSure={() => undefined}
+        />
+      </OnAPhone>,
+    );
+    return;
+  }
+  if (at === 'feeling') {
+    await render(
+      <OnAPhone>
+        <Feeling
+          chosen={undefined}
+          onBack={() => undefined}
+          onChoose={() => undefined}
+          onContinue={() => undefined}
+          onSkip={() => undefined}
         />
       </OnAPhone>,
     );

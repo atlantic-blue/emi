@@ -235,13 +235,13 @@ describe('her answer changes the words, never the range', () => {
       expect(screen.queryByText(forecastCopy.cycleMoves)).toBeNull();
     });
 
-    it('hands her to the hold, whether she answers it or passes it by', async () => {
+    it('hands her to the question after it, whether she answers it or passes it by', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheRegularity();
       await shePresses(onboardingSkipTestID);
 
-      expect(app.pathname()).toBe('/onboarding/hold');
+      expect(app.pathname()).toBe('/onboarding/feeling');
     });
   });
 
