@@ -1,4 +1,4 @@
-import { type Regularity, regularityValues } from '@emi/crypto';
+import { type Feeling, type Regularity, feelingValues, regularityValues } from '@emi/crypto';
 
 import { words } from '../../language';
 import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
@@ -72,6 +72,11 @@ export const firstRunCopy = {
     lines: [words('onboarding.regularity.line.explains')],
     action: words('onboarding.regularity.action'),
   },
+  feeling: {
+    title: words('onboarding.feeling.title'),
+    lines: [words('onboarding.feeling.line.talks'), words('onboarding.feeling.line.encrypted')],
+    action: words('onboarding.feeling.action'),
+  },
   hold: {
     title: words('onboarding.hold.title'),
     instruction: words('onboarding.hold.instruction'),
@@ -106,6 +111,7 @@ export const firstRunScreens = [
   'cycleLength',
   'periodLength',
   'regularity',
+  'feeling',
 ] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];
@@ -125,6 +131,20 @@ export const regularityLabels: Readonly<Record<Regularity, string>> = {
 
 /** The order the screen offers them in, which the record above cannot carry. */
 export const regularityChoices: readonly Regularity[] = regularityValues;
+
+/**
+ * The words of the three answers to how she feels about her cycle. A map for the same reason the
+ * one above is a map: a fourth value arriving in `Feeling` leaves this file failing to compile
+ * rather than leaving her an answer she cannot choose.
+ */
+export const feelingLabels: Readonly<Record<Feeling, string>> = {
+  fine: words('onboarding.feeling.choice.fine'),
+  hard: words('onboarding.feeling.choice.hard'),
+  understand: words('onboarding.feeling.choice.understand'),
+};
+
+/** The order the screen offers them in, which the record above cannot carry. */
+export const feelingChoices: readonly Feeling[] = feelingValues;
 
 /**
  * How far along she is, said in words. Nothing draws it: the bar carries the position on the

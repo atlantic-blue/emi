@@ -1,8 +1,10 @@
 import {
   type DayRecord,
+  type Feeling,
   type ProfileRecord,
   type Regularity,
   earliestBirthYear,
+  feelingValues,
   longestName,
   longestPeriodLengthDays,
   regularityValues,
@@ -92,6 +94,11 @@ export interface FirstRunAnswers {
    * sentence under the forecast and never the range, which is arithmetic over the days she logged.
    */
   readonly regularity?: Regularity;
+  /**
+   * How she feels about her cycle. Left out where she skipped the question. It changes what the
+   * home screen offers her on a day inside her period and nothing about the arithmetic.
+   */
+  readonly feeling?: Feeling;
 }
 
 export type FirstRunRefusal =
@@ -103,6 +110,7 @@ export type FirstRunRefusal =
   | 'birth-year-is-out-of-range'
   | 'period-length-is-out-of-range'
   | 'regularity-is-not-one-of-the-three'
+  | 'feeling-is-not-one-of-the-three'
   | 'first-run-is-already-done';
 
 export class FirstRunError extends Error {
@@ -150,6 +158,19 @@ export function statedRegularity(db: Database, vault: ProfileVault): Regularity 
 /** Whether the answer is one of the three the screen offers, asked of a value from anywhere. */
 export function regularityIsOffered(answer: string): answer is Regularity {
   return (regularityValues as readonly string[]).includes(answer);
+}
+
+/**
+ * How she said her period feels, read from the sealed profile. Nothing at all is the answer a Skip
+ * leaves behind, and then the home screen offers her nothing it would not offer anybody else.
+ */
+export function statedFeeling(db: Database, vault: ProfileVault): Feeling | undefined {
+  return readProfile(db, vault)?.feeling;
+}
+
+/** Whether the answer is one of the three that screen offers, asked of a value from anywhere. */
+export function feelingIsOffered(answer: string): answer is Feeling {
+  return (feelingValues as readonly string[]).includes(answer);
 }
 
 export function periodLengthIsInRange(days: number): boolean {
@@ -252,6 +273,7 @@ function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
       ? {}
       : { periodLengthDays: answers.periodLengthDays }),
     ...(answers.regularity === undefined ? {} : { regularity: answers.regularity }),
+    ...(answers.feeling === undefined ? {} : { feeling: answers.feeling }),
     recordedAt: now.toISOString(),
   };
 }
@@ -319,6 +341,12 @@ export function completeFirstRun(
     throw new FirstRunError(
       'regularity-is-not-one-of-the-three',
       `a cycle is one of ${regularityValues.join(', ')}, this one is ${answers.regularity}`,
+    );
+  }
+  if (answers.feeling !== undefined && !feelingIsOffered(answers.feeling)) {
+    throw new FirstRunError(
+      'feeling-is-not-one-of-the-three',
+      `a feeling is one of ${feelingValues.join(', ')}, this one is ${answers.feeling}`,
     );
   }
   if (firstRunIsDone(db)) {

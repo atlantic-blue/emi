@@ -1,4 +1,4 @@
-import type { Regularity } from '@emi/crypto';
+import type { Feeling, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
@@ -10,6 +10,7 @@ import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 import { greeting, homeCopy } from './copy';
+import { thePainLineIsOffered } from './painLine';
 
 /**
  * The one screen she opens. The ring carries the meaning and the words underneath it stay small,
@@ -35,6 +36,7 @@ export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
 export const homeGreetingTestID = 'home-greeting';
+export const homePainLineTestID = 'home-pain-line';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -52,7 +54,14 @@ interface Props {
    * one sentence under the forecast and nothing else on this screen.
    */
   readonly regularity?: Regularity;
+  /**
+   * How she said her period feels, and nothing at all where she skipped the question. It is read
+   * here and nowhere in the arithmetic: the only thing it moves is the line below the ring.
+   */
+  readonly feeling?: Feeling;
   readonly onLogToday: () => void;
+  /** The way to the pain group of the log, which only the line below the ring takes her by. */
+  readonly onLogPain: () => void;
   /** The way into what she has already written, which is what the logging is for. */
   readonly onHistory: () => void;
   /** The way out, because a record she cannot take with her is not hers. */
@@ -66,7 +75,9 @@ export function HomeScreen({
   cycleLengthDays,
   name,
   regularity,
+  feeling,
   onLogToday,
+  onLogPain,
   onHistory,
   onExport,
   onSettings,
@@ -102,6 +113,17 @@ export function HomeScreen({
             result={forecast}
           />
         </View>
+
+        {thePainLineIsOffered(feeling, ring) ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onLogPain}
+            style={styles.painLine}
+            testID={homePainLineTestID}
+          >
+            <Text style={styles.painLineLabel}>{homeCopy.painLine}</Text>
+          </Pressable>
+        ) : null}
 
         <Pressable
           accessibilityRole="button"
@@ -190,6 +212,22 @@ const styles = StyleSheet.create({
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
   // takes the small size rather than the body size a sentence would otherwise get.
   noRingLine: {
+    color: colour.onSurfaceVariant,
+    ...textStyle('body-sm'),
+    textAlign: 'center',
+  },
+  // Between the forecast and the way into the log, because it is an offer to log and it belongs
+  // beside the button it stands in front of. It stays at the small size, which SCREEN-2 holds the
+  // whole screen to.
+  painLine: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: space.spaceLg,
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+    paddingHorizontal: space.spaceLg,
+  },
+  painLineLabel: {
     color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
     textAlign: 'center',

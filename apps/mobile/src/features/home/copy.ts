@@ -10,6 +10,7 @@ export const homeCopy = {
   history: words('home.history'),
   export: words('home.export'),
   settings: words('home.settings'),
+  painLine: words('home.painLine'),
 } as const;
 
 /**

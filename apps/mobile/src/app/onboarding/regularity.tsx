@@ -13,10 +13,10 @@ export default function RegularityRoute(): ReactNode {
       chosen={regularity}
       onBack={() => router.back()}
       onChoose={setRegularity}
-      onContinue={() => router.push('/onboarding/hold')}
+      onContinue={() => router.push('/onboarding/feeling')}
       onSkip={() => {
         setRegularity(undefined);
-        router.push('/onboarding/hold');
+        router.push('/onboarding/feeling');
       }}
     />
   );

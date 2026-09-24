@@ -144,6 +144,10 @@ export const english = {
   'home.greeting': 'Hello, {name}',
   'home.history': 'History',
   'home.logToday': 'Log today',
+  // The line a woman who said her period is hard reads on a day inside it. It names her own
+  // answer back to her and offers the one group she is most likely to want, and it says what the
+  // press does rather than saying anything about how she must feel.
+  'home.painLine': 'You said these days are hard. Log the pain first.',
   'home.settings': 'Settings',
   'home.wordmark': 'Emi',
 
@@ -223,6 +227,13 @@ export const english = {
   'onboarding.cycleLength.longer': 'One day longer',
   'onboarding.cycleLength.shorter': 'One day shorter',
   'onboarding.cycleLength.title': 'How long is your cycle, roughly?',
+  'onboarding.feeling.action': 'Continue',
+  'onboarding.feeling.choice.fine': 'I am fine with it',
+  'onboarding.feeling.choice.hard': 'It is hard, most months',
+  'onboarding.feeling.choice.understand': 'I want to understand it',
+  'onboarding.feeling.line.encrypted': 'Encrypted on this phone.',
+  'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
+  'onboarding.feeling.title': 'How you feel about it',
   'onboarding.hold.action': 'Hold to begin',
   'onboarding.hold.held': 'Holding',
   'onboarding.hold.instruction': 'Press and hold the ring to begin.',

@@ -77,7 +77,17 @@ async function sheReachesTheLastPeriod(): Promise<void> {
  * How much of the bar is filled on each question in turn, written out rather than worked out, so
  * a bar that counts something other than the questions fails here.
  */
-const theEightFractionsOfTheBar = ['12.5%', '25%', '37.5%', '50%', '62.5%', '75%', '87.5%', '100%'];
+const theNineFractionsOfTheBar = [
+  '11.11111111111111%',
+  '22.22222222222222%',
+  '33.33333333333333%',
+  '44.44444444444444%',
+  '55.55555555555556%',
+  '66.66666666666666%',
+  '77.77777777777779%',
+  '88.88888888888889%',
+  '100%',
+];
 
 /** How much of the bar is filled on the screen she is looking at, as the screen drew it. */
 function theBarIsFilled(): unknown {
@@ -182,7 +192,7 @@ describe('the last period is the one question she cannot skip', () => {
         }
       }
 
-      expect(filled).toEqual(theEightFractionsOfTheBar);
+      expect(filled).toEqual(theNineFractionsOfTheBar);
       expect(counters).toEqual([]);
     });
   });

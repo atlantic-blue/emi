@@ -105,6 +105,7 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
         forecast={learning}
         onExport={nothing}
         onHistory={nothing}
+        onLogPain={nothing}
         onLogToday={nothing}
         onSettings={nothing}
         ring={undefined}

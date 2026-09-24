@@ -5,6 +5,7 @@ import { render } from '@testing-library/react-native';
 import { CycleLength } from '../../src/features/onboarding/CycleLength';
 import { HerName } from '../../src/features/onboarding/HerName';
 import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
+import { Feeling } from '../../src/features/onboarding/Feeling';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
 import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
 import { Regularity } from '../../src/features/onboarding/Regularity';
@@ -30,7 +31,7 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
 const theCaveat = [
-  'Rendered from the trees the eight first run screens produced under the test runner, at 393 by',
+  'Rendered from the trees the nine first run screens produced under the test runner, at 393 by',
   '852 points, which is the glass of an iPhone 16, and not captured from a phone.',
   'The number names the monospaced',
   'face, which no screen loads yet, so it falls back here and on a phone. Reproduce with:',
@@ -47,12 +48,12 @@ interface Screen {
 
 const theScreens: readonly Screen[] = [
   {
-    title: 'One of eight',
+    title: 'One of nine',
     note: 'What Emi is, and what it will not do. She is asked for nothing here.',
     element: <WhatEmiIs onContinue={() => undefined} />,
   },
   {
-    title: 'Two of eight',
+    title: 'Two of nine',
     note: 'What Emi should call her. The one field in the first run, and it carries a way past it.',
     element: (
       <HerName
@@ -65,7 +66,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Three of eight',
+    title: 'Three of nine',
     note: 'The year she was born, with nothing picked for her. The wheel opens on 1996, thirty\n      years back, which the drawing cannot show: it draws every list from the top.',
     element: (
       <YearOfBirth
@@ -79,7 +80,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Four of eight',
+    title: 'Four of nine',
     note: 'She picks the day her last period started from the month she is in. The eleventh is\n      chosen, and the days after today take no press.',
     element: (
       <LastPeriod
@@ -92,7 +93,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Five of eight',
+    title: 'Five of nine',
     note: 'The period before that one, picked twenty eight days back, with the cycle it makes said\n      under the month. She may leave this one unanswered.',
     element: (
       <PeriodBefore
@@ -107,7 +108,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Six of eight',
+    title: 'Six of nine',
     note: 'The answer the first forecast is made from.',
     element: (
       <CycleLength
@@ -119,7 +120,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Seven of eight',
+    title: 'Seven of nine',
     note: 'It is what the period arc is drawn at until she logs a period end of her own, and she\n      may answer that she is not sure.',
     element: (
       <PeriodLength
@@ -132,10 +133,23 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Eight of eight',
-    note: 'The last answer she gives, as she finds it: three rows and none of them chosen for her,\n      so the way on waits. It moves one sentence under the forecast and never the range.',
+    title: 'Eight of nine',
+    note: 'Three rows and none of them chosen for her, so the way on waits. It moves one sentence\n      under the forecast and never the range.',
     element: (
       <Regularity
+        chosen={undefined}
+        onBack={() => undefined}
+        onChoose={() => undefined}
+        onContinue={() => undefined}
+        onSkip={() => undefined}
+      />
+    ),
+  },
+  {
+    title: 'Nine of nine',
+    note: 'The last answer she gives. It moves one line on the home screen, on the days inside her\n      period, and nothing else anywhere.',
+    element: (
+      <Feeling
         chosen={undefined}
         onBack={() => undefined}
         onChoose={() => undefined}

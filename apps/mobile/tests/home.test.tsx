@@ -29,6 +29,7 @@ async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
         forecast={forecastOf(listCycles(migratedDatabase()))}
         onExport={() => asked.push('export')}
         onHistory={() => asked.push('history')}
+        onLogPain={() => asked.push('log pain')}
         onLogToday={() => asked.push('log today')}
         onSettings={() => asked.push('settings')}
         ring={undefined}
