@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import type { DayRecord, Feeling } from '@emi/crypto';
 import { feelingValues } from '@emi/crypto';
 import { addDays, symptomGroups } from '@emi/cycle';
-import { screen } from '@testing-library/react-native';
+import { screen, within } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
@@ -14,7 +14,7 @@ import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import { homePainLineTestID, logTodayTestID } from '../../src/features/home/HomeScreen';
 import { homeCopy } from '../../src/features/home/copy';
-import { logFlowGroupTestID } from '../../src/features/log/LogFlow';
+import { logFlowGroupTestID, logFlowGroupsTestID } from '../../src/features/log/LogFlow';
 import { painGroup } from '../../src/features/log/askedGroup';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
@@ -384,18 +384,21 @@ describe('a hard period day offers the pain log first', () => {
       expect(record?.symptoms).toEqual([theSymptomShePresses]);
     });
 
-    it('draws no group at all for a woman who pressed the log itself', async () => {
+    it('lifts no group above the picker for a woman who pressed the log itself', async () => {
       await herPhone(insideHerPeriod, 'hard');
       await sheOpensEmi();
 
       await shePresses(logTodayTestID);
 
       // Every group, not only the pain one, because the log she reached by the tab is the log she
-      // reached yesterday and a group she did not ask for is a screen she did not ask for.
+      // reached yesterday and a group she did not ask for is a group above the picker she did not
+      // ask for. They are all there under it, which is where the tab draws them.
+      const underThePicker = within(screen.getByTestId(logFlowGroupsTestID));
+
       for (const group of symptomGroups) {
-        expect(screen.queryByTestId(logFlowGroupTestID(group))).toBeNull();
+        expect(underThePicker.getByTestId(logFlowGroupTestID(group))).toBeTruthy();
       }
-      expect(screen.queryByTestId(`symptom-chip-${theSymptomShePresses}`)).toBeNull();
+      expect(screen.getAllByTestId(`symptom-chip-${theSymptomShePresses}`)).toHaveLength(1);
     });
   });
 });

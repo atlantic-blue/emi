@@ -29,6 +29,9 @@ export const logFlowDoneTestID = 'log-flow-done';
 export const logFlowNoRingTestID = 'log-flow-no-ring';
 export const logFlowSavedTestID = 'log-flow-saved';
 
+/** The block the groups under the flow picker are drawn in, so a test reads them in her order. */
+export const logFlowGroupsTestID = 'log-flow-groups';
+
 /** The section one group is drawn in, named after the group so a test presses the group it means. */
 export function logFlowGroupTestID(group: SymptomGroup): string {
   return symptomGroupTestID(group);
@@ -46,6 +49,11 @@ interface Props {
    * for it and not for the picker.
    */
   readonly group?: SymptomGroup;
+  /**
+   * Every group she is offered under the flow picker, in the order she reads them. The one the
+   * address named is not among them, because it is drawn above the picker instead.
+   */
+  readonly groups?: readonly SymptomGroup[];
   /** What the day already carries. Empty where it carries nothing, never left out. */
   readonly symptoms?: readonly string[];
   readonly onPick: (flow: Flow) => void;
@@ -61,6 +69,7 @@ export function LogFlow({
   chosen,
   marked,
   group,
+  groups = [],
   symptoms = [],
   onPick,
   onMark,
@@ -106,6 +115,21 @@ export function LogFlow({
           <Text style={styles.line} testID={logFlowSavedTestID}>
             {logFlowCopy.saved}
           </Text>
+        )}
+
+        {groups.length === 0 ? null : (
+          <View testID={logFlowGroupsTestID}>
+            {groups.map((each) => (
+              <SymptomGroupSection
+                key={each}
+                heading={groupHeadings[each]}
+                onToggle={(slug) => onToggleSymptom?.(slug)}
+                picked={symptoms}
+                symptoms={symptomsInGroup(each)}
+                testID={logFlowGroupTestID(each)}
+              />
+            ))}
+          </View>
         )}
       </ScrollView>
 

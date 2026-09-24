@@ -15,3 +15,17 @@ export function groupsInHerOrder(focus: readonly SymptomGroup[] = []): readonly 
 
   return [...hers, ...symptomGroups.filter((group) => !hers.includes(group))];
 }
+
+/**
+ * The groups the log tab draws under the flow picker: her order, without the one the address
+ * named, because that one is already drawn above the picker.
+ *
+ * A group drawn twice is two sets of the same chips on one screen, and a press on either writes
+ * the same day, so she reads one of them as the answer and the other as a second question.
+ */
+export function groupsUnderTheFlow(
+  focus: readonly SymptomGroup[] = [],
+  asked?: SymptomGroup,
+): readonly SymptomGroup[] {
+  return groupsInHerOrder(focus).filter((group) => group !== asked);
+}
