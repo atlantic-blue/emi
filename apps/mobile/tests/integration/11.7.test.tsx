@@ -326,6 +326,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       await shePresses(goalTestID('doctorRecord'));
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
       await sheHoldsTheRing();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());

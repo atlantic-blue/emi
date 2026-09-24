@@ -10,7 +10,12 @@ import {
 } from '@emi/crypto';
 
 import { words } from '../../language';
-import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
+import {
+  type TodaySymptom,
+  maximumCycleLengthDays,
+  minimumCycleLengthDays,
+  todaySymptoms,
+} from './firstRun';
 
 /**
  * The words of the first run. Section 9.7 of the design sets the rules they follow: say what
@@ -96,6 +101,12 @@ export const firstRunCopy = {
     lines: [words('onboarding.focus.line.first')],
     action: words('onboarding.focus.action'),
   },
+  today: {
+    title: words('onboarding.today.title'),
+    lines: [words('onboarding.today.line.skip'), words('onboarding.today.line.encrypted')],
+    action: words('onboarding.today.action'),
+    skip: words('onboarding.today.skip'),
+  },
   hold: {
     title: words('onboarding.hold.title'),
     instruction: words('onboarding.hold.instruction'),
@@ -133,6 +144,7 @@ export const firstRunScreens = [
   'feeling',
   'goals',
   'focus',
+  'today',
 ] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];
@@ -201,6 +213,26 @@ export const focusLabels: Readonly<Record<Focus, string>> = {
 
 /** The order the screen offers them in, which the record above cannot carry. */
 export const focusChoices: readonly Focus[] = focusValues;
+
+/**
+ * The words of the six feelings the last question offers. The prototype's own six words are kept,
+ * so four of them are the catalogue's word for the slug and two are shorter than it: she presses
+ * Tired for `fatigue` and Low for `low-mood`.
+ *
+ * A map for the reason the four above are maps: a seventh slug arriving in `todaySymptoms` leaves
+ * this file failing to compile rather than leaving her a tile with no word on it.
+ */
+export const todayLabels: Readonly<Record<TodaySymptom, string>> = {
+  cramps: words('onboarding.today.choice.cramps'),
+  headache: words('onboarding.today.choice.headache'),
+  bloating: words('onboarding.today.choice.bloating'),
+  fatigue: words('onboarding.today.choice.fatigue'),
+  calm: words('onboarding.today.choice.calm'),
+  'low-mood': words('onboarding.today.choice.low-mood'),
+};
+
+/** The order the screen offers them in, which the map above cannot carry. */
+export const todayChoices: readonly TodaySymptom[] = todaySymptoms;
 
 /**
  * How far along she is, said in words. Nothing draws it: the bar carries the position on the

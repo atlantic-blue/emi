@@ -12,11 +12,13 @@ import {
 import { useDatabase } from '../../data/DatabaseProvider';
 import { useHerVaultsMade } from '../../services/vault/VaultProvider';
 import {
+  type TodaySymptom,
   defaultCycleLengthDays,
   firstRunIsDone,
   focusAfterPressing,
   goalsAfterPressing,
   nameSheGave,
+  symptomsAfterPressing,
   writeEverythingAtTheHold,
 } from './firstRun';
 import { markTourSeen, tourIsSeen } from './tour';
@@ -39,6 +41,8 @@ interface FirstRun {
   readonly goals: readonly Goal[];
   /** What she has pressed so far, in the order she pressed it, and empty until she presses one. */
   readonly focus: readonly Focus[];
+  /** What she says she feels today, in the order she pressed it, and empty until she presses one. */
+  readonly symptoms: readonly TodaySymptom[];
   /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
   readonly nameTyped: string;
   readonly birthYear: number | undefined;
@@ -60,6 +64,10 @@ interface FirstRun {
   readonly pressFocus: (group: Focus) => void;
   /** The way past the question, which empties whatever she pressed before she pressed it. */
   readonly forgetTheFocus: () => void;
+  /** One tile pressed: the feeling joins the list, or leaves it where she pressed it again. */
+  readonly pressSymptom: (slug: TodaySymptom) => void;
+  /** The way past the question, which empties whatever she pressed before she pressed it. */
+  readonly forgetToday: () => void;
   readonly setNameTyped: (typed: string) => void;
   /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as a year. */
   readonly setBirthYear: (year: number | undefined) => void;
@@ -104,6 +112,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [feeling, setFeeling] = useState<Feeling | undefined>(undefined);
   const [goals, setGoals] = useState<readonly Goal[]>([]);
   const [focus, setFocus] = useState<readonly Focus[]>([]);
+  const [symptoms, setSymptoms] = useState<readonly TodaySymptom[]>([]);
   const [nameTyped, setNameTyped] = useState('');
   const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
   const writing = useRef(false);
@@ -132,6 +141,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
           feeling,
           goals,
           focus,
+          symptoms,
           name: nameSheGave(nameTyped),
           birthYear,
         },
@@ -154,6 +164,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     periodLengthDays,
     periodStartedOn,
     regularity,
+    symptoms,
   ]);
 
   const pressGoal = useCallback((goal: Goal) => {
@@ -172,6 +183,14 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setFocus([]);
   }, []);
 
+  const pressSymptom = useCallback((slug: TodaySymptom) => {
+    setSymptoms((chosen) => symptomsAfterPressing(chosen, slug));
+  }, []);
+
+  const forgetToday = useCallback(() => {
+    setSymptoms([]);
+  }, []);
+
   const leaveTheTour = useCallback(() => {
     markTourSeen(database, new Date());
     setTourIsDone(tourIsSeen(database));
@@ -186,6 +205,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setFeeling(undefined);
     setGoals([]);
     setFocus([]);
+    setSymptoms([]);
     setNameTyped('');
     setBirthYear(undefined);
     setIsDone(firstRunIsDone(database));
@@ -204,6 +224,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       feeling,
       goals,
       focus,
+      symptoms,
       nameTyped,
       birthYear,
       setPeriodStartedOn,
@@ -216,6 +237,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       forgetTheGoals,
       pressFocus,
       forgetTheFocus,
+      pressSymptom,
+      forgetToday,
       setNameTyped,
       setBirthYear,
       leaveTheTour,
@@ -229,11 +252,14 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       focus,
       forgetTheFocus,
       forgetTheGoals,
+      forgetToday,
       goals,
       isDone,
       leaveTheTour,
       pressFocus,
       pressGoal,
+      pressSymptom,
+      symptoms,
       nameTyped,
       periodBeforeStartedOn,
       periodLengthDays,

@@ -41,7 +41,7 @@ Feature: She opens Emi and logs her first period
     And she skips the tour Emi opens with
     And she answers every question of the first run
     And she presses and holds the ring
-    Then she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle
+    Then she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today
     And there was no further question to answer
 
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password

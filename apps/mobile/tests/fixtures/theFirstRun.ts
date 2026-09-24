@@ -11,10 +11,12 @@ import {
 } from '../../src/features/onboarding/OnboardingScreen';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { focusTestID } from '../../src/features/onboarding/Focus';
+import { todayTestID } from '../../src/features/onboarding/Today';
 import { goalTestID } from '../../src/features/onboarding/Goals';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import { yearTestID } from '../../src/features/onboarding/YearOfBirth';
 import {
+  type TodaySymptom,
   defaultCycleLengthDays,
   defaultPeriodLengthDays,
 } from '../../src/features/onboarding/firstRun';
@@ -35,6 +37,8 @@ export interface HerAnswers {
   readonly goals?: readonly Goal[];
   /** Left out where she skips the question, which leaves her log sheet in the order it has today. */
   readonly focus?: readonly Focus[];
+  /** Left out where she skips the question, which leaves today with no row of its own at all. */
+  readonly symptoms?: readonly TodaySymptom[];
   /** Left out where she skips the question, which is what a walk that is about something else does. */
   readonly name?: string;
   readonly birthYear?: number;
@@ -122,12 +126,22 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
 
   if (answers.focus === undefined || answers.focus.length === 0) {
     await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+  } else {
+    for (const group of answers.focus) {
+      await fireEvent.press(screen.getByTestId(focusTestID(group)));
+    }
+
+    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  }
+
+  if (answers.symptoms === undefined || answers.symptoms.length === 0) {
+    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
 
     return;
   }
 
-  for (const group of answers.focus) {
-    await fireEvent.press(screen.getByTestId(focusTestID(group)));
+  for (const slug of answers.symptoms) {
+    await fireEvent.press(screen.getByTestId(todayTestID(slug)));
   }
 
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));
