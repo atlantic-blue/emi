@@ -248,7 +248,6 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.feeling.title': 'Как вы к этому относитесь',
   'onboarding.focus.action': 'Продолжить',
   'onboarding.focus.line.first': 'Emi ставит это первым, когда вы записываете день.',
-  'onboarding.focus.line.settings': 'Вы можете изменить это в настройках.',
   'onboarding.focus.title': 'Что из этого меняется с вашим циклом?',
   'onboarding.goals.action': 'Продолжить',
   'onboarding.goals.choice.doctorRecord': 'Вести запись для врача',

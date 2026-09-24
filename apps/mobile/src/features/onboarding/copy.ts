@@ -93,7 +93,7 @@ export const firstRunCopy = {
   },
   focus: {
     title: words('onboarding.focus.title'),
-    lines: [words('onboarding.focus.line.first'), words('onboarding.focus.line.settings')],
+    lines: [words('onboarding.focus.line.first')],
     action: words('onboarding.focus.action'),
   },
   hold: {

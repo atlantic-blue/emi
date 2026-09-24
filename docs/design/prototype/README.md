@@ -192,6 +192,14 @@ against the fill the same panel pairs it with. Three of the four inks fail the f
 fill, which is the whole reason no text is ever drawn on a fill. The measured numbers are in the
 step that moves the tokens.
 
+### Copy that names a screen Emi has not built yet
+
+`You can change these in Settings.` on the focus screen. Settings holds one control, and it deletes
+everything. The sentence promises her a way to change her groups that nothing builds, so the focus
+screen does not say it. Write it again in the step that lets her change her focus in Settings, and
+not before. The copy review of screen 13 keeps this line, because the reading was of the words and
+not of what Settings can do.
+
 ## The retired canvas, and the one edit made to the markup
 
 The export carries a second palette in its prose, and the canvas of that palette is `#faf8f5`. It
