@@ -1,4 +1,4 @@
-import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
+import type { DayRecord, Feeling, Focus, Goal, Regularity } from '@emi/crypto';
 
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
@@ -48,6 +48,7 @@ export async function herPhoneHolds(
   regularity?: Regularity,
   feeling?: Feeling,
   goals?: readonly Goal[],
+  focus?: readonly Focus[],
 ): Promise<void> {
   const database = herDatabase();
   const vault = herVault();
@@ -72,6 +73,7 @@ export async function herPhoneHolds(
       ...(regularity === undefined ? {} : { regularity }),
       ...(feeling === undefined ? {} : { feeling }),
       ...(goals === undefined ? {} : { goals }),
+      ...(focus === undefined ? {} : { focus }),
       recordedAt: firstRunFinishedAt.toISOString(),
     },
     now: firstRunFinishedAt,

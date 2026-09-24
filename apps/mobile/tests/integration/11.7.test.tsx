@@ -277,13 +277,13 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(firstRunCopy.goals.lines).toHaveLength(2);
     });
 
-    it('hands her to the hold, whether she answers it or passes it by', async () => {
+    it('hands her on to the focus, whether she answers it or passes it by', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheGoals();
       await shePresses(onboardingSkipTestID);
 
-      expect(app.pathname()).toBe('/onboarding/hold');
+      expect(app.pathname()).toBe('/onboarding/focus');
     });
   });
 
@@ -324,6 +324,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       await sheReachesTheGoals();
       await shePresses(goalTestID('fertileWindow'));
       await shePresses(goalTestID('doctorRecord'));
+      await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await sheHoldsTheRing();
 

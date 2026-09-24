@@ -1,8 +1,10 @@
 import {
   type Feeling,
+  type Focus,
   type Goal,
   type Regularity,
   feelingValues,
+  focusValues,
   goalValues,
   regularityValues,
 } from '@emi/crypto';
@@ -89,6 +91,11 @@ export const firstRunCopy = {
     lines: [words('onboarding.goals.line.chooseAll'), words('onboarding.goals.line.encrypted')],
     action: words('onboarding.goals.action'),
   },
+  focus: {
+    title: words('onboarding.focus.title'),
+    lines: [words('onboarding.focus.line.first'), words('onboarding.focus.line.settings')],
+    action: words('onboarding.focus.action'),
+  },
   hold: {
     title: words('onboarding.hold.title'),
     instruction: words('onboarding.hold.instruction'),
@@ -125,6 +132,7 @@ export const firstRunScreens = [
   'regularity',
   'feeling',
   'goals',
+  'focus',
 ] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];
@@ -173,6 +181,26 @@ export const goalLabels: Readonly<Record<Goal, string>> = {
 
 /** The order the screen offers them in, which the record above cannot carry. */
 export const goalChoices: readonly Goal[] = goalValues;
+
+/**
+ * The words of the six things she can say change with her cycle. Each tile is a group of the log
+ * sheet, so it carries the word that group is headed with there. She presses Sleep here and reads
+ * Sleep at the top of her log, and one thing is called one name.
+ *
+ * A map for the reason the three above are maps: a seventh value arriving in `Focus` leaves this
+ * file failing to compile rather than leaving her a tile she cannot press.
+ */
+export const focusLabels: Readonly<Record<Focus, string>> = {
+  sleep: words('log.group.sleep'),
+  mood: words('log.group.mood'),
+  energy: words('log.group.energy'),
+  skin: words('log.group.skin'),
+  digestion: words('log.group.digestion'),
+  pain: words('log.group.pain'),
+};
+
+/** The order the screen offers them in, which the record above cannot carry. */
+export const focusChoices: readonly Focus[] = focusValues;
 
 /**
  * How far along she is, said in words. Nothing draws it: the bar carries the position on the

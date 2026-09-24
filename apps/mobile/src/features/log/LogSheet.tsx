@@ -2,6 +2,7 @@ import {
   type ChosenUnits,
   type MeasurementReading,
   type Symptom,
+  type SymptomGroup,
   type TemperatureUnit,
   type WeightUnit,
   readingIn,
@@ -19,7 +20,7 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 
 import { EnergyScale } from './EnergyScale';
 import { MoodPicker } from './MoodPicker';
-import { SymptomGroupSection, groupHeadings } from './SymptomGroup';
+import { SymptomGroupSection, groupHeadings, symptomGroupTestID } from './SymptomGroup';
 import { Temperature } from './Temperature';
 import { Weight } from './Weight';
 import { sectionsFor } from './search';
@@ -53,6 +54,11 @@ export interface LogSheetProps {
   readonly onSave: (entry: LogSheetEntry) => void | Promise<void>;
   /** The catalogue, so a test can drive a retired symptom without editing the real one. */
   readonly catalogue?: readonly Symptom[];
+  /**
+   * What she said changes with her cycle, in the order she said it, from her sealed profile. Those
+   * groups are drawn first. Empty, and the sheet draws the order it has for everybody.
+   */
+  readonly focus?: readonly SymptomGroup[];
 }
 
 export function LogSheet({
@@ -66,6 +72,7 @@ export function LogSheet({
   onChooseUnits,
   onSave,
   catalogue,
+  focus,
 }: LogSheetProps) {
   const [query, setQuery] = useState('');
   const [picked, setPicked] = useState<readonly string[]>(symptoms);
@@ -86,10 +93,12 @@ export function LogSheet({
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
-  // The mood group is drawn by the picker above, so the list below offers the other seven.
+  // The mood group is drawn by the picker above, so the list below offers the other seven. A
+  // woman who named the mood as hers has it at the top of the sheet already, which is why naming
+  // it moves nothing here.
   const sections = useMemo(
-    () => sectionsFor(query, symptomsOutsideTheMoodPicker(catalogue)),
-    [query, catalogue],
+    () => sectionsFor(query, symptomsOutsideTheMoodPicker(catalogue), focus),
+    [query, catalogue, focus],
   );
 
   function toggle(slug: string): void {
@@ -202,7 +211,7 @@ export function LogSheet({
               onToggle={toggle}
               picked={picked}
               symptoms={section.symptoms}
-              testID={`symptom-group-${section.group ?? 'found'}`}
+              testID={symptomGroupTestID(section.group ?? 'found')}
             />
           ))
         )}
