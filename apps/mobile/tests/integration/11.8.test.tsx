@@ -230,13 +230,13 @@ describe('the log opens on what she said changes with her cycle', () => {
       expect(firstRunCopy.focus.lines).toHaveLength(1);
     });
 
-    it('hands her to the hold, whether she answers it or passes it by', async () => {
+    it('hands her to today, whether she answers it or passes it by', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheFocus();
       await shePresses(onboardingSkipTestID);
 
-      expect(app.pathname()).toBe('/onboarding/hold');
+      expect(app.pathname()).toBe('/onboarding/today');
     });
   });
 
@@ -291,6 +291,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheReachesTheFocus();
       await shePresses(focusTestID('pain'));
       await shePresses(focusTestID('sleep'));
+      await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await sheHoldsTheRing();
 

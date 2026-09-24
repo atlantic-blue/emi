@@ -12,11 +12,11 @@ export default function FocusRoute(): ReactNode {
     <Focus
       chosen={focus}
       onBack={() => router.back()}
-      onContinue={() => router.push('/onboarding/hold')}
+      onContinue={() => router.push('/onboarding/today')}
       onPress={pressFocus}
       onSkip={() => {
         forgetTheFocus();
-        router.push('/onboarding/hold');
+        router.push('/onboarding/today');
       }}
     />
   );

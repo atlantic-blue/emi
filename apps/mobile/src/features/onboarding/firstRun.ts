@@ -15,7 +15,7 @@ import {
   shortestPeriodLengthDays,
   youngestBirthYears,
 } from '@emi/crypto';
-import { type Flow, addDays, daysBetween } from '@emi/cycle';
+import { type Flow, addDays, daysBetween, isKnownSymptom } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import { insertDayLog } from '../../data/dayLogRepository';
@@ -76,6 +76,40 @@ export function periodBeforeIsInRange(periodBefore: string, periodStartedOn: str
  */
 export const firstRunFlow: Flow = 'medium';
 
+/**
+ * The six feelings the last question of the first run offers, each one a slug the catalogue
+ * already holds, so a day she seals here reads back through the same list her log sheet reads.
+ * They are slugs and not tiles, because a slug is the only part of a symptom that never changes.
+ */
+export const todaySymptoms = [
+  'cramps',
+  'headache',
+  'bloating',
+  'fatigue',
+  'calm',
+  'low-mood',
+] as const;
+
+export type TodaySymptom = (typeof todaySymptoms)[number];
+
+/** Whether the slug is one of the six that screen offers, asked of a value from anywhere. */
+export function todaySymptomIsOffered(slug: string): slug is TodaySymptom {
+  return (todaySymptoms as readonly string[]).includes(slug);
+}
+
+/**
+ * Her list after she presses one tile: the slug joins the list, or leaves it where she pressed it
+ * a second time. The order is the order she tapped, which is what the record keeps.
+ */
+export function symptomsAfterPressing(
+  chosen: readonly TodaySymptom[],
+  pressed: TodaySymptom,
+): readonly TodaySymptom[] {
+  return chosen.includes(pressed)
+    ? chosen.filter((slug) => slug !== pressed)
+    : [...chosen, pressed];
+}
+
 export interface FirstRunAnswers {
   readonly periodStartedOn: string;
   readonly cycleLengthDays: number;
@@ -115,6 +149,12 @@ export interface FirstRunAnswers {
    * empty list is never written, for the reason the goals above are never written empty.
    */
   readonly focus?: readonly Focus[];
+  /**
+   * What she said she feels today, in the order she pressed it. Left out where she said there is
+   * nothing to add, and then today gets no row of its own at all. An empty list is never written,
+   * for the reason the goals above are never written empty.
+   */
+  readonly symptoms?: readonly TodaySymptom[];
 }
 
 export type FirstRunRefusal =
@@ -131,6 +171,8 @@ export type FirstRunRefusal =
   | 'goal-is-chosen-twice'
   | 'focus-is-not-one-of-the-six'
   | 'focus-is-chosen-twice'
+  | 'symptom-is-not-in-the-catalogue'
+  | 'symptom-is-chosen-twice'
   | 'first-run-is-already-done';
 
 export class FirstRunError extends Error {
@@ -449,13 +491,32 @@ export function completeFirstRun(
       `a focus is chosen once, these were chosen twice: ${[...new Set(focusedTwice)].join(', ')}`,
     );
   }
+  const feltToday = answers.symptoms ?? [];
+  const outsideTheCatalogue = feltToday.filter((slug) => !isKnownSymptom(slug));
+  if (outsideTheCatalogue.length > 0) {
+    throw new FirstRunError(
+      'symptom-is-not-in-the-catalogue',
+      `the catalogue holds no symptom named ${outsideTheCatalogue.join(', ')}`,
+    );
+  }
+  const feltTwice = feltToday.filter((slug, at) => feltToday.indexOf(slug) !== at);
+  if (feltTwice.length > 0) {
+    throw new FirstRunError(
+      'symptom-is-chosen-twice',
+      `a symptom is chosen once, these were chosen twice: ${[...new Set(feltTwice)].join(', ')}`,
+    );
+  }
   if (firstRunIsDone(db)) {
     throw new FirstRunError('first-run-is-already-done', 'the first run is already done');
   }
 
+  // Today and the day she bled are one row when they are one day, because `day_log_day` holds
+  // one row for a day and a second insert for it is refused rather than merged.
+  const theDaySheBledIsToday = answers.periodStartedOn === today;
   const recorded: DayRecord = {
     day: answers.periodStartedOn,
     flow: firstRunFlow,
+    ...(theDaySheBledIsToday && feltToday.length > 0 ? { symptoms: feltToday } : {}),
     recordedAt: now.toISOString(),
   };
 
@@ -471,6 +532,11 @@ export function completeFirstRun(
       insertDayLog(db, { day: earlier.day, payload: vaults.day.seal(earlier), now });
     }
     insertDayLog(db, { day: recorded.day, payload: vaults.day.seal(recorded), now });
+    if (feltToday.length > 0 && !theDaySheBledIsToday) {
+      const felt: DayRecord = { day: today, symptoms: feltToday, recordedAt: now.toISOString() };
+
+      insertDayLog(db, { day: felt.day, payload: vaults.day.seal(felt), now });
+    }
     writeProfile(db, vaults.profile, { profile: herProfile(answers, now), now });
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
     setLockOnReturn(db, true);
