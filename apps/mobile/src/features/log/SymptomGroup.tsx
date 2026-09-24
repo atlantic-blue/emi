@@ -19,6 +19,11 @@ export const groupHeadings: Readonly<Record<GroupName, string>> = {
   libido: words('log.group.libido'),
 };
 
+/** The section one group is drawn in, named after the group so a test reads the group it means. */
+export function symptomGroupTestID(group: GroupName | 'found'): string {
+  return `symptom-group-${group}`;
+}
+
 export interface SymptomChipProps {
   readonly symptom: Symptom;
   readonly isPicked: boolean;

@@ -10,7 +10,7 @@ import type { RingInput } from '../cycle/ringInput';
 import { words } from '../../language';
 import { dayLabel } from '../onboarding/days';
 import { FlowPicker } from './FlowPicker';
-import { SymptomGroupSection, groupHeadings } from './SymptomGroup';
+import { SymptomGroupSection, groupHeadings, symptomGroupTestID } from './SymptomGroup';
 import { UnexpectedBleeding } from './UnexpectedBleeding';
 
 /**
@@ -31,7 +31,7 @@ export const logFlowSavedTestID = 'log-flow-saved';
 
 /** The section one group is drawn in, named after the group so a test presses the group it means. */
 export function logFlowGroupTestID(group: SymptomGroup): string {
-  return `symptom-group-${group}`;
+  return symptomGroupTestID(group);
 }
 
 interface Props {

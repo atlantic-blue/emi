@@ -1,4 +1,4 @@
-import type { Feeling, Goal, Regularity } from '@emi/crypto';
+import type { Feeling, Focus, Goal, Regularity } from '@emi/crypto';
 import {
   type ReactNode,
   createContext,
@@ -14,6 +14,7 @@ import { useHerVaultsMade } from '../../services/vault/VaultProvider';
 import {
   defaultCycleLengthDays,
   firstRunIsDone,
+  focusAfterPressing,
   goalsAfterPressing,
   nameSheGave,
   writeEverythingAtTheHold,
@@ -36,6 +37,8 @@ interface FirstRun {
   readonly feeling: Feeling | undefined;
   /** What she has pressed so far, in the order she pressed it, and empty until she presses one. */
   readonly goals: readonly Goal[];
+  /** What she has pressed so far, in the order she pressed it, and empty until she presses one. */
+  readonly focus: readonly Focus[];
   /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
   readonly nameTyped: string;
   readonly birthYear: number | undefined;
@@ -53,6 +56,10 @@ interface FirstRun {
   readonly pressGoal: (goal: Goal) => void;
   /** The way past the question, which empties whatever she pressed before she pressed it. */
   readonly forgetTheGoals: () => void;
+  /** One tile pressed: the group joins the list, or leaves it where she pressed it a second time. */
+  readonly pressFocus: (group: Focus) => void;
+  /** The way past the question, which empties whatever she pressed before she pressed it. */
+  readonly forgetTheFocus: () => void;
   readonly setNameTyped: (typed: string) => void;
   /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as a year. */
   readonly setBirthYear: (year: number | undefined) => void;
@@ -96,6 +103,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [regularity, setRegularity] = useState<Regularity | undefined>(undefined);
   const [feeling, setFeeling] = useState<Feeling | undefined>(undefined);
   const [goals, setGoals] = useState<readonly Goal[]>([]);
+  const [focus, setFocus] = useState<readonly Focus[]>([]);
   const [nameTyped, setNameTyped] = useState('');
   const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
   const writing = useRef(false);
@@ -123,6 +131,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
           regularity,
           feeling,
           goals,
+          focus,
           name: nameSheGave(nameTyped),
           birthYear,
         },
@@ -137,6 +146,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     cycleLengthDays,
     database,
     feeling,
+    focus,
     goals,
     makeHerVaults,
     nameTyped,
@@ -154,6 +164,14 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setGoals([]);
   }, []);
 
+  const pressFocus = useCallback((group: Focus) => {
+    setFocus((chosen) => focusAfterPressing(chosen, group));
+  }, []);
+
+  const forgetTheFocus = useCallback(() => {
+    setFocus([]);
+  }, []);
+
   const leaveTheTour = useCallback(() => {
     markTourSeen(database, new Date());
     setTourIsDone(tourIsSeen(database));
@@ -167,6 +185,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setRegularity(undefined);
     setFeeling(undefined);
     setGoals([]);
+    setFocus([]);
     setNameTyped('');
     setBirthYear(undefined);
     setIsDone(firstRunIsDone(database));
@@ -184,6 +203,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       regularity,
       feeling,
       goals,
+      focus,
       nameTyped,
       birthYear,
       setPeriodStartedOn,
@@ -194,6 +214,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       setFeeling,
       pressGoal,
       forgetTheGoals,
+      pressFocus,
+      forgetTheFocus,
       setNameTyped,
       setBirthYear,
       leaveTheTour,
@@ -204,10 +226,13 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       birthYear,
       cycleLengthDays,
       feeling,
+      focus,
+      forgetTheFocus,
       forgetTheGoals,
       goals,
       isDone,
       leaveTheTour,
+      pressFocus,
       pressGoal,
       nameTyped,
       periodBeforeStartedOn,

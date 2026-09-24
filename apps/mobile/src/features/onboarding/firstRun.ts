@@ -1,11 +1,13 @@
 import {
   type DayRecord,
   type Feeling,
+  type Focus,
   type Goal,
   type ProfileRecord,
   type Regularity,
   earliestBirthYear,
   feelingValues,
+  focusValues,
   goalValues,
   longestName,
   longestPeriodLengthDays,
@@ -107,6 +109,12 @@ export interface FirstRunAnswers {
    * skipping are the same answer, so both leave the key off her profile.
    */
   readonly goals?: readonly Goal[];
+  /**
+   * What she said changes with her cycle, in the order she tapped it. Left out where she skipped
+   * the question, and then the log sheet draws its groups in the order it has for everybody. An
+   * empty list is never written, for the reason the goals above are never written empty.
+   */
+  readonly focus?: readonly Focus[];
 }
 
 export type FirstRunRefusal =
@@ -121,6 +129,8 @@ export type FirstRunRefusal =
   | 'feeling-is-not-one-of-the-three'
   | 'goal-is-not-one-of-the-four'
   | 'goal-is-chosen-twice'
+  | 'focus-is-not-one-of-the-six'
+  | 'focus-is-chosen-twice'
   | 'first-run-is-already-done';
 
 export class FirstRunError extends Error {
@@ -194,6 +204,30 @@ export function statedGoals(db: Database, vault: ProfileVault): readonly Goal[] 
 /** Whether the answer is one of the four that screen offers, asked of a value from anywhere. */
 export function goalIsOffered(answer: string): answer is Goal {
   return (goalValues as readonly string[]).includes(answer);
+}
+
+/**
+ * What she said changes with her cycle, read from the sealed profile. Nothing at all is the answer
+ * a Skip leaves behind, and then the log sheet draws its groups in the order it has for everybody.
+ */
+export function statedFocus(db: Database, vault: ProfileVault): readonly Focus[] | undefined {
+  return readProfile(db, vault)?.focus;
+}
+
+/** Whether the answer is one of the six that screen offers, asked of a value from anywhere. */
+export function focusIsOffered(answer: string): answer is Focus {
+  return (focusValues as readonly string[]).includes(answer);
+}
+
+/**
+ * Her list after she presses one tile. The order she tapped is the whole answer, because the log
+ * sheet draws her groups in it, so a list handed back sorted would be a different answer from the
+ * one she gave.
+ */
+export function focusAfterPressing(chosen: readonly Focus[], pressed: Focus): readonly Focus[] {
+  return chosen.includes(pressed)
+    ? chosen.filter((group) => group !== pressed)
+    : [...chosen, pressed];
 }
 
 /**
@@ -309,6 +343,7 @@ function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
     ...(answers.regularity === undefined ? {} : { regularity: answers.regularity }),
     ...(answers.feeling === undefined ? {} : { feeling: answers.feeling }),
     ...(answers.goals === undefined || answers.goals.length === 0 ? {} : { goals: answers.goals }),
+    ...(answers.focus === undefined || answers.focus.length === 0 ? {} : { focus: answers.focus }),
     recordedAt: now.toISOString(),
   };
 }
@@ -397,6 +432,21 @@ export function completeFirstRun(
     throw new FirstRunError(
       'goal-is-chosen-twice',
       `a goal is chosen once, these were chosen twice: ${[...new Set(chosenTwice)].join(', ')}`,
+    );
+  }
+  const chosenFocus = answers.focus ?? [];
+  const outsideTheSix = chosenFocus.filter((group) => !focusIsOffered(group));
+  if (outsideTheSix.length > 0) {
+    throw new FirstRunError(
+      'focus-is-not-one-of-the-six',
+      `a focus is one of ${focusValues.join(', ')}, these are not: ${outsideTheSix.join(', ')}`,
+    );
+  }
+  const focusedTwice = chosenFocus.filter((group, at) => chosenFocus.indexOf(group) !== at);
+  if (focusedTwice.length > 0) {
+    throw new FirstRunError(
+      'focus-is-chosen-twice',
+      `a focus is chosen once, these were chosen twice: ${[...new Set(focusedTwice)].join(', ')}`,
     );
   }
   if (firstRunIsDone(db)) {

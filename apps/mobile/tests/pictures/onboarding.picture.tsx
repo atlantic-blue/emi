@@ -6,6 +6,7 @@ import { CycleLength } from '../../src/features/onboarding/CycleLength';
 import { HerName } from '../../src/features/onboarding/HerName';
 import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import { Feeling } from '../../src/features/onboarding/Feeling';
+import { Focus } from '../../src/features/onboarding/Focus';
 import { Goals } from '../../src/features/onboarding/Goals';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
 import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
@@ -32,7 +33,7 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
 const theCaveat = [
-  'Rendered from the trees the ten first run screens produced under the test runner, at 393 by',
+  'Rendered from the trees the eleven first run screens produced under the test runner, at 393 by',
   '852 points, which is the glass of an iPhone 16, and not captured from a phone.',
   'The number names the monospaced',
   'face, which no screen loads yet, so it falls back here and on a phone. Reproduce with:',
@@ -49,12 +50,12 @@ interface Screen {
 
 const theScreens: readonly Screen[] = [
   {
-    title: 'One of ten',
+    title: 'One of eleven',
     note: 'What Emi is, and what it will not do. She is asked for nothing here.',
     element: <WhatEmiIs onContinue={() => undefined} />,
   },
   {
-    title: 'Two of ten',
+    title: 'Two of eleven',
     note: 'What Emi should call her. The one field in the first run, and it carries a way past it.',
     element: (
       <HerName
@@ -67,7 +68,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Three of ten',
+    title: 'Three of eleven',
     note: 'The year she was born, with nothing picked for her. The wheel opens on 1996, thirty\n      years back, which the drawing cannot show: it draws every list from the top.',
     element: (
       <YearOfBirth
@@ -81,7 +82,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Four of ten',
+    title: 'Four of eleven',
     note: 'She picks the day her last period started from the month she is in. The eleventh is\n      chosen, and the days after today take no press.',
     element: (
       <LastPeriod
@@ -94,7 +95,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Five of ten',
+    title: 'Five of eleven',
     note: 'The period before that one, picked twenty eight days back, with the cycle it makes said\n      under the month. She may leave this one unanswered.',
     element: (
       <PeriodBefore
@@ -109,7 +110,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Six of ten',
+    title: 'Six of eleven',
     note: 'The answer the first forecast is made from.',
     element: (
       <CycleLength
@@ -121,7 +122,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Seven of ten',
+    title: 'Seven of eleven',
     note: 'It is what the period arc is drawn at until she logs a period end of her own, and she\n      may answer that she is not sure.',
     element: (
       <PeriodLength
@@ -134,7 +135,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Eight of ten',
+    title: 'Eight of eleven',
     note: 'Three rows and none of them chosen for her, so the way on waits. It moves one sentence\n      under the forecast and never the range.',
     element: (
       <Regularity
@@ -147,7 +148,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Nine of ten',
+    title: 'Nine of eleven',
     note: 'It moves one line on the home screen, on the days inside her period, and nothing else\n      anywhere.',
     element: (
       <Feeling
@@ -160,11 +161,24 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Ten of ten',
-    note: 'The last answer she gives, and the one question she may answer more than once. Each box\n      she ticks adds one card to her home screen, and ticking none is the way past it.',
+    title: 'Ten of eleven',
+    note: 'The one question she may answer more than once. Each box she ticks adds one card to her\n      home screen, and ticking none is the way past it.',
     element: (
       <Goals
         chosen={[]}
+        onBack={() => undefined}
+        onContinue={() => undefined}
+        onPress={() => undefined}
+        onSkip={() => undefined}
+      />
+    ),
+  },
+  {
+    title: 'Eleven of eleven',
+    note: 'The last answer she gives. The order she presses the tiles in is the order her log sheet\n      puts the groups in, and pressing none leaves the log as it is for everybody.',
+    element: (
+      <Focus
+        chosen={['pain', 'sleep']}
         onBack={() => undefined}
         onContinue={() => undefined}
         onPress={() => undefined}

@@ -14,8 +14,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 interface Props {
   readonly icon: IconName;
   readonly title: string;
-  /** What is recorded here today, in the monospaced face, because most of them are measurements. */
-  readonly note: string;
+  /**
+   * What is recorded here today, in the monospaced face, because most of them are measurements.
+   * Left out where the tile records nothing, and then no second line is drawn at all.
+   */
+  readonly note?: string;
   readonly isChosen: boolean;
   readonly onPress: () => void;
   readonly testID?: string;
@@ -60,7 +63,7 @@ export function SelectableTile({
       </View>
       <View>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.note}>{note}</Text>
+        {note === undefined ? null : <Text style={styles.note}>{note}</Text>}
       </View>
     </Pressable>
   );

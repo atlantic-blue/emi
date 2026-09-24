@@ -12,11 +12,11 @@ export default function GoalsRoute(): ReactNode {
     <Goals
       chosen={goals}
       onBack={() => router.back()}
-      onContinue={() => router.push('/onboarding/hold')}
+      onContinue={() => router.push('/onboarding/focus')}
       onPress={pressGoal}
       onSkip={() => {
         forgetTheGoals();
-        router.push('/onboarding/hold');
+        router.push('/onboarding/focus');
       }}
     />
   );

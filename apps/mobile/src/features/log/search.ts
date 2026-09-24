@@ -1,10 +1,6 @@
-import {
-  type Symptom,
-  type SymptomGroup,
-  loggableSymptoms,
-  symptomGroups,
-  symptoms,
-} from '@emi/cycle';
+import { type Symptom, type SymptomGroup, loggableSymptoms, symptoms } from '@emi/cycle';
+
+import { groupsInHerOrder } from './herOrder';
 
 /**
  * Search reads the display name and the slug, because an export shows her a slug and she then
@@ -44,14 +40,18 @@ export function searchSymptoms(
 /**
  * Grouped while she browses, and one flat list while she searches, because a search that keeps
  * eight headings makes her read the headings to find the single answer.
+ *
+ * While she browses, the groups she named in the first run come first, in the order she named
+ * them. A search answers what she typed and nothing else, so her order does not reach it.
  */
 export function sectionsFor(
   query: string,
   catalogue: readonly Symptom[] = symptoms,
+  focus: readonly SymptomGroup[] = [],
 ): readonly SymptomSection[] {
   const offered = loggableSymptoms(catalogue);
   if (normalise(query) === '') {
-    return symptomGroups
+    return groupsInHerOrder(focus)
       .map((group) => ({
         group,
         symptoms: offered.filter((each) => each.group === group),
