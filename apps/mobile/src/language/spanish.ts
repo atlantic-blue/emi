@@ -104,8 +104,8 @@ export const spanish: CatalogueIn<'es'> = {
   'forecast.confidence.sentence': 'Confianza {word}, a partir de tus últimos {cycles} ciclos',
   'forecast.cycleMoves': 'Tu ciclo se mueve, así que el rango es más amplio.',
   'forecast.cyclesWanted': {
-    one: 'Emi necesita {count} ciclo completo más antes de hacer una previsión.',
-    other: 'Emi necesita {count} ciclos completos más antes de hacer una previsión.',
+    one: 'Emi necesita {count} ciclo completo más antes de decir cuánta confianza tiene.',
+    other: 'Emi necesita {count} ciclos completos más antes de decir cuánta confianza tiene.',
   },
   'forecast.fertileWindow': 'Ventana fértil',
   /**
@@ -238,6 +238,16 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.feeling.line.encrypted': 'Cifrado en este teléfono.',
   'onboarding.feeling.line.talks': 'Esto solo cambia cómo Emi te habla, nada más.',
   'onboarding.feeling.title': 'Cómo te sientes con ello',
+  'onboarding.firstForecast.action': 'Continuar',
+  'onboarding.firstForecast.line.learning':
+    'Emi todavía está aprendiendo. Después de dos ciclos dice cuánta confianza tiene.',
+  'onboarding.firstForecast.onThisPhone.line':
+    'Emi calcula el rango en este teléfono, con las fechas que diste.',
+  'onboarding.firstForecast.onThisPhone.title': 'Calculado en este teléfono',
+  'onboarding.firstForecast.title': 'Tu próxima regla',
+  'onboarding.firstForecast.why.line':
+    'Un ciclo puede moverse unos días de un mes al siguiente. Un rango lo dice. Una sola fecha lo escondería.',
+  'onboarding.firstForecast.why.title': '¿Por qué un rango?',
   'onboarding.focus.action': 'Continuar',
   'onboarding.focus.line.first': 'Emi pone esto primero cuando anotas un día.',
   'onboarding.focus.title': '¿Qué de esto cambia con tu ciclo?',

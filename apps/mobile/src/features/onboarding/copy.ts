@@ -107,6 +107,19 @@ export const firstRunCopy = {
     action: words('onboarding.today.action'),
     skip: words('onboarding.today.skip'),
   },
+  firstForecast: {
+    title: words('onboarding.firstForecast.title'),
+    learning: words('onboarding.firstForecast.line.learning'),
+    why: {
+      title: words('onboarding.firstForecast.why.title'),
+      line: words('onboarding.firstForecast.why.line'),
+    },
+    onThisPhone: {
+      title: words('onboarding.firstForecast.onThisPhone.title'),
+      line: words('onboarding.firstForecast.onThisPhone.line'),
+    },
+    action: words('onboarding.firstForecast.action'),
+  },
   hold: {
     title: words('onboarding.hold.title'),
     instruction: words('onboarding.hold.instruction'),

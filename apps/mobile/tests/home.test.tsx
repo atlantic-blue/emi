@@ -54,7 +54,7 @@ describe('the home screen', () => {
       cycleCopy.noRing.title,
       cycleCopy.noRing.line,
       'Still learning',
-      'Emi needs 2 more complete cycles before it forecasts.',
+      'Emi needs 2 more complete cycles before it says how sure it is.',
       'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',
       logTodayLabel,
       historyLabel,

@@ -54,6 +54,7 @@ import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
 import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
 import { aDayRecord } from '../apps/mobile/tests/fixtures/dayRecord';
 import { resetExpoSecureStore } from '../apps/mobile/tests/fixtures/expoSecureStore';
+import { firstForecastActionTestID } from '../apps/mobile/src/features/onboarding/FirstForecast';
 import { sheAnswersEveryQuestion } from '../apps/mobile/tests/fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
 import {
@@ -490,6 +491,7 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
+        await shePresses(firstForecastActionTestID);
       },
     );
 
@@ -574,6 +576,8 @@ defineFeature(feature, (test) => {
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
+      await shePresses(firstForecastActionTestID);
+      visited.push(app.pathname());
     });
 
     and('she presses and holds the ring', async () => {
@@ -596,6 +600,7 @@ defineFeature(feature, (test) => {
           '/onboarding/goals',
           '/onboarding/focus',
           '/onboarding/today',
+          '/onboarding/first-forecast',
           '/onboarding/hold',
         ]);
         expect(whatEachScreenSaid).toEqual([firstRunCopy.welcome.title]);
@@ -657,6 +662,8 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(onboardingSkipTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(firstForecastActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
     });
 

@@ -192,8 +192,11 @@ A cycle starts on the first day of bleeding that is not marked unexpected. The p
 the next period is the last start plus the median of the last six cycle lengths. The median, not the
 mean, so that one long cycle after an illness does not drag every forecast after it.
 
-The forecast is a range, never a single day. Estimated ovulation is the predicted start minus the
-luteal length. The fertile window runs from five days before that day to one day after it.
+The forecast is a range, never a single day. Before two cycles are complete there is no median of
+her own to take, so the range is the length she gave at the first run, three days either side, which
+is the mean per-user variation of the cited cohort rounded to a whole day. Estimated ovulation is
+the predicted start minus the luteal length. The fertile window runs from five days before that day
+to one day after it.
 
 This is arithmetic. It is not intelligence, and calling it intelligence would be a claim the code
 cannot support. It is also the reason the privacy promise is cheap to keep: there is nothing to send

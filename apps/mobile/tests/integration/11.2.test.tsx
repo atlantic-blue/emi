@@ -12,6 +12,7 @@ import { writeSetting } from '../../src/data/settingRepository';
 import { homeGreetingTestID, homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { greeting } from '../../src/features/home/copy';
 import { nameFieldTestID, nameTooLongTestID } from '../../src/features/onboarding/HerName';
+import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
@@ -263,6 +264,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(firstForecastActionTestID);
       await sheHoldsTheRing();
 
       expect((await herProfile())?.birthYear).toBeUndefined();
@@ -286,6 +288,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(firstForecastActionTestID);
       await sheHoldsTheRing();
 
       expect((await herProfile())?.name).toBeUndefined();

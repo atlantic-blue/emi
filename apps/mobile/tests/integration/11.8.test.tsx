@@ -15,6 +15,7 @@ import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import { groupsInHerOrder } from '../../src/features/log/herOrder';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { Focus as FocusScreen, focusIcons, focusTestID } from '../../src/features/onboarding/Focus';
+import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -293,6 +294,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await shePresses(focusTestID('sleep'));
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(firstForecastActionTestID);
       await sheHoldsTheRing();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());

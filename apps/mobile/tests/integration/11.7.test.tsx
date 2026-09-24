@@ -32,6 +32,7 @@ import { forecastOf } from '../../src/features/forecast/fromCache';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { goalTestID } from '../../src/features/onboarding/Goals';
+import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -327,6 +328,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(firstForecastActionTestID);
       await sheHoldsTheRing();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());

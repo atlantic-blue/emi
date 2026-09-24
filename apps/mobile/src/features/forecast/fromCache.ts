@@ -18,7 +18,19 @@ export function cyclesOf(rows: readonly CycleRow[]): Cycle[] {
     }));
 }
 
-/** A forecast from what the cache holds, which is what every screen reads. */
-export function forecastOf(rows: readonly CycleRow[]): ForecastResult {
-  return forecastFrom(cyclesOf(rows));
+/**
+ * A forecast from what the cache holds, which is what every screen reads.
+ *
+ * The length she gave at the first run is handed in, because before two of her cycles are complete
+ * there is no median of her own to count the next period from. A caller that leaves it out reads
+ * the learning state with no range in it.
+ */
+export function forecastOf(
+  rows: readonly CycleRow[],
+  statedCycleLengthDays?: number,
+): ForecastResult {
+  return forecastFrom(
+    cyclesOf(rows),
+    statedCycleLengthDays === undefined ? {} : { statedCycleLengthDays },
+  );
 }

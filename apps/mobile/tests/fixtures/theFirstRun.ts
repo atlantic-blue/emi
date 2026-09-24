@@ -11,6 +11,7 @@ import {
 } from '../../src/features/onboarding/OnboardingScreen';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { focusTestID } from '../../src/features/onboarding/Focus';
+import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import { todayTestID } from '../../src/features/onboarding/Today';
 import { goalTestID } from '../../src/features/onboarding/Goals';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
@@ -136,13 +137,15 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
 
   if (answers.symptoms === undefined || answers.symptoms.length === 0) {
     await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+  } else {
+    for (const slug of answers.symptoms) {
+      await fireEvent.press(screen.getByTestId(todayTestID(slug)));
+    }
 
-    return;
+    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
   }
 
-  for (const slug of answers.symptoms) {
-    await fireEvent.press(screen.getByTestId(todayTestID(slug)));
-  }
-
-  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  // The last question is behind her, and the forecast Emi counts from her answers stands between
+  // it and the hold. It asks her nothing, so the walk reads it and presses on.
+  await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
 }

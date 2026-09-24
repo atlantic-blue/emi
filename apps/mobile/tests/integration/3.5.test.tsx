@@ -1,10 +1,13 @@
 import { render, screen } from '@testing-library/react-native';
 
+import { startWhileLearning } from '@emi/cycle';
+
 import { listCycles } from '../../src/data/cycleRepository';
 import type { Database } from '../../src/data/database';
 import {
   NextPeriodOrLearning,
   learningCyclesWantedTestID,
+  learningRangeTestID,
   learningStatedLengthTestID,
   learningTestID,
 } from '../../src/features/forecast/Learning';
@@ -13,12 +16,13 @@ import {
   nextPeriodRangeTestID,
   nextPeriodTestID,
 } from '../../src/features/forecast/NextPeriod';
-import { confidenceWords, learningCopy } from '../../src/features/forecast/copy';
+import { confidenceWords, learningCopy, rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { statedCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import {
   noCycleComplete,
   oneCycleComplete,
+  startsOf,
   twoCyclesComplete,
 } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
@@ -77,8 +81,23 @@ async function sheOpensEmi(has: WhatSheHasLogged): Promise<void> {
   }
 
   await render(
-    <NextPeriodOrLearning cycleLengthDays={stated} result={forecastOf(listCycles(database))} />,
+    <NextPeriodOrLearning
+      cycleLengthDays={stated}
+      result={forecastOf(listCycles(database), stated)}
+    />,
   );
+}
+
+/** The last start in the set, which is the day the learning state counts the next one from. */
+function theLastStartOf(has: WhatSheHasLogged): string {
+  const starts = startsOf(has.set);
+  const last = starts[starts.length - 1];
+
+  if (last === undefined) {
+    throw new Error('a recorded set holds at least the day her first period started');
+  }
+
+  return last;
 }
 
 function theWordsOnTheScreen(): string {
@@ -112,7 +131,7 @@ describe('Emi says it is still learning until the second cycle completes', () =>
       await sheOpensEmi(nothingButTheFirstRun);
 
       expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
-        'Emi needs 2 more complete cycles before it forecasts.',
+        'Emi needs 2 more complete cycles before it says how sure it is.',
       );
     });
 
@@ -120,7 +139,7 @@ describe('Emi says it is still learning until the second cycle completes', () =>
       await sheOpensEmi(onePeriodAfterThat);
 
       expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
-        'Emi needs 1 more complete cycle before it forecasts.',
+        'Emi needs 1 more complete cycle before it says how sure it is.',
       );
     });
 
@@ -134,19 +153,26 @@ describe('Emi says it is still learning until the second cycle completes', () =>
       });
     }
 
-    it('names no day at all, because there is no day to name', async () => {
+    it('names two days and never one, counted from the length she gave', async () => {
       await sheOpensEmi(nothingButTheFirstRun);
 
-      expect(daysNamedIn(theWordsOnTheScreen())).toEqual([]);
+      expect(daysNamedIn(theWordsOnTheScreen())).toHaveLength(2);
       expect(theWordsOnTheScreen()).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(screen.getByTestId(learningRangeTestID)).toHaveTextContent(
+        rangeSentence(
+          startWhileLearning(theLastStartOf(nothingButTheFirstRun), sheSaidHerCycleRuns),
+        ),
+      );
     });
 
-    it('reads as three lines, and the screen carries nothing else', async () => {
+    it('reads as a range and three lines, and the screen carries nothing else', async () => {
       await sheOpensEmi(onePeriodAfterThat);
 
       expect(textIn(screen.toJSON())).toEqual([
+        'Next period',
+        rangeSentence(startWhileLearning(theLastStartOf(onePeriodAfterThat), sheSaidHerCycleRuns)),
         'Still learning',
-        'Emi needs 1 more complete cycle before it forecasts.',
+        'Emi needs 1 more complete cycle before it says how sure it is.',
         `Until then Emi counts a cycle of ${sheSaidHerCycleRuns} days, the length you gave at the first run.`,
       ]);
     });

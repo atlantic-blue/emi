@@ -75,6 +75,26 @@ export function readCycle(db: Database, startedOn: string): CycleRow | undefined
 
 /** Empties the table and writes the cycles given, in one transaction, so a reader never sees half a rebuild. */
 export function replaceCycles(db: Database, write: CycleCacheWrite): CycleRow[] {
+  db.execute('BEGIN');
+  try {
+    const rows = replaceCyclesWithin(db, write);
+
+    db.execute('COMMIT');
+
+    return rows;
+  } catch (error) {
+    db.execute('ROLLBACK');
+    throw error;
+  }
+}
+
+/**
+ * The same rebuild, for a caller that has already opened a transaction of its own. SQLite holds no
+ * nested transaction, so a second BEGIN would refuse, and the caller's ROLLBACK has to be able to
+ * take the cache back with everything else it wrote. The first run is the caller this exists for:
+ * her days and the cache they produce land together or not at all.
+ */
+export function replaceCyclesWithin(db: Database, write: CycleCacheWrite): CycleRow[] {
   const checked = write.cycles.map(checkedCycle);
   for (let index = 1; index < checked.length; index += 1) {
     const before = checked[index - 1];
@@ -108,27 +128,20 @@ export function replaceCycles(db: Database, write: CycleCacheWrite): CycleRow[] 
     }
   }
 
-  db.execute('BEGIN');
-  try {
-    db.execute('DELETE FROM cycle');
-    for (const cycle of checked) {
-      db.run(
-        `INSERT INTO cycle (id, started_on, ended_on, length_days, period_length_days, is_predicted)
+  db.execute('DELETE FROM cycle');
+  for (const cycle of checked) {
+    db.run(
+      `INSERT INTO cycle (id, started_on, ended_on, length_days, period_length_days, is_predicted)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          newIdentifier(db, write.now),
-          cycle.startedOn,
-          cycle.endedOn,
-          cycle.lengthDays,
-          cycle.periodLengthDays,
-          cycle.isPredicted ? 1 : 0,
-        ],
-      );
-    }
-    db.execute('COMMIT');
-  } catch (error) {
-    db.execute('ROLLBACK');
-    throw error;
+      [
+        newIdentifier(db, write.now),
+        cycle.startedOn,
+        cycle.endedOn,
+        cycle.lengthDays,
+        cycle.periodLengthDays,
+        cycle.isPredicted ? 1 : 0,
+      ],
+    );
   }
 
   return listCycles(db);
