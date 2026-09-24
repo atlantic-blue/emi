@@ -224,11 +224,10 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheReachesTheFocus();
 
       expect(screen.getByText(firstRunCopy.focus.title)).toBeTruthy();
-      // Each line is named on its own rather than read off the copy, so a line taken out of the
+      // The line is named on its own rather than read off the copy, so a line taken out of the
       // screen fails here instead of leaving a shorter list that still agrees with itself.
       expect(screen.getByText(words('onboarding.focus.line.first'))).toBeTruthy();
-      expect(screen.getByText(words('onboarding.focus.line.settings'))).toBeTruthy();
-      expect(firstRunCopy.focus.lines).toHaveLength(2);
+      expect(firstRunCopy.focus.lines).toHaveLength(1);
     });
 
     it('hands her to the hold, whether she answers it or passes it by', async () => {

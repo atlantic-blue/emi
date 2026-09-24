@@ -239,7 +239,6 @@ export const english = {
   'onboarding.feeling.title': 'How you feel about it',
   'onboarding.focus.action': 'Continue',
   'onboarding.focus.line.first': 'Emi puts these first when you log a day.',
-  'onboarding.focus.line.settings': 'You can change these in Settings.',
   'onboarding.focus.title': 'Which of these change with your cycle?',
   'onboarding.goals.action': 'Continue',
   'onboarding.goals.choice.doctorRecord': 'Keep a record for my doctor',

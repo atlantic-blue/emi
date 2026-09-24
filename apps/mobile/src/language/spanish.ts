@@ -240,7 +240,6 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.feeling.title': 'Cómo te sientes con ello',
   'onboarding.focus.action': 'Continuar',
   'onboarding.focus.line.first': 'Emi pone esto primero cuando anotas un día.',
-  'onboarding.focus.line.settings': 'Puedes cambiarlo en Ajustes.',
   'onboarding.focus.title': '¿Qué de esto cambia con tu ciclo?',
   'onboarding.goals.action': 'Continuar',
   'onboarding.goals.choice.doctorRecord': 'Llevar un registro para mi médico',
