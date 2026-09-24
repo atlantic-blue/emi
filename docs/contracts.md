@@ -131,9 +131,12 @@ Errors: text of any size is drawn on the period, follicular, ovulation or luteal
 
 Verified by a test.
 
-Output: every interactive element is at least 44 points on both axes.
+Output: every interactive element is at least 44 points on both axes, except a day square of a
+calendar month. A day square is at least 44 points high. Its touch is the width of its column plus
+half the gap on each side, so no point in the row belongs to no square.
 
-Errors: any element below that size, named with its measured size.
+Errors: any other element below 44 points, named with its measured size. A day square whose touch
+leaves a point of its row with no square.
 
 ### SEE-4, motion respects the setting
 
