@@ -9,10 +9,14 @@ interface BuildProfile {
   readonly autoIncrement?: boolean;
 }
 
+interface SubmitProfile {
+  readonly ios?: { readonly ascAppId?: string };
+}
+
 interface BuildConfiguration {
   readonly cli: { readonly version: string; readonly appVersionSource: string };
   readonly build: Readonly<Record<string, BuildProfile>>;
-  readonly submit: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+  readonly submit: Readonly<Record<string, SubmitProfile>>;
 }
 
 interface ApplicationConfiguration {
@@ -86,10 +90,24 @@ describe('the application carries what EAS needs to build it for TestFlight', ()
       ]);
     });
   });
+});
 
-  describe('sending a build on to TestFlight', () => {
-    it('holds a production profile to send with, and names no application yet', () => {
-      expect(build().submit.production).toEqual({});
+describe('a submit to TestFlight needs no Apple login', () => {
+  describe('the profile a submit sends with', () => {
+    it('names the Emi record in App Store Connect, so a submit asks for no Apple id', () => {
+      expect(build().submit.production?.ios?.ascAppId).toBe('6815742770');
+    });
+
+    it('carries the id as text, which is the form the submit profile takes', () => {
+      expect(typeof build().submit.production?.ios?.ascAppId).toBe('string');
+    });
+
+    it('names the application and nothing besides, so a submit changes no other setting', () => {
+      expect(build().submit.production).toEqual({ ios: { ascAppId: '6815742770' } });
+    });
+
+    it('offers this one profile, so a submit cannot pick an unwritten profile', () => {
+      expect(Object.keys(build().submit)).toEqual(['production']);
     });
   });
 });
