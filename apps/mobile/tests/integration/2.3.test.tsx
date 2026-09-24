@@ -24,6 +24,8 @@ import {
   monthTestID,
 } from '../../src/features/onboarding/Calendar';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
+import { promiseActionTestID } from '../../src/features/onboarding/ThePromise';
+import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
@@ -163,6 +165,12 @@ async function sheSkipsToday(): Promise<void> {
 /** The way on from her first forecast, which is a screen she reads rather than answers. */
 async function sheReadsHerFirstForecast(): Promise<void> {
   await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
+}
+
+/** The promise and what Emi does with it, the last two screens she reads before the hold. */
+async function sheReadsThePromise(): Promise<void> {
+  await fireEvent.press(screen.getByTestId(promiseActionTestID));
+  await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
 }
 
 /** The whole first run: every question answered, and the hold that writes the answers. */
@@ -421,6 +429,10 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await sheReadsHerFirstForecast();
       visited.push(app.pathname());
+      await fireEvent.press(screen.getByTestId(promiseActionTestID));
+      visited.push(app.pathname());
+      await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
+      visited.push(app.pathname());
       await sheHoldsTheRing();
 
       expect(visited).toEqual([
@@ -437,6 +449,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/focus',
         '/onboarding/today',
         '/onboarding/first-forecast',
+        '/onboarding/the-promise',
+        '/onboarding/what-emi-does-with-it',
         '/onboarding/hold',
       ]);
       expect(app.pathname()).toBe('/');
@@ -447,19 +461,22 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       // A name opening with an underscore is a layout rather than a route, so she is never sent
       // to it. Every half is named, so a deleted layout fails here as loudly as an unasked
-      // question. The tour and the hold ask her nothing, so they are named on their own and
-      // taken out before the questions are counted.
-      expect(held).toContain('tour.tsx');
-      expect(held).toContain('hold.tsx');
-      expect(held).toContain('first-forecast.tsx');
+      // question. The five screens that ask her nothing are named on their own and taken out
+      // before the questions are counted.
+      const asksHerNothing = [
+        'tour.tsx',
+        'hold.tsx',
+        'first-forecast.tsx',
+        'the-promise.tsx',
+        'what-emi-does-with-it.tsx',
+      ];
+
+      for (const name of asksHerNothing) {
+        expect(held).toContain(name);
+      }
+
       expect(
-        held.filter(
-          (name) =>
-            !name.startsWith('_') &&
-            name !== 'tour.tsx' &&
-            name !== 'hold.tsx' &&
-            name !== 'first-forecast.tsx',
-        ),
+        held.filter((name) => !name.startsWith('_') && !asksHerNothing.includes(name)),
       ).toEqual([
         'cycle-length.tsx',
         'feeling.tsx',
@@ -474,7 +491,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'welcome.tsx',
         'year-of-birth.tsx',
       ]);
-      expect(held).toHaveLength(firstRunScreens.length + 4);
+      expect(held).toHaveLength(firstRunScreens.length + asksHerNothing.length + 1);
       expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
     });
   });
@@ -605,6 +622,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsTheFocus();
       await sheSkipsToday();
       await sheReadsHerFirstForecast();
+      await sheReadsThePromise();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');
@@ -681,6 +699,12 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await sheReadsHerFirstForecast();
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await fireEvent.press(screen.getByTestId(promiseActionTestID));
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
       expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
@@ -740,6 +764,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsTheFocus();
       await sheSkipsToday();
       await sheReadsHerFirstForecast();
+      await sheReadsThePromise();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');

@@ -33,7 +33,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
-import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -365,6 +365,7 @@ describe('what she feels today is her first logged day', () => {
       await shePresses(todayTestID('fatigue'));
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
+      await sheReadsThePromise();
       await sheHoldsTheRing();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);

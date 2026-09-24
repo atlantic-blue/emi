@@ -318,6 +318,17 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.periodLength.shorter': 'На день меньше',
   'onboarding.periodLength.skip': 'Не знаю точно',
   'onboarding.periodLength.title': 'Сколько дней обычно идут месячные?',
+  'onboarding.promise.action': 'Дальше',
+  'onboarding.promise.delete.line': 'Удаление всего убирает каждый день с этого телефона.',
+  'onboarding.promise.delete.title': 'Удалить всё, одним нажатием',
+  'onboarding.promise.encrypted.line':
+    'Emi шифрует каждый день на телефоне, ключом, который остаётся на телефоне, и отправляет только результат.',
+  'onboarding.promise.encrypted.title':
+    'Зашифровано на этом телефоне, ключом, который есть только у вас',
+  'onboarding.promise.noTracking.line':
+    'Emi не спрашивает пароль и не несёт инструментов слежения.',
+  'onboarding.promise.noTracking.title': 'Без пароля, без инструментов слежения',
+  'onboarding.promise.title': 'Только вы можете читать свои дни.',
   'onboarding.regularity.action': 'Продолжить',
   'onboarding.regularity.choice.moves': 'Нет, он смещается',
   'onboarding.regularity.choice.regular': 'Да, почти каждый месяц',
@@ -378,6 +389,22 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.welcome.line.showsYou':
     'Emi показывает вам то, что говорят ваши собственные записи, и больше ничего. Emi не является средством контрацепции. Emi не является медицинским изделием.',
   'onboarding.welcome.title': 'Emi изучает ваш цикл. Данные остаются у вас.',
+  'onboarding.whatEmiDoes.action': 'Дальше',
+  'onboarding.whatEmiDoes.forecast.line':
+    'Сначала диапазон. Он становится уже, когда Emi узнаёт ваши циклы.',
+  'onboarding.whatEmiDoes.forecast.title': 'Ваш прогноз: диапазон, и насколько Emi уверена',
+  'onboarding.whatEmiDoes.log.and': 'и',
+  'onboarding.whatEmiDoes.log.chosen': {
+    one: '{groups} идёт первым, когда вы записываете день, как вы выбрали.',
+    few: '{groups} идут первыми, когда вы записываете день, как вы выбрали.',
+    many: '{groups} идут первыми, когда вы записываете день, как вы выбрали.',
+  },
+  'onboarding.whatEmiDoes.log.title': 'Ваша запись: что вы видите первым',
+  'onboarding.whatEmiDoes.log.usual': 'Запись открывается в обычном порядке.',
+  'onboarding.whatEmiDoes.privacy.line':
+    'Зашифровано на этом телефоне. Никто другой не может это прочитать.',
+  'onboarding.whatEmiDoes.privacy.title': 'Ваша приватность: только вы можете это прочитать',
+  'onboarding.whatEmiDoes.title': 'Вот что Emi делает с тем, что вы рассказали',
 
   'recovery.before.action': 'Показать мой код',
   'recovery.before.line.nobody':

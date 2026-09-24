@@ -308,6 +308,17 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.periodLength.shorter': 'Un día menos',
   'onboarding.periodLength.skip': 'No lo sé',
   'onboarding.periodLength.title': '¿Cuántos días suele durar tu periodo?',
+  'onboarding.promise.action': 'Continuar',
+  'onboarding.promise.delete.line': 'Borrar todo quita cada día de este teléfono.',
+  'onboarding.promise.delete.title': 'Borrar todo, con una pulsación',
+  'onboarding.promise.encrypted.line':
+    'Emi cifra cada día en el teléfono, con una clave que se queda en el teléfono, y solo envía el resultado.',
+  'onboarding.promise.encrypted.title':
+    'Cifrado en este teléfono, con una clave que solo tienes tú',
+  'onboarding.promise.noTracking.line':
+    'Emi no te pide ninguna contraseña y no lleva herramientas de seguimiento.',
+  'onboarding.promise.noTracking.title': 'Sin contraseña, sin herramientas de seguimiento',
+  'onboarding.promise.title': 'Solo tú puedes leer tus días.',
   'onboarding.regularity.action': 'Continuar',
   'onboarding.regularity.choice.moves': 'No, se mueve',
   'onboarding.regularity.choice.regular': 'Sí, casi todos los meses',
@@ -368,6 +379,20 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.welcome.line.showsYou':
     'Emi te muestra lo que dicen tus propios registros, y nada más. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
   'onboarding.welcome.title': 'Emi aprende tu ciclo. Tus datos son tuyos.',
+  'onboarding.whatEmiDoes.action': 'Continuar',
+  'onboarding.whatEmiDoes.forecast.line':
+    'Primero un rango. Se estrecha a medida que Emi aprende tus ciclos.',
+  'onboarding.whatEmiDoes.forecast.title': 'Tu previsión: un rango, y qué seguridad tiene Emi',
+  'onboarding.whatEmiDoes.log.and': 'y',
+  'onboarding.whatEmiDoes.log.chosen': {
+    one: '{groups} va primero cuando anotas un día, como elegiste.',
+    other: '{groups} van primero cuando anotas un día, como elegiste.',
+  },
+  'onboarding.whatEmiDoes.log.title': 'Tu registro: lo que ves primero',
+  'onboarding.whatEmiDoes.log.usual': 'El registro se abre en su orden habitual.',
+  'onboarding.whatEmiDoes.privacy.line': 'Cifrado en este teléfono. Nadie más puede leerlo.',
+  'onboarding.whatEmiDoes.privacy.title': 'Tu privacidad: solo tú puedes leer nada de esto',
+  'onboarding.whatEmiDoes.title': 'Esto es lo que Emi hace con lo que le contaste',
 
   'recovery.before.action': 'Mostrar mi código',
   'recovery.before.line.nobody':

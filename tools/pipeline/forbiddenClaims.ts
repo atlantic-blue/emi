@@ -99,6 +99,16 @@ export const interfaceOnlyWording: readonly string[] = [
   'safe',
   'protected',
   'protection',
+  // The cipher, the hardware and the standards nobody has held Emi to. Each one is a claim a
+  // reader cannot check: the key sits in the keychain, the envelope is one named construction a
+  // document may name and a screen may not, and no auditor has read any of it. A document has room
+  // to argue about them, so they are refused on a screen and left alone there.
+  'aes',
+  'enclave',
+  'audited',
+  'zero knowledge',
+  'zero cloud',
+  'hardware key',
   // Spanish. Each ending is named, because these are matched as whole words rather than as a
   // substring, so that an ordinary name built around one survives.
   'segura',

@@ -55,6 +55,8 @@ import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
 import { aDayRecord } from '../apps/mobile/tests/fixtures/dayRecord';
 import { resetExpoSecureStore } from '../apps/mobile/tests/fixtures/expoSecureStore';
 import { firstForecastActionTestID } from '../apps/mobile/src/features/onboarding/FirstForecast';
+import { promiseActionTestID } from '../apps/mobile/src/features/onboarding/ThePromise';
+import { whatEmiDoesActionTestID } from '../apps/mobile/src/features/onboarding/WhatEmiDoesWithIt';
 import { sheAnswersEveryQuestion } from '../apps/mobile/tests/fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
 import {
@@ -492,6 +494,8 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
         await shePresses(firstForecastActionTestID);
+        await shePresses(promiseActionTestID);
+        await shePresses(whatEmiDoesActionTestID);
       },
     );
 
@@ -578,6 +582,10 @@ defineFeature(feature, (test) => {
       visited.push(app.pathname());
       await shePresses(firstForecastActionTestID);
       visited.push(app.pathname());
+      await shePresses(promiseActionTestID);
+      visited.push(app.pathname());
+      await shePresses(whatEmiDoesActionTestID);
+      visited.push(app.pathname());
     });
 
     and('she presses and holds the ring', async () => {
@@ -601,6 +609,8 @@ defineFeature(feature, (test) => {
           '/onboarding/focus',
           '/onboarding/today',
           '/onboarding/first-forecast',
+          '/onboarding/the-promise',
+          '/onboarding/what-emi-does-with-it',
           '/onboarding/hold',
         ]);
         expect(whatEachScreenSaid).toEqual([firstRunCopy.welcome.title]);
@@ -664,6 +674,10 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(firstForecastActionTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(promiseActionTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(whatEmiDoesActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
     });
 

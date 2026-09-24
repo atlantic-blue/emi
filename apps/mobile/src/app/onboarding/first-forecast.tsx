@@ -26,6 +26,9 @@ export default function FirstForecastRoute(): ReactNode {
   }
 
   return (
-    <FirstForecast onContinue={() => router.push('/onboarding/hold')} start={forecast.start} />
+    <FirstForecast
+      onContinue={() => router.push('/onboarding/the-promise')}
+      start={forecast.start}
+    />
   );
 }

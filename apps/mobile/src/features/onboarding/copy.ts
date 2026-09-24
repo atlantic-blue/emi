@@ -341,3 +341,96 @@ export function tourCountLabel(card: TourCard): string {
     of: tourCardCount,
   });
 }
+
+/**
+ * The three lines of the promise, in the order she reads them. A list as well as the record below,
+ * because the order is the screen and a record does not carry one.
+ */
+export const promiseLines = ['encrypted', 'noTracking', 'delete'] as const;
+
+export type PromiseLine = (typeof promiseLines)[number];
+
+export const promiseCopy = {
+  title: words('onboarding.promise.title'),
+  lines: {
+    encrypted: {
+      title: words('onboarding.promise.encrypted.title'),
+      line: words('onboarding.promise.encrypted.line'),
+    },
+    noTracking: {
+      title: words('onboarding.promise.noTracking.title'),
+      line: words('onboarding.promise.noTracking.line'),
+    },
+    delete: {
+      title: words('onboarding.promise.delete.title'),
+      line: words('onboarding.promise.delete.line'),
+    },
+  } satisfies Readonly<Record<PromiseLine, { readonly title: string; readonly line: string }>>,
+  action: words('onboarding.promise.action'),
+} as const;
+
+/** The three cards of the screen after the promise, in the order she reads them. */
+export const whatEmiDoesCards = ['forecast', 'log', 'privacy'] as const;
+
+export type WhatEmiDoesCard = (typeof whatEmiDoesCards)[number];
+
+export const whatEmiDoesCopy = {
+  title: words('onboarding.whatEmiDoes.title'),
+  forecast: {
+    title: words('onboarding.whatEmiDoes.forecast.title'),
+    line: words('onboarding.whatEmiDoes.forecast.line'),
+  },
+  log: {
+    title: words('onboarding.whatEmiDoes.log.title'),
+    usual: words('onboarding.whatEmiDoes.log.usual'),
+    and: words('onboarding.whatEmiDoes.log.and'),
+  },
+  privacy: {
+    title: words('onboarding.whatEmiDoes.privacy.title'),
+    line: words('onboarding.whatEmiDoes.privacy.line'),
+  },
+  action: words('onboarding.whatEmiDoes.action'),
+} as const;
+
+/**
+ * A group named inside a sentence rather than at the head of its section. Every language Emi ships
+ * writes a group as a common noun, so only the name that opens the sentence keeps its capital.
+ *
+ * `toLowerCase` rather than the locale aware form, which maps a capital I to a dotless letter on a
+ * phone set to Turkish.
+ */
+function insideASentence(label: string): string {
+  return label.charAt(0).toLowerCase() + label.slice(1);
+}
+
+/**
+ * Her groups, joined the way a sentence names them. `Intl.ListFormat` is the obvious way and the
+ * engine the application runs on does not carry it: Hermes ships the collator, the date format and
+ * the number format and no more, so that call is undefined on a phone and correct under the runner.
+ */
+function namesOf(groups: readonly Focus[]): string {
+  const named = groups.map((group, at) =>
+    at === 0 ? focusLabels[group] : insideASentence(focusLabels[group]),
+  );
+  const last = named.at(-1);
+  const before = named.slice(0, -1);
+
+  if (last === undefined) {
+    return '';
+  }
+
+  return before.length === 0 ? last : `${before.join(', ')} ${whatEmiDoesCopy.log.and} ${last}`;
+}
+
+/**
+ * What the log card says: the groups she pressed, in the order she pressed them, or the order
+ * everybody gets where she pressed none. A woman who pressed none named nothing to come first, so
+ * the card says what she will open rather than reading her an empty list back.
+ */
+export function whatComesFirstWhenSheLogs(groups: readonly Focus[]): string {
+  if (groups.length === 0) {
+    return whatEmiDoesCopy.log.usual;
+  }
+
+  return words('onboarding.whatEmiDoes.log.chosen', groups.length, { groups: namesOf(groups) });
+}

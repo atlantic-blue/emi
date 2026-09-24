@@ -34,7 +34,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
-import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -295,6 +295,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
+      await sheReadsThePromise();
       await sheHoldsTheRing();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());

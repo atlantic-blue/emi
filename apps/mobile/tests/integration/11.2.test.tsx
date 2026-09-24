@@ -36,7 +36,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { openTestDatabase } from '../data/nodeDatabase';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
-import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -265,6 +265,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
+      await sheReadsThePromise();
       await sheHoldsTheRing();
 
       expect((await herProfile())?.birthYear).toBeUndefined();
@@ -289,6 +290,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
+      await sheReadsThePromise();
       await sheHoldsTheRing();
 
       expect((await herProfile())?.name).toBeUndefined();
