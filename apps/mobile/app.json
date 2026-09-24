@@ -2,6 +2,7 @@
   "expo": {
     "name": "Emi",
     "slug": "emi",
+    "owner": "atlanticblue",
     "version": "0.0.1",
     "orientation": "portrait",
     "scheme": "emi",
@@ -36,6 +37,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e75181ac-ed33-4423-905d-a1d0778bd52b"
+      }
     }
   }
 }
