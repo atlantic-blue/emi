@@ -12,6 +12,8 @@ import {
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { focusTestID } from '../../src/features/onboarding/Focus';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
+import { promiseActionTestID } from '../../src/features/onboarding/ThePromise';
+import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import { todayTestID } from '../../src/features/onboarding/Today';
 import { goalTestID } from '../../src/features/onboarding/Goals';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
@@ -145,7 +147,17 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
     await fireEvent.press(screen.getByTestId(onboardingActionTestID));
   }
 
-  // The last question is behind her, and the forecast Emi counts from her answers stands between
-  // it and the hold. It asks her nothing, so the walk reads it and presses on.
+  // The last question is behind her, and three screens she reads rather than answers stand between
+  // it and the hold: the forecast, the promise, and what Emi does with what she said.
   await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
+  await sheReadsThePromise();
+}
+
+/**
+ * The two screens after the forecast and before the hold, read and pressed past. Neither asks her
+ * anything, so every walk that wants the hold comes through here rather than naming both buttons.
+ */
+export async function sheReadsThePromise(): Promise<void> {
+  await fireEvent.press(screen.getByTestId(promiseActionTestID));
+  await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
 }

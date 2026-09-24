@@ -39,7 +39,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { openTestDatabase } from '../data/nodeDatabase';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herProfileVault, herVault, theVaultOnHerPhone } from '../fixtures/herVault';
-import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -352,6 +352,7 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
+      await sheReadsThePromise();
       await sheHoldsTheRing();
 
       expect((await herSealedDays()).map((day) => day.day)).toEqual([herPeriodStarted]);

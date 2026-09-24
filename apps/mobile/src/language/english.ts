@@ -265,8 +265,8 @@ export const english = {
   // What she reads when the write refuses. It says nothing was kept, because nothing was: the
   // day, the answers and the marker go in one transaction or none of them do.
   'onboarding.hold.refused': 'Emi kept nothing. Press and hold the ring again.',
-  // The copy review of screen 19 wrote this line, in place of the export's claim about an enclave.
-  // It is true only because the hold is the one moment the first run writes.
+  // True only because the hold is the one moment the first run writes. The key is made there if
+  // this phone holds none, and it is kept in the keychain rather than anywhere a screen may name.
   'onboarding.hold.sealed':
     "Holding the ring saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
   'onboarding.hold.title': 'Your cycle, your data, your key.',
@@ -311,6 +311,15 @@ export const english = {
   'onboarding.periodLength.shorter': 'One day shorter',
   'onboarding.periodLength.skip': 'I am not sure',
   'onboarding.periodLength.title': 'How many days does your period usually last?',
+  'onboarding.promise.action': 'Continue',
+  'onboarding.promise.delete.line': 'Delete everything removes every day from this phone.',
+  'onboarding.promise.delete.title': 'Delete everything, in one press',
+  'onboarding.promise.encrypted.line':
+    'Emi encrypts each day on the phone, with a key that stays on the phone, and sends only the result.',
+  'onboarding.promise.encrypted.title': 'Encrypted on this phone, with a key only you hold',
+  'onboarding.promise.noTracking.line': 'Emi asks for no password and carries no tracking tools.',
+  'onboarding.promise.noTracking.title': 'No password, no tracking tools',
+  'onboarding.promise.title': 'Only you can read your days.',
   'onboarding.regularity.action': 'Continue',
   'onboarding.regularity.choice.moves': 'No, it moves',
   'onboarding.regularity.choice.regular': 'Yes, most months',
@@ -371,6 +380,20 @@ export const english = {
   'onboarding.welcome.line.showsYou':
     'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
   'onboarding.welcome.title': 'Emi learns your cycle. You keep your data.',
+  'onboarding.whatEmiDoes.action': 'Continue',
+  'onboarding.whatEmiDoes.forecast.line':
+    'A range first. It gets narrower as Emi learns your cycles.',
+  'onboarding.whatEmiDoes.forecast.title': 'Your forecast: a range, and how sure Emi is',
+  'onboarding.whatEmiDoes.log.and': 'and',
+  'onboarding.whatEmiDoes.log.chosen': {
+    one: '{groups} comes first when you log, as you chose.',
+    other: '{groups} come first when you log, as you chose.',
+  },
+  'onboarding.whatEmiDoes.log.title': 'Your log: what you see first',
+  'onboarding.whatEmiDoes.log.usual': 'The log opens in its usual order.',
+  'onboarding.whatEmiDoes.privacy.line': 'Encrypted on this phone. Nobody else can read it.',
+  'onboarding.whatEmiDoes.privacy.title': 'Your privacy: only you can read any of it',
+  'onboarding.whatEmiDoes.title': 'Here is what Emi does with what you told it',
 
   'recovery.before.action': 'Show my code',
   'recovery.before.line.nobody':
