@@ -153,6 +153,16 @@ says so.
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
 with `npm run generate:cycle-length-picture`.
 
+Before the hold it answers her. It counts her next period from the days she gave and the length she
+stated, and it shows the two ends of that range rather than a date. Nothing is written yet: the
+arithmetic runs on the answers she is still holding in memory, and the two cards under the range say
+why it is a range and where it was worked out.
+
+![Her first forecast, from one period and from two](../brand/screens/first-forecast.png)
+
+Rendered under the test runner at 393 by 852 points, and not captured from a phone. Draw it again
+with `npm run generate:first-forecast-picture`.
+
 Then it asks her to press and hold the ring. That hold is the only moment the first run writes: her
 key is made if this phone has none, and the day she gave, her answers and the marker go in one
 transaction. A woman who walks away at any question leaves nothing behind, and a write that fails
@@ -166,8 +176,8 @@ with `npm run generate:hold-picture`.
 
 Her answers make the ring, and the ring is the product. It carries the day of her cycle and the
 phase she is in, so she can read it across a room and nobody beside her can. It draws what her own
-records support and no more: with one cycle recorded Emi says it is still learning, and it gives a
-range with a confidence only once it has two.
+records support and no more: with one cycle recorded Emi gives a range and says it is still
+learning, and it puts a confidence beside that range only once it has two.
 
 ![The home screen at six recorded histories](../brand/screens/home-screen.png)
 
@@ -199,11 +209,12 @@ beside it. The arithmetic runs on her phone, on her own last six cycles, and not
 anywhere to produce it. A woman told the fourteenth who bleeds on the sixteenth was told something
 false, so the forecast is a range and never a single day.
 
-She reads it in the same place she reads the ring. Before two cycles are complete Emi says it is
-still learning, names how many more it wants, and counts by the length she gave at the first run,
-with no confidence shown, because a confidence is a statement about the spread of her own cycles and
-one cycle has no spread. Once she has two, the same place carries two dates and how sure Emi is of
-them: high when her cycles sit close together, low when they do not.
+She reads it in the same place she reads the ring. Before two cycles are complete the range is
+counted from the length she gave at the first run, three days either side, and Emi says it is still
+learning and names how many more cycles it wants. No confidence is shown there, because a confidence
+is a statement about the spread of her own cycles and one cycle has no spread. Once she has two, the
+same place carries a range from her own lengths and how sure Emi is of it: high when her cycles sit
+close together, low when they do not.
 
 ![The home screen at six recorded histories: nothing yet, still learning, and four forecasts from high to low confidence](../brand/screens/home-screen.png)
 

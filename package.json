@@ -43,6 +43,7 @@
     "generate:delete-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern deleteEverything.picture",
     "generate:welcome-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern welcome.picture",
     "generate:cycle-length-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern cycleLength.picture",
+    "generate:first-forecast-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern firstForecast.picture",
     "generate:hold-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern holdToBegin.picture",
     "generate:past-day-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern pastDay.picture",
     "generate:log-sheet-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern logSheet.picture",

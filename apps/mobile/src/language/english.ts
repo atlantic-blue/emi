@@ -98,8 +98,8 @@ export const english = {
   'forecast.confidence.sentence': '{word} confidence, from your last {cycles} cycles',
   'forecast.cycleMoves': 'Your cycle moves, so the range is wider.',
   'forecast.cyclesWanted': {
-    one: 'Emi needs {count} more complete cycle before it forecasts.',
-    other: 'Emi needs {count} more complete cycles before it forecasts.',
+    one: 'Emi needs {count} more complete cycle before it says how sure it is.',
+    other: 'Emi needs {count} more complete cycles before it says how sure it is.',
   },
   'forecast.fertileWindow': 'Fertile window',
   /**
@@ -237,6 +237,16 @@ export const english = {
   'onboarding.feeling.line.encrypted': 'Encrypted on this phone.',
   'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
   'onboarding.feeling.title': 'How you feel about it',
+  'onboarding.firstForecast.action': 'Continue',
+  'onboarding.firstForecast.line.learning':
+    'Emi is still learning. After two cycles it says how sure it is.',
+  'onboarding.firstForecast.onThisPhone.line':
+    'Emi works out the range on this phone, from the dates you gave.',
+  'onboarding.firstForecast.onThisPhone.title': 'Worked out on this phone',
+  'onboarding.firstForecast.title': 'Your next period',
+  'onboarding.firstForecast.why.line':
+    'A cycle can move by a few days from one month to the next. A range says that. One date would hide it.',
+  'onboarding.firstForecast.why.title': 'Why a range?',
   'onboarding.focus.action': 'Continue',
   'onboarding.focus.line.first': 'Emi puts these first when you log a day.',
   'onboarding.focus.title': 'Which of these change with your cycle?',

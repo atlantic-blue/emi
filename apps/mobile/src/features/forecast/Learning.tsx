@@ -5,19 +5,29 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { NextPeriod } from './NextPeriod';
-import { cyclesWantedSentence, learningCopy, statedLengthSentence } from './copy';
+import {
+  cyclesWantedSentence,
+  forecastCopy,
+  learningCopy,
+  rangeSentence,
+  statedLengthSentence,
+} from './copy';
 
 /**
- * What Emi says before two cycles are complete. On the first day it knows one thing, the length she
- * gave during the first run, and a range drawn from that would be a forecast of her answer rather
- * than of her body. So it says it is still learning, says how many more cycles it wants, and names
- * the length it counts by until then.
+ * What Emi says before two cycles are complete. It knows one thing about her rhythm, the length she
+ * gave during the first run, so it counts the next period from that, says it is still learning, and
+ * names how many more cycles it wants.
+ *
+ * The two days are named rather than withheld, because a woman who said when her last period
+ * started has been told nothing by a screen that will not say when the next one is due. They are a
+ * range and never a date, and the sentence under them says the length they were counted from.
  *
  * Nothing here renders a confidence, which is the error contract CYCLE-3 states. A confidence is a
  * statement about the spread of her own cycle lengths, and fewer than two cycles have no spread.
  */
 
 export const learningTestID = 'learning';
+export const learningRangeTestID = 'learning-range';
 export const learningCyclesWantedTestID = 'learning-cycles-wanted';
 export const learningStatedLengthTestID = 'learning-stated-length';
 
@@ -30,6 +40,14 @@ interface LearningProps {
 export function Learning({ learning, cycleLengthDays }: LearningProps): ReactNode {
   return (
     <View accessible style={styles.block} testID={learningTestID}>
+      {learning.start === undefined ? null : (
+        <>
+          <Text style={styles.label}>{forecastCopy.nextPeriod}</Text>
+          <Text style={styles.range} testID={learningRangeTestID}>
+            {rangeSentence(learning.start)}
+          </Text>
+        </>
+      )}
       <Text style={styles.label}>{learningCopy.stillLearning}</Text>
       <Text style={styles.wanted} testID={learningCyclesWantedTestID}>
         {cyclesWantedSentence(learning)}
@@ -65,6 +83,13 @@ export function NextPeriodOrLearning({ result, cycleLengthDays, regularity }: Pr
 
 const styles = StyleSheet.create({
   block: { paddingHorizontal: space.spaceLg, paddingVertical: space.spaceMd },
+  // The same size and colour the settled forecast draws its range at, because the two ends mean
+  // the same thing on both screens and only the sentence under them changes.
+  range: {
+    color: colour.onSurface,
+    ...textStyle('headline-md'),
+    marginBottom: space.spaceSm,
+  },
   label: {
     color: colour.onSurfaceVariant,
     ...textStyle('label-sm'),

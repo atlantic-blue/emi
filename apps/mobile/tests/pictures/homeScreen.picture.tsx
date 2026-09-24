@@ -108,7 +108,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       : daysLogged(daysOf(recorded.set), recordedAt);
   const cycles = listCycles(database);
   const open = cycles[cycles.length - 1];
-  const forecast = forecastOf(cycles);
+  const forecast = forecastOf(cycles, sheSaidHerCycleRuns);
   const ring =
     open === undefined
       ? undefined

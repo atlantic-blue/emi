@@ -1,7 +1,8 @@
 import { cyclesFrom, daysBetween } from '../src/cycles';
-import type { Forecast } from '../src/forecast';
+import type { Forecast, Learning } from '../src/forecast';
 import {
   CYCLES_BEFORE_A_FORECAST,
+  DAYS_EITHER_SIDE_WHILE_LEARNING,
   FERTILE_DAYS_AFTER_OVULATION,
   FERTILE_DAYS_BEFORE_OVULATION,
   FORECAST_WINDOW_CYCLES,
@@ -10,6 +11,7 @@ import {
   lastLengths,
   median,
   spread,
+  startWhileLearning,
 } from '../src/forecast';
 import type { RecordedSet } from './fixtures/recordedSets';
 import {
@@ -180,6 +182,98 @@ describe('before two cycles are complete', () => {
       completeCycles: 0,
       needsCycles: CYCLES_BEFORE_A_FORECAST,
     });
+  });
+});
+
+describe('the range Emi counts while it is still learning', () => {
+  const sheSaidHerCycleRuns = 31;
+
+  /** One period recorded and no cycle complete, which is where the first run leaves her. */
+  const herFirstPeriodOnly = { ...veryRegular, lengths: [] };
+
+  function learningFrom(set: RecordedSet, statedCycleLengthDays?: number): Learning {
+    const result = forecastFrom(
+      cyclesFrom(daysOf(set)),
+      statedCycleLengthDays === undefined ? {} : { statedCycleLengthDays },
+    );
+
+    if (result.kind !== 'learning') {
+      throw new Error(
+        `${set.lengths.length} cycles produced a forecast rather than the learning state`,
+      );
+    }
+
+    return result;
+  }
+
+  it('counts the range from her last start and the length she gave', () => {
+    const learning = learningFrom(herFirstPeriodOnly, sheSaidHerCycleRuns);
+
+    expect(learning.start).toEqual({ from: '2026-02-02', to: '2026-02-08' });
+  });
+
+  it('counts from the last start she recorded, where she gave the period before it as well', () => {
+    const oneCycleBehindHer = { ...veryRegular, lengths: [28] };
+    const starts = startsOf(oneCycleBehindHer);
+    const lastStart = starts[starts.length - 1];
+
+    const learning = learningFrom(oneCycleBehindHer, sheSaidHerCycleRuns);
+
+    expect(lastStart).toBe('2026-02-02');
+    expect(learning.completeCycles).toBe(1);
+    expect(learning.start).toEqual({ from: '2026-03-02', to: '2026-03-08' });
+  });
+
+  it('opens the range three days either side, which is the cohort variation rounded', () => {
+    const learning = learningFrom(herFirstPeriodOnly, sheSaidHerCycleRuns);
+
+    expect(DAYS_EITHER_SIDE_WHILE_LEARNING).toBe(3);
+    expect(daysBetween(learning.start?.from ?? '', learning.start?.to ?? '')).toBe(
+      DAYS_EITHER_SIDE_WHILE_LEARNING * 2,
+    );
+  });
+
+  it('is wider than the range a woman with six steady cycles reads', () => {
+    const settled = forecastOf(veryRegular);
+    const learning = learningFrom(herFirstPeriodOnly, sheSaidHerCycleRuns);
+
+    expect(daysBetween(learning.start?.from ?? '', learning.start?.to ?? '')).toBeGreaterThan(
+      daysBetween(settled.start.from, settled.start.to),
+    );
+  });
+
+  it('never names a single day, whatever length she gave', () => {
+    for (let days = 21; days <= 45; days += 1) {
+      const learning = learningFrom(herFirstPeriodOnly, days);
+
+      expect(learning.start?.from).not.toBe(learning.start?.to);
+    }
+  });
+
+  it('counts no range at all where the caller gave no length to count by', () => {
+    expect(learningFrom(herFirstPeriodOnly).start).toBeUndefined();
+  });
+
+  it('counts no range at all where she has recorded no day', () => {
+    expect(forecastFrom([], { statedCycleLengthDays: sheSaidHerCycleRuns })).toEqual({
+      kind: 'learning',
+      completeCycles: 0,
+      needsCycles: CYCLES_BEFORE_A_FORECAST,
+    });
+  });
+
+  it('refuses a length that is not a whole number of days from one', () => {
+    expect(() => startWhileLearning('2026-01-05', 0)).toThrow('whole number of days');
+    expect(() => startWhileLearning('2026-01-05', 28.5)).toThrow('whole number of days');
+  });
+
+  it('is not counted by once two cycles are complete, where her own lengths are', () => {
+    const settled = forecastFrom(cyclesFrom(daysOf(twoCyclesExactly)), {
+      statedCycleLengthDays: sheSaidHerCycleRuns,
+    });
+
+    expect(settled).toEqual(forecastFrom(cyclesFrom(daysOf(twoCyclesExactly))));
+    expect(settled.kind).toBe('forecast');
   });
 });
 

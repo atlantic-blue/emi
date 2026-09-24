@@ -57,7 +57,7 @@ function whatSheIsLookingAt(
       statedCycleLengthDays: stated,
       statedPeriodLengthDays: herAnswers?.periodLengthDays,
     }),
-    forecast: forecastOf(cycles),
+    forecast: forecastOf(cycles, stated),
     cycleLengthDays: stated,
     name: herAnswers?.name,
     regularity: herAnswers?.regularity,

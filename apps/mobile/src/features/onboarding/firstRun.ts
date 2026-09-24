@@ -15,10 +15,19 @@ import {
   shortestPeriodLengthDays,
   youngestBirthYears,
 } from '@emi/crypto';
-import { type Flow, addDays, daysBetween, isKnownSymptom } from '@emi/cycle';
+import {
+  type Flow,
+  type ForecastResult,
+  addDays,
+  cyclesFrom,
+  daysBetween,
+  forecastFrom,
+  isKnownSymptom,
+} from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import { insertDayLog } from '../../data/dayLogRepository';
+import { rebuildCyclesWithin } from '../cycle/rebuild';
 import { readProfile, writeProfile } from '../../data/profileRepository';
 import { readSetting, writeSetting } from '../../data/settingRepository';
 import type { DayVault } from '../../services/vault/dayVault';
@@ -341,6 +350,28 @@ export function birthYearIsInRange(year: number, now: Date): boolean {
   return Number.isInteger(year) && year >= earliestBirthYear && year <= latestBirthYear(now);
 }
 
+/** The answers a forecast is worked out from, which are the days she gave and the length she stated. */
+export type HerForecastAnswers = Pick<
+  FirstRunAnswers,
+  'cycleLengthDays' | 'periodBeforeStartedOn' | 'periodStartedOn'
+>;
+
+/**
+ * What Emi can say about her next period while her answers are still in memory. The days handed to
+ * the arithmetic are the days the hold is about to seal, and the arithmetic is the one the home
+ * screen reads, so the range she is shown before the hold is the range she reads after it.
+ */
+export function forecastFromHerAnswers(answers: HerForecastAnswers): ForecastResult {
+  const days = [
+    ...(answers.periodBeforeStartedOn === undefined
+      ? []
+      : [{ day: answers.periodBeforeStartedOn, flow: firstRunFlow }]),
+    { day: answers.periodStartedOn, flow: firstRunFlow },
+  ];
+
+  return forecastFrom(cyclesFrom(days), { statedCycleLengthDays: answers.cycleLengthDays });
+}
+
 /** Her day is sealed under one of these and her answers under the other, both under her one key. */
 export interface FirstRunVaults {
   readonly day: DayVault;
@@ -537,6 +568,10 @@ export function completeFirstRun(
 
       insertDayLog(db, { day: felt.day, payload: vaults.day.seal(felt), now });
     }
+    // The home screen reads the cycle cache and never the day log, so the cache is built here
+    // rather than left for the first day she logs. It is inside this transaction, so a day that
+    // fails to seal takes the cache with it and leaves the database as it was.
+    rebuildCyclesWithin(db, vaults.day.open, now);
     writeProfile(db, vaults.profile, { profile: herProfile(answers, now), now });
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
     setLockOnReturn(db, true);

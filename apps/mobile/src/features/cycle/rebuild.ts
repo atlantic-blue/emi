@@ -2,7 +2,7 @@ import type { Cycle, DayRecord } from '@emi/cycle';
 import { cyclesFrom } from '@emi/cycle';
 
 import type { CycleEntry, CycleRow } from '../../data/cycleRepository';
-import { replaceCycles } from '../../data/cycleRepository';
+import { replaceCycles, replaceCyclesWithin } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
 import type { DayLogDelete, DayLogRow, DayLogWrite } from '../../data/dayLogRepository';
 import {
@@ -34,8 +34,21 @@ export function recordedDays(db: Database, readDay: ReadDay): DayRecord[] {
 }
 
 export function rebuildCycles(db: Database, readDay: ReadDay, now: Date): CycleRow[] {
-  const cycles = cyclesFrom(recordedDays(db, readDay));
-  return replaceCycles(db, { cycles: cycles.map(asEntry), now });
+  return replaceCycles(db, { cycles: cyclesRecorded(db, readDay), now });
+}
+
+/**
+ * The same rebuild, for a caller that has already opened a transaction. The first run writes her
+ * days and this cache under one, so the home screen she lands on either knows about every day she
+ * gave or the hold wrote nothing at all.
+ */
+export function rebuildCyclesWithin(db: Database, readDay: ReadDay, now: Date): CycleRow[] {
+  return replaceCyclesWithin(db, { cycles: cyclesRecorded(db, readDay), now });
+}
+
+/** Every cycle her days make, as the cache holds them. */
+function cyclesRecorded(db: Database, readDay: ReadDay): CycleEntry[] {
+  return cyclesFrom(recordedDays(db, readDay)).map(asEntry);
 }
 
 export function logDay(db: Database, write: DayLogWrite, readDay: ReadDay): DayAndCycles {

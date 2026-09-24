@@ -1,5 +1,5 @@
 import type { ConfidenceBand } from './confidence';
-import { confidenceFor } from './confidence';
+import { POPULATION_SPREAD_DAYS, confidenceFor } from './confidence';
 import type { Cycle } from './cycles';
 import { addDays, cycleLengths } from './cycles';
 
@@ -26,6 +26,14 @@ export const LUTEAL_LENGTH_DAYS = 13;
  * cycles were all exactly 28 days is still told a range.
  */
 export const MINIMUM_DAYS_EITHER_SIDE = 1;
+
+/**
+ * How far either side of the day she is counted to, before two of her cycles are complete. Her own
+ * spread is the one number a woman with no complete cycle cannot have, so the width is the mean
+ * per-user variation of the cited cohort, rounded to a whole day. It is wider than most settled
+ * forecasts, which is the honest way round: the range narrows as Emi reads her own cycles.
+ */
+export const DAYS_EITHER_SIDE_WHILE_LEARNING = Math.round(POPULATION_SPREAD_DAYS);
 
 /** Design section 8: five days before the estimated ovulation through one day after it. */
 export const FERTILE_DAYS_BEFORE_OVULATION = 5;
@@ -69,6 +77,12 @@ export interface Learning {
   readonly kind: 'learning';
   readonly completeCycles: number;
   readonly needsCycles: number;
+  /**
+   * The days her next period is counted to, from the last start she recorded and the length she
+   * gave at the first run. Nothing at all where she has recorded no day, or where the caller gave
+   * no length, and then a screen has no range to draw and says so.
+   */
+  readonly start?: DayRange;
 }
 
 /**
@@ -81,6 +95,29 @@ export type ForecastResult = Forecast | Learning;
 export interface ForecastOptions {
   /** Step 3.4 passes the length measured from her own temperature rise. */
   readonly lutealLengthDays?: number;
+  /**
+   * How long she said her cycle runs, at the first run. It is counted by while Emi is learning and
+   * never inside a forecast, because a forecast is the median of cycles she lived.
+   */
+  readonly statedCycleLengthDays?: number;
+}
+
+/**
+ * The days her next period is counted to before two of her cycles are complete. The middle is the
+ * last start she recorded plus the length she gave, and the width is the cohort's variation, so
+ * the two ends say that a stated length is an estimate rather than a promise.
+ */
+export function startWhileLearning(lastStartedOn: string, statedCycleLengthDays: number): DayRange {
+  if (!Number.isInteger(statedCycleLengthDays) || statedCycleLengthDays < 1) {
+    throw new Error(
+      `a cycle length is a whole number of days from one, this one is ${statedCycleLengthDays}`,
+    );
+  }
+
+  return {
+    from: addDays(lastStartedOn, statedCycleLengthDays - DAYS_EITHER_SIDE_WHILE_LEARNING),
+    to: addDays(lastStartedOn, statedCycleLengthDays + DAYS_EITHER_SIDE_WHILE_LEARNING),
+  };
 }
 
 function valueAt(sorted: readonly number[], index: number): number {
@@ -136,7 +173,14 @@ export function forecastFrom(
   const last = cycles[cycles.length - 1];
 
   if (!last || complete < CYCLES_BEFORE_A_FORECAST) {
-    return { kind: 'learning', completeCycles: complete, needsCycles: CYCLES_BEFORE_A_FORECAST };
+    return {
+      kind: 'learning',
+      completeCycles: complete,
+      needsCycles: CYCLES_BEFORE_A_FORECAST,
+      ...(last === undefined || options.statedCycleLengthDays === undefined
+        ? {}
+        : { start: startWhileLearning(last.startedOn, options.statedCycleLengthDays) }),
+    };
   }
 
   const lutealLengthDays = options.lutealLengthDays ?? LUTEAL_LENGTH_DAYS;

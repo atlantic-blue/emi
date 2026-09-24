@@ -119,7 +119,7 @@ export function ringInputFor(from: RingInputFrom): RingInput | undefined {
     return undefined;
   }
 
-  const forecast = forecastOf(from.cycles);
+  const forecast = forecastOf(from.cycles, from.statedCycleLengthDays);
   const expectedLengthDays =
     forecast.kind === 'forecast'
       ? Math.round(forecast.medianLengthDays)

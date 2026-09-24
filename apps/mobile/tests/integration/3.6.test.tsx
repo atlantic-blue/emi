@@ -349,7 +349,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
       expect(screen.getByTestId(learningTestID)).toBeTruthy();
       expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
-        'Emi needs 1 more complete cycle before it forecasts.',
+        'Emi needs 1 more complete cycle before it says how sure it is.',
       );
       expect(screen.queryByTestId(nextPeriodRangeTestID)).toBeNull();
     });

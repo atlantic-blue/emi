@@ -11,6 +11,7 @@ import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import { words } from '../../src/language';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
+import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -249,13 +250,13 @@ describe('what she feels today is her first logged day', () => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    it('hands her to the hold, whether she saves the day or passes it by', async () => {
+    it('hands her to her first forecast, whether she saves the day or passes it by', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesToday();
       await shePresses(onboardingSkipTestID);
 
-      expect(app.pathname()).toBe('/onboarding/hold');
+      expect(app.pathname()).toBe('/onboarding/first-forecast');
     });
 
     it('has written nothing at all while she stands on it', async () => {
@@ -363,6 +364,7 @@ describe('what she feels today is her first logged day', () => {
       await shePresses(todayTestID('cramps'));
       await shePresses(todayTestID('fatigue'));
       await shePresses(onboardingSkipTestID);
+      await shePresses(firstForecastActionTestID);
       await sheHoldsTheRing();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);

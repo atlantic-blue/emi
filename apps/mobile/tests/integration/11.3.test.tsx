@@ -17,6 +17,7 @@ import { learningCyclesWantedTestID } from '../../src/features/forecast/Learning
 import { cyclesWantedSentence } from '../../src/features/forecast/copy';
 import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { dayTestID, earlierMonthTestID } from '../../src/features/onboarding/Calendar';
+import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -219,14 +220,15 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       });
       await sheHoldsTheRing();
 
-      // Her days hold the cycle. The screen reads the cycle cache rather than her days, and the
-      // hold writes no cache, so the sentence still asks for two cycles until the first day she
-      // logs rebuilds it. The day log is where this step puts her answer; the screen that reads
-      // it back is step 11.10.
-      expect(listCycles(herDatabase())).toEqual([]);
+      // The screen reads the cycle cache rather than her days, and the hold rebuilds it, so the
+      // cycle she lived is behind the sentence she reads: one more cycle is wanted and not two.
+      expect(listCycles(herDatabase())).toMatchObject([
+        { startedOn: theOneBefore, lengthDays: theCycleSheLived },
+        { startedOn: herPeriodStarted, lengthDays: null },
+      ]);
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
-        cyclesWantedSentence({ kind: 'learning', completeCycles: 0, needsCycles: 2 }),
+        cyclesWantedSentence({ kind: 'learning', completeCycles: 1, needsCycles: 2 }),
       );
     });
 
@@ -349,6 +351,7 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(firstForecastActionTestID);
       await sheHoldsTheRing();
 
       expect((await herSealedDays()).map((day) => day.day)).toEqual([herPeriodStarted]);

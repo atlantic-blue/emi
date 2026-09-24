@@ -23,6 +23,7 @@ import {
   laterMonthTestID,
   monthTestID,
 } from '../../src/features/onboarding/Calendar';
+import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
@@ -157,6 +158,11 @@ async function sheSkipsTheFocus(): Promise<void> {
 /** The way past today, which is the last question and leaves today with no row of its own. */
 async function sheSkipsToday(): Promise<void> {
   await fireEvent.press(theScreen('today').getByTestId(onboardingSkipTestID));
+}
+
+/** The way on from her first forecast, which is a screen she reads rather than answers. */
+async function sheReadsHerFirstForecast(): Promise<void> {
+  await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
 }
 
 /** The whole first run: every question answered, and the hold that writes the answers. */
@@ -413,6 +419,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
+      await sheReadsHerFirstForecast();
+      visited.push(app.pathname());
       await sheHoldsTheRing();
 
       expect(visited).toEqual([
@@ -428,6 +436,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/goals',
         '/onboarding/focus',
         '/onboarding/today',
+        '/onboarding/first-forecast',
         '/onboarding/hold',
       ]);
       expect(app.pathname()).toBe('/');
@@ -442,8 +451,15 @@ describe('the first run ends on the home screen with her period recorded', () =>
       // taken out before the questions are counted.
       expect(held).toContain('tour.tsx');
       expect(held).toContain('hold.tsx');
+      expect(held).toContain('first-forecast.tsx');
       expect(
-        held.filter((name) => !name.startsWith('_') && name !== 'tour.tsx' && name !== 'hold.tsx'),
+        held.filter(
+          (name) =>
+            !name.startsWith('_') &&
+            name !== 'tour.tsx' &&
+            name !== 'hold.tsx' &&
+            name !== 'first-forecast.tsx',
+        ),
       ).toEqual([
         'cycle-length.tsx',
         'feeling.tsx',
@@ -458,7 +474,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'welcome.tsx',
         'year-of-birth.tsx',
       ]);
-      expect(held).toHaveLength(firstRunScreens.length + 3);
+      expect(held).toHaveLength(firstRunScreens.length + 4);
       expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
     });
   });
@@ -588,6 +604,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsTheGoals();
       await sheSkipsTheFocus();
       await sheSkipsToday();
+      await sheReadsHerFirstForecast();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');
@@ -661,6 +678,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await sheSkipsToday();
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await sheReadsHerFirstForecast();
       expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
@@ -719,6 +739,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsTheGoals();
       await sheSkipsTheFocus();
       await sheSkipsToday();
+      await sheReadsHerFirstForecast();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');

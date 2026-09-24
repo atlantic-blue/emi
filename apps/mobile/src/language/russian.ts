@@ -103,9 +103,9 @@ export const russian: CatalogueIn<'ru'> = {
   'forecast.confidence.sentence': 'Уверенность {word}, по вашим последним {cycles} циклам',
   'forecast.cycleMoves': 'Ваш цикл смещается, поэтому диапазон шире.',
   'forecast.cyclesWanted': {
-    one: 'Emi нужен ещё {count} полный цикл, прежде чем делать прогноз.',
-    few: 'Emi нужно ещё {count} полных цикла, прежде чем делать прогноз.',
-    many: 'Emi нужно ещё {count} полных циклов, прежде чем делать прогноз.',
+    one: 'Emi нужен ещё {count} полный цикл, чтобы сказать, насколько она уверена.',
+    few: 'Emi нужно ещё {count} полных цикла, чтобы сказать, насколько она уверена.',
+    many: 'Emi нужно ещё {count} полных циклов, чтобы сказать, насколько она уверена.',
   },
   'forecast.fertileWindow': 'Фертильное окно',
   /**
@@ -246,6 +246,16 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.feeling.line.encrypted': 'Зашифровано на этом телефоне.',
   'onboarding.feeling.line.talks': 'Это меняет только то, как Emi говорит с вами.',
   'onboarding.feeling.title': 'Как вы к этому относитесь',
+  'onboarding.firstForecast.action': 'Продолжить',
+  'onboarding.firstForecast.line.learning':
+    'Emi ещё учится. После двух циклов она скажет, насколько уверена.',
+  'onboarding.firstForecast.onThisPhone.line':
+    'Emi считает диапазон на этом телефоне, по датам, которые вы дали.',
+  'onboarding.firstForecast.onThisPhone.title': 'Посчитано на этом телефоне',
+  'onboarding.firstForecast.title': 'Ваши следующие месячные',
+  'onboarding.firstForecast.why.line':
+    'Цикл может сдвинуться на несколько дней от месяца к месяцу. Диапазон говорит об этом. Одна дата это скрыла бы.',
+  'onboarding.firstForecast.why.title': 'Почему диапазон?',
   'onboarding.focus.action': 'Продолжить',
   'onboarding.focus.line.first': 'Emi ставит это первым, когда вы записываете день.',
   'onboarding.focus.title': 'Что из этого меняется с вашим циклом?',
