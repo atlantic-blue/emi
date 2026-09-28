@@ -125,6 +125,76 @@ envelope, and until it does, this section describes a package rather than a prod
 The `day` column beside the payload is a copy of the date, kept in the clear so the application can
 query by date. It stays on the phone. It is not part of the envelope that is sent.
 
+## What stays plain on the phone
+
+Status: built
+
+Two values on the phone are readable on purpose, and this section is the list of them. Anything
+that can read the database file can read every line below. None of it is sent to the server in the
+clear.
+
+A reader of that file learns which days she recorded something on, when each period started, how
+long each cycle ran, and how long she bled. That reader learns nothing she wrote on a day. The
+flow, the symptoms, the mood and the note are inside the sealed payload, and the payload opens
+under the vault key alone.
+
+The two values are the date of a day and the cycle cache. The date is the index a person reads a
+day by, and a sealed date would turn one lookup into a walk that opens every row. The cycle cache
+is worked out from days that are already sealed, so it states part of those days again in the
+clear. The cost of both is written out below rather than left for a reader to assemble.
+
+The sealed profile is not in this list, because it holds no readable field. The setting table is
+plain and holds six names. Five are preferences, and none of them is about her body. The sixth
+remembers which article she was last shown, and today it also records the cycle phase Emi placed
+her in at that moment. Feature 14 step 2 takes the phase out of that row, and step 3 removes it
+from the phones that already hold it.
+
+### The date of a day
+
+Lives: the `day` column of `day_log`, as `2026-09-28`, under a unique index.
+
+What a reader learns: which days she recorded something on. Nothing of what she recorded, which
+sits sealed in the `payload` column beside it. This column is a copy of a date the payload carries
+too, and the copy stays on the phone.
+
+### The times a day was written
+
+Lives: the `created_at`, `updated_at` and `deleted_at` columns of `day_log`, beside `revision`,
+`synced_revision` and the row identifier.
+
+What a reader learns: when she first wrote a day down, when she last changed it, how many times
+she changed it, and whether the row reached the server. The identifier is a universally unique
+identifier of version 7, so its first six bytes are the instant the row was made and say the write
+time a second time. None of it says what she wrote.
+
+### The start of a cycle
+
+Lives: the `started_on` column of `cycle`, under a unique index.
+
+What a reader learns: the day each period started. Every row of this table is worked out from the
+day log, so the cache states a day she recorded rather than one she was asked for.
+
+### The length of a cycle
+
+Lives: the `length_days` column of `cycle`, with `ended_on` beside it.
+
+What a reader learns: how many days each cycle ran. A cycle that has not ended holds nothing in
+either column, so the row she is in says only when it started.
+
+### The length of a period
+
+Lives: the `period_length_days` column of `cycle`.
+
+What a reader learns: how many days she bled in each cycle. It holds nothing while a period is
+still running, because the count is written once the period ends.
+
+### Whether a cycle is a forecast
+
+Lives: the `is_predicted` column of `cycle`, as 0 or 1.
+
+What a reader learns: whether a row came from days she recorded or from what Emi expects. The
+rebuild writes recorded cycles only, so every row on a phone today holds 0.
+
 ## What Emi does not defend against
 
 Status: designed

@@ -4,6 +4,21 @@ export const keyHeading = 'The keys, and what guards each one';
 
 export const refusalHeading = 'What Emi does not defend against';
 
+export const plainHeading = 'What stays plain on the phone';
+
+/**
+ * The values the phone keeps readable, in the order the document names them. The first two are
+ * columns of the day log and the rest are the cycle cache, which is every column of that table.
+ */
+export const plainValues: readonly string[] = [
+  'The date of a day',
+  'The times a day was written',
+  'The start of a cycle',
+  'The length of a cycle',
+  'The length of a period',
+  'Whether a cycle is a forecast',
+];
+
 /** The keys of section 7.1 of the design, in the order the document explains them. */
 export const designKeys: readonly string[] = [
   'The vault key',
@@ -108,4 +123,12 @@ export function refusalProblems(
   attacks: readonly string[] = acceptedAttacks,
 ): string[] {
   return problemsFor(markdown, refusalHeading, attacks, ['What to do']);
+}
+
+/** Every value the phone keeps in the clear must be named, with what a reader of the file learns. */
+export function plainValueProblems(
+  markdown: string,
+  values: readonly string[] = plainValues,
+): string[] {
+  return problemsFor(markdown, plainHeading, values, ['Lives', 'What a reader learns']);
 }
