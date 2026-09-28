@@ -52,10 +52,11 @@ export class CycleError extends Error {
 }
 
 /**
- * Bleeding may run for up to eight consecutive days and still be one period: the upper bound of
- * normal menstrual duration in FIGO System 1 (Munro, Critchley and Fraser 2018, International
- * Journal of Gynecology and Obstetrics 143(3):393 to 408, doi 10.1002/ijgo.12666). A bleeding day
- * inside that window continues the period she is already having. The next one starts a cycle.
+ * Bleeding may run for up to eight consecutive days and still be one period: the bound System 1
+ * of the International Federation of Gynecology and Obstetrics reports for menstrual duration
+ * (Munro, Critchley and Fraser 2018). The paper and its identifier travel with the figure, as
+ * PERIOD_DURATION_IN_SYSTEM_1 in published.ts. A bleeding day inside that window continues the
+ * period she is already having. The next one starts a cycle.
  *
  * Without this bound the second day of a period would start a cycle of one day, and a period that
  * pauses for a day would start one of three.
