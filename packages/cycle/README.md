@@ -23,6 +23,12 @@ five days before it to one day after.
 `confidenceBands` holds the three bands, and each one carries the figure its edge comes from and the
 paper that reports it. `confidenceFor` reads a spread and returns the band.
 
+`publishedFigures` is the one list of numbers that come from a paper rather than from her own
+days: the cycle length range of 24 to 38 days, the bound of 8 days on a period, and the cycle
+length variation of 2.6 days. Each one carries what it measures, what the paper reports, the unit
+and the citation, so a screen can put her own number beside a published one and say where that
+one came from.
+
 `symptoms` is the catalogue: seventy entries across eight groups. `loggableSymptoms` leaves out the
 retired ones, `findSymptom` resolves a retired slug anyway, and `unknownSymptomSlugs` returns the
 offenders rather than a boolean, so a refusal can name them.
