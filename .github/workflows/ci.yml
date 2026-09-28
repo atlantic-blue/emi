@@ -31,4 +31,5 @@ jobs:
       - run: npm run check:features
       - run: npm run check:story
       - run: npm run check:pictures
+      - run: npm run check:mockups
       - run: npm test

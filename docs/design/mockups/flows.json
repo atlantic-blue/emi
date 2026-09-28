@@ -1,0 +1,995 @@
+{
+  "project": "Emi",
+  "readAt": {
+    "date": "2026-09-24",
+    "commit": "1e719af",
+    "repository": "atlantic-blue/emi"
+  },
+  "screens": {
+    "day": {
+      "name": "A day she already lived",
+      "notes": [
+        "The same screen as the log, for a day behind today.",
+        "The ring beside it is the cycle she is in today, not a ring for that day."
+      ],
+      "route": "/day/:date",
+      "source": "apps/mobile/src/app/day/[date].tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><figure class=\"ring\" data-component=\"CycleRing\" style=\"display:flex;justify-content:center;position:relative\"><svg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" role=\"img\" aria-label=\"Day 12 of 29, ovulation\"><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-period)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"115.47 588.25\" stroke-dashoffset=\"-2.93\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-follicular)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"139.73 563.98\" stroke-dashoffset=\"-124.26\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-ovulation)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"164.00 539.72\" stroke-dashoffset=\"-269.86\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-luteal)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"261.06 442.65\" stroke-dashoffset=\"-439.72\" transform=\"rotate(-90 120 120)\"/><circle cx=\"187.8\" cy=\"209.2\" r=\"9\" fill=\"var(--t-colour-ovulation-ink)\" stroke=\"var(--t-colour-surface)\" stroke-width=\"3\"/></svg><figcaption style=\"position:absolute;top:0;left:0;right:0;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--t-space-xs)\"><span class=\"eyebrow\">Day</span><span class=\"t-data-lg\">12</span><span class=\"t-body-sm muted\">of 29</span><span class=\"t-label-md on-ovulation\">ovulation</span></figcaption></figure><h1 class=\"t-headline-md\" data-component=\"Text\">Tuesday 16 September</h1><p class=\"eyebrow\" data-component=\"Text\">Your flow</p><ul class=\"chips\" data-component=\"FlowPicker\"><li class=\"chip\">None</li><li class=\"chip\">Spotting</li><li class=\"chip on\">Light</li><li class=\"chip\">Medium</li><li class=\"chip\">Heavy</li></ul><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">The ring beside it is the cycle she is in today, not a ring for that day.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"history\">Done</a></div></main>"
+    },
+    "log": {
+      "name": "Log",
+      "notes": [
+        "Seventy symptoms in eight groups. The groups she chose in the first run are drawn first.",
+        "An address may name one group, and the home offer for pain does that.",
+        "The sheet behind the groups searches every symptom and says how many are found and how many are picked."
+      ],
+      "route": "/log",
+      "source": "apps/mobile/src/app/(tabs)/log/index.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><figure class=\"ring\" data-component=\"CycleRing\" style=\"display:flex;justify-content:center;position:relative\"><svg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" role=\"img\" aria-label=\"Day 12 of 29, ovulation\"><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-period)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"115.47 588.25\" stroke-dashoffset=\"-2.93\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-follicular)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"139.73 563.98\" stroke-dashoffset=\"-124.26\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-ovulation)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"164.00 539.72\" stroke-dashoffset=\"-269.86\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-luteal)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"261.06 442.65\" stroke-dashoffset=\"-439.72\" transform=\"rotate(-90 120 120)\"/><circle cx=\"187.8\" cy=\"209.2\" r=\"9\" fill=\"var(--t-colour-ovulation-ink)\" stroke=\"var(--t-colour-surface)\" stroke-width=\"3\"/></svg><figcaption style=\"position:absolute;top:0;left:0;right:0;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--t-space-xs)\"><span class=\"eyebrow\">Day</span><span class=\"t-data-lg\">12</span><span class=\"t-body-sm muted\">of 29</span><span class=\"t-label-md on-ovulation\">ovulation</span></figcaption></figure><h1 class=\"t-headline-md\" data-component=\"Text\">Today</h1><p class=\"eyebrow\" data-component=\"Text\">Your flow</p><ul class=\"chips\" data-component=\"FlowPicker\"><li class=\"chip\">None</li><li class=\"chip\">Spotting</li><li class=\"chip\">Light</li><li class=\"chip on\">Medium</li><li class=\"chip\">Heavy</li></ul><div class=\"stack\" data-component=\"UnexpectedBleeding\"><p class=\"t-body-sm muted\">Not your period? Log it. Emi will track the pattern.</p></div><ul class=\"chips\" data-component=\"SymptomGroup\"><li class=\"chip on\">Mood</li><li class=\"chip\">Energy</li><li class=\"chip on\">Pain</li><li class=\"chip\">Digestion</li><li class=\"chip\">Skin and hair</li><li class=\"chip\">Sleep</li><li class=\"chip\">Head</li><li class=\"chip\">Libido</li></ul><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">Saved on this phone.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"today\">Done</a></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"today\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-on-surface-variant)\"/></svg><span>Today</span></a><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"settings\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "hold": {
+      "name": "Hold to begin",
+      "notes": [
+        "The press and hold is the write. A refusal says Emi kept nothing and asks her to hold again.",
+        "The last answer replaces the first run with the ring, so it reads as a step forward."
+      ],
+      "route": "/onboarding/hold",
+      "source": "apps/mobile/src/app/onboarding/hold.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"HoldToBegin\">Your cycle, your data, your key.</h1><figure class=\"ring\" data-component=\"CycleRing\" style=\"display:flex;justify-content:center;position:relative\"><svg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" role=\"img\" aria-label=\"Press and hold the ring to begin.\"><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-surface-container-high)\" stroke-width=\"16\" stroke-dasharray=\"10 12\"/></svg><figcaption style=\"position:absolute;top:0;left:0;right:0;height:240px;display:flex;align-items:center;justify-content:center;padding:0 56px;text-align:center\" class=\"t-body-sm muted\">Press and hold the ring to begin.</figcaption></figure><div class=\"stack\" data-component=\"HoldToBegin\"><p class=\"t-body-sm muted\">Holding the ring saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"today\">Hold to begin</a></div></main>"
+    },
+    "lock": {
+      "name": "Emi is locked",
+      "notes": [
+        "No route reaches this. A gate over the whole navigator draws it.",
+        "A cover with the wordmark draws while the application sits in the background."
+      ],
+      "source": "apps/mobile/src/features/lock/LockScreen.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<div class=\"os\" data-component=\"Text\"><div style=\"height:120px\"></div><div style=\"display:flex;justify-content:center\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" stroke=\"var(--t-colour-primary)\" stroke-width=\"2.5\"/><circle cx=\"12\" cy=\"3\" r=\"2.6\" fill=\"var(--t-colour-period)\"/></svg></div><p class=\"t-headline-lg\" style=\"text-align:center\">emi</p><p class=\"t-headline-md\" style=\"text-align:center\">Emi is locked.</p><p class=\"t-body-sm\" style=\"text-align:center;opacity:.8\">Unlock with your face, your fingerprint or your passcode.</p><div style=\"flex:1\"></div><a class=\"button\" data-component=\"PrimaryButton\">Unlock</a></div>"
+    },
+    "name": {
+      "name": "Her name",
+      "notes": ["A first name, or nothing. Forty characters at most."],
+      "route": "/onboarding/name",
+      "source": "apps/mobile/src/app/onboarding/name.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:17%\"></div></div><p class=\"eyebrow\">Step 2 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">What should Emi call you?</h1><div class=\"field\" data-component=\"TextField\">Your name<span class=\"caret\"></span></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Emi greets you by it. Nothing else uses it.</p><p class=\"t-body-sm muted\">Emi encrypts this on the phone before it goes anywhere.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"yearOfBirth\">Skip</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"yearOfBirth\">Continue</a></div></main>"
+    },
+    "tour": {
+      "name": "The tour",
+      "notes": [
+        "Four cards in one screen: the ring, a range and how sure Emi is, what you write read back, and yours and it stays yours.",
+        "The fourth card names the price: one month free, then 29.99 pounds a year."
+      ],
+      "route": "/onboarding/tour",
+      "source": "apps/mobile/src/app/onboarding/tour.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"TourScreen\">Your cycle, in one ring.</h1><div class=\"stack\" data-component=\"TourScreen\"><p class=\"t-body-sm muted\">The ring is your cycle. A bead marks today, and the number inside it is the day you are on.</p><p class=\"t-body-sm muted\">Four arcs divide the ring: the days you bleed, the days after them, the days around ovulation, and the days before your next period.</p></div><figure class=\"ring\" data-component=\"CycleRing\" style=\"display:flex;justify-content:center;position:relative\"><svg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" role=\"img\" aria-label=\"Day 12 of 29\"><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-period)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"115.47 588.25\" stroke-dashoffset=\"-2.93\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-follicular)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"139.73 563.98\" stroke-dashoffset=\"-124.26\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-ovulation)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"164.00 539.72\" stroke-dashoffset=\"-269.86\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-luteal)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"261.06 442.65\" stroke-dashoffset=\"-439.72\" transform=\"rotate(-90 120 120)\"/><circle cx=\"187.8\" cy=\"209.2\" r=\"9\" fill=\"var(--t-colour-ovulation-ink)\" stroke=\"var(--t-colour-surface)\" stroke-width=\"3\"/></svg><figcaption style=\"position:absolute;top:0;left:0;right:0;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--t-space-xs)\"><span class=\"eyebrow\">Day</span><span class=\"t-data-lg\">12</span><span class=\"t-body-sm muted\">of 29</span></figcaption></figure><section class=\"card\" data-component=\"TourScreen\"><h2 class=\"t-headline-sm\">Yours, and it stays yours</h2><p class=\"t-body-sm muted\">One month free, then 29.99 pounds a year.</p></section><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"welcome\">Skip</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"welcome\">Next</a></div></main>"
+    },
+    "focus": {
+      "name": "What changes with her cycle",
+      "route": "/onboarding/focus",
+      "source": "apps/mobile/src/app/onboarding/focus.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:100%\"></div></div><p class=\"eyebrow\">Step 12 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">Which of these change with your cycle?</h1><ul class=\"opts\" data-component=\"MultiChoiceRow\"><li class=\"opt on\">Sleep<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt on\">Mood<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt\">Energy</li><li class=\"opt\">Skin and hair</li><li class=\"opt\">Digestion</li><li class=\"opt on\">Pain<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Emi puts these first when you log a day.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"todayFirstRun\">Skip</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"todayFirstRun\">Continue</a></div></main>"
+    },
+    "goals": {
+      "name": "What she wants Emi for",
+      "route": "/onboarding/goals",
+      "source": "apps/mobile/src/app/onboarding/goals.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:92%\"></div></div><p class=\"eyebrow\">Step 11 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">What do you want Emi to help with?</h1><ul class=\"opts\" data-component=\"MultiChoiceRow\"><li class=\"opt on\">Know when my period comes<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt on\">Understand my symptoms<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt\">See my fertile window, as an estimate</li><li class=\"opt on\">Keep a record for my doctor<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Choose all that apply.</p><p class=\"t-body-sm muted\">Emi encrypts your answers on this phone. Nobody else can read them.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"focus\">Skip</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"focus\">Continue</a></div></main>"
+    },
+    "today": {
+      "name": "Today",
+      "notes": [
+        "A phone with nothing logged draws no ring and says the ring needs a period.",
+        "Two offers appear from her answers: a record for her doctor opens the export, and a hard period offers the pain group first.",
+        "The dock stands under every screen in this group: Today, Log, Insights and Privacy."
+      ],
+      "route": "/",
+      "source": "apps/mobile/src/app/(tabs)/index.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"home-header\" data-component=\"Text\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" stroke=\"var(--t-colour-primary)\" stroke-width=\"2.5\"/><circle cx=\"12\" cy=\"3\" r=\"2.6\" fill=\"var(--t-colour-period)\"/></svg><span class=\"word\">Emi</span><span class=\"greeting\">Hello, Maria</span></header><figure class=\"ring\" data-component=\"CycleRing\" style=\"display:flex;justify-content:center;position:relative\"><svg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" role=\"img\" aria-label=\"Day 12 of 29, ovulation\"><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-period)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"115.47 588.25\" stroke-dashoffset=\"-2.93\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-follicular)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"139.73 563.98\" stroke-dashoffset=\"-124.26\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-ovulation)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"164.00 539.72\" stroke-dashoffset=\"-269.86\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-luteal)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"261.06 442.65\" stroke-dashoffset=\"-439.72\" transform=\"rotate(-90 120 120)\"/><circle cx=\"187.8\" cy=\"209.2\" r=\"9\" fill=\"var(--t-colour-ovulation-ink)\" stroke=\"var(--t-colour-surface)\" stroke-width=\"3\"/></svg><figcaption style=\"position:absolute;top:0;left:0;right:0;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--t-space-xs)\"><span class=\"eyebrow\">Day</span><span class=\"t-data-lg\">12</span><span class=\"t-body-sm muted\">of 29</span><span class=\"t-label-md on-ovulation\">ovulation</span></figcaption></figure><section class=\"card\" data-component=\"NextPeriod\"><h2 class=\"eyebrow\">Next period</h2><p class=\"t-headline-md\">Between the 14th and the 18th of October</p><p class=\"t-body-sm muted\">High confidence, from your last 6 cycles</p></section><p class=\"eyebrow\" data-component=\"FertileWindow\">Fertile window</p><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"log\">Log today</a><div class=\"rows\" data-component=\"Text\" style=\"display:flex;flex-direction:row;gap:var(--t-space-lg);justify-content:center\"><a class=\"link\" data-component=\"TextLink\" data-to=\"history\">History</a><a class=\"link\" data-component=\"TextLink\" data-to=\"export\">Export</a><a class=\"link\" data-component=\"TextLink\" data-to=\"settings\">Settings</a></div></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"today\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"settings\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "delete": {
+      "name": "Delete everything",
+      "notes": [
+        "After the press it says It is gone, and offers Start again.",
+        "A server Emi could not reach is named: the phone holds nothing either way.",
+        "What it says is read back off the keychain and the tables, not from the call returning."
+      ],
+      "route": "/settings/delete",
+      "source": "apps/mobile/src/app/settings/delete.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"Text\">Delete everything</h1><p class=\"t-body-lg\" data-component=\"Text\">One press and it is gone. There is no undo, no waiting period, and nobody at Emi can bring it back, because nobody at Emi can read it.</p><ul class=\"card\" data-component=\"Card\"><li class=\"t-body-lg\">Every day you logged on this phone</li><li class=\"t-body-lg\">The cycles Emi worked out from them</li><li class=\"t-body-lg\">Your settings</li><li class=\"t-body-lg\">The key that opens any of it</li><li class=\"t-body-lg\">Your account on the server, and every day it holds</li></ul><div class=\"push\"></div><a class=\"button danger\" data-component=\"PrimaryButton\">Delete everything</a><a class=\"link\" data-component=\"TextLink\" data-to=\"settings\">Back</a></div></main>"
+    },
+    "export": {
+      "name": "Export",
+      "notes": [
+        "The share button is drawn only where the phone has a sharing sheet.",
+        "A phone with no room left says the files could not be written."
+      ],
+      "route": "/export",
+      "source": "apps/mobile/src/app/export.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"today\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Export</span><span class=\"right\" data-component=\"TextLink\" data-to=\"today\">Back</span></header><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">Two files. One you can read and give to a doctor, one another application can read.</p><p class=\"t-body-sm muted\">Nothing is sent anywhere. The files are made on this phone and you choose who gets them.</p></div><a class=\"button\" data-component=\"PrimaryButton\">Make the files</a><section class=\"card\" data-component=\"Text\"><p class=\"t-body-lg\">42 days and 3 cycles.</p></section><a class=\"button secondary\" data-component=\"SecondaryButton\">Share</a><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">The share button is drawn only where the phone has a sharing sheet.</p></div></div></main>"
+    },
+    "feeling": {
+      "name": "How she feels about it",
+      "route": "/onboarding/feeling",
+      "source": "apps/mobile/src/app/onboarding/feeling.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:83%\"></div></div><p class=\"eyebrow\">Step 10 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">How you feel about it</h1><ul class=\"opts\" data-component=\"SingleChoiceRow\"><li class=\"opt\">I am fine with it</li><li class=\"opt\">It is hard, most months</li><li class=\"opt on\">I want to understand it<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">This changes how Emi talks to you, and nothing else.</p><p class=\"t-body-sm muted\">Encrypted on this phone.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"goals\">Skip</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"goals\">Continue</a></div></main>"
+    },
+    "history": {
+      "name": "Insights",
+      "notes": [
+        "A cycle row opens the day it started.",
+        "A pattern is a symptom that came back at the same point in three cycles of six.",
+        "Each cycle row carries a bar of the four phase colours."
+      ],
+      "route": "/history",
+      "source": "apps/mobile/src/app/(tabs)/history.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"Text\">History</h1><p class=\"eyebrow\" data-component=\"Text\">What comes back</p><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">Nothing has come back in 3 cycles yet.</p></div><p class=\"eyebrow\" data-component=\"Text\">Your cycles</p><ul class=\"rows\" data-component=\"Pressable\"><li class=\"row\" data-component=\"Pressable\" data-to=\"day\"><span class=\"what\"><span class=\"lead\">From the 3rd of September</span><span class=\"sub\">29 days, 5 days of them bleeding</span><span class=\"strip\"><span class=\"period\" style=\"flex:5\"></span><span class=\"follicular\" style=\"flex:8\"></span><span class=\"ovulation\" style=\"flex:4\"></span><span class=\"luteal\" style=\"flex:12\"></span></span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"today\">Back</a></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"today\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-on-surface-variant)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"settings\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "welcome": {
+      "name": "What Emi is",
+      "notes": ["Step 1 of 12 on the progress bar the frame draws."],
+      "route": "/onboarding/welcome",
+      "source": "apps/mobile/src/app/onboarding/welcome.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:8%\"></div></div><p class=\"eyebrow\">Step 1 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">Emi learns your cycle. You keep your data.</h1><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Your cycle is worked out on this phone. Nothing is sent anywhere.</p><p class=\"t-body-sm muted\">There is no account. Emi never asks for your email address or a password.</p><p class=\"t-body-sm muted\">Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"name\">Continue</a></div></main>"
+    },
+    "calendar": {
+      "ref": "Stories 9 and 10",
+      "name": "The month",
+      "notes": [
+        "The cycle day sits above each date. A day she bled is filled, a predicted day is a dotted outline, and today is ringed.",
+        "The sheet at the foot names the day she pressed. Pressing the sheet opens that day.",
+        "A day that has not happened draws the same refusal the address draws, in the same words."
+      ],
+      "route": "/calendar",
+      "status": "proposed",
+      "defects": [
+        "Emi has no calendar. The only way to a past day today is a cycle row on Insights, so a day she wants to correct is a day she must find through a cycle.",
+        "Nothing opens this screen. The header carries no calendar and the dock holds four columns already. Where she opens the calendar is undecided, and the drawing puts it nowhere rather than guessing."
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">September</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayNext\">Today</span></header><div class=\"month\" data-component=\"CycleMonth\"><div class=\"heads\"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">1</span><span class=\"cd\">19</span></div><div class=\"cell\"><span class=\"n\">2</span><span class=\"cd\">20</span></div><div class=\"cell bled\"><span class=\"n\">3</span><span class=\"cd\">1</span></div><div class=\"cell bled\"><span class=\"n\">4</span><span class=\"cd\">2</span></div><div class=\"cell bled\"><span class=\"n\">5</span><span class=\"cd\">3</span></div><div class=\"cell bled\"><span class=\"n\">6</span><span class=\"cd\">4</span></div><div class=\"cell bled\"><span class=\"n\">7</span><span class=\"cd\">5</span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">8</span><span class=\"cd\">6</span></div><div class=\"cell\"><span class=\"n\">9</span><span class=\"cd\">7</span></div><div class=\"cell\"><span class=\"n\">10</span><span class=\"cd\">8</span></div><div class=\"cell\"><span class=\"n\">11</span><span class=\"cd\">9</span></div><div class=\"cell\"><span class=\"n\">12</span><span class=\"cd\">10</span></div><div class=\"cell\"><span class=\"n\">13</span><span class=\"cd\">11</span></div><div class=\"cell\"><span class=\"n\">14</span><span class=\"cd\">12</span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">15</span><span class=\"cd\">13</span></div><div class=\"cell\"><span class=\"n\">16</span><span class=\"cd\">14</span></div><div class=\"cell\"><span class=\"n\">17</span><span class=\"cd\">15</span></div><div class=\"cell today\" data-component=\"CycleMonth\" data-to=\"day\"><span class=\"n\">18</span><span class=\"cd\">16</span></div><div class=\"cell\"><span class=\"n\">19</span><span class=\"cd\">17</span></div><div class=\"cell\"><span class=\"n\">20</span><span class=\"cd\">18</span></div><div class=\"cell\"><span class=\"n\">21</span><span class=\"cd\">19</span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">22</span><span class=\"cd\">20</span></div><div class=\"cell\"><span class=\"n\">23</span><span class=\"cd\">21</span></div><div class=\"cell\"><span class=\"n\">24</span><span class=\"cd\">22</span></div><div class=\"cell forecast\" data-component=\"CycleMonth\" data-to=\"dayRefused\"><span class=\"n\">25</span><span class=\"cd\">23</span></div><div class=\"cell\"><span class=\"n\">26</span><span class=\"cd\">24</span></div><div class=\"cell\"><span class=\"n\">27</span><span class=\"cd\">25</span></div><div class=\"cell\"><span class=\"n\">28</span><span class=\"cd\">26</span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">29</span><span class=\"cd\">27</span></div><div class=\"cell\"><span class=\"n\">30</span><span class=\"cd\">28</span></div><div class=\"cell\"></div><div class=\"cell\"></div><div class=\"cell\"></div><div class=\"cell\"></div><div class=\"cell\"></div></div></div><ul class=\"rows\" data-component=\"DaySheet\"><li class=\"row\" data-component=\"DaySheet\" data-to=\"day\"><span class=\"what\"><span class=\"lead\">The 18th of September</span><span class=\"sub\">Day 21, luteal. Cramps and low mood</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"row\" data-component=\"DaySheet\" data-to=\"dayRefused\"><span class=\"what\"><span class=\"lead\">The 25th of September</span><span class=\"sub\">A day that has not happened</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><div class=\"push\"></div><div style=\"display:flex;gap:var(--t-space-lg);justify-content:center\"><a class=\"link\" data-component=\"TextLink\" data-to=\"calendarEarlier\">Earlier</a><a class=\"link\" data-component=\"TextLink\" data-to=\"calendar\">Later</a></div><a class=\"button secondary\" data-component=\"SecondaryButton\" data-to=\"editPeriod\">Edit my period</a></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "citation": {
+      "ref": "Story 4",
+      "name": "Where these figures come from",
+      "notes": [
+        "Both citations are in the code today, in confidence.ts and cycles.ts. This screen reads them rather than repeating them.",
+        "Until CYCLE-5 is satisfied for every edge the bands stay marked provisional in the interface."
+      ],
+      "route": "/cycles/figures",
+      "source": "packages/cycle/src/confidence.ts, packages/cycle/src/cycles.ts",
+      "status": "proposed",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayNumbers\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Where these figures come from</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayNumbers\">Back</span></header><ul class=\"rows\" data-component=\"CitationRow\"><li class=\"row\"><span class=\"what\"><span class=\"lead\">Cycle length variation, 2.6 days</span><span class=\"sub\">Bull and others 2019, npj Digital Medicine 2:83</span></span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">A period may run up to 8 days</span><span class=\"sub\">Munro, Critchley and Fraser 2018, System 1</span></span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">Cycle length range</span><span class=\"sub\">The code cites none</span></span></li></ul><p class=\"t-body-lg\" data-component=\"Text\">Each figure is quoted in the words the paper reports it in, so you can check it rather than trust it.</p><p class=\"code\" data-component=\"Text\">10.1038/s41746-019-0152-7\n10.1002/ijgo.12666</p><div class=\"push\"></div></div></main>"
+    },
+    "reminder": {
+      "ref": "Story 11",
+      "name": "The reminder, in the first run",
+      "notes": [
+        "The screen shows the notification it will send before it asks for the permission, so she reads the words on her lock screen before she agrees to them.",
+        "It sits after the first forecast because the forecast is the thing the reminder counts back from.",
+        "The prototype names a reminder screen and nobody built it."
+      ],
+      "route": "/onboarding/reminder",
+      "status": "proposed",
+      "defects": [
+        "Emi sends nothing. It holds no notification code and expo-notifications is not a dependency of the application.",
+        "The first run is twelve questions today. Adding this makes it thirteen. Does the reminder sit inside the first run or after the hold?"
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:92%\"></div></div><p class=\"eyebrow\">Step 12 of 13</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">Shall Emi tell you when it is near?</h1><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Two days before the range starts.</p><p class=\"t-body-sm muted\">This phone works it out and this phone raises it. Nothing is sent anywhere.</p></div><div class=\"quote\" data-component=\"ReminderPreview\"><span class=\"t-label-md\">Emi</span><span class=\"t-body-sm muted\">Your period is forecast in two days.</span></div><ul class=\"opts\" data-component=\"SingleChoiceRow\"><li class=\"opt on\">Two days before<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt\">One day before</li><li class=\"opt\">On the day</li></ul><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"thePromise\">Not now</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"reminderPermission\">Remind me</a></div></main>"
+    },
+    "settings": {
+      "name": "Privacy",
+      "notes": ["One row and a way back. The dock calls this tab Privacy."],
+      "route": "/settings",
+      "source": "apps/mobile/src/app/(tabs)/settings/index.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"Text\">Settings</h1><ul class=\"rows\" data-component=\"Pressable\"><li class=\"row\" data-component=\"Pressable\" data-to=\"delete\"><span class=\"what\"><span class=\"lead\">Delete everything</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">One row and a way back. The dock calls this tab Privacy.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"today\">Back</a></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"today\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-on-surface-variant)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"settings\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "todayNext": {
+      "ref": "Stories 1, 2 and 3",
+      "name": "Today, as the stories leave it",
+      "notes": [
+        "The header is the mark, the word emi and the greeting. Nothing else. The mark is Icon with the ring drawing, which packages/tokens already carries. The brand file is brand/logo/emi-wordmark.svg, the word with the ring as the dot of the i, and nothing in the application imports it yet.",
+        "History, Export and Settings are not on this screen. Export sits under Privacy, with the answers, the reminder and the lock.",
+        "The week strip is story 1, at the week story 1 describes: today is Thursday the 17th, cycle day 4, the three days behind it are period days, and the 18th is predicted. A period day is a filled circle, today is ringed, and a predicted day is a dotted outline.",
+        "The map draws no fill, no ring and no dotted outline, so the line under the strip names the state of every day. That line is not a row on the phone.",
+        "The phase line, the ring and the forecast all read day 4 of a 31 day cycle that started on the 14th of September.",
+        "The line under the strip is story 2. The phase word takes the ink partner of its phase and never sits on the phase fill, which is SEE-2.",
+        "Two round actions, period and symptoms, which is the decision the operator took in section 12 of the stories.",
+        "The body of this screen is four more frames in the map, because the map draws one frame at a time and this screen scrolls. No link stands for the scroll: a scroll is not a press."
+      ],
+      "route": "/",
+      "source": "apps/mobile/src/features/home/HomeScreen.tsx",
+      "status": "proposed",
+      "defects": [
+        "The week strip, the phase line and the round actions are all new. The screen today carries none of them.",
+        "Stories 9 and 10 both start here and both need the calendar, and this screen opens no calendar. Where she opens it is undecided. The header carries the mark, the word and the greeting only, the dock holds four columns already, and no third place is drawn.",
+        "Story 2 asks for a line that reads across a room, and SCREEN-2 refuses the word period above 14 points on this screen. The drawing gives the size to the day number and holds the phase word small. Is that the answer, or does the phase word change?"
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"home-header\" data-component=\"HomeHeader\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" stroke=\"var(--t-colour-primary)\" stroke-width=\"2.5\"/><circle cx=\"12\" cy=\"3\" r=\"2.6\" fill=\"var(--t-colour-period)\"/></svg><span class=\"word\">emi</span><span class=\"greeting\">Hello, Maria</span></header><div class=\"week\" data-component=\"WeekStrip\"><div class=\"day\"><span class=\"letter\">M</span><span class=\"date bled\">14</span><span class=\"cycleday\">1</span></div><div class=\"day\"><span class=\"letter\">T</span><span class=\"date bled\">15</span><span class=\"cycleday\">2</span></div><div class=\"day\"><span class=\"letter\">W</span><span class=\"date bled\">16</span><span class=\"cycleday\">3</span></div><div class=\"day\"><span class=\"letter\">T</span><span class=\"date today\">17</span><span class=\"cycleday\">4</span></div><div class=\"day\"><span class=\"letter\">F</span><span class=\"date forecast\">18</span><span class=\"cycleday\">5</span></div><div class=\"day\"><span class=\"letter\">S</span><span class=\"date\">19</span><span class=\"cycleday\">6</span></div><div class=\"day\"><span class=\"letter\">S</span><span class=\"date\">20</span><span class=\"cycleday\">7</span></div></div><div class=\"phase-line\" data-component=\"PhaseLine\"><span class=\"num\">Day 4</span><span class=\"said on-period\">Your period, day 4 of about 5</span></div><figure class=\"ring\" data-component=\"CycleRing\" style=\"display:flex;justify-content:center;position:relative\"><svg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" role=\"img\" aria-label=\"Your period\"><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-period)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"107.64 596.08\" stroke-dashoffset=\"-2.93\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-follicular)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"175.74 527.98\" stroke-dashoffset=\"-116.43\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-ovulation)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"153.04 550.68\" stroke-dashoffset=\"-298.04\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-luteal)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"243.84 459.88\" stroke-dashoffset=\"-456.94\" transform=\"rotate(-90 120 120)\"/><circle cx=\"193.0\" cy=\"35.0\" r=\"9\" fill=\"var(--t-colour-period-ink)\" stroke=\"var(--t-colour-surface)\" stroke-width=\"3\"/></svg><figcaption style=\"position:absolute;top:0;left:0;right:0;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--t-space-xs)\"><span class=\"eyebrow\">Day</span><span class=\"t-data-lg\">4</span><span class=\"t-body-sm muted\">of 31</span><span class=\"t-label-md on-period\">Your period</span></figcaption></figure><div class=\"round-actions\" data-component=\"RoundAction\"><a class=\"round\" data-component=\"RoundAction\" data-to=\"log\"><span class=\"disc\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 3s6 6.4 6 10.4A6 6 0 0 1 6 13.4C6 9.4 12 3 12 3z\" stroke=\"var(--t-colour-on-primary-fixed)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linejoin=\"round\"/></svg></span><span class=\"name\">Period</span></a><a class=\"round\" data-component=\"RoundAction\" data-to=\"logSymptoms\"><span class=\"disc\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8\" stroke=\"var(--t-colour-on-primary-fixed)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span><span class=\"name\">Symptoms</span></a></div><section class=\"card\" data-component=\"NextPeriod\"><h2 class=\"eyebrow\">Next period</h2><p class=\"t-headline-md\">Between the 13th and the 17th of October</p></section></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "dayRefused": {
+      "name": "A day Emi refuses",
+      "notes": ["An address that is not a date says Not a day instead."],
+      "route": "/day/:date",
+      "source": "apps/mobile/src/features/log/DayRefused.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"Text\">Not yet</h1><p class=\"t-body-lg\" data-component=\"Text\">That day has not happened. You can log today and any day behind it.</p><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">An address that is not a date says Not a day instead.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"today\">Back</a></div></main>"
+    },
+    "editPeriod": {
+      "ref": "Story 10",
+      "name": "Edit my period",
+      "notes": [
+        "One action saves the whole range. Every day in it becomes a day record whose revision rises, which is TABLE-1.",
+        "The cycle cache is rebuilt from the day log afterwards and never written by hand, which is TABLE-2.",
+        "The days are drawn on the month grid in the built screen. They are listed here because the map draws a grid without a press."
+      ],
+      "route": "/calendar/period",
+      "status": "proposed",
+      "defects": [
+        "Emi sets a flow one day at a time, so a woman whose period ran two days longer than Emi thinks must open six days and edit each one."
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"calendar\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Edit my period</span><span class=\"right\" data-component=\"TextLink\" data-to=\"calendar\">Cancel</span></header><p class=\"t-body-lg\" data-component=\"Text\">Press the days you bled. Emi holds 4 days, from the 15th.</p><ul class=\"opts\" data-component=\"PeriodRangePicker\"><li class=\"opt on\">Monday the 15th<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt on\">Tuesday the 16th<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt on\">Wednesday the 17th<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt\">Thursday the 18th</li><li class=\"opt on\">Friday the 19th<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt on\">Saturday the 20th<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><p class=\"t-body-lg\" data-component=\"Text\">You added the 19th and the 20th. You took the 18th off.</p><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"calendar\">Save</a></div></main>"
+    },
+    "lastPeriod": {
+      "name": "Her last period",
+      "notes": ["The one answer the first run requires. No way past it is drawn."],
+      "route": "/onboarding/last-period",
+      "source": "apps/mobile/src/app/onboarding/last-period.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:42%\"></div></div><p class=\"eyebrow\">Step 5 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">When did your last period start?</h1><div class=\"month\" data-component=\"Calendar\"><div class=\"heads\"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">1</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">2</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">3</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">4</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">5</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">6</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">7</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">8</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">9</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">10</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">11</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">12</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">13</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">14</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell bled\"><span class=\"n\">15</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">16</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">17</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">18</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">19</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">20</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">21</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">22</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">23</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">24</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">25</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">26</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">27</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">28</span><span class=\"cd\"></span></div></div></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">The first day you bled. The nearest day you remember is close enough.</p><p class=\"t-body-sm muted\">Emi encrypts this on the phone before it goes anywhere.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"periodBefore\">Continue</a></div></main>"
+    },
+    "regularity": {
+      "name": "Regular",
+      "route": "/onboarding/regularity",
+      "source": "apps/mobile/src/app/onboarding/regularity.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:75%\"></div></div><p class=\"eyebrow\">Step 9 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">Regular</h1><ul class=\"opts\" data-component=\"SingleChoiceRow\"><li class=\"opt\">Yes, most months</li><li class=\"opt on\">No, it moves<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt\">I do not know yet</li></ul><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">This only changes how Emi explains your forecast.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"feeling\">Skip</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"feeling\">Continue</a></div></main>"
+    },
+    "thePromise": {
+      "name": "The promise",
+      "route": "/onboarding/the-promise",
+      "source": "apps/mobile/src/app/onboarding/the-promise.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"ThePromise\">Only you can read your days.</h1><ul class=\"card\" data-component=\"Card\"><li class=\"t-body-lg\">Encrypted on this phone, with a key only you hold</li><li class=\"t-body-lg\">No password, no tracking tools</li><li class=\"t-body-lg\">Delete everything, in one press</li></ul><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"whatEmiDoesWithIt\">Continue</a></div></main>"
+    },
+    "todayEmpty": {
+      "ref": "Stories 8 and 13",
+      "name": "Today, on day one",
+      "notes": [
+        "The empty ring and the learning card are both built. What is new is the rest of the screen saying what it needs, rather than being absent without a word.",
+        "A woman who answered I do not remember at the first run lands here, which is story 13."
+      ],
+      "route": "/",
+      "status": "proposed",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"home-header\" data-component=\"HomeHeader\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" stroke=\"var(--t-colour-primary)\" stroke-width=\"2.5\"/><circle cx=\"12\" cy=\"3\" r=\"2.6\" fill=\"var(--t-colour-period)\"/></svg><span class=\"word\">emi</span><span class=\"greeting\">Hello, Maria</span></header><h1 class=\"t-headline-lg\" data-component=\"Text\">Nothing to draw yet</h1><p class=\"t-body-lg\" data-component=\"Text\">The ring needs a period. Log a day you bled and it appears.</p><section class=\"card\" data-component=\"Learning\"><h2 class=\"t-headline-sm\">Still learning</h2><p class=\"t-body-sm muted\">Emi needs 2 complete cycles before it forecasts.</p><p class=\"t-body-sm muted\">Until then Emi counts a cycle of 28 days, the length you gave at the first run.</p></section><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"log\">Log today</a></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "cycleLength": {
+      "name": "Cycle length",
+      "notes": ["Held between 21 and 45 days."],
+      "route": "/onboarding/cycle-length",
+      "source": "apps/mobile/src/app/onboarding/cycle-length.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:58%\"></div></div><p class=\"eyebrow\">Step 7 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">How long is your cycle, roughly?</h1><div class=\"stepper\" data-component=\"Stepper\"><span class=\"knob\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span><span class=\"reading\">28 days</span><span class=\"knob\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Count the first day of one period to the day before the next.</p></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Held between 21 and 45 days.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"periodLength\">Done</a></div></main>"
+    },
+    "logSymptoms": {
+      "ref": "Story 3",
+      "name": "The log, opened on the symptoms",
+      "notes": [
+        "Seventy symptoms in eight groups, and the groups she chose at the first run come first.",
+        "An address may name one group. The home offer for a hard period does that today."
+      ],
+      "route": "/log",
+      "source": "apps/mobile/src/features/log/LogFlow.tsx, apps/mobile/src/features/log/LogSheet.tsx",
+      "status": "built",
+      "defects": [
+        "No round action opens this. The only way in is the Log column of the dock, which opens on the flow picker."
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayLogged\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Today</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayLogged\">Done</span></header><div class=\"field\" data-component=\"LogSheet\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"6\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M15.5 15.5L20 20\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span style=\"margin-left:var(--t-space-sm)\">Search symptoms</span></div><p class=\"eyebrow\" data-component=\"Text\">Mood</p><ul class=\"chips\" data-component=\"SymptomGroup\"><li class=\"chip on\">Low</li><li class=\"chip\">Anxious</li><li class=\"chip\">Irritable</li><li class=\"chip\">Calm</li><li class=\"chip\">Weepy</li></ul><p class=\"eyebrow\" data-component=\"Text\">Pain</p><ul class=\"chips\" data-component=\"SymptomGroup\"><li class=\"chip on\">Cramps</li><li class=\"chip\">Headache</li><li class=\"chip\">Back</li><li class=\"chip\">Breast</li><li class=\"chip\">Joint</li></ul><p class=\"t-body-sm muted\" data-component=\"Text\">2 picked</p><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"todayLogged\">Save</a></div></main>"
+    },
+    "privacyNext": {
+      "ref": "Stories 11 and 12",
+      "name": "Privacy, as the stories leave it",
+      "notes": [
+        "The screen holds one row today, and that row deletes everything.",
+        "Nothing here grows into a menu. Every row is an answer she already gave, or the lock, or the two ways out.",
+        "The dock calls this tab Privacy and the heading says Privacy. The built screen heads it Settings, which is the two names story 12 has to settle."
+      ],
+      "route": "/settings",
+      "source": "apps/mobile/src/features/settings/SettingsScreen.tsx",
+      "status": "proposed",
+      "defects": [
+        "The built screen heads itself Settings and the dock calls it Privacy. Which word does this screen take?"
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"Text\">Privacy</h1><ul class=\"rows\" data-component=\"AnswerRow\"><li class=\"row\" data-component=\"AnswerRow\" data-to=\"yourAnswers\"><span class=\"what\"><span class=\"lead\">Your answers</span><span class=\"sub\">The eight things you told Emi at the first run</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"row\" data-component=\"AnswerRow\" data-to=\"reminderSettings\"><span class=\"what\"><span class=\"lead\">Reminders</span><span class=\"sub\">Two days before</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">Lock</span><span class=\"sub\">On, with your face or your passcode</span></span></li><li class=\"row\" data-component=\"AnswerRow\" data-to=\"export\"><span class=\"what\"><span class=\"lead\">Export</span><span class=\"sub\">Two files, made on this phone</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"row\" data-component=\"AnswerRow\" data-to=\"delete\"><span class=\"what\"><span class=\"lead\">Delete everything</span><span class=\"sub\">One press, and there is no undo</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><p class=\"t-body-lg\" data-component=\"Text\">Only the answers you already gave, the reminder and the lock.</p><div class=\"push\"></div></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-on-surface-variant)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "todayCycles": {
+      "ref": "Story 6",
+      "name": "Cycle history, as strips",
+      "notes": [
+        "The strips read the cycle cache. No arithmetic is repeated here, which is TABLE-2.",
+        "Pressing a strip opens Insights at that cycle, which is where the same three cycles already live."
+      ],
+      "route": "/",
+      "status": "proposed",
+      "defects": [
+        "Insights draws these cycles today and the screen she opens does not, so a woman who never presses Insights never meets them."
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Cycle history</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayNext\">Today</span></header><ul class=\"rows\" data-component=\"CycleStrip\"><li class=\"row\" data-component=\"CycleStrip\" data-to=\"history\"><span class=\"what\"><span class=\"lead\">From the 3rd of September</span><span class=\"sub\">Day 21, still running</span><span class=\"strip\"><span class=\"period\" style=\"flex:5\"></span><span class=\"follicular\" style=\"flex:8\"></span><span class=\"ovulation\" style=\"flex:4\"></span><span class=\"luteal\" style=\"flex:4\"></span></span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"row\" data-component=\"CycleStrip\" data-to=\"history\"><span class=\"what\"><span class=\"lead\">7 August to 2 September</span><span class=\"sub\">27 days, 5 of them bleeding</span><span class=\"strip\"><span class=\"period\" style=\"flex:5\"></span><span class=\"follicular\" style=\"flex:7\"></span><span class=\"ovulation\" style=\"flex:4\"></span><span class=\"luteal\" style=\"flex:11\"></span></span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"row\" data-component=\"CycleStrip\" data-to=\"history\"><span class=\"what\"><span class=\"lead\">1 July to 6 August</span><span class=\"sub\">37 days, 7 of them bleeding</span><span class=\"strip\"><span class=\"period\" style=\"flex:7\"></span><span class=\"follicular\" style=\"flex:10\"></span><span class=\"ovulation\" style=\"flex:5\"></span><span class=\"luteal\" style=\"flex:15\"></span></span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><p class=\"t-body-lg\" data-component=\"Text\">Each strip carries the four phase fills. Any word on a strip takes the ink partner of its phase.</p><div class=\"push\"></div></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "todayLogged": {
+      "ref": "Story 3",
+      "name": "Today, after she logged",
+      "notes": [
+        "This is the second press of story 3 landing. She marked two symptoms, she saved, and the screen she started on carries them.",
+        "The forecast card sits under the round actions, as it does on the screen she opened."
+      ],
+      "route": "/",
+      "status": "proposed",
+      "defects": ["Nothing on the home screen reads back what she logged today."],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"home-header\" data-component=\"HomeHeader\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" stroke=\"var(--t-colour-primary)\" stroke-width=\"2.5\"/><circle cx=\"12\" cy=\"3\" r=\"2.6\" fill=\"var(--t-colour-period)\"/></svg><span class=\"word\">emi</span><span class=\"greeting\">Hello, Maria</span></header><div class=\"week\" data-component=\"WeekStrip\"><div class=\"day\"><span class=\"letter\">M</span><span class=\"date bled\">14</span><span class=\"cycleday\">1</span></div><div class=\"day\"><span class=\"letter\">T</span><span class=\"date bled\">15</span><span class=\"cycleday\">2</span></div><div class=\"day\"><span class=\"letter\">W</span><span class=\"date bled\">16</span><span class=\"cycleday\">3</span></div><div class=\"day\"><span class=\"letter\">T</span><span class=\"date today\">17</span><span class=\"cycleday\">4</span></div><div class=\"day\"><span class=\"letter\">F</span><span class=\"date forecast\">18</span><span class=\"cycleday\">5</span></div><div class=\"day\"><span class=\"letter\">S</span><span class=\"date\">19</span><span class=\"cycleday\">6</span></div><div class=\"day\"><span class=\"letter\">S</span><span class=\"date\">20</span><span class=\"cycleday\">7</span></div></div><div class=\"phase-line\" data-component=\"PhaseLine\"><span class=\"num\">Day 4</span><span class=\"said on-period\">Your period, day 4 of about 5</span></div><ul class=\"rows\" data-component=\"LoggedToday\"><li class=\"row\" data-component=\"LoggedToday\" data-to=\"logSymptoms\"><span class=\"what\"><span class=\"lead\">Logged today</span><span class=\"sub\">Cramps and low mood</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><figure class=\"ring\" data-component=\"CycleRing\" style=\"display:flex;justify-content:center;position:relative\"><svg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" role=\"img\" aria-label=\"Your period\"><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-period)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"107.64 596.08\" stroke-dashoffset=\"-2.93\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-follicular)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"175.74 527.98\" stroke-dashoffset=\"-116.43\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-ovulation)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"153.04 550.68\" stroke-dashoffset=\"-298.04\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-luteal)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"243.84 459.88\" stroke-dashoffset=\"-456.94\" transform=\"rotate(-90 120 120)\"/><circle cx=\"193.0\" cy=\"35.0\" r=\"9\" fill=\"var(--t-colour-period-ink)\" stroke=\"var(--t-colour-surface)\" stroke-width=\"3\"/></svg><figcaption style=\"position:absolute;top:0;left:0;right:0;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--t-space-xs)\"><span class=\"eyebrow\">Day</span><span class=\"t-data-lg\">4</span><span class=\"t-body-sm muted\">of 31</span><span class=\"t-label-md on-period\">Your period</span></figcaption></figure><div class=\"round-actions\" data-component=\"RoundAction\"><a class=\"round\" data-component=\"RoundAction\" data-to=\"log\"><span class=\"disc\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 3s6 6.4 6 10.4A6 6 0 0 1 6 13.4C6 9.4 12 3 12 3z\" stroke=\"var(--t-colour-on-primary-fixed)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linejoin=\"round\"/></svg></span><span class=\"name\">Period</span></a><a class=\"round\" data-component=\"RoundAction\" data-to=\"logSymptoms\"><span class=\"disc\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8\" stroke=\"var(--t-colour-on-primary-fixed)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span><span class=\"name\">Symptoms</span></a></div></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "todayLuteal": {
+      "ref": "Story 2",
+      "name": "Today, in the luteal phase",
+      "notes": [
+        "This is the week story 2 is finished by: she is in the luteal phase. Luteal is not one of the four words SCREEN-2 holds under 14 points, so the whole line can carry across a room.",
+        "The screen she opens draws the period case, where SCREEN-2 does bite. The two screens together are the whole of the question story 2 raises.",
+        "The day number is the part that carries across a room in both cases. The phase word changes size and the number does not."
+      ],
+      "route": "/",
+      "status": "proposed",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"home-header\" data-component=\"HomeHeader\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" stroke=\"var(--t-colour-primary)\" stroke-width=\"2.5\"/><circle cx=\"12\" cy=\"3\" r=\"2.6\" fill=\"var(--t-colour-period)\"/></svg><span class=\"word\">emi</span><span class=\"greeting\">Hello, Maria</span></header><div class=\"week\" data-component=\"WeekStrip\"><div class=\"day\"><span class=\"letter\">M</span><span class=\"date\">5</span><span class=\"cycleday\">18</span></div><div class=\"day\"><span class=\"letter\">T</span><span class=\"date\">6</span><span class=\"cycleday\">19</span></div><div class=\"day\"><span class=\"letter\">W</span><span class=\"date\">7</span><span class=\"cycleday\">20</span></div><div class=\"day\"><span class=\"letter\">T</span><span class=\"date today\">8</span><span class=\"cycleday\">21</span></div><div class=\"day\"><span class=\"letter\">F</span><span class=\"date\">9</span><span class=\"cycleday\">22</span></div><div class=\"day\"><span class=\"letter\">S</span><span class=\"date\">10</span><span class=\"cycleday\">23</span></div><div class=\"day\"><span class=\"letter\">S</span><span class=\"date\">11</span><span class=\"cycleday\">24</span></div></div><div class=\"phase-line\" data-component=\"PhaseLine\"><span class=\"num\">Day 21</span><span class=\"said on-luteal\">Luteal phase, 31 day cycle</span></div><figure class=\"ring\" data-component=\"CycleRing\" style=\"display:flex;justify-content:center;position:relative\"><svg width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" role=\"img\" aria-label=\"Luteal phase\"><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-period)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"107.64 596.08\" stroke-dashoffset=\"-2.93\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-follicular)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"175.74 527.98\" stroke-dashoffset=\"-116.43\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-ovulation)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"153.04 550.68\" stroke-dashoffset=\"-298.04\" transform=\"rotate(-90 120 120)\"/><circle cx=\"120\" cy=\"120\" r=\"112\" fill=\"none\" stroke=\"var(--t-colour-luteal)\" stroke-width=\"16\" stroke-linecap=\"butt\" stroke-dasharray=\"243.84 459.88\" stroke-dashoffset=\"-456.94\" transform=\"rotate(-90 120 120)\"/><circle cx=\"25.0\" cy=\"179.2\" r=\"9\" fill=\"var(--t-colour-luteal-ink)\" stroke=\"var(--t-colour-surface)\" stroke-width=\"3\"/></svg><figcaption style=\"position:absolute;top:0;left:0;right:0;height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--t-space-xs)\"><span class=\"eyebrow\">Day</span><span class=\"t-data-lg\">21</span><span class=\"t-body-sm muted\">of 31</span><span class=\"t-label-md on-luteal\">Luteal phase</span></figcaption></figure><div class=\"round-actions\" data-component=\"RoundAction\"><a class=\"round\" data-component=\"RoundAction\" data-to=\"log\"><span class=\"disc\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 3s6 6.4 6 10.4A6 6 0 0 1 6 13.4C6 9.4 12 3 12 3z\" stroke=\"var(--t-colour-on-primary-fixed)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linejoin=\"round\"/></svg></span><span class=\"name\">Period</span></a><a class=\"round\" data-component=\"RoundAction\" data-to=\"logSymptoms\"><span class=\"disc\"><svg width=\"26\" height=\"26\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8\" stroke=\"var(--t-colour-on-primary-fixed)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span><span class=\"name\">Symptoms</span></a></div><section class=\"card\" data-component=\"NextPeriod\"><h2 class=\"eyebrow\">Next period</h2><p class=\"t-headline-md\">Between the 13th and the 17th of October</p></section></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "todayTrends": {
+      "ref": "Story 5",
+      "name": "Cycle trends, six cycles",
+      "notes": [
+        "The chart reads the last six cycles, which the forecast already reads, so the points and the forecast cannot disagree.",
+        "Nothing is drawn before two complete cycles exist. Before that the section carries the sentence of story 8."
+      ],
+      "route": "/",
+      "status": "proposed",
+      "defects": [
+        "The band behind the points needs a published range for the cycle length, and the code cites none. The same gap as the cycle row of Your cycles."
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Cycle trends</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayNext\">Today</span></header><figure class=\"card\" data-component=\"CycleTrend\" style=\"padding:var(--t-space-md) var(--t-space-sm)\"><svg width=\"310\" height=\"180\" viewBox=\"0 0 310 180\" role=\"img\" aria-label=\"Six cycle lengths, 27 to 37 days, over a shaded band\"><rect x=\"34\" y=\"66\" width=\"264\" height=\"44\" fill=\"var(--t-colour-secondary-fixed)\"/><line x1=\"34\" y1=\"150\" x2=\"298\" y2=\"150\" stroke=\"var(--t-colour-outline-variant)\" stroke-width=\"1\"/><line x1=\"34\" y1=\"20\" x2=\"34\" y2=\"150\" stroke=\"var(--t-colour-outline-variant)\" stroke-width=\"1\"/><polyline points=\"55,96 103,74 151,52 199,110 247,40 295,63\" fill=\"none\" stroke=\"var(--t-colour-primary)\" stroke-width=\"2\" stroke-linejoin=\"round\"/><circle cx=\"55\" cy=\"96\" r=\"4\" fill=\"var(--t-colour-primary)\"/><circle cx=\"103\" cy=\"74\" r=\"4\" fill=\"var(--t-colour-primary)\"/><circle cx=\"151\" cy=\"52\" r=\"4\" fill=\"var(--t-colour-primary)\"/><circle cx=\"199\" cy=\"110\" r=\"4\" fill=\"var(--t-colour-primary)\"/><circle cx=\"247\" cy=\"40\" r=\"4\" fill=\"var(--t-colour-primary)\"/><circle cx=\"295\" cy=\"63\" r=\"4\" fill=\"var(--t-colour-primary)\"/><text x=\"8\" y=\"44\" font-size=\"10\" fill=\"var(--t-colour-on-surface-variant)\">37</text><text x=\"8\" y=\"154\" font-size=\"10\" fill=\"var(--t-colour-on-surface-variant)\">27</text></svg><figcaption class=\"t-body-sm muted\">Six complete cycles. The band is the published range.</figcaption></figure><p class=\"t-body-lg\" data-component=\"Text\">Three of your last 6 complete cycles ran longer than the band.</p><a class=\"link start\" data-component=\"TextLink\" data-to=\"history\">The same six cycles, in full</a><div class=\"push\"></div></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "yearOfBirth": {
+      "name": "Year of birth",
+      "notes": ["Held between 1940 and nine years before today."],
+      "route": "/onboarding/year-of-birth",
+      "source": "apps/mobile/src/app/onboarding/year-of-birth.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:25%\"></div></div><p class=\"eyebrow\">Step 3 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">What year were you born?</h1><div class=\"stepper\" data-component=\"Stepper\"><span class=\"knob\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span><span class=\"reading\">Born in 1990</span><span class=\"knob\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Emi encrypts this on the phone before it goes anywhere.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"lastPeriod\">Skip</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"lastPeriod\">Continue</a></div></main>"
+    },
+    "yourAnswers": {
+      "ref": "Story 12",
+      "name": "Your answers",
+      "notes": [
+        "Eight answers, which is exactly the eight the hold sealed. The screen adds none.",
+        "Every one of these is in one sealed row, and this screen writes that row through the envelope the first run used.",
+        "A woman who skipped a question reads the row with nothing under it, and pressing it asks her the question for the first time."
+      ],
+      "route": "/settings/answers",
+      "status": "proposed",
+      "defects": [
+        "There is no way back to any first run answer today, so a woman who typed the wrong year must delete everything she owns to correct one number."
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Your answers</span><span class=\"right\" data-component=\"TextLink\" data-to=\"privacyNext\">Back</span></header><ul class=\"rows\" data-component=\"AnswerRow\"><li class=\"row\"><span class=\"what\"><span class=\"lead\">Your name</span></span><span class=\"value\">Maria</span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">Year of birth</span></span><span class=\"value\">1990</span></li><li class=\"row\" data-component=\"AnswerRow\" data-to=\"answerCycleLength\"><span class=\"what\"><span class=\"lead\">Cycle length</span></span><span class=\"value\">28 days</span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">Period length</span></span><span class=\"value\">5 days</span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">Regular</span><span class=\"sub\">No, it moves</span></span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">How you feel about it</span><span class=\"sub\">I want to understand it</span></span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">What you want Emi for</span><span class=\"sub\">3 of the 4</span></span></li><li class=\"row\"><span class=\"what\"><span class=\"lead\">What changes with your cycle</span><span class=\"sub\">Sleep, mood and pain</span></span></li></ul><div class=\"push\"></div></div></main>"
+    },
+    "notification": {
+      "ref": "Story 11",
+      "name": "Two days before",
+      "notes": [
+        "The phone draws the lock screen. The component named here is the one Emi makes: it writes the title and the one line, and it schedules them from the forecast the phone already holds.",
+        "No server is involved and nothing about a period is sent anywhere for this to work.",
+        "The text names Emi and a day. It never names a symptom, and it never names what she logged.",
+        "Pressing it opens Emi on the log."
+      ],
+      "status": "proposed",
+      "defects": [
+        "This is the only thing in the whole product that reaches her while Emi is closed, and it is the largest gap of the parity sweep.",
+        "A notification cannot be proved without a real device, so the step that builds it waits for the operator."
+      ],
+      "surface": "mobile",
+      "html": "<div class=\"os\" data-component=\"ReminderNotification\"><div style=\"height:96px\"></div><p class=\"t-body-sm\" style=\"text-align:center;opacity:.75\">Thursday 15 October</p><p class=\"clock\">09:00</p><div class=\"banner\" data-component=\"ReminderNotification\" data-to=\"log\"><span class=\"t-label-md\">Emi, now</span><span class=\"t-body-lg\">Your period is forecast in two days.</span></div><div style=\"flex:1\"></div><p class=\"t-body-sm\" style=\"text-align:center;opacity:.6\">Nothing about a period is sent anywhere for this.</p></div>"
+    },
+    "periodBefore": {
+      "name": "The period before",
+      "route": "/onboarding/period-before",
+      "source": "apps/mobile/src/app/onboarding/period-before.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:50%\"></div></div><p class=\"eyebrow\">Step 6 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">The period before</h1><div class=\"month\" data-component=\"Calendar\"><div class=\"heads\"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class=\"week7\"><div class=\"cell\"></div><div class=\"cell\"></div><div class=\"cell\"><span class=\"n\">1</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">2</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">3</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">4</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">5</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">6</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">7</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">8</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">9</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">10</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">11</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">12</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">13</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">14</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">15</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">16</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">17</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">18</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">19</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">20</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">21</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">22</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">23</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">24</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">25</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">26</span><span class=\"cd\"></span></div></div></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Do you remember when the period before that started?</p><p class=\"t-body-sm muted\">Each one you add makes the first forecast surer.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"cycleLength\">I do not remember</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"cycleLength\">Add it</a></div></main>"
+    },
+    "periodLength": {
+      "name": "Period length",
+      "notes": ["Held between 1 and 15 days."],
+      "route": "/onboarding/period-length",
+      "source": "apps/mobile/src/app/onboarding/period-length.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:67%\"></div></div><p class=\"eyebrow\">Step 8 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">How many days does your period usually last?</h1><div class=\"stepper\" data-component=\"Stepper\"><span class=\"knob\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span><span class=\"reading\">5 days</span><span class=\"knob\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">From the first day of bleeding until it stops.</p><p class=\"t-body-sm muted\">Emi uses the days you log instead, once you log them.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"regularity\">I am not sure</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"regularity\">Done</a></div></main>"
+    },
+    "recoveryCode": {
+      "name": "Her recovery code",
+      "notes": ["Built and unreachable."],
+      "source": "apps/mobile/src/features/recovery/ShowRecoveryCode.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"Text\">Your recovery code</h1><p class=\"t-data-lg\" data-component=\"Text\" style=\"word-spacing:var(--t-space-sm)\">WRQ4 8KDM 2PXV 7HLT 9BNF ZC</p><p class=\"t-body-lg\" data-component=\"Text\">26 characters. Emi shows them once and stores them nowhere.</p><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"recoveryConfirm\">I have written it down</a></div></main>"
+    },
+    "todayNumbers": {
+      "ref": "Story 4",
+      "name": "Your cycles, three numbers",
+      "notes": [
+        "No row carries the word normal, abnormal or irregular. Emi prints her measured number and the published figure, and she reads them.",
+        "The period row cites System 1 of the International Federation of Gynecology and Obstetrics, which bounds menstrual duration at eight days. The variation row cites Bull and others 2019, whose per user variation has a mean of 2.6 days."
+      ],
+      "route": "/",
+      "status": "proposed",
+      "defects": [
+        "Story 4 asks for a published range beside the cycle length, and the code cites none. It cites the period duration and the cycle length variation only. Which published range does the cycle length row sit against?"
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Your cycles</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayNext\">Today</span></header><div class=\"measured\" data-component=\"MeasuredRow\"><span class=\"head\"></span><span class=\"head\">Yours</span><span class=\"head\">Published</span><span class=\"what\">Last cycle</span><span class=\"mine\">37 days</span><span class=\"theirs\">not cited yet</span><span class=\"what\">Last period</span><span class=\"mine\">7 days</span><span class=\"theirs\">up to 8 days</span><span class=\"what\">Variation</span><span class=\"mine\">4.1 days</span><span class=\"theirs\">2.6 days</span></div><p class=\"t-body-lg\" data-component=\"Text\">The published figure is the one the paper reports, and the paper is one press away.</p><a class=\"link start\" data-component=\"TextLink\" data-to=\"citation\">Where these figures come from</a><div class=\"push\"></div></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "firstForecast": {
+      "name": "Her first forecast",
+      "notes": [
+        "A day she has not answered for sends her back to the last period question.",
+        "Emi needs two complete cycles before it forecasts, so the first run says it is still learning."
+      ],
+      "route": "/onboarding/first-forecast",
+      "source": "apps/mobile/src/app/onboarding/first-forecast.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><p class=\"eyebrow\" data-component=\"FirstForecast\">Your next period</p><h1 class=\"t-headline-lg\" data-component=\"FirstForecast\">Between the 14th and the 18th of October</h1><section class=\"card\" data-component=\"Card\"><h2 class=\"t-headline-sm\">Why a range?</h2><p class=\"t-body-sm muted\">Emi has read 1 complete cycle. A range is the honest shape of what one cycle can say.</p></section><section class=\"card\" data-component=\"Card\"><h2 class=\"t-headline-sm\">Worked out on this phone</h2><p class=\"t-body-sm muted\">The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.</p></section><div class=\"stack\" data-component=\"FirstForecast\"><p class=\"t-body-sm muted\">Emi needs 2 complete cycles before it forecasts, so this is still learning.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"thePromise\">Continue</a></div></main>"
+    },
+    "recoverySetup": {
+      "name": "Before the recovery code",
+      "notes": ["Built and unreachable. Nothing in the application navigates to it."],
+      "source": "apps/mobile/src/features/recovery/RecoverySetup.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"Text\">Your data is locked to this phone</h1><p class=\"t-body-lg\" data-component=\"Text\">Lose the phone and you lose the days, unless you keep a code that can open them again.</p><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">Built and unreachable. Nothing in the application navigates to it.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"recoveryCode\">Show my code</a></div></main>"
+    },
+    "todayFirstRun": {
+      "name": "Today, in the first run",
+      "notes": ["Six symptoms of the seventy, as a grid of tiles."],
+      "route": "/onboarding/today",
+      "source": "apps/mobile/src/app/onboarding/today.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">Today</h1><ul class=\"tiles\" data-component=\"SelectableTile\"><li class=\"tile on\">Cramps</li><li class=\"tile\">Headache</li><li class=\"tile\">Bloating</li><li class=\"tile\">Tired</li><li class=\"tile\">Calm</li><li class=\"tile\">Low</li></ul><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">You can skip this.</p><p class=\"t-body-sm muted\">Emi encrypts it on this phone.</p></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">Six symptoms of the seventy, as a grid of tiles.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"firstForecast\">Nothing to add</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"firstForecast\">Save today</a></div></main>"
+    },
+    "todayPatterns": {
+      "ref": "Story 7",
+      "name": "What comes back",
+      "notes": [
+        "Every card names its own evidence: the count of cycles it came back in, out of the count Emi read.",
+        "No card compares her with another woman. Emi holds nobody else's log."
+      ],
+      "route": "/",
+      "status": "proposed",
+      "defects": [
+        "This is the payoff for a year of logging and it sits one press away from nobody today."
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">What comes back</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayNext\">Today</span></header><ul class=\"rows\" data-component=\"PatternCard\"><li class=\"row\" data-component=\"PatternCard\" data-to=\"history\"><span class=\"what\"><span class=\"lead\">Bloating, about day 12 of your cycle</span><span class=\"sub\">in 4 of your last 6 cycles</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"row\" data-component=\"PatternCard\" data-to=\"history\"><span class=\"what\"><span class=\"lead\">Cramps, about 2 days before your period</span><span class=\"sub\">in 5 of your last 6 cycles</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><p class=\"t-body-lg\" data-component=\"Text\">A symptom you logged once or twice is not a pattern, and Emi does not name it one.</p><a class=\"link start\" data-component=\"TextLink\" data-to=\"history\">What comes back, in full</a><div class=\"push\"></div></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "lastPeriodNext": {
+      "ref": "Story 13",
+      "name": "Her last period, with a way past",
+      "notes": [
+        "The way past takes the words the period before question already uses, so she meets one sentence and not two.",
+        "The period before question is skipped with it. A woman who cannot name one date cannot name the one behind it."
+      ],
+      "route": "/onboarding/last-period",
+      "source": "apps/mobile/src/features/onboarding/LastPeriod.tsx",
+      "status": "proposed",
+      "defects": [
+        "The built screen draws no way past, so a woman who cannot answer this one question cannot use Emi at all."
+      ],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><div class=\"progress\" data-component=\"ProgressBar\"><div class=\"track\"><div class=\"done\" style=\"width:42%\"></div></div><p class=\"eyebrow\">Step 5 of 12</p></div><h1 class=\"t-headline-lg\" data-component=\"OnboardingScreen\">When did your last period start?</h1><div class=\"month\" data-component=\"Calendar\"><div class=\"heads\"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">1</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">2</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">3</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">4</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">5</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">6</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">7</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">8</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">9</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">10</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">11</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">12</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">13</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">14</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">15</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">16</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">17</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">18</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">19</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">20</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">21</span><span class=\"cd\"></span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">22</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">23</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">24</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">25</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">26</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">27</span><span class=\"cd\"></span></div><div class=\"cell\"><span class=\"n\">28</span><span class=\"cd\"></span></div></div></div><div class=\"stack\" data-component=\"OnboardingScreen\"><p class=\"t-body-sm muted\">The first day you bled. The nearest day you remember is close enough.</p><p class=\"t-body-sm muted\">Emi encrypts this on the phone before it goes anywhere.</p></div><div class=\"push\"></div><a class=\"link\" data-component=\"TextLink\" data-to=\"cycleLength\">I do not remember</a><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"periodBefore\">Continue</a></div></main>"
+    },
+    "todayEmptyBody": {
+      "ref": "Story 8",
+      "name": "Day one, the sections she has not earned",
+      "notes": [
+        "Each sentence says what the section needs and how far off she is. It never draws an empty chart and it never invents a number.",
+        "The sentence about the patterns is the one the history screen already says. The other two are new."
+      ],
+      "route": "/",
+      "status": "proposed",
+      "defects": ["No section anywhere in the application says what it needs and when it arrives."],
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayEmpty\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">What arrives later</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayEmpty\">Today</span></header><p class=\"eyebrow\" data-component=\"Text\">Your cycles</p><div class=\"quote\" data-component=\"SectionWaiting\"><span class=\"t-label-md\">Your three numbers arrive with your second period.</span><span class=\"t-body-sm muted\">Emi has read 0 complete cycles.</span></div><p class=\"eyebrow\" data-component=\"Text\">Cycle trends</p><div class=\"quote\" data-component=\"SectionWaiting\"><span class=\"t-label-md\">The chart arrives once 2 cycles are complete.</span><span class=\"t-body-sm muted\">Emi draws nothing from nothing, and it holds no sample data.</span></div><p class=\"eyebrow\" data-component=\"Text\">What comes back</p><div class=\"quote\" data-component=\"SectionWaiting\"><span class=\"t-label-md\">Emi names a symptom once it has come back in 3 cycles.</span><span class=\"t-body-sm muted\">0 of yours are complete.</span></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"log\">Log today</a></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "calendarEarlier": {
+      "ref": "Story 9",
+      "name": "The month before",
+      "notes": [
+        "She swiped back one month. The month she is reading is the only thing that changed.",
+        "This is two months behind today, which is the walk story 9 is finished by."
+      ],
+      "route": "/calendar",
+      "status": "proposed",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">August</span><span class=\"right\" data-component=\"TextLink\" data-to=\"todayNext\">Today</span></header><div class=\"month\" data-component=\"CycleMonth\"><div class=\"heads\"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class=\"week7\"><div class=\"cell\"></div><div class=\"cell\"></div><div class=\"cell\"></div><div class=\"cell\"><span class=\"n\">1</span><span class=\"cd\">19</span></div><div class=\"cell\"><span class=\"n\">2</span><span class=\"cd\">20</span></div><div class=\"cell\"><span class=\"n\">3</span><span class=\"cd\">21</span></div><div class=\"cell\"><span class=\"n\">4</span><span class=\"cd\">22</span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">5</span><span class=\"cd\">23</span></div><div class=\"cell\"><span class=\"n\">6</span><span class=\"cd\">24</span></div><div class=\"cell bled\"><span class=\"n\">7</span><span class=\"cd\">1</span></div><div class=\"cell bled\"><span class=\"n\">8</span><span class=\"cd\">2</span></div><div class=\"cell bled\"><span class=\"n\">9</span><span class=\"cd\">3</span></div><div class=\"cell bled\"><span class=\"n\">10</span><span class=\"cd\">4</span></div><div class=\"cell bled\"><span class=\"n\">11</span><span class=\"cd\">5</span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">12</span><span class=\"cd\">6</span></div><div class=\"cell\"><span class=\"n\">13</span><span class=\"cd\">7</span></div><div class=\"cell\" data-component=\"CycleMonth\" data-to=\"day\"><span class=\"n\">14</span><span class=\"cd\">8</span></div><div class=\"cell\"><span class=\"n\">15</span><span class=\"cd\">9</span></div><div class=\"cell\"><span class=\"n\">16</span><span class=\"cd\">10</span></div><div class=\"cell\"><span class=\"n\">17</span><span class=\"cd\">11</span></div><div class=\"cell\"><span class=\"n\">18</span><span class=\"cd\">12</span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">19</span><span class=\"cd\">13</span></div><div class=\"cell\"><span class=\"n\">20</span><span class=\"cd\">14</span></div><div class=\"cell\"><span class=\"n\">21</span><span class=\"cd\">15</span></div><div class=\"cell\"><span class=\"n\">22</span><span class=\"cd\">16</span></div><div class=\"cell\"><span class=\"n\">23</span><span class=\"cd\">17</span></div><div class=\"cell\"><span class=\"n\">24</span><span class=\"cd\">18</span></div><div class=\"cell\"><span class=\"n\">25</span><span class=\"cd\">19</span></div></div><div class=\"week7\"><div class=\"cell\"><span class=\"n\">26</span><span class=\"cd\">20</span></div><div class=\"cell\"><span class=\"n\">27</span><span class=\"cd\">21</span></div><div class=\"cell\"><span class=\"n\">28</span><span class=\"cd\">22</span></div><div class=\"cell\"><span class=\"n\">29</span><span class=\"cd\">23</span></div><div class=\"cell\"><span class=\"n\">30</span><span class=\"cd\">24</span></div><div class=\"cell\"><span class=\"n\">31</span><span class=\"cd\">25</span></div><div class=\"cell\"></div></div></div><ul class=\"rows\" data-component=\"DaySheet\"><li class=\"row\" data-component=\"DaySheet\" data-to=\"day\"><span class=\"what\"><span class=\"lead\">The 14th of August</span><span class=\"sub\">Day 8, follicular. Nothing logged</span></span><span class=\"chev\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M9 5l7 7-7 7\" stroke=\"var(--t-colour-outline)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li></ul><div class=\"push\"></div><div style=\"display:flex;gap:var(--t-space-lg);justify-content:center\"><a class=\"link\" data-component=\"TextLink\" data-to=\"calendarEarlier\">Earlier</a><a class=\"link\" data-component=\"TextLink\" data-to=\"calendar\">Later</a></div><a class=\"button secondary\" data-component=\"SecondaryButton\" data-to=\"editPeriod\">Edit my period</a></div><nav class=\"dock\" data-component=\"BottomNavigation\"><a class=\"col on\" data-component=\"BottomNavigation\" data-to=\"todayNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\"/><circle cx=\"12\" cy=\"4\" r=\"2\" fill=\"var(--t-colour-primary)\"/></svg><span>Today</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"log\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Log</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"history\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 17V11M12 17V6M19 17v-4\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg><span>Insights</span></a><a class=\"col\" data-component=\"BottomNavigation\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/><path d=\"M8.5 11V8a3.5 3.5 0 1 1 7 0v3\" stroke=\"var(--t-colour-on-surface-variant)\" stroke-width=\"var(--t-stroke-icon)\"/></svg><span>Privacy</span></a></nav></main>"
+    },
+    "recoveryConfirm": {
+      "name": "Type the code back",
+      "notes": ["Built and unreachable."],
+      "source": "apps/mobile/src/features/recovery/ConfirmRecoveryCode.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"Text\">Type the code back</h1><div class=\"field\" data-component=\"TextField\">Your 26 character recovery code<span class=\"caret\"></span></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\">Done</a></div></main>"
+    },
+    "reminderSettings": {
+      "ref": "Stories 11 and 12",
+      "name": "Reminders",
+      "notes": [
+        "Never is one of the four answers, so turning it off costs the same one press that turning it on did.",
+        "The words she will read are on the screen where she chooses them."
+      ],
+      "route": "/settings/reminders",
+      "status": "proposed",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body tight\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"privacyNext\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Reminders</span><span class=\"right\" data-component=\"TextLink\" data-to=\"privacyNext\">Back</span></header><ul class=\"opts\" data-component=\"SingleChoiceRow\"><li class=\"opt on\">Two days before<span class=\"tick\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M5 12.5l4.5 4.5L19 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></li><li class=\"opt\">One day before</li><li class=\"opt\">On the day</li><li class=\"opt\">Never</li></ul><ul class=\"rows\" data-component=\"AnswerRow\"><li class=\"row\"><span class=\"what\"><span class=\"lead\">Time of day</span></span><span class=\"value\">09:00</span></li></ul><div class=\"quote\" data-component=\"ReminderPreview\"><span class=\"t-label-md\">Emi</span><span class=\"t-body-sm muted\">Your period is forecast in two days.</span></div><p class=\"t-body-lg\" data-component=\"Text\">This phone works it out from the forecast it already holds. Nothing is sent anywhere.</p><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"privacyNext\">Save</a></div></main>"
+    },
+    "answerCycleLength": {
+      "ref": "Story 12",
+      "name": "Cycle length, changed",
+      "notes": [
+        "The same question and the same control as the first run asked it with, so she is not learning a second interface to correct an answer.",
+        "The save writes the one sealed profile row, which is TABLE-5, and the forecast on the screen she opens moves."
+      ],
+      "route": "/settings/answers/cycle-length",
+      "status": "proposed",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><header class=\"top\" data-component=\"Text\"><span class=\"back\" data-component=\"TextLink\" data-to=\"yourAnswers\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M15 5l-7 7 7 7\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span><span class=\"title\">Cycle length</span><span class=\"right\" data-component=\"TextLink\" data-to=\"yourAnswers\">Cancel</span></header><h1 class=\"t-headline-md\" data-component=\"OnboardingScreen\">How long is your cycle, roughly?</h1><div class=\"stepper\" data-component=\"Stepper\"><span class=\"knob\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span><span class=\"reading\">31 days</span><span class=\"knob\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 6v12M6 12h12\" stroke=\"var(--t-colour-primary)\" stroke-width=\"var(--t-stroke-icon)\" stroke-linecap=\"round\"/></svg></span></div><div class=\"stack\" data-component=\"Text\"><p class=\"t-body-sm muted\">Count the first day of one period to the day before the next.</p><p class=\"t-body-sm muted\">Emi replaces this with your own number once it has seen two cycles.</p><p class=\"t-body-sm muted\">You gave 28 days at the first run.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"yourAnswers\">Save</a></div></main>"
+    },
+    "whatEmiDoesWithIt": {
+      "name": "What Emi does with it",
+      "notes": ["The log card names the groups she chose on the focus screen."],
+      "route": "/onboarding/what-emi-does-with-it",
+      "source": "apps/mobile/src/app/onboarding/what-emi-does-with-it.tsx",
+      "status": "built",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"WhatEmiDoesWithIt\">Here is what Emi does with what you told it</h1><ul class=\"card\" data-component=\"Card\"><li class=\"t-body-lg\">Your forecast: a range, and how sure Emi is</li><li class=\"t-body-lg\">Your log: what you see first</li><li class=\"t-body-lg\">Your privacy: only you can read any of it</li></ul><div class=\"stack\" data-component=\"WhatEmiDoesWithIt\"><p class=\"t-body-sm muted\">The log card names the groups you chose: sleep, mood and pain.</p></div><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"hold\">Continue</a></div></main>"
+    },
+    "reminderPermission": {
+      "ref": "Story 11",
+      "name": "The phone asks",
+      "notes": [
+        "The operating system draws the dialog and Emi writes none of its words. The component named here is the one Emi makes: it asks for the permission and it handles both answers.",
+        "A woman who refuses reaches the same next screen. The first run never stops on this answer."
+      ],
+      "status": "proposed",
+      "surface": "mobile",
+      "html": "<div class=\"dim\" data-component=\"ReminderPermission\"><section class=\"dialog\"><h1 class=\"t-headline-sm\">Emi would like to send you notifications</h1><p class=\"t-body-sm muted\">Notifications may include alerts and sounds. These can be configured in Settings.</p><div class=\"pair\"><span class=\"half\" data-component=\"ReminderPermission\" data-to=\"thePromise\">Do not allow</span><span class=\"half\" data-component=\"ReminderPermission\" data-to=\"thePromise\">Allow</span></div></section></div>"
+    },
+    "firstForecastLearning": {
+      "ref": "Story 13",
+      "name": "The first forecast, with no date",
+      "notes": [
+        "The learning state already exists in the arithmetic, which is CYCLE-3. What is new is the first run reaching it.",
+        "The built screen sends a woman with no answer back to the last period question."
+      ],
+      "route": "/onboarding/first-forecast",
+      "source": "apps/mobile/src/features/onboarding/FirstForecast.tsx",
+      "status": "proposed",
+      "surface": "mobile",
+      "html": "<main class=\"screen\"><div class=\"body\"><h1 class=\"t-headline-lg\" data-component=\"FirstForecast\">Emi has no date to count from</h1><div class=\"stack\" data-component=\"FirstForecast\"><p class=\"t-body-sm muted\">The first period you log starts everything.</p><p class=\"t-body-sm muted\">Until then Emi counts a cycle of 28 days, the length you gave.</p></div><section class=\"card\" data-component=\"Card\"><h2 class=\"t-headline-sm\">Still learning</h2><p class=\"t-body-sm muted\">Emi needs 2 complete cycles before it forecasts.</p></section><p class=\"t-body-lg\" data-component=\"Text\">Emi builds no forecast from a date it guessed, because a guess on day one is a false sentence on day one.</p><div class=\"push\"></div><a class=\"button\" data-component=\"PrimaryButton\" data-to=\"thePromise\">Continue</a></div></main>"
+    }
+  },
+  "stories": [
+    {
+      "id": "11",
+      "edges": [
+        ["reminder", "reminderPermission", "Remind me", "missing"],
+        ["reminder", "thePromise", "Not now", "missing"],
+        ["reminderPermission", "thePromise", "Allow, or do not allow", "missing"],
+        ["thePromise", "hold", "Continue, through what Emi does with it", "built"],
+        ["hold", "todayNext", "Hold to begin", "built"],
+        ["todayNext", "notification", "Two days later, her phone raises it", "missing"],
+        ["notification", "log", "She presses it", "missing"],
+        ["log", "todayNext", "Done", "built"],
+        ["todayNext", "privacyNext", "Privacy", "designed"],
+        ["privacyNext", "reminderSettings", "Reminders", "missing"],
+        ["reminderSettings", "privacyNext", "Save", "missing"]
+      ],
+      "lanes": ["In the first run", "Two days before", "Any time, in Privacy"],
+      "nodes": [
+        ["reminder", 0, 0],
+        ["reminderPermission", 1, 0],
+        ["thePromise", 2, 0],
+        ["hold", 3, 0],
+        ["todayNext", 0, 1],
+        ["notification", 1, 1],
+        ["log", 2, 1],
+        ["privacyNext", 1, 2],
+        ["reminderSettings", 2, 2]
+      ],
+      "start": "reminder",
+      "steps": "One answer in the first run, then one press two days before.",
+      "story": "She reaches the reminder screen in the first run and turns the reminder on. Two days before the forecast start, her phone shows a notification. She presses it and Emi opens on the log. Nothing about a period is sent anywhere for this to work: the phone holds the forecast, so the phone schedules the notification.",
+      "title": "Story 11: Emi tells her the period is near, and her phone alone raises it"
+    },
+    {
+      "id": "9",
+      "edges": [
+        ["todayNext", "calendar", "The calendar", "missing"],
+        ["calendar", "calendarEarlier", "Earlier", "missing"],
+        ["calendarEarlier", "calendar", "Later", "missing"],
+        ["calendarEarlier", "day", "The 14th of August", "designed"],
+        ["day", "calendarEarlier", "Done, and the month draws the change", "missing"],
+        ["calendar", "dayRefused", "A day that has not happened", "designed"],
+        ["dayRefused", "calendar", "Back", "designed"]
+      ],
+      "lanes": ["The month, and a day in it", "A day Emi refuses"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["calendar", 1, 0],
+        ["calendarEarlier", 2, 0],
+        ["day", 3, 0],
+        ["dayRefused", 2, 1]
+      ],
+      "start": "todayNext",
+      "steps": "Four presses from the screen she opens to a day two months back.",
+      "story": "She presses the calendar. She reads September. She swipes back to August. She presses the 14th, reads what she wrote and edits it. A day that has not happened is refused in the words the address already refuses it in.",
+      "title": "Story 9: She opens a month and reads any day in it"
+    },
+    {
+      "id": "10",
+      "edges": [
+        ["todayNext", "calendar", "The calendar", "missing"],
+        ["calendar", "editPeriod", "Edit my period", "missing"],
+        ["editPeriod", "calendar", "Save", "missing"],
+        ["calendar", "todayNext", "Back, and the ring has moved", "missing"],
+        ["calendar", "day", "One day, the only way that exists today", "designed"],
+        ["day", "calendar", "Done", "missing"]
+      ],
+      "lanes": ["The whole period at once", "One day at a time, which is what exists"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["calendar", 1, 0],
+        ["editPeriod", 2, 0],
+        ["day", 2, 1]
+      ],
+      "start": "todayNext",
+      "steps": "Two presses in, one save, and the ring has moved.",
+      "story": "She presses Edit my period. The month opens with the period Emi holds drawn on it. She adds two days, removes one, and saves once. Every day of the range becomes a day record whose revision rises, and the cycle cache is rebuilt from the day log rather than written by hand.",
+      "title": "Story 10: She corrects a whole period in one action"
+    },
+    {
+      "id": "12",
+      "edges": [
+        ["todayNext", "privacyNext", "Privacy", "designed"],
+        ["privacyNext", "yourAnswers", "Your answers", "missing"],
+        ["yourAnswers", "answerCycleLength", "Cycle length", "missing"],
+        ["answerCycleLength", "yourAnswers", "Save", "missing"],
+        ["yourAnswers", "privacyNext", "Back", "missing"],
+        ["privacyNext", "todayNext", "Today, and the forecast has moved", "designed"],
+        ["privacyNext", "delete", "Delete everything", "built"],
+        ["privacyNext", "export", "Export", "built"]
+      ],
+      "lanes": ["Correcting an answer", "The two ways out that already exist"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["privacyNext", 1, 0],
+        ["yourAnswers", 2, 0],
+        ["answerCycleLength", 3, 0],
+        ["delete", 2, 1],
+        ["export", 3, 1]
+      ],
+      "start": "todayNext",
+      "steps": "Three presses to the answer, one save.",
+      "story": "She opens Privacy. She presses her cycle length. She moves it from 28 to 31 and saves. The forecast on the screen she opens has moved. The profile stays one sealed row, and this screen writes it through the envelope the first run used.",
+      "title": "Story 12: She changes an answer she gave at the first run"
+    },
+    {
+      "id": "1",
+      "lanes": ["What she opens"],
+      "nodes": [["todayNext", 0, 0]],
+      "start": "todayNext",
+      "steps": "No press at all. She opens Emi and reads.",
+      "story": "She opens Emi. The strip is the first thing under the wordmark. She reads that today is day 21, that the days behind it carry their own cycle day, and which day is predicted. She presses nothing.",
+      "title": "Story 1: She reads her week without opening anything"
+    },
+    {
+      "id": "2",
+      "edges": [
+        ["todayNext", "todayLuteal", "The same line, three weeks later", "missing"],
+        ["todayLuteal", "todayNext", "Back to the week she opens", "missing"]
+      ],
+      "lanes": ["The line she opens on, in her period", "The same line, in the luteal phase"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["todayLuteal", 1, 0]
+      ],
+      "start": "todayNext",
+      "steps": "No press at all. She reads it from across the room.",
+      "story": "She opens Emi. Under the strip she reads one line that names the phase and the day, and she reads it from where she left the phone. The line never sits on a phase fill: three of the four phase colours fail the contrast floor as text, so the line takes the ink partner of its phase.",
+      "title": "Story 2: She reads what day of her cycle she is on, in words"
+    },
+    {
+      "id": "3",
+      "edges": [
+        ["todayNext", "logSymptoms", "Symptoms", "missing"],
+        ["logSymptoms", "todayLogged", "Save", "missing"],
+        ["todayNext", "log", "Period", "missing"],
+        ["log", "todayLogged", "Done", "built"],
+        ["todayLogged", "logSymptoms", "Press what you logged to change it", "missing"]
+      ],
+      "lanes": ["Symptoms, in two presses", "The flow, in two presses"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["logSymptoms", 1, 0],
+        ["todayLogged", 2, 0],
+        ["log", 1, 1]
+      ],
+      "start": "todayNext",
+      "steps": "Two presses from opening Emi to a symptom recorded.",
+      "story": "She opens Emi. She presses the round action for symptoms. The log opens on the symptom groups. She marks two symptoms and saves. She returns to the screen she started on and the symptoms are on it. Two round actions, period and symptoms, which is the decision the operator took.",
+      "title": "Story 3: She starts a log in one press, from the screen she opens"
+    },
+    {
+      "id": "4",
+      "edges": [
+        ["todayNext", "todayNumbers", "She scrolls once", "missing"],
+        ["todayNumbers", "citation", "Where these figures come from", "missing"],
+        ["citation", "todayNumbers", "Back", "missing"]
+      ],
+      "lanes": ["The three numbers, and where they are measured against"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["todayNumbers", 1, 0],
+        ["citation", 2, 0]
+      ],
+      "start": "todayNext",
+      "steps": "One scroll, and one press to the papers.",
+      "story": "She opens Emi and scrolls once. She reads that her last cycle ran 37 days, that her last period ran 7 days, and how much her cycles vary. Beside each number she reads the published figure and she reaches the paper from that screen. No row calls a woman abnormal.",
+      "title": "Story 4: She reads her own three cycle numbers, beside a published range"
+    },
+    {
+      "id": "6",
+      "edges": [
+        ["todayNext", "todayNumbers", "She scrolls once", "missing"],
+        ["todayNumbers", "todayCycles", "She keeps scrolling", "missing"],
+        ["todayCycles", "history", "A strip opens the cycle", "missing"],
+        ["history", "todayCycles", "Back", "missing"],
+        ["history", "day", "A cycle row opens the day it started", "built"]
+      ],
+      "lanes": ["The strips, and the screen that already draws them"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["todayNumbers", 1, 0],
+        ["todayCycles", 2, 0],
+        ["history", 3, 0],
+        ["day", 4, 0]
+      ],
+      "start": "todayNext",
+      "steps": "Two scrolls, one press out and one press back.",
+      "story": "She opens Emi and scrolls. She reads the current cycle and the two before it, each as a strip. She presses one and lands on Insights at that cycle, and she comes back. The strips read the cycle cache, so the arithmetic is not written twice.",
+      "title": "Story 6: She sees each past cycle as a strip, on the screen she opens"
+    },
+    {
+      "id": "5",
+      "edges": [
+        ["todayNext", "todayCycles", "She scrolls to the cycles", "missing"],
+        ["todayCycles", "todayTrends", "She keeps scrolling", "missing"],
+        ["todayTrends", "history", "The same six cycles, in full", "missing"],
+        ["history", "todayTrends", "Back", "missing"]
+      ],
+      "lanes": ["The chart, and the numbers it must agree with"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["todayCycles", 1, 0],
+        ["todayTrends", 2, 0],
+        ["history", 3, 0]
+      ],
+      "start": "todayNext",
+      "steps": "Three scrolls to the chart.",
+      "story": "She opens Emi and scrolls. She reads the six points, the band behind them, and one sentence that counts how many fell outside it. Nothing is drawn before two complete cycles exist.",
+      "title": "Story 5: She reads the shape of her last six cycles"
+    },
+    {
+      "id": "7",
+      "edges": [
+        ["todayNext", "todayTrends", "She scrolls to the trends", "missing"],
+        ["todayTrends", "todayPatterns", "She keeps scrolling", "missing"],
+        ["todayPatterns", "history", "The card opens the pattern in full", "missing"],
+        ["history", "todayPatterns", "Back", "missing"]
+      ],
+      "lanes": ["The card, and the screen it agrees with"],
+      "nodes": [
+        ["todayNext", 0, 0],
+        ["todayTrends", 1, 0],
+        ["todayPatterns", 2, 0],
+        ["history", 3, 0]
+      ],
+      "start": "todayNext",
+      "steps": "Four scrolls, one press.",
+      "story": "She opens Emi and scrolls. She reads that bloating came back on day 12 in four of her last six cycles. She presses the card and reads the whole pattern on Insights. A symptom logged once or twice is never named a pattern, and no card compares her with another woman.",
+      "title": "Story 7: She meets the symptom that comes back, without going to look for it"
+    },
+    {
+      "id": "8",
+      "edges": [
+        ["todayEmpty", "todayEmptyBody", "She scrolls", "missing"],
+        ["todayEmptyBody", "log", "Log today", "built"],
+        ["log", "todayNext", "Done, and the sections have arrived", "missing"],
+        ["todayNext", "todayNumbers", "She scrolls", "missing"],
+        ["todayNumbers", "todayEmpty", "Start again, on a fresh phone", "missing"]
+      ],
+      "lanes": ["Day one", "After her first period"],
+      "nodes": [
+        ["todayEmpty", 0, 0],
+        ["todayEmptyBody", 1, 0],
+        ["log", 2, 0],
+        ["todayNext", 0, 1],
+        ["todayNumbers", 1, 1]
+      ],
+      "start": "todayEmpty",
+      "steps": "Two scrolls on day one, one log, and the screen fills in.",
+      "story": "She finishes the first run and opens Emi. Where a section needs two cycles and she has none, she reads one sentence that says what it needs and when it arrives. She does not read an empty chart and she never reads sample data. She logs one period, opens Emi again, and the sections her data now supports have arrived.",
+      "title": "Story 8: A section she has not earned is absent, and she is told why"
+    },
+    {
+      "id": "13",
+      "edges": [
+        ["lastPeriodNext", "cycleLength", "I do not remember", "missing"],
+        [
+          "cycleLength",
+          "firstForecastLearning",
+          "Done, through the rest of the questions",
+          "missing"
+        ],
+        ["firstForecastLearning", "hold", "Continue, through the promise", "built"],
+        ["hold", "todayEmpty", "Hold to begin", "built"],
+        ["todayEmpty", "log", "Log today", "built"],
+        ["log", "todayNext", "Done, and the ring appears", "built"]
+      ],
+      "lanes": ["The first run, without a date", "The screen she opens, and the day she logs"],
+      "nodes": [
+        ["lastPeriodNext", 0, 0],
+        ["cycleLength", 1, 0],
+        ["firstForecastLearning", 2, 0],
+        ["hold", 3, 0],
+        ["todayEmpty", 0, 1],
+        ["log", 1, 1],
+        ["todayNext", 2, 1]
+      ],
+      "start": "lastPeriodNext",
+      "steps": "One press past the one question she cannot answer.",
+      "story": "She reaches the last period question, presses I do not remember, and Emi takes her on. The screen she opens carries no ring, and it says the first period she logs starts everything. Emi builds no forecast from a guessed date.",
+      "title": "Story 13: She starts Emi without remembering when her last period started"
+    }
+  ],
+  "dataModel": {
+    "intro": "Four tables on the phone and one in the cloud. Two of the four hold ciphertext and nothing else. The server holds an encrypted vault and no key, so no story below can be served by reading a row on it.",
+    "zones": [
+      {
+        "sub": "SQLite, opened with a key that is made on the phone and kept in the keychain.",
+        "title": "On the phone",
+        "tables": [
+          {
+            "name": "day_log",
+            "role": "One row for one day. A trigger refuses a write that does not raise the revision.",
+            "fields": [
+              ["day", "text", "YYYY-MM-DD, unique"],
+              ["payload", "blob", "the sealed day record"],
+              ["revision", "integer", "rises on every write"],
+              ["created_at", "text", "when she first wrote the day"],
+              ["updated_at", "text", "never behind created_at"]
+            ],
+            "status": "built"
+          },
+          {
+            "name": "cycle",
+            "role": "The cache the ring, the forecast, the strips and the chart all read. Every value is derived from day_log, so it carries no revision and no sync marker.",
+            "fields": [
+              ["started_on", "text", "the first day she bled"],
+              ["ended_on", "text", "nothing at all while it runs"],
+              ["length_days", "integer", "derived"],
+              ["period_length_days", "integer", "derived"]
+            ],
+            "status": "built"
+          },
+          {
+            "name": "setting",
+            "role": "A key and a value, in plain text, for the things that are not about her body. The reminder of story 11 belongs here.",
+            "fields": [
+              ["key", "text", "unique"],
+              ["value", "text", "plain"],
+              ["reminder.daysBefore", "text", "story 11, proposed"],
+              ["reminder.timeOfDay", "text", "story 11, proposed"]
+            ],
+            "status": "built"
+          },
+          {
+            "name": "profile",
+            "role": "Exactly one row, holding the eight answers the first run sealed. Story 12 writes this row through the envelope the first run used, and adds no second copy of any answer.",
+            "fields": [
+              ["payload", "blob", "the sealed profile record"],
+              ["revision", "integer", "rises on every write"]
+            ],
+            "status": "built"
+          }
+        ]
+      },
+      {
+        "sub": "DynamoDB. No attribute carries a date, a symptom, a flow or a note.",
+        "title": "On the server",
+        "tables": [
+          {
+            "name": "emi-vault",
+            "role": "The account and the record items. The service reads ciphertext and holds no key that opens it.",
+            "fields": [
+              ["deviceKey", "binary", "the public key of the phone"],
+              ["wrappedVaultKey", "binary", "sealed under the recovery code"],
+              ["envelope", "binary", "one sealed record"],
+              ["revision", "integer", "refused when it does not rise"]
+            ],
+            "status": "built"
+          }
+        ]
+      }
+    ],
+    "decisions": [
+      "Story 4 wants a published range beside her own cycle length. The code cites a bound for the period duration and a figure for the cycle length variation, and it cites nothing for the cycle length range. Which published range does that row sit against?",
+      "Story 11 puts two values in the setting table in plain text: how many days before, and the time of day. Neither is about her body. Is plain text right for both?",
+      "Story 10 rewrites a range of day records in one action. Every day in the range raises its own revision, so one save can push six records to the server. Is that one request or six?"
+    ]
+  }
+}

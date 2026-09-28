@@ -23,6 +23,7 @@ check: ## everything the pipeline runs, in the pipeline's order, stopping at the
 	npm run check:features
 	npm run check:story
 	npm run check:pictures
+	npm run check:mockups
 	npm test
 
 format: ## write the formatting the pipeline checks
