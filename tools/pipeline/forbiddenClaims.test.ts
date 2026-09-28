@@ -22,6 +22,9 @@ import {
   designKeys,
   keyHeading,
   keyProblems,
+  plainHeading,
+  plainValueProblems,
+  plainValues,
   privacyDocument,
   refusalHeading,
   refusalProblems,
@@ -75,6 +78,7 @@ const aSafeDayClaim = anExampleStartingWith('safe d');
 const aDenial = theDenialStartingWith('Emi is not a');
 const aKey = theFirst(designKeys, 'key');
 const anAttack = theFirst(acceptedAttacks, 'attack');
+const aPlainValue = theFirst(plainValues, 'plain value');
 
 describe(`a ${aPregnancyClaim} claim anywhere in the repository fails the pipeline`, () => {
   const scanned = scannableFilesOf(repositoryRoot);
@@ -288,5 +292,86 @@ describe('the privacy document names a defence for every key the design has', ()
 
   it('is named in the documents index', () => {
     expect(read('docs/README.md')).toContain('privacy.md');
+  });
+});
+
+describe('the privacy document names every value the phone keeps in the clear', () => {
+  it('carries the section, and names every plain value the check carries', () => {
+    const named = subsectionsUnder(privacy, plainHeading).map((subsection) => subsection.title);
+
+    expect(privacy).toContain(`## ${plainHeading}`);
+    expect(named).toEqual([...plainValues]);
+  });
+
+  it('lists as many values as the check carries, and no seventh', () => {
+    expect(subsectionsUnder(privacy, plainHeading)).toHaveLength(plainValues.length);
+    expect(plainValues).toHaveLength(6);
+  });
+
+  it('says where each value lives and what a reader of the file learns from it', () => {
+    expect(plainValueProblems(privacy)).toEqual([]);
+  });
+
+  it('says what that reader does not learn, which is anything she wrote on a day', () => {
+    const [section] = subsectionsUnder(privacy, plainHeading);
+    const opening = privacy.slice(
+      privacy.indexOf(`## ${plainHeading}`),
+      privacy.indexOf(`### ${section?.title ?? ''}`),
+    );
+
+    expect(opening).toContain('learns nothing she wrote on a day');
+  });
+
+  it('refuses a document that drops a value, and names the one it dropped', () => {
+    const short = [
+      `## ${plainHeading}`,
+      '',
+      `### ${aPlainValue}`,
+      '',
+      'Lives: the `day` column of `day_log`, as one date for each row.',
+      '',
+      'What a reader learns: which days she recorded something on, and nothing more.',
+      '',
+    ].join('\n');
+
+    expect(plainValueProblems(short)).toEqual(
+      plainValues
+        .slice(1)
+        .map((value) => `${privacyDocument} has no "${value}" under "${plainHeading}"`),
+    );
+  });
+
+  it('refuses a value whose learns line says nothing', () => {
+    const thin = [
+      `## ${plainHeading}`,
+      '',
+      `### ${aPlainValue}`,
+      '',
+      'Lives: the `day` column of `day_log`, as one date for each row.',
+      '',
+      'What a reader learns: little.',
+      '',
+    ].join('\n');
+
+    expect(plainValueProblems(thin, [aPlainValue])).toEqual([
+      `${privacyDocument}: "${aPlainValue}" carries no what a reader learns line that says anything`,
+    ]);
+  });
+
+  it('refuses a value the check does not carry', () => {
+    const invented = [
+      `## ${plainHeading}`,
+      '',
+      '### Her name',
+      '',
+      'Lives: the setting table, where nothing about her body may be written.',
+      '',
+      'What a reader learns: what she is called, which the phone has no reason to hold.',
+      '',
+    ].join('\n');
+
+    expect(plainValueProblems(invented, [])).toEqual([
+      `${privacyDocument} names "Her name" under "${plainHeading}", and nothing asked for it`,
+    ]);
   });
 });
