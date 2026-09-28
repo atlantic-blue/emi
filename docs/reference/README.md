@@ -4,7 +4,7 @@ What each package exports, generated from the source by `npm run generate:refere
 what a package is for. These pages say what it offers, what each function refuses, and which
 values are in range.
 
-- `content.md` is `@emi/content`, 21 exported symbols across 5 files.
+- `content.md` is `@emi/content`, 23 exported symbols across 6 files.
 - `crypto.md` is `@emi/crypto`, 114 exported symbols across 8 files.
 - `cycle.md` is `@emi/cycle`, 99 exported symbols across 8 files.
 - `tokens.md` is `@emi/tokens`, 81 exported symbols across 8 files.

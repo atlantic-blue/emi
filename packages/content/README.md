@@ -1,7 +1,7 @@
 # `@emi/content`
 
 The article feed. The package holds the shape of an article, the client that reads one from the
-endpoint, and the rule for how long an answer is held on the device.
+endpoint, and the rule for how long an answer is held while the application runs.
 
 Nothing here imports the application, so the whole path can be driven without starting a screen.
 
@@ -19,11 +19,16 @@ and it answers nothing rather than throwing.
 nothing on every way a call can go wrong. An address of nothing is one of those ways, and it is the
 one every build takes today.
 
-`CachedAnswer`, `ArticleCache` and `isFresh` are the holding rule. `readAnswer` and `writtenAnswer`
-are how a row survives a launch. `memoryCache` is the one a test drives; the application supplies
-one built on its own storage.
+`HeldAnswer`, `ArticleCache` and `isFresh` are the holding rule, and it holds in this process
+alone. Each phase keeps its own answer for twelve hours, so a screen drawn many times in one visit
+asks the endpoint once. A launch starts with nothing held and asks again.
 
-`articleReader` puts the two together: what is already held, then the endpoint.
+`LastShownArticle`, `LastShownStore`, `writtenLastShown` and `readLastShown` are the row the phone
+keeps: the slug of the article she was last shown, and the instant she was shown it. The row does
+not stand in for the article, and it names no cycle phase.
+
+`articleReader` puts them together: what is already held, then the endpoint, and the row written
+with the slug of whatever she was shown.
 
 ## How to run its tests
 

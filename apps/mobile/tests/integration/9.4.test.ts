@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import type { Article, ArticleAnswer, ArticleSource, CachedAnswer } from '@emi/content';
+import type { Article, ArticleAnswer, ArticleSource, LastShownArticle } from '@emi/content';
 import { ARTICLE_TIMEOUT_MILLISECONDS, articleReader, articlesAt } from '@emi/content';
 import type { PhaseName } from '@emi/tokens';
 
@@ -9,7 +9,7 @@ import type { Database } from '../../src/data/database';
 import { migrate } from '../../src/data/schema';
 import { readSetting } from '../../src/data/settingRepository';
 import { articleAddress, articleAddressVariable } from '../../src/features/today/articleAddress';
-import { databaseArticleCache } from '../../src/features/today/articleCache';
+import { databaseLastShownArticle } from '../../src/features/today/lastShownArticle';
 import { openTestDatabase } from '../data/nodeDatabase';
 
 const address = 'https://articles.example';
@@ -30,13 +30,17 @@ function migrated(): Database {
   return database;
 }
 
-/** The reader as the application builds it: the row on the phone, and the endpoint at an address. */
+/**
+ * The reader as the application builds it: the endpoint at an address, the answer held for the
+ * life of this reader, and the row on the phone remembering what she was last shown. A second
+ * reader over the same database is the next launch.
+ */
 function readerOver(
   database: Database,
   source: ArticleSource,
   now: () => Date = () => readAt,
 ): (phase: PhaseName) => Promise<Article | null> {
-  return articleReader({ source, cache: databaseArticleCache(database), now });
+  return articleReader({ source, lastShown: databaseLastShownArticle(database), now });
 }
 
 function answering(answer: ArticleAnswer): {
@@ -54,10 +58,10 @@ function answering(answer: ArticleAnswer): {
   };
 }
 
-function held(database: Database): CachedAnswer | null {
+function remembered(database: Database): LastShownArticle | null {
   const row = readSetting(database, 'articleAnswer');
 
-  return row === undefined ? null : (JSON.parse(row) as CachedAnswer);
+  return row === undefined ? null : (JSON.parse(row) as LastShownArticle);
 }
 
 describe('the article feed comes from an api', () => {
@@ -83,21 +87,20 @@ describe('the article feed comes from an api', () => {
   });
 
   describe('an endpoint that answers', () => {
-    it('draws what it sent, and holds it on the phone with the time it was read', async () => {
+    it('draws what it sent, and remembers it on the phone by its slug', async () => {
       const database = migrated();
       const { send } = answering({ status: 200, body: fromTheEndpoint });
 
       const read = await readerOver(database, articlesAt(address, send))('follicular');
 
       expect(read).toEqual(fromTheEndpoint);
-      expect(held(database)).toEqual({
-        phase: 'follicular',
-        article: fromTheEndpoint,
+      expect(remembered(database)).toEqual({
+        id: 'endpoint-follicular-1',
         readAt: readAt.toISOString(),
       });
     });
 
-    it('is not asked again on the next draw, because the row is read first', async () => {
+    it('is not asked again on the next draw, because the answer is held in this launch', async () => {
       const database = migrated();
       const { send, asked } = answering({ status: 200, body: fromTheEndpoint });
       const read = readerOver(database, articlesAt(address, send));
@@ -156,7 +159,7 @@ describe('the article feed comes from an api', () => {
       await expect(readerOver(database, articlesAt(address, send))('luteal')).resolves.toBeNull();
     });
 
-    it('holds the nothing it was told, so an endpoint that is down is asked once', async () => {
+    it('holds the nothing it was told, so an endpoint that is down is asked once a launch', async () => {
       const database = migrated();
       const { send, asked } = answering({ status: 503, body: null });
       const read = readerOver(database, articlesAt(address, send));
@@ -165,16 +168,12 @@ describe('the article feed comes from an api', () => {
       await read('period');
 
       expect(asked).toHaveLength(1);
-      expect(held(database)).toEqual({
-        phase: 'period',
-        article: null,
-        readAt: readAt.toISOString(),
-      });
+      expect(remembered(database)).toBeNull();
     });
   });
 
-  describe('the row on the phone', () => {
-    it('is read back across a launch, so a second launch draws without a call', async () => {
+  describe('the next launch', () => {
+    it('asks again, because the row does not stand in for the article', async () => {
       const database = migrated();
       const { send, asked } = answering({ status: 200, body: fromTheEndpoint });
 
@@ -183,10 +182,10 @@ describe('the article feed comes from an api', () => {
       const afterALaunch = await readerOver(database, articlesAt(address, send))('follicular');
 
       expect(afterALaunch).toEqual(fromTheEndpoint);
-      expect(asked).toHaveLength(1);
+      expect(asked).toHaveLength(2);
     });
 
-    it('is asked again once the phase has turned', async () => {
+    it('asks again once the phase has turned', async () => {
       const database = migrated();
       const { send, asked } = answering({ status: 200, body: fromTheEndpoint });
       const read = readerOver(database, articlesAt(address, send));
@@ -196,43 +195,6 @@ describe('the article feed comes from an api', () => {
 
       expect(asked).toHaveLength(2);
       expect(next).toBeNull();
-    });
-
-    it.each([
-      ['a line that is not json', 'not json at all'],
-      [
-        'a line whose article is a shape nobody can draw',
-        JSON.stringify({ phase: 'follicular', article: { id: 1 }, readAt: readAt.toISOString() }),
-      ],
-      [
-        'a line that names a phase nobody draws',
-        JSON.stringify({ phase: 'menopause', article: null, readAt: readAt.toISOString() }),
-      ],
-    ])('is thrown away rather than trusted when it holds %s', async (_named, written) => {
-      const database = migrated();
-      const { send, asked } = answering({ status: 200, body: fromTheEndpoint });
-
-      database.run('INSERT INTO setting (key, value) VALUES (?, ?)', ['articleAnswer', written]);
-
-      const read = await readerOver(database, articlesAt(address, send))('follicular');
-
-      expect(read).toEqual(fromTheEndpoint);
-      expect(asked).toHaveLength(1);
-    });
-
-    it('holds nothing she entered about her body', async () => {
-      const database = migrated();
-      const { send } = answering({ status: 200, body: fromTheEndpoint });
-
-      await readerOver(database, articlesAt(address, send))('follicular');
-
-      expect(readSetting(database, 'articleAnswer')).toBe(
-        JSON.stringify({
-          phase: 'follicular',
-          article: fromTheEndpoint,
-          readAt: readAt.toISOString(),
-        }),
-      );
     });
   });
 
