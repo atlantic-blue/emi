@@ -41,10 +41,11 @@ export const POPULATION_SPREAD_DAYS = 2.6;
 export const POPULATION_SPREAD_DEVIATION_DAYS = 2.5;
 
 /**
- * FIGO System 1 also publishes a regularity bound, up to seven days for ages 26 to 41, but it
- * measures shortest cycle to longest cycle rather than a standard deviation. The two numbers are
- * not in the same unit, so it cannot set an edge here. It bounds a period's duration instead, in
- * cycles.ts.
+ * System 1 of the International Federation of Gynecology and Obstetrics also publishes a
+ * regularity bound, up to seven days for ages 26 to 41, but it measures shortest cycle to longest
+ * cycle rather than a standard deviation. The two numbers are not in the same unit, so it cannot
+ * set an edge here. The two figures that paper does set are the bound on a period's duration in
+ * cycles.ts and the cycle length range in published.ts.
  */
 export const HIGH_UP_TO_SPREAD_DAYS = POPULATION_SPREAD_DAYS;
 /** Above this her own cycles vary by more than a standard deviation past the mean of the cohort. */
