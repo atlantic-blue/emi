@@ -59,7 +59,7 @@ colors:
 typography:
   display-lg:
     fontFamily: Newsreader
-    fontSize: 3rem
+    fontSize: 2.75rem
     fontWeight: '400'
     lineHeight: 3.5rem
     letterSpacing: -0.02em
@@ -71,25 +71,25 @@ typography:
     letterSpacing: -0.015em
   headline-lg:
     fontFamily: Newsreader
-    fontSize: 2rem
+    fontSize: 1.75rem
     fontWeight: '400'
-    lineHeight: 2.5rem
+    lineHeight: 2.25rem
     letterSpacing: -0.01em
   headline-md:
     fontFamily: Newsreader
-    fontSize: 1.5rem
-    fontWeight: '500'
-    lineHeight: 2rem
-  headline-sm:
-    fontFamily: Newsreader
     fontSize: 1.25rem
     fontWeight: '500'
-    lineHeight: 1.75rem
+    lineHeight: 1.625rem
+  headline-sm:
+    fontFamily: Newsreader
+    fontSize: 1.125rem
+    fontWeight: '500'
+    lineHeight: 1.5rem
   body-lg:
     fontFamily: Plus Jakarta Sans
-    fontSize: 1.125rem
+    fontSize: 1rem
     fontWeight: '400'
-    lineHeight: 1.75rem
+    lineHeight: 1.5rem
   body-md:
     fontFamily: Plus Jakarta Sans
     fontSize: 1rem
@@ -114,9 +114,9 @@ typography:
     letterSpacing: 0.02em
   data-lg:
     fontFamily: JetBrains Mono
-    fontSize: 1.75rem
+    fontSize: 1.5rem
     fontWeight: '500'
-    lineHeight: 2.25rem
+    lineHeight: 1.875rem
     letterSpacing: -0.03em
   data-md:
     fontFamily: JetBrains Mono

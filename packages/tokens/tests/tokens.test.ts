@@ -67,29 +67,30 @@ describe('the type scale', () => {
     expect(
       typeRoleNames.map((name) => `${name} ${typeScale[name].size}/${typeScale[name].lineHeight}`),
     ).toEqual([
-      'display-lg 48/56',
+      'display-lg 44/56',
       'display-lg-mobile 36/44',
-      'headline-lg 32/40',
-      'headline-md 24/32',
-      'headline-sm 20/28',
-      'body-lg 18/28',
+      'headline-lg 28/36',
+      'headline-md 20/26',
+      'headline-sm 18/24',
+      'body-lg 16/24',
       'body-md 16/24',
       'body-sm 14/20',
       'label-md 14/20',
       'label-sm 12/16',
-      'data-lg 28/36',
+      'data-lg 24/30',
       'data-md 16/24',
       'data-sm 12/16',
     ]);
   });
 
-  it('keeps every line height at or above the floor, apart from the one nobody has decided', () => {
+  it('keeps every line height at or above the floor, with nothing left undecided', () => {
     const cramped = typeRoleNames
       .filter((name) => typeScale[name].lineHeight < typeScale[name].size * LINE_HEIGHT_FLOOR)
       .map((name) => `${name} is ${typeScale[name].lineHeight} on ${typeScale[name].size}`);
 
-    expect(cramped).toEqual(['display-lg is 56 on 48']);
-    expect(lineHeightsNobodyHasDecided).toEqual(['display-lg']);
+    expect(typeRoleNames).toHaveLength(13);
+    expect(cramped).toEqual([]);
+    expect(lineHeightsNobodyHasDecided).toEqual([]);
   });
 
   it('names three faces, and gives each role one of them', () => {

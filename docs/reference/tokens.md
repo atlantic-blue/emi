@@ -924,16 +924,13 @@ text is where it is felt first. Contract TOKEN-3 fixes the number.
 const lineHeightsNobodyHasDecided: readonly TypeRoleName[]
 ```
 
-The one role that sits under the floor, written out rather than allowed as a class.
+A role that sits under the floor, recorded one role at a time rather than allowed as a class, the
+way the corners are recorded in `tools/pipeline/prototype.ts`, so a move on either side reddens
+the check that reads them.
 
-`display-lg` is 48 points over 56, which is 1.167. The design system front matter is read from
-the prototype and is the one place a value is written, and contract TOKEN-3 fixes the floor at
-1.2, so the two disagree and neither side is this step's to move. The same disagreement is in the
-original design, where the display role is 34 over 40, which is 1.176.
-
-It is recorded here one role at a time, the way the corners are recorded in
-`tools/pipeline/prototype.ts`, so a move on either side reddens the check that reads them. The
-decision is the operator's.
+Nothing is under the floor. `display-lg` was the one entry, at 48 points over 56, which is 1.167.
+The design system stage brought the size to 44, so the ratio is 1.273 and it clears the floor
+contract TOKEN-3 fixes at 1.2.
 
 ### `letterSpacingOf`
 

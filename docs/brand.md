@@ -680,17 +680,17 @@ The scale has 13 roles in three faces. The headings are set in Newsreader, the w
 length are set in Plus Jakarta Sans, and every number is set in JetBrains Mono. A line height below
 1.2 times the size fails the token test, and the role that sits under it is named with the rest.
 
-- `display-lg` is 48 points over 56 at weight 400, letter spacing -0.96, which is 1.17 times the size, set in Newsreader.
+- `display-lg` is 44 points over 56 at weight 400, letter spacing -0.88, which is 1.27 times the size, set in Newsreader.
 - `display-lg-mobile` is 36 points over 44 at weight 400, letter spacing -0.54, which is 1.22 times the size, set in Newsreader.
-- `headline-lg` is 32 points over 40 at weight 400, letter spacing -0.32, which is 1.25 times the size, set in Newsreader.
-- `headline-md` is 24 points over 32 at weight 500, which is 1.33 times the size, set in Newsreader.
-- `headline-sm` is 20 points over 28 at weight 500, which is 1.40 times the size, set in Newsreader.
-- `body-lg` is 18 points over 28 at weight 400, which is 1.56 times the size, set in Plus Jakarta Sans.
+- `headline-lg` is 28 points over 36 at weight 400, letter spacing -0.28, which is 1.29 times the size, set in Newsreader.
+- `headline-md` is 20 points over 26 at weight 500, which is 1.30 times the size, set in Newsreader.
+- `headline-sm` is 18 points over 24 at weight 500, which is 1.33 times the size, set in Newsreader.
+- `body-lg` is 16 points over 24 at weight 400, which is 1.50 times the size, set in Plus Jakarta Sans.
 - `body-md` is 16 points over 24 at weight 400, which is 1.50 times the size, set in Plus Jakarta Sans.
 - `body-sm` is 14 points over 20 at weight 400, which is 1.43 times the size, set in Plus Jakarta Sans.
 - `label-md` is 14 points over 20 at weight 600, letter spacing 0.14, which is 1.43 times the size, set in Plus Jakarta Sans.
 - `label-sm` is 12 points over 16 at weight 600, letter spacing 0.24, which is 1.33 times the size, set in Plus Jakarta Sans.
-- `data-lg` is 28 points over 36 at weight 500, letter spacing -0.84, which is 1.29 times the size, set in JetBrains Mono.
+- `data-lg` is 24 points over 30 at weight 500, letter spacing -0.72, which is 1.25 times the size, set in JetBrains Mono.
 - `data-md` is 16 points over 24 at weight 400, letter spacing -0.32, which is 1.50 times the size, set in JetBrains Mono.
 - `data-sm` is 12 points over 16 at weight 500, letter spacing 0.24, which is 1.33 times the size, set in JetBrains Mono.
 

@@ -58,7 +58,7 @@ export interface TypeRole {
  * sixteen points.
  */
 export const typeScale: Readonly<Record<TypeRoleName, TypeRole>> = {
-  'display-lg': { face: 'display', size: 48, lineHeight: 56, letterSpacingEm: -0.02, weight: 400 },
+  'display-lg': { face: 'display', size: 44, lineHeight: 56, letterSpacingEm: -0.02, weight: 400 },
   'display-lg-mobile': {
     face: 'display',
     size: 36,
@@ -66,15 +66,15 @@ export const typeScale: Readonly<Record<TypeRoleName, TypeRole>> = {
     letterSpacingEm: -0.015,
     weight: 400,
   },
-  'headline-lg': { face: 'display', size: 32, lineHeight: 40, letterSpacingEm: -0.01, weight: 400 },
-  'headline-md': { face: 'display', size: 24, lineHeight: 32, letterSpacingEm: 0, weight: 500 },
-  'headline-sm': { face: 'display', size: 20, lineHeight: 28, letterSpacingEm: 0, weight: 500 },
-  'body-lg': { face: 'text', size: 18, lineHeight: 28, letterSpacingEm: 0, weight: 400 },
+  'headline-lg': { face: 'display', size: 28, lineHeight: 36, letterSpacingEm: -0.01, weight: 400 },
+  'headline-md': { face: 'display', size: 20, lineHeight: 26, letterSpacingEm: 0, weight: 500 },
+  'headline-sm': { face: 'display', size: 18, lineHeight: 24, letterSpacingEm: 0, weight: 500 },
+  'body-lg': { face: 'text', size: 16, lineHeight: 24, letterSpacingEm: 0, weight: 400 },
   'body-md': { face: 'text', size: 16, lineHeight: 24, letterSpacingEm: 0, weight: 400 },
   'body-sm': { face: 'text', size: 14, lineHeight: 20, letterSpacingEm: 0, weight: 400 },
   'label-md': { face: 'text', size: 14, lineHeight: 20, letterSpacingEm: 0.01, weight: 600 },
   'label-sm': { face: 'text', size: 12, lineHeight: 16, letterSpacingEm: 0.02, weight: 600 },
-  'data-lg': { face: 'data', size: 28, lineHeight: 36, letterSpacingEm: -0.03, weight: 500 },
+  'data-lg': { face: 'data', size: 24, lineHeight: 30, letterSpacingEm: -0.03, weight: 500 },
   'data-md': { face: 'data', size: 16, lineHeight: 24, letterSpacingEm: -0.02, weight: 400 },
   'data-sm': { face: 'data', size: 12, lineHeight: 16, letterSpacingEm: 0.02, weight: 500 },
 };
@@ -103,18 +103,15 @@ export const typeRoleNames: readonly TypeRoleName[] = [
 export const LINE_HEIGHT_FLOOR = 1.2;
 
 /**
- * The one role that sits under the floor, written out rather than allowed as a class.
+ * A role that sits under the floor, recorded one role at a time rather than allowed as a class, the
+ * way the corners are recorded in `tools/pipeline/prototype.ts`, so a move on either side reddens
+ * the check that reads them.
  *
- * `display-lg` is 48 points over 56, which is 1.167. The design system front matter is read from
- * the prototype and is the one place a value is written, and contract TOKEN-3 fixes the floor at
- * 1.2, so the two disagree and neither side is this step's to move. The same disagreement is in the
- * original design, where the display role is 34 over 40, which is 1.176.
- *
- * It is recorded here one role at a time, the way the corners are recorded in
- * `tools/pipeline/prototype.ts`, so a move on either side reddens the check that reads them. The
- * decision is the operator's.
+ * Nothing is under the floor. `display-lg` was the one entry, at 48 points over 56, which is 1.167.
+ * The design system stage brought the size to 44, so the ratio is 1.273 and it clears the floor
+ * contract TOKEN-3 fixes at 1.2.
  */
-export const lineHeightsNobodyHasDecided: readonly TypeRoleName[] = ['display-lg'];
+export const lineHeightsNobodyHasDecided: readonly TypeRoleName[] = [];
 
 /**
  * React Native measures letter spacing in points and the design system measures it in em, which is
