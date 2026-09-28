@@ -43,17 +43,19 @@ export function takeThePhaseOffTheArticleAnswer(db: Database): ArticleAnswerOutc
     return { move: 'no-row-to-rewrite' };
   }
 
-  const alreadyWithoutIt = readLastShown(held);
+  const read = readLastShown(held);
 
-  if (alreadyWithoutIt !== null) {
-    return { move: 'already-holds-the-slug', id: alreadyWithoutIt.id };
+  // The row has to be the line this build writes, and not merely a line this build can read. A row
+  // that reads back as the two fields while carrying a third still holds whatever that third is.
+  if (read !== null && held === writtenLastShown(read)) {
+    return { move: 'already-holds-the-slug', id: read.id };
   }
 
   // The plain row is about to be replaced or dropped, and what SQLite lets go of stays in the file
   // unless this is on. The rebuild the launch runs afterwards is the half this does not cover.
   writeOverWhatIsRemoved(db);
 
-  const named = theArticleTheOldRowNames(held);
+  const named = read ?? theArticleTheOldRowNames(held);
 
   if (named === null) {
     db.run('DELETE FROM setting WHERE key = ?', [articleAnswerKey]);

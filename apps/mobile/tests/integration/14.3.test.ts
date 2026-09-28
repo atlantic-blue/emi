@@ -327,6 +327,47 @@ describe('a launch pass takes the phase off the phones that already hold it', ()
     });
   });
 
+  describe('a row that reads back as the two fields and carries a third', () => {
+    it('is rewritten, because the row must be the line this build writes', () => {
+      const phone = aPhoneThatDrewAnArticle(
+        directory,
+        JSON.stringify({
+          id: theArticleSheWasShown.id,
+          readAt: sheWasShownItAt,
+          phase: thePhaseTheOldBuildRecorded,
+        }),
+      );
+
+      expect(takeThePhaseOffTheArticleAnswer(phone.database)).toEqual({
+        move: 'rewritten-as-the-slug',
+        id: theArticleSheWasShown.id,
+      });
+
+      expect(theRow(phone.database)).toBe(
+        `{"id":"${theArticleSheWasShown.id}","readAt":"${sheWasShownItAt}"}`,
+      );
+      phone.close();
+    });
+
+    it('leaves no phase in the file once the launch has run', () => {
+      const hers = phaseWordsThatAreHersAlone(directory);
+      const phone = aPhoneThatDrewAnArticle(
+        directory,
+        JSON.stringify({
+          id: theArticleSheWasShown.id,
+          readAt: sheWasShownItAt,
+          phase: thePhaseTheOldBuildRecorded,
+        }),
+      );
+      expect(theFileHolds(phone.path, thePhaseTheOldBuildRecorded)).toBe(true);
+
+      runTheLaunchPasses(phone.database, herVaults(), sheOpenedItAt);
+
+      expect(hers.filter((name) => theFileHolds(phone.path, name))).toEqual([]);
+      phone.close();
+    });
+  });
+
   describe('what the launch pays for the pass', () => {
     it('rebuilds the file once on the launch that rewrote the row', () => {
       const phone = aPhoneThatDrewAnArticle(directory);
