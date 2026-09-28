@@ -18,6 +18,8 @@ claim against the code that makes it. These documents are the readable half of t
   is generated from `packages/tokens`, so nobody edits it by hand.
 - `reference/` holds one page for each package: every exported symbol, its signature, and the
   comment that sits on it in the source. It is generated too.
+- `design/mockups/` holds the approved mockups stage: 52 screens drawn as markup, and the check
+  that holds a rendered screen against the drawing it names.
 - `design/` holds the designs and the reviews that are not part of the eight documents above.
   `design/structure-review-2026-09-20.md` reads the shape of the code on one day: the
   measurements, eight findings, and a numbered path the operator chooses from. It changes no
@@ -90,6 +92,18 @@ reader a line and tells them nothing.
 
 A workspace joins the reference by offering `src/index.ts`. `apps/mobile` offers none: it is
 screens, and nobody imports it.
+
+## The check on the mockups
+
+Every screen was drawn before it was built, and a step that builds one is proved against its
+drawing. The drawings are `design/mockups/flows.json`, and `design/mockups/README.md` says what is
+in it and what reads it.
+
+    npm run check:mockups
+
+It fails on a stage that arrives short of the 52 screens it delivered, on a screen key a test names
+and the stage does not hold, on a screen whose drawing names no part, and on a run where no test
+named a screen at all.
 
 ## Running the check on a machine with no bundled browser
 
