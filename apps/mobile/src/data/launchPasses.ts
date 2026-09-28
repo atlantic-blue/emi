@@ -7,11 +7,15 @@ import {
   type CycleLengthOutcome,
   moveCycleLengthIntoProfile,
 } from './migrations/006-cycle-length-into-profile';
+import {
+  type ArticleAnswerOutcome,
+  takeThePhaseOffTheArticleAnswer,
+} from './migrations/007-article-answer-without-the-phase';
 
 /**
- * The two passes that cannot be statements, run together on the launch that holds her key.
+ * The three passes that cannot be statements, run together on the launch that holds her key.
  *
- * They are run in one place because the file is rebuilt once for both of them rather than once
+ * They are run in one place because the file is rebuilt once for all of them rather than once
  * each: a rebuild writes every page of her history out again, and a launch that has moved nothing
  * must not pay for one at all.
  */
@@ -19,6 +23,7 @@ import {
 export interface LaunchOutcome {
   readonly days: EncryptOutcome;
   readonly cycleLength: CycleLengthOutcome;
+  readonly articleAnswer: ArticleAnswerOutcome;
   /** Whether the file was written again, which is what takes the plain copies out of it. */
   readonly fileRebuilt: boolean;
 }
@@ -32,13 +37,15 @@ export interface HerVaults {
 export function runTheLaunchPasses(db: Database, vaults: HerVaults, now: Date): LaunchOutcome {
   const days = encryptPlainPayloads(db, vaults.day, now);
   const cycleLength = moveCycleLengthIntoProfile(db, vaults.profile, now);
-  const moved = days.sealed > 0 || tookThePlainKeyOut(cycleLength);
+  const articleAnswer = takeThePhaseOffTheArticleAnswer(db);
+  const moved =
+    days.sealed > 0 || tookThePlainKeyOut(cycleLength) || tookThePhaseOut(articleAnswer);
 
   if (moved) {
     rebuildTheFile(db);
   }
 
-  return { days, cycleLength, fileRebuilt: moved };
+  return { days, cycleLength, articleAnswer, fileRebuilt: moved };
 }
 
 /**
@@ -47,4 +54,12 @@ export function runTheLaunchPasses(db: Database, vaults: HerVaults, now: Date): 
  */
 function tookThePlainKeyOut(outcome: CycleLengthOutcome): boolean {
   return outcome.move === 'sealed-into-the-profile' || outcome.move === 'already-in-the-profile';
+}
+
+/**
+ * The rewrite replaced the row and the removal dropped it, and the file holds the old copy of it
+ * either way. A row this build wrote, and a phone that drew no article, have nothing to clear.
+ */
+function tookThePhaseOut(outcome: ArticleAnswerOutcome): boolean {
+  return outcome.move === 'rewritten-as-the-slug' || outcome.move === 'removed';
 }

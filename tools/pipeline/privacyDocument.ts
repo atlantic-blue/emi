@@ -132,3 +132,46 @@ export function plainValueProblems(
 ): string[] {
   return problemsFor(markdown, plainHeading, values, ['Lives', 'What a reader learns']);
 }
+
+/** The text under a second level heading, before the first third level heading under it. */
+export function openingUnder(markdown: string, heading: string): string {
+  const from = markdown.indexOf(`## ${heading}`);
+
+  if (from === -1) {
+    return '';
+  }
+
+  const rest = markdown.slice(from);
+  const to = rest.indexOf('\n### ');
+
+  return to === -1 ? rest : rest.slice(0, to);
+}
+
+/** What the document must say the setting table's article row holds today. */
+export const articleRowHolds = 'as its identifier and the instant she read it';
+
+/** What that row held before the launch pass, and what the document may no longer say of it. */
+export const articleRowNoLongerHolds = 'records the cycle phase';
+
+/**
+ * The article row of the setting table held a cycle phase, and the opening of the plain value
+ * section said so. A launch takes that phase off every phone, so a document that still says the row
+ * records one names a plain value the phone does not keep. That is worse than naming none, because a
+ * reader trusts the list to be the whole list.
+ */
+export function articleRowProblems(markdown: string): string[] {
+  const opening = openingUnder(markdown, plainHeading);
+  const problems: string[] = [];
+
+  if (!opening.includes(articleRowHolds)) {
+    problems.push(`${privacyDocument} does not say the article row holds it "${articleRowHolds}"`);
+  }
+
+  if (opening.includes(articleRowNoLongerHolds)) {
+    problems.push(
+      `${privacyDocument} still says the article row "${articleRowNoLongerHolds}", and a launch takes it off`,
+    );
+  }
+
+  return problems;
+}
