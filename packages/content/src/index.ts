@@ -7,4 +7,5 @@ export const packageName = '@emi/content';
 export * from './article';
 export * from './cache';
 export * from './client';
+export * from './lastShown';
 export * from './reader';
