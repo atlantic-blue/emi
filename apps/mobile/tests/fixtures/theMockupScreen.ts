@@ -8,6 +8,7 @@ import {
   promiseLineTestID,
   thePromiseTestID,
 } from '../../src/features/onboarding/ThePromise';
+import { settingsTitleTestID } from '../../src/features/settings/SettingsScreen';
 
 /**
  * A rendered screen, held against the drawing it names.
@@ -56,6 +57,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     promiseLineTestID('delete'),
   ],
   PrimaryButton: [promiseActionTestID],
+  Text: [settingsTitleTestID],
   ThePromise: [thePromiseTestID],
 };
 

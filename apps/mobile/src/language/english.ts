@@ -438,7 +438,7 @@ export const english = {
     'Emi could not reach the server to take your account off it. Nothing can open what is up there now: the only key was on this phone, and it went with your days.',
   'settings.settings.back': 'Back',
   'settings.settings.delete': 'Delete everything',
-  'settings.settings.title': 'Settings',
+  'settings.settings.title': 'Privacy',
   'tab.insights': 'Insights',
   'tab.log': 'Log',
   'tab.privacy': 'Privacy',

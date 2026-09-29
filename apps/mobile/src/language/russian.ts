@@ -449,7 +449,7 @@ export const russian: CatalogueIn<'ru'> = {
     'Emi не смогла связаться с сервером, чтобы убрать вашу учётную запись. Теперь то, что там осталось, не открыть ничем: единственный ключ был на этом телефоне и ушёл вместе с вашими днями.',
   'settings.settings.back': 'Назад',
   'settings.settings.delete': 'Удалить всё',
-  'settings.settings.title': 'Настройки',
+  'settings.settings.title': 'Приватность',
   'tab.insights': 'Обзор',
   'tab.log': 'Запись',
   'tab.privacy': 'Приватность',
