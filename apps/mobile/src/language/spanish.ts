@@ -439,7 +439,7 @@ export const spanish: CatalogueIn<'es'> = {
     'Emi no pudo llegar al servidor para quitar tu cuenta de él. Nada puede abrir lo que hay allí ahora: la única clave estaba en este teléfono, y se fue con tus días.',
   'settings.settings.back': 'Atrás',
   'settings.settings.delete': 'Borrarlo todo',
-  'settings.settings.title': 'Ajustes',
+  'settings.settings.title': 'Privacidad',
   'tab.insights': 'Análisis',
   'tab.log': 'Registro',
   'tab.privacy': 'Privacidad',

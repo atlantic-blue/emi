@@ -6,6 +6,7 @@ import { Screen } from '../../components/Screen';
 import { settingsCopy } from './copy';
 
 export const settingsScreenTestID = 'settings-screen';
+export const settingsTitleTestID = 'settings-title';
 export const settingsDeleteTestID = 'settings-delete';
 export const settingsBackTestID = 'settings-back';
 
@@ -19,7 +20,7 @@ export function SettingsScreen({ onDelete, onBack }: Props): ReactNode {
   return (
     <Screen testID={settingsScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" style={styles.title} testID={settingsTitleTestID}>
           {settingsCopy.settings.title}
         </Text>
 
