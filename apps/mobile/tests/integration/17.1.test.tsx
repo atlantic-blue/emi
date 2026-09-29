@@ -65,7 +65,11 @@ function theColumnLabel(): string {
 async function sheOpensIt(): Promise<void> {
   await render(
     <OnAPhone>
-      <SettingsScreen onBack={() => undefined} onDelete={() => undefined} />
+      <SettingsScreen
+        onBack={() => undefined}
+        onDelete={() => undefined}
+        onExport={() => undefined}
+      />
     </OnAPhone>,
   );
 }

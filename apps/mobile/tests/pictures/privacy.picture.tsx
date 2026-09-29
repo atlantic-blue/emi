@@ -6,9 +6,9 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
 /**
- * The screen the fourth column of the dock opens, drawn for somebody to look at. The heading is
- * the subject of the picture: the dock names this place, and a word is the one thing a reader
- * checks with their eyes that a test can only compare.
+ * The screen the fourth column of the dock opens, drawn for somebody to look at. The four rows are
+ * the subject of the picture: which of them is faded, which of them carries a line under its name,
+ * and how much room a thumb is given, are all things a reader checks with their eyes.
  *
  * It is not part of the suite: the file is named for a picture rather than for a test, and the
  * runner is pointed at it by `npm run generate:privacy-picture`.
@@ -24,8 +24,10 @@ const theCaveat = [
 ].join(' ');
 
 const theTitle = 'The screen the dock opens';
-const theNote =
-  'It holds one row today, and that row deletes everything. The heading names the place.';
+const theNote = [
+  'Four rows: her answers, the lock, the export and the way out. Her answers is faded because',
+  'nothing opens behind it yet, and it carries no line promising a screen that is absent.',
+].join(' ');
 
 const screens: DrawnScreen[] = [];
 
@@ -33,7 +35,11 @@ describe('the screen the dock opens, drawn for somebody to look at', () => {
   it('renders it', async () => {
     const view = await render(
       <OnAPhone>
-        <SettingsScreen onBack={() => undefined} onDelete={() => undefined} />
+        <SettingsScreen
+          onBack={() => undefined}
+          onDelete={() => undefined}
+          onExport={() => undefined}
+        />
       </OnAPhone>,
     );
     // A copy, taken before the screen is torn down, with the harness's own provider left out.

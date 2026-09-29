@@ -2,7 +2,13 @@ import { join } from 'node:path';
 
 import { screen } from '@testing-library/react-native';
 
-import { type Mockups, mockupsIn, partsOfTheScreen } from '../../../../tools/pipeline/mockups';
+import {
+  type MockupRow,
+  type Mockups,
+  mockupsIn,
+  partsOfTheScreen,
+  rowsOfTheScreen,
+} from '../../../../tools/pipeline/mockups';
 import {
   promiseActionTestID,
   promiseLineTestID,
@@ -77,6 +83,18 @@ export function thePartsOfTheMockup(
     builtUnder: identifiers[name] ?? [],
     name,
   }));
+}
+
+/**
+ * The rows one drawing places, in its order, each one carrying where the drawing sends it.
+ *
+ * A screen of rows is held to this as well as to its parts, because a part is named by a
+ * `data-component` and a row the drawing sends nowhere carries none. The lock row of Privacy is
+ * exactly that, and a comparison that read the parts alone would let it be taken off the built
+ * screen without a word.
+ */
+export function theRowsOfTheMockup(key: string): MockupRow[] {
+  return rowsOfTheScreen(theStage(), key);
 }
 
 /** Every test identifier the screen on the glass draws, in the order the screen draws them. */

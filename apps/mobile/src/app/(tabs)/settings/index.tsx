@@ -7,6 +7,10 @@ export default function SettingsRoute(): ReactNode {
   const router = useRouter();
 
   return (
-    <SettingsScreen onBack={() => router.back()} onDelete={() => router.push('/settings/delete')} />
+    <SettingsScreen
+      onBack={() => router.back()}
+      onDelete={() => router.push('/settings/delete')}
+      onExport={() => router.push('/export')}
+    />
   );
 }
