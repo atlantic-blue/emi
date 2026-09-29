@@ -15,6 +15,10 @@ import {
   thePromiseTestID,
 } from '../../src/features/onboarding/ThePromise';
 import { settingsTitleTestID } from '../../src/features/settings/SettingsScreen';
+import {
+  yourAnswersBackTestID,
+  yourAnswersTitleTestID,
+} from '../../src/features/settings/YourAnswers';
 
 /**
  * A rendered screen, held against the drawing it names.
@@ -63,7 +67,8 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     promiseLineTestID('delete'),
   ],
   PrimaryButton: [promiseActionTestID],
-  Text: [settingsTitleTestID],
+  Text: [settingsTitleTestID, yourAnswersTitleTestID],
+  TextLink: [yourAnswersBackTestID],
   ThePromise: [thePromiseTestID],
 };
 

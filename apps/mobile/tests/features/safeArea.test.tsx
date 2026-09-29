@@ -27,12 +27,14 @@ import {
   deletedScreenTestID,
 } from '../../src/features/settings/DeleteEverything';
 import { SettingsScreen, settingsScreenTestID } from '../../src/features/settings/SettingsScreen';
+import { YourAnswers, yourAnswersScreenTestID } from '../../src/features/settings/YourAnswers';
 import {
   OnAPhone,
   aPhoneWithAnIsland,
   aPhoneWithNoIsland,
   screensDrawingUnderTheIsland,
 } from '../fixtures/theSafeArea';
+import { aProfileRecord } from '../fixtures/profileRecord';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 
@@ -135,7 +137,13 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
   ],
   [
     settingsScreenTestID,
-    (): ReactElement => <SettingsScreen onBack={nothing} onDelete={nothing} onExport={nothing} />,
+    (): ReactElement => (
+      <SettingsScreen onAnswers={nothing} onBack={nothing} onDelete={nothing} onExport={nothing} />
+    ),
+  ],
+  [
+    yourAnswersScreenTestID,
+    (): ReactElement => <YourAnswers answers={aProfileRecord()} onBack={nothing} />,
   ],
   [
     deleteScreenTestID,
@@ -289,7 +297,14 @@ describe('every screen respects the safe area', () => {
 
     it('refuses to draw at all when it is rendered outside the provider', async () => {
       await expect(
-        render(<SettingsScreen onBack={nothing} onDelete={nothing} onExport={nothing} />),
+        render(
+          <SettingsScreen
+            onAnswers={nothing}
+            onBack={nothing}
+            onDelete={nothing}
+            onExport={nothing}
+          />,
+        ),
       ).rejects.toThrow(/SafeAreaProvider/);
     });
   });

@@ -81,7 +81,7 @@ The contracts it builds:
 - `TABLE-1` the day log table, its eight columns, its unique day and the revision that rises on
   every write.
 - `SCREEN-1` the first run, with no account and no email address, ending at the hold that writes
-  every answer at once.
+  every answer at once. Feature 17 adds the way back to every answer she gave.
 - `SCREEN-2` the home screen, with the ring, the cycle day and the phase name. Feature 3 adds the
   forecast range.
 - `SCREEN-4` a past day, opened, read and edited, with the ring redrawn.
