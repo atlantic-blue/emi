@@ -407,8 +407,10 @@ function insideASentence(label: string): string {
  * Her groups, joined the way a sentence names them. `Intl.ListFormat` is the obvious way and the
  * engine the application runs on does not carry it: Hermes ships the collator, the date format and
  * the number format and no more, so that call is undefined on a phone and correct under the runner.
+ * It is exported because the screen that reads her first run back to her names the same groups
+ * in the same sentence, and two joinings would put the comma in two places.
  */
-function namesOf(groups: readonly Focus[]): string {
+export function focusNamesInASentence(groups: readonly Focus[]): string {
   const named = groups.map((group, at) =>
     at === 0 ? focusLabels[group] : insideASentence(focusLabels[group]),
   );
@@ -432,5 +434,7 @@ export function whatComesFirstWhenSheLogs(groups: readonly Focus[]): string {
     return whatEmiDoesCopy.log.usual;
   }
 
-  return words('onboarding.whatEmiDoes.log.chosen', groups.length, { groups: namesOf(groups) });
+  return words('onboarding.whatEmiDoes.log.chosen', groups.length, {
+    groups: focusNamesInASentence(groups),
+  });
 }

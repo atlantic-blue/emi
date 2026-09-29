@@ -66,6 +66,7 @@ async function sheOpensIt(): Promise<void> {
   await render(
     <OnAPhone>
       <SettingsScreen
+        onAnswers={() => undefined}
         onBack={() => undefined}
         onDelete={() => undefined}
         onExport={() => undefined}
@@ -85,9 +86,12 @@ function everythingSheReads(): string {
 describe('the screen she reaches from the dock takes the name Privacy', () => {
   describe('the drawing the screen is held to', () => {
     it('places a heading first, and says what the built heading is drawn under', () => {
-      expect(theHeadingOfTheDrawing()).toEqual([
-        { builtUnder: [settingsTitleTestID], name: 'Text' },
-      ]);
+      const [heading] = theHeadingOfTheDrawing();
+
+      expect(heading?.name).toBe('Text');
+      // Every screen heads itself with the same drawn part, so the record carries one identifier
+      // for each heading built. What this step needs is that its own is on the list.
+      expect(heading?.builtUnder).toContain(settingsTitleTestID);
     });
 
     it('places more than the heading, and the rest of it is not this step', () => {

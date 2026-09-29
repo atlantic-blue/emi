@@ -35,22 +35,20 @@ interface RowProps {
   readonly lead: string;
   /** What the row does, under its name. Left out where there is nothing true to say yet. */
   readonly line?: string;
-  /** Left out by a row that opens nothing, which is the lock and her answers. */
+  /** Left out by a row that opens nothing, which is the lock. */
   readonly onPress?: () => void;
-  /** A row that will open something and cannot yet. It refuses a press and says so to a reader. */
-  readonly comingLater?: boolean;
 }
 
-function Row({ row, lead, line, onPress, comingLater = false }: RowProps): ReactNode {
+function Row({ row, lead, line, onPress }: RowProps): ReactNode {
   const testID = settingsRowTestID(row);
   const words = (
     <>
-      <Text style={comingLater ? styles.rowLeadComingLater : styles.rowLead}>{lead}</Text>
+      <Text style={styles.rowLead}>{lead}</Text>
       {line === undefined ? null : <Text style={styles.rowLine}>{line}</Text>}
     </>
   );
 
-  if (onPress === undefined && !comingLater) {
+  if (onPress === undefined) {
     return (
       <View style={styles.row} testID={testID}>
         {words}
@@ -59,14 +57,7 @@ function Row({ row, lead, line, onPress, comingLater = false }: RowProps): React
   }
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ disabled: comingLater }}
-      disabled={comingLater}
-      onPress={onPress}
-      style={styles.row}
-      testID={testID}
-    >
+    <Pressable accessibilityRole="button" onPress={onPress} style={styles.row} testID={testID}>
       {words}
     </Pressable>
   );
@@ -79,10 +70,12 @@ function Row({ row, lead, line, onPress, comingLater = false }: RowProps): React
  * that cannot be undone should not be the only thing she can reach from this screen.
  */
 export function SettingsScreen({
+  onAnswers,
   onExport,
   onDelete,
   onBack,
 }: {
+  readonly onAnswers: () => void;
   readonly onExport: () => void;
   readonly onDelete: () => void;
   readonly onBack: () => void;
@@ -94,7 +87,12 @@ export function SettingsScreen({
           {settingsCopy.settings.title}
         </Text>
 
-        <Row comingLater lead={settingsCopy.settings.rows.answers.lead} row="answers" />
+        <Row
+          lead={settingsCopy.settings.rows.answers.lead}
+          line={settingsCopy.settings.rows.answers.line}
+          onPress={onAnswers}
+          row="answers"
+        />
         <Row
           lead={settingsCopy.settings.rows.lock.lead}
           line={settingsCopy.settings.rows.lock.line}
@@ -153,10 +151,6 @@ const styles = StyleSheet.create({
   },
   rowLead: {
     color: colour.onSurface,
-    ...textStyle('body-lg'),
-  },
-  rowLeadComingLater: {
-    color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
   },
   rowLine: {
