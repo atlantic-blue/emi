@@ -31,7 +31,6 @@ export const specimenSentences: Readonly<Record<TypeRoleName, string>> = {
   'headline-md': 'Nothing to draw yet.',
   'headline-sm': 'Your cycle is worked out on this phone.',
   'body-lg': 'Predicted on your phone. Encrypted at rest. Shared with nobody.',
-  'body-md': 'Emi tells you what it actually knows.',
   'body-sm': 'The ring needs a period. Log a day you bled and it appears.',
   'label-md': 'DAY 14 / CYCLE 29 DAYS',
   'label-sm': 'STEP 1 OF 3',
@@ -215,8 +214,8 @@ export function Specimen({ fontsBase }: { fontsBase: string }): Html {
           Emi type specimen
         </div>
         <div class={`${faceClass(interfaceFace)} ${sizeClass('body-sm')}`}>
-          Three faces, thirteen roles, two weights each. Every sentence is one Emi writes. A point
-          is drawn as a pixel, and the sizes are the ones in the token package.
+          Three faces, twelve roles, two weights each. Every sentence is one Emi writes. A point is
+          drawn as a pixel, and the sizes are the ones in the token package.
         </div>
         {(Object.keys(face) as FaceName[]).map((faceName) => (
           <Family faceName={faceName} />

@@ -90,11 +90,6 @@ typography:
     fontSize: 1rem
     fontWeight: '400'
     lineHeight: 1.5rem
-  body-md:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 1rem
-    fontWeight: '400'
-    lineHeight: 1.5rem
   body-sm:
     fontFamily: Plus Jakarta Sans
     fontSize: 0.875rem
@@ -224,8 +219,7 @@ every role.
   reflection, the entry date, a cycle milestone and a section title. The roles are `display-lg`,
   `display-lg-mobile`, `headline-lg`, `headline-md` and `headline-sm`.
 - **Body and controls**: Plus Jakarta Sans. A geometric sans with open tracking, for symptom notes,
-  insights and button text. The roles are `body-lg`, `body-md`, `body-sm`, `label-md` and
-  `label-sm`.
+  insights and button text. The roles are `body-lg`, `body-sm`, `label-md` and `label-sm`.
 - **Numbers and measurements**: JetBrains Mono. Monospaced figures for a cycle day, a calendar grid,
   a temperature and a duration. The roles are `data-lg`, `data-md` and `data-sm`. A figure that is
   monospaced does not move as it changes.
@@ -304,7 +298,7 @@ Two corners carry the interface, and both are named in the `rounded` block of th
 - A `surface-container-lowest` ground, the `lg` corner, a one point border in `outline-variant`, and
   `space-md` of padding inside it.
 - The focused state draws a one point ring in `primary-container`.
-- The text she types is `body-md`. The prompt above it is a headline role, so it is set in
+- The text she types is `body-lg`. The prompt above it is a headline role, so it is set in
   Newsreader.
 
 ### Checkboxes and radio controls

@@ -251,7 +251,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
         borderWidth: stroke.hairline,
         color: colour.onSurface,
         padding: space.spaceMd,
-        ...textStyle('body-md'),
+        ...textStyle('body-lg'),
       });
     });
 

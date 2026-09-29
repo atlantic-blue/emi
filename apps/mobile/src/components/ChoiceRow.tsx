@@ -103,12 +103,12 @@ const styles = StyleSheet.create({
   label: {
     color: colour.onSurfaceVariant,
     flexShrink: 1,
-    ...textStyle('body-md'),
+    ...textStyle('body-lg'),
   },
   labelChosen: {
     color: colour.onSurface,
     flexShrink: 1,
-    ...textStyle('body-md'),
+    ...textStyle('body-lg'),
   },
   radio: {
     alignItems: 'center',

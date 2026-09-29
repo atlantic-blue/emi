@@ -676,7 +676,7 @@ it covers every fill rather than the ones that measure badly.
 
 Status: built
 
-The scale has 13 roles in three faces. The headings are set in Newsreader, the words she reads at
+The scale has 12 roles in three faces. The headings are set in Newsreader, the words she reads at
 length are set in Plus Jakarta Sans, and every number is set in JetBrains Mono. A line height below
 1.2 times the size fails the token test, and the role that sits under it is named with the rest.
 
@@ -686,7 +686,6 @@ length are set in Plus Jakarta Sans, and every number is set in JetBrains Mono. 
 - `headline-md` is 20 points over 26 at weight 500, which is 1.30 times the size, set in Newsreader.
 - `headline-sm` is 18 points over 24 at weight 500, which is 1.33 times the size, set in Newsreader.
 - `body-lg` is 16 points over 24 at weight 400, which is 1.50 times the size, set in Plus Jakarta Sans.
-- `body-md` is 16 points over 24 at weight 400, which is 1.50 times the size, set in Plus Jakarta Sans.
 - `body-sm` is 14 points over 20 at weight 400, which is 1.43 times the size, set in Plus Jakarta Sans.
 - `label-md` is 14 points over 20 at weight 600, letter spacing 0.14, which is 1.43 times the size, set in Plus Jakarta Sans.
 - `label-sm` is 12 points over 16 at weight 600, letter spacing 0.24, which is 1.33 times the size, set in Plus Jakarta Sans.

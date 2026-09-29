@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     color: colour.onSurface,
     minHeight: FIELD_HEIGHT,
     padding: space.spaceMd,
-    ...textStyle('body-md'),
+    ...textStyle('body-lg'),
   },
   field: { gap: space.spaceSm },
   focused: { borderColor: colour.primaryContainer },

@@ -84,7 +84,7 @@ Sans carries what she reads at length, and JetBrains Mono carries a number, a un
 Thirteen roles, each with the line height the token package fixes, and every sentence on the page is
 one Emi writes.
 
-![The type specimen: three faces across thirteen roles, in two weights each](../brand/specimen/specimen.png)
+![The type specimen: three faces across twelve roles, in two weights each](../brand/specimen/specimen.png)
 
 Drawn by its own generator, rather than under the test runner. `npm run generate:specimen` reads the
 type scale and the font files from `packages/tokens`, so the page cannot name a size the application

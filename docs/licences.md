@@ -44,8 +44,8 @@ heavy at 48 points, the replacement is the 72pt cut at the same two weights.
 
 Status: built
 
-Every sentence and every label. The design system sets `body-lg`, `body-md`, `body-sm`, `label-md`
-and `label-sm` in it.
+Every sentence and every label. The design system sets `body-lg`, `body-sm`, `label-md` and
+`label-sm` in it.
 
 Licence: SIL Open Font License, Version 1.1, in
 `apps/mobile/assets/fonts/plus-jakarta-sans/OFL.txt`.

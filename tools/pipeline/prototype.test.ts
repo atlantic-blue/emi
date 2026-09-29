@@ -20,6 +20,7 @@ import {
   prototypeReadme,
   proseOf,
   radiiTheExportKeeps,
+  roleTheExportKeeps,
   sectionUnder,
   sourceScreen,
   type Theme,
@@ -54,6 +55,12 @@ const colourNames = Object.keys(prototype.colours);
 const spacingNames = Object.keys(prototype.spacing);
 const roleNames = Object.keys(prototype.type);
 
+/** The name the export keeps and the design system retired, read out of the recorded sentences. */
+const retiredRole = String(roleTheExportKeeps[0]?.split(' ')[0]);
+
+/** The roles both sides still name, which is the set the two are compared over role by role. */
+const sharedRoleNames = roleNames.filter((name) => name !== retiredRole);
+
 /** The palette the configuration names, which is the palette without the eight phase colours. */
 const describedWithoutPhases = Object.keys(described.colours).filter(
   (name) => !phaseColourNames.includes(name),
@@ -65,6 +72,7 @@ describe('the design system says what the prototype draws', () => {
     expect(Object.keys(described.colours)).toHaveLength(47 + phaseColourNames.length);
     expect(spacingNames).toHaveLength(11);
     expect(roleNames).toHaveLength(13);
+    expect(sharedRoleNames).toHaveLength(12);
     expect(prototype.type['display-lg']?.fontSize).toBe('2.75rem');
     expect(prototype.type['data-lg']?.fontFamily).toBe('JetBrains Mono');
   });
@@ -81,7 +89,7 @@ describe('the design system says what the prototype draws', () => {
   it('names the same colours, the same spacing steps and the same type roles', () => {
     expect(describedWithoutPhases.sort()).toEqual([...colourNames].sort());
     expect(Object.keys(described.spacing).sort()).toEqual([...spacingNames].sort());
-    expect(Object.keys(described.type).sort()).toEqual([...roleNames].sort());
+    expect(Object.keys(described.type).sort()).toEqual([...sharedRoleNames].sort());
   });
 
   it.each(colourNames)('holds the prototype value for colour %s', (name) => {
@@ -92,15 +100,17 @@ describe('the design system says what the prototype draws', () => {
     expect(described.spacing[name]).toBe(prototype.spacing[name]);
   });
 
-  it.each(roleNames)(
+  it.each(sharedRoleNames)(
     'draws %s at the size, line height, tracking and weight of the prototype',
     (name) => {
       expect(described.type[name]).toEqual(prototype.type[name]);
     },
   );
 
-  it('agrees about everything, apart from the radii nobody has decided yet', () => {
-    expect(disagreements(prototype, described)).toEqual([...radiiTheExportKeeps]);
+  it('agrees about everything, apart from the radii and the one role the export keeps', () => {
+    expect(disagreements(prototype, described)).toEqual(
+      [...radiiTheExportKeeps, ...roleTheExportKeeps].sort(),
+    );
   });
 
   it('names three faces, because the numbers and the headings are not the body', () => {
@@ -197,7 +207,9 @@ describe('a colour named in the prose of the design document fails the pipeline'
 
     it('keeps the eight out of the comparison with the configuration, which does not name them', () => {
       expect(phaseColourNames.filter((name) => name in prototype.colours)).toEqual([]);
-      expect(disagreements(prototype, described)).toEqual([...radiiTheExportKeeps]);
+      expect(disagreements(prototype, described)).toEqual(
+        [...radiiTheExportKeeps, ...roleTheExportKeeps].sort(),
+      );
     });
   });
 });
@@ -214,6 +226,23 @@ describe('the corners the two sides do not agree about', () => {
   });
 });
 
+describe('the type role the export keeps and the design system retired', () => {
+  it('keeps the disagreement written out, so putting the role back reddens this too', () => {
+    expect(roleTheExportKeeps.length).toBeGreaterThan(0);
+    expect(roleTheExportKeeps.every((said) => said.startsWith(`${retiredRole} `))).toBe(true);
+  });
+
+  it('names a role the export still draws with, which is why the export keeps it', () => {
+    expect(prototype.type[retiredRole]).toBeDefined();
+    expect(described.type[retiredRole]).toBeUndefined();
+    expect(screen).toContain(`text-${retiredRole}`);
+  });
+
+  it('retires it into a role of the same face and the same size, so no screen moves', () => {
+    expect(described.type['body-lg']).toEqual(prototype.type[retiredRole]);
+  });
+});
+
 describe('a value that moves is named', () => {
   const moved = (block: keyof Theme, name: string, value: string): Theme => ({
     ...described,
@@ -222,9 +251,8 @@ describe('a value that moves is named', () => {
 
   it('says which colour moved, and what each side says', () => {
     const other = described.colours['error'] as string;
-    const [said] = disagreements(prototype, moved('colours', 'primary', other));
 
-    expect(said).toBe(
+    expect(disagreements(prototype, moved('colours', 'primary', other))).toContain(
       `colour primary: the prototype says ${prototype.colours['primary']} and the design system says ${other}`,
     );
   });
