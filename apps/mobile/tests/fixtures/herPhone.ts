@@ -1,4 +1,4 @@
-import type { DayRecord, Feeling, Focus, Goal, Regularity } from '@emi/crypto';
+import type { DayRecord, Feeling, Focus, Goal, ProfileRecord, Regularity } from '@emi/crypto';
 
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
@@ -50,6 +50,34 @@ export async function herPhoneHolds(
   goals?: readonly Goal[],
   focus?: readonly Focus[],
 ): Promise<void> {
+  // The length she stated is a fact about her body, so it is sealed in her profile and not in
+  // the setting table beside the two markers below.
+  await herPhoneHoldsTheseAnswers(
+    firstRunFinishedAt,
+    {
+      kind: 'profile',
+      cycleLengthDays,
+      ...(periodLengthDays === undefined ? {} : { periodLengthDays }),
+      ...(regularity === undefined ? {} : { regularity }),
+      ...(feeling === undefined ? {} : { feeling }),
+      ...(goals === undefined ? {} : { goals }),
+      ...(focus === undefined ? {} : { focus }),
+      recordedAt: firstRunFinishedAt.toISOString(),
+    },
+    records,
+  );
+}
+
+/**
+ * The same phone, with her answers given whole rather than one argument at a time. A screen that
+ * reads every answer back needs the name and the year of birth too, and a list of eight
+ * positional arguments is a list nobody can read at the call.
+ */
+export async function herPhoneHoldsTheseAnswers(
+  firstRunFinishedAt: Date,
+  profile: ProfileRecord,
+  records: readonly DayRecord[] = [],
+): Promise<void> {
   const database = herDatabase();
   const vault = herVault();
   migrate(database);
@@ -63,21 +91,7 @@ export async function herPhoneHolds(
     logDay(database, { day: record.day, payload: vault.seal(record), now: when }, vault.open);
   }
 
-  // The length she stated is a fact about her body, so it is sealed in her profile and not in
-  // the setting table beside the two markers below.
-  writeProfile(database, herProfileVault(), {
-    profile: {
-      kind: 'profile',
-      cycleLengthDays,
-      ...(periodLengthDays === undefined ? {} : { periodLengthDays }),
-      ...(regularity === undefined ? {} : { regularity }),
-      ...(feeling === undefined ? {} : { feeling }),
-      ...(goals === undefined ? {} : { goals }),
-      ...(focus === undefined ? {} : { focus }),
-      recordedAt: firstRunFinishedAt.toISOString(),
-    },
-    now: firstRunFinishedAt,
-  });
+  writeProfile(database, herProfileVault(), { profile, now: firstRunFinishedAt });
   writeSetting(database, 'firstRunCompletedAt', firstRunFinishedAt.toISOString());
   // The tour runs before the two questions, so a phone that answered them has been through it.
   // Without this the application sends her to card 1 and the screen under test is never reached.

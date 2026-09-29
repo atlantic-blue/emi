@@ -6,6 +6,7 @@ import { fireEvent, renderRouter, screen as routedScreen } from 'expo-router/tes
 
 import { type Language, catalogueOf, languages } from '../../src/language';
 import { deleteScreenTestID } from '../../src/features/settings/DeleteEverything';
+import { yourAnswersScreenTestID } from '../../src/features/settings/YourAnswers';
 import { exportScreenTestID } from '../../src/features/export/ExportScreen';
 import {
   SettingsScreen,
@@ -109,6 +110,7 @@ async function sheOpensPrivacyOnItsOwn(): Promise<void> {
   await render(
     <OnAPhone>
       <SettingsScreen
+        onAnswers={() => undefined}
         onBack={() => undefined}
         onDelete={() => undefined}
         onExport={() => undefined}
@@ -171,12 +173,12 @@ describe('every row of Privacy is at least 44 points and each one opens what it 
       expect(theWordsIn(settingsDeleteTestID)).toContain(settingsCopy.settings.rows.delete.line);
     });
 
-    it('says nothing under her answers, because the screen behind it is not built', () => {
-      expect(theWordsIn(settingsAnswersTestID)).toBe(settingsCopy.settings.rows.answers.lead);
+    it('says under her answers what the screen behind it holds', () => {
+      expect(theWordsIn(settingsAnswersTestID)).toContain(settingsCopy.settings.rows.answers.line);
     });
 
-    it('draws her answers as a row that is there and cannot be used yet', () => {
-      expect(screen.getByTestId(settingsAnswersTestID).props.accessibilityState).toMatchObject({
+    it('draws her answers as a row she can press, now that the screen behind it is built', () => {
+      expect(screen.getByTestId(settingsAnswersTestID).props.accessibilityState).not.toMatchObject({
         disabled: true,
       });
     });
@@ -235,11 +237,11 @@ describe('every row of Privacy is at least 44 points and each one opens what it 
       expect(routedScreen.getByTestId(deleteScreenTestID)).toBeTruthy();
     });
 
-    it('leaves her where she is when she presses her answers, and opens nothing', async () => {
+    it('leaves her on the screen that reads her first run back when she presses her answers', async () => {
       await sheOpensEmiAndWalksToPrivacy();
       await shePresses(settingsAnswersTestID);
 
-      expect(routedScreen.getByTestId(settingsScreenTestID)).toBeTruthy();
+      expect(routedScreen.getByTestId(yourAnswersScreenTestID)).toBeTruthy();
       expect(routedScreen.queryByTestId(exportScreenTestID)).toBeNull();
       expect(routedScreen.queryByTestId(deleteScreenTestID)).toBeNull();
     });
@@ -248,6 +250,7 @@ describe('every row of Privacy is at least 44 points and each one opens what it 
   describe('the words of the four rows, in each of the three languages', () => {
     const theKeysOfTheRows = [
       'settings.settings.answers',
+      'settings.settings.answersLine',
       'settings.settings.lock',
       'settings.settings.lockLine',
       'settings.settings.export',

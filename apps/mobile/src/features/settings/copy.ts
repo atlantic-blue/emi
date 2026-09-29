@@ -11,7 +11,10 @@ export const settingsCopy = {
     title: words('settings.settings.title'),
     back: words('settings.settings.back'),
     rows: {
-      answers: { lead: words('settings.settings.answers') },
+      answers: {
+        lead: words('settings.settings.answers'),
+        line: words('settings.settings.answersLine'),
+      },
       lock: {
         lead: words('settings.settings.lock'),
         line: words('settings.settings.lockLine'),
@@ -48,3 +51,28 @@ export const settingsCopy = {
     withoutTheServer: words('settings.deleted.withoutTheServer'),
   },
 } as const;
+
+/**
+ * The words of the screen that reads her first run back to her. The lead of a row is the
+ * question she was asked, shortened to what fits a row, so she recognises the answer under it as
+ * the one she gave.
+ */
+export const yourAnswersCopy = {
+  title: words('settings.answers.title'),
+  back: words('settings.answers.back'),
+  rows: {
+    name: words('settings.answers.name'),
+    birthYear: words('settings.answers.birthYear'),
+    cycleLength: words('settings.answers.cycleLength'),
+    periodLength: words('settings.answers.periodLength'),
+    regularity: words('settings.answers.regularity'),
+    feeling: words('settings.answers.feeling'),
+    goals: words('settings.answers.goals'),
+    focus: words('settings.answers.focus'),
+  },
+} as const;
+
+/** How many of the four she chose, which is what the drawing reads back rather than the list. */
+export function goalsChosenLabel(chosen: number, of: number): string {
+  return words('settings.answers.goalsChosen', undefined, { chosen, of });
+}
