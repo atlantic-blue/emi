@@ -145,9 +145,11 @@ clear. The cost of both is written out below rather than left for a reader to as
 
 The sealed profile is not in this list, because it holds no readable field. The setting table is
 plain and holds six names. Five are preferences, and none of them is about her body. The sixth
-remembers which article she was last shown, and today it also records the cycle phase Emi placed
-her in at that moment. Feature 14 step 2 takes the phase out of that row, and step 3 removes it
-from the phones that already hold it.
+holds the article she was last shown, as its identifier and the instant she read it, and nothing
+else. It records no cycle phase. The identifier names a piece of general writing anybody can
+fetch, so a reader of the file learns which piece was drawn on this phone and nothing about the
+cycle she was in. A launch takes the phase off a phone that still holds the older row, and writes
+the file again, so the old copy does not stay in it.
 
 ### The date of a day
 

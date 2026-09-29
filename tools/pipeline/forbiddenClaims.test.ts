@@ -19,9 +19,13 @@ import {
 } from './forbiddenClaims';
 import {
   acceptedAttacks,
+  articleRowHolds,
+  articleRowNoLongerHolds,
+  articleRowProblems,
   designKeys,
   keyHeading,
   keyProblems,
+  openingUnder,
   plainHeading,
   plainValueProblems,
   plainValues,
@@ -373,5 +377,37 @@ describe('the privacy document names every value the phone keeps in the clear', 
     expect(plainValueProblems(invented, [])).toEqual([
       `${privacyDocument} names "Her name" under "${plainHeading}", and nothing asked for it`,
     ]);
+  });
+});
+
+describe('the privacy document says what the article row of the setting table holds', () => {
+  it('says it holds the article identifier and the instant, and nothing else', () => {
+    expect(articleRowProblems(privacy)).toEqual([]);
+    expect(privacy).toContain(articleRowHolds);
+  });
+
+  it('no longer says that row records a cycle phase', () => {
+    expect(privacy).not.toContain(articleRowNoLongerHolds);
+  });
+
+  it('refuses a document that still says the row records a phase, and names the sentence', () => {
+    const stale = [
+      `## ${plainHeading}`,
+      '',
+      `The sixth remembers which article she was last shown, and today it also ${articleRowNoLongerHolds} Emi placed her in.`,
+      '',
+      `### ${aPlainValue}`,
+      '',
+    ].join('\n');
+
+    expect(articleRowProblems(stale)).toEqual([
+      `${privacyDocument} does not say the article row holds it "${articleRowHolds}"`,
+      `${privacyDocument} still says the article row "${articleRowNoLongerHolds}", and a launch takes it off`,
+    ]);
+  });
+
+  it('reads the opening of the section and not the values under it', () => {
+    expect(openingUnder(privacy, plainHeading)).not.toContain(`### ${aPlainValue}`);
+    expect(openingUnder(privacy, 'a heading no document carries')).toBe('');
   });
 });
