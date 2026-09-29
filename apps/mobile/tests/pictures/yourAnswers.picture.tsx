@@ -14,6 +14,8 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
  * The second screen is the same woman with three questions skipped, because a row with nothing
  * under it is the part of this screen that is easiest to get wrong.
  *
+ * The cycle length row carries the mark that says it opens something, because it now does.
+ *
  * It is not part of the suite: the file is named for a picture rather than for a test, and the
  * runner is pointed at it by `npm run generate:your-answers-picture`.
  */
@@ -50,7 +52,7 @@ const drawn: DrawnScreen[] = [];
 async function draw(title: string, note: string, answers = sheAnsweredEverything): Promise<void> {
   const view = await render(
     <OnAPhone>
-      <YourAnswers answers={answers} onBack={() => undefined} />
+      <YourAnswers answers={answers} onBack={() => undefined} onCycleLength={() => undefined} />
     </OnAPhone>,
   );
   // A copy, taken before the screen is torn down, with the harness's own provider left out.

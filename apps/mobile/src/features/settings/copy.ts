@@ -76,3 +76,20 @@ export const yourAnswersCopy = {
 export function goalsChosenLabel(chosen: number, of: number): string {
   return words('settings.answers.goalsChosen', undefined, { chosen, of });
 }
+
+/**
+ * The words of a screen where she changes one answer. The question itself, the lines under it and
+ * the stepper's own labels are not here: they come from the first run, because this screen asks
+ * the same question with the same control and giving it a second wording would make it a second
+ * question.
+ */
+export const answerCopy = {
+  back: words('settings.answer.back'),
+  cancel: words('settings.answer.cancel'),
+  save: words('settings.answer.save'),
+} as const;
+
+/** What she gave the first time, said under the control she is changing it with. */
+export function gaveAtFirstRunSentence(answer: string): string {
+  return words('settings.answer.gaveAtFirstRun', undefined, { answer });
+}

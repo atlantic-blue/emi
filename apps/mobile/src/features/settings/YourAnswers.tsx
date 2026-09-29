@@ -1,5 +1,6 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ProfileRecord } from '@emi/crypto';
+import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -20,23 +21,57 @@ export function yourAnswerRowTestID(row: YourAnswerRow): string {
   return `your-answers-row-${row}`;
 }
 
+/** Points. The mark that says a row opens something, read beside the answer it belongs to. */
+const OPENS_MARK_SIZE = 18;
+
 interface RowProps {
   readonly row: YourAnswerRow;
   readonly answer: string | undefined;
+  /** Left out by a row that opens nothing, and then no mark is drawn beside it. */
+  readonly onOpen?: () => void;
 }
 
 /**
  * One question and what she said to it. A short answer sits on the question's own line and a
  * sentence sits under it, which is the only difference between the two shapes.
+ *
+ * A row she can change carries a mark at its end, so the rows that open something are told apart
+ * from the rows that only read by something other than pressing each one to find out.
  */
-function Row({ row, answer }: RowProps): ReactNode {
-  const beside = answersReadBesideTheQuestion.includes(row);
+function Row({ row, answer, onOpen }: RowProps): ReactNode {
+  const style = answersReadBesideTheQuestion.includes(row) ? styles.rowBeside : styles.row;
+  const said = answer === undefined ? null : <Text style={styles.answer}>{answer}</Text>;
+  const words = (
+    <>
+      <Text style={styles.question}>{yourAnswersCopy.rows[row]}</Text>
+      {onOpen === undefined ? (
+        said
+      ) : (
+        <View style={styles.opens}>
+          {said}
+          <Icon colour={colour.outline} name="chevron" size={OPENS_MARK_SIZE} />
+        </View>
+      )}
+    </>
+  );
+
+  if (onOpen === undefined) {
+    return (
+      <View style={style} testID={yourAnswerRowTestID(row)}>
+        {words}
+      </View>
+    );
+  }
 
   return (
-    <View style={beside ? styles.rowBeside : styles.row} testID={yourAnswerRowTestID(row)}>
-      <Text style={styles.question}>{yourAnswersCopy.rows[row]}</Text>
-      {answer === undefined ? null : <Text style={styles.answer}>{answer}</Text>}
-    </View>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onOpen}
+      style={style}
+      testID={yourAnswerRowTestID(row)}
+    >
+      {words}
+    </Pressable>
   );
 }
 
@@ -52,9 +87,12 @@ function Row({ row, answer }: RowProps): ReactNode {
 export function YourAnswers({
   answers,
   onBack,
+  onCycleLength,
 }: {
   readonly answers: ProfileRecord | undefined;
   readonly onBack: () => void;
+  /** Left out where nothing is reached from here, which is every drawing of this screen alone. */
+  readonly onCycleLength?: () => void;
 }): ReactNode {
   return (
     <Screen testID={yourAnswersScreenTestID}>
@@ -74,7 +112,14 @@ export function YourAnswers({
         </View>
 
         {yourAnswerRows.map((row) => (
-          <Row answer={theAnswerSheGave(row, answers)} key={row} row={row} />
+          <Row
+            answer={theAnswerSheGave(row, answers)}
+            key={row}
+            row={row}
+            {...(row === 'cycleLength' && onCycleLength !== undefined
+              ? { onOpen: onCycleLength }
+              : {})}
+          />
         ))}
       </ScrollView>
     </Screen>
@@ -102,6 +147,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  // What she reads and the mark that says the row opens, kept together at the end of the line so
+  // the mark sits against the edge rather than against the answer.
+  opens: { alignItems: 'center', columnGap: space.spaceSm, flexDirection: 'row' },
   question: {
     color: colour.onSurface,
     ...textStyle('body-lg'),

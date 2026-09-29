@@ -85,6 +85,42 @@ export function writeProfile(db: Database, vault: ProfileVault, write: ProfileWr
   return written(db);
 }
 
+/** One answer of the profile, given again. Every other answer stays as she left it. */
+export type AnswerGivenAgain = Partial<Omit<ProfileRecord, 'kind' | 'recordedAt'>>;
+
+export interface AnswerChange {
+  readonly answer: AnswerGivenAgain;
+  readonly now: Date;
+}
+
+/**
+ * One answer changed, written back into the one row her first run sealed.
+ *
+ * The row is opened, the answer is replaced, and the whole record is sealed again, because the
+ * payload is one envelope and there is no way to write a field of it. So this is the only path
+ * that changes an answer, and a second copy of one anywhere else would be a second source for the
+ * forecast to disagree with.
+ *
+ * A phone with no profile is refused rather than given one: an answer changed before the first
+ * run wrote anything would be a profile built out of a single question.
+ */
+export function changeProfileAnswer(
+  db: Database,
+  vault: ProfileVault,
+  change: AnswerChange,
+): ProfileRow {
+  const held = readProfile(db, vault);
+
+  if (!held) {
+    throw new ProfileTableError('profile-is-not-written', 'this phone holds no profile to change');
+  }
+
+  return writeProfile(db, vault, {
+    profile: { ...held, ...change.answer, recordedAt: change.now.toISOString() },
+    now: change.now,
+  });
+}
+
 /** What she told Emi about herself, or nothing at all on a phone that has not been asked yet. */
 export function readProfile(db: Database, vault: ProfileVault): ProfileRecord | undefined {
   const held = profileRow(db);
