@@ -408,7 +408,7 @@ describe('the month title never touches the way to another month', () => {
 
   describe('the width a run of words is measured at', () => {
     it('comes off the font file the application ships', () => {
-      expect(theWidthOfWords('September 2026', 'headline-md')).toBeCloseTo(168.276, 3);
+      expect(theWidthOfWords('September 2026', 'headline-md')).toBeCloseTo(140.23, 3);
       expect(theWidthOfWords('Earlier', 'body-sm')).toBeCloseTo(41.062, 3);
       expect(theWidthOfWords('', 'headline-md')).toBe(0);
     });

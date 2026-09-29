@@ -140,7 +140,7 @@ function pointsOf(written: string): number {
 describe('the type scale says what the design system says', () => {
   it('reads the document, so an empty read is not taken for agreement', () => {
     expect(Object.keys(inTheDocument)).toHaveLength(13);
-    expect(inTheDocument['display-lg']?.fontSize).toBe('3rem');
+    expect(inTheDocument['display-lg']?.fontSize).toBe('2.75rem');
   });
 
   it('holds the same thirteen roles, under the same names', () => {
@@ -175,20 +175,24 @@ describe('the type scale says what the design system says', () => {
     expect(Object.values(face).sort()).toEqual([...families].sort());
   });
 
-  it('keeps every role at or above the line height floor, apart from the one nobody has decided', () => {
+  it('keeps every role at or above the line height floor, and none of them is undecided', () => {
     const cramped = typeRoleNames.filter(
       (name) => typeScale[name].lineHeight < typeScale[name].size * LINE_HEIGHT_FLOOR,
     );
 
-    expect(cramped).toEqual([...lineHeightsNobodyHasDecided]);
+    expect(typeRoleNames).toHaveLength(13);
+    expect(cramped).toEqual([]);
+    expect(lineHeightsNobodyHasDecided).toEqual([]);
   });
 
-  it('holds the undecided role at the ratio the document draws it, so the fix reddens this too', () => {
-    const [undecided] = lineHeightsNobodyHasDecided;
-    const role = typeScale[undecided ?? 'display-lg'];
+  it('holds the display role at the ratio the document draws it, so a size left behind reddens this', () => {
+    const ratios = typeRoleNames.map(
+      (name) => `${name} ${(typeScale[name].lineHeight / typeScale[name].size).toFixed(3)}`,
+    );
 
-    expect(undecided).toBe('display-lg');
-    expect(role.lineHeight / role.size).toBeCloseTo(1.167, 3);
+    expect(ratios[0]).toBe('display-lg 1.273');
+    expect(ratios[2]).toBe('headline-lg 1.286');
+    expect(ratios.filter((said) => Number(said.split(' ')[1]) < LINE_HEIGHT_FLOOR)).toEqual([]);
   });
 });
 

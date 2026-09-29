@@ -65,7 +65,7 @@ describe('the design system says what the prototype draws', () => {
     expect(Object.keys(described.colours)).toHaveLength(47 + phaseColourNames.length);
     expect(spacingNames).toHaveLength(11);
     expect(roleNames).toHaveLength(13);
-    expect(prototype.type['display-lg']?.fontSize).toBe('3rem');
+    expect(prototype.type['display-lg']?.fontSize).toBe('2.75rem');
     expect(prototype.type['data-lg']?.fontFamily).toBe('JetBrains Mono');
   });
 
