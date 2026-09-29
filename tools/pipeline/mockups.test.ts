@@ -12,6 +12,8 @@ import {
   partsOf,
   partsOfTheScreen,
   readNothingProblems,
+  rowsOf,
+  rowsOfTheScreen,
   screenKeysNamedIn,
   screenKeysNamedUnder,
   screenKeysOf,
@@ -117,6 +119,46 @@ describe('the approved mockups stage, as the repository reads it', () => {
         '<a data-component="PrimaryButton">Go</a>';
 
       expect(partsOf(drawn)).toEqual(['CycleRing', 'PrimaryButton']);
+    });
+  });
+
+  describe('the rows a drawing places', () => {
+    it('reads the rows of Privacy, and where the drawing sends each of them', () => {
+      expect(rowsOfTheScreen(theStage, 'privacyNext')).toEqual([
+        { to: 'yourAnswers' },
+        { to: 'reminderSettings' },
+        { to: null },
+        { to: 'export' },
+        { to: 'delete' },
+      ]);
+    });
+
+    it('sends a row nowhere where the drawing gives it no destination', () => {
+      const rows = '<ul><li class="row" data-to="export">Export</li><li class="row">Lock</li></ul>';
+
+      expect(rowsOf(rows)).toEqual([{ to: 'export' }, { to: null }]);
+    });
+
+    it('leaves a list item that is not a row alone', () => {
+      const mixed =
+        '<ul><li class="chip">One</li><li class="row card" data-to="delete">Two</li></ul>';
+
+      expect(rowsOf(mixed)).toEqual([{ to: 'delete' }]);
+    });
+
+    it('refuses a key it does not hold, rather than reading as a screen of no rows', () => {
+      expect(() => rowsOfTheScreen(theStage, 'aScreenNobodyDrew')).toThrow(
+        'holds no screen called "aScreenNobodyDrew"',
+      );
+    });
+
+    it('refuses a drawing of no rows, because nothing can be held to no row', () => {
+      expect(() =>
+        rowsOfTheScreen(
+          aStageOf({ aScreenOfProse: '<main><p>Words</p></main>' }),
+          'aScreenOfProse',
+        ),
+      ).toThrow('draws no row');
     });
   });
 

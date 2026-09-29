@@ -37,7 +37,11 @@ export const theFixture = join(testRoot, 'fixtures', 'theMockupScreen.ts');
  * The fixture calls that name a screen key. Each one takes the key as its first argument, so the
  * scan below reads the literal there and the gate knows which drawings the suite claims to use.
  */
-export const fixtureCalls: readonly string[] = ['thePartsOfTheMockup', 'partsMissingFromTheScreen'];
+export const fixtureCalls: readonly string[] = [
+  'thePartsOfTheMockup',
+  'partsMissingFromTheScreen',
+  'theRowsOfTheMockup',
+];
 
 export interface MockupScreen {
   /** What the drawing calls the screen, for a reader rather than for a test. */
@@ -150,6 +154,68 @@ export function partsOfTheScreen(mockups: Mockups, key: string): string[] {
   }
 
   return partsOf(screen.html);
+}
+
+export interface MockupRow {
+  /**
+   * The screen key the drawing sends the row to, or null where the drawing sends it nowhere. The
+   * lock row of Privacy is the second kind: it states what the lock is doing rather than opening
+   * anything.
+   */
+  readonly to: string | null;
+}
+
+const aListItem = /<li\b((?:"[^"]*"|'[^']*'|[^>])*)>/g;
+const aClass = /class="([^"]*)"/;
+const aDestination = /data-to="([^"]*)"/;
+
+/**
+ * The rows of a drawing, in the order it places them.
+ *
+ * A row is read for where it goes and never for the words it carries, for the same reason the
+ * parts above are: the wording is the catalogue's to settle in three languages, and the drawing is
+ * a draft of it. Where it goes is the drawing's own decision, so that is what a built screen is
+ * held to.
+ */
+export function rowsOf(html: string): MockupRow[] {
+  const rows: MockupRow[] = [];
+
+  aListItem.lastIndex = 0;
+
+  for (let found = aListItem.exec(html); found !== null; found = aListItem.exec(html)) {
+    const attributes = found[1] ?? '';
+    const classes = (aClass.exec(attributes)?.[1] ?? '').split(/\s+/);
+
+    if (!classes.includes('row')) {
+      continue;
+    }
+
+    rows.push({ to: aDestination.exec(attributes)?.[1] ?? null });
+  }
+
+  return rows;
+}
+
+/**
+ * The rows of one screen of the stage. A drawing with no row is refused rather than answered with
+ * an empty list, because a comparison against nothing reads exactly like one every row answered.
+ */
+export function rowsOfTheScreen(mockups: Mockups, key: string): MockupRow[] {
+  const screen = mockups.screens[key];
+
+  if (screen === undefined) {
+    throw new Error(
+      `the mockups stage holds no screen called "${key}", and it holds ${screenKeysOf(mockups).length}`,
+    );
+  }
+
+  const rows = rowsOf(screen.html);
+
+  if (rows.length === 0) {
+    throw new Error(`the mockup screen "${key}" draws no row, and nothing can be held to no row`);
+  }
+
+  return rows;
 }
 
 /** Every test file under the application, as paths from the root of the repository. */

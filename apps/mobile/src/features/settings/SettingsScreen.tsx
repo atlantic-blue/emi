@@ -1,22 +1,92 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
 import { settingsCopy } from './copy';
 
 export const settingsScreenTestID = 'settings-screen';
 export const settingsTitleTestID = 'settings-title';
-export const settingsDeleteTestID = 'settings-delete';
 export const settingsBackTestID = 'settings-back';
 
-interface Props {
-  readonly onDelete: () => void;
-  readonly onBack: () => void;
+/**
+ * The rows of Privacy, in the order she reads them, and the whole of the screen.
+ *
+ * A row is an answer she already gave, the lock, or one of the two ways out. Nothing else is a
+ * row, so the screen cannot grow into a menu without this list growing first, where somebody has
+ * to decide about it. The drawing carries a fifth row for the reminder. The reminder is not built,
+ * so the row it will take is not drawn and the drawing is the record of where it goes.
+ */
+export const settingsRows = ['answers', 'lock', 'export', 'delete'] as const;
+
+export type SettingsRow = (typeof settingsRows)[number];
+
+export function settingsRowTestID(row: SettingsRow): string {
+  return `settings-row-${row}`;
 }
 
-/** The way to the one thing in here, and the way back out of it. */
-export function SettingsScreen({ onDelete, onBack }: Props): ReactNode {
+export const settingsAnswersTestID = settingsRowTestID('answers');
+export const settingsLockTestID = settingsRowTestID('lock');
+export const settingsExportTestID = settingsRowTestID('export');
+export const settingsDeleteTestID = settingsRowTestID('delete');
+
+interface RowProps {
+  readonly row: SettingsRow;
+  readonly lead: string;
+  /** What the row does, under its name. Left out where there is nothing true to say yet. */
+  readonly line?: string;
+  /** Left out by a row that opens nothing, which is the lock and her answers. */
+  readonly onPress?: () => void;
+  /** A row that will open something and cannot yet. It refuses a press and says so to a reader. */
+  readonly comingLater?: boolean;
+}
+
+function Row({ row, lead, line, onPress, comingLater = false }: RowProps): ReactNode {
+  const testID = settingsRowTestID(row);
+  const words = (
+    <>
+      <Text style={comingLater ? styles.rowLeadComingLater : styles.rowLead}>{lead}</Text>
+      {line === undefined ? null : <Text style={styles.rowLine}>{line}</Text>}
+    </>
+  );
+
+  if (onPress === undefined && !comingLater) {
+    return (
+      <View style={styles.row} testID={testID}>
+        {words}
+      </View>
+    );
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: comingLater }}
+      disabled={comingLater}
+      onPress={onPress}
+      style={styles.row}
+      testID={testID}
+    >
+      {words}
+    </Pressable>
+  );
+}
+
+/**
+ * Privacy: what she already told Emi, the lock she relies on, and the two ways her data leaves.
+ *
+ * Delete everything is one row among four rather than the only thing here, because the one action
+ * that cannot be undone should not be the only thing she can reach from this screen.
+ */
+export function SettingsScreen({
+  onExport,
+  onDelete,
+  onBack,
+}: {
+  readonly onExport: () => void;
+  readonly onDelete: () => void;
+  readonly onBack: () => void;
+}): ReactNode {
   return (
     <Screen testID={settingsScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
@@ -24,14 +94,24 @@ export function SettingsScreen({ onDelete, onBack }: Props): ReactNode {
           {settingsCopy.settings.title}
         </Text>
 
-        <Pressable
-          accessibilityRole="button"
+        <Row comingLater lead={settingsCopy.settings.rows.answers.lead} row="answers" />
+        <Row
+          lead={settingsCopy.settings.rows.lock.lead}
+          line={settingsCopy.settings.rows.lock.line}
+          row="lock"
+        />
+        <Row
+          lead={settingsCopy.settings.rows.export.lead}
+          line={settingsCopy.settings.rows.export.line}
+          onPress={onExport}
+          row="export"
+        />
+        <Row
+          lead={settingsCopy.settings.rows.delete.lead}
+          line={settingsCopy.settings.rows.delete.line}
           onPress={onDelete}
-          style={styles.row}
-          testID={settingsDeleteTestID}
-        >
-          <Text style={styles.rowLabel}>{settingsCopy.settings.delete}</Text>
-        </Pressable>
+          row="delete"
+        />
 
         <Pressable
           accessibilityRole="button"
@@ -64,13 +144,24 @@ const styles = StyleSheet.create({
     backgroundColor: colour.surfaceContainerLowest,
     borderRadius: radius.md,
     justifyContent: 'center',
-    marginTop: space.spaceLg,
+    marginTop: space.spaceMd,
     minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.spaceMd,
+    paddingVertical: space.spaceSm,
+    rowGap: space.spaceXs,
   },
-  rowLabel: {
+  rowLead: {
     color: colour.onSurface,
     ...textStyle('body-lg'),
+  },
+  rowLeadComingLater: {
+    color: colour.onSurfaceVariant,
+    ...textStyle('body-lg'),
+  },
+  rowLine: {
+    color: colour.onSurfaceVariant,
+    ...textStyle('body-sm'),
   },
   title: {
     color: colour.onSurface,

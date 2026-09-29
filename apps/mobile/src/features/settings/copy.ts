@@ -10,7 +10,21 @@ export const settingsCopy = {
   settings: {
     title: words('settings.settings.title'),
     back: words('settings.settings.back'),
-    delete: words('settings.settings.delete'),
+    rows: {
+      answers: { lead: words('settings.settings.answers') },
+      lock: {
+        lead: words('settings.settings.lock'),
+        line: words('settings.settings.lockLine'),
+      },
+      export: {
+        lead: words('settings.settings.export'),
+        line: words('settings.settings.exportLine'),
+      },
+      delete: {
+        lead: words('settings.settings.delete'),
+        line: words('settings.settings.deleteLine'),
+      },
+    },
   },
   delete: {
     title: words('settings.delete.title'),

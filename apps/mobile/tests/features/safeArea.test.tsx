@@ -135,7 +135,7 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
   ],
   [
     settingsScreenTestID,
-    (): ReactElement => <SettingsScreen onBack={nothing} onDelete={nothing} />,
+    (): ReactElement => <SettingsScreen onBack={nothing} onDelete={nothing} onExport={nothing} />,
   ],
   [
     deleteScreenTestID,
@@ -288,9 +288,9 @@ describe('every screen respects the safe area', () => {
     });
 
     it('refuses to draw at all when it is rendered outside the provider', async () => {
-      await expect(render(<SettingsScreen onBack={nothing} onDelete={nothing} />)).rejects.toThrow(
-        /SafeAreaProvider/,
-      );
+      await expect(
+        render(<SettingsScreen onBack={nothing} onDelete={nothing} onExport={nothing} />),
+      ).rejects.toThrow(/SafeAreaProvider/);
     });
   });
 });
