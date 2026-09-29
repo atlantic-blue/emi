@@ -1,5 +1,5 @@
 /**
- * The three faces of the design system, and the thirteen roles it names for them. The roles keep
+ * The three faces of the design system, and the twelve roles it names for them. The roles keep
  * the names the design system gives them, so a reader can hold the two open side by side and a test
  * can read one against the other.
  *
@@ -20,7 +20,7 @@ export const face: Readonly<Record<FaceName, string>> = {
 /** The three weights the design system asks for. Every one of them has a file in this repository. */
 export type TypeWeight = 400 | 500 | 600;
 
-/** The thirteen roles the design system names, in its own words. */
+/** The twelve roles the design system names, in its own words. */
 export type TypeRoleName =
   | 'display-lg'
   | 'display-lg-mobile'
@@ -28,7 +28,6 @@ export type TypeRoleName =
   | 'headline-md'
   | 'headline-sm'
   | 'body-lg'
-  | 'body-md'
   | 'body-sm'
   | 'label-md'
   | 'label-sm'
@@ -52,7 +51,7 @@ export interface TypeRole {
 }
 
 /**
- * The thirteen roles, copied from the design system's own front matter. A role that drifts from it
+ * The twelve roles, copied from the design system's own front matter. A role that drifts from it
  * fails `packages/tokens/tests/designSystem.test.ts`, which reads the document. The document
  * measures in rem for a browser and a screen measures in points, so every size here is its rem at
  * sixteen points.
@@ -70,7 +69,6 @@ export const typeScale: Readonly<Record<TypeRoleName, TypeRole>> = {
   'headline-md': { face: 'display', size: 20, lineHeight: 26, letterSpacingEm: 0, weight: 500 },
   'headline-sm': { face: 'display', size: 18, lineHeight: 24, letterSpacingEm: 0, weight: 500 },
   'body-lg': { face: 'text', size: 16, lineHeight: 24, letterSpacingEm: 0, weight: 400 },
-  'body-md': { face: 'text', size: 16, lineHeight: 24, letterSpacingEm: 0, weight: 400 },
   'body-sm': { face: 'text', size: 14, lineHeight: 20, letterSpacingEm: 0, weight: 400 },
   'label-md': { face: 'text', size: 14, lineHeight: 20, letterSpacingEm: 0.01, weight: 600 },
   'label-sm': { face: 'text', size: 12, lineHeight: 16, letterSpacingEm: 0.02, weight: 600 },
@@ -87,7 +85,6 @@ export const typeRoleNames: readonly TypeRoleName[] = [
   'headline-md',
   'headline-sm',
   'body-lg',
-  'body-md',
   'body-sm',
   'label-md',
   'label-sm',

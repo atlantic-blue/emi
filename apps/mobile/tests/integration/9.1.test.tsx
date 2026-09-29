@@ -148,7 +148,7 @@ describe('three typefaces across the whole product', () => {
       expect(runsDrawnInAnUnloadedFace(screen.toJSON())).toEqual([]);
     });
 
-    it('draws every size it draws at one of the thirteen roles', async () => {
+    it('draws every size it draws at one of the twelve roles', async () => {
       const app = renderRouter(appDirectory, { initialUrl: '/' });
       await app;
 

@@ -9,8 +9,12 @@ moves anywhere else has left the prototype behind.
 Each screen carries the configuration it draws with, in a script element with the id
 `tailwind-config`. All twenty three carry the same one. `tools/pipeline/prototype.test.ts` reads it
 out of `screen-0-style-sheet.html` and compares it with the front matter of the design system
-document, value for value: the colours, the spacing and the thirteen type roles with their sizes,
-line heights, tracking and weights. The corners are the one block the two sides do not agree about.
+document, value for value: the colours, the spacing and the type roles with their sizes, line
+heights, tracking and weights. The corners are the one block the two sides do not agree about. The
+export names thirteen type roles and the design system names twelve: `body-md` carried the same
+face, size and line height as `body-lg`, so the design system retired it and the three call sites
+took `body-lg`. The export keeps the name because the markup of all twenty three screens reaches
+for it.
 The token package took the design system's scale and `apps/mobile/tailwind.config.js` reads the
 token package, so the application draws that one. That answers
 https://github.com/atlantic-blue/emi/issues/159, and the difference stays recorded in
