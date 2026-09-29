@@ -40,8 +40,8 @@ function theStyleOfTheWordsIn(testID: string): Record<string, unknown> {
 
 describe('the body-md role retires into body-lg', () => {
   describe('the role list the design system names', () => {
-    it('holds twelve roles, and body-md is not one of them', () => {
-      expect(typeRoleNames).toHaveLength(12);
+    it('holds eleven roles, and body-md is not one of them', () => {
+      expect(typeRoleNames).toHaveLength(11);
       expect(typeRoleNames).not.toContain('body-md');
       expect(Object.keys(typeScale)).not.toContain('body-md');
     });

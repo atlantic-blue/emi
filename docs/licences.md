@@ -61,7 +61,7 @@ Files:
 
 Status: built
 
-Every number and every measurement. The design system sets `data-lg`, `data-md` and `data-sm` in it,
+Every number and every measurement. The design system sets `data-lg` and `data-sm` in it,
 which carry a cycle day, a calendar grid, a temperature and a duration. A monospaced figure holds its
 place as it changes, so a number does not move while she reads it.
 

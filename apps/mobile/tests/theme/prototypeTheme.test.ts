@@ -127,12 +127,12 @@ describe('the theme the application draws in is the token package, in the shape 
       expect(Object.keys(extended.spacing)).toHaveLength(11);
     });
 
-    it('declares the twelve text roles itself rather than through Tailwind’s own scale', () => {
+    it('declares the eleven text roles itself rather than through Tailwind’s own scale', () => {
       // Given a size and a line height together, Tailwind writes the line height as a variable
       // fallback, which react-native-css reads as a multiple of the font size. So the roles are
       // written as plain declarations by a plugin and the values are asserted on what compiles.
       expect('fontSize' in extended).toBe(false);
-      expect(typeRoleNames).toHaveLength(12);
+      expect(typeRoleNames).toHaveLength(11);
     });
 
     it('sets every role in the file the application registers, never in the family’s own name', () => {

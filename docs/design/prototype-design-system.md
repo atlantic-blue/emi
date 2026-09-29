@@ -113,12 +113,6 @@ typography:
     fontWeight: '500'
     lineHeight: 1.875rem
     letterSpacing: -0.03em
-  data-md:
-    fontFamily: JetBrains Mono
-    fontSize: 1rem
-    fontWeight: '400'
-    lineHeight: 1.5rem
-    letterSpacing: -0.02em
   data-sm:
     fontFamily: JetBrains Mono
     fontSize: 0.75rem
@@ -221,7 +215,7 @@ every role.
 - **Body and controls**: Plus Jakarta Sans. A geometric sans with open tracking, for symptom notes,
   insights and button text. The roles are `body-lg`, `body-sm`, `label-md` and `label-sm`.
 - **Numbers and measurements**: JetBrains Mono. Monospaced figures for a cycle day, a calendar grid,
-  a temperature and a duration. The roles are `data-lg`, `data-md` and `data-sm`. A figure that is
+  a temperature and a duration. The roles are `data-lg` and `data-sm`. A figure that is
   monospaced does not move as it changes.
 - **The wordmark**: always lowercase, `emi`, set in Newsreader. Never in capitals.
 

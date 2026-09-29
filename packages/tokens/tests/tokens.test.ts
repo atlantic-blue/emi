@@ -1,3 +1,7 @@
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { extname, join, resolve } from 'node:path';
+
 import { colour, colourNames, colours, hasRole } from '../src/colour';
 import { faceFamily, fonts } from '../src/font';
 import { phaseNames, phasePalette } from '../src/ring';
@@ -9,6 +13,56 @@ import {
   typeRoleNames,
   typeScale,
 } from '../src/type';
+
+const repositoryRoot = resolve(__dirname, '..', '..', '..');
+
+/**
+ * Reaching for a role, as against writing its name. A quoted name is code asking for the role, a
+ * name followed by a colon is a key in a configuration or a style sheet, and the three prefixes are
+ * the classes markup draws with. Prose that records the retirement names the role too, and that is
+ * the opposite of a reach, so the forms are named rather than the characters.
+ */
+function reachesFor(role: string, contents: string): boolean {
+  return [
+    `'${role}'`,
+    `"${role}"`,
+    `${role}:`,
+    `text-${role}`,
+    `font-${role}`,
+    `size-${role}`,
+  ].some((form) => contents.includes(form));
+}
+
+/**
+ * The export under `docs/design/prototype` is the design tool's own output, and the markup of three
+ * of its screens reaches for `text-data-md`. A configuration that stopped naming the role would draw
+ * that text at whatever the browser defaults to, so the export keeps the name, its own check reads
+ * the two sides against each other, and `tools/pipeline/prototype.ts` records the difference property
+ * by property. Those two files and this one name the role in order to hold it out, and a mention
+ * inside a backtick reads the same as a class to the forms above, so they are named here.
+ */
+function mayReachForIt(file: string): boolean {
+  return (
+    file.startsWith('docs/design/prototype/') ||
+    file === 'tools/pipeline/prototype.ts' ||
+    file === 'tools/pipeline/prototype.test.ts' ||
+    file === 'packages/tokens/tests/tokens.test.ts'
+  );
+}
+
+/** Where a reach can be written. A picture holds no class and no key, so it is not read. */
+const readable = ['.ts', '.tsx', '.js', '.mjs', '.cjs', '.json', '.md', '.html', '.css', '.yml'];
+
+function trackedFiles(): string[] {
+  const listed = spawnSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+  });
+
+  expect(listed.status).toBe(0);
+
+  return listed.stdout.split('\n').filter((line) => line.length > 0);
+}
 
 describe('the colour set', () => {
   it('holds the colours the design system names and no more', () => {
@@ -58,9 +112,9 @@ describe('the colour set', () => {
 });
 
 describe('the type scale', () => {
-  it('holds the twelve roles the design system names', () => {
-    expect(typeRoleNames).toHaveLength(12);
-    expect(Object.keys(typeScale)).toHaveLength(12);
+  it('holds the eleven roles the design system names', () => {
+    expect(typeRoleNames).toHaveLength(11);
+    expect(Object.keys(typeScale)).toHaveLength(11);
   });
 
   it('holds the size and the line height of each role', () => {
@@ -77,7 +131,6 @@ describe('the type scale', () => {
       'label-md 14/20',
       'label-sm 12/16',
       'data-lg 24/30',
-      'data-md 16/24',
       'data-sm 12/16',
     ]);
   });
@@ -87,7 +140,7 @@ describe('the type scale', () => {
       .filter((name) => typeScale[name].lineHeight < typeScale[name].size * LINE_HEIGHT_FLOOR)
       .map((name) => `${name} is ${typeScale[name].lineHeight} on ${typeScale[name].size}`);
 
-    expect(typeRoleNames).toHaveLength(12);
+    expect(typeRoleNames).toHaveLength(11);
     expect(cramped).toEqual([]);
     expect(lineHeightsNobodyHasDecided).toEqual([]);
   });
@@ -136,12 +189,12 @@ describe('the type scale', () => {
       'headline-sm',
     ]);
     expect(byFace('text')).toEqual(['body-lg', 'body-sm', 'label-md', 'label-sm']);
-    expect(byFace('data')).toEqual(['data-lg', 'data-md', 'data-sm']);
+    expect(byFace('data')).toEqual(['data-lg', 'data-sm']);
   });
 
   it('carries the weight of each role, so no call site chooses one', () => {
     expect(typeRoleNames.map((name) => typeScale[name].weight)).toEqual([
-      400, 400, 400, 500, 500, 400, 400, 600, 600, 500, 400, 500,
+      400, 400, 400, 500, 500, 400, 400, 600, 600, 500, 500,
     ]);
   });
 
@@ -149,14 +202,45 @@ describe('the type scale', () => {
     const tighter = typeRoleNames.filter((name) => typeScale[name].letterSpacingEm < 0);
     const wider = typeRoleNames.filter((name) => typeScale[name].letterSpacingEm > 0);
 
-    expect(tighter).toEqual([
-      'display-lg',
-      'display-lg-mobile',
-      'headline-lg',
-      'data-lg',
-      'data-md',
-    ]);
+    expect(tighter).toEqual(['display-lg', 'display-lg-mobile', 'headline-lg', 'data-lg']);
     expect(wider).toEqual(['label-md', 'label-sm', 'data-sm']);
+  });
+});
+
+describe('the data-md role, which retired because no screen drew it', () => {
+  it('leaves the name out of the scale, so nothing can reach for it', () => {
+    expect(typeRoleNames).not.toContain('data-md');
+    expect(Object.keys(typeScale)).not.toContain('data-md');
+    expect(typeRoleNames.filter((name) => typeScale[name].face === 'data')).toEqual([
+      'data-lg',
+      'data-sm',
+    ]);
+  });
+
+  it('is reached for by no file the repository tracks, apart from the export that draws it', () => {
+    const files = trackedFiles().filter(
+      (file) => readable.includes(extname(file)) && file !== 'package-lock.json',
+    );
+
+    expect(files.length).toBeGreaterThan(100);
+
+    const reaching = files.filter((file) =>
+      reachesFor('data-md', readFileSync(join(repositoryRoot, file), 'utf8')),
+    );
+
+    expect(reaching).not.toEqual([]);
+    expect(reaching.filter((file) => !mayReachForIt(file))).toEqual([]);
+  });
+
+  it('reads a reach as a quoted name, a key or a class, and a record of the retirement as neither', () => {
+    expect(reachesFor('data-md', "textStyle('data-md')")).toBe(true);
+    expect(reachesFor('data-md', '"data-md":["1rem"]')).toBe(true);
+    expect(reachesFor('data-md', '  data-md:\n    fontSize: 1rem')).toBe(true);
+    expect(reachesFor('data-md', '<div class="text-data-md">')).toBe(true);
+    expect(reachesFor('data-md', '.size-data-md { font-size: 16px; }')).toBe(true);
+    expect(reachesFor('data-md', 'the data-md role retired, and `data-md` is drawn nowhere')).toBe(
+      false,
+    );
   });
 });
 

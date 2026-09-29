@@ -139,11 +139,11 @@ function pointsOf(written: string): number {
 
 describe('the type scale says what the design system says', () => {
   it('reads the document, so an empty read is not taken for agreement', () => {
-    expect(Object.keys(inTheDocument)).toHaveLength(12);
+    expect(Object.keys(inTheDocument)).toHaveLength(11);
     expect(inTheDocument['display-lg']?.fontSize).toBe('2.75rem');
   });
 
-  it('holds the same twelve roles, under the same names', () => {
+  it('holds the same eleven roles, under the same names', () => {
     expect([...typeRoleNames].sort()).toEqual(Object.keys(inTheDocument).sort());
   });
 
@@ -180,7 +180,7 @@ describe('the type scale says what the design system says', () => {
       (name) => typeScale[name].lineHeight < typeScale[name].size * LINE_HEIGHT_FLOOR,
     );
 
-    expect(typeRoleNames).toHaveLength(12);
+    expect(typeRoleNames).toHaveLength(11);
     expect(cramped).toEqual([]);
     expect(lineHeightsNobodyHasDecided).toEqual([]);
   });
