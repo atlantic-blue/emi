@@ -2,6 +2,7 @@ import { phaseLabel } from '@emi/tokens';
 
 import { words } from '../../language';
 import { monthNames, ordinal } from '../forecast/copy';
+import type { WhatSheChanged } from './savePeriod';
 import type { WhatTheSheetSays } from './theDaySheet';
 
 /**
@@ -12,6 +13,7 @@ import type { WhatTheSheetSays } from './theDaySheet';
 export const calendarCopy = {
   back: words('calendar.screen.back'),
   earlier: words('calendar.screen.earlier'),
+  editPeriod: words('calendar.screen.editPeriod'),
   earlierMonth: words('calendar.screen.earlierMonth'),
   later: words('calendar.screen.later'),
   laterMonth: words('calendar.screen.laterMonth'),
@@ -77,4 +79,76 @@ function theLine(cycle: string | undefined, logged: string | undefined): string 
   }
 
   return words('calendar.daySheet.andLogged', undefined, { logged, said: cycle });
+}
+
+/** The words of the period picker. */
+export const editPeriodCopy = {
+  back: words('calendar.editPeriod.back'),
+  cancel: words('calendar.editPeriod.cancel'),
+  noDayLeft: words('calendar.editPeriod.noDayLeft'),
+  save: words('calendar.editPeriod.save'),
+  title: words('calendar.editPeriod.title'),
+} as const;
+
+/**
+ * What Emi holds, said above the grid, so she knows which period she is about to correct and how
+ * much of it Emi already has.
+ */
+export function whatEmiHoldsSaid(held: readonly string[]): string {
+  const first = held[0];
+
+  if (first === undefined) {
+    return words('calendar.editPeriod.leadWithNoDay');
+  }
+
+  return words('calendar.editPeriod.lead', held.length, { date: aDaySaid(first) });
+}
+
+/**
+ * What she changed, said under the grid. It is worked out from the difference between what Emi held
+ * and what she is holding, so the line cannot name a day she did not press.
+ */
+export function whatSheChangedSaid(changed: WhatSheChanged): string {
+  const added =
+    changed.added.length === 0
+      ? undefined
+      : words('calendar.editPeriod.added', undefined, { days: theDaysSaid(changed.added) });
+  const removed =
+    changed.removed.length === 0
+      ? undefined
+      : words('calendar.editPeriod.removed', undefined, { days: theDaysSaid(changed.removed) });
+
+  if (added === undefined) {
+    return removed ?? words('calendar.editPeriod.nothingChanged');
+  }
+
+  return removed === undefined
+    ? added
+    : words('calendar.editPeriod.bothChanges', undefined, { added, removed });
+}
+
+/** One day of the month, as she reads a date: the 19th in English, el 19 in Spanish. */
+function aDaySaid(day: string): string {
+  return words('calendar.editPeriod.aDay', undefined, {
+    date: ordinal(Number(day.slice(8, 10))),
+  });
+}
+
+/**
+ * A list of days as one phrase. A comma separates a list in all three languages Emi is written in,
+ * so the only part the catalogue holds is the word before the last of them, and it is the one the
+ * day she logged already reads.
+ */
+function theDaysSaid(days: readonly string[]): string {
+  const said = days.map(aDaySaid);
+  const last = said[said.length - 1];
+  const before = said.slice(0, -1).join(', ');
+
+  if (last === undefined) {
+    throw new Error('a list of no day was written as a phrase');
+  }
+
+  return before.length === 0
+    ? last
+    : words('home.loggedToday.andTheLast', undefined, { last, said: before });
 }

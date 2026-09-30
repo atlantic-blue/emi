@@ -2,6 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@e
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { SecondaryButton } from '../../components/Button';
 import { Screen } from '../../components/Screen';
 import { aDayOutOfReachLabel, herDayLabel } from '../cycle/copy';
 import type { HerDay } from '../cycle/herWeek';
@@ -45,6 +46,8 @@ interface Props {
   readonly onLaterMonth: () => void;
   /** The way to the day itself, which is the address the repository already answers on. */
   readonly onOpenDay: (day: string) => void;
+  /** The way to the whole period, corrected in one action rather than a day at a time. */
+  readonly onEditPeriod: () => void;
 }
 
 /**
@@ -52,6 +55,8 @@ interface Props {
  * day her next period is expected on outlined, and today ringed.
  *
  * A press on a square puts a sheet at the foot naming that day, and a press on the sheet opens it.
+ * Under both of them is the way to the whole period, for a correction that would otherwise be one
+ * day at a time.
  * Nothing here counts a cycle day or picks a mark. The days arrive worked out from the cycle cache
  * and the day log, so the month and the ring cannot name different days.
  */
@@ -66,6 +71,7 @@ export function CalendarScreen({
   onOpenDay,
   onEarlierMonth,
   onLaterMonth,
+  onEditPeriod,
 }: Props): ReactNode {
   const held = new Map(days.map((day) => [day.day, day]));
 
@@ -158,6 +164,14 @@ export function CalendarScreen({
         {shePressed === undefined ? null : (
           <DaySheet {...daySheetWords(shePressed)} onPress={() => onOpenDay(shePressed.day)} />
         )}
+
+        <View style={styles.foot}>
+          <SecondaryButton
+            label={calendarCopy.editPeriod}
+            onPress={onEditPeriod}
+            testID={calendarEditPeriodTestID}
+          />
+        </View>
       </ScrollView>
     </Screen>
   );
@@ -165,6 +179,9 @@ export function CalendarScreen({
 
 const styles = StyleSheet.create({
   body: { flexGrow: 1, paddingHorizontal: space.spaceLg, paddingVertical: space.spaceXl },
+  // The way to the whole period sits under everything else and is pushed to the foot, because a day
+  // she presses is what she came for and correcting a period is the rarer thing.
+  foot: { justifyContent: 'flex-end', marginTop: 'auto', paddingTop: space.spaceLg },
   // The two ways to another month and the title share one row, and the distance between them is
   // the one the first run's month keeps. Five boxes in the header above would need 406 points of
   // the 345 an iPhone 16 leaves, and the month name is what would be cut.

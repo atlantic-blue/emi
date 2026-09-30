@@ -147,6 +147,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
         month="2026-05-01"
         onBack={nothing}
         onEarlierMonth={nothing}
+        onEditPeriod={nothing}
         onLaterMonth={nothing}
         onOpenDay={nothing}
         onPressDay={nothing}

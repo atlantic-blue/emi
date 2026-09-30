@@ -134,6 +134,7 @@ export default function CalendarRoute(): ReactNode {
       month={month}
       onBack={leave}
       onEarlierMonth={() => sheMovesTo(addMonths(month, -1))}
+      onEditPeriod={() => router.push(`/calendar/period?${dayParameter}=${month}`)}
       onLaterMonth={() => sheMovesTo(addMonths(month, 1))}
       onOpenDay={(day) => router.push(`/day/${day}`)}
       onPressDay={setShePressed}

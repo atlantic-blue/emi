@@ -9,11 +9,13 @@ import { monthWeeks, weekdayColumnNames } from '../onboarding/days';
 /**
  * The month grid, drawn once for every screen that shows a month.
  *
- * Two screens stand on it. The first run asks which day her last period started on, so its squares
- * take a press and the one she picked is marked. The calendar screen reads her own month back to
- * her, so its squares carry the day of her cycle and what happened on that date. What a square
- * draws and what it does when she presses it arrive from the screen; the columns, the rows and the
- * size of a square are the grid's own.
+ * It has two modes, and the mode is the role a square carries. One picks a single day: the first
+ * run asks which day her last period started on, so its squares are the options of one choice. The
+ * other picks a range: the period picker asks which days she bled on, so each square is a day she
+ * turns on and off on its own. The calendar screen picks neither and opens the day she presses.
+ *
+ * What a square draws and what it does when she presses it arrive from the screen; the columns, the
+ * rows and the size of a square are the grid's own.
  */
 
 export function dayTestID(day: string): string {
@@ -72,9 +74,10 @@ export interface MonthSquare {
   readonly onPress?: () => void;
   /**
    * What the square is to somebody listening. A screen asking her to pick one day of the month
-   * offers a set of options, and a screen where a day opens something offers a button.
+   * offers a set of options, a screen picking a range offers a tick she turns on and off, and a
+   * screen where a day opens something offers a button.
    */
-  readonly role?: 'radio' | 'button';
+  readonly role?: 'radio' | 'checkbox' | 'button';
 }
 
 interface SquareProps {
@@ -136,11 +139,20 @@ function Square({ day, square }: SquareProps): ReactNode {
     );
   }
 
+  // A tick is checked or it is not, and a choice among many is the one that is selected, so the two
+  // modes are spoken differently. A screen reader says nothing at all about `selected` on a
+  // checkbox, and the tick under the number is not a cue anybody listening gets.
+  const role = square.role ?? 'radio';
+
   return (
     <Pressable
       accessibilityLabel={square.label}
-      accessibilityRole={square.role ?? 'radio'}
-      accessibilityState={{ disabled: square.outOfReach === true, selected: chosen }}
+      accessibilityRole={role}
+      accessibilityState={
+        role === 'checkbox'
+          ? { checked: chosen, disabled: square.outOfReach === true }
+          : { disabled: square.outOfReach === true, selected: chosen }
+      }
       disabled={square.outOfReach === true}
       hitSlop={SQUARE_TOUCH}
       onPress={square.onPress}

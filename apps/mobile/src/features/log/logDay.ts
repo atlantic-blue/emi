@@ -4,8 +4,8 @@ import { type Flow, isBleeding } from '@emi/cycle';
 import type { Database } from '../../data/database';
 import { readDayLog } from '../../data/dayLogRepository';
 import type { DayVault } from '../../services/vault/dayVault';
-import type { DayAndCycles } from '../cycle/rebuild';
-import { editDay, logDay } from '../cycle/rebuild';
+import type { DayAndCycles, DaysAndCycles } from '../cycle/rebuild';
+import { editDay, logDay, saveDays } from '../cycle/rebuild';
 
 /**
  * One write of one day, from a screen. A day she already logged keeps everything else it holds,
@@ -27,16 +27,50 @@ export interface FlowLog {
 
 export function logFlow(db: Database, vault: DayVault, log: FlowLog): DayAndCycles {
   const held = readDayLog(db, log.day);
-  const record: DayRecord = {
+  const write = { day: log.day, payload: vault.seal(theDayAfter(db, vault, log)), now: log.now };
+
+  return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
+}
+
+/** One day of a save of many: which day, and the flow it takes. */
+export interface DayFlow {
+  readonly day: string;
+  readonly flow: Flow;
+}
+
+export interface FlowsLog {
+  readonly days: readonly DayFlow[];
+  readonly now: Date;
+}
+
+/**
+ * One save of the flow of several days, which is how a whole period is corrected in one action.
+ *
+ * Each day is built the way a day she logs on its own is built, so a day of the period keeps its
+ * symptoms and everything else it holds. Every day is sealed before the write opens, because sealing
+ * reads the day the table holds and the write is the part that has to be all or nothing.
+ */
+export function logFlows(db: Database, vault: DayVault, log: FlowsLog): DaysAndCycles {
+  const writes = log.days.map((each) => ({
+    day: each.day,
+    payload: vault.seal(theDayAfter(db, vault, { ...each, now: log.now })),
+    now: log.now,
+  }));
+
+  return saveDays(db, writes, vault.open, log.now);
+}
+
+/** The day as this write leaves it: what it already held, with the flow she just gave it. */
+function theDayAfter(db: Database, vault: DayVault, log: FlowLog): DayRecord {
+  const held = readDayLog(db, log.day);
+
+  return {
     ...(held ? withoutTheMark(vault.open(held.payload)) : {}),
     day: log.day,
     flow: log.flow,
     ...(marksTheBleeding(log) ? { bleedingIsUnexpected: true } : {}),
     recordedAt: log.now.toISOString(),
   };
-  const write = { day: log.day, payload: vault.seal(record), now: log.now };
-
-  return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
 }
 
 /** What she picked for this day already, so the picker opens on her own answer. */
