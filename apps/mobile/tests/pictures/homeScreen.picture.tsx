@@ -12,6 +12,7 @@ import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { HomeScreen } from '../../src/features/home/HomeScreen';
+import { herNumbers } from '../../src/features/home/herNumbers';
 import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import {
   daysOf,
@@ -127,6 +128,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
         forecast={forecast}
         goals={recorded.goals}
         name={recorded.name}
+        numbers={herNumbers(cycles, forecast)}
         onExport={() => undefined}
         onHistory={() => undefined}
         onLogPain={() => undefined}

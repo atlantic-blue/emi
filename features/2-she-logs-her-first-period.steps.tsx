@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
-import { addDays } from '@emi/cycle';
+import { addDays, publishedFigures } from '@emi/cycle';
 import {
   FULL_TURN_DEGREES,
   GAP_DEGREES,
@@ -21,6 +21,7 @@ import {
   ringBeadTestID,
   ringTrackTestID,
 } from '../apps/mobile/src/components/CycleRing';
+import { type CycleRow, listCycles } from '../apps/mobile/src/data/cycleRepository';
 import type { Database } from '../apps/mobile/src/data/database';
 import {
   DayLogError,
@@ -34,7 +35,17 @@ import { profileRow, readProfile } from '../apps/mobile/src/data/profileReposito
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
 import { flowOptionTestID } from '../apps/mobile/src/features/log/FlowPicker';
-import { homeScreenTestID } from '../apps/mobile/src/features/home/HomeScreen';
+import { historyCycleTestID } from '../apps/mobile/src/features/history/HistoryScreen';
+import {
+  historyTestID,
+  homeFiguresLineTestID,
+  homeScreenTestID,
+} from '../apps/mobile/src/features/home/HomeScreen';
+import {
+  herNumberTestID,
+  homeNumbersTestID,
+  publishedNumberTestID,
+} from '../apps/mobile/src/features/home/MeasuredRow';
 import { longerTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { periodLengthTestID } from '../apps/mobile/src/features/onboarding/PeriodLength';
 import {
@@ -70,7 +81,13 @@ import {
   theProfileVaultOnHerPhone,
   theVaultOnHerPhone,
 } from '../apps/mobile/tests/fixtures/herVault';
-import { sizedTextIn } from '../apps/mobile/tests/fixtures/renderedText';
+import { sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
+import {
+  herCyclesVaryBy,
+  herLastCycleRuns,
+  herLastPeriodRuns,
+  daysOfHerThreeCycles,
+} from '../apps/mobile/tests/fixtures/herThreeCycles';
 import {
   controlsTooSmallToPress,
   daySquaresLeavingTheRowDead,
@@ -338,6 +355,23 @@ function refusalOf(act: () => unknown): string {
     throw error;
   }
   throw new Error('the write was accepted, and a refusal was expected');
+}
+
+/** Every word one part of the screen puts in front of her, read as one line. */
+function whatItSays(testID: string): string {
+  return textIn(screen.getByTestId(testID)).join(' ');
+}
+
+/** The most recent cycle her phone closed, which is the one her two lengths are read from. */
+function theLastCompleteCycleOnHerPhone(): CycleRow {
+  const complete = listCycles(herDatabase()).filter((cycle) => cycle.lengthDays !== null);
+  const last = complete[complete.length - 1];
+
+  if (last === undefined) {
+    throw new Error('her own days were written and no complete cycle was read back');
+  }
+
+  return last;
 }
 
 beforeEach(() => {
@@ -1466,6 +1500,102 @@ defineFeature(feature, (test) => {
       expect(refused).toThrow(/CHECK/i);
       expect(table.all('SELECT day FROM day_log')).toEqual([]);
     });
+  });
+
+  test('SCREEN-2, she reads her three cycle numbers beside the published figures', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let herLastCycle: CycleRow;
+    let herCycleLengthOnTheScreenSheOpened = '';
+    let herPeriodLengthOnTheScreenSheOpened = '';
+
+    given('her phone holds three cycles of her own', async () => {
+      await herPhoneHolds(whenSheOpensIt, daysOfHerThreeCycles(today));
+    });
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+      herLastCycle = theLastCompleteCycleOnHerPhone();
+    });
+
+    then(
+      'she reads how long her last cycle ran, how long her last period ran, and how much her cycles vary',
+      () => {
+        herCycleLengthOnTheScreenSheOpened = whatItSays(herNumberTestID('cycle-length'));
+        herPeriodLengthOnTheScreenSheOpened = whatItSays(herNumberTestID('period-duration'));
+
+        expect(herCycleLengthOnTheScreenSheOpened).toBe(`${herLastCycleRuns} days`);
+        expect(herPeriodLengthOnTheScreenSheOpened).toBe(`${herLastPeriodRuns} days`);
+        expect(whatItSays(herNumberTestID('cycle-length-variation'))).toBe(
+          `${herCyclesVaryBy} days`,
+        );
+        // Her three numbers are her own days read back, and not three constants this file chose.
+        expect([herLastCycle.lengthDays, herLastCycle.periodLengthDays]).toEqual([
+          herLastCycleRuns,
+          herLastPeriodRuns,
+        ]);
+      },
+    );
+
+    and('beside each of the three she reads the figure a published paper reports', () => {
+      for (const figure of publishedFigures) {
+        expect(whatItSays(publishedNumberTestID(figure.measures))).not.toBe('');
+        expect(figure.citation.source.length).toBeGreaterThan(0);
+      }
+
+      expect(whatItSays(publishedNumberTestID('period-duration'))).toBe('up to 8 days');
+      expect(whatItSays(publishedNumberTestID('cycle-length-variation'))).toBe('2.6 days');
+    });
+
+    and('the published figure beside her cycle length is 24 to 38 days', () => {
+      expect(whatItSays(publishedNumberTestID('cycle-length'))).toBe('24 to 38 days');
+    });
+
+    and(
+      'she is told the published figure is the one the paper reports and the paper is one press away',
+      () => {
+        expect(whatItSays(homeFiguresLineTestID)).toBe(
+          'The published figure is the one the paper reports, and the paper is one press away.',
+        );
+      },
+    );
+
+    and('none of the three numbers is called normal, abnormal or irregular', () => {
+      const said = whatItSays(homeNumbersTestID).toLowerCase();
+
+      for (const word of ['normal', 'abnormal', 'irregular']) {
+        expect(said).not.toContain(word);
+      }
+    });
+
+    and(
+      'the cycle length she reads here is the one the Insights screen gives that same cycle',
+      async () => {
+        // The section goes when she leaves it, so what she read is kept above and compared here.
+        await shePresses(historyTestID);
+
+        expect(herCycleLengthOnTheScreenSheOpened).toContain(String(herLastCycle.lengthDays));
+        expect(whatItSays(historyCycleTestID(herLastCycle.startedOn))).toContain(
+          String(herLastCycle.lengthDays),
+        );
+      },
+    );
+
+    and(
+      'the period length she reads here is the bleeding the Insights screen gives that same cycle',
+      () => {
+        expect(herPeriodLengthOnTheScreenSheOpened).toContain(
+          String(herLastCycle.periodLengthDays),
+        );
+        expect(whatItSays(historyCycleTestID(herLastCycle.startedOn))).toContain(
+          String(herLastCycle.periodLengthDays),
+        );
+        expect(herLastCycle.periodLengthDays).not.toBe(herLastCycle.lengthDays);
+      },
+    );
   });
 });
 
