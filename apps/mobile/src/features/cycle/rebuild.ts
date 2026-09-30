@@ -29,7 +29,15 @@ export interface DayAndCycles {
   readonly cycles: readonly CycleRow[];
 }
 
-export function recordedDays(db: Database, readDay: ReadDay): DayRecord[] {
+/**
+ * Every day she recorded, as the reader answers them. The reader's own type travels through, so a
+ * caller holding a reader that opens the whole day reads the whole day back and never has to go to
+ * the table a second time for the part this package does not care about.
+ */
+export function recordedDays<Opened extends DayRecord>(
+  db: Database,
+  readDay: (payload: Uint8Array) => Opened,
+): Opened[] {
   return listDayLogs(db).map((row) => readDay(row.payload));
 }
 

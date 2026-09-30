@@ -1,9 +1,7 @@
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
-import type { Feeling, Goal, Regularity } from '@emi/crypto';
-import type { ForecastResult } from '@emi/cycle';
-import type { DayRecord } from '@emi/cycle';
-import { addDays } from '@emi/cycle';
+import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
+import { type ForecastResult, addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
@@ -89,6 +87,25 @@ const sheRecordedFourDaysOfIt: readonly DayRecord[] = Array.from(
   },
 );
 
+/**
+ * The same period, with today left unlogged, and then today carrying the two symptoms the drawing
+ * of the screen she comes back to names. The two frames are the pair step 15.6 builds: the row is
+ * absent on the first and reads back her marks on the second.
+ */
+const sheRecordedTheThreeDaysBehindToday: readonly DayRecord[] = sheRecordedFourDaysOfIt.slice(
+  0,
+  3,
+);
+
+const sheThenMarkedTwoSymptoms: readonly DayRecord[] = [
+  ...sheRecordedTheThreeDaysBehindToday,
+  {
+    day: addDays(herPeriodStartedOnAMonday, 3),
+    symptoms: ['cramps', 'low-mood'],
+    recordedAt: `${addDays(herPeriodStartedOnAMonday, 3)}T19:00:00.000Z`,
+  },
+];
+
 const theRecordedSets: readonly Recorded[] = [
   { title: 'Her first day, nothing recorded', set: veryRegular, recorded: 'nothing' },
   { title: 'One cycle recorded, still learning', set: oneCycleComplete },
@@ -116,6 +133,20 @@ const theRecordedSets: readonly Recorded[] = [
     title: 'Four recorded period days, and the week she reads them in',
     set: veryRegular,
     days: sheRecordedFourDaysOfIt,
+    onDay: 4,
+    periodRunsFor: 5,
+  },
+  {
+    title: 'Day 4, and she has marked nothing today',
+    set: veryRegular,
+    days: sheRecordedTheThreeDaysBehindToday,
+    onDay: 4,
+    periodRunsFor: 5,
+  },
+  {
+    title: 'The two symptoms she marked today, read back under the line',
+    set: veryRegular,
+    days: sheThenMarkedTwoSymptoms,
     onDay: 4,
     periodRunsFor: 5,
   },
@@ -159,6 +190,10 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
           statedPeriodLengthDays: recorded.periodRunsFor,
         });
 
+  // Today as she left it, picked out of the days this frame was drawn from, which is what the
+  // route hands the screen.
+  const loggedToday = recorded.days?.find((day) => day.day === today);
+
   const view = await render(
     <OnAPhone>
       <HomeScreen
@@ -166,6 +201,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
         feeling={recorded.feeling}
         forecast={forecast}
         goals={recorded.goals}
+        loggedToday={loggedToday}
         name={recorded.name}
         numbers={herNumbers(cycles, forecast)}
         onExport={() => undefined}

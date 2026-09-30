@@ -1,4 +1,4 @@
-import type { Feeling, Goal, Regularity } from '@emi/crypto';
+import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
 import { type IconName, MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
@@ -12,11 +12,12 @@ import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 import { HomeHeader } from './HomeHeader';
+import { LoggedToday } from './LoggedToday';
 import { PhaseLine } from './PhaseLine';
 import { RoundAction, type RoundActionName } from './RoundAction';
 import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
-import { homeCopy } from './copy';
+import { homeCopy, whatSheMarkedToday } from './copy';
 import type { MeasuredNumber } from './herNumbers';
 import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
@@ -31,6 +32,7 @@ import { thePainLineIsOffered } from './painLine';
 
 export { homeGreetingTestID } from './HomeHeader';
 export { roundActionTestID, roundActions } from './RoundAction';
+export { loggedTodayTestID } from './LoggedToday';
 export { phaseLineTestID } from './PhaseLine';
 export { weekStripTestID } from './WeekStrip';
 
@@ -61,6 +63,12 @@ interface Props {
   readonly week?: readonly DayOfHerWeek[];
   /** Her own day, which is what a day of the strip is named against for a screen reader. */
   readonly today?: string;
+  /**
+   * Today as she left it, read out of the same days the ring and the strip are built from, and
+   * nothing at all where she has written nothing today. It is read here and nowhere in the
+   * arithmetic: the only thing it moves is the row under the phase line.
+   */
+  readonly loggedToday?: DayRecord;
   readonly forecast: ForecastResult;
   /** The length she gave at the first run, which the learning state counts by. */
   readonly cycleLengthDays: number;
@@ -104,6 +112,7 @@ export function HomeScreen({
   ring,
   week,
   today,
+  loggedToday,
   forecast,
   cycleLengthDays,
   name,
@@ -116,6 +125,8 @@ export function HomeScreen({
   onLogPain,
   onExport,
 }: Props): ReactNode {
+  const marked = whatSheMarkedToday(loggedToday);
+
   return (
     <Screen testID={homeScreenTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
@@ -130,6 +141,12 @@ export function HomeScreen({
         {ring === undefined ? null : (
           <View style={styles.phaseLine}>
             <PhaseLine ring={ring} />
+          </View>
+        )}
+
+        {marked === undefined ? null : (
+          <View style={styles.logged}>
+            <LoggedToday marked={marked} onPress={onSymptoms} />
           </View>
         )}
 
@@ -222,6 +239,13 @@ const styles = StyleSheet.create({
     marginTop: space.spaceSm,
   },
   forecast: { marginTop: space.spaceLg },
+  // The row sits between the line and the ring, which is where the drawing of this screen places
+  // it: she reads the day she is on, then what she already said about it, then the ring.
+  logged: {
+    alignSelf: 'stretch',
+    marginBottom: space.spaceLg,
+    paddingHorizontal: space.margin,
+  },
   noRing: { alignItems: 'center', paddingHorizontal: space.spaceLg },
   // Her three numbers sit under the forecast they were read from, and above the ways off the
   // screen, because they are something to read rather than somewhere to go.

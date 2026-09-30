@@ -2160,8 +2160,13 @@ defineFeature(feature, (test) => {
     });
 
     and('the line under it names both symptoms she marked, and no symptom she did not', () => {
+      // The screen she is looking at and not the whole glass. The log tab stays mounted behind
+      // this one, and contract SCREEN-2 holds the four words small on the home screen alone.
+      const glass = screen.getByTestId(homeScreenTestID);
+
       expect(theSymptomsTheRowNames()).toEqual(theSymptomsTheDrawingNames());
-      expect(theFourWordsDrawnTooLargeOn(screen.toJSON())).toEqual([]);
+      expect(theFourWordsDrawnTooLargeOn(glass)).toEqual([]);
+      expect(theFourWordsDrawnOn(glass).length).toBeGreaterThan(0);
     });
 
     and('that is the drawing of the screen she comes back to, down to the ring', () => {
