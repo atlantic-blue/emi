@@ -1,6 +1,6 @@
 import type { Feeling, Goal, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
+import { type IconName, MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -38,7 +38,7 @@ export { weekStripTestID } from './WeekStrip';
  * The two actions and the drawing each one carries. The order is the order the drawing places
  * them in, and nothing else on this screen decides it.
  */
-const theRoundActions: readonly { action: RoundActionName; icon: string }[] = [
+const theRoundActions: readonly { action: RoundActionName; icon: IconName }[] = [
   { action: 'period', icon: 'drop' },
   { action: 'symptoms', icon: 'sun' },
 ];
