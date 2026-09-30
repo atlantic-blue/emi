@@ -34,12 +34,36 @@ function reachesFor(role: string, contents: string): boolean {
 }
 
 /**
+ * Reaching for a spacing step, as against writing its name. The token package writes a step in
+ * camel case and a style sheet writes it in kebab case, so both spellings are read. A step always
+ * follows a hyphen in a class, because Tailwind writes the property first, and it always follows a
+ * dot when code reads it off the scale. Prose that records the retirement writes the name inside
+ * backticks, which is the opposite of a reach, so the forms are named rather than the characters.
+ */
+function reachesForStep(step: string, contents: string): boolean {
+  const kebab = step.replace(/[A-Z]/g, (capital) => `-${capital.toLowerCase()}`);
+
+  return [
+    `'${step}'`,
+    `"${step}"`,
+    `space.${step}`,
+    `'${kebab}'`,
+    `"${kebab}"`,
+    `${kebab}:`,
+    `-${kebab}`,
+  ].some((form) => contents.includes(form));
+}
+
+/**
  * The export under `docs/design/prototype` is the design tool's own output, and the markup of three
  * of its screens reaches for `text-data-md`. A configuration that stopped naming the role would draw
  * that text at whatever the browser defaults to, so the export keeps the name, its own check reads
  * the two sides against each other, and `tools/pipeline/prototype.ts` records the difference property
  * by property. Those two files and this one name the role in order to hold it out, and a mention
  * inside a backtick reads the same as a class to the forms above, so they are named here.
+ *
+ * The same four files are the only ones allowed to name a retired spacing step, for the same
+ * reason: the markup of the export reaches for `px-gutter-lg`.
  */
 function mayReachForIt(file: string): boolean {
   return (
@@ -47,6 +71,13 @@ function mayReachForIt(file: string): boolean {
     file === 'tools/pipeline/prototype.ts' ||
     file === 'tools/pipeline/prototype.test.ts' ||
     file === 'packages/tokens/tests/tokens.test.ts'
+  );
+}
+
+/** Every file a reach can be written in, which is the tracked text of the repository. */
+function readableFiles(): string[] {
+  return trackedFiles().filter(
+    (file) => readable.includes(extname(file)) && file !== 'package-lock.json',
   );
 }
 
@@ -218,9 +249,7 @@ describe('the data-md role, which retired because no screen drew it', () => {
   });
 
   it('is reached for by no file the repository tracks, apart from the export that draws it', () => {
-    const files = trackedFiles().filter(
-      (file) => readable.includes(extname(file)) && file !== 'package-lock.json',
-    );
+    const files = readableFiles();
 
     expect(files.length).toBeGreaterThan(100);
 
@@ -244,6 +273,39 @@ describe('the data-md role, which retired because no screen drew it', () => {
   });
 });
 
+/** The three names this step retired, each of which held the value of a step that stays. */
+const retiredSteps = ['gutter', 'gutterMd', 'gutterLg'];
+
+describe('the three gutter steps, which retired because each repeated another step', () => {
+  it.each(retiredSteps)('leaves %s out of the scale, so nothing can reach for it', (step) => {
+    expect(spaceNames).not.toContain(step);
+    expect(Object.keys(space)).not.toContain(step);
+  });
+
+  it.each(retiredSteps)('is reached for by no file the repository tracks: %s', (step) => {
+    const files = readableFiles();
+
+    expect(files.length).toBeGreaterThan(100);
+
+    const reaching = files.filter((file) =>
+      reachesForStep(step, readFileSync(join(repositoryRoot, file), 'utf8')),
+    );
+
+    expect(reaching).not.toEqual([]);
+    expect(reaching.filter((file) => !mayReachForIt(file))).toEqual([]);
+  });
+
+  it('reads a reach as a quoted name, a key or a class, and a record of the retirement as neither', () => {
+    expect(reachesForStep('gutter', 'space.gutter')).toBe(true);
+    expect(reachesForStep('gutterMd', "step('gutterMd')")).toBe(true);
+    expect(reachesForStep('gutterLg', '"gutter-lg":"2rem"')).toBe(true);
+    expect(reachesForStep('gutterLg', '  gutter-lg: 2rem')).toBe(true);
+    expect(reachesForStep('gutterLg', '<div class="px-gutter-lg">')).toBe(true);
+    expect(reachesForStep('gutterMd', 'the `gutter-md` step retired into nothing')).toBe(false);
+    expect(reachesForStep('gutter', 'a gutter each side of the calendar')).toBe(false);
+  });
+});
+
 describe('the spacing', () => {
   it('puts every step on the four point grid', () => {
     const off = spaceNames.filter((name) => space[name] % 4 !== 0);
@@ -257,12 +319,10 @@ describe('the spacing', () => {
     expect(steps).toEqual([...steps].sort((one, other) => one - other));
   });
 
-  it('names one gap twice and two of them three times, because the page steps meet the rhythm', () => {
-    expect(space.gutter).toBe(space.spaceMd);
+  it('names two gaps twice, because the two page margins meet the rhythm', () => {
     expect(space.margin).toBe(space.spaceLg);
-    expect(space.gutterMd).toBe(space.spaceLg);
-    expect(space.gutterLg).toBe(space.marginMd);
-    expect(space.spaceXl).toBe(space.gutterLg);
+    expect(space.marginMd).toBe(space.spaceXl);
+    expect(spaceNames).toHaveLength(8);
     expect(new Set(spaceNames.map((name) => space[name])).size).toBe(6);
   });
 
@@ -281,6 +341,15 @@ describe('the spacing', () => {
 
   it('keeps the tap target at the accessible minimum', () => {
     expect(MINIMUM_TAP_TARGET).toBeGreaterThanOrEqual(44);
+  });
+
+  it('holds five steps of the rhythm and three margins, and nothing else', () => {
+    const rhythm = spaceNames.filter((name) => name.startsWith('space'));
+    const margins = spaceNames.filter((name) => name.startsWith('margin'));
+
+    expect(rhythm).toEqual(['spaceXs', 'spaceSm', 'spaceMd', 'spaceLg', 'spaceXl']);
+    expect(margins).toEqual(['margin', 'marginMd', 'marginLg']);
+    expect(spaceNames).toHaveLength(rhythm.length + margins.length);
   });
 
   it('holds the six corners the document names, rising to the capsule', () => {

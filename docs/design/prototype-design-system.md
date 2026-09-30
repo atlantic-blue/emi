@@ -127,9 +127,6 @@ rounded:
   xl: 1.5rem
   full: 9999px
 spacing:
-  gutter: 1rem
-  gutter-md: 1.5rem
-  gutter-lg: 2rem
   margin: 1.5rem
   margin-md: 2rem
   margin-lg: 3.5rem
@@ -148,6 +145,11 @@ matter names them and `tools/pipeline/prototype.test.ts` reads them back out of 
 screen. That check also holds every other value the two sides share. The corners are the one block
 the two sides do not agree about. Emi draws the scale in the front matter here, which answers
 https://github.com/atlantic-blue/emi/issues/159, and the export keeps its own because it is an export.
+
+The front matter also names three spacing steps fewer than the export. `gutter`, `gutter-md` and
+`gutter-lg` each repeated the value of another step, and no screen of the application drew any of
+them, so the design system retired the three names. The export keeps them because its own markup
+reaches for them.
 
 Every paragraph below names a role. None of them names a value. The front matter above is the only
 place a colour, a size or a step is written, so this document describes one palette.
@@ -223,7 +225,7 @@ every role.
 
 The layout sits on an eight point grid. The front matter names every step.
 
-- **Phone**: one column, fluid cards, `margin` around the canvas, and `gutter` between cards. Every
+- **Phone**: one column, fluid cards, `margin` around the canvas, and `space-md` between cards. Every
   interactive element is at least 44 points on both axes.
 - **Tablet**: six columns, with `margin-md` around the canvas. The ring and the journal entry sit
   side by side or stack.

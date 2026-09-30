@@ -118,13 +118,13 @@ describe('the theme the application draws in is the token package, in the shape 
       expect(Object.keys(extended.borderRadius)).toHaveLength(6);
     });
 
-    it('takes all eleven spacing steps, under the names Tailwind writes them with', () => {
+    it('takes all eight spacing steps, under the names Tailwind writes them with', () => {
       expect(extended.spacing).toEqual(
         Object.fromEntries(
           spaceNames.map((name) => [hyphenated(name), `${String(space[name])}px`]),
         ),
       );
-      expect(Object.keys(extended.spacing)).toHaveLength(11);
+      expect(Object.keys(extended.spacing)).toHaveLength(8);
     });
 
     it('declares the eleven text roles itself rather than through Tailwind’s own scale', () => {
