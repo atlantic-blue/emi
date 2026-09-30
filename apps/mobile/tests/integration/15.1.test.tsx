@@ -139,6 +139,10 @@ describe('the screen she opens names Emi and greets her by the name she gave', (
   });
 
   describe('what the comparison says when a part of the header is missing', () => {
+    beforeEach(async () => {
+      await sheOpensEmi(theNameSheGave);
+    });
+
     it('names the mark, and says what it is built under', () => {
       const withoutTheMark = whatTheScreenSheOpensDrew().filter(
         (identifier) => identifier !== homeHeaderMarkTestID,
