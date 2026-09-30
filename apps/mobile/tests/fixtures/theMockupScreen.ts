@@ -5,8 +5,10 @@ import { screen } from '@testing-library/react-native';
 
 import {
   type MockupRow,
+  type MockupScreen,
   type Mockups,
   mockupsIn,
+  partsOf,
   partsOfTheScreen,
   rowsOfTheScreen,
 } from '../../../../tools/pipeline/mockups';
@@ -16,6 +18,11 @@ import {
   calendarTodayTestID,
 } from '../../src/features/calendar/CalendarScreen';
 import { daySheetTestID } from '../../src/features/calendar/DaySheet';
+import {
+  dayRefusedBackTestID,
+  dayRefusedLineTestID,
+  dayRefusedTitleTestID,
+} from '../../src/features/log/DayRefused';
 import { cycleRingTestID } from '../../src/components/CycleRing';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
@@ -114,6 +121,8 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     answerHeaderTestID,
     answerLinesTestID,
     calendarHeaderTestID,
+    dayRefusedTitleTestID,
+    dayRefusedLineTestID,
   ],
   TextLink: [
     yourAnswersBackTestID,
@@ -121,6 +130,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     answerCancelTestID,
     calendarBackTestID,
     calendarTodayTestID,
+    dayRefusedBackTestID,
   ],
   ThePromise: [thePromiseTestID],
   WeekStrip: [weekStripTestID],
@@ -141,13 +151,75 @@ export interface Part {
  * markup to learn the order the drawing puts them in, rather than trusting an order somebody typed.
  */
 export function theMarkupOfTheMockup(key: string): string {
+  return theDrawingCalled(key).html;
+}
+
+function theDrawingCalled(key: string): MockupScreen {
   const drawing = theStage().screens[key];
 
   if (drawing === undefined) {
     throw new Error(`the mockups stage holds no screen called "${key}"`);
   }
 
-  return drawing.html;
+  return drawing;
+}
+
+/** The characters a sentence may carry that a pattern would otherwise read as its own. */
+function asAPattern(words: string): string {
+  return words.replace(/[.*+?^${}()|[\]\\]/g, (found) => `\\${found}`);
+}
+
+/**
+ * Where a drawing puts a note: a muted paragraph alone in a block, carrying a sentence the drawing
+ * also lists under its notes.
+ */
+function theBlockHolding(note: string): RegExp {
+  return new RegExp(
+    `<div class="stack"[^>]*><p class="t-body-sm muted">${asAPattern(note)}</p></div>`,
+  );
+}
+
+/**
+ * The parts of one drawing, without the notes the stage wrote for whoever reads it.
+ *
+ * Seven drawings carry a note inside their own markup, and each one is a muted paragraph in a
+ * block that names a part. The sentence is addressed to somebody reading the stage and never to a
+ * woman using Emi, so a screen that does not draw it is right rather than short of a part.
+ *
+ * Every note the drawing lists has to be found as a block and removed. A note that stayed would
+ * ask the built screen for a paragraph nobody should read, and a removal that took more than the
+ * note with it would leave a comparison weaker than it reads, so both are refused.
+ */
+export function thePartsOfTheMockupWithoutItsNotes(
+  key: string,
+  identifiers: PartIdentifiers = theIdentifiersOfAPart,
+): Part[] {
+  const drawing = theDrawingCalled(key);
+  const written = (drawing.notes ?? []).filter((note) => drawing.html.includes(note));
+  let markup = drawing.html;
+
+  for (const note of written) {
+    const block = theBlockHolding(note);
+
+    if (!block.test(markup)) {
+      throw new Error(
+        `the drawing "${key}" writes a note that is not a block of its own: "${note}"`,
+      );
+    }
+
+    markup = markup.replace(block, '');
+  }
+
+  const kept = partsOf(markup);
+  const lost = partsOf(drawing.html).length - kept.length;
+
+  if (lost !== written.length) {
+    throw new Error(
+      `dropping ${String(written.length)} note(s) from the drawing "${key}" took ${String(lost)} part(s) with it`,
+    );
+  }
+
+  return kept.map((name) => ({ builtUnder: identifiers[name] ?? [], name }));
 }
 
 /** The parts of one drawing, in its order, each one carrying what it is built under. */

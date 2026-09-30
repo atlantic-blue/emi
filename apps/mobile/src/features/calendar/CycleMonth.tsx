@@ -109,16 +109,28 @@ function Square({ day, square }: SquareProps): ReactNode {
       ) : null}
     </>
   );
+  // The dim goes under the mark rather than over it. A day she cannot open is still a day her
+  // period is expected on, and a dim that repainted the border would take that outline away.
   const style = [
     styles.day,
+    square.outOfReach === true && styles.dayOutOfReach,
     theMark[square.mark],
     chosen && styles.dayChosen,
-    square.outOfReach === true && styles.dayOutOfReach,
   ];
 
+  // A square with nothing to press is read and never pressed, so it carries no role. A square the
+  // screen refuses is the exception: it is a button she cannot use, and saying so is the only cue
+  // a woman who is listening gets, because the dimming is not one.
   if (square.onPress === undefined) {
     return (
-      <View accessibilityLabel={square.label} style={style} testID={dayTestID(day)}>
+      <View
+        accessibilityLabel={square.label}
+        style={style}
+        testID={dayTestID(day)}
+        {...(square.outOfReach === true
+          ? { accessibilityRole: 'button' as const, accessibilityState: { disabled: true } }
+          : {})}
+      >
         {inside}
       </View>
     );

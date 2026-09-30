@@ -47,6 +47,7 @@ export const english = {
   'cycle.day.bled': 'you bled',
   'cycle.day.cycleDay': 'cycle day {cycle}',
   'cycle.day.expected': 'your period is expected',
+  'cycle.day.notYet': 'not yet, this day has not happened',
   'cycle.noRing.line': 'The ring needs a period. Log a day you bled and it appears.',
   'cycle.noRing.title': 'Nothing to draw yet',
   'cycle.phaseLine.day': 'Day {day}',

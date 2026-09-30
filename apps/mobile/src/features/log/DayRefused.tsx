@@ -23,6 +23,8 @@ export const dayRefusedCopy: Readonly<Record<DayRefusal, { title: string; line: 
 
 export const dayRefusedBackLabel = words('log.day.back');
 export const dayRefusedTestID = 'day-refused';
+export const dayRefusedTitleTestID = 'day-refused-title';
+export const dayRefusedLineTestID = 'day-refused-line';
 export const dayRefusedBackTestID = 'day-refused-back';
 
 interface Props {
@@ -36,10 +38,12 @@ export function DayRefused({ refusal, onBack }: Props): ReactNode {
   return (
     <Screen testID={dayRefusedTestID}>
       <View style={styles.body}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" style={styles.title} testID={dayRefusedTitleTestID}>
           {said.title}
         </Text>
-        <Text style={styles.line}>{said.line}</Text>
+        <Text style={styles.line} testID={dayRefusedLineTestID}>
+          {said.line}
+        </Text>
 
         <Pressable
           accessibilityRole="button"

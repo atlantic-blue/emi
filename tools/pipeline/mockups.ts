@@ -39,6 +39,7 @@ export const theFixture = join(testRoot, 'fixtures', 'theMockupScreen.ts');
  */
 export const fixtureCalls: readonly string[] = [
   'thePartsOfTheMockup',
+  'thePartsOfTheMockupWithoutItsNotes',
   'partsMissingFromTheScreen',
   'theRowsOfTheMockup',
 ];

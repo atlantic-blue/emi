@@ -3,8 +3,9 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
-import { herDayLabel } from '../cycle/copy';
+import { aDayOutOfReachLabel, herDayLabel } from '../cycle/copy';
 import type { HerDay } from '../cycle/herWeek';
+import { refusalFor } from '../log/editDay';
 import { monthLabel } from '../onboarding/days';
 import { CycleMonth, type MonthSquare } from './CycleMonth';
 import { DaySheet } from './DaySheet';
@@ -63,6 +64,18 @@ export function CalendarScreen({
 
     if (hers === undefined) {
       throw new Error(`the month drew ${day} and the cycle says nothing about it`);
+    }
+
+    // One rule decides whether a day opens, and the address she could type it into reads the same
+    // one, so the month never offers a day the day itself would refuse.
+    if (refusalFor({ day, today }) !== undefined) {
+      return {
+        label: aDayOutOfReachLabel(hers, today),
+        mark: hers.mark,
+        outOfReach: true,
+        role: 'button',
+        ...(hers.cycleDay === undefined ? {} : { cycleDay: hers.cycleDay }),
+      };
     }
 
     return {

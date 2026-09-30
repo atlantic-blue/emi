@@ -96,3 +96,11 @@ export function herDayLabel(day: HerDay, today: string): string {
 
   return said.join(', ');
 }
+
+/**
+ * What a screen reader says about a day the month draws and will not open. The square is drawn
+ * faint, and faint is nothing to somebody listening, so the reason it takes no press is said.
+ */
+export function aDayOutOfReachLabel(day: HerDay, today: string): string {
+  return [herDayLabel(day, today), words('cycle.day.notYet')].join(', ');
+}

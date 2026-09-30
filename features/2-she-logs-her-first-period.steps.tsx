@@ -124,7 +124,9 @@ import {
   theCycleDayOver,
   theCycleDaysOfTheDrawing,
   theDatesOfTheDrawing,
+  theDayAheadSheCannotOpen,
   theDayTheDrawingsSheetNames,
+  theSquareSheSees,
   theMonthAndItsSheetOfTheDrawing,
   theSheetSheReads,
   theDatesTheMonthDrew,
@@ -192,6 +194,11 @@ import {
   theStripSheReads,
 } from '../apps/mobile/tests/fixtures/theWeekSheOpensWith';
 import { partsMissing } from '../apps/mobile/tests/fixtures/theMockupScreen';
+import {
+  thePartsOfTheDrawingOfARefusedDay,
+  whatTheRefusalDrew,
+} from '../apps/mobile/tests/fixtures/theDayEmiRefuses';
+import { words } from '../apps/mobile/src/language';
 import {
   herPhoneHoldsNothingForToday,
   theDrawingAfterSheLogged,
@@ -2524,6 +2531,82 @@ defineFeature(feature, (test) => {
 
       expect(sheet?.lead).toContain(ordinal(Number(String(another).slice(8, 10))));
       expect(sheet?.lead).not.toContain(ordinal(Number(theDaySheOpens.slice(8, 10))));
+    });
+  });
+
+  test('SCREEN-4, a day that has not happened yet is refused in the month and at its address', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    const aheadOfHer = theDayAheadSheCannotOpen();
+
+    given('her phone holds three recorded cycles', async () => {
+      jest.setSystemTime(whenSheOpensTheMonth());
+      await herPhoneHoldsThreeRecordedCycles(whenSheOpensTheMonth());
+    });
+
+    when('she opens the month', async () => {
+      app = await sheOpens('/calendar');
+    });
+
+    and('she presses the square two days ahead of today', async () => {
+      expect(screen.getByTestId(dayTestID(aheadOfHer))).toBeTruthy();
+      await shePresses(dayTestID(aheadOfHer));
+    });
+
+    then('she is still reading the month, and nothing at the foot of it names that day', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(theSheetSheReads()).toBeUndefined();
+    });
+
+    and('that square is faint, and somebody listening is told it takes no press', () => {
+      const square = theSquareSheSees(aheadOfHer);
+
+      expect(square.dimmed).toBe(true);
+      expect(square.saidToTakeNoPress).toBe(true);
+      expect(square.spoken).toContain(words('cycle.day.notYet'));
+    });
+
+    and('a day she already lived still takes a press and names itself at the foot', async () => {
+      const behindHer = theDaysTheDrawingFills()[0];
+
+      expect(behindHer).toBeDefined();
+      expect(theSquareSheSees(String(behindHer)).saidToTakeNoPress).toBe(false);
+      await shePresses(dayTestID(String(behindHer)));
+
+      expect(theSheetSheReads()?.lead).toContain(ordinal(Number(String(behindHer).slice(8, 10))));
+    });
+
+    when('she opens that same day ahead of her by its address', async () => {
+      // She puts the month down before she opens the address. Two applications left running at
+      // once leave two routers, and the way back then reaches neither of them.
+      await app.close();
+      app = await sheOpens(`/day/${aheadOfHer}`);
+    });
+
+    then('she is told the day has not happened yet', () => {
+      expect(screen.getByText(dayRefusedCopy['day-is-in-the-future'].title)).toBeTruthy();
+      expect(screen.getByText(dayRefusedCopy['day-is-in-the-future'].line)).toBeTruthy();
+    });
+
+    and('that is the drawing of the day Emi refuses', () => {
+      expect(partsMissing(thePartsOfTheDrawingOfARefusedDay(), whatTheRefusalDrew())).toEqual([]);
+    });
+
+    and('there is nothing on that screen to pick a flow with', () => {
+      expect(screen.queryByTestId(flowPickerTestID)).toBeNull();
+      expect(screen.queryByTestId(flowOptionTestID('heavy'))).toBeNull();
+    });
+
+    when('she presses the way back', async () => {
+      await shePresses(dayRefusedBackTestID);
+    });
+
+    then('her phone holds nothing on that day', () => {
+      expect(whatWasRecordedOn(aheadOfHer)).toBeUndefined();
     });
   });
 });

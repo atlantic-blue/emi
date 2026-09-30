@@ -191,6 +191,23 @@ export function theDaySheOpensTheMonth(): string {
   return theDayTheDrawingMarks('today');
 }
 
+/**
+ * A day of the drawn month she has not lived yet, two days ahead of the day she opens it on. The
+ * drawing rings the eighteenth and the month runs to the thirtieth, so the day is inside it and
+ * she can reach its square without leaving the month she is reading.
+ */
+export function theDayAheadSheCannotOpen(): string {
+  return addDays(theDaySheOpensTheMonth(), 2);
+}
+
+/** Every day of the drawn month she has already lived, which is every day she may still open. */
+export function theDaysBehindHer(): string[] {
+  return theSquaresOfTheDrawing()
+    .filter((square) => square.date !== undefined)
+    .map((square) => theDayOf(Number(square.date)))
+    .filter((day) => day <= theDaySheOpensTheMonth());
+}
+
 /** The square the drawing outlines, which is a day her next period is expected on. */
 export function theDayTheDrawingOutlines(): string {
   return theDayTheDrawingMarks('forecast');
@@ -530,6 +547,28 @@ export function theCycleDayIsAboveTheDate(day: string): boolean {
     .map((element) => String(element.props.testID));
 
   return drawn.indexOf(cycleDayTestID(day)) < drawn.indexOf(dateTestID(day));
+}
+
+/** What one square of the month tells her, beyond the numbers written inside it. */
+export interface SquareSheSees {
+  /** Whether it is drawn faint, which is how the month shows a day it will not open. */
+  readonly dimmed: boolean;
+  /** Whether it tells somebody listening that it takes no press. */
+  readonly saidToTakeNoPress: boolean;
+  /** What a screen reader reads out for it. */
+  readonly spoken: string;
+}
+
+export function theSquareSheSees(day: string): SquareSheSees {
+  const square = screen.getByTestId(dayTestID(day));
+  const style: ViewStyle = StyleSheet.flatten(square.props.style);
+  const state = square.props.accessibilityState as { disabled?: boolean } | undefined;
+
+  return {
+    dimmed: typeof style.opacity === 'number' && style.opacity < 1,
+    saidToTakeNoPress: state?.disabled === true,
+    spoken: String(square.props.accessibilityLabel ?? ''),
+  };
 }
 
 /**

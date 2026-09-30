@@ -313,3 +313,17 @@ Feature: She opens Emi and logs her first period
     Then she is reading the month again, and the sheet names the flow she just picked
     And the day of her cycle over that date is the day the ring now says
     And pressing another day of the month names that day instead
+
+  Scenario: SCREEN-4, a day that has not happened yet is refused in the month and at its address
+    Given her phone holds three recorded cycles
+    When she opens the month
+    And she presses the square two days ahead of today
+    Then she is still reading the month, and nothing at the foot of it names that day
+    And that square is faint, and somebody listening is told it takes no press
+    And a day she already lived still takes a press and names itself at the foot
+    When she opens that same day ahead of her by its address
+    Then she is told the day has not happened yet
+    And that is the drawing of the day Emi refuses
+    And there is nothing on that screen to pick a flow with
+    When she presses the way back
+    Then her phone holds nothing on that day
