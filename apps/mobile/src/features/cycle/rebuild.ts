@@ -8,6 +8,7 @@ import type { DayLogDelete, DayLogRow, DayLogWrite } from '../../data/dayLogRepo
 import {
   insertDayLog,
   listDayLogs,
+  readDayLog,
   softDeleteDayLog,
   updateDayLog,
 } from '../../data/dayLogRepository';
@@ -26,6 +27,12 @@ export type ReadDay = (payload: Uint8Array) => DayRecord;
 
 export interface DayAndCycles {
   readonly day: DayLogRow;
+  readonly cycles: readonly CycleRow[];
+}
+
+/** The same, for a save that wrote more than one day, in the order it wrote them. */
+export interface DaysAndCycles {
+  readonly days: readonly DayLogRow[];
   readonly cycles: readonly CycleRow[];
 }
 
@@ -72,6 +79,43 @@ export function editDay(db: Database, write: DayLogWrite, readDay: ReadDay): Day
 export function deleteDay(db: Database, remove: DayLogDelete, readDay: ReadDay): DayAndCycles {
   const day = softDeleteDayLog(db, remove);
   return { day, cycles: rebuildCycles(db, readDay, remove.now) };
+}
+
+/**
+ * Every day of one save, under one transaction, with the cache rebuilt once at the end of it.
+ *
+ * Her period is one thing she corrected, so half of it written is worse than none of it: the cache
+ * would describe a period she never had. The rebuild is the one that joins a transaction already
+ * open, because `replaceCycles` opens one of its own and SQLite holds no nested transaction.
+ *
+ * A day the table already holds is changed and a day it does not is written, so a caller hands over
+ * the days it means to change and never has to ask which of the two each one is.
+ */
+export function saveDays(
+  db: Database,
+  writes: readonly DayLogWrite[],
+  readDay: ReadDay,
+  now: Date,
+): DaysAndCycles {
+  if (writes.length === 0) {
+    throw new Error('a save of no day would rebuild the cache for nothing');
+  }
+
+  db.execute('BEGIN');
+
+  try {
+    const days = writes.map((write) =>
+      readDayLog(db, write.day) === undefined ? insertDayLog(db, write) : updateDayLog(db, write),
+    );
+    const cycles = rebuildCyclesWithin(db, readDay, now);
+
+    db.execute('COMMIT');
+
+    return { cycles, days };
+  } catch (error) {
+    db.execute('ROLLBACK');
+    throw error;
+  }
 }
 
 /** What the cache holds for a cycle, which is the arithmetic's own answer and nothing added to it. */
