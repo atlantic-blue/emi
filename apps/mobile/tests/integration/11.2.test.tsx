@@ -18,11 +18,7 @@ import {
   onboardingBackTestID,
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import {
-  YEAR_ROW_HEIGHT,
-  yearTestID,
-  yearWheelTestID,
-} from '../../src/features/onboarding/YearOfBirth';
+import { YEAR_ROW_HEIGHT, yearTestID, yearWheelTestID } from '../../src/components/YearWheel';
 import { firstRunCopy, nameTooLongLine } from '../../src/features/onboarding/copy';
 import {
   type FirstRunRefusal,

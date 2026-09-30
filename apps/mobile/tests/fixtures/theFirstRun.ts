@@ -17,7 +17,7 @@ import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDo
 import { todayTestID } from '../../src/features/onboarding/Today';
 import { goalTestID } from '../../src/features/onboarding/Goals';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
-import { yearTestID } from '../../src/features/onboarding/YearOfBirth';
+import { yearTestID } from '../../src/components/YearWheel';
 import {
   type TodaySymptom,
   defaultCycleLengthDays,

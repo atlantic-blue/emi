@@ -14,12 +14,8 @@ import {
   onboardingActionTestID,
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import {
-  YEAR_ROW_HEIGHT,
-  YearOfBirth,
-  yearTestID,
-  yearWheelTestID,
-} from '../../src/features/onboarding/YearOfBirth';
+import { YEAR_ROW_HEIGHT, yearTestID, yearWheelTestID } from '../../src/components/YearWheel';
+import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
 import { firstRunCopy } from '../../src/features/onboarding/copy';
 import { birthYearsOffered } from '../../src/features/onboarding/firstRun';
 import { english } from '../../src/language/english';

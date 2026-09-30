@@ -1,5 +1,5 @@
 import type { Flow } from '@emi/cycle';
-import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useReducer, useState } from 'react';
 
@@ -28,12 +28,22 @@ export default function LogFlowRoute(): ReactNode {
   const { isDone } = useFirstRun();
   const asked = useLocalSearchParams<{ group?: string }>();
   const [today] = useState(() => localDay(new Date()));
+  // Her groups, read when the tab is looked at rather than when it was first drawn. She changes
+  // this answer on a screen of its own and comes back here, and a tab that keeps what it read at
+  // the first draw would go on ordering the sheet by the answer she left behind.
+  const [hers, setHers] = useState(() => statedFocus(database, profiles));
   // The group the address asked for. The home line is the only thing that names one today, and it
   // names the group it offered, so she lands on the one she pressed for.
   const group = groupAskedFor(asked[groupParameter]);
   // A write lands in the database, which React cannot see, so the write says it happened and the
   // day and the ring are read again on the render that follows.
   const [, sheWrote] = useReducer((writes: number) => writes + 1, 0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setHers(statedFocus(database, profiles));
+    }, [database, profiles]),
+  );
 
   const pick = useCallback(
     (flow: Flow) => {
@@ -86,7 +96,7 @@ export default function LogFlowRoute(): ReactNode {
       chosen={flowLogged(database, vault, today)}
       day={today}
       group={group}
-      groups={groupsUnderTheFlow(statedFocus(database, profiles), group)}
+      groups={groupsUnderTheFlow(hers, group)}
       marked={unexpectedLogged(database, vault, today)}
       onDone={() => router.back()}
       onMark={mark}

@@ -4,6 +4,7 @@ import { type ReactNode, useCallback, useState } from 'react';
 import { useDatabase } from '../../../data/DatabaseProvider';
 import { readProfile } from '../../../data/profileRepository';
 import { YourAnswers } from '../../../features/settings/YourAnswers';
+import { theScreenEachRowOpens } from '../../../features/settings/herAnswers';
 import { useProfileVault } from '../../../services/vault/VaultProvider';
 
 /**
@@ -31,8 +32,8 @@ export default function YourAnswersRoute(): ReactNode {
       onBack={() => {
         router.back();
       }}
-      onCycleLength={() => {
-        router.push('/settings/answers/cycle-length');
+      onOpen={(row) => {
+        router.push(theScreenEachRowOpens[row]);
       }}
     />
   );
