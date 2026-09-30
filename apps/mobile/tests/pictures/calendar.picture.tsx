@@ -135,6 +135,8 @@ async function drawn(state: State): Promise<DrawnScreen> {
         days={herReadingOn(state.today).days}
         month={startOfMonth(state.today)}
         onBack={() => undefined}
+        onEarlierMonth={() => undefined}
+        onLaterMonth={() => undefined}
         onOpenDay={() => undefined}
         onPressDay={() => undefined}
         onToday={() => undefined}

@@ -11,6 +11,10 @@ import type { WhatTheSheetSays } from './theDaySheet';
  */
 export const calendarCopy = {
   back: words('calendar.screen.back'),
+  earlier: words('calendar.screen.earlier'),
+  earlierMonth: words('calendar.screen.earlierMonth'),
+  later: words('calendar.screen.later'),
+  laterMonth: words('calendar.screen.laterMonth'),
   today: words('calendar.today'),
 } as const;
 

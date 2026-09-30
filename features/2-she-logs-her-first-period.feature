@@ -327,3 +327,21 @@ Feature: She opens Emi and logs her first period
     And there is nothing on that screen to pick a flow with
     When she presses the way back
     Then her phone holds nothing on that day
+
+  Scenario: SCREEN-4, she swipes back two months and reads a day in that month
+    Given her phone holds three recorded cycles
+    When she opens the month
+    And she presses the way to an earlier month
+    Then she is reading the month before, which is the month the drawing of it names
+    And that is the drawing of the month before, with the parts it places in its order
+    And no square of it is ringed, because today is in the month she opened
+    When she presses the way to an earlier month again
+    Then she is reading the month two behind the one she opened
+    When she presses a day of that month
+    And she presses the sheet at the foot
+    Then she is looking at that day, two months behind today
+    When she presses the way back
+    Then she is reading that same month again, and not the month she opened
+    When she presses the way to a later month twice
+    Then she is reading the month she opened, with today ringed on it
+    And both ways to another month are at least 44 points on both axes

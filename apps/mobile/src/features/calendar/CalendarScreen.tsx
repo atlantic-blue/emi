@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -18,6 +18,9 @@ export const calendarTitleTestID = 'calendar-screen-title';
 export const calendarBackTestID = 'calendar-screen-back';
 export const calendarTodayTestID = 'calendar-screen-today';
 export const calendarMonthTestID = 'calendar-screen-month';
+export const calendarHeadingTestID = 'calendar-screen-heading';
+export const calendarEarlierTestID = 'calendar-screen-earlier';
+export const calendarLaterTestID = 'calendar-screen-later';
 
 interface Props {
   /** The month she is reading, named by any day in it. */
@@ -35,6 +38,10 @@ interface Props {
   /** The way to the screen she opens, which is where today is. */
   readonly onToday: () => void;
   readonly onPressDay: (day: string) => void;
+  /** The way to the month before the one she is reading. */
+  readonly onEarlierMonth: () => void;
+  /** The way to the month after it, which reaches months she has not lived yet. */
+  readonly onLaterMonth: () => void;
   /** The way to the day itself, which is the address the repository already answers on. */
   readonly onOpenDay: (day: string) => void;
 }
@@ -56,6 +63,8 @@ export function CalendarScreen({
   onToday,
   onPressDay,
   onOpenDay,
+  onEarlierMonth,
+  onLaterMonth,
 }: Props): ReactNode {
   const held = new Map(days.map((day) => [day.day, day]));
 
@@ -99,9 +108,6 @@ export function CalendarScreen({
           >
             <Text style={styles.linkLabel}>{calendarCopy.back}</Text>
           </Pressable>
-          <Text accessibilityRole="header" style={styles.title} testID={calendarTitleTestID}>
-            {monthLabel(month)}
-          </Text>
           <Pressable
             accessibilityRole="button"
             onPress={onToday}
@@ -112,7 +118,41 @@ export function CalendarScreen({
           </Pressable>
         </View>
 
-        <CycleMonth month={month} squareOf={squareOf} testID={calendarMonthTestID} />
+        <CycleMonth
+          heading={
+            <View style={styles.heading} testID={calendarHeadingTestID}>
+              <Pressable
+                accessibilityLabel={calendarCopy.earlierMonth}
+                accessibilityRole="button"
+                onPress={onEarlierMonth}
+                style={styles.page}
+                testID={calendarEarlierTestID}
+              >
+                <Text style={styles.pageLabel}>{calendarCopy.earlier}</Text>
+              </Pressable>
+              <Text
+                accessibilityRole="header"
+                numberOfLines={1}
+                style={styles.title}
+                testID={calendarTitleTestID}
+              >
+                {monthLabel(month)}
+              </Text>
+              <Pressable
+                accessibilityLabel={calendarCopy.laterMonth}
+                accessibilityRole="button"
+                onPress={onLaterMonth}
+                style={styles.page}
+                testID={calendarLaterTestID}
+              >
+                <Text style={styles.pageLabel}>{calendarCopy.later}</Text>
+              </Pressable>
+            </View>
+          }
+          month={month}
+          squareOf={squareOf}
+          testID={calendarMonthTestID}
+        />
 
         {shePressed === undefined ? null : (
           <DaySheet {...daySheetWords(shePressed)} onPress={() => onOpenDay(shePressed.day)} />
@@ -124,6 +164,16 @@ export function CalendarScreen({
 
 const styles = StyleSheet.create({
   body: { flexGrow: 1, paddingHorizontal: space.spaceLg, paddingVertical: space.spaceXl },
+  // The two ways to another month and the title share one row, and the distance between them is
+  // the one the first run's month keeps. Five boxes in the header above would need 406 points of
+  // the 345 an iPhone 16 leaves, and the month name is what would be cut.
+  heading: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: space.spaceSm,
+    justifyContent: 'space-between',
+    marginBottom: space.spaceMd,
+  },
   header: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -139,8 +189,26 @@ const styles = StyleSheet.create({
     color: colour.primary,
     ...textStyle('body-lg'),
   },
-  // The month name gives way before the two links do, because a longer name in another language
-  // may not take the room a thumb needs on either side of it.
+  // A way to another month is a pill she can see rather than a word among words, because the two
+  // of them stand either side of the title and a thumb has to find them without reading.
+  page: {
+    alignItems: 'center',
+    backgroundColor: colour.primaryFixed,
+    borderColor: colour.primary,
+    borderRadius: radius.md,
+    borderWidth: stroke.hairline,
+    justifyContent: 'center',
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+    paddingHorizontal: space.spaceMd,
+  },
+  pageLabel: {
+    color: colour.primary,
+    ...textStyle('body-sm'),
+  },
+  // The month name is the only box in its row that gives way. It is longer in Spanish than in
+  // English, and longer again in a face the phone substitutes, and each way to another month has a
+  // thumb to hold, so the width comes off the words.
   title: {
     color: colour.onSurface,
     flexShrink: 1,
