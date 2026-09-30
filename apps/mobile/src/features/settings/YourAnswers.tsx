@@ -39,7 +39,12 @@ interface RowProps {
  * from the rows that only read by something other than pressing each one to find out.
  */
 function Row({ row, answer, onOpen }: RowProps): ReactNode {
-  const style = answersReadBesideTheQuestion.includes(row) ? styles.rowBeside : styles.row;
+  // A row with nothing under it reads on one line either way, so the mark that says it opens sits
+  // beside the question rather than alone on a line of its own.
+  const style =
+    answersReadBesideTheQuestion.includes(row) || answer === undefined
+      ? styles.rowBeside
+      : styles.row;
   const said = answer === undefined ? null : <Text style={styles.answer}>{answer}</Text>;
   const words = (
     <>
@@ -82,17 +87,19 @@ function Row({ row, answer, onOpen }: RowProps): ReactNode {
  * away, and a question she skipped keeps its row with nothing under it, because an invented
  * default would read as something she said.
  *
+ * Every row opens the question it names, asked again with the control the first run asked it with.
+ *
  * Nothing here writes. The answers arrive opened, from the one sealed row the route reads.
  */
 export function YourAnswers({
   answers,
   onBack,
-  onCycleLength,
+  onOpen,
 }: {
   readonly answers: ProfileRecord | undefined;
   readonly onBack: () => void;
   /** Left out where nothing is reached from here, which is every drawing of this screen alone. */
-  readonly onCycleLength?: () => void;
+  readonly onOpen?: (row: YourAnswerRow) => void;
 }): ReactNode {
   return (
     <Screen testID={yourAnswersScreenTestID}>
@@ -116,9 +123,13 @@ export function YourAnswers({
             answer={theAnswerSheGave(row, answers)}
             key={row}
             row={row}
-            {...(row === 'cycleLength' && onCycleLength !== undefined
-              ? { onOpen: onCycleLength }
-              : {})}
+            {...(onOpen === undefined
+              ? {}
+              : {
+                  onOpen: () => {
+                    onOpen(row);
+                  },
+                })}
           />
         ))}
       </ScrollView>

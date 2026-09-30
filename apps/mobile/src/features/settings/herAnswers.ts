@@ -82,3 +82,21 @@ export function theAnswerSheGave(
         : focusNamesInASentence(answers.focus);
   }
 }
+
+/**
+ * Where each row goes, which is the screen that asks that question again with the control the
+ * first run asked it with.
+ *
+ * A map rather than a branch in the route, so a ninth answer arriving in `yourAnswerRows` leaves
+ * this file failing to compile rather than leaving one row pressing to nothing.
+ */
+export const theScreenEachRowOpens: Readonly<Record<YourAnswerRow, string>> = {
+  name: '/settings/answers/name',
+  birthYear: '/settings/answers/year-of-birth',
+  cycleLength: '/settings/answers/cycle-length',
+  periodLength: '/settings/answers/period-length',
+  regularity: '/settings/answers/regularity',
+  feeling: '/settings/answers/feeling',
+  goals: '/settings/answers/goals',
+  focus: '/settings/answers/focus',
+};

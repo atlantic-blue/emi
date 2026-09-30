@@ -54,6 +54,7 @@
     "generate:privacy-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern privacy.picture",
     "generate:your-answers-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern yourAnswers.picture",
     "generate:answer-cycle-length-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answerCycleLength.picture",
+    "generate:answers-again-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answersAgain.picture",
     "test": "npm run test:workspace && npm run test:mobile && npm run test:behaviour",
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile",

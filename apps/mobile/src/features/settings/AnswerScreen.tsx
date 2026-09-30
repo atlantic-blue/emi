@@ -32,6 +32,11 @@ interface Props {
   readonly lines: readonly string[];
   /** What she gave at the first run, read as she read it there. Left out where she skipped it. */
   readonly held: string | undefined;
+  /**
+   * Left out where saving is always available. A screen whose control can be left holding no answer
+   * at all sets it, because a save of nothing would take away the answer she came here to correct.
+   */
+  readonly saveIsReady?: boolean;
   readonly onSave: () => void;
   readonly onCancel: () => void;
   /** The control the first run gave this answer, which this screen borrows rather than replaces. */
@@ -54,6 +59,7 @@ export function AnswerScreen({
   question,
   lines,
   held,
+  saveIsReady = true,
   onSave,
   onCancel,
   children,
@@ -109,7 +115,12 @@ export function AnswerScreen({
       </ScrollView>
 
       <View style={styles.footer}>
-        <PrimaryButton label={answerCopy.save} onPress={onSave} testID={answerSaveTestID} />
+        <PrimaryButton
+          isReady={saveIsReady}
+          label={answerCopy.save}
+          onPress={onSave}
+          testID={answerSaveTestID}
+        />
       </View>
     </Screen>
   );
