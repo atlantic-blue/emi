@@ -10,6 +10,7 @@ import {
   rowsOfTheScreen,
 } from '../../../../tools/pipeline/mockups';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
+import { phaseLineTestID } from '../../src/features/home/PhaseLine';
 import { weekStripTestID } from '../../src/features/home/WeekStrip';
 import {
   promiseActionTestID,
@@ -81,6 +82,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   // The drawing calls the question of a changed answer by the name of the frame the first run asks
   // it in, because it is the same question in the same words.
   OnboardingScreen: [answerQuestionTestID],
+  PhaseLine: [phaseLineTestID],
   PrimaryButton: [promiseActionTestID, answerSaveTestID],
   Stepper: [changeCycleLengthStepperTestID],
   Text: [settingsTitleTestID, yourAnswersTitleTestID, answerHeaderTestID, answerLinesTestID],

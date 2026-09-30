@@ -227,3 +227,13 @@ Feature: She opens Emi and logs her first period
     And today is ringed
     And tomorrow is a dotted outline, because her period is expected to run into it
     And the two days after that are plain
+
+  Scenario: SCREEN-2, she reads her phase and her cycle day as words from across the room
+    Given her phone holds four recorded period days, the last of them today
+    When she opens Emi
+    Then under her week she reads the day of her cycle, in type large enough to read across a room
+    And the phase she is in is written beside it, in words
+    And the day of her cycle is drawn far larger than the phase beside it
+    And the words period, bleeding, fertile and ovulation are still drawn at 14 points or less
+    And the phase is written in the ink of that phase, and never on the colour of it
+    And the same screen three weeks later reads her luteal phase the same way

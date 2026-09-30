@@ -99,6 +99,20 @@ import {
   whatTheHeaderDrew,
   whatTheScreenSheOpensDrew,
 } from '../apps/mobile/tests/fixtures/theHeaderSheOpensWith';
+import { textDrawnOnAPhaseFill } from '../apps/mobile/tests/fixtures/phaseInk';
+import {
+  theDaySheReachesHerLutealPhase,
+  theLargestTheyMayBeDrawn,
+  theWordsAStrangerWouldRead,
+  theFillOf,
+  theFourWordsDrawnOn,
+  theFourWordsDrawnTooLargeOn,
+  theInkOf,
+  thePhaseLineOfTheDrawing,
+  thePhaseLineOnTheGlass,
+  thePhaseLineSheReads,
+  theTopOfTheDrawing,
+} from '../apps/mobile/tests/fixtures/thePhaseLineSheReads';
 import {
   herPhoneHoldsFourRecordedPeriodDays,
   theDayTheRingSaysFor,
@@ -167,10 +181,6 @@ const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISEC
 const sheForgot = addDays(today, -3);
 const aDayAhead = addDays(today, 2);
 const notADayAtAll = '2026-02-30';
-
-/** The four words a stranger at arm's length must not be able to read, and the size floor. */
-const theWordsAStrangerWouldRead = ['period', 'bleeding', 'fertile', 'ovulation'];
-const theLargestTheyMayBeDrawn = 14;
 
 const septemberTheFourteenth = '2026-09-14';
 const wroteAt = new Date('2026-09-14T08:15:00.000Z');
@@ -1804,6 +1814,96 @@ defineFeature(feature, (test) => {
           .slice(5)
           .map((day) => day.mark),
       ).toEqual(['plain', 'plain']);
+    });
+  });
+
+  test('SCREEN-2, she reads her phase and her cycle day as words from across the room', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    /** What the whole glass held, kept so the words can be measured after she has moved on. */
+    let theGlassOnHerPeriodDay: unknown;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+      theGlassOnHerPeriodDay = screen.toJSON();
+    });
+
+    then(
+      'under her week she reads the day of her cycle, in type large enough to read across a room',
+      () => {
+        expect(app.pathname()).toBe('/');
+        // The parts and their order come off the drawing rather than off this file, so the line
+        // sits where the drawing puts it and not where a test would accept it.
+        expect(partsMissing(theTopOfTheDrawing('todayNext'), whatTheScreenSheOpensDrew())).toEqual(
+          [],
+        );
+        expect(thePhaseLineSheReads().day).toBe(thePhaseLineOfTheDrawing('todayNext').day);
+        expect(thePhaseLineSheReads().day).toBe(theDayTheRingSaysFor(theDaySheOpensIt));
+      },
+    );
+
+    and('the phase she is in is written beside it, in words', () => {
+      expect(thePhaseLineSheReads().phase.toLowerCase()).toContain('period');
+    });
+
+    and('the day of her cycle is drawn far larger than the phase beside it', () => {
+      const read = thePhaseLineSheReads();
+
+      expect(read.dayPoints).toBeGreaterThan(read.phasePoints ?? 0);
+      expect(read.dayPoints).toBeGreaterThan(theLargestTheyMayBeDrawn * 2);
+    });
+
+    and(
+      'the words period, bleeding, fertile and ovulation are still drawn at 14 points or less',
+      () => {
+        expect(theFourWordsDrawnTooLargeOn(theGlassOnHerPeriodDay)).toEqual([]);
+        expect(theFourWordsDrawnOn(theGlassOnHerPeriodDay).length).toBeGreaterThan(0);
+      },
+    );
+
+    and('the phase is written in the ink of that phase, and never on the colour of it', () => {
+      expect(thePhaseLineSheReads().phaseColour).toBe(theInkOf('period'));
+      expect(thePhaseLineSheReads().phaseColour).not.toBe(theFillOf('period'));
+      // The strip above the line draws a date on the period fill, which is a figure rather than
+      // a word, so the reading is of the line and it is of something.
+      expect(textIn(thePhaseLineOnTheGlass()).length).toBeGreaterThan(0);
+      expect(textDrawnOnAPhaseFill(thePhaseLineOnTheGlass())).toEqual([]);
+    });
+
+    and('the same screen three weeks later reads her luteal phase the same way', async () => {
+      const onHerPeriodDay = thePhaseLineSheReads();
+
+      await app.close();
+      resetExpoSqlite();
+      resetExpoSecureStore();
+      const threeWeeksLater = new Date(`${theDaySheReachesHerLutealPhase}T12:00:00.000Z`);
+      jest.setSystemTime(threeWeeksLater);
+      await herPhoneHoldsFourRecordedPeriodDays(threeWeeksLater);
+      await sheOpens('/');
+
+      const inHerLutealPhase = thePhaseLineSheReads();
+
+      expect(partsMissing(theTopOfTheDrawing('todayLuteal'), whatTheScreenSheOpensDrew())).toEqual(
+        [],
+      );
+      expect(inHerLutealPhase.day).toBe(thePhaseLineOfTheDrawing('todayLuteal').day);
+      expect(inHerLutealPhase.day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
+      expect(inHerLutealPhase.phase.toLowerCase()).toContain('luteal');
+      expect(inHerLutealPhase.phaseColour).toBe(theInkOf('luteal'));
+      // The four words stay where they are whatever the phase, so the word she reads here is
+      // drawn at the size the period day drew its own.
+      expect(inHerLutealPhase.phasePoints).toBe(onHerPeriodDay.phasePoints);
+      expect(inHerLutealPhase.dayPoints).toBe(onHerPeriodDay.dayPoints);
+      expect(theFourWordsDrawnTooLargeOn(screen.toJSON())).toEqual([]);
     });
   });
 });
