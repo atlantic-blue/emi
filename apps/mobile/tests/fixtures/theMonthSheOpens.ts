@@ -27,6 +27,7 @@ import type { DayMark } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { forecastOf } from '../../src/features/forecast/fromCache';
+import { addMonths } from '../../src/features/onboarding/days';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 
 import { herDatabase, herPhoneHoldsTheseAnswers } from './herPhone';
@@ -72,6 +73,7 @@ const theTitle = /<span class="title">([^<]*)<\/span>/;
 const theSheetLeadOfTheDrawing = /<span class="lead">([^<]*)<\/span>/;
 const theSheetSubOfTheDrawing = /<span class="sub">([^<]*)<\/span>/;
 const aDateInTheSentence = /(\d+)/;
+const aCellThatOpensADay = /<div class="cell[^"]*"[^>]*data-to="day"[^>]*>([\s\S]*?)<\/div>/;
 const aColumnHead = /<div class="heads">([\s\S]*?)<\/div>/;
 const aHeadLetter = /<span>([^<]*)<\/span>/g;
 
@@ -630,4 +632,82 @@ export function theWeekMeasuredOn(glassWidth: number): { rightEdge: number; widt
   const measured = theRow(row, cells, glassWidth);
 
   return { rightEdge: measured.rightEdge, width: measured.width };
+}
+
+/**
+ * The month before the one she opens, which is the month the drawing `calendarEarlier` shows, and
+ * the month two behind it, which is where the walk of story 9 ends.
+ */
+export function theMonthBeforeSheOpens(): string {
+  return addMonths(theMonthSheOpens, -1);
+}
+
+export function theMonthTwoBeforeSheOpens(): string {
+  return addMonths(theMonthSheOpens, -2);
+}
+
+export function theMonthAfterSheOpens(): string {
+  return addMonths(theMonthSheOpens, 1);
+}
+
+/** The month name the drawing of the month before writes in its header, in English. */
+export function theMonthTheEarlierDrawingNames(): string {
+  const found = theTitle.exec(theMarkupOfTheMockup('calendarEarlier'));
+
+  if (found === null) {
+    throw new Error('the drawing of the month before carries no title');
+  }
+
+  return String(found[1]);
+}
+
+/**
+ * The square the drawing of the month before sends to a day, which is the day it has her open. It
+ * is read off the drawing rather than typed here, so a stage that moves the day moves this with it.
+ */
+export function theDayTheEarlierDrawingOpens(): string {
+  const cell = aCellThatOpensADay.exec(theMarkupOfTheMockup('calendarEarlier'));
+  const date = cell === null ? null : theDate.exec(String(cell[1]));
+
+  if (date === null) {
+    throw new Error('the drawing of the month before sends no square to a day');
+  }
+
+  return `${theMonthBeforeSheOpens().slice(0, 8)}${String(date[1]).padStart(2, '0')}`;
+}
+
+/**
+ * What each part of the drawing of the month before is built under. That drawing names the grid on
+ * the one square it sends to a day, so the grid answers on the square for that day.
+ */
+export function theIdentifiersOfTheEarlierMonth(): PartIdentifiers {
+  return { ...theIdentifiersOfAPart, CycleMonth: [dayTestID(theDayTheEarlierDrawingOpens())] };
+}
+
+/** The parts of the drawing of the month before, down to the sheet it puts at the foot. */
+export function theEarlierMonthOfTheDrawing(): Part[] {
+  return theEarlierDrawingDownTo(0);
+}
+
+/** Those parts and the sheet, which is what she reads once she has pressed a day of that month. */
+export function theEarlierMonthAndItsSheetOfTheDrawing(): Part[] {
+  return theEarlierDrawingDownTo(1);
+}
+
+/**
+ * The drawing of the month before down to its sheet, with or without the sheet itself. Below the
+ * sheet it draws a footer and a dock, which the month screen does not carry and the later steps of
+ * the path do not add, so the comparison stops there the way it stops on the drawing of the month.
+ */
+function theEarlierDrawingDownTo(andTheSheet: 0 | 1): Part[] {
+  const parts = thePartsOfTheMockup('calendarEarlier', theIdentifiersOfTheEarlierMonth());
+  const sheet = parts.findIndex((part) => part.name === 'DaySheet');
+
+  if (sheet < 1) {
+    throw new Error(
+      'the drawing of the month before places no day sheet, so nothing says where to stop',
+    );
+  }
+
+  return parts.slice(0, sheet + andTheSheet);
 }

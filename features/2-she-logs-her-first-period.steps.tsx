@@ -34,7 +34,11 @@ import {
 import { migrate } from '../apps/mobile/src/data/schema';
 import { profileRow, readProfile } from '../apps/mobile/src/data/profileRepository';
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
-import { calendarBackTestID } from '../apps/mobile/src/features/calendar/CalendarScreen';
+import {
+  calendarBackTestID,
+  calendarEarlierTestID,
+  calendarLaterTestID,
+} from '../apps/mobile/src/features/calendar/CalendarScreen';
 import { daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
 import { DAYS_IN_A_WEEK } from '../apps/mobile/src/features/cycle/herWeek';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
@@ -126,6 +130,11 @@ import {
   theDatesOfTheDrawing,
   theDayAheadSheCannotOpen,
   theDayTheDrawingsSheetNames,
+  theDayTheEarlierDrawingOpens,
+  theEarlierMonthOfTheDrawing,
+  theMonthBeforeSheOpens,
+  theMonthTheEarlierDrawingNames,
+  theMonthTwoBeforeSheOpens,
   theSquareSheSees,
   theMonthAndItsSheetOfTheDrawing,
   theSheetSheReads,
@@ -218,6 +227,7 @@ import {
   daysOfHerThreeCycles,
 } from '../apps/mobile/tests/fixtures/herThreeCycles';
 import {
+  type Control,
   controlsTooSmallToPress,
   daySquaresLeavingTheRowDead,
 } from '../apps/mobile/tests/fixtures/tapTargets';
@@ -2607,6 +2617,100 @@ defineFeature(feature, (test) => {
 
     then('her phone holds nothing on that day', () => {
       expect(whatWasRecordedOn(aheadOfHer)).toBeUndefined();
+    });
+  });
+
+  test('SCREEN-4, she swipes back two months and reads a day in that month', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    const aDayOfTheMonthTwoBack = `${theMonthTwoBeforeSheOpens().slice(0, 8)}14`;
+
+    given('her phone holds three recorded cycles', async () => {
+      jest.setSystemTime(whenSheOpensTheMonth());
+      await herPhoneHoldsThreeRecordedCycles(whenSheOpensTheMonth());
+    });
+
+    when('she opens the month', async () => {
+      app = await sheOpens('/calendar');
+
+      expect(theMonthSheReads()).toBe(monthLabel(theMonthSheOpens));
+    });
+
+    and('she presses the way to an earlier month', async () => {
+      await shePresses(calendarEarlierTestID);
+    });
+
+    then('she is reading the month before, which is the month the drawing of it names', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(theMonthSheReads()).toBe(monthLabel(theMonthBeforeSheOpens()));
+      expect(theMonthSheReads()).toContain(theMonthTheEarlierDrawingNames());
+    });
+
+    and('that is the drawing of the month before, with the parts it places in its order', () => {
+      expect(partsMissing(theEarlierMonthOfTheDrawing(), whatTheMonthScreenDrew())).toEqual([]);
+    });
+
+    and('no square of it is ringed, because today is in the month she opened', () => {
+      expect(theMarkOnTheSquare(theDayTheEarlierDrawingOpens())).not.toBe('today');
+    });
+
+    when('she presses the way to an earlier month again', async () => {
+      await shePresses(calendarEarlierTestID);
+    });
+
+    then('she is reading the month two behind the one she opened', () => {
+      expect(theMonthSheReads()).toBe(monthLabel(theMonthTwoBeforeSheOpens()));
+    });
+
+    when('she presses a day of that month', async () => {
+      await shePresses(dayTestID(aDayOfTheMonthTwoBack));
+
+      expect(theSheetSheReads()?.lead).toContain(
+        ordinal(Number(aDayOfTheMonthTwoBack.slice(8, 10))),
+      );
+    });
+
+    and('she presses the sheet at the foot', async () => {
+      await shePresses(daySheetTestID);
+    });
+
+    then('she is looking at that day, two months behind today', () => {
+      expect(app.pathname()).toBe(`/day/${aDayOfTheMonthTwoBack}`);
+      expect(startOfMonth(aDayOfTheMonthTwoBack)).toBe(theMonthTwoBeforeSheOpens());
+      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
+    });
+
+    when('she presses the way back', async () => {
+      await shePresses(logFlowDoneTestID);
+    });
+
+    then('she is reading that same month again, and not the month she opened', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(theMonthSheReads()).toBe(monthLabel(theMonthTwoBeforeSheOpens()));
+      expect(theMonthSheReads()).not.toBe(monthLabel(theMonthSheOpens));
+    });
+
+    when('she presses the way to a later month twice', async () => {
+      await shePresses(calendarLaterTestID);
+      await shePresses(calendarLaterTestID);
+    });
+
+    then('she is reading the month she opened, with today ringed on it', () => {
+      expect(theMonthSheReads()).toBe(monthLabel(theMonthSheOpens));
+      expect(theMarkOnTheSquare(theDaySheOpensTheMonth())).toBe('today');
+    });
+
+    and('both ways to another month are at least 44 points on both axes', () => {
+      const ways = [
+        screen.getByTestId(calendarEarlierTestID),
+        screen.getByTestId(calendarLaterTestID),
+      ] as unknown as Control[];
+
+      expect(controlsTooSmallToPress(ways)).toEqual([]);
     });
   });
 });
