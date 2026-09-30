@@ -272,3 +272,14 @@ Feature: She opens Emi and logs her first period
     And the line under it names both symptoms she marked, and no symptom she did not
     And that is the drawing of the screen she comes back to, down to the ring
     And pressing what she logged opens the log on the symptom groups again
+
+  Scenario: SCREEN-4, she opens a month and reads the cycle day of every day in it
+    Given her phone holds three recorded cycles
+    When she opens the month
+    Then she is reading the month the drawing names, in seven columns
+    And above every date is the day of her cycle that date falls on
+    And every one of those is the day the ring says for that date
+    And the days she bled are filled
+    And the day her next period is expected on is a dotted outline
+    And today is ringed
+    And every square is as high as a thumb needs, and takes its width from the month

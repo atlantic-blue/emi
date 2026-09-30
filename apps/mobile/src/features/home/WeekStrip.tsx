@@ -2,7 +2,7 @@ import { colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
-import type { DayMark, DayOfHerWeek } from '../cycle/herWeek';
+import type { DayMark, HerDay } from '../cycle/herWeek';
 import { weekDayLabel } from './copy';
 
 /**
@@ -37,7 +37,7 @@ export function weekDateTestID(day: string): string {
 const THE_DATE_IS_A_DISC_OF = 32;
 
 interface Props {
-  readonly days: readonly DayOfHerWeek[];
+  readonly days: readonly HerDay[];
   /** Her own day, which is what a day of the strip is named against for a screen reader. */
   readonly today: string;
 }

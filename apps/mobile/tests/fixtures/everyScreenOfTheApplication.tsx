@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 
+import { CalendarScreen, calendarScreenTestID } from '../../src/features/calendar/CalendarScreen';
 import { ExportScreen, exportScreenTestID } from '../../src/features/export/ExportScreen';
 import { HistoryScreen, historyScreenTestID } from '../../src/features/history/HistoryScreen';
 import { HomeScreen, homeScreenTestID } from '../../src/features/home/HomeScreen';
@@ -25,6 +26,8 @@ import {
 } from '../../src/features/settings/DeleteEverything';
 import { SettingsScreen, settingsScreenTestID } from '../../src/features/settings/SettingsScreen';
 import { YourAnswers, yourAnswersScreenTestID } from '../../src/features/settings/YourAnswers';
+import type { HerDay } from '../../src/features/cycle/herWeek';
+import { monthWeeks, weekdayLetter } from '../../src/features/onboarding/days';
 import { aProfileRecord } from './profileRecord';
 
 /**
@@ -42,6 +45,23 @@ const neverRun = async (): Promise<never> => {
 };
 
 const learning = { completeCycles: 0, kind: 'learning', needsCycles: 3 } as const;
+
+/**
+ * A whole month of days for the month screen, because that screen refuses a month it was handed
+ * only part of. Nothing here is read for its numbers: this list exists so the screen draws.
+ */
+function theDaysOfOneMonth(month: string, today: string): HerDay[] {
+  return monthWeeks(month)
+    .flat()
+    .filter((day): day is string => day !== undefined)
+    .map((day) => ({
+      cycleDay: Number(day.slice(8, 10)),
+      date: Number(day.slice(8, 10)),
+      day,
+      letter: weekdayLetter(day),
+      mark: day === today ? 'today' : 'plain',
+    }));
+}
 
 export const everyScreenOfTheApplication: readonly (readonly [string, () => ReactElement])[] = [
   [
@@ -118,6 +138,18 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [
     dayRefusedTestID,
     (): ReactElement => <DayRefused onBack={nothing} refusal="day-is-in-the-future" />,
+  ],
+  [
+    calendarScreenTestID,
+    (): ReactElement => (
+      <CalendarScreen
+        days={theDaysOfOneMonth('2026-05-01', '2026-05-14')}
+        month="2026-05-01"
+        onBack={nothing}
+        onToday={nothing}
+        today="2026-05-14"
+      />
+    ),
   ],
   [
     historyScreenTestID,

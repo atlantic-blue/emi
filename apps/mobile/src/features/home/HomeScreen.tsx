@@ -7,7 +7,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CycleRing } from '../../components/CycleRing';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
-import type { DayOfHerWeek } from '../cycle/herWeek';
+import type { HerDay } from '../cycle/herWeek';
 import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
@@ -60,7 +60,7 @@ interface Props {
    * The week she is in, Monday to Sunday, worked out from the same cycle cache the ring is. It
    * arrives already worked out, so the strip and the ring cannot count her days two ways.
    */
-  readonly week?: readonly DayOfHerWeek[];
+  readonly week?: readonly HerDay[];
   /** Her own day, which is what a day of the strip is named against for a screen reader. */
   readonly today?: string;
   /**

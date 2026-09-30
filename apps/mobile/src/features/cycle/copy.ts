@@ -1,6 +1,7 @@
 import type { PhaseName, RingGeometry } from '@emi/tokens';
 
 import { type WordKey, words } from '../../language';
+import type { HerDay } from './herWeek';
 
 /**
  * The words of the ring. Two screens draw the ring, so the sentence about an empty one lives here
@@ -72,4 +73,9 @@ function thePhaseSaid(geometry: RingGeometry): string {
   }
 
   return words(thePhaseOfHerCycle[geometry.phase], geometry.cycleLengthDays);
+}
+
+/** What a screen reader says about one day of her week or her month. */
+export function herDayLabel(_day: HerDay, _today: string): string {
+  return '';
 }

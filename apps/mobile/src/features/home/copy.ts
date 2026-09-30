@@ -2,7 +2,7 @@ import type { DayRecord } from '@emi/crypto';
 import { type PublishedFigure, type PublishedMeasurement, findSymptom } from '@emi/cycle';
 
 import { words } from '../../language';
-import type { DayOfHerWeek } from '../cycle/herWeek';
+import type { HerDay } from '../cycle/herWeek';
 import { flowLabel } from '../log/FlowPicker';
 import { dayLabel } from '../onboarding/days';
 import type { MeasuredNumber } from './herNumbers';
@@ -85,7 +85,7 @@ export function greeting(name: string): string {
  * a fill, a ring and a broken line, and none of the three reaches a reader who is listening, so
  * each one is said in words here.
  */
-export function weekDayLabel(day: DayOfHerWeek, today: string): string {
+export function weekDayLabel(day: HerDay, today: string): string {
   const said = [dayLabel(day.day, today)];
 
   if (day.cycleDay !== undefined) {

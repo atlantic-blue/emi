@@ -20,7 +20,7 @@ export type DayMark = 'bled' | 'today' | 'forecast' | 'plain';
 /** The week runs Monday to Sunday, which is the week the calendar of the first run already draws. */
 export const DAYS_IN_A_WEEK = 7;
 
-export interface DayOfHerWeek {
+export interface HerDay {
   /** The calendar day, as a year, a month and a day. */
   readonly day: string;
   /** The letter of the weekday, from the catalogue, in her own language. */
@@ -72,7 +72,7 @@ function isAPeriodDay(phases: readonly PhaseSpan[], cycleDay: number): boolean {
  * ahead of her that the cycle puts inside the period is an outline, because it is an estimate and
  * an estimate she has not lived yet may not look like one she has.
  */
-export function herWeek(from: HerWeekFrom): DayOfHerWeek[] {
+export function herWeek(from: HerWeekFrom): HerDay[] {
   const monday = startOfWeek(from.today);
   const ring = ringInputFor(from);
   const bled = new Set(

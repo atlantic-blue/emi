@@ -10,6 +10,11 @@ import {
   partsOfTheScreen,
   rowsOfTheScreen,
 } from '../../../../tools/pipeline/mockups';
+import {
+  calendarBackTestID,
+  calendarHeaderTestID,
+  calendarTodayTestID,
+} from '../../src/features/calendar/CalendarScreen';
 import { cycleRingTestID } from '../../src/components/CycleRing';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
@@ -99,8 +104,22 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   Stepper: [changeCycleLengthStepperTestID],
   // One section for each group, so a drawing naming the part matches whichever group is drawn.
   SymptomGroup: symptomGroups.map(symptomGroupTestID),
-  Text: [settingsTitleTestID, yourAnswersTitleTestID, answerHeaderTestID, answerLinesTestID],
-  TextLink: [yourAnswersBackTestID, answerBackTestID, answerCancelTestID],
+  // The drawing of the month names its header Text and writes the month inside it in a span it
+  // names nothing, so the header is what answers for that part.
+  Text: [
+    settingsTitleTestID,
+    yourAnswersTitleTestID,
+    answerHeaderTestID,
+    answerLinesTestID,
+    calendarHeaderTestID,
+  ],
+  TextLink: [
+    yourAnswersBackTestID,
+    answerBackTestID,
+    answerCancelTestID,
+    calendarBackTestID,
+    calendarTodayTestID,
+  ],
   ThePromise: [thePromiseTestID],
   WeekStrip: [weekStripTestID],
 };
