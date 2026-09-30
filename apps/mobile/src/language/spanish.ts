@@ -418,6 +418,10 @@ export const spanish: CatalogueIn<'es'> = {
     'Ese no es el código que Emi te mostró. Léelo del papel y escríbelo otra vez.',
   'recovery.step': 'Paso {step} de {of}',
 
+  'settings.answer.back': 'Atrás',
+  'settings.answer.cancel': 'Cancelar',
+  'settings.answer.gaveAtFirstRun': 'Al empezar indicaste {answer}.',
+  'settings.answer.save': 'Guardar',
   'settings.answers.back': 'Atrás',
   'settings.answers.birthYear': 'Año de nacimiento',
   'settings.answers.cycleLength': 'Duración del ciclo',

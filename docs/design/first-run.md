@@ -70,6 +70,7 @@ Verified by a test.
 Output: at most eleven questions and five other screens between the welcome and the home screen.
 Only the last period is required. It ends with her answers written in one transaction at the hold.
 Every answer it takes is readable afterwards from the Privacy screen.
+An answer she gave is changeable afterwards, through the control she gave it with.
 
 Errors: a question whose answer nothing in the product reads, except the year of birth. A question with no Skip, other than
 the last period. An answer written to the database or the server in plain text. An account, an

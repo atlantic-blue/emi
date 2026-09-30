@@ -418,6 +418,10 @@ export const english = {
     'That is not the code Emi showed you. Read it off the paper and type it again.',
   'recovery.step': 'Step {step} of {of}',
 
+  'settings.answer.back': 'Back',
+  'settings.answer.cancel': 'Cancel',
+  'settings.answer.gaveAtFirstRun': 'You gave {answer} at the first run.',
+  'settings.answer.save': 'Save',
   'settings.answers.back': 'Back',
   'settings.answers.birthYear': 'Year of birth',
   'settings.answers.cycleLength': 'Cycle length',

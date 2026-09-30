@@ -429,6 +429,10 @@ export const russian: CatalogueIn<'ru'> = {
     'Это не тот код, который показала Emi. Прочитайте его с бумаги и введите снова.',
   'recovery.step': 'Шаг {step} из {of}',
 
+  'settings.answer.back': 'Назад',
+  'settings.answer.cancel': 'Отмена',
+  'settings.answer.gaveAtFirstRun': 'В начале вы указали {answer}.',
+  'settings.answer.save': 'Сохранить',
   'settings.answers.back': 'Назад',
   'settings.answers.birthYear': 'Год рождения',
   'settings.answers.cycleLength': 'Длина цикла',

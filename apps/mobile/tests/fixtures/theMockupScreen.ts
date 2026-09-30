@@ -14,6 +14,15 @@ import {
   promiseLineTestID,
   thePromiseTestID,
 } from '../../src/features/onboarding/ThePromise';
+import {
+  answerBackTestID,
+  answerCancelTestID,
+  answerHeaderTestID,
+  answerLinesTestID,
+  answerQuestionTestID,
+  answerSaveTestID,
+} from '../../src/features/settings/AnswerScreen';
+import { changeCycleLengthStepperTestID } from '../../src/features/settings/ChangeCycleLength';
 import { settingsTitleTestID } from '../../src/features/settings/SettingsScreen';
 import {
   yourAnswersBackTestID,
@@ -66,9 +75,13 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     promiseLineTestID('noTracking'),
     promiseLineTestID('delete'),
   ],
-  PrimaryButton: [promiseActionTestID],
-  Text: [settingsTitleTestID, yourAnswersTitleTestID],
-  TextLink: [yourAnswersBackTestID],
+  // The drawing calls the question of a changed answer by the name of the frame the first run asks
+  // it in, because it is the same question in the same words.
+  OnboardingScreen: [answerQuestionTestID],
+  PrimaryButton: [promiseActionTestID, answerSaveTestID],
+  Stepper: [changeCycleLengthStepperTestID],
+  Text: [settingsTitleTestID, yourAnswersTitleTestID, answerHeaderTestID, answerLinesTestID],
+  TextLink: [yourAnswersBackTestID, answerBackTestID, answerCancelTestID],
   ThePromise: [thePromiseTestID],
 };
 
