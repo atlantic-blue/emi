@@ -10,6 +10,23 @@ import { type SymptomGroup, symptomGroups } from '@emi/cycle';
 /** The name the address carries the group under. */
 export const groupParameter = 'group';
 
+/** The name the address carries what the log opens on under. */
+export const opensOnParameter = 'on';
+
+/** The value of that name which asks for the symptom groups rather than for the flow picker. */
+export const theSymptoms = 'symptoms';
+
+/** What the log opens on: her symptom groups, or the flow picker it has always opened on. */
+export type OpensOn = 'flow' | 'symptoms';
+
+/**
+ * What the address asks the log to open on. Anything other than the one value is read as the flow,
+ * so the plain address the Log column of the dock carries opens on the picker it always did.
+ */
+export function opensOn(asked: string | undefined): OpensOn {
+  return asked === theSymptoms ? 'symptoms' : 'flow';
+}
+
 /** The group the home line offers on a day she said is hard. */
 export const painGroup: SymptomGroup = 'pain';
 

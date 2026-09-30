@@ -11,7 +11,12 @@ import { type DayOfHerWeek, herWeek } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../features/cycle/ringInput';
 import { forecastOf } from '../../features/forecast/fromCache';
-import { groupParameter, painGroup } from '../../features/log/askedGroup';
+import {
+  groupParameter,
+  opensOnParameter,
+  painGroup,
+  theSymptoms,
+} from '../../features/log/askedGroup';
 import { HomeScreen } from '../../features/home/HomeScreen';
 import { type MeasuredNumber, herNumbers } from '../../features/home/herNumbers';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
@@ -120,7 +125,7 @@ export default function HomeRoute(): ReactNode {
       onExport={() => router.push('/export')}
       onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
       onPeriod={() => router.push('/log')}
-      onSymptoms={() => router.push('/log')}
+      onSymptoms={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
       regularity={shown.regularity}
       ring={shown.ring}
       today={today}

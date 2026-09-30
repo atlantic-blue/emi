@@ -9,6 +9,7 @@ import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
 import { words } from '../../language';
 import { dayLabel } from '../onboarding/days';
+import type { OpensOn } from './askedGroup';
 import { FlowPicker } from './FlowPicker';
 import { SymptomGroupSection, groupHeadings, symptomGroupTestID } from './SymptomGroup';
 import { UnexpectedBleeding } from './UnexpectedBleeding';
@@ -50,10 +51,15 @@ interface Props {
    */
   readonly group?: SymptomGroup;
   /**
-   * Every group she is offered under the flow picker, in the order she reads them. The one the
+   * Every group she is offered beside the flow picker, in the order she reads them. The one the
    * address named is not among them, because it is drawn above the picker instead.
    */
   readonly groups?: readonly SymptomGroup[];
+  /**
+   * What the screen opens on. A woman who pressed the symptoms action came for a symptom, so the
+   * groups are drawn above the picker for her and below it for everybody else.
+   */
+  readonly opensOn?: OpensOn;
   /** What the day already carries. Empty where it carries nothing, never left out. */
   readonly symptoms?: readonly string[];
   readonly onPick: (flow: Flow) => void;
@@ -70,6 +76,7 @@ export function LogFlow({
   marked,
   group,
   groups = [],
+  opensOn = 'flow',
   symptoms = [],
   onPick,
   onMark,
@@ -79,6 +86,21 @@ export function LogFlow({
   // The mark answers a question about bleeding, so it is offered on the days that carry some. The
   // test is the arithmetic's own, which is why a spot can be marked and a day of nothing cannot.
   const sheBled = chosen !== undefined && isBleeding({ day, flow: chosen });
+  const theGroups =
+    groups.length === 0 ? null : (
+      <View testID={logFlowGroupsTestID}>
+        {groups.map((each) => (
+          <SymptomGroupSection
+            key={each}
+            heading={groupHeadings[each]}
+            onToggle={(slug) => onToggleSymptom?.(slug)}
+            picked={symptoms}
+            symptoms={symptomsInGroup(each)}
+            testID={logFlowGroupTestID(each)}
+          />
+        ))}
+      </View>
+    );
 
   return (
     <Screen testID={logFlowTestID}>
@@ -106,6 +128,7 @@ export function LogFlow({
             testID={logFlowGroupTestID(group)}
           />
         )}
+        {opensOn === 'symptoms' ? theGroups : null}
         <Text accessibilityRole="header" style={styles.title}>
           {logFlowCopy.title}
         </Text>
@@ -117,20 +140,7 @@ export function LogFlow({
           </Text>
         )}
 
-        {groups.length === 0 ? null : (
-          <View testID={logFlowGroupsTestID}>
-            {groups.map((each) => (
-              <SymptomGroupSection
-                key={each}
-                heading={groupHeadings[each]}
-                onToggle={(slug) => onToggleSymptom?.(slug)}
-                picked={symptoms}
-                symptoms={symptomsInGroup(each)}
-                testID={logFlowGroupTestID(each)}
-              />
-            ))}
-          </View>
-        )}
+        {opensOn === 'symptoms' ? null : theGroups}
       </ScrollView>
 
       <Pressable

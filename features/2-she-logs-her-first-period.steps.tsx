@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
-import { addDays, publishedFigures } from '@emi/cycle';
+import { addDays, publishedFigures, symptomGroups } from '@emi/cycle';
 import { tabTestID } from '@emi/ui';
 import {
   FULL_TURN_DEGREES,
@@ -36,6 +36,7 @@ import { profileRow, readProfile } from '../apps/mobile/src/data/profileReposito
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
 import { flowOptionTestID, flowPickerTestID } from '../apps/mobile/src/features/log/FlowPicker';
+import { opensOnParameter, theSymptoms } from '../apps/mobile/src/features/log/askedGroup';
 import { historyCycleTestID } from '../apps/mobile/src/features/history/HistoryScreen';
 import {
   homeFiguresLineTestID,
@@ -122,6 +123,16 @@ import {
   theRoundActionsOnTheGlass,
   theScreenDownToTheRoundActions,
 } from '../apps/mobile/tests/fixtures/theRoundActionsUnderTheRing';
+import {
+  theDrawingOfTheFlow,
+  theDrawingOfTheSymptoms,
+  theDrawingPlaces,
+  theFlowPickerIsOnTheLog,
+  theGroupsTheLogDrew,
+  theLogProblems,
+  whatTheDrawingOpensOn,
+  whatTheLogDrew,
+} from '../apps/mobile/tests/fixtures/theLogSheLandsOn';
 import {
   herPhoneHoldsFourRecordedPeriodDays,
   theDayTheRingSaysFor,
@@ -246,6 +257,8 @@ function herSixPeriodsAndAWrongMonday(): DayRecord[] {
 
 interface OpenApp {
   readonly pathname: () => string;
+  /** What the address she is on carries, which is how the log is asked to open on the symptoms. */
+  readonly searchParams: () => Record<string, string | string[]>;
   /** She puts the phone down and the application goes away. Her phone keeps what was written. */
   readonly close: () => Promise<void>;
 }
@@ -258,7 +271,11 @@ async function sheOpens(at: string): Promise<OpenApp> {
   const app = renderRouter(appDirectory, { initialUrl: at });
   const view = await app;
 
-  return { pathname: () => app.getPathname(), close: () => view.unmount() };
+  return {
+    pathname: () => app.getPathname(),
+    searchParams: () => app.getSearchParams(),
+    close: () => view.unmount(),
+  };
 }
 
 async function shePresses(testID: string): Promise<void> {
@@ -1990,6 +2007,72 @@ defineFeature(feature, (test) => {
 
       expect(app.pathname()).toBe('/settings');
       expect(screen.getByTestId(settingsExportTestID)).toBeTruthy();
+    });
+  });
+
+  test('SCREEN-2, the symptoms action opens the log on the groups and the dock still opens on the flows', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she presses the symptoms action under the ring', async () => {
+      const [, symptoms] = theRoundActionsOnTheGlass();
+
+      expect(symptoms).toBe(roundActionTestID('symptoms'));
+      await shePresses(String(symptoms));
+    });
+
+    then('she is on the log, and the first thing she can mark there is a symptom', () => {
+      expect(app.pathname()).toBe('/log');
+      expect(theLogProblems(theDrawingOfTheSymptoms)).toEqual([]);
+      expect(app.searchParams()[opensOnParameter]).toBe(theSymptoms);
+    });
+
+    and('she passed no flow option on the way to it', () => {
+      const drawn = whatTheLogDrew();
+      const [firstGroup] = theGroupsTheLogDrew();
+
+      expect(firstGroup).toBeDefined();
+      expect(drawn.indexOf(String(firstGroup))).toBeLessThan(drawn.indexOf(flowPickerTestID));
+    });
+
+    and('every one of her symptom groups is offered', () => {
+      expect(theGroupsTheLogDrew()).toHaveLength(symptomGroups.length);
+    });
+
+    and('she can still pick a flow on the same screen', () => {
+      expect(theFlowPickerIsOnTheLog()).toBe(true);
+    });
+
+    and('the drawing of that screen places a symptom group, and places no flow picker', () => {
+      expect(whatTheDrawingOpensOn(theDrawingOfTheSymptoms)).toBe('symptoms');
+      expect(theDrawingPlaces(theDrawingOfTheSymptoms, 'symptoms')).toBe(true);
+      expect(theDrawingPlaces(theDrawingOfTheSymptoms, 'flow')).toBe(false);
+    });
+
+    and('pressing the Log column of the dock opens the log on the flow options', async () => {
+      await shePresses(tabTestID('log/index'));
+
+      expect(app.pathname()).toBe('/log');
+      expect(app.searchParams()[opensOnParameter]).toBeUndefined();
+      expect(theLogProblems(theDrawingOfTheFlow)).toEqual([]);
+    });
+
+    and('that is the drawing of the log, which places the flow options before the groups', () => {
+      expect(whatTheDrawingOpensOn(theDrawingOfTheFlow)).toBe('flow');
+      expect(theDrawingPlaces(theDrawingOfTheFlow, 'symptoms')).toBe(true);
     });
   });
 });
