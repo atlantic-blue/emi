@@ -1,6 +1,8 @@
 import type { PublishedFigure, PublishedMeasurement } from '@emi/cycle';
 
 import { words } from '../../language';
+import type { DayOfHerWeek } from '../cycle/herWeek';
+import { dayLabel } from '../onboarding/days';
 import type { MeasuredNumber } from './herNumbers';
 
 /**
@@ -71,4 +73,25 @@ export function publishedFigureReads(figure: PublishedFigure): string {
  */
 export function greeting(name: string): string {
   return words('home.greeting', undefined, { name });
+}
+
+/**
+ * What a screen reader says about one day of the week strip. The three cues the strip draws are
+ * a fill, a ring and a broken line, and none of the three reaches a reader who is listening, so
+ * each one is said in words here.
+ */
+export function weekDayLabel(day: DayOfHerWeek, today: string): string {
+  const said = [dayLabel(day.day, today)];
+
+  if (day.cycleDay !== undefined) {
+    said.push(words('home.week.cycleDay', undefined, { cycle: day.cycleDay }));
+  }
+  if (day.mark === 'bled') {
+    said.push(words('home.week.bled'));
+  }
+  if (day.mark === 'forecast') {
+    said.push(words('home.week.expected'));
+  }
+
+  return said.join(', ');
 }

@@ -797,8 +797,10 @@ defineFeature(feature, (test) => {
 
     and('the ring says she is on day 2 of 28, in the period phase', () => {
       expect(theRingSays()).toBe('Day 2 of 28, period');
-      expect(screen.getByText('2')).toBeTruthy();
-      expect(screen.getByText(phaseLabel.period)).toBeTruthy();
+      // The day is read inside the ring rather than anywhere on the glass, because the week
+      // strip draws a date and a cycle day too, and a number found loose could be either.
+      expect(within(screen.getByTestId(cycleRingTestID)).getByText('2')).toBeTruthy();
+      expect(within(screen.getByTestId(cycleRingTestID)).getByText(phaseLabel.period)).toBeTruthy();
     });
 
     and('the ring is drawn on the screen she is looking at', () => {

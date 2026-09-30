@@ -7,6 +7,7 @@ import { useDatabase } from '../../data/DatabaseProvider';
 import { listCycles } from '../../data/cycleRepository';
 import { readProfile } from '../../data/profileRepository';
 import type { Database } from '../../data/database';
+import { type DayOfHerWeek, herWeek } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../features/cycle/ringInput';
 import { forecastOf } from '../../features/forecast/fromCache';
@@ -22,6 +23,8 @@ import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
 
 interface Shown {
   readonly ring: RingInput | undefined;
+  /** Her week, Monday to Sunday, read out of the same rows the ring is built from. */
+  readonly week: readonly DayOfHerWeek[];
   readonly forecast: ReturnType<typeof forecastOf>;
   readonly cycleLengthDays: number;
   /** Her name, where she gave one, which is the only thing the home screen greets her by. */
@@ -54,15 +57,19 @@ function whatSheIsLookingAt(
   // One forecast, read by the sentence under the ring and by the variation row, so the spread the
   // range is drawn from and the spread she reads cannot be two different numbers.
   const forecast = forecastOf(cycles, stated);
+  // One read of her days for the ring and for the strip. Reading them twice would let the two
+  // stand on different rows, which is the one thing the strip may never do.
+  const readBack = {
+    cycles,
+    records: recordedDays(database, vault.open),
+    today,
+    statedCycleLengthDays: stated,
+    statedPeriodLengthDays: herAnswers?.periodLengthDays,
+  };
 
   return {
-    ring: ringInputFor({
-      cycles,
-      records: recordedDays(database, vault.open),
-      today,
-      statedCycleLengthDays: stated,
-      statedPeriodLengthDays: herAnswers?.periodLengthDays,
-    }),
+    ring: ringInputFor(readBack),
+    week: herWeek(readBack),
     forecast,
     numbers: herNumbers(cycles, forecast),
     cycleLengthDays: stated,
@@ -117,6 +124,8 @@ export default function HomeRoute(): ReactNode {
       onSettings={() => router.push('/settings')}
       regularity={shown.regularity}
       ring={shown.ring}
+      today={today}
+      week={shown.week}
     />
   );
 }

@@ -2,11 +2,13 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
 import type { Feeling, Goal, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
+import type { DayRecord } from '@emi/cycle';
 import { addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
 import { listCycles } from '../../src/data/cycleRepository';
+import { herWeek } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { rangeSentence } from '../../src/features/forecast/copy';
@@ -40,6 +42,9 @@ import { recordedAt } from '../fixtures/forecast';
 const theDaySheOpensIt = 8;
 const sheSaidHerCycleRuns = 31;
 
+/** The day the frame with nothing recorded is drawn on, which is the day the sets are counted from. */
+const theDayWithNothingRecorded = recordedAt.toISOString().slice(0, 10);
+
 const theCaveat = [
   'Rendered from the tree the home screen produced under the test runner, at 390 by 844 points,',
   'and not captured from a phone. The page loads the same font files the application loads, so the',
@@ -63,9 +68,28 @@ interface Recorded {
   readonly goals?: readonly Goal[];
   /** The day of the cycle this frame is drawn on, where it is not the day the rest are drawn on. */
   readonly onDay?: number;
+  /** The days she recorded, where the recorded sets cannot express them. */
+  readonly days?: readonly DayRecord[];
+  /** How long she said her period runs, which is what a day ahead of her is drawn against. */
+  readonly periodRunsFor?: number;
 }
 
-const theFourSets: readonly Recorded[] = [
+/**
+ * Her period started on a Monday and she has recorded four days of it, today being the fourth.
+ * The recorded sets cannot express this: each one closes every period it writes, and a period
+ * that is closed leaves no day ahead of her for the strip to draw as expected.
+ */
+const herPeriodStartedOnAMonday = '2026-09-14';
+const sheRecordedFourDaysOfIt: readonly DayRecord[] = Array.from(
+  { length: 4 },
+  (_unused, index) => {
+    const day = addDays(herPeriodStartedOnAMonday, index);
+
+    return { day, flow: 'medium', recordedAt: `${day}T08:00:00.000Z` };
+  },
+);
+
+const theRecordedSets: readonly Recorded[] = [
   { title: 'Her first day, nothing recorded', set: veryRegular, recorded: 'nothing' },
   { title: 'One cycle recorded, still learning', set: oneCycleComplete },
   { title: 'Six cycles of 28 days, and she gave her name', set: veryRegular, name: 'Ada' },
@@ -88,6 +112,13 @@ const theFourSets: readonly Recorded[] = [
     set: veryRegular,
     goals: ['fertileWindow', 'doctorRecord'],
   },
+  {
+    title: 'Four recorded period days, and the week she reads them in',
+    set: veryRegular,
+    days: sheRecordedFourDaysOfIt,
+    onDay: 4,
+    periodRunsFor: 5,
+  },
 ];
 
 /** What the frame is captioned with: the day she is on, and the sentence the screen names. */
@@ -106,18 +137,23 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
   const database =
     recorded.recorded === 'nothing'
       ? migratedDatabase()
-      : daysLogged(daysOf(recorded.set), recordedAt);
+      : daysLogged(recorded.days ?? daysOf(recorded.set), recordedAt);
   const cycles = listCycles(database);
   const open = cycles[cycles.length - 1];
   const forecast = forecastOf(cycles, sheSaidHerCycleRuns);
+  const records = recordedDays(database, readDay);
+  // A woman with nothing recorded still has a week, so the frame that draws no ring is drawn on
+  // the same day the recorded sets are counted from.
+  const today = open === undefined ? theDayWithNothingRecorded : addDays(open.startedOn, onDay - 1);
   const ring =
     open === undefined
       ? undefined
       : ringInputFor({
           cycles,
-          records: recordedDays(database, readDay),
-          today: addDays(open.startedOn, onDay - 1),
+          records,
+          today,
           statedCycleLengthDays: sheSaidHerCycleRuns,
+          statedPeriodLengthDays: recorded.periodRunsFor,
         });
 
   const view = await render(
@@ -136,6 +172,14 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
         onSettings={() => undefined}
         regularity={recorded.regularity}
         ring={ring}
+        today={today}
+        week={herWeek({
+          cycles,
+          records,
+          today,
+          statedCycleLengthDays: sheSaidHerCycleRuns,
+          statedPeriodLengthDays: recorded.periodRunsFor,
+        })}
       />
     </OnAPhone>,
   );
@@ -165,14 +209,14 @@ describe('the home screen, drawn for somebody to look at', () => {
     jest.restoreAllMocks();
   });
 
-  for (const recorded of theFourSets) {
+  for (const recorded of theRecordedSets) {
     it(`renders the home screen from ${recorded.title.toLowerCase()}`, async () => {
       screens.push(await drawn(recorded));
     });
   }
 
   it('draws them into one picture', async () => {
-    expect(screens).toHaveLength(theFourSets.length);
+    expect(screens).toHaveLength(theRecordedSets.length);
 
     const result = drawOrCheck({
       name: 'home-screen',

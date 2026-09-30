@@ -165,6 +165,9 @@ export const spanish: CatalogueIn<'es'> = {
   'home.numbers.upTo': 'hasta {days}',
   'home.painLine': 'Dijiste que estos días son difíciles. Registra el dolor primero.',
   'home.settings': 'Ajustes',
+  'home.week.bled': 'sangraste',
+  'home.week.cycleDay': 'día {cycle} del ciclo',
+  'home.week.expected': 'se espera tu periodo',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Cancelar',

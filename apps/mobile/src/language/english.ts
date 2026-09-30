@@ -163,6 +163,9 @@ export const english = {
   'home.numbers.upTo': 'up to {days}',
   'home.painLine': 'You said these days are hard. Log the pain first.',
   'home.settings': 'Settings',
+  'home.week.bled': 'you bled',
+  'home.week.cycleDay': 'cycle day {cycle}',
+  'home.week.expected': 'your period is expected',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Cancel',

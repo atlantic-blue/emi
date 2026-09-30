@@ -5,6 +5,7 @@ import { screen } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
+import { cycleRingTestID } from '../../src/components/CycleRing';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import {
   weekCycleDayTestID,
@@ -103,9 +104,12 @@ describe('she reads the cycle day of every day of her week without pressing anyt
       );
     });
 
-    it('draws the strip under the header and above everything else on the screen', () => {
-      expect(whatTheScreenSheOpensDrew()[0]).toBe(homeHeaderTestID);
-      expect(whatTheScreenSheOpensDrew()[1]).toBe(weekStripTestID);
+    it('draws the strip under the header and above the ring', () => {
+      const drawn = whatTheScreenSheOpensDrew();
+
+      expect(drawn[0]).toBe(homeHeaderTestID);
+      expect(drawn.indexOf(weekStripTestID)).toBeGreaterThan(drawn.indexOf(homeHeaderTestID));
+      expect(drawn.indexOf(weekStripTestID)).toBeLessThan(drawn.indexOf(cycleRingTestID));
     });
 
     it('draws her whole week, Monday to Sunday, with today in it', () => {

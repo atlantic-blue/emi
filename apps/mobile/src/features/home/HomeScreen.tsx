@@ -7,10 +7,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { CycleRing } from '../../components/CycleRing';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
+import type { DayOfHerWeek } from '../cycle/herWeek';
 import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 import { HomeHeader } from './HomeHeader';
+import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
 import { homeCopy } from './copy';
 import type { MeasuredNumber } from './herNumbers';
@@ -38,6 +40,7 @@ export const settingsTestID = 'home-settings';
 export const settingsLabel = homeCopy.settings;
 
 export { homeGreetingTestID } from './HomeHeader';
+export { weekStripTestID } from './WeekStrip';
 
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
@@ -50,6 +53,13 @@ export const homeFiguresLineTestID = 'home-figures-line';
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
   readonly ring: RingInput | undefined;
+  /**
+   * The week she is in, Monday to Sunday, worked out from the same cycle cache the ring is. It
+   * arrives already worked out, so the strip and the ring cannot count her days two ways.
+   */
+  readonly week?: readonly DayOfHerWeek[];
+  /** Her own day, which is what a day of the strip is named against for a screen reader. */
+  readonly today?: string;
   readonly forecast: ForecastResult;
   /** The length she gave at the first run, which the learning state counts by. */
   readonly cycleLengthDays: number;
@@ -91,6 +101,8 @@ interface Props {
 
 export function HomeScreen({
   ring,
+  week,
+  today,
   forecast,
   cycleLengthDays,
   name,
@@ -108,6 +120,12 @@ export function HomeScreen({
     <Screen testID={homeScreenTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <HomeHeader name={name} />
+
+        {week === undefined || today === undefined ? null : (
+          <View style={styles.week}>
+            <WeekStrip days={week} today={today} />
+          </View>
+        )}
 
         {ring ? (
           <CycleRing {...ring} />
@@ -254,6 +272,9 @@ const styles = StyleSheet.create({
   // Her three numbers sit under the forecast they were read from, and above the ways off the
   // screen, because they are something to read rather than somewhere to go.
   numbers: { alignSelf: 'stretch', paddingHorizontal: space.spaceLg },
+  // Her week sits between the header and the ring, which is where the drawing of this screen
+  // places it, and it is the first thing she reads because it answers where she is.
+  week: { alignSelf: 'stretch', marginBottom: space.spaceLg },
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
   // takes the small size rather than the body size a sentence would otherwise get.
   noRingLine: {
