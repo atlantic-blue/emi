@@ -137,7 +137,7 @@ spacing:
   space-sm: 0.5rem
   space-md: 1rem
   space-lg: 1.5rem
-  space-xl: 2.5rem
+  space-xl: 2rem
 ---
 
 The prototype this document describes is in `docs/design/prototype/`. The front matter is read out of
@@ -231,6 +231,10 @@ The layout sits on an eight point grid. The front matter names every step.
   page does not spread.
 
 Space between components is `space-xs` through `space-xl`. The scale prefers room over density.
+
+`space-xl` is the largest gap the scale holds, and it separates one section of a screen from the
+next. It is not the gap between a sentence and the button under it, which is `space-md` or
+`space-lg`. A screen that puts the largest gap inside a section has used the wrong step.
 
 ## Elevation and depth
 
