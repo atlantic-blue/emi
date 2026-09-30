@@ -38,10 +38,12 @@ export function DayRefused({ refusal, onBack }: Props): ReactNode {
   return (
     <Screen testID={dayRefusedTestID}>
       <View style={styles.body}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" style={styles.title} testID={dayRefusedTitleTestID}>
           {said.title}
         </Text>
-        <Text style={styles.line}>{said.line}</Text>
+        <Text style={styles.line} testID={dayRefusedLineTestID}>
+          {said.line}
+        </Text>
 
         <Pressable
           accessibilityRole="button"
