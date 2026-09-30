@@ -2,7 +2,12 @@ import { screen } from '@testing-library/react-native';
 
 import { logFlowTestID } from '../../src/features/log/LogFlow';
 
-import { theIdentifiersDrawn, theIdentifiersOfAPart, thePartsOfTheMockup } from './theMockupScreen';
+import {
+  type Part,
+  theIdentifiersDrawn,
+  theIdentifiersOfAPart,
+  thePartsOfTheMockup,
+} from './theMockupScreen';
 
 /**
  * The log she lands on, held against the drawing that sent her there.
@@ -51,11 +56,32 @@ export function builtUnder(part: OpenedOn): readonly string[] {
 }
 
 /**
+ * Every drawing this fixture can read, with its key written out at the call. The mockups gate
+ * reads the literal there, so a key built at run time is a drawing nobody can tell is missing.
+ */
+const theDrawings: Readonly<Record<string, () => Part[]>> = {
+  log: () => thePartsOfTheMockup('log'),
+  logSymptoms: () => thePartsOfTheMockup('logSymptoms'),
+  todayNext: () => thePartsOfTheMockup('todayNext'),
+};
+
+/** The parts one drawing places, or a refusal naming a drawing nothing here reads. */
+export function thePartsOfTheDrawing(key: string): Part[] {
+  const read = theDrawings[key];
+
+  if (read === undefined) {
+    throw new Error(`nothing here reads the drawing "${key}"`);
+  }
+
+  return read();
+}
+
+/**
  * What one drawing opens on, read off the parts it places. A drawing that places neither is
  * refused rather than answered, because a comparison against nothing reads exactly like a match.
  */
 export function whatTheDrawingOpensOn(key: string): OpenedOn {
-  const names = thePartsOfTheMockup(key).map((part) => part.name);
+  const names = thePartsOfTheDrawing(key).map((part) => part.name);
   const group = names.indexOf(thePartOfTheDrawing.symptoms);
   const picker = names.indexOf(thePartOfTheDrawing.flow);
 
@@ -76,7 +102,7 @@ export function whatTheDrawingOpensOn(key: string): OpenedOn {
 
 /** Whether the drawing places that part at all, wherever it places it. */
 export function theDrawingPlaces(key: string, part: OpenedOn): boolean {
-  return thePartsOfTheMockup(key).some((placed) => placed.name === thePartOfTheDrawing[part]);
+  return thePartsOfTheDrawing(key).some((placed) => placed.name === thePartOfTheDrawing[part]);
 }
 
 /**
