@@ -157,10 +157,7 @@ export const english = {
   // The line a woman who asked for a record for her doctor reads. It names her own answer back
   // to her, and it says what the press does rather than saying what the record is for.
   'home.doctorRecord': 'You asked for a record for your doctor. Open the export.',
-  'home.export': 'Export',
   'home.greeting': 'Hello, {name}',
-  'home.history': 'History',
-  'home.logToday': 'Log today',
   // The line a woman who said her period is hard reads on a day inside it. It names her own
   // answer back to her and offers the one group she is most likely to want, and it says what the
   // press does rather than saying anything about how she must feel.
@@ -176,7 +173,8 @@ export const english = {
   'home.numbers.range': '{low} to {high}',
   'home.numbers.upTo': 'up to {days}',
   'home.painLine': 'You said these days are hard. Log the pain first.',
-  'home.settings': 'Settings',
+  'home.roundAction.period': 'Period',
+  'home.roundAction.symptoms': 'Symptoms',
   'home.week.bled': 'you bled',
   'home.week.cycleDay': 'cycle day {cycle}',
   'home.week.expected': 'your period is expected',

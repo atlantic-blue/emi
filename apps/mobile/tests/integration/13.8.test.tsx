@@ -47,10 +47,9 @@ function theScreenSheOpens(ring: typeof theCycleSheIsIn | undefined): ReactEleme
       cycleLengthDays={31}
       forecast={stillLearning}
       onExport={nothing}
-      onHistory={nothing}
       onLogPain={nothing}
-      onLogToday={nothing}
-      onSettings={nothing}
+      onPeriod={nothing}
+      onSymptoms={nothing}
       ring={ring}
     />
   );
@@ -93,12 +92,15 @@ describe('the screen she opens begins at the top of the glass', () => {
       expect(theBoxSaying(onATallerGlass, homeCopy.wordmark).top).toBe(theTopOfTheGlass);
     });
 
-    it('reads down the glass in the order it read before: the ring, the forecast, then the way in', async () => {
+    it('reads down the glass in the order the drawing gives: the ring, the way in, the forecast', async () => {
       const boxes = await placedOn(thePhoneSheHolds, theCycleSheIsIn);
       const forecast = theBoxNamed(boxes, homeForecastTestID);
 
       expect(theBoxSaying(boxes, homeCopy.wordmark).top).toBeLessThan(forecast.top);
-      expect(theBoxSaying(boxes, homeCopy.logToday).top).toBeGreaterThan(forecast.top);
+      expect(theBoxSaying(boxes, homeCopy.roundAction.period).top).toBeLessThan(forecast.top);
+      expect(theBoxSaying(boxes, homeCopy.roundAction.period).top).toBeGreaterThan(
+        theBoxSaying(boxes, homeCopy.wordmark).top,
+      );
     });
   });
 

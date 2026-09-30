@@ -35,7 +35,7 @@ import {
   HomeScreen,
   homeForecastTestID,
   homeNoRingTestID,
-  logTodayTestID,
+  roundActionTestID,
 } from '../../src/features/home/HomeScreen';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
@@ -171,10 +171,9 @@ async function sheOpensHerHomeScreen(her: HerPhone): Promise<void> {
         cycleLengthDays={sheSaidHerCycleRuns}
         forecast={her.forecast}
         onExport={() => undefined}
-        onHistory={() => undefined}
         onLogPain={() => undefined}
-        onLogToday={() => undefined}
-        onSettings={() => undefined}
+        onPeriod={() => undefined}
+        onSymptoms={() => undefined}
         ring={her.ring}
       />
     </OnAPhone>,
@@ -332,10 +331,9 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             cycleLengthDays={sheSaidHerCycleRuns}
             forecast={forecastOf(cycles)}
             onExport={() => undefined}
-            onHistory={() => undefined}
             onLogPain={() => undefined}
-            onLogToday={() => undefined}
-            onSettings={() => undefined}
+            onPeriod={() => undefined}
+            onSymptoms={() => undefined}
             ring={ringInputFor({
               cycles,
               records: recordedDays(database, readDay),
@@ -361,10 +359,9 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             cycleLengthDays={sheSaidHerCycleRuns}
             forecast={forecastOf(listCycles(migratedDatabase()))}
             onExport={() => undefined}
-            onHistory={() => undefined}
             onLogPain={() => undefined}
-            onLogToday={() => undefined}
-            onSettings={() => undefined}
+            onPeriod={() => undefined}
+            onSymptoms={() => undefined}
             ring={undefined}
           />
         </OnAPhone>,
@@ -390,7 +387,9 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       it(`keeps the word small on the day the ring writes ${day.writes}`, async () => {
         await sheOpensHerHomeScreen(herPhone(veryRegular, day.onDay));
 
-        expect(screen.getByText(day.writes)).toBeTruthy();
+        // Inside the ring, because a round action under it carries the same word and the
+        // question here is the word the ring itself writes.
+        expect(within(screen.getByTestId(cycleRingTestID)).getByText(day.writes)).toBeTruthy();
         expect(theWordsAStrangerCouldRead().map((run) => run.text)).toContain(day.writes);
         expect(drawnTooLarge()).toEqual([]);
       });
@@ -403,10 +402,9 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             cycleLengthDays={sheSaidHerCycleRuns}
             forecast={forecastOf(listCycles(migratedDatabase()))}
             onExport={() => undefined}
-            onHistory={() => undefined}
             onLogPain={() => undefined}
-            onLogToday={() => undefined}
-            onSettings={() => undefined}
+            onPeriod={() => undefined}
+            onSymptoms={() => undefined}
             ring={undefined}
           />
         </OnAPhone>,
@@ -498,13 +496,13 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
       expect(theRingSays()).toBe(`Day 2 of ${herCycleLengthDays}, follicular`);
 
-      await fireEvent.press(screen.getByTestId(logTodayTestID));
+      await fireEvent.press(screen.getByTestId(roundActionTestID('period')));
       await fireEvent.press(screen.getByTestId(flowOptionTestID('heavy')));
       await fireEvent.press(screen.getByTestId(logFlowDoneTestID));
 
       expect(app.getPathname()).toBe('/');
       expect(theRingSays()).toBe(`Day 2 of ${herCycleLengthDays}, period`);
-      expect(screen.getByText(phaseLabel.period)).toBeTruthy();
+      expect(within(screen.getByTestId(cycleRingTestID)).getByText(phaseLabel.period)).toBeTruthy();
     });
   });
 });

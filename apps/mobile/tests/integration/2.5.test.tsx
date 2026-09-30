@@ -15,7 +15,7 @@ import {
   logFlowNoRingTestID,
   logFlowSavedTestID,
 } from '../../src/features/log/LogFlow';
-import { logTodayTestID } from '../../src/features/home/HomeScreen';
+import { roundActionTestID } from '../../src/features/home/HomeScreen';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { herVault } from '../fixtures/herVault';
@@ -139,7 +139,7 @@ describe('logging a flow redraws the ring', () => {
       await herPhoneHolds(whenSheOpensIt, herSixCycles());
       const app = await sheOpensEmi();
 
-      await shePresses(logTodayTestID);
+      await shePresses(roundActionTestID('period'));
 
       expect(app.pathname()).toBe('/log');
       for (const [flow, label] of Object.entries(flowLabel)) {
@@ -151,7 +151,7 @@ describe('logging a flow redraws the ring', () => {
     it('sends her back to the home screen when she is done', async () => {
       await herPhoneHolds(whenSheOpensIt, herSixCycles());
       const app = await sheOpensEmi();
-      await shePresses(logTodayTestID);
+      await shePresses(roundActionTestID('period'));
 
       await shePresses(logFlowDoneTestID);
 

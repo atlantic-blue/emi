@@ -20,11 +20,7 @@ import {
   measuredRowTestID,
   publishedNumberTestID,
 } from '../../src/features/home/MeasuredRow';
-import {
-  historyTestID,
-  homeFiguresLineTestID,
-  homeScreenTestID,
-} from '../../src/features/home/HomeScreen';
+import { homeFiguresLineTestID, homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { wordKeys } from '../../src/language';
 import { english } from '../../src/language/english';
 import { russian } from '../../src/language/russian';
@@ -317,7 +313,7 @@ describe('she reads her three cycle numbers beside the published figures', () =>
       const cycle = herLastCompleteCycle();
       const onTheSection = herNumberFor('cycle-length');
 
-      await shePresses(historyTestID);
+      await shePresses(tabTestID('history'));
 
       expect(onTheSection).toContain(String(cycle.lengthDays));
       expect(whatItSays(historyCycleTestID(cycle.startedOn))).toContain(String(cycle.lengthDays));
@@ -327,7 +323,7 @@ describe('she reads her three cycle numbers beside the published figures', () =>
       const cycle = herLastCompleteCycle();
       const onTheSection = herNumberFor('period-duration');
 
-      await shePresses(historyTestID);
+      await shePresses(tabTestID('history'));
 
       expect(onTheSection).toContain(String(cycle.periodLengthDays));
       expect(whatItSays(historyCycleTestID(cycle.startedOn))).toContain(

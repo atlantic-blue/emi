@@ -5,18 +5,7 @@ import { listCycles } from '../src/data/cycleRepository';
 import { cycleCopy } from '../src/features/cycle/copy';
 import { homeCopy } from '../src/features/home/copy';
 import { forecastOf } from '../src/features/forecast/fromCache';
-import {
-  HomeScreen,
-  exportLabel,
-  exportTestID,
-  historyLabel,
-  historyTestID,
-  homeNoRingTestID,
-  logTodayLabel,
-  logTodayTestID,
-  settingsLabel,
-  settingsTestID,
-} from '../src/features/home/HomeScreen';
+import { HomeScreen, homeNoRingTestID, roundActionTestID } from '../src/features/home/HomeScreen';
 import { migratedDatabase } from './fixtures/cycleCache';
 import { textIn } from './fixtures/renderedText';
 
@@ -28,10 +17,9 @@ async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
         cycleLengthDays={28}
         forecast={forecastOf(listCycles(migratedDatabase()))}
         onExport={() => asked.push('export')}
-        onHistory={() => asked.push('history')}
         onLogPain={() => asked.push('log pain')}
-        onLogToday={() => asked.push('log today')}
-        onSettings={() => asked.push('settings')}
+        onPeriod={() => asked.push('period')}
+        onSymptoms={() => asked.push('symptoms')}
         ring={undefined}
       />
     </OnAPhone>,
@@ -45,7 +33,7 @@ describe('the home screen', () => {
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
   });
 
-  it('shows the wordmark, what to do next, and the four ways in', async () => {
+  it('shows the wordmark, what to do next, and the two round actions', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
@@ -53,49 +41,29 @@ describe('the home screen', () => {
       homeCopy.wordmark,
       cycleCopy.noRing.title,
       cycleCopy.noRing.line,
+      homeCopy.roundAction.period,
+      homeCopy.roundAction.symptoms,
       'Still learning',
       'Emi needs 2 more complete cycles before it says how sure it is.',
       'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',
-      logTodayLabel,
-      historyLabel,
-      exportLabel,
-      settingsLabel,
     ]);
   });
 
-  it('sends her to log the day when she presses the control that says so', async () => {
+  it('sends her to log her period when she presses the first round action', async () => {
     const asked: string[] = [];
     await theEmptyHomeScreen(asked);
 
-    await fireEvent.press(screen.getByTestId(logTodayTestID));
+    await fireEvent.press(screen.getByTestId(roundActionTestID('period')));
 
-    expect(asked).toEqual(['log today']);
+    expect(asked).toEqual(['period']);
   });
 
-  it('sends her to her history when she presses the control that says so', async () => {
+  it('sends her to log a symptom when she presses the second round action', async () => {
     const asked: string[] = [];
     await theEmptyHomeScreen(asked);
 
-    await fireEvent.press(screen.getByTestId(historyTestID));
+    await fireEvent.press(screen.getByTestId(roundActionTestID('symptoms')));
 
-    expect(asked).toEqual(['history']);
-  });
-
-  it('sends her to the export when she presses the control that says so', async () => {
-    const asked: string[] = [];
-    await theEmptyHomeScreen(asked);
-
-    await fireEvent.press(screen.getByTestId(exportTestID));
-
-    expect(asked).toEqual(['export']);
-  });
-
-  it('sends her to the settings when she presses the control that says so', async () => {
-    const asked: string[] = [];
-    await theEmptyHomeScreen(asked);
-
-    await fireEvent.press(screen.getByTestId(settingsTestID));
-
-    expect(asked).toEqual(['settings']);
+    expect(asked).toEqual(['symptoms']);
   });
 });

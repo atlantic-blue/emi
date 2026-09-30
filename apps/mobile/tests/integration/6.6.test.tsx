@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import { accountIdFor, base64Of, type DayRecord, sealRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
+import { tabTestID } from '@emi/ui';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import type { AuthorizerEvent, HttpRequestEvent } from '../../../../services/vault/src/api';
@@ -21,7 +22,6 @@ import {
   deleteRefusedTestID,
   serverNotReachedTestID,
 } from '../../src/features/settings/DeleteEverything';
-import { settingsTestID } from '../../src/features/home/HomeScreen';
 import { settingsDeleteTestID } from '../../src/features/settings/SettingsScreen';
 import { settingsCopy } from '../../src/features/settings/copy';
 import { deviceKey, type DeviceKey, deviceKeyItem } from '../../src/services/sync/deviceKey';
@@ -245,7 +245,7 @@ async function shePresses(testID: string): Promise<void> {
 
 async function sheWalksToTheDeleteScreen(): Promise<void> {
   await renderRouter(appDirectory, { initialUrl: '/' });
-  await shePresses(settingsTestID);
+  await shePresses(tabTestID('settings/index'));
   await shePresses(settingsDeleteTestID);
 }
 

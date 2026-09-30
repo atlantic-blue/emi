@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import { type DayRecord, readEnvelope } from '@emi/crypto';
 import { addDays, findMood, findSymptom, temperature, weight } from '@emi/cycle';
+import { tabTestID } from '@emi/ui';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { waitFor } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
@@ -18,8 +19,8 @@ import {
 import { exportCopy, fullDate, heldSentence } from '../../src/features/export/copy';
 import { exportFormat } from '../../src/features/export/everything';
 import { exportFileStem } from '../../src/features/export/files';
-import { exportTestID } from '../../src/features/home/HomeScreen';
 import { chooseUnits } from '../../src/features/log/units';
+import { settingsExportTestID } from '../../src/features/settings/SettingsScreen';
 import type { DayVault } from '../../src/services/vault/dayVault';
 import { claimsIn } from '../../../../tools/pipeline/forbiddenClaims';
 import { resetExpoSqlite } from '../data/expoSqlite';
@@ -106,7 +107,8 @@ async function herPhone(): Promise<void> {
 
 async function sheExports(): Promise<void> {
   await renderRouter(appDirectory, { initialUrl: '/' });
-  await fireEvent.press(screen.getByTestId(exportTestID));
+  await fireEvent.press(screen.getByTestId(tabTestID('settings/index')));
+  await fireEvent.press(screen.getByTestId(settingsExportTestID));
 
   expect(screen.getByTestId(exportScreenTestID)).toBeTruthy();
 

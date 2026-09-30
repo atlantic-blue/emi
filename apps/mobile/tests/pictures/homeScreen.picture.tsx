@@ -169,10 +169,9 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
         name={recorded.name}
         numbers={herNumbers(cycles, forecast)}
         onExport={() => undefined}
-        onHistory={() => undefined}
         onLogPain={() => undefined}
-        onLogToday={() => undefined}
-        onSettings={() => undefined}
+        onPeriod={() => undefined}
+        onSymptoms={() => undefined}
         regularity={recorded.regularity}
         ring={ring}
         today={today}

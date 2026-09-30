@@ -14,13 +14,14 @@ import {
   typeRoleNames,
   typeScale,
 } from '@emi/tokens';
-import { screen } from '@testing-library/react-native';
+import { screen, within } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import { join } from 'node:path';
 
 import type { DayRecord } from '@emi/crypto';
 
 import { addDays } from '@emi/cycle';
+import { cycleRingTestID } from '../../src/components/CycleRing';
 import { drawnRuns, registeredFaces, runsDrawnInAnUnloadedFace } from '../fixtures/drawnFaces';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herPhoneHolds } from '../fixtures/herPhone';
@@ -129,12 +130,17 @@ describe('a text colour below the contrast floor fails the build', () => {
     it('writes the phase name in that phase’s own ink, and never on its own fill', async () => {
       await herHomeScreen();
 
+      // Inside the ring, because a round action under it carries one of the same words and the
+      // question here is the ink the ring writes the phase in.
+      const insideTheRing = within(screen.getByTestId(cycleRingTestID));
       // The phase is read off the screen rather than assumed, so the case holds whichever day of
       // her own history she happens to be on.
-      const shown = phaseNames.find((phase) => screen.queryByText(phaseLabel[phase]) !== null);
+      const shown = phaseNames.find(
+        (phase) => insideTheRing.queryByText(phaseLabel[phase]) !== null,
+      );
 
       expect(shown).toBeDefined();
-      expect(colourOf(screen.getByText(phaseLabel[shown ?? 'period']) as never)).toBe(
+      expect(colourOf(insideTheRing.getByText(phaseLabel[shown ?? 'period']) as never)).toBe(
         colour[phasePalette[shown ?? 'period'].ink],
       );
       expect(textDrawnOnAPhaseFill(screen.toJSON())).toEqual([]);

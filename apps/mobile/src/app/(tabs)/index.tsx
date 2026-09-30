@@ -118,10 +118,9 @@ export default function HomeRoute(): ReactNode {
       name={shown.name}
       numbers={shown.numbers}
       onExport={() => router.push('/export')}
-      onHistory={() => router.push('/history')}
       onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
-      onLogToday={() => router.push('/log')}
-      onSettings={() => router.push('/settings')}
+      onPeriod={() => router.push('/log')}
+      onSymptoms={() => router.push('/log')}
       regularity={shown.regularity}
       ring={shown.ring}
       today={today}

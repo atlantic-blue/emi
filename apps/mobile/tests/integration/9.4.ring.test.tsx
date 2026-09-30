@@ -280,10 +280,9 @@ describe('the phase name is written in its ink and never on its own fill', () =>
             cycleLengthDays={herCycle.cycleLengthDays}
             forecast={her.forecast}
             onExport={() => undefined}
-            onHistory={() => undefined}
             onLogPain={() => undefined}
-            onLogToday={() => undefined}
-            onSettings={() => undefined}
+            onPeriod={() => undefined}
+            onSymptoms={() => undefined}
             ring={her.ring}
           />
         </OnAPhone>,

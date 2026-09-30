@@ -1,6 +1,6 @@
 import type { Feeling, Goal, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -13,6 +13,7 @@ import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 import { HomeHeader } from './HomeHeader';
 import { PhaseLine } from './PhaseLine';
+import { RoundAction, type RoundActionName } from './RoundAction';
 import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
 import { homeCopy } from './copy';
@@ -28,21 +29,19 @@ import { thePainLineIsOffered } from './painLine';
  * arcs draw and what the sentence names are the same answer read twice.
  */
 
-export const logTodayTestID = 'home-log-today';
-export const logTodayLabel = homeCopy.logToday;
-
-export const historyTestID = 'home-history';
-export const historyLabel = homeCopy.history;
-
-export const exportTestID = 'home-export';
-export const exportLabel = homeCopy.export;
-
-export const settingsTestID = 'home-settings';
-export const settingsLabel = homeCopy.settings;
-
 export { homeGreetingTestID } from './HomeHeader';
+export { roundActionTestID, roundActions } from './RoundAction';
 export { phaseLineTestID } from './PhaseLine';
 export { weekStripTestID } from './WeekStrip';
+
+/**
+ * The two actions and the drawing each one carries. The order is the order the drawing places
+ * them in, and nothing else on this screen decides it.
+ */
+const theRoundActions: readonly { action: RoundActionName; icon: string }[] = [
+  { action: 'period', icon: 'drop' },
+  { action: 'symptoms', icon: 'sun' },
+];
 
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
@@ -91,14 +90,14 @@ interface Props {
    * filled with somebody else's numbers.
    */
   readonly numbers?: readonly MeasuredNumber[];
-  readonly onLogToday: () => void;
+  /** The way into the log, which the round action under the ring takes her by. */
+  readonly onPeriod: () => void;
+  /** The second round action. It reaches the log too until step 5 points it at the groups. */
+  readonly onSymptoms: () => void;
   /** The way to the pain group of the log, which only the line below the ring takes her by. */
   readonly onLogPain: () => void;
-  /** The way into what she has already written, which is what the logging is for. */
-  readonly onHistory: () => void;
-  /** The way out, because a record she cannot take with her is not hers. */
+  /** The way out, which only the card a woman who asked for it reads takes her by. */
   readonly onExport: () => void;
-  readonly onSettings: () => void;
 }
 
 export function HomeScreen({
@@ -112,11 +111,10 @@ export function HomeScreen({
   feeling,
   goals,
   numbers,
-  onLogToday,
+  onPeriod,
+  onSymptoms,
   onLogPain,
-  onHistory,
   onExport,
-  onSettings,
 }: Props): ReactNode {
   return (
     <Screen testID={homeScreenTestID}>
@@ -145,6 +143,18 @@ export function HomeScreen({
             <Text style={styles.noRingLine}>{cycleCopy.noRing.line}</Text>
           </View>
         )}
+
+        <View style={styles.roundActions}>
+          {theRoundActions.map((round) => (
+            <RoundAction
+              action={round.action}
+              icon={round.icon}
+              key={round.action}
+              label={homeCopy.roundAction[round.action]}
+              onPress={round.action === 'period' ? onPeriod : onSymptoms}
+            />
+          ))}
+        </View>
 
         <View style={styles.forecast} testID={homeForecastTestID}>
           <NextPeriodOrLearning
@@ -190,64 +200,12 @@ export function HomeScreen({
             <Text style={styles.offerLabel}>{homeCopy.painLine}</Text>
           </Pressable>
         ) : null}
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={onLogToday}
-          style={styles.action}
-          testID={logTodayTestID}
-        >
-          <Text style={styles.actionLabel}>{logTodayLabel}</Text>
-        </Pressable>
-
-        <View style={styles.links}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onHistory}
-            style={styles.history}
-            testID={historyTestID}
-          >
-            <Text style={styles.historyLabel}>{historyLabel}</Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            onPress={onExport}
-            style={styles.history}
-            testID={exportTestID}
-          >
-            <Text style={styles.historyLabel}>{exportLabel}</Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            onPress={onSettings}
-            style={styles.history}
-            testID={settingsTestID}
-          >
-            <Text style={styles.historyLabel}>{settingsLabel}</Text>
-          </Pressable>
-        </View>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  action: {
-    alignItems: 'center',
-    backgroundColor: colour.surfaceTint,
-    borderRadius: radius.md,
-    justifyContent: 'center',
-    marginTop: space.spaceXl,
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceLg,
-  },
-  actionLabel: {
-    color: colour.surfaceContainerLowest,
-    ...textStyle('body-lg'),
-  },
   // The card carries the window the ring already draws in colour, said in words, so it sits
   // under the forecast it is counted back from rather than beside the ways off the screen.
   card: { marginTop: space.spaceMd },
@@ -264,22 +222,18 @@ const styles = StyleSheet.create({
     marginTop: space.spaceSm,
   },
   forecast: { marginTop: space.spaceLg },
-  history: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceLg,
-  },
-  historyLabel: {
-    color: colour.onSurfaceVariant,
-    ...textStyle('body-sm'),
-  },
-  links: { flexDirection: 'row', gap: space.spaceMd, marginTop: space.spaceSm },
   noRing: { alignItems: 'center', paddingHorizontal: space.spaceLg },
   // Her three numbers sit under the forecast they were read from, and above the ways off the
   // screen, because they are something to read rather than somewhere to go.
   numbers: { alignSelf: 'stretch', paddingHorizontal: space.spaceLg },
+  // The two actions sit between the ring and the forecast, which is where the drawing places
+  // them: she reads the day she is on, then the one press she makes about it.
+  roundActions: {
+    flexDirection: 'row',
+    gap: space.spaceXl,
+    justifyContent: 'center',
+    marginTop: space.spaceLg,
+  },
   // The line sits between her week and the ring, which is where the drawing of this screen places
   // it: she reads the days, then the day she is on, then the ring that draws it.
   phaseLine: { alignSelf: 'stretch', marginBottom: space.spaceLg },
