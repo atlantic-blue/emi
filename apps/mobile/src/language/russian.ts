@@ -165,6 +165,7 @@ export const russian: CatalogueIn<'ru'> = {
 
   'home.doctorRecord': 'Вы просили запись для врача. Откройте экспорт.',
   'home.greeting': 'Здравствуйте, {name}',
+  'home.loggedToday.lead': 'Записано сегодня',
   'home.numbers.cycleLength': 'Последний цикл',
   'home.numbers.cycleLengthVariation': 'Разброс',
   'home.numbers.days': { one: '{count} день', few: '{count} дня', many: '{count} дней' },

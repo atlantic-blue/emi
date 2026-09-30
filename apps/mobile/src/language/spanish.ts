@@ -163,6 +163,7 @@ export const spanish: CatalogueIn<'es'> = {
 
   'home.doctorRecord': 'Pediste un registro para tu médico. Abre la exportación.',
   'home.greeting': 'Hola, {name}',
+  'home.loggedToday.lead': 'Registrado hoy',
   'home.numbers.cycleLength': 'Último ciclo',
   'home.numbers.cycleLengthVariation': 'Variación',
   'home.numbers.days': { one: '{count} día', other: '{count} días' },

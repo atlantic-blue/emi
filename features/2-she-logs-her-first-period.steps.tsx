@@ -50,7 +50,11 @@ import {
   homeHeaderTestID,
   homeHeaderWordTestID,
 } from '../apps/mobile/src/features/home/HomeHeader';
-import { greeting } from '../apps/mobile/src/features/home/copy';
+import { loggedTodayTestID } from '../apps/mobile/src/features/home/LoggedToday';
+import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
+import { greeting, homeCopy } from '../apps/mobile/src/features/home/copy';
+import { logFlowDoneTestID } from '../apps/mobile/src/features/log/LogFlow';
+import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
 import { weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
 import {
   herNumberTestID,
@@ -144,6 +148,17 @@ import {
   theStripSheReads,
 } from '../apps/mobile/tests/fixtures/theWeekSheOpensWith';
 import { partsMissing } from '../apps/mobile/tests/fixtures/theMockupScreen';
+import {
+  herPhoneHoldsNothingForToday,
+  theDrawingAfterSheLogged,
+  theDrawingBeforeSheLogged,
+  theDrawingPlacesTheRow,
+  theRowIsOnTheScreen,
+  theRowSheReads,
+  theScreenDownToTheRing,
+  theSymptomsTheDrawingNames,
+  theSymptomsTheRowNames,
+} from '../apps/mobile/tests/fixtures/whatSheLoggedToday';
 import { sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
 import {
   herCyclesVaryBy,
@@ -2073,6 +2088,95 @@ defineFeature(feature, (test) => {
     and('that is the drawing of the log, which places the flow options before the groups', () => {
       expect(whatTheDrawingOpensOn(theDrawingOfTheFlow)).toBe('flow');
       expect(theDrawingPlaces(theDrawingOfTheFlow, 'symptoms')).toBe(true);
+    });
+  });
+
+  test('SCREEN-2, she records a symptom and the screen she started on shows it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given(
+      'her phone holds the period days behind today, and nothing at all for today',
+      async () => {
+        jest.setSystemTime(whenSheOpensTheStrip);
+        await herPhoneHoldsNothingForToday(whenSheOpensTheStrip);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then(
+      'nothing on the screen reads back a log for today, and there is no empty row either',
+      () => {
+        expect(app.pathname()).toBe('/');
+        expect(theRowIsOnTheScreen()).toBe(false);
+      },
+    );
+
+    and('that is the drawing of the screen she opens, which places no such row', () => {
+      expect(theDrawingPlacesTheRow(theDrawingBeforeSheLogged)).toBe(false);
+      expect(
+        partsMissing(
+          theScreenDownToTheRing(theDrawingBeforeSheLogged),
+          whatTheScreenSheOpensDrew(),
+        ),
+      ).toEqual([]);
+    });
+
+    when('she presses the symptoms action under the ring', async () => {
+      await shePresses(roundActionTestID('symptoms'));
+
+      expect(app.pathname()).toBe('/log');
+    });
+
+    and('she marks the two symptoms the drawing names', async () => {
+      for (const slug of theSymptomsTheDrawingNames()) {
+        await shePresses(symptomChipTestID(slug));
+      }
+    });
+
+    and('she saves', async () => {
+      await shePresses(logFlowDoneTestID);
+    });
+
+    then('she is back on the screen she started on', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+    });
+
+    and('under the day of her cycle she reads that she logged today', () => {
+      const drawn = whatTheScreenSheOpensDrew();
+
+      expect(theRowIsOnTheScreen()).toBe(true);
+      expect(theRowSheReads().lead).toBe(homeCopy.loggedToday.lead);
+      expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(phaseLineTestID));
+      expect(drawn.indexOf(loggedTodayTestID)).toBeLessThan(drawn.indexOf(cycleRingTestID));
+    });
+
+    and('the line under it names both symptoms she marked, and no symptom she did not', () => {
+      expect(theSymptomsTheRowNames()).toEqual(theSymptomsTheDrawingNames());
+      expect(theFourWordsDrawnTooLargeOn(screen.toJSON())).toEqual([]);
+    });
+
+    and('that is the drawing of the screen she comes back to, down to the ring', () => {
+      expect(theDrawingPlacesTheRow(theDrawingAfterSheLogged)).toBe(true);
+      expect(
+        partsMissing(theScreenDownToTheRing(theDrawingAfterSheLogged), whatTheScreenSheOpensDrew()),
+      ).toEqual([]);
+    });
+
+    and('pressing what she logged opens the log on the symptom groups again', async () => {
+      await shePresses(loggedTodayTestID);
+
+      expect(app.pathname()).toBe('/log');
+      expect(app.searchParams()[opensOnParameter]).toBe(theSymptoms);
+      expect(theLogProblems(theDrawingOfTheSymptoms)).toEqual([]);
     });
   });
 });

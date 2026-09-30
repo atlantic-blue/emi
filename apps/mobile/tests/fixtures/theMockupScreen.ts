@@ -12,6 +12,7 @@ import {
 } from '../../../../tools/pipeline/mockups';
 import { cycleRingTestID } from '../../src/components/CycleRing';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
+import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
 import { phaseLineTestID } from '../../src/features/home/PhaseLine';
 import { roundActionTestID, roundActions } from '../../src/features/home/RoundAction';
 import { weekStripTestID } from '../../src/features/home/WeekStrip';
@@ -86,6 +87,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   CycleRing: [cycleRingTestID],
   FlowPicker: [flowPickerTestID],
   HomeHeader: [homeHeaderTestID],
+  LoggedToday: [loggedTodayTestID],
   // The drawing calls the question of a changed answer by the name of the frame the first run asks
   // it in, because it is the same question in the same words.
   OnboardingScreen: [answerQuestionTestID],

@@ -19,6 +19,11 @@ export const groupHeadings: Readonly<Record<GroupName, string>> = {
   libido: words('log.group.libido'),
 };
 
+/** The chip one symptom is drawn under, named after the slug her record carries and never the name. */
+export function symptomChipTestID(slug: string): string {
+  return `symptom-chip-${slug}`;
+}
+
 /** The section one group is drawn in, named after the group so a test reads the group it means. */
 export function symptomGroupTestID(group: GroupName | 'found'): string {
   return `symptom-group-${group}`;
@@ -37,7 +42,7 @@ export function SymptomChip({ symptom, isPicked, onToggle }: SymptomChipProps) {
       accessibilityState={{ checked: isPicked }}
       onPress={() => onToggle(symptom.slug)}
       style={[styles.chip, isPicked ? styles.chipPicked : styles.chipPlain]}
-      testID={`symptom-chip-${symptom.slug}`}
+      testID={symptomChipTestID(symptom.slug)}
     >
       <Text numberOfLines={2} style={[styles.chipLabel, isPicked && styles.chipLabelPicked]}>
         {symptom.name}

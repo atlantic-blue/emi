@@ -258,3 +258,17 @@ Feature: She opens Emi and logs her first period
     And the drawing of that screen places a symptom group, and places no flow picker
     And pressing the Log column of the dock opens the log on the flow options
     And that is the drawing of the log, which places the flow options before the groups
+
+  Scenario: SCREEN-2, she records a symptom and the screen she started on shows it
+    Given her phone holds the period days behind today, and nothing at all for today
+    When she opens Emi
+    Then nothing on the screen reads back a log for today, and there is no empty row either
+    And that is the drawing of the screen she opens, which places no such row
+    When she presses the symptoms action under the ring
+    And she marks the two symptoms the drawing names
+    And she saves
+    Then she is back on the screen she started on
+    And under the day of her cycle she reads that she logged today
+    And the line under it names both symptoms she marked, and no symptom she did not
+    And that is the drawing of the screen she comes back to, down to the ring
+    And pressing what she logged opens the log on the symptom groups again

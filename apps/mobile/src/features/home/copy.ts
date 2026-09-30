@@ -1,3 +1,4 @@
+import type { DayRecord } from '@emi/crypto';
 import type { PublishedFigure, PublishedMeasurement } from '@emi/cycle';
 
 import { words } from '../../language';
@@ -14,6 +15,9 @@ export const homeCopy = {
   roundAction: {
     period: words('home.roundAction.period'),
     symptoms: words('home.roundAction.symptoms'),
+  },
+  loggedToday: {
+    lead: words('home.loggedToday.lead'),
   },
   painLine: words('home.painLine'),
   doctorRecord: words('home.doctorRecord'),
@@ -94,4 +98,13 @@ export function weekDayLabel(day: DayOfHerWeek, today: string): string {
   }
 
   return said.join(', ');
+}
+
+/**
+ * What she marked today, as the one line under the heading, and nothing at all where she marked
+ * nothing. The row is drawn only where this answers, so the absent case is decided once here
+ * rather than once in the screen and once in the row.
+ */
+export function whatSheMarkedToday(_record: DayRecord | undefined): string | undefined {
+  return undefined;
 }

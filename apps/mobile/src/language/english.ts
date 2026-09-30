@@ -158,6 +158,7 @@ export const english = {
   // to her, and it says what the press does rather than saying what the record is for.
   'home.doctorRecord': 'You asked for a record for your doctor. Open the export.',
   'home.greeting': 'Hello, {name}',
+  'home.loggedToday.lead': 'Logged today',
   // The line a woman who said her period is hard reads on a day inside it. It names her own
   // answer back to her and offers the one group she is most likely to want, and it says what the
   // press does rather than saying anything about how she must feel.
