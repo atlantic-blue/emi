@@ -98,7 +98,7 @@ export const firstRunCopy = {
   },
   focus: {
     title: words('onboarding.focus.title'),
-    lines: [words('onboarding.focus.line.first')],
+    lines: [words('onboarding.focus.line.first'), words('onboarding.focus.line.privacy')],
     action: words('onboarding.focus.action'),
   },
   today: {

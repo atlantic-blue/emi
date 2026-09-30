@@ -250,6 +250,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.firstForecast.why.title': '¿Por qué un rango?',
   'onboarding.focus.action': 'Continuar',
   'onboarding.focus.line.first': 'Emi pone esto primero cuando anotas un día.',
+  'onboarding.focus.line.privacy': 'Puedes cambiarlo en Privacidad.',
   'onboarding.focus.title': '¿Qué de esto cambia con tu ciclo?',
   'onboarding.goals.action': 'Continuar',
   'onboarding.goals.choice.doctorRecord': 'Llevar un registro para mi médico',
