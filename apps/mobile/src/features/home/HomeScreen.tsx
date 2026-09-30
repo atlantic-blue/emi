@@ -10,7 +10,9 @@ import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
+import { MeasuredRows } from './MeasuredRow';
 import { greeting, homeCopy } from './copy';
+import type { MeasuredNumber } from './herNumbers';
 import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
 
@@ -41,6 +43,7 @@ export const homeGreetingTestID = 'home-greeting';
 export const homePainLineTestID = 'home-pain-line';
 export const homeFertileWindowTestID = 'home-fertile-window';
 export const homeDoctorRecordTestID = 'home-doctor-record';
+export const homeFiguresLineTestID = 'home-figures-line';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -68,6 +71,12 @@ interface Props {
    * goal draws one card, and a woman who asked for neither reads the screen as it was before.
    */
   readonly goals?: readonly Goal[];
+  /**
+   * Her three measurements beside the published figures, and nothing at all until her own days
+   * carry all three. Emi holds no sample data, so a section it cannot fill is absent rather than
+   * filled with somebody else's numbers.
+   */
+  readonly numbers?: readonly MeasuredNumber[];
   readonly onLogToday: () => void;
   /** The way to the pain group of the log, which only the line below the ring takes her by. */
   readonly onLogPain: () => void;
@@ -86,6 +95,7 @@ export function HomeScreen({
   regularity,
   feeling,
   goals,
+  numbers,
   onLogToday,
   onLogPain,
   onHistory,
@@ -129,6 +139,15 @@ export function HomeScreen({
             <FertileWindow forecast={forecast} />
           </View>
         ) : null}
+
+        {numbers === undefined ? null : (
+          <View style={styles.numbers}>
+            <MeasuredRows headings={homeCopy.numbers} numbers={numbers} />
+            <Text style={styles.figuresLine} testID={homeFiguresLineTestID}>
+              {homeCopy.numbers.line}
+            </Text>
+          </View>
+        )}
 
         {theRecordForHerDoctorIsOffered(goals) ? (
           <Pressable
@@ -217,6 +236,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingVertical: space.spaceXl,
   },
+  // The line sits under the rows rather than beside them, and it says where the published figure
+  // came from. Step 18.3 builds the page it names and makes this line the way to it.
+  figuresLine: {
+    color: colour.onSurfaceVariant,
+    ...textStyle('body-sm'),
+    marginTop: space.spaceSm,
+  },
   forecast: { marginTop: space.spaceLg },
   // Under the wordmark and above the ring, and small, because SCREEN-2 keeps the home screen
   // unreadable from an arm's length away and her name is the one word on it that is hers.
@@ -238,6 +264,9 @@ const styles = StyleSheet.create({
   },
   links: { flexDirection: 'row', gap: space.spaceMd, marginTop: space.spaceSm },
   noRing: { alignItems: 'center', paddingHorizontal: space.spaceLg },
+  // Her three numbers sit under the forecast they were read from, and above the ways off the
+  // screen, because they are something to read rather than somewhere to go.
+  numbers: { alignSelf: 'stretch', paddingHorizontal: space.spaceLg },
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
   // takes the small size rather than the body size a sentence would otherwise get.
   noRingLine: {

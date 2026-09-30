@@ -196,3 +196,14 @@ Feature: She opens Emi and logs her first period
     Given a day log table with nothing in it
     When a row whose update time is behind its creation time is offered to it
     Then the table refuses the write and says so
+
+  Scenario: SCREEN-2, she reads her three cycle numbers beside the published figures
+    Given her phone holds three cycles of her own
+    When she opens Emi
+    Then she reads how long her last cycle ran, how long her last period ran, and how much her cycles vary
+    And beside each of the three she reads the figure a published paper reports
+    And the published figure beside her cycle length is 24 to 38 days
+    And she is told the published figure is the one the paper reports and the paper is one press away
+    And none of the three numbers is called normal, abnormal or irregular
+    And the cycle length she reads here is the one the Insights screen gives that same cycle
+    And the period length she reads here is the bleeding the Insights screen gives that same cycle

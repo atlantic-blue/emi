@@ -150,6 +150,17 @@ export const english = {
   // The line a woman who said her period is hard reads on a day inside it. It names her own
   // answer back to her and offers the one group she is most likely to want, and it says what the
   // press does rather than saying anything about how she must feel.
+  'home.numbers.cycleLength': 'Last cycle',
+  'home.numbers.cycleLengthVariation': 'Variation',
+  'home.numbers.days': { one: '{count} day', other: '{count} days' },
+  'home.numbers.fractionDays': '{days} days',
+  'home.numbers.hers': 'Yours',
+  'home.numbers.line':
+    'The published figure is the one the paper reports, and the paper is one press away.',
+  'home.numbers.periodDuration': 'Last period',
+  'home.numbers.published': 'Published',
+  'home.numbers.range': '{low} to {high}',
+  'home.numbers.upTo': 'up to {days}',
   'home.painLine': 'You said these days are hard. Log the pain first.',
   'home.settings': 'Settings',
   'home.wordmark': 'Emi',
