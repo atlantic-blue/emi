@@ -50,6 +50,7 @@ export const spanish: CatalogueIn<'es'> = {
   'cycle.day.bled': 'sangraste',
   'cycle.day.cycleDay': 'día {cycle} del ciclo',
   'cycle.day.expected': 'se espera tu periodo',
+  'cycle.day.notYet': 'todavía no, este día no ha ocurrido',
   'cycle.noRing.line': 'El anillo necesita un periodo. Registra un día en que sangraste y aparece.',
   'cycle.noRing.title': 'Todavía no hay nada que dibujar',
   'cycle.phaseLine.day': 'Día {day}',

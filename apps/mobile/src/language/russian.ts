@@ -51,6 +51,7 @@ export const russian: CatalogueIn<'ru'> = {
   'cycle.day.bled': 'шла кровь',
   'cycle.day.cycleDay': 'день цикла {cycle}',
   'cycle.day.expected': 'ожидаются месячные',
+  'cycle.day.notYet': 'ещё нет, этот день не наступил',
   'cycle.noRing.line': 'Кольцу нужны месячные. Отметьте день, когда шла кровь, и оно появится.',
   'cycle.noRing.title': 'Пока нечего рисовать',
   'cycle.phaseLine.day': 'День {day}',

@@ -23,6 +23,8 @@ export const dayRefusedCopy: Readonly<Record<DayRefusal, { title: string; line: 
 
 export const dayRefusedBackLabel = words('log.day.back');
 export const dayRefusedTestID = 'day-refused';
+export const dayRefusedTitleTestID = 'day-refused-title';
+export const dayRefusedLineTestID = 'day-refused-line';
 export const dayRefusedBackTestID = 'day-refused-back';
 
 interface Props {
