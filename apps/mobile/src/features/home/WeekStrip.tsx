@@ -1,6 +1,6 @@
-import { colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { herDayLabel } from '../cycle/copy';
 import type { DayMark, HerDay } from '../cycle/herWeek';
@@ -13,6 +13,9 @@ import type { DayMark, HerDay } from '../cycle/herWeek';
  * filled, today is ringed, and a day her period is expected to run into is a dotted outline: three
  * different shapes rather than three strengths of one colour, which design section 3 holds every
  * cue to.
+ *
+ * Every day is also the way into her month, so the row she already reads is the way in and nothing
+ * new goes in the header or in the dock.
  */
 
 export const weekStripTestID = 'home-week-strip';
@@ -40,15 +43,19 @@ interface Props {
   readonly days: readonly HerDay[];
   /** Her own day, which is what a day of the strip is named against for a screen reader. */
   readonly today: string;
+  /** The way into her month, which every day of the row takes her by, naming the day she pressed. */
+  readonly onOpenMonth?: (day: string) => void;
 }
 
-export function WeekStrip({ days, today }: Props): ReactNode {
+export function WeekStrip({ days, today, onOpenMonth }: Props): ReactNode {
   return (
     <View style={styles.strip} testID={weekStripTestID}>
       {days.map((day) => (
-        <View
+        <Pressable
           accessibilityLabel={herDayLabel(day, today)}
+          accessibilityRole="button"
           key={day.day}
+          onPress={() => onOpenMonth?.(day.day)}
           style={styles.day}
           testID={weekDayTestID(day.day)}
         >
@@ -67,7 +74,7 @@ export function WeekStrip({ days, today }: Props): ReactNode {
               {day.date}
             </Text>
           </View>
-        </View>
+        </Pressable>
       ))}
     </View>
   );
@@ -117,7 +124,16 @@ const styles = StyleSheet.create({
     color: colour.surfaceContainerLowest,
     ...textStyle('body-sm'),
   },
-  day: { alignItems: 'center', gap: space.spaceXs },
+  // A day of the row is what she presses to reach her month, so it carries the floor SEE-3 sets
+  // rather than the width of the disc inside it. Seven of them need 308 points and the row has 327
+  // inside its margins on the narrowest phone Emi is built for.
+  day: {
+    alignItems: 'center',
+    gap: space.spaceXs,
+    justifyContent: 'center',
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+  },
   letter: {
     color: colour.onSurfaceVariant,
     ...textStyle('label-sm'),

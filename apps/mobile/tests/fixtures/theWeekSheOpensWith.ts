@@ -1,5 +1,6 @@
 import type { DayRecord, ProfileRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
+import { MINIMUM_TAP_TARGET } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 import { StyleSheet, type ViewStyle } from 'react-native';
 
@@ -13,11 +14,14 @@ import {
   weekDateTestID,
   weekDayTestID,
   weekLetterTestID,
+  weekStripTestID,
 } from '../../src/features/home/WeekStrip';
 
 import { herDatabase, herPhoneHoldsTheseAnswers } from './herPhone';
 import { herVault } from './herVault';
 import { textIn } from './renderedText';
+import { type Control, controlsTooSmallToPress } from './tapTargets';
+import { type Box, widthInside } from './theWidthOfARow';
 import {
   type Part,
   theIdentifiersDrawn,
@@ -248,4 +252,31 @@ export async function herPhoneHoldsNoDayAtAll(firstRunFinishedAt: Date): Promise
   };
 
   await herPhoneHoldsTheseAnswers(firstRunFinishedAt, profile, []);
+}
+
+/**
+ * Each day of the strip that is under the floor SEE-3 sets, named with the size it was drawn at.
+ * The days are read off the strip rather than asked for by name, so a strip that drew six would be
+ * measured as six.
+ */
+export function theDaysOfHerWeekTooSmallToPress(): string[] {
+  const drawn: Control[] = theDaysTheStripDrew().map((day) =>
+    screen.getByTestId(weekDayTestID(day)),
+  );
+
+  return controlsTooSmallToPress(drawn);
+}
+
+/**
+ * The room inside the strip on a glass of that width, and the room its days need to stand at the
+ * floor SEE-3 sets. Seven controls of the floor have to fit across the narrowest phone Emi is
+ * built for, or the row runs past its own right edge and a day of her week is off the glass.
+ */
+export function theStripMeasuredOn(glassWidth: number): { room: number; theDaysNeed: number } {
+  const strip = screen.getByTestId(weekStripTestID) as unknown as Box;
+
+  return {
+    room: widthInside(strip, glassWidth),
+    theDaysNeed: theDaysTheStripDrew().length * MINIMUM_TAP_TARGET,
+  };
 }

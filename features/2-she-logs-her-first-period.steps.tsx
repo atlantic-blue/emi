@@ -2,7 +2,7 @@ import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
 import { addDays, publishedFigures, symptomGroups } from '@emi/cycle';
-import { tabTestID } from '@emi/ui';
+import { dockPanelTestID, tabTestID } from '@emi/ui';
 import {
   FULL_TURN_DEGREES,
   GAP_DEGREES,
@@ -34,6 +34,9 @@ import {
 import { migrate } from '../apps/mobile/src/data/schema';
 import { profileRow, readProfile } from '../apps/mobile/src/data/profileRepository';
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
+import { calendarBackTestID } from '../apps/mobile/src/features/calendar/CalendarScreen';
+import { DAYS_IN_A_WEEK } from '../apps/mobile/src/features/cycle/herWeek';
+import { tabs } from '../apps/mobile/src/features/chrome/tabs';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
 import { flowOptionTestID, flowPickerTestID } from '../apps/mobile/src/features/log/FlowPicker';
 import { opensOnParameter, theSymptoms } from '../apps/mobile/src/features/log/askedGroup';
@@ -55,7 +58,7 @@ import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
 import { greeting, homeCopy } from '../apps/mobile/src/features/home/copy';
 import { logFlowDoneTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
-import { weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
+import { weekDayTestID, weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
 import {
   herNumberTestID,
   homeNumbersTestID,
@@ -76,7 +79,7 @@ import {
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
 import { firstRunCopy } from '../apps/mobile/src/features/onboarding/copy';
-import { monthLabel } from '../apps/mobile/src/features/onboarding/days';
+import { monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
 import { defaultCycleLengthDays } from '../apps/mobile/src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
 import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
@@ -168,6 +171,8 @@ import {
 import {
   herPhoneHoldsFourRecordedPeriodDays,
   theDayTheRingSaysFor,
+  theDaysOfHerWeekTooSmallToPress,
+  theStripMeasuredOn,
   theDaySheOpensIt,
   theDaysOfHerWeek,
   theDaysOfTheDrawingsStrip,
@@ -328,6 +333,18 @@ async function sheOpens(at: string): Promise<OpenApp> {
 
 async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
+}
+
+/**
+ * The columns of the dock, in the order it drew them, read off the capsule rather than asked for
+ * by name. Asking for them by name reads back the order of the ask.
+ */
+function theColumnsOfTheDock(): string[] {
+  return screen
+    .getByTestId(dockPanelTestID)
+    .children.map((column) =>
+      String((column as unknown as { props: { testID: unknown } }).props.testID),
+    );
 }
 
 async function sheAnswersEveryQuestionOfTheFirstRun(): Promise<void> {
@@ -2290,6 +2307,85 @@ defineFeature(feature, (test) => {
       expect(theSquaresTooShortForAThumb()).toEqual([]);
       expect(theSquaresTakingAWidthOfTheirOwn()).toEqual([]);
       expect(week.rightEdge).toBeLessThanOrEqual(week.width);
+    });
+  });
+
+  test('SCREEN-4, she reaches a month from the screen she opens by pressing her week', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    let theDayShePressed: string;
+
+    given('her phone holds three recorded cycles', async () => {
+      jest.setSystemTime(whenSheOpensTheMonth());
+      await herPhoneHoldsThreeRecordedCycles(whenSheOpensTheMonth());
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('every day of the week she is reading is at least 44 points on both axes', () => {
+      expect(app.pathname()).toBe('/');
+      expect(theDaysTheStripDrew()).toHaveLength(DAYS_IN_A_WEEK);
+      expect(theDaysOfHerWeekTooSmallToPress()).toEqual([]);
+      expect(MINIMUM_TAP_TARGET).toBe(44);
+    });
+
+    and('the seven of them fit across the narrowest phone Emi is built for', () => {
+      const strip = theStripMeasuredOn(aSmallIPhone.width);
+
+      expect(strip.theDaysNeed).toBeLessThanOrEqual(strip.room);
+    });
+
+    and('the dock still holds the four columns it held, and nothing else', () => {
+      expect(theColumnsOfTheDock()).toEqual(tabs.map((tab) => tabTestID(tab.name)));
+      expect(theColumnsOfTheDock()).toHaveLength(4);
+    });
+
+    when('she presses a day of that week', async () => {
+      theDayShePressed = String(theDaysTheStripDrew()[0]);
+      await shePresses(weekDayTestID(theDayShePressed));
+    });
+
+    then('she is reading the month that day falls in', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(theMonthSheReads()).toBe(monthLabel(startOfMonth(theDayShePressed)));
+    });
+
+    and(
+      'that is the month the drawing names, with the parts the drawing places in its order',
+      () => {
+        expect(partsMissing(theHeaderAndTheMonthOfTheDrawing(), whatTheMonthScreenDrew())).toEqual(
+          [],
+        );
+        expect(theMonthSheReads()).toContain(theMonthTheDrawingNames());
+        expect(theDatesTheMonthDrew()).toEqual(theDatesOfTheDrawing());
+      },
+    );
+
+    when('she presses the way back', async () => {
+      await shePresses(calendarBackTestID);
+    });
+
+    then('she is on the screen she opened, reading her week again', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(theDaysTheStripDrew()).toHaveLength(DAYS_IN_A_WEEK);
+    });
+
+    and('pressing a different day of the same week reaches the same month', async () => {
+      const another = theDaysTheStripDrew().find((day) => day !== theDayShePressed);
+
+      expect(another).toBeDefined();
+      await shePresses(weekDayTestID(String(another)));
+
+      expect(app.pathname()).toBe('/calendar');
+      expect(startOfMonth(String(another))).toBe(startOfMonth(theDayShePressed));
+      expect(theMonthSheReads()).toBe(monthLabel(startOfMonth(theDayShePressed)));
     });
   });
 });
