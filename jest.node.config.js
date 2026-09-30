@@ -1,6 +1,9 @@
 /** @type {import('jest').Config} */
 module.exports = {
   displayName: 'workspace',
+  // The same cap as the application tier, stated here so a change there cannot uncap this run.
+  maxWorkers: 4,
+  workerIdleMemoryLimit: '1GB',
   testEnvironment: 'node',
   rootDir: __dirname,
   testMatch: [

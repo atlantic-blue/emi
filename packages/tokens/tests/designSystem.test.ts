@@ -223,6 +223,7 @@ describe('the corners and the spacing say what the design system says', () => {
   it('reads both blocks, so an empty read is not taken for agreement', () => {
     expect(Object.keys(cornersInTheDocument)).toHaveLength(6);
     expect(Object.keys(spacingInTheDocument)).toHaveLength(11);
+    expect(spacingInTheDocument['space-xl']).toBe('2rem');
   });
 
   it('holds the same corner names and the same steps', () => {

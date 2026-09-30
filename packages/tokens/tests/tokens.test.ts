@@ -262,7 +262,16 @@ describe('the spacing', () => {
     expect(space.margin).toBe(space.spaceMd);
     expect(space.gutterMd).toBe(space.spaceLg);
     expect(space.gutterLg).toBe(space.marginMd);
-    expect(new Set(spaceNames.map((name) => space[name])).size).toBe(7);
+    expect(space.spaceXl).toBe(space.gutterLg);
+    expect(new Set(spaceNames.map((name) => space[name])).size).toBe(6);
+  });
+
+  it('holds the largest section gap at 32 points, with only the desktop margin above it', () => {
+    const largest = Math.max(...spaceNames.map((name) => space[name]));
+
+    expect(space.spaceXl).toBe(32);
+    expect(largest).toBe(space.marginLg);
+    expect(spaceNames.filter((name) => space[name] > space.spaceXl)).toEqual(['marginLg']);
   });
 
   it('keeps the tap target at the accessible minimum', () => {

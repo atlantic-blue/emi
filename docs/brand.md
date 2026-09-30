@@ -707,7 +707,7 @@ The spacing scale, in points:
 - `gutterMd` is 24.
 - `gutterLg` is 32.
 - `marginMd` is 32.
-- `spaceXl` is 40.
+- `spaceXl` is 32.
 - `marginLg` is 56.
 
 The corner radii, in points:

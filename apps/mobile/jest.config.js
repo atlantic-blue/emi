@@ -23,4 +23,10 @@ module.exports = {
     '\\.css$': '<rootDir>/tests/fixtures/theStylesheetImport.ts',
   },
   testTimeout: 60000,
+  // Nothing here set a worker count, so jest started one worker for each processor less one:
+  // thirteen on this machine, each growing to about 1.6 GiB as it took more files, and a run
+  // peaking at 17,027 MiB of a 24 GiB machine. Two sessions running their tests together then
+  // exhausted it. Four workers that restart above a gibibyte hold the same run inside a session.
+  maxWorkers: 4,
+  workerIdleMemoryLimit: '1GB',
 };

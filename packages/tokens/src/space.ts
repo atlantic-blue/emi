@@ -34,7 +34,7 @@ export const space: Readonly<Record<SpaceName, number>> = {
   spaceSm: 8,
   spaceMd: 16,
   spaceLg: 24,
-  spaceXl: 40,
+  spaceXl: 32,
 };
 
 /**
