@@ -291,7 +291,7 @@ describe('a value that moves is named', () => {
 
   it('says which spacing step moved', () => {
     expect(disagreements(prototype, moved('spacing', 'margin', '2rem'))).toContain(
-      'spacing margin: the prototype says 1rem and the design system says 2rem',
+      'spacing margin: the prototype says 1.5rem and the design system says 2rem',
     );
   });
 

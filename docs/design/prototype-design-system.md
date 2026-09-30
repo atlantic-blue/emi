@@ -130,7 +130,7 @@ spacing:
   gutter: 1rem
   gutter-md: 1.5rem
   gutter-lg: 2rem
-  margin: 1rem
+  margin: 1.5rem
   margin-md: 2rem
   margin-lg: 3.5rem
   space-xs: 0.25rem
@@ -235,6 +235,11 @@ Space between components is `space-xs` through `space-xl`. The scale prefers roo
 `space-xl` is the largest gap the scale holds, and it separates one section of a screen from the
 next. It is not the gap between a sentence and the button under it, which is `space-md` or
 `space-lg`. A screen that puts the largest gap inside a section has used the wrong step.
+
+`margin` is the horizontal padding of a screen, and a screen reaches for it rather than for a
+spacing step. The two carry the same number today, and they answer different questions: `margin`
+says how far the words sit from the glass, and `space-lg` says how far one block sits from the next.
+A screen that wants a wider or a narrower edge than the rest says so, and it says why.
 
 ## Elevation and depth
 

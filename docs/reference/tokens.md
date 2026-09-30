@@ -762,7 +762,9 @@ The eleven steps the document names. A screen asks for `spaceMd` and never for 1
 const space: Readonly<Record<SpaceName, number>>
 ```
 
-Points.
+Points. `margin` and `spaceLg` hold the same number and are not one step: `margin` is the edge
+of a screen and `spaceLg` is a gap inside one. A screen that wants a different edge moves
+`margin`, which leaves every gap where it was.
 
 ### `RadiusName`
 

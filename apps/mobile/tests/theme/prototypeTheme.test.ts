@@ -196,8 +196,9 @@ describe('the theme the application draws in is the token package, in the shape 
       );
     });
 
-    it('writes the margin the dock stands on, and the face its words are drawn in', () => {
+    it('pads the dock by the screen margin rather than by the rhythm gap, and names its face', () => {
       expect(compiled).toContain(`.px-margin {\n  padding-inline: ${String(space.margin)}px;`);
+      expect(compiled).not.toContain(`.px-margin {\n  padding-inline: ${String(space.spaceMd)}px;`);
       expect(compiled).toContain(
         `.font-label-sm {\n  font-family: ${fontNameFor(typeScale['label-sm'].face, typeScale['label-sm'].weight)};`,
       );
