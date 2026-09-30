@@ -1,3 +1,7 @@
+import { CycleError } from '@emi/cycle';
+
+import { startOfMonth } from '../onboarding/days';
+
 /**
  * The month the address asks for, and the name it carries the day under.
  *
@@ -15,5 +19,16 @@ export const dayParameter = 'day';
  * unreadable day is read as no day rather than as an error, and the month opens on today.
  */
 export function theMonthAskedFor(asked: string | undefined): string | undefined {
-  return asked === '' ? '' : undefined;
+  if (asked === undefined || asked === '') {
+    return undefined;
+  }
+
+  try {
+    return startOfMonth(asked);
+  } catch (thrown) {
+    if (thrown instanceof CycleError) {
+      return undefined;
+    }
+    throw thrown;
+  }
 }

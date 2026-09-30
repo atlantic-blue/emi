@@ -106,6 +106,8 @@ interface Props {
   readonly onLogPain: () => void;
   /** The way out, which only the card a woman who asked for it reads takes her by. */
   readonly onExport: () => void;
+  /** The way into her month, which every day of her week takes her by, naming the day she pressed. */
+  readonly onOpenMonth?: (day: string) => void;
 }
 
 export function HomeScreen({
@@ -124,6 +126,7 @@ export function HomeScreen({
   onSymptoms,
   onLogPain,
   onExport,
+  onOpenMonth,
 }: Props): ReactNode {
   const marked = whatSheMarkedToday(loggedToday);
 
@@ -134,7 +137,7 @@ export function HomeScreen({
 
         {week === undefined || today === undefined ? null : (
           <View style={styles.week}>
-            <WeekStrip days={week} today={today} />
+            <WeekStrip days={week} onOpenMonth={onOpenMonth} today={today} />
           </View>
         )}
 

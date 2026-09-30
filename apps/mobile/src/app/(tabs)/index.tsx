@@ -3,6 +3,7 @@ import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
+import { dayParameter } from '../../features/calendar/askedMonth';
 import { useDatabase } from '../../data/DatabaseProvider';
 import { listCycles } from '../../data/cycleRepository';
 import { readProfile } from '../../data/profileRepository';
@@ -130,6 +131,7 @@ export default function HomeRoute(): ReactNode {
       numbers={shown.numbers}
       onExport={() => router.push('/export')}
       onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
+      onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
       onPeriod={() => router.push('/log')}
       onSymptoms={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
       regularity={shown.regularity}
