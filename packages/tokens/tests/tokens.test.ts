@@ -257,13 +257,18 @@ describe('the spacing', () => {
     expect(steps).toEqual([...steps].sort((one, other) => one - other));
   });
 
-  it('names one gap three times, because the page gutter, the margin and the rhythm agree on it', () => {
+  it('names one gap twice and two of them three times, because the page steps meet the rhythm', () => {
     expect(space.gutter).toBe(space.spaceMd);
-    expect(space.margin).toBe(space.spaceMd);
+    expect(space.margin).toBe(space.spaceLg);
     expect(space.gutterMd).toBe(space.spaceLg);
     expect(space.gutterLg).toBe(space.marginMd);
     expect(space.spaceXl).toBe(space.gutterLg);
     expect(new Set(spaceNames.map((name) => space[name])).size).toBe(6);
+  });
+
+  it('holds the screen margin at 24 points, a step of its own rather than the rhythm gap', () => {
+    expect(space.margin).toBe(24);
+    expect(space.margin).not.toBe(space.spaceMd);
   });
 
   it('holds the largest section gap at 32 points, with only the desktop margin above it', () => {

@@ -22,12 +22,16 @@ export type SpaceName =
   | 'spaceLg'
   | 'spaceXl';
 
-/** Points. */
+/**
+ * Points. `margin` and `spaceLg` hold the same number and are not one step: `margin` is the edge
+ * of a screen and `spaceLg` is a gap inside one. A screen that wants a different edge moves
+ * `margin`, which leaves every gap where it was.
+ */
 export const space: Readonly<Record<SpaceName, number>> = {
   gutter: 16,
   gutterMd: 24,
   gutterLg: 32,
-  margin: 16,
+  margin: 24,
   marginMd: 32,
   marginLg: 56,
   spaceXs: 4,
@@ -70,8 +74,8 @@ export const spaceNames: readonly SpaceName[] = [
   'spaceXs',
   'spaceSm',
   'gutter',
-  'margin',
   'spaceMd',
+  'margin',
   'spaceLg',
   'gutterMd',
   'gutterLg',
