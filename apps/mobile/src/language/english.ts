@@ -42,6 +42,20 @@ export const english = {
 
   'cycle.noRing.line': 'The ring needs a period. Log a day you bled and it appears.',
   'cycle.noRing.title': 'Nothing to draw yet',
+  'cycle.phaseLine.day': 'Day {day}',
+  'cycle.phaseLine.follicular': {
+    one: 'Follicular phase, a cycle of {count} day',
+    other: 'Follicular phase, a cycle of {count} days',
+  },
+  'cycle.phaseLine.luteal': {
+    one: 'Luteal phase, a cycle of {count} day',
+    other: 'Luteal phase, a cycle of {count} days',
+  },
+  'cycle.phaseLine.ovulation': {
+    one: 'Ovulation phase, a cycle of {count} day',
+    other: 'Ovulation phase, a cycle of {count} days',
+  },
+  'cycle.phaseLine.period': 'Your period, day {day} of about {days}',
   'cycle.ring.spoken': 'Day {day} of {length}, {phase}',
 
   'export.again': 'Make them again',

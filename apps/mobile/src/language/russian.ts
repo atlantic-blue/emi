@@ -46,6 +46,23 @@ export const russian: CatalogueIn<'ru'> = {
 
   'cycle.noRing.line': 'Кольцу нужны месячные. Отметьте день, когда шла кровь, и оно появится.',
   'cycle.noRing.title': 'Пока нечего рисовать',
+  'cycle.phaseLine.day': 'День {day}',
+  'cycle.phaseLine.follicular': {
+    one: 'Фолликулярная фаза, цикл {count} день',
+    few: 'Фолликулярная фаза, цикл {count} дня',
+    many: 'Фолликулярная фаза, цикл {count} дней',
+  },
+  'cycle.phaseLine.luteal': {
+    one: 'Лютеиновая фаза, цикл {count} день',
+    few: 'Лютеиновая фаза, цикл {count} дня',
+    many: 'Лютеиновая фаза, цикл {count} дней',
+  },
+  'cycle.phaseLine.ovulation': {
+    one: 'Фаза овуляции, цикл {count} день',
+    few: 'Фаза овуляции, цикл {count} дня',
+    many: 'Фаза овуляции, цикл {count} дней',
+  },
+  'cycle.phaseLine.period': 'Менструация, день {day} из примерно {days}',
   'cycle.ring.spoken': 'День {day} из {length}, {phase}',
 
   'export.again': 'Создать заново',

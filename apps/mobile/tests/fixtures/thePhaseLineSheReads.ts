@@ -23,9 +23,27 @@ import { herPeriodStartedOn } from './theWeekSheOpensWith';
  * typed.
  */
 
+/**
+ * The two drawings this step is held to, each named where it is read. The gate over the mockups
+ * stage reads these calls to learn which drawings the suite claims, so the key is written out
+ * rather than handed in, and a key built at run time would tell it nothing.
+ */
+const theDrawings: Readonly<Record<string, () => Part[]>> = {
+  todayLuteal: () => thePartsOfTheMockup('todayLuteal'),
+  todayNext: () => thePartsOfTheMockup('todayNext'),
+};
+
 /** The header, the strip and the line, which is what the top of the screen carries once this is built. */
 export function theTopOfTheDrawing(key: string): Part[] {
-  return thePartsOfTheMockup(key).slice(0, 3);
+  const parts = theDrawings[key];
+
+  if (parts === undefined) {
+    throw new Error(
+      `this step is held to todayNext and todayLuteal, and it was asked for "${key}"`,
+    );
+  }
+
+  return parts().slice(0, 3);
 }
 
 /** The line as one drawing draws it: the day it names, and the phase it names it in. */

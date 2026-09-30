@@ -119,6 +119,9 @@ const theRecordedSets: readonly Recorded[] = [
     onDay: 4,
     periodRunsFor: 5,
   },
+  // The frames above land on a period day or a follicular one, so none of them shows the line in a
+  // phase contract SCREEN-2 says nothing about. This is the other half of that question.
+  { title: 'Day 21, in the luteal phase', set: veryRegular, onDay: 21 },
 ];
 
 /** What the frame is captioned with: the day she is on, and the sentence the screen names. */

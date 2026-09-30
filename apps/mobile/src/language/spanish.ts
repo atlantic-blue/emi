@@ -45,6 +45,20 @@ export const spanish: CatalogueIn<'es'> = {
 
   'cycle.noRing.line': 'El anillo necesita un periodo. Registra un día en que sangraste y aparece.',
   'cycle.noRing.title': 'Todavía no hay nada que dibujar',
+  'cycle.phaseLine.day': 'Día {day}',
+  'cycle.phaseLine.follicular': {
+    one: 'Fase folicular, un ciclo de {count} día',
+    other: 'Fase folicular, un ciclo de {count} días',
+  },
+  'cycle.phaseLine.luteal': {
+    one: 'Fase lútea, un ciclo de {count} día',
+    other: 'Fase lútea, un ciclo de {count} días',
+  },
+  'cycle.phaseLine.ovulation': {
+    one: 'Fase de ovulación, un ciclo de {count} día',
+    other: 'Fase de ovulación, un ciclo de {count} días',
+  },
+  'cycle.phaseLine.period': 'Tu periodo, día {day} de unos {days}',
   'cycle.ring.spoken': 'Día {day} de {length}, {phase}',
 
   'export.again': 'Crearlos de nuevo',
