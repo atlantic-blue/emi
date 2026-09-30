@@ -5,6 +5,7 @@ import {
   FontFile,
   OPEN_FONT_LICENCE,
   applicationFontFiles,
+  cutsNoRoleAsksFor,
   faceFamily,
   fontFamilyNames,
   fontFile,
@@ -73,13 +74,42 @@ describe('every shipped font carries its licence', () => {
 
       const missing = fontFamilyNames.flatMap((name) => {
         const wanted = [...(asked.get(name) ?? new Set<number>())].sort();
-        const held = fonts[name].weights.map((weight) => fontFile(name, weight).weight).sort();
+        const held = fonts[name].weights
+          .map((weight) => fontFile(name, weight))
+          .filter((file) => !cutsNoRoleAsksFor.includes(file.name))
+          .map((file) => file.weight)
+          .sort();
 
         return String(wanted) === String(held) ? [] : [`${name} ships ${held} and needs ${wanted}`];
       });
 
       expect(missing).toEqual([]);
       expect(new Set(fontFiles.map((file) => file.path)).size).toBe(6);
+    });
+
+    describe('the cut that ships while no role asks for its weight', () => {
+      it('holds the one cut, which is the weight data-md asked for before it retired', () => {
+        expect(cutsNoRoleAsksFor).toEqual(['JetBrainsMono-Regular']);
+        expect(fontFile('jetBrainsMono', 'regular').weight).toBe(400);
+        expect(typeRoleNames.filter((role) => typeScale[role].face === 'data')).toEqual([
+          'data-lg',
+          'data-sm',
+        ]);
+      });
+
+      it('names a cut that ships, so a name left behind here is found rather than carried', () => {
+        const shipped = fontFiles.map((file) => file.name);
+
+        expect(cutsNoRoleAsksFor.filter((name) => !shipped.includes(name))).toEqual([]);
+      });
+
+      it('names no cut a role does ask for, so the exception cannot cover a drawn weight', () => {
+        const drawn = typeRoleNames.map((role) =>
+          fontNameFor(typeScale[role].face, typeScale[role].weight),
+        );
+
+        expect(cutsNoRoleAsksFor.filter((name) => drawn.includes(name))).toEqual([]);
+      });
     });
 
     it('refuses a cut a family never shipped, rather than answering with a lighter one', () => {
@@ -291,6 +321,7 @@ describe('the roles are bound to the family that ships', () => {
     );
 
     expect(answered.filter((name) => name === undefined)).toEqual([]);
-    expect(new Set(answered).size).toBe(6);
+    expect(new Set(answered).size).toBe(fontFiles.length - cutsNoRoleAsksFor.length);
+    expect(new Set(answered).size).toBe(5);
   });
 });

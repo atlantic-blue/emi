@@ -1,5 +1,5 @@
 /**
- * The three faces of the design system, and the twelve roles it names for them. The roles keep
+ * The three faces of the design system, and the eleven roles it names for them. The roles keep
  * the names the design system gives them, so a reader can hold the two open side by side and a test
  * can read one against the other.
  *
@@ -20,7 +20,7 @@ export const face: Readonly<Record<FaceName, string>> = {
 /** The three weights the design system asks for. Every one of them has a file in this repository. */
 export type TypeWeight = 400 | 500 | 600;
 
-/** The twelve roles the design system names, in its own words. */
+/** The eleven roles the design system names, in its own words. */
 export type TypeRoleName =
   | 'display-lg'
   | 'display-lg-mobile'
@@ -32,7 +32,6 @@ export type TypeRoleName =
   | 'label-md'
   | 'label-sm'
   | 'data-lg'
-  | 'data-md'
   | 'data-sm';
 
 /**
@@ -51,7 +50,7 @@ export interface TypeRole {
 }
 
 /**
- * The twelve roles, copied from the design system's own front matter. A role that drifts from it
+ * The eleven roles, copied from the design system's own front matter. A role that drifts from it
  * fails `packages/tokens/tests/designSystem.test.ts`, which reads the document. The document
  * measures in rem for a browser and a screen measures in points, so every size here is its rem at
  * sixteen points.
@@ -73,7 +72,6 @@ export const typeScale: Readonly<Record<TypeRoleName, TypeRole>> = {
   'label-md': { face: 'text', size: 14, lineHeight: 20, letterSpacingEm: 0.01, weight: 600 },
   'label-sm': { face: 'text', size: 12, lineHeight: 16, letterSpacingEm: 0.02, weight: 600 },
   'data-lg': { face: 'data', size: 24, lineHeight: 30, letterSpacingEm: -0.03, weight: 500 },
-  'data-md': { face: 'data', size: 16, lineHeight: 24, letterSpacingEm: -0.02, weight: 400 },
   'data-sm': { face: 'data', size: 12, lineHeight: 16, letterSpacingEm: 0.02, weight: 500 },
 };
 
@@ -89,7 +87,6 @@ export const typeRoleNames: readonly TypeRoleName[] = [
   'label-md',
   'label-sm',
   'data-lg',
-  'data-md',
   'data-sm',
 ];
 

@@ -2,6 +2,7 @@
 import {
   FaceName,
   applicationFontFiles,
+  cutsNoRoleAsksFor,
   face,
   faceFamily,
   fontFile,
@@ -56,6 +57,19 @@ describe('the type specimen a person looks at', () => {
     expect(page).not.toContain('IBMPlexMono');
   });
 
+  it('draws the cut that ships while no role asks for its weight, which is why it ships', () => {
+    // The style sheet declares a class for every file that ships, so the body is read on its own:
+    // a declared class the markup never uses is what this case exists to refuse.
+    const body = String(page.split('</style>')[1]);
+
+    expect(cutsNoRoleAsksFor).not.toEqual([]);
+    expect(body).toContain('Emi type specimen');
+
+    const undrawn = cutsNoRoleAsksFor.filter((name) => !body.includes(`face-${name}`));
+
+    expect(undrawn).toEqual([]);
+  });
+
   it.each(Object.keys(face) as FaceName[])(
     'names the %s family, what it carries, its files and its licence',
     (faceName) => {
@@ -95,7 +109,7 @@ describe('the type specimen a person looks at', () => {
       .map((role) => role);
 
     expect(missing).toEqual([]);
-    expect(typeRoleNames).toHaveLength(12);
+    expect(typeRoleNames).toHaveLength(11);
   });
 
   it('writes the size and the line height beside each sample, so the picture names what it shows', () => {

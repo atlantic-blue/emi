@@ -162,6 +162,21 @@ export const fontFiles: readonly FontFile[] = fontFamilyNames.flatMap((name) =>
   fonts[name].weights.map((weight) => fontFile(name, weight)),
 );
 
+/**
+ * A cut that ships while no role of the design system asks for its weight.
+ *
+ * `data-md` was the one role drawn in JetBrains Mono at 400, and the design system retired it
+ * because no screen of the application drew it. The cut stays because the type specimen draws it:
+ * its stacked digits panel is set in the regular cut, so a shifting digit is read at the weight a
+ * reader of the specimen compares against. `brand/tests/specimen.test.tsx` holds that page to it, so
+ * a specimen that stopped drawing the cut reddens rather than leaving this entry standing.
+ *
+ * The application still loads it, which is a file on the phone no screen draws. Whether the phone
+ * keeps carrying it is a decision about the bundle, and it is recorded here one cut at a time rather
+ * than allowed as a class, so a cut added on either side reddens the check that reads them.
+ */
+export const cutsNoRoleAsksFor: readonly string[] = ['JetBrainsMono-Regular'];
+
 /** The files the application loads, which is every file that ships, because every face is drawn. */
 export const applicationFontFiles: readonly FontFile[] = fontFiles;
 

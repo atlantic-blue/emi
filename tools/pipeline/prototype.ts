@@ -230,25 +230,33 @@ export const radiiTheExportKeeps: readonly string[] = [
 ];
 
 /**
- * The one type role the export names and the design system no longer does.
+ * The two type roles the export names and the design system no longer does.
  *
  * `body-md` carried the same face, the same size and the same line height as `body-lg`, so the two
  * names were one value and a value under two names drifts the first time somebody edits one of
  * them. The design system dropped the name and the three call sites took `body-lg`.
  *
- * The export keeps it, for the reason the corners above are kept: the markup of twenty three
- * screens reaches for `text-body-md` and `font-body-md`, and a configuration that no longer names
- * the role draws that text at whatever the browser defaults to. So the difference is recorded
- * rather than edited away.
+ * `data-md` was drawn by no screen of the application at all, so the design system dropped it and
+ * nothing took it. It retires into nothing rather than into a neighbour.
  *
- * It is recorded one property at a time rather than by allowing the role, so a move on either side
+ * The export keeps both, for the reason the corners above are kept: the markup of its screens
+ * reaches for `text-body-md` and for `text-data-md`, and a configuration that no longer names a
+ * role draws that text at whatever the browser defaults to. So the difference is recorded rather
+ * than edited away.
+ *
+ * It is recorded one property at a time rather than by allowing the roles, so a move on either side
  * reddens the check that reads them.
  */
-export const roleTheExportKeeps: readonly string[] = [
+export const rolesTheExportKeeps: readonly string[] = [
   'body-md fontFamily: the prototype says Plus Jakarta Sans and the design system says nothing',
   'body-md fontSize: the prototype says 1rem and the design system says nothing',
   'body-md fontWeight: the prototype says 400 and the design system says nothing',
   'body-md lineHeight: the prototype says 1.5rem and the design system says nothing',
+  'data-md fontFamily: the prototype says JetBrains Mono and the design system says nothing',
+  'data-md fontSize: the prototype says 1rem and the design system says nothing',
+  'data-md fontWeight: the prototype says 400 and the design system says nothing',
+  'data-md letterSpacing: the prototype says -0.02em and the design system says nothing',
+  'data-md lineHeight: the prototype says 1.5rem and the design system says nothing',
 ];
 
 /**
