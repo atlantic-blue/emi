@@ -15,6 +15,7 @@ import {
   calendarHeaderTestID,
   calendarTodayTestID,
 } from '../../src/features/calendar/CalendarScreen';
+import { daySheetTestID } from '../../src/features/calendar/DaySheet';
 import { cycleRingTestID } from '../../src/components/CycleRing';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
@@ -90,6 +91,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     promiseLineTestID('delete'),
   ],
   CycleRing: [cycleRingTestID],
+  DaySheet: [daySheetTestID],
   FlowPicker: [flowPickerTestID],
   HomeHeader: [homeHeaderTestID],
   LoggedToday: [loggedTodayTestID],

@@ -1,6 +1,6 @@
 import type { DayRecord, ProfileRecord } from '@emi/crypto';
 import { addDays, daysBetween } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, type PhaseName, colour, ringGeometry } from '@emi/tokens';
 import { screen, within } from '@testing-library/react-native';
 import { StyleSheet, type ViewStyle } from 'react-native';
 
@@ -18,6 +18,11 @@ import {
   weekCellTestIDs,
   weekTestID,
 } from '../../src/features/calendar/CycleMonth';
+import {
+  daySheetLeadTestID,
+  daySheetLineTestID,
+  daySheetTestID,
+} from '../../src/features/calendar/DaySheet';
 import type { DayMark } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { ringInputFor } from '../../src/features/cycle/ringInput';
@@ -64,6 +69,9 @@ const aCellOfTheMonth = /<div class="cell([^"]*)"[^>]*>([\s\S]*?)<\/div>/g;
 const theDate = /<span class="n">([^<]*)<\/span>/;
 const theCycleDay = /<span class="cd">([^<]*)<\/span>/;
 const theTitle = /<span class="title">([^<]*)<\/span>/;
+const theSheetLeadOfTheDrawing = /<span class="lead">([^<]*)<\/span>/;
+const theSheetSubOfTheDrawing = /<span class="sub">([^<]*)<\/span>/;
+const aDateInTheSentence = /(\d+)/;
 const aColumnHead = /<div class="heads">([\s\S]*?)<\/div>/;
 const aHeadLetter = /<span>([^<]*)<\/span>/g;
 
@@ -254,8 +262,16 @@ export function daysOfHerThreeCycles(): DayRecord[] {
   );
 }
 
-/** Her phone before she opens the month: three recorded cycles and the answers of the first run. */
-export async function herPhoneHoldsThreeRecordedCycles(firstRunFinishedAt: Date): Promise<void> {
+/**
+ * Her phone before she opens the month: three recorded cycles and the answers of the first run.
+ *
+ * A caller may hand it further days. The drawing's own sheet names a day she marked something on,
+ * and a mark that carries no flow reaches no cycle, so the month draws what it drew without it.
+ */
+export async function herPhoneHoldsThreeRecordedCycles(
+  firstRunFinishedAt: Date,
+  andAlso: readonly DayRecord[] = [],
+): Promise<void> {
   const profile: ProfileRecord = {
     kind: 'profile',
     cycleLengthDays: sheSaidHerCycleRuns,
@@ -263,7 +279,10 @@ export async function herPhoneHoldsThreeRecordedCycles(firstRunFinishedAt: Date)
     recordedAt: firstRunFinishedAt.toISOString(),
   };
 
-  await herPhoneHoldsTheseAnswers(firstRunFinishedAt, profile, daysOfHerThreeCycles());
+  await herPhoneHoldsTheseAnswers(firstRunFinishedAt, profile, [
+    ...daysOfHerThreeCycles(),
+    ...andAlso,
+  ]);
 }
 
 /**
@@ -290,6 +309,16 @@ function herReading(today: string): Parameters<typeof ringInputFor>[0] {
  */
 export function theDayTheRingSaysOn(day: string): number | undefined {
   return ringInputFor(herReading(day))?.day;
+}
+
+/**
+ * The phase the ring itself would name on that date, read the same way. The sheet is held to this
+ * rather than to a word in a list, so a sheet that named a phase of its own would be caught.
+ */
+export function thePhaseTheRingSaysOn(day: string): PhaseName | undefined {
+  const input = ringInputFor(herReading(day));
+
+  return input === undefined ? undefined : ringGeometry(input).phase;
 }
 
 /**
@@ -333,9 +362,74 @@ export function theHeaderAndTheMonthOfTheDrawing(): Part[] {
   return parts.slice(0, sheet);
 }
 
+/**
+ * The parts of the drawing down to the sheet at the foot, which is what this step adds.
+ *
+ * The drawing places two sheet rows, and they are two states of one sheet rather than two rows on
+ * one screen: one names a day she lived and one names a day that has not happened. So the walk
+ * stops at the first of them.
+ */
+export function theMonthAndItsSheetOfTheDrawing(): Part[] {
+  const parts = thePartsOfTheMockup('calendar', theIdentifiersOfTheMonth());
+  const sheet = parts.findIndex((part) => part.name === 'DaySheet');
+
+  if (sheet < 1) {
+    throw new Error('the drawing of the month places no day sheet, so nothing says where to stop');
+  }
+
+  return parts.slice(0, sheet + 1);
+}
+
 /** Every part of that drawing, which is what the later steps of the feature build. */
 export function everyPartOfTheDrawing(): Part[] {
   return thePartsOfTheMockup('calendar', theIdentifiersOfTheMonth());
+}
+
+/**
+ * The day the drawing's own sheet names, as a day of the month it draws. The sheet leads with the
+ * date in words, so the number in that sentence is the day she presses.
+ */
+export function theDayTheDrawingsSheetNames(): string {
+  const said = theSheetLeadOfTheDrawing.exec(theMarkupOfTheMockup('calendar'));
+  const date = said === null ? null : aDateInTheSentence.exec(String(said[1]));
+
+  if (date === null) {
+    throw new Error('the sheet of the drawing of the month names no day');
+  }
+
+  return theDayOf(Number(date[1]));
+}
+
+/** What the drawing's sheet says under that date, which is where it names a cycle day and a phase. */
+export function theSheetLineOfTheDrawing(): string {
+  const said = theSheetSubOfTheDrawing.exec(theMarkupOfTheMockup('calendar'));
+
+  if (said === null) {
+    throw new Error('the sheet of the drawing of the month says nothing under the date');
+  }
+
+  return String(said[1]);
+}
+
+/** The two things the sheet on the glass says, or nothing at all where no sheet is on it. */
+export interface SheetSheReads {
+  /** The date in words, which is the day she pressed. */
+  readonly lead: string;
+  /** The day of her cycle, the phase, and what she logged. Nothing where it drew no line. */
+  readonly line: string | undefined;
+}
+
+export function theSheetSheReads(): SheetSheReads | undefined {
+  if (screen.queryByTestId(daySheetTestID) === null) {
+    return undefined;
+  }
+
+  const line = screen.queryByTestId(daySheetLineTestID);
+
+  return {
+    lead: saidUnder(daySheetLeadTestID),
+    line: line === null ? undefined : textIn(line).join(''),
+  };
 }
 
 /**
