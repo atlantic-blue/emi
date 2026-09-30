@@ -741,20 +741,10 @@ What one rem of the document is worth on a phone.
 
 ```
 type SpaceName =
-  | 'gutter'
-  | 'gutterMd'
-  | 'gutterLg'
-  | 'margin'
-  | 'marginMd'
-  | 'marginLg'
-  | 'spaceXs'
-  | 'spaceSm'
-  | 'spaceMd'
-  | 'spaceLg'
-  | 'spaceXl';
+  'margin' | 'marginMd' | 'marginLg' | 'spaceXs' | 'spaceSm' | 'spaceMd' | 'spaceLg' | 'spaceXl';
 ```
 
-The eleven steps the document names. A screen asks for `spaceMd` and never for 16.
+The eight steps the document names. A screen asks for `spaceMd` and never for 16.
 
 ### `space`
 

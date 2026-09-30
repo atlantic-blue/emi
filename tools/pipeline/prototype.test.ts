@@ -23,6 +23,7 @@ import {
   rolesTheExportKeeps,
   sectionUnder,
   sourceScreen,
+  stepsTheExportKeeps,
   type Theme,
 } from './prototype.ts';
 
@@ -63,6 +64,14 @@ const retiredRoles = [
 /** The roles both sides still name, which is the set the two are compared over role by role. */
 const sharedRoleNames = roleNames.filter((name) => !retiredRoles.includes(name));
 
+/** The steps the export keeps and the design system retired, read out of the recorded sentences. */
+const retiredSteps = [
+  ...new Set(stepsTheExportKeeps.map((said) => String(said.split(' ')[1]).replace(':', ''))),
+].sort();
+
+/** The steps both sides still name, which is the set the two are compared over step by step. */
+const sharedSpacingNames = spacingNames.filter((name) => !retiredSteps.includes(name));
+
 /** The palette the configuration names, which is the palette without the eight phase colours. */
 const describedWithoutPhases = Object.keys(described.colours).filter(
   (name) => !phaseColourNames.includes(name),
@@ -73,6 +82,7 @@ describe('the design system says what the prototype draws', () => {
     expect(colourNames).toHaveLength(47);
     expect(Object.keys(described.colours)).toHaveLength(47 + phaseColourNames.length);
     expect(spacingNames).toHaveLength(11);
+    expect(sharedSpacingNames).toHaveLength(8);
     expect(roleNames).toHaveLength(13);
     expect(sharedRoleNames).toHaveLength(11);
     expect(prototype.type['display-lg']?.fontSize).toBe('2.75rem');
@@ -90,7 +100,7 @@ describe('the design system says what the prototype draws', () => {
 
   it('names the same colours, the same spacing steps and the same type roles', () => {
     expect(describedWithoutPhases.sort()).toEqual([...colourNames].sort());
-    expect(Object.keys(described.spacing).sort()).toEqual([...spacingNames].sort());
+    expect(Object.keys(described.spacing).sort()).toEqual([...sharedSpacingNames].sort());
     expect(Object.keys(described.type).sort()).toEqual([...sharedRoleNames].sort());
   });
 
@@ -98,7 +108,7 @@ describe('the design system says what the prototype draws', () => {
     expect(described.colours[name]).toBe(prototype.colours[name]);
   });
 
-  it.each(spacingNames)('holds the prototype value for spacing %s', (name) => {
+  it.each(sharedSpacingNames)('holds the prototype value for spacing %s', (name) => {
     expect(described.spacing[name]).toBe(prototype.spacing[name]);
   });
 
@@ -109,9 +119,9 @@ describe('the design system says what the prototype draws', () => {
     },
   );
 
-  it('agrees about everything, apart from the radii and the two roles the export keeps', () => {
+  it('agrees about everything, apart from the radii, the roles and the steps the export keeps', () => {
     expect(disagreements(prototype, described)).toEqual(
-      [...radiiTheExportKeeps, ...rolesTheExportKeeps].sort(),
+      [...radiiTheExportKeeps, ...rolesTheExportKeeps, ...stepsTheExportKeeps].sort(),
     );
   });
 
@@ -210,7 +220,7 @@ describe('a colour named in the prose of the design document fails the pipeline'
     it('keeps the eight out of the comparison with the configuration, which does not name them', () => {
       expect(phaseColourNames.filter((name) => name in prototype.colours)).toEqual([]);
       expect(disagreements(prototype, described)).toEqual(
-        [...radiiTheExportKeeps, ...rolesTheExportKeeps].sort(),
+        [...radiiTheExportKeeps, ...rolesTheExportKeeps, ...stepsTheExportKeeps].sort(),
       );
     });
   });
@@ -273,6 +283,46 @@ describe('the type roles the export keeps and the design system retired', () => 
       'data-sm',
     ]);
   });
+});
+
+describe('the spacing steps the export keeps and the design system retired', () => {
+  const markupOf = (file: string): string =>
+    readFileSync(join(root, prototypeDirectory, file), 'utf8');
+  const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
+    name.endsWith('.html'),
+  );
+
+  it('keeps all three disagreements written out, so putting a step back reddens this too', () => {
+    expect(retiredSteps).toEqual(['gutter', 'gutter-lg', 'gutter-md']);
+    expect(
+      stepsTheExportKeeps.filter(
+        (said) => !retiredSteps.some((step) => said.startsWith(`spacing ${step}: `)),
+      ),
+    ).toEqual([]);
+  });
+
+  it.each(retiredSteps)('is named by the export and by the design system nowhere: %s', (step) => {
+    expect(prototype.spacing[step]).toBeDefined();
+    expect(described.spacing[step]).toBeUndefined();
+  });
+
+  it.each(retiredSteps)(
+    'is still reached for by the markup of a screen, which is why the export keeps %s',
+    (step) => {
+      expect(screens.filter((file) => markupOf(file).includes(`-${step}`))).not.toEqual([]);
+    },
+  );
+
+  it.each(retiredSteps)(
+    'repeated a step the design system keeps, which is why %s retires',
+    (step) => {
+      const sameValue = sharedSpacingNames.filter(
+        (name) => described.spacing[name] === prototype.spacing[step],
+      );
+
+      expect(sameValue).not.toEqual([]);
+    },
+  );
 });
 
 describe('a value that moves is named', () => {

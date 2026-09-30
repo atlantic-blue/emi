@@ -15,6 +15,9 @@ export names thirteen type roles and the design system names eleven. `body-md` c
 face, size and line height as `body-lg`, so the design system retired it and the three call sites
 took `body-lg`. No screen of the application drew `data-md` at all, so the design system retired
 that one into nothing. The export keeps both names because its own markup reaches for them.
+The export names eleven spacing steps and the design system names eight. `gutter`, `gutter-md` and
+`gutter-lg` each repeated the value of another step, and no screen of the application drew any of
+them, so the design system retired the three and the export keeps them.
 The token package took the design system's scale and `apps/mobile/tailwind.config.js` reads the
 token package, so the application draws that one. That answers
 https://github.com/atlantic-blue/emi/issues/159, and the difference stays recorded in

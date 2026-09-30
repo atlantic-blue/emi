@@ -700,12 +700,9 @@ The spacing scale, in points:
 
 - `spaceXs` is 4.
 - `spaceSm` is 8.
-- `gutter` is 16.
 - `spaceMd` is 16.
 - `margin` is 24.
 - `spaceLg` is 24.
-- `gutterMd` is 24.
-- `gutterLg` is 32.
 - `marginMd` is 32.
 - `spaceXl` is 32.
 - `marginLg` is 56.

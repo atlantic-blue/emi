@@ -260,6 +260,27 @@ export const rolesTheExportKeeps: readonly string[] = [
 ];
 
 /**
+ * The three spacing steps the export names and the design system no longer does.
+ *
+ * Each of the three repeated the value of another step. `gutter` held what `space-md` holds,
+ * `gutter-md` held what `space-lg` holds, and `gutter-lg` held what `space-xl` and `margin-md`
+ * hold. No screen of the application reached for any of them, so the design system dropped the
+ * three names and nothing took them. They retire into nothing rather than into a neighbour.
+ *
+ * The export keeps all three, for the reason the corners and the two roles above are kept: the
+ * markup of its screens reaches for `px-gutter-lg`, and a configuration that no longer names a
+ * step draws no padding at all there. So the difference is recorded rather than edited away.
+ *
+ * It is recorded one step at a time rather than by allowing the block, so a move on either side
+ * reddens the check that reads them.
+ */
+export const stepsTheExportKeeps: readonly string[] = [
+  'spacing gutter: the prototype says 1rem and the design system says nothing',
+  'spacing gutter-lg: the prototype says 2rem and the design system says nothing',
+  'spacing gutter-md: the prototype says 1.5rem and the design system says nothing',
+];
+
+/**
  * The four phase fills and the ink beside each one, in the order a cycle runs.
  *
  * These eight are the one part of the palette the Tailwind configuration does not name. The screens

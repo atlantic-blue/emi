@@ -8,19 +8,9 @@
 /** What one rem of the document is worth on a phone. */
 export const REM_IN_POINTS = 16;
 
-/** The eleven steps the document names. A screen asks for `spaceMd` and never for 16. */
+/** The eight steps the document names. A screen asks for `spaceMd` and never for 16. */
 export type SpaceName =
-  | 'gutter'
-  | 'gutterMd'
-  | 'gutterLg'
-  | 'margin'
-  | 'marginMd'
-  | 'marginLg'
-  | 'spaceXs'
-  | 'spaceSm'
-  | 'spaceMd'
-  | 'spaceLg'
-  | 'spaceXl';
+  'margin' | 'marginMd' | 'marginLg' | 'spaceXs' | 'spaceSm' | 'spaceMd' | 'spaceLg' | 'spaceXl';
 
 /**
  * Points. `margin` and `spaceLg` hold the same number and are not one step: `margin` is the edge
@@ -28,9 +18,6 @@ export type SpaceName =
  * `margin`, which leaves every gap where it was.
  */
 export const space: Readonly<Record<SpaceName, number>> = {
-  gutter: 16,
-  gutterMd: 24,
-  gutterLg: 32,
   margin: 24,
   marginMd: 32,
   marginLg: 56,
@@ -73,12 +60,9 @@ export const MINIMUM_TAP_TARGET = 44;
 export const spaceNames: readonly SpaceName[] = [
   'spaceXs',
   'spaceSm',
-  'gutter',
   'spaceMd',
   'margin',
   'spaceLg',
-  'gutterMd',
-  'gutterLg',
   'marginMd',
   'spaceXl',
   'marginLg',
