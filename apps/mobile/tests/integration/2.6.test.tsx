@@ -14,7 +14,7 @@ import {
 } from '../../src/features/log/DayRefused';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { logFlowDoneTestID, logFlowSavedTestID } from '../../src/features/log/LogFlow';
-import { logTodayTestID } from '../../src/features/home/HomeScreen';
+import { roundActionTestID } from '../../src/features/home/HomeScreen';
 import { DayEditError, editFlow, flowOn } from '../../src/features/log/editDay';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -240,7 +240,7 @@ describe('a past day is edited and a future day is refused', () => {
       await shePresses(logFlowDoneTestID);
 
       expect(app.pathname()).toBe('/');
-      expect(screen.getByTestId(logTodayTestID)).toBeTruthy();
+      expect(screen.getByTestId(roundActionTestID('period'))).toBeTruthy();
       expect(whatWasRecordedOn(sheForgot)?.flow).toBe('heavy');
     });
   });

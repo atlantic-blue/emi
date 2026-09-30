@@ -2,17 +2,14 @@ import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
+import { tabTestID } from '@emi/ui';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { keyholdingItems } from '../../../../tools/pipeline/keyLeak';
 import { listDayLogs } from '../../src/data/dayLogRepository';
 import { readProfile } from '../../src/data/profileRepository';
 
-import {
-  historyTestID,
-  homeScreenTestID,
-  settingsTestID,
-} from '../../src/features/home/HomeScreen';
+import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import {
   deleteActionTestID,
   deleteBackTestID,
@@ -102,7 +99,7 @@ async function shePresses(testID: string): Promise<void> {
 }
 
 async function sheWalksToTheDeleteScreen(): Promise<void> {
-  await shePresses(settingsTestID);
+  await shePresses(tabTestID('settings/index'));
   await shePresses(settingsDeleteTestID);
 }
 
@@ -144,7 +141,7 @@ describe('after deleting, the database and the keychain are both empty', () => {
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
 
-      await shePresses(settingsTestID);
+      await shePresses(tabTestID('settings/index'));
 
       expect(screen.getByTestId(settingsScreenTestID)).toBeTruthy();
 
@@ -288,7 +285,7 @@ describe('after deleting, the database and the keychain are both empty', () => {
       await sheHoldsTheRing();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
-      expect(screen.getByTestId(historyTestID)).toBeTruthy();
+      expect(screen.getByTestId(tabTestID('history'))).toBeTruthy();
 
       const rows = listDayLogs(herDatabase());
       const vault = await theVaultOnHerPhone();

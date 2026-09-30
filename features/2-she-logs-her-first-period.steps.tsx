@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
 import { addDays, publishedFigures } from '@emi/cycle';
+import { tabTestID } from '@emi/ui';
 import {
   FULL_TURN_DEGREES,
   GAP_DEGREES,
@@ -34,12 +35,13 @@ import { migrate } from '../apps/mobile/src/data/schema';
 import { profileRow, readProfile } from '../apps/mobile/src/data/profileRepository';
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
-import { flowOptionTestID } from '../apps/mobile/src/features/log/FlowPicker';
+import { flowOptionTestID, flowPickerTestID } from '../apps/mobile/src/features/log/FlowPicker';
 import { historyCycleTestID } from '../apps/mobile/src/features/history/HistoryScreen';
 import {
-  historyTestID,
   homeFiguresLineTestID,
+  homeForecastTestID,
   homeScreenTestID,
+  roundActionTestID,
 } from '../apps/mobile/src/features/home/HomeScreen';
 import {
   homeGreetingTestID,
@@ -67,6 +69,7 @@ import {
   onboardingSkipTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
+import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
 import { firstRunCopy } from '../apps/mobile/src/features/onboarding/copy';
 import { defaultCycleLengthDays } from '../apps/mobile/src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
@@ -113,6 +116,12 @@ import {
   thePhaseLineSheReads,
   theTopOfTheDrawing,
 } from '../apps/mobile/tests/fixtures/thePhaseLineSheReads';
+import {
+  roundActionProblems,
+  roundActionsTooSmallToPress,
+  theRoundActionsOnTheGlass,
+  theScreenDownToTheRoundActions,
+} from '../apps/mobile/tests/fixtures/theRoundActionsUnderTheRing';
 import {
   herPhoneHoldsFourRecordedPeriodDays,
   theDayTheRingSaysFor,
@@ -1173,8 +1182,12 @@ defineFeature(feature, (test) => {
     });
 
     then('the phase she is in is written inside the ring in words', () => {
-      expect(screen.getByText(phaseLabel.period)).toBeTruthy();
-      expect(screen.queryByText(phaseLabel.luteal)).toBeNull();
+      // Inside the ring, because the round action under it carries the same word and the question
+      // here is what the ring itself names.
+      const insideTheRing = within(screen.getByTestId(cycleRingTestID));
+
+      expect(insideTheRing.getByText(phaseLabel.period)).toBeTruthy();
+      expect(insideTheRing.queryByText(phaseLabel.luteal)).toBeNull();
     });
 
     and('a screen reader is told the day and the phase in the same sentence', () => {
@@ -1668,7 +1681,7 @@ defineFeature(feature, (test) => {
       'the cycle length she reads here is the one the Insights screen gives that same cycle',
       async () => {
         // The section goes when she leaves it, so what she read is kept above and compared here.
-        await shePresses(historyTestID);
+        await shePresses(tabTestID('history'));
 
         expect(herCycleLengthOnTheScreenSheOpened).toContain(String(herLastCycle.lengthDays));
         expect(whatItSays(historyCycleTestID(herLastCycle.startedOn))).toContain(
@@ -1904,6 +1917,79 @@ defineFeature(feature, (test) => {
       expect(inHerLutealPhase.phasePoints).toBe(onHerPeriodDay.phasePoints);
       expect(inHerLutealPhase.dayPoints).toBe(onHerPeriodDay.dayPoints);
       expect(theFourWordsDrawnTooLargeOn(screen.toJSON())).toEqual([]);
+    });
+  });
+
+  test('SCREEN-2, she starts a log from the screen she opens in one press', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('under the ring she reads two round actions, in the order the drawing places them', () => {
+      expect(app.pathname()).toBe('/');
+      // The parts, their order and the count all come off the drawing, so a third action fails
+      // here and the failure names the number the drawing places.
+      expect(partsMissing(theScreenDownToTheRoundActions(), whatTheScreenSheOpensDrew())).toEqual(
+        [],
+      );
+      expect(roundActionProblems()).toEqual([]);
+      expect(theRoundActionsOnTheGlass()).toHaveLength(2);
+
+      const drawn = whatTheScreenSheOpensDrew();
+
+      for (const action of theRoundActionsOnTheGlass()) {
+        expect(drawn.indexOf(action)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
+        expect(drawn.indexOf(action)).toBeLessThan(drawn.indexOf(homeForecastTestID));
+      }
+    });
+
+    and('each of them is at least 44 points on both axes', () => {
+      expect(roundActionsTooSmallToPress()).toEqual([]);
+      expect(MINIMUM_TAP_TARGET).toBe(44);
+    });
+
+    and(
+      'there is no Log today button, and no link to the history, the export or the settings',
+      () => {
+        // The four are named as the strings they were drawn under rather than through a constant,
+        // because the constants went with them and a way off an interface has to be tested too.
+        for (const gone of ['home-log-today', 'home-history', 'home-export', 'home-settings']) {
+          expect(screen.queryByTestId(gone)).toBeNull();
+        }
+      },
+    );
+
+    and('pressing the first one puts her on the log, at the flow picker', async () => {
+      const [first] = theRoundActionsOnTheGlass();
+
+      expect(first).toBe(roundActionTestID('period'));
+      await shePresses(String(first));
+
+      expect(app.pathname()).toBe('/log');
+      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
+    });
+
+    and('the dock still reaches the history and the privacy screen', async () => {
+      await shePresses(tabTestID('history'));
+
+      expect(app.pathname()).toBe('/history');
+
+      await shePresses(tabTestID('settings/index'));
+
+      expect(app.pathname()).toBe('/settings');
+      expect(screen.getByTestId(settingsExportTestID)).toBeTruthy();
     });
   });
 });

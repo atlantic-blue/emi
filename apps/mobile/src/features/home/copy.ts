@@ -11,10 +11,10 @@ import type { MeasuredNumber } from './herNumbers';
  */
 export const homeCopy = {
   wordmark: words('home.wordmark'),
-  logToday: words('home.logToday'),
-  history: words('home.history'),
-  export: words('home.export'),
-  settings: words('home.settings'),
+  roundAction: {
+    period: words('home.roundAction.period'),
+    symptoms: words('home.roundAction.symptoms'),
+  },
   painLine: words('home.painLine'),
   doctorRecord: words('home.doctorRecord'),
   numbers: {

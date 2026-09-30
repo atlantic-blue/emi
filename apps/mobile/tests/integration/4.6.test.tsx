@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { type DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
 import { colour, phasePalette } from '@emi/tokens';
+import { tabTestID } from '@emi/ui';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo, StyleSheet } from 'react-native';
 
@@ -22,7 +23,6 @@ import {
 } from '../../src/features/history/HistoryScreen';
 import { historyCopy, patternsWaitingSentence } from '../../src/features/history/copy';
 import { historyNeedsCycles } from '../../src/features/history/historyNow';
-import { historyTestID } from '../../src/features/home/HomeScreen';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { herVault } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -119,7 +119,7 @@ async function shePresses(testID: string): Promise<void> {
 
 async function sheOpensHerHistory(): Promise<OpenApp> {
   const app = await sheOpensEmi();
-  await shePresses(historyTestID);
+  await shePresses(tabTestID('history'));
 
   return app;
 }

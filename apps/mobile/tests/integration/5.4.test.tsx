@@ -2,13 +2,14 @@ import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
 import { type Symptom, addDays, symptoms } from '@emi/cycle';
+import { tabTestID } from '@emi/ui';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo, AppState } from 'react-native';
 
 import { readSettings } from '../../src/data/settingRepository';
 import { historyScreenTestID } from '../../src/features/history/HistoryScreen';
 import { cycleSentence } from '../../src/features/history/copy';
-import { historyTestID, homeScreenTestID } from '../../src/features/home/HomeScreen';
+import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { coverTestID } from '../../src/features/lock/Cover';
 import { lockScreenTestID, unlockTestID } from '../../src/features/lock/LockScreen';
 import { lockCopy } from '../../src/features/lock/copy';
@@ -161,7 +162,7 @@ describe('the lock shows when she comes back to the application', () => {
     beforeEach(async () => {
       await herPhoneHolds(whenSheOpensIt, herYear(), herCycleLengthDays);
       await sheOpensEmi();
-      await shePresses(historyTestID);
+      await shePresses(tabTestID('history'));
     });
 
     it('covers her screen before the picture of Emi is taken', async () => {
@@ -198,7 +199,7 @@ describe('the lock shows when she comes back to the application', () => {
     beforeEach(async () => {
       await herPhoneHolds(whenSheOpensIt, herYear(), herCycleLengthDays);
       await sheOpensEmi();
-      await shePresses(historyTestID);
+      await shePresses(tabTestID('history'));
     });
 
     it('gives her her own screen back once the phone says yes', async () => {
@@ -258,7 +259,7 @@ describe('the lock shows when she comes back to the application', () => {
     it('does not hold her out of her own history', async () => {
       await herPhoneHolds(whenSheOpensIt, herYear(), herCycleLengthDays);
       await sheOpensEmi();
-      await shePresses(historyTestID);
+      await shePresses(tabTestID('history'));
       thePhoneHasNothingEnrolled();
 
       await sheLeavesEmi();
@@ -274,7 +275,7 @@ describe('the lock shows when she comes back to the application', () => {
       await herPhoneHolds(whenSheOpensIt, herYear(), herCycleLengthDays);
       setLockOnReturn(herDatabase(), false);
       await sheOpensEmi();
-      await shePresses(historyTestID);
+      await shePresses(tabTestID('history'));
 
       await sheLeavesEmi();
       await sheComesBackToEmi();
@@ -287,7 +288,7 @@ describe('the lock shows when she comes back to the application', () => {
       await herPhoneHolds(whenSheOpensIt, herYear(), herCycleLengthDays);
       setLockOnReturn(herDatabase(), false);
       await sheOpensEmi();
-      await shePresses(historyTestID);
+      await shePresses(tabTestID('history'));
 
       await sheOpensTheSwitcher();
 

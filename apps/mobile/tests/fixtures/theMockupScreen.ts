@@ -9,8 +9,10 @@ import {
   partsOfTheScreen,
   rowsOfTheScreen,
 } from '../../../../tools/pipeline/mockups';
+import { cycleRingTestID } from '../../src/components/CycleRing';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import { phaseLineTestID } from '../../src/features/home/PhaseLine';
+import { roundActionTestID, roundActions } from '../../src/features/home/RoundAction';
 import { weekStripTestID } from '../../src/features/home/WeekStrip';
 import {
   promiseActionTestID,
@@ -78,12 +80,16 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     promiseLineTestID('noTracking'),
     promiseLineTestID('delete'),
   ],
+  CycleRing: [cycleRingTestID],
   HomeHeader: [homeHeaderTestID],
   // The drawing calls the question of a changed answer by the name of the frame the first run asks
   // it in, because it is the same question in the same words.
   OnboardingScreen: [answerQuestionTestID],
   PhaseLine: [phaseLineTestID],
   PrimaryButton: [promiseActionTestID, answerSaveTestID],
+  // The drawing names both round actions by one name, so the record carries both identifiers and
+  // the walk matches each of them in turn.
+  RoundAction: roundActions.map(roundActionTestID),
   Stepper: [changeCycleLengthStepperTestID],
   Text: [settingsTitleTestID, yourAnswersTitleTestID, answerHeaderTestID, answerLinesTestID],
   TextLink: [yourAnswersBackTestID, answerBackTestID, answerCancelTestID],

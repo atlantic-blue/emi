@@ -94,10 +94,9 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
         cycleLengthDays={28}
         forecast={learning}
         onExport={nothing}
-        onHistory={nothing}
         onLogPain={nothing}
-        onLogToday={nothing}
-        onSettings={nothing}
+        onPeriod={nothing}
+        onSymptoms={nothing}
         ring={undefined}
       />
     ),

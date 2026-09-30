@@ -12,7 +12,7 @@ import { words } from '../../src/language';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { homePainLineTestID, logTodayTestID } from '../../src/features/home/HomeScreen';
+import { homePainLineTestID, roundActionTestID } from '../../src/features/home/HomeScreen';
 import { homeCopy } from '../../src/features/home/copy';
 import { logFlowGroupTestID, logFlowGroupsTestID } from '../../src/features/log/LogFlow';
 import { painGroup } from '../../src/features/log/askedGroup';
@@ -303,7 +303,7 @@ describe('a hard period day offers the pain log first', () => {
       await sheOpensEmi();
 
       expect(thePainLine()).toBeUndefined();
-      expect(screen.getByTestId(logTodayTestID)).toBeTruthy();
+      expect(screen.getByTestId(roundActionTestID('period'))).toBeTruthy();
     });
 
     it('is not there on the same day where she said she wants to understand it', async () => {
@@ -388,7 +388,7 @@ describe('a hard period day offers the pain log first', () => {
       await herPhone(insideHerPeriod, 'hard');
       await sheOpensEmi();
 
-      await shePresses(logTodayTestID);
+      await shePresses(roundActionTestID('period'));
 
       // Every group, not only the pain one, because the log she reached by the tab is the log she
       // reached yesterday and a group she did not ask for is a group above the picker she did not

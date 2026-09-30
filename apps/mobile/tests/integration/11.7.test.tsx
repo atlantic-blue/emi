@@ -4,6 +4,7 @@ import type { DayRecord, Goal } from '@emi/crypto';
 import { goalValues } from '@emi/crypto';
 import type { Forecast } from '@emi/cycle';
 import { addDays } from '@emi/cycle';
+import { tabTestID } from '@emi/ui';
 import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
@@ -14,13 +15,10 @@ import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import { words } from '../../src/language';
 import {
-  exportTestID,
-  historyTestID,
   homeDoctorRecordTestID,
   homeFertileWindowTestID,
   homeScreenTestID,
-  logTodayTestID,
-  settingsTestID,
+  roundActionTestID,
 } from '../../src/features/home/HomeScreen';
 import { homeCopy } from '../../src/features/home/copy';
 import {
@@ -492,18 +490,20 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(screen.queryByTestId(homeDoctorRecordTestID)).toBeNull();
       // The ways off the screen are named one at a time, so a card that arrived by taking the
       // place of one of them fails here rather than passing on the two absences above.
-      expect(screen.getByTestId(logTodayTestID)).toBeTruthy();
-      expect(screen.getByTestId(historyTestID)).toBeTruthy();
-      expect(screen.getByTestId(exportTestID)).toBeTruthy();
-      expect(screen.getByTestId(settingsTestID)).toBeTruthy();
+      expect(screen.getByTestId(roundActionTestID('period'))).toBeTruthy();
+      expect(screen.getByTestId(roundActionTestID('symptoms'))).toBeTruthy();
+      expect(screen.getByTestId(tabTestID('history'))).toBeTruthy();
+      expect(screen.getByTestId(tabTestID('settings/index'))).toBeTruthy();
     });
 
     it('keeps the way to the export she has always had, beside the card she was given', async () => {
       await herPhone(3, ['doctorRecord']);
       await sheOpensEmi();
 
-      expect(screen.getByTestId(exportTestID)).toBeTruthy();
+      // The screen she opens carries no export link of its own now. The card is the one thing on
+      // it that offers the export, and the privacy screen the dock reaches lists it as a row.
       expect(screen.getByTestId(homeDoctorRecordTestID)).toBeTruthy();
+      expect(screen.getByTestId(tabTestID('settings/index'))).toBeTruthy();
     });
   });
 });

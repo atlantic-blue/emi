@@ -237,3 +237,12 @@ Feature: She opens Emi and logs her first period
     And the words period, bleeding, fertile and ovulation are still drawn at 14 points or less
     And the phase is written in the ink of that phase, and never on the colour of it
     And the same screen three weeks later reads her luteal phase the same way
+
+  Scenario: SCREEN-2, she starts a log from the screen she opens in one press
+    Given her phone holds four recorded period days, the last of them today
+    When she opens Emi
+    Then under the ring she reads two round actions, in the order the drawing places them
+    And each of them is at least 44 points on both axes
+    And there is no Log today button, and no link to the history, the export or the settings
+    And pressing the first one puts her on the log, at the flow picker
+    And the dock still reaches the history and the privacy screen
