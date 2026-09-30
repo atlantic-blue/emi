@@ -243,6 +243,12 @@ spacing step. The two carry the same number today, and they answer different que
 says how far the words sit from the glass, and `space-lg` says how far one block sits from the next.
 A screen that wants a wider or a narrower edge than the rest says so, and it says why.
 
+The content of a screen begins at the top of it, and no screen centres its body. The spare room
+falls under the last thing on the screen. A body that centres its content puts half the spare room
+above the first thing she reads, which draws a short column of words in the middle of an empty
+glass. A block inside a body may still centre what is in it, which is how the first run holds the
+one control she came to press.
+
 ## Elevation and depth
 
 There are no deep shadows, no blur and no glass. Depth comes from a tonal step and a hairline.

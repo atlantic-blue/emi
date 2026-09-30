@@ -145,7 +145,6 @@ const styles = StyleSheet.create({
   },
   body: {
     flexGrow: 1,
-    justifyContent: 'center',
     paddingHorizontal: space.spaceLg,
     paddingVertical: space.spaceXl,
   },
