@@ -30,6 +30,7 @@ export const english = {
   'calendar.ordinal.other': 'th',
   'calendar.ordinal.second': 'nd',
   'calendar.ordinal.third': 'rd',
+  'calendar.screen.back': 'Back',
   'calendar.today': 'Today',
   'calendar.weekday.friday': 'Friday',
   'calendar.weekday.monday': 'Monday',
@@ -40,6 +41,9 @@ export const english = {
   'calendar.weekday.wednesday': 'Wednesday',
   'calendar.yesterday': 'Yesterday',
 
+  'cycle.day.bled': 'you bled',
+  'cycle.day.cycleDay': 'cycle day {cycle}',
+  'cycle.day.expected': 'your period is expected',
   'cycle.noRing.line': 'The ring needs a period. Log a day you bled and it appears.',
   'cycle.noRing.title': 'Nothing to draw yet',
   'cycle.phaseLine.day': 'Day {day}',
@@ -183,9 +187,6 @@ export const english = {
   'home.painLine': 'You said these days are hard. Log the pain first.',
   'home.roundAction.period': 'Period',
   'home.roundAction.symptoms': 'Symptoms',
-  'home.week.bled': 'you bled',
-  'home.week.cycleDay': 'cycle day {cycle}',
-  'home.week.expected': 'your period is expected',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Cancel',

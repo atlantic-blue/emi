@@ -2,8 +2,8 @@ import { colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
+import { herDayLabel } from '../cycle/copy';
 import type { DayMark, HerDay } from '../cycle/herWeek';
-import { weekDayLabel } from './copy';
 
 /**
  * Her week, under the header of the screen she opens. Seven days, each carrying the letter of its
@@ -47,7 +47,7 @@ export function WeekStrip({ days, today }: Props): ReactNode {
     <View style={styles.strip} testID={weekStripTestID}>
       {days.map((day) => (
         <View
-          accessibilityLabel={weekDayLabel(day, today)}
+          accessibilityLabel={herDayLabel(day, today)}
           key={day.day}
           style={styles.day}
           testID={weekDayTestID(day.day)}

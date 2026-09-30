@@ -1,15 +1,13 @@
-import { colour, space, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
+import { herDayLabel } from '../cycle/copy';
 import type { HerDay } from '../cycle/herWeek';
 import { monthLabel } from '../onboarding/days';
-
-/**
- * Her own month, read back to her. The header is here and the month under it is the step that
- * builds the grid.
- */
+import { CycleMonth, type MonthSquare } from './CycleMonth';
+import { calendarCopy } from './copy';
 
 export const calendarScreenTestID = 'calendar-screen';
 export const calendarHeaderTestID = 'calendar-screen-header';
@@ -30,15 +28,57 @@ interface Props {
   readonly onToday: () => void;
 }
 
-export function CalendarScreen({ month }: Props): ReactNode {
+/**
+ * Her own month, read back to her: the day of her cycle above every date, a day she bled filled, a
+ * day her next period is expected on outlined, and today ringed.
+ *
+ * She reads it without pressing anything. Nothing here counts a cycle day or picks a mark. The days
+ * arrive worked out from the cycle cache and the day log, so the month and the ring cannot name
+ * different days.
+ */
+export function CalendarScreen({ month, today, days, onBack, onToday }: Props): ReactNode {
+  const held = new Map(days.map((day) => [day.day, day]));
+
+  const squareOf = (day: string): MonthSquare => {
+    const hers = held.get(day);
+
+    if (hers === undefined) {
+      throw new Error(`the month drew ${day} and the cycle says nothing about it`);
+    }
+
+    return {
+      label: herDayLabel(hers, today),
+      mark: hers.mark,
+      ...(hers.cycleDay === undefined ? {} : { cycleDay: hers.cycleDay }),
+    };
+  };
+
   return (
     <Screen testID={calendarScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.header} testID={calendarHeaderTestID}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onBack}
+            style={styles.link}
+            testID={calendarBackTestID}
+          >
+            <Text style={styles.linkLabel}>{calendarCopy.back}</Text>
+          </Pressable>
           <Text accessibilityRole="header" style={styles.title} testID={calendarTitleTestID}>
             {monthLabel(month)}
           </Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onToday}
+            style={styles.link}
+            testID={calendarTodayTestID}
+          >
+            <Text style={styles.linkLabel}>{calendarCopy.today}</Text>
+          </Pressable>
         </View>
+
+        <CycleMonth month={month} squareOf={squareOf} testID={calendarMonthTestID} />
       </ScrollView>
     </Screen>
   );
@@ -51,6 +91,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  link: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+  },
+  linkLabel: {
+    color: colour.primary,
+    ...textStyle('body-lg'),
+  },
+  // The month name gives way before the two links do, because a longer name in another language
+  // may not take the room a thumb needs on either side of it.
   title: {
     color: colour.onSurface,
     flexShrink: 1,

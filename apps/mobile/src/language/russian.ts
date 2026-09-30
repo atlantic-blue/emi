@@ -34,6 +34,7 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.ordinal.other': '',
   'calendar.ordinal.second': '',
   'calendar.ordinal.third': '',
+  'calendar.screen.back': 'Назад',
   'calendar.today': 'Сегодня',
   'calendar.weekday.friday': 'Пятница',
   'calendar.weekday.monday': 'Понедельник',
@@ -44,6 +45,9 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.weekday.wednesday': 'Среда',
   'calendar.yesterday': 'Вчера',
 
+  'cycle.day.bled': 'шла кровь',
+  'cycle.day.cycleDay': 'день цикла {cycle}',
+  'cycle.day.expected': 'ожидаются месячные',
   'cycle.noRing.line': 'Кольцу нужны месячные. Отметьте день, когда шла кровь, и оно появится.',
   'cycle.noRing.title': 'Пока нечего рисовать',
   'cycle.phaseLine.day': 'День {day}',
@@ -186,9 +190,6 @@ export const russian: CatalogueIn<'ru'> = {
   'home.painLine': 'Вы сказали, что эти дни тяжёлые. Отметьте боль первой.',
   'home.roundAction.period': 'Месячные',
   'home.roundAction.symptoms': 'Симптомы',
-  'home.week.bled': 'шла кровь',
-  'home.week.cycleDay': 'день цикла {cycle}',
-  'home.week.expected': 'ожидаются месячные',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Отмена',
