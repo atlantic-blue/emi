@@ -1,10 +1,8 @@
 import { join } from 'node:path';
 
-import type { DayRecord } from '@emi/crypto';
 import {
   POPULATION_SPREAD_DAYS,
   type PublishedMeasurement,
-  addDays,
   publishedFigures,
   toOneDecimalPlace,
 } from '@emi/cycle';
@@ -13,8 +11,6 @@ import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
-import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
-import { daysOf } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import { type CycleRow, listCycles } from '../../src/data/cycleRepository';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { historyCycleTestID } from '../../src/features/history/HistoryScreen';
@@ -37,6 +33,13 @@ import { type Catalogue, type Language, languages } from '../../src/language';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
+import {
+  herCycleLengths,
+  herCyclesVaryBy,
+  herLastCycleRuns,
+  herLastPeriodRuns,
+  daysOfHerThreeCycles,
+} from '../fixtures/herThreeCycles';
 import { sizedTextIn, textIn } from '../fixtures/renderedText';
 import {
   type Part,
@@ -55,24 +58,8 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = dayOf(whenSheOpensIt);
 
-/** The day of the running cycle she opens Emi on, which is nowhere near either end of it. */
-const theDaySheOpensItOn = 8;
-
 /** The length she gave at the first run, which no row of this section reads. */
 const sheSaidHerCycleRuns = 29;
-
-/**
- * Her three complete cycles, chosen so that her three numbers are three different numbers. A set
- * whose length, period and variation shared a value would let a row drawing the wrong one pass.
- */
-const herCycleLengths: readonly number[] = [24, 30, 31];
-const herPeriodRunsFor = 5;
-
-const herLastCycleRuns = 31;
-const herLastPeriodRuns = herPeriodRunsFor;
-
-/** One standard deviation of 24, 30 and 31, over n minus one, written to one decimal place. */
-const herCyclesVaryBy = 3.8;
 
 /** What each row says, in the words of the catalogue, written out rather than read off it. */
 const herCycleLengthReads = '31 days';
@@ -157,18 +144,6 @@ const thePartsThisStepAnswersFor = theDrawingPlaces
   .filter((part) => part.ownedBy === undefined)
   .map(asPart);
 
-/** Her days, as she would have recorded them, each one carrying the moment she wrote it. */
-function herDays(lengths: readonly number[]): DayRecord[] {
-  const ranAltogether = lengths.reduce((total, length) => total + length, 0);
-  const set: RecordedSet = {
-    firstStart: addDays(today, -(theDaySheOpensItOn - 1) - ranAltogether),
-    lengths,
-    periodDays: herPeriodRunsFor,
-  };
-
-  return daysOf(set).map((day) => ({ ...day, recordedAt: `${day.day}T08:00:00.000Z` }));
-}
-
 /** The most recent cycle the cache closed, which is the one her two lengths are read from. */
 function herLastCompleteCycle(): CycleRow {
   const complete = listCycles(herDatabase()).filter((cycle) => cycle.lengthDays !== null);
@@ -182,7 +157,7 @@ function herLastCompleteCycle(): CycleRow {
 }
 
 async function sheOpensEmi(lengths: readonly number[] = herCycleLengths): Promise<void> {
-  await herPhoneHolds(whenSheOpensIt, herDays(lengths), sheSaidHerCycleRuns);
+  await herPhoneHolds(whenSheOpensIt, daysOfHerThreeCycles(today, lengths), sheSaidHerCycleRuns);
   await renderRouter(appDirectory, { initialUrl: '/' });
 }
 
