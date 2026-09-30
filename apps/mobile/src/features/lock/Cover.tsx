@@ -15,7 +15,7 @@ export const coverTestID = 'lock-cover';
 export function Cover(): ReactNode {
   return (
     <Screen testID={coverTestID}>
-      <View style={styles.middle}>
+      <View style={styles.body}>
         <Text style={styles.wordmark}>{lockCopy.cover.wordmark}</Text>
       </View>
     </Screen>
@@ -23,10 +23,9 @@ export function Cover(): ReactNode {
 }
 
 const styles = StyleSheet.create({
-  middle: {
+  body: {
     alignItems: 'center',
     flex: 1,
-    justifyContent: 'center',
     padding: space.spaceLg,
   },
   wordmark: {

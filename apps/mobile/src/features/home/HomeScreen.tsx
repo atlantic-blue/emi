@@ -234,7 +234,6 @@ const styles = StyleSheet.create({
   body: {
     alignItems: 'center',
     flexGrow: 1,
-    justifyContent: 'center',
     paddingVertical: space.spaceXl,
   },
   // The line sits under the rows rather than beside them, and it says where the published figure
@@ -296,8 +295,8 @@ const styles = StyleSheet.create({
     ...textStyle('headline-md'),
     marginBottom: space.spaceXs,
   },
-  // The scroll fills the screen so the block inside it sits in the middle of the glass rather than
-  // against the top of it, which is where a container sized to its own content would leave it.
+  // The scroll fills the screen, so the spare room belongs to the body and falls under the last
+  // thing on it. A container sized to its own content would leave that room outside the body.
   scroll: { flex: 1 },
   wordmark: {
     color: colour.onSurface,

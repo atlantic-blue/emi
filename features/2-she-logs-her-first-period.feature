@@ -65,6 +65,13 @@ Feature: She opens Emi and logs her first period
     Then the words period, bleeding, fertile and ovulation are all drawn at 14 points or less
     And at least one of those words is on the screen, so the measurement is of something
 
+  Scenario: SCREEN-2, the screen she opens begins at the top of the glass
+    Given her phone holds her answers and not one day
+    When she opens Emi
+    Then she is looking at the home screen
+    And the first thing it says sits at the top of the glass, with no empty room above it
+    And the room left over falls under the last thing on it, and not above the first
+
   Scenario: SCREEN-4, she opens the day she got wrong and the ring is redrawn
     Given her phone holds six periods and a Monday she said nothing happened on
     When she opens that Monday

@@ -35,7 +35,7 @@ export function DayRefused({ refusal, onBack }: Props): ReactNode {
 
   return (
     <Screen testID={dayRefusedTestID}>
-      <View style={styles.middle}>
+      <View style={styles.body}>
         <Text accessibilityRole="header" style={styles.title}>
           {said.title}
         </Text>
@@ -69,15 +69,14 @@ const styles = StyleSheet.create({
     color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
+  body: {
+    flex: 1,
+    padding: space.spaceLg,
+  },
   line: {
     color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
     textAlign: 'center',
-  },
-  middle: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: space.spaceLg,
   },
   title: {
     color: colour.onSurface,

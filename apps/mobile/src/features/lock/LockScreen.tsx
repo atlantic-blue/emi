@@ -22,7 +22,7 @@ interface Props {
 export function LockScreen({ wasRefused, onUnlock }: Props): ReactNode {
   return (
     <Screen testID={lockScreenTestID}>
-      <View style={styles.middle}>
+      <View style={styles.body}>
         <Text style={styles.wordmark}>{lockCopy.locked.wordmark}</Text>
         <Text accessibilityRole="header" style={styles.title}>
           {lockCopy.locked.title}
@@ -58,16 +58,15 @@ const styles = StyleSheet.create({
     color: colour.surfaceContainerLowest,
     ...textStyle('body-lg'),
   },
+  body: {
+    alignItems: 'center',
+    flex: 1,
+    padding: space.spaceLg,
+  },
   line: {
     color: colour.onSurfaceVariant,
     ...textStyle('body-lg'),
     textAlign: 'center',
-  },
-  middle: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    padding: space.spaceLg,
   },
   title: {
     color: colour.onSurface,

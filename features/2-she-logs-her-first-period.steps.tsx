@@ -75,6 +75,7 @@ import {
   dayOf,
   herDatabase,
   herPhoneHolds,
+  herPhoneHoldsTheseAnswers,
 } from '../apps/mobile/tests/fixtures/herPhone';
 import {
   herVault,
@@ -94,10 +95,21 @@ import {
 } from '../apps/mobile/tests/fixtures/tapTargets';
 import {
   type Box,
+  type Phone,
   aSmallIPhone,
   anIPhone16,
   theRow,
 } from '../apps/mobile/tests/fixtures/theWidthOfARow';
+import {
+  theBodyOfTheScreen,
+  theRoomAboveTheContent,
+  theRoomAtTheFoot,
+  theRoomAtTheTop,
+} from '../apps/mobile/tests/fixtures/theBodyOfTheScreen';
+import {
+  type PlacedBox,
+  placedOnTheGlass,
+} from '../apps/mobile/tests/fixtures/theHeightDownTheGlass';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../apps/mobile/tests/data/expoSqlite'));
 jest.mock('expo-secure-store', () =>
@@ -797,6 +809,44 @@ defineFeature(feature, (test) => {
 
     and('at least one of those words is on the screen, so the measurement is of something', () => {
       expect(drawn.length).toBeGreaterThan(0);
+    });
+  });
+
+  test('SCREEN-2, the screen she opens begins at the top of the glass', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    let boxes: PlacedBox[] = [];
+
+    given('her phone holds her answers and not one day', async () => {
+      await herPhoneHoldsTheseAnswers(whenSheOpensIt, {
+        kind: 'profile',
+        cycleLengthDays: sheSaysHerCycleRuns,
+        recordedAt: whenSheOpensIt.toISOString(),
+      });
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+      boxes = placedOnTheGlass(theScreenSheIsLookingAt(), thePhoneSheHolds);
+    });
+
+    then('she is looking at the home screen', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+    });
+
+    and('the first thing it says sits at the top of the glass, with no empty room above it', () => {
+      expect(theRoomAboveTheContent(theBodyOfTheScreen(boxes))).toBe(0);
+    });
+
+    and('the room left over falls under the last thing on it, and not above the first', () => {
+      const body = theBodyOfTheScreen(boxes);
+
+      expect(theRoomAtTheFoot(body)).toBeGreaterThan(theRoomAtTheTop(body));
     });
   });
 
@@ -1622,6 +1672,49 @@ function fieldsIn(node: unknown): Drawn[] {
 /** The question above each field, which is the sentence a screen reader reads out for it. */
 function fieldsDrawn(): string[] {
   return fieldsIn(screen.toJSON()).map((field) => String(field.props?.accessibilityLabel));
+}
+
+/** The glass she holds, in points, which is the phone the screens of Emi are drawn for. */
+const thePhoneSheHolds: Phone = { height: 844, name: 'the phone she holds', width: 390 };
+
+/**
+ * The screen out of the tree the application drew. The router hangs boxes of its own above the
+ * screen and none of them is anything she sees, so a measurement starts at the box the screen names.
+ */
+function theScreenSheIsLookingAt(): unknown {
+  const named = (node: unknown): Drawn | null => {
+    if (Array.isArray(node)) {
+      for (const each of node) {
+        const found = named(each);
+
+        if (found !== null) {
+          return found;
+        }
+      }
+
+      return null;
+    }
+
+    if (node === null || typeof node !== 'object') {
+      return null;
+    }
+
+    const element = node as Drawn;
+
+    if (element.props?.testID === homeScreenTestID) {
+      return element;
+    }
+
+    return named(element.children ?? []);
+  };
+
+  const found = named(screen.toJSON());
+
+  if (found === null) {
+    throw new Error('she is not looking at the home screen, so there is nothing to measure on it');
+  }
+
+  return JSON.parse(JSON.stringify(found));
 }
 
 /** The value an animated style holds right now, which is what she is looking at. */
