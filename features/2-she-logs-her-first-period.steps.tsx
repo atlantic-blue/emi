@@ -38,6 +38,7 @@ import {
   calendarBackTestID,
   calendarEarlierTestID,
   calendarLaterTestID,
+  calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
 import { daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
 import { DAYS_IN_A_WEEK } from '../apps/mobile/src/features/cycle/herWeek';
@@ -160,6 +161,35 @@ import {
   theWeekMeasuredOn,
   whatTheMonthScreenDrew,
 } from '../apps/mobile/tests/fixtures/theMonthSheOpens';
+import {
+  aCycleIsWrittenByHand,
+  type HeldDay,
+  herPhoneHoldsAPeriodOfFourDays,
+  herThreePeriodStarts,
+  howManyDaysSheTakesOff,
+  sheIsOnThePeriodPicker,
+  theChangeLineSheReads,
+  theCycleStartsHerDayLogGives,
+  theCycleStartsHerPhoneHolds,
+  theDayHerNextPeriodMayStartOn,
+  theDaySheOpensEmi,
+  theDaySheStopped,
+  theDaySheTakesOff,
+  theDaysEmiHolds,
+  theDaysHerPhoneHoldsIn,
+  theDaysSheAdds,
+  theDaysSheIsLeftHolding,
+  theDaysTickedOnThePicker,
+  theLeadSheReads,
+  theMonthSheCorrects,
+  thePartsOfTheRangePickerDrawing,
+  theWayToEditHerPeriod,
+  whatHerPhoneHoldsOn,
+  whatSomebodyListeningHearsOn,
+  whatTheRangePickerDrew,
+  whenSheOpensEmi,
+} from '../apps/mobile/tests/fixtures/thePeriodSheCorrects';
+import { editPeriodSaveTestID } from '../apps/mobile/src/features/calendar/PeriodRangePicker';
 import { textDrawnOnAPhaseFill } from '../apps/mobile/tests/fixtures/phaseInk';
 import {
   theDaySheReachesHerLutealPhase,
@@ -2712,6 +2742,205 @@ defineFeature(feature, (test) => {
 
       expect(controlsTooSmallToPress(ways)).toEqual([]);
     });
+  });
+
+  test('SCREEN-4, she corrects a whole period in one save and the ring redraws', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    let theRingSaid = '';
+    let herNextPeriodWasExpectedOn: string | undefined;
+    const whatHerPhoneHeldBefore = new Map<string, HeldDay | undefined>();
+    const theDaysEmiHeld = theDaysEmiHolds();
+    const theDaysSheAdded = theDaysSheAdds();
+    const theDaySheTookOff = theDaySheTakesOff();
+    const theFirstDaySheAdds = String(theDaysSheAdded[0]);
+    const theSecondDaySheAdds = String(theDaysSheAdded[1]);
+
+    given('her phone holds a period of four days, and two complete cycles behind it', async () => {
+      jest.setSystemTime(whenSheOpensEmi());
+      await herPhoneHoldsAPeriodOfFourDays(whenSheOpensEmi());
+
+      expect(theDaysEmiHeld).toHaveLength(4);
+      expect(theDaysSheAdded).toHaveLength(2);
+      expect(howManyDaysSheTakesOff()).toBe(1);
+      expect(theCycleStartsHerPhoneHolds()).toEqual(herThreePeriodStarts());
+
+      for (const day of [...theDaysEmiHeld, ...theDaysSheAdded]) {
+        whatHerPhoneHeldBefore.set(day, whatHerPhoneHoldsOn(day));
+      }
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+
+      theRingSaid = theRingSays();
+      herNextPeriodWasExpectedOn = theDayHerNextPeriodMayStartOn();
+    });
+
+    and('she presses a day of the week she is reading', async () => {
+      await shePresses(weekDayTestID(theDaySheOpensEmi()));
+    });
+
+    then('she is reading the month that day falls in', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(theMonthSheReads()).toBe(monthLabel(theMonthSheCorrects));
+    });
+
+    when('she presses the way to edit her period', async () => {
+      await shePresses(theWayToEditHerPeriod);
+    });
+
+    then('she is looking at the period picker, and that is the drawing of it', () => {
+      expect(app.pathname()).toBe('/calendar/period');
+      expect(sheIsOnThePeriodPicker()).toBe(true);
+      expect(partsMissing(thePartsOfTheRangePickerDrawing(), whatTheRangePickerDrew())).toEqual([]);
+      expect(theLeadSheReads()).not.toBe('');
+    });
+
+    and('the four days Emi holds arrive as hers, and no other day of that month does', () => {
+      expect(theDaysTickedOnThePicker()).toEqual(theDaysEmiHeld);
+    });
+
+    and('somebody listening is told each day is one she can turn on and off', () => {
+      for (const day of theDaysEmiHeld) {
+        expect(whatSomebodyListeningHearsOn(day)).toEqual({
+          checked: true,
+          disabled: false,
+          role: 'checkbox',
+        });
+      }
+
+      for (const day of theDaysSheAdded) {
+        expect(whatSomebodyListeningHearsOn(day)).toEqual({
+          checked: false,
+          disabled: false,
+          role: 'checkbox',
+        });
+      }
+    });
+
+    and('a day she has not lived yet takes no press here either', async () => {
+      const aDayAheadOfHer = addDays(theDaySheOpensEmi(), 2);
+
+      expect(whatSomebodyListeningHearsOn(aDayAheadOfHer).disabled).toBe(true);
+
+      await shePresses(dayTestID(aDayAheadOfHer));
+
+      expect(theDaysTickedOnThePicker()).toEqual(theDaysEmiHeld);
+    });
+
+    when('she presses the two days her period ran on after that', async () => {
+      for (const day of theDaysSheAdded) {
+        await shePresses(dayTestID(day));
+      }
+
+      expect(theDaysTickedOnThePicker()).toEqual([...theDaysEmiHeld, ...theDaysSheAdded].sort());
+    });
+
+    and('she presses the day her period did not start on', async () => {
+      await shePresses(dayTestID(theDaySheTookOff));
+
+      expect(theDaysTickedOnThePicker()).toEqual(theDaysSheIsLeftHolding());
+    });
+
+    then('the line under the month names the two days she added and the day she took off', () => {
+      const line = theChangeLineSheReads();
+
+      for (const day of [...theDaysSheAdded, theDaySheTookOff]) {
+        expect(line).toContain(ordinal(Number(day.slice(8, 10))));
+      }
+    });
+
+    when('she saves, once', async () => {
+      await shePresses(editPeriodSaveTestID);
+    });
+
+    then('she is reading the month again, and the two days she added are filled on it', () => {
+      expect(app.pathname()).toBe('/calendar');
+
+      for (const day of theDaysSheAdded) {
+        expect(theMarkOnTheSquare(day)).toBe('bled');
+      }
+    });
+
+    and('the day she took off is not filled', () => {
+      expect(theMarkOnTheSquare(theDaySheTookOff)).not.toBe('bled');
+    });
+
+    when('she reaches the screen she opens', async () => {
+      await shePresses(calendarTodayTestID);
+    });
+
+    then('the ring says a different day of her cycle than it said before', () => {
+      expect(app.pathname()).toBe('/');
+      expect(theRingSaid).not.toBe('');
+      expect(theRingSays()).not.toBe(theRingSaid);
+    });
+
+    and('the day her next period is expected to start on moved as well', () => {
+      expect(herNextPeriodWasExpectedOn).toBeDefined();
+      expect(theDayHerNextPeriodMayStartOn()).not.toBe(herNextPeriodWasExpectedOn);
+    });
+
+    and(
+      'the first day she added was on her phone already, and it is at one revision higher now, under the identifier it had',
+      () => {
+        const before = whatHerPhoneHeldBefore.get(theFirstDaySheAdds);
+
+        expect(theFirstDaySheAdds).toBe(theDaySheStopped());
+        expect(before?.revision).toBe(1);
+        expect(whatHerPhoneHoldsOn(theFirstDaySheAdds)).toEqual({
+          id: String(before?.id),
+          revision: 2,
+        });
+      },
+    );
+
+    and(
+      'the second day she added was never on her phone, and it is there now at its first revision',
+      () => {
+        expect(whatHerPhoneHeldBefore.get(theSecondDaySheAdds)).toBeUndefined();
+        expect(whatHerPhoneHoldsOn(theSecondDaySheAdds)?.revision).toBe(1);
+      },
+    );
+
+    and('the day she took off is at one revision higher too, under the identifier it had', () => {
+      const before = whatHerPhoneHeldBefore.get(theDaySheTookOff);
+
+      expect(before?.revision).toBe(1);
+      expect(whatHerPhoneHoldsOn(theDaySheTookOff)).toEqual({
+        id: String(before?.id),
+        revision: 2,
+      });
+    });
+
+    and('no day of that month she pressed nothing on was written at all', () => {
+      const sheChanged = new Set([...theDaysSheAdded, theDaySheTookOff]);
+
+      for (const day of theDaysEmiHeld.filter((each) => !sheChanged.has(each))) {
+        expect(whatHerPhoneHoldsOn(day)?.revision).toBe(1);
+      }
+
+      expect(theDaysHerPhoneHoldsIn(theMonthSheCorrects)).toEqual(
+        [...new Set([...theDaysEmiHeld, ...theDaysSheAdded])].sort(),
+      );
+    });
+
+    and(
+      'every cycle on her phone comes from the days she recorded, and a cycle written by hand is refused',
+      () => {
+        expect(theCycleStartsHerPhoneHolds()).toEqual(theCycleStartsHerDayLogGives());
+        expect(theCycleStartsHerPhoneHolds()).not.toEqual(herThreePeriodStarts());
+
+        expect(() => {
+          aCycleIsWrittenByHand();
+        }).toThrow(/cache/);
+      },
+    );
   });
 });
 

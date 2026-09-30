@@ -345,3 +345,28 @@ Feature: She opens Emi and logs her first period
     When she presses the way to a later month twice
     Then she is reading the month she opened, with today ringed on it
     And both ways to another month are at least 44 points on both axes
+
+  Scenario: SCREEN-4, she corrects a whole period in one save and the ring redraws
+    Given her phone holds a period of four days, and two complete cycles behind it
+    When she opens Emi
+    And she presses a day of the week she is reading
+    Then she is reading the month that day falls in
+    When she presses the way to edit her period
+    Then she is looking at the period picker, and that is the drawing of it
+    And the four days Emi holds arrive as hers, and no other day of that month does
+    And somebody listening is told each day is one she can turn on and off
+    And a day she has not lived yet takes no press here either
+    When she presses the two days her period ran on after that
+    And she presses the day her period did not start on
+    Then the line under the month names the two days she added and the day she took off
+    When she saves, once
+    Then she is reading the month again, and the two days she added are filled on it
+    And the day she took off is not filled
+    When she reaches the screen she opens
+    Then the ring says a different day of her cycle than it said before
+    And the day her next period is expected to start on moved as well
+    And the first day she added was on her phone already, and it is at one revision higher now, under the identifier it had
+    And the second day she added was never on her phone, and it is there now at its first revision
+    And the day she took off is at one revision higher too, under the identifier it had
+    And no day of that month she pressed nothing on was written at all
+    And every cycle on her phone comes from the days she recorded, and a cycle written by hand is refused

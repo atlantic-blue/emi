@@ -21,6 +21,7 @@ export const calendarMonthTestID = 'calendar-screen-month';
 export const calendarHeadingTestID = 'calendar-screen-heading';
 export const calendarEarlierTestID = 'calendar-screen-earlier';
 export const calendarLaterTestID = 'calendar-screen-later';
+export const calendarEditPeriodTestID = 'calendar-screen-edit-period';
 
 interface Props {
   /** The month she is reading, named by any day in it. */
