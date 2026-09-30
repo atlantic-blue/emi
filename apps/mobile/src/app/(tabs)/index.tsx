@@ -1,4 +1,4 @@
-import type { Feeling, Goal, Regularity } from '@emi/crypto';
+import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
@@ -42,6 +42,8 @@ interface Shown {
   readonly goals: readonly Goal[] | undefined;
   /** Her three measurements beside the published figures, or nothing until her days carry them. */
   readonly numbers: readonly MeasuredNumber[] | undefined;
+  /** Today as she left it, picked out of the days already read, or nothing where she wrote none. */
+  readonly loggedToday: DayRecord | undefined;
 }
 
 /**
@@ -74,6 +76,9 @@ function whatSheIsLookingAt(
 
   return {
     ring: ringInputFor(readBack),
+    // Picked out of the days the ring and the strip were built from, so the row under the line and
+    // the ring above it can never stand on two different readings of today.
+    loggedToday: readBack.records.find((record) => record.day === today),
     week: herWeek(readBack),
     forecast,
     numbers: herNumbers(cycles, forecast),
@@ -120,6 +125,7 @@ export default function HomeRoute(): ReactNode {
       feeling={shown.feeling}
       forecast={shown.forecast}
       goals={shown.goals}
+      loggedToday={shown.loggedToday}
       name={shown.name}
       numbers={shown.numbers}
       onExport={() => router.push('/export')}
