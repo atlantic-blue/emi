@@ -67,6 +67,8 @@ export interface TheBody {
   readonly style: Style;
   /** The first thing the body holds, which is what a centred body pushes down the glass. */
   readonly first: PlacedBox;
+  /** The last thing the body holds, which is what the spare room falls under. */
+  readonly last: PlacedBox;
 }
 
 /**
@@ -101,13 +103,20 @@ export function theBodyOfTheScreen(boxes: readonly PlacedBox[]): TheBody {
     throw new Error('the scrolling view of the screen held nothing, so it has no body');
   }
 
-  const first = childrenOf(body)[0];
+  const inside = childrenOf(body);
+  const first = inside[0];
+  const last = inside[inside.length - 1];
 
-  if (first === undefined) {
+  if (first === undefined || last === undefined) {
     throw new Error('the body of the screen holds nothing, so nothing was placed in it');
   }
 
-  return { box: placementOf(boxes, body), first: placementOf(boxes, first), style };
+  return {
+    box: placementOf(boxes, body),
+    first: placementOf(boxes, first),
+    last: placementOf(boxes, last),
+    style,
+  };
 }
 
 /** Where the body lets its content begin: under its own border and its own padding. */
@@ -117,6 +126,16 @@ export function theTopOfTheContent(body: TheBody): number {
     held(body.style, ['borderTopWidth', 'borderWidth']) +
     held(body.style, ['paddingTop', 'paddingVertical', 'padding'])
   );
+}
+
+/** The room between the top of the body and the first thing in it, padding and all. */
+export function theRoomAtTheTop(body: TheBody): number {
+  return body.first.top - body.box.top;
+}
+
+/** The room between the last thing in the body and the foot of it, which is where the spare belongs. */
+export function theRoomAtTheFoot(body: TheBody): number {
+  return body.box.top + body.box.height - (body.last.top + body.last.height);
 }
 
 /** The room a body leaves above the first thing in it, over and above what that thing asked for. */
