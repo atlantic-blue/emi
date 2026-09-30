@@ -17,7 +17,7 @@ import {
 import type { HerDay } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
-import { localDay, startOfMonth } from '../../features/onboarding/days';
+import { addMonths, localDay, startOfMonth } from '../../features/onboarding/days';
 import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
@@ -102,6 +102,20 @@ export default function CalendarRoute(): ReactNode {
     }, [database, month, profiles, today, vault]),
   );
 
+  // The month travels in the address and nowhere else, so the month she was reading is the month
+  // she comes back to from a day she opened in it.
+  //
+  // The entry is replaced rather than pushed, so the way back still belongs to the screen she
+  // opened the month from however many months she moved through. A replaced entry stands the
+  // screen up again on the month it names, which is also how her days come to be read for that
+  // month rather than for the one she left.
+  const sheMovesTo = useCallback(
+    (to: string) => {
+      router.replace(`/calendar?${dayParameter}=${to}`);
+    },
+    [router],
+  );
+
   const leave = useCallback(() => {
     if (router.canGoBack()) {
       router.back();
@@ -119,6 +133,8 @@ export default function CalendarRoute(): ReactNode {
       days={hers.days}
       month={month}
       onBack={leave}
+      onEarlierMonth={() => sheMovesTo(addMonths(month, -1))}
+      onLaterMonth={() => sheMovesTo(addMonths(month, 1))}
       onOpenDay={(day) => router.push(`/day/${day}`)}
       onPressDay={setShePressed}
       onToday={() => router.replace('/')}
