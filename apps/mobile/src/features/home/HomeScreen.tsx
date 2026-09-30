@@ -12,6 +12,7 @@ import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 import { HomeHeader } from './HomeHeader';
+import { PhaseLine } from './PhaseLine';
 import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
 import { homeCopy } from './copy';
@@ -40,6 +41,7 @@ export const settingsTestID = 'home-settings';
 export const settingsLabel = homeCopy.settings;
 
 export { homeGreetingTestID } from './HomeHeader';
+export { phaseLineTestID } from './PhaseLine';
 export { weekStripTestID } from './WeekStrip';
 
 export const homeScreenTestID = 'home-screen';
@@ -124,6 +126,12 @@ export function HomeScreen({
         {week === undefined || today === undefined ? null : (
           <View style={styles.week}>
             <WeekStrip days={week} today={today} />
+          </View>
+        )}
+
+        {ring === undefined ? null : (
+          <View style={styles.phaseLine}>
+            <PhaseLine ring={ring} />
           </View>
         )}
 
@@ -272,6 +280,9 @@ const styles = StyleSheet.create({
   // Her three numbers sit under the forecast they were read from, and above the ways off the
   // screen, because they are something to read rather than somewhere to go.
   numbers: { alignSelf: 'stretch', paddingHorizontal: space.spaceLg },
+  // The line sits between her week and the ring, which is where the drawing of this screen places
+  // it: she reads the days, then the day she is on, then the ring that draws it.
+  phaseLine: { alignSelf: 'stretch', marginBottom: space.spaceLg },
   // Her week sits between the header and the ring, which is where the drawing of this screen
   // places it, and it is the first thing she reads because it answers where she is.
   week: { alignSelf: 'stretch', marginBottom: space.spaceLg },
