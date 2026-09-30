@@ -249,6 +249,7 @@ export const english = {
   'onboarding.firstForecast.why.title': 'Why a range?',
   'onboarding.focus.action': 'Continue',
   'onboarding.focus.line.first': 'Emi puts these first when you log a day.',
+  'onboarding.focus.line.privacy': 'You can change these in Privacy.',
   'onboarding.focus.title': 'Which of these change with your cycle?',
   'onboarding.goals.action': 'Continue',
   'onboarding.goals.choice.doctorRecord': 'Keep a record for my doctor',

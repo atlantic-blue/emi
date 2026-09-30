@@ -258,6 +258,7 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.firstForecast.why.title': 'Почему диапазон?',
   'onboarding.focus.action': 'Продолжить',
   'onboarding.focus.line.first': 'Emi ставит это первым, когда вы записываете день.',
+  'onboarding.focus.line.privacy': 'Вы можете изменить это в разделе Приватность.',
   'onboarding.focus.title': 'Что из этого меняется с вашим циклом?',
   'onboarding.goals.action': 'Продолжить',
   'onboarding.goals.choice.doctorRecord': 'Вести запись для врача',

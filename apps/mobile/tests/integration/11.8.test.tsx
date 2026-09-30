@@ -219,16 +219,17 @@ describe('the log opens on what she said changes with her cycle', () => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    it('says Emi puts these first when she logs a day, and promises nothing else', async () => {
+    it('says Emi puts these first when she logs a day, and where she changes them', async () => {
       await sheOpensEmi();
 
       await sheReachesTheFocus();
 
       expect(screen.getByText(firstRunCopy.focus.title)).toBeTruthy();
-      // The line is named on its own rather than read off the copy, so a line taken out of the
+      // Each line is named on its own rather than read off the copy, so a line taken out of the
       // screen fails here instead of leaving a shorter list that still agrees with itself.
       expect(screen.getByText(words('onboarding.focus.line.first'))).toBeTruthy();
-      expect(firstRunCopy.focus.lines).toHaveLength(1);
+      expect(screen.getByText(words('onboarding.focus.line.privacy'))).toBeTruthy();
+      expect(firstRunCopy.focus.lines).toHaveLength(2);
     });
 
     it('hands her to today, whether she answers it or passes it by', async () => {
