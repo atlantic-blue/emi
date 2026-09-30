@@ -13,7 +13,12 @@ import {
   symptomsLogged,
   unexpectedLogged,
 } from '../../../features/log/logDay';
-import { groupAskedFor, groupParameter } from '../../../features/log/askedGroup';
+import {
+  groupAskedFor,
+  groupParameter,
+  opensOn,
+  opensOnParameter,
+} from '../../../features/log/askedGroup';
 import { groupsUnderTheFlow } from '../../../features/log/herOrder';
 import { useFirstRun } from '../../../features/onboarding/FirstRunProvider';
 import { statedFocus } from '../../../features/onboarding/firstRun';
@@ -26,7 +31,7 @@ export default function LogFlowRoute(): ReactNode {
   const profiles = useProfileVault();
   const router = useRouter();
   const { isDone } = useFirstRun();
-  const asked = useLocalSearchParams<{ group?: string }>();
+  const asked = useLocalSearchParams<{ group?: string; on?: string }>();
   const [today] = useState(() => localDay(new Date()));
   // Her groups, read when the tab is looked at rather than when it was first drawn. She changes
   // this answer on a screen of its own and comes back here, and a tab that keeps what it read at
@@ -35,6 +40,9 @@ export default function LogFlowRoute(): ReactNode {
   // The group the address asked for. The home line is the only thing that names one today, and it
   // names the group it offered, so she lands on the one she pressed for.
   const group = groupAskedFor(asked[groupParameter]);
+  // What she came here for. The symptoms action asks for the groups, and everything else asks for
+  // the flow, so the Log column of the dock opens on the picker it always opened on.
+  const opens = opensOn(asked[opensOnParameter]);
   // A write lands in the database, which React cannot see, so the write says it happened and the
   // day and the ring are read again on the render that follows.
   const [, sheWrote] = useReducer((writes: number) => writes + 1, 0);
@@ -102,6 +110,7 @@ export default function LogFlowRoute(): ReactNode {
       onMark={mark}
       onPick={pick}
       onToggleSymptom={toggle}
+      opensOn={opens}
       ring={ringNow(database, vault, profiles, today)}
       symptoms={symptomsLogged(database, vault, today)}
       today={today}
