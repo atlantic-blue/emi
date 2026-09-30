@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 
+import { symptomGroups } from '@emi/cycle';
 import { screen } from '@testing-library/react-native';
 
 import {
@@ -14,6 +15,8 @@ import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import { phaseLineTestID } from '../../src/features/home/PhaseLine';
 import { roundActionTestID, roundActions } from '../../src/features/home/RoundAction';
 import { weekStripTestID } from '../../src/features/home/WeekStrip';
+import { flowPickerTestID } from '../../src/features/log/FlowPicker';
+import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import {
   promiseActionTestID,
   promiseLineTestID,
@@ -81,6 +84,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     promiseLineTestID('delete'),
   ],
   CycleRing: [cycleRingTestID],
+  FlowPicker: [flowPickerTestID],
   HomeHeader: [homeHeaderTestID],
   // The drawing calls the question of a changed answer by the name of the frame the first run asks
   // it in, because it is the same question in the same words.
@@ -91,6 +95,8 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   // the walk matches each of them in turn.
   RoundAction: roundActions.map(roundActionTestID),
   Stepper: [changeCycleLengthStepperTestID],
+  // One section for each group, so a drawing naming the part matches whichever group is drawn.
+  SymptomGroup: symptomGroups.map(symptomGroupTestID),
   Text: [settingsTitleTestID, yourAnswersTitleTestID, answerHeaderTestID, answerLinesTestID],
   TextLink: [yourAnswersBackTestID, answerBackTestID, answerCancelTestID],
   ThePromise: [thePromiseTestID],

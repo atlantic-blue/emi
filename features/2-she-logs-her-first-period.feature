@@ -246,3 +246,15 @@ Feature: She opens Emi and logs her first period
     And there is no Log today button, and no link to the history, the export or the settings
     And pressing the first one puts her on the log, at the flow picker
     And the dock still reaches the history and the privacy screen
+
+  Scenario: SCREEN-2, the symptoms action opens the log on the groups and the dock still opens on the flows
+    Given her phone holds four recorded period days, the last of them today
+    When she opens Emi
+    And she presses the symptoms action under the ring
+    Then she is on the log, and the first thing she can mark there is a symptom
+    And she passed no flow option on the way to it
+    And every one of her symptom groups is offered
+    And she can still pick a flow on the same screen
+    And the drawing of that screen places a symptom group, and places no flow picker
+    And pressing the Log column of the dock opens the log on the flow options
+    And that is the drawing of the log, which places the flow options before the groups

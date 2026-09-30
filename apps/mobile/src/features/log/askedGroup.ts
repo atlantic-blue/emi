@@ -10,6 +10,12 @@ import { type SymptomGroup, symptomGroups } from '@emi/cycle';
 /** The name the address carries the group under. */
 export const groupParameter = 'group';
 
+/** The name the address carries what the log opens on under. */
+export const opensOnParameter = 'on';
+
+/** The value of that name which asks for the symptom groups rather than for the flow picker. */
+export const theSymptoms = 'symptoms';
+
 /** The group the home line offers on a day she said is hard. */
 export const painGroup: SymptomGroup = 'pain';
 

@@ -16,6 +16,7 @@ import { flowPickerTestID } from '../../src/features/log/FlowPicker';
 import { settingsExportTestID } from '../../src/features/settings/SettingsScreen';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { theDrawingOfTheSymptoms, theLogProblems } from '../fixtures/theLogSheLandsOn';
 import { partsMissing } from '../fixtures/theMockupScreen';
 import {
   roundActionProblems,
@@ -161,13 +162,13 @@ describe('she starts a log from the screen she opens in one press', () => {
       expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
     });
 
-    it('takes the symptoms action to the log too, until step 5 points it at the groups', async () => {
+    it('takes the symptoms action to the log as well, opened on the symptom groups', async () => {
       const app = await sheOpensEmi();
 
       await fireEvent.press(screen.getByTestId(roundActionTestID('symptoms')));
 
       expect(app.pathname()).toBe('/log');
-      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
+      expect(theLogProblems(theDrawingOfTheSymptoms)).toEqual([]);
     });
   });
 
