@@ -41,6 +41,7 @@ export const homeGreetingTestID = 'home-greeting';
 export const homePainLineTestID = 'home-pain-line';
 export const homeFertileWindowTestID = 'home-fertile-window';
 export const homeDoctorRecordTestID = 'home-doctor-record';
+export const homeFiguresLineTestID = 'home-figures-line';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
