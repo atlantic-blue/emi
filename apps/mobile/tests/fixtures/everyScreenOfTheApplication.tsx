@@ -1,6 +1,8 @@
+import { publishedFigures } from '@emi/cycle';
 import type { ReactElement } from 'react';
 
 import { CalendarScreen, calendarScreenTestID } from '../../src/features/calendar/CalendarScreen';
+import { FiguresScreen, figuresScreenTestID } from '../../src/features/cycle/CitationRow';
 import { ExportScreen, exportScreenTestID } from '../../src/features/export/ExportScreen';
 import { HistoryScreen, historyScreenTestID } from '../../src/features/history/HistoryScreen';
 import { HomeScreen, homeScreenTestID } from '../../src/features/home/HomeScreen';
@@ -120,6 +122,10 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
         ring={undefined}
       />
     ),
+  ],
+  [
+    figuresScreenTestID,
+    (): ReactElement => <FiguresScreen figures={publishedFigures} onBack={nothing} />,
   ],
   [
     logFlowTestID,

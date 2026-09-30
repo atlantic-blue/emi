@@ -24,6 +24,14 @@ import {
   dayRefusedTitleTestID,
 } from '../../src/features/log/DayRefused';
 import { cycleRingTestID } from '../../src/components/CycleRing';
+import {
+  citationRowsTestID,
+  figuresBackTestID,
+  figuresHeaderTestID,
+  figuresLeaveTestID,
+  figuresPrintedTestID,
+  figuresQuotedTestID,
+} from '../../src/features/cycle/CitationRow';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
 import { phaseLineTestID } from '../../src/features/home/PhaseLine';
@@ -97,6 +105,8 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     promiseLineTestID('noTracking'),
     promiseLineTestID('delete'),
   ],
+  // One part for the whole list, because the drawing names the list once and never a row of it.
+  CitationRow: [citationRowsTestID],
   CycleRing: [cycleRingTestID],
   DaySheet: [daySheetTestID],
   FlowPicker: [flowPickerTestID],
@@ -123,6 +133,9 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     calendarHeaderTestID,
     dayRefusedTitleTestID,
     dayRefusedLineTestID,
+    figuresHeaderTestID,
+    figuresQuotedTestID,
+    figuresPrintedTestID,
   ],
   TextLink: [
     yourAnswersBackTestID,
@@ -131,6 +144,8 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     calendarBackTestID,
     calendarTodayTestID,
     dayRefusedBackTestID,
+    figuresBackTestID,
+    figuresLeaveTestID,
   ],
   ThePromise: [thePromiseTestID],
   WeekStrip: [weekStripTestID],

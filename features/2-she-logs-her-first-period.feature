@@ -370,3 +370,20 @@ Feature: She opens Emi and logs her first period
     And the day she took off is at one revision higher too, under the identifier it had
     And no day of that month she pressed nothing on was written at all
     And every cycle on her phone comes from the days she recorded, and a cycle written by hand is refused
+
+  Scenario: SCREEN-2, she reaches the page that says where each published figure comes from
+    Given her phone holds three cycles of her own
+    When she opens Emi
+    And she presses the way to where these figures come from
+    Then she is reading one row for each published figure Emi puts beside her own numbers
+    And each row quotes the figure, names the paper that reports it, and gives the identifier of that paper
+    And the cycle length is credited to the International Federation of Gynecology and Obstetrics, and not to nobody
+    And she is told every figure is quoted in the words the paper reports it in
+    When the arithmetic is changed to cite another paper, reporting another range
+    And she opens the page again
+    Then she reads the new range and the new paper, because the page quotes the arithmetic and keeps no copy of it
+    When the arithmetic is put back
+    And she opens Emi again
+    And she presses the way to where these figures come from
+    And she presses the way back
+    Then she is on the screen she opened, reading her three numbers again

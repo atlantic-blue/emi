@@ -53,6 +53,7 @@ export const homePainLineTestID = 'home-pain-line';
 export const homeFertileWindowTestID = 'home-fertile-window';
 export const homeDoctorRecordTestID = 'home-doctor-record';
 export const homeFiguresLineTestID = 'home-figures-line';
+export const homeFiguresPressTestID = 'home-figures-press';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -99,6 +100,11 @@ interface Props {
    * filled with somebody else's numbers.
    */
   readonly numbers?: readonly MeasuredNumber[];
+  /**
+   * The way to the page that says where each published figure comes from. Nothing at all where
+   * the caller offers none, and then the press under the line is not drawn either.
+   */
+  readonly onFigures?: () => void;
   /** The way into the log, which the round action under the ring takes her by. */
   readonly onPeriod: () => void;
   /** The second round action. It reaches the log too until step 5 points it at the groups. */
