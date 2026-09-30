@@ -7,7 +7,9 @@ import { herDayLabel } from '../cycle/copy';
 import type { HerDay } from '../cycle/herWeek';
 import { monthLabel } from '../onboarding/days';
 import { CycleMonth, type MonthSquare } from './CycleMonth';
-import { calendarCopy } from './copy';
+import { DaySheet } from './DaySheet';
+import { calendarCopy, daySheetWords } from './copy';
+import type { WhatTheSheetSays } from './theDaySheet';
 
 export const calendarScreenTestID = 'calendar-screen';
 export const calendarHeaderTestID = 'calendar-screen-header';
@@ -23,20 +25,37 @@ interface Props {
   readonly today: string;
   /** The days of that month, each one carrying its cycle day and what happened on it. */
   readonly days: readonly HerDay[];
+  /**
+   * The day she pressed, worked out, or nothing at all until she presses one. A sheet naming a
+   * day she did not choose would be Emi choosing for her.
+   */
+  readonly shePressed?: WhatTheSheetSays;
   readonly onBack: () => void;
   /** The way to the screen she opens, which is where today is. */
   readonly onToday: () => void;
+  readonly onPressDay: (day: string) => void;
+  /** The way to the day itself, which is the address the repository already answers on. */
+  readonly onOpenDay: (day: string) => void;
 }
 
 /**
  * Her own month, read back to her: the day of her cycle above every date, a day she bled filled, a
  * day her next period is expected on outlined, and today ringed.
  *
- * She reads it without pressing anything. Nothing here counts a cycle day or picks a mark. The days
- * arrive worked out from the cycle cache and the day log, so the month and the ring cannot name
- * different days.
+ * A press on a square puts a sheet at the foot naming that day, and a press on the sheet opens it.
+ * Nothing here counts a cycle day or picks a mark. The days arrive worked out from the cycle cache
+ * and the day log, so the month and the ring cannot name different days.
  */
-export function CalendarScreen({ month, today, days, onBack, onToday }: Props): ReactNode {
+export function CalendarScreen({
+  month,
+  today,
+  days,
+  shePressed,
+  onBack,
+  onToday,
+  onPressDay,
+  onOpenDay,
+}: Props): ReactNode {
   const held = new Map(days.map((day) => [day.day, day]));
 
   const squareOf = (day: string): MonthSquare => {
@@ -49,6 +68,8 @@ export function CalendarScreen({ month, today, days, onBack, onToday }: Props): 
     return {
       label: herDayLabel(hers, today),
       mark: hers.mark,
+      onPress: () => onPressDay(day),
+      role: 'button',
       ...(hers.cycleDay === undefined ? {} : { cycleDay: hers.cycleDay }),
     };
   };
@@ -79,6 +100,10 @@ export function CalendarScreen({ month, today, days, onBack, onToday }: Props): 
         </View>
 
         <CycleMonth month={month} squareOf={squareOf} testID={calendarMonthTestID} />
+
+        {shePressed === undefined ? null : (
+          <DaySheet {...daySheetWords(shePressed)} onPress={() => onOpenDay(shePressed.day)} />
+        )}
       </ScrollView>
     </Screen>
   );

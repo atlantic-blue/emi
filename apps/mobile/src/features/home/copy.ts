@@ -1,8 +1,6 @@
-import type { DayRecord } from '@emi/crypto';
-import { type PublishedFigure, type PublishedMeasurement, findSymptom } from '@emi/cycle';
+import type { PublishedFigure, PublishedMeasurement } from '@emi/cycle';
 
 import { words } from '../../language';
-import { flowLabel } from '../log/FlowPicker';
 import type { MeasuredNumber } from './herNumbers';
 
 /**
@@ -76,80 +74,4 @@ export function publishedFigureReads(figure: PublishedFigure): string {
  */
 export function greeting(name: string): string {
   return words('home.greeting', undefined, { name });
-}
-
-/**
- * Everything one day holds, in the order the row names it, each one in her own words.
- *
- * The flow comes first because it is the thing she opens the log for. A measurement is named and
- * never read out, because the row says what she marked and the day itself says what she wrote.
- */
-function theMarksOn(record: DayRecord): string[] {
-  const named: string[] = [];
-
-  if (record.flow !== undefined) {
-    named.push(
-      record.flow === 'none'
-        ? words('home.loggedToday.noFlow')
-        : words('home.loggedToday.flow', undefined, {
-            flow: flowLabel[record.flow].toLowerCase(),
-          }),
-    );
-  }
-
-  for (const slug of [...(record.symptoms ?? []), ...(record.moods ?? [])]) {
-    const symptom = findSymptom(slug);
-
-    if (symptom !== undefined) {
-      named.push(symptom.name.toLowerCase());
-    }
-  }
-
-  if (record.energy !== undefined) {
-    named.push(words('home.loggedToday.energy'));
-  }
-
-  if (record.temperatureCelsius !== undefined) {
-    named.push(words('home.loggedToday.temperature'));
-  }
-
-  if (record.weightKilograms !== undefined) {
-    named.push(words('home.loggedToday.weight'));
-  }
-
-  if (record.note !== undefined && record.note.trim().length > 0) {
-    named.push(words('home.loggedToday.note'));
-  }
-
-  return named;
-}
-
-/**
- * The marks as one sentence. A comma separates a list in all three languages Emi is written in, so
- * the only part the catalogue has to hold is the word before the last mark.
- */
-function saidTogether(named: readonly string[], last: string): string {
-  const before = named.slice(0, -1).join(', ');
-
-  return before.length === 0
-    ? last
-    : words('home.loggedToday.andTheLast', undefined, { last, said: before });
-}
-
-/**
- * What she marked today, as the one line under the heading, and nothing at all where she marked
- * nothing. The row is drawn only where this answers, so the absent case is decided once here
- * rather than once in the screen and once in the row.
- */
-export function whatSheMarkedToday(record: DayRecord | undefined): string | undefined {
-  const named = record === undefined ? [] : theMarksOn(record);
-  const last = named[named.length - 1];
-
-  if (last === undefined) {
-    return undefined;
-  }
-
-  const said = saidTogether(named, last);
-
-  return said.charAt(0).toUpperCase() + said.slice(1);
 }

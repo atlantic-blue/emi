@@ -12,6 +12,9 @@
  * are held to the same list here as they were on the screens they came from.
  */
 export const english = {
+  'calendar.daySheet.andLogged': '{said}. {logged}',
+  'calendar.daySheet.cycleDay': 'Day {day}, {phase}',
+  'calendar.daySheet.day': 'The {date} of {month}',
   'calendar.month.april': 'April',
   'calendar.month.august': 'August',
   'calendar.month.december': 'December',
