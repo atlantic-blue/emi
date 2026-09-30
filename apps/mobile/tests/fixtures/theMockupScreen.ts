@@ -9,6 +9,7 @@ import {
   partsOfTheScreen,
   rowsOfTheScreen,
 } from '../../../../tools/pipeline/mockups';
+import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import {
   promiseActionTestID,
   promiseLineTestID,
@@ -75,6 +76,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     promiseLineTestID('noTracking'),
     promiseLineTestID('delete'),
   ],
+  HomeHeader: [homeHeaderTestID],
   // The drawing calls the question of a changed answer by the name of the frame the first run asks
   // it in, because it is the same question in the same words.
   OnboardingScreen: [answerQuestionTestID],
@@ -90,6 +92,23 @@ export interface Part {
   readonly name: string;
   /** Every identifier the built part may carry. Empty where nothing says what it is built under. */
   readonly builtUnder: readonly string[];
+}
+
+/**
+ * The markup of one drawing.
+ *
+ * A comparison reads the parts a drawing names, and the header of the screen she opens names one
+ * part with three things inside it that carry no name of their own. So that one step reads the
+ * markup to learn the order the drawing puts them in, rather than trusting an order somebody typed.
+ */
+export function theMarkupOfTheMockup(key: string): string {
+  const drawing = theStage().screens[key];
+
+  if (drawing === undefined) {
+    throw new Error(`the mockups stage holds no screen called "${key}"`);
+  }
+
+  return drawing.html;
 }
 
 /** The parts of one drawing, in its order, each one carrying what it is built under. */

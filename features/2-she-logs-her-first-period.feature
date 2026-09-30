@@ -207,3 +207,12 @@ Feature: She opens Emi and logs her first period
     And none of the three numbers is called normal, abnormal or irregular
     And the cycle length she reads here is the one the Insights screen gives that same cycle
     And the period length she reads here is the bleeding the Insights screen gives that same cycle
+
+  Scenario: SCREEN-2, the screen she opens names Emi and greets her by the name she gave
+    Given her phone holds cycles of her own, and she gave the name Ada
+    When she opens Emi
+    Then the header is the first thing on the screen she opens
+    And it carries the mark, then the word Emi, then the greeting
+    And the greeting reads Hello, Ada
+    And the drawing of this screen puts that header first, and the screen answers for it
+    And a woman who gave no name reads the mark and the word, and no greeting at all
