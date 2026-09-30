@@ -42,6 +42,13 @@ import {
   homeScreenTestID,
 } from '../apps/mobile/src/features/home/HomeScreen';
 import {
+  homeGreetingTestID,
+  homeHeaderMarkTestID,
+  homeHeaderTestID,
+  homeHeaderWordTestID,
+} from '../apps/mobile/src/features/home/HomeHeader';
+import { greeting } from '../apps/mobile/src/features/home/copy';
+import {
   herNumberTestID,
   homeNumbersTestID,
   publishedNumberTestID,
@@ -82,6 +89,16 @@ import {
   theProfileVaultOnHerPhone,
   theVaultOnHerPhone,
 } from '../apps/mobile/tests/fixtures/herVault';
+import {
+  herPhoneHoldsHerDaysAnd,
+  theHeaderCarries,
+  theHeaderOfTheDrawing,
+  theNameSheGave,
+  theOrderTheDrawingPlacesThemIn,
+  whatTheHeaderDrew,
+  whatTheScreenSheOpensDrew,
+} from '../apps/mobile/tests/fixtures/theHeaderSheOpensWith';
+import { partsMissing } from '../apps/mobile/tests/fixtures/theMockupScreen';
 import { sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
 import {
   herCyclesVaryBy,
@@ -1644,6 +1661,65 @@ defineFeature(feature, (test) => {
           String(herLastCycle.periodLengthDays),
         );
         expect(herLastCycle.periodLengthDays).not.toBe(herLastCycle.lengthDays);
+      },
+    );
+  });
+
+  test('SCREEN-2, the screen she opens names Emi and greets her by the name she gave', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('her phone holds cycles of her own, and she gave the name Ada', async () => {
+      await herPhoneHoldsHerDaysAnd(whenSheOpensIt, today, theNameSheGave);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('the header is the first thing on the screen she opens', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(whatTheScreenSheOpensDrew()[0]).toBe(homeHeaderTestID);
+    });
+
+    and('it carries the mark, then the word Emi, then the greeting', () => {
+      // The order comes off the drawing rather than off this file, so the three below are the
+      // three the drawing places and not three somebody typed in an order that suited them.
+      expect(theOrderTheDrawingPlacesThemIn()).toEqual(theHeaderCarries.map((part) => part.name));
+      expect(partsMissing(theHeaderCarries, whatTheScreenSheOpensDrew())).toEqual([]);
+      expect(whatItSays(homeHeaderWordTestID)).toBe('Emi');
+    });
+
+    and('the greeting reads Hello, Ada', () => {
+      expect(whatItSays(homeGreetingTestID)).toBe('Hello, Ada');
+      expect(whatItSays(homeGreetingTestID)).toBe(greeting(theNameSheGave));
+    });
+
+    and('the drawing of this screen puts that header first, and the screen answers for it', () => {
+      expect(theHeaderOfTheDrawing().map((part) => part.name)).toEqual(['HomeHeader']);
+      expect(partsMissing(theHeaderOfTheDrawing(), whatTheScreenSheOpensDrew())).toEqual([]);
+    });
+
+    and(
+      'a woman who gave no name reads the mark and the word, and no greeting at all',
+      async () => {
+        await app.close();
+        resetExpoSqlite();
+        resetExpoSecureStore();
+        await herPhoneHoldsHerDaysAnd(whenSheOpensIt, today);
+        await sheOpens('/');
+
+        expect(whatTheHeaderDrew()).toEqual([
+          homeHeaderTestID,
+          homeHeaderMarkTestID,
+          homeHeaderWordTestID,
+        ]);
+        expect(screen.queryByTestId(homeGreetingTestID)).toBeNull();
       },
     );
   });

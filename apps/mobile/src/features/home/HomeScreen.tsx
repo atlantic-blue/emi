@@ -10,8 +10,9 @@ import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
+import { HomeHeader } from './HomeHeader';
 import { MeasuredRows } from './MeasuredRow';
-import { greeting, homeCopy } from './copy';
+import { homeCopy } from './copy';
 import type { MeasuredNumber } from './herNumbers';
 import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
@@ -36,10 +37,11 @@ export const exportLabel = homeCopy.export;
 export const settingsTestID = 'home-settings';
 export const settingsLabel = homeCopy.settings;
 
+export { homeGreetingTestID } from './HomeHeader';
+
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
 export const homeForecastTestID = 'home-forecast';
-export const homeGreetingTestID = 'home-greeting';
 export const homePainLineTestID = 'home-pain-line';
 export const homeFertileWindowTestID = 'home-fertile-window';
 export const homeDoctorRecordTestID = 'home-doctor-record';
@@ -105,15 +107,7 @@ export function HomeScreen({
   return (
     <Screen testID={homeScreenTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
-        <Text accessibilityRole="header" style={styles.wordmark}>
-          {homeCopy.wordmark}
-        </Text>
-
-        {name === undefined ? null : (
-          <Text style={styles.greeting} testID={homeGreetingTestID}>
-            {greeting(name)}
-          </Text>
-        )}
+        <HomeHeader name={name} />
 
         {ring ? (
           <CycleRing {...ring} />
@@ -244,13 +238,6 @@ const styles = StyleSheet.create({
     marginTop: space.spaceSm,
   },
   forecast: { marginTop: space.spaceLg },
-  // Under the wordmark and above the ring, and small, because SCREEN-2 keeps the home screen
-  // unreadable from an arm's length away and her name is the one word on it that is hers.
-  greeting: {
-    color: colour.onSurfaceVariant,
-    ...textStyle('body-sm'),
-    marginBottom: space.spaceLg,
-  },
   history: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -298,9 +285,4 @@ const styles = StyleSheet.create({
   // The scroll fills the screen, so the spare room belongs to the body and falls under the last
   // thing on it. A container sized to its own content would leave that room outside the body.
   scroll: { flex: 1 },
-  wordmark: {
-    color: colour.onSurface,
-    ...textStyle('headline-lg'),
-    marginBottom: space.spaceLg,
-  },
 });
