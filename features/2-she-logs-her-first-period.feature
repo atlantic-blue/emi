@@ -283,3 +283,16 @@ Feature: She opens Emi and logs her first period
     And the day her next period is expected on is a dotted outline
     And today is ringed
     And every square is as high as a thumb needs, and takes its width from the month
+
+  Scenario: SCREEN-4, she reaches a month from the screen she opens by pressing her week
+    Given her phone holds three recorded cycles
+    When she opens Emi
+    Then every day of the week she is reading is at least 44 points on both axes
+    And the seven of them fit across the narrowest phone Emi is built for
+    And the dock still holds the four columns it held, and nothing else
+    When she presses a day of that week
+    Then she is reading the month that day falls in
+    And that is the month the drawing names, with the parts the drawing places in its order
+    When she presses the way back
+    Then she is on the screen she opened, reading her week again
+    And pressing a different day of the same week reaches the same month
