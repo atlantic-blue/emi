@@ -12,6 +12,7 @@ import { type RingInput, ringInputFor } from '../../features/cycle/ringInput';
 import { forecastOf } from '../../features/forecast/fromCache';
 import { groupParameter, painGroup } from '../../features/log/askedGroup';
 import { HomeScreen } from '../../features/home/HomeScreen';
+import { type MeasuredNumber, herNumbers } from '../../features/home/herNumbers';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
 import type { DayVault } from '../../services/vault/dayVault';
@@ -31,6 +32,8 @@ interface Shown {
   readonly feeling: Feeling | undefined;
   /** What she asked Emi for, where she answered, which chooses the cards under the forecast. */
   readonly goals: readonly Goal[] | undefined;
+  /** Her three measurements beside the published figures, or nothing until her days carry them. */
+  readonly numbers: readonly MeasuredNumber[] | undefined;
 }
 
 /**
@@ -48,6 +51,9 @@ function whatSheIsLookingAt(
   // of the screen are the same answers opened once rather than twice.
   const herAnswers = readProfile(database, profiles);
   const stated = herAnswers?.cycleLengthDays ?? defaultCycleLengthDays;
+  // One forecast, read by the sentence under the ring and by the variation row, so the spread the
+  // range is drawn from and the spread she reads cannot be two different numbers.
+  const forecast = forecastOf(cycles, stated);
 
   return {
     ring: ringInputFor({
@@ -57,7 +63,8 @@ function whatSheIsLookingAt(
       statedCycleLengthDays: stated,
       statedPeriodLengthDays: herAnswers?.periodLengthDays,
     }),
-    forecast: forecastOf(cycles, stated),
+    forecast,
+    numbers: herNumbers(cycles, forecast),
     cycleLengthDays: stated,
     name: herAnswers?.name,
     regularity: herAnswers?.regularity,
@@ -102,6 +109,7 @@ export default function HomeRoute(): ReactNode {
       forecast={shown.forecast}
       goals={shown.goals}
       name={shown.name}
+      numbers={shown.numbers}
       onExport={() => router.push('/export')}
       onHistory={() => router.push('/history')}
       onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
