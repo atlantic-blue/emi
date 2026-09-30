@@ -136,6 +136,16 @@ export function weekdayColumn(day: string): number {
   return (date.getUTCDay() + 6) % 7;
 }
 
+/** The one letter a weekday is drawn under where a strip has no room for its name. */
+export function weekdayLetter(day: string): string {
+  return (weekdayColumnNames[weekdayColumn(day)] ?? '').slice(0, 1);
+}
+
+/** The Monday of the week a day falls in, which is the day every week of Emi starts on. */
+export function startOfWeek(day: string): string {
+  return addDays(day, -weekdayColumn(day));
+}
+
 /**
  * The weeks of a month, seven cells to a week. A cell is empty where the week runs outside the
  * month, so one weekday holds one column all the way down the grid.

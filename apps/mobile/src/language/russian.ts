@@ -163,6 +163,9 @@ export const russian: CatalogueIn<'ru'> = {
   'home.numbers.upTo': 'до {days}',
   'home.painLine': 'Вы сказали, что эти дни тяжёлые. Отметьте боль первой.',
   'home.settings': 'Настройки',
+  'home.week.bled': 'шла кровь',
+  'home.week.cycleDay': 'день цикла {cycle}',
+  'home.week.expected': 'ожидаются месячные',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Отмена',
