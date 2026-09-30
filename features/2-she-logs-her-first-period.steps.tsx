@@ -76,6 +76,7 @@ import {
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
 import { firstRunCopy } from '../apps/mobile/src/features/onboarding/copy';
+import { monthLabel } from '../apps/mobile/src/features/onboarding/days';
 import { defaultCycleLengthDays } from '../apps/mobile/src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
 import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
@@ -107,6 +108,33 @@ import {
   whatTheHeaderDrew,
   whatTheScreenSheOpensDrew,
 } from '../apps/mobile/tests/fixtures/theHeaderSheOpensWith';
+import {
+  aWeekOfHerMonth,
+  herPhoneHoldsThreeRecordedCycles,
+  theColumnsOfTheDrawing,
+  theCycleDaysOfTheDrawing,
+  theDatesOfTheDrawing,
+  theDatesTheMonthDrew,
+  theDaySheOpensTheMonth,
+  theDayTheDrawingOutlines,
+  theDayTheRingSaysOn,
+  theDaysTheDrawingFills,
+  theEmptyBoxesOfTheDrawing,
+  theEmptyBoxesTheMonthDrew,
+  theHeaderAndTheMonthOfTheDrawing,
+  theMarkOnTheSquare,
+  theMonthSheOpens,
+  theMonthSheReads,
+  theMonthSheReadsBack,
+  theMonthTheDrawingNames,
+  theRangeHerNextPeriodMayStartOn,
+  theSquaresCountingTheirCycleDayBelowTheDate,
+  theSquaresTakingAWidthOfTheirOwn,
+  theSquaresTheMonthDrew,
+  theSquaresTooShortForAThumb,
+  theWeekMeasuredOn,
+  whatTheMonthScreenDrew,
+} from '../apps/mobile/tests/fixtures/theMonthSheOpens';
 import { textDrawnOnAPhaseFill } from '../apps/mobile/tests/fixtures/phaseInk';
 import {
   theDaySheReachesHerLutealPhase,
@@ -204,6 +232,11 @@ const today = dayOf(whenSheOpensIt);
 
 /** The Thursday of the week the drawing shows, which the week strip scenario is read on. */
 const whenSheOpensTheStrip = new Date(`${theDaySheOpensIt}T12:00:00.000Z`);
+
+/** Midday on the day the drawing of the month rings, which is the day she opens it on. */
+function whenSheOpensTheMonth(): Date {
+  return new Date(`${theDaySheOpensTheMonth()}T12:00:00.000Z`);
+}
 
 /** The day she names at her first run, which is five days behind the day she opens Emi. */
 const herPeriodStarted = addDays(today, -5);
@@ -1831,7 +1864,7 @@ defineFeature(feature, (test) => {
     and('every one of those is the day the ring says for that date', () => {
       const read = theStripSheReads().map((day) => day.cycleDay);
 
-      expect(read).toEqual(theDaysOfHerWeek().map((day) => theDayTheRingSaysFor(day)));
+      expect(read).toEqual(theDaysOfHerWeek().map((day) => theDayTheRingSaysOn(day)));
       expect(read.filter((day) => Number.isInteger(day))).toHaveLength(
         theDaysOfTheDrawingsStrip().length,
       );
@@ -2182,6 +2215,81 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/log');
       expect(app.searchParams()[opensOnParameter]).toBe(theSymptoms);
       expect(theLogProblems(theDrawingOfTheSymptoms)).toEqual([]);
+    });
+  });
+
+  test('SCREEN-4, she opens a month and reads the cycle day of every day in it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('her phone holds three recorded cycles', async () => {
+      jest.setSystemTime(whenSheOpensTheMonth());
+      await herPhoneHoldsThreeRecordedCycles(whenSheOpensTheMonth());
+    });
+
+    when('she opens the month', async () => {
+      app = await sheOpens('/calendar');
+    });
+
+    then('she is reading the month the drawing names, in seven columns', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(partsMissing(theHeaderAndTheMonthOfTheDrawing(), whatTheMonthScreenDrew())).toEqual(
+        [],
+      );
+      expect(theMonthSheReads()).toBe(monthLabel(theMonthSheOpens));
+      expect(theMonthSheReads()).toContain(theMonthTheDrawingNames());
+      expect(theDatesTheMonthDrew()).toEqual(theDatesOfTheDrawing());
+      expect(theEmptyBoxesTheMonthDrew()).toBe(theEmptyBoxesOfTheDrawing());
+      expect(aWeekOfHerMonth().cells).toHaveLength(theColumnsOfTheDrawing().length);
+    });
+
+    and('above every date is the day of her cycle that date falls on', () => {
+      // The cycle days come off the drawing rather than off this file, so the numbers below are the
+      // ones the drawing counts and not thirty somebody typed in an order that suited them.
+      expect(theMonthSheReadsBack().map((square) => square.cycleDay)).toEqual(
+        theCycleDaysOfTheDrawing(),
+      );
+      expect(theSquaresCountingTheirCycleDayBelowTheDate()).toEqual([]);
+    });
+
+    and('every one of those is the day the ring says for that date', () => {
+      const read = theMonthSheReadsBack().map((square) => square.cycleDay);
+
+      expect(read).toEqual(theSquaresTheMonthDrew().map((day) => theDayTheRingSaysOn(day)));
+      expect(read.filter((day) => Number.isInteger(day))).toHaveLength(
+        theDatesOfTheDrawing().length,
+      );
+    });
+
+    and('the days she bled are filled', () => {
+      expect(theDaysTheDrawingFills().map((day) => theMarkOnTheSquare(day))).toEqual(
+        theDaysTheDrawingFills().map(() => 'bled'),
+      );
+      expect(theDaysTheDrawingFills().length).toBeGreaterThan(1);
+    });
+
+    and('the day her next period is expected on is a dotted outline', () => {
+      const mayStart = theRangeHerNextPeriodMayStartOn();
+
+      expect(theMarkOnTheSquare(theDayTheDrawingOutlines())).toBe('forecast');
+      expect(theMarkOnTheSquare(mayStart.from)).toBe('forecast');
+      expect(theMarkOnTheSquare(addDays(mayStart.from, -1))).toBe('plain');
+    });
+
+    and('today is ringed', () => {
+      expect(theMarkOnTheSquare(theDaySheOpensTheMonth())).toBe('today');
+    });
+
+    and('every square is as high as a thumb needs, and takes its width from the month', () => {
+      const week = theWeekMeasuredOn(anIPhone16.width);
+
+      expect(theSquaresTooShortForAThumb()).toEqual([]);
+      expect(theSquaresTakingAWidthOfTheirOwn()).toEqual([]);
+      expect(week.rightEdge).toBeLessThanOrEqual(week.width);
     });
   });
 });

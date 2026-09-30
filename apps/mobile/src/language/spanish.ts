@@ -33,6 +33,7 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.ordinal.other': '',
   'calendar.ordinal.second': '',
   'calendar.ordinal.third': '',
+  'calendar.screen.back': 'Atrás',
   'calendar.today': 'Hoy',
   'calendar.weekday.friday': 'Viernes',
   'calendar.weekday.monday': 'Lunes',
@@ -43,6 +44,9 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.weekday.wednesday': 'Miércoles',
   'calendar.yesterday': 'Ayer',
 
+  'cycle.day.bled': 'sangraste',
+  'cycle.day.cycleDay': 'día {cycle} del ciclo',
+  'cycle.day.expected': 'se espera tu periodo',
   'cycle.noRing.line': 'El anillo necesita un periodo. Registra un día en que sangraste y aparece.',
   'cycle.noRing.title': 'Todavía no hay nada que dibujar',
   'cycle.phaseLine.day': 'Día {day}',
@@ -185,9 +189,6 @@ export const spanish: CatalogueIn<'es'> = {
   'home.painLine': 'Dijiste que estos días son difíciles. Registra el dolor primero.',
   'home.roundAction.period': 'Regla',
   'home.roundAction.symptoms': 'Síntomas',
-  'home.week.bled': 'sangraste',
-  'home.week.cycleDay': 'día {cycle} del ciclo',
-  'home.week.expected': 'se espera tu periodo',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Cancelar',

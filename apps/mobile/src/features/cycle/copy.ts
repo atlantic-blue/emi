@@ -1,6 +1,8 @@
 import type { PhaseName, RingGeometry } from '@emi/tokens';
 
 import { type WordKey, words } from '../../language';
+import { dayLabel } from '../onboarding/days';
+import type { HerDay } from './herWeek';
 
 /**
  * The words of the ring. Two screens draw the ring, so the sentence about an empty one lives here
@@ -72,4 +74,25 @@ function thePhaseSaid(geometry: RingGeometry): string {
   }
 
   return words(thePhaseOfHerCycle[geometry.phase], geometry.cycleLengthDays);
+}
+
+/**
+ * What a screen reader says about one day of her week or her month. The three cues a day is drawn
+ * with are a fill, a ring and a broken line, and none of the three reaches a woman who is
+ * listening, so each one is said in words here.
+ */
+export function herDayLabel(day: HerDay, today: string): string {
+  const said = [dayLabel(day.day, today)];
+
+  if (day.cycleDay !== undefined) {
+    said.push(words('cycle.day.cycleDay', undefined, { cycle: day.cycleDay }));
+  }
+  if (day.mark === 'bled') {
+    said.push(words('cycle.day.bled'));
+  }
+  if (day.mark === 'forecast') {
+    said.push(words('cycle.day.expected'));
+  }
+
+  return said.join(', ');
 }

@@ -7,7 +7,7 @@ import { useDatabase } from '../../data/DatabaseProvider';
 import { listCycles } from '../../data/cycleRepository';
 import { readProfile } from '../../data/profileRepository';
 import type { Database } from '../../data/database';
-import { type DayOfHerWeek, herWeek } from '../../features/cycle/herWeek';
+import { type HerDay, herWeek } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../features/cycle/ringInput';
 import { forecastOf } from '../../features/forecast/fromCache';
@@ -29,7 +29,7 @@ import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
 interface Shown {
   readonly ring: RingInput | undefined;
   /** Her week, Monday to Sunday, read out of the same rows the ring is built from. */
-  readonly week: readonly DayOfHerWeek[];
+  readonly week: readonly HerDay[];
   readonly forecast: ReturnType<typeof forecastOf>;
   readonly cycleLengthDays: number;
   /** Her name, where she gave one, which is the only thing the home screen greets her by. */
