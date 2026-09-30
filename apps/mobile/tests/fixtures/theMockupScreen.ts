@@ -10,6 +10,7 @@ import {
   rowsOfTheScreen,
 } from '../../../../tools/pipeline/mockups';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
+import { weekStripTestID } from '../../src/features/home/WeekStrip';
 import {
   promiseActionTestID,
   promiseLineTestID,
@@ -85,6 +86,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   Text: [settingsTitleTestID, yourAnswersTitleTestID, answerHeaderTestID, answerLinesTestID],
   TextLink: [yourAnswersBackTestID, answerBackTestID, answerCancelTestID],
   ThePromise: [thePromiseTestID],
+  WeekStrip: [weekStripTestID],
 };
 
 export interface Part {

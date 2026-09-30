@@ -216,3 +216,14 @@ Feature: She opens Emi and logs her first period
     And the greeting reads Hello, Ada
     And the drawing of this screen puts that header first, and the screen answers for it
     And a woman who gave no name reads the mark and the word, and no greeting at all
+
+  Scenario: SCREEN-2, she reads the cycle day of every day of her week without pressing anything
+    Given her phone holds four recorded period days, the last of them today
+    When she opens Emi
+    Then she reads her whole week, seven days, without pressing anything
+    And above every date is the day of her cycle that date falls on
+    And every one of those is the day the ring says for that date
+    And the three days behind today are filled, because she bled on them
+    And today is ringed
+    And tomorrow is a dotted outline, because her period is expected to run into it
+    And the two days after that are plain

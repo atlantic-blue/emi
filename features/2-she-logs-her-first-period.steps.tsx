@@ -48,6 +48,7 @@ import {
   homeHeaderWordTestID,
 } from '../apps/mobile/src/features/home/HomeHeader';
 import { greeting } from '../apps/mobile/src/features/home/copy';
+import { weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
 import {
   herNumberTestID,
   homeNumbersTestID,
@@ -98,6 +99,16 @@ import {
   whatTheHeaderDrew,
   whatTheScreenSheOpensDrew,
 } from '../apps/mobile/tests/fixtures/theHeaderSheOpensWith';
+import {
+  herPhoneHoldsFourRecordedPeriodDays,
+  theDayTheRingSaysFor,
+  theDaySheOpensIt,
+  theDaysOfHerWeek,
+  theDaysOfTheDrawingsStrip,
+  theDaysTheStripDrew,
+  theMarkOnTheDate,
+  theStripSheReads,
+} from '../apps/mobile/tests/fixtures/theWeekSheOpensWith';
 import { partsMissing } from '../apps/mobile/tests/fixtures/theMockupScreen';
 import { sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
 import {
@@ -141,6 +152,9 @@ const appDirectory = join(__dirname, '..', 'apps', 'mobile', 'src', 'app');
 /** Midday, and well away from any summer time change, so her calendar reads the same anywhere. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = dayOf(whenSheOpensIt);
+
+/** The Thursday of the week the drawing shows, which the week strip scenario is read on. */
+const whenSheOpensTheStrip = new Date(`${theDaySheOpensIt}T12:00:00.000Z`);
 
 /** The day she names at her first run, which is five days behind the day she opens Emi. */
 const herPeriodStarted = addDays(today, -5);
@@ -1722,6 +1736,73 @@ defineFeature(feature, (test) => {
         expect(screen.queryByTestId(homeGreetingTestID)).toBeNull();
       },
     );
+  });
+
+  test('SCREEN-2, she reads the cycle day of every day of her week without pressing anything', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('she reads her whole week, seven days, without pressing anything', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(weekStripTestID)).toBeTruthy();
+      expect(theDaysTheStripDrew()).toEqual(theDaysOfHerWeek());
+      expect(theDaysTheStripDrew()).toHaveLength(theDaysOfTheDrawingsStrip().length);
+      expect(theDaysTheStripDrew()).toContain(theDaySheOpensIt);
+    });
+
+    and('above every date is the day of her cycle that date falls on', () => {
+      // The cycle days come off the drawing rather than off this file, so the seven below are the
+      // seven the drawing counts and not seven somebody typed in an order that suited them.
+      expect(theStripSheReads().map((day) => day.cycleDay)).toEqual(
+        theDaysOfTheDrawingsStrip().map((day) => day.cycleDay),
+      );
+    });
+
+    and('every one of those is the day the ring says for that date', () => {
+      const read = theStripSheReads().map((day) => day.cycleDay);
+
+      expect(read).toEqual(theDaysOfHerWeek().map((day) => theDayTheRingSaysFor(day)));
+      expect(read.filter((day) => Number.isInteger(day))).toHaveLength(
+        theDaysOfTheDrawingsStrip().length,
+      );
+    });
+
+    and('the three days behind today are filled, because she bled on them', () => {
+      expect(
+        theStripSheReads()
+          .slice(0, 3)
+          .map((day) => day.mark),
+      ).toEqual(['bled', 'bled', 'bled']);
+    });
+
+    and('today is ringed', () => {
+      expect(theMarkOnTheDate(theDaySheOpensIt)).toBe('today');
+    });
+
+    and('tomorrow is a dotted outline, because her period is expected to run into it', () => {
+      expect(theMarkOnTheDate(addDays(theDaySheOpensIt, 1))).toBe('forecast');
+    });
+
+    and('the two days after that are plain', () => {
+      expect(
+        theStripSheReads()
+          .slice(5)
+          .map((day) => day.mark),
+      ).toEqual(['plain', 'plain']);
+    });
   });
 });
 
