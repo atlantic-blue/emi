@@ -16,6 +16,9 @@ import type { CatalogueIn } from './words';
  * so a Spanish sentence cannot claim what the English sentence may not.
  */
 export const spanish: CatalogueIn<'es'> = {
+  'calendar.daySheet.andLogged': '{said}. {logged}',
+  'calendar.daySheet.cycleDay': 'Día {day}, {phase}',
+  'calendar.daySheet.day': 'El {date} de {month}',
   'calendar.month.april': 'abril',
   'calendar.month.august': 'agosto',
   'calendar.month.december': 'diciembre',

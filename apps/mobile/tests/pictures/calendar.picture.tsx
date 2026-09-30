@@ -1,16 +1,23 @@
+import type { DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
 
 import { listCycles } from '../../src/data/cycleRepository';
 import { CalendarScreen } from '../../src/features/calendar/CalendarScreen';
 import { herMonth } from '../../src/features/calendar/herMonth';
+import {
+  type HerReading,
+  type WhatTheSheetSays,
+  whatTheSheetSays,
+} from '../../src/features/calendar/theDaySheet';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { startOfMonth } from '../../src/features/onboarding/days';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { iPhone16Size } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
-import { daysLogged, readDay } from '../fixtures/cycleCache';
+import { daysLogged } from '../fixtures/cycleCache';
+import { herVault } from '../fixtures/herVault';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
 /**
@@ -40,27 +47,62 @@ const herPeriodRunsFor = 5;
 const theDaySheOpensIt = '2026-09-18';
 const aDaySheWasBleedingOn = '2026-08-18';
 
-function herDays(): { day: string; flow: 'medium' | 'none' }[] {
-  return herPeriodStarts.flatMap((start) =>
-    Array.from({ length: herPeriodRunsFor + 1 }, (_unused, offset) => ({
-      day: addDays(start, offset),
-      flow: offset === herPeriodRunsFor ? ('none' as const) : ('medium' as const),
-    })),
+/** What she marked on the day she presses, so the sheet at the foot has something to read back. */
+const sheMarked = ['cramps', 'low-mood'];
+
+function herDays(): DayRecord[] {
+  const bled = herPeriodStarts.flatMap((start) =>
+    Array.from({ length: herPeriodRunsFor + 1 }, (_unused, offset) => {
+      const day = addDays(start, offset);
+
+      return {
+        day,
+        flow: offset === herPeriodRunsFor ? ('none' as const) : ('medium' as const),
+        recordedAt: `${day}T08:00:00.000Z`,
+      };
+    }),
   );
+
+  return [
+    ...bled,
+    {
+      day: theDaySheOpensIt,
+      symptoms: sheMarked,
+      recordedAt: `${theDaySheOpensIt}T09:00:00.000Z`,
+    },
+  ];
 }
 
-function herMonthOn(today: string): ReturnType<typeof herMonth> {
+function herReadingOn(today: string): { from: HerReading; days: ReturnType<typeof herMonth> } {
   const database = daysLogged(herDays(), recordedAt);
+  const from = {
+    cycles: listCycles(database),
+    records: recordedDays(database, (payload) => herVault().open(payload)),
+    today,
+    statedCycleLengthDays: defaultCycleLengthDays,
+    statedPeriodLengthDays: herPeriodRunsFor,
+  };
 
-  return herMonth(
-    {
-      cycles: listCycles(database),
-      records: recordedDays(database, readDay),
-      today,
-      statedCycleLengthDays: defaultCycleLengthDays,
-      statedPeriodLengthDays: herPeriodRunsFor,
-    },
-    startOfMonth(today),
+  return { from, days: herMonth(from, startOfMonth(today)) };
+}
+
+/** The sheet as the screen works it out, for the state that shows a day she pressed. */
+function theSheetFor(state: State): WhatTheSheetSays | undefined {
+  if (state.shePressed === undefined) {
+    return undefined;
+  }
+
+  const { from, days } = herReadingOn(state.today);
+  const hers = days.find((day) => day.day === state.shePressed);
+
+  if (hers === undefined) {
+    throw new Error(`${state.shePressed} is not a day of the month this state draws`);
+  }
+
+  return whatTheSheetSays(
+    from,
+    hers,
+    from.records.find((record) => record.day === state.shePressed),
   );
 }
 
@@ -68,17 +110,20 @@ interface State {
   readonly title: string;
   readonly note: string;
   readonly today: string;
+  /** The day she pressed, and nothing at all in the state she has pressed none. */
+  readonly shePressed?: string;
 }
 
 const theStates: readonly State[] = [
   {
-    title: 'The month she is in',
-    note: 'Day sixteen. The five days she bled are filled, and the days her next period is expected on are outlined.',
+    title: 'The month she is in, with the day she pressed named at the foot',
+    note: 'Day sixteen. The five days she bled are filled, the days her next period is expected on are outlined, and the sheet names the day she pressed, its cycle day, its phase and what she marked on it. Pressing the sheet opens that day.',
     today: theDaySheOpensIt,
+    shePressed: theDaySheOpensIt,
   },
   {
-    title: 'The month before, while she was bleeding',
-    note: 'Her period ran from the fourteenth. The day she is reading it on is ringed, and the days behind it are filled.',
+    title: 'The month before, while she was bleeding, pressed nowhere',
+    note: 'Her period ran from the fourteenth. The day she is reading it on is ringed, and the days behind it are filled. She has pressed no day, so the foot names none.',
     today: aDaySheWasBleedingOn,
   },
 ];
@@ -87,11 +132,14 @@ async function drawn(state: State): Promise<DrawnScreen> {
   const view = await render(
     <OnAPhone>
       <CalendarScreen
-        days={herMonthOn(state.today)}
+        days={herReadingOn(state.today).days}
         month={startOfMonth(state.today)}
         onBack={() => undefined}
+        onOpenDay={() => undefined}
+        onPressDay={() => undefined}
         onToday={() => undefined}
         today={state.today}
+        {...(theSheetFor(state) === undefined ? {} : { shePressed: theSheetFor(state) })}
       />
     </OnAPhone>,
   );

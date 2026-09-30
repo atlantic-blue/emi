@@ -11,13 +11,14 @@ import type { HerDay } from '../cycle/herWeek';
 import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
+import { whatSheMarkedOn } from '../log/copy';
 import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
 import { PhaseLine } from './PhaseLine';
 import { RoundAction, type RoundActionName } from './RoundAction';
 import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
-import { homeCopy, whatSheMarkedToday } from './copy';
+import { homeCopy } from './copy';
 import type { MeasuredNumber } from './herNumbers';
 import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
@@ -128,7 +129,7 @@ export function HomeScreen({
   onExport,
   onOpenMonth,
 }: Props): ReactNode {
-  const marked = whatSheMarkedToday(loggedToday);
+  const marked = whatSheMarkedOn(loggedToday);
 
   return (
     <Screen testID={homeScreenTestID}>

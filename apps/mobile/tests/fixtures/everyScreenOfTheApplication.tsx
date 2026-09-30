@@ -146,6 +146,8 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
         days={theDaysOfOneMonth('2026-05-01', '2026-05-14')}
         month="2026-05-01"
         onBack={nothing}
+        onOpenDay={nothing}
+        onPressDay={nothing}
         onToday={nothing}
         today="2026-05-14"
       />

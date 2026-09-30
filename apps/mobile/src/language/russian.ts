@@ -17,6 +17,9 @@ import type { CatalogueIn } from './words';
  * languages, so a Russian sentence cannot claim what the English sentence may not.
  */
 export const russian: CatalogueIn<'ru'> = {
+  'calendar.daySheet.andLogged': '{said}. {logged}',
+  'calendar.daySheet.cycleDay': 'День {day}, {phase}',
+  'calendar.daySheet.day': '{date} {month}',
   'calendar.month.april': 'апреля',
   'calendar.month.august': 'августа',
   'calendar.month.december': 'декабря',

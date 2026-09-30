@@ -296,3 +296,20 @@ Feature: She opens Emi and logs her first period
     When she presses the way back
     Then she is on the screen she opened, reading her week again
     And pressing a different day of the same week reaches the same month
+
+  Scenario: SCREEN-4, she presses a day in the month and reads what she wrote that day
+    Given her phone holds three recorded cycles, and a symptom she marked on one day
+    When she opens the month
+    Then nothing at the foot of it names a day, because she has pressed none
+    When she presses the day the drawing names
+    Then a sheet at the foot names that date in words
+    And it names the day of her cycle that date falls on, and the phase she was in
+    And it names the symptom she marked that day
+    And that is the month the drawing names, down to the sheet
+    When she presses the sheet
+    Then she is looking at that day, and at no other
+    When she says her period came that day
+    And she presses the way back
+    Then she is reading the month again, and the sheet names the flow she just picked
+    And the day of her cycle over that date is the day the ring now says
+    And pressing another day of the month names that day instead

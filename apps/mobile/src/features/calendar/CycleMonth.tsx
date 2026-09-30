@@ -70,6 +70,11 @@ export interface MonthSquare {
   readonly label: string;
   /** Nothing where the square takes no press, and then it is read and never pressed. */
   readonly onPress?: () => void;
+  /**
+   * What the square is to somebody listening. A screen asking her to pick one day of the month
+   * offers a set of options, and a screen where a day opens something offers a button.
+   */
+  readonly role?: 'radio' | 'button';
 }
 
 interface SquareProps {
@@ -122,7 +127,7 @@ function Square({ day, square }: SquareProps): ReactNode {
   return (
     <Pressable
       accessibilityLabel={square.label}
-      accessibilityRole="radio"
+      accessibilityRole={square.role ?? 'radio'}
       accessibilityState={{ disabled: square.outOfReach === true, selected: chosen }}
       disabled={square.outOfReach === true}
       hitSlop={SQUARE_TOUCH}

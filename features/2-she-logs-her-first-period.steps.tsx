@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
-import { addDays, publishedFigures, symptomGroups } from '@emi/cycle';
+import { addDays, findSymptom, publishedFigures, symptomGroups } from '@emi/cycle';
 import { dockPanelTestID, tabTestID } from '@emi/ui';
 import {
   FULL_TURN_DEGREES,
@@ -35,10 +35,15 @@ import { migrate } from '../apps/mobile/src/data/schema';
 import { profileRow, readProfile } from '../apps/mobile/src/data/profileRepository';
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
 import { calendarBackTestID } from '../apps/mobile/src/features/calendar/CalendarScreen';
+import { daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
 import { DAYS_IN_A_WEEK } from '../apps/mobile/src/features/cycle/herWeek';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
-import { flowOptionTestID, flowPickerTestID } from '../apps/mobile/src/features/log/FlowPicker';
+import {
+  flowLabel,
+  flowOptionTestID,
+  flowPickerTestID,
+} from '../apps/mobile/src/features/log/FlowPicker';
 import { opensOnParameter, theSymptoms } from '../apps/mobile/src/features/log/askedGroup';
 import { historyCycleTestID } from '../apps/mobile/src/features/history/HistoryScreen';
 import {
@@ -79,6 +84,7 @@ import {
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
 import { firstRunCopy } from '../apps/mobile/src/features/onboarding/copy';
+import { ordinal } from '../apps/mobile/src/features/forecast/copy';
 import { monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
 import { defaultCycleLengthDays } from '../apps/mobile/src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
@@ -115,8 +121,12 @@ import {
   aWeekOfHerMonth,
   herPhoneHoldsThreeRecordedCycles,
   theColumnsOfTheDrawing,
+  theCycleDayOver,
   theCycleDaysOfTheDrawing,
   theDatesOfTheDrawing,
+  theDayTheDrawingsSheetNames,
+  theMonthAndItsSheetOfTheDrawing,
+  theSheetSheReads,
   theDatesTheMonthDrew,
   theDaySheOpensTheMonth,
   theDayTheDrawingOutlines,
@@ -135,6 +145,7 @@ import {
   theSquaresTakingAWidthOfTheirOwn,
   theSquaresTheMonthDrew,
   theSquaresTooShortForAThumb,
+  thePhaseTheRingSaysOn,
   theWeekMeasuredOn,
   whatTheMonthScreenDrew,
 } from '../apps/mobile/tests/fixtures/theMonthSheOpens';
@@ -254,6 +265,19 @@ const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISEC
 const sheForgot = addDays(today, -3);
 const aDayAhead = addDays(today, 2);
 const notADayAtAll = '2026-02-30';
+
+/** The symptom she marked on the day the drawing of the month names in its sheet. */
+const theSymptomSheMarked = theSymptomCalled('cramps');
+
+function theSymptomCalled(slug: string): { readonly slug: string; readonly name: string } {
+  const found = findSymptom(slug);
+
+  if (found === undefined) {
+    throw new Error(`${slug} is not a symptom Emi offers`);
+  }
+
+  return found;
+}
 
 const septemberTheFourteenth = '2026-09-14';
 const wroteAt = new Date('2026-09-14T08:15:00.000Z');
@@ -2386,6 +2410,120 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/calendar');
       expect(startOfMonth(String(another))).toBe(startOfMonth(theDayShePressed));
       expect(theMonthSheReads()).toBe(monthLabel(startOfMonth(theDayShePressed)));
+    });
+  });
+
+  test('SCREEN-4, she presses a day in the month and reads what she wrote that day', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    let theDaySheOpens: string;
+    let theCycleDayBeforeSheChangedIt: number | undefined;
+
+    given(
+      'her phone holds three recorded cycles, and a symptom she marked on one day',
+      async () => {
+        jest.setSystemTime(whenSheOpensTheMonth());
+        theDaySheOpens = theDayTheDrawingsSheetNames();
+        await herPhoneHoldsThreeRecordedCycles(whenSheOpensTheMonth(), [
+          {
+            day: theDaySheOpens,
+            symptoms: [theSymptomSheMarked.slug],
+            recordedAt: `${theDaySheOpens}T09:00:00.000Z`,
+          },
+        ]);
+      },
+    );
+
+    when('she opens the month', async () => {
+      app = await sheOpens('/calendar');
+    });
+
+    then('nothing at the foot of it names a day, because she has pressed none', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(theSheetSheReads()).toBeUndefined();
+    });
+
+    when('she presses the day the drawing names', async () => {
+      theCycleDayBeforeSheChangedIt = theCycleDayOver(theDaySheOpens);
+      await shePresses(dayTestID(theDaySheOpens));
+    });
+
+    then('a sheet at the foot names that date in words', () => {
+      const sheet = theSheetSheReads();
+
+      expect(sheet?.lead).toContain(ordinal(Number(theDaySheOpens.slice(8, 10))));
+      expect(sheet?.lead).toContain(theMonthTheDrawingNames());
+    });
+
+    and('it names the day of her cycle that date falls on, and the phase she was in', () => {
+      const said = String(theSheetSheReads()?.line).toLowerCase();
+      const phase = thePhaseTheRingSaysOn(theDaySheOpens);
+
+      expect(theCycleDayBeforeSheChangedIt).toBe(theDayTheRingSaysOn(theDaySheOpens));
+      expect(said).toContain(String(theCycleDayBeforeSheChangedIt));
+      expect(phase).toBeDefined();
+      expect(said).toContain(phaseLabel[phase ?? 'period'].toLowerCase());
+    });
+
+    and('it names the symptom she marked that day', () => {
+      expect(String(theSheetSheReads()?.line).toLowerCase()).toContain(
+        theSymptomSheMarked.name.toLowerCase(),
+      );
+    });
+
+    and('that is the month the drawing names, down to the sheet', () => {
+      expect(partsMissing(theMonthAndItsSheetOfTheDrawing(), whatTheMonthScreenDrew())).toEqual([]);
+      expect(theMonthSheReads()).toContain(theMonthTheDrawingNames());
+      expect(theDatesTheMonthDrew()).toEqual(theDatesOfTheDrawing());
+    });
+
+    when('she presses the sheet', async () => {
+      await shePresses(daySheetTestID);
+    });
+
+    then('she is looking at that day, and at no other', () => {
+      expect(app.pathname()).toBe(`/day/${theDaySheOpens}`);
+      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
+    });
+
+    when('she says her period came that day', async () => {
+      await shePresses(flowOptionTestID('medium'));
+
+      expect(whatWasRecordedOn(theDaySheOpens)?.flow).toBe('medium');
+    });
+
+    and('she presses the way back', async () => {
+      await shePresses(logFlowDoneTestID);
+    });
+
+    then('she is reading the month again, and the sheet names the flow she just picked', () => {
+      const said = String(theSheetSheReads()?.line).toLowerCase();
+
+      expect(app.pathname()).toBe('/calendar');
+      expect(said).toContain(flowLabel.medium.toLowerCase());
+      expect(said).toContain(theSymptomSheMarked.name.toLowerCase());
+    });
+
+    and('the day of her cycle over that date is the day the ring now says', () => {
+      expect(theCycleDayOver(theDaySheOpens)).toBe(theDayTheRingSaysOn(theDaySheOpens));
+      expect(theCycleDayOver(theDaySheOpens)).not.toBe(theCycleDayBeforeSheChangedIt);
+      expect(String(theSheetSheReads()?.line)).toContain(String(theCycleDayOver(theDaySheOpens)));
+    });
+
+    and('pressing another day of the month names that day instead', async () => {
+      const another = theDaysTheDrawingFills()[0];
+
+      expect(another).toBeDefined();
+      await shePresses(dayTestID(String(another)));
+
+      const sheet = theSheetSheReads();
+
+      expect(sheet?.lead).toContain(ordinal(Number(String(another).slice(8, 10))));
+      expect(sheet?.lead).not.toContain(ordinal(Number(theDaySheOpens.slice(8, 10))));
     });
   });
 });
