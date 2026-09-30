@@ -23,6 +23,9 @@ const [transformer, options] = preset.transform['\\.[jt]sx?$'];
 module.exports = {
   ...mobile,
   displayName: 'home-picture',
+  // The same cap as the application tier, stated here so a change there cannot uncap this run.
+  maxWorkers: 4,
+  workerIdleMemoryLimit: '1GB',
   rootDir: mobileRoot,
   testMatch: ['<rootDir>/tests/pictures/*.picture.tsx'],
   transform: {

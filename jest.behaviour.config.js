@@ -15,6 +15,9 @@ const mobile = require('./apps/mobile/jest.config.js');
 module.exports = {
   ...mobile,
   displayName: 'behaviour',
+  // The same cap as the application tier, stated here so a change there cannot uncap this run.
+  maxWorkers: 4,
+  workerIdleMemoryLimit: '1GB',
   rootDir: resolve(__dirname, 'apps', 'mobile'),
   roots: [resolve(__dirname, 'features'), resolve(__dirname, 'apps', 'mobile')],
   testMatch: [resolve(__dirname, 'features', '**', '*.steps.tsx')],
