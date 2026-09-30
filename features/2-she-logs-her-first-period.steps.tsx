@@ -2581,6 +2581,9 @@ defineFeature(feature, (test) => {
     });
 
     when('she opens that same day ahead of her by its address', async () => {
+      // She puts the month down before she opens the address. Two applications left running at
+      // once leave two routers, and the way back then reaches neither of them.
+      await app.close();
       app = await sheOpens(`/day/${aheadOfHer}`);
     });
 
