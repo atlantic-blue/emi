@@ -338,6 +338,14 @@ export const english = {
   'onboarding.firstForecast.action': 'Continue',
   'onboarding.firstForecast.line.learning':
     'Emi is still learning. After two cycles it says how sure it is.',
+  'onboarding.firstForecast.noDate.cycles': {
+    one: 'Emi needs {count} complete cycle before it forecasts.',
+    other: 'Emi needs {count} complete cycles before it forecasts.',
+  },
+  'onboarding.firstForecast.noDate.first': 'The first period you log starts everything.',
+  'onboarding.firstForecast.noDate.guess':
+    'Emi builds no forecast from a date it guessed, because a guess on day one is a false sentence on day one.',
+  'onboarding.firstForecast.noDate.title': 'Emi has no date to count from',
   'onboarding.firstForecast.onThisPhone.line':
     'Emi works out the range on this phone, from the dates you gave.',
   'onboarding.firstForecast.onThisPhone.title': 'Worked out on this phone',

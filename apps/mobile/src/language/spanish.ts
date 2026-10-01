@@ -338,6 +338,14 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.firstForecast.action': 'Continuar',
   'onboarding.firstForecast.line.learning':
     'Emi todavía está aprendiendo. Después de dos ciclos dice cuánta confianza tiene.',
+  'onboarding.firstForecast.noDate.cycles': {
+    one: 'Emi necesita {count} ciclo completo antes de hacer una previsión.',
+    other: 'Emi necesita {count} ciclos completos antes de hacer una previsión.',
+  },
+  'onboarding.firstForecast.noDate.first': 'La primera regla que registres lo empieza todo.',
+  'onboarding.firstForecast.noDate.guess':
+    'Emi no hace ninguna previsión a partir de una fecha que haya supuesto, porque una suposición el primer día es una frase falsa el primer día.',
+  'onboarding.firstForecast.noDate.title': 'Emi no tiene una fecha desde la que contar',
   'onboarding.firstForecast.onThisPhone.line':
     'Emi calcula el rango en este teléfono, con las fechas que diste.',
   'onboarding.firstForecast.onThisPhone.title': 'Calculado en este teléfono',

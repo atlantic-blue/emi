@@ -4,6 +4,7 @@ import { type DayRecord } from '@emi/crypto';
 import {
   CYCLE_LENGTH_HIGH_DAYS,
   CYCLE_LENGTH_LOW_DAYS,
+  CYCLES_BEFORE_A_FORECAST,
   addDays,
   findSymptom,
   type PublishedFigure,
@@ -164,22 +165,45 @@ import {
 import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
+  onboardingBackTestID,
   onboardingProgressTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
-import { firstRunCopy, firstRunScreenCount } from '../apps/mobile/src/features/onboarding/copy';
-import { ordinal, statedLengthSentence } from '../apps/mobile/src/features/forecast/copy';
+import {
+  cyclesBeforeAForecastSentence,
+  firstRunCopy,
+  firstRunScreenCount,
+} from '../apps/mobile/src/features/onboarding/copy';
+import {
+  learningCopy,
+  ordinal,
+  statedLengthSentence,
+} from '../apps/mobile/src/features/forecast/copy';
 import { monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
-import { defaultCycleLengthDays } from '../apps/mobile/src/features/onboarding/firstRun';
+import {
+  defaultCycleLengthDays,
+  forecastFromHerAnswers,
+} from '../apps/mobile/src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
 import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
 import { aDayRecord } from '../apps/mobile/tests/fixtures/dayRecord';
 import { resetExpoSecureStore } from '../apps/mobile/tests/fixtures/expoSecureStore';
-import { firstForecastActionTestID } from '../apps/mobile/src/features/onboarding/FirstForecast';
-import { promiseActionTestID } from '../apps/mobile/src/features/onboarding/ThePromise';
+import {
+  firstForecastActionTestID,
+  firstForecastLinesTestID,
+  firstForecastNoGuessTestID,
+  firstForecastRangeTestID,
+  firstForecastStillLearningTestID,
+  firstForecastTestID,
+  firstForecastTitleTestID,
+} from '../apps/mobile/src/features/onboarding/FirstForecast';
+import {
+  promiseActionTestID,
+  thePromiseTestID,
+} from '../apps/mobile/src/features/onboarding/ThePromise';
 import { whatEmiDoesActionTestID } from '../apps/mobile/src/features/onboarding/WhatEmiDoesWithIt';
 import {
   sheAnswersEveryQuestion,
@@ -339,6 +363,7 @@ import {
   whatHerPhoneHolds,
 } from '../apps/mobile/tests/fixtures/theStatesOfHerData';
 import { catalogueFilesOf, samplesUnder } from '../tools/pipeline/sampleWording';
+import { thePartsOfTheForecastWithNoDate } from '../apps/mobile/tests/fixtures/theFirstForecastWithNoDate';
 import {
   type WaitingDrawn,
   theWaitingSectionsOnTheGlass,
@@ -360,7 +385,7 @@ import {
   theSymptomsTheDrawingNames,
   theSymptomsTheRowNames,
 } from '../apps/mobile/tests/fixtures/whatSheLoggedToday';
-import { sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
+import { daysNamedIn, sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
 import {
   herCyclesVaryBy,
   herLastCycleRuns,
@@ -4220,6 +4245,8 @@ defineFeature(feature, (test) => {
         whereSheIsNow();
       }
 
+      await shePresses(firstForecastActionTestID);
+      whereSheIsNow();
       await shePresses(promiseActionTestID);
       whereSheIsNow();
       await shePresses(whatEmiDoesActionTestID);
@@ -4259,6 +4286,113 @@ defineFeature(feature, (test) => {
         expect(listCycles(herDatabase())).toEqual([]);
       },
     );
+  });
+
+  test('SCREEN-1, the first run with no date ends on a forecast that says it is still learning', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
+    });
+
+    and('she reaches the question about when her last period started', async () => {
+      await sheReachesTheLastPeriodQuestion();
+
+      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+    });
+
+    and('she says she does not remember', async () => {
+      await shePresses(onboardingWayPastTestID);
+    });
+
+    and('she answers the rest of the questions', async () => {
+      for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
+        await shePresses(longerTestID);
+      }
+
+      await shePresses(onboardingActionTestID);
+
+      for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePresses(onboardingSkipTestID);
+      }
+    });
+
+    then('she is reading her first forecast, and Emi says it has no date to count from', () => {
+      expect(app.pathname()).toBe('/onboarding/first-forecast');
+      expect(whatItSays(firstForecastTitleTestID)).toBe(firstRunCopy.firstForecast.noDate.title);
+    });
+
+    and('a line says the first period she logs starts everything', () => {
+      expect(textIn(screen.getByTestId(firstForecastLinesTestID))).toContain(
+        firstRunCopy.firstForecast.noDate.first,
+      );
+    });
+
+    and('a line names the cycle length she gave, and no length Emi picked', () => {
+      expect(textIn(screen.getByTestId(firstForecastLinesTestID))).toContain(
+        statedLengthSentence(sheSaysHerCycleRuns),
+      );
+      expect(whatItSays(firstForecastLinesTestID)).toContain(String(sheSaysHerCycleRuns));
+      expect(whatItSays(firstForecastLinesTestID)).not.toContain(String(defaultCycleLengthDays));
+    });
+
+    and('the card says Emi is still learning, and how many complete cycles it needs', () => {
+      expect(textIn(screen.getByTestId(firstForecastStillLearningTestID))).toEqual([
+        learningCopy.stillLearning,
+        cyclesBeforeAForecastSentence(CYCLES_BEFORE_A_FORECAST),
+      ]);
+      // The number is the arithmetic's own, read off the answer CYCLE-3 gives her answers.
+      const answer = forecastFromHerAnswers({ cycleLengthDays: sheSaysHerCycleRuns });
+
+      expect(answer.kind === 'learning' ? answer.needsCycles : 0).toBe(CYCLES_BEFORE_A_FORECAST);
+    });
+
+    and('a line says Emi builds no forecast from a date it guessed', () => {
+      expect(whatItSays(firstForecastNoGuessTestID)).toBe(firstRunCopy.firstForecast.noDate.guess);
+    });
+
+    and('no range and no date is written anywhere on that screen', () => {
+      expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
+      expect(daysNamedIn(whatItSays(firstForecastTestID))).toEqual([]);
+      expect(listDayLogs(herDatabase())).toEqual([]);
+    });
+
+    and(
+      'that is the drawing of the first forecast with no date, part for part, in its order',
+      () => {
+        expect(partsMissing(thePartsOfTheForecastWithNoDate(), theIdentifiersDrawn())).toEqual([]);
+      },
+    );
+
+    and(
+      'the screen offers the way on, and no way back to the question she could not answer',
+      () => {
+        expect(screen.getByTestId(firstForecastActionTestID)).toBeTruthy();
+        expect(screen.queryByTestId(onboardingBackTestID)).toBeNull();
+        expect(screen.queryByTestId(onboardingWayPastTestID)).toBeNull();
+        expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
+      },
+    );
+
+    when('she presses the way on', async () => {
+      await shePresses(firstForecastActionTestID);
+    });
+
+    then('she is reading what Emi promises her', () => {
+      expect(app.pathname()).toBe('/onboarding/the-promise');
+      expect(screen.getByTestId(thePromiseTestID)).toBeTruthy();
+    });
   });
 });
 

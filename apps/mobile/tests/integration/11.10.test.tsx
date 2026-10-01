@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { cyclesFrom, forecastFrom } from '@emi/cycle';
+import { CYCLES_BEFORE_A_FORECAST, cyclesFrom, forecastFrom } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 
@@ -62,6 +62,17 @@ const herPeriodStarted = '2026-05-09';
 const theOneBefore = '2026-04-11';
 
 const herCycleLengthDays = 28;
+
+/**
+ * The answer a woman with one recorded day leaves the arithmetic with: still learning, and a range
+ * counted from the length she gave. It is what this screen draws on its own, away from the router.
+ */
+const theLearningStateWithARange = {
+  completeCycles: 0,
+  kind: 'learning',
+  needsCycles: CYCLES_BEFORE_A_FORECAST,
+  start: { from: '2026-06-03', to: '2026-06-09' },
+} as const;
 
 /** The two files this step adds to the interface, which the single day scan reads with the rest. */
 const theNewInterfaceFiles = [
@@ -260,15 +271,17 @@ describe('her first forecast is a range, before anything is written', () => {
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
     });
 
-    it('takes her on to the promise, where she reached it without a day', async () => {
+    it('says it has no date to count from, where she reached it without a day', async () => {
       const app = renderRouter(appDirectory, { initialUrl: '/onboarding/first-forecast' });
 
       await app;
 
       // A woman with no day passed the question that asks for one, so sending her back would
-      // return her to the one question she said she could not answer.
-      expect(app.getPathname()).toBe('/onboarding/the-promise');
-      expect(screen.queryByTestId(firstForecastTestID)).toBeNull();
+      // return her to the one question she said she could not answer. Emi draws the screen in its
+      // learning state instead, which step 20.3 builds and proves.
+      expect(app.getPathname()).toBe('/onboarding/first-forecast');
+      expect(screen.getByTestId(firstForecastTestID)).toBeTruthy();
+      expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
     });
 
     it('hands her to the promise when she presses Continue, and the hold is behind it', async () => {
@@ -444,8 +457,9 @@ describe('her first forecast is a range, before anything is written', () => {
       await render(
         <OnAPhone>
           <FirstForecast
+            cycleLengthDays={herCycleLengthDays}
+            forecast={theLearningStateWithARange}
             onContinue={() => pressed.push('continue')}
-            start={{ from: '2026-06-03', to: '2026-06-09' }}
           />
         </OnAPhone>,
       );
@@ -458,8 +472,9 @@ describe('her first forecast is a range, before anything is written', () => {
       await render(
         <OnAPhone>
           <FirstForecast
+            cycleLengthDays={herCycleLengthDays}
+            forecast={theLearningStateWithARange}
             onContinue={() => undefined}
-            start={{ from: '2026-06-03', to: '2026-06-09' }}
           />
         </OnAPhone>,
       );

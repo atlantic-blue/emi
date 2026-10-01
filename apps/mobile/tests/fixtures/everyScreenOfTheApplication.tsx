@@ -93,7 +93,11 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [
     firstForecastTestID,
     (): ReactElement => (
-      <FirstForecast onContinue={nothing} start={{ from: '2026-06-06', to: '2026-06-10' }} />
+      <FirstForecast
+        cycleLengthDays={28}
+        forecast={{ ...learning, start: { from: '2026-06-06', to: '2026-06-10' } }}
+        onContinue={nothing}
+      />
     ),
   ],
   [holdScreenTestID, (): ReactElement => <HoldToBegin onHeld={neverRun} />],

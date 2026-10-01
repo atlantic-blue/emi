@@ -356,6 +356,15 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.firstForecast.action': 'Продолжить',
   'onboarding.firstForecast.line.learning':
     'Emi ещё учится. После двух циклов она скажет, насколько уверена.',
+  'onboarding.firstForecast.noDate.cycles': {
+    one: 'Emi нужен {count} полный цикл, прежде чем она сделает прогноз.',
+    few: 'Emi нужно {count} полных цикла, прежде чем она сделает прогноз.',
+    many: 'Emi нужно {count} полных циклов, прежде чем она сделает прогноз.',
+  },
+  'onboarding.firstForecast.noDate.first': 'Первые месячные, которые вы запишете, начинают всё.',
+  'onboarding.firstForecast.noDate.guess':
+    'Emi не строит прогноз по дате, которую угадала, потому что догадка в первый день это ложное утверждение в первый день.',
+  'onboarding.firstForecast.noDate.title': 'У Emi нет даты, от которой считать',
   'onboarding.firstForecast.onThisPhone.line':
     'Emi считает диапазон на этом телефоне, по датам, которые вы дали.',
   'onboarding.firstForecast.onThisPhone.title': 'Посчитано на этом телефоне',
