@@ -45,9 +45,6 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = dayOf(whenSheOpensIt);
 
-/** The drawing this step builds: the screen she opens on day one, before she recorded anything. */
-const theDrawing = 'todayEmpty';
-
 /**
  * The length she gave at her first run. It is deliberately not the length Emi would count by on
  * its own, so a card reading the wrong one names 28 and the case can say which number it read.
@@ -114,7 +111,7 @@ describe('day one says what the ring needs and the first period she logs draws i
 
     it('draws no ring, and the drawing of day one places none either', () => {
       expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
-      expect(thePartsOfTheMockup(theDrawing).map((part) => part.name)).not.toContain('CycleRing');
+      expect(thePartsOfTheMockup('todayEmpty').map((part) => part.name)).not.toContain('CycleRing');
       expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
     });
 
@@ -137,7 +134,7 @@ describe('day one says what the ring needs and the first period she logs draws i
     });
 
     it('is held to the parts the drawing places, in the drawing order, and to no other list', () => {
-      expect(thePartsOfTheMockup(theDrawing).map((part) => part.name)).toEqual(
+      expect(thePartsOfTheMockup('todayEmpty').map((part) => part.name)).toEqual(
         theDrawingPlaces().map((part) => part.name),
       );
     });
@@ -191,7 +188,6 @@ describe('day one says what the ring needs and the first period she logs draws i
 
       const vault = await theVaultOnHerPhone();
       const rows = listDayLogs(herDatabase());
-
 
       expect(rows.map((row) => row.day)).toEqual([today]);
       expect(rows.map((row) => vault.open(row.payload).flow)).toEqual(['medium']);

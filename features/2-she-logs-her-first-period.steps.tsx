@@ -3905,9 +3905,7 @@ defineFeature(feature, (test) => {
     });
 
     and('the ring says she is on the first day of a cycle of the length she gave', () => {
-      expect(theRingSays()).toBe(
-        ringSpokenLabel(1, sheSaysHerCycleRuns, phaseLabel.period),
-      );
+      expect(theRingSays()).toBe(ringSpokenLabel(1, sheSaysHerCycleRuns, phaseLabel.period));
     });
 
     and('nothing offers to log today any more, and the two lines are gone', () => {

@@ -125,6 +125,12 @@ const sheThenMarkedTwoSymptoms: readonly DayRecord[] = [
  */
 const theStripsSitThisFarDown = 700;
 
+/**
+ * The points the day one frame is offset by. The three sections she has not earned carry that body
+ * past the height of the glass, so the one button at the foot of it is drawn below the frame.
+ */
+const theWayToLogTodaySitsThisFarDown = 250;
+
 /** The points the trend frame is offset by, measured the same way: her chart sits below her strips. */
 const theTrendSitsThisFarDown = 1450;
 
@@ -193,6 +199,12 @@ const theRecordedSets: readonly Recorded[] = [
     title: `Her trend over the published band, offset upward by ${String(theTrendSitsThisFarDown)} points`,
     set: genuinelyIrregular,
     offsetPoints: theTrendSitsThisFarDown,
+  },
+  {
+    title: `Her first day, offset upward by ${String(theWayToLogTodaySitsThisFarDown)} points`,
+    set: veryRegular,
+    recorded: 'nothing',
+    offsetPoints: theWayToLogTodaySitsThisFarDown,
   },
   // The only frame drawn from days that carry symptoms. The recorded sets hold bleeding alone, so
   // no other frame can show a card, and a screen with nothing to name draws no section at all.
