@@ -202,6 +202,7 @@ export const spanish: CatalogueIn<'es'> = {
   'home.cycles.line':
     'Cada franja es uno de tus ciclos, primero el que estás viviendo. Pulsa una franja para leer ese ciclo en Análisis.',
   'home.greeting': 'Hola, {name}',
+  'home.logToday': 'Registrar hoy',
   'home.loggedToday.andTheLast': '{said} y {last}',
   'home.loggedToday.energy': 'energía',
   'home.loggedToday.flow': 'flujo {flow}',

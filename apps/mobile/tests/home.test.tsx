@@ -5,7 +5,12 @@ import { listCycles } from '../src/data/cycleRepository';
 import { cycleCopy } from '../src/features/cycle/copy';
 import { homeCopy } from '../src/features/home/copy';
 import { forecastOf } from '../src/features/forecast/fromCache';
-import { HomeScreen, homeNoRingTestID, roundActionTestID } from '../src/features/home/HomeScreen';
+import {
+  HomeScreen,
+  homeLogTodayTestID,
+  homeNoRingTestID,
+  roundActionTestID,
+} from '../src/features/home/HomeScreen';
 import { migratedDatabase } from './fixtures/cycleCache';
 import { textIn } from './fixtures/renderedText';
 
@@ -18,6 +23,7 @@ async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
         forecast={forecastOf(listCycles(migratedDatabase()))}
         onExport={() => asked.push('export')}
         onLogPain={() => asked.push('log pain')}
+        onLogToday={() => asked.push('log today')}
         onPeriod={() => asked.push('period')}
         onSymptoms={() => asked.push('symptoms')}
         ring={undefined}
@@ -33,7 +39,7 @@ describe('the home screen', () => {
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
   });
 
-  it('shows the wordmark, what to do next, and the two round actions', async () => {
+  it('shows the wordmark, what to do next, the two round actions and the one button', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
@@ -46,6 +52,7 @@ describe('the home screen', () => {
       'Still learning',
       'Emi needs 2 more complete cycles before it says how sure it is.',
       'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',
+      homeCopy.logToday,
     ]);
   });
 
@@ -65,5 +72,14 @@ describe('the home screen', () => {
     await fireEvent.press(screen.getByTestId(roundActionTestID('symptoms')));
 
     expect(asked).toEqual(['symptoms']);
+  });
+
+  it('sends her to the log when she presses the one button, which has no ring to press', async () => {
+    const asked: string[] = [];
+    await theEmptyHomeScreen(asked);
+
+    await fireEvent.press(screen.getByTestId(homeLogTodayTestID));
+
+    expect(asked).toEqual(['log today']);
   });
 });

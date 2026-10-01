@@ -281,6 +281,7 @@ describe('the phase name is written in its ink and never on its own fill', () =>
             forecast={her.forecast}
             onExport={() => undefined}
             onLogPain={() => undefined}
+            onLogToday={() => undefined}
             onPeriod={() => undefined}
             onSymptoms={() => undefined}
             ring={her.ring}

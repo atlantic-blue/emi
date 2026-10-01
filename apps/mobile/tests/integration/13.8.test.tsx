@@ -48,6 +48,7 @@ function theScreenSheOpens(ring: typeof theCycleSheIsIn | undefined): ReactEleme
       forecast={stillLearning}
       onExport={nothing}
       onLogPain={nothing}
+      onLogToday={nothing}
       onPeriod={nothing}
       onSymptoms={nothing}
       ring={ring}

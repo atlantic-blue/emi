@@ -16,6 +16,7 @@ import { homeNumbersTestID } from '../../src/features/home/MeasuredRow';
 import {
   homeCyclesLineTestID,
   homeFiguresLineTestID,
+  homeLogTodayTestID,
   homePatternsLineTestID,
   homeScreenTestID,
   homeTrendCountTestID,
@@ -80,7 +81,7 @@ function whatOneSectionSays(section: 'cycles' | 'trend' | 'patterns'): string {
  *
  * A part with nothing under it is a part another step owns, named with the step that owns it. The
  * drawing is a whole page and this step builds the waiting sections of one, so the header and the
- * two ways out of it belong to feature 15, and the way to log today belongs to the next step here.
+ * two ways out of it belong to feature 15.
  */
 interface PartOfTheDrawing {
   readonly name: string;
@@ -102,7 +103,7 @@ function theDrawingPlaces(): PartOfTheDrawing[] {
       { name: 'Text', builtUnder: [sectionWaitingHeadingTestID(section)] },
       { name: 'SectionWaiting', builtUnder: [sectionWaitingTestID(section)] },
     ]),
-    { name: 'PrimaryButton', builtUnder: [], ownedBy: 'the way to log today, feature 19 step 2' },
+    { name: 'PrimaryButton', builtUnder: [homeLogTodayTestID] },
     { name: 'BottomNavigation', builtUnder: [tabTestID('index')] },
     { name: 'BottomNavigation', builtUnder: [tabTestID('log/index')] },
     { name: 'BottomNavigation', builtUnder: [tabTestID('history')] },
@@ -223,7 +224,7 @@ describe('a section her data cannot fill carries one sentence and no chart', () 
         .map(asPart);
 
       expect(partsMissing(mine, theIdentifiersDrawn())).toEqual([]);
-      expect(mine).toHaveLength(10);
+      expect(mine).toHaveLength(11);
     });
 
     it('answers for nothing else of the drawing yet, and names each part it leaves to another step', () => {
@@ -239,7 +240,6 @@ describe('a section her data cannot fill carries one sentence and no chart', () 
         'the header, feature 15 step 1',
         'the way back in the header, feature 15 step 1',
         'the word Today in the header, feature 15 step 1',
-        'the way to log today, feature 19 step 2',
       ]);
     });
   });

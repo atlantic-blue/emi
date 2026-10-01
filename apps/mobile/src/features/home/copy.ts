@@ -16,6 +16,7 @@ export const homeCopy = {
   loggedToday: {
     lead: words('home.loggedToday.lead'),
   },
+  logToday: words('home.logToday'),
   painLine: words('home.painLine'),
   doctorRecord: words('home.doctorRecord'),
   cycles: {

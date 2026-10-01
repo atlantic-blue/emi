@@ -4,6 +4,7 @@ import { type IconName, MINIMUM_TAP_TARGET, colour, space, textStyle } from '@em
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { PrimaryButton } from '../../components/Button';
 import { CycleRing } from '../../components/CycleRing';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
@@ -57,6 +58,9 @@ const theRoundActions: readonly { action: RoundActionName; icon: IconName }[] = 
 
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
+export const homeNoRingTitleTestID = 'home-no-ring-title';
+export const homeNoRingLineTestID = 'home-no-ring-line';
+export const homeLogTodayTestID = 'home-log-today';
 export const homeForecastTestID = 'home-forecast';
 export const homePainLineTestID = 'home-pain-line';
 export const homeFertileWindowTestID = 'home-fertile-window';
@@ -153,6 +157,12 @@ interface Props {
   readonly onFigures?: () => void;
   /** The way into the log, which the round action under the ring takes her by. */
   readonly onPeriod: () => void;
+  /**
+   * The way into the log that the one button offers, and the only way off a screen with no ring on
+   * it. It is required rather than offered, because a woman on day one has recorded nothing and a
+   * caller that forgot it would leave her a sentence about a ring and no way to draw one.
+   */
+  readonly onLogToday: () => void;
   /** The second round action. It reaches the log too until step 5 points it at the groups. */
   readonly onSymptoms: () => void;
   /** The way to the pain group of the log, which only the line below the ring takes her by. */
@@ -190,6 +200,7 @@ export function HomeScreen({
   patterns,
   onFigures,
   onOpenCycles,
+  onLogToday,
   onPeriod,
   onSymptoms,
   onLogPain,
@@ -228,10 +239,16 @@ export function HomeScreen({
           <CycleRing {...ring} />
         ) : (
           <View style={styles.noRing} testID={homeNoRingTestID}>
-            <Text accessibilityRole="header" style={styles.noRingTitle}>
+            <Text
+              accessibilityRole="header"
+              style={styles.noRingTitle}
+              testID={homeNoRingTitleTestID}
+            >
               {cycleCopy.noRing.title}
             </Text>
-            <Text style={styles.noRingLine}>{cycleCopy.noRing.line}</Text>
+            <Text style={styles.noRingLine} testID={homeNoRingLineTestID}>
+              {cycleCopy.noRing.line}
+            </Text>
           </View>
         )}
 
@@ -378,6 +395,16 @@ export function HomeScreen({
             <Text style={styles.offerLabel}>{homeCopy.painLine}</Text>
           </Pressable>
         ) : null}
+
+        {ring === undefined ? (
+          <View style={styles.logToday}>
+            <PrimaryButton
+              label={homeCopy.logToday}
+              onPress={onLogToday}
+              testID={homeLogTodayTestID}
+            />
+          </View>
+        ) : null}
       </ScrollView>
     </Screen>
   );
@@ -521,6 +548,9 @@ const styles = StyleSheet.create({
     ...textStyle('headline-md'),
     marginBottom: space.spaceXs,
   },
+  // The one button sits at the foot of the body, under everything she reads, because a screen with
+  // no ring on it is a screen asking her for one thing and the ask goes last.
+  logToday: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.spaceLg },
   // A section she has not earned yet is held to the width the filled sections take, so the screen
   // keeps one left edge whether her days fill it or not.
   waiting: { alignSelf: 'stretch', paddingHorizontal: space.spaceLg },

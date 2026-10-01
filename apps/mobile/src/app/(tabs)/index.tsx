@@ -159,6 +159,7 @@ export default function HomeRoute(): ReactNode {
       onExport={() => router.push('/export')}
       onFigures={() => router.push('/cycles/figures')}
       onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
+      onLogToday={() => router.push('/log')}
       onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}
       onOpenCycles={() => router.push('/history')}
       onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
