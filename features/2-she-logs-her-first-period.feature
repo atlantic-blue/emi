@@ -432,3 +432,13 @@ Feature: She opens Emi and logs her first period
     And Insights names it at the same point in her cycle, in the same count of her cycles, as the card did
     When she presses the way back
     Then she is on the screen she opened, reading the same two cards
+
+  Scenario: SCREEN-2, a section her data cannot fill carries one sentence and no chart
+    Given her phone holds her answers and not one day
+    When she opens Emi
+    Then where her cycles, her trend and what comes back would be, she reads a waiting section
+    And each one says what it needs before Emi can draw it
+    And each one says how many of her cycles are complete
+    And every number in the three is a count read off her phone or a threshold Emi states
+    And no chart, no strip, no row and no card is drawn in any of the three
+    And what comes back says here exactly what it says on Insights
