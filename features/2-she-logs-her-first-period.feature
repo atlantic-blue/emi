@@ -527,3 +527,11 @@ Feature: She opens Emi and logs her first period
     Then she is reading a ring drawn from the day she logged
     And the ring says she is on the first day of a cycle of the length she gave
     And nothing offers to log today any more
+
+  Scenario: SCREEN-2, every colour in the redesign prototype has a name in the design document
+    Given the fifty two screens of the redesign prototype, and the design document written from them
+    When every colour the screens paint with is read against the names in that document
+    Then every one of them has a name, and every name in the document is painted by a screen
+    And a translucent colour is held to the opaque colour underneath it
+    And a colour the prototype paints under the contrast floor records the value Emi builds instead
+    And the ink of each phase is readable on the ground the ring writes the phase name on
