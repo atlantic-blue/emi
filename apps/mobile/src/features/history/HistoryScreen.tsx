@@ -59,6 +59,12 @@ export function historyPatternPhaseTestID(slug: string): string {
 
 interface Props {
   readonly history: History;
+  /**
+   * The cycle she arrived at, where she came from a strip on the screen she opens, and nothing at
+   * all where she pressed the Insights column of the dock. That one row is marked, so she lands on
+   * the cycle she pressed rather than on a list of four that look alike.
+   */
+  readonly openedAt?: string;
   /** A press opens the day itself, because a pattern she disagrees with is a day she can correct. */
   readonly onOpenDay: (day: string) => void;
   readonly onBack: () => void;
@@ -85,16 +91,20 @@ function PhaseBar({ cycle }: { readonly cycle: HistoryCycle }): ReactNode {
 
 function CycleRow({
   cycle,
+  opened,
   onOpenDay,
 }: {
   readonly cycle: HistoryCycle;
+  /** True for the one cycle she arrived at, which is drawn with a border she can see. */
+  readonly opened: boolean;
   readonly onOpenDay: (day: string) => void;
 }): ReactNode {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ selected: opened }}
       onPress={() => onOpenDay(cycle.startedOn)}
-      style={styles.row}
+      style={[styles.row, opened ? styles.opened : null]}
       testID={historyCycleTestID(cycle.startedOn)}
     >
       <Text style={styles.rowTitle}>{cycleSentence(cycle.startedOn, cycle.endedOn)}</Text>
@@ -134,7 +144,7 @@ function PatternRow({
   );
 }
 
-export function HistoryScreen({ history, onOpenDay, onBack }: Props): ReactNode {
+export function HistoryScreen({ history, openedAt, onOpenDay, onBack }: Props): ReactNode {
   return (
     <Screen testID={historyScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
@@ -169,7 +179,12 @@ export function HistoryScreen({ history, onOpenDay, onBack }: Props): ReactNode 
         ) : (
           <View style={styles.list} testID={historyCyclesTestID}>
             {history.cycles.map((cycle) => (
-              <CycleRow cycle={cycle} key={cycle.startedOn} onOpenDay={onOpenDay} />
+              <CycleRow
+                cycle={cycle}
+                key={cycle.startedOn}
+                onOpenDay={onOpenDay}
+                opened={cycle.startedOn === openedAt}
+              />
             ))}
           </View>
         )}
@@ -235,6 +250,12 @@ const styles = StyleSheet.create({
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
     padding: space.spaceMd,
+  },
+  // The cycle she arrived at from the screen she opens, drawn with the accent border so she can
+  // see which of four rows she asked for. The mark is a width as well as a colour.
+  opened: {
+    borderColor: colour.primary,
+    borderWidth: 2,
   },
   rowLine: {
     color: colour.onSurfaceVariant,

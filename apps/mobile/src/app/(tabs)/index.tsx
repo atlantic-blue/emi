@@ -8,6 +8,7 @@ import { useDatabase } from '../../data/DatabaseProvider';
 import { listCycles } from '../../data/cycleRepository';
 import { readProfile } from '../../data/profileRepository';
 import type { Database } from '../../data/database';
+import type { ReadCycle } from '../../features/cycle/cyclesRead';
 import { type HerDay, herWeek } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../features/cycle/ringInput';
@@ -19,11 +20,13 @@ import {
   theSymptoms,
 } from '../../features/log/askedGroup';
 import { HomeScreen } from '../../features/home/HomeScreen';
+import { herCycles } from '../../features/home/herCycles';
 import { type MeasuredNumber, herNumbers } from '../../features/home/herNumbers';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
+import { cycleParameter } from '../../features/history/askedCycle';
 import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
 import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
 
@@ -43,6 +46,8 @@ interface Shown {
   readonly goals: readonly Goal[] | undefined;
   /** Her three measurements beside the published figures, or nothing until her days carry them. */
   readonly numbers: readonly MeasuredNumber[] | undefined;
+  /** The cycles she reads as strips, or nothing at all until her days make one. */
+  readonly cycles: readonly ReadCycle[] | undefined;
   /** Today as she left it, picked out of the days already read, or nothing where she wrote none. */
   readonly loggedToday: DayRecord | undefined;
 }
@@ -83,6 +88,8 @@ function whatSheIsLookingAt(
     week: herWeek(readBack),
     forecast,
     numbers: herNumbers(cycles, forecast),
+    // Read off the rows the ring was drawn from, so a strip and the ring stand on one reading.
+    cycles: herCycles(readBack),
     cycleLengthDays: stated,
     name: herAnswers?.name,
     regularity: herAnswers?.regularity,
@@ -123,6 +130,7 @@ export default function HomeRoute(): ReactNode {
   return (
     <HomeScreen
       cycleLengthDays={shown.cycleLengthDays}
+      cycles={shown.cycles}
       feeling={shown.feeling}
       forecast={shown.forecast}
       goals={shown.goals}
@@ -132,6 +140,7 @@ export default function HomeRoute(): ReactNode {
       onExport={() => router.push('/export')}
       onFigures={() => router.push('/cycles/figures')}
       onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
+      onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}
       onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
       onPeriod={() => router.push('/log')}
       onSymptoms={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
