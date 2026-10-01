@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
 import { theCycleAskedFor } from '../../features/history/askedCycle';
+import { thePatternAskedFor } from '../../features/history/askedPattern';
 import { HistoryScreen } from '../../features/history/HistoryScreen';
 import { historyNow } from '../../features/history/historyNow';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
@@ -43,8 +44,9 @@ export default function HistoryRoute(): ReactNode {
     <HistoryScreen
       history={history}
       onBack={leave}
-      openedAt={theCycleAskedFor(asked.cycle)}
       onOpenDay={(day) => router.push(`/day/${day}`)}
+      openedAt={theCycleAskedFor(asked.cycle)}
+      openedPattern={thePatternAskedFor(asked.pattern)}
     />
   );
 }
