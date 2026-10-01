@@ -1,7 +1,14 @@
 import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
-import { addDays, findSymptom, publishedFigures, symptomGroups } from '@emi/cycle';
+import {
+  addDays,
+  findSymptom,
+  type PublishedFigure,
+  type PublishedMeasurement,
+  publishedFigures,
+  symptomGroups,
+} from '@emi/cycle';
 import { dockPanelTestID, tabTestID } from '@emi/ui';
 import {
   FULL_TURN_DEGREES,
@@ -53,6 +60,7 @@ import { opensOnParameter, theSymptoms } from '../apps/mobile/src/features/log/a
 import { historyCycleTestID } from '../apps/mobile/src/features/history/HistoryScreen';
 import {
   homeFiguresLineTestID,
+  homeFiguresPressTestID,
   homeForecastTestID,
   homeScreenTestID,
   roundActionTestID,
@@ -63,6 +71,15 @@ import {
   homeHeaderTestID,
   homeHeaderWordTestID,
 } from '../apps/mobile/src/features/home/HomeHeader';
+import {
+  citationFigureTestID,
+  citationIdentifierTestID,
+  citationPaperTestID,
+  citationRowTestID,
+  figuresBackTestID,
+  figuresQuotedTestID,
+  figuresScreenTestID,
+} from '../apps/mobile/src/features/cycle/CitationRow';
 import { loggedTodayTestID } from '../apps/mobile/src/features/home/LoggedToday';
 import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
 import { greeting, homeCopy } from '../apps/mobile/src/features/home/copy';
@@ -589,6 +606,52 @@ function theLastCompleteCycleOnHerPhone(): CycleRow {
   return last;
 }
 
+/** The address the drawing of the page that says where the figures come from gives it. */
+const theFiguresPage = '/cycles/figures';
+
+/** The measurement each row of that page is about, in the order the page draws them. */
+function theRowsSheReads(): PublishedMeasurement[] {
+  const measurements: PublishedMeasurement[] = [
+    'cycle-length',
+    'period-duration',
+    'cycle-length-variation',
+  ];
+
+  return screen
+    .queryAllByTestId(/.+/)
+    .map((element) => String(element.props.testID))
+    .flatMap((identifier) =>
+      measurements.filter((measures) => identifier === citationRowTestID(measures)),
+    );
+}
+
+/**
+ * The one list of published figures, as the arithmetic ships it, and a way to change it.
+ *
+ * Nothing is mocked. The page is meant to quote the arithmetic rather than keep a copy of it, so
+ * the only way to show that is to change the arithmetic and open the page again. A page that had
+ * typed a figure of its own would keep drawing the old one.
+ */
+const theFiguresTheArithmeticShips: readonly PublishedFigure[] = [...publishedFigures];
+
+function theArithmeticHolds(figures: readonly PublishedFigure[]): void {
+  const held = publishedFigures as PublishedFigure[];
+
+  held.splice(0, held.length, ...figures);
+}
+
+/** The same measurement, reported by another paper with another range and another identifier. */
+const anotherPaperReportsTheCycleLength: PublishedFigure = {
+  measures: 'cycle-length',
+  value: { kind: 'range', low: 20, high: 41 },
+  unit: 'days',
+  citation: {
+    source: 'A later cohort, reported somewhere else',
+    doi: '10.0000/another.paper',
+    figure: 'menstrual cycle frequency, reported as 20 to 41 days',
+  },
+};
+
 beforeEach(() => {
   jest.useFakeTimers();
   jest.setSystemTime(whenSheOpensIt);
@@ -600,6 +663,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // A scenario that changed the published figures and then failed would leave every scenario after
+  // it reading an arithmetic nobody ships, so the list goes back whatever happened.
+  theArithmeticHolds(theFiguresTheArithmeticShips);
   jest.useRealTimers();
   jest.restoreAllMocks();
 });
@@ -2941,6 +3007,121 @@ defineFeature(feature, (test) => {
         }).toThrow(/cache/);
       },
     );
+  });
+
+  test('SCREEN-2, she reaches the page that says where each published figure comes from', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    let herCycleLengthOnTheScreenSheOpened = '';
+
+    given('her phone holds three cycles of her own', async () => {
+      await herPhoneHolds(whenSheOpensIt, daysOfHerThreeCycles(today));
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+      herCycleLengthOnTheScreenSheOpened = whatItSays(herNumberTestID('cycle-length'));
+    });
+
+    and('she presses the way to where these figures come from', async () => {
+      await shePresses(homeFiguresPressTestID);
+    });
+
+    then('she is reading one row for each published figure Emi puts beside her own numbers', () => {
+      expect(app.pathname()).toBe(theFiguresPage);
+      expect(theRowsSheReads()).toEqual(publishedFigures.map((figure) => figure.measures));
+      expect(theRowsSheReads()).toHaveLength(3);
+    });
+
+    and(
+      'each row quotes the figure, names the paper that reports it, and gives the identifier of that paper',
+      () => {
+        for (const figure of publishedFigures) {
+          expect(whatItSays(citationFigureTestID(figure.measures))).not.toBe('');
+          expect(whatItSays(citationPaperTestID(figure.measures))).toBe(figure.citation.source);
+          expect(whatItSays(citationIdentifierTestID(figure.measures))).toContain(
+            figure.citation.doi,
+          );
+        }
+
+        expect(whatItSays(citationFigureTestID('cycle-length'))).toBe('24 to 38 days');
+        expect(whatItSays(citationFigureTestID('period-duration'))).toBe('up to 8 days');
+        expect(whatItSays(citationFigureTestID('cycle-length-variation'))).toBe('2.6 days');
+      },
+    );
+
+    and(
+      'the cycle length is credited to the International Federation of Gynecology and Obstetrics, and not to nobody',
+      () => {
+        expect(whatItSays(citationPaperTestID('cycle-length'))).toContain(
+          'International Federation of Gynecology and Obstetrics',
+        );
+        expect(whatItSays(citationIdentifierTestID('cycle-length'))).toContain(
+          '10.1002/ijgo.12666',
+        );
+        // What the drawing of this page wrote under the cycle length, before the arithmetic cited it.
+        expect(whatItSays(figuresScreenTestID)).not.toContain('The code cites none');
+      },
+    );
+
+    and('she is told every figure is quoted in the words the paper reports it in', () => {
+      expect(whatItSays(figuresQuotedTestID)).toBe(
+        'Each figure is quoted in the words the paper reports it in, so you can check it rather than trust it.',
+      );
+    });
+
+    when('the arithmetic is changed to cite another paper, reporting another range', async () => {
+      await app.close();
+      theArithmeticHolds([
+        anotherPaperReportsTheCycleLength,
+        ...theFiguresTheArithmeticShips.slice(1),
+      ]);
+    });
+
+    and('she opens the page again', async () => {
+      app = await sheOpens(theFiguresPage);
+    });
+
+    then(
+      'she reads the new range and the new paper, because the page quotes the arithmetic and keeps no copy of it',
+      () => {
+        expect(whatItSays(citationFigureTestID('cycle-length'))).toBe('20 to 41 days');
+        expect(whatItSays(citationPaperTestID('cycle-length'))).toBe(
+          anotherPaperReportsTheCycleLength.citation.source,
+        );
+        expect(whatItSays(figuresScreenTestID)).not.toContain('24 to 38 days');
+      },
+    );
+
+    when('the arithmetic is put back', async () => {
+      await app.close();
+      theArithmeticHolds(theFiguresTheArithmeticShips);
+
+      expect(publishedFigures).toEqual(theFiguresTheArithmeticShips);
+    });
+
+    and('she opens Emi again', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she presses the way to where these figures come from', async () => {
+      await shePresses(homeFiguresPressTestID);
+    });
+
+    and('she presses the way back', async () => {
+      await shePresses(figuresBackTestID);
+    });
+
+    then('she is on the screen she opened, reading her three numbers again', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(whatItSays(herNumberTestID('cycle-length'))).toBe(herCycleLengthOnTheScreenSheOpened);
+      expect(screen.getByTestId(homeNumbersTestID)).toBeTruthy();
+    });
   });
 });
 

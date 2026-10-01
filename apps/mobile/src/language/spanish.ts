@@ -72,6 +72,14 @@ export const spanish: CatalogueIn<'es'> = {
   'cycle.day.cycleDay': 'día {cycle} del ciclo',
   'cycle.day.expected': 'se espera tu periodo',
   'cycle.day.notYet': 'todavía no, este día no ha ocurrido',
+  'cycle.figures.back': 'Atrás',
+  'cycle.figures.cycleLength': 'Duración del ciclo',
+  'cycle.figures.cycleLengthVariation': 'Variación de la duración del ciclo',
+  'cycle.figures.periodDuration': 'Duración de la regla',
+  'cycle.figures.printed': 'Cada estudio se nombra como lo imprime su revista.',
+  'cycle.figures.quoted':
+    'Cada cifra se cita con las palabras del estudio que la informa, para que puedas comprobarla en vez de creerla.',
+  'cycle.figures.title': 'De dónde vienen estas cifras',
   'cycle.noRing.line': 'El anillo necesita un periodo. Registra un día en que sangraste y aparece.',
   'cycle.noRing.title': 'Todavía no hay nada que dibujar',
   'cycle.phaseLine.day': 'Día {day}',
@@ -208,6 +216,7 @@ export const spanish: CatalogueIn<'es'> = {
   'home.numbers.line':
     'La cifra publicada es la que informa el estudio, y el estudio está a un toque.',
   'home.numbers.periodDuration': 'Último periodo',
+  'home.numbers.press': 'De dónde vienen estas cifras',
   'home.numbers.published': 'Publicado',
   'home.numbers.range': 'de {low} a {high}',
   'home.numbers.upTo': 'hasta {days}',

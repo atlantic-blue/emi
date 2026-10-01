@@ -20,7 +20,11 @@ import {
   measuredRowTestID,
   publishedNumberTestID,
 } from '../../src/features/home/MeasuredRow';
-import { homeFiguresLineTestID, homeScreenTestID } from '../../src/features/home/HomeScreen';
+import {
+  homeFiguresLineTestID,
+  homeFiguresPressTestID,
+  homeScreenTestID,
+} from '../../src/features/home/HomeScreen';
 import { wordKeys } from '../../src/language';
 import { english } from '../../src/language/english';
 import { russian } from '../../src/language/russian';
@@ -110,7 +114,7 @@ const theLargestAWordMayBeDrawn = 14;
  *
  * A part with nothing under it is a part another step owns, named with the step that owns it. The
  * drawing is a whole page and this step builds a section of one, so the header and the way back
- * belong to feature 15 and the press belongs to step 18.3. The list shortens as those steps land.
+ * belong to feature 15. The list shortens as those steps land.
  */
 interface PartOfTheDrawing {
   readonly name: string;
@@ -125,7 +129,7 @@ const theDrawingPlaces: readonly PartOfTheDrawing[] = [
   { name: 'TextLink', builtUnder: [], ownedBy: 'the word Today in the header, feature 15 step 1' },
   { name: 'MeasuredRow', builtUnder: [homeNumbersTestID] },
   { name: 'Text', builtUnder: [homeFiguresLineTestID] },
-  { name: 'TextLink', builtUnder: [], ownedBy: 'the press to the figures page, step 18.3' },
+  { name: 'TextLink', builtUnder: [homeFiguresPressTestID] },
   { name: 'BottomNavigation', builtUnder: [tabTestID('index')] },
   { name: 'BottomNavigation', builtUnder: [tabTestID('log/index')] },
   { name: 'BottomNavigation', builtUnder: [tabTestID('history')] },
@@ -283,7 +287,7 @@ describe('she reads her three cycle numbers beside the published figures', () =>
 
     it('draws every part of the drawing this step builds, in the order the drawing places them', () => {
       expect(partsMissing(thePartsThisStepAnswersFor, theIdentifiersDrawn())).toEqual([]);
-      expect(thePartsThisStepAnswersFor).toHaveLength(6);
+      expect(thePartsThisStepAnswersFor).toHaveLength(7);
     });
 
     it('answers for nothing else of the drawing yet, and names each part it leaves to another step', () => {
@@ -299,7 +303,6 @@ describe('she reads her three cycle numbers beside the published figures', () =>
         'the header, feature 15 step 1',
         'the way back in the header, feature 15 step 1',
         'the word Today in the header, feature 15 step 1',
-        'the press to the figures page, step 18.3',
       ]);
     });
   });

@@ -205,6 +205,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
         name={recorded.name}
         numbers={herNumbers(cycles, forecast)}
         onExport={() => undefined}
+        onFigures={() => undefined}
         onLogPain={() => undefined}
         onPeriod={() => undefined}
         onSymptoms={() => undefined}

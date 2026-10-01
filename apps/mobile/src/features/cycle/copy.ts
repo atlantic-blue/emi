@@ -1,3 +1,4 @@
+import type { PublishedMeasurement } from '@emi/cycle';
 import type { PhaseName, RingGeometry } from '@emi/tokens';
 
 import { type WordKey, words } from '../../language';
@@ -104,3 +105,23 @@ export function herDayLabel(day: HerDay, today: string): string {
 export function aDayOutOfReachLabel(day: HerDay, today: string): string {
   return [herDayLabel(day, today), words('cycle.day.notYet')].join(', ');
 }
+
+/**
+ * The words of the page that says where each published figure comes from.
+ *
+ * The figure itself is worded by the same function the section on the screen she opens uses, so
+ * the two places she meets a published number say it in one voice. Nothing here holds a number.
+ */
+export const figuresCopy = {
+  title: words('cycle.figures.title'),
+  back: words('cycle.figures.back'),
+  quoted: words('cycle.figures.quoted'),
+  printed: words('cycle.figures.printed'),
+} as const;
+
+/** What each published figure measures, named on the row that quotes it. */
+export const publishedMeasurementName: Readonly<Record<PublishedMeasurement, string>> = {
+  'cycle-length': words('cycle.figures.cycleLength'),
+  'cycle-length-variation': words('cycle.figures.cycleLengthVariation'),
+  'period-duration': words('cycle.figures.periodDuration'),
+};

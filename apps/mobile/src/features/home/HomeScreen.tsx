@@ -53,6 +53,7 @@ export const homePainLineTestID = 'home-pain-line';
 export const homeFertileWindowTestID = 'home-fertile-window';
 export const homeDoctorRecordTestID = 'home-doctor-record';
 export const homeFiguresLineTestID = 'home-figures-line';
+export const homeFiguresPressTestID = 'home-figures-press';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -99,6 +100,11 @@ interface Props {
    * filled with somebody else's numbers.
    */
   readonly numbers?: readonly MeasuredNumber[];
+  /**
+   * The way to the page that says where each published figure comes from. Nothing at all where
+   * the caller offers none, and then the press under the line is not drawn either.
+   */
+  readonly onFigures?: () => void;
   /** The way into the log, which the round action under the ring takes her by. */
   readonly onPeriod: () => void;
   /** The second round action. It reaches the log too until step 5 points it at the groups. */
@@ -123,6 +129,7 @@ export function HomeScreen({
   feeling,
   goals,
   numbers,
+  onFigures,
   onPeriod,
   onSymptoms,
   onLogPain,
@@ -197,6 +204,16 @@ export function HomeScreen({
             <Text style={styles.figuresLine} testID={homeFiguresLineTestID}>
               {homeCopy.numbers.line}
             </Text>
+            {onFigures === undefined ? null : (
+              <Pressable
+                accessibilityRole="button"
+                onPress={onFigures}
+                style={styles.figuresPress}
+                testID={homeFiguresPressTestID}
+              >
+                <Text style={styles.figuresPressLabel}>{homeCopy.numbers.press}</Text>
+              </Pressable>
+            )}
           </View>
         )}
 
@@ -236,11 +253,23 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceXl,
   },
   // The line sits under the rows rather than beside them, and it says where the published figure
-  // came from. Step 18.3 builds the page it names and makes this line the way to it.
+  // came from. The press under it is the way to the page that answers that.
   figuresLine: {
     color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
+  },
+  // The press sits under the line that names the paper, which is where the drawing of this screen
+  // places it, and it is left aligned with the rows rather than centred like the ways off the screen.
+  figuresPress: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+  },
+  figuresPressLabel: {
+    color: colour.primary,
+    ...textStyle('body-sm'),
   },
   forecast: { marginTop: space.spaceLg },
   // The row sits between the line and the ring, which is where the drawing of this screen places
