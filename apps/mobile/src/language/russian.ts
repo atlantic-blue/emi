@@ -226,6 +226,12 @@ export const russian: CatalogueIn<'ru'> = {
   'home.numbers.range': 'от {low} до {high}',
   'home.numbers.upTo': 'до {days}',
   'home.painLine': 'Вы сказали, что эти дни тяжёлые. Отметьте боль первой.',
+  'home.patterns.beforePeriod': 'примерно за {days} до месячных',
+  'home.patterns.card': '{name}, {when}',
+  'home.patterns.line':
+    'Симптом, который вы отметили один или два раза, не закономерность, и Emi его так не называет.',
+  'home.patterns.onCycleDay': 'около дня {day} вашего цикла',
+  'home.patterns.press': 'Что возвращается, полностью',
   'home.roundAction.period': 'Месячные',
   'home.roundAction.symptoms': 'Симптомы',
   // График её последних полных циклов на опубликованном диапазоне. Подпись и фраза под ним

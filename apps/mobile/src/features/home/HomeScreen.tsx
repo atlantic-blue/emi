@@ -20,10 +20,12 @@ import { PhaseLine } from './PhaseLine';
 import { RoundAction, type RoundActionName } from './RoundAction';
 import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
+import { PatternCards } from './PatternCard';
 import { cyclesOutsideReads, homeCopy } from './copy';
 import type { ReadCycle } from '../cycle/cyclesRead';
 import type { MeasuredNumber } from './herNumbers';
 import { type TrendCycle, cyclesOutsideTheBand } from './herTrend';
+import type { ReadPattern } from '../cycle/patternsRead';
 import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
 
@@ -61,6 +63,8 @@ export const homeFiguresPressTestID = 'home-figures-press';
 export const homeCyclesLineTestID = 'home-cycles-line';
 export const homeTrendCountTestID = 'home-trend-count';
 export const homeTrendPressTestID = 'home-trend-press';
+export const homePatternsLineTestID = 'home-patterns-line';
+export const homePatternsPressTestID = 'home-patterns-press';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -120,6 +124,11 @@ interface Props {
    */
   readonly trend?: readonly TrendCycle[];
   /**
+   * The symptoms that came back, most repeated first, and nothing at all where none of them came
+   * back in enough of her cycles. Emi holds no sample data, so a section it cannot fill is absent.
+   */
+  readonly patterns?: readonly ReadPattern[];
+  /**
    * The way to the page that already lists those same cycles in full. The link under the chart
    * is not drawn where the caller offers none.
    */
@@ -141,6 +150,13 @@ interface Props {
   readonly onOpenMonth?: (day: string) => void;
   /** The way to one cycle on the Insights screen, which a strip takes her by. */
   readonly onOpenCycle?: (startedOn: string) => void;
+  /** The way to one symptom on the Insights screen, which a card takes her by. */
+  readonly onOpenPattern?: (slug: string) => void;
+  /**
+   * The way to every symptom that came back, in full. The link under the cards is not drawn where
+   * the caller offers none.
+   */
+  readonly onOpenPatterns?: () => void;
 }
 
 export function HomeScreen({
@@ -157,6 +173,7 @@ export function HomeScreen({
   numbers,
   cycles,
   trend,
+  patterns,
   onFigures,
   onOpenCycles,
   onPeriod,
@@ -165,6 +182,8 @@ export function HomeScreen({
   onExport,
   onOpenMonth,
   onOpenCycle,
+  onOpenPattern,
+  onOpenPatterns,
 }: Props): ReactNode {
   const marked = whatSheMarkedOn(loggedToday);
 
@@ -275,6 +294,25 @@ export function HomeScreen({
           </View>
         )}
 
+        {patterns === undefined || onOpenPattern === undefined ? null : (
+          <View style={styles.patterns}>
+            <PatternCards onOpenPattern={onOpenPattern} patterns={patterns} />
+            <Text style={styles.patternsLine} testID={homePatternsLineTestID}>
+              {homeCopy.patterns.line}
+            </Text>
+            {onOpenPatterns === undefined ? null : (
+              <Pressable
+                accessibilityRole="button"
+                onPress={onOpenPatterns}
+                style={styles.patternsPress}
+                testID={homePatternsPressTestID}
+              >
+                <Text style={styles.patternsPressLabel}>{homeCopy.patterns.press}</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+
         {theRecordForHerDoctorIsOffered(goals) ? (
           <Pressable
             accessibilityRole="button"
@@ -324,6 +362,28 @@ const styles = StyleSheet.create({
   // Her trend sits under the strips it was read from, because a strip is one cycle and the chart
   // is the shape of six, and she reads the one she is in before the shape of the six behind it.
   trend: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.spaceLg },
+  // What came back sits under the shape of her six cycles, because the chart is the measurement
+  // and a card is what Emi makes of it, and she reads the measurement first.
+  patterns: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.spaceLg },
+  // The line sits under the cards and says what Emi refuses to call a pattern, so the rule she is
+  // reading the cards against is on the screen with them.
+  patternsLine: {
+    color: colour.onSurfaceVariant,
+    ...textStyle('body-sm'),
+    marginTop: space.spaceSm,
+  },
+  // The link sits under that line, left aligned with the cards rather than centred like the ways
+  // off the screen, which is where the drawing of this screen places it.
+  patternsPress: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+  },
+  patternsPressLabel: {
+    color: colour.primary,
+    ...textStyle('body-sm'),
+  },
   trendCount: {
     color: colour.onSurface,
     ...textStyle('body-sm'),
