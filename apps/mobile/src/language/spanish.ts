@@ -225,6 +225,15 @@ export const spanish: CatalogueIn<'es'> = {
   'home.painLine': 'Dijiste que estos días son difíciles. Registra el dolor primero.',
   'home.roundAction.period': 'Regla',
   'home.roundAction.symptoms': 'Síntomas',
+  // El gráfico de sus últimos ciclos completos sobre el rango publicado. El pie y la frase debajo
+  // cuentan los ciclos que dibujó el gráfico, así que una mujer con tres nunca lee seis.
+  'home.trend.allInside': 'Todos tus últimos {cycles} quedaron dentro de la banda.',
+  'home.trend.caption': 'Tus últimos {cycles}. La banda es el rango publicado.',
+  'home.trend.cycleCount': { one: '{count} ciclo completo', other: '{count} ciclos completos' },
+  'home.trend.outside': '{outside} de tus últimos {cycles} quedaron fuera de la banda.',
+  'home.trend.press': 'Los mismos ciclos, completos',
+  'home.trend.spoken':
+    'Tus últimos {cycles}, de {shortest} a {longest} días, sobre el rango publicado de {low} a {high} días.',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Cancelar',

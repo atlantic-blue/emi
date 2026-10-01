@@ -21,6 +21,7 @@ import {
 } from '../../features/log/askedGroup';
 import { HomeScreen } from '../../features/home/HomeScreen';
 import { herCycles } from '../../features/home/herCycles';
+import { type TrendCycle, herTrend } from '../../features/home/herTrend';
 import { type MeasuredNumber, herNumbers } from '../../features/home/herNumbers';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
@@ -48,6 +49,8 @@ interface Shown {
   readonly numbers: readonly MeasuredNumber[] | undefined;
   /** The cycles she reads as strips, or nothing at all until her days make one. */
   readonly cycles: readonly ReadCycle[] | undefined;
+  /** The complete cycles she reads as a shape, or nothing until two of them are complete. */
+  readonly trend: readonly TrendCycle[] | undefined;
   /** Today as she left it, picked out of the days already read, or nothing where she wrote none. */
   readonly loggedToday: DayRecord | undefined;
 }
@@ -90,6 +93,8 @@ function whatSheIsLookingAt(
     numbers: herNumbers(cycles, forecast),
     // Read off the rows the ring was drawn from, so a strip and the ring stand on one reading.
     cycles: herCycles(readBack),
+    // The same read again, so the points, the strips and the ring cannot disagree about a cycle.
+    trend: herTrend(readBack),
     cycleLengthDays: stated,
     name: herAnswers?.name,
     regularity: herAnswers?.regularity,
@@ -141,12 +146,14 @@ export default function HomeRoute(): ReactNode {
       onFigures={() => router.push('/cycles/figures')}
       onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
       onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}
+      onOpenCycles={() => router.push('/history')}
       onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
       onPeriod={() => router.push('/log')}
       onSymptoms={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
       regularity={shown.regularity}
       ring={shown.ring}
       today={today}
+      trend={shown.trend}
       week={shown.week}
     />
   );

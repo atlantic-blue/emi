@@ -228,6 +228,19 @@ export const russian: CatalogueIn<'ru'> = {
   'home.painLine': 'Вы сказали, что эти дни тяжёлые. Отметьте боль первой.',
   'home.roundAction.period': 'Месячные',
   'home.roundAction.symptoms': 'Симптомы',
+  // График её последних полных циклов на опубликованном диапазоне. Подпись и фраза под ним
+  // считают циклы, которые нарисовал график, поэтому женщина с тремя никогда не прочитает шесть.
+  'home.trend.allInside': 'Все ваши последние {cycles} остались внутри полосы.',
+  'home.trend.caption': 'Ваши последние {cycles}. Полоса показывает опубликованный диапазон.',
+  'home.trend.cycleCount': {
+    one: '{count} полный цикл',
+    few: '{count} полных цикла',
+    many: '{count} полных циклов',
+  },
+  'home.trend.outside': '{outside} из ваших последних {cycles} вышли за пределы полосы.',
+  'home.trend.press': 'Те же циклы, полностью',
+  'home.trend.spoken':
+    'Ваши последние {cycles}, от {shortest} до {longest} дней, на опубликованном диапазоне от {low} до {high} дней.',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Отмена',

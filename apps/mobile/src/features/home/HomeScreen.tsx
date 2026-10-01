@@ -13,15 +13,17 @@ import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 import { whatSheMarkedOn } from '../log/copy';
 import { CycleStrips } from './CycleStrip';
+import { CycleTrend } from './CycleTrend';
 import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
 import { PhaseLine } from './PhaseLine';
 import { RoundAction, type RoundActionName } from './RoundAction';
 import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
-import { homeCopy } from './copy';
+import { cyclesOutsideReads, homeCopy } from './copy';
 import type { ReadCycle } from '../cycle/cyclesRead';
 import type { MeasuredNumber } from './herNumbers';
+import { type TrendCycle, cyclesOutsideTheBand } from './herTrend';
 import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
 
@@ -57,6 +59,8 @@ export const homeDoctorRecordTestID = 'home-doctor-record';
 export const homeFiguresLineTestID = 'home-figures-line';
 export const homeFiguresPressTestID = 'home-figures-press';
 export const homeCyclesLineTestID = 'home-cycles-line';
+export const homeTrendCountTestID = 'home-trend-count';
+export const homeTrendPressTestID = 'home-trend-press';
 
 interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
@@ -110,6 +114,17 @@ interface Props {
    */
   readonly cycles?: readonly ReadCycle[];
   /**
+   * Her last complete cycles, oldest first, and nothing at all before two of them are complete.
+   * They are the six cycles the forecast takes its median over, so the shape she reads and the
+   * range she is given cannot stand on two different readings of her days.
+   */
+  readonly trend?: readonly TrendCycle[];
+  /**
+   * The way to the page that already lists those same cycles in full. The link under the chart
+   * is not drawn where the caller offers none.
+   */
+  readonly onOpenCycles?: () => void;
+  /**
    * The way to the page that says where each published figure comes from. Nothing at all where
    * the caller offers none, and then the press under the line is not drawn either.
    */
@@ -141,7 +156,9 @@ export function HomeScreen({
   goals,
   numbers,
   cycles,
+  trend,
   onFigures,
+  onOpenCycles,
   onPeriod,
   onSymptoms,
   onLogPain,
@@ -239,6 +256,25 @@ export function HomeScreen({
           </View>
         )}
 
+        {trend === undefined ? null : (
+          <View style={styles.trend}>
+            <CycleTrend cycles={trend} />
+            <Text style={styles.trendCount} testID={homeTrendCountTestID}>
+              {cyclesOutsideReads(cyclesOutsideTheBand(trend), trend.length)}
+            </Text>
+            {onOpenCycles === undefined ? null : (
+              <Pressable
+                accessibilityRole="button"
+                onPress={onOpenCycles}
+                style={styles.trendPress}
+                testID={homeTrendPressTestID}
+              >
+                <Text style={styles.trendPressLabel}>{homeCopy.trend.press}</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+
         {theRecordForHerDoctorIsOffered(goals) ? (
           <Pressable
             accessibilityRole="button"
@@ -284,6 +320,26 @@ const styles = StyleSheet.create({
     color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
+  },
+  // Her trend sits under the strips it was read from, because a strip is one cycle and the chart
+  // is the shape of six, and she reads the one she is in before the shape of the six behind it.
+  trend: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.spaceLg },
+  trendCount: {
+    color: colour.onSurface,
+    ...textStyle('body-sm'),
+    marginTop: space.spaceSm,
+  },
+  // The link sits under the sentence, where the drawing of this screen places it, left aligned
+  // with the chart rather than centred like the ways off the screen.
+  trendPress: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+  },
+  trendPressLabel: {
+    color: colour.primary,
+    ...textStyle('body-sm'),
   },
   figuresLine: {
     color: colour.onSurfaceVariant,
