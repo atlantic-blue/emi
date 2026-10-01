@@ -35,10 +35,7 @@ import {
   ringTrackTestID,
 } from '../apps/mobile/src/components/CycleRing';
 import { cycleCopy, ringSpokenLabel } from '../apps/mobile/src/features/cycle/copy';
-import {
-  learningStatedLengthTestID,
-  learningTestID,
-} from '../apps/mobile/src/features/forecast/Learning';
+import { learningStatedLengthTestID } from '../apps/mobile/src/features/forecast/Learning';
 import { type CycleRow, listCycles } from '../apps/mobile/src/data/cycleRepository';
 import type { Database } from '../apps/mobile/src/data/database';
 import {
@@ -207,8 +204,13 @@ import {
 import { whatEmiDoesActionTestID } from '../apps/mobile/src/features/onboarding/WhatEmiDoesWithIt';
 import {
   sheAnswersEveryQuestion,
+  sheAnswersEveryQuestionWithNoDate,
   sheReachesTheLastPeriodQuestion,
 } from '../apps/mobile/tests/fixtures/theFirstRun';
+import {
+  thePartsOfTheDayOneDrawing,
+  thePartsTheDayOneDrawingNames,
+} from '../apps/mobile/tests/fixtures/theDrawingOfDayOne';
 import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
 import {
   aBleedingDay,
@@ -341,12 +343,7 @@ import {
   theMarkOnTheDate,
   theStripSheReads,
 } from '../apps/mobile/tests/fixtures/theWeekSheOpensWith';
-import {
-  type Part,
-  partsMissing,
-  theIdentifiersDrawn,
-  thePartsOfTheMockup,
-} from '../apps/mobile/tests/fixtures/theMockupScreen';
+import { partsMissing, theIdentifiersDrawn } from '../apps/mobile/tests/fixtures/theMockupScreen';
 import {
   type Measured,
   everySectionMeasured,
@@ -593,24 +590,6 @@ async function sheAnswersEveryQuestionOfTheFirstRun(): Promise<void> {
     periodStartedOn: herPeriodStarted,
     cycleLengthDays: sheSaysHerCycleRuns,
   });
-}
-
-/** The drawing of the screen she opens on day one, before she recorded anything at all. */
-const theDrawingOfDayOne = 'todayEmpty';
-
-/**
- * What each part of the drawing of day one is built under, in the order the drawing places them.
- * Every part of it is built, so nothing here is owed to a step that has not run yet.
- */
-function theDayOneDrawingPlaces(): Part[] {
-  return [
-    { builtUnder: [homeHeaderTestID], name: 'HomeHeader' },
-    { builtUnder: [homeNoRingTitleTestID], name: 'Text' },
-    { builtUnder: [homeNoRingLineTestID], name: 'Text' },
-    { builtUnder: [learningTestID], name: 'Learning' },
-    { builtUnder: [homeLogTodayTestID], name: 'PrimaryButton' },
-    ...tabs.map((tab) => ({ builtUnder: [tabTestID(tab.name)], name: 'BottomNavigation' })),
-  ];
 }
 
 /** What the ring says about the day she is on, read off the ring and not off the arithmetic. */
@@ -3949,9 +3928,7 @@ defineFeature(feature, (test) => {
     then('there is no ring, and nothing at all is drawn in place of one', () => {
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
-      expect(thePartsOfTheMockup(theDrawingOfDayOne).map((part) => part.name)).not.toContain(
-        'CycleRing',
-      );
+      expect(thePartsTheDayOneDrawingNames().map((part) => part.name)).not.toContain('CycleRing');
     });
 
     and('a title says there is nothing to draw yet', () => {
@@ -3978,9 +3955,9 @@ defineFeature(feature, (test) => {
     });
 
     and('that is the drawing of day one, part for part, in the order it places them', () => {
-      expect(partsMissing(theDayOneDrawingPlaces(), theIdentifiersDrawn())).toEqual([]);
-      expect(thePartsOfTheMockup(theDrawingOfDayOne).map((part) => part.name)).toEqual(
-        theDayOneDrawingPlaces().map((part) => part.name),
+      expect(partsMissing(thePartsOfTheDayOneDrawing(), theIdentifiersDrawn())).toEqual([]);
+      expect(thePartsTheDayOneDrawingNames().map((part) => part.name)).toEqual(
+        thePartsOfTheDayOneDrawing().map((part) => part.name),
       );
     });
 
@@ -4392,6 +4369,100 @@ defineFeature(feature, (test) => {
     then('she is reading what Emi promises her', () => {
       expect(app.pathname()).toBe('/onboarding/the-promise');
       expect(screen.getByTestId(thePromiseTestID)).toBeTruthy();
+    });
+  });
+
+  test('SCREEN-1, she completes the first run with no date, logs a period, and reads a ring', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
+    });
+
+    and(
+      'she answers every question of the first run, and says she does not remember her last period',
+      async () => {
+        await sheAnswersEveryQuestionWithNoDate({ cycleLengthDays: sheSaysHerCycleRuns });
+
+        expect(app.pathname()).toBe('/onboarding/hold');
+      },
+    );
+
+    and('she presses and holds the ring', async () => {
+      await sheHoldsTheRing();
+    });
+
+    then('she is looking at the screen that says what the ring needs', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(whatItSays(homeNoRingTitleTestID)).toBe(cycleCopy.noRing.title);
+      expect(whatItSays(homeNoRingLineTestID)).toBe(cycleCopy.noRing.line);
+    });
+
+    and('there is no ring, and nothing at all is drawn in place of one', () => {
+      expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
+      expect(thePartsTheDayOneDrawingNames().map((part) => part.name)).not.toContain('CycleRing');
+    });
+
+    and('the card counts the cycle length she gave, and no length Emi picked', () => {
+      const said = whatItSays(learningStatedLengthTestID);
+
+      expect(said).toBe(statedLengthSentence(sheSaysHerCycleRuns));
+      expect(said).not.toContain(String(defaultCycleLengthDays));
+    });
+
+    and('her phone holds no day at all', () => {
+      expect(listDayLogs(herDatabase())).toEqual([]);
+      expect(listCycles(herDatabase())).toEqual([]);
+    });
+
+    and('that is the drawing of day one, part for part, in the order it places them', () => {
+      expect(partsMissing(thePartsOfTheDayOneDrawing(), theIdentifiersDrawn())).toEqual([]);
+      expect(thePartsTheDayOneDrawingNames().map((part) => part.name)).toEqual(
+        thePartsOfTheDayOneDrawing().map((part) => part.name),
+      );
+    });
+
+    when('she presses the button that offers to log today', async () => {
+      await shePresses(homeLogTodayTestID);
+
+      expect(app.pathname()).toBe('/log');
+      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
+    });
+
+    and('she says her period came today', async () => {
+      await shePresses(flowOptionTestID('medium'));
+    });
+
+    and('she presses the way back', async () => {
+      await shePresses(logFlowDoneTestID);
+    });
+
+    then('she is reading a ring drawn from the day she logged', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
+      expect(theCycleStartsHerPhoneHolds()).toEqual([today]);
+    });
+
+    and('the ring says she is on the first day of a cycle of the length she gave', () => {
+      expect(theRingSays()).toBe(ringSpokenLabel(1, sheSaysHerCycleRuns, phaseLabel.period));
+    });
+
+    and('nothing offers to log today any more', () => {
+      for (const gone of [homeLogTodayTestID, homeNoRingTitleTestID, homeNoRingLineTestID]) {
+        expect(screen.queryByTestId(gone)).toBeNull();
+      }
     });
   });
 });

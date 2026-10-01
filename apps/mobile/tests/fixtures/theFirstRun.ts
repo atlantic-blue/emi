@@ -8,6 +8,7 @@ import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { focusTestID } from '../../src/features/onboarding/Focus';
@@ -48,14 +49,11 @@ export interface HerAnswers {
 }
 
 /**
- * Every question of the first run, answered, which leaves her looking at the hold.
- *
- * The first run grows a screen at a time through feature 11, so the walk lives here rather than in
- * each test that has to get past it. A test about the questions themselves drives them itself.
- *
- * A question she is not given an answer for is skipped, because only the last period is required
- * and a walk that presses on without answering would be left standing on the screen.
+ * Her answers when she cannot remember when her last period started. Every other question is the
+ * same question she is asked either way, so this is her answers without the two days.
  */
+export type HerAnswersWithNoDate = Omit<HerAnswers, 'periodBeforeStartedOn' | 'periodStartedOn'>;
+
 /**
  * The welcome and the two questions she may pass, pressed past, which leaves her looking at the
  * question about when her last period started.
@@ -69,7 +67,10 @@ export async function sheReachesTheLastPeriodQuestion(): Promise<void> {
   await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
 }
 
-export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void> {
+/** The welcome, her name and the year she was born, which leaves her at the last period question. */
+async function sheAnswersWhatComesBeforeHerLastPeriod(
+  answers: HerAnswersWithNoDate,
+): Promise<void> {
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));
 
   if (answers.name === undefined) {
@@ -85,17 +86,14 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
     await fireEvent.press(screen.getByTestId(yearTestID(answers.birthYear)));
     await fireEvent.press(screen.getByTestId(onboardingActionTestID));
   }
+}
 
-  await fireEvent.press(screen.getByTestId(dayTestID(answers.periodStartedOn)));
-  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
-
-  if (answers.periodBeforeStartedOn === undefined) {
-    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
-  } else {
-    await fireEvent.press(screen.getByTestId(dayTestID(answers.periodBeforeStartedOn)));
-    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
-  }
-
+/**
+ * Every question from the cycle length onwards, answered, and the three screens she reads after
+ * them. It leaves her looking at the hold, whichever way she got past the question about her last
+ * period.
+ */
+async function sheAnswersWhatComesAfterHerLastPeriod(answers: HerAnswersWithNoDate): Promise<void> {
   const asked = answers.cycleLengthDays ?? defaultCycleLengthDays;
   for (let pressed = defaultCycleLengthDays; pressed < asked; pressed += 1) {
     await fireEvent.press(screen.getByTestId(longerTestID));
@@ -164,6 +162,44 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
   // it and the hold: the forecast, the promise, and what Emi does with what she said.
   await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
   await sheReadsThePromise();
+}
+
+/**
+ * Every question of the first run, answered, which leaves her looking at the hold.
+ *
+ * The first run grows a screen at a time through feature 11, so the walk lives here rather than in
+ * each test that has to get past it. A test about the questions themselves drives them itself.
+ *
+ * A question she is not given an answer for is skipped, because only the last period is required
+ * and a walk that presses on without answering would be left standing on the screen.
+ */
+export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void> {
+  await sheAnswersWhatComesBeforeHerLastPeriod(answers);
+
+  await fireEvent.press(screen.getByTestId(dayTestID(answers.periodStartedOn)));
+  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+
+  if (answers.periodBeforeStartedOn === undefined) {
+    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+  } else {
+    await fireEvent.press(screen.getByTestId(dayTestID(answers.periodBeforeStartedOn)));
+    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  }
+
+  await sheAnswersWhatComesAfterHerLastPeriod(answers);
+}
+
+/**
+ * The same walk for a woman who cannot remember when her last period started. She answers every
+ * other question and takes the way past that one, which passes the period before with it, so the
+ * walk never meets that question at all. It leaves her looking at the hold, with no day to write.
+ */
+export async function sheAnswersEveryQuestionWithNoDate(
+  answers: HerAnswersWithNoDate = {},
+): Promise<void> {
+  await sheAnswersWhatComesBeforeHerLastPeriod(answers);
+  await fireEvent.press(screen.getByTestId(onboardingWayPastTestID));
+  await sheAnswersWhatComesAfterHerLastPeriod(answers);
 }
 
 /**
