@@ -669,6 +669,11 @@ function whatItSays(testID: string): string {
   return textIn(screen.getByTestId(testID)).join(' ');
 }
 
+/** Everything one waiting section says, both lines of it, read as one line. */
+function whatAWaitingSectionSays(section: WaitingDrawn): string {
+  return `${section.needs} ${section.read ?? ''}`;
+}
+
 /** How many of her cycles are complete, read out of her phone and never off the screen. */
 function herCompleteCycles(): number {
   return listCycles(herDatabase()).filter((cycle) => cycle.lengthDays !== null).length;
@@ -3745,12 +3750,11 @@ defineFeature(feature, (test) => {
       );
     });
 
-    and('each one says how many of her cycles are complete', () => {
+    and('where a section counts her own cycles, it names the count her phone holds', () => {
       const complete = String(herCompleteCycles());
+      const counting = said.filter((each) => whatAWaitingSectionSays(each).includes(complete));
 
-      for (const section of said) {
-        expect(`${section.needs} ${section.read ?? ''}`).toContain(complete);
-      }
+      expect(counting.map((each) => each.section)).toEqual(['cycles', 'patterns']);
     });
 
     and('every number in the three is a count read off her phone or a threshold Emi states', () => {
@@ -3760,9 +3764,7 @@ defineFeature(feature, (test) => {
         String(cyclesBeforeAPattern),
       ];
       const numbers = said.flatMap((section) =>
-        [...`${section.needs} ${section.read ?? ''}`.matchAll(/\d+(?:\.\d+)?/g)].map(
-          ([found]) => found,
-        ),
+        [...whatAWaitingSectionSays(section).matchAll(/\d+(?:\.\d+)?/g)].map(([found]) => found),
       );
 
       expect(numbers.filter((number) => !hers.includes(number))).toEqual([]);
