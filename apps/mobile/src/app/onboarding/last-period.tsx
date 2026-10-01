@@ -4,6 +4,10 @@ import type { ReactNode } from 'react';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { LastPeriod } from '../../features/onboarding/LastPeriod';
 
+/**
+ * Every day of the question about the period before is measured from the day she gives here, so a
+ * woman who gives none is sent round that question to the one about how long her cycle runs.
+ */
 export default function LastPeriodRoute(): ReactNode {
   const router = useRouter();
   const { periodStartedOn, setPeriodStartedOn } = useFirstRun();
@@ -15,6 +19,7 @@ export default function LastPeriodRoute(): ReactNode {
       onBack={() => router.back()}
       onChoose={setPeriodStartedOn}
       onContinue={() => router.push('/onboarding/period-before')}
+      onWayPast={() => router.push('/onboarding/cycle-length')}
     />
   );
 }

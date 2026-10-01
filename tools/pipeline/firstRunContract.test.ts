@@ -61,6 +61,14 @@ describe('the contract for the first run names the hold as the only write', () =
       }
     });
 
+    it('gives every question a way past, with no exception for the last period', () => {
+      const said = wordsOf(sectionFor(contractSectionsIn(contracts), 'SCREEN-1') as string);
+
+      expect(said).toContain('A question with no Skip.');
+      expect(said).not.toContain('other than the last period');
+      expect(said).not.toContain('Only the last period is required');
+    });
+
     it('asks for no account, no email address and no password, as it always did', () => {
       const said = wordsOf(sectionFor(contractSectionsIn(contracts), 'SCREEN-1') as string);
 

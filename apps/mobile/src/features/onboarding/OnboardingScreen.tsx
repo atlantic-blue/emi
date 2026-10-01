@@ -3,7 +3,7 @@ import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { PrimaryButton } from '../../components/Button';
+import { PrimaryButton, TextLink } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { ProgressBar } from '../../components/ProgressBar';
 import { Screen } from '../../components/Screen';
@@ -29,6 +29,14 @@ interface Props {
   /** Left out where the way past is the plain one, and then the frame writes its own word. */
   readonly skipLabel?: string;
   /**
+   * Left out where the answer is required, and then no way past is drawn under the body. The Skip
+   * above sits over the question; this one sits under it, where a woman who has read the question
+   * and cannot answer it is looking.
+   */
+  readonly onWayPast?: () => void;
+  /** Left out where the way past is the plain one, and then the frame writes its own word. */
+  readonly wayPastLabel?: string;
+  /**
    * The lines stand above what she is asked rather than under it. A screen whose question is tall
    * enough to fill the glass puts the lines under it out of sight, and a line she has to scroll to
    * reach is a line she reads after she has answered, which is too late for a line about what Emi
@@ -42,6 +50,9 @@ export const onboardingActionTestID = 'onboarding-action';
 export const onboardingProgressTestID = 'onboarding-progress';
 export const onboardingBackTestID = 'onboarding-back';
 export const onboardingSkipTestID = 'onboarding-skip';
+export const onboardingTitleTestID = 'onboarding-title';
+export const onboardingLinesTestID = 'onboarding-lines';
+export const onboardingWayPastTestID = 'onboarding-way-past';
 
 /** Points. The arrow is read at the size the rest of the set is read at. */
 const BACK_MARK_SIZE = 22;
@@ -70,13 +81,15 @@ export function OnboardingScreen({
   onBack,
   onSkip,
   skipLabel,
+  onWayPast,
+  wayPastLabel,
   linesComeFirst = false,
   children,
 }: Props): ReactNode {
   const [lead, ...rest] = lines;
   const said =
     rest.length === 0 ? null : (
-      <Card>
+      <Card testID={onboardingLinesTestID}>
         {rest.map((line, at) => (
           <Text key={line} style={at === 0 ? styles.line : [styles.line, styles.lineAfter]}>
             {line}
@@ -124,7 +137,7 @@ export function OnboardingScreen({
 
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <View>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" style={styles.title} testID={onboardingTitleTestID}>
             {title}
           </Text>
           {lead === undefined ? null : <Text style={styles.lead}>{lead}</Text>}
@@ -136,6 +149,16 @@ export function OnboardingScreen({
 
         {linesComeFirst ? null : said}
       </ScrollView>
+
+      {onWayPast === undefined ? null : (
+        <View style={styles.wayPast}>
+          <TextLink
+            label={wayPastLabel ?? firstRunCopy.skip}
+            onPress={onWayPast}
+            testID={onboardingWayPastTestID}
+          />
+        </View>
+      )}
 
       <View style={styles.footer}>
         <PrimaryButton
@@ -214,6 +237,10 @@ const styles = StyleSheet.create({
     color: colour.onSurfaceVariant,
     ...textStyle('label-md'),
   },
+  // The way past stands outside the scrolling middle, under what she was asked and over the one
+  // thing she can press. A question as tall as a month would otherwise put it below the fold,
+  // which is where a woman who has just found she cannot answer is least likely to look.
+  wayPast: { alignItems: 'center', paddingTop: space.spaceMd },
   title: {
     color: colour.onSurface,
     ...textStyle('headline-lg'),

@@ -92,6 +92,7 @@ const theScreens: readonly Screen[] = [
         onBack={() => undefined}
         onChoose={() => undefined}
         onContinue={() => undefined}
+        onWayPast={() => undefined}
       />
     ),
   },

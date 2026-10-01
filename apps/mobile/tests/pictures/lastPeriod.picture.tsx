@@ -46,6 +46,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
         onBack={() => undefined}
         onChoose={() => undefined}
         onContinue={() => undefined}
+        onWayPast={() => undefined}
       />
     </OnAPhone>,
   );
