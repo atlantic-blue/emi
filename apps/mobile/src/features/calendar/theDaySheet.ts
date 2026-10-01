@@ -1,9 +1,9 @@
 import type { DayRecord } from '@emi/crypto';
-import { type PhaseName, ringGeometry } from '@emi/tokens';
+import type { PhaseName } from '@emi/tokens';
 
 import type { HerDay, HerDaysFrom } from '../cycle/herWeek';
-import { ringInputFor } from '../cycle/ringInput';
 import { whatSheMarkedOn } from '../log/copy';
+import { thePhaseOn } from './herMonthPhases';
 
 /**
  * The day she pressed in the month, as the sheet at the foot reads it back.
@@ -41,19 +41,4 @@ export function whatTheSheetSays(
     ...(phase === undefined ? {} : { phase }),
     ...(logged === undefined ? {} : { logged }),
   };
-}
-
-/**
- * The phase that date fell in. The ring draws the cycle she is standing in, so asking it about an
- * older date is asking what it drew on that date, and the cycles that had not begun by then are
- * the ones it could not have known about.
- */
-function thePhaseOn(from: HerDaysFrom, day: string): PhaseName | undefined {
-  const input = ringInputFor({
-    ...from,
-    cycles: from.cycles.filter((cycle) => cycle.startedOn <= day),
-    today: day,
-  });
-
-  return input === undefined ? undefined : ringGeometry(input).phase;
 }

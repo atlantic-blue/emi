@@ -8,6 +8,7 @@ import { addMonths, dayLabel, monthLabel, startOfMonth } from './days';
 
 export {
   chosenDayMarkTestID,
+  dateDiscTestID,
   dateTestID,
   dayTestID,
   emptyCellTestID,
