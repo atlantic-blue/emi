@@ -535,3 +535,11 @@ Feature: She opens Emi and logs her first period
     And a translucent colour is held to the opaque colour underneath it
     And a colour the prototype paints under the contrast floor records the value Emi builds instead
     And the ink of each phase is readable on the ground the ring writes the phase name on
+
+  Scenario: SCREEN-2, the top wash takes the colours of the phase of today
+    Given the four phases of a cycle, and the wash the design document names for each of them
+    When the wash at the top of the screen is drawn for the phase she is in
+    Then it runs through the colours that phase names, from its own tint down to the ground
+    And each tint fades to nothing, so no phase leaves an edge across the screen
+    And a screen that knows no phase yet draws the soft wash every other screen draws
+    And no colour of a wash is ever drawn as a word, because colour is all it carries

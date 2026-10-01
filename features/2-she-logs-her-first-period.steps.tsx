@@ -13,7 +13,14 @@ import {
   publishedFigures,
   symptomGroups,
 } from '@emi/cycle';
-import { dockPanelTestID, tabTestID } from '@emi/ui';
+import {
+  Wash,
+  dockPanelTestID,
+  tabTestID,
+  washFieldGradientID,
+  washFieldTestID,
+  washTintGradientID,
+} from '@emi/ui';
 import {
   CONTRAST_FLOOR,
   FULL_TURN_DEGREES,
@@ -22,14 +29,20 @@ import {
   type PhaseName,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
+  colours,
   contrastRatio,
+  hasRole,
   phaseLabel,
   phaseNames,
+  washNames,
+  washOfPhase,
+  washStops,
+  washes,
 } from '@emi/tokens';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { AccessibilityInfo, Animated, StyleSheet } from 'react-native';
-import { waitFor, within } from '@testing-library/react-native';
+import { render, waitFor, within } from '@testing-library/react-native';
 
 import {
   cycleRingTestID,
@@ -376,6 +389,12 @@ import {
   prototypeDirectory,
   screenSuffix,
 } from '../tools/pipeline/prototype';
+import {
+  gradientNamed,
+  paintedWith,
+  stopsOf,
+  washColoursOf,
+} from '../apps/mobile/tests/fixtures/theWashOnTheGlass';
 import { thePartsOfTheForecastWithNoDate } from '../apps/mobile/tests/fixtures/theFirstForecastWithNoDate';
 import {
   type WaitingDrawn,
@@ -4580,6 +4599,108 @@ defineFeature(feature, (test) => {
         expect(ink).not.toBe(described.colours[phase]);
         expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(CONTRAST_FLOOR);
       }
+    });
+  });
+
+  // The wash is the quietest cue Emi has: colour across the top of the screen and not one word, so
+  // a stranger at arm's length reads warmth and nothing else. It has to be the phase's own colours
+  // rather than a decoration, and the colours have to be the ones the design document names, which
+  // is the chain this walks from the document to what reaches the glass.
+  test('SCREEN-2, the top wash takes the colours of the phase of today', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const repositoryRoot = join(__dirname, '..');
+    let named: Readonly<Record<string, readonly string[]>> = {};
+    const drawn = new Map<string, string[]>();
+
+    /** The colours one wash ran through on the glass, the two tints first, then the field. */
+    const washOnTheGlass = async (phase?: PhaseName): Promise<string[]> => {
+      const painted = await render(<Wash phase={phase} />);
+      const tree = painted.toJSON();
+      const tints = ([1, 2] as const).map((at) =>
+        washColoursOf(stopsOf(gradientNamed(tree, washTintGradientID(at)))),
+      );
+
+      expect(paintedWith(tree, washFieldTestID)).toBe(washFieldGradientID);
+
+      return [...tints.flat(), ...washColoursOf(stopsOf(gradientNamed(tree, washFieldGradientID)))];
+    };
+
+    given(
+      'the four phases of a cycle, and the wash the design document names for each of them',
+      () => {
+        named = describedIn(readFileSync(join(repositoryRoot, designSystemDocument), 'utf8')).wash;
+
+        expect(phaseNames).toHaveLength(4);
+        expect(Object.keys(named).sort()).toEqual(['luteal', 'ovulation', 'period', 'soft']);
+        for (const wash of Object.values(named)) {
+          expect(wash).toHaveLength(4);
+        }
+      },
+    );
+
+    when('the wash at the top of the screen is drawn for the phase she is in', async () => {
+      for (const phase of phaseNames) {
+        drawn.set(phase, await washOnTheGlass(phase));
+      }
+
+      expect([...drawn.keys()]).toEqual([...phaseNames]);
+    });
+
+    then(
+      'it runs through the colours that phase names, from its own tint down to the ground',
+      () => {
+        for (const phase of phaseNames) {
+          const written = named[washOfPhase[phase]];
+
+          expect(written).toBeDefined();
+          expect(drawn.get(phase)?.map((value) => value.toLowerCase())).toEqual(
+            (written ?? []).map((value) => value.toLowerCase()),
+          );
+          expect(drawn.get(phase)?.at(-1)?.toLowerCase()).toBe(
+            String(named['soft']?.at(-1)).toLowerCase(),
+          );
+        }
+      },
+    );
+
+    and('each tint fades to nothing, so no phase leaves an edge across the screen', async () => {
+      for (const phase of phaseNames) {
+        const painted = await render(<Wash phase={phase} />);
+
+        for (const at of [1, 2] as const) {
+          const stops = stopsOf(gradientNamed(painted.toJSON(), washTintGradientID(at)));
+          const last = stops.at(-1);
+
+          expect(stops).toHaveLength(2);
+          expect(stops[0]?.opacity).toBe(1);
+          expect(last?.opacity).toBe(0);
+          expect(last?.colour).toBe(stops[0]?.colour);
+        }
+      }
+    });
+
+    and(
+      'a screen that knows no phase yet draws the soft wash every other screen draws',
+      async () => {
+        const soft = (named['soft'] ?? []).map((value) => value.toLowerCase());
+
+        expect((await washOnTheGlass(undefined)).map((value) => value.toLowerCase())).toEqual(soft);
+        expect((await washOnTheGlass('follicular')).map((value) => value.toLowerCase())).toEqual(
+          soft,
+        );
+      },
+    );
+
+    and('no colour of a wash is ever drawn as a word, because colour is all it carries', () => {
+      const stops = washNames.flatMap((name) => washStops(washes[name]));
+
+      expect(stops).toHaveLength(16);
+      expect(stops.filter((stop) => hasRole(stop, 'text'))).toEqual([]);
+      expect(stops.flatMap((stop) => colours[stop].textOn)).toEqual([]);
     });
   });
 });
