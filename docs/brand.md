@@ -8,65 +8,50 @@ value the application uses. Run `npm run generate:brand` after a token changes. 
 
 Status: built
 
-The token package declares 55 colours, in this order. A role says where a colour can go. A ground is
+The token package declares 40 colours, in this order. A role says where a colour can go. A ground is
 a surface to sit on. A text colour carries words. A fill paints an arc of the ring. A line draws a
 hairline.
 
-- `surface` is `#FFF8F5` and carries the role ground.
-- `surfaceDim` is `#E1D8D5` and carries the role ground.
-- `surfaceBright` is `#FFF8F5` and carries the role ground.
-- `surfaceContainerLowest` is `#FFFFFF` and carries the role ground.
-- `surfaceContainerLow` is `#FBF2EE` and carries the role ground.
-- `surfaceContainer` is `#F5ECE8` and carries the role ground.
-- `surfaceContainerHigh` is `#EFE6E3` and carries the role ground.
-- `surfaceContainerHighest` is `#EAE1DD` and carries the role ground.
-- `onSurface` is `#1F1B19` and carries the role text.
-- `onSurfaceVariant` is `#56423D` and carries the role text.
-- `inverseSurface` is `#342F2D` and carries the role ground.
-- `inverseOnSurface` is `#F8EFEB` and carries the role text.
-- `outline` is `#89726C` and carries the role line.
-- `outlineVariant` is `#DCC1B9` and carries the role line.
-- `surfaceTint` is `#9C4327` and carries the roles ground and fill.
-- `primary` is `#843117` and carries the roles ground and fill.
-- `onPrimary` is `#FFFFFF` and carries the role text.
-- `primaryContainer` is `#A3482C` and carries the roles ground and fill.
-- `onPrimaryContainer` is `#FFD8CE` and carries the role text.
-- `inversePrimary` is `#FFB59F` and carries the role text.
-- `secondary` is `#625E58` and carries the roles ground, text and fill.
-- `onSecondary` is `#FFFFFF` and carries the role text.
-- `secondaryContainer` is `#E8E1D9` and carries the roles ground and fill.
-- `onSecondaryContainer` is `#68645E` and carries the role text.
-- `tertiary` is `#921F12` and carries the roles ground, text and fill.
-- `onTertiary` is `#FFFFFF` and carries the role text.
-- `tertiaryContainer` is `#B43727` and carries the roles ground and fill.
-- `onTertiaryContainer` is `#FFD8D2` and carries the role text.
-- `error` is `#BA1A1A` and carries the roles ground, text and fill.
-- `onError` is `#FFFFFF` and carries the role text.
-- `errorContainer` is `#FFDAD6` and carries the roles ground and fill.
-- `onErrorContainer` is `#93000A` and carries the role text.
-- `primaryFixed` is `#FFDBD1` and carries the roles ground and fill.
-- `primaryFixedDim` is `#FFB59F` and carries the roles ground and fill.
-- `onPrimaryFixed` is `#3A0A00` and carries the role text.
-- `onPrimaryFixedVariant` is `#7D2C12` and carries the role text.
-- `secondaryFixed` is `#E8E1D9` and carries the roles ground and fill.
-- `secondaryFixedDim` is `#CCC5BE` and carries the roles ground and fill.
-- `onSecondaryFixed` is `#1E1B17` and carries the role text.
-- `onSecondaryFixedVariant` is `#4A4641` and carries the role text.
-- `tertiaryFixed` is `#FFDAD4` and carries the roles ground and fill.
-- `tertiaryFixedDim` is `#FFB4A8` and carries the roles ground and fill.
-- `onTertiaryFixed` is `#410100` and carries the role text.
-- `onTertiaryFixedVariant` is `#8B190E` and carries the role text.
-- `background` is `#FFF8F5` and carries the role ground.
-- `onBackground` is `#1F1B19` and carries the role text.
-- `surfaceVariant` is `#EAE1DD` and carries the roles ground and fill.
-- `period` is `#D97D6E` and carries the roles ground and fill.
-- `periodInk` is `#5C2018` and carries the role text.
-- `follicular` is `#E5A96D` and carries the roles ground and fill.
-- `follicularInk` is `#5E3B10` and carries the role text.
-- `ovulation` is `#A8A663` and carries the roles ground and fill.
-- `ovulationInk` is `#404218` and carries the role text.
-- `luteal` is `#9B849E` and carries the roles ground and fill.
-- `lutealInk` is `#433246` and carries the role text.
+- `ground` is `#FFF8F3` and carries the role ground.
+- `card` is `#FFFFFF` and carries the role ground.
+- `field` is `#FFF2EB` and carries the role ground.
+- `line` is `#F1E1D6` and carries the role line.
+- `darkCard` is `#4A2A2E` and carries the roles ground and fill.
+- `text` is `#2E2224` and carries the role text.
+- `secondaryText` is `#76625F` and carries the role text.
+- `onAccent` is `#FFFFFF` and carries the role text.
+- `accent` is `#B8434E` and carries the roles ground, fill and text.
+- `accentPressed` is `#8E2F3A` and carries the roles ground, fill and text.
+- `accentSoft` is `#FFDCDC` and carries the roles ground and fill.
+- `accentSoftInk` is `#AF404A` and carries the role text.
+- `accentTile` is `#F9E3E1` and carries the roles ground and fill.
+- `dockQuiet` is `#826F69` and carries the role text.
+- `pickerNear` is `#866E65` and carries the role text.
+- `pickerFar` is `#906B59` and carries the role text.
+- `disabledLabel` is `#C9B4AA` and carries the role line.
+- `quietIcon` is `#B49F96` and carries the role line.
+- `warmIcon` is `#A0521A` and carries the role text.
+- `dotOff` is `#EFDCCF` and carries the role fill.
+- `stepTrack` is `#F3E2D6` and carries the role fill.
+- `emptyRing` is `#E6CFC2` and carries the role line.
+- `uncheckedRing` is `#D9C2B6` and carries the role line.
+- `period` is `#B8434E` and carries the role fill.
+- `periodInk` is `#8E2F3A` and carries the role text.
+- `follicular` is `#F5DCCB` and carries the role fill.
+- `follicularInk` is `#2E2224` and carries the role text.
+- `ovulation` is `#E9A15F` and carries the role fill.
+- `ovulationInk` is `#8A4A1C` and carries the role text.
+- `luteal` is `#C27E86` and carries the role fill.
+- `lutealInk` is `#7E3E48` and carries the role text.
+- `washWarm` is `#FFE8CD` and carries the roles ground and fill.
+- `washAmber` is `#FFD6BA` and carries the roles ground and fill.
+- `washRose` is `#F6D3D0` and carries the role fill.
+- `washBlush` is `#FBE6E2` and carries the role fill.
+- `washPink` is `#FFE6EE` and carries the role fill.
+- `notificationMiddle` is `#8A4A52` and carries the role fill.
+- `notificationEnd` is `#E9A07A` and carries the role fill.
+- `platformLine` is `#E6D6CC` and carries the role line.
+- `platformBlue` is `#1F6FD1` and carries the role text.
 
 ## Colour, measured
 
@@ -76,620 +61,151 @@ The function `contrastRatio` in `packages/tokens/src/colour.ts` measures every r
 contrast test reads the same function. Level AA of the Web Content Accessibility Guidelines asks for
 4.5 to 1 for normal text. A pair below 4.5 is refused here, and the test refuses it too.
 
-These 205 pairs are approved:
+These 34 pairs are approved:
 
-- onSurface on surface is 16.27 to 1
-- onSurface on surfaceDim is 12.19 to 1
-- onSurface on surfaceBright is 16.27 to 1
-- onSurface on surfaceContainerLowest is 17.09 to 1
-- onSurface on surfaceContainerLow is 15.49 to 1
-- onSurface on surfaceContainer is 14.68 to 1
-- onSurface on surfaceContainerHigh is 13.91 to 1
-- onSurface on surfaceContainerHighest is 13.27 to 1
-- onSurface on background is 16.27 to 1
-- onSurface on surfaceVariant is 13.27 to 1
-- onSurfaceVariant on surface is 8.92 to 1
-- onSurfaceVariant on surfaceDim is 6.68 to 1
-- onSurfaceVariant on surfaceBright is 8.92 to 1
-- onSurfaceVariant on surfaceContainerLowest is 9.37 to 1
-- onSurfaceVariant on surfaceContainerLow is 8.49 to 1
-- onSurfaceVariant on surfaceContainer is 8.05 to 1
-- onSurfaceVariant on surfaceContainerHigh is 7.63 to 1
-- onSurfaceVariant on surfaceContainerHighest is 7.27 to 1
-- onSurfaceVariant on background is 8.92 to 1
-- onSurfaceVariant on surfaceVariant is 7.27 to 1
-- inverseOnSurface on inverseSurface is 11.66 to 1
-- onPrimary on primary is 8.63 to 1
-- onPrimary on primaryContainer is 5.96 to 1
-- onPrimary on surfaceTint is 6.47 to 1
-- onPrimaryContainer on primaryContainer is 4.53 to 1
-- onPrimaryContainer on primary is 6.56 to 1
-- inversePrimary on inverseSurface is 7.77 to 1
-- secondary on surface is 6.13 to 1
-- secondary on surfaceDim is 4.59 to 1
-- secondary on surfaceBright is 6.13 to 1
-- secondary on surfaceContainerLowest is 6.44 to 1
-- secondary on surfaceContainerLow is 5.84 to 1
-- secondary on surfaceContainer is 5.53 to 1
-- secondary on surfaceContainerHigh is 5.24 to 1
-- secondary on surfaceContainerHighest is 5.00 to 1
-- secondary on background is 6.13 to 1
-- secondary on surfaceVariant is 5.00 to 1
-- onSecondary on secondary is 6.44 to 1
-- onSecondaryContainer on secondaryContainer is 4.53 to 1
-- onSecondaryContainer on surface is 5.60 to 1
-- onSecondaryContainer on surfaceBright is 5.60 to 1
-- onSecondaryContainer on surfaceContainerLowest is 5.88 to 1
-- onSecondaryContainer on surfaceContainerLow is 5.33 to 1
-- onSecondaryContainer on surfaceContainer is 5.05 to 1
-- onSecondaryContainer on surfaceContainerHigh is 4.79 to 1
-- onSecondaryContainer on surfaceContainerHighest is 4.57 to 1
-- onSecondaryContainer on background is 5.60 to 1
-- onSecondaryContainer on surfaceVariant is 4.57 to 1
-- tertiary on surface is 8.24 to 1
-- tertiary on surfaceDim is 6.17 to 1
-- tertiary on surfaceBright is 8.24 to 1
-- tertiary on surfaceContainerLowest is 8.65 to 1
-- tertiary on surfaceContainerLow is 7.84 to 1
-- tertiary on surfaceContainer is 7.44 to 1
-- tertiary on surfaceContainerHigh is 7.05 to 1
-- tertiary on surfaceContainerHighest is 6.72 to 1
-- tertiary on background is 8.24 to 1
-- tertiary on surfaceVariant is 6.72 to 1
-- onTertiary on tertiary is 8.65 to 1
-- onTertiary on tertiaryContainer is 5.97 to 1
-- onTertiaryContainer on tertiaryContainer is 4.55 to 1
-- error on surface is 6.15 to 1
-- error on surfaceDim is 4.61 to 1
-- error on surfaceBright is 6.15 to 1
-- error on surfaceContainerLowest is 6.46 to 1
-- error on surfaceContainerLow is 5.86 to 1
-- error on surfaceContainer is 5.55 to 1
-- error on surfaceContainerHigh is 5.26 to 1
-- error on surfaceContainerHighest is 5.02 to 1
-- error on background is 6.15 to 1
-- error on surfaceVariant is 5.02 to 1
-- onError on error is 6.46 to 1
-- onErrorContainer on errorContainer is 7.24 to 1
-- onErrorContainer on surface is 8.91 to 1
-- onErrorContainer on surfaceDim is 6.67 to 1
-- onErrorContainer on surfaceBright is 8.91 to 1
-- onErrorContainer on surfaceContainerLowest is 9.35 to 1
-- onErrorContainer on surfaceContainerLow is 8.48 to 1
-- onErrorContainer on surfaceContainer is 8.04 to 1
-- onErrorContainer on surfaceContainerHigh is 7.62 to 1
-- onErrorContainer on surfaceContainerHighest is 7.27 to 1
-- onErrorContainer on background is 8.91 to 1
-- onErrorContainer on surfaceVariant is 7.27 to 1
-- onPrimaryFixed on primaryFixed is 13.33 to 1
-- onPrimaryFixed on primaryFixedDim is 10.11 to 1
-- onPrimaryFixed on surface is 16.35 to 1
-- onPrimaryFixed on surfaceDim is 12.25 to 1
-- onPrimaryFixed on surfaceBright is 16.35 to 1
-- onPrimaryFixed on surfaceContainerLowest is 17.17 to 1
-- onPrimaryFixed on surfaceContainerLow is 15.56 to 1
-- onPrimaryFixed on surfaceContainer is 14.75 to 1
-- onPrimaryFixed on surfaceContainerHigh is 13.98 to 1
-- onPrimaryFixed on surfaceContainerHighest is 13.33 to 1
-- onPrimaryFixed on background is 16.35 to 1
-- onPrimaryFixed on surfaceVariant is 13.33 to 1
-- onPrimaryFixedVariant on primaryFixed is 7.28 to 1
-- onPrimaryFixedVariant on primaryFixedDim is 5.52 to 1
-- onPrimaryFixedVariant on surface is 8.92 to 1
-- onPrimaryFixedVariant on surfaceDim is 6.69 to 1
-- onPrimaryFixedVariant on surfaceBright is 8.92 to 1
-- onPrimaryFixedVariant on surfaceContainerLowest is 9.37 to 1
-- onPrimaryFixedVariant on surfaceContainerLow is 8.49 to 1
-- onPrimaryFixedVariant on surfaceContainer is 8.05 to 1
-- onPrimaryFixedVariant on surfaceContainerHigh is 7.63 to 1
-- onPrimaryFixedVariant on surfaceContainerHighest is 7.28 to 1
-- onPrimaryFixedVariant on background is 8.92 to 1
-- onPrimaryFixedVariant on surfaceVariant is 7.28 to 1
-- onSecondaryFixed on secondaryFixed is 13.23 to 1
-- onSecondaryFixed on secondaryFixedDim is 10.04 to 1
-- onSecondaryFixed on surface is 16.33 to 1
-- onSecondaryFixed on surfaceDim is 12.24 to 1
-- onSecondaryFixed on surfaceBright is 16.33 to 1
-- onSecondaryFixed on surfaceContainerLowest is 17.15 to 1
-- onSecondaryFixed on surfaceContainerLow is 15.55 to 1
-- onSecondaryFixed on surfaceContainer is 14.74 to 1
-- onSecondaryFixed on surfaceContainerHigh is 13.97 to 1
-- onSecondaryFixed on surfaceContainerHighest is 13.32 to 1
-- onSecondaryFixed on background is 16.33 to 1
-- onSecondaryFixed on surfaceVariant is 13.32 to 1
-- onSecondaryFixedVariant on secondaryFixed is 7.22 to 1
-- onSecondaryFixedVariant on secondaryFixedDim is 5.48 to 1
-- onSecondaryFixedVariant on surface is 8.91 to 1
-- onSecondaryFixedVariant on surfaceDim is 6.68 to 1
-- onSecondaryFixedVariant on surfaceBright is 8.91 to 1
-- onSecondaryFixedVariant on surfaceContainerLowest is 9.36 to 1
-- onSecondaryFixedVariant on surfaceContainerLow is 8.49 to 1
-- onSecondaryFixedVariant on surfaceContainer is 8.04 to 1
-- onSecondaryFixedVariant on surfaceContainerHigh is 7.62 to 1
-- onSecondaryFixedVariant on surfaceContainerHighest is 7.27 to 1
-- onSecondaryFixedVariant on background is 8.91 to 1
-- onSecondaryFixedVariant on surfaceVariant is 7.27 to 1
-- onTertiaryFixed on tertiaryFixed is 13.21 to 1
-- onTertiaryFixed on tertiaryFixedDim is 10.04 to 1
-- onTertiaryFixed on surface is 16.27 to 1
-- onTertiaryFixed on surfaceDim is 12.19 to 1
-- onTertiaryFixed on surfaceBright is 16.27 to 1
-- onTertiaryFixed on surfaceContainerLowest is 17.09 to 1
-- onTertiaryFixed on surfaceContainerLow is 15.49 to 1
-- onTertiaryFixed on surfaceContainer is 14.68 to 1
-- onTertiaryFixed on surfaceContainerHigh is 13.91 to 1
-- onTertiaryFixed on surfaceContainerHighest is 13.27 to 1
-- onTertiaryFixed on background is 16.27 to 1
-- onTertiaryFixed on surfaceVariant is 13.27 to 1
-- onTertiaryFixedVariant on tertiaryFixed is 7.24 to 1
-- onTertiaryFixedVariant on tertiaryFixedDim is 5.50 to 1
-- onTertiaryFixedVariant on surface is 8.91 to 1
-- onTertiaryFixedVariant on surfaceDim is 6.68 to 1
-- onTertiaryFixedVariant on surfaceBright is 8.91 to 1
-- onTertiaryFixedVariant on surfaceContainerLowest is 9.36 to 1
-- onTertiaryFixedVariant on surfaceContainerLow is 8.49 to 1
-- onTertiaryFixedVariant on surfaceContainer is 8.04 to 1
-- onTertiaryFixedVariant on surfaceContainerHigh is 7.62 to 1
-- onTertiaryFixedVariant on surfaceContainerHighest is 7.27 to 1
-- onTertiaryFixedVariant on background is 8.91 to 1
-- onTertiaryFixedVariant on surfaceVariant is 7.27 to 1
-- onBackground on surface is 16.27 to 1
-- onBackground on surfaceDim is 12.19 to 1
-- onBackground on surfaceBright is 16.27 to 1
-- onBackground on surfaceContainerLowest is 17.09 to 1
-- onBackground on surfaceContainerLow is 15.49 to 1
-- onBackground on surfaceContainer is 14.68 to 1
-- onBackground on surfaceContainerHigh is 13.91 to 1
-- onBackground on surfaceContainerHighest is 13.27 to 1
-- onBackground on background is 16.27 to 1
-- onBackground on surfaceVariant is 13.27 to 1
-- periodInk on surface is 11.94 to 1
-- periodInk on surfaceDim is 8.95 to 1
-- periodInk on surfaceBright is 11.94 to 1
-- periodInk on surfaceContainerLowest is 12.54 to 1
-- periodInk on surfaceContainerLow is 11.37 to 1
-- periodInk on surfaceContainer is 10.77 to 1
-- periodInk on surfaceContainerHigh is 10.21 to 1
-- periodInk on surfaceContainerHighest is 9.74 to 1
-- periodInk on background is 11.94 to 1
-- periodInk on surfaceVariant is 9.74 to 1
-- follicularInk on surface is 9.48 to 1
-- follicularInk on surfaceDim is 7.11 to 1
-- follicularInk on surfaceBright is 9.48 to 1
-- follicularInk on surfaceContainerLowest is 9.96 to 1
-- follicularInk on surfaceContainerLow is 9.03 to 1
-- follicularInk on surfaceContainer is 8.56 to 1
-- follicularInk on surfaceContainerHigh is 8.11 to 1
-- follicularInk on surfaceContainerHighest is 7.73 to 1
-- follicularInk on background is 9.48 to 1
-- follicularInk on surfaceVariant is 7.73 to 1
-- ovulationInk on surface is 9.95 to 1
-- ovulationInk on surfaceDim is 7.45 to 1
-- ovulationInk on surfaceBright is 9.95 to 1
-- ovulationInk on surfaceContainerLowest is 10.45 to 1
-- ovulationInk on surfaceContainerLow is 9.47 to 1
-- ovulationInk on surfaceContainer is 8.98 to 1
-- ovulationInk on surfaceContainerHigh is 8.50 to 1
-- ovulationInk on surfaceContainerHighest is 8.11 to 1
-- ovulationInk on background is 9.95 to 1
-- ovulationInk on surfaceVariant is 8.11 to 1
-- lutealInk on surface is 11.21 to 1
-- lutealInk on surfaceDim is 8.40 to 1
-- lutealInk on surfaceBright is 11.21 to 1
-- lutealInk on surfaceContainerLowest is 11.78 to 1
-- lutealInk on surfaceContainerLow is 10.68 to 1
-- lutealInk on surfaceContainer is 10.12 to 1
-- lutealInk on surfaceContainerHigh is 9.59 to 1
-- lutealInk on surfaceContainerHighest is 9.15 to 1
-- lutealInk on background is 11.21 to 1
-- lutealInk on surfaceVariant is 9.15 to 1
+- text on ground is 14.57 to 1
+- text on card is 15.32 to 1
+- text on field is 13.98 to 1
+- secondaryText on ground is 5.42 to 1
+- secondaryText on card is 5.70 to 1
+- secondaryText on field is 5.20 to 1
+- onAccent on accent is 5.32 to 1
+- onAccent on darkCard is 12.64 to 1
+- accent on ground is 5.06 to 1
+- accent on card is 5.32 to 1
+- accent on field is 4.85 to 1
+- accentPressed on ground is 7.63 to 1
+- accentPressed on card is 8.02 to 1
+- accentPressed on field is 7.32 to 1
+- accentPressed on accentSoft is 6.31 to 1
+- accentSoftInk on accentSoft is 4.52 to 1
+- dockQuiet on ground is 4.51 to 1
+- dockQuiet on card is 4.74 to 1
+- pickerNear on ground is 4.51 to 1
+- pickerNear on card is 4.74 to 1
+- pickerFar on ground is 4.51 to 1
+- pickerFar on card is 4.74 to 1
+- warmIcon on ground is 5.37 to 1
+- warmIcon on card is 5.65 to 1
+- warmIcon on field is 5.15 to 1
+- periodInk on ground is 7.63 to 1
+- periodInk on card is 8.02 to 1
+- follicularInk on ground is 14.57 to 1
+- follicularInk on card is 15.32 to 1
+- ovulationInk on ground is 6.49 to 1
+- ovulationInk on card is 6.82 to 1
+- lutealInk on ground is 7.48 to 1
+- lutealInk on card is 7.87 to 1
+- platformBlue on card is 4.94 to 1
 
-These 373 pairs are refused, in order of ratio. A text colour is approved only on the grounds above.
+These 75 pairs are refused, in order of ratio. A text colour is approved only on the grounds above.
 The nearest misses come first.
 
-- periodInk on period is 4.24 to 1
-- tertiary on follicular is 4.21 to 1
-- onSecondaryContainer on surfaceDim is 4.19 to 1
-- ovulationInk on ovulation is 4.13 to 1
-- lutealInk on period is 3.99 to 1
-- follicularInk on ovulation is 3.94 to 1
-- inversePrimary on surfaceTint is 3.81 to 1
-- inversePrimary on error is 3.80 to 1
-- error on primaryFixedDim is 3.80 to 1
-- error on tertiaryFixedDim is 3.80 to 1
-- inversePrimary on secondary is 3.79 to 1
-- secondary on primaryFixedDim is 3.79 to 1
-- secondary on tertiaryFixedDim is 3.79 to 1
-- error on secondaryFixedDim is 3.78 to 1
-- secondary on secondaryFixedDim is 3.77 to 1
-- onPrimaryFixedVariant on ovulation is 3.70 to 1
-- onSurfaceVariant on ovulation is 3.70 to 1
-- onTertiaryFixedVariant on ovulation is 3.70 to 1
-- onSecondaryFixedVariant on ovulation is 3.70 to 1
-- onErrorContainer on ovulation is 3.70 to 1
-- periodInk on luteal is 3.69 to 1
-- ovulationInk on period is 3.54 to 1
-- inversePrimary on tertiaryContainer is 3.52 to 1
-- inversePrimary on primaryContainer is 3.51 to 1
-- lutealInk on luteal is 3.47 to 1
-- onSecondaryContainer on primaryFixedDim is 3.46 to 1
-- onSecondaryContainer on tertiaryFixedDim is 3.46 to 1
-- onSecondaryContainer on secondaryFixedDim is 3.44 to 1
-- tertiary on ovulation is 3.42 to 1
-- onPrimary on luteal is 3.39 to 1
-- onSecondary on luteal is 3.39 to 1
-- onTertiary on luteal is 3.39 to 1
-- onError on luteal is 3.39 to 1
-- follicularInk on period is 3.37 to 1
-- onPrimaryFixedVariant on period is 3.17 to 1
-- onSurfaceVariant on period is 3.17 to 1
-- onTertiaryFixedVariant on period is 3.17 to 1
-- onSecondaryFixedVariant on period is 3.17 to 1
-- onErrorContainer on period is 3.17 to 1
-- error on follicular is 3.15 to 1
-- secondary on follicular is 3.14 to 1
-- ovulationInk on luteal is 3.08 to 1
-- inverseOnSurface on luteal is 3.00 to 1
-- onPrimary on period is 2.95 to 1
-- onSecondary on period is 2.95 to 1
-- onTertiary on period is 2.95 to 1
-- onError on period is 2.95 to 1
-- follicularInk on luteal is 2.93 to 1
-- tertiary on period is 2.93 to 1
-- onPrimaryFixed on primaryContainer is 2.88 to 1
-- onSecondaryFixed on primaryContainer is 2.88 to 1
-- onPrimaryFixed on tertiaryContainer is 2.87 to 1
-- onSecondaryFixed on tertiaryContainer is 2.87 to 1
-- onSurface on primaryContainer is 2.86 to 1
-- onBackground on primaryContainer is 2.86 to 1
-- onTertiaryFixed on primaryContainer is 2.86 to 1
-- onSecondaryContainer on follicular is 2.86 to 1
-- onSurface on tertiaryContainer is 2.86 to 1
-- onBackground on tertiaryContainer is 2.86 to 1
-- onTertiaryFixed on tertiaryContainer is 2.86 to 1
-- onPrimaryFixedVariant on luteal is 2.76 to 1
-- onSurfaceVariant on luteal is 2.76 to 1
-- onTertiaryFixedVariant on luteal is 2.76 to 1
-- onSecondaryFixedVariant on luteal is 2.76 to 1
-- onErrorContainer on luteal is 2.76 to 1
-- onPrimaryFixed on secondary is 2.67 to 1
-- onSecondaryFixed on secondary is 2.66 to 1
-- onPrimaryFixed on error is 2.66 to 1
-- onSecondaryFixed on error is 2.65 to 1
-- onSurface on secondary is 2.65 to 1
-- onBackground on secondary is 2.65 to 1
-- onTertiaryFixed on secondary is 2.65 to 1
-- onPrimaryFixed on surfaceTint is 2.65 to 1
-- onSecondaryFixed on surfaceTint is 2.65 to 1
-- onSurface on error is 2.64 to 1
-- onBackground on error is 2.64 to 1
-- onTertiaryFixed on error is 2.64 to 1
-- onSurface on surfaceTint is 2.64 to 1
-- onBackground on surfaceTint is 2.64 to 1
-- onTertiaryFixed on surfaceTint is 2.64 to 1
-- inverseOnSurface on period is 2.61 to 1
-- onTertiaryContainer on luteal is 2.59 to 1
-- onPrimaryContainer on luteal is 2.58 to 1
-- error on ovulation is 2.55 to 1
-- tertiary on luteal is 2.55 to 1
-- secondary on ovulation is 2.54 to 1
-- onPrimary on ovulation is 2.53 to 1
-- onSecondary on ovulation is 2.53 to 1
-- onTertiary on ovulation is 2.53 to 1
-- onError on ovulation is 2.53 to 1
-- onSecondaryContainer on ovulation is 2.32 to 1
-- onTertiaryContainer on period is 2.25 to 1
-- onSecondaryContainer on inverseSurface is 2.25 to 1
-- onPrimaryContainer on period is 2.25 to 1
-- inverseOnSurface on ovulation is 2.23 to 1
-- error on period is 2.19 to 1
-- secondary on period is 2.18 to 1
-- periodInk on primaryContainer is 2.10 to 1
-- periodInk on tertiaryContainer is 2.10 to 1
-- onPrimary on follicular is 2.05 to 1
-- onSecondary on follicular is 2.05 to 1
-- onTertiary on follicular is 2.05 to 1
-- onError on follicular is 2.05 to 1
-- secondary on inverseSurface is 2.05 to 1
-- error on inverseSurface is 2.04 to 1
-- inversePrimary on luteal is 2.00 to 1
-- onSecondaryContainer on period is 1.99 to 1
-- onPrimaryFixed on primary is 1.99 to 1
-- onSecondaryFixed on primary is 1.99 to 1
-- onPrimaryFixed on tertiary is 1.98 to 1
-- onSecondaryFixed on tertiary is 1.98 to 1
-- onSurface on primary is 1.98 to 1
-- onBackground on primary is 1.98 to 1
-- onTertiaryFixed on primary is 1.98 to 1
-- onSurface on tertiary is 1.97 to 1
-- onBackground on tertiary is 1.97 to 1
-- onTertiaryFixed on tertiary is 1.97 to 1
-- lutealInk on primaryContainer is 1.97 to 1
-- lutealInk on tertiaryContainer is 1.97 to 1
-- periodInk on secondary is 1.95 to 1
-- periodInk on error is 1.94 to 1
-- periodInk on surfaceTint is 1.94 to 1
-- onTertiaryContainer on ovulation is 1.93 to 1
-- onPrimaryContainer on ovulation is 1.92 to 1
-- error on luteal is 1.90 to 1
-- secondary on luteal is 1.90 to 1
-- lutealInk on secondary is 1.83 to 1
-- lutealInk on error is 1.82 to 1
-- lutealInk on surfaceTint is 1.82 to 1
-- inverseOnSurface on follicular is 1.81 to 1
-- ovulationInk on primaryContainer is 1.75 to 1
-- ovulationInk on tertiaryContainer is 1.75 to 1
-- inversePrimary on period is 1.74 to 1
-- onSecondaryContainer on luteal is 1.73 to 1
-- onPrimary on secondaryFixedDim is 1.71 to 1
-- onSecondary on secondaryFixedDim is 1.71 to 1
-- onTertiary on secondaryFixedDim is 1.71 to 1
-- onError on secondaryFixedDim is 1.71 to 1
-- onPrimary on tertiaryFixedDim is 1.70 to 1
-- onSecondary on tertiaryFixedDim is 1.70 to 1
-- onTertiary on tertiaryFixedDim is 1.70 to 1
-- onError on tertiaryFixedDim is 1.70 to 1
-- onPrimary on primaryFixedDim is 1.70 to 1
-- inversePrimary on surfaceContainerLowest is 1.70 to 1
-- onSecondary on primaryFixedDim is 1.70 to 1
-- onTertiary on primaryFixedDim is 1.70 to 1
-- onError on primaryFixedDim is 1.70 to 1
-- follicularInk on primaryContainer is 1.67 to 1
-- follicularInk on tertiaryContainer is 1.67 to 1
-- ovulationInk on secondary is 1.62 to 1
-- inversePrimary on surface is 1.62 to 1
-- inversePrimary on surfaceBright is 1.62 to 1
-- inversePrimary on background is 1.62 to 1
-- ovulationInk on error is 1.62 to 1
-- ovulationInk on surfaceTint is 1.61 to 1
-- onPrimaryFixedVariant on primaryContainer is 1.57 to 1
-- onSurfaceVariant on primaryContainer is 1.57 to 1
-- onTertiaryFixedVariant on primaryContainer is 1.57 to 1
-- onSecondaryFixedVariant on primaryContainer is 1.57 to 1
-- onPrimaryFixedVariant on tertiaryContainer is 1.57 to 1
-- onErrorContainer on primaryContainer is 1.57 to 1
-- onSurfaceVariant on tertiaryContainer is 1.57 to 1
-- onTertiaryFixedVariant on tertiaryContainer is 1.57 to 1
-- onSecondaryFixedVariant on tertiaryContainer is 1.57 to 1
-- onErrorContainer on tertiaryContainer is 1.57 to 1
-- onTertiaryContainer on follicular is 1.56 to 1
-- onPrimaryContainer on follicular is 1.56 to 1
-- follicularInk on secondary is 1.55 to 1
-- follicularInk on error is 1.54 to 1
-- inversePrimary on surfaceContainerLow is 1.54 to 1
-- follicularInk on surfaceTint is 1.54 to 1
-- tertiary on inverseSurface is 1.53 to 1
-- inverseOnSurface on secondaryFixedDim is 1.51 to 1
-- inverseOnSurface on tertiaryFixedDim is 1.50 to 1
-- inverseOnSurface on primaryFixedDim is 1.50 to 1
-- inversePrimary on ovulation is 1.49 to 1
-- onSecondaryContainer on tertiary is 1.47 to 1
-- onSecondaryContainer on primary is 1.47 to 1
-- inversePrimary on surfaceContainer is 1.46 to 1
-- onPrimaryFixedVariant on secondary is 1.46 to 1
-- onSurfaceVariant on secondary is 1.45 to 1
-- onTertiaryFixedVariant on secondary is 1.45 to 1
-- onSecondaryFixedVariant on secondary is 1.45 to 1
-- onErrorContainer on secondary is 1.45 to 1
-- periodInk on primary is 1.45 to 1
-- tertiary on primaryContainer is 1.45 to 1
-- onPrimaryFixedVariant on error is 1.45 to 1
-- onSurfaceVariant on error is 1.45 to 1
-- onTertiaryFixedVariant on error is 1.45 to 1
-- periodInk on tertiary is 1.45 to 1
-- tertiary on tertiaryContainer is 1.45 to 1
-- onSecondaryFixedVariant on error is 1.45 to 1
-- onPrimaryFixedVariant on surfaceTint is 1.45 to 1
-- onErrorContainer on error is 1.45 to 1
-- onSurfaceVariant on surfaceTint is 1.45 to 1
-- onTertiaryFixedVariant on surfaceTint is 1.45 to 1
-- onSecondaryFixedVariant on surfaceTint is 1.45 to 1
-- onErrorContainer on surfaceTint is 1.45 to 1
-- onErrorContainer on inverseSurface is 1.41 to 1
-- onSecondaryFixedVariant on inverseSurface is 1.41 to 1
-- onTertiaryFixedVariant on inverseSurface is 1.41 to 1
-- onSurfaceVariant on inverseSurface is 1.41 to 1
-- onPrimaryFixedVariant on inverseSurface is 1.41 to 1
-- onPrimary on surfaceDim is 1.40 to 1
-- onSecondary on surfaceDim is 1.40 to 1
-- onTertiary on surfaceDim is 1.40 to 1
-- onError on surfaceDim is 1.40 to 1
-- inversePrimary on surfaceContainerHigh is 1.38 to 1
-- lutealInk on primary is 1.36 to 1
-- lutealInk on tertiary is 1.36 to 1
-- secondary on tertiary is 1.34 to 1
-- tertiary on secondary is 1.34 to 1
-- secondary on primary is 1.34 to 1
-- tertiary on error is 1.34 to 1
-- error on tertiary is 1.34 to 1
-- tertiary on surfaceTint is 1.34 to 1
-- error on primary is 1.34 to 1
-- follicularInk on inverseSurface is 1.33 to 1
-- inversePrimary on surfaceContainerHighest is 1.32 to 1
-- inversePrimary on surfaceVariant is 1.32 to 1
-- inversePrimary on primaryFixed is 1.32 to 1
-- onPrimaryContainer on surfaceContainerLowest is 1.32 to 1
-- inversePrimary on errorContainer is 1.31 to 1
-- inversePrimary on tertiaryFixed is 1.31 to 1
-- onTertiaryContainer on surfaceContainerLowest is 1.31 to 1
-- inversePrimary on secondaryContainer is 1.31 to 1
-- inversePrimary on secondaryFixed is 1.31 to 1
-- onTertiaryContainer on secondaryFixedDim is 1.30 to 1
-- onPrimaryFixed on inverseSurface is 1.30 to 1
-- onSecondaryFixed on inverseSurface is 1.30 to 1
-- onPrimaryContainer on secondaryFixedDim is 1.30 to 1
-- onTertiaryContainer on tertiaryFixedDim is 1.30 to 1
-- onPrimary on secondaryContainer is 1.30 to 1
-- onPrimary on secondaryFixed is 1.30 to 1
-- onSecondary on secondaryContainer is 1.30 to 1
-- onSecondary on secondaryFixed is 1.30 to 1
-- onTertiary on secondaryContainer is 1.30 to 1
-- onTertiary on secondaryFixed is 1.30 to 1
-- onError on secondaryContainer is 1.30 to 1
-- onError on secondaryFixed is 1.30 to 1
-- onTertiaryContainer on primaryFixedDim is 1.29 to 1
-- onSurface on inverseSurface is 1.29 to 1
-- onBackground on inverseSurface is 1.29 to 1
-- onTertiaryFixed on inverseSurface is 1.29 to 1
-- onPrimary on tertiaryFixed is 1.29 to 1
-- onSecondary on tertiaryFixed is 1.29 to 1
-- onTertiary on tertiaryFixed is 1.29 to 1
-- onError on tertiaryFixed is 1.29 to 1
-- onPrimaryContainer on tertiaryFixedDim is 1.29 to 1
-- onPrimary on errorContainer is 1.29 to 1
-- onSecondary on errorContainer is 1.29 to 1
-- onTertiary on errorContainer is 1.29 to 1
-- onError on errorContainer is 1.29 to 1
-- onPrimaryContainer on primaryFixedDim is 1.29 to 1
-- onPrimary on primaryFixed is 1.29 to 1
-- onSecondary on primaryFixed is 1.29 to 1
-- onTertiary on primaryFixed is 1.29 to 1
-- onError on primaryFixed is 1.29 to 1
-- onPrimary on surfaceContainerHighest is 1.29 to 1
-- onPrimary on surfaceVariant is 1.29 to 1
-- onSecondary on surfaceContainerHighest is 1.29 to 1
-- onSecondary on surfaceVariant is 1.29 to 1
-- onTertiary on surfaceContainerHighest is 1.29 to 1
-- onTertiary on surfaceVariant is 1.29 to 1
-- onError on surfaceContainerHighest is 1.29 to 1
-- onError on surfaceVariant is 1.29 to 1
-- ovulationInk on inverseSurface is 1.26 to 1
-- onPrimaryContainer on surface is 1.25 to 1
-- onPrimaryContainer on surfaceBright is 1.25 to 1
-- onPrimaryContainer on background is 1.25 to 1
-- onTertiaryContainer on surface is 1.25 to 1
-- onTertiaryContainer on surfaceBright is 1.25 to 1
-- onTertiaryContainer on background is 1.25 to 1
-- inverseOnSurface on surfaceDim is 1.24 to 1
-- onPrimary on surfaceContainerHigh is 1.23 to 1
-- onSecondary on surfaceContainerHigh is 1.23 to 1
-- onTertiary on surfaceContainerHigh is 1.23 to 1
-- onError on surfaceContainerHigh is 1.23 to 1
-- inversePrimary on surfaceDim is 1.21 to 1
-- ovulationInk on primary is 1.21 to 1
-- inversePrimary on follicular is 1.21 to 1
-- ovulationInk on tertiary is 1.21 to 1
-- onPrimaryContainer on surfaceContainerLow is 1.19 to 1
-- onTertiaryContainer on surfaceContainerLow is 1.19 to 1
-- onPrimary on surfaceContainer is 1.16 to 1
-- onSecondary on surfaceContainer is 1.16 to 1
-- onTertiary on surfaceContainer is 1.16 to 1
-- onError on surfaceContainer is 1.16 to 1
-- follicularInk on primary is 1.15 to 1
-- follicularInk on tertiary is 1.15 to 1
-- inverseOnSurface on secondaryContainer is 1.14 to 1
-- inverseOnSurface on secondaryFixed is 1.14 to 1
-- inverseOnSurface on tertiaryFixed is 1.14 to 1
-- inverseOnSurface on errorContainer is 1.14 to 1
-- inverseOnSurface on primaryFixed is 1.14 to 1
-- inverseOnSurface on surfaceContainerHighest is 1.14 to 1
-- inverseOnSurface on surfaceVariant is 1.14 to 1
-- inverseOnSurface on surfaceContainerLowest is 1.13 to 1
-- onPrimaryContainer on surfaceContainer is 1.13 to 1
-- onTertiaryContainer on surfaceContainer is 1.13 to 1
-- lutealInk on inverseSurface is 1.12 to 1
-- onPrimary on surfaceContainerLow is 1.10 to 1
-- onSecondary on surfaceContainerLow is 1.10 to 1
-- onTertiary on surfaceContainerLow is 1.10 to 1
-- onError on surfaceContainerLow is 1.10 to 1
-- onSecondaryContainer on surfaceTint is 1.10 to 1
-- onSecondaryContainer on error is 1.10 to 1
-- onSecondaryContainer on secondary is 1.10 to 1
-- onPrimaryFixedVariant on primary is 1.09 to 1
-- onSurfaceVariant on primary is 1.08 to 1
-- onTertiaryFixedVariant on primary is 1.08 to 1
-- onSecondaryFixedVariant on primary is 1.08 to 1
-- inverseOnSurface on surfaceContainerHigh is 1.08 to 1
-- onErrorContainer on primary is 1.08 to 1
-- error on primaryContainer is 1.08 to 1
-- onPrimaryFixedVariant on tertiary is 1.08 to 1
-- onSurfaceVariant on tertiary is 1.08 to 1
-- onTertiaryFixedVariant on tertiary is 1.08 to 1
-- error on tertiaryContainer is 1.08 to 1
-- onSecondaryFixedVariant on tertiary is 1.08 to 1
-- onErrorContainer on tertiary is 1.08 to 1
-- secondary on primaryContainer is 1.08 to 1
-- inverseOnSurface on surface is 1.08 to 1
-- inverseOnSurface on surfaceBright is 1.08 to 1
-- inverseOnSurface on background is 1.08 to 1
-- secondary on tertiaryContainer is 1.08 to 1
-- onPrimaryContainer on surfaceContainerHigh is 1.07 to 1
-- onTertiaryContainer on surfaceContainerHigh is 1.07 to 1
-- onTertiaryContainer on surfaceDim is 1.07 to 1
-- onPrimaryContainer on surfaceDim is 1.07 to 1
-- periodInk on inverseSurface is 1.05 to 1
-- onPrimary on surface is 1.05 to 1
-- onPrimary on surfaceBright is 1.05 to 1
-- onPrimary on background is 1.05 to 1
-- onSecondary on surface is 1.05 to 1
-- onSecondary on surfaceBright is 1.05 to 1
-- onSecondary on background is 1.05 to 1
-- onTertiary on surface is 1.05 to 1
-- onTertiary on surfaceBright is 1.05 to 1
-- onTertiary on background is 1.05 to 1
-- onError on surface is 1.05 to 1
-- onError on surfaceBright is 1.05 to 1
-- onError on background is 1.05 to 1
-- inverseOnSurface on surfaceContainer is 1.03 to 1
-- inverseOnSurface on surfaceContainerLow is 1.03 to 1
-- onPrimaryContainer on surfaceContainerHighest is 1.02 to 1
-- onPrimaryContainer on surfaceVariant is 1.02 to 1
-- onPrimaryContainer on primaryFixed is 1.02 to 1
-- onTertiaryContainer on surfaceContainerHighest is 1.02 to 1
-- onTertiaryContainer on surfaceVariant is 1.02 to 1
-- onTertiaryContainer on primaryFixed is 1.02 to 1
-- onPrimaryContainer on errorContainer is 1.02 to 1
-- onPrimaryContainer on tertiaryFixed is 1.02 to 1
-- onSecondaryContainer on tertiaryContainer is 1.02 to 1
-- onTertiaryContainer on errorContainer is 1.02 to 1
-- onSecondaryContainer on primaryContainer is 1.01 to 1
-- onPrimaryContainer on secondaryContainer is 1.01 to 1
-- onPrimaryContainer on secondaryFixed is 1.01 to 1
-- onTertiaryContainer on tertiaryFixed is 1.01 to 1
-- onTertiaryContainer on secondaryContainer is 1.01 to 1
-- onTertiaryContainer on secondaryFixed is 1.01 to 1
-- inversePrimary on secondaryFixedDim is 1.01 to 1
-- secondary on surfaceTint is 1.00 to 1
-- secondary on error is 1.00 to 1
-- error on secondary is 1.00 to 1
-- tertiary on primary is 1.00 to 1
-- error on surfaceTint is 1.00 to 1
-- inversePrimary on tertiaryFixedDim is 1.00 to 1
-- onPrimary on surfaceContainerLowest is 1.00 to 1
-- inversePrimary on primaryFixedDim is 1.00 to 1
-- onSecondary on surfaceContainerLowest is 1.00 to 1
-- onTertiary on surfaceContainerLowest is 1.00 to 1
-- onError on surfaceContainerLowest is 1.00 to 1
+- secondaryText on accentSoft is 4.49 to 1
+- accent on washWarm is 4.47 to 1
+- warmIcon on accentSoft is 4.45 to 1
+- accent on accentTile is 4.33 to 1
+- dockQuiet on field is 4.33 to 1
+- pickerNear on field is 4.32 to 1
+- pickerFar on field is 4.32 to 1
+- accentSoftInk on washAmber is 4.26 to 1
+- secondaryText on washAmber is 4.23 to 1
+- warmIcon on washAmber is 4.19 to 1
+- accent on accentSoft is 4.18 to 1
+- platformBlue on washWarm is 4.16 to 1
+- platformBlue on accentTile is 4.02 to 1
+- dockQuiet on washWarm is 3.99 to 1
+- pickerNear on washWarm is 3.99 to 1
+- pickerFar on washWarm is 3.99 to 1
+- accent on washAmber is 3.94 to 1
+- platformBlue on accentSoft is 3.89 to 1
+- dockQuiet on accentTile is 3.86 to 1
+- pickerNear on accentTile is 3.86 to 1
+- pickerFar on accentTile is 3.86 to 1
+- dockQuiet on accentSoft is 3.73 to 1
+- pickerNear on accentSoft is 3.73 to 1
+- pickerFar on accentSoft is 3.73 to 1
+- platformBlue on washAmber is 3.66 to 1
+- dockQuiet on washAmber is 3.52 to 1
+- pickerNear on washAmber is 3.52 to 1
+- pickerFar on washAmber is 3.51 to 1
+- text on accent is 2.88 to 1
+- follicularInk on accent is 2.88 to 1
+- pickerFar on darkCard is 2.67 to 1
+- pickerNear on darkCard is 2.67 to 1
+- dockQuiet on darkCard is 2.66 to 1
+- platformBlue on darkCard is 2.56 to 1
+- accent on darkCard is 2.38 to 1
+- warmIcon on darkCard is 2.24 to 1
+- secondaryText on darkCard is 2.22 to 1
+- accentSoftInk on darkCard is 2.20 to 1
+- text on accentPressed is 1.91 to 1
+- follicularInk on accentPressed is 1.91 to 1
+- ovulationInk on darkCard is 1.85 to 1
+- pickerFar on accentPressed is 1.69 to 1
+- pickerNear on accentPressed is 1.69 to 1
+- dockQuiet on accentPressed is 1.69 to 1
+- platformBlue on accentPressed is 1.62 to 1
+- lutealInk on darkCard is 1.61 to 1
+- accentPressed on darkCard is 1.58 to 1
+- periodInk on darkCard is 1.58 to 1
+- accent on accentPressed is 1.51 to 1
+- accentPressed on accent is 1.51 to 1
+- periodInk on accent is 1.51 to 1
+- lutealInk on accent is 1.48 to 1
+- warmIcon on accentPressed is 1.42 to 1
+- secondaryText on accentPressed is 1.41 to 1
+- accentSoftInk on accentPressed is 1.40 to 1
+- onAccent on washAmber is 1.35 to 1
+- ovulationInk on accent is 1.28 to 1
+- onAccent on accentSoft is 1.27 to 1
+- onAccent on accentTile is 1.23 to 1
+- text on darkCard is 1.21 to 1
+- follicularInk on darkCard is 1.21 to 1
+- onAccent on washWarm is 1.19 to 1
+- ovulationInk on accentPressed is 1.18 to 1
+- pickerFar on accent is 1.12 to 1
+- pickerNear on accent is 1.12 to 1
+- dockQuiet on accent is 1.12 to 1
+- onAccent on field is 1.10 to 1
+- accentSoftInk on accent is 1.08 to 1
+- platformBlue on accent is 1.08 to 1
+- secondaryText on accent is 1.07 to 1
+- warmIcon on accent is 1.06 to 1
+- onAccent on ground is 1.05 to 1
+- lutealInk on accentPressed is 1.02 to 1
+- onAccent on card is 1.00 to 1
+- periodInk on accentPressed is 1.00 to 1
 
 A phase fill carries no text. Each one has an ink partner that carries the text instead. On the
 stone ground they measure:
 
-- period on surface is 2.81 to 1, so `periodInk` carries the text.
-- follicular on surface is 1.96 to 1, so `follicularInk` carries the text.
-- ovulation on surface is 2.41 to 1, so `ovulationInk` carries the text.
-- luteal on surface is 3.23 to 1, so `lutealInk` carries the text.
+- period on ground is 5.06 to 1, so `periodInk` carries the text.
+- follicular on ground is 1.25 to 1, so `follicularInk` carries the text.
+- ovulation on ground is 2.05 to 1, so `ovulationInk` carries the text.
+- luteal on ground is 3.02 to 1, so `lutealInk` carries the text.
 
-No phase fill measures above the floor. The rule that a fill carries no text is the same either way:
-it covers every fill rather than the ones that measure badly.
+The fill `period` measures above the floor. It still carries no text. The rule is the same for every
+fill.
 
 ## The type scale
 
 Status: built
 
-The scale has 11 roles in three faces. The headings are set in Newsreader, the words she reads at
-length are set in Plus Jakarta Sans, and every number is set in JetBrains Mono. A line height below
-1.2 times the size fails the token test, and the role that sits under it is named with the rest.
+The scale has 11 roles in three faces. The headings are set in Figtree, the words she reads at
+length are set in Figtree, and every number is set in JetBrains Mono. A line height below 1.2 times
+the size fails the token test, and the role that sits under it is named with the rest.
 
-- `display-lg` is 44 points over 56 at weight 400, letter spacing -0.88, which is 1.27 times the size, set in Newsreader.
-- `display-lg-mobile` is 36 points over 44 at weight 400, letter spacing -0.54, which is 1.22 times the size, set in Newsreader.
-- `headline-lg` is 28 points over 36 at weight 400, letter spacing -0.28, which is 1.29 times the size, set in Newsreader.
-- `headline-md` is 20 points over 26 at weight 500, which is 1.30 times the size, set in Newsreader.
-- `headline-sm` is 18 points over 24 at weight 500, which is 1.33 times the size, set in Newsreader.
-- `body-lg` is 16 points over 24 at weight 400, which is 1.50 times the size, set in Plus Jakarta Sans.
-- `body-sm` is 14 points over 20 at weight 400, which is 1.43 times the size, set in Plus Jakarta Sans.
-- `label-md` is 14 points over 20 at weight 600, letter spacing 0.14, which is 1.43 times the size, set in Plus Jakarta Sans.
-- `label-sm` is 12 points over 16 at weight 600, letter spacing 0.24, which is 1.33 times the size, set in Plus Jakarta Sans.
-- `data-lg` is 24 points over 30 at weight 500, letter spacing -0.72, which is 1.25 times the size, set in JetBrains Mono.
+- `display-lg` is 50 points over 60 at weight 800, letter spacing -1, which is 1.20 times the size, set in Figtree.
+- `display-lg-mobile` is 34 points over 42 at weight 800, letter spacing -0.68, which is 1.24 times the size, set in Figtree.
+- `headline-lg` is 28 points over 34 at weight 800, letter spacing -0.56, which is 1.21 times the size, set in Figtree.
+- `headline-md` is 22 points over 28 at weight 800, letter spacing -0.22, which is 1.27 times the size, set in Figtree.
+- `headline-sm` is 18 points over 24 at weight 800, which is 1.33 times the size, set in Figtree.
+- `body-lg` is 16 points over 24 at weight 400, which is 1.50 times the size, set in Figtree.
+- `body-sm` is 14 points over 20 at weight 400, which is 1.43 times the size, set in Figtree.
+- `label-md` is 13 points over 18 at weight 700, which is 1.38 times the size, set in Figtree.
+- `label-sm` is 11 points over 15 at weight 600, letter spacing 0.22, which is 1.36 times the size, set in Figtree.
+- `data-lg` is 24 points over 30 at weight 500, letter spacing -0.48, which is 1.25 times the size, set in JetBrains Mono.
 - `data-sm` is 12 points over 16 at weight 500, letter spacing 0.24, which is 1.33 times the size, set in JetBrains Mono.
 
 ## Space, radius and stroke
@@ -700,21 +216,22 @@ The spacing scale, in points:
 
 - `spaceXs` is 4.
 - `spaceSm` is 8.
-- `spaceMd` is 16.
-- `margin` is 24.
-- `spaceLg` is 24.
-- `marginMd` is 32.
-- `spaceXl` is 32.
+- `spaceMd` is 12.
+- `spaceLg` is 16.
+- `margin` is 20.
+- `spaceXl` is 24.
+- `marginMd` is 28.
 - `marginLg` is 56.
 
 The corner radii, in points:
 
-- `sm` is 4.
-- `DEFAULT` is 8.
-- `md` is 12.
+- `sm` is 10.
+- `DEFAULT` is 12.
+- `md` is 14.
 - `lg` is 16.
-- `xl` is 24.
-- `full` is 9999.
+- `xl` is 18.
+- `xxl` is 28.
+- `full` is 999.
 
 The strokes, in points:
 

@@ -58,7 +58,7 @@ export function HerName({ typed, onType, onContinue, onSkip, onBack }: Props): R
 
 const styles = StyleSheet.create({
   refused: {
-    color: colour.error,
+    color: colour.accent,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
   },

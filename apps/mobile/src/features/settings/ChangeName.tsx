@@ -64,7 +64,7 @@ export function ChangeName({ gave, onSave, onCancel }: Props): ReactNode {
 
 const styles = StyleSheet.create({
   refused: {
-    color: colour.error,
+    color: colour.accent,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
   },

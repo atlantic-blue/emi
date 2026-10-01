@@ -78,8 +78,8 @@ export function PatternCards({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.lg,
     borderWidth: 1,
     justifyContent: 'center',
@@ -91,12 +91,12 @@ const styles = StyleSheet.create({
   // The count takes the small label size, because it is the evidence for the line above it and she
   // reads the answer first. Both stay under the size SCREEN-2 holds this screen to.
   evidence: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
     marginTop: space.spaceXs,
   },
   when: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-sm'),
   },
 });

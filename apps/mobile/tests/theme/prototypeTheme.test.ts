@@ -100,11 +100,11 @@ describe('the theme the application draws in is the token package, in the shape 
   });
 
   describe('the corners, the spacing and the faces are the tokens too', () => {
-    it('takes all six corners, at the scale the front matter names', () => {
+    it('takes all seven corners, at the scale the front matter names', () => {
       expect(extended.borderRadius).toEqual(
         Object.fromEntries(radiusNames.map((name) => [name, `${String(radius[name])}px`])),
       );
-      expect(Object.keys(extended.borderRadius)).toHaveLength(6);
+      expect(Object.keys(extended.borderRadius)).toHaveLength(7);
     });
 
     it('takes all eight spacing steps, under the names Tailwind writes them with', () => {
@@ -176,13 +176,9 @@ describe('the theme the application draws in is the token package, in the shape 
     );
 
     it('draws the dock on the card ground, at the corner every container takes', () => {
-      expect(compiled).toContain(
-        `.bg-surface-container-lowest {\n  background-color: ${colour.surfaceContainerLowest};`,
-      );
+      expect(compiled).toContain(`.bg-card {\n  background-color: ${colour.card};`);
       expect(compiled).toContain(`.rounded-xl {\n  border-radius: ${String(radius.xl)}px;`);
-      expect(compiled).toContain(
-        `.border-outline-variant {\n  border-color: ${colour.outlineVariant};`,
-      );
+      expect(compiled).toContain(`.border-line {\n  border-color: ${colour.line};`);
     });
 
     it('pads the dock by the screen margin rather than by the rhythm gap, and names its face', () => {
@@ -199,9 +195,9 @@ describe('the class merge in @emi/ui knows the scale it is merging', () => {
   it('keeps the text role when a colour follows it, because both are spelled text', () => {
     // gluestack merges what a caller passes with what a component carries, and the merge drops the
     // earlier of two classes it reads as the same property. Untaught, it reads text-label-sm and
-    // text-primary as one, keeps the colour, and every word in the product loses its size.
-    expect(textStyle({ class: 'text-label-sm text-primary' })).toContain('text-label-sm');
-    expect(textStyle({ class: 'text-label-sm text-primary' })).toContain('text-primary');
+    // text-accent as one, keeps the colour, and every word in the product loses its size.
+    expect(textStyle({ class: 'text-label-sm text-accent' })).toContain('text-label-sm');
+    expect(textStyle({ class: 'text-label-sm text-accent' })).toContain('text-accent');
   });
 
   it('still drops a second size, because two sizes on one word is a mistake', () => {

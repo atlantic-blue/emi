@@ -40,7 +40,7 @@ export function TextField({ label, value, onChange, hint, testID }: Props): Reac
           setFocused(true);
         }}
         placeholder={hint}
-        placeholderTextColor={colour.onSurfaceVariant}
+        placeholderTextColor={colour.secondaryText}
         style={focused ? [styles.box, styles.focused] : styles.box}
         testID={testID}
         value={value}
@@ -51,19 +51,19 @@ export function TextField({ label, value, onChange, hint, testID }: Props): Reac
 
 const styles = StyleSheet.create({
   box: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.lg,
     borderWidth: stroke.hairline,
-    color: colour.onSurface,
+    color: colour.text,
     minHeight: FIELD_HEIGHT,
     padding: space.spaceMd,
     ...textStyle('body-lg'),
   },
   field: { gap: space.spaceSm },
-  focused: { borderColor: colour.primaryContainer },
+  focused: { borderColor: colour.accent },
   label: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-sm'),
   },
 });

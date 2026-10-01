@@ -1,8 +1,6 @@
-const { readFileSync } = require('node:fs');
-const { join } = require('node:path');
-
 const {
   colour,
+  phaseNames,
   fontNameFor,
   letterSpacingOf,
   radius,
@@ -13,12 +11,6 @@ const {
 
 const plugin = require('tailwindcss/plugin');
 
-const {
-  configuredIn,
-  prototypeDirectory,
-  sourceScreen,
-} = require('../../tools/pipeline/prototype.ts');
-
 /**
  * The theme the application is drawn in, read from @emi/tokens.
  *
@@ -27,19 +19,11 @@ const {
  * the prototype itself. So the palette, the scale, the corners and the spacing have one home, and
  * this file converts them into the shape Tailwind reads rather than restating any of them.
  *
- * The corners are the one block where the front matter and the prototype's own configuration
- * disagree, and the front matter is the side the tokens took, which is the decision in
- * https://github.com/atlantic-blue/emi/issues/159.
- *
- * The roles the palette is allowed to name are still read from the prototype, so a colour the
- * screens draw with and the token package does not hold stops the build here.
+ * The redesign prototype writes every value into the markup it paints, so there is no
+ * configuration of its own for this file to read. `tools/pipeline/prototype.test.ts` holds the front
+ * matter to the screens colour by colour, in both directions, so a colour that reaches a screen and
+ * not the token package is caught one link up the chain.
  */
-
-const repositoryRoot = join(__dirname, '..', '..');
-
-const prototype = configuredIn(
-  readFileSync(join(repositoryRoot, prototypeDirectory, sourceScreen), 'utf8'),
-);
 
 function hyphenated(name) {
   return name.replace(/[A-Z]/g, (capital) => `-${capital.toLowerCase()}`);
@@ -49,21 +33,14 @@ function points(measured) {
   return `${String(measured)}px`;
 }
 
-const byRole = Object.fromEntries(
-  Object.entries(colour).map(([name, value]) => [hyphenated(name), value]),
-);
-
-/** A colour the prototype draws with and the token package does not hold stops the build here. */
+/**
+ * Every colour of the token package, under the name Tailwind reads. The four phase fills and the
+ * four inks are left out, because the ring reads them from the token package and draws them itself.
+ */
 const colors = Object.fromEntries(
-  Object.keys(prototype.colours).map((role) => {
-    const value = byRole[role];
-
-    if (value === undefined) {
-      throw new Error(`the prototype names the colour ${role} and @emi/tokens does not hold it`);
-    }
-
-    return [role, value];
-  }),
+  Object.entries(colour)
+    .map(([name, value]) => [hyphenated(name), value])
+    .filter(([role]) => !phaseNames.some((phase) => role === phase || role === `${phase}-ink`)),
 );
 
 const borderRadius = Object.fromEntries(

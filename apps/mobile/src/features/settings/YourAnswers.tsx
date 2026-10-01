@@ -54,7 +54,7 @@ function Row({ row, answer, onOpen }: RowProps): ReactNode {
       ) : (
         <View style={styles.opens}>
           {said}
-          <Icon colour={colour.outline} name="chevron" size={OPENS_MARK_SIZE} />
+          <Icon colour={colour.quietIcon} name="chevron" size={OPENS_MARK_SIZE} />
         </View>
       )}
     </>
@@ -139,7 +139,7 @@ export function YourAnswers({
 
 const styles = StyleSheet.create({
   answer: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   back: {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
   },
   backLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-lg'),
   },
   body: { flexGrow: 1, paddingHorizontal: space.spaceLg, paddingVertical: space.spaceXl },
@@ -162,11 +162,11 @@ const styles = StyleSheet.create({
   // the mark sits against the edge rather than against the answer.
   opens: { alignItems: 'center', columnGap: space.spaceSm, flexDirection: 'row' },
   question: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
   },
   row: {
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.md,
     justifyContent: 'center',
     marginTop: space.spaceMd,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   },
   rowBeside: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.md,
     columnGap: space.spaceMd,
     flexDirection: 'row',
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceSm,
   },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
   },
 });

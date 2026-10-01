@@ -82,15 +82,15 @@ export const BEAD_RADIUS = 9;
 export const BEAD_HALO_WIDTH = 2;
 
 /**
- * The two colours the bead is drawn in. The design system gives the active bead on the ring to
- * `primaryContainer` and keeps `primary` for the pressed state, and the bead is never pressed.
+ * The two colours the bead is drawn in. The redesign draws today as a card disc with the text
+ * colour around it, so the bead reads against every arc it can sit on and against the ground.
  *
  * They are named here because the phone and the brand picture both draw this bead, and a colour
  * written at each of the two places is a colour that can disagree with itself.
  */
 export const beadPalette: Readonly<Record<'fill' | 'halo', ColourName>> = {
-  fill: 'primaryContainer',
-  halo: 'surfaceContainerLowest',
+  fill: 'card',
+  halo: 'text',
 };
 
 /** How long one phase runs in the cycle being drawn, in whole days. */

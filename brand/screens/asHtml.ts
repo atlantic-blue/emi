@@ -322,7 +322,7 @@ const FACES = applicationFontFiles
 
 const resetFor = (size: PhoneSize): string => `
 * { box-sizing: border-box; }
-body { margin: 0; padding: 40px; background: ${colour.surfaceContainer}; font-family: system-ui, sans-serif; }
+body { margin: 0; padding: 40px; background: ${colour.field}; font-family: system-ui, sans-serif; }
 div {
   display: flex;
   flex-direction: column;
@@ -338,12 +338,12 @@ svg { flex-shrink: 0; }
   height: ${size.height}px;
   border-radius: 36px;
   overflow: hidden;
-  border: 1px solid ${colour.outlineVariant};
+  border: 1px solid ${colour.line};
 }
 .phone > div { height: 100%; }
-.title { font-size: 15px; font-weight: 600; color: ${colour.onSurface}; margin: 0 0 2px; }
-.note { font-size: 13px; color: ${colour.onSurfaceVariant}; margin: 0 0 12px; min-height: 34px; }
-.caveat { font-size: 13px; color: ${colour.onSurfaceVariant}; margin: 20px 0 0; max-width: 1200px; }
+.title { font-size: 15px; font-weight: 600; color: ${colour.text}; margin: 0 0 2px; }
+.note { font-size: 13px; color: ${colour.secondaryText}; margin: 0 0 12px; min-height: 34px; }
+.caveat { font-size: 13px; color: ${colour.secondaryText}; margin: 20px 0 0; max-width: 1200px; }
 `;
 
 /**

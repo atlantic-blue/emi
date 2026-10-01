@@ -119,7 +119,7 @@ export function OnboardingScreen({
             testID={onboardingBackTestID}
           >
             <View style={styles.backMark}>
-              <Icon colour={colour.onSurface} name="chevron" size={BACK_MARK_SIZE} />
+              <Icon colour={colour.text} name="chevron" size={BACK_MARK_SIZE} />
             </View>
           </Pressable>
         )}
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceMd,
   },
   footer: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     padding: space.spaceLg,
   },
@@ -210,15 +210,15 @@ const styles = StyleSheet.create({
   // The lead line answers the title, so it carries the strongest text colour. The lines under it
   // keep the same size, because two of them say what Emi is not and nothing there is a footnote.
   lead: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   lineAfter: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     marginTop: space.spaceMd,
     paddingTop: space.spaceMd,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceSm,
   },
   skipLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-md'),
   },
   // The way past stands outside the scrolling middle, under what she was asked and over the one
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   // which is where a woman who has just found she cannot answer is least likely to look.
   wayPast: { alignItems: 'center', paddingTop: space.spaceMd },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
     marginBottom: space.spaceMd,
   },

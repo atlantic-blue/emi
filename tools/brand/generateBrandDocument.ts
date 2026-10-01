@@ -59,7 +59,7 @@ export interface BrandSources {
 }
 
 /** The ground every measured pair is read against, which is the ground a screen sits on. */
-export const GROUND: ColourName = 'surface';
+export const GROUND: ColourName = 'ground';
 
 export const shippedSources: BrandSources = {
   palette: colours,

@@ -45,14 +45,14 @@ export function UnexpectedBleeding({ marked, onMark }: Props): ReactNode {
 
 const styles = StyleSheet.create({
   block: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: 1,
     gap: space.spaceSm,
     marginTop: space.spaceSm,
     paddingTop: space.spaceMd,
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   mark: {
@@ -66,11 +66,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceMd,
     paddingVertical: space.spaceSm,
   },
-  markChosen: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
+  markChosen: { backgroundColor: colour.accentSoft, borderColor: colour.accent },
   markLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
-  markLabelChosen: { color: colour.onSurface },
-  markPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
+  markLabelChosen: { color: colour.text },
+  markPlain: { backgroundColor: colour.field, borderColor: colour.field },
 });

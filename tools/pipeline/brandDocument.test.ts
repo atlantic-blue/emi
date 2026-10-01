@@ -45,7 +45,7 @@ const moved: BrandSources = {
   ...shippedSources,
   palette: {
     ...colours,
-    periodInk: { ...colours.periodInk, value: colours.onSurfaceVariant.value },
+    periodInk: { ...colours.periodInk, value: colours.secondaryText.value },
   },
 };
 
@@ -100,7 +100,7 @@ describe('a changed token leaves the brand document stale and the run red', () =
       expect(finished.output).toContain(`${brandDocumentPath} is stale`);
       expect(finished.output).toContain('disagree at line');
       expect(finished.output).toContain(
-        `committed: "- \`periodInk\` is \`${colours.onSurfaceVariant.value}\``,
+        `committed: "- \`periodInk\` is \`${colours.secondaryText.value}\``,
       );
       expect(finished.output).toContain(
         `generated: "- \`periodInk\` is \`${colours.periodInk.value}\``,
@@ -185,10 +185,11 @@ describe('a changed token leaves the brand document stale and the run red', () =
     it('measures the pairs it refuses instead of leaving them unexplained', () => {
       const refused = refusedPairs();
 
-      // The nearest misses are three of the four inks on their own fill, which is the measurement
-      // contract SEE-2 exists to answer.
-      expect(committed).toContain('- periodInk on period is 4.24 to 1');
-      expect(committed).toContain('- lutealInk on luteal is 3.47 to 1');
+      // The nearest misses are a text colour on a tinted surface, within a tenth of the floor. A
+      // phase fill is not a ground, so an ink on its own fill is measured in the paragraph below
+      // rather than in this list.
+      expect(committed).toContain('- secondaryText on accentSoft is 4.49 to 1');
+      expect(committed).toContain('- accent on washWarm is 4.47 to 1');
       expect(refused.every((pair) => pair.ratio < CONTRAST_FLOOR)).toBe(true);
       expect(refused.filter((pair) => !committed.includes(`- ${report(pair)}`))).toEqual([]);
       expect(refused.length).toBeGreaterThan(0);
@@ -216,24 +217,28 @@ describe('a changed token leaves the brand document stale and the run red', () =
       const fills = fillPairs().map((pair) => pair.text);
 
       expect(inkPartnerOf(shippedSources, 'period')).toBe('periodInk');
-      expect(inkPartnerOf(shippedSources, 'surfaceTint')).toBeNull();
-      expect(inkPartnerOf(shippedSources, 'errorContainer')).toBeNull();
-      expect(fills).not.toContain('surfaceTint');
-      expect(fills).not.toContain('errorContainer');
+      expect(inkPartnerOf(shippedSources, 'accent')).toBeNull();
+      expect(inkPartnerOf(shippedSources, 'accentSoft')).toBeNull();
+      expect(fills).not.toContain('accent');
+      expect(fills).not.toContain('accentSoft');
     });
 
-    it('says that no phase fill reaches the floor, which is why each one has an ink', () => {
+    // The period fill is the accent, which carries white text where it is a button, so it reaches the
+    // floor as a value. It still carries no text as a fill, and the document says which way round it
+    // is today, because a reader cannot tell that from the list.
+    it('says which phase fill reaches the floor, and that it carries no text anyway', () => {
       const passing = fillPairs().filter((pair) => pair.ratio >= CONTRAST_FLOOR);
 
-      expect(passing.map((pair) => pair.text)).toEqual([]);
-      expect(committed).toContain('No phase fill measures above the floor.');
+      expect(passing.map((pair) => pair.text)).toEqual(['period']);
+      expect(committed).toContain('The fill `period` measures above the floor.');
+      expect(committed).toContain('It still carries no text.');
     });
 
     it('moves the ratio it prints when the colour under it moves', () => {
       const before = report({
         text: 'periodInk',
-        ground: 'surface',
-        ratio: contrastRatio(colours.periodInk.value, colours.surface.value),
+        ground: 'ground',
+        ratio: contrastRatio(colours.periodInk.value, colours.ground.value),
       });
       const after = brandDocument(moved);
 

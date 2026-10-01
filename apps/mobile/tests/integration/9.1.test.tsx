@@ -47,19 +47,19 @@ beforeEach(() => {
   resetExpoSecureStore();
 });
 
-describe('three typefaces across the whole product', () => {
+describe('one face for every word, and a monospace for the figures', () => {
   describe('the files the application loads', () => {
     it('loads each family the design system names, at every weight it ships', () => {
       expect(applicationFontFiles.map((file) => file.name)).toEqual([
-        'Newsreader16pt-Regular',
-        'Newsreader16pt-Medium',
-        'PlusJakartaSans-Regular',
-        'PlusJakartaSans-SemiBold',
+        'Figtree-Regular',
+        'Figtree-SemiBold',
+        'Figtree-Bold',
+        'Figtree-ExtraBold',
         'JetBrainsMono-Regular',
         'JetBrainsMono-Medium',
       ]);
-      expect(face.display).toBe('Newsreader');
-      expect(face.text).toBe('Plus Jakarta Sans');
+      expect(face.display).toBe('Figtree');
+      expect(face.text).toBe('Figtree');
       expect(face.data).toBe('JetBrains Mono');
     });
 
@@ -84,10 +84,12 @@ describe('three typefaces across the whole product', () => {
 
       expect(handed).not.toContain('Fraunces');
       expect(handed).not.toContain('IBMPlexMono');
+      expect(handed).not.toContain('Newsreader');
+      expect(handed).not.toContain('PlusJakartaSans');
       expect(Object.keys(fontsToLoad)).toHaveLength(6);
       expect(Object.values(faceFamily).map((name) => fonts[name].family)).toEqual([
-        'Newsreader 16pt',
-        'Plus Jakarta Sans',
+        'Figtree',
+        'Figtree',
         'JetBrains Mono',
       ]);
     });

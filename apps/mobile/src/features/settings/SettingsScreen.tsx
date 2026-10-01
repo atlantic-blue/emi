@@ -134,12 +134,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
   },
   backLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   body: { flexGrow: 1, paddingHorizontal: space.spaceLg, paddingVertical: space.spaceXl },
   row: {
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.md,
     justifyContent: 'center',
     marginTop: space.spaceMd,
@@ -150,15 +150,15 @@ const styles = StyleSheet.create({
     rowGap: space.spaceXs,
   },
   rowLead: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
   },
   rowLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
   },
 });

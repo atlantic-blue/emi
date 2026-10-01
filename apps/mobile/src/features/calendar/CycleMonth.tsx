@@ -107,7 +107,7 @@ function Square({ day, square }: SquareProps): ReactNode {
       </Text>
       {chosen ? (
         <View testID={chosenDayMarkTestID}>
-          <Icon colour={colour.surfaceContainerLowest} name="check" size={SQUARE_MARK_SIZE} />
+          <Icon colour={colour.card} name="check" size={SQUARE_MARK_SIZE} />
         </View>
       ) : null}
     </>
@@ -227,13 +227,13 @@ const theMark: Readonly<Record<DayMark, ViewStyle>> = StyleSheet.create({
   bled: { backgroundColor: colour.period, borderColor: colour.period },
   forecast: { borderColor: colour.period, borderStyle: 'dotted' },
   plain: {},
-  today: { borderColor: colour.primary, borderStyle: 'solid' },
+  today: { borderColor: colour.accent, borderStyle: 'solid' },
 });
 
 const styles = StyleSheet.create({
   calendar: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.lg,
     borderWidth: stroke.hairline,
     marginTop: space.spaceMd,
@@ -242,37 +242,37 @@ const styles = StyleSheet.create({
   // The cycle day is the smallest thing in a square, because it is the number she checks rather
   // than the number she looks for, and the date under it is what she scans the row by.
   cycleDay: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
   },
   // Every square carries the line the chosen one carries, drawn in its own ground where it is not
   // chosen, so nothing moves by a point and a half when she presses one.
   day: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainer,
-    borderColor: colour.surfaceContainer,
+    backgroundColor: colour.field,
+    borderColor: colour.field,
     borderRadius: radius.md,
     borderWidth: stroke.icon,
     flex: 1,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
   },
-  dayChosen: { backgroundColor: colour.surfaceTint, borderColor: colour.onPrimaryFixedVariant },
+  dayChosen: { backgroundColor: colour.accent, borderColor: colour.accentSoftInk },
   dayNumber: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
-  dayNumberChosen: { color: colour.surfaceContainerLowest },
-  dayNumberOnFill: { color: colour.surfaceContainerLowest },
+  dayNumberChosen: { color: colour.card },
+  dayNumberOnFill: { color: colour.card },
   dayOutOfReach: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
+    borderColor: colour.card,
     opacity: 0.4,
   },
   empty: { flex: 1, minHeight: MINIMUM_TAP_TARGET },
   week: { flexDirection: 'row', gap: space.spaceXs, marginBottom: space.spaceXs },
   weekday: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     flex: 1,
     ...textStyle('label-sm'),
     textAlign: 'center',

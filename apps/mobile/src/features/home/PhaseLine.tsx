@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   // The number carries the display role rather than the figure role the ring uses, because this is
   // the one thing on the screen meant to be read from the other side of a room.
   day: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('display-lg-mobile'),
   },
   // The words sit on the number's baseline, so the small phase reads as part of the same line

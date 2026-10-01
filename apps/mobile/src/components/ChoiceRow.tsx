@@ -70,7 +70,7 @@ export function MultiChoiceRow({ label, isChosen, onPress, testID }: Props): Rea
         <View style={isChosen ? [styles.box, styles.boxChosen] : styles.box}>
           {isChosen ? (
             <Icon
-              colour={colour.primaryContainer}
+              colour={colour.accent}
               name="check"
               size={TICK_SIZE}
               testID={testID === undefined ? undefined : checkboxMarkTestID(testID)}
@@ -85,35 +85,35 @@ export function MultiChoiceRow({ label, isChosen, onPress, testID }: Props): Rea
 const styles = StyleSheet.create({
   box: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outline,
+    backgroundColor: colour.card,
+    borderColor: colour.quietIcon,
     borderRadius: radius.sm,
     borderWidth: stroke.hairline,
     height: CONTROL_SIZE,
     justifyContent: 'center',
     width: CONTROL_SIZE,
   },
-  boxChosen: { borderColor: colour.primaryContainer },
+  boxChosen: { borderColor: colour.accent },
   core: {
-    backgroundColor: colour.surface,
+    backgroundColor: colour.ground,
     borderRadius: radius.full,
     height: RADIO_CORE,
     width: RADIO_CORE,
   },
   label: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     flexShrink: 1,
     ...textStyle('body-lg'),
   },
   labelChosen: {
-    color: colour.onSurface,
+    color: colour.text,
     flexShrink: 1,
     ...textStyle('body-lg'),
   },
   radio: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outline,
+    backgroundColor: colour.card,
+    borderColor: colour.quietIcon,
     borderRadius: radius.full,
     borderWidth: stroke.hairline,
     height: CONTROL_SIZE,
@@ -121,12 +121,12 @@ const styles = StyleSheet.create({
     width: CONTROL_SIZE,
   },
   radioChosen: {
-    backgroundColor: colour.primaryContainer,
-    borderColor: colour.primaryContainer,
+    backgroundColor: colour.accent,
+    borderColor: colour.accent,
   },
   row: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLow,
+    backgroundColor: colour.field,
     borderRadius: radius.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceMd,
     paddingVertical: space.spaceSm,
   },
-  rowChosen: { backgroundColor: colour.surfaceContainerHigh },
+  rowChosen: { backgroundColor: colour.field },
   // The control is twenty points across and sits in a box of the full tap floor, so a press that
   // lands beside it still lands on it.
   target: {

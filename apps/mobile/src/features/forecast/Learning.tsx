@@ -86,23 +86,23 @@ const styles = StyleSheet.create({
   // The same size and colour the settled forecast draws its range at, because the two ends mean
   // the same thing on both screens and only the sentence under them changes.
   range: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
     marginBottom: space.spaceSm,
   },
   label: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
     marginBottom: space.spaceXs,
   },
   length: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   // The learning state is quieter than the forecast it will become: the sentence takes the body
   // size rather than the heading size the two days carry, because there is no date to lead with.
   wanted: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
     marginBottom: space.spaceXs,
   },

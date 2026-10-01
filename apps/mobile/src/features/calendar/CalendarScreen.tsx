@@ -204,15 +204,15 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
   },
   linkLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-lg'),
   },
   // A way to another month is a pill she can see rather than a word among words, because the two
   // of them stand either side of the title and a thumb has to find them without reading.
   page: {
     alignItems: 'center',
-    backgroundColor: colour.primaryFixed,
-    borderColor: colour.primary,
+    backgroundColor: colour.accentSoft,
+    borderColor: colour.accent,
     borderRadius: radius.md,
     borderWidth: stroke.hairline,
     justifyContent: 'center',
@@ -221,14 +221,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceMd,
   },
   pageLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-sm'),
   },
   // The month name is the only box in its row that gives way. It is longer in Spanish than in
   // English, and longer again in a face the phone substitutes, and each way to another month has a
   // thumb to hold, so the width comes off the words.
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     flexShrink: 1,
     ...textStyle('headline-md'),
   },

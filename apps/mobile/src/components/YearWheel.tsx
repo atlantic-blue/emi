@@ -93,18 +93,18 @@ export function YearWheel({ years, chosen, opensOn, labelOf, onChoose }: Props):
 }
 
 const styles = StyleSheet.create({
-  chosen: { backgroundColor: colour.secondaryContainer },
+  chosen: { backgroundColor: colour.field },
   chosenReading: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
   },
   reading: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   well: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.xl,
     borderWidth: stroke.hairline,
     padding: space.spaceSm,

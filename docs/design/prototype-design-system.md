@@ -1,155 +1,176 @@
 ---
-name: Warm Editorial Journal
+name: The approved redesign of 2026-10-01
 colors:
-  surface: '#fff8f5'
-  surface-dim: '#e1d8d5'
-  surface-bright: '#fff8f5'
-  surface-container-lowest: '#ffffff'
-  surface-container-low: '#fbf2ee'
-  surface-container: '#f5ece8'
-  surface-container-high: '#efe6e3'
-  surface-container-highest: '#eae1dd'
-  on-surface: '#1f1b19'
-  on-surface-variant: '#56423d'
-  inverse-surface: '#342f2d'
-  inverse-on-surface: '#f8efeb'
-  outline: '#89726c'
-  outline-variant: '#dcc1b9'
-  surface-tint: '#9c4327'
-  primary: '#843117'
-  on-primary: '#ffffff'
-  primary-container: '#a3482c'
-  on-primary-container: '#ffd8ce'
-  inverse-primary: '#ffb59f'
-  secondary: '#625e58'
-  on-secondary: '#ffffff'
-  secondary-container: '#e8e1d9'
-  on-secondary-container: '#68645e'
-  tertiary: '#921f12'
-  on-tertiary: '#ffffff'
-  tertiary-container: '#b43727'
-  on-tertiary-container: '#ffd8d2'
-  error: '#ba1a1a'
-  on-error: '#ffffff'
-  error-container: '#ffdad6'
-  on-error-container: '#93000a'
-  primary-fixed: '#ffdbd1'
-  primary-fixed-dim: '#ffb59f'
-  on-primary-fixed: '#3a0a00'
-  on-primary-fixed-variant: '#7d2c12'
-  secondary-fixed: '#e8e1d9'
-  secondary-fixed-dim: '#ccc5be'
-  on-secondary-fixed: '#1e1b17'
-  on-secondary-fixed-variant: '#4a4641'
-  tertiary-fixed: '#ffdad4'
-  tertiary-fixed-dim: '#ffb4a8'
-  on-tertiary-fixed: '#410100'
-  on-tertiary-fixed-variant: '#8b190e'
-  background: '#fff8f5'
-  on-background: '#1f1b19'
-  surface-variant: '#eae1dd'
-  period: '#d97d6e'
-  period-ink: '#5c2018'
-  follicular: '#e5a96d'
-  follicular-ink: '#5e3b10'
-  ovulation: '#a8a663'
-  ovulation-ink: '#404218'
-  luteal: '#9b849e'
-  luteal-ink: '#433246'
+  ground: '#FFF8F3'
+  card: '#FFFFFF'
+  field: '#FFF2EB'
+  line: '#F1E1D6'
+  dark-card: '#4A2A2E'
+  text: '#2E2224'
+  secondary-text: '#76625F'
+  on-accent: '#FFFFFF'
+  accent: '#B8434E'
+  accent-pressed: '#8E2F3A'
+  accent-soft: '#FFDCDC'
+  accent-soft-ink: '#AF404A'
+  accent-tile: '#F9E3E1'
+  dock-quiet: '#826F69'
+  picker-near: '#866E65'
+  picker-far: '#906B59'
+  disabled-label: '#C9B4AA'
+  quiet-icon: '#B49F96'
+  warm-icon: '#A0521A'
+  dot-off: '#EFDCCF'
+  step-track: '#F3E2D6'
+  empty-ring: '#E6CFC2'
+  unchecked-ring: '#D9C2B6'
+  period: '#B8434E'
+  period-ink: '#8E2F3A'
+  follicular: '#F5DCCB'
+  follicular-ink: '#2E2224'
+  ovulation: '#E9A15F'
+  ovulation-ink: '#8A4A1C'
+  luteal: '#C27E86'
+  luteal-ink: '#7E3E48'
+  wash-warm: '#FFE8CD'
+  wash-amber: '#FFD6BA'
+  wash-rose: '#F6D3D0'
+  wash-blush: '#FBE6E2'
+  wash-pink: '#FFE6EE'
+  notification-middle: '#8A4A52'
+  notification-end: '#E9A07A'
+  platform-line: '#E6D6CC'
+  platform-blue: '#1F6FD1'
+raised:
+  accent-soft-ink:
+    prototype: '#B8434E'
+    on: accent-soft
+    reason: the ink on an accent soft chip, 4.18 on that chip, under the floor of 4.5
+  dock-quiet:
+    prototype: '#94807A'
+    on: ground
+    reason: the dock label and icon of a tab she is not on, 3.55 on the ground
+  picker-near:
+    prototype: '#A48F87'
+    on: ground
+    reason: the number next to the one she chose in a picker, 2.91 on the ground
+  picker-far:
+    prototype: '#D4C2B9'
+    on: ground
+    reason: the number two away from the one she chose, 1.63 on the ground
+wash:
+  soft:
+    - '#FFE8CD'
+    - '#FFDCDC'
+    - '#FFF2EB'
+    - '#FFF8F3'
+  period:
+    - '#FFD6BA'
+    - '#FFDCDC'
+    - '#FFDCDC'
+    - '#FFF8F3'
+  ovulation:
+    - '#FFD6BA'
+    - '#FFE8CD'
+    - '#FFE8CD'
+    - '#FFF8F3'
+  luteal:
+    - '#FFDCDC'
+    - '#F6D3D0'
+    - '#FBE6E2'
+    - '#FFF8F3'
+rounded:
+  sm: '10px'
+  DEFAULT: '12px'
+  md: '14px'
+  lg: '16px'
+  xl: '18px'
+  xxl: '28px'
+  full: '999px'
+spacing:
+  space-xs: '4px'
+  space-sm: '8px'
+  space-md: '12px'
+  space-lg: '16px'
+  margin: '20px'
+  space-xl: '24px'
+  margin-md: '28px'
+  margin-lg: '56px'
 typography:
   display-lg:
-    fontFamily: Newsreader
-    fontSize: 2.75rem
-    fontWeight: '400'
-    lineHeight: 3.5rem
-    letterSpacing: -0.02em
+    fontFamily: 'Figtree'
+    fontSize: '50px'
+    fontWeight: '800'
+    lineHeight: '60px'
+    letterSpacing: '-0.02em'
   display-lg-mobile:
-    fontFamily: Newsreader
-    fontSize: 2.25rem
-    fontWeight: '400'
-    lineHeight: 2.75rem
-    letterSpacing: -0.015em
+    fontFamily: 'Figtree'
+    fontSize: '34px'
+    fontWeight: '800'
+    lineHeight: '42px'
+    letterSpacing: '-0.02em'
   headline-lg:
-    fontFamily: Newsreader
-    fontSize: 1.75rem
-    fontWeight: '400'
-    lineHeight: 2.25rem
-    letterSpacing: -0.01em
+    fontFamily: 'Figtree'
+    fontSize: '28px'
+    fontWeight: '800'
+    lineHeight: '34px'
+    letterSpacing: '-0.02em'
   headline-md:
-    fontFamily: Newsreader
-    fontSize: 1.25rem
-    fontWeight: '500'
-    lineHeight: 1.625rem
+    fontFamily: 'Figtree'
+    fontSize: '22px'
+    fontWeight: '800'
+    lineHeight: '28px'
+    letterSpacing: '-0.01em'
   headline-sm:
-    fontFamily: Newsreader
-    fontSize: 1.125rem
-    fontWeight: '500'
-    lineHeight: 1.5rem
+    fontFamily: 'Figtree'
+    fontSize: '18px'
+    fontWeight: '800'
+    lineHeight: '24px'
   body-lg:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 1rem
+    fontFamily: 'Figtree'
+    fontSize: '16px'
     fontWeight: '400'
-    lineHeight: 1.5rem
+    lineHeight: '24px'
   body-sm:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 0.875rem
+    fontFamily: 'Figtree'
+    fontSize: '14px'
     fontWeight: '400'
-    lineHeight: 1.25rem
+    lineHeight: '20px'
   label-md:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 0.875rem
-    fontWeight: '600'
-    lineHeight: 1.25rem
-    letterSpacing: 0.01em
+    fontFamily: 'Figtree'
+    fontSize: '13px'
+    fontWeight: '700'
+    lineHeight: '18px'
   label-sm:
-    fontFamily: Plus Jakarta Sans
-    fontSize: 0.75rem
+    fontFamily: 'Figtree'
+    fontSize: '11px'
     fontWeight: '600'
-    lineHeight: 1rem
-    letterSpacing: 0.02em
+    lineHeight: '15px'
+    letterSpacing: '0.02em'
   data-lg:
-    fontFamily: JetBrains Mono
-    fontSize: 1.5rem
+    fontFamily: 'JetBrains Mono'
+    fontSize: '24px'
     fontWeight: '500'
-    lineHeight: 1.875rem
-    letterSpacing: -0.03em
+    lineHeight: '30px'
+    letterSpacing: '-0.02em'
   data-sm:
-    fontFamily: JetBrains Mono
-    fontSize: 0.75rem
+    fontFamily: 'JetBrains Mono'
+    fontSize: '12px'
     fontWeight: '500'
-    lineHeight: 1rem
-    letterSpacing: 0.02em
-rounded:
-  sm: 0.25rem
-  DEFAULT: 0.5rem
-  md: 0.75rem
-  lg: 1rem
-  xl: 1.5rem
-  full: 9999px
-spacing:
-  margin: 1.5rem
-  margin-md: 2rem
-  margin-lg: 3.5rem
-  space-xs: 0.25rem
-  space-sm: 0.5rem
-  space-md: 1rem
-  space-lg: 1.5rem
-  space-xl: 2rem
+    lineHeight: '16px'
+    letterSpacing: '0.02em'
 ---
 
-The prototype this document describes is in `docs/design/prototype/`. The front matter is read out of
-`screen-0-style-sheet.html`, which carries the configuration all six screens draw with, and it is not
-written by hand. The four phase fills and the four inks beside them are the one addition: the screens
-draw those eight as plain values inside the ring rather than through the configuration, so the front
-matter names them and `tools/pipeline/prototype.test.ts` reads them back out of the style sheet
-screen. That check also holds every other value the two sides share. The corners are the one block
-the two sides do not agree about. Emi draws the scale in the front matter here, which answers
-https://github.com/atlantic-blue/emi/issues/159, and the export keeps its own because it is an export.
+The prototype this document describes is in `docs/design/prototype/`. The front matter is read
+against all fifty two screens by `tools/pipeline/prototype.test.ts`: every colour a screen paints
+with has a name above, and every name above is painted by a screen. The screens carry no
+configuration of their own, so each one writes its colours straight into the markup, and a
+translucent value is held to the opaque colour underneath it.
 
-The front matter also names three spacing steps fewer than the export. `gutter`, `gutter-md` and
-`gutter-lg` each repeated the value of another step, and no screen of the application drew any of
-them, so the design system retired the three names. The export keeps them because its own markup
-reaches for them.
+Four names carry two values. Each one is a colour the prototype paints below the contrast floor,
+and the `raised` block records what the prototype paints, the ground it was measured on and the
+reason it moved. The screens are read against the painted value and the token package builds the
+raised one, so neither half of the document has to lie about the other.
 
 Every paragraph below names a role. None of them names a value. The front matter above is the only
 place a colour, a size or a step is written, so this document describes one palette.
@@ -158,13 +179,12 @@ place a colour, a size or a step is written, so this document describes one pale
 
 This design system is a calm, warm, adult private journal. It rejects the hyper feminine and
 cartoonish habits of the category: no bodies, no floral pastels, no droplets. It treats cyclical
-health as an intimate editorial practice. The tone is reassuring, dignified and private, closer to
-writing in a linen bound notebook than to using an application.
+health as an intimate editorial practice. The tone is reassuring, dignified and private.
 
-The movement is warm editorial minimalism with the refinement of good stationery.
+The movement is warm minimalism with the refinement of good stationery.
 
-- Generous space, on a paper toned ground.
-- Bookish serif headings, with a legible geometric body face and monospaced figures for data.
+- Generous space, on a warm paper ground, with a soft wash at the top of each screen.
+- One face for every word, in four weights, with monospaced figures for the recovery code.
 - Low contrast hairlines and soft card surfaces, rather than dramatic shadows.
 - A lowercase wordmark, `emi`, which reads as quiet rather than institutional.
 - Abstract continuous line work and circular phase ribbons. No anatomical or floral drawing.
@@ -175,145 +195,69 @@ The palette comes from unbleached paper, earth pigments and natural textiles.
 
 ### The canvas and the surfaces
 
-- **Canvas**: `surface`. The ground the whole application sits on.
-- **Card**: `surface-container-lowest`. Panels and the focused entry card.
-- **Recessed surface**: `surface-container`. Inset metrics, inactive day wells and secondary cards.
-- **Containers between them**: `surface-container-low` and `surface-container-high`. The step
-  between a card and the ground it sits on.
-- **Body text**: `on-surface`. Editorial headings and interface words alike. It is never pure black.
-- **Secondary text**: `on-surface-variant`. Metadata, footnotes and supporting lines.
-- **Hairline**: `outline-variant`. A one point border that defines structure without a shadow.
+The ground is the warm paper every screen sits on. The card is the plain surface a section is
+raised onto, and the field is the quieter surface a control sits in. The line is the hairline
+between a row and the row under it. The dark card is the one surface that reverses, and it carries
+the white that the accent carries.
+
+Each screen draws a soft wash across its top, tinted by the phase she is in. The wash is four
+gradients, one for the period, one for the days after it, one for ovulation and one for the luteal
+phase, and each runs from a warm stop through a rose or an amber stop to the ground. A wash is
+never a ground for text, because a gradient has no one value to measure.
 
 ### The accents and the states
 
-- **Primary action**: `primary-container`, with `on-primary` on top of it. Affirmative actions,
-  primary chips and the active bead on the ring. The pressed state steps to `primary`.
-- **Selected well**: `surface-container-high`, with `on-surface` on top of it. Selected dates,
-  active toggle chips and pressed states.
-- **Alert**: `error`, with `on-error` on top of it, and `error-container` behind a longer message.
+The accent is the one colour that acts. It carries white text, it fills the button that writes, and
+it draws the period arc. The pressed accent is the same hue, darker, for the moment a control is
+held and for the ink of a phase name. The accent soft is the tint behind a chip, and the chip's own
+ink is a darker shade of the accent, because the accent itself does not clear the floor on it.
+
+The quiet label is the only text colour that is allowed under the floor, and it is allowed there
+because it labels a control that cannot be pressed. The dock draws the tab she is not on in its own
+quiet colour, which is raised above the floor from what the prototype paints.
+
+Two screens draw the operating system rather than Emi: the notification on the lock screen and the
+dialog the phone puts up to ask about notifications. The platform's own line and blue are named so
+the check can read them, and no pair on a platform surface is measured, because Emi never paints
+those surfaces.
 
 ### The four phases, and the ink beside each one
 
-A phase is drawn in its own fill. The words about that phase are written in the ink beside it,
-because a fill is too light to carry text. Colour alone never carries the meaning: the ring also
-leaves a gap of ground at every boundary and writes the phase name in words.
-
-- **Period**: fill `period`, ink `period-ink`.
-- **Follicular**: fill `follicular`, ink `follicular-ink`.
-- **Ovulation**: fill `ovulation`, ink `ovulation-ink`.
-- **Luteal**: fill `luteal`, ink `luteal-ink`.
-
-An ink is measured against the surface it is written on, never against its own fill. Three of the
-four inks fail the contrast floor on their own fill, which is why no text is ever drawn on a fill.
+Each phase has a fill and an ink. The fill draws the arc of the ring, and the ink writes the name of
+the phase. The ink is never written on its own fill, which is contract SEE-2, and it is never equal
+to its fill, so the ring that writes a phase name on the ground stays readable. Every ink clears the
+contrast floor on the ground.
 
 ## Typography
 
-Three faces, and the front matter names the size, the line height, the tracking and the weight of
-every role.
+One face carries every word of the application, in four weights: regular for running text, semibold
+for a quiet label, bold for a heading inside a card, and extra bold for a number and a screen title.
+A monospaced face carries the recovery code, where a reader has to tell one character from another.
 
-- **Display and headlines**: Newsreader. An editorial serif with warmth. It carries the daily
-  reflection, the entry date, a cycle milestone and a section title. The roles are `display-lg`,
-  `display-lg-mobile`, `headline-lg`, `headline-md` and `headline-sm`.
-- **Body and controls**: Plus Jakarta Sans. A geometric sans with open tracking, for symptom notes,
-  insights and button text. The roles are `body-lg`, `body-sm`, `label-md` and `label-sm`.
-- **Numbers and measurements**: JetBrains Mono. Monospaced figures for a cycle day, a calendar grid,
-  a temperature and a duration. The roles are `data-lg` and `data-sm`. A figure that is
-  monospaced does not move as it changes.
-- **The wordmark**: always lowercase, `emi`, set in Newsreader. Never in capitals.
+The scale runs from the label the dock draws up to the cycle day inside the ring. Every role names
+its own line height, and no role is set below the line height floor.
 
 ## Layout and spacing
 
-The layout sits on an eight point grid. The front matter names every step.
+A screen is 390 by 844 points. Its horizontal padding is the margin, and never a spacing step. A
+screen's content begins at the top, and no screen centres its body.
 
-- **Phone**: one column, fluid cards, `margin` around the canvas, and `space-md` between cards. Every
-  interactive element is at least 44 points on both axes.
-- **Tablet**: six columns, with `margin-md` around the canvas. The ring and the journal entry sit
-  side by side or stack.
-- **Desktop**: twelve columns, with `margin-lg` around the canvas, held to a reading width so the
-  page does not spread.
-
-Space between components is `space-xs` through `space-xl`. The scale prefers room over density.
-
-`space-xl` is the largest gap the scale holds, and it separates one section of a screen from the
-next. It is not the gap between a sentence and the button under it, which is `space-md` or
-`space-lg`. A screen that puts the largest gap inside a section has used the wrong step.
-
-`margin` is the horizontal padding of a screen, and a screen reaches for it rather than for a
-spacing step. The two carry the same number today, and they answer different questions: `margin`
-says how far the words sit from the glass, and `space-lg` says how far one block sits from the next.
-A screen that wants a wider or a narrower edge than the rest says so, and it says why.
-
-The content of a screen begins at the top of it, and no screen centres its body. The spare room
-falls under the last thing on the screen. A body that centres its content puts half the spare room
-above the first thing she reads, which draws a short column of words in the middle of an empty
-glass. A block inside a body may still centre what is in it, which is how the first run holds the
-one control she came to press.
-
-## Elevation and depth
-
-There are no deep shadows, no blur and no glass. Depth comes from a tonal step and a hairline.
-
-- **Layer 0, the canvas**: `surface`.
-- **Layer 1, cards and inset containers**: `surface-container-lowest` or `surface-container`, each
-  bound by a one point border in `outline-variant`.
-- **Layer 2, a floating sheet**: `surface-container-lowest`, a one point border in `outline-variant`,
-  and one ambient shadow: `on-surface` at 5 per cent, offset 4 points down, blurred 20 points, drawn
-  2 points inside the edge.
-
-Focus is commanded by contrast and by a change of surface tone, never by an artificial light.
+The spacing steps run from the gap inside a chip up to the gap between one section and the next.
+The largest step separates a section from a section, never a sentence from the button under it.
 
 ## Shapes
 
-Two corners carry the interface, and both are named in the `rounded` block of the front matter.
+A control is rounded on a scale of its own, from the small corner of a field up to the large corner
+of a card, with the full corner reserved for anything circular: an avatar, a chip, a dot, a tab
+target and the ring itself.
 
-- **Cards and containers**: the `xl` corner.
-- **Buttons, fields and chips**: the `lg` corner.
-- **The ring and any circular node**: a true circle, drawn in a single stroke.
-- **Illustration**: never representational. Looping continuous paths, orbital rings and lunar
-  geometry. No anatomical drawing, no droplets, no botanical pastels.
+## Elevation and depth
 
-## Components
+Depth is a shadow of the text colour at a few parts in a hundred, and never a darker surface. A card
+lifts off the ground by one or two points. Nothing in this design system drops a hard shadow.
 
-### Buttons
+## What this document does not hold
 
-- **Primary**: a `primary-container` ground with `on-primary` words, the `lg` corner, at least 48
-  points high and at least 44 points of tap target. The pressed state steps to `primary`.
-- **Secondary**: a `surface-container-lowest` ground, a one point border in `outline-variant`, and
-  `on-surface` words. The pressed state steps to `surface-container`.
-- **Text button**: `on-surface` words with an underline four points below them. No ground and no
-  border.
-
-### The four phase ring
-
-- One continuous vector ring, divided into four arcs.
-- Each arc is stroked in its own phase fill, at a stroke the front matter does not name and the
-  component holds.
-- A metric or a label inside or beside an arc is written in that phase's ink.
-- The cycle day at the centre is set in `data-lg`.
-
-### Cards and inset panels
-
-- **Card**: a `surface-container-lowest` ground, the `xl` corner, a one point border in
-  `outline-variant`, and `space-lg` of padding inside it.
-- **Recessed card**: a `surface-container` ground, for a historical day and a supplementary note.
-
-### Chips and symptom selectors
-
-- **Resting**: a `surface-container` ground, a one point border in `outline-variant`, `on-surface`
-  words, the `lg` corner, and padding of `space-sm` by `space-md`.
-- **Selected**: a `surface-container-high` ground, a border in `primary-container`, and `on-surface`
-  words.
-
-### Fields and journal text areas
-
-- A `surface-container-lowest` ground, the `lg` corner, a one point border in `outline-variant`, and
-  `space-md` of padding inside it.
-- The focused state draws a one point ring in `primary-container`.
-- The text she types is `body-lg`. The prompt above it is a headline role, so it is set in
-  Newsreader.
-
-### Checkboxes and radio controls
-
-- A radio control is two circles, 20 points across, inside a 44 point tap target. The selected core
-  is `primary-container`.
-- A checkbox is a rounded square at the `sm` corner, with its mark in `primary-container`.
+It does not hold a component library, a motion specification or an illustration set. The screens of
+the prototype are the reference for each of those, and the steps that follow this one build them one
+surface at a time.

@@ -8,10 +8,10 @@ import { applicationFontFiles } from '@emi/tokens';
  */
 
 const modules: Readonly<Record<string, number>> = {
-  'newsreader/Newsreader16pt-Regular.ttf': require('../../../assets/fonts/newsreader/Newsreader16pt-Regular.ttf'),
-  'newsreader/Newsreader16pt-Medium.ttf': require('../../../assets/fonts/newsreader/Newsreader16pt-Medium.ttf'),
-  'plus-jakarta-sans/PlusJakartaSans-Regular.ttf': require('../../../assets/fonts/plus-jakarta-sans/PlusJakartaSans-Regular.ttf'),
-  'plus-jakarta-sans/PlusJakartaSans-SemiBold.ttf': require('../../../assets/fonts/plus-jakarta-sans/PlusJakartaSans-SemiBold.ttf'),
+  'figtree/Figtree-Regular.ttf': require('../../../assets/fonts/figtree/Figtree-Regular.ttf'),
+  'figtree/Figtree-SemiBold.ttf': require('../../../assets/fonts/figtree/Figtree-SemiBold.ttf'),
+  'figtree/Figtree-Bold.ttf': require('../../../assets/fonts/figtree/Figtree-Bold.ttf'),
+  'figtree/Figtree-ExtraBold.ttf': require('../../../assets/fonts/figtree/Figtree-ExtraBold.ttf'),
   'jetbrains-mono/JetBrainsMono-Regular.ttf': require('../../../assets/fonts/jetbrains-mono/JetBrainsMono-Regular.ttf'),
   'jetbrains-mono/JetBrainsMono-Medium.ttf': require('../../../assets/fonts/jetbrains-mono/JetBrainsMono-Medium.ttf'),
 };

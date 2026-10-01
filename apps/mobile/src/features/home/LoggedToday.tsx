@@ -45,23 +45,23 @@ export function LoggedToday({ marked, onPress }: Props): ReactNode {
           {marked}
         </Text>
       </View>
-      <Icon colour={colour.outline} name="chevron" size={OPENS_MARK_SIZE} />
+      <Icon colour={colour.quietIcon} name="chevron" size={OPENS_MARK_SIZE} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   lead: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   row: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.md,
     flexDirection: 'row',
     gap: space.spaceMd,

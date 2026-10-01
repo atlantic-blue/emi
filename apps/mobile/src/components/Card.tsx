@@ -36,12 +36,12 @@ export function Card({ layer = 'card', testID, children }: Props): ReactNode {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.xl,
     borderWidth: stroke.hairline,
     padding: space.spaceLg,
   },
   floating: { boxShadow: floatingShadow },
-  recessed: { backgroundColor: colour.surfaceContainer },
+  recessed: { backgroundColor: colour.field },
 });

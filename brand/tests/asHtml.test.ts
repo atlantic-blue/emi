@@ -19,8 +19,8 @@ function field({ value, placeholder }: Field): unknown {
     props: {
       value,
       placeholder,
-      placeholderTextColor: colour.onSurfaceVariant,
-      style: { color: colour.onSurface, ...textStyle('body-lg') },
+      placeholderTextColor: colour.secondaryText,
+      style: { color: colour.text, ...textStyle('body-lg') },
     },
     children: null,
   };
@@ -37,7 +37,7 @@ describe('a picture of a screen draws what a field holds', () => {
     });
 
     it('keeps the colour the field names for text she typed', () => {
-      expect(markupOf(field({ value: '36.8' }))).toContain(`color: ${colour.onSurface}`);
+      expect(markupOf(field({ value: '36.8' }))).toContain(`color: ${colour.text}`);
     });
   });
 
@@ -51,9 +51,9 @@ describe('a picture of a screen draws what a field holds', () => {
     it('draws the placeholder in the colour the field asks for, which is fainter', () => {
       const drawn = markupOf(field({ value: '', placeholder: 'Search symptoms' }));
 
-      expect(drawn).toContain(`color: ${colour.onSurfaceVariant}`);
-      expect(drawn.lastIndexOf(`color: ${colour.onSurfaceVariant}`)).toBeGreaterThan(
-        drawn.indexOf(`color: ${colour.onSurface}`),
+      expect(drawn).toContain(`color: ${colour.secondaryText}`);
+      expect(drawn.lastIndexOf(`color: ${colour.secondaryText}`)).toBeGreaterThan(
+        drawn.indexOf(`color: ${colour.text}`),
       );
     });
 

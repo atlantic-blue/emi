@@ -56,11 +56,11 @@ export function FlowPicker({ chosen, onPick }: Props): ReactNode {
 
 const styles = StyleSheet.create({
   label: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
     textAlign: 'center',
   },
-  labelChosen: { color: colour.onSurface },
+  labelChosen: { color: colour.text },
   option: {
     alignItems: 'center',
     borderRadius: radius.md,
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceMd,
     paddingVertical: space.spaceSm,
   },
-  optionChosen: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
-  optionPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
+  optionChosen: { backgroundColor: colour.accentSoft, borderColor: colour.accent },
+  optionPlain: { backgroundColor: colour.field, borderColor: colour.field },
   options: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
 });

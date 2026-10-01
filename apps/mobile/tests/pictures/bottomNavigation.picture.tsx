@@ -28,7 +28,7 @@ const theCaveat = [
 ].join(' ');
 
 /** Her surface, filling the glass, because the dock pins itself over it rather than sitting under it. */
-const theGlass = { backgroundColor: colour.surface, height: '100%' } as const;
+const theGlass = { backgroundColor: colour.ground, height: '100%' } as const;
 
 interface Standing {
   readonly title: string;

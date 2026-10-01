@@ -98,23 +98,23 @@ const approved: readonly Pair[] = colourNames
 describe('a text colour below the contrast floor fails the build', () => {
   describe('the floor the palette is held to', () => {
     it('measures every approved pair, so an empty set is not read as a pass', () => {
-      expect(approved.length).toBeGreaterThan(50);
+      expect(approved).toHaveLength(34);
       expect(approved.filter((pair) => pair.ratio < CONTRAST_FLOOR).map(report)).toEqual([]);
     });
 
     it('names the token and the ratio when a colour moves under it', () => {
-      // The value of outline, which the design system names and the floor refuses as a word.
-      const moved = colours.outline.value;
-      const under = colours.onSurfaceVariant.textOn
+      // The value of the quiet icon, which the design system names and the floor refuses as a word.
+      const moved = colours.quietIcon.value;
+      const under = colours.secondaryText.textOn
         .map((ground) => ({
-          text: 'onSurfaceVariant' as ColourName,
+          text: 'secondaryText' as ColourName,
           ground,
           ratio: contrastRatio(moved, colours[ground].value),
         }))
         .filter((pair) => pair.ratio < CONTRAST_FLOOR);
 
-      expect(under.map(report)).toContain('onSurfaceVariant on surface is 4.27 to 1');
-      expect(under.length).toBe(colours.onSurfaceVariant.textOn.length);
+      expect(under.map(report)).toContain('secondaryText on ground is 2.39 to 1');
+      expect(under.length).toBe(colours.secondaryText.textOn.length);
     });
 
     it('gives every text colour a ground, because an unmeasured colour is what this stops', () => {
@@ -199,13 +199,13 @@ describe('a text colour below the contrast floor fails the build', () => {
     });
 
     it('measures each ink on the ground it is written on, and never on its own fill', () => {
-      const onTheGround = phaseNames.map((phase) => measure(phasePalette[phase].ink, 'background'));
+      const onTheGround = phaseNames.map((phase) => measure(phasePalette[phase].ink, 'ground'));
 
       expect(onTheGround.map(report)).toEqual([
-        'periodInk on background is 11.94 to 1',
-        'follicularInk on background is 9.48 to 1',
-        'ovulationInk on background is 9.95 to 1',
-        'lutealInk on background is 11.21 to 1',
+        'periodInk on ground is 7.63 to 1',
+        'follicularInk on ground is 14.57 to 1',
+        'ovulationInk on ground is 6.49 to 1',
+        'lutealInk on ground is 7.48 to 1',
       ]);
       expect(phaseNames.flatMap((phase) => colours[phasePalette[phase].fill].textOn)).toEqual([]);
     });
@@ -216,9 +216,9 @@ describe('a text colour below the contrast floor fails the build', () => {
       );
 
       expect(onItsOwnFill.filter((pair) => pair.ratio < CONTRAST_FLOOR).map(report)).toEqual([
-        'periodInk on period is 4.24 to 1',
-        'ovulationInk on ovulation is 4.13 to 1',
-        'lutealInk on luteal is 3.47 to 1',
+        'periodInk on period is 1.51 to 1',
+        'ovulationInk on ovulation is 3.16 to 1',
+        'lutealInk on luteal is 2.48 to 1',
       ]);
     });
   });

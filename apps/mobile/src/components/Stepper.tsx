@@ -91,26 +91,26 @@ export function Stepper({
 
 const styles = StyleSheet.create({
   caption: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
   },
   mark: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
   },
   middle: { alignItems: 'center', gap: space.spaceXs },
   reading: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('data-lg'),
   },
-  spent: { backgroundColor: colour.surfaceContainerHigh },
+  spent: { backgroundColor: colour.field },
   spentMark: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('headline-md'),
   },
   step: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.full,
     height: MINIMUM_TAP_TARGET,
     justifyContent: 'center',
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   well: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainer,
+    backgroundColor: colour.field,
     borderRadius: radius.xl,
     flexDirection: 'row',
     justifyContent: 'space-between',

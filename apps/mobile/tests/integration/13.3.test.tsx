@@ -15,7 +15,7 @@ import { TextField } from '../../src/components/TextField';
  * one of the two names went, and no screen moved.
  */
 const whatTheyDrewBefore = {
-  fontFamily: 'PlusJakartaSans-Regular',
+  fontFamily: 'Figtree-Regular',
   fontSize: 16,
   letterSpacing: 0,
   lineHeight: 24,

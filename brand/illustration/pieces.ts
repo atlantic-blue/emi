@@ -28,7 +28,7 @@ export function fillOf(phase: PhaseColour): ColourName {
 export const TRANSLUCENT_FLOOR = 0.2;
 export const TRANSLUCENT_CEILING = 0.3;
 
-export const GROUND: ColourName = 'surface';
+export const GROUND: ColourName = 'ground';
 
 export const PIECE_WIDTH = 320;
 export const PIECE_HEIGHT = 220;

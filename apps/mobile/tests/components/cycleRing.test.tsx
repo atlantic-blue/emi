@@ -296,9 +296,10 @@ describe('the ring on the screen', () => {
     const bead = screen.getByTestId(ringBeadTestID);
 
     expect(colourOf(bead.props.fill)).toBe(colour[beadPalette.fill]);
-    // The design system gives the active bead on the ring to the container, and keeps the deeper
-    // primary for a control she is pressing. The bead is never pressed.
-    expect(colourOf(bead.props.fill)).not.toBe(colour.primary);
+    // The bead is a disc of the card colour with the text colour around it, so it is never the
+    // accent and never one of the four arcs it can sit on.
+    expect(colourOf(bead.props.fill)).not.toBe(colour.accent);
+    expect(colourOf(bead.props.fill)).not.toBe(colour.period);
     expect(colourOf(bead.props.stroke)).toBe(colour[beadPalette.halo]);
     expect(bead.props.cy).toBeLessThan(RING_DIAMETER / 2);
     expect(bead.props.cx).toBeGreaterThan(RING_DIAMETER / 2);

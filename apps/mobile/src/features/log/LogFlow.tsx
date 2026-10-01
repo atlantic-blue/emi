@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   body: { gap: space.spaceMd, padding: space.spaceLg, paddingTop: space.spaceXl },
   done: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceTint,
+    backgroundColor: colour.accent,
     borderRadius: radius.md,
     justifyContent: 'center',
     margin: space.spaceLg,
@@ -168,25 +168,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
   },
   doneLabel: {
-    color: colour.surfaceContainerLowest,
+    color: colour.card,
     ...textStyle('body-lg'),
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   noRingTitle: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
     marginBottom: space.spaceSm,
   },
   ring: { alignItems: 'center', marginBottom: space.spaceMd },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
   },
   when: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
   },
 });

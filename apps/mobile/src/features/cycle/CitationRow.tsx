@@ -107,7 +107,7 @@ export function FiguresScreen({ figures, onBack }: Props): ReactNode {
           testID={figuresBackTestID}
         >
           <View style={styles.backMark}>
-            <Icon colour={colour.onSurface} name="chevron" size={BACK_MARK_SIZE} />
+            <Icon colour={colour.text} name="chevron" size={BACK_MARK_SIZE} />
           </View>
         </Pressable>
 
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   // The figure the paper reports takes the ink of the surface, because it is the number she came
   // to check. Everything around it on the row is quieter than it.
   figure: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
   },
   header: {
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceSm,
   },
   identifier: {
-    color: colour.outline,
+    color: colour.quietIcon,
     ...textStyle('label-sm'),
   },
   // The measurement and the figure sit on one line with room between them, so the column of
@@ -190,22 +190,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceSm,
   },
   leaveLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('label-md'),
   },
   // The paper is quoted at the small size, because SCREEN-2 holds the word bleeding to 14 points
   // and the title of the System 1 paper carries it twice.
   paper: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   printed: {
-    color: colour.outline,
+    color: colour.quietIcon,
     ...textStyle('label-sm'),
     marginTop: space.spaceSm,
   },
   quoted: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     marginTop: space.spaceLg,
   },
@@ -214,21 +214,21 @@ const styles = StyleSheet.create({
     rowGap: space.spaceXs,
   },
   separated: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
   },
   rows: {
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.md,
     paddingHorizontal: space.spaceMd,
   },
   scroll: { flex: 1 },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
   },
   what: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
 });

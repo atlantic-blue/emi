@@ -165,13 +165,21 @@ function faceAt(path: string): Face {
   return face;
 }
 
-/** The cut one role of the design system is drawn in, as the file that ships it. */
+/**
+ * The cut one role of the design system is drawn in, as the file that ships it.
+ *
+ * Tracking is left out of every width read here. A platform may put it after the last letter as
+ * well as between the letters, and which one it does is not known from a font file. Negative
+ * tracking only ever draws a run narrower, so a width read without it is an upper bound and a test
+ * that asks whether a run fits is still answered. Positive tracking would draw the run wider than
+ * the number read here, so it is refused rather than guessed at.
+ */
 export function theFaceOf(role: TypeRoleName): Face {
   const step = typeScale[role];
 
-  if (step.letterSpacingEm !== 0) {
+  if (step.letterSpacingEm > 0) {
     throw new Error(
-      `${role} is drawn with tracking, and how much of it a platform puts after the last letter is not known here`,
+      `${role} is drawn with tracking that widens it, and how much of it a platform puts after the last letter is not known here`,
     );
   }
 

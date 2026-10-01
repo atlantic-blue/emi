@@ -97,8 +97,8 @@ function trackedFiles(): string[] {
 
 describe('the colour set', () => {
   it('holds the colours the design system names and no more', () => {
-    expect(colourNames).toHaveLength(55);
-    expect(Object.keys(colours)).toHaveLength(55);
+    expect(colourNames).toHaveLength(40);
+    expect(Object.keys(colours)).toHaveLength(40);
   });
 
   it('writes every value in upper case hex, so two spellings of one colour cannot appear', () => {
@@ -135,7 +135,7 @@ describe('the colour set', () => {
       ...phaseNames.map((phase) => phasePalette[phase].ink),
     ];
     const shared = phaseColours.filter((name) =>
-      ['primary', 'primaryContainer', 'secondaryContainer', 'tertiaryContainer'].includes(name),
+      ['accent', 'accent', 'field', 'accentTile'].includes(name),
     );
 
     expect(shared).toEqual([]);
@@ -152,15 +152,15 @@ describe('the type scale', () => {
     expect(
       typeRoleNames.map((name) => `${name} ${typeScale[name].size}/${typeScale[name].lineHeight}`),
     ).toEqual([
-      'display-lg 44/56',
-      'display-lg-mobile 36/44',
-      'headline-lg 28/36',
-      'headline-md 20/26',
+      'display-lg 50/60',
+      'display-lg-mobile 34/42',
+      'headline-lg 28/34',
+      'headline-md 22/28',
       'headline-sm 18/24',
       'body-lg 16/24',
       'body-sm 14/20',
-      'label-md 14/20',
-      'label-sm 12/16',
+      'label-md 13/18',
+      'label-sm 11/15',
       'data-lg 24/30',
       'data-sm 12/16',
     ]);
@@ -176,8 +176,10 @@ describe('the type scale', () => {
     expect(lineHeightsNobodyHasDecided).toEqual([]);
   });
 
-  it('names three faces, and gives each role one of them', () => {
-    expect(Object.values(face)).toEqual(['Newsreader', 'Plus Jakarta Sans', 'JetBrains Mono']);
+  // The display face and the text face are one family at different weights, so the two names stay
+  // and every call site that reads a face keeps reading the same one.
+  it('names three faces across two families, and gives each role one of them', () => {
+    expect(Object.values(face)).toEqual(['Figtree', 'Figtree', 'JetBrains Mono']);
     expect([...new Set(typeRoleNames.map((name) => typeScale[name].face))]).toEqual([
       'display',
       'text',
@@ -185,16 +187,17 @@ describe('the type scale', () => {
     ]);
   });
 
-  it('draws every face in a family of its own, so no two jobs share a file', () => {
+  it('names a family for every face, and ships the words and the figures apart', () => {
     const families = Object.values(faceFamily);
 
-    expect(new Set(families).size).toBe(families.length);
     expect(families).toHaveLength(Object.keys(face).length);
+    expect(new Set(families).size).toBe(2);
+    expect(faceFamily.data).not.toBe(faceFamily.text);
   });
 
   it('ships a cut of the family each face names, which can be narrower than the name', () => {
-    // The design system names Newsreader and the repository ships one optical cut of it, so the
-    // shipped name opens with the name the document uses rather than repeating it.
+    // A shipped family can carry a narrower name than the document uses, as an optical cut does, so
+    // the shipped name opens with the name the document uses rather than repeating it.
     const cuts = Object.entries(face).map(([faceName, family]) => {
       const shipped = fonts[faceFamily[faceName as keyof typeof face]].family;
 
@@ -203,13 +206,13 @@ describe('the type scale', () => {
 
     expect(cuts.filter((said) => said.length > 0)).toEqual([]);
     expect(Object.values(faceFamily).map((name) => fonts[name].family)).toEqual([
-      'Newsreader 16pt',
-      'Plus Jakarta Sans',
+      'Figtree',
+      'Figtree',
       'JetBrains Mono',
     ]);
   });
 
-  it('gives the serif the headings, the sans the words and the monospace the numbers', () => {
+  it('gives one face the headings, one the words and the monospace the numbers', () => {
     const byFace = (name: string) => typeRoleNames.filter((role) => typeScale[role].face === name);
 
     expect(byFace('display')).toEqual([
@@ -225,7 +228,7 @@ describe('the type scale', () => {
 
   it('carries the weight of each role, so no call site chooses one', () => {
     expect(typeRoleNames.map((name) => typeScale[name].weight)).toEqual([
-      400, 400, 400, 500, 500, 400, 400, 600, 600, 500, 500,
+      800, 800, 800, 800, 800, 400, 400, 700, 600, 500, 500,
     ]);
   });
 
@@ -233,8 +236,14 @@ describe('the type scale', () => {
     const tighter = typeRoleNames.filter((name) => typeScale[name].letterSpacingEm < 0);
     const wider = typeRoleNames.filter((name) => typeScale[name].letterSpacingEm > 0);
 
-    expect(tighter).toEqual(['display-lg', 'display-lg-mobile', 'headline-lg', 'data-lg']);
-    expect(wider).toEqual(['label-md', 'label-sm', 'data-sm']);
+    expect(tighter).toEqual([
+      'display-lg',
+      'display-lg-mobile',
+      'headline-lg',
+      'headline-md',
+      'data-lg',
+    ]);
+    expect(wider).toEqual(['label-sm', 'data-sm']);
   });
 });
 
@@ -319,24 +328,25 @@ describe('the spacing', () => {
     expect(steps).toEqual([...steps].sort((one, other) => one - other));
   });
 
-  it('names two gaps twice, because the two page margins meet the rhythm', () => {
-    expect(space.margin).toBe(space.spaceLg);
-    expect(space.marginMd).toBe(space.spaceXl);
+  it('gives every step a value of its own, so no two names are one gap', () => {
     expect(spaceNames).toHaveLength(8);
-    expect(new Set(spaceNames.map((name) => space[name])).size).toBe(6);
+    expect(new Set(spaceNames.map((name) => space[name])).size).toBe(8);
   });
 
-  it('holds the screen margin at 24 points, a step of its own rather than the rhythm gap', () => {
-    expect(space.margin).toBe(24);
-    expect(space.margin).not.toBe(space.spaceMd);
+  it('holds the screen margin at 20 points, which is the padding every screen draws', () => {
+    expect(space.margin).toBe(20);
+    expect(space.margin).not.toBe(space.spaceLg);
   });
 
-  it('holds the largest section gap at 32 points, with only the desktop margin above it', () => {
+  it('holds the largest section gap at 24 points, with the two wider margins above it', () => {
     const largest = Math.max(...spaceNames.map((name) => space[name]));
 
-    expect(space.spaceXl).toBe(32);
+    expect(space.spaceXl).toBe(24);
     expect(largest).toBe(space.marginLg);
-    expect(spaceNames.filter((name) => space[name] > space.spaceXl)).toEqual(['marginLg']);
+    expect(spaceNames.filter((name) => space[name] > space.spaceXl)).toEqual([
+      'marginMd',
+      'marginLg',
+    ]);
   });
 
   it('keeps the tap target at the accessible minimum', () => {
@@ -349,13 +359,14 @@ describe('the spacing', () => {
 
     expect(rhythm).toEqual(['spaceXs', 'spaceSm', 'spaceMd', 'spaceLg', 'spaceXl']);
     expect(margins).toEqual(['margin', 'marginMd', 'marginLg']);
+    expect(spaceNames.indexOf('margin')).toBeLessThan(spaceNames.indexOf('spaceXl'));
     expect(spaceNames).toHaveLength(rhythm.length + margins.length);
   });
 
-  it('holds the six corners the document names, rising to the capsule', () => {
+  it('holds the seven corners the document names, rising to the capsule', () => {
     const corners = radiusNames.map((name) => radius[name]);
 
-    expect(corners).toEqual([4, 8, 12, 16, 24, 9999]);
+    expect(corners).toEqual([10, 12, 14, 16, 18, 28, 999]);
     expect(corners).toEqual([...corners].sort((one, other) => one - other));
   });
 });

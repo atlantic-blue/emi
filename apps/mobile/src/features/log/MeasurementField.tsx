@@ -51,7 +51,7 @@ export function MeasurementField<Unit extends string>({
           keyboardType="decimal-pad"
           onChangeText={(text) => onRead(readingOf(measurement, text, unit))}
           placeholder={placeholder}
-          placeholderTextColor={colour.onSurfaceVariant}
+          placeholderTextColor={colour.secondaryText}
           style={styles.field}
           testID={`${testID}-value`}
           value={shown.typed}
@@ -91,18 +91,18 @@ const styles = StyleSheet.create({
   section: { gap: space.spaceMd },
   headings: { alignItems: 'baseline', flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
   heading: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
   },
   hint: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   row: { alignItems: 'center', flexDirection: 'row', gap: space.spaceSm },
   field: {
-    backgroundColor: colour.surfaceContainer,
+    backgroundColor: colour.field,
     borderRadius: radius.md,
-    color: colour.onSurface,
+    color: colour.text,
     flex: 1,
     ...textStyle('body-lg'),
     minHeight: MINIMUM_TAP_TARGET,
@@ -119,15 +119,15 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.spaceSm,
   },
-  unitPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
-  unitChosen: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
+  unitPlain: { backgroundColor: colour.field, borderColor: colour.field },
+  unitChosen: { backgroundColor: colour.accentSoft, borderColor: colour.accent },
   unitLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
-  unitLabelChosen: { color: colour.onSurface },
+  unitLabelChosen: { color: colour.text },
   refusal: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-sm'),
   },
 });

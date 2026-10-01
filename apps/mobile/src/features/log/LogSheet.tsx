@@ -189,7 +189,7 @@ export function LogSheet({
             setQuery(typed);
           }}
           placeholder={searchLabel}
-          placeholderTextColor={colour.onSurfaceVariant}
+          placeholderTextColor={colour.secondaryText}
           style={styles.search}
           testID="symptom-search"
           value={query}
@@ -250,28 +250,28 @@ function countOf(count: number): string {
 
 const styles = StyleSheet.create({
   sheet: {
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     flex: 1,
   },
   scrolled: { gap: space.spaceLg, padding: space.spaceLg },
   search: {
-    backgroundColor: colour.surfaceContainer,
+    backgroundColor: colour.field,
     borderRadius: radius.md,
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
     minHeight: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.spaceMd,
     paddingVertical: space.spaceSm,
   },
   nothing: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   foot: {
     alignItems: 'center',
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: 1,
     flexDirection: 'row',
     gap: space.spaceMd,
@@ -280,12 +280,12 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceMd,
   },
   count: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   save: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceTint,
+    backgroundColor: colour.accent,
     borderRadius: radius.md,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
   },
   saveLabel: {
-    color: colour.surfaceContainerLowest,
+    color: colour.card,
     ...textStyle('body-lg'),
   },
 });

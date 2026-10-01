@@ -18,6 +18,7 @@ import {
   driftProblems,
   generateCommand,
   markSizes,
+  FILL_NOTE,
   measurementsFor,
   picturePath,
   relativeFontsBase,
@@ -57,10 +58,10 @@ const committed = committedSheet(root);
  * The palette with muted taken to the value body carries. A real token rather than a typed hex,
  * and a different ratio, which is the drift the pipeline job exists to catch.
  */
-const movedValue = colours.outline.value;
+const movedValue = colours.quietIcon.value;
 const movedPalette = {
   ...colours,
-  onSurfaceVariant: { ...colours.onSurfaceVariant, value: movedValue },
+  secondaryText: { ...colours.secondaryText, value: movedValue },
 };
 const moved = { ...sources, brand: { ...shippedSources, palette: movedPalette } };
 
@@ -109,13 +110,28 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
       }
     });
 
-    it('prints a measurement beside every one of the fifty five', () => {
+    it('prints a measurement beside every one of the forty', () => {
       const silent = colourNames.filter(
         (name) => measurementsFor(shippedSources, name).length === 0,
       );
 
       expect(silent).toEqual([]);
-      expect(colourNames).toHaveLength(55);
+      expect(colourNames).toHaveLength(40);
+    });
+
+    // A wash stop, a tile, a track and a dot carry no word at all, so the sheet says that rather
+    // than leaving the line beside the swatch empty.
+    it('says of a colour that only fills a shape that it carries no word', () => {
+      const filling = colourNames.filter((name) =>
+        measurementsFor(shippedSources, name).includes(FILL_NOTE),
+      );
+
+      expect(filling.length).toBeGreaterThan(5);
+      expect(page).toContain(FILL_NOTE);
+      for (const name of filling) {
+        expect(colours[name].roles).not.toContain('text');
+        expect(colours[name].textOn).toEqual([]);
+      }
     });
 
     it('prints the ratio contrastRatio computes, and not a number typed by hand', () => {
@@ -139,7 +155,7 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
 
     it('says what a fill is measured at and which partner carries its text', () => {
       const measured = measurementsFor(shippedSources, phasePalette.period.fill);
-      const said = 'period on surface is 2.81 to 1, so periodInk carries the text';
+      const said = 'period on ground is 5.06 to 1, so periodInk carries the text';
 
       expect(measured).toContain(said);
       expect(page).toContain(said);
@@ -275,20 +291,20 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
 
     it('changes when a colour moves, and prints the ratio the new value measures', () => {
       const after = sheetDocument(moved);
-      const measured = contrastRatio(movedValue, colours.surface.value).toFixed(2);
+      const measured = contrastRatio(movedValue, colours.ground.value).toFixed(2);
 
       expect(after).not.toEqual(page);
-      expect(page).toContain('onSurfaceVariant on surface is 8.92 to 1');
-      expect(after).not.toContain('onSurfaceVariant on surface is 8.92 to 1');
-      expect(after).toContain(`onSurfaceVariant on surface is ${measured} to 1`);
+      expect(page).toContain('secondaryText on ground is 5.42 to 1');
+      expect(after).not.toContain('secondaryText on ground is 5.42 to 1');
+      expect(after).toContain(`secondaryText on ground is ${measured} to 1`);
     });
 
     it('changes the measurement beside the swatch, not only the patch of colour', () => {
-      const before = measurementsFor(shippedSources, 'onSurfaceVariant');
-      const after = measurementsFor(moved.brand, 'onSurfaceVariant');
+      const before = measurementsFor(shippedSources, 'secondaryText');
+      const after = measurementsFor(moved.brand, 'secondaryText');
 
       expect(after).not.toEqual(before);
-      expect(after[0]).toContain(contrastRatio(movedValue, colours.surface.value).toFixed(2));
+      expect(after[0]).toContain(contrastRatio(movedValue, colours.ground.value).toFixed(2));
     });
 
     it('refuses the committed copy when a token has moved, naming the line', () => {

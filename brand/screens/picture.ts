@@ -166,6 +166,10 @@ function drawPage(name: string, page: string, size: PhoneSize): number {
       '--headless',
       '--no-sandbox',
       '--disable-gpu',
+      // A page of seventeen phones is 7222 points wide, and the browser holds that framebuffer in
+      // shared memory. A container gives /dev/shm 64 MiB by default, where the draw never returns
+      // and reports nothing, so the browser is told to use a file instead.
+      '--disable-dev-shm-usage',
       '--hide-scrollbars',
       `--screenshot=${output}`,
       `--window-size=${size.width},${size.height}`,

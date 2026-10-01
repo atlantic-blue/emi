@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   cycles: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.spaceLg },
   // The line sits under the strips and says what a strip is, so nothing is drawn over a fill.
   cyclesLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
   },
@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
   // The line sits under the cards and says what Emi refuses to call a pattern, so the rule she is
   // reading the cards against is on the screen with them.
   patternsLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
   },
@@ -457,11 +457,11 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
   },
   patternsPressLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-sm'),
   },
   trendCount: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
   },
@@ -474,11 +474,11 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
   },
   trendPressLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-sm'),
   },
   figuresLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
   },
@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
   },
   figuresPressLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-sm'),
   },
   forecast: { marginTop: space.spaceLg },
@@ -523,7 +523,7 @@ const styles = StyleSheet.create({
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
   // takes the small size rather than the body size a sentence would otherwise get.
   noRingLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     textAlign: 'center',
   },
@@ -539,12 +539,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
   },
   offerLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     textAlign: 'center',
   },
   noRingTitle: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
     marginBottom: space.spaceXs,
   },

@@ -125,7 +125,7 @@ export function ExportScreen({ onBack, onExport, onShare, canShare }: Props): Re
 const styles = StyleSheet.create({
   action: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceTint,
+    backgroundColor: colour.accent,
     borderRadius: radius.md,
     justifyContent: 'center',
     marginTop: space.spaceLg,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
   },
   actionLabel: {
-    color: colour.surfaceContainerLowest,
+    color: colour.card,
     ...textStyle('body-lg'),
   },
   back: {
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
   },
   backLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   body: {
@@ -153,13 +153,13 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceMd,
   },
   failed: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-sm'),
     marginTop: space.spaceMd,
   },
   file: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -168,15 +168,15 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceSm,
   },
   fileName: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-sm'),
   },
   held: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
     marginTop: space.spaceSm,
   },
@@ -189,11 +189,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceSm,
   },
   shareLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('body-sm'),
   },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
     marginTop: space.spaceSm,
   },

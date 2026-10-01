@@ -55,7 +55,7 @@ export function SelectableTile({
     >
       <View style={styles.top}>
         <Icon
-          colour={isChosen ? colour.primary : colour.onSurfaceVariant}
+          colour={isChosen ? colour.accent : colour.secondaryText}
           name={icon}
           size={TILE_ICON}
         />
@@ -71,18 +71,18 @@ export function SelectableTile({
 
 const styles = StyleSheet.create({
   bead: {
-    backgroundColor: colour.primaryContainer,
+    backgroundColor: colour.accent,
     borderRadius: radius.full,
     height: BEAD_SIZE,
     width: BEAD_SIZE,
   },
-  chosen: { backgroundColor: colour.surfaceContainerHigh },
+  chosen: { backgroundColor: colour.field },
   note: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('data-sm'),
   },
   tile: {
-    backgroundColor: colour.surfaceContainerLow,
+    backgroundColor: colour.field,
     borderRadius: radius.xl,
     height: TILE_HEIGHT,
     justifyContent: 'space-between',
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     padding: space.spaceMd,
   },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
   },
   top: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },

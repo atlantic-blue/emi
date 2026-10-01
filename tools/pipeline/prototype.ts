@@ -1,5 +1,7 @@
 import { join } from 'node:path';
 
+import { parse } from 'yaml';
+
 /**
  * The redesign prototype and the document that describes it, read against each other.
  *
@@ -67,46 +69,95 @@ export interface Screen {
   readonly markup: string;
 }
 
-export function describedIn(_document: string): Described {
-  return { colours: {}, raised: {}, wash: {}, rounded: {}, spacing: {}, type: {} };
-}
-
-export function namedValues(_described: Described): ReadonlySet<string> {
-  return new Set<string>();
-}
-
-export function opaqueBaseOf(value: string): string {
-  return value.toLowerCase();
-}
-
-export function coloursDrawnIn(_markup: string): string[] {
-  return [];
-}
-
-export function coloursWithNoName(_named: Iterable<string>, _screens: readonly Screen[]): string[] {
-  return [];
-}
-
-export function namesDrawnNowhere(_described: Described, _screens: readonly Screen[]): string[] {
-  return [];
+interface FrontMatter {
+  colors?: Record<string, string>;
+  raised?: Record<string, RaisedColour>;
+  wash?: Record<string, string[]>;
+  rounded?: Record<string, string>;
+  spacing?: Record<string, string>;
+  typography?: Record<string, TypeRole>;
 }
 
 /**
- * The four phase fills and the ink beside each one, in the order a cycle runs.
- *
- * The ring writes the name of the phase she is in on the ground rather than on the arc, which is
- * contract SEE-2, so an ink is measured against the ground and never against its own fill.
+ * The front matter, parsed as the YAML it is. A value the document writes without quotes arrives
+ * as a number, and every value here is compared as it is written, so each one is put back into the
+ * spelling the page uses.
  */
-export const phaseColourNames: readonly string[] = [
-  'period',
-  'period-ink',
-  'follicular',
-  'follicular-ink',
-  'ovulation',
-  'ovulation-ink',
-  'luteal',
-  'luteal-ink',
-];
+export function describedIn(document: string): Described {
+  const front = document.split('\n---')[0]?.replace(/^---\n/, '');
+
+  if (front === undefined || front.trim().length === 0) {
+    throw new Error(`${designSystemDocument} has no front matter, so it describes nothing`);
+  }
+
+  const read = parse(front) as FrontMatter | null;
+
+  if (read === null) {
+    throw new Error(`${designSystemDocument} has front matter that reads as nothing`);
+  }
+
+  return {
+    colours: written(read.colors),
+    raised: read.raised ?? {},
+    wash: read.wash ?? {},
+    rounded: written(read.rounded),
+    spacing: written(read.spacing),
+    type: read.typography ?? {},
+  };
+}
+
+function written(block: Record<string, string> | undefined): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(block ?? {}).map(([name, value]) => [name, String(value)]),
+  );
+}
+
+/**
+ * The colour underneath a value, whatever its alpha, written as six digits in lower case.
+ *
+ * The redesign paints a surface, a scrim, a shadow and the far stop of a gradient as translucent
+ * values. The style before it read a translucent value as a depth and skipped it, and that
+ * exemption would leave the dock, the glass over the ring and five gradient stops unread. So every
+ * value is reduced to the colour it is mixed from, and that colour is what the document names.
+ */
+export function opaqueBaseOf(value: string): string {
+  const written = value.trim().toLowerCase().replace(/\s+/g, '');
+
+  if (written.startsWith('#')) {
+    const digits = written.slice(1);
+    const six =
+      digits.length === 3 || digits.length === 4
+        ? [...digits.slice(0, 3)].map((digit) => `${digit}${digit}`).join('')
+        : digits.slice(0, 6);
+
+    return `#${six}`;
+  }
+
+  const inside = written.slice(written.indexOf('(') + 1, written.lastIndexOf(')'));
+  const channels = inside.split(/[,/]/).slice(0, 3).map(Number.parseFloat);
+
+  if (channels.length < 3 || channels.some((channel) => Number.isNaN(channel))) {
+    throw new Error(`${value} is neither a hex colour nor a function that mixes one`);
+  }
+
+  return `#${channels.map((channel) => Math.round(channel).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * Every value the document names, as the colour underneath it.
+ *
+ * A raised colour contributes the value the prototype paints as well as the value Emi builds, so
+ * the screens pass against the document that corrects them.
+ */
+export function namedValues(described: Described): ReadonlySet<string> {
+  const values = [
+    ...Object.values(described.colours),
+    ...Object.values(described.raised).map((raised) => raised.prototype),
+    ...Object.values(described.wash).flat(),
+  ];
+
+  return new Set(values.map(opaqueBaseOf));
+}
 
 /**
  * The parts of a screen a browser paints from: every tag with its attributes, and the body of
@@ -126,6 +177,83 @@ export function drawnParts(markup: string): string[] {
     ),
   ];
 }
+
+/** Every colour a screen paints with, in the order it paints them, one entry for each mention. */
+export function coloursDrawnIn(markup: string): string[] {
+  return drawnParts(markup).flatMap((part) =>
+    [...part.matchAll(valuePattern)].map(([found]) => found),
+  );
+}
+
+/**
+ * Every colour a screen paints with that the document names nowhere, one sentence each and sorted.
+ *
+ * The value is reported as the colour underneath it rather than as the screen writes it, because
+ * that is the value the document has to name, and a sentence naming `rgba(255,255,255,0.7)` would
+ * send a reader looking for a name no palette would ever carry.
+ */
+export function coloursWithNoName(named: Iterable<string>, screens: readonly Screen[]): string[] {
+  const held = new Set([...named].map((value) => value.toLowerCase()));
+  const found = new Map<string, Set<string>>();
+
+  for (const { file, markup } of screens) {
+    for (const written of coloursDrawnIn(markup)) {
+      const base = opaqueBaseOf(written);
+
+      if (!held.has(base)) {
+        found.set(base, (found.get(base) ?? new Set()).add(file));
+      }
+    }
+  }
+
+  return [...found]
+    .map(
+      ([base, files]) =>
+        `${[...files].sort().join(', ')} paints ${base}, and ${designSystemDocument} names it nowhere`,
+    )
+    .sort();
+}
+
+/**
+ * Every colour the document names that no screen paints, one sentence each and sorted.
+ *
+ * This is the other direction, and it is the one that catches a document left describing a colour
+ * the redesign dropped. A raised colour is held to the value the prototype paints, because the
+ * value Emi builds is the correction and no screen was ever going to carry it.
+ */
+export function namesDrawnNowhere(described: Described, screens: readonly Screen[]): string[] {
+  const painted = new Set(
+    screens.flatMap(({ markup }) => coloursDrawnIn(markup).map(opaqueBaseOf)),
+  );
+
+  return Object.entries(described.colours)
+    .map(([name, value]) => ({
+      name,
+      base: opaqueBaseOf(described.raised[name]?.prototype ?? value),
+    }))
+    .filter(({ base }) => !painted.has(base))
+    .map(
+      ({ name, base }) => `${designSystemDocument} names ${name} ${base}, and no screen paints it`,
+    )
+    .sort();
+}
+
+/**
+ * The four phase fills and the ink beside each one, in the order a cycle runs.
+ *
+ * The ring writes the name of the phase she is in on the ground rather than on the arc, which is
+ * contract SEE-2, so an ink is measured against the ground and never against its own fill.
+ */
+export const phaseColourNames: readonly string[] = [
+  'period',
+  'period-ink',
+  'follicular',
+  'follicular-ink',
+  'ovulation',
+  'ovulation-ink',
+  'luteal',
+  'luteal-ink',
+];
 
 /** One line of the document, with the number a reader would find it on. */
 export interface Line {

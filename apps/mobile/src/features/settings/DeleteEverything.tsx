@@ -119,7 +119,7 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
 const styles = StyleSheet.create({
   action: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceTint,
+    backgroundColor: colour.accent,
     borderRadius: radius.md,
     justifyContent: 'center',
     marginTop: space.spaceXl,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
   },
   actionLabel: {
-    color: colour.surfaceContainerLowest,
+    color: colour.card,
     ...textStyle('body-lg'),
   },
   back: {
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
   },
   backLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   body: {
@@ -149,28 +149,28 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceXl,
   },
   goes: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     marginTop: space.spaceLg,
     paddingTop: space.spaceMd,
   },
   goesLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     marginTop: space.spaceXs,
   },
   refused: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
     marginTop: space.spaceMd,
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
     marginTop: space.spaceMd,
   },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
   },
 });

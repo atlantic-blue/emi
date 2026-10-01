@@ -125,6 +125,9 @@ function ratio(pair: Pair): string {
  */
 export const LINE_NOTE = 'draws a line, so it carries no word and no ratio of its own';
 
+/** A colour that only ever fills a shape: a wash stop, a tile, a track, a dot that is not lit. */
+export const FILL_NOTE = 'fills a shape, so it carries no word and no ratio of its own';
+
 export function measurementsFor(sources: BrandSources, name: ColourName): readonly string[] {
   if (!SIX_DIGIT_HEX.test(sources.palette[name].value)) {
     return [TRANSPARENT_NOTE];
@@ -160,10 +163,10 @@ export function measurementsFor(sources: BrandSources, name: ColourName): readon
     lines.push(`${report(fill)}, so ${partner} carries the text`);
   }
 
-  return lines;
+  return lines.length === 0 ? [FILL_NOTE] : lines;
 }
 
-/** A class per file rather than per weight, because three families share the same three weights. */
+/** A class per file rather than per weight, because two families share some of the same weights. */
 export function faceClass(file: FontFile): string {
   return `face-${file.name}`;
 }
@@ -220,24 +223,24 @@ function styleSheet(fontsBase: string): string {
     sizeRules(),
     markRules(),
     `body {
-  background: ${colour.surfaceContainerLowest};
-  color: ${colour.onSurface};
+  background: ${colour.card};
+  color: ${colour.text};
   margin: 0;
   padding: ${PAGE_PADDING}px;
   width: ${sheetPage.width}px;
   height: ${sheetPage.height}px;
   box-sizing: border-box;
 }`,
-    `.standfirst { color: ${colour.onSurfaceVariant}; max-width: 780px; margin-top: 8px; }`,
-    `.stamp { color: ${colour.onSurfaceVariant}; }`,
+    `.standfirst { color: ${colour.secondaryText}; max-width: 780px; margin-top: 8px; }`,
+    `.stamp { color: ${colour.secondaryText}; }`,
     `.head { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; }`,
-    `.section { border-top: 1px solid ${colour.outlineVariant}; margin-top: 44px; padding-top: 20px; }`,
+    `.section { border-top: 1px solid ${colour.line}; margin-top: 44px; padding-top: 20px; }`,
     `.section-head { display: flex; align-items: baseline; gap: 20px; margin-bottom: 20px; }`,
-    `.section-note { color: ${colour.onSurfaceVariant}; }`,
+    `.section-note { color: ${colour.secondaryText}; }`,
     `.marks { display: flex; gap: 32px; }`,
     `.mark-card {
-  background: ${colour.surfaceContainerLowest};
-  border: 1px solid ${colour.outlineVariant};
+  background: ${colour.card};
+  border: 1px solid ${colour.line};
   border-radius: 16px;
   padding: 24px;
   width: 296px;
@@ -248,7 +251,7 @@ function styleSheet(fontsBase: string): string {
     `.mark-name { margin-bottom: 16px; }`,
     `.mark-row { display: flex; align-items: flex-end; gap: 20px; height: 136px; }`,
     `.mark-small { display: flex; align-items: flex-end; gap: 20px; margin-top: 16px; }`,
-    `.mark-label { color: ${colour.onSurfaceVariant}; margin-top: 12px; }`,
+    `.mark-label { color: ${colour.secondaryText}; margin-top: 12px; }`,
     `.mark-row + .mark-small { margin-top: auto; }`,
     `.icon-card { width: 360px; }`,
     `.icon-shown svg { display: block; width: ${ICON_SHOWN_AT}px; height: ${ICON_SHOWN_AT}px; }`,
@@ -263,14 +266,14 @@ function styleSheet(fontsBase: string): string {
   width: 96px;
   height: 96px;
   border-radius: 12px;
-  border: 1px solid ${colour.outlineVariant};
+  border: 1px solid ${colour.line};
   flex: none;
 }`,
     `.swatch-name { display: flex; align-items: baseline; gap: 12px; }`,
-    `.roles { color: ${colour.onSurfaceVariant}; margin-bottom: 6px; }`,
-    `.measured { color: ${colour.onSurfaceVariant}; }`,
+    `.roles { color: ${colour.secondaryText}; margin-bottom: 6px; }`,
+    `.measured { color: ${colour.secondaryText}; }`,
     `.type-row { display: flex; align-items: baseline; gap: 28px; margin-bottom: 10px; }`,
-    `.type-label { color: ${colour.onSurfaceVariant}; width: 260px; flex: none; }`,
+    `.type-label { color: ${colour.secondaryText}; width: 260px; flex: none; }`,
     `.rings { display: flex; gap: 56px; }`,
     `.ring { width: ${RING_DIAMETER}px; }`,
     `.drawing { position: relative; height: ${RING_DIAMETER}px; }`,
@@ -283,7 +286,7 @@ function styleSheet(fontsBase: string): string {
   justify-content: center;
 }`,
     `.ring-phase { text-transform: uppercase; }`,
-    `.ring-note { color: ${colour.onSurfaceVariant}; margin-top: 6px; }`,
+    `.ring-note { color: ${colour.secondaryText}; margin-top: 6px; }`,
     `.icon-grid { display: flex; flex-wrap: wrap; gap: 16px 24px; }`,
     `.icon-cell {
   width: 116px;
@@ -292,10 +295,10 @@ function styleSheet(fontsBase: string): string {
   align-items: center;
   gap: 8px;
 }`,
-    `.icon-name { color: ${colour.onSurfaceVariant}; }`,
+    `.icon-name { color: ${colour.secondaryText}; }`,
     `.pieces { display: flex; gap: 40px; }`,
-    `.piece-says { color: ${colour.onSurfaceVariant}; margin-top: 10px; width: 320px; }`,
-    `.foot { color: ${colour.onSurfaceVariant}; margin-top: 44px; }`,
+    `.piece-says { color: ${colour.secondaryText}; margin-top: 10px; width: 320px; }`,
+    `.foot { color: ${colour.secondaryText}; margin-top: 44px; }`,
   ].join('\n');
 }
 
@@ -451,7 +454,7 @@ function IconCell({ icon }: { icon: Icon }): Html {
         height={icon.size}
         viewBox={`0 0 ${icon.size} ${icon.size}`}
         fill="none"
-        stroke={colour.onSurface}
+        stroke={colour.text}
         stroke-width={icon.strokeWidth}
         stroke-linecap="round"
         stroke-linejoin="round"

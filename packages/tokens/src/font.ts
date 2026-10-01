@@ -7,7 +7,7 @@ export const fontsRoot = 'apps/mobile/assets/fonts';
  * The weights that ship. A style that names a weight no file carries leaves the platform to
  * imitate it, so a weight arrives as a file first.
  */
-export type FontWeightName = 'regular' | 'medium' | 'semiBold';
+export type FontWeightName = 'regular' | 'medium' | 'semiBold' | 'bold' | 'extraBold';
 
 /**
  * One file on disk, and the name the application registers it under. The two strings differ, so a
@@ -21,8 +21,11 @@ export interface FontFile {
   readonly path: string;
 }
 
-/** The three families this repository redistributes, one for each face of the design system. */
-export type FontFamilyName = 'newsreader' | 'plusJakartaSans' | 'jetBrainsMono';
+/**
+ * The two families this repository redistributes. One carries every word of the application and the
+ * other carries the recovery code, where a reader has to tell one character from another.
+ */
+export type FontFamilyName = 'figtree' | 'jetBrainsMono';
 
 /**
  * A family, its files, and the terms they travel under. A test reads the licence fields against the
@@ -54,52 +57,27 @@ export const OPEN_FONT_LICENCE = 'SIL Open Font License, Version 1.1';
  * Each family ships the cuts its own roles ask for and no others, because a weight nobody asks for
  * is bytes in the download.
  *
- * Newsreader carries an optical size axis and the repository ships one static cut of it. The cut is
- * `16pt`. The display roles run from 20 to 48 points, and the 72pt cut is drawn for sizes far above
- * that, so it reads thin where most of Emi's headlines sit. The two cuts were not compared on a
- * device; if the 16pt cut reads heavy at 48 points, the replacement is the 72pt cut at the same two
+ * Figtree ships as a variable font and as static cuts. The static cuts ship here, because React
+ * Native reaches only the default instance of a variable file, and the redesign asks for four
  * weights.
  */
 export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
-  newsreader: {
-    family: 'Newsreader 16pt',
+  figtree: {
+    family: 'Figtree',
     licence: OPEN_FONT_LICENCE,
-    licencePath: 'newsreader/OFL.txt',
+    licencePath: 'figtree/OFL.txt',
     copyright:
-      'Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)',
-    source: 'https://github.com/productiontype/Newsreader',
-    weights: ['regular', 'medium'],
+      'Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree)',
+    source: 'https://github.com/erikdkennedy/figtree',
+    weights: ['regular', 'semiBold', 'bold', 'extraBold'],
     files: {
-      regular: {
-        name: 'Newsreader16pt-Regular',
-        weight: 400,
-        path: 'newsreader/Newsreader16pt-Regular.ttf',
-      },
-      medium: {
-        name: 'Newsreader16pt-Medium',
-        weight: 500,
-        path: 'newsreader/Newsreader16pt-Medium.ttf',
-      },
-    },
-  },
-  plusJakartaSans: {
-    family: 'Plus Jakarta Sans',
-    licence: OPEN_FONT_LICENCE,
-    licencePath: 'plus-jakarta-sans/OFL.txt',
-    copyright:
-      'Copyright 2020 The Plus Jakarta Sans Project Authors (https://github.com/tokotype/PlusJakartaSans)',
-    source: 'https://github.com/tokotype/PlusJakartaSans',
-    weights: ['regular', 'semiBold'],
-    files: {
-      regular: {
-        name: 'PlusJakartaSans-Regular',
-        weight: 400,
-        path: 'plus-jakarta-sans/PlusJakartaSans-Regular.ttf',
-      },
-      semiBold: {
-        name: 'PlusJakartaSans-SemiBold',
-        weight: 600,
-        path: 'plus-jakarta-sans/PlusJakartaSans-SemiBold.ttf',
+      regular: { name: 'Figtree-Regular', weight: 400, path: 'figtree/Figtree-Regular.ttf' },
+      semiBold: { name: 'Figtree-SemiBold', weight: 600, path: 'figtree/Figtree-SemiBold.ttf' },
+      bold: { name: 'Figtree-Bold', weight: 700, path: 'figtree/Figtree-Bold.ttf' },
+      extraBold: {
+        name: 'Figtree-ExtraBold',
+        weight: 800,
+        path: 'figtree/Figtree-ExtraBold.ttf',
       },
     },
   },
@@ -127,16 +105,12 @@ export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
 };
 
 /** The families as data. A test walks this to prove each has its files and its licence on disk. */
-export const fontFamilyNames: readonly FontFamilyName[] = [
-  'newsreader',
-  'plusJakartaSans',
-  'jetBrainsMono',
-];
+export const fontFamilyNames: readonly FontFamilyName[] = ['figtree', 'jetBrainsMono'];
 
 /** Which family draws each face of the design system. Every face has one and every family is drawn. */
 export const faceFamily: Readonly<Record<FaceName, FontFamilyName>> = {
-  display: 'newsreader',
-  text: 'plusJakartaSans',
+  display: 'figtree',
+  text: 'figtree',
   data: 'jetBrainsMono',
 };
 
@@ -165,11 +139,11 @@ export const fontFiles: readonly FontFile[] = fontFamilyNames.flatMap((name) =>
 /**
  * A cut that ships while no role of the design system asks for its weight.
  *
- * `data-md` was the one role drawn in JetBrains Mono at 400, and the design system retired it
- * because no screen of the application drew it. The cut stays because the type specimen draws it:
- * its stacked digits panel is set in the regular cut, so a shifting digit is read at the weight a
- * reader of the specimen compares against. `brand/tests/specimen.test.tsx` holds that page to it, so
- * a specimen that stopped drawing the cut reddens rather than leaving this entry standing.
+ * No role of the redesign asks for JetBrains Mono at 400: the recovery code is set in the medium
+ * cut. The regular cut stays because the type specimen draws it: its stacked digits panel is set in
+ * the regular cut, so a shifting digit is read at the weight a reader of the specimen compares
+ * against. `brand/tests/specimen.test.tsx` holds that page to it, so a specimen that stopped drawing
+ * the cut reddens rather than leaving this entry standing.
  *
  * The application still loads it, which is a file on the phone no screen draws. Whether the phone
  * keeps carrying it is a decision about the bundle, and it is recorded here one cut at a time rather
@@ -185,6 +159,8 @@ export const weightFiles: Readonly<Record<TypeWeight, FontWeightName>> = {
   400: 'regular',
   500: 'medium',
   600: 'semiBold',
+  700: 'bold',
+  800: 'extraBold',
 };
 
 /**

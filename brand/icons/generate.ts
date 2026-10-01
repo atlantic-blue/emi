@@ -157,8 +157,8 @@ function contactSheetSource(drawings: readonly Drawing[]): string {
   const rows = Math.ceil(drawings.length / SHEET_COLUMNS);
   const width = SHEET_COLUMNS * SHEET_CELL;
   const height = rows * SHEET_CELL;
-  const ground = colours.surfaceContainerLowest.value;
-  const ink = colours.onSurface.value;
+  const ground = colours.card.value;
+  const ink = colours.text.value;
   const placed = drawings
     .map((drawing, index) => {
       const left = (index % SHEET_COLUMNS) * SHEET_CELL;

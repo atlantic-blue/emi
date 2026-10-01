@@ -191,7 +191,7 @@ const OPENS_FROM = 0.94;
 
 const styles = StyleSheet.create({
   day: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle(CYCLE_DAY_ROLE),
   },
   middle: {

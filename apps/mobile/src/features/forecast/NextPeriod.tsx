@@ -49,23 +49,23 @@ export function NextPeriod({ forecast, regularity }: Props): ReactNode {
 const styles = StyleSheet.create({
   block: { paddingHorizontal: space.spaceLg, paddingVertical: space.spaceMd },
   confidence: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   label: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
     marginBottom: space.spaceXs,
   },
   // Under the confidence rather than beside the range, because it explains the width she is
   // reading and does not change it.
   moves: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     marginTop: space.spaceXs,
   },
   range: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
     marginBottom: space.spaceXs,
   },

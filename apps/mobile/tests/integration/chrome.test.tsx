@@ -188,13 +188,13 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
     it('draws the tab she is on in primary and the other three in on surface variant', async () => {
       await sheOpens('/');
 
-      expect(theIconColourOf('index')).toBe(colour.primary);
-      expect(theLabelColourOf('index')).toBe(colour.primary.toLowerCase());
+      expect(theIconColourOf('index')).toBe(colour.accent);
+      expect(theLabelColourOf('index')).toBe(colour.accent.toLowerCase());
       expect(theLabelWeightOf('index')).toBe(600);
 
       for (const tab of theFourTabs.filter((each) => each.name !== 'index')) {
-        expect(theIconColourOf(tab.name)).toBe(colour.onSurfaceVariant);
-        expect(theLabelColourOf(tab.name)).toBe(colour.onSurfaceVariant.toLowerCase());
+        expect(theIconColourOf(tab.name)).toBe(colour.secondaryText);
+        expect(theLabelColourOf(tab.name)).toBe(colour.secondaryText.toLowerCase());
       }
     });
 
@@ -218,10 +218,10 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
 
       await fireEvent.press(screen.getByTestId(tabTestID('history')));
 
-      expect(theIconColourOf('history')).toBe(colour.primary);
-      expect(theLabelColourOf('history')).toBe(colour.primary.toLowerCase());
-      expect(theIconColourOf('index')).toBe(colour.onSurfaceVariant);
-      expect(theLabelColourOf('index')).toBe(colour.onSurfaceVariant.toLowerCase());
+      expect(theIconColourOf('history')).toBe(colour.accent);
+      expect(theLabelColourOf('history')).toBe(colour.accent.toLowerCase());
+      expect(theIconColourOf('index')).toBe(colour.secondaryText);
+      expect(theLabelColourOf('index')).toBe(colour.secondaryText.toLowerCase());
     });
   });
 
@@ -251,8 +251,8 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       // Layer 2 of the design system, which is the one thing here that floats over a screen: a
       // solid fill, because this style has no glass, and the single shadow the document allows.
       expect(theStyleOf(dockPanelTestID)).toMatchObject({
-        backgroundColor: theSameColourAs(colour.surfaceContainerLowest),
-        borderColor: colour.outlineVariant.toLowerCase(),
+        backgroundColor: theSameColourAs(colour.card),
+        borderColor: colour.line.toLowerCase(),
         borderRadius: radius.xl,
         borderWidth: 1,
         boxShadow: floatingShadow,
@@ -272,7 +272,7 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
       await theDockOnAPhone();
 
       expect(theStyleOf(tabTestID('index'))).toMatchObject({
-        backgroundColor: colour.surfaceContainerHigh,
+        backgroundColor: colour.field,
         borderRadius: radius.lg,
       });
       expect(theStyleOf(tabTestID('history'))['backgroundColor']).toBeUndefined();
@@ -344,7 +344,7 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
     it('runs her own surface under the dock, so no band of another colour crosses the glass', async () => {
       await sheOpens('/');
 
-      expect(theGroundUnder(bottomNavigationTestID)).toBe(colour.surface);
+      expect(theGroundUnder(bottomNavigationTestID)).toBe(colour.ground);
     });
 
     it('runs it under the dock on every tab she picks, and not only the one she opens on', async () => {
@@ -352,7 +352,7 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
 
       await fireEvent.press(screen.getByTestId(tabTestID('history')));
 
-      expect(theGroundUnder(bottomNavigationTestID)).toBe(colour.surface);
+      expect(theGroundUnder(bottomNavigationTestID)).toBe(colour.ground);
     });
   });
 

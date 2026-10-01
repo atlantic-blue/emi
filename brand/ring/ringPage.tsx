@@ -147,8 +147,8 @@ function styleSheet(fontsBase: string): string {
   return [
     fontRules(fontsBase),
     `body {
-  background: ${colour.surfaceContainerLowest};
-  color: ${colour.onSurface};
+  background: ${colour.card};
+  color: ${colour.text};
   margin: 0;
   padding: 48px 56px;
   width: ${ringPage.width - 112}px;
@@ -174,9 +174,9 @@ function styleSheet(fontsBase: string): string {
   text-transform: uppercase;
 }`,
     `.title { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin-top: 12px; }`,
-    `.note { color: ${colour.onSurfaceVariant}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
+    `.note { color: ${colour.secondaryText}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
     `.heading { font-size: ${typeScale['headline-lg'].size}px; line-height: ${typeScale['headline-lg'].lineHeight}px; }`,
-    `.standfirst { color: ${colour.onSurfaceVariant}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
+    `.standfirst { color: ${colour.secondaryText}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
   ].join('\n');
 }
 

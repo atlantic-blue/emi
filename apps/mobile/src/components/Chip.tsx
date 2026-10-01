@@ -34,8 +34,8 @@ export function Chip({ label, isChosen, onPress, testID }: Props): ReactNode {
 const styles = StyleSheet.create({
   chip: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainer,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.field,
+    borderColor: colour.line,
     borderRadius: radius.lg,
     borderWidth: stroke.hairline,
     justifyContent: 'center',
@@ -45,11 +45,11 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceSm,
   },
   chosen: {
-    backgroundColor: colour.surfaceContainerHigh,
-    borderColor: colour.primaryContainer,
+    backgroundColor: colour.field,
+    borderColor: colour.accent,
   },
   label: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-sm'),
   },
 });
