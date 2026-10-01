@@ -56,7 +56,7 @@ const sheSaidHerCycleRuns = 29;
 const theLargestAWordMayBeDrawn = 14;
 
 /** What the strip of the cycle she is in says, in the words of the catalogue. */
-const theRunningCycleReads = 'Still running, 5 of bleeding so far';
+const theRunningCycleReads = 'Still running, 5 days of bleeding so far';
 
 /** Every key the section draws its words from, so a key added later is read by this file too. */
 const theKeysOfTheSection = wordKeys.filter((key) => key.startsWith('home.cycles.'));

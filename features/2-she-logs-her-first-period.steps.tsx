@@ -97,7 +97,7 @@ import {
 } from '../apps/mobile/src/features/cycle/CitationRow';
 import { loggedTodayTestID } from '../apps/mobile/src/features/home/LoggedToday';
 import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
-import { cycleLengthSentence, dayReads } from '../apps/mobile/src/features/history/copy';
+import { cycleLengthSentence, cycleSentence } from '../apps/mobile/src/features/history/copy';
 import { greeting, homeCopy } from '../apps/mobile/src/features/home/copy';
 import { logFlowDoneTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
@@ -3237,7 +3237,7 @@ defineFeature(feature, (test) => {
         for (const cycle of theCyclesHerPhoneHolds()) {
           const said = whatItSays(cycleStripTestID(cycle.startedOn));
 
-          expect(said).toContain(dayReads(cycle.startedOn));
+          expect(said).toContain(cycleSentence(cycle.startedOn, cycle.endedOn));
           expect(said).toContain(cycleLengthSentence(cycle.lengthDays, cycle.periodLengthDays));
         }
       },
