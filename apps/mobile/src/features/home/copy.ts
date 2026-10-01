@@ -18,6 +18,9 @@ export const homeCopy = {
   },
   painLine: words('home.painLine'),
   doctorRecord: words('home.doctorRecord'),
+  cycles: {
+    line: words('home.cycles.line'),
+  },
   numbers: {
     hers: words('home.numbers.hers'),
     published: words('home.numbers.published'),

@@ -3,7 +3,7 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
 import { type ForecastResult, addDays } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
-import { AccessibilityInfo } from 'react-native';
+import { AccessibilityInfo, View } from 'react-native';
 
 import { listCycles } from '../../src/data/cycleRepository';
 import { herWeek } from '../../src/features/cycle/herWeek';
@@ -12,6 +12,7 @@ import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { HomeScreen } from '../../src/features/home/HomeScreen';
+import { herCycles } from '../../src/features/home/herCycles';
 import { herNumbers } from '../../src/features/home/herNumbers';
 import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import {
@@ -22,7 +23,7 @@ import {
   twoCyclesExactly,
   veryRegular,
 } from '../../../../packages/cycle/tests/fixtures/recordedSets';
-import type { DrawnScreen } from '../../../../brand/screens/asHtml';
+import { type DrawnScreen, phoneSize } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 import { daysLogged, migratedDatabase, readDay } from '../fixtures/cycleCache';
 import { recordedAt } from '../fixtures/forecast';
@@ -49,6 +50,8 @@ const theCaveat = [
   'words are drawn in Plus Jakarta Sans. Reproduce with: npm run generate:home-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
+  'The last frame draws the same screen offset upward, because a frame is 844 points tall and her',
+  'cycle strips sit below that. Its caption says by how much. Nothing else about it differs.',
 ].join(' ');
 
 interface Recorded {
@@ -70,6 +73,12 @@ interface Recorded {
   readonly days?: readonly DayRecord[];
   /** How long she said her period runs, which is what a day ahead of her is drawn against. */
   readonly periodRunsFor?: number;
+  /**
+   * Points to offset the screen upward by, where this frame holds the foot of the screen rather
+   * than the head of it. A frame clips at 844 points, so a section further down than that is drawn
+   * and never seen. The screen is laid out whole and the box is moved, which is what scrolling does.
+   */
+  readonly offsetPoints?: number;
 }
 
 /**
@@ -105,6 +114,12 @@ const sheThenMarkedTwoSymptoms: readonly DayRecord[] = [
     recordedAt: `${addDays(herPeriodStartedOnAMonday, 3)}T19:00:00.000Z`,
   },
 ];
+
+/**
+ * The points the last frame is offset by. Her strips sit under her three numbers, which is further
+ * down the screen than a frame reaches, so the box is moved down the screen by this much.
+ */
+const theStripsSitThisFarDown = 700;
 
 const theRecordedSets: readonly Recorded[] = [
   { title: 'Her first day, nothing recorded', set: veryRegular, recorded: 'nothing' },
@@ -153,10 +168,23 @@ const theRecordedSets: readonly Recorded[] = [
   // The frames above land on a period day or a follicular one, so none of them shows the line in a
   // phase contract SCREEN-2 says nothing about. This is the other half of that question.
   { title: 'Day 21, in the luteal phase', set: veryRegular, onDay: 21 },
+  {
+    title: `Her cycle strips, offset upward by ${String(theStripsSitThisFarDown)} points`,
+    set: genuinelyIrregular,
+    offsetPoints: theStripsSitThisFarDown,
+  },
 ];
 
 /** What the frame is captioned with: the day she is on, and the sentence the screen names. */
-function noteFor(day: number | undefined, forecast: ForecastResult): string {
+function noteFor(
+  day: number | undefined,
+  forecast: ForecastResult,
+  offsetPoints: number | undefined,
+): string {
+  if (offsetPoints !== undefined) {
+    return `Offset up ${String(offsetPoints)} points, so the foot of the screen is in the frame.`;
+  }
+
   if (day === undefined) {
     return 'Nothing recorded, so there is no ring and no forecast.';
   }
@@ -194,32 +222,50 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
   // route hands the screen.
   const loggedToday = recorded.days?.find((day) => day.day === today);
 
+  const screen = (
+    <HomeScreen
+      cycleLengthDays={sheSaidHerCycleRuns}
+      feeling={recorded.feeling}
+      forecast={forecast}
+      goals={recorded.goals}
+      loggedToday={loggedToday}
+      name={recorded.name}
+      numbers={herNumbers(cycles, forecast)}
+      cycles={herCycles({ cycles, records })}
+      onExport={() => undefined}
+      onFigures={() => undefined}
+      onLogPain={() => undefined}
+      onOpenCycle={() => undefined}
+      onPeriod={() => undefined}
+      onSymptoms={() => undefined}
+      regularity={recorded.regularity}
+      ring={ring}
+      today={today}
+      week={herWeek({
+        cycles,
+        records,
+        today,
+        statedCycleLengthDays: sheSaidHerCycleRuns,
+        statedPeriodLengthDays: recorded.periodRunsFor,
+      })}
+    />
+  );
+  // The whole screen is laid out, in a box as tall as it needs, and the box is moved up inside the
+  // frame. A screen left at the height of the frame would clip the strips rather than scroll to them.
   const view = await render(
     <OnAPhone>
-      <HomeScreen
-        cycleLengthDays={sheSaidHerCycleRuns}
-        feeling={recorded.feeling}
-        forecast={forecast}
-        goals={recorded.goals}
-        loggedToday={loggedToday}
-        name={recorded.name}
-        numbers={herNumbers(cycles, forecast)}
-        onExport={() => undefined}
-        onFigures={() => undefined}
-        onLogPain={() => undefined}
-        onPeriod={() => undefined}
-        onSymptoms={() => undefined}
-        regularity={recorded.regularity}
-        ring={ring}
-        today={today}
-        week={herWeek({
-          cycles,
-          records,
-          today,
-          statedCycleLengthDays: sheSaidHerCycleRuns,
-          statedPeriodLengthDays: recorded.periodRunsFor,
-        })}
-      />
+      {recorded.offsetPoints === undefined ? (
+        screen
+      ) : (
+        <View
+          style={{
+            height: phoneSize.height + recorded.offsetPoints,
+            marginTop: -recorded.offsetPoints,
+          }}
+        >
+          {screen}
+        </View>
+      )}
     </OnAPhone>,
   );
   // A copy, taken before the screen is torn down. The runner holds one screen at a time, so a tree
@@ -230,7 +276,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
 
   return {
     title: recorded.title,
-    note: noteFor(ring === undefined ? undefined : onDay, forecast),
+    note: noteFor(ring === undefined ? undefined : onDay, forecast, recorded.offsetPoints),
     tree,
   };
 }

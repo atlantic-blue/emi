@@ -193,6 +193,8 @@ export const english = {
   // The line a woman who asked for a record for her doctor reads. It names her own answer back
   // to her, and it says what the press does rather than saying what the record is for.
   'home.doctorRecord': 'You asked for a record for your doctor. Open the export.',
+  'home.cycles.line':
+    'Each strip is one of your cycles, the one you are in first. Press a strip to read that cycle on Insights.',
   'home.greeting': 'Hello, {name}',
   'home.loggedToday.andTheLast': '{said} and {last}',
   'home.loggedToday.energy': 'energy',

@@ -12,6 +12,7 @@ import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
 import { whatSheMarkedOn } from '../log/copy';
+import { CycleStrips } from './CycleStrip';
 import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
 import { PhaseLine } from './PhaseLine';
@@ -19,6 +20,7 @@ import { RoundAction, type RoundActionName } from './RoundAction';
 import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
 import { homeCopy } from './copy';
+import type { ReadCycle } from '../cycle/cyclesRead';
 import type { MeasuredNumber } from './herNumbers';
 import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
@@ -102,6 +104,12 @@ interface Props {
    */
   readonly numbers?: readonly MeasuredNumber[];
   /**
+   * Her recent cycles, the one she is in first, and nothing at all where the cache holds none.
+   * Each one arrives already divided into its four phases, so this screen and the Insights screen
+   * cannot draw one cycle two ways.
+   */
+  readonly cycles?: readonly ReadCycle[];
+  /**
    * The way to the page that says where each published figure comes from. Nothing at all where
    * the caller offers none, and then the press under the line is not drawn either.
    */
@@ -116,6 +124,8 @@ interface Props {
   readonly onExport: () => void;
   /** The way into her month, which every day of her week takes her by, naming the day she pressed. */
   readonly onOpenMonth?: (day: string) => void;
+  /** The way to one cycle on the Insights screen, which a strip takes her by. */
+  readonly onOpenCycle?: (startedOn: string) => void;
 }
 
 export function HomeScreen({
@@ -130,12 +140,14 @@ export function HomeScreen({
   feeling,
   goals,
   numbers,
+  cycles,
   onFigures,
   onPeriod,
   onSymptoms,
   onLogPain,
   onExport,
   onOpenMonth,
+  onOpenCycle,
 }: Props): ReactNode {
   const marked = whatSheMarkedOn(loggedToday);
 
@@ -218,6 +230,15 @@ export function HomeScreen({
           </View>
         )}
 
+        {cycles === undefined || onOpenCycle === undefined ? null : (
+          <View style={styles.cycles}>
+            <CycleStrips cycles={cycles} onOpenCycle={onOpenCycle} />
+            <Text style={styles.cyclesLine} testID={homeCyclesLineTestID}>
+              {homeCopy.cycles.line}
+            </Text>
+          </View>
+        )}
+
         {theRecordForHerDoctorIsOffered(goals) ? (
           <Pressable
             accessibilityRole="button"
@@ -255,6 +276,15 @@ const styles = StyleSheet.create({
   },
   // The line sits under the rows rather than beside them, and it says where the published figure
   // came from. The press under it is the way to the page that answers that.
+  // Her own cycles sit under the numbers they were read from, because a strip is the shape of a
+  // cycle and a number is one measurement of it, and she reads the measurement first.
+  cycles: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.spaceLg },
+  // The line sits under the strips and says what a strip is, so nothing is drawn over a fill.
+  cyclesLine: {
+    color: colour.onSurfaceVariant,
+    ...textStyle('body-sm'),
+    marginTop: space.spaceSm,
+  },
   figuresLine: {
     color: colour.onSurfaceVariant,
     ...textStyle('body-sm'),
