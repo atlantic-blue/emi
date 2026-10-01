@@ -1,4 +1,4 @@
-import type { PublishedFigure, PublishedMeasurement } from '@emi/cycle';
+import type { PatternAnchor, PublishedFigure, PublishedMeasurement } from '@emi/cycle';
 
 import { words } from '../../language';
 import type { MeasuredNumber } from './herNumbers';
@@ -29,6 +29,10 @@ export const homeCopy = {
   },
   trend: {
     press: words('home.trend.press'),
+  },
+  patterns: {
+    line: words('home.patterns.line'),
+    press: words('home.patterns.press'),
   },
 } as const;
 
@@ -124,5 +128,29 @@ export function trendSpokenLabel(reads: {
     longest: reads.longest,
     low: reads.low,
     shortest: reads.shortest,
+  });
+}
+
+/**
+ * Where in her cycle a symptom keeps landing, said the way the arithmetic anchored it. The clause
+ * opens in lower case, because a card writes it after the name of the symptom rather than first.
+ */
+export function patternWhenReads(anchor: PatternAnchor, day: number): string {
+  if (anchor === 'cycle-day') {
+    return words('home.patterns.onCycleDay', undefined, { day });
+  }
+
+  return words('home.patterns.beforePeriod', undefined, { days: days(day) });
+}
+
+/** The lead of one card: the symptom she logged, then the point in her cycle it comes back at. */
+export function patternCardReads(pattern: {
+  readonly name: string;
+  readonly anchor: PatternAnchor;
+  readonly day: number;
+}): string {
+  return words('home.patterns.card', undefined, {
+    name: pattern.name,
+    when: patternWhenReads(pattern.anchor, pattern.day),
   });
 }

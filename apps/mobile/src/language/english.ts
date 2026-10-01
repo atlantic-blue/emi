@@ -220,6 +220,12 @@ export const english = {
   'home.numbers.range': '{low} to {high}',
   'home.numbers.upTo': 'up to {days}',
   'home.painLine': 'You said these days are hard. Log the pain first.',
+  'home.patterns.beforePeriod': 'about {days} before your period',
+  'home.patterns.card': '{name}, {when}',
+  'home.patterns.line':
+    'A symptom you logged once or twice is not a pattern, and Emi does not name it one.',
+  'home.patterns.onCycleDay': 'about day {day} of your cycle',
+  'home.patterns.press': 'What comes back, in full',
   'home.roundAction.period': 'Period',
   'home.roundAction.symptoms': 'Symptoms',
   // The chart of her last complete cycles over the published range. The caption and the sentence

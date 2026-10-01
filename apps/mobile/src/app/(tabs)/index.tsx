@@ -23,11 +23,14 @@ import { HomeScreen } from '../../features/home/HomeScreen';
 import { herCycles } from '../../features/home/herCycles';
 import { type TrendCycle, herTrend } from '../../features/home/herTrend';
 import { type MeasuredNumber, herNumbers } from '../../features/home/herNumbers';
+import { herPatterns } from '../../features/home/herPatterns';
+import type { ReadPattern } from '../../features/cycle/patternsRead';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { localDay } from '../../features/onboarding/days';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
 import { cycleParameter } from '../../features/history/askedCycle';
+import { patternParameter } from '../../features/history/askedPattern';
 import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
 import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
 
@@ -51,6 +54,8 @@ interface Shown {
   readonly cycles: readonly ReadCycle[] | undefined;
   /** The complete cycles she reads as a shape, or nothing until two of them are complete. */
   readonly trend: readonly TrendCycle[] | undefined;
+  /** The symptoms that came back, or nothing until one of them came back in enough cycles. */
+  readonly patterns: readonly ReadPattern[] | undefined;
   /** Today as she left it, picked out of the days already read, or nothing where she wrote none. */
   readonly loggedToday: DayRecord | undefined;
 }
@@ -95,6 +100,9 @@ function whatSheIsLookingAt(
     cycles: herCycles(readBack),
     // The same read again, so the points, the strips and the ring cannot disagree about a cycle.
     trend: herTrend(readBack),
+    // The same days once more. A pattern is read from the symptoms she wrote on them, which no
+    // other reader of this screen needs, and from the cycles those same days produced.
+    patterns: herPatterns(readBack),
     cycleLengthDays: stated,
     name: herAnswers?.name,
     regularity: herAnswers?.regularity,
@@ -148,8 +156,11 @@ export default function HomeRoute(): ReactNode {
       onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}
       onOpenCycles={() => router.push('/history')}
       onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
+      onOpenPattern={(slug) => router.push(`/history?${patternParameter}=${slug}`)}
+      onOpenPatterns={() => router.push('/history')}
       onPeriod={() => router.push('/log')}
       onSymptoms={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
+      patterns={shown.patterns}
       regularity={shown.regularity}
       ring={shown.ring}
       today={today}

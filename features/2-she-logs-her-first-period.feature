@@ -415,3 +415,20 @@ Feature: She opens Emi and logs her first period
     Then she is reading Insights, listing those same six cycles
     When she presses the way back
     Then she is on the screen she opened, reading the same six points
+
+  Scenario: SCREEN-2, she meets the symptom that comes back without going to look for it
+    Given her phone holds six cycles, one symptom in five of them and another in four
+    And she logged a third symptom in two of those cycles
+    When she opens Emi
+    Then she reads one card for each symptom that came back, the most repeated first
+    And each card names the symptom and where in her cycle it keeps landing
+    And each card names how many of her cycles carried it, out of the six Emi read
+    And the symptom she logged in two cycles is named on no card
+    And she is told a symptom logged once or twice is not a pattern
+    And every number in that section is one of her own counts
+    And no word of it calls her normal, abnormal or irregular
+    When she presses the card of the symptom that came back most
+    Then she is reading Insights, with that symptom marked and no other marked
+    And Insights names it at the same point in her cycle, in the same count of her cycles, as the card did
+    When she presses the way back
+    Then she is on the screen she opened, reading the same two cards

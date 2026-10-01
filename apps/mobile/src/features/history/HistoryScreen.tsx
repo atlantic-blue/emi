@@ -65,6 +65,12 @@ interface Props {
    * the cycle she pressed rather than on a list of four that look alike.
    */
   readonly openedAt?: string;
+  /**
+   * The symptom she arrived at, where she came from a card on the screen she opens, and nothing at
+   * all where she pressed the Insights column of the dock. That one row is marked, so she lands on
+   * the symptom she pressed rather than on a list of them.
+   */
+  readonly openedPattern?: string;
   /** A press opens the day itself, because a pattern she disagrees with is a day she can correct. */
   readonly onOpenDay: (day: string) => void;
   readonly onBack: () => void;
@@ -118,16 +124,20 @@ function CycleRow({
 
 function PatternRow({
   pattern,
+  opened,
   onOpenDay,
 }: {
   readonly pattern: HistoryPattern;
+  /** True for the one symptom she arrived at, which is drawn with a border she can see. */
+  readonly opened: boolean;
   readonly onOpenDay: (day: string) => void;
 }): ReactNode {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ selected: opened }}
       onPress={() => onOpenDay(pattern.lastDay)}
-      style={styles.row}
+      style={[styles.row, opened ? styles.opened : null]}
       testID={historyPatternTestID(pattern.slug)}
     >
       <Text style={styles.rowTitle}>{pattern.name}</Text>
@@ -144,7 +154,13 @@ function PatternRow({
   );
 }
 
-export function HistoryScreen({ history, openedAt, onOpenDay, onBack }: Props): ReactNode {
+export function HistoryScreen({
+  history,
+  openedAt,
+  openedPattern,
+  onOpenDay,
+  onBack,
+}: Props): ReactNode {
   return (
     <Screen testID={historyScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
@@ -164,7 +180,12 @@ export function HistoryScreen({ history, openedAt, onOpenDay, onBack }: Props): 
         ) : (
           <View style={styles.list} testID={historyPatternsTestID}>
             {history.patterns.map((pattern) => (
-              <PatternRow key={pattern.slug} onOpenDay={onOpenDay} pattern={pattern} />
+              <PatternRow
+                key={pattern.slug}
+                onOpenDay={onOpenDay}
+                opened={pattern.slug === openedPattern}
+                pattern={pattern}
+              />
             ))}
           </View>
         )}
@@ -251,8 +272,8 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
     padding: space.spaceMd,
   },
-  // The cycle she arrived at from the screen she opens, drawn with the accent border so she can
-  // see which of four rows she asked for. The mark is a width as well as a colour.
+  // The cycle or the symptom she arrived at from the screen she opens, drawn with the accent
+  // border so she can see which row she asked for. The mark is a width as well as a colour.
   opened: {
     borderColor: colour.primary,
     borderWidth: 2,

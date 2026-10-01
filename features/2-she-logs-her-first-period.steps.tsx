@@ -65,6 +65,8 @@ import {
   historyArcTestID,
   historyBackTestID,
   historyCycleTestID,
+  historyPatternTestID,
+  historyPatternsTestID,
   historyScreenTestID,
 } from '../apps/mobile/src/features/history/HistoryScreen';
 import {
@@ -87,6 +89,8 @@ import {
   homeFiguresLineTestID,
   homeFiguresPressTestID,
   homeForecastTestID,
+  homePatternsLineTestID,
+  homePatternsPressTestID,
   homeScreenTestID,
   homeTrendCountTestID,
   homeTrendPressTestID,
@@ -109,8 +113,18 @@ import {
 } from '../apps/mobile/src/features/cycle/CitationRow';
 import { loggedTodayTestID } from '../apps/mobile/src/features/home/LoggedToday';
 import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
-import { cycleLengthSentence, cycleSentence } from '../apps/mobile/src/features/history/copy';
-import { cyclesOutsideReads, greeting, homeCopy } from '../apps/mobile/src/features/home/copy';
+import {
+  cycleLengthSentence,
+  cycleSentence,
+  patternEvidenceSentence,
+} from '../apps/mobile/src/features/history/copy';
+import {
+  cyclesOutsideReads,
+  greeting,
+  homeCopy,
+  patternCardReads,
+  patternWhenReads,
+} from '../apps/mobile/src/features/home/copy';
 import { logFlowDoneTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
 import { weekDayTestID, weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
@@ -306,6 +320,18 @@ import {
   herCycleLengths,
   herCyclesOutsideTheBand,
 } from '../apps/mobile/tests/fixtures/herSixCycles';
+import {
+  daysOfHerRepeatingSymptoms,
+  theCyclesEmiReads,
+  theSymptomSheLoggedTwice,
+  theSymptomsThatCameBack,
+} from '../apps/mobile/tests/fixtures/herRepeatingSymptoms';
+import {
+  homePatternsTestID,
+  patternCardEvidenceTestID,
+  patternCardTestID,
+  patternCardWhenTestID,
+} from '../apps/mobile/src/features/home/PatternCard';
 import {
   type Control,
   controlsTooSmallToPress,
@@ -756,6 +782,58 @@ function thePointsDrawnOutsideTheBand(): number[] {
   return theCompleteCyclesHerPhoneHolds()
     .map((cycle) => theHeightOfThePoint(cycle.startedOn))
     .filter((height) => height < band.top - onTheEdge || height > band.bottom + onTheEdge);
+}
+
+/**
+ * Every pattern card on the glass, read off the section rather than asked for by name. Asking for
+ * the cards she is expected to read back would hide a card for a symptom that came back twice.
+ */
+function theCardsSheReads(): string[] {
+  return screen
+    .getByTestId(homePatternsTestID)
+    .children.map((card) =>
+      String((card as unknown as { props: { testID: unknown } }).props.testID),
+    );
+}
+
+/** Every symptom the Insights screen names, read off its list the same way. */
+function theSymptomsInsightsNames(): string[] {
+  return screen
+    .getByTestId(historyPatternsTestID)
+    .children.map((row) => String((row as unknown as { props: { testID: unknown } }).props.testID));
+}
+
+/** Every word of the section of cards, as one line, which is what a stranger could read. */
+function whatTheSectionSays(): string {
+  return [
+    whatItSays(homePatternsTestID),
+    whatItSays(homePatternsLineTestID),
+    whatItSays(homePatternsPressTestID),
+  ].join(' ');
+}
+
+/** Every whole number the section prints, so each one can be held to a count of her own. */
+function theNumbersTheSectionPrints(): number[] {
+  return [...whatTheSectionSays().matchAll(/\d+/g)].map((found) => Number(found[0]));
+}
+
+/** How many of her own days carry one symptom, read back out of her phone and not out of a card. */
+function theDaysSheLogged(slug: string): number {
+  const vault = herVault();
+
+  return listDayLogs(herDatabase())
+    .map((row) => vault.open(row.payload))
+    .filter((record) => (record.symptoms ?? []).includes(slug)).length;
+}
+
+/** Every symptom the Insights screen marks as the one she arrived at. */
+function theSymptomsMarkedOnInsights(): string[] {
+  return theSymptomsInsightsNames().filter((identifier) => {
+    const state = screen.getByTestId(identifier).props.accessibilityState as
+      { selected?: boolean } | undefined;
+
+    return state?.selected === true;
+  });
 }
 
 /** The address the drawing of the page that says where the figures come from gives it. */
@@ -3480,6 +3558,131 @@ defineFeature(feature, (test) => {
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(thePointsSheReads()).toEqual(thePointsSheRead);
       expect(thePointsSheReads()).toHaveLength(6);
+    });
+  });
+
+  test('SCREEN-2, she meets the symptom that comes back without going to look for it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    let theCardsSheRead: string[] = [];
+    const theOneThatCameBackMost =
+      theSymptomsThatCameBack[0] as (typeof theSymptomsThatCameBack)[0];
+
+    given(
+      'her phone holds six cycles, one symptom in five of them and another in four',
+      async () => {
+        await herPhoneHolds(whenSheOpensIt, daysOfHerRepeatingSymptoms(today));
+      },
+    );
+
+    and('she logged a third symptom in two of those cycles', () => {
+      expect(theDaysSheLogged(theSymptomSheLoggedTwice)).toBe(2);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+      theCardsSheRead = theCardsSheReads();
+    });
+
+    then('she reads one card for each symptom that came back, the most repeated first', () => {
+      expect(theCardsSheRead).toEqual(
+        theSymptomsThatCameBack.map((symptom) => patternCardTestID(symptom.slug)),
+      );
+      expect(theCardsSheRead).toHaveLength(2);
+    });
+
+    and('each card names the symptom and where in her cycle it keeps landing', () => {
+      for (const symptom of theSymptomsThatCameBack) {
+        const named = theSymptomCalled(symptom.slug).name;
+        const said = whatItSays(patternCardWhenTestID(symptom.slug));
+
+        expect(said).toContain(named);
+        expect(said).toContain(String(symptom.day));
+        expect(said).toBe(
+          patternCardReads({ anchor: symptom.anchor, day: symptom.day, name: named }),
+        );
+      }
+    });
+
+    and('each card names how many of her cycles carried it, out of the six Emi read', () => {
+      for (const symptom of theSymptomsThatCameBack) {
+        const said = whatItSays(patternCardEvidenceTestID(symptom.slug));
+
+        expect(said).toContain(String(symptom.cyclesWithIt));
+        expect(said).toContain(String(theCyclesEmiReads));
+        expect(said).toBe(patternEvidenceSentence(symptom.cyclesWithIt, theCyclesEmiReads));
+      }
+    });
+
+    and('the symptom she logged in two cycles is named on no card', () => {
+      expect(theCardsSheRead).not.toContain(patternCardTestID(theSymptomSheLoggedTwice));
+      expect(screen.queryByTestId(patternCardTestID(theSymptomSheLoggedTwice))).toBeNull();
+      expect(whatTheSectionSays()).not.toContain(theSymptomCalled(theSymptomSheLoggedTwice).name);
+    });
+
+    and('she is told a symptom logged once or twice is not a pattern', () => {
+      expect(whatItSays(homePatternsLineTestID)).toBe(homeCopy.patterns.line);
+    });
+
+    and('every number in that section is one of her own counts', () => {
+      const hers = new Set([
+        theCyclesEmiReads,
+        ...theSymptomsThatCameBack.flatMap((symptom) => [symptom.day, symptom.cyclesWithIt]),
+      ]);
+
+      expect(theNumbersTheSectionPrints().length).toBeGreaterThan(0);
+      expect(theNumbersTheSectionPrints().filter((number) => !hers.has(number))).toEqual([]);
+    });
+
+    and('no word of it calls her normal, abnormal or irregular', () => {
+      const said = whatTheSectionSays().toLowerCase();
+
+      for (const verdict of ['normal', 'abnormal', 'irregular']) {
+        expect(said).not.toContain(verdict);
+      }
+    });
+
+    when('she presses the card of the symptom that came back most', async () => {
+      await shePresses(patternCardTestID(theOneThatCameBackMost.slug));
+    });
+
+    then('she is reading Insights, with that symptom marked and no other marked', () => {
+      expect(screen.getByTestId(historyScreenTestID)).toBeTruthy();
+      expect(theSymptomsMarkedOnInsights()).toEqual([
+        historyPatternTestID(theOneThatCameBackMost.slug),
+      ]);
+      expect(theSymptomsInsightsNames().length).toBeGreaterThan(1);
+    });
+
+    and(
+      'Insights names it at the same point in her cycle, in the same count of her cycles, as the card did',
+      () => {
+        const said = whatItSays(historyPatternTestID(theOneThatCameBackMost.slug));
+        const named = theSymptomCalled(theOneThatCameBackMost.slug).name;
+
+        expect(said).toContain(named);
+        expect(said.toLowerCase()).toContain(
+          patternWhenReads(theOneThatCameBackMost.anchor, theOneThatCameBackMost.day).toLowerCase(),
+        );
+        expect(said).toContain(
+          patternEvidenceSentence(theOneThatCameBackMost.cyclesWithIt, theCyclesEmiReads),
+        );
+      },
+    );
+
+    when('she presses the way back', async () => {
+      await shePresses(historyBackTestID);
+    });
+
+    then('she is on the screen she opened, reading the same two cards', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(theCardsSheReads()).toEqual(theCardsSheRead);
+      expect(theCardsSheReads()).toHaveLength(2);
     });
   });
 });

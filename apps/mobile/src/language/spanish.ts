@@ -223,6 +223,12 @@ export const spanish: CatalogueIn<'es'> = {
   'home.numbers.range': 'de {low} a {high}',
   'home.numbers.upTo': 'hasta {days}',
   'home.painLine': 'Dijiste que estos días son difíciles. Registra el dolor primero.',
+  'home.patterns.beforePeriod': 'unos {days} antes de tu periodo',
+  'home.patterns.card': '{name}, {when}',
+  'home.patterns.line':
+    'Un síntoma que registraste una o dos veces no es un patrón, y Emi no lo llama así.',
+  'home.patterns.onCycleDay': 'hacia el día {day} de tu ciclo',
+  'home.patterns.press': 'Lo que vuelve, completo',
   'home.roundAction.period': 'Regla',
   'home.roundAction.symptoms': 'Síntomas',
   // El gráfico de sus últimos ciclos completos sobre el rango publicado. El pie y la frase debajo

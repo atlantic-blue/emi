@@ -13,6 +13,7 @@ import { rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { HomeScreen } from '../../src/features/home/HomeScreen';
 import { herCycles } from '../../src/features/home/herCycles';
+import { herPatterns } from '../../src/features/home/herPatterns';
 import { herTrend } from '../../src/features/home/herTrend';
 import { herNumbers } from '../../src/features/home/herNumbers';
 import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
@@ -28,6 +29,7 @@ import { type DrawnScreen, phoneSize } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 import { daysLogged, migratedDatabase, readDay } from '../fixtures/cycleCache';
 import { recordedAt } from '../fixtures/forecast';
+import { daysOfHerRepeatingSymptoms } from '../fixtures/herRepeatingSymptoms';
 
 /**
  * The picture contract SCREEN-2 asks a person to look at. It renders the screen the application
@@ -51,9 +53,9 @@ const theCaveat = [
   'words are drawn in Plus Jakarta Sans. Reproduce with: npm run generate:home-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
-  'The last two frames draw the same screen offset upward, because a frame is 844 points tall and',
-  'her cycle strips and her trend both sit below that. Each caption says by how much. Nothing else',
-  'about them differs.',
+  'The last three frames draw the same screen offset upward, because a frame is 844 points tall',
+  'and her strips, her trend and her cards all sit below that. Each caption says by how much.',
+  'Nothing else about them differs.',
 ].join(' ');
 
 interface Recorded {
@@ -126,6 +128,15 @@ const theStripsSitThisFarDown = 700;
 /** The points the trend frame is offset by, measured the same way: her chart sits below her strips. */
 const theTrendSitsThisFarDown = 1450;
 
+/** The points the cards are offset by. They sit under the chart, which is further down again. */
+const theCardsSitThisFarDown = 1780;
+
+/**
+ * The day the frame of her cards is counted from, which is the day every other frame counts from.
+ * The fixture places her symptoms against it, so the cards name the cycles the fixture names.
+ */
+const theDaySheOpensHerCards = theDayWithNothingRecorded;
+
 const theRecordedSets: readonly Recorded[] = [
   { title: 'Her first day, nothing recorded', set: veryRegular, recorded: 'nothing' },
   { title: 'One cycle recorded, still learning', set: oneCycleComplete },
@@ -182,6 +193,14 @@ const theRecordedSets: readonly Recorded[] = [
     title: `Her trend over the published band, offset upward by ${String(theTrendSitsThisFarDown)} points`,
     set: genuinelyIrregular,
     offsetPoints: theTrendSitsThisFarDown,
+  },
+  // The only frame drawn from days that carry symptoms. The recorded sets hold bleeding alone, so
+  // no other frame can show a card, and a screen with nothing to name draws no section at all.
+  {
+    title: `What came back, offset upward by ${String(theCardsSitThisFarDown)} points`,
+    set: veryRegular,
+    days: daysOfHerRepeatingSymptoms(theDaySheOpensHerCards),
+    offsetPoints: theCardsSitThisFarDown,
   },
 ];
 
@@ -247,8 +266,11 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       onLogPain={() => undefined}
       onOpenCycle={() => undefined}
       onOpenCycles={() => undefined}
+      onOpenPattern={() => undefined}
+      onOpenPatterns={() => undefined}
       onPeriod={() => undefined}
       onSymptoms={() => undefined}
+      patterns={herPatterns({ cycles, records })}
       regularity={recorded.regularity}
       ring={ring}
       today={today}
