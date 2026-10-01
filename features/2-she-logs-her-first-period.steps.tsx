@@ -13,20 +13,29 @@ import {
   publishedFigures,
   symptomGroups,
 } from '@emi/cycle';
-import { dockPanelTestID, tabTestID } from '@emi/ui';
+import {
+  bottomNavigationTestID,
+  deepestHomeIndicator,
+  dockPanelTestID,
+  dockRoom,
+  tabTestID,
+} from '@emi/ui';
 import {
   CONTRAST_FLOOR,
   FULL_TURN_DEGREES,
   GAP_DEGREES,
+  ICON_SIZE,
   MINIMUM_TAP_TARGET,
   type PhaseName,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
+  colour,
   colours,
   contrastRatio,
   phaseLabel,
   phaseNames,
   radius,
+  stroke,
 } from '@emi/tokens';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
@@ -151,7 +160,7 @@ import {
   patternCardReads,
   patternWhenReads,
 } from '../apps/mobile/src/features/home/copy';
-import { logFlowDoneTestID } from '../apps/mobile/src/features/log/LogFlow';
+import { logFlowDoneTestID, logFlowTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
 import { weekDayTestID, weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
 import {
@@ -177,7 +186,10 @@ import {
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
-import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
+import {
+  settingsExportTestID,
+  settingsScreenTestID,
+} from '../apps/mobile/src/features/settings/SettingsScreen';
 import {
   cyclesBeforeAForecastSentence,
   firstRunCopy,
@@ -596,7 +608,7 @@ async function shePresses(testID: string): Promise<void> {
 }
 
 /**
- * The columns of the dock, in the order it drew them, read off the capsule rather than asked for
+ * The columns of the dock, in the order it drew them, read off the bar rather than asked for
  * by name. Asking for them by name reads back the order of the ask.
  */
 function theColumnsOfTheDock(): string[] {
@@ -4488,6 +4500,133 @@ defineFeature(feature, (test) => {
     });
   });
 
+  // The dock is the one piece of chrome every screen she can reach carries, so its redesign is
+  // read with the navigator under it. A bar that lost one of its four routes is a bar that broke
+  // the product, and nothing drawn against the component alone would say so.
+  test('SCREEN-2, the dock takes the redesign look and keeps its routes', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const theFourColumns = [
+      { label: 'Today', name: 'index', reaches: homeScreenTestID },
+      { label: 'Log', name: 'log/index', reaches: logFlowTestID },
+      { label: 'Insights', name: 'history', reaches: historyScreenTestID },
+      { label: 'Privacy', name: 'settings/index', reaches: settingsScreenTestID },
+    ];
+
+    /** Points. The height the prototype gives a column of the bar. */
+    const theColumnHeight = 52;
+
+    /** The drawing and the word of one column, which is everything a column holds. */
+    const theColumn = (
+      name: string,
+    ): { readonly drawing: Record<string, unknown>; readonly word: Record<string, unknown> } => {
+      const [drawing, word] = screen.getByTestId(tabTestID(name)).children;
+      const propsOf = (held: unknown): Record<string, unknown> =>
+        (held as { props: Record<string, unknown> }).props;
+
+      return { drawing: propsOf(drawing), word: propsOf(word) };
+    };
+
+    /**
+     * The colour the drawing of a column is stroked in. The word beside it takes its colour from a
+     * class, and this tier compiles no theme, so a class resolves to nothing here. The word's own
+     * colour is read in `apps/mobile/tests/integration/22.7.test.tsx`, which compiles the theme.
+     */
+    const theDrawingColourOf = (name: string): unknown => theColumn(name).drawing['stroke'];
+
+    given('her phone holds six cycles of her own', async () => {
+      await herPhoneHolds(
+        whenSheOpensIt,
+        herRecordedDays({ cycleLengthDays: 28, periodDays: 4, dayOfCycle: 2 }),
+      );
+    });
+
+    when('she opens Emi and reads the dock across the foot of the screen', async () => {
+      await sheOpens('/');
+
+      expect(screen.getByTestId(bottomNavigationTestID)).toBeTruthy();
+      expect(theColumnsOfTheDock()).toEqual(theFourColumns.map((column) => tabTestID(column.name)));
+    });
+
+    then('the dock is a white bar that reaches both edges of the glass, under one hairline', () => {
+      const bar = flattenedStyleOf(bottomNavigationTestID);
+
+      expect(bar).toMatchObject({
+        backgroundColor: colour.card,
+        borderTopColor: colour.line,
+        borderTopWidth: stroke.hairline,
+        bottom: 0,
+        left: 0,
+        position: 'absolute',
+        right: 0,
+      });
+      // A bar rather than a capsule standing over her screen, so there is no corner, no hairline
+      // on the other three edges, and none of the one shadow the design system allows a panel.
+      expect(bar['borderRadius']).toBeUndefined();
+      expect(bar['borderWidth']).toBeUndefined();
+      expect(bar['boxShadow']).toBeUndefined();
+    });
+
+    and(
+      'each of the four columns takes an equal share of the width, with its word under its drawing',
+      () => {
+        for (const column of theFourColumns) {
+          const drawn = flattenedStyleOf(tabTestID(column.name));
+
+          expect(drawn).toMatchObject({ flex: 1, minHeight: theColumnHeight });
+          expect(drawn['backgroundColor']).toBeUndefined();
+          expect(theColumn(column.name).drawing['width']).toBe(ICON_SIZE);
+          expect(theColumn(column.name).word['children']).toBe(column.label);
+        }
+      },
+    );
+
+    and(
+      'the drawing in the column she is on is stroked in the accent, and the other three in the quiet dock colour',
+      () => {
+        expect(theDrawingColourOf('index')).toBe(colour.accent);
+
+        for (const column of theFourColumns.slice(1)) {
+          expect(theDrawingColourOf(column.name)).toBe(colour.dockQuiet);
+        }
+      },
+    );
+
+    and('the screen above the bar leaves exactly the room the bar draws', () => {
+      // The room is the sum of what the bar draws on the phone that keeps the most glass for
+      // itself, read off the bar rather than typed beside the code it describes. The runner hands
+      // the screens no insets, so the room the phone keeps arrives from the token the dock pads
+      // itself by, which `22.7` holds against the inset a phone with an island reports.
+      const room =
+        Number(flattenedStyleOf(dockPanelTestID)['paddingTop']) +
+        Number(flattenedStyleOf(tabTestID('index'))['minHeight']) +
+        deepestHomeIndicator;
+
+      expect(dockRoom).toBe(room);
+      expect(flattenedStyleOf(homeScreenTestID)['paddingBottom']).toBe(dockRoom);
+    });
+
+    and(
+      'pressing each column opens the screen behind it and moves the accent onto it',
+      async () => {
+        for (const column of theFourColumns) {
+          await shePresses(tabTestID(column.name));
+
+          expect(screen.getByTestId(column.reaches)).toBeTruthy();
+          expect(screen.getByTestId(bottomNavigationTestID)).toBeTruthy();
+          expect(theDrawingColourOf(column.name)).toBe(colour.accent);
+
+          for (const other of theFourColumns.filter((each) => each.name !== column.name)) {
+            expect(theDrawingColourOf(other.name)).toBe(colour.dockQuiet);
+          }
+        }
+      },
+    );
+  });
+
   // The palette the home screen is drawn in comes from the prototype, through the front matter of
   // the design document, into the token package. This is the first link of that chain, and the one
   // place a colour can enter without anything reading it.
@@ -4760,6 +4899,14 @@ function theScreenSheIsLookingAt(): unknown {
   }
 
   return JSON.parse(JSON.stringify(found));
+}
+
+/** Every style a node carries, flattened into the one the platform draws it from. */
+function flattenedStyleOf(testID: string): Record<string, unknown> {
+  return (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<
+    string,
+    unknown
+  >;
 }
 
 /** The value an animated style holds right now, which is what she is looking at. */
