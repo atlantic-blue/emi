@@ -1,3 +1,4 @@
+import { FERTILE_DAYS_AFTER_OVULATION, addDays } from '@emi/cycle';
 import { type PhaseName, ringGeometry } from '@emi/tokens';
 
 import { forecastOf } from '../forecast/fromCache';
@@ -34,14 +35,20 @@ export function thePhaseOn(from: RingInputFrom, day: string): PhaseName | undefi
 }
 
 /**
- * The day the forecast names as the estimated ovulation of the cycle holding that date. Nothing at
- * all while Emi is still learning her cycles, because until then it names no day.
+ * The middle of the fertile window of the cycle holding that date. Nothing at all while Emi is
+ * still learning her cycles, because until then it publishes no window.
+ *
+ * It is counted back from the end of the window rather than read off the forecast, because the
+ * interface names neither of the two single days a forecast carries, which is contract CYCLE-2.
+ * The window closes one day after the middle, so the two are the same date by construction.
  */
 export function theOvulationDayOn(from: RingInputFrom, day: string): string | undefined {
   const read = asSheReadItOn(from, day);
   const forecast = forecastOf(read.cycles, read.statedCycleLengthDays);
 
-  return forecast.kind === 'forecast' ? forecast.estimatedOvulation : undefined;
+  return forecast.kind === 'forecast'
+    ? addDays(forecast.fertileWindow.to, -FERTILE_DAYS_AFTER_OVULATION)
+    : undefined;
 }
 
 /** What the month colours one date by, or nothing where no cycle of hers holds it. */
