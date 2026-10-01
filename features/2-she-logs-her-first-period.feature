@@ -535,3 +535,12 @@ Feature: She opens Emi and logs her first period
     And a translucent colour is held to the opaque colour underneath it
     And a colour the prototype paints under the contrast floor records the value Emi builds instead
     And the ink of each phase is readable on the ground the ring writes the phase name on
+
+  Scenario: SCREEN-2, the buttons take the redesign shapes
+    Given a screen carrying every action Emi can ask her to take
+    When she reads it without reading a word of it
+    Then the action that writes her data is the only filled pill, in the one colour that acts
+    And the action beside it is a quieter pill with no fill of its own
+    And the quiet action is words alone, with no ground and no rule under them
+    And the round action is a disc carrying a drawing and no words
+    And her thumb reaches every one of them, because none is under forty four points

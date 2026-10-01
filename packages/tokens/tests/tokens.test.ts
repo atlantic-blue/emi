@@ -143,9 +143,9 @@ describe('the colour set', () => {
 });
 
 describe('the type scale', () => {
-  it('holds the eleven roles the design system names', () => {
-    expect(typeRoleNames).toHaveLength(11);
-    expect(Object.keys(typeScale)).toHaveLength(11);
+  it('holds the thirteen roles the design system names', () => {
+    expect(typeRoleNames).toHaveLength(13);
+    expect(Object.keys(typeScale)).toHaveLength(13);
   });
 
   it('holds the size and the line height of each role', () => {
@@ -159,6 +159,8 @@ describe('the type scale', () => {
       'headline-sm 18/24',
       'body-lg 16/24',
       'body-sm 14/20',
+      'button-lg 16/22',
+      'button-md 15/21',
       'label-md 13/18',
       'label-sm 11/15',
       'data-lg 24/30',
@@ -171,7 +173,7 @@ describe('the type scale', () => {
       .filter((name) => typeScale[name].lineHeight < typeScale[name].size * LINE_HEIGHT_FLOOR)
       .map((name) => `${name} is ${typeScale[name].lineHeight} on ${typeScale[name].size}`);
 
-    expect(typeRoleNames).toHaveLength(11);
+    expect(typeRoleNames).toHaveLength(13);
     expect(cramped).toEqual([]);
     expect(lineHeightsNobodyHasDecided).toEqual([]);
   });
@@ -222,13 +224,20 @@ describe('the type scale', () => {
       'headline-md',
       'headline-sm',
     ]);
-    expect(byFace('text')).toEqual(['body-lg', 'body-sm', 'label-md', 'label-sm']);
+    expect(byFace('text')).toEqual([
+      'body-lg',
+      'body-sm',
+      'button-lg',
+      'button-md',
+      'label-md',
+      'label-sm',
+    ]);
     expect(byFace('data')).toEqual(['data-lg', 'data-sm']);
   });
 
   it('carries the weight of each role, so no call site chooses one', () => {
     expect(typeRoleNames.map((name) => typeScale[name].weight)).toEqual([
-      800, 800, 800, 800, 800, 400, 400, 700, 600, 500, 500,
+      800, 800, 800, 800, 800, 400, 400, 700, 700, 700, 600, 500, 500,
     ]);
   });
 
