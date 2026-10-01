@@ -203,8 +203,6 @@ export const russian: CatalogueIn<'ru'> = {
   'history.title': 'История',
 
   'home.doctorRecord': 'Вы просили запись для врача. Откройте экспорт.',
-  'home.cycles.line':
-    'Полоса показывает один ваш цикл, первым идёт текущий. Нажмите на полосу, чтобы прочитать этот цикл в разделе Обзор.',
   'home.greeting': 'Здравствуйте, {name}',
   'home.loggedToday.andTheLast': '{said} и {last}',
   'home.loggedToday.energy': 'энергия',

@@ -1,9 +1,8 @@
-import { Redirect, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
-import { theCycleAskedFor } from '../../features/history/askedCycle';
 import { HistoryScreen } from '../../features/history/HistoryScreen';
 import { historyNow } from '../../features/history/historyNow';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
@@ -18,7 +17,6 @@ export default function HistoryRoute(): ReactNode {
   const vault = useVault();
   const router = useRouter();
   const { isDone } = useFirstRun();
-  const asked = useLocalSearchParams();
   const [history, setHistory] = useState(() => historyNow(database, vault));
 
   useFocusEffect(
@@ -43,7 +41,6 @@ export default function HistoryRoute(): ReactNode {
     <HistoryScreen
       history={history}
       onBack={leave}
-      openedAt={theCycleAskedFor(asked.cycle)}
       onOpenDay={(day) => router.push(`/day/${day}`)}
     />
   );

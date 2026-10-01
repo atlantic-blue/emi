@@ -199,8 +199,6 @@ export const spanish: CatalogueIn<'es'> = {
   'history.title': 'Historial',
 
   'home.doctorRecord': 'Pediste un registro para tu médico. Abre la exportación.',
-  'home.cycles.line':
-    'Cada franja es uno de tus ciclos, primero el que estás viviendo. Pulsa una franja para leer ese ciclo en Análisis.',
   'home.greeting': 'Hola, {name}',
   'home.loggedToday.andTheLast': '{said} y {last}',
   'home.loggedToday.energy': 'energía',
