@@ -18,16 +18,18 @@ import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
 import { PhaseLine } from './PhaseLine';
 import { RoundAction, type RoundActionName } from './RoundAction';
+import { SectionWaiting } from './SectionWaiting';
 import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
 import { PatternCards } from './PatternCard';
-import { cyclesOutsideReads, homeCopy } from './copy';
+import { cyclesOutsideReads, cyclesWaitingReads, homeCopy, trendWaitingReads } from './copy';
 import type { ReadCycle } from '../cycle/cyclesRead';
 import type { MeasuredNumber } from './herNumbers';
-import { type TrendCycle, cyclesOutsideTheBand } from './herTrend';
+import { type TrendCycle, cyclesBeforeATrend, cyclesOutsideTheBand } from './herTrend';
 import type { ReadPattern } from '../cycle/patternsRead';
 import { theFertileWindowIsOffered, theRecordForHerDoctorIsOffered } from './homeCards';
 import { thePainLineIsOffered } from './painLine';
+import { patternsWaiting } from '../cycle/patternsWaiting';
 
 /**
  * The one screen she opens. The ring carries the meaning and the words underneath it stay small,
@@ -42,6 +44,7 @@ export { roundActionTestID, roundActions } from './RoundAction';
 export { loggedTodayTestID } from './LoggedToday';
 export { phaseLineTestID } from './PhaseLine';
 export { weekStripTestID } from './WeekStrip';
+export { sectionWaitingTestID, waitingSections } from './SectionWaiting';
 
 /**
  * The two actions and the drawing each one carries. The order is the order the drawing places
@@ -85,6 +88,16 @@ interface Props {
   readonly forecast: ForecastResult;
   /** The length she gave at the first run, which the learning state counts by. */
   readonly cycleLengthDays: number;
+  /**
+   * How many of her cycles are complete, counted off the rows the rest of this screen is read from.
+   * Every section that cannot be filled yet names it, so the number she is told to wait for is one
+   * Emi read rather than one it chose.
+   *
+   * Nothing at all where the caller counted no rows, and then no waiting section is drawn either. A
+   * sentence saying how far off she is stands on a count Emi read, so without one there is nothing
+   * truthful to say and the section stays absent.
+   */
+  readonly completeCycles?: number;
   /**
    * The name in her profile, and nothing at all where she skipped the question or gave none. Then
    * no greeting is drawn, because a woman who kept her name is not greeted by a blank line.
@@ -166,6 +179,7 @@ export function HomeScreen({
   loggedToday,
   forecast,
   cycleLengthDays,
+  completeCycles,
   name,
   regularity,
   feeling,
@@ -247,6 +261,16 @@ export function HomeScreen({
           </View>
         ) : null}
 
+        {numbers !== undefined || completeCycles === undefined ? null : (
+          <View style={styles.waiting}>
+            <SectionWaiting
+              heading={homeCopy.waiting.cycles}
+              section="cycles"
+              {...cyclesWaitingReads(completeCycles)}
+            />
+          </View>
+        )}
+
         {numbers === undefined ? null : (
           <View style={styles.numbers}>
             <MeasuredRows headings={homeCopy.numbers} numbers={numbers} />
@@ -275,6 +299,16 @@ export function HomeScreen({
           </View>
         )}
 
+        {trend !== undefined || completeCycles === undefined ? null : (
+          <View style={styles.waiting}>
+            <SectionWaiting
+              heading={homeCopy.waiting.trend}
+              section="trend"
+              {...trendWaitingReads(cyclesBeforeATrend)}
+            />
+          </View>
+        )}
+
         {trend === undefined ? null : (
           <View style={styles.trend}>
             <CycleTrend cycles={trend} />
@@ -291,6 +325,16 @@ export function HomeScreen({
                 <Text style={styles.trendPressLabel}>{homeCopy.trend.press}</Text>
               </Pressable>
             )}
+          </View>
+        )}
+
+        {patterns !== undefined || completeCycles === undefined ? null : (
+          <View style={styles.waiting}>
+            <SectionWaiting
+              heading={homeCopy.waiting.patterns}
+              section="patterns"
+              {...patternsWaiting(completeCycles)}
+            />
           </View>
         )}
 
@@ -343,10 +387,15 @@ const styles = StyleSheet.create({
   // The card carries the window the ring already draws in colour, said in words, so it sits
   // under the forecast it is counted back from rather than beside the ways off the screen.
   card: { marginTop: space.spaceMd },
+  // The content begins hard against the top of the glass, and the room at the foot is the larger of
+  // the two whether her days fill the screen or not. On day one the three waiting sections carry the
+  // body past the height of the glass, so there is no spare room to fall anywhere, and a foot equal
+  // to the top would leave the last sentence reading against the edge of the dock.
   body: {
     alignItems: 'center',
     flexGrow: 1,
-    paddingVertical: space.spaceXl,
+    paddingBottom: space.spaceXl + space.spaceLg,
+    paddingTop: space.spaceXl,
   },
   // The line sits under the rows rather than beside them, and it says where the published figure
   // came from. The press under it is the way to the page that answers that.
@@ -472,6 +521,9 @@ const styles = StyleSheet.create({
     ...textStyle('headline-md'),
     marginBottom: space.spaceXs,
   },
+  // A section she has not earned yet is held to the width the filled sections take, so the screen
+  // keeps one left edge whether her days fill it or not.
+  waiting: { alignSelf: 'stretch', paddingHorizontal: space.spaceLg },
   // The scroll fills the screen, so the spare room belongs to the body and falls under the last
   // thing on it. A container sized to its own content would leave that room outside the body.
   scroll: { flex: 1 },

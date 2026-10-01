@@ -180,11 +180,11 @@ export const english = {
   'history.pattern.evidence': 'in {withIt} of your last {read} cycles',
   'history.pattern.line': '{when}, {evidence}',
   'history.pattern.beforePeriod': 'About {days} before your period',
-  'history.patternsWaiting': {
-    one: 'Emi names a symptom once it has come back in {needs} cycles. {count} of yours is complete.',
-    other:
-      'Emi names a symptom once it has come back in {needs} cycles. {count} of yours are complete.',
+  'history.patternsComplete': {
+    one: '{count} of yours is complete.',
+    other: '{count} of yours are complete.',
   },
+  'history.patternsNeed': 'Emi names a symptom once it has come back in {needs} cycles.',
   'history.patterns': 'What comes back',
   'history.running': 'Still running',
   'history.runningWithPeriod': '{running}, {periodDays} of bleeding so far',
@@ -235,6 +235,16 @@ export const english = {
   'home.trend.cycleCount': { one: '{count} complete cycle', other: '{count} complete cycles' },
   'home.trend.outside': '{outside} of your last {cycles} ran outside the band.',
   'home.trend.press': 'The same cycles, in full',
+  'home.waiting.cycles.heading': 'Your cycles',
+  'home.waiting.cycles.needs': 'Your three numbers arrive with your second period.',
+  'home.waiting.cycles.read': 'Emi has read {cycles}.',
+  'home.waiting.patterns.heading': 'What comes back',
+  'home.waiting.trend.heading': 'Cycle trends',
+  'home.waiting.trend.needs': {
+    one: 'The chart arrives once {count} cycle is complete.',
+    other: 'The chart arrives once {count} cycles are complete.',
+  },
+  'home.waiting.trend.read': 'Emi draws nothing from nothing, and it holds no sample data.',
   'home.trend.spoken':
     'Your last {cycles}, from {shortest} to {longest} days, over the published range of {low} to {high} days.',
   'home.wordmark': 'Emi',

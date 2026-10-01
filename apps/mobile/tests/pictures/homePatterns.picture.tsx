@@ -77,6 +77,7 @@ async function drawn(): Promise<DrawnScreen> {
         }}
       >
         <HomeScreen
+          completeCycles={cycles.filter((cycle) => cycle.lengthDays !== null).length}
           cycleLengthDays={sheSaidHerCycleRuns}
           cycles={herCycles(readBack)}
           forecast={forecast}

@@ -30,6 +30,11 @@ export const homeCopy = {
   trend: {
     press: words('home.trend.press'),
   },
+  waiting: {
+    cycles: words('home.waiting.cycles.heading'),
+    trend: words('home.waiting.trend.heading'),
+    patterns: words('home.waiting.patterns.heading'),
+  },
   patterns: {
     line: words('home.patterns.line'),
     press: words('home.patterns.press'),
@@ -85,6 +90,31 @@ export function publishedFigureReads(figure: PublishedFigure): string {
  */
 export function greeting(name: string): string {
   return words('home.greeting', undefined, { name });
+}
+
+/**
+ * What the section of her three numbers says while it waits, and how many complete cycles Emi read
+ * to say it. The count is her own, so a woman who recorded nothing reads nought rather than a
+ * number Emi picked for the look of the screen.
+ */
+export function cyclesWaitingReads(completeCycles: number): { needs: string; read: string } {
+  return {
+    needs: words('home.waiting.cycles.needs'),
+    read: words('home.waiting.cycles.read', undefined, {
+      cycles: trendCycleCount(completeCycles),
+    }),
+  };
+}
+
+/**
+ * What the chart says while it waits. The threshold is the arithmetic's own, handed in rather than
+ * written here, so the sentence cannot name one number while the chart waits for another.
+ */
+export function trendWaitingReads(needsCycles: number): { needs: string; read: string } {
+  return {
+    needs: words('home.waiting.trend.needs', needsCycles),
+    read: words('home.waiting.trend.read'),
+  };
 }
 
 /** How many complete cycles the chart drew, in her own language, agreeing with the number. */

@@ -188,11 +188,11 @@ export const spanish: CatalogueIn<'es'> = {
   'history.pattern.evidence': 'en {withIt} de tus últimos {read} ciclos',
   'history.pattern.line': '{when}, {evidence}',
   'history.pattern.beforePeriod': 'Unos {days} antes de tu periodo',
-  'history.patternsWaiting': {
-    one: 'Emi nombra un síntoma cuando ha vuelto en {needs} ciclos. {count} de los tuyos está completo.',
-    other:
-      'Emi nombra un síntoma cuando ha vuelto en {needs} ciclos. {count} de los tuyos están completos.',
+  'history.patternsComplete': {
+    one: '{count} de los tuyos está completo.',
+    other: '{count} de los tuyos están completos.',
   },
+  'history.patternsNeed': 'Emi nombra un síntoma cuando ha vuelto en {needs} ciclos.',
   'history.patterns': 'Lo que vuelve',
   'history.running': 'Todavía en curso',
   'history.runningWithPeriod': '{running}, {periodDays} de sangrado hasta ahora',
@@ -238,6 +238,16 @@ export const spanish: CatalogueIn<'es'> = {
   'home.trend.cycleCount': { one: '{count} ciclo completo', other: '{count} ciclos completos' },
   'home.trend.outside': '{outside} de tus últimos {cycles} quedaron fuera de la banda.',
   'home.trend.press': 'Los mismos ciclos, completos',
+  'home.waiting.cycles.heading': 'Tus ciclos',
+  'home.waiting.cycles.needs': 'Tus tres cifras llegan con tu segundo periodo.',
+  'home.waiting.cycles.read': 'Emi ha leído {cycles}.',
+  'home.waiting.patterns.heading': 'Lo que vuelve',
+  'home.waiting.trend.heading': 'Tendencias del ciclo',
+  'home.waiting.trend.needs': {
+    one: 'El gráfico llega cuando {count} ciclo esté completo.',
+    other: 'El gráfico llega cuando {count} ciclos estén completos.',
+  },
+  'home.waiting.trend.read': 'Emi no dibuja nada de nada, y no guarda datos de ejemplo.',
   'home.trend.spoken':
     'Tus últimos {cycles}, de {shortest} a {longest} días, sobre el rango publicado de {low} a {high} días.',
   'home.wordmark': 'Emi',
