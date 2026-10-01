@@ -37,6 +37,7 @@
     "generate:onboarding-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern onboarding.picture",
     "generate:tour-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern tour.picture",
     "generate:home-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern homeScreen.picture",
+    "generate:trend-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern homeTrend.picture",
     "generate:flow-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern logFlow.picture",
     "generate:last-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern lastPeriod.picture",
     "generate:history-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern history.picture",

@@ -13,6 +13,7 @@ import { rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { HomeScreen } from '../../src/features/home/HomeScreen';
 import { herCycles } from '../../src/features/home/herCycles';
+import { herTrend } from '../../src/features/home/herTrend';
 import { herNumbers } from '../../src/features/home/herNumbers';
 import type { RecordedSet } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import {
@@ -50,8 +51,9 @@ const theCaveat = [
   'words are drawn in Plus Jakarta Sans. Reproduce with: npm run generate:home-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
-  'The last frame draws the same screen offset upward, because a frame is 844 points tall and her',
-  'cycle strips sit below that. Its caption says by how much. Nothing else about it differs.',
+  'The last two frames draw the same screen offset upward, because a frame is 844 points tall and',
+  'her cycle strips and her trend both sit below that. Each caption says by how much. Nothing else',
+  'about them differs.',
 ].join(' ');
 
 interface Recorded {
@@ -121,6 +123,9 @@ const sheThenMarkedTwoSymptoms: readonly DayRecord[] = [
  */
 const theStripsSitThisFarDown = 700;
 
+/** The points the trend frame is offset by, measured the same way: her chart sits below her strips. */
+const theTrendSitsThisFarDown = 1450;
+
 const theRecordedSets: readonly Recorded[] = [
   { title: 'Her first day, nothing recorded', set: veryRegular, recorded: 'nothing' },
   { title: 'One cycle recorded, still learning', set: oneCycleComplete },
@@ -172,6 +177,11 @@ const theRecordedSets: readonly Recorded[] = [
     title: `Her cycle strips, offset upward by ${String(theStripsSitThisFarDown)} points`,
     set: genuinelyIrregular,
     offsetPoints: theStripsSitThisFarDown,
+  },
+  {
+    title: `Her trend over the published band, offset upward by ${String(theTrendSitsThisFarDown)} points`,
+    set: genuinelyIrregular,
+    offsetPoints: theTrendSitsThisFarDown,
   },
 ];
 
@@ -236,11 +246,13 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       onFigures={() => undefined}
       onLogPain={() => undefined}
       onOpenCycle={() => undefined}
+      onOpenCycles={() => undefined}
       onPeriod={() => undefined}
       onSymptoms={() => undefined}
       regularity={recorded.regularity}
       ring={ring}
       today={today}
+      trend={herTrend({ cycles, records })}
       week={herWeek({
         cycles,
         records,

@@ -401,3 +401,17 @@ Feature: She opens Emi and logs her first period
     And Insights gives that cycle the same length and the same four arcs the strip gave it
     When she presses the way back
     Then she is on the screen she opened, reading the same four strips
+
+  Scenario: SCREEN-2, she reads the shape of her last six cycles against the published range
+    Given her phone holds six complete cycles, three of which ran outside the published range
+    When she opens Emi
+    Then she reads one point for each of her six complete cycles, oldest first
+    And the published range of 24 to 38 days is shaded behind the points
+    And each point sits where that cycle length falls against the two numbers on the axis
+    And she is told three of her last six complete cycles ran outside the band
+    And three is the number she gets by counting the points drawn outside the band
+    And nothing in that section calls her cycles normal, abnormal or irregular
+    When she presses the way to the same cycles in full
+    Then she is reading Insights, listing those same six cycles
+    When she presses the way back
+    Then she is on the screen she opened, reading the same six points

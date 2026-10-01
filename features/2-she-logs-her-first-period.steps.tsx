@@ -2,6 +2,8 @@ import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
 import {
+  CYCLE_LENGTH_HIGH_DAYS,
+  CYCLE_LENGTH_LOW_DAYS,
   addDays,
   findSymptom,
   type PublishedFigure,
@@ -72,12 +74,22 @@ import {
   cycleStripTestID,
 } from '../apps/mobile/src/features/home/CycleStrip';
 import { stripsSheReads } from '../apps/mobile/src/features/home/herCycles';
+import { cyclesSheReadsAsATrend } from '../apps/mobile/src/features/home/herTrend';
+import {
+  PLOT_HEIGHT,
+  homeTrendTestID,
+  trendAxisTestID,
+  trendBandTestID,
+  trendPointTestID,
+} from '../apps/mobile/src/features/home/CycleTrend';
 import {
   homeCyclesLineTestID,
   homeFiguresLineTestID,
   homeFiguresPressTestID,
   homeForecastTestID,
   homeScreenTestID,
+  homeTrendCountTestID,
+  homeTrendPressTestID,
   roundActionTestID,
 } from '../apps/mobile/src/features/home/HomeScreen';
 import {
@@ -98,7 +110,7 @@ import {
 import { loggedTodayTestID } from '../apps/mobile/src/features/home/LoggedToday';
 import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
 import { cycleLengthSentence, cycleSentence } from '../apps/mobile/src/features/history/copy';
-import { greeting, homeCopy } from '../apps/mobile/src/features/home/copy';
+import { cyclesOutsideReads, greeting, homeCopy } from '../apps/mobile/src/features/home/copy';
 import { logFlowDoneTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
 import { weekDayTestID, weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
@@ -289,6 +301,11 @@ import {
   herLastPeriodRuns,
   daysOfHerThreeCycles,
 } from '../apps/mobile/tests/fixtures/herThreeCycles';
+import {
+  daysOfHerSixCycles,
+  herCycleLengths,
+  herCyclesOutsideTheBand,
+} from '../apps/mobile/tests/fixtures/herSixCycles';
 import {
   type Control,
   controlsTooSmallToPress,
@@ -679,6 +696,66 @@ function theCyclesMarkedOnInsights(): string[] {
       return state?.selected === true;
     })
     .map((cycle) => cycle.startedOn);
+}
+
+/**
+ * Her complete cycles as her phone holds them, oldest first, which is the order the chart draws its
+ * points in. The chart is read against the cache, because the cache is where a cycle comes from.
+ */
+function theCompleteCyclesHerPhoneHolds(): CycleRow[] {
+  return [...listCycles(herDatabase())]
+    .filter((cycle) => !cycle.isPredicted && cycle.lengthDays !== null)
+    .sort((one, other) => one.startedOn.localeCompare(other.startedOn))
+    .slice(-cyclesSheReadsAsATrend);
+}
+
+/** Every point of the trend chart on the glass, in the order the screen she opens drew them. */
+function thePointsSheReads(): string[] {
+  const drawn = new Set(
+    screen.queryAllByTestId(/.+/).map((element) => String(element.props.testID)),
+  );
+
+  return theCompleteCyclesHerPhoneHolds()
+    .map((cycle) => trendPointTestID(cycle.startedOn))
+    .filter((identifier) => drawn.has(identifier));
+}
+
+/** The band behind the points, read off the drawing: the top of it and the bottom of it. */
+function theBandBehindThePoints(): { top: number; bottom: number } {
+  const band = screen.getByTestId(trendBandTestID).props as { y: number; height: number };
+
+  return { bottom: band.y + band.height, top: band.y };
+}
+
+/** Where one point sits down the plot, read off the drawing. */
+function theHeightOfThePoint(startedOn: string): number {
+  return (screen.getByTestId(trendPointTestID(startedOn)).props as { cy: number }).cy;
+}
+
+/**
+ * The days a height down the plot stands for, worked out from the two numbers printed beside the
+ * axis and from nothing the chart holds. A reader with those two numbers gets this, which is why
+ * they are printed.
+ */
+function theDaysAtTheHeight(height: number): number {
+  const low = Number(whatItSays(trendAxisTestID('low')));
+  const high = Number(whatItSays(trendAxisTestID('high')));
+
+  return high - (height * (high - low)) / PLOT_HEIGHT;
+}
+
+/**
+ * The points a reader counts as sitting outside the band, by looking at the points and the band.
+ * A coordinate is drawn to two decimal places, so a point on the edge of the band is read as on it
+ * rather than as outside it.
+ */
+function thePointsDrawnOutsideTheBand(): number[] {
+  const band = theBandBehindThePoints();
+  const onTheEdge = 0.05;
+
+  return theCompleteCyclesHerPhoneHolds()
+    .map((cycle) => theHeightOfThePoint(cycle.startedOn))
+    .filter((height) => height < band.top - onTheEdge || height > band.bottom + onTheEdge);
 }
 
 /** The address the drawing of the page that says where the figures come from gives it. */
@@ -3310,6 +3387,99 @@ defineFeature(feature, (test) => {
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(theStripsSheReads()).toEqual(theStripsSheRead);
       expect(theStripsSheReads()).toHaveLength(stripsSheReads);
+    });
+  });
+
+  test('SCREEN-2, she reads the shape of her last six cycles against the published range', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    let thePointsSheRead: string[] = [];
+    let theCountSheRead = '';
+
+    given(
+      'her phone holds six complete cycles, three of which ran outside the published range',
+      async () => {
+        await herPhoneHolds(whenSheOpensIt, daysOfHerSixCycles(today));
+      },
+    );
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+      thePointsSheRead = thePointsSheReads();
+      theCountSheRead = whatItSays(homeTrendCountTestID);
+    });
+
+    then('she reads one point for each of her six complete cycles, oldest first', () => {
+      const hers = theCompleteCyclesHerPhoneHolds();
+
+      expect(thePointsSheRead).toEqual(hers.map((cycle) => trendPointTestID(cycle.startedOn)));
+      expect(thePointsSheRead).toHaveLength(6);
+      expect(hers.map((cycle) => cycle.lengthDays)).toEqual([...herCycleLengths]);
+    });
+
+    and('the published range of 24 to 38 days is shaded behind the points', () => {
+      const band = theBandBehindThePoints();
+
+      expect(theDaysAtTheHeight(band.top)).toBeCloseTo(CYCLE_LENGTH_HIGH_DAYS, 1);
+      expect(theDaysAtTheHeight(band.bottom)).toBeCloseTo(CYCLE_LENGTH_LOW_DAYS, 1);
+      expect([CYCLE_LENGTH_LOW_DAYS, CYCLE_LENGTH_HIGH_DAYS]).toEqual([24, 38]);
+    });
+
+    and('each point sits where that cycle length falls against the two numbers on the axis', () => {
+      for (const cycle of theCompleteCyclesHerPhoneHolds()) {
+        expect(theDaysAtTheHeight(theHeightOfThePoint(cycle.startedOn))).toBeCloseTo(
+          cycle.lengthDays as number,
+          1,
+        );
+      }
+    });
+
+    and('she is told three of her last six complete cycles ran outside the band', () => {
+      expect(theCountSheRead).toBe(cyclesOutsideReads(3, 6));
+      expect(theCountSheRead).toContain('3');
+      expect(theCountSheRead).toContain('6');
+    });
+
+    and('three is the number she gets by counting the points drawn outside the band', () => {
+      expect(thePointsDrawnOutsideTheBand()).toHaveLength(3);
+      expect(herCyclesOutsideTheBand).toHaveLength(3);
+    });
+
+    and('nothing in that section calls her cycles normal, abnormal or irregular', () => {
+      const said = [whatItSays(homeTrendTestID), theCountSheRead, whatItSays(homeTrendPressTestID)]
+        .join(' ')
+        .toLowerCase();
+
+      for (const verdict of ['normal', 'abnormal', 'irregular']) {
+        expect(said).not.toContain(verdict);
+      }
+    });
+
+    when('she presses the way to the same cycles in full', async () => {
+      await shePresses(homeTrendPressTestID);
+    });
+
+    then('she is reading Insights, listing those same six cycles', () => {
+      expect(screen.getByTestId(historyScreenTestID)).toBeTruthy();
+
+      for (const cycle of theCompleteCyclesHerPhoneHolds()) {
+        expect(screen.getByTestId(historyCycleTestID(cycle.startedOn))).toBeTruthy();
+      }
+    });
+
+    when('she presses the way back', async () => {
+      await shePresses(historyBackTestID);
+    });
+
+    then('she is on the screen she opened, reading the same six points', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(thePointsSheReads()).toEqual(thePointsSheRead);
+      expect(thePointsSheReads()).toHaveLength(6);
     });
   });
 });

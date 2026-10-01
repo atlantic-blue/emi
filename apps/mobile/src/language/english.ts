@@ -222,6 +222,15 @@ export const english = {
   'home.painLine': 'You said these days are hard. Log the pain first.',
   'home.roundAction.period': 'Period',
   'home.roundAction.symptoms': 'Symptoms',
+  // The chart of her last complete cycles over the published range. The caption and the sentence
+  // under it count the cycles the chart drew, so a woman with three of them is never told six.
+  'home.trend.allInside': 'All of your last {cycles} ran inside the band.',
+  'home.trend.caption': 'Your last {cycles}. The band is the published range.',
+  'home.trend.cycleCount': { one: '{count} complete cycle', other: '{count} complete cycles' },
+  'home.trend.outside': '{outside} of your last {cycles} ran outside the band.',
+  'home.trend.press': 'The same cycles, in full',
+  'home.trend.spoken':
+    'Your last {cycles}, from {shortest} to {longest} days, over the published range of {low} to {high} days.',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Cancel',

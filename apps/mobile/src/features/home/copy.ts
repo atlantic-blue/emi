@@ -27,6 +27,9 @@ export const homeCopy = {
     line: words('home.numbers.line'),
     press: words('home.numbers.press'),
   },
+  trend: {
+    press: words('home.trend.press'),
+  },
 } as const;
 
 /** What each measurement is called, in her own language, on the row that carries it. */
@@ -78,4 +81,48 @@ export function publishedFigureReads(figure: PublishedFigure): string {
  */
 export function greeting(name: string): string {
   return words('home.greeting', undefined, { name });
+}
+
+/** How many complete cycles the chart drew, in her own language, agreeing with the number. */
+export function trendCycleCount(cycles: number): string {
+  return words('home.trend.cycleCount', cycles);
+}
+
+/** The caption under the chart, which says what the band behind her points is. */
+export function trendCaptionReads(cycles: number): string {
+  return words('home.trend.caption', undefined, { cycles: trendCycleCount(cycles) });
+}
+
+/**
+ * How many of the cycles on the chart ran outside the published range. A woman whose cycles all
+ * fell inside it reads a sentence of its own, because the plural lookup gives nought the same form
+ * as six and "0 of your last 6" is not a sentence anybody writes.
+ */
+export function cyclesOutsideReads(outside: number, read: number): string {
+  const cycles = trendCycleCount(read);
+
+  return outside === 0
+    ? words('home.trend.allInside', undefined, { cycles })
+    : words('home.trend.outside', undefined, { cycles, outside });
+}
+
+/**
+ * What somebody listening is told about the chart. A picture says nothing to a screen reader, so
+ * the sentence carries what the shape carries: how many cycles, the ends of her own range, and the
+ * range the paper reports.
+ */
+export function trendSpokenLabel(reads: {
+  readonly cycles: number;
+  readonly shortest: number;
+  readonly longest: number;
+  readonly low: number;
+  readonly high: number;
+}): string {
+  return words('home.trend.spoken', undefined, {
+    cycles: trendCycleCount(reads.cycles),
+    high: reads.high,
+    longest: reads.longest,
+    low: reads.low,
+    shortest: reads.shortest,
+  });
 }
