@@ -33,8 +33,9 @@ interface Props {
 /**
  * The day her last period started, picked from a calendar rather than typed.
  *
- * It is the one question with no way past it. SCREEN-1 makes this answer the one the first run
- * cannot do without, so the frame is given no Skip and the button waits until she has picked a day.
+ * The day the first forecast is counted from, so the button waits until she has picked one. A
+ * woman who cannot name it reads the question, finds she cannot answer it, and takes the way past
+ * under the days, which is why that control sits there rather than in the header above them.
  */
 export function LastPeriod({
   now,

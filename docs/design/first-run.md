@@ -37,7 +37,7 @@ flowchart TD
   T["Tour, four cards"] --> W["Welcome"]
   W --> N["Name"]
   N --> BY["Year of birth"]
-  BY --> LP["Last period, required"]
+  BY --> LP["Last period"]
   LP --> PB["The period before"]
   PB --> CL["Cycle length"]
   CL --> PL["Period length"]
@@ -56,8 +56,8 @@ flowchart TD
 
 Every answer is held in memory until the hold. The hold makes her vault key if she has none, then
 writes the days and the profile in one transaction. If she leaves before the hold, nothing is
-written and the first run starts again next time. Only the last period is required. Every other
-question has Skip, and Skip writes nothing for that field.
+written and the first run starts again next time. Every question can be passed, and a question she
+passes writes nothing for that field.
 
 ## 1. SCREEN-1, written again
 
@@ -68,13 +68,13 @@ Replaces the section in `docs/contracts.md`.
 Verified by a test.
 
 Output: at most eleven questions and five other screens between the welcome and the home screen.
-Only the last period is required. It ends with her answers written in one transaction at the hold.
+Every question can be passed. It ends with her answers written in one transaction at the hold.
 Every answer it takes is readable afterwards from the Privacy screen.
 An answer she gave is changeable afterwards, through the control she gave it with.
 
-Errors: a question whose answer nothing in the product reads, except the year of birth. A question with no Skip, other than
-the last period. An answer written to the database or the server in plain text. An account, an
-email address or a password asked for. Anything written before the hold.
+Errors: a question whose answer nothing in the product reads, except the year of birth. A question
+with no Skip. An answer written to the database or the server in plain text. An account, an email
+address or a password asked for. Anything written before the hold.
 
 ## 2. The data model, field level
 
