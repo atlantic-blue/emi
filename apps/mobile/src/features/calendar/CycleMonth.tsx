@@ -30,6 +30,24 @@ export function dateTestID(day: string): string {
   return `calendar-date-${day}`;
 }
 
+/** The round disc the date sits in, which is where a square carries its fill and its outline. */
+export function dateDiscTestID(day: string): string {
+  return `calendar-disc-${day}`;
+}
+
+/** The legend above the columns, which the screen reading a phase asks for. */
+export const monthLegendTestID = 'calendar-legend';
+
+/** One entry of that legend: a dot and the word beside it. */
+export function legendTestID(of: 'period' | 'fertile'): string {
+  return `calendar-legend-${of}`;
+}
+
+/** The dot of an entry, which is the colour the grid uses for those days. */
+export function legendDotTestID(of: 'period' | 'fertile'): string {
+  return `calendar-legend-dot-${of}`;
+}
+
 export const weekTestID = 'calendar-week';
 export const emptyCellTestID = 'calendar-empty';
 

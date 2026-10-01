@@ -35,6 +35,8 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.editPeriod.removed': 'Quitaste {days}.',
   'calendar.editPeriod.save': 'Guardar',
   'calendar.editPeriod.title': 'Editar mi periodo',
+  'calendar.legend.fertile': 'Fértil',
+  'calendar.legend.period': 'Periodo',
   'calendar.month.april': 'abril',
   'calendar.month.august': 'agosto',
   'calendar.month.december': 'diciembre',

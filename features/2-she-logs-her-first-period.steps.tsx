@@ -22,6 +22,7 @@ import {
   type PhaseName,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
+  colour,
   contrastRatio,
   phaseLabel,
   phaseNames,
@@ -54,10 +55,12 @@ import { readSetting, settingKeys } from '../apps/mobile/src/data/settingReposit
 import {
   calendarBackTestID,
   calendarEarlierTestID,
+  calendarEditPeriodTestID,
   calendarLaterTestID,
   calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
 import { daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
+import { monthLegendCopy } from '../apps/mobile/src/features/calendar/copy';
 import { DAYS_IN_A_WEEK } from '../apps/mobile/src/features/cycle/herWeek';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
@@ -272,7 +275,15 @@ import {
   theSquaresTheMonthDrew,
   theSquaresTooShortForAThumb,
   thePhaseTheRingSaysOn,
+  theDateInkOn,
+  theDiscAroundTheDate,
+  theFertileDaysTheRingCounts,
+  theLegendDots,
+  theLegendSheReads,
+  theOvulationDayTheForecastNames,
+  thePhaseGroundOn,
   theWeekMeasuredOn,
+  whatThePanelHolds,
   whatTheMonthScreenDrew,
 } from '../apps/mobile/tests/fixtures/theMonthSheOpens';
 import {
@@ -4580,6 +4591,91 @@ defineFeature(feature, (test) => {
         expect(ink).not.toBe(described.colours[phase]);
         expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(CONTRAST_FLOOR);
       }
+    });
+  });
+
+  // The redesign of the month, read as she reads it: the phases she never saw on this grid before,
+  // the two words that say what the colours mean, and the panel that names the day she pressed.
+  test('SCREEN-4, the month grid takes the redesign look', ({ given, when, and, then }) => {
+    let app: OpenApp;
+    let sheWasSentTo = '';
+
+    given('her phone holds three recorded cycles', async () => {
+      jest.setSystemTime(whenSheOpensTheMonth());
+      await herPhoneHoldsThreeRecordedCycles(whenSheOpensTheMonth());
+    });
+
+    when('she opens the month', async () => {
+      app = await sheOpens('/calendar');
+    });
+
+    then('every date sits in a disc of its own, with the day of her cycle above it', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(theSquaresTheMonthDrew().length).toBeGreaterThan(theColumnsOfTheDrawing().length);
+      expect(theSquaresCountingTheirCycleDayBelowTheDate()).toEqual([]);
+
+      for (const day of theSquaresTheMonthDrew()) {
+        expect(theDiscAroundTheDate(day).width).toBe(theDiscAroundTheDate(day).height);
+        expect(theCycleDayOver(day)).toBe(theDayTheRingSaysOn(day));
+      }
+    });
+
+    and('the days she bled are filled with the colour of her period', () => {
+      expect(theDaysTheDrawingFills().length).toBeGreaterThan(1);
+
+      for (const day of theDaysTheDrawingFills()) {
+        expect(thePhaseGroundOn(day)).toBe(colour.period);
+        expect(theDateInkOn(day)).toBe(colour.onAccent);
+      }
+    });
+
+    and('every fertile day the ring counts is tinted', () => {
+      const tinted = theFertileDaysTheRingCounts().filter(
+        (day) => day !== theOvulationDayTheForecastNames(),
+      );
+
+      expect(tinted.length).toBeGreaterThan(0);
+
+      for (const day of tinted) {
+        expect(thePhaseGroundOn(day)).toBe(colour.washWarm);
+        expect(theDateInkOn(day)).toBe(colour.ovulationInk);
+      }
+    });
+
+    and('the one day the forecast names as the estimated ovulation is filled', () => {
+      const ovulation = String(theOvulationDayTheForecastNames());
+
+      expect(theOvulationDayTheForecastNames()).toBeDefined();
+      expect(theFertileDaysTheRingCounts()).toContain(ovulation);
+      expect(thePhaseGroundOn(ovulation)).toBe(colour.ovulation);
+      expect(theDateInkOn(ovulation)).toBe(colour.text);
+    });
+
+    and('a legend above the grid names her period and her fertile days', () => {
+      expect(theLegendSheReads()).toEqual({
+        fertile: monthLegendCopy.fertile,
+        period: monthLegendCopy.period,
+      });
+      expect(theLegendDots()).toEqual({ fertile: colour.ovulation, period: colour.period });
+    });
+
+    when('she presses the day the drawing names', async () => {
+      sheWasSentTo = theDayTheDrawingsSheetNames();
+      await shePresses(dayTestID(sheWasSentTo));
+    });
+
+    then('a panel at the foot names that day, over the way to her whole period', () => {
+      const held = whatThePanelHolds();
+
+      expect(theSheetSheReads()?.lead).toContain(String(Number(sheWasSentTo.slice(8, 10))));
+      expect(held.indexOf(daySheetTestID)).toBeGreaterThanOrEqual(0);
+      expect(held.indexOf(daySheetTestID)).toBeLessThan(held.indexOf(calendarEditPeriodTestID));
+    });
+
+    and('pressing that panel opens the day it names', async () => {
+      await shePresses(daySheetTestID);
+
+      expect(app.pathname()).toBe(`/day/${sheWasSentTo}`);
     });
   });
 });

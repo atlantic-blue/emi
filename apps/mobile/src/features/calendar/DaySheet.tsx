@@ -16,6 +16,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 export const daySheetTestID = 'calendar-day-sheet';
 export const daySheetLeadTestID = 'calendar-day-sheet-lead';
 export const daySheetLineTestID = 'calendar-day-sheet-line';
+/** The round button that carries the mark saying the day opens. */
+export const daySheetOpenTestID = 'calendar-day-sheet-open';
 
 /** Points. The mark that says the row opens something, at the size the other rows of Emi draw it. */
 const OPENS_MARK_SIZE = 18;

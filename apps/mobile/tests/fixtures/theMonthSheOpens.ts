@@ -7,14 +7,19 @@ import { StyleSheet, type ViewStyle } from 'react-native';
 import { listCycles } from '../../src/data/cycleRepository';
 import {
   calendarMonthTestID,
+  calendarPanelTestID,
   calendarScreenTestID,
   calendarTitleTestID,
 } from '../../src/features/calendar/CalendarScreen';
 import {
   cycleDayTestID,
+  dateDiscTestID,
   dateTestID,
   dayTestID,
   emptyCellTestID,
+  legendDotTestID,
+  legendTestID,
+  monthLegendTestID,
   weekCellTestIDs,
   weekTestID,
 } from '../../src/features/calendar/CycleMonth';
@@ -517,7 +522,7 @@ export function theDateDrawnFor(day: string): number {
  * different things to look at, and that is what the reader below distinguishes.
  */
 export function theMarkOnTheSquare(day: string): DayMark {
-  const style: ViewStyle = StyleSheet.flatten(screen.getByTestId(dayTestID(day)).props.style);
+  const style: ViewStyle = StyleSheet.flatten(screen.getByTestId(dateDiscTestID(day)).props.style);
 
   if (style.backgroundColor === colour.period) {
     return 'bled';
@@ -710,4 +715,98 @@ function theEarlierDrawingDownTo(andTheSheet: 0 | 1): Part[] {
   }
 
   return parts.slice(0, sheet + andTheSheet);
+}
+
+/** The disc the date is drawn inside, as the style it was drawn with. */
+export function theDiscAroundTheDate(day: string): ViewStyle {
+  return StyleSheet.flatten(screen.getByTestId(dateDiscTestID(day)).props.style);
+}
+
+/**
+ * The ground the disc of that date is drawn on, which is how the month says a phase. A day with no
+ * phase to say draws no ground at all, and reads back as nothing rather than as a colour.
+ */
+export function thePhaseGroundOn(day: string): string | undefined {
+  const style: ViewStyle = StyleSheet.flatten(screen.getByTestId(dateDiscTestID(day)).props.style);
+
+  return typeof style.backgroundColor === 'string' ? style.backgroundColor : undefined;
+}
+
+/** The colour the date itself is written in, which is the ink the ground it sits on takes. */
+export function theDateInkOn(day: string): string | undefined {
+  const style = StyleSheet.flatten(screen.getByTestId(dateTestID(day)).props.style) as {
+    color?: unknown;
+  };
+
+  return typeof style.color === 'string' ? style.color : undefined;
+}
+
+/** Every day of the drawn month, as a day of the calendar, in the order the drawing places them. */
+export function theDaysOfTheDrawnMonth(): string[] {
+  return theDatesOfTheDrawing().map(theDayOf);
+}
+
+/**
+ * The days of the drawn month the ring itself counts as fertile, which is the arc it draws around
+ * ovulation. The month is held to this rather than to a list typed here, so a month that decided a
+ * window of its own would be caught by the thing it may not disagree with.
+ */
+export function theFertileDaysTheRingCounts(): string[] {
+  return theDaysOfTheDrawnMonth().filter((day) => thePhaseTheRingSaysOn(day) === 'ovulation');
+}
+
+/**
+ * The one day of the drawn month the forecast names as the estimated ovulation, read off the same
+ * forecast every screen reads. Nothing at all where no cycle of hers held that month.
+ */
+export function theOvulationDayTheForecastNames(): string | undefined {
+  return theDaysOfTheDrawnMonth().find((day) => {
+    const forecast = forecastOf(herReading(day).cycles, sheSaidHerCycleRuns);
+
+    return forecast.kind === 'forecast' && forecast.estimatedOvulation === day;
+  });
+}
+
+/** The two words of the legend above the grid, or nothing where the grid draws no legend. */
+export interface LegendSheReads {
+  readonly period: string;
+  readonly fertile: string;
+}
+
+export function theLegendSheReads(): LegendSheReads | undefined {
+  if (screen.queryByTestId(monthLegendTestID) === null) {
+    return undefined;
+  }
+
+  return {
+    fertile: saidUnder(legendTestID('fertile')),
+    period: saidUnder(legendTestID('period')),
+  };
+}
+
+/** The colour of each dot of the legend, which is what ties a word to the days it describes. */
+export function theLegendDots(): LegendSheReads {
+  const colourOf = (of: 'period' | 'fertile'): string => {
+    const style: ViewStyle = StyleSheet.flatten(
+      screen.getByTestId(legendDotTestID(of)).props.style,
+    );
+
+    return typeof style.backgroundColor === 'string' ? style.backgroundColor : '';
+  };
+
+  return { fertile: colourOf('fertile'), period: colourOf('period') };
+}
+
+/** Whether the month put the panel at the foot on the glass. */
+export function thePanelIsAtTheFoot(): boolean {
+  return screen.queryByTestId(calendarPanelTestID) !== null;
+}
+
+/** What the panel at the foot holds, in the order it holds it. */
+export function whatThePanelHolds(): string[] {
+  const panel = screen.getByTestId(calendarPanelTestID);
+
+  return within(panel)
+    .queryAllByTestId(/.+/)
+    .map((element) => String(element.props.testID));
 }

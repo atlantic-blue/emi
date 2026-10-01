@@ -23,6 +23,8 @@ export const calendarHeadingTestID = 'calendar-screen-heading';
 export const calendarEarlierTestID = 'calendar-screen-earlier';
 export const calendarLaterTestID = 'calendar-screen-later';
 export const calendarEditPeriodTestID = 'calendar-screen-edit-period';
+/** The panel at the foot: the day she pressed, over the way to her whole period. */
+export const calendarPanelTestID = 'calendar-screen-panel';
 
 interface Props {
   /** The month she is reading, named by any day in it. */
