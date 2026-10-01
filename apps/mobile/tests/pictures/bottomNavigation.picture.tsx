@@ -20,14 +20,14 @@ import { theThemeIsLoaded } from '../fixtures/theTheme';
 const theCaveat = [
   'Rendered from the tree the dock produced under the test runner, at 390 by 844 points, and not',
   'captured from a phone. The class names are turned into these points by the real Tailwind, run',
-  'over apps/mobile/tailwind.config.js, which reads @emi/tokens. The panel is layer 2 of the',
-  'design system: a solid fill, a hairline and one ambient shadow, with no blur and no glass. The',
-  'dock pins itself to the foot of the glass, and the room it keeps beneath is the room an iPhone',
-  'with a dynamic island keeps for itself, which is 34 points.',
+  'over apps/mobile/tailwind.config.js, which reads @emi/tokens. The bar reaches both edges of the',
+  'glass, fills with the card colour, and carries one hairline along its top edge. It sits on the',
+  'bottom edge, and the room it keeps beneath the columns is the room an iPhone with a dynamic',
+  'island keeps for itself, which is 34 points.',
   'Reproduce with: npm run generate:dock-picture.',
 ].join(' ');
 
-/** Her surface, filling the glass, because the dock pins itself over it rather than sitting under it. */
+/** Her surface, filling the glass, because the bar pins itself over it rather than sitting under it. */
 const theGlass = { backgroundColor: colour.ground, height: '100%' } as const;
 
 interface Standing {
@@ -39,18 +39,18 @@ interface Standing {
 const theStates: readonly Standing[] = [
   {
     title: 'She is on Today',
-    note: 'The tab she is on is terracotta. The other three are the muted ink.',
+    note: 'The tab she is on is terracotta. The other three are the quiet ink the dock keeps for them.',
     chosen: 'index',
   },
   {
     title: 'She is on Insights',
-    note: 'The same dock one tab along, so the only thing that moves is which column is lit.',
+    note: 'The same bar one tab along, so the only thing that moves is which column is lit.',
     chosen: 'history',
   },
 ];
 
 async function drawn(standing: Standing): Promise<DrawnScreen> {
-  // The dock takes no room in the flow, so it is drawn over a glass of her own surface, which is
+  // The bar takes no room in the flow, so it is drawn over a glass of her own surface, which is
   // what a screen puts under it.
   const view = await render(
     <OnAPhone>
