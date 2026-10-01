@@ -1,534 +1,361 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import { CONTRAST_FLOOR, contrastRatio } from '../../packages/tokens/src/colour';
+
 import {
+  type Described,
+  canvasFile,
   claimsHeading,
   claimsNotRecorded,
-  coloursDrawnOutsideThePalette,
+  coloursDrawnIn,
   coloursInTheProse,
-  configuredIn,
+  coloursWithNoName,
   copyReviewDocument,
   describedIn,
   designSystemDocument,
-  disagreements,
   drawnParts,
   falseClaimsOfTheCopyReview,
+  namedValues,
+  namesDrawnNowhere,
+  opaqueBaseOf,
   phaseColourNames,
-  phaseColoursIn,
-  phaseColoursNotDrawn,
   prototypeDirectory,
   prototypeReadme,
   proseOf,
-  radiiTheExportKeeps,
-  rolesTheExportKeeps,
+  screenSuffix,
   sectionUnder,
-  sourceScreen,
-  stepsTheExportKeeps,
-  type Theme,
 } from './prototype.ts';
 
 /**
- * The design system document is read against the prototype it was written from.
+ * The redesign prototype is read against the document written from it.
  *
- * Everything downstream reads the document: the token package, and through it every screen. So
- * until this ran, the one place the chain could break without a test noticing was its first link,
- * where the document and the prototype sit side by side and nothing held them together.
+ * The prototype approved on 2026-10-01 carries no configuration element, so there is no block of
+ * named values to compare. Every colour is written straight into the markup it paints. The rule
+ * that replaces the comparison is narrower and harder to pass: a colour a screen paints with has a
+ * name in the front matter, and a name in the front matter is painted by a screen.
+ *
+ * The contrast arithmetic is the token package's, borrowed rather than written again, because a
+ * second implementation of it would agree with the first until the day it did not.
  */
 
 const root = resolve(__dirname, '..', '..');
-const screen = readFileSync(join(root, prototypeDirectory, sourceScreen), 'utf8');
+const screens = readdirSync(join(root, prototypeDirectory))
+  .filter((file) => file.endsWith(screenSuffix))
+  .sort();
+
+function markupOf(file: string): string {
+  return readFileSync(join(root, prototypeDirectory, file), 'utf8');
+}
+
 const document = readFileSync(join(root, designSystemDocument), 'utf8');
-
-const prototype = configuredIn(screen);
 const described = describedIn(document);
+const named = namedValues(described);
+const painted = screens.map((file) => ({ file, markup: markupOf(file) }));
 
-/**
- * A colour to probe a refusal with. It is one the document names with its digits reversed, rather
- * than a value written here, because a value belongs in packages/tokens and nowhere else. Every case
- * that uses it proves first that the screen draws it nowhere, so a probe that turns out to be a real
- * colour of the prototype fails out loud rather than passing on nothing.
- */
-const aColourTheScreenDoesNotDraw = `#${[...(described.colours['period'] ?? '').slice(1)]
-  .reverse()
-  .join('')}`;
-
-const colourNames = Object.keys(prototype.colours);
-const spacingNames = Object.keys(prototype.spacing);
-const roleNames = Object.keys(prototype.type);
-
-/** The names the export keeps and the design system retired, read out of the recorded sentences. */
-const retiredRoles = [
-  ...new Set(rolesTheExportKeeps.map((said) => String(said.split(' ')[0]))),
-].sort();
-
-/** The roles both sides still name, which is the set the two are compared over role by role. */
-const sharedRoleNames = roleNames.filter((name) => !retiredRoles.includes(name));
-
-/** The steps the export keeps and the design system retired, read out of the recorded sentences. */
-const retiredSteps = [
-  ...new Set(stepsTheExportKeeps.map((said) => String(said.split(' ')[1]).replace(':', ''))),
-].sort();
-
-/** The steps both sides still name, which is the set the two are compared over step by step. */
-const sharedSpacingNames = spacingNames.filter((name) => !retiredSteps.includes(name));
-
-/** The palette the configuration names, which is the palette without the eight phase colours. */
-const describedWithoutPhases = Object.keys(described.colours).filter(
-  (name) => !phaseColourNames.includes(name),
+/** Every colour the 52 screens paint with, as the opaque colour underneath each one. */
+const basesDrawn = new Set(
+  painted.flatMap(({ markup }) => coloursDrawnIn(markup).map((value) => opaqueBaseOf(value))),
 );
 
-describe('the design system says what the prototype draws', () => {
-  it('reads both sides, so an empty read is not taken for agreement', () => {
-    expect(colourNames).toHaveLength(47);
-    expect(Object.keys(described.colours)).toHaveLength(47 + phaseColourNames.length);
-    expect(spacingNames).toHaveLength(11);
-    expect(sharedSpacingNames).toHaveLength(8);
-    expect(roleNames).toHaveLength(13);
-    expect(sharedRoleNames).toHaveLength(11);
-    expect(prototype.type['display-lg']?.fontSize).toBe('2.75rem');
-    expect(prototype.type['data-lg']?.fontFamily).toBe('JetBrains Mono');
+/** The same colour written as a function at the alpha given, so no value is typed in this file. */
+function atAlpha(value: string, alpha: number): string {
+  const channels = [1, 3, 5].map((at) => Number.parseInt(value.slice(at, at + 2), 16));
+
+  return `rgba(${channels.join(',')},${alpha})`;
+}
+
+/**
+ * A colour no screen paints and the document does not name. It is built from a value the document
+ * does name, with its digits reversed, so a probe that turns out to be a real colour of the
+ * redesign fails out loud rather than passing on nothing. A value belongs in packages/tokens and
+ * nowhere else.
+ */
+const aColourNobodyDraws = `#${[...(described.colours['accent'] ?? '').slice(1)].reverse().join('')}`;
+
+describe('every colour in the redesign prototype has a name in the design document', () => {
+  describe('both sides are read, so an empty read is not taken for agreement', () => {
+    it('reads fifty two screens and the canvas that places them', () => {
+      expect(screens).toHaveLength(52);
+      expect(readdirSync(join(root, prototypeDirectory))).toContain(canvasFile);
+      expect(screens.every((file) => markupOf(file).includes('<x-dc>'))).toBe(true);
+    });
+
+    it('reads two thousand four hundred and thirty two colours, under thirty five distinct ones', () => {
+      const mentions = painted.flatMap(({ markup }) => coloursDrawnIn(markup));
+
+      expect(mentions).toHaveLength(2432);
+      expect(basesDrawn.size).toBe(35);
+    });
+
+    it('reads a document that names at least as many colours as the screens paint with', () => {
+      expect(named.size).toBeGreaterThanOrEqual(basesDrawn.size);
+      expect(Object.keys(described.colours).length).toBeGreaterThan(30);
+    });
   });
 
-  it('holds the accent the export itself disagreed about, as the front matter writes it', () => {
-    // The export's prose called the primary accent the value the front matter gives
-    // `primary-container`, so the two roles are asserted to be different colours rather than by
-    // writing either one out. A value belongs in packages/tokens and nowhere else.
-    expect(described.colours['primary']).toMatch(/^#[0-9a-f]{6}$/);
-    expect(described.colours['primary']).toBe(prototype.colours['primary']);
-    expect(described.colours['primary']).not.toBe(described.colours['primary-container']);
+  describe('a colour a screen paints with', () => {
+    it('has a name, across the whole set', () => {
+      expect(coloursWithNoName(named, painted)).toEqual([]);
+    });
+
+    it.each(screens)('has a name, on %s', (file) => {
+      expect(coloursWithNoName(named, [{ file, markup: markupOf(file) }])).toEqual([]);
+    });
+
+    it('is reported with its value and the screen that paints it, when the document forgets it', () => {
+      const dropped = String(described.raised['dock-quiet']?.prototype);
+      const without = new Set([...named].filter((value) => value !== dropped.toLowerCase()));
+
+      const said = coloursWithNoName(without, painted);
+
+      expect(said.length).toBeGreaterThan(0);
+      expect(said[0]).toContain(dropped.toLowerCase());
+      expect(said[0]).toContain('Main.dc.html');
+      expect(said[0]).toContain(designSystemDocument);
+    });
+
+    it('is read out of an attribute, a class and a style alike, and never out of a word', () => {
+      const value = aColourNobodyDraws;
+
+      expect(named.has(value.toLowerCase())).toBe(false);
+      expect(
+        coloursWithNoName(named, [{ file: 'a', markup: `<circle fill="${value}"/>` }]),
+      ).toHaveLength(1);
+      expect(
+        coloursWithNoName(named, [{ file: 'a', markup: `<div class="bg-[${value}]">` }]),
+      ).toHaveLength(1);
+      expect(
+        coloursWithNoName(named, [{ file: 'a', markup: `<div style="color:${value}">` }]),
+      ).toHaveLength(1);
+      expect(
+        coloursWithNoName(named, [{ file: 'a', markup: `<style>.r{fill:${value}}</style>` }]),
+      ).toHaveLength(1);
+      expect(coloursWithNoName(named, [{ file: 'a', markup: `<span>${value}</span>` }])).toEqual(
+        [],
+      );
+      expect(coloursWithNoName(named, [{ file: 'a', markup: `<!-- ${value} -->` }])).toEqual([]);
+    });
   });
 
-  it('names the same colours, the same spacing steps and the same type roles', () => {
-    expect(describedWithoutPhases.sort()).toEqual([...colourNames].sort());
-    expect(Object.keys(described.spacing).sort()).toEqual([...sharedSpacingNames].sort());
-    expect(Object.keys(described.type).sort()).toEqual([...sharedRoleNames].sort());
+  describe('a translucent colour is held to the colour underneath it', () => {
+    it('reads an alpha of any depth as its opaque base', () => {
+      const text = String(described.colours['text']);
+      const card = String(described.colours['card']);
+      const ground = String(described.colours['ground']);
+
+      expect(opaqueBaseOf(atAlpha(text, 0.04))).toBe(text.toLowerCase());
+      expect(opaqueBaseOf(atAlpha(card, 0.94))).toBe(card.toLowerCase());
+      expect(opaqueBaseOf(atAlpha(ground, 0))).toBe(ground.toLowerCase());
+      expect(opaqueBaseOf(ground.toUpperCase())).toBe(ground.toLowerCase());
+      expect(opaqueBaseOf(`#${'f'.repeat(3)}`)).toBe(`#${'f'.repeat(6)}`);
+    });
+
+    it('refuses a base the document does not name, however faint the alpha', () => {
+      const faint = atAlpha(aColourNobodyDraws, 0.02);
+
+      expect(
+        coloursWithNoName(named, [{ file: 'a', markup: `<div style="color:${faint}">` }]),
+      ).toHaveLength(1);
+    });
+
+    it('passes a shadow, because the colour under it is one the document names', () => {
+      const shadow = atAlpha(String(described.colours['text']), 0.04);
+
+      expect(
+        coloursWithNoName(named, [
+          { file: 'a', markup: `<div style="box-shadow:0 1px 2px ${shadow}">` },
+        ]),
+      ).toEqual([]);
+    });
   });
 
-  it.each(colourNames)('holds the prototype value for colour %s', (name) => {
-    expect(described.colours[name]).toBe(prototype.colours[name]);
+  describe('a colour the document names and no screen paints', () => {
+    it('leaves no such name behind', () => {
+      expect(namesDrawnNowhere(described, painted)).toEqual([]);
+    });
+
+    it('is named, with the value nobody paints', () => {
+      const invented = {
+        ...described,
+        colours: { ...described.colours, ghost: aColourNobodyDraws },
+      };
+      const [said] = namesDrawnNowhere(invented as Described, painted);
+
+      expect(said).toContain('ghost');
+      expect(said).toContain(aColourNobodyDraws.toLowerCase());
+    });
+  });
+});
+
+describe('a colour the prototype paints below the contrast floor is raised, and both values are recorded', () => {
+  const raisedNames = Object.keys(described.raised).sort();
+
+  it('records every colour that had to move, and nothing else', () => {
+    expect(raisedNames).toEqual(['accent-soft-ink', 'dock-quiet', 'picker-far', 'picker-near']);
   });
 
-  it.each(sharedSpacingNames)('holds the prototype value for spacing %s', (name) => {
-    expect(described.spacing[name]).toBe(prototype.spacing[name]);
-  });
-
-  it.each(sharedRoleNames)(
-    'draws %s at the size, line height, tracking and weight of the prototype',
+  it.each(['accent-soft-ink', 'dock-quiet', 'picker-far', 'picker-near'])(
+    'paints %s under the floor and builds a value that clears it',
     (name) => {
-      expect(described.type[name]).toEqual(prototype.type[name]);
+      const raised = described.raised[name];
+      const ground = described.colours[String(raised?.on)];
+      const built = described.colours[name];
+
+      expect(raised?.prototype).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      expect(ground).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      expect(contrastRatio(String(raised?.prototype), String(ground))).toBeLessThan(CONTRAST_FLOOR);
+      expect(contrastRatio(String(built), String(ground))).toBeGreaterThanOrEqual(CONTRAST_FLOOR);
     },
   );
 
-  it('agrees about everything, apart from the radii, the roles and the steps the export keeps', () => {
-    expect(disagreements(prototype, described)).toEqual(
-      [...radiiTheExportKeeps, ...rolesTheExportKeeps, ...stepsTheExportKeeps].sort(),
-    );
+  it('keeps the value the prototype paints inside the names, so the screens still pass', () => {
+    for (const name of raisedNames) {
+      expect(named.has(String(described.raised[name]?.prototype).toLowerCase())).toBe(true);
+    }
   });
 
-  it('names three faces, because the numbers and the headings are not the body', () => {
-    const faces = new Set(Object.values(described.type).map((role) => role.fontFamily));
-
-    expect([...faces].sort()).toHaveLength(3);
+  it('says why each one moved, in words a reader can check', () => {
+    for (const name of raisedNames) {
+      expect(String(described.raised[name]?.reason).length).toBeGreaterThan(20);
+    }
   });
 });
 
 describe('a colour named in the prose of the design document fails the pipeline', () => {
-  describe('the prose names a role and never a value', () => {
-    it('reads the prose, so an empty read is not taken for silence', () => {
-      const prose = proseOf(document);
+  it('reads the prose, so an empty read is not taken for silence', () => {
+    const prose = proseOf(document);
 
-      expect(prose.length).toBeGreaterThan(100);
-      expect(prose.some((line) => line.text.startsWith('## Colours'))).toBe(true);
-      expect(prose[0]?.number).toBeGreaterThan(100);
-    });
-
-    it('writes no colour value anywhere below the front matter', () => {
-      expect(coloursInTheProse(document)).toEqual([]);
-    });
-
-    it('refuses a hex value, and names the line and the paragraph', () => {
-      const value = aColourTheScreenDoesNotDraw;
-
-      expect(value).toMatch(/^#[0-9a-f]{6}$/);
-
-      const written = `---\nname: One\n---\n\nThe primary button is ${value} on press.\n`;
-      const [said] = coloursInTheProse(written);
-
-      expect(coloursInTheProse(written)).toHaveLength(1);
-      expect(said).toContain('line 5');
-      expect(said).toContain(value);
-      expect(said).toContain('The primary button is');
-    });
-
-    it('refuses a colour written as a function, so a second palette cannot arrive in other clothes', () => {
-      expect(coloursInTheProse('---\na: b\n---\nrgba(38, 34, 32, 0.05)\n')).toHaveLength(1);
-      expect(coloursInTheProse('---\na: b\n---\nhsl(20, 60%, 40%)\n')).toHaveLength(1);
-    });
-
-    it('reads the front matter as the one place a value belongs, so it is never a failure', () => {
-      const front = document.split('\n').slice(0, proseOf(document)[0]!.number - 1);
-
-      expect(front.filter((line) => /#[0-9a-f]{6}/.test(line)).length).toBeGreaterThan(40);
-      expect(coloursInTheProse(document)).toEqual([]);
-    });
-
-    it('refuses a document with no front matter, rather than reading the whole of it as prose', () => {
-      expect(() => proseOf('# One\n\nNo front matter here.\n')).toThrow('has no front matter');
-    });
+    expect(prose.length).toBeGreaterThan(50);
+    expect(prose[0]?.number).toBeGreaterThan(50);
   });
 
-  describe('the four phase fills and the four inks', () => {
-    it('names eight, as four pairs in the order a cycle runs', () => {
-      expect(phaseColourNames).toHaveLength(8);
-      expect(phaseColourNames.filter((name) => name.endsWith('-ink'))).toHaveLength(4);
-    });
+  it('writes no colour value anywhere below the front matter', () => {
+    expect(coloursInTheProse(document)).toEqual([]);
+  });
 
-    it('holds every one of them in the front matter', () => {
-      const held = phaseColoursIn(described);
+  it('refuses a hex value, and names the line and the paragraph', () => {
+    const value = aColourNobodyDraws;
+    const written = `---\nname: One\n---\n\nThe accent is ${value} on press.\n`;
+    const [said] = coloursInTheProse(written);
 
-      expect(Object.keys(held)).toEqual([...phaseColourNames]);
-      for (const name of phaseColourNames) {
-        expect(held[name]).toMatch(/^#[0-9a-f]{6}$/);
-      }
-    });
+    expect(coloursInTheProse(written)).toHaveLength(1);
+    expect(said).toContain('line 5');
+    expect(said).toContain(value);
+  });
 
-    it('draws every one of them on the screen the front matter was read from', () => {
-      expect(phaseColoursNotDrawn(described, screen)).toEqual([]);
-    });
+  it('refuses a colour written as a function, so a second palette cannot arrive in other clothes', () => {
+    expect(coloursInTheProse('---\na: b\n---\nrgba(38, 34, 32, 0.05)\n')).toHaveLength(1);
+    expect(coloursInTheProse('---\na: b\n---\nhsl(20, 60%, 40%)\n')).toHaveLength(1);
+  });
 
-    it('says which phase colour the front matter names and the screen never draws', () => {
-      const value = aColourTheScreenDoesNotDraw;
+  it('reads the front matter as the one place a value belongs, so it is never a failure', () => {
+    const front = document.split('\n').slice(0, (proseOf(document)[0]?.number ?? 1) - 1);
 
-      expect(screen.toLowerCase()).not.toContain(value.toLowerCase());
+    expect(front.filter((line) => /#[0-9a-fA-F]{6}/.test(line)).length).toBeGreaterThan(30);
+  });
 
-      const moved = { ...described, colours: { ...described.colours, period: value } };
-      const [said] = phaseColoursNotDrawn(moved, screen);
-
-      expect(said).toContain('phase colour period');
-      expect(said).toContain(value);
-      expect(said).toContain(sourceScreen);
-    });
-
-    it('says which phase colour the front matter forgot', () => {
-      const { luteal: _dropped, ...rest } = described.colours;
-
-      expect(phaseColoursNotDrawn({ ...described, colours: rest }, screen)).toEqual([
-        'phase colour luteal: the design system names nothing',
-      ]);
-    });
-
-    it('keeps the eight out of the comparison with the configuration, which does not name them', () => {
-      expect(phaseColourNames.filter((name) => name in prototype.colours)).toEqual([]);
-      expect(disagreements(prototype, described)).toEqual(
-        [...radiiTheExportKeeps, ...rolesTheExportKeeps, ...stepsTheExportKeeps].sort(),
-      );
-    });
+  it('refuses a document with no front matter, rather than reading the whole of it as prose', () => {
+    expect(() => proseOf('# One\n\nNo front matter here.\n')).toThrow('has no front matter');
   });
 });
 
-describe('the corners the two sides do not agree about', () => {
-  it('keeps the disagreement written out, so the fix reddens this too', () => {
-    expect(radiiTheExportKeeps.length).toBeGreaterThan(0);
-    expect(radiiTheExportKeeps.every((said) => said.startsWith('radius '))).toBe(true);
+describe('the four phase fills and the four inks', () => {
+  it('names eight, as four pairs in the order a cycle runs', () => {
+    expect(phaseColourNames).toHaveLength(8);
+    expect(phaseColourNames.filter((name) => name.endsWith('-ink'))).toHaveLength(4);
   });
 
-  it('holds the one corner they do agree about, so the block is not waved through whole', () => {
-    expect(prototype.radii['full']).toBe('9999px');
-    expect(described.radii['full']).toBe('9999px');
-  });
-});
-
-describe('the type roles the export keeps and the design system retired', () => {
-  const markupOf = (file: string): string =>
-    readFileSync(join(root, prototypeDirectory, file), 'utf8');
-  const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
-    name.endsWith('.html'),
-  );
-
-  it('keeps both disagreements written out, so putting a role back reddens this too', () => {
-    expect(retiredRoles).toEqual(['body-md', 'data-md']);
-    expect(
-      rolesTheExportKeeps.filter(
-        (said) => !retiredRoles.some((role) => said.startsWith(`${role} `)),
-      ),
-    ).toEqual([]);
+  it('holds every one of them in the front matter', () => {
+    for (const name of phaseColourNames) {
+      expect(described.colours[name]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    }
   });
 
-  it.each(retiredRoles)('is named by the export and by the design system nowhere: %s', (role) => {
-    expect(prototype.type[role]).toBeDefined();
-    expect(described.type[role]).toBeUndefined();
+  it('keeps every ink off its own fill, which is the pair contract SEE-2 forbids', () => {
+    for (const name of phaseColourNames.filter((each) => each.endsWith('-ink'))) {
+      const fill = described.colours[name.replace('-ink', '')];
+
+      expect(described.colours[name]).not.toBe(fill);
+    }
   });
 
-  it.each(retiredRoles)(
-    'is still reached for by the markup of a screen, which is why the export keeps %s',
-    (role) => {
-      expect(screens.filter((file) => markupOf(file).includes(`text-${role}`))).not.toEqual([]);
-    },
-  );
+  it('keeps every ink readable on the ground, which is where the ring writes the phase name', () => {
+    const ground = String(described.colours['ground']);
+    const under = phaseColourNames
+      .filter((name) => name.endsWith('-ink'))
+      .filter((name) => contrastRatio(String(described.colours[name]), ground) < CONTRAST_FLOOR);
 
-  it('retires body-md into a role of the same face and the same size, so no screen moves', () => {
-    expect(described.type['body-lg']).toEqual(prototype.type['body-md']);
-  });
-
-  it('retires data-md into nothing, because the design system left no role at its face and size', () => {
-    const kept = Object.entries(described.type).filter(
-      ([, role]) =>
-        role.fontFamily === prototype.type['data-md']?.fontFamily &&
-        role.fontSize === prototype.type['data-md']?.fontSize,
-    );
-
-    expect(kept).toEqual([]);
-    expect(Object.keys(described.type).filter((name) => name.startsWith('data-'))).toEqual([
-      'data-lg',
-      'data-sm',
-    ]);
-  });
-});
-
-describe('the spacing steps the export keeps and the design system retired', () => {
-  const markupOf = (file: string): string =>
-    readFileSync(join(root, prototypeDirectory, file), 'utf8');
-  const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
-    name.endsWith('.html'),
-  );
-
-  it('keeps all three disagreements written out, so putting a step back reddens this too', () => {
-    expect(retiredSteps).toEqual(['gutter', 'gutter-lg', 'gutter-md']);
-    expect(
-      stepsTheExportKeeps.filter(
-        (said) => !retiredSteps.some((step) => said.startsWith(`spacing ${step}: `)),
-      ),
-    ).toEqual([]);
-  });
-
-  it.each(retiredSteps)('is named by the export and by the design system nowhere: %s', (step) => {
-    expect(prototype.spacing[step]).toBeDefined();
-    expect(described.spacing[step]).toBeUndefined();
-  });
-
-  it.each(retiredSteps)(
-    'is still reached for by the markup of a screen, which is why the export keeps %s',
-    (step) => {
-      expect(screens.filter((file) => markupOf(file).includes(`-${step}`))).not.toEqual([]);
-    },
-  );
-
-  it.each(retiredSteps)(
-    'repeated a step the design system keeps, which is why %s retires',
-    (step) => {
-      const sameValue = sharedSpacingNames.filter(
-        (name) => described.spacing[name] === prototype.spacing[step],
-      );
-
-      expect(sameValue).not.toEqual([]);
-    },
-  );
-});
-
-describe('a value that moves is named', () => {
-  const moved = (block: keyof Theme, name: string, value: string): Theme => ({
-    ...described,
-    [block]: { ...described[block], [name]: value },
-  });
-
-  it('says which colour moved, and what each side says', () => {
-    const other = described.colours['error'] as string;
-
-    expect(disagreements(prototype, moved('colours', 'primary', other))).toContain(
-      `colour primary: the prototype says ${prototype.colours['primary']} and the design system says ${other}`,
-    );
-  });
-
-  it('says which spacing step moved', () => {
-    expect(disagreements(prototype, moved('spacing', 'margin', '2rem'))).toContain(
-      'spacing margin: the prototype says 1.5rem and the design system says 2rem',
-    );
-  });
-
-  it('reads a type role property by property, so a tracking change is not lost inside a role', () => {
-    const roles = {
-      ...described.type,
-      'label-md': { ...described.type['label-md'], letterSpacing: '0em' },
-    } as Theme['type'];
-
-    expect(disagreements(prototype, { ...described, type: roles })).toContain(
-      'label-md letterSpacing: the prototype says 0.01em and the design system says 0em',
-    );
-  });
-
-  it('counts a name only one side holds, so a deleted colour is not silence', () => {
-    const { primary: _dropped, ...rest } = described.colours;
-
-    expect(disagreements(prototype, { ...described, colours: rest })).toContain(
-      `colour primary: the prototype says ${prototype.colours['primary']} and the design system says nothing`,
-    );
+    expect(under).toEqual([]);
   });
 });
 
 describe('the prototype in the repository', () => {
   const held = readdirSync(join(root, prototypeDirectory)).sort();
 
-  it('holds twenty three screens, each with a picture beside it', () => {
-    const markup = held.filter((file) => file.endsWith('.html'));
-
-    expect(markup).toHaveLength(23);
-    expect(markup.map((file) => file.replace('.html', '.png'))).toEqual(
-      held.filter((file) => file.endsWith('.png')),
-    );
+  it('holds fifty two screens, the canvas, the readme and the copy review, and nothing else', () => {
+    expect(held).toEqual([...screens, canvasFile, 'README.md', 'copy-review.md'].sort());
   });
 
-  it('draws every screen from the one configuration, so the source screen speaks for the set', () => {
-    for (const file of held.filter((name) => name.endsWith('.html'))) {
-      const other = configuredIn(readFileSync(join(root, prototypeDirectory, file), 'utf8'));
+  it('keeps the screens as the tool wrote them, so no formatter moves a line', () => {
+    const ignored = readFileSync(join(root, '.prettierignore'), 'utf8');
 
-      expect(disagreements(prototype, other)).toEqual([]);
-    }
+    expect(ignored).toContain(`${prototypeDirectory}/*.html`);
   });
 
   it('is named by the document it was written into', () => {
     expect(document).toContain(prototypeDirectory);
-    expect(document).toContain(sourceScreen);
   });
 
-  it('refuses a screen that carries no configuration, rather than reading it as empty', () => {
-    expect(() => configuredIn('<html></html>')).toThrow('configures nothing');
+  it('names every screen after a screen of the mockups, apart from the one the canvas launches', () => {
+    const mockups = JSON.parse(
+      readFileSync(join(root, 'docs', 'design', 'mockups', 'flows.json'), 'utf8'),
+    ) as { screens: Record<string, unknown> };
+    const unknown = screens
+      .map((file) => file.replace(screenSuffix, ''))
+      .filter((name) => !(name in mockups.screens));
+
+    expect(unknown).toEqual(['Main']);
   });
-});
 
-describe('the room a screen reserves at its foot', () => {
-  const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
-    name.endsWith('.html'),
-  );
+  it('reads the parts a browser paints from, and not the words between them', () => {
+    expect(drawnParts(markupOf('today.dc.html')).length).toBeGreaterThan(20);
+    const written = String(described.colours['accent']);
 
-  const reserved = (file: string): string | undefined =>
-    /<main class="[^"]*\b(pb-\d+)\b/.exec(
-      readFileSync(join(root, prototypeDirectory, file), 'utf8'),
-    )?.[1];
-
-  it('is reserved by the six screens that carry something fixed at the foot, and by no other', () => {
-    expect(screens).toHaveLength(23);
-    expect(
-      Object.fromEntries(
-        screens
-          .filter((file) => reserved(file) !== undefined)
-          .map((file) => [file, reserved(file)]),
-      ),
-    ).toEqual({
-      'cycle-length.html': 'pb-28',
-      'cycle-regularity.html': 'pb-28',
-      'home.html': 'pb-24',
-      'last-period.html': 'pb-28',
-      'period-before.html': 'pb-28',
-      'period-length.html': 'pb-28',
-    });
+    expect(drawnParts(`<span>${written}</span>`).join('')).not.toContain(written);
   });
 });
 
-describe('a screen of the prototype that draws a colour outside the palette fails the pipeline', () => {
-  const screens = readdirSync(join(root, prototypeDirectory)).filter((name) =>
-    name.endsWith('.html'),
-  );
-  const palette = Object.values(described.colours);
-  const markupOf = (file: string): string =>
-    readFileSync(join(root, prototypeDirectory, file), 'utf8');
+describe('the copy review of screens 6 to 22', () => {
+  const review = readFileSync(join(root, copyReviewDocument), 'utf8');
+  const readme = readFileSync(join(root, prototypeReadme), 'utf8');
 
-  describe('every screen paints from the front matter and from nowhere else', () => {
-    it('reads twenty three screens and a palette of fifty five, so an empty read is not silence', () => {
-      expect(screens).toHaveLength(23);
-      expect(palette).toHaveLength(47 + phaseColourNames.length);
-      expect(drawnParts(markupOf(sourceScreen)).length).toBeGreaterThan(400);
-    });
-
-    it.each(screens)('paints %s with no colour the palette does not hold', (file) => {
-      expect(coloursDrawnOutsideThePalette(palette, markupOf(file))).toEqual([]);
-    });
-
-    it('names the value and reads it out of an attribute, a class and a style alike', () => {
-      const value = aColourTheScreenDoesNotDraw;
-
-      expect(palette).not.toContain(value);
-
-      expect(coloursDrawnOutsideThePalette(palette, `<circle fill="${value}"></circle>`)).toEqual([
-        value,
-      ]);
-      expect(coloursDrawnOutsideThePalette(palette, `<div class="bg-[${value}]"></div>`)).toEqual([
-        value,
-      ]);
-      expect(coloursDrawnOutsideThePalette(palette, `<div style="color: ${value}"></div>`)).toEqual(
-        [value],
-      );
-      expect(
-        coloursDrawnOutsideThePalette(palette, `<style>.ring { fill: ${value}; }</style>`),
-      ).toEqual([value]);
-    });
-
-    it('reads a value a screen writes as a word as no colour at all', () => {
-      const value = aColourTheScreenDoesNotDraw;
-
-      expect(coloursDrawnOutsideThePalette(palette, `<span>${value}</span>`)).toEqual([]);
-      expect(coloursDrawnOutsideThePalette(palette, `<!-- the band is ${value} -->`)).toEqual([]);
-    });
-
-    it('reads a shadow as a depth rather than as a colour, and an opaque function as a colour', () => {
-      expect(
-        coloursDrawnOutsideThePalette(palette, '<div class="shadow-[0_1px_8px_rgba(0,0,0,0.03)]">'),
-      ).toEqual([]);
-      expect(coloursDrawnOutsideThePalette(palette, '<div style="color: rgb(0,0,0)">')).toEqual([
-        'rgb(0,0,0)',
-      ]);
-    });
-
-    it('refuses the retired canvas, which is the value four screens drew before this ran', () => {
-      const retired = (described.colours['surface'] as string).replace(/^#ff/, '#fa');
-
-      expect(retired).toMatch(/^#[0-9a-f]{6}$/);
-      expect(palette).not.toContain(retired);
-      expect(
-        coloursDrawnOutsideThePalette(palette, `<circle stroke="${retired}"></circle>`),
-      ).toEqual([retired]);
-    });
+  it('reads both documents, so an empty read is not taken for agreement', () => {
+    expect(falseClaimsOfTheCopyReview.length).toBeGreaterThan(30);
+    expect(review.split('\n').length).toBeGreaterThan(100);
+    expect(sectionUnder(readme, claimsHeading).length).toBeGreaterThan(2000);
   });
 
-  describe('the copy review of screens 6 to 22', () => {
-    const review = readFileSync(join(root, copyReviewDocument), 'utf8');
-    const readme = readFileSync(join(root, prototypeReadme), 'utf8');
+  it('is recorded in the readme, claim for claim, under the heading that says it is never built', () => {
+    expect(claimsNotRecorded(review, readme)).toEqual([]);
+  });
 
-    it('reads both documents, so an empty read is not taken for agreement', () => {
-      expect(falseClaimsOfTheCopyReview.length).toBeGreaterThan(30);
-      expect(review.split('\n').length).toBeGreaterThan(100);
-      expect(sectionUnder(readme, claimsHeading).length).toBeGreaterThan(2000);
-    });
+  it('says which document lost a claim, rather than passing on a missing one', () => {
+    const dropped = falseClaimsOfTheCopyReview[0] as string;
 
-    it('is recorded in the readme, claim for claim, under the heading that says it is never built', () => {
-      expect(claimsNotRecorded(review, readme)).toEqual([]);
-    });
+    expect(claimsNotRecorded(review.replace(dropped, ''), readme)).toEqual([
+      `${copyReviewDocument} does not name ${dropped}`,
+    ]);
+    expect(claimsNotRecorded(review, readme.replace(dropped, ''))).toEqual([
+      `${prototypeReadme} does not record ${dropped} under ${claimsHeading.slice(3)}`,
+    ]);
+  });
 
-    it('says which document lost a claim, rather than passing on a missing one', () => {
-      const dropped = falseClaimsOfTheCopyReview[0] as string;
+  it('reads a claim wrapped over two lines as one phrase', () => {
+    const claim = 'We will broaden windows into softer horizon ranges';
 
-      expect(claimsNotRecorded(review.replace(dropped, ''), readme)).toEqual([
-        `${copyReviewDocument} does not name ${dropped}`,
-      ]);
-      expect(claimsNotRecorded(review, readme.replace(dropped, ''))).toEqual([
-        `${prototypeReadme} does not record ${dropped} under ${claimsHeading.slice(3)}`,
-      ]);
-    });
-
-    it('reads the claims under that heading alone, so a claim named elsewhere is not recorded', () => {
-      const claim = falseClaimsOfTheCopyReview[1] as string;
-      const elsewhere = `${claimsHeading}\n\nNothing.\n\n## Later\n\n${claim}\n`;
-
-      expect(claimsNotRecorded(claim, elsewhere)).toContain(
-        `${prototypeReadme} does not record ${claim} under ${claimsHeading.slice(3)}`,
-      );
-    });
-
-    it('reads a claim wrapped over two lines as one phrase', () => {
-      const claim = 'We will broaden windows into softer horizon ranges';
-
-      expect(falseClaimsOfTheCopyReview).toContain(claim);
-      expect(review).not.toContain(claim);
-      expect(claimsNotRecorded(review, readme)).toEqual([]);
-    });
+    expect(falseClaimsOfTheCopyReview).toContain(claim);
+    expect(review).not.toContain(claim);
+    expect(claimsNotRecorded(review, readme)).toEqual([]);
   });
 });

@@ -18,12 +18,7 @@ import {
 
 import { emiClasses } from '../../../../packages/ui/src/gluestack/emiClasses';
 import { textStyle } from '../../../../packages/ui/src/gluestack/text/styles';
-import {
-  configuredIn,
-  phaseColourNames,
-  prototypeDirectory,
-  sourceScreen,
-} from '../../../../tools/pipeline/prototype';
+import { phaseColourNames } from '../../../../tools/pipeline/prototype';
 import theme from '../../tailwind.config';
 import { theCompiledTheme, theThemeWithEveryTextRole } from '../fixtures/theTheme';
 
@@ -36,16 +31,12 @@ import { theCompiledTheme, theThemeWithEveryTextRole } from '../fixtures/theThem
  * itself. So nothing here restates a measurement: it reads the configuration against the tokens
  * and lets that chain carry the rest.
  *
- * The corners are the one block where the front matter and the prototype's own configuration
- * disagree. The tokens took the front matter, so the application draws that scale.
+ * The redesign prototype writes every value into the markup it paints, so there is no
+ * configuration of its own to compare with. The front matter is the one place a value is
+ * written, and `tools/pipeline/prototype.test.ts` holds it to the screens colour by colour.
  */
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
-
-/** The style the palette comes from. Its configuration names every colour but the eight. */
-const journal = configuredIn(
-  readFileSync(join(repositoryRoot, prototypeDirectory, sourceScreen), 'utf8'),
-);
 
 const extended = theme.theme.extend;
 
@@ -78,26 +69,24 @@ describe('the theme the application draws in is the token package, in the shape 
       expect(extended.colors[role]).toBe(colour[name]);
     });
 
-    it('names every role the prototype names, and no role it does not', () => {
-      expect(Object.keys(extended.colors).sort()).toEqual(Object.keys(journal.colours).sort());
-      expect(Object.keys(journal.colours)).toHaveLength(47);
+    it('names every role of the token package but the eight the ring draws itself', () => {
+      const configured = Object.keys(extended.colors).sort();
+
+      expect(configured).toEqual(
+        everyRole
+          .map(hyphenated)
+          .filter((role) => !phaseColourNames.includes(role))
+          .sort(),
+      );
+      expect(configured.length).toBeGreaterThan(20);
     });
 
-    it('holds the eight the prototype never names, because the ring draws them itself', () => {
+    it('leaves the eight out, because the ring reads them from the tokens and draws them itself', () => {
       const unconfigured = everyRole
         .map(hyphenated)
-        .filter((role) => journal.colours[role] === undefined);
+        .filter((role) => extended.colors[role] === undefined);
 
       expect(unconfigured.sort()).toEqual([...phaseColourNames].sort());
-      expect(everyRole).toHaveLength(Object.keys(journal.colours).length + phaseColourNames.length);
-    });
-
-    it('carries the prototype’s own values, so reading them from the tokens changed nothing', () => {
-      const drifted = Object.entries(journal.colours)
-        .filter(([role, value]) => extended.colors[role]?.toLowerCase() !== value.toLowerCase())
-        .map(([role]) => role);
-
-      expect(drifted).toEqual([]);
     });
 
     it('holds no hex code of its own, because the palette has one home', () => {
