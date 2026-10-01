@@ -317,6 +317,22 @@ import {
   thePartsOfTheMockup,
 } from '../apps/mobile/tests/fixtures/theMockupScreen';
 import {
+  type Measured,
+  everySectionMeasured,
+  partsNoSectionAnswersFor,
+  sectionsBreakingTheRule,
+  sectionsClaimingTheSamePart,
+  theSectionsOfTheScreenSheOpens,
+} from '../apps/mobile/tests/fixtures/everySection';
+import {
+  type HerDataState,
+  type HerDays,
+  herPhoneHoldsThisState,
+  theStatesOfHerData,
+  whatHerPhoneHolds,
+} from '../apps/mobile/tests/fixtures/theStatesOfHerData';
+import { catalogueFilesOf, samplesUnder } from '../tools/pipeline/sampleWording';
+import {
   type WaitingDrawn,
   theWaitingSectionsOnTheGlass,
   theWaitingSectionsTheDrawingPlaces,
@@ -3913,6 +3929,160 @@ defineFeature(feature, (test) => {
         expect(screen.queryByTestId(gone)).toBeNull();
       }
     });
+  });
+
+  test('SCREEN-2, every section of the screen she opens is drawn from her own data or absent with a sentence', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    /** The screen at one state of her data, kept so every step reads one opening of it. */
+    interface SheRead {
+      readonly state: HerDataState;
+      readonly measured: readonly Measured[];
+      readonly unanswered: readonly string[];
+      readonly drawn: readonly string[];
+      readonly held: HerDays;
+    }
+
+    let herStates: HerDataState[] = [];
+    const sheRead: SheRead[] = [];
+
+    /** The states one section was drawn at, named, so a section that came early is named with it. */
+    function whereItWasDrawn(name: string): string[] {
+      return sheRead
+        .filter((at) => at.measured.some((section) => section.section === name && section.hers))
+        .map((at) => at.state.name);
+    }
+
+    given(
+      'her answers, and her own days at four states: nothing recorded, one cycle, two cycles and six',
+      () => {
+        herStates = theStatesOfHerData(today);
+
+        expect(herStates.map((state) => state.name)).toEqual([
+          'nothing recorded',
+          'one complete cycle',
+          '2 complete cycles',
+          '6 complete cycles',
+        ]);
+      },
+    );
+
+    when('she opens Emi at every one of those four states', async () => {
+      for (const state of herStates) {
+        resetExpoSqlite();
+        resetExpoSecureStore();
+        await herPhoneHoldsThisState(whenSheOpensIt, state);
+
+        const app = await sheOpens('/');
+
+        sheRead.push({
+          drawn: theIdentifiersDrawn(),
+          held: whatHerPhoneHolds(herDatabase(), today),
+          measured: everySectionMeasured(state.name, state.holds),
+          state,
+          unanswered: partsNoSectionAnswersFor(),
+        });
+
+        // The router handles the deep links of the whole application, so a second one standing
+        // beside the first reads its own address. One screen at a time, and the state goes with it.
+        await app.close();
+      }
+    });
+
+    then('everything she reads on it stands on days she recorded herself', () => {
+      expect(sheRead).toHaveLength(herStates.length);
+      expect(sheRead.map((at) => at.held.completeCycles)).toEqual([0, 1, 2, 6]);
+      expect(sheRead.map((at) => ({ ...at.held, state: at.state.name }))).toEqual(
+        herStates.map((state) => ({
+          completeCycles: state.holds.completeCycles,
+          dayOfHerCycle: state.holds.dayOfHerCycle,
+          loggedToday: state.holds.loggedToday,
+          recordedDays: state.holds.recordedDays,
+          state: state.name,
+        })),
+      );
+      expect(sheRead.flatMap((at) => sectionsBreakingTheRule(at.measured))).toEqual([]);
+    });
+
+    and(
+      'a section her own days cannot fill is absent, with one sentence in its place where it owes her one',
+      () => {
+        const owed = sheRead.flatMap((at) =>
+          at.measured.filter((section) => section.owesASentence && !section.hers),
+        );
+
+        expect(owed.filter((section) => section.instead.length === 0)).toEqual([]);
+        expect(owed.filter((section) => section.drawn.length > 0)).toEqual([]);
+        expect(owed.length).toBeGreaterThan(0);
+      },
+    );
+
+    and('no chart, no strip, no row and no card is drawn from nothing, at any of the four', () => {
+      const unearned = sheRead.flatMap((at) =>
+        at.measured
+          .filter((section) => !section.hers)
+          .flatMap((section) => section.drawn.map((part) => `${at.state.name}: ${part}`)),
+      );
+
+      expect(unearned).toEqual([]);
+
+      // Named one by one as well, because the four are the shapes a tracker fills a screen with
+      // and a record that stopped claiming one of them would pass the sweep above in silence.
+      const atDayOne = sheRead[0];
+
+      expect(atDayOne?.state.name).toBe('nothing recorded');
+      expect(
+        [homeTrendTestID, homeCyclesTestID, homeNumbersTestID, homePatternsTestID].filter((part) =>
+          (atDayOne?.drawn ?? []).includes(part),
+        ),
+      ).toEqual([]);
+    });
+
+    and(
+      'a section arrives on the state her own days earn it, and never on the state before',
+      () => {
+        const everyState = herStates.map((state) => state.name);
+
+        expect(whereItWasDrawn('the ring')).toEqual(everyState.slice(1));
+        expect(whereItWasDrawn('her past cycles as strips')).toEqual(everyState.slice(1));
+        expect(whereItWasDrawn('her three numbers beside the published figures')).toEqual(
+          everyState.slice(2),
+        );
+        expect(whereItWasDrawn('her forecast')).toEqual(everyState.slice(2));
+        expect(whereItWasDrawn('the shape of her last cycles')).toEqual(everyState.slice(2));
+        expect(whereItWasDrawn('the symptoms that came back')).toEqual(everyState.slice(3));
+        expect(whereItWasDrawn('the record for her doctor')).toEqual(everyState);
+      },
+    );
+
+    and(
+      'every part of the screen answers to a section, so one nobody accounted for cannot arrive unread',
+      () => {
+        expect(
+          sheRead.flatMap((at) => at.unanswered.map((part) => `${at.state.name}: ${part}`)),
+        ).toEqual([]);
+        expect(sectionsClaimingTheSamePart(sheRead.flatMap((at) => at.drawn))).toEqual([]);
+        expect(theSectionsOfTheScreenSheOpens.length).toBeGreaterThan(0);
+        expect(sheRead.flatMap((at) => at.measured)).toHaveLength(
+          theSectionsOfTheScreenSheOpens.length * herStates.length,
+        );
+      },
+    );
+
+    and(
+      'no word Emi can say, in any of its three languages, calls anything on a screen a sample',
+      () => {
+        const repositoryRoot = join(__dirname, '..');
+        const read = samplesUnder(repositoryRoot, catalogueFilesOf(repositoryRoot));
+
+        expect(read.problems).toEqual([]);
+        expect(read.cataloguesRead).toBe(3);
+        expect(read.keysRead).toBeGreaterThan(300);
+      },
+    );
   });
 });
 

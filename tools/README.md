@@ -54,7 +54,13 @@ refuses a package rather than guessing: a test names what each one stands for.
 
 The tests beside them run under the workspace jest project. `documentation.test.ts` covers the
 documents, the feature map, the contracts and the readmes. `forbiddenClaims.test.ts` reads every
-tracked text file for wording Emi may never use about itself. `colourLeak.test.ts` proves a hex
+tracked text file for wording Emi may never use about itself. `sampleWording.test.ts` reads the
+words of every language Emi is written in for the wording a sample carries, so no screen can arrive
+with something on it labelled as one. `pipeline/sampleWording.ts` holds its readers: it finds the
+catalogues by reading the language directory rather than by name, parses each one, and reports the
+keys it read, because a run that read no catalogue finds nothing wrong. It matches a whole word
+rather than a stem, which the Russian word for approximately forces: that word carries the Russian
+word for example inside it. `colourLeak.test.ts` proves a hex
 value outside `packages/tokens` is refused. `licence.test.ts` reads the licence and every manifest
 that names one. `reference.test.ts` covers the three rules
 of the reference and watches each one go red and green again. `emptyTestRun.test.ts` proves a run
