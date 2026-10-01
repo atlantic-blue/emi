@@ -535,3 +535,12 @@ Feature: She opens Emi and logs her first period
     And a translucent colour is held to the opaque colour underneath it
     And a colour the prototype paints under the contrast floor records the value Emi builds instead
     And the ink of each phase is readable on the ground the ring writes the phase name on
+
+  Scenario: SCREEN-2, the dock takes the redesign look and keeps its routes
+    Given her phone holds six cycles of her own
+    When she opens Emi and reads the dock across the foot of the screen
+    Then the dock is a white bar that reaches both edges of the glass, under one hairline
+    And each of the four columns takes an equal share of the width, with its word under its drawing
+    And the drawing in the column she is on is stroked in the accent, and the other three in the quiet dock colour
+    And the screen above the bar leaves exactly the room the bar draws
+    And pressing each column opens the screen behind it and moves the accent onto it

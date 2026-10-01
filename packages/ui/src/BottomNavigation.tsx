@@ -1,40 +1,32 @@
-import { type IconName, colour, radius } from '@emi/tokens';
+import { ICON_SIZE, type IconName, colour, space, stroke } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { createContext, useContext } from 'react';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon } from './Icon';
-import { floatingShadow } from './floating';
 import { Box } from './gluestack/box';
 import { HStack } from './gluestack/hstack';
 import { Pressable } from './gluestack/pressable';
 import { Text } from './gluestack/text';
 
 /**
- * The dock: a panel standing off the bottom of the glass, holding one column for each place she
- * can go.
+ * The dock: a bar across the foot of the glass, holding one column for each place she can go.
  *
- * It is layer 2 of the design system, the one thing in the product that floats over a screen: a
- * card ground, the corner every container takes, a hairline, and the single ambient shadow the
- * document allows. This style has no blur and no glass, so the fill is solid and her screen passes
- * behind the panel rather than through it.
+ * The prototype pins it to the left, the right and the bottom edge, fills it with the card colour,
+ * and draws one hairline along its top. So her screen ends where that line begins, nothing of the
+ * ground shows beside the bar, and the bar itself takes every press that lands on it.
  *
- * The palette, the corner and the padding arrive as class names, which reach points through
- * `apps/mobile/tailwind.config.js` and therefore through @emi/tokens. The three measurements the
- * dock owns are written here, because no class carries them and the room a screen leaves at its
- * foot is their sum.
+ * The four measurements the dock owns are written here, because no class carries them and the room
+ * a screen leaves at its foot is their sum.
  *
- * The tab she is on sits in the selected well the document names, so the column she is on differs
- * from the other three by a shape as well as by a colour.
+ * The tab she is on is drawn in the accent, icon and word together, and the other three in the
+ * quiet colour the design document names for them. A screen reader is told which one is selected,
+ * because the accent is the only thing a reader of the screen has to go on.
  *
  * The chrome knows nothing about routing or about words. It is handed the tabs, told which one she
  * is on, and calls back when she picks another, so the one list of tabs lives with the screens it
  * names rather than in here.
- *
- * It hangs over the screen rather than standing beside it: her screen fills the glass to the
- * bottom edge and the panel floats over it. The air around the panel lets a press through, and
- * only the panel takes one.
  */
 
 /** One column of the dock. */
@@ -56,22 +48,22 @@ interface Props {
 /** The dock itself, which a test asks for to prove it is drawn, or that it is not. */
 export const bottomNavigationTestID = 'bottom-navigation';
 
-/** The panel inside it, which carries the height, the corner, the hairline and the fill. */
+/** The row inside the bar, which holds the four columns and nothing else. */
 export const dockPanelTestID = 'bottom-navigation-panel';
-
-/** The box that stands the panel off the edges of the glass and off the foot. */
-export const standOffTestID = 'bottom-navigation-stand-off';
 
 /** One column, by the name of the route it reaches. */
 export function tabTestID(name: string): string {
   return `bottom-navigation-${name}`;
 }
 
-/** Points. The height the design system fixes the dock at, with the safe area accommodated. */
-export const dockHeight = 64;
+/** Points. One column, above the forty four points contract SEE-3 asks of every target. */
+const TAB_HEIGHT = 52;
 
-/** Points. The air between the panel and the bottom edge of the glass. */
-export const dockStandOff = 12;
+/** Points. What a column takes where the bar is too narrow to hand it a quarter of itself. */
+const TAB_WIDTH = 52;
+
+/** Points. What the bar draws above the room the phone keeps for itself. */
+export const dockHeight = space.spaceSm + TAB_HEIGHT;
 
 /**
  * Points. The deepest home indicator a phone keeps for itself, which the dock pads itself by.
@@ -86,7 +78,7 @@ export const deepestHomeIndicator = 34;
  * The room a screen leaves at its foot so the dock covers nothing she can read, which is what the
  * dock draws on the phone that keeps the most glass for itself.
  */
-export const dockRoom = dockHeight + dockStandOff + deepestHomeIndicator;
+export const dockRoom = dockHeight + deepestHomeIndicator;
 
 const RoomAtTheFoot = createContext<number | undefined>(undefined);
 
@@ -103,24 +95,18 @@ export function useRoomAtTheFoot(): number | undefined {
   return useContext(RoomAtTheFoot);
 }
 
-/** Points. The drawing in a column, which the design system sets smaller than the one in a row. */
-const TAB_ICON = 22;
-
-/** Points. One column, above the forty four points contract SEE-3 asks of every target. */
-const TAB_HEIGHT = 48;
-
-/** Points. A column is wider than it is deep, so four of them fill the panel evenly. */
-const TAB_WIDTH = 52;
-
 const styles = StyleSheet.create({
-  column: { height: TAB_HEIGHT, minWidth: TAB_WIDTH },
-  // The selected well the document names, so the column she is on differs by a shape and not only
-  // by a colour. It is a style rather than a class because a class on this node stops
-  // react-native-css resolving the one on the word inside it.
-  columnHere: { backgroundColor: colour.field, borderRadius: radius.lg },
-  overTheScreen: { bottom: 0, left: 0, position: 'absolute', right: 0 },
-  panel: { boxShadow: floatingShadow, height: dockHeight },
-  standOff: { paddingBottom: dockStandOff },
+  bar: {
+    backgroundColor: colour.card,
+    borderTopColor: colour.line,
+    borderTopWidth: stroke.hairline,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+  },
+  column: { flex: 1, gap: space.spaceXs, minHeight: TAB_HEIGHT, minWidth: TAB_WIDTH },
+  row: { paddingInline: space.spaceSm, paddingTop: space.spaceSm },
 });
 
 /** The dock, drawn from the tabs it is handed, with the one she is on lit. */
@@ -128,55 +114,39 @@ export function BottomNavigation({ tabs, chosen, onChoose }: Props): ReactNode {
   const insets = useSafeAreaInsets();
 
   return (
-    <Box
-      pointerEvents="box-none"
-      style={[styles.overTheScreen, { paddingBottom: insets.bottom }]}
-      testID={bottomNavigationTestID}
-    >
-      <Box
-        className="px-margin"
-        pointerEvents="box-none"
-        style={styles.standOff}
-        testID={standOffTestID}
-      >
-        <HStack
-          className="items-center justify-around rounded-xl border border-line bg-card px-space-sm"
-          pointerEvents="auto"
-          style={styles.panel}
-          testID={dockPanelTestID}
-        >
-          {tabs.map((tab) => {
-            const sheIsHere = tab.name === chosen;
+    <Box style={[styles.bar, { paddingBottom: insets.bottom }]} testID={bottomNavigationTestID}>
+      <HStack style={styles.row} testID={dockPanelTestID}>
+        {tabs.map((tab) => {
+          const sheIsHere = tab.name === chosen;
 
-            return (
-              <Pressable
-                accessibilityRole="tab"
-                accessibilityState={{ selected: sheIsHere }}
-                className="flex-col items-center justify-center"
-                key={tab.name}
-                onPress={() => {
-                  onChoose(tab.name);
-                }}
-                style={sheIsHere ? [styles.column, styles.columnHere] : styles.column}
-                testID={tabTestID(tab.name)}
+          return (
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityState={{ selected: sheIsHere }}
+              className="flex-col items-center justify-center"
+              key={tab.name}
+              onPress={() => {
+                onChoose(tab.name);
+              }}
+              style={styles.column}
+              testID={tabTestID(tab.name)}
+            >
+              <Icon
+                colour={sheIsHere ? colour.accent : colour.dockQuiet}
+                name={tab.icon}
+                size={ICON_SIZE}
+              />
+              <Text
+                className={`font-label-sm text-label-sm ${
+                  sheIsHere ? 'text-accent' : 'text-dock-quiet'
+                }`}
               >
-                <Icon
-                  colour={sheIsHere ? colour.accent : colour.secondaryText}
-                  name={tab.icon}
-                  size={TAB_ICON}
-                />
-                <Text
-                  className={`mt-0.5 font-label-sm text-label-sm ${
-                    sheIsHere ? 'text-accent' : 'text-secondary-text'
-                  }`}
-                >
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </HStack>
-      </Box>
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </HStack>
     </Box>
   );
 }
