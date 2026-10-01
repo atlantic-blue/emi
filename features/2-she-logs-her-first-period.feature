@@ -387,3 +387,17 @@ Feature: She opens Emi and logs her first period
     And she presses the way to where these figures come from
     And she presses the way back
     Then she is on the screen she opened, reading her three numbers again
+
+  Scenario: SCREEN-2, she reaches a past cycle from the screen she opens and comes back to it
+    Given her phone holds three cycles of her own
+    When she opens Emi
+    Then she reads a strip for the cycle she is in, and one for each of the three cycles before it
+    And each strip names the days that cycle covers, how long it ran, and how much of it she bled
+    And the length on each strip is the length her phone holds for that cycle
+    And each strip draws the four phase fills, and not one word sits on a fill
+    And under the strips she is told what they are and that one of them opens
+    When she presses the strip of the cycle before the one she is in
+    Then she is reading Insights, with that cycle marked and no other cycle marked
+    And Insights gives that cycle the same length and the same four arcs the strip gave it
+    When she presses the way back
+    Then she is on the screen she opened, reading the same four strips
