@@ -1,4 +1,4 @@
-import type { DayRange } from '@emi/cycle';
+import type { ForecastResult } from '@emi/cycle';
 import { colour, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -20,6 +20,10 @@ import { firstRunCopy } from './copy';
  */
 
 export const firstForecastTestID = 'onboarding-first-forecast';
+export const firstForecastTitleTestID = 'first-forecast-title';
+export const firstForecastLinesTestID = 'first-forecast-lines';
+export const firstForecastStillLearningTestID = 'first-forecast-still-learning';
+export const firstForecastNoGuessTestID = 'first-forecast-no-guess';
 export const firstForecastRangeTestID = 'first-forecast-range';
 export const firstForecastLearningTestID = 'first-forecast-learning';
 export const firstForecastWhyTestID = 'first-forecast-why';
@@ -27,12 +31,20 @@ export const firstForecastOnThisPhoneTestID = 'first-forecast-on-this-phone';
 export const firstForecastActionTestID = 'first-forecast-action';
 
 interface Props {
-  /** The two days her next period is counted to, which is never one day. */
-  readonly start: DayRange;
+  /** What the arithmetic answered for the days she gave, which carries no range where she gave none. */
+  readonly forecast: ForecastResult;
+  /** The length she gave at the cycle length question, named while Emi has no cycle of hers. */
+  readonly cycleLengthDays: number;
   readonly onContinue: () => void;
 }
 
-export function FirstForecast({ start, onContinue }: Props): ReactNode {
+export function FirstForecast({ forecast, onContinue }: Props): ReactNode {
+  const start = forecast.start;
+
+  if (start === undefined) {
+    return null;
+  }
+
   return (
     <Screen testID={firstForecastTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>

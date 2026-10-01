@@ -10,6 +10,10 @@ import { profileRow, readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
+import {
+  firstForecastActionTestID,
+  firstForecastTestID,
+} from '../../src/features/onboarding/FirstForecast';
 import { longerTestID } from '../../src/features/onboarding/CycleLength';
 import { HOLD_MILLISECONDS } from '../../src/features/onboarding/HoldToBegin';
 import {
@@ -115,6 +119,7 @@ async function sheAnswersTheRest(feelsToday: readonly TodaySymptom[] = []): Prom
     await shePresses(onboardingActionTestID);
   }
 
+  await shePresses(firstForecastActionTestID);
   await shePresses(promiseActionTestID);
   await shePresses(whatEmiDoesActionTestID);
 }
@@ -242,7 +247,7 @@ describe('the way past the last period question passes the period before with it
       }
 
       expect(app.pathname()).not.toBe('/onboarding/last-period');
-      expect(screen.getByTestId(promiseActionTestID)).toBeTruthy();
+      expect(screen.getByTestId(firstForecastTestID)).toBeTruthy();
     });
   });
 });

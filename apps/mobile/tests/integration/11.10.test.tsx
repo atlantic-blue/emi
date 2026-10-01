@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { cyclesFrom, forecastFrom } from '@emi/cycle';
+import { CYCLES_BEFORE_A_FORECAST, cyclesFrom, forecastFrom } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 
@@ -62,6 +62,17 @@ const herPeriodStarted = '2026-05-09';
 const theOneBefore = '2026-04-11';
 
 const herCycleLengthDays = 28;
+
+/**
+ * The answer a woman with one recorded day leaves the arithmetic with: still learning, and a range
+ * counted from the length she gave. It is what this screen draws on its own, away from the router.
+ */
+const theLearningStateWithARange = {
+  completeCycles: 0,
+  kind: 'learning',
+  needsCycles: CYCLES_BEFORE_A_FORECAST,
+  start: { from: '2026-06-03', to: '2026-06-09' },
+} as const;
 
 /** The two files this step adds to the interface, which the single day scan reads with the rest. */
 const theNewInterfaceFiles = [
@@ -444,8 +455,9 @@ describe('her first forecast is a range, before anything is written', () => {
       await render(
         <OnAPhone>
           <FirstForecast
+            cycleLengthDays={herCycleLengthDays}
+            forecast={theLearningStateWithARange}
             onContinue={() => pressed.push('continue')}
-            start={{ from: '2026-06-03', to: '2026-06-09' }}
           />
         </OnAPhone>,
       );
@@ -458,8 +470,9 @@ describe('her first forecast is a range, before anything is written', () => {
       await render(
         <OnAPhone>
           <FirstForecast
+            cycleLengthDays={herCycleLengthDays}
+            forecast={theLearningStateWithARange}
             onContinue={() => undefined}
-            start={{ from: '2026-06-03', to: '2026-06-09' }}
           />
         </OnAPhone>,
       );

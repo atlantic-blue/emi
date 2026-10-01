@@ -26,8 +26,9 @@ export default function FirstForecastRoute(): ReactNode {
 
   return (
     <FirstForecast
+      cycleLengthDays={cycleLengthDays}
+      forecast={forecast}
       onContinue={() => router.push('/onboarding/the-promise')}
-      start={forecast.start}
     />
   );
 }

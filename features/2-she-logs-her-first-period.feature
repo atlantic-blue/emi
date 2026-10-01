@@ -74,6 +74,24 @@ Feature: She opens Emi and logs her first period
     And she is looking at the screen that says the ring needs a period
     And her phone holds the name, the year and the length she gave, and no day at all
 
+  Scenario: SCREEN-1, the first run with no date ends on a forecast that says it is still learning
+    Given she has never opened Emi before
+    When she opens Emi
+    And she skips the tour Emi opens with
+    And she reaches the question about when her last period started
+    And she says she does not remember
+    And she answers the rest of the questions
+    Then she is reading her first forecast, and Emi says it has no date to count from
+    And a line says the first period she logs starts everything
+    And a line names the cycle length she gave, and no length Emi picked
+    And the card says Emi is still learning, and how many complete cycles it needs
+    And a line says Emi builds no forecast from a date it guessed
+    And no range and no date is written anywhere on that screen
+    And that is the drawing of the first forecast with no date, part for part, in its order
+    And the screen offers the way on, and no way back to the question she could not answer
+    When she presses the way on
+    Then she is reading what Emi promises her
+
   Scenario: SCREEN-2, the home screen shows the ring, the day of her cycle and the phase she is in
     Given her phone holds six cycles of her own
     When she opens Emi

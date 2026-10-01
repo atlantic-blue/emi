@@ -124,6 +124,11 @@ export const firstRunCopy = {
       title: words('onboarding.firstForecast.onThisPhone.title'),
       line: words('onboarding.firstForecast.onThisPhone.line'),
     },
+    noDate: {
+      title: words('onboarding.firstForecast.noDate.title'),
+      first: words('onboarding.firstForecast.noDate.first'),
+      guess: words('onboarding.firstForecast.noDate.guess'),
+    },
     action: words('onboarding.firstForecast.action'),
   },
   hold: {
@@ -266,6 +271,15 @@ export function stepLabel(screen: FirstRunScreen): string {
 }
 
 /** How she reads the cycle length she is setting, which is a count and takes the form to match. */
+/**
+ * How many complete cycles Emi wants before it forecasts at all. A woman who gave no date reads
+ * this instead of a range, and the number handed in is the one the arithmetic asks for, so the
+ * sentence cannot state a count the rule behind it disagrees with.
+ */
+export function cyclesBeforeAForecastSentence(cycles: number): string {
+  return words('onboarding.firstForecast.noDate.cycles', cycles);
+}
+
 export function cycleLengthDaysLabel(days: number): string {
   return words('onboarding.cycleLength.days', days);
 }
