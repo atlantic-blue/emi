@@ -120,7 +120,11 @@ export function symptomsAfterPressing(
 }
 
 export interface FirstRunAnswers {
-  readonly periodStartedOn: string;
+  /**
+   * The day her last period started, left out where she does not remember it. Emi counts from the
+   * days she gives it and never from a day it chose, so nothing stands in for this one.
+   */
+  readonly periodStartedOn?: string;
   readonly cycleLengthDays: number;
   /**
    * The start before that one, left out where she does not remember it. Where she gives it, the
@@ -366,7 +370,9 @@ export function forecastFromHerAnswers(answers: HerForecastAnswers): ForecastRes
     ...(answers.periodBeforeStartedOn === undefined
       ? []
       : [{ day: answers.periodBeforeStartedOn, flow: firstRunFlow }]),
-    { day: answers.periodStartedOn, flow: firstRunFlow },
+    ...(answers.periodStartedOn === undefined
+      ? []
+      : [{ day: answers.periodStartedOn, flow: firstRunFlow }]),
   ];
 
   return forecastFrom(cyclesFrom(days), { statedCycleLengthDays: answers.cycleLengthDays });
@@ -425,6 +431,9 @@ function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
  * Her two answers land together or not at all. A day written without her profile beside it would
  * send her back to the first screen and then refuse the day she picked there, which is the one
  * shape of half written first run she could not get herself out of.
+ *
+ * A woman who passed the question about her last period gives no day, so no day is written and
+ * her profile lands on its own. The ring has nothing to draw until the first period she logs.
  */
 export function completeFirstRun(
   db: Database,
@@ -433,27 +442,29 @@ export function completeFirstRun(
   now: Date,
 ): void {
   const today = localDay(now);
-  const back = daysBetween(answers.periodStartedOn, today);
+  const theDaySheGave = answers.periodStartedOn;
+  const back = theDaySheGave === undefined ? undefined : daysBetween(theDaySheGave, today);
 
-  if (back < 0) {
+  if (back !== undefined && back < 0) {
     throw new FirstRunError(
       'period-start-is-in-the-future',
-      `a period cannot start on ${answers.periodStartedOn}, which is after ${today}`,
+      `a period cannot start on ${theDaySheGave}, which is after ${today}`,
     );
   }
-  if (back > longestLookBackDays) {
+  if (back !== undefined && back > longestLookBackDays) {
     throw new FirstRunError(
       'period-start-is-too-long-ago',
-      `${answers.periodStartedOn} is ${back} days back, and the first run reaches ${longestLookBackDays}`,
+      `${theDaySheGave} is ${back} days back, and the first run reaches ${longestLookBackDays}`,
     );
   }
   if (
+    theDaySheGave !== undefined &&
     answers.periodBeforeStartedOn !== undefined &&
-    !periodBeforeIsInRange(answers.periodBeforeStartedOn, answers.periodStartedOn)
+    !periodBeforeIsInRange(answers.periodBeforeStartedOn, theDaySheGave)
   ) {
     throw new FirstRunError(
       'period-before-is-out-of-range',
-      `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days, and ${answers.periodBeforeStartedOn} is ${daysBetween(answers.periodBeforeStartedOn, answers.periodStartedOn)} days before ${answers.periodStartedOn}`,
+      `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days, and ${answers.periodBeforeStartedOn} is ${daysBetween(answers.periodBeforeStartedOn, theDaySheGave)} days before ${theDaySheGave}`,
     );
   }
   if (!cycleLengthIsInRange(answers.cycleLengthDays)) {
@@ -543,13 +554,16 @@ export function completeFirstRun(
 
   // Today and the day she bled are one row when they are one day, because `day_log_day` holds
   // one row for a day and a second insert for it is refused rather than merged.
-  const theDaySheBledIsToday = answers.periodStartedOn === today;
-  const recorded: DayRecord = {
-    day: answers.periodStartedOn,
-    flow: firstRunFlow,
-    ...(theDaySheBledIsToday && feltToday.length > 0 ? { symptoms: feltToday } : {}),
-    recordedAt: now.toISOString(),
-  };
+  const theDaySheBledIsToday = theDaySheGave === today;
+  const recorded: DayRecord | undefined =
+    theDaySheGave === undefined
+      ? undefined
+      : {
+          day: theDaySheGave,
+          flow: firstRunFlow,
+          ...(theDaySheBledIsToday && feltToday.length > 0 ? { symptoms: feltToday } : {}),
+          recordedAt: now.toISOString(),
+        };
 
   db.execute('BEGIN');
   try {
@@ -562,7 +576,9 @@ export function completeFirstRun(
 
       insertDayLog(db, { day: earlier.day, payload: vaults.day.seal(earlier), now });
     }
-    insertDayLog(db, { day: recorded.day, payload: vaults.day.seal(recorded), now });
+    if (recorded !== undefined) {
+      insertDayLog(db, { day: recorded.day, payload: vaults.day.seal(recorded), now });
+    }
     if (feltToday.length > 0 && !theDaySheBledIsToday) {
       const felt: DayRecord = { day: today, symptoms: feltToday, recordedAt: now.toISOString() };
 

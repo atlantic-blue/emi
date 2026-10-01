@@ -9,9 +9,8 @@ import { forecastFromHerAnswers } from '../../features/onboarding/firstRun';
  * The forecast is worked out here rather than held in the provider, because it is arithmetic over
  * answers she has already given and never an answer of its own.
  *
- * A woman who reaches this route without a day to count from is sent back to the question that
- * asks for one. That is the one answer the first run cannot do without, so the screen behind this
- * one is where she belongs rather than a screen drawing a range from nothing.
+ * A woman who reaches this route without a day to count from has no range to read, and she
+ * passed the question that asks for one, so she goes on to the promise rather than back to it.
  */
 export default function FirstForecastRoute(): ReactNode {
   const router = useRouter();
@@ -22,7 +21,7 @@ export default function FirstForecastRoute(): ReactNode {
       : forecastFromHerAnswers({ periodStartedOn, periodBeforeStartedOn, cycleLengthDays });
 
   if (forecast?.start === undefined) {
-    return <Redirect href="/onboarding/last-period" />;
+    return <Redirect href="/onboarding/the-promise" />;
   }
 
   return (

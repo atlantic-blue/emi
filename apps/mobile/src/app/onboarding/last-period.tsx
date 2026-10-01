@@ -7,10 +7,13 @@ import { LastPeriod } from '../../features/onboarding/LastPeriod';
 /**
  * Every day of the question about the period before is measured from the day she gives here, so a
  * woman who gives none is sent round that question to the one about how long her cycle runs.
+ *
+ * The way past is an answer of nothing, so it drops both days rather than only skipping the
+ * screen: a day she picked before she read the link would otherwise reach the hold and be written.
  */
 export default function LastPeriodRoute(): ReactNode {
   const router = useRouter();
-  const { periodStartedOn, setPeriodStartedOn } = useFirstRun();
+  const { periodStartedOn, setPeriodStartedOn, forgetTheDates } = useFirstRun();
 
   return (
     <LastPeriod
@@ -19,7 +22,10 @@ export default function LastPeriodRoute(): ReactNode {
       onBack={() => router.back()}
       onChoose={setPeriodStartedOn}
       onContinue={() => router.push('/onboarding/period-before')}
-      onWayPast={() => router.push('/onboarding/cycle-length')}
+      onWayPast={() => {
+        forgetTheDates();
+        router.push('/onboarding/cycle-length');
+      }}
     />
   );
 }
