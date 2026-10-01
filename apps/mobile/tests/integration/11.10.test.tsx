@@ -271,15 +271,17 @@ describe('her first forecast is a range, before anything is written', () => {
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
     });
 
-    it('takes her on to the promise, where she reached it without a day', async () => {
+    it('says it has no date to count from, where she reached it without a day', async () => {
       const app = renderRouter(appDirectory, { initialUrl: '/onboarding/first-forecast' });
 
       await app;
 
       // A woman with no day passed the question that asks for one, so sending her back would
-      // return her to the one question she said she could not answer.
-      expect(app.getPathname()).toBe('/onboarding/the-promise');
-      expect(screen.queryByTestId(firstForecastTestID)).toBeNull();
+      // return her to the one question she said she could not answer. Emi draws the screen in its
+      // learning state instead, which step 20.3 builds and proves.
+      expect(app.getPathname()).toBe('/onboarding/first-forecast');
+      expect(screen.getByTestId(firstForecastTestID)).toBeTruthy();
+      expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
     });
 
     it('hands her to the promise when she presses Continue, and the hold is behind it', async () => {
