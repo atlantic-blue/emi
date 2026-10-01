@@ -20,6 +20,15 @@ export const calendarCopy = {
   today: words('calendar.today'),
 } as const;
 
+/**
+ * The two words of the legend above the grid. The grid is drawn by three screens and only the month
+ * carries phases, so the legend is the one place these two words are read.
+ */
+export const monthLegendCopy = {
+  fertile: words('calendar.legend.fertile'),
+  period: words('calendar.legend.period'),
+} as const;
+
 /** The two things the sheet at the foot says about the day she pressed. */
 export interface DaySheetSaid {
   /** The date in words, which is how she knows which day she is reading. */

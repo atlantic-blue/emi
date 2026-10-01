@@ -9,6 +9,7 @@ import { readProfile } from '../../data/profileRepository';
 import { CalendarScreen } from '../../features/calendar/CalendarScreen';
 import { dayParameter, theMonthAskedFor } from '../../features/calendar/askedMonth';
 import { herMonth } from '../../features/calendar/herMonth';
+import { type DayPhase, theDayPhaseOn } from '../../features/calendar/herMonthPhases';
 import {
   type HerReading,
   type WhatTheSheetSays,
@@ -53,6 +54,8 @@ function herReading(
 /** The month she is reading, and the sheet for the day she pressed, from one reading of her days. */
 interface HerMonth {
   readonly days: HerDay[];
+  /** The phase of one date, so the month draws the window the ring drew on that date. */
+  readonly phaseOn: (day: string) => DayPhase | undefined;
   readonly sheetFor: (day: string) => WhatTheSheetSays | undefined;
 }
 
@@ -68,6 +71,7 @@ function herMonthOf(
 
   return {
     days,
+    phaseOn: (day) => theDayPhaseOn(from, day),
     sheetFor: (day) => {
       const hers = days.find((each) => each.day === day);
 
@@ -139,6 +143,7 @@ export default function CalendarRoute(): ReactNode {
       onOpenDay={(day) => router.push(`/day/${day}`)}
       onPressDay={setShePressed}
       onToday={() => router.replace('/')}
+      phaseOn={hers.phaseOn}
       today={today}
       {...(shePressed === undefined ? {} : { shePressed: hers.sheetFor(shePressed) })}
     />

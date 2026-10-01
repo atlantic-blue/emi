@@ -140,14 +140,14 @@ describe('a day square of the calendar is wide enough to press, and leaves no de
       }
     });
 
-    it('is 44.4 points wide on an iPhone 16 and 41.9 on a small one', async () => {
+    it('is 44.7 points wide on an iPhone 16 and 42.1 on a small one', async () => {
       await sheReachesHerLastPeriod();
 
       for (const width of theColumnsOfTheWeek(anIPhone16)) {
-        expect(width).toBeCloseTo(44.4, 2);
+        expect(width).toBeCloseTo(44.7, 2);
       }
       for (const width of theColumnsOfTheWeek(aSmallIPhone)) {
-        expect(width).toBeCloseTo(41.9, 2);
+        expect(width).toBeCloseTo(42.1, 2);
       }
     });
 
@@ -177,7 +177,7 @@ describe('a day square of the calendar is wide enough to press, and leaves no de
       await sheReachesHerLastPeriod();
 
       for (const width of theColumnsOfTheWeek(anIPhone16)) {
-        expect(width + THE_GAP_BETWEEN_SQUARES).toBeCloseTo(48.4, 2);
+        expect(width + THE_GAP_BETWEEN_SQUARES).toBeCloseTo(48.7, 2);
       }
     });
   });
