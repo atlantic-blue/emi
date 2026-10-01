@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     padding: space.spaceLg,
   },
   wordmark: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('display-lg-mobile'),
   },
 });

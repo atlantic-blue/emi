@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   // The selected well the document names, so the column she is on differs by a shape and not only
   // by a colour. It is a style rather than a class because a class on this node stops
   // react-native-css resolving the one on the word inside it.
-  columnHere: { backgroundColor: colour.surfaceContainerHigh, borderRadius: radius.lg },
+  columnHere: { backgroundColor: colour.field, borderRadius: radius.lg },
   overTheScreen: { bottom: 0, left: 0, position: 'absolute', right: 0 },
   panel: { boxShadow: floatingShadow, height: dockHeight },
   standOff: { paddingBottom: dockStandOff },
@@ -140,7 +140,7 @@ export function BottomNavigation({ tabs, chosen, onChoose }: Props): ReactNode {
         testID={standOffTestID}
       >
         <HStack
-          className="items-center justify-around rounded-xl border border-outline-variant bg-surface-container-lowest px-space-sm"
+          className="items-center justify-around rounded-xl border border-line bg-card px-space-sm"
           pointerEvents="auto"
           style={styles.panel}
           testID={dockPanelTestID}
@@ -161,13 +161,13 @@ export function BottomNavigation({ tabs, chosen, onChoose }: Props): ReactNode {
                 testID={tabTestID(tab.name)}
               >
                 <Icon
-                  colour={sheIsHere ? colour.primary : colour.onSurfaceVariant}
+                  colour={sheIsHere ? colour.accent : colour.secondaryText}
                   name={tab.icon}
                   size={TAB_ICON}
                 />
                 <Text
                   className={`mt-0.5 font-label-sm text-label-sm ${
-                    sheIsHere ? 'text-primary' : 'text-on-surface-variant'
+                    sheIsHere ? 'text-accent' : 'text-secondary-text'
                   }`}
                 >
                   {tab.label}

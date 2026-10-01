@@ -69,7 +69,7 @@ export function WhatEmiDoesWithIt({ focus, onContinue }: Props): ReactNode {
             <Card key={card} testID={whatEmiDoesCardTestID(card)}>
               <View style={styles.row}>
                 <View style={styles.disc}>
-                  <Icon colour={colour.primary} name={whatEmiDoesIcons[card]} size={ICON_SIZE} />
+                  <Icon colour={colour.accent} name={whatEmiDoesIcons[card]} size={ICON_SIZE} />
                 </View>
                 <View style={styles.saying}>
                   <Text style={styles.cardTitle}>{said[card].title}</Text>
@@ -99,25 +99,25 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceXl,
   },
   cardLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   cardTitle: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
     marginBottom: space.spaceXs,
   },
   cards: { gap: space.spaceMd, marginTop: space.spaceLg },
   disc: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainer,
+    backgroundColor: colour.field,
     borderRadius: radius.full,
     height: DISC_DIAMETER,
     justifyContent: 'center',
     width: DISC_DIAMETER,
   },
   footer: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     padding: space.spaceLg,
   },
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   saying: { flex: 1 },
   scroll: { flex: 1 },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
   },
 });

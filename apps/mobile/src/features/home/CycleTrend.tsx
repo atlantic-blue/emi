@@ -134,7 +134,7 @@ export function CycleTrend({ cycles }: { readonly cycles: readonly TrendCycle[] 
           viewBox={`0 0 ${PLOT_WIDTH} ${PLOT_HEIGHT}`}
         >
           <Rect
-            fill={colour.secondaryFixed}
+            fill={colour.field}
             height={plot.band.height}
             testID={trendBandTestID}
             width={PLOT_WIDTH}
@@ -144,7 +144,7 @@ export function CycleTrend({ cycles }: { readonly cycles: readonly TrendCycle[] 
           <Polyline
             fill="none"
             points={joinOf(plot.points)}
-            stroke={colour.primary}
+            stroke={colour.accent}
             strokeLinejoin="round"
             strokeWidth={JOIN_WIDTH}
             testID={trendJoinTestID}
@@ -153,7 +153,7 @@ export function CycleTrend({ cycles }: { readonly cycles: readonly TrendCycle[] 
             <Circle
               cx={point.x}
               cy={point.y}
-              fill={colour.primary}
+              fill={colour.accent}
               key={point.startedOn}
               r={POINT_RADIUS}
               testID={trendPointTestID(point.startedOn)}
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   axisLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('data-sm'),
     textAlign: 'right',
   },
@@ -189,15 +189,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   caption: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
     marginTop: space.spaceSm,
   },
   plot: { flex: 1 },
   trend: {
     alignSelf: 'stretch',
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.lg,
     borderWidth: 1,
     padding: space.spaceMd,

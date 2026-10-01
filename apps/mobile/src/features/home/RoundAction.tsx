@@ -48,7 +48,7 @@ export function RoundAction({ action, icon, label, onPress }: Props): ReactNode 
       testID={roundActionTestID(action)}
     >
       <View style={styles.disc}>
-        <Icon colour={colour.onPrimaryFixed} name={icon} size={theDrawingInTheDisc} />
+        <Icon colour={colour.accentSoftInk} name={icon} size={theDrawingInTheDisc} />
       </View>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
@@ -65,14 +65,14 @@ const styles = StyleSheet.create({
   },
   disc: {
     alignItems: 'center',
-    backgroundColor: colour.primaryFixed,
+    backgroundColor: colour.accentSoft,
     borderRadius: radius.full,
     height: theDiscIsThisWide,
     justifyContent: 'center',
     width: theDiscIsThisWide,
   },
   label: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-md'),
   },
 });

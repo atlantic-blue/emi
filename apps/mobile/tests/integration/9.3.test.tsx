@@ -106,7 +106,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
         "import { StyleSheet } from 'react-native';",
         '',
         'export const styles = StyleSheet.create({',
-        `  chip: { backgroundColor: '${colour.surfaceContainer}' },`,
+        `  chip: { backgroundColor: '${colour.field}' },`,
         '});',
         '',
       ].join('\n');
@@ -122,7 +122,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
         "import { StyleSheet } from 'react-native';",
         '',
         'export const styles = StyleSheet.create({',
-        '  chip: { backgroundColor: colour.surfaceContainer },',
+        '  chip: { backgroundColor: colour.field },',
         '});',
         '',
       ].join('\n');
@@ -154,11 +154,11 @@ describe('a component that writes a colour of its own fails the lint', () => {
       await render(<PrimaryButton label={label} onPress={nothing} testID="action" />);
 
       expect(theStyleOf('action')).toMatchObject({
-        backgroundColor: colour.primaryContainer,
+        backgroundColor: colour.accent,
         borderRadius: radius.lg,
       });
       expect(theStyleOfTheWordsIn('action')).toMatchObject({
-        color: colour.onPrimary,
+        color: colour.onAccent,
         ...textStyle('label-md'),
       });
     });
@@ -170,13 +170,13 @@ describe('a component that writes a colour of its own fails the lint', () => {
         fireEvent(screen.getByTestId('action'), 'pressIn');
       });
 
-      expect(theStyleOf('action')).toMatchObject({ backgroundColor: colour.primary });
+      expect(theStyleOf('action')).toMatchObject({ backgroundColor: colour.accent });
 
       await act(async () => {
         fireEvent(screen.getByTestId('action'), 'pressOut');
       });
 
-      expect(theStyleOf('action')).toMatchObject({ backgroundColor: colour.primaryContainer });
+      expect(theStyleOf('action')).toMatchObject({ backgroundColor: colour.accent });
     });
 
     it('draws a spent action as a measured pair rather than fading it', async () => {
@@ -193,8 +193,8 @@ describe('a component that writes a colour of its own fails the lint', () => {
 
       // An opacity nobody measured is a contrast ratio nobody knows, which is what TOKEN-2 stops.
       expect(theStyleOf('action')['opacity']).toBeUndefined();
-      expect(theStyleOf('action')).toMatchObject({ backgroundColor: colour.surfaceContainer });
-      expect(theStyleOfTheWordsIn('action')).toMatchObject({ color: colour.onSurfaceVariant });
+      expect(theStyleOf('action')).toMatchObject({ backgroundColor: colour.field });
+      expect(theStyleOfTheWordsIn('action')).toMatchObject({ color: colour.secondaryText });
 
       fireEvent.press(screen.getByTestId('action'));
       expect(pressed).toEqual([]);
@@ -204,12 +204,12 @@ describe('a component that writes a colour of its own fails the lint', () => {
       await render(<SecondaryButton label={label} onPress={nothing} testID="beside" />);
 
       expect(theStyleOf('beside')).toMatchObject({
-        backgroundColor: colour.surfaceContainerLowest,
-        borderColor: colour.outlineVariant,
+        backgroundColor: colour.card,
+        borderColor: colour.line,
         borderRadius: radius.lg,
         borderWidth: stroke.hairline,
       });
-      expect(theStyleOfTheWordsIn('beside')).toMatchObject({ color: colour.onSurface });
+      expect(theStyleOfTheWordsIn('beside')).toMatchObject({ color: colour.text });
     });
 
     it('steps the action beside it to the recessed ground while her thumb is down', async () => {
@@ -219,7 +219,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
         fireEvent(screen.getByTestId('beside'), 'pressIn');
       });
 
-      expect(theStyleOf('beside')).toMatchObject({ backgroundColor: colour.surfaceContainer });
+      expect(theStyleOf('beside')).toMatchObject({ backgroundColor: colour.field });
     });
 
     it('draws the quiet action as words with a rule under them, and no ground at all', async () => {
@@ -229,11 +229,11 @@ describe('a component that writes a colour of its own fails the lint', () => {
 
       expect(theStyleOf('quiet')['backgroundColor']).toBeUndefined();
       expect(theStyleOf('quiet')['borderWidth']).toBeUndefined();
-      expect(theStyleOfTheWordsIn('quiet')).toMatchObject({ color: colour.onSurface });
+      expect(theStyleOfTheWordsIn('quiet')).toMatchObject({ color: colour.text });
       expect(
         StyleSheet.flatten((rule as unknown as { props: { style?: unknown } }).props.style),
       ).toMatchObject({
-        backgroundColor: colour.onSurface,
+        backgroundColor: colour.text,
         height: stroke.hairline,
         marginTop: 4,
       });
@@ -245,11 +245,11 @@ describe('a component that writes a colour of its own fails the lint', () => {
       await render(<TextField label="Name" onChange={nothing} testID="field" value="" />);
 
       expect(theStyleOf('field')).toMatchObject({
-        backgroundColor: colour.surfaceContainerLowest,
-        borderColor: colour.outlineVariant,
+        backgroundColor: colour.card,
+        borderColor: colour.line,
         borderRadius: radius.lg,
         borderWidth: stroke.hairline,
-        color: colour.onSurface,
+        color: colour.text,
         padding: space.spaceMd,
         ...textStyle('body-lg'),
       });
@@ -262,7 +262,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
         fireEvent(screen.getByTestId('field'), 'focus');
       });
 
-      expect(theStyleOf('field')).toMatchObject({ borderColor: colour.primaryContainer });
+      expect(theStyleOf('field')).toMatchObject({ borderColor: colour.accent });
       expect(theStyleOf('field')['boxShadow']).toBeUndefined();
     });
 
@@ -270,7 +270,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
       await render(<TextField label="Name" onChange={nothing} testID="field" value="" />);
 
       expect(StyleSheet.flatten(screen.getByText('Name').props.style)).toMatchObject({
-        color: colour.onSurface,
+        color: colour.text,
         ...textStyle('headline-sm'),
       });
     });
@@ -298,12 +298,12 @@ describe('a component that writes a colour of its own fails the lint', () => {
       await theStepper();
 
       expect(theStyleOf(stepper)).toMatchObject({
-        backgroundColor: colour.surfaceContainer,
+        backgroundColor: colour.field,
         borderRadius: radius.xl,
         padding: space.spaceMd,
       });
       expect(theStyleOf(stepperDownTestID(stepper))).toMatchObject({
-        backgroundColor: colour.surfaceContainerLowest,
+        backgroundColor: colour.card,
         borderRadius: radius.full,
         height: MINIMUM_TAP_TARGET,
         width: MINIMUM_TAP_TARGET,
@@ -315,7 +315,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
 
       expect(
         StyleSheet.flatten(screen.getByTestId(stepperReadingTestID(stepper)).props.style),
-      ).toMatchObject({ color: colour.onSurface, ...textStyle('data-lg') });
+      ).toMatchObject({ color: colour.text, ...textStyle('data-lg') });
     });
 
     it('keeps a button at its boundary in place, spent rather than gone', async () => {
@@ -323,10 +323,10 @@ describe('a component that writes a colour of its own fails the lint', () => {
 
       expect(screen.getByTestId(stepperUpTestID(stepper))).toBeTruthy();
       expect(theStyleOf(stepperUpTestID(stepper))).toMatchObject({
-        backgroundColor: colour.surfaceContainerHigh,
+        backgroundColor: colour.field,
       });
       expect(theStyleOfTheWordsIn(stepperUpTestID(stepper))).toMatchObject({
-        color: colour.onSurfaceVariant,
+        color: colour.secondaryText,
       });
     });
   });
@@ -341,14 +341,14 @@ describe('a component that writes a colour of its own fails the lint', () => {
       );
 
       expect(theStyleOf('chosen')).toMatchObject({
-        backgroundColor: colour.surfaceContainerHigh,
+        backgroundColor: colour.field,
         borderRadius: radius.lg,
       });
       expect(theStyleOf('resting')).toMatchObject({
-        backgroundColor: colour.surfaceContainerLow,
+        backgroundColor: colour.field,
       });
-      expect(theStyleOfTheWordsIn('chosen')).toMatchObject({ color: colour.onSurface });
-      expect(theStyleOfTheWordsIn('resting')).toMatchObject({ color: colour.onSurfaceVariant });
+      expect(theStyleOfTheWordsIn('chosen')).toMatchObject({ color: colour.text });
+      expect(theStyleOfTheWordsIn('resting')).toMatchObject({ color: colour.secondaryText });
     });
 
     it('says which control it is, so a screen reader hears one of a set or any of a set', async () => {
@@ -376,7 +376,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
       // is stroked in is read off the drawing itself.
       expect(theStyleOf('any')).toBeTruthy();
       expect(String(screen.getByTestId(checkboxMarkTestID('any')).props['xml'])).toContain(
-        colour.primaryContainer,
+        colour.accent,
       );
     });
   });
@@ -391,16 +391,16 @@ describe('a component that writes a colour of its own fails the lint', () => {
       );
 
       expect(theStyleOf('resting')).toMatchObject({
-        backgroundColor: colour.surfaceContainer,
-        borderColor: colour.outlineVariant,
+        backgroundColor: colour.field,
+        borderColor: colour.line,
         borderRadius: radius.lg,
         borderWidth: stroke.hairline,
       });
       expect(theStyleOf('chosen')).toMatchObject({
-        backgroundColor: colour.surfaceContainerHigh,
-        borderColor: colour.primaryContainer,
+        backgroundColor: colour.field,
+        borderColor: colour.accent,
       });
-      expect(theStyleOfTheWordsIn('resting')).toMatchObject({ color: colour.onSurface });
+      expect(theStyleOfTheWordsIn('resting')).toMatchObject({ color: colour.text });
     });
   });
 
@@ -428,14 +428,14 @@ describe('a component that writes a colour of its own fails the lint', () => {
       );
 
       expect(theStyleOf('chosen')).toMatchObject({
-        backgroundColor: colour.surfaceContainerHigh,
+        backgroundColor: colour.field,
         borderRadius: radius.xl,
       });
       expect(theStyleOf('resting')).toMatchObject({
-        backgroundColor: colour.surfaceContainerLow,
+        backgroundColor: colour.field,
       });
       expect(theStyleOf(tileBeadTestID('chosen'))).toMatchObject({
-        backgroundColor: colour.primaryContainer,
+        backgroundColor: colour.accent,
       });
       expect(screen.queryByTestId(tileBeadTestID('resting'))).toBeNull();
     });
@@ -446,8 +446,8 @@ describe('a component that writes a colour of its own fails the lint', () => {
       await render(<Card testID="card">{null}</Card>);
 
       expect(theStyleOf('card')).toMatchObject({
-        backgroundColor: colour.surfaceContainerLowest,
-        borderColor: colour.outlineVariant,
+        backgroundColor: colour.card,
+        borderColor: colour.line,
         borderRadius: radius.xl,
         borderWidth: stroke.hairline,
         padding: space.spaceLg,
@@ -461,7 +461,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
         </Card>,
       );
 
-      expect(theStyleOf('card')).toMatchObject({ backgroundColor: colour.surfaceContainer });
+      expect(theStyleOf('card')).toMatchObject({ backgroundColor: colour.field });
       expect(theStyleOf('card')['boxShadow']).toBeUndefined();
     });
 
@@ -481,11 +481,11 @@ describe('a component that writes a colour of its own fails the lint', () => {
       await render(<ProgressBar label="Step 2 of 3" step={2} testID="bar" total={3} />);
 
       expect(theStyleOf('bar')).toMatchObject({
-        backgroundColor: colour.surfaceContainer,
+        backgroundColor: colour.field,
         borderRadius: radius.full,
       });
       expect(theStyleOf(progressFillTestID('bar'))).toMatchObject({
-        backgroundColor: colour.primaryContainer,
+        backgroundColor: colour.accent,
         width: `${(2 / 3) * 100}%`,
       });
       expect(screen.getByTestId('bar').props['accessibilityValue']).toEqual({
@@ -513,7 +513,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
       // The dock is drawn under the navigator, so the whole of it is measured in
       // tests/integration/chrome.test.tsx. What belongs here is that it is named as a layer.
       expect(dockPanelTestID).toBe('bottom-navigation-panel');
-      expect(floatingShadow).toContain(colour.onSurface);
+      expect(floatingShadow).toContain(colour.text);
     });
   });
 
@@ -521,8 +521,8 @@ describe('a component that writes a colour of its own fails the lint', () => {
     it('is at least forty four points on both axes', async () => {
       await render(
         <View>
-          <PrimaryButton label="Save" onPress={nothing} testID="primary" />
-          <SecondaryButton label="Cancel" onPress={nothing} testID="secondary" />
+          <PrimaryButton label="Save" onPress={nothing} testID="accent" />
+          <SecondaryButton label="Cancel" onPress={nothing} testID="secondaryText" />
           <TextLink label="Export" onPress={nothing} testID="link" />
           <Stepper
             canGoDown

@@ -75,7 +75,7 @@ export function AnswerScreen({
           testID={answerBackTestID}
         >
           <View style={styles.backMark}>
-            <Icon colour={colour.onSurface} name="chevron" size={BACK_MARK_SIZE} />
+            <Icon colour={colour.text} name="chevron" size={BACK_MARK_SIZE} />
           </View>
         </Pressable>
 
@@ -151,11 +151,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceSm,
   },
   cancelLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('label-md'),
   },
   footer: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     padding: space.spaceLg,
   },
@@ -167,17 +167,17 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceSm,
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   question: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
   },
   said: { rowGap: space.spaceSm },
   scroll: { flex: 1 },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
   },
 });

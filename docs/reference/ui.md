@@ -142,7 +142,7 @@ One drawing from the set, at the size and the colour the screen asks for.
 ### `floatingShadow`
 
 ```
-const floatingShadow = `0px 4px 20px -2px ${colour.onSurface}0d`
+const floatingShadow = `0px 4px 20px -2px ${colour.text}0d`
 ```
 
 The one shadow this design system allows, on layer 2 and nowhere else.

@@ -80,7 +80,7 @@ export function LastPeriod({
               </Text>
               {isChosen ? (
                 <View testID={chosenNameMarkTestID}>
-                  <Icon colour={colour.surfaceContainerLowest} name="check" size={NAME_MARK_SIZE} />
+                  <Icon colour={colour.card} name="check" size={NAME_MARK_SIZE} />
                 </View>
               ) : null}
             </Pressable>
@@ -104,8 +104,8 @@ export function LastPeriod({
 const styles = StyleSheet.create({
   name: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.full,
     borderWidth: stroke.icon,
     flex: 1,
@@ -116,10 +116,10 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.spaceMd,
   },
-  nameChosen: { backgroundColor: colour.surfaceTint, borderColor: colour.onPrimaryFixedVariant },
-  nameChosenLabel: { color: colour.surfaceContainerLowest },
+  nameChosen: { backgroundColor: colour.accent, borderColor: colour.accentSoftInk },
+  nameChosenLabel: { color: colour.card },
   nameLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   named: { flexDirection: 'row', gap: space.spaceSm, marginTop: space.spaceSm },

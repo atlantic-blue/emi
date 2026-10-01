@@ -34,9 +34,6 @@ const contractDocument = join(__dirname, '..', '..', '..', '..', 'docs', 'contra
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const herPeriodStarted = '2026-05-09';
 
-/** The two phones the squares are measured on. Both draw one narrower than the floor. */
-const bothPhones: readonly Phone[] = [anIPhone16, aSmallIPhone];
-
 /** Points. What the calendar leaves between two squares, and what a touch covers half of. */
 const THE_GAP_BETWEEN_SQUARES = space.spaceXs;
 
@@ -105,7 +102,7 @@ function aSquareOfTheRow(touch: Record<string, number> | undefined): Control {
 
 const aRowOfSquares: Control = { props: { style: { gap: THE_GAP_BETWEEN_SQUARES } } };
 
-describe('a day square of the calendar is narrower than 44 points and her thumb still finds it', () => {
+describe('a day square of the calendar is wide enough to press, and leaves no dead point', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -119,24 +116,42 @@ describe('a day square of the calendar is narrower than 44 points and her thumb 
   });
 
   describe('the square she presses on the question about her last period', () => {
-    it.each(bothPhones)('is drawn narrower than 44 points on $name', async (phone) => {
+    // The redesign draws a screen with a margin of twenty points, where the style before it drew
+    // twenty four, so seven squares across the rest of the width grew. An iPhone 16 now clears the
+    // tap target and a small one still does not, and the gap between the squares carries the rest.
+    it('clears the tap target on an iPhone 16, which the style before this one did not', async () => {
       await sheReachesHerLastPeriod();
 
-      expect(theColumnsOfTheWeek(phone)).toHaveLength(7);
+      expect(theColumnsOfTheWeek(anIPhone16)).toHaveLength(7);
 
-      for (const width of theColumnsOfTheWeek(phone)) {
-        expect(width).toBeLessThan(MINIMUM_TAP_TARGET);
+      for (const width of theColumnsOfTheWeek(anIPhone16)) {
+        expect(width).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
       }
     });
 
-    it('is 41 points wide on an iPhone 16 and 38.4 on a small one', async () => {
+    it('is still under the tap target on a small iPhone, which the gap carries', async () => {
       await sheReachesHerLastPeriod();
 
-      expect(theColumnsOfTheWeek(anIPhone16)).toEqual([41, 41, 41, 41, 41, 41, 41]);
-      expect(theColumnsOfTheWeek(aSmallIPhone)).toEqual([38.4, 38.4, 38.4, 38.4, 38.4, 38.4, 38.4]);
+      expect(theColumnsOfTheWeek(aSmallIPhone)).toHaveLength(7);
+
+      for (const width of theColumnsOfTheWeek(aSmallIPhone)) {
+        expect(width).toBeLessThan(MINIMUM_TAP_TARGET);
+        expect(width + THE_GAP_BETWEEN_SQUARES).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
+      }
     });
 
-    it('keeps the 44 points of height, so its width is the whole of the exception', async () => {
+    it('is 44.4 points wide on an iPhone 16 and 41.9 on a small one', async () => {
+      await sheReachesHerLastPeriod();
+
+      for (const width of theColumnsOfTheWeek(anIPhone16)) {
+        expect(width).toBeCloseTo(44.4, 2);
+      }
+      for (const width of theColumnsOfTheWeek(aSmallIPhone)) {
+        expect(width).toBeCloseTo(41.9, 2);
+      }
+    });
+
+    it('keeps the 44 points of height as well as the width', async () => {
       await sheReachesHerLastPeriod();
 
       const { squares } = theWeekSheChoosesFrom();
@@ -158,11 +173,11 @@ describe('a day square of the calendar is narrower than 44 points and her thumb 
       ).toEqual([]);
     });
 
-    it('takes a touch 45 points wide on an iPhone 16, which is wider than a thumb needs', async () => {
+    it('takes a touch wider than the square itself, so the gap between squares is live', async () => {
       await sheReachesHerLastPeriod();
 
       for (const width of theColumnsOfTheWeek(anIPhone16)) {
-        expect(width + THE_GAP_BETWEEN_SQUARES).toBe(45);
+        expect(width + THE_GAP_BETWEEN_SQUARES).toBeCloseTo(48.4, 2);
       }
     });
   });

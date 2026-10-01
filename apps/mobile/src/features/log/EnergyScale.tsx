@@ -74,11 +74,11 @@ const styles = StyleSheet.create({
   section: { gap: space.spaceMd },
   headings: { alignItems: 'baseline', flexDirection: 'row', gap: space.spaceSm },
   heading: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
   },
   chosen: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   steps: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
@@ -91,11 +91,11 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
     paddingHorizontal: space.spaceMd,
   },
-  stepPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
-  stepChosen: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
+  stepPlain: { backgroundColor: colour.field, borderColor: colour.field },
+  stepChosen: { backgroundColor: colour.accentSoft, borderColor: colour.accent },
   stepLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
-  stepLabelChosen: { color: colour.onSurface },
+  stepLabelChosen: { color: colour.text },
 });

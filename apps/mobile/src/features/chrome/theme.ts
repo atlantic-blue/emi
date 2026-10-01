@@ -14,5 +14,5 @@ import { DefaultTheme } from 'expo-router';
  */
 export const theNavigatorGround = {
   ...DefaultTheme,
-  colors: { ...DefaultTheme.colors, background: colour.surface },
+  colors: { ...DefaultTheme.colors, background: colour.ground },
 };

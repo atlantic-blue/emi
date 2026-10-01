@@ -17,13 +17,14 @@ import {
  * everywhere at once and nothing else would notice.
  *
  * The document is held to the prototype it was written from by
- * `tools/pipeline/prototype.test.ts`, which also refuses a colour value anywhere in its prose. So
- * the chain runs from the markup, through the front matter, to here, and every link is read.
+ * `tools/pipeline/prototype.test.ts`, which reads every colour the fifty two screens paint against
+ * the names in the front matter, and refuses a colour value anywhere in the prose. So the chain runs
+ * from the markup, through the front matter, to here, and every link is read.
  */
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..');
 
-/** The design system Emi is drawn in, written from the Warm Editorial Journal prototype. */
+/** The design system Emi is drawn in, written from the redesign prototype. */
 export const designSystemDocument = join('docs', 'design', 'prototype-design-system.md');
 
 interface RoleInTheDocument {
@@ -140,7 +141,7 @@ function pointsOf(written: string): number {
 describe('the type scale says what the design system says', () => {
   it('reads the document, so an empty read is not taken for agreement', () => {
     expect(Object.keys(inTheDocument)).toHaveLength(11);
-    expect(inTheDocument['display-lg']?.fontSize).toBe('2.75rem');
+    expect(inTheDocument['display-lg']?.fontSize).toBe('50px');
   });
 
   it('holds the same eleven roles, under the same names', () => {
@@ -168,11 +169,11 @@ describe('the type scale says what the design system says', () => {
     expect(face[typeScale[name].face]).toBe(inTheDocument[name]?.fontFamily);
   });
 
-  it('names three families across the document, one for each job', () => {
+  it('names two families across the document, because one face carries every word', () => {
     const families = new Set(Object.values(inTheDocument).map((role) => role.fontFamily));
 
-    expect([...families].sort()).toEqual(['JetBrains Mono', 'Newsreader', 'Plus Jakarta Sans']);
-    expect(Object.values(face).sort()).toEqual([...families].sort());
+    expect([...families].sort()).toEqual(['Figtree', 'JetBrains Mono']);
+    expect([...new Set(Object.values(face))].sort()).toEqual([...families].sort());
   });
 
   it('keeps every role at or above the line height floor, and none of them is undecided', () => {
@@ -190,8 +191,8 @@ describe('the type scale says what the design system says', () => {
       (name) => `${name} ${(typeScale[name].lineHeight / typeScale[name].size).toFixed(3)}`,
     );
 
-    expect(ratios[0]).toBe('display-lg 1.273');
-    expect(ratios[2]).toBe('headline-lg 1.286');
+    expect(ratios[0]).toBe('display-lg 1.200');
+    expect(ratios[2]).toBe('headline-lg 1.214');
     expect(ratios.filter((said) => Number(said.split(' ')[1]) < LINE_HEIGHT_FLOOR)).toEqual([]);
   });
 });
@@ -202,8 +203,8 @@ const spacingInTheDocument = valuesIn(document, 'spacing');
 
 describe('the palette says what the design system says', () => {
   it('reads the document, so an empty read is not taken for agreement', () => {
-    expect(Object.keys(coloursInTheDocument)).toHaveLength(55);
-    expect(coloursInTheDocument['primary']).toBe('#843117');
+    expect(Object.keys(coloursInTheDocument)).toHaveLength(40);
+    expect(coloursInTheDocument['accent']).toBe('#B8434E');
   });
 
   it('holds the same colours, under the same names', () => {
@@ -221,10 +222,10 @@ describe('the palette says what the design system says', () => {
 
 describe('the corners and the spacing say what the design system says', () => {
   it('reads both blocks, so an empty read is not taken for agreement', () => {
-    expect(Object.keys(cornersInTheDocument)).toHaveLength(6);
+    expect(Object.keys(cornersInTheDocument)).toHaveLength(7);
     expect(Object.keys(spacingInTheDocument)).toHaveLength(8);
-    expect(spacingInTheDocument['space-xl']).toBe('2rem');
-    expect(spacingInTheDocument['margin']).toBe('1.5rem');
+    expect(spacingInTheDocument['space-xl']).toBe('24px');
+    expect(spacingInTheDocument['margin']).toBe('20px');
   });
 
   it('holds the same corner names and the same steps', () => {

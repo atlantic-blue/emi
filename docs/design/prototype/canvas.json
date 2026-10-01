@@ -1,0 +1,544 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Today",
+      "w": 390,
+      "x": 0,
+      "y": 3612
+    },
+    "answerCycleLength.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Cycle length, changed",
+      "w": 390,
+      "x": 1410,
+      "y": 7224
+    },
+    "calendar.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The month",
+      "w": 390,
+      "x": 940,
+      "y": 4816
+    },
+    "calendarEarlier.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The month before",
+      "w": 390,
+      "x": 1410,
+      "y": 4816
+    },
+    "citation.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Where these figures come from",
+      "w": 390,
+      "x": 940,
+      "y": 6020
+    },
+    "cycleLength.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Cycle length",
+      "w": 390,
+      "x": 3290,
+      "y": 0
+    },
+    "day.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "A day she already lived",
+      "w": 390,
+      "x": 1880,
+      "y": 4816
+    },
+    "dayRefused.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "A day Emi refuses",
+      "w": 390,
+      "x": 2350,
+      "y": 4816
+    },
+    "delete.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Delete everything",
+      "w": 390,
+      "x": 2820,
+      "y": 7224
+    },
+    "editPeriod.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Edit my period",
+      "w": 390,
+      "x": 2820,
+      "y": 4816
+    },
+    "export.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Export",
+      "w": 390,
+      "x": 2350,
+      "y": 7224
+    },
+    "feeling.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "How she feels about it",
+      "w": 390,
+      "x": 940,
+      "y": 1204
+    },
+    "firstForecast.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Her first forecast",
+      "w": 390,
+      "x": 0,
+      "y": 2408
+    },
+    "firstForecastLearning.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The first forecast, with no date",
+      "w": 390,
+      "x": 470,
+      "y": 2408
+    },
+    "focus.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "What changes with her cycle",
+      "w": 390,
+      "x": 1880,
+      "y": 1204
+    },
+    "goals.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "What she wants Emi for",
+      "w": 390,
+      "x": 1410,
+      "y": 1204
+    },
+    "history.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Insights",
+      "w": 390,
+      "x": 0,
+      "y": 6020
+    },
+    "hold.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Hold to begin",
+      "w": 390,
+      "x": 1880,
+      "y": 2408
+    },
+    "lastPeriod.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Her last period",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "lastPeriodNext.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Her last period, with a way past",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "lock.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Emi is locked",
+      "w": 390,
+      "x": 2820,
+      "y": 3612
+    },
+    "log.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Log",
+      "w": 390,
+      "x": 0,
+      "y": 4816
+    },
+    "logSymptoms.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The log, opened on the symptoms",
+      "w": 390,
+      "x": 470,
+      "y": 4816
+    },
+    "name.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Her name",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "notification.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Two days before",
+      "w": 390,
+      "x": 3290,
+      "y": 3612
+    },
+    "periodBefore.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The period before",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "periodLength.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Period length",
+      "w": 390,
+      "x": 0,
+      "y": 1204
+    },
+    "privacyNext.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Privacy, as the stories leave it",
+      "w": 390,
+      "x": 0,
+      "y": 7224
+    },
+    "recoveryCode.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Her recovery code",
+      "w": 390,
+      "x": 2820,
+      "y": 2408
+    },
+    "recoveryConfirm.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Type the code back",
+      "w": 390,
+      "x": 3290,
+      "y": 2408
+    },
+    "recoverySetup.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Before the recovery code",
+      "w": 390,
+      "x": 2350,
+      "y": 2408
+    },
+    "regularity.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Regular",
+      "w": 390,
+      "x": 470,
+      "y": 1204
+    },
+    "reminder.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The reminder, in the first run",
+      "w": 390,
+      "x": 2820,
+      "y": 1204
+    },
+    "reminderPermission.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The phone asks",
+      "w": 390,
+      "x": 3290,
+      "y": 1204
+    },
+    "reminderSettings.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Reminders",
+      "w": 390,
+      "x": 1880,
+      "y": 7224
+    },
+    "settings.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Privacy",
+      "w": 390,
+      "x": 470,
+      "y": 7224
+    },
+    "thePromise.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The promise",
+      "w": 390,
+      "x": 940,
+      "y": 2408
+    },
+    "today.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Today, with the forecast",
+      "w": 390,
+      "x": 2350,
+      "y": 3612
+    },
+    "todayCycles.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Cycle history, as strips",
+      "w": 390,
+      "x": 1410,
+      "y": 6020
+    },
+    "todayEmpty.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Today, on day one",
+      "w": 390,
+      "x": 1410,
+      "y": 3612
+    },
+    "todayEmptyBody.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Day one, the sections she has not earned",
+      "w": 390,
+      "x": 1880,
+      "y": 3612
+    },
+    "todayFirstRun.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Today, in the first run",
+      "w": 390,
+      "x": 2350,
+      "y": 1204
+    },
+    "todayLogged.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Today, after she logged",
+      "w": 390,
+      "x": 940,
+      "y": 3612
+    },
+    "todayLuteal.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Today, in the luteal phase",
+      "w": 390,
+      "x": 470,
+      "y": 3612
+    },
+    "todayNumbers.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Your cycles, three numbers",
+      "w": 390,
+      "x": 470,
+      "y": 6020
+    },
+    "todayPatterns.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "What comes back",
+      "w": 390,
+      "x": 2350,
+      "y": 6020
+    },
+    "todayTrends.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Cycle trends, six cycles",
+      "w": 390,
+      "x": 1880,
+      "y": 6020
+    },
+    "tour.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "The tour",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "welcome.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "What Emi is",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "whatEmiDoesWithIt.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "What Emi does with it",
+      "w": 390,
+      "x": 1410,
+      "y": 2408
+    },
+    "yearOfBirth.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Year of birth",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "yourAnswers.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Your answers",
+      "w": 390,
+      "x": 940,
+      "y": 7224
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-01T11:50:55Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "row0": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "First run, the questions",
+      "w": 240,
+      "x": 0,
+      "y": -240
+    },
+    "row1": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "First run, the rest",
+      "w": 240,
+      "x": 0,
+      "y": 964
+    },
+    "row2": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "First run, the promise and the key",
+      "w": 240,
+      "x": 0,
+      "y": 2168
+    },
+    "row3": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "Today",
+      "w": 240,
+      "x": 0,
+      "y": 3372
+    },
+    "row4": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "Log and the calendar",
+      "w": 240,
+      "x": 0,
+      "y": 4576
+    },
+    "row5": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "Insights",
+      "w": 240,
+      "x": 0,
+      "y": 5780
+    },
+    "row6": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "Privacy",
+      "w": 240,
+      "x": 0,
+      "y": 6984
+    }
+  },
+  "order": [
+    "welcome.dc.html",
+    "tour.dc.html",
+    "name.dc.html",
+    "yearOfBirth.dc.html",
+    "lastPeriod.dc.html",
+    "lastPeriodNext.dc.html",
+    "periodBefore.dc.html",
+    "cycleLength.dc.html",
+    "periodLength.dc.html",
+    "regularity.dc.html",
+    "feeling.dc.html",
+    "goals.dc.html",
+    "focus.dc.html",
+    "todayFirstRun.dc.html",
+    "reminder.dc.html",
+    "reminderPermission.dc.html",
+    "firstForecast.dc.html",
+    "firstForecastLearning.dc.html",
+    "thePromise.dc.html",
+    "whatEmiDoesWithIt.dc.html",
+    "hold.dc.html",
+    "recoverySetup.dc.html",
+    "recoveryCode.dc.html",
+    "recoveryConfirm.dc.html",
+    "Main.dc.html",
+    "todayLuteal.dc.html",
+    "todayLogged.dc.html",
+    "todayEmpty.dc.html",
+    "todayEmptyBody.dc.html",
+    "today.dc.html",
+    "lock.dc.html",
+    "notification.dc.html",
+    "log.dc.html",
+    "logSymptoms.dc.html",
+    "calendar.dc.html",
+    "calendarEarlier.dc.html",
+    "day.dc.html",
+    "dayRefused.dc.html",
+    "editPeriod.dc.html",
+    "history.dc.html",
+    "todayNumbers.dc.html",
+    "citation.dc.html",
+    "todayCycles.dc.html",
+    "todayTrends.dc.html",
+    "todayPatterns.dc.html",
+    "privacyNext.dc.html",
+    "settings.dc.html",
+    "yourAnswers.dc.html",
+    "answerCycleLength.dc.html",
+    "reminderSettings.dc.html",
+    "export.dc.html",
+    "delete.dc.html"
+  ],
+  "pages": [],
+  "title": "Emi redesign"
+}

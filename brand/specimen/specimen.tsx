@@ -47,7 +47,7 @@ export const familyRoles: Readonly<Record<FaceName, string>> = {
 
 const stackedDigits = ['1111111111', '0000000000'];
 
-/** A class per file rather than per weight, because three families share the same three weights. */
+/** A class per file rather than per weight, because two families share some of the same weights. */
 export function faceClass(file: FontFile): string {
   return `face-${file.name}`;
 }
@@ -93,8 +93,8 @@ function styleSheet(fontsBase: string): string {
     fontRules(fontsBase),
     sizeRules(),
     `body {
-  background: ${colour.surfaceContainerLowest};
-  color: ${colour.onSurface};
+  background: ${colour.card};
+  color: ${colour.text};
   margin: 0;
   padding: 56px 64px;
   width: ${specimenPage.width - 128}px;
@@ -102,7 +102,7 @@ function styleSheet(fontsBase: string): string {
   box-sizing: border-box;
 }`,
     `.label {
-  color: ${colour.onSurfaceVariant};
+  color: ${colour.secondaryText};
   width: 240px;
   flex: none;
 }`,
@@ -113,7 +113,7 @@ function styleSheet(fontsBase: string): string {
   margin-bottom: 8px;
 }`,
     `.section {
-  border-top: 1px solid ${colour.outlineVariant};
+  border-top: 1px solid ${colour.line};
   padding-top: 20px;
   margin-top: 28px;
 }`,
@@ -124,11 +124,11 @@ function styleSheet(fontsBase: string): string {
   margin-bottom: 4px;
 }`,
     `.files {
-  color: ${colour.onSurfaceVariant};
+  color: ${colour.secondaryText};
   margin-bottom: 18px;
 }`,
     `.scale {
-  color: ${colour.primary};
+  color: ${colour.accent};
 }`,
   ].join('\n');
 }
@@ -150,7 +150,7 @@ function Sample({ role }: { role: TypeRoleName }): Html {
 
 function Title({ children }: { children: Html | string }): Html {
   return (
-    <div class={`${faceClass(fontFile(faceFamily.display, 'medium'))} ${sizeClass('headline-md')}`}>
+    <div class={`${faceClass(fontFile(faceFamily.display, 'bold'))} ${sizeClass('headline-md')}`}>
       {children}
     </div>
   );
@@ -213,7 +213,7 @@ export function Specimen({ fontsBase }: { fontsBase: string }): Html {
           Emi type specimen
         </div>
         <div class={`${faceClass(interfaceFace)} ${sizeClass('body-sm')}`}>
-          Three faces, eleven roles, two weights each. Every sentence is one Emi writes. A point is
+          Three faces, eleven roles, in two families. Every sentence is one Emi writes. A point is
           drawn as a pixel, and the sizes are the ones in the token package.
         </div>
         {(Object.keys(face) as FaceName[]).map((faceName) => (

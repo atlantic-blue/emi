@@ -51,7 +51,7 @@ export function ThePromise({ onContinue }: { readonly onContinue: () => void }):
             <Card key={line} testID={promiseLineTestID(line)}>
               <View style={styles.row}>
                 <View style={styles.disc}>
-                  <Icon colour={colour.primary} name={promiseIcons[line]} size={ICON_SIZE} />
+                  <Icon colour={colour.accent} name={promiseIcons[line]} size={ICON_SIZE} />
                 </View>
                 <View style={styles.said}>
                   <Text style={styles.lineTitle}>{promiseCopy.lines[line].title}</Text>
@@ -82,23 +82,23 @@ const styles = StyleSheet.create({
   },
   disc: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainer,
+    backgroundColor: colour.field,
     borderRadius: radius.full,
     height: DISC_DIAMETER,
     justifyContent: 'center',
     width: DISC_DIAMETER,
   },
   footer: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     padding: space.spaceLg,
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   lineTitle: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
     marginBottom: space.spaceXs,
   },
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   said: { flex: 1 },
   scroll: { flex: 1 },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
   },
 });

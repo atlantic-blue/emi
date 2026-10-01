@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   // in English and longer again in a face the phone substitutes, and the two pills have a thumb to
   // hold, so the width comes off the words and never off the way to another month.
   month: {
-    color: colour.onSurface,
+    color: colour.text,
     flexShrink: 1,
     ...textStyle('headline-md'),
   },
@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
   // pill, so the difference is a shape and not only a strength of colour.
   page: {
     alignItems: 'center',
-    backgroundColor: colour.primaryFixed,
-    borderColor: colour.primary,
+    backgroundColor: colour.accentSoft,
+    borderColor: colour.accent,
     borderRadius: radius.md,
     borderWidth: stroke.hairline,
     justifyContent: 'center',
@@ -143,13 +143,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceMd,
   },
   pageLabel: {
-    color: colour.primary,
+    color: colour.accentSoftInk,
     ...textStyle('body-sm'),
   },
   pageSpent: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
+    borderColor: colour.card,
     opacity: 0.4,
   },
-  pageSpentLabel: { color: colour.onSurfaceVariant },
+  pageSpentLabel: { color: colour.secondaryText },
 });

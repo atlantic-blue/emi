@@ -71,20 +71,20 @@ export function MeasuredRows({
 
 const styles = StyleSheet.create({
   head: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     flex: 3,
     ...textStyle('label-sm'),
   },
   // Her own number takes the ink of the surface and the published one takes the quieter partner,
   // so the column she came to read is the one that carries the weight.
   mine: {
-    color: colour.onSurface,
+    color: colour.text,
     flex: 3,
     ...textStyle('label-md'),
   },
   numbers: {
     alignSelf: 'stretch',
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.md,
     marginTop: space.spaceLg,
     paddingHorizontal: space.spaceMd,
@@ -97,12 +97,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   theirs: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     flex: 4,
     ...textStyle('body-sm'),
   },
   what: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     flex: 4,
     ...textStyle('body-sm'),
   },

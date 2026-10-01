@@ -37,14 +37,14 @@ export function ShowRecoveryCode({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.lg,
     borderWidth: 1,
     padding: space.spaceLg,
   },
   code: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
     // She copies this one value character by character, so the letters are spaced further apart
     // than the scale spaces running text, and the lines are spaced further apart than that.

@@ -88,7 +88,7 @@ export function SymptomGroupSection({
 const styles = StyleSheet.create({
   section: { gap: space.spaceMd, marginBottom: space.spaceLg },
   heading: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
@@ -105,12 +105,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceMd,
     paddingVertical: space.spaceSm,
   },
-  chipPlain: { backgroundColor: colour.surfaceContainer, borderColor: colour.surfaceContainer },
-  chipPicked: { backgroundColor: colour.primaryFixed, borderColor: colour.primary },
+  chipPlain: { backgroundColor: colour.field, borderColor: colour.field },
+  chipPicked: { backgroundColor: colour.accentSoft, borderColor: colour.accent },
   chipLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
     textAlign: 'center',
   },
-  chipLabelPicked: { color: colour.onSurface },
+  chipLabelPicked: { color: colour.text },
 });

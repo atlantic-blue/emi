@@ -228,7 +228,7 @@ describe('the phase name is written in its ink and never on its own fill', () =>
 
       expect(drawnColour(bead.props.fill)).toBe(colour[beadPalette.fill]);
       expect(drawnColour(bead.props.fill).toLowerCase()).toBe(
-        inTheDesignSystem('primary-container').toLowerCase(),
+        inTheDesignSystem('card').toLowerCase(),
       );
       expect(drawnColour(bead.props.stroke)).toBe(colour[beadPalette.halo]);
     });

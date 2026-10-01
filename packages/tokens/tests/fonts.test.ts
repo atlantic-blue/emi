@@ -44,21 +44,20 @@ describe('every shipped font carries its licence', () => {
   describe('the families the token package names', () => {
     it('ships one family for each face the design system names, and no family it does not', () => {
       expect(fontFamilyNames.map((name) => fonts[name].family)).toEqual([
-        'Newsreader 16pt',
-        'Plus Jakarta Sans',
+        'Figtree',
         'JetBrains Mono',
       ]);
-      expect([...fontFamilyNames].sort()).toEqual(Object.values(faceFamily).sort());
+      expect([...fontFamilyNames].sort()).toEqual([...new Set(Object.values(faceFamily))].sort());
       expect(Object.keys(faceFamily).sort()).toEqual(Object.keys(face).sort());
     });
 
     it('ships every file it names and loads all of them, because every face is drawn', () => {
       expect(fontFiles).toHaveLength(6);
       expect(applicationFontFiles.map((file) => file.name)).toEqual([
-        'Newsreader16pt-Regular',
-        'Newsreader16pt-Medium',
-        'PlusJakartaSans-Regular',
-        'PlusJakartaSans-SemiBold',
+        'Figtree-Regular',
+        'Figtree-SemiBold',
+        'Figtree-Bold',
+        'Figtree-ExtraBold',
         'JetBrainsMono-Regular',
         'JetBrainsMono-Medium',
       ]);
@@ -113,23 +112,21 @@ describe('every shipped font carries its licence', () => {
     });
 
     it('refuses a cut a family never shipped, rather than answering with a lighter one', () => {
-      expect(() => fontFile('newsreader', 'semiBold')).toThrow(
-        'Newsreader 16pt ships no semiBold cut',
-      );
-      expect(() => fontFile('plusJakartaSans', 'medium')).toThrow(
-        'Plus Jakarta Sans ships no medium cut',
+      expect(() => fontFile('figtree', 'medium')).toThrow('Figtree ships no medium cut');
+      expect(() => fontFile('jetBrainsMono', 'extraBold')).toThrow(
+        'JetBrains Mono ships no extraBold cut',
       );
     });
 
     it('names each file by the name a style will ask for', () => {
-      expect(fontNameFor('display', 400)).toBe('Newsreader16pt-Regular');
-      expect(fontNameFor('text', 400)).toBe('PlusJakartaSans-Regular');
+      expect(fontNameFor('display', 800)).toBe('Figtree-ExtraBold');
+      expect(fontNameFor('text', 400)).toBe('Figtree-Regular');
       expect(fontNameFor('data', 500)).toBe('JetBrainsMono-Medium');
     });
 
     it('draws every weight in its own file, so nothing is left to the renderer to thicken', () => {
-      expect(fontNameFor('display', 500)).toBe('Newsreader16pt-Medium');
-      expect(fontNameFor('text', 600)).toBe('PlusJakartaSans-SemiBold');
+      expect(fontNameFor('display', 700)).toBe('Figtree-Bold');
+      expect(fontNameFor('text', 600)).toBe('Figtree-SemiBold');
       expect(fontNameFor('data', 400)).toBe('JetBrainsMono-Regular');
     });
 

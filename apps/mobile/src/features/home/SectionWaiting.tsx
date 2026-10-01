@@ -80,22 +80,22 @@ const styles = StyleSheet.create({
   // The heading sits above the block rather than inside it, which is where the drawing puts it, so
   // the section she cannot read yet is named the same way the filled one will be.
   heading: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
     marginBottom: space.spaceXs,
   },
   // What it needs takes the ink of the surface, because that is the sentence she came away with.
   needs: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
   },
   // How far off she is takes the quieter ink, so the two lines are read in the order they matter.
   read: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   said: {
-    backgroundColor: colour.surfaceContainerLowest,
+    backgroundColor: colour.card,
     borderRadius: radius.md,
     paddingHorizontal: space.spaceMd,
     paddingVertical: space.spaceSm,

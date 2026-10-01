@@ -339,8 +339,8 @@ const STYLE = `
 body {
   margin: 0;
   padding: ${space.spaceLg}px;
-  background: ${colour.surfaceContainerLowest};
-  color: ${colour.onSurface};
+  background: ${colour.card};
+  color: ${colour.text};
   font-family: system-ui, sans-serif;
   font-size: ${typeScale['body-lg'].size}px;
   line-height: ${typeScale['body-lg'].lineHeight}px;
@@ -352,23 +352,23 @@ h2 {
   line-height: ${typeScale['headline-md'].lineHeight}px;
   margin: ${space.spaceXl}px 0 ${space.spaceMd}px;
   padding-bottom: ${space.spaceXs}px;
-  border-bottom: 1px solid ${colour.outlineVariant};
+  border-bottom: 1px solid ${colour.line};
 }
-h3 { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin: 0 0 ${space.spaceXs}px; color: ${colour.primary}; }
+h3 { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin: 0 0 ${space.spaceXs}px; color: ${colour.accent}; }
 p { margin: ${space.spaceXs}px 0 0; }
-.taken { color: ${colour.onSurfaceVariant}; }
-.what { color: ${colour.onSurfaceVariant}; margin-top: ${space.spaceMd}px; }
-.note { color: ${colour.onSurfaceVariant}; font-size: ${typeScale['body-sm'].size}px; margin-top: ${space.spaceMd}px; }
+.taken { color: ${colour.secondaryText}; }
+.what { color: ${colour.secondaryText}; margin-top: ${space.spaceMd}px; }
+.note { color: ${colour.secondaryText}; font-size: ${typeScale['body-sm'].size}px; margin-top: ${space.spaceMd}px; }
 article {
-  background: ${colour.surfaceContainerLowest};
-  border: 1px solid ${colour.outlineVariant};
+  background: ${colour.card};
+  border: 1px solid ${colour.line};
   border-radius: ${radius.lg}px;
   padding: ${space.spaceMd}px;
   margin-bottom: ${space.spaceSm}px;
   break-inside: avoid;
 }
 .line { display: flex; gap: ${space.spaceMd}px; padding: 2px 0; }
-.label { color: ${colour.onSurfaceVariant}; flex: 0 0 200px; }
-.value { color: ${colour.onSurface}; flex: 1 1 auto; }
-@media print { body { background: ${colour.surfaceContainerLowest}; } article { break-inside: avoid; } }
+.label { color: ${colour.secondaryText}; flex: 0 0 200px; }
+.value { color: ${colour.text}; flex: 1 1 auto; }
+@media print { body { background: ${colour.card}; } article { break-inside: avoid; } }
 `;

@@ -143,44 +143,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceSm,
   },
   linkLabel: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
   },
-  primary: { backgroundColor: colour.primaryContainer },
-  primaryHeldDown: { backgroundColor: colour.primary },
+  primary: { backgroundColor: colour.accent },
+  primaryHeldDown: { backgroundColor: colour.accent },
   primaryLabel: {
-    color: colour.onPrimary,
+    color: colour.onAccent,
     ...textStyle('label-md'),
   },
   rule: {
-    backgroundColor: colour.onSurface,
+    backgroundColor: colour.text,
     height: stroke.hairline,
     marginTop: UNDERLINE_GAP,
     width: '100%',
   },
   secondary: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderWidth: stroke.hairline,
   },
-  secondaryHeldDown: { backgroundColor: colour.surfaceContainer },
+  secondaryHeldDown: { backgroundColor: colour.field },
   secondaryLabel: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
   },
   // A spent action keeps a measured pair rather than fading: an opacity nobody measured is a
   // contrast ratio nobody knows, and contract TOKEN-2 exists to stop exactly that.
   spent: {
-    backgroundColor: colour.surfaceContainer,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.field,
+    borderColor: colour.line,
     borderWidth: stroke.hairline,
   },
   spentLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-md'),
   },
   spentRule: {
-    backgroundColor: colour.onSurfaceVariant,
+    backgroundColor: colour.secondaryText,
     height: stroke.hairline,
     marginTop: UNDERLINE_GAP,
     width: '100%',

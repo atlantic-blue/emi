@@ -62,7 +62,7 @@ export function RecoveryScreen({
 const styles = StyleSheet.create({
   action: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceTint,
+    backgroundColor: colour.accent,
     borderRadius: radius.md,
     justifyContent: 'center',
     margin: space.spaceLg,
@@ -71,23 +71,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
   },
   actionLabel: {
-    color: colour.surfaceContainerLowest,
+    color: colour.card,
     ...textStyle('body-lg'),
   },
   actionWaiting: { opacity: 0.4 },
   body: { padding: space.spaceLg, paddingTop: space.spaceXl },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
     marginBottom: space.spaceMd,
   },
   step: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
     marginBottom: space.spaceMd,
   },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
     marginBottom: space.spaceLg,
   },

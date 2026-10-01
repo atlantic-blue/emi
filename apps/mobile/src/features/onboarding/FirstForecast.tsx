@@ -143,47 +143,47 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceXl,
   },
   cardLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   cardTitle: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
     marginBottom: space.spaceXs,
   },
   cards: { gap: space.spaceMd, marginTop: space.spaceXl },
   footer: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     padding: space.spaceLg,
   },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   lines: { gap: space.spaceSm },
   // Under the range rather than beside it, because it says what the two days are worth and a
   // woman reads the days first.
   learning: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   // Outside the card and in the ink the body reads at, because it is the one sentence on the
   // screen about what Emi refuses to do, and a card would read as another aside.
   noGuess: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
   },
   // The accent, and the largest thing on the screen, because the range is what she came through
   // twelve questions to read.
   range: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('headline-md'),
     marginBottom: space.spaceSm,
   },
   scroll: { flex: 1 },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
     marginBottom: space.spaceMd,
   },

@@ -39,18 +39,18 @@ export function FertileWindow({ forecast }: Props): ReactNode {
 const styles = StyleSheet.create({
   block: { paddingHorizontal: space.spaceLg, paddingVertical: space.spaceMd },
   estimate: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   label: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
     marginBottom: space.spaceXs,
   },
   // The window is the quieter of the two blocks, so it takes the body size and the ring's own
   // ovulation ink rather than the heading size the next period carries.
   range: {
-    color: colour.onPrimaryFixedVariant,
+    color: colour.accentSoftInk,
     ...textStyle('body-lg'),
     marginBottom: space.spaceXs,
   },

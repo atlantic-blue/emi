@@ -5,7 +5,7 @@ import { colourNames, typeRoleNames } from '@emi/tokens';
  *
  * gluestack merges the classes a caller passes with the ones a component carries, and the merge
  * drops the earlier of two classes it believes set the same property. It reads Tailwind's own
- * names to decide that, so `text-label-sm` and `text-primary` look like the same class to it: one
+ * names to decide that, so `text-label-sm` and `text-accent` look like the same class to it: one
  * a text size and one a text colour, both spelled `text-`. Left alone it keeps the colour and
  * silently drops the size, and every word in the product draws at the browser default.
  *

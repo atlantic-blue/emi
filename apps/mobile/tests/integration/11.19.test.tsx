@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { MINIMUM_TAP_TARGET, space, stroke } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, space, stroke, typeScale } from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { migrate } from '../../src/data/schema';
@@ -408,20 +408,28 @@ describe('the month title never touches the way to another month', () => {
 
   describe('the width a run of words is measured at', () => {
     it('comes off the font file the application ships', () => {
-      expect(theWidthOfWords('September 2026', 'headline-md')).toBeCloseTo(140.23, 3);
-      expect(theWidthOfWords('Earlier', 'body-sm')).toBeCloseTo(41.062, 3);
+      expect(theWidthOfWords('September 2026', 'headline-md')).toBeCloseTo(172.238, 3);
+      expect(theWidthOfWords('Earlier', 'body-sm')).toBeCloseTo(38.864, 3);
       expect(theWidthOfWords('', 'headline-md')).toBe(0);
     });
 
     it('gives a glyph past the end of the metrics the last advance the table holds', () => {
-      // Plus Jakarta Sans writes 1,187 advances for 1,188 glyphs, and the ogonek is the glyph it
-      // stops before, so its width is the one the table ends on rather than nothing at all.
-      expect(theWidthOfWords('\u02db', 'body-sm')).toBeCloseTo(5.348, 3);
-      expect(theWidthOfWords('\u00b8', 'body-sm')).toBeCloseTo(5.348, 3);
+      // A font writes fewer advances than it has glyphs, and a glyph past the end of the table takes
+      // the last advance it holds rather than no width at all. Figtree writes an advance for the
+      // ogonek and stops before the cedilla, so the two read differently and both read a width.
+      expect(theWidthOfWords('\u02db', 'body-sm')).toBeCloseTo(3.444, 3);
+      expect(theWidthOfWords('\u00b8', 'body-sm')).toBeCloseTo(2.996, 3);
     });
 
-    it('is refused for a role drawn with tracking, because nothing here places the last of it', () => {
+    it('is refused for a role whose tracking widens it, because nothing here places the last of it', () => {
       expect(() => theWidthOfWords('Later', 'label-sm')).toThrow('tracking');
+    });
+
+    // Negative tracking only ever draws a run narrower, so the width read without it is an upper
+    // bound and a question about whether a run fits is still answered.
+    it('is read without the tracking of a role that draws narrower, as an upper bound', () => {
+      expect(typeScale['headline-md'].letterSpacingEm).toBeLessThan(0);
+      expect(theWidthOfWords('September 2026', 'headline-md')).toBeGreaterThan(0);
     });
 
     it('holds every language Emi writes in to one of the two answers', () => {

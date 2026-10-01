@@ -122,7 +122,7 @@ export function HoldToBegin({ onHeld }: Props): ReactNode {
     <Screen testID={holdScreenTestID}>
       <View style={styles.body}>
         <View style={styles.header}>
-          <Icon colour={colour.primary} name="ring" size={MARK_SIZE} />
+          <Icon colour={colour.accent} name="ring" size={MARK_SIZE} />
           <Text accessibilityRole="header" style={styles.title}>
             {firstRunCopy.hold.title}
           </Text>
@@ -136,14 +136,14 @@ export function HoldToBegin({ onHeld }: Props): ReactNode {
                 cy={centre.y}
                 fill="none"
                 r={ringRadius}
-                stroke={colour.surfaceContainerHigh}
+                stroke={colour.field}
                 strokeWidth={RING_TRACK_WIDTH}
               />
               {filled > 0 ? (
                 <Path
                   d={arcPath(centre, ringRadius, 0, filled)}
                   fill="none"
-                  stroke={colour.primary}
+                  stroke={colour.accent}
                   strokeWidth={RING_TRACK_WIDTH}
                   testID={holdProgressTestID}
                 />
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   },
   core: {
     alignItems: 'center',
-    backgroundColor: colour.surfaceContainerHigh,
+    backgroundColor: colour.field,
     borderRadius: radius.full,
     height: CORE_DIAMETER,
     justifyContent: 'center',
@@ -229,9 +229,9 @@ const styles = StyleSheet.create({
   },
   // Her thumb is on the glass and the ring behind it may be drawing nothing, on a phone that
   // asks for less motion, so the core answers the press itself.
-  coreHeld: { backgroundColor: colour.surfaceContainerHighest },
+  coreHeld: { backgroundColor: colour.field },
   coreLabel: {
-    color: colour.onSurface,
+    color: colour.text,
     textAlign: 'center',
     ...textStyle('label-md'),
   },
@@ -240,24 +240,24 @@ const styles = StyleSheet.create({
   // leaves, so the words sit under the ring rather than against the bottom of the glass.
   middle: { flex: 1, gap: space.spaceXl, justifyContent: 'center' },
   instruction: {
-    color: colour.onSurface,
+    color: colour.text,
     textAlign: 'center',
     ...textStyle('headline-sm'),
   },
   ring: { alignItems: 'center', alignSelf: 'center', justifyContent: 'center' },
   said: { gap: space.spaceSm },
   refused: {
-    color: colour.error,
+    color: colour.accent,
     textAlign: 'center',
     ...textStyle('body-sm'),
   },
   sealed: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     textAlign: 'center',
     ...textStyle('body-sm'),
   },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     textAlign: 'center',
     ...textStyle('headline-sm'),
   },

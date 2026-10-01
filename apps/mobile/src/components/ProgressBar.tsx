@@ -53,12 +53,12 @@ export function ProgressBar({ step, total, label, testID = 'progress' }: Props):
 
 const styles = StyleSheet.create({
   fill: {
-    backgroundColor: colour.primaryContainer,
+    backgroundColor: colour.accent,
     borderRadius: radius.full,
     height: '100%',
   },
   track: {
-    backgroundColor: colour.surfaceContainer,
+    backgroundColor: colour.field,
     borderRadius: radius.full,
     height: TRACK_HEIGHT,
     overflow: 'hidden',

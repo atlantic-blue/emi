@@ -19,7 +19,7 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 const theCaveat = [
   'Rendered from the tree the tour produced under the test runner, at 390 by 844 points, and not',
   'captured from a phone. The page loads the same font files the application loads, so the words',
-  'are drawn in Newsreader, Plus Jakarta Sans and JetBrains Mono. Reproduce with:',
+  'are drawn in Figtree and JetBrains Mono. Reproduce with:',
   'npm run generate:tour-picture. The room kept at the top and the bottom of each screen is the',
   'room an iPhone with a dynamic island keeps for itself, which is 59 points and 34 points.',
   'The ring on the first card draws a cycle nobody has lived, because the tour comes before she',

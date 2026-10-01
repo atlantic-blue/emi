@@ -184,7 +184,7 @@ describe('an icon drawn at a second stroke weight fails the build', () => {
 
   describe('the screen draws every shape the file holds', () => {
     it.each(theTiles)('draws %s through the icon component, shape for shape', async (name) => {
-      await render(<Icon colour={colour.onSurface} name={name} testID="tile" />);
+      await render(<Icon colour={colour.text} name={name} testID="tile" />);
 
       expect(shapesDrawn(screen.toJSON() as unknown as Drawn)).toEqual(
         shapesIn(fileFor(name)).map(drawnAs),
@@ -192,7 +192,7 @@ describe('an icon drawn at a second stroke weight fails the build', () => {
     });
 
     it('draws the ellipse bloating is built from, which no other drawing in the set uses', async () => {
-      await render(<Icon colour={colour.onSurface} name="bloating" testID="tile" />);
+      await render(<Icon colour={colour.text} name="bloating" testID="tile" />);
 
       expect(shapesDrawn(screen.toJSON() as unknown as Drawn)).toContain('RNSVGEllipse');
       expect(screen.getByTestId('tile').props.strokeWidth).toBe(stroke.icon);
@@ -241,7 +241,7 @@ describe('an icon drawn at a second stroke weight fails the build', () => {
     it('fails on a drawing that names its own colour, so a screen cannot set it', () => {
       const run = generateFrom(
         redrawn(theTilesCopied(), 'digestion', (source) =>
-          source.replace('stroke="currentColor"', `stroke="${colour.onSurface}"`),
+          source.replace('stroke="currentColor"', `stroke="${colour.text}"`),
         ),
       );
 

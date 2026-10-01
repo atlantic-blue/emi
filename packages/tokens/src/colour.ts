@@ -1,6 +1,6 @@
 /**
  * The palette of the design system, name for name and value for value. The document is
- * `docs/design/prototype-design-system.md`, written from the Warm Editorial Journal prototype, and
+ * `docs/design/prototype-design-system.md`, written from the redesign prototype, and
  * `tests/designSystem.test.ts` reads this file against it, so a value that drifts from the document
  * fails the run.
  *
@@ -8,53 +8,29 @@
  * document first, because the contrast test can only measure what is here.
  */
 export type ColourName =
-  | 'surface'
-  | 'surfaceDim'
-  | 'surfaceBright'
-  | 'surfaceContainerLowest'
-  | 'surfaceContainerLow'
-  | 'surfaceContainer'
-  | 'surfaceContainerHigh'
-  | 'surfaceContainerHighest'
-  | 'onSurface'
-  | 'onSurfaceVariant'
-  | 'inverseSurface'
-  | 'inverseOnSurface'
-  | 'outline'
-  | 'outlineVariant'
-  | 'surfaceTint'
-  | 'primary'
-  | 'onPrimary'
-  | 'primaryContainer'
-  | 'onPrimaryContainer'
-  | 'inversePrimary'
-  | 'secondary'
-  | 'onSecondary'
-  | 'secondaryContainer'
-  | 'onSecondaryContainer'
-  | 'tertiary'
-  | 'onTertiary'
-  | 'tertiaryContainer'
-  | 'onTertiaryContainer'
-  | 'error'
-  | 'onError'
-  | 'errorContainer'
-  | 'onErrorContainer'
-  | 'primaryFixed'
-  | 'primaryFixedDim'
-  | 'onPrimaryFixed'
-  | 'onPrimaryFixedVariant'
-  | 'secondaryFixed'
-  | 'secondaryFixedDim'
-  | 'onSecondaryFixed'
-  | 'onSecondaryFixedVariant'
-  | 'tertiaryFixed'
-  | 'tertiaryFixedDim'
-  | 'onTertiaryFixed'
-  | 'onTertiaryFixedVariant'
-  | 'background'
-  | 'onBackground'
-  | 'surfaceVariant'
+  | 'ground'
+  | 'card'
+  | 'field'
+  | 'line'
+  | 'darkCard'
+  | 'text'
+  | 'secondaryText'
+  | 'onAccent'
+  | 'accent'
+  | 'accentPressed'
+  | 'accentSoft'
+  | 'accentSoftInk'
+  | 'accentTile'
+  | 'dockQuiet'
+  | 'pickerNear'
+  | 'pickerFar'
+  | 'disabledLabel'
+  | 'quietIcon'
+  | 'warmIcon'
+  | 'dotOff'
+  | 'stepTrack'
+  | 'emptyRing'
+  | 'uncheckedRing'
   | 'period'
   | 'periodInk'
   | 'follicular'
@@ -62,7 +38,16 @@ export type ColourName =
   | 'ovulation'
   | 'ovulationInk'
   | 'luteal'
-  | 'lutealInk';
+  | 'lutealInk'
+  | 'washWarm'
+  | 'washAmber'
+  | 'washRose'
+  | 'washBlush'
+  | 'washPink'
+  | 'notificationMiddle'
+  | 'notificationEnd'
+  | 'platformLine'
+  | 'platformBlue';
 
 /**
  * What a colour is allowed to do. A fill and a text colour are separate roles because a phase fill
@@ -81,54 +66,39 @@ export interface ColourToken {
   readonly textOn: readonly ColourName[];
 }
 
+/**
+ * The palette. Every value is the document's own, and every `textOn` entry was measured at or above
+ * the floor by `tests/contrast.test.ts`.
+ *
+ * Four of these values are not the value the prototype paints. Each one is a colour the prototype
+ * paints below the floor, and the document's `raised` block records both, so the markup check reads
+ * the painted value while this file carries the one Emi builds.
+ */
+/** The palette as data, in the order the document prints it. A type cannot be read at run time. */
 const ALL: readonly ColourName[] = [
-  'surface',
-  'surfaceDim',
-  'surfaceBright',
-  'surfaceContainerLowest',
-  'surfaceContainerLow',
-  'surfaceContainer',
-  'surfaceContainerHigh',
-  'surfaceContainerHighest',
-  'onSurface',
-  'onSurfaceVariant',
-  'inverseSurface',
-  'inverseOnSurface',
-  'outline',
-  'outlineVariant',
-  'surfaceTint',
-  'primary',
-  'onPrimary',
-  'primaryContainer',
-  'onPrimaryContainer',
-  'inversePrimary',
-  'secondary',
-  'onSecondary',
-  'secondaryContainer',
-  'onSecondaryContainer',
-  'tertiary',
-  'onTertiary',
-  'tertiaryContainer',
-  'onTertiaryContainer',
-  'error',
-  'onError',
-  'errorContainer',
-  'onErrorContainer',
-  'primaryFixed',
-  'primaryFixedDim',
-  'onPrimaryFixed',
-  'onPrimaryFixedVariant',
-  'secondaryFixed',
-  'secondaryFixedDim',
-  'onSecondaryFixed',
-  'onSecondaryFixedVariant',
-  'tertiaryFixed',
-  'tertiaryFixedDim',
-  'onTertiaryFixed',
-  'onTertiaryFixedVariant',
-  'background',
-  'onBackground',
-  'surfaceVariant',
+  'ground',
+  'card',
+  'field',
+  'line',
+  'darkCard',
+  'text',
+  'secondaryText',
+  'onAccent',
+  'accent',
+  'accentPressed',
+  'accentSoft',
+  'accentSoftInk',
+  'accentTile',
+  'dockQuiet',
+  'pickerNear',
+  'pickerFar',
+  'disabledLabel',
+  'quietIcon',
+  'warmIcon',
+  'dotOff',
+  'stepTrack',
+  'emptyRing',
+  'uncheckedRing',
   'period',
   'periodInk',
   'follicular',
@@ -137,129 +107,266 @@ const ALL: readonly ColourName[] = [
   'ovulationInk',
   'luteal',
   'lutealInk',
-];
-
-/** Every light ground the document draws a screen on, which is where running text sits. */
-const ON_LIGHT: readonly ColourName[] = [
-  'surface',
-  'surfaceDim',
-  'surfaceBright',
-  'surfaceContainerLowest',
-  'surfaceContainerLow',
-  'surfaceContainer',
-  'surfaceContainerHigh',
-  'surfaceContainerHighest',
-  'background',
-  'surfaceVariant',
+  'washWarm',
+  'washAmber',
+  'washRose',
+  'washBlush',
+  'washPink',
+  'notificationMiddle',
+  'notificationEnd',
+  'platformLine',
+  'platformBlue',
 ];
 
 /**
- * The same grounds without the dimmed one. `surfaceDim` is the darkest ground in the set, and
- * `onSecondaryContainer` reaches 4.19 to 1 on it against 4.53 on every other, so the one colour
- * that misses the floor there names the nine rather than the ten.
- */
-const ON_LIGHT_BUT_DIM: readonly ColourName[] = ON_LIGHT.filter((name) => name !== 'surfaceDim');
-
-/**
- * The palette. Every value is the document's own, and every `textOn` entry was measured at or
- * above the floor. `outline` carries no text anywhere: its best reading is 3.20 to 1 on the
- * lightest ground in the set, so it draws a line and never a word.
+ * The palette. Every value is the document own, and every `textOn` entry was measured at or above
+ * the floor by `tests/contrast.test.ts`.
  *
- * The four phase fills carry no text at any size. Three of the four inks fail the floor on their
- * own fill, and contract SEE-2 covers all four rather than the three that measure badly.
+ * Four of these values are not the value the prototype paints. Each one is a colour the prototype
+ * paints below the floor, and the document's `raised` block records both, so the markup check reads
+ * the painted value while this file carries the one Emi builds.
  */
 export const colours: Readonly<Record<ColourName, ColourToken>> = {
-  surface: { value: '#FFF8F5', roles: ['ground'], textOn: [] },
-  surfaceDim: { value: '#E1D8D5', roles: ['ground'], textOn: [] },
-  surfaceBright: { value: '#FFF8F5', roles: ['ground'], textOn: [] },
-  surfaceContainerLowest: { value: '#FFFFFF', roles: ['ground'], textOn: [] },
-  surfaceContainerLow: { value: '#FBF2EE', roles: ['ground'], textOn: [] },
-  surfaceContainer: { value: '#F5ECE8', roles: ['ground'], textOn: [] },
-  surfaceContainerHigh: { value: '#EFE6E3', roles: ['ground'], textOn: [] },
-  surfaceContainerHighest: { value: '#EAE1DD', roles: ['ground'], textOn: [] },
-  onSurface: { value: '#1F1B19', roles: ['text'], textOn: ON_LIGHT },
-  onSurfaceVariant: { value: '#56423D', roles: ['text'], textOn: ON_LIGHT },
-  inverseSurface: { value: '#342F2D', roles: ['ground'], textOn: [] },
-  inverseOnSurface: { value: '#F8EFEB', roles: ['text'], textOn: ['inverseSurface'] },
-  outline: { value: '#89726C', roles: ['line'], textOn: [] },
-  outlineVariant: { value: '#DCC1B9', roles: ['line'], textOn: [] },
-  surfaceTint: { value: '#9C4327', roles: ['ground', 'fill'], textOn: [] },
-  primary: { value: '#843117', roles: ['ground', 'fill'], textOn: [] },
-  onPrimary: {
+  /** The warm paper every screen sits on. */
+  ground: {
+    value: '#FFF8F3',
+    roles: ['ground'],
+    textOn: [],
+  },
+  /** The plain surface a section is raised onto. */
+  card: {
+    value: '#FFFFFF',
+    roles: ['ground'],
+    textOn: [],
+  },
+  /** The quieter surface a control sits in. */
+  field: {
+    value: '#FFF2EB',
+    roles: ['ground'],
+    textOn: [],
+  },
+  /** The hairline between a row and the row under it. */
+  line: {
+    value: '#F1E1D6',
+    roles: ['line'],
+    textOn: [],
+  },
+  /** The one surface that reverses, which carries the white the accent carries. */
+  darkCard: {
+    value: '#4A2A2E',
+    roles: ['ground', 'fill'],
+    textOn: [],
+  },
+  /** Every word she reads at length. */
+  text: {
+    value: '#2E2224',
+    roles: ['text'],
+    textOn: ['ground', 'card', 'field'],
+  },
+  /** A label, a caption and the quieter half of a row. */
+  secondaryText: {
+    value: '#76625F',
+    roles: ['text'],
+    textOn: ['ground', 'card', 'field'],
+  },
+  /** The white that carries text on the accent and on the dark card. */
+  onAccent: {
     value: '#FFFFFF',
     roles: ['text'],
-    textOn: ['primary', 'primaryContainer', 'surfaceTint'],
+    textOn: ['accent', 'darkCard'],
   },
-  primaryContainer: { value: '#A3482C', roles: ['ground', 'fill'], textOn: [] },
-  onPrimaryContainer: {
-    value: '#FFD8CE',
+  /** The one colour that acts. */
+  accent: {
+    value: '#B8434E',
+    roles: ['ground', 'fill', 'text'],
+    textOn: ['ground', 'card', 'field'],
+  },
+  /** The accent while a control is held, and the ink of the period phase name. */
+  accentPressed: {
+    value: '#8E2F3A',
+    roles: ['ground', 'fill', 'text'],
+    textOn: ['ground', 'card', 'field', 'accentSoft'],
+  },
+  /** The tint behind a chip. */
+  accentSoft: {
+    value: '#FFDCDC',
+    roles: ['ground', 'fill'],
+    textOn: [],
+  },
+  /** The ink on an accent soft chip, raised because the accent itself does not clear the floor there. */
+  accentSoftInk: {
+    value: '#AF404A',
     roles: ['text'],
-    textOn: ['primaryContainer', 'primary'],
+    textOn: ['accentSoft'],
   },
-  inversePrimary: { value: '#FFB59F', roles: ['text'], textOn: ['inverseSurface'] },
-  secondary: { value: '#625E58', roles: ['ground', 'text', 'fill'], textOn: ON_LIGHT },
-  onSecondary: { value: '#FFFFFF', roles: ['text'], textOn: ['secondary'] },
-  secondaryContainer: { value: '#E8E1D9', roles: ['ground', 'fill'], textOn: [] },
-  onSecondaryContainer: {
-    value: '#68645E',
+  /** A tile tinted by the accent. */
+  accentTile: {
+    value: '#F9E3E1',
+    roles: ['ground', 'fill'],
+    textOn: [],
+  },
+  /** The label and the icon of a tab she is not on. */
+  dockQuiet: {
+    value: '#826F69',
     roles: ['text'],
-    textOn: ['secondaryContainer', ...ON_LIGHT_BUT_DIM],
+    textOn: ['ground', 'card'],
   },
-  tertiary: { value: '#921F12', roles: ['ground', 'text', 'fill'], textOn: ON_LIGHT },
-  onTertiary: { value: '#FFFFFF', roles: ['text'], textOn: ['tertiary', 'tertiaryContainer'] },
-  tertiaryContainer: { value: '#B43727', roles: ['ground', 'fill'], textOn: [] },
-  onTertiaryContainer: { value: '#FFD8D2', roles: ['text'], textOn: ['tertiaryContainer'] },
-  error: { value: '#BA1A1A', roles: ['ground', 'text', 'fill'], textOn: ON_LIGHT },
-  onError: { value: '#FFFFFF', roles: ['text'], textOn: ['error'] },
-  errorContainer: { value: '#FFDAD6', roles: ['ground', 'fill'], textOn: [] },
-  onErrorContainer: { value: '#93000A', roles: ['text'], textOn: ['errorContainer', ...ON_LIGHT] },
-  primaryFixed: { value: '#FFDBD1', roles: ['ground', 'fill'], textOn: [] },
-  primaryFixedDim: { value: '#FFB59F', roles: ['ground', 'fill'], textOn: [] },
-  onPrimaryFixed: {
-    value: '#3A0A00',
+  /** The number next to the one she chose in a picker. */
+  pickerNear: {
+    value: '#866E65',
     roles: ['text'],
-    textOn: ['primaryFixed', 'primaryFixedDim', ...ON_LIGHT],
+    textOn: ['ground', 'card'],
   },
-  onPrimaryFixedVariant: {
-    value: '#7D2C12',
+  /** The number two away from the one she chose. */
+  pickerFar: {
+    value: '#906B59',
     roles: ['text'],
-    textOn: ['primaryFixed', 'primaryFixedDim', ...ON_LIGHT],
+    textOn: ['ground', 'card'],
   },
-  secondaryFixed: { value: '#E8E1D9', roles: ['ground', 'fill'], textOn: [] },
-  secondaryFixedDim: { value: '#CCC5BE', roles: ['ground', 'fill'], textOn: [] },
-  onSecondaryFixed: {
-    value: '#1E1B17',
+  /** The label of a control that cannot be pressed, and the ring of an option she has not chosen. It carries no live word, so it is never measured as text: it is the one colour of the redesign that sits under the floor, and it sits there because nothing readable depends on it. */
+  disabledLabel: {
+    value: '#C9B4AA',
+    roles: ['line'],
+    textOn: [],
+  },
+  /** The icon at the end of a row, which points rather than says. */
+  quietIcon: {
+    value: '#B49F96',
+    roles: ['line'],
+    textOn: [],
+  },
+  /** An icon inside a field, and the words beside it. */
+  warmIcon: {
+    value: '#A0521A',
     roles: ['text'],
-    textOn: ['secondaryFixed', 'secondaryFixedDim', ...ON_LIGHT],
+    textOn: ['ground', 'card', 'field'],
   },
-  onSecondaryFixedVariant: {
-    value: '#4A4641',
+  /** A dot in a row of dots that is not lit. */
+  dotOff: {
+    value: '#EFDCCF',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The track a step bar fills. */
+  stepTrack: {
+    value: '#F3E2D6',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The dashed ring drawn where there is nothing to draw yet. */
+  emptyRing: {
+    value: '#E6CFC2',
+    roles: ['line'],
+    textOn: [],
+  },
+  /** The ring of a choice she has not made. */
+  uncheckedRing: {
+    value: '#D9C2B6',
+    roles: ['line'],
+    textOn: [],
+  },
+  /** The arc of the days she bleeds. */
+  period: {
+    value: '#B8434E',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The name of the period phase, written on the ground. */
+  periodInk: {
+    value: '#8E2F3A',
     roles: ['text'],
-    textOn: ['secondaryFixed', 'secondaryFixedDim', ...ON_LIGHT],
+    textOn: ['ground', 'card'],
   },
-  tertiaryFixed: { value: '#FFDAD4', roles: ['ground', 'fill'], textOn: [] },
-  tertiaryFixedDim: { value: '#FFB4A8', roles: ['ground', 'fill'], textOn: [] },
-  onTertiaryFixed: {
-    value: '#410100',
+  /** The arc of the days after the period. */
+  follicular: {
+    value: '#F5DCCB',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The name of the days after the period, written on the ground. */
+  follicularInk: {
+    value: '#2E2224',
     roles: ['text'],
-    textOn: ['tertiaryFixed', 'tertiaryFixedDim', ...ON_LIGHT],
+    textOn: ['ground', 'card'],
   },
-  onTertiaryFixedVariant: {
-    value: '#8B190E',
+  /** The arc of the days around ovulation. */
+  ovulation: {
+    value: '#E9A15F',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The name of the ovulation phase, written on the ground. */
+  ovulationInk: {
+    value: '#8A4A1C',
     roles: ['text'],
-    textOn: ['tertiaryFixed', 'tertiaryFixedDim', ...ON_LIGHT],
+    textOn: ['ground', 'card'],
   },
-  background: { value: '#FFF8F5', roles: ['ground'], textOn: [] },
-  onBackground: { value: '#1F1B19', roles: ['text'], textOn: ON_LIGHT },
-  surfaceVariant: { value: '#EAE1DD', roles: ['ground', 'fill'], textOn: [] },
-  period: { value: '#D97D6E', roles: ['ground', 'fill'], textOn: [] },
-  periodInk: { value: '#5C2018', roles: ['text'], textOn: ON_LIGHT },
-  follicular: { value: '#E5A96D', roles: ['ground', 'fill'], textOn: [] },
-  follicularInk: { value: '#5E3B10', roles: ['text'], textOn: ON_LIGHT },
-  ovulation: { value: '#A8A663', roles: ['ground', 'fill'], textOn: [] },
-  ovulationInk: { value: '#404218', roles: ['text'], textOn: ON_LIGHT },
-  luteal: { value: '#9B849E', roles: ['ground', 'fill'], textOn: [] },
-  lutealInk: { value: '#433246', roles: ['text'], textOn: ON_LIGHT },
+  /** The arc of the luteal days. */
+  luteal: {
+    value: '#C27E86',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The name of the luteal phase, written on the ground. */
+  lutealInk: {
+    value: '#7E3E48',
+    roles: ['text'],
+    textOn: ['ground', 'card'],
+  },
+  /** The warm stop of a wash. */
+  washWarm: {
+    value: '#FFE8CD',
+    roles: ['ground', 'fill'],
+    textOn: [],
+  },
+  /** The amber stop of a wash. */
+  washAmber: {
+    value: '#FFD6BA',
+    roles: ['ground', 'fill'],
+    textOn: [],
+  },
+  /** The rose stop of the luteal wash. */
+  washRose: {
+    value: '#F6D3D0',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The blush stop of the luteal wash. */
+  washBlush: {
+    value: '#FBE6E2',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The far stop of the glow inside the hold ring. */
+  washPink: {
+    value: '#FFE6EE',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The middle stop of the notification Emi draws on the lock screen. */
+  notificationMiddle: {
+    value: '#8A4A52',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The last stop of that notification. */
+  notificationEnd: {
+    value: '#E9A07A',
+    roles: ['fill'],
+    textOn: [],
+  },
+  /** The line inside the dialog the phone puts up. Emi never paints it. */
+  platformLine: {
+    value: '#E6D6CC',
+    roles: ['line'],
+    textOn: [],
+  },
+  /** The blue the phone writes its own buttons in. Emi never paints it. */
+  platformBlue: {
+    value: '#1F6FD1',
+    roles: ['text'],
+    textOn: ['card'],
+  },
 };
 
 /** The palette as data, in the order the brand document prints. A type cannot be read at run time. */

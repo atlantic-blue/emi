@@ -1,3 +1,4 @@
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { type DayRecord } from '@emi/crypto';
@@ -14,12 +15,14 @@ import {
 } from '@emi/cycle';
 import { dockPanelTestID, tabTestID } from '@emi/ui';
 import {
+  CONTRAST_FLOOR,
   FULL_TURN_DEGREES,
   GAP_DEGREES,
   MINIMUM_TAP_TARGET,
   type PhaseName,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
+  contrastRatio,
   phaseLabel,
   phaseNames,
 } from '@emi/tokens';
@@ -360,6 +363,19 @@ import {
   whatHerPhoneHolds,
 } from '../apps/mobile/tests/fixtures/theStatesOfHerData';
 import { catalogueFilesOf, samplesUnder } from '../tools/pipeline/sampleWording';
+import {
+  type Described,
+  type Screen,
+  coloursDrawnIn,
+  coloursWithNoName,
+  describedIn,
+  designSystemDocument,
+  namedValues,
+  namesDrawnNowhere,
+  opaqueBaseOf,
+  prototypeDirectory,
+  screenSuffix,
+} from '../tools/pipeline/prototype';
 import { thePartsOfTheForecastWithNoDate } from '../apps/mobile/tests/fixtures/theFirstForecastWithNoDate';
 import {
   type WaitingDrawn,
@@ -4462,6 +4478,107 @@ defineFeature(feature, (test) => {
     and('nothing offers to log today any more', () => {
       for (const gone of [homeLogTodayTestID, homeNoRingTitleTestID, homeNoRingLineTestID]) {
         expect(screen.queryByTestId(gone)).toBeNull();
+      }
+    });
+  });
+
+  // The palette the home screen is drawn in comes from the prototype, through the front matter of
+  // the design document, into the token package. This is the first link of that chain, and the one
+  // place a colour can enter without anything reading it.
+  test('SCREEN-2, every colour in the redesign prototype has a name in the design document', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const repositoryRoot = join(__dirname, '..');
+    let painted: Screen[] = [];
+    let described: Described;
+    let named: ReadonlySet<string> = new Set();
+
+    /** The same colour written as a function at the alpha given, so no value is typed here. */
+    const atAlpha = (value: string, alpha: number): string =>
+      `rgba(${[1, 3, 5].map((at) => Number.parseInt(value.slice(at, at + 2), 16)).join(',')},${alpha})`;
+
+    given(
+      'the fifty two screens of the redesign prototype, and the design document written from them',
+      () => {
+        painted = readdirSync(join(repositoryRoot, prototypeDirectory))
+          .filter((file) => file.endsWith(screenSuffix))
+          .sort()
+          .map((file) => ({
+            file,
+            markup: readFileSync(join(repositoryRoot, prototypeDirectory, file), 'utf8'),
+          }));
+        described = describedIn(readFileSync(join(repositoryRoot, designSystemDocument), 'utf8'));
+
+        expect(painted).toHaveLength(52);
+        expect(Object.keys(described.colours).length).toBeGreaterThan(30);
+      },
+    );
+
+    when('every colour the screens paint with is read against the names in that document', () => {
+      named = namedValues(described);
+      const mentions = painted.flatMap(({ markup }) => coloursDrawnIn(markup));
+
+      expect(mentions).toHaveLength(2432);
+      expect(new Set(mentions.map(opaqueBaseOf)).size).toBe(35);
+      expect(named.size).toBeGreaterThanOrEqual(35);
+    });
+
+    then(
+      'every one of them has a name, and every name in the document is painted by a screen',
+      () => {
+        expect(coloursWithNoName(named, painted)).toEqual([]);
+        expect(namesDrawnNowhere(described, painted)).toEqual([]);
+      },
+    );
+
+    and('a translucent colour is held to the opaque colour underneath it', () => {
+      const card = String(described.colours['card']);
+      const seventenths = atAlpha(card, 0.7);
+
+      expect(opaqueBaseOf(seventenths)).toBe(card.toLowerCase());
+      expect(
+        coloursWithNoName(named, [
+          { file: 'one', markup: `<div style="background:${seventenths}">` },
+        ]),
+      ).toEqual([]);
+      expect(
+        coloursWithNoName(named, [
+          { file: 'one', markup: `<div style="background:${atAlpha(card, 0)}">` },
+        ]),
+      ).toEqual([]);
+    });
+
+    and(
+      'a colour the prototype paints under the contrast floor records the value Emi builds instead',
+      () => {
+        const raised = Object.keys(described.raised).sort();
+
+        expect(raised).toEqual(['accent-soft-ink', 'dock-quiet', 'picker-far', 'picker-near']);
+
+        for (const name of raised) {
+          const entry = described.raised[name];
+          const ground = String(described.colours[String(entry?.on)]);
+
+          expect(named.has(String(entry?.prototype).toLowerCase())).toBe(true);
+          expect(contrastRatio(String(entry?.prototype), ground)).toBeLessThan(CONTRAST_FLOOR);
+          expect(contrastRatio(String(described.colours[name]), ground)).toBeGreaterThanOrEqual(
+            CONTRAST_FLOOR,
+          );
+        }
+      },
+    );
+
+    and('the ink of each phase is readable on the ground the ring writes the phase name on', () => {
+      const ground = String(described.colours['ground']);
+
+      for (const phase of phaseNames) {
+        const ink = String(described.colours[`${phase}-ink`]);
+
+        expect(ink).not.toBe(described.colours[phase]);
+        expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(CONTRAST_FLOOR);
       }
     });
   });

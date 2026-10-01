@@ -34,7 +34,7 @@ export function HomeHeader({ name }: Props): ReactNode {
     <View style={styles.header} testID={homeHeaderTestID}>
       <View style={styles.mark}>
         <Icon
-          colour={colour.primary}
+          colour={colour.accent}
           name="ring"
           size={theMarkIsAsTallAsTheWord}
           testID={homeHeaderMarkTestID}
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   // Her name is the one word on this screen that is hers, so it stays at the small size, which is
   // what SCREEN-2 holds the whole screen to.
   greeting: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   // The mark and the word sit at one end and the greeting at the other. The row is stretched
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   mark: { alignItems: 'center', flexDirection: 'row', gap: space.spaceSm },
   word: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
   },
 });

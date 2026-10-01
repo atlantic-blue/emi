@@ -83,13 +83,13 @@ const styles = StyleSheet.create({
   // The cycle she lived, said back to her the moment she picks the day, because that number is
   // the whole reason the question is asked.
   gap: {
-    color: colour.onSurface,
+    color: colour.text,
     marginTop: space.spaceMd,
     ...textStyle('body-lg'),
     textAlign: 'center',
   },
   refused: {
-    color: colour.error,
+    color: colour.accent,
     marginTop: space.spaceMd,
     ...textStyle('body-sm'),
     textAlign: 'center',

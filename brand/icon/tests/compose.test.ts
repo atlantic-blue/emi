@@ -15,7 +15,7 @@ import {
 import { colourFromHex, decodePng, inkBox, pixelAt } from '../png';
 import { appleIcons, googleIcons, iconFiles } from '../sizes';
 
-const square = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="30" width="40" height="20" fill="${colour.primary}"/></svg>`;
+const square = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="20" y="30" width="40" height="20" fill="${colour.accent}"/></svg>`;
 
 function render(svg: string, pixels: number) {
   return decodePng(new Resvg(svg, { fitTo: { mode: 'width', value: pixels } }).render().asPng());
@@ -78,8 +78,8 @@ describe('the mark is placed by the design, not by the file it came from', () =>
   it('scales the drawing by its ink, so padding in the source cannot shrink the mark', () => {
     const ring = readRingSource(square);
     const ink = { left: 20, top: 30, width: 40, height: 20 };
-    const icon = render(composeIcon(ring, 'icon', ink, colour.surfaceContainerLowest), 1000);
-    const box = inkBox(icon, colourFromHex(colour.surfaceContainerLowest));
+    const icon = render(composeIcon(ring, 'icon', ink, colour.card), 1000);
+    const box = inkBox(icon, colourFromHex(colour.card));
 
     expect(box.width / icon.width).toBeCloseTo(RING_FRACTION_OF_WIDTH, 2);
   });
@@ -90,12 +90,12 @@ describe('the mark is placed by the design, not by the file it came from', () =>
       ring,
       'adaptiveBackground',
       { left: 0, top: 0, width: 1, height: 1 },
-      colour.surfaceContainerLowest,
+      colour.card,
     );
 
     expect(background).not.toContain('<g ');
     expect(background).toContain(
-      `<rect width="${CANVAS}" height="${CANVAS}" fill="${colour.surfaceContainerLowest}"/>`,
+      `<rect width="${CANVAS}" height="${CANVAS}" fill="${colour.card}"/>`,
     );
   });
 
@@ -105,10 +105,10 @@ describe('the mark is placed by the design, not by the file it came from', () =>
       ring,
       'adaptiveForeground',
       { left: 0, top: 0, width: 1, height: 1 },
-      colour.surfaceContainerLowest,
+      colour.card,
     );
 
-    expect(foreground).not.toContain(`fill="${colour.surfaceContainerLowest}"`);
+    expect(foreground).not.toContain(`fill="${colour.card}"`);
     expect(foreground).toContain('<g ');
   });
 
@@ -120,7 +120,7 @@ describe('the mark is placed by the design, not by the file it came from', () =>
 describe('the image reader measures what is really there', () => {
   it('finds the drawing inside a bigger picture', () => {
     const image = render(square, 100);
-    const box = inkBox(image, colourFromHex(colour.surfaceContainerLowest));
+    const box = inkBox(image, colourFromHex(colour.card));
 
     expect(box).toEqual({ left: 20, top: 30, width: 40, height: 20 });
   });
@@ -134,15 +134,13 @@ describe('the image reader measures what is really there', () => {
   it('reads back the colour that was drawn', () => {
     const image = render(square, 100);
 
-    expect(pixelAt(image, 40, 40)).toEqual({ ...colourFromHex(colour.primary), alpha: 255 });
+    expect(pixelAt(image, 40, 40)).toEqual({ ...colourFromHex(colour.accent), alpha: 255 });
   });
 
   it('refuses a picture with nothing on it', () => {
-    const empty = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="${colour.surfaceContainerLowest}"/></svg>`;
+    const empty = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="${colour.card}"/></svg>`;
 
-    expect(() => inkBox(render(empty, 10), colourFromHex(colour.surfaceContainerLowest))).toThrow(
-      'no ink at all',
-    );
+    expect(() => inkBox(render(empty, 10), colourFromHex(colour.card))).toThrow('no ink at all');
   });
 });
 

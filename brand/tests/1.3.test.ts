@@ -217,9 +217,9 @@ describe('the ring gap survives the smallest rendering', () => {
     });
 
     it('takes its colours from the token package', () => {
-      expect(wordmark().svg).toContain(colour.primary);
-      expect(lockup().svg).toContain(colour.surfaceContainerLowest);
-      expect(ringAlone().svg).toContain(colour.primary);
+      expect(wordmark().svg).toContain(colour.accent);
+      expect(lockup().svg).toContain(colour.card);
+      expect(ringAlone().svg).toContain(colour.accent);
     });
 
     it('fits every drawing inside the box it declares', () => {

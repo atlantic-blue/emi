@@ -132,7 +132,7 @@ export function EditPeriodScreen({
           testID={editPeriodBackTestID}
         >
           <View style={styles.backMark}>
-            <Icon colour={colour.onSurface} name="chevron" size={BACK_MARK_SIZE} />
+            <Icon colour={colour.text} name="chevron" size={BACK_MARK_SIZE} />
           </View>
         </Pressable>
 
@@ -202,18 +202,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceSm,
   },
   cancelLabel: {
-    color: colour.primary,
+    color: colour.accent,
     ...textStyle('label-md'),
   },
   // What she changed sits under the grid rather than over it, because the grid is the answer and
   // this line is what Emi read back off it.
   change: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
     marginTop: space.spaceMd,
   },
   footer: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     padding: space.spaceLg,
   },
@@ -225,12 +225,12 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceSm,
   },
   lead: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
   },
   scroll: { flex: 1 },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('label-md'),
   },
 });

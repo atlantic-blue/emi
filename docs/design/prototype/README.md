@@ -1,85 +1,53 @@
 # The prototype
 
-The markup here is the source of truth for what Emi looks like. It is the Warm Editorial Journal
-style, exported from Google Stitch on 2026-09-23.
-`docs/design/prototype-design-system.md` is written from it, and every later step of the style
-feature builds from that document. So a value that moves here moves everything, and a value that
-moves anywhere else has left the prototype behind.
+The markup here is the source of truth for what Emi looks like. It is the redesign the operator
+approved on 2026-10-01, written by the same tool that wrote the style before it.
+`docs/design/prototype-design-system.md` is written from it, and every later step of the redesign
+builds from that document. So a value that moves here moves everything, and a value that moves
+anywhere else has left the prototype behind.
 
-Each screen carries the configuration it draws with, in a script element with the id
-`tailwind-config`. All twenty three carry the same one. `tools/pipeline/prototype.test.ts` reads it
-out of `screen-0-style-sheet.html` and compares it with the front matter of the design system
-document, value for value: the colours, the spacing and the type roles with their sizes, line
-heights, tracking and weights. The corners are the one block the two sides do not agree about. The
-export names thirteen type roles and the design system names eleven. `body-md` carried the same
-face, size and line height as `body-lg`, so the design system retired it and the three call sites
-took `body-lg`. No screen of the application drew `data-md` at all, so the design system retired
-that one into nothing. The export keeps both names because its own markup reaches for them.
-The export names eleven spacing steps and the design system names eight. `gutter`, `gutter-md` and
-`gutter-lg` each repeated the value of another step, and no screen of the application drew any of
-them, so the design system retired the three and the export keeps them.
-The token package took the design system's scale and `apps/mobile/tailwind.config.js` reads the
-token package, so the application draws that one. That answers
-https://github.com/atlantic-blue/emi/issues/159, and the difference stays recorded in
-`tools/pipeline/prototype.ts` rather than edited out of the export.
+The redesign carries no configuration element. Each screen writes its colours straight into the
+markup it paints, as an inline style or an attribute. So there is no block of named values to
+compare, and `tools/pipeline/prototype.test.ts` holds the two sides together one colour at a time
+instead: every colour the fifty two screens paint with has a name in the front matter, and every
+name in the front matter is painted by a screen. A translucent value is read as the opaque colour
+underneath it, so a surface at seven tenths and a shadow at four hundredths are both held to a name.
 
-The eight phase colours are the one thing the configuration does not name. The screens draw the four
-arcs and the four labels beside them as plain values inside the ring, so the front matter names the
-eight and the check reads them back out of `screen-0-style-sheet.html`.
+Four colours are named twice, because the prototype paints one value and Emi builds another. Each
+one is a colour the prototype draws below the contrast floor of 4.5 to 1, and the front matter
+records the value the prototype paints, the value Emi builds, the ground each was measured on and
+the reason. The colour check reads the painted value and the token package reads the built one.
 
-## The twenty three screens
+`canvas.json` places the screens beside each other, in the seven rows below. The screen the canvas
+launches is `Main.dc.html`, and every other file is named after its screen in
+`docs/design/mockups/flows.json`.
 
-The first six arrived with the style. Screens 6 to 22 arrived on 2026-09-23, with the copy review
-beside them in `copy-review.md`.
+## The fifty two screens
 
-`screen-0-style-sheet` is the style sheet. It draws the palette, the ring, the type scale, every
-component and the grid on one page. It is the screen the configuration and the phase colours are
-read from.
+**First run, the questions.** `welcome`, `tour`, `name`, `yearOfBirth`, `lastPeriod`,
+`lastPeriodNext`, `periodBefore`, `cycleLength`.
 
-`tour-card-1` is the first card of the opening tour. It carries the ring, the cycle day and the
-phase name.
+**First run, the rest.** `periodLength`, `regularity`, `feeling`, `goals`, `focus`,
+`todayFirstRun`, `reminder`, `reminderPermission`.
 
-`tour-card-4` is the last card of the tour. It carries the price.
+**First run, the promise and the key.** `firstForecast`, `firstForecastLearning`, `thePromise`,
+`whatEmiDoesWithIt`, `hold`, `recoverySetup`, `recoveryCode`, `recoveryConfirm`.
 
-`welcome` is the privacy screen of the first run.
+**Today.** `Main`, `todayLuteal`, `todayLogged`, `todayEmpty`, `todayEmptyBody`, `today`, `lock`,
+`notification`.
 
-`name` asks what Emi should call her.
+**Log and the calendar.** `log`, `logSymptoms`, `calendar`, `calendarEarlier`, `day`, `dayRefused`,
+`editPeriod`.
 
-`year-of-birth` asks the year she was born.
+**Insights.** `history`, `todayNumbers`, `citation`, `todayCycles`, `todayTrends`, `todayPatterns`.
 
-`last-period` asks when her last period started, on a month grid.
+**Privacy.** `privacyNext`, `settings`, `yourAnswers`, `answerCycleLength`, `reminderSettings`,
+`export`, `delete`.
 
-`period-before` asks for the period before that one, and says what a second date buys.
-
-`cycle-length` asks how long her cycle runs, on a stepper.
-
-`period-length` asks how many days she bleeds.
-
-`cycle-regularity` asks whether her cycle is regular, on three choice rows.
-
-`feeling` asks how she feels about her cycle, on three choice rows.
-
-`goals` asks what she wants Emi for, on four rows she can pick more than one of.
-
-`focus` asks which symptom groups to put first, on six tiles.
-
-`today` offers the six tiles for the day she is on.
-
-`first-forecast` shows her first range, and says why it is a range.
-
-`the-promise` is the privacy screen at the end of the first run.
-
-`reminder` offers the notification two days before.
-
-`what-emi-gives-her` is the summary of what she chose.
-
-`hold-to-begin` is the ring she presses and holds, which is the one moment the first run writes.
-
-`free-month` is the paywall.
-
-`all-set` is the screen after the hold.
-
-`home` is the day screen, with the ring, the forecast and the dock.
+Two of these screens draw the operating system rather than Emi. `reminderPermission` draws the
+dialog the phone puts up to ask about notifications, and `notification` draws a notification on the
+lock screen. The colours in those two are the platform's own, so they are named and never measured
+as Emi's text on Emi's ground.
 
 ## Copy on these screens that must never be built, because it is false
 
@@ -199,34 +167,17 @@ against the fill the same panel pairs it with. Three of the four inks fail the f
 fill, which is the whole reason no text is ever drawn on a fill. The measured numbers are in the
 step that moves the tokens.
 
-## The retired canvas, and the one edit made to the markup
-
-The export carries a second palette in its prose, and the canvas of that palette is `#faf8f5`. It
-reached four screens as paint: `tour-card-1`, `hold-to-begin`, `all-set` and `home` each drew a
-circle inside the ring with it, straight into a `fill` or a `stroke` attribute, where the
-configuration never saw it. The front matter holds no such value, so the ring bead of four screens
-was drawn in a colour the design system does not name.
-
-Those four attributes now hold the front matter's `background`, which is `#fff8f5`. That is the one
-edit made to the markup, and it is recorded here rather than hidden: the design decision of
-2026-09-23 is that the front matter is the one palette, and a screen that paints outside it is a
-screen the application would be built wrong from. The pictures beside the markup were rendered by
-the tool before the edit, and the two values differ by five parts in two hundred and fifty five on
-one channel, so the pictures still show what the markup draws.
-
-`tools/pipeline/prototype.test.ts` now reads every colour each screen paints with and holds it
-against the front matter, so a value can no longer arrive through an attribute. It reads the tags,
-the style blocks and the script blocks, and never the text between them, because the style sheet
-screen prints `#FAF8F5`, `#F4EFEA`, `#262220`, `#B83A2A` and `#FBEBE8` as swatch labels for a
-reader, and `year-of-birth` names `#EDE6DE` in a comment. Those are words about the export's own
-prose palette, not paint, and they stay exactly as the tool wrote them.
-
-Read a colour from the front matter and never off the markup.
-
 ## What the check does not hold
 
-The check reads the configuration, the eight phase colours, the colours each screen paints with and
-the false claims of the copy review. The words on these screens are not approved copy, the numbers
-are invented for the drawing, and several pieces are not in version 1. Read the markup for the
-shape, the spacing and the colour, read `copy-review.md` for the words, and read `.krewe/design.md`
-for what Emi builds.
+The check reads the colours each screen paints with, the names the front matter gives them, the four
+phase pairs, the prose of the design document and the false claims of the copy review. The words on
+these screens are not approved copy, the numbers are invented for the drawing, and several pieces
+are not in version 1. Read the markup for the shape, the spacing and the colour, read
+`copy-review.md` for the words, and read `.krewe/design.md` for what Emi builds.
+
+The screens carry no pictures. The export wrote none, each screen loads a support script this
+repository does not hold, and each one asks a remote host for its face. The pictures the pipeline
+compares are the ones under `apps/mobile/tests/pictures` and `brand/screens`, drawn from the
+application itself.
+
+Read a colour from the front matter and never off the markup.

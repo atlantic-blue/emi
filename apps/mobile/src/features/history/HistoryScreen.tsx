@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   back: {
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: colour.surfaceContainer,
+    backgroundColor: colour.field,
     borderRadius: radius.md,
     justifyContent: 'center',
     marginTop: space.spaceLg,
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceMd,
   },
   backLabel: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
   bar: {
@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   body: { padding: space.spaceLg },
   heading: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-md'),
     marginBottom: space.spaceSm,
     marginTop: space.spaceLg,
@@ -255,8 +255,8 @@ const styles = StyleSheet.create({
     marginTop: space.spaceXs,
   },
   row: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.lg,
     borderWidth: 1,
     justifyContent: 'center',
@@ -267,19 +267,19 @@ const styles = StyleSheet.create({
   // The cycle or the symptom she arrived at from the screen she opens, drawn with the accent
   // border so she can see which row she asked for. The mark is a width as well as a colour.
   opened: {
-    borderColor: colour.primary,
+    borderColor: colour.accent,
     borderWidth: 2,
   },
   rowLine: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   rowTitle: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-lg'),
   },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
   },
 });

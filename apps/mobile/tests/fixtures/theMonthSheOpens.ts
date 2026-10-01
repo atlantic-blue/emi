@@ -526,7 +526,7 @@ export function theMarkOnTheSquare(day: string): DayMark {
     return 'forecast';
   }
 
-  return style.borderColor === colour.primary ? 'today' : 'plain';
+  return style.borderColor === colour.accent ? 'today' : 'plain';
 }
 
 /** What the built month drew for every day of it: the date, the cycle day and the state. */

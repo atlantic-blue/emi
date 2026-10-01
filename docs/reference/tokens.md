@@ -23,53 +23,29 @@ do it, because the types come off before the bundle runs.
 
 ```
 type ColourName =
-  | 'surface'
-  | 'surfaceDim'
-  | 'surfaceBright'
-  | 'surfaceContainerLowest'
-  | 'surfaceContainerLow'
-  | 'surfaceContainer'
-  | 'surfaceContainerHigh'
-  | 'surfaceContainerHighest'
-  | 'onSurface'
-  | 'onSurfaceVariant'
-  | 'inverseSurface'
-  | 'inverseOnSurface'
-  | 'outline'
-  | 'outlineVariant'
-  | 'surfaceTint'
-  | 'primary'
-  | 'onPrimary'
-  | 'primaryContainer'
-  | 'onPrimaryContainer'
-  | 'inversePrimary'
-  | 'secondary'
-  | 'onSecondary'
-  | 'secondaryContainer'
-  | 'onSecondaryContainer'
-  | 'tertiary'
-  | 'onTertiary'
-  | 'tertiaryContainer'
-  | 'onTertiaryContainer'
-  | 'error'
-  | 'onError'
-  | 'errorContainer'
-  | 'onErrorContainer'
-  | 'primaryFixed'
-  | 'primaryFixedDim'
-  | 'onPrimaryFixed'
-  | 'onPrimaryFixedVariant'
-  | 'secondaryFixed'
-  | 'secondaryFixedDim'
-  | 'onSecondaryFixed'
-  | 'onSecondaryFixedVariant'
-  | 'tertiaryFixed'
-  | 'tertiaryFixedDim'
-  | 'onTertiaryFixed'
-  | 'onTertiaryFixedVariant'
-  | 'background'
-  | 'onBackground'
-  | 'surfaceVariant'
+  | 'ground'
+  | 'card'
+  | 'field'
+  | 'line'
+  | 'darkCard'
+  | 'text'
+  | 'secondaryText'
+  | 'onAccent'
+  | 'accent'
+  | 'accentPressed'
+  | 'accentSoft'
+  | 'accentSoftInk'
+  | 'accentTile'
+  | 'dockQuiet'
+  | 'pickerNear'
+  | 'pickerFar'
+  | 'disabledLabel'
+  | 'quietIcon'
+  | 'warmIcon'
+  | 'dotOff'
+  | 'stepTrack'
+  | 'emptyRing'
+  | 'uncheckedRing'
   | 'period'
   | 'periodInk'
   | 'follicular'
@@ -77,11 +53,20 @@ type ColourName =
   | 'ovulation'
   | 'ovulationInk'
   | 'luteal'
-  | 'lutealInk';
+  | 'lutealInk'
+  | 'washWarm'
+  | 'washAmber'
+  | 'washRose'
+  | 'washBlush'
+  | 'washPink'
+  | 'notificationMiddle'
+  | 'notificationEnd'
+  | 'platformLine'
+  | 'platformBlue';
 ```
 
 The palette of the design system, name for name and value for value. The document is
-`docs/design/prototype-design-system.md`, written from the Warm Editorial Journal prototype, and
+`docs/design/prototype-design-system.md`, written from the redesign prototype, and
 `tests/designSystem.test.ts` reads this file against it, so a value that drifts from the document
 fails the run.
 
@@ -117,12 +102,12 @@ on any ground, which is the drift the contrast test exists to catch.
 const colours: Readonly<Record<ColourName, ColourToken>>
 ```
 
-The palette. Every value is the document's own, and every `textOn` entry was measured at or
-above the floor. `outline` carries no text anywhere: its best reading is 3.20 to 1 on the
-lightest ground in the set, so it draws a line and never a word.
+The palette. Every value is the document own, and every `textOn` entry was measured at or above
+the floor by `tests/contrast.test.ts`.
 
-The four phase fills carry no text at any size. Three of the four inks fail the floor on their
-own fill, and contract SEE-2 covers all four rather than the three that measure badly.
+Four of these values are not the value the prototype paints. Each one is a colour the prototype
+paints below the floor, and the document's `raised` block records both, so the markup check reads
+the painted value while this file carries the one Emi builds.
 
 ### `colourNames`
 
@@ -187,7 +172,7 @@ Where the font files sit, as a path from the root of the repository.
 ### `FontWeightName`
 
 ```
-type FontWeightName = 'regular' | 'medium' | 'semiBold';
+type FontWeightName = 'regular' | 'medium' | 'semiBold' | 'bold' | 'extraBold';
 ```
 
 The weights that ship. A style that names a weight no file carries leaves the platform to
@@ -211,10 +196,11 @@ style names the registered name and never the path.
 ### `FontFamilyName`
 
 ```
-type FontFamilyName = 'newsreader' | 'plusJakartaSans' | 'jetBrainsMono';
+type FontFamilyName = 'figtree' | 'jetBrainsMono';
 ```
 
-The three families this repository redistributes, one for each face of the design system.
+The two families this repository redistributes. One carries every word of the application and the
+other carries the recovery code, where a reader has to tell one character from another.
 
 ### `FontFamily`
 
@@ -257,10 +243,8 @@ const fonts: Readonly<Record<FontFamilyName, FontFamily>>
 Each family ships the cuts its own roles ask for and no others, because a weight nobody asks for
 is bytes in the download.
 
-Newsreader carries an optical size axis and the repository ships one static cut of it. The cut is
-`16pt`. The display roles run from 20 to 48 points, and the 72pt cut is drawn for sizes far above
-that, so it reads thin where most of Emi's headlines sit. The two cuts were not compared on a
-device; if the 16pt cut reads heavy at 48 points, the replacement is the 72pt cut at the same two
+Figtree ships as a variable font and as static cuts. The static cuts ship here, because React
+Native reaches only the default instance of a variable file, and the redesign asks for four
 weights.
 
 ### `fontFamilyNames`
@@ -305,11 +289,11 @@ const cutsNoRoleAsksFor: readonly string[]
 
 A cut that ships while no role of the design system asks for its weight.
 
-`data-md` was the one role drawn in JetBrains Mono at 400, and the design system retired it
-because no screen of the application drew it. The cut stays because the type specimen draws it:
-its stacked digits panel is set in the regular cut, so a shifting digit is read at the weight a
-reader of the specimen compares against. `brand/tests/specimen.test.tsx` holds that page to it, so
-a specimen that stopped drawing the cut reddens rather than leaving this entry standing.
+No role of the redesign asks for JetBrains Mono at 400: the recovery code is set in the medium
+cut. The regular cut stays because the type specimen draws it: its stacked digits panel is set in
+the regular cut, so a shifting digit is read at the weight a reader of the specimen compares
+against. `brand/tests/specimen.test.tsx` holds that page to it, so a specimen that stopped drawing
+the cut reddens rather than leaving this entry standing.
 
 The application still loads it, which is a file on the phone no screen draws. Whether the phone
 keeps carrying it is a decision about the bundle, and it is recorded here one cut at a time rather
@@ -589,8 +573,8 @@ Ground drawn around the bead, in points, so it reads against whichever phase is 
 const beadPalette: Readonly<Record<'fill' | 'halo', ColourName>>
 ```
 
-The two colours the bead is drawn in. The design system gives the active bead on the ring to
-`primaryContainer` and keeps `primary` for the pressed state, and the bead is never pressed.
+The two colours the bead is drawn in. The redesign draws today as a card disc with the text
+colour around it, so the bead reads against every arc it can sit on and against the ground.
 
 They are named here because the phone and the brand picture both draw this bead, and a colour
 written at each of the two places is a colour that can disagree with itself.
@@ -741,7 +725,7 @@ What one rem of the document is worth on a phone.
 
 ```
 type SpaceName =
-  'margin' | 'marginMd' | 'marginLg' | 'spaceXs' | 'spaceSm' | 'spaceMd' | 'spaceLg' | 'spaceXl';
+  'spaceXs' | 'spaceSm' | 'spaceMd' | 'spaceLg' | 'margin' | 'spaceXl' | 'marginMd' | 'marginLg';
 ```
 
 The eight steps the document names. A screen asks for `spaceMd` and never for 16.
@@ -759,7 +743,7 @@ of a screen and `spaceLg` is a gap inside one. A screen that wants a different e
 ### `RadiusName`
 
 ```
-type RadiusName = 'sm' | 'DEFAULT' | 'md' | 'lg' | 'xl' | 'full';
+type RadiusName = 'sm' | 'DEFAULT' | 'md' | 'lg' | 'xl' | 'xxl' | 'full';
 ```
 
 The corners the document names. `DEFAULT` keeps the document's own key, so the two can be read
@@ -850,16 +834,17 @@ The design system is `docs/design/prototype-design-system.md`.
 const face: Readonly<Record<FaceName, string>>
 ```
 
-One family for each job. A serif carries the editorial voice, a geometric sans carries what she
-reads at length, and monospaced figures hold their place as a number changes.
+One face carries every word, and monospaced figures hold their place as a number changes. The
+display face and the text face are the same family at different weights, so the two names stay
+and the call sites that read them do not move.
 
 ### `TypeWeight`
 
 ```
-type TypeWeight = 400 | 500 | 600;
+type TypeWeight = 400 | 500 | 600 | 700 | 800;
 ```
 
-The three weights the design system asks for. Every one of them has a file in this repository.
+The weights the design system asks for. Every one of them has a file in this repository.
 
 ### `TypeRoleName`
 
@@ -905,9 +890,8 @@ const typeScale: Readonly<Record<TypeRoleName, TypeRole>>
 ```
 
 The eleven roles, copied from the design system's own front matter. A role that drifts from it
-fails `packages/tokens/tests/designSystem.test.ts`, which reads the document. The document
-measures in rem for a browser and a screen measures in points, so every size here is its rem at
-sixteen points.
+fails `packages/tokens/tests/designSystem.test.ts`, which reads the document. The document and
+a screen both measure in px, so a size here is the size the document writes.
 
 ### `typeRoleNames`
 
@@ -936,9 +920,9 @@ A role that sits under the floor, recorded one role at a time rather than allowe
 way the corners are recorded in `tools/pipeline/prototype.ts`, so a move on either side reddens
 the check that reads them.
 
-Nothing is under the floor. `display-lg` was the one entry, at 48 points over 56, which is 1.167.
-The design system stage brought the size to 44, so the ratio is 1.273 and it clears the floor
-contract TOKEN-3 fixes at 1.2.
+Nothing is under the floor. The redesign draws the cycle day at a line height of one, which is
+what a single line in the middle of a ring needs, and contract TOKEN-3 holds every role at 1.2 of
+its size, so the role carries the floor and the ring draws one line inside it.
 
 ### `letterSpacingOf`
 

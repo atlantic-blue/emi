@@ -67,7 +67,7 @@ export function TourScreen({ card, onNext, onBack, onSkip }: Props): ReactNode {
   return (
     <Screen testID={tourScreenTestID(card)}>
       <View style={styles.header}>
-        <Icon colour={colour.primary} name="ring" size={MARK_SIZE} testID={tourMarkTestID} />
+        <Icon colour={colour.accent} name="ring" size={MARK_SIZE} testID={tourMarkTestID} />
         <View style={styles.headerEnd}>
           <Text style={styles.count} testID={tourCountTestID}>
             {tourCountLabel(card)}
@@ -123,7 +123,7 @@ function pictureOf(card: TourCard): ReactNode {
   if (card === 'yours') {
     return (
       <View style={styles.emblem} testID={tourEmblemTestID}>
-        <Icon colour={colour.primaryContainer} name="lock" size={EMBLEM_ICON_SIZE} />
+        <Icon colour={colour.accent} name="lock" size={EMBLEM_ICON_SIZE} />
       </View>
     );
   }
@@ -141,19 +141,19 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceLg,
   },
   count: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('data-sm'),
   },
   emblem: {
     alignItems: 'center',
-    backgroundColor: colour.secondaryContainer,
+    backgroundColor: colour.field,
     borderRadius: radius.full,
     height: EMBLEM_DIAMETER,
     justifyContent: 'center',
     width: EMBLEM_DIAMETER,
   },
   footer: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     padding: space.spaceLg,
   },
@@ -166,18 +166,18 @@ const styles = StyleSheet.create({
   },
   headerEnd: { alignItems: 'center', flexDirection: 'row', gap: space.spaceMd },
   line: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   lineAfter: {
-    borderTopColor: colour.outlineVariant,
+    borderTopColor: colour.line,
     borderTopWidth: stroke.hairline,
     marginTop: space.spaceSm,
     paddingTop: space.spaceSm,
   },
   scroll: { flex: 1 },
   title: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('headline-lg'),
     textAlign: 'center',
   },

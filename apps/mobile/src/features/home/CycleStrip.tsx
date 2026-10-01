@@ -111,17 +111,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   days: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-sm'),
   },
   fill: { flexBasis: 0, height: '100%' },
   length: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
   strip: {
-    backgroundColor: colour.surfaceContainerLowest,
-    borderColor: colour.outlineVariant,
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.lg,
     borderWidth: 1,
     justifyContent: 'center',

@@ -94,7 +94,7 @@ const theMark: Readonly<Record<DayMark, ViewStyle>> = StyleSheet.create({
   },
   plain: {},
   today: {
-    borderColor: colour.primary,
+    borderColor: colour.accent,
     borderStyle: 'solid',
     borderWidth: stroke.icon,
   },
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   // The cycle day is the smallest thing on the strip, because it is the number she checks rather
   // than the number she looks for, and the date underneath is what she scans the row by.
   cycleDay: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
   },
   date: {
@@ -115,13 +115,13 @@ const styles = StyleSheet.create({
     width: THE_DATE_IS_A_DISC_OF,
   },
   dateNumber: {
-    color: colour.onSurface,
+    color: colour.text,
     ...textStyle('body-sm'),
   },
   // A number on the period fill takes the ground colour rather than the ink of the phase, because
   // SEE-2 keeps a word off a fill and a figure on one is held to the same floor.
   dateOnFill: {
-    color: colour.surfaceContainerLowest,
+    color: colour.card,
     ...textStyle('body-sm'),
   },
   // A day of the row is what she presses to reach her month, so it carries the floor SEE-3 sets
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     minWidth: MINIMUM_TAP_TARGET,
   },
   letter: {
-    color: colour.onSurfaceVariant,
+    color: colour.secondaryText,
     ...textStyle('label-sm'),
   },
   // The row is stretched because the body it sits in centres what it holds, and a strip narrower
