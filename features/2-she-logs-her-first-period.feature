@@ -61,6 +61,19 @@ Feature: She opens Emi and logs her first period
     Then she is being asked how long her cycle runs
     And the question she could not answer is behind her
 
+  Scenario: SCREEN-1, the way past the last period question passes the period before with it
+    Given she has never opened Emi before
+    When she opens Emi
+    And she skips the tour Emi opens with
+    And she gives her name and the year she was born, and reaches the question about her last period
+    And she says she does not remember
+    Then she is being asked how long her cycle runs
+    And the counter reads step 6 of 12, the twelve steps the first run always had
+    When she answers the rest of the questions and presses and holds the ring
+    Then she was never asked when the period before that started
+    And she is looking at the screen that says the ring needs a period
+    And her phone holds the name, the year and the length she gave, and no day at all
+
   Scenario: SCREEN-2, the home screen shows the ring, the day of her cycle and the phase she is in
     Given her phone holds six cycles of her own
     When she opens Emi

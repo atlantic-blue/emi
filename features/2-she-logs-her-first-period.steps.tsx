@@ -153,6 +153,8 @@ import {
   publishedNumberTestID,
 } from '../apps/mobile/src/features/home/MeasuredRow';
 import { longerTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
+import { nameFieldTestID } from '../apps/mobile/src/features/onboarding/HerName';
+import { yearTestID } from '../apps/mobile/src/components/YearWheel';
 import { periodLengthTestID } from '../apps/mobile/src/features/onboarding/PeriodLength';
 import {
   dayTestID,
@@ -162,12 +164,13 @@ import {
 import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
+  onboardingProgressTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
-import { firstRunCopy } from '../apps/mobile/src/features/onboarding/copy';
+import { firstRunCopy, firstRunScreenCount } from '../apps/mobile/src/features/onboarding/copy';
 import { ordinal, statedLengthSentence } from '../apps/mobile/src/features/forecast/copy';
 import { monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
 import { defaultCycleLengthDays } from '../apps/mobile/src/features/onboarding/firstRun';
@@ -429,6 +432,23 @@ function whenSheOpensTheMonth(): Date {
 /** The day she names at her first run, which is five days behind the day she opens Emi. */
 const herPeriodStarted = addDays(today, -5);
 const sheSaysHerCycleRuns = defaultCycleLengthDays + 2;
+
+/** The name and the year she gives, so her sealed answers hold more than one number. */
+const theNameSheGives = 'Ada';
+const theYearSheWasBornIn = 1994;
+
+/**
+ * How many steps the counter has always said, written out by hand rather than read off the list
+ * of screens, so a question that quietly leaves the first run is named here.
+ */
+const theStepsOfTheFirstRun = 12;
+const theCycleLengthIsStepSix = 6;
+
+/**
+ * The questions between the cycle length and the three screens she reads rather than answers:
+ * her period length, how steady her cycle is, how she feels, her goals, her focus and today.
+ */
+const theQuestionsLeftAfterTheCycleLength = 6;
 
 /** When the hold ends, which is the instant everything she answered is written at. */
 const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
@@ -4123,6 +4143,120 @@ defineFeature(feature, (test) => {
         expect(read.problems).toEqual([]);
         expect(read.cataloguesRead).toBe(3);
         expect(read.keysRead).toBeGreaterThan(300);
+      },
+    );
+  });
+
+  test('SCREEN-1, the way past the last period question passes the period before with it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    const everyScreenSheReached: string[] = [];
+
+    function whereSheIsNow(): void {
+      everyScreenSheReached.push(app.pathname());
+    }
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
+      whereSheIsNow();
+    });
+
+    and(
+      'she gives her name and the year she was born, and reaches the question about her last period',
+      async () => {
+        await shePresses(onboardingActionTestID);
+        whereSheIsNow();
+        await fireEvent.changeText(screen.getByTestId(nameFieldTestID), theNameSheGives);
+        await shePresses(onboardingActionTestID);
+        whereSheIsNow();
+        await shePresses(yearTestID(theYearSheWasBornIn));
+        await shePresses(onboardingActionTestID);
+        whereSheIsNow();
+
+        expect(app.pathname()).toBe('/onboarding/last-period');
+      },
+    );
+
+    and('she says she does not remember', async () => {
+      await shePresses(onboardingWayPastTestID);
+      whereSheIsNow();
+    });
+
+    then('she is being asked how long her cycle runs', () => {
+      expect(app.pathname()).toBe('/onboarding/cycle-length');
+      expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
+    });
+
+    and('the counter reads step 6 of 12, the twelve steps the first run always had', () => {
+      expect(screen.getByTestId(onboardingProgressTestID).props.accessibilityValue).toMatchObject({
+        max: theStepsOfTheFirstRun,
+        now: theCycleLengthIsStepSix,
+      });
+      // The total is counted off the list of screens, so the number written out here is what
+      // catches a question quietly leaving the run.
+      expect(firstRunScreenCount).toBe(theStepsOfTheFirstRun);
+    });
+
+    when('she answers the rest of the questions and presses and holds the ring', async () => {
+      for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
+        await shePresses(longerTestID);
+      }
+
+      await shePresses(onboardingActionTestID);
+      whereSheIsNow();
+
+      for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePresses(onboardingSkipTestID);
+        whereSheIsNow();
+      }
+
+      await shePresses(promiseActionTestID);
+      whereSheIsNow();
+      await shePresses(whatEmiDoesActionTestID);
+      whereSheIsNow();
+      await sheHoldsTheRing();
+      whereSheIsNow();
+    });
+
+    then('she was never asked when the period before that started', () => {
+      expect(everyScreenSheReached).not.toContain('/onboarding/period-before');
+      expect(screen.queryByTestId('onboarding-periodBefore')).toBeNull();
+      // A walk that pressed nothing reaches no period before question either, so the screens she
+      // did reach are read as well.
+      expect(everyScreenSheReached).toContain('/onboarding/cycle-length');
+      expect(everyScreenSheReached).toContain('/onboarding/hold');
+    });
+
+    and('she is looking at the screen that says the ring needs a period', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(whatItSays(homeNoRingLineTestID)).toBe(cycleCopy.noRing.line);
+      expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
+    });
+
+    and(
+      'her phone holds the name, the year and the length she gave, and no day at all',
+      async () => {
+        const sealed = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
+
+        expect(sealed?.name).toBe(theNameSheGives);
+        expect(sealed?.birthYear).toBe(theYearSheWasBornIn);
+        expect(sealed?.cycleLengthDays).toBe(sheSaysHerCycleRuns);
+        expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
+          whenSheFinishesTheHold.toISOString(),
+        );
+        expect(listDayLogs(herDatabase())).toEqual([]);
+        expect(listCycles(herDatabase())).toEqual([]);
       },
     );
   });

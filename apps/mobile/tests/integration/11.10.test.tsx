@@ -260,12 +260,14 @@ describe('her first forecast is a range, before anything is written', () => {
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
     });
 
-    it('sends her back to the question that asks for a day, where she reached it without one', async () => {
+    it('takes her on to the promise, where she reached it without a day', async () => {
       const app = renderRouter(appDirectory, { initialUrl: '/onboarding/first-forecast' });
 
       await app;
 
-      expect(app.getPathname()).toBe('/onboarding/last-period');
+      // A woman with no day passed the question that asks for one, so sending her back would
+      // return her to the one question she said she could not answer.
+      expect(app.getPathname()).toBe('/onboarding/the-promise');
       expect(screen.queryByTestId(firstForecastTestID)).toBeNull();
     });
 

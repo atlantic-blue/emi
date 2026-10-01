@@ -27,6 +27,7 @@ interface FirstRun {
   readonly isDone: boolean;
   /** Whether she has already been shown the four cards, which is the database's answer. */
   readonly tourIsDone: boolean;
+  /** Nothing at all where she does not remember the day, which is that question's way past it. */
   readonly periodStartedOn: string | undefined;
   /** The start before that one, and nothing at all where she does not remember it. */
   readonly periodBeforeStartedOn: string | undefined;
@@ -49,6 +50,12 @@ interface FirstRun {
   readonly setPeriodStartedOn: (day: string) => void;
   /** Nothing is the answer "I do not remember" leaves behind, so the setter takes it as well. */
   readonly setPeriodBeforeStartedOn: (day: string | undefined) => void;
+  /**
+   * The way past the question about her last period, which passes the question about the period
+   * before with it. Both days go, because a woman who says she does not remember has answered
+   * nothing, and a day she pressed before she read the link is not an answer she gave.
+   */
+  readonly forgetTheDates: () => void;
   readonly setCycleLengthDays: (days: number) => void;
   /** Nothing is the answer "I am not sure" leaves behind, so the setter takes it as well. */
   readonly setPeriodLengthDays: (days: number | undefined) => void;
@@ -121,12 +128,6 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     if (writing.current || firstRunIsDone(database)) {
       return;
     }
-    if (periodStartedOn === undefined) {
-      throw new Error(
-        'the first run cannot be written before she has said when her period started',
-      );
-    }
-
     writing.current = true;
     try {
       await writeEverythingAtTheHold(
@@ -169,6 +170,11 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
 
   const pressGoal = useCallback((goal: Goal) => {
     setGoals((chosen) => goalsAfterPressing(chosen, goal));
+  }, []);
+
+  const forgetTheDates = useCallback(() => {
+    setPeriodStartedOn(undefined);
+    setPeriodBeforeStartedOn(undefined);
   }, []);
 
   const forgetTheGoals = useCallback(() => {
@@ -229,6 +235,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       birthYear,
       setPeriodStartedOn,
       setPeriodBeforeStartedOn,
+      forgetTheDates,
       setCycleLengthDays,
       setPeriodLengthDays,
       setRegularity,
@@ -250,6 +257,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       cycleLengthDays,
       feeling,
       focus,
+      forgetTheDates,
       forgetTheFocus,
       forgetTheGoals,
       forgetToday,
