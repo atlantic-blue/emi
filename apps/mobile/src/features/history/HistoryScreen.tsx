@@ -12,15 +12,9 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
+import { patternsWaitingSentence } from '../cycle/patternsWaiting';
 import type { History, HistoryCycle, HistoryPattern } from './historyNow';
-import { historyNeedsCycles } from './historyNow';
-import {
-  cycleLengthSentence,
-  cycleSentence,
-  historyCopy,
-  patternSentence,
-  patternsWaitingSentence,
-} from './copy';
+import { cycleLengthSentence, cycleSentence, historyCopy, patternSentence } from './copy';
 
 /**
  * Six cycles read back, and what came back with them. The value of logging arrives here: a woman
@@ -173,9 +167,7 @@ export function HistoryScreen({
         </Text>
         {history.patterns.length === 0 ? (
           <Text style={styles.rowLine} testID={historyWaitingTestID}>
-            {history.completeCycles < historyNeedsCycles
-              ? patternsWaitingSentence(history.completeCycles, historyNeedsCycles)
-              : historyCopy.nothingRepeats}
+            {patternsWaitingSentence(history.completeCycles)}
           </Text>
         ) : (
           <View style={styles.list} testID={historyPatternsTestID}>

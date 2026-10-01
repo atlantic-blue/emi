@@ -68,15 +68,26 @@ import {
   historyPatternTestID,
   historyPatternsTestID,
   historyScreenTestID,
+  historyWaitingTestID,
 } from '../apps/mobile/src/features/history/HistoryScreen';
 import {
   cycleStripBarTestID,
   cycleStripFillTestID,
   cycleStripLengthTestID,
   cycleStripTestID,
+  homeCyclesTestID,
 } from '../apps/mobile/src/features/home/CycleStrip';
 import { stripsSheReads } from '../apps/mobile/src/features/home/herCycles';
-import { cyclesSheReadsAsATrend } from '../apps/mobile/src/features/home/herTrend';
+import { cyclesBeforeAPattern } from '../apps/mobile/src/features/home/herPatterns';
+import {
+  sectionWaitingTestID,
+  waitingSections,
+} from '../apps/mobile/src/features/home/SectionWaiting';
+import { patternsWaitingSentence } from '../apps/mobile/src/features/cycle/patternsWaiting';
+import {
+  cyclesBeforeATrend,
+  cyclesSheReadsAsATrend,
+} from '../apps/mobile/src/features/home/herTrend';
 import {
   PLOT_HEIGHT,
   homeTrendTestID,
@@ -292,6 +303,11 @@ import {
   theStripSheReads,
 } from '../apps/mobile/tests/fixtures/theWeekSheOpensWith';
 import { partsMissing } from '../apps/mobile/tests/fixtures/theMockupScreen';
+import {
+  type WaitingDrawn,
+  theWaitingSectionsOnTheGlass,
+  theWaitingSectionsTheDrawingPlaces,
+} from '../apps/mobile/tests/fixtures/theWaitingSections';
 import {
   thePartsOfTheDrawingOfARefusedDay,
   whatTheRefusalDrew,
@@ -652,6 +668,19 @@ function refusalOf(act: () => unknown): string {
 function whatItSays(testID: string): string {
   return textIn(screen.getByTestId(testID)).join(' ');
 }
+
+/** Everything one waiting section says, both lines of it, read as one line. */
+function whatAWaitingSectionSays(section: WaitingDrawn): string {
+  return `${section.needs} ${section.read ?? ''}`;
+}
+
+/** How many of her cycles are complete, read out of her phone and never off the screen. */
+function herCompleteCycles(): number {
+  return listCycles(herDatabase()).filter((cycle) => cycle.lengthDays !== null).length;
+}
+
+/** The drawing of day one, below the ring, which places a waiting section for each of the three. */
+const theDrawingOfWhatArrivesLater = 'todayEmptyBody';
 
 /** The most recent cycle her phone closed, which is the one her two lengths are read from. */
 function theLastCompleteCycleOnHerPhone(): CycleRow {
@@ -3683,6 +3712,87 @@ defineFeature(feature, (test) => {
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(theCardsSheReads()).toEqual(theCardsSheRead);
       expect(theCardsSheReads()).toHaveLength(2);
+    });
+  });
+
+  test('SCREEN-2, a section her data cannot fill carries one sentence and no chart', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let said: WaitingDrawn[] = [];
+    let aboutWhatComesBack = '';
+
+    given('her phone holds her answers and not one day', async () => {
+      await herPhoneHoldsTheseAnswers(whenSheOpensIt, {
+        kind: 'profile',
+        cycleLengthDays: sheSaysHerCycleRuns,
+        recordedAt: whenSheOpensIt.toISOString(),
+      });
+    });
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+      said = theWaitingSectionsOnTheGlass(waitingSections);
+    });
+
+    then(
+      'where her cycles, her trend and what comes back would be, she reads a waiting section',
+      () => {
+        expect(said.map((each) => each.section)).toEqual([...waitingSections]);
+      },
+    );
+
+    and('each one says what it needs before Emi can draw it', () => {
+      expect(said.map((each) => each.needs)).toEqual(
+        theWaitingSectionsTheDrawingPlaces(theDrawingOfWhatArrivesLater).map((each) => each.needs),
+      );
+    });
+
+    and('where a section counts her own cycles, it names the count her phone holds', () => {
+      const complete = String(herCompleteCycles());
+      const counting = said.filter((each) => whatAWaitingSectionSays(each).includes(complete));
+
+      expect(counting.map((each) => each.section)).toEqual(['cycles', 'patterns']);
+    });
+
+    and('every number in the three is a count read off her phone or a threshold Emi states', () => {
+      const hers = [
+        String(herCompleteCycles()),
+        String(cyclesBeforeATrend),
+        String(cyclesBeforeAPattern),
+      ];
+      const numbers = said.flatMap((section) =>
+        [...whatAWaitingSectionSays(section).matchAll(/\d+(?:\.\d+)?/g)].map(([found]) => found),
+      );
+
+      expect(numbers.filter((number) => !hers.includes(number))).toEqual([]);
+      expect(numbers.length).toBeGreaterThan(0);
+    });
+
+    and('no chart, no strip, no row and no card is drawn in any of the three', () => {
+      for (const part of [
+        homeNumbersTestID,
+        homeFiguresLineTestID,
+        homeCyclesTestID,
+        homeCyclesLineTestID,
+        homeTrendTestID,
+        homeTrendCountTestID,
+        homePatternsTestID,
+        homePatternsLineTestID,
+      ]) {
+        expect(screen.queryByTestId(part)).toBeNull();
+      }
+    });
+
+    and('what comes back says here exactly what it says on Insights', async () => {
+      aboutWhatComesBack = whatItSays(sectionWaitingTestID('patterns'));
+
+      await shePresses(tabTestID('history'));
+
+      expect(whatItSays(historyWaitingTestID)).toBe(aboutWhatComesBack);
+      expect(aboutWhatComesBack).toContain(patternsWaitingSentence(herCompleteCycles()));
     });
   });
 });

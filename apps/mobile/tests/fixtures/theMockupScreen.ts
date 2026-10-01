@@ -33,6 +33,11 @@ import {
   figuresQuotedTestID,
 } from '../../src/features/cycle/CitationRow';
 import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
+import {
+  sectionWaitingHeadingTestID,
+  sectionWaitingTestID,
+  waitingSections,
+} from '../../src/features/home/SectionWaiting';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
 import { phaseLineTestID } from '../../src/features/home/PhaseLine';
 import { roundActionTestID, roundActions } from '../../src/features/home/RoundAction';
@@ -116,6 +121,9 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   // it in, because it is the same question in the same words.
   OnboardingScreen: [answerQuestionTestID],
   PhaseLine: [phaseLineTestID],
+  // One part for each section her days cannot fill, so a drawing naming the part matches whichever
+  // of the three is waiting.
+  SectionWaiting: waitingSections.map(sectionWaitingTestID),
   PrimaryButton: [promiseActionTestID, answerSaveTestID],
   // The drawing names both round actions by one name, so the record carries both identifiers and
   // the walk matches each of them in turn.
@@ -136,6 +144,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     figuresHeaderTestID,
     figuresQuotedTestID,
     figuresPrintedTestID,
+    ...waitingSections.map(sectionWaitingHeadingTestID),
   ],
   TextLink: [
     yourAnswersBackTestID,

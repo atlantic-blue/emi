@@ -21,7 +21,8 @@ import {
   historyScreenTestID,
   historyWaitingTestID,
 } from '../../src/features/history/HistoryScreen';
-import { historyCopy, patternsWaitingSentence } from '../../src/features/history/copy';
+import { patternsWaitingSentence } from '../../src/features/cycle/patternsWaiting';
+import { historyCopy } from '../../src/features/history/copy';
 import { historyNeedsCycles } from '../../src/features/history/historyNow';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { herVault } from '../fixtures/herVault';
@@ -219,7 +220,7 @@ describe('a recurring symptom is named and a one off is not', () => {
       await sheOpensHerHistory();
 
       expect(screen.getByTestId(historyWaitingTestID)).toHaveTextContent(
-        patternsWaitingSentence(1, historyNeedsCycles),
+        patternsWaitingSentence(1),
       );
       expect(screen.queryByTestId(historyPatternsTestID)).toBeNull();
     });

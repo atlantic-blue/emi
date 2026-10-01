@@ -40,6 +40,8 @@ interface Shown {
   readonly week: readonly HerDay[];
   readonly forecast: ReturnType<typeof forecastOf>;
   readonly cycleLengthDays: number;
+  /** How many of her cycles are complete, which every section that cannot be filled yet names. */
+  readonly completeCycles: number;
   /** Her name, where she gave one, which is the only thing the home screen greets her by. */
   readonly name: string | undefined;
   /** How steady she said her cycle is, where she answered, which adds one sentence and no more. */
@@ -104,6 +106,9 @@ function whatSheIsLookingAt(
     // other reader of this screen needs, and from the cycles those same days produced.
     patterns: herPatterns(readBack),
     cycleLengthDays: stated,
+    // Counted off the rows every other section on this screen was read from, so a waiting section
+    // and a filled one can never disagree about how many cycles Emi has.
+    completeCycles: cycles.filter((cycle) => cycle.lengthDays !== null).length,
     name: herAnswers?.name,
     regularity: herAnswers?.regularity,
     feeling: herAnswers?.feeling,
@@ -143,6 +148,7 @@ export default function HomeRoute(): ReactNode {
   return (
     <HomeScreen
       cycleLengthDays={shown.cycleLengthDays}
+      completeCycles={shown.completeCycles}
       cycles={shown.cycles}
       feeling={shown.feeling}
       forecast={shown.forecast}

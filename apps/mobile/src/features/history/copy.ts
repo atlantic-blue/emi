@@ -18,7 +18,6 @@ export const historyCopy = {
   patterns: words('history.patterns'),
   running: words('history.running'),
   noCycles: words('history.noCycles'),
-  nothingRepeats: words('history.nothingRepeats'),
 } as const;
 
 /** The day as she reads it: the 14th of May. */
@@ -107,12 +106,4 @@ export function patternSentence(
     evidence: patternEvidenceSentence(cyclesWithIt, cyclesRead),
     when: patternDaySentence(anchor, day),
   });
-}
-
-/**
- * What Emi says before it has read enough to say anything. The count of complete cycles is named,
- * because a woman who is told to wait deserves to know how long.
- */
-export function patternsWaitingSentence(completeCycles: number, needsCycles: number): string {
-  return words('history.patternsWaiting', completeCycles, { needs: needsCycles });
 }

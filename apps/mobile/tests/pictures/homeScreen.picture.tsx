@@ -253,6 +253,7 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
 
   const screen = (
     <HomeScreen
+      completeCycles={cycles.filter((cycle) => cycle.lengthDays !== null).length}
       cycleLengthDays={sheSaidHerCycleRuns}
       feeling={recorded.feeling}
       forecast={forecast}
