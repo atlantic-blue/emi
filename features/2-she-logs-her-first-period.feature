@@ -442,3 +442,20 @@ Feature: She opens Emi and logs her first period
     And every number in the three is a count read off her phone or a threshold Emi states
     And no chart, no strip, no row and no card is drawn in any of the three
     And what comes back says here exactly what it says on Insights
+
+  Scenario: SCREEN-2, day one says what the ring needs and the first period she logs draws it
+    Given her phone holds her first run answers and not one recorded day
+    When she opens Emi
+    Then there is no ring, and nothing at all is drawn in place of one
+    And a title says there is nothing to draw yet
+    And a line says the ring needs a period, and that a day she bled makes it appear
+    And the card counts the cycle length she gave at her first run, and no length Emi picked
+    And one button offers to log today
+    And that is the drawing of day one, part for part, in the order it places them
+    When she presses the button that offers to log today
+    Then she is on the log, at the flow options
+    When she says her period came today
+    And she presses the way back
+    Then she is on the screen she opened, reading a ring drawn from the day she logged
+    And the ring says she is on the first day of a cycle of the length she gave
+    And nothing offers to log today any more, and the two lines are gone

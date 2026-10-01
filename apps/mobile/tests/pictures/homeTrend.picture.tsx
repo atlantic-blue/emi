@@ -76,6 +76,7 @@ async function drawn(): Promise<DrawnScreen> {
           onExport={() => undefined}
           onFigures={() => undefined}
           onLogPain={() => undefined}
+          onLogToday={() => undefined}
           onOpenCycle={() => undefined}
           onOpenCycles={() => undefined}
           onPeriod={() => undefined}

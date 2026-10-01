@@ -196,6 +196,9 @@ export const english = {
   'home.cycles.line':
     'Each strip is one of your cycles, the one you are in first. Press a strip to read that cycle on Insights.',
   'home.greeting': 'Hello, {name}',
+  // The one button of a screen with no ring. As soon as a ring is drawn the two round actions
+  // are the way into the log, so this label is read on day one and nowhere else.
+  'home.logToday': 'Log today',
   'home.loggedToday.andTheLast': '{said} and {last}',
   'home.loggedToday.energy': 'energy',
   'home.loggedToday.flow': '{flow} flow',

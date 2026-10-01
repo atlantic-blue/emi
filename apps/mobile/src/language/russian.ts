@@ -207,6 +207,7 @@ export const russian: CatalogueIn<'ru'> = {
   'home.cycles.line':
     'Полоса показывает один ваш цикл, первым идёт текущий. Нажмите на полосу, чтобы прочитать этот цикл в разделе Обзор.',
   'home.greeting': 'Здравствуйте, {name}',
+  'home.logToday': 'Записать сегодня',
   'home.loggedToday.andTheLast': '{said} и {last}',
   'home.loggedToday.energy': 'энергия',
   'home.loggedToday.flow': '{flow} выделения',

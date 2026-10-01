@@ -57,6 +57,9 @@ const theRoundActions: readonly { action: RoundActionName; icon: IconName }[] = 
 
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
+export const homeNoRingTitleTestID = 'home-no-ring-title';
+export const homeNoRingLineTestID = 'home-no-ring-line';
+export const homeLogTodayTestID = 'home-log-today';
 export const homeForecastTestID = 'home-forecast';
 export const homePainLineTestID = 'home-pain-line';
 export const homeFertileWindowTestID = 'home-fertile-window';
@@ -153,6 +156,12 @@ interface Props {
   readonly onFigures?: () => void;
   /** The way into the log, which the round action under the ring takes her by. */
   readonly onPeriod: () => void;
+  /**
+   * The way into the log that the one button offers, and the only way off a screen with no ring on
+   * it. It is required rather than offered, because a woman on day one has recorded nothing and a
+   * caller that forgot it would leave her a sentence about a ring and no way to draw one.
+   */
+  readonly onLogToday: () => void;
   /** The second round action. It reaches the log too until step 5 points it at the groups. */
   readonly onSymptoms: () => void;
   /** The way to the pain group of the log, which only the line below the ring takes her by. */
