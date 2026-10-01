@@ -3,11 +3,9 @@ import {
   PATTERN_NEEDS_CYCLES,
   PATTERN_WINDOW_CYCLES,
   findSymptom,
-  isBleeding,
   median,
   patternsIn,
 } from '@emi/cycle';
-import type { DayRecord } from '@emi/crypto';
 import type { PhaseName, PhaseSpan } from '@emi/tokens';
 
 import type { CycleRow } from '../../data/cycleRepository';
@@ -15,6 +13,8 @@ import { listCycles } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
 import { listDayLogs } from '../../data/dayLogRepository';
 import type { DayVault } from '../../services/vault/dayVault';
+import type { ReadCycle } from '../cycle/cyclesRead';
+import { cyclesRead, medianCycleLengthDays } from '../cycle/cyclesRead';
 import { phasesOf, shapeFromLength } from '../cycle/ringInput';
 
 /**
@@ -23,15 +23,8 @@ import { phasesOf, shapeFromLength } from '../cycle/ringInput';
  * reading of the same rows.
  */
 
-/** One cycle as she reads it back, with the arcs that colour it. */
-export interface HistoryCycle {
-  readonly startedOn: string;
-  readonly endedOn: string | null;
-  readonly lengthDays: number | null;
-  readonly periodLengthDays: number | null;
-  /** The four arcs of that cycle, so the row can carry its colour without carrying any text on it. */
-  readonly phases: readonly PhaseSpan[];
-}
+/** One cycle as she reads it back, which is the cycle the screen she opens draws as a strip. */
+export type HistoryCycle = ReadCycle;
 
 /** One symptom that came back, with the name and the colour the screen needs to write it. */
 export interface HistoryPattern {
@@ -54,7 +47,7 @@ export interface History {
   readonly completeCycles: number;
 }
 
-/** A period of unknown length is drawn at its shortest, because nothing yet says it ran longer. */
+/** A period the cache has not closed is one day long here, which is what the arcs are drawn at. */
 const UNCLOSED_PERIOD_DAYS = 1;
 
 function asCycle(row: CycleRow) {
@@ -76,33 +69,6 @@ function medianPeriodDays(complete: readonly CycleRow[], medianLengthDays: numbe
   return bled.length > 0
     ? Math.min(medianLengthDays, Math.round(median(bled)))
     : UNCLOSED_PERIOD_DAYS;
-}
-
-/**
- * The days she bled in a cycle whose period the cache has not closed yet. A period is closed by a
- * recorded day without bleeding, so the cycle she is in has no length of its own while it runs, and
- * a row drawn at one day would show a woman in the middle of her period a cycle she is not having.
- */
-function daysBled(records: readonly DayRecord[], row: CycleRow): number {
-  const bled = records.filter(
-    (record) =>
-      record.day >= row.startedOn &&
-      (row.endedOn === null || record.day <= row.endedOn) &&
-      isBleeding(record),
-  );
-
-  return Math.max(UNCLOSED_PERIOD_DAYS, bled.length);
-}
-
-function spansOf(
-  row: CycleRow,
-  medianLengthDays: number,
-  records: readonly DayRecord[],
-): PhaseSpan[] {
-  const lengthDays = Math.max(row.lengthDays ?? medianLengthDays, 1);
-  const periodDays = row.periodLengthDays ?? daysBled(records, row);
-
-  return phasesOf(shapeFromLength(lengthDays, Math.min(lengthDays, periodDays)));
 }
 
 /**
@@ -163,13 +129,13 @@ export function historyNow(db: Database, vault: DayVault): History {
   // symptoms and the moods, which no other reader of this table needs.
   const records = listDayLogs(db).map((row) => vault.open(row.payload));
   const complete = cycles.filter((cycle) => cycle.lengthDays !== null);
-  const lengths = complete.map((cycle) => cycle.lengthDays as number).slice(-PATTERN_WINDOW_CYCLES);
-  const medianLengthDays = lengths.length > 0 ? Math.round(median(lengths)) : 0;
-
+  const medianLengthDays = medianCycleLengthDays(cycles);
+  // Read once, through the reader the screen she opens reads, so one cycle cannot be two shapes.
+  const read = cyclesRead({ cycles, records });
   const shown = [
-    ...cycles.filter((cycle) => cycle.lengthDays === null),
-    ...complete.slice(-PATTERN_WINDOW_CYCLES),
-  ].sort((one, other) => other.startedOn.localeCompare(one.startedOn));
+    ...read.filter((cycle) => cycle.lengthDays === null),
+    ...read.filter((cycle) => cycle.lengthDays !== null).slice(0, PATTERN_WINDOW_CYCLES),
+  ];
 
   const patterns = patternsIn({ records, cycles: cycles.map(asCycle) });
   // The phase a pattern falls in is read off a cycle of her median length, because a pattern is
@@ -180,13 +146,7 @@ export function historyNow(db: Database, vault: DayVault): History {
       : [];
 
   return {
-    cycles: shown.map((row) => ({
-      startedOn: row.startedOn,
-      endedOn: row.endedOn,
-      lengthDays: row.lengthDays,
-      periodLengthDays: row.periodLengthDays,
-      phases: spansOf(row, medianLengthDays, records),
-    })),
+    cycles: shown,
     patterns: patterns.map((pattern) => named(pattern, medianLengthDays, medianSpans)),
     completeCycles: complete.length,
   };

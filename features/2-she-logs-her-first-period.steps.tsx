@@ -14,9 +14,11 @@ import {
   FULL_TURN_DEGREES,
   GAP_DEGREES,
   MINIMUM_TAP_TARGET,
+  type PhaseName,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
   phaseLabel,
+  phaseNames,
 } from '@emi/tokens';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
@@ -57,8 +59,21 @@ import {
   flowPickerTestID,
 } from '../apps/mobile/src/features/log/FlowPicker';
 import { opensOnParameter, theSymptoms } from '../apps/mobile/src/features/log/askedGroup';
-import { historyCycleTestID } from '../apps/mobile/src/features/history/HistoryScreen';
 import {
+  historyArcTestID,
+  historyBackTestID,
+  historyCycleTestID,
+  historyScreenTestID,
+} from '../apps/mobile/src/features/history/HistoryScreen';
+import {
+  cycleStripBarTestID,
+  cycleStripFillTestID,
+  cycleStripLengthTestID,
+  cycleStripTestID,
+} from '../apps/mobile/src/features/home/CycleStrip';
+import { stripsSheReads } from '../apps/mobile/src/features/home/herCycles';
+import {
+  homeCyclesLineTestID,
   homeFiguresLineTestID,
   homeFiguresPressTestID,
   homeForecastTestID,
@@ -82,6 +97,7 @@ import {
 } from '../apps/mobile/src/features/cycle/CitationRow';
 import { loggedTodayTestID } from '../apps/mobile/src/features/home/LoggedToday';
 import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
+import { cycleLengthSentence, cycleSentence } from '../apps/mobile/src/features/history/copy';
 import { greeting, homeCopy } from '../apps/mobile/src/features/home/copy';
 import { logFlowDoneTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
@@ -604,6 +620,65 @@ function theLastCompleteCycleOnHerPhone(): CycleRow {
   }
 
   return last;
+}
+
+/**
+ * Her cycles as her phone holds them, most recent first, which is the order the strips are drawn
+ * in. The strips are read against the cache, because the cache is where a cycle comes from.
+ */
+function theCyclesHerPhoneHolds(): CycleRow[] {
+  return [...listCycles(herDatabase())]
+    .filter((cycle) => !cycle.isPredicted)
+    .sort((one, other) => other.startedOn.localeCompare(one.startedOn));
+}
+
+/** Every cycle strip on the glass, in the order the screen she opens drew them. */
+function theStripsSheReads(): string[] {
+  const hers = new Set(theCyclesHerPhoneHolds().map((cycle) => cycleStripTestID(cycle.startedOn)));
+
+  return screen
+    .queryAllByTestId(/.+/)
+    .map((element) => String(element.props.testID))
+    .filter((identifier) => hers.has(identifier));
+}
+
+/** The phases one strip drew, which are the phases that cycle had a day for. */
+function thePhasesOfTheStrip(startedOn: string): PhaseName[] {
+  const drawn = new Set(
+    screen.queryAllByTestId(/.+/).map((element) => String(element.props.testID)),
+  );
+
+  return phaseNames.filter((phase) => drawn.has(cycleStripFillTestID(startedOn, phase)));
+}
+
+/** The days one fill of a strip covers, read off the drawing itself. */
+function theDaysOfTheFill(startedOn: string, phase: PhaseName): number {
+  const style = StyleSheet.flatten(
+    screen.getByTestId(cycleStripFillTestID(startedOn, phase)).props.style,
+  ) as { flexGrow?: number };
+
+  return style.flexGrow ?? 0;
+}
+
+/** The days one arc of the same cycle covers on the Insights screen. */
+function theDaysOfTheArc(startedOn: string, phase: PhaseName): number {
+  const style = StyleSheet.flatten(
+    screen.getByTestId(historyArcTestID(startedOn, phase)).props.style,
+  ) as { flexGrow?: number };
+
+  return style.flexGrow ?? 0;
+}
+
+/** Every cycle the Insights screen marks as the one she arrived at. */
+function theCyclesMarkedOnInsights(): string[] {
+  return theCyclesHerPhoneHolds()
+    .filter((cycle) => {
+      const state = screen.getByTestId(historyCycleTestID(cycle.startedOn)).props
+        .accessibilityState as { selected?: boolean } | undefined;
+
+      return state?.selected === true;
+    })
+    .map((cycle) => cycle.startedOn);
 }
 
 /** The address the drawing of the page that says where the figures come from gives it. */
@@ -3121,6 +3196,120 @@ defineFeature(feature, (test) => {
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(whatItSays(herNumberTestID('cycle-length'))).toBe(herCycleLengthOnTheScreenSheOpened);
       expect(screen.getByTestId(homeNumbersTestID)).toBeTruthy();
+    });
+  });
+
+  test('SCREEN-2, she reaches a past cycle from the screen she opens and comes back to it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    let theStripsSheRead: string[] = [];
+    let theCycleShePressed = '';
+    let whatTheStripSaidAboutIt = '';
+    let theArcsTheStripDrew: number[] = [];
+
+    given('her phone holds three cycles of her own', async () => {
+      await herPhoneHolds(whenSheOpensIt, daysOfHerThreeCycles(today));
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+      theStripsSheRead = theStripsSheReads();
+    });
+
+    then(
+      'she reads a strip for the cycle she is in, and one for each of the three cycles before it',
+      () => {
+        const hers = theCyclesHerPhoneHolds();
+
+        expect(theStripsSheRead).toEqual(hers.map((cycle) => cycleStripTestID(cycle.startedOn)));
+        expect(theStripsSheRead).toHaveLength(stripsSheReads);
+        expect(hers[0]?.lengthDays).toBeNull();
+      },
+    );
+
+    and(
+      'each strip names the days that cycle covers, how long it ran, and how much of it she bled',
+      () => {
+        for (const cycle of theCyclesHerPhoneHolds()) {
+          const said = whatItSays(cycleStripTestID(cycle.startedOn));
+
+          expect(said).toContain(cycleSentence(cycle.startedOn, cycle.endedOn));
+          expect(said).toContain(cycleLengthSentence(cycle.lengthDays, cycle.periodLengthDays));
+        }
+      },
+    );
+
+    and('the length on each strip is the length her phone holds for that cycle', () => {
+      for (const cycle of theCyclesHerPhoneHolds().filter((row) => row.lengthDays !== null)) {
+        expect(whatItSays(cycleStripLengthTestID(cycle.startedOn))).toContain(
+          String(cycle.lengthDays),
+        );
+        expect(whatItSays(cycleStripLengthTestID(cycle.startedOn))).toBe(
+          cycleLengthSentence(cycle.lengthDays, cycle.periodLengthDays),
+        );
+      }
+
+      expect(theCyclesHerPhoneHolds().map((cycle) => cycle.lengthDays)).toEqual([null, 31, 30, 24]);
+    });
+
+    and('each strip draws the four phase fills, and not one word sits on a fill', () => {
+      for (const cycle of theCyclesHerPhoneHolds()) {
+        expect(thePhasesOfTheStrip(cycle.startedOn)).toEqual([...phaseNames]);
+        expect(textIn(screen.getByTestId(cycleStripBarTestID(cycle.startedOn)))).toEqual([]);
+
+        for (const phase of phaseNames) {
+          expect(theDaysOfTheFill(cycle.startedOn, phase)).toBeGreaterThan(0);
+          expect(textIn(screen.getByTestId(cycleStripFillTestID(cycle.startedOn, phase)))).toEqual(
+            [],
+          );
+        }
+      }
+    });
+
+    and('under the strips she is told what they are and that one of them opens', () => {
+      expect(whatItSays(homeCyclesLineTestID)).not.toBe('');
+    });
+
+    when('she presses the strip of the cycle before the one she is in', async () => {
+      const past = theCyclesHerPhoneHolds()[1] as CycleRow;
+
+      theCycleShePressed = past.startedOn;
+      whatTheStripSaidAboutIt = whatItSays(cycleStripLengthTestID(past.startedOn));
+      theArcsTheStripDrew = phaseNames.map((phase) => theDaysOfTheFill(past.startedOn, phase));
+
+      await shePresses(cycleStripTestID(past.startedOn));
+    });
+
+    then('she is reading Insights, with that cycle marked and no other cycle marked', () => {
+      expect(screen.getByTestId(historyScreenTestID)).toBeTruthy();
+      expect(theCyclesMarkedOnInsights()).toEqual([theCycleShePressed]);
+    });
+
+    and(
+      'Insights gives that cycle the same length and the same four arcs the strip gave it',
+      () => {
+        expect(whatItSays(historyCycleTestID(theCycleShePressed))).toContain(
+          whatTheStripSaidAboutIt,
+        );
+        expect(phaseNames.map((phase) => theDaysOfTheArc(theCycleShePressed, phase))).toEqual(
+          theArcsTheStripDrew,
+        );
+      },
+    );
+
+    when('she presses the way back', async () => {
+      await shePresses(historyBackTestID);
+    });
+
+    then('she is on the screen she opened, reading the same four strips', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(theStripsSheReads()).toEqual(theStripsSheRead);
+      expect(theStripsSheReads()).toHaveLength(stripsSheReads);
     });
   });
 });
