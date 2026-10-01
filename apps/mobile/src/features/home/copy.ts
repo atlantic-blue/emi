@@ -22,6 +22,7 @@ export const homeCopy = {
     hers: words('home.numbers.hers'),
     published: words('home.numbers.published'),
     line: words('home.numbers.line'),
+    press: words('home.numbers.press'),
   },
 } as const;
 

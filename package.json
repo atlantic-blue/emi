@@ -44,6 +44,7 @@
     "generate:delete-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern deleteEverything.picture",
     "generate:welcome-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern welcome.picture",
     "generate:cycle-length-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern cycleLength.picture",
+    "generate:figures-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern figures.picture",
     "generate:first-forecast-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern firstForecast.picture",
     "generate:promise-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern thePromise.picture",
     "generate:hold-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern holdToBegin.picture",

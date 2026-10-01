@@ -68,6 +68,14 @@ export const english = {
   'cycle.day.cycleDay': 'cycle day {cycle}',
   'cycle.day.expected': 'your period is expected',
   'cycle.day.notYet': 'not yet, this day has not happened',
+  'cycle.figures.back': 'Back',
+  'cycle.figures.cycleLength': 'Cycle length',
+  'cycle.figures.cycleLengthVariation': 'Cycle length variation',
+  'cycle.figures.periodDuration': 'Period length',
+  'cycle.figures.printed': 'A paper is named here as its journal prints it.',
+  'cycle.figures.quoted':
+    'Each figure is quoted in the words the paper reports it in, so you can check it rather than trust it.',
+  'cycle.figures.title': 'Where these figures come from',
   'cycle.noRing.line': 'The ring needs a period. Log a day you bled and it appears.',
   'cycle.noRing.title': 'Nothing to draw yet',
   'cycle.phaseLine.day': 'Day {day}',
@@ -205,6 +213,7 @@ export const english = {
   'home.numbers.line':
     'The published figure is the one the paper reports, and the paper is one press away.',
   'home.numbers.periodDuration': 'Last period',
+  'home.numbers.press': 'Where these figures come from',
   'home.numbers.published': 'Published',
   'home.numbers.range': '{low} to {high}',
   'home.numbers.upTo': 'up to {days}',
