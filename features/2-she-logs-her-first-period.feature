@@ -459,3 +459,13 @@ Feature: She opens Emi and logs her first period
     Then she is on the screen she opened, reading a ring drawn from the day she logged
     And the ring says she is on the first day of a cycle of the length she gave
     And nothing offers to log today any more, and the two lines are gone
+
+  Scenario: SCREEN-2, every section of the screen she opens is drawn from her own data or absent with a sentence
+    Given her answers, and her own days at four states: nothing recorded, one cycle, two cycles and six
+    When she opens Emi at every one of those four states
+    Then everything she reads on it stands on days she recorded herself
+    And a section her own days cannot fill is absent, with one sentence in its place where it owes her one
+    And no chart, no strip, no row and no card is drawn from nothing, at any of the four
+    And a section arrives on the state her own days earn it, and never on the state before
+    And every part of the screen answers to a section, so one nobody accounted for cannot arrive unread
+    And no word Emi can say, in any of its three languages, calls anything on a screen a sample
