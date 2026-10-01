@@ -509,3 +509,21 @@ Feature: She opens Emi and logs her first period
     And a section arrives on the state her own days earn it, and never on the state before
     And every part of the screen answers to a section, so one nobody accounted for cannot arrive unread
     And no word Emi can say, in any of its three languages, calls anything on a screen a sample
+
+  Scenario: SCREEN-1, she completes the first run with no date, logs a period, and reads a ring
+    Given she has never opened Emi before
+    When she opens Emi
+    And she skips the tour Emi opens with
+    And she answers every question of the first run, and says she does not remember her last period
+    And she presses and holds the ring
+    Then she is looking at the screen that says what the ring needs
+    And there is no ring, and nothing at all is drawn in place of one
+    And the card counts the cycle length she gave, and no length Emi picked
+    And her phone holds no day at all
+    And that is the drawing of day one, part for part, in the order it places them
+    When she presses the button that offers to log today
+    And she says her period came today
+    And she presses the way back
+    Then she is reading a ring drawn from the day she logged
+    And the ring says she is on the first day of a cycle of the length she gave
+    And nothing offers to log today any more

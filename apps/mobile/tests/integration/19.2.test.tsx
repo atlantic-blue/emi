@@ -1,7 +1,6 @@
 import { join } from 'node:path';
 
 import { phaseLabel } from '@emi/tokens';
-import { tabTestID } from '@emi/ui';
 import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
@@ -11,7 +10,6 @@ import { listDayLogs } from '../../src/data/dayLogRepository';
 import { cycleCopy, ringSpokenLabel } from '../../src/features/cycle/copy';
 import { statedLengthSentence } from '../../src/features/forecast/copy';
 import { learningStatedLengthTestID, learningTestID } from '../../src/features/forecast/Learning';
-import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
 import {
   homeLogTodayTestID,
   homeNoRingLineTestID,
@@ -29,11 +27,10 @@ import { dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { theVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn } from '../fixtures/renderedText';
 import {
-  type Part,
-  partsMissing,
-  theIdentifiersDrawn,
-  thePartsOfTheMockup,
-} from '../fixtures/theMockupScreen';
+  thePartsOfTheDayOneDrawing,
+  thePartsTheDayOneDrawingNames,
+} from '../fixtures/theDrawingOfDayOne';
+import { partsMissing, theIdentifiersDrawn } from '../fixtures/theMockupScreen';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -55,27 +52,6 @@ const sheSaidHerCycleRuns = defaultCycleLengthDays + 1;
 async function sheOpensEmiOnDayOne(): Promise<void> {
   await herPhoneHolds(whenSheOpensIt, [], sheSaidHerCycleRuns);
   await renderRouter(appDirectory, { initialUrl: '/' });
-}
-
-/**
- * What each part of the drawing is built under, in the drawing's order.
- *
- * Every part of this drawing is built, which is what finishes it: the two lines and the card were
- * already there, and the way to log today is what this step adds. So nothing here is owed to
- * another step, unlike the drawing of the sections underneath it.
- */
-function theDrawingPlaces(): Part[] {
-  return [
-    { builtUnder: [homeHeaderTestID], name: 'HomeHeader' },
-    { builtUnder: [homeNoRingTitleTestID], name: 'Text' },
-    { builtUnder: [homeNoRingLineTestID], name: 'Text' },
-    { builtUnder: [learningTestID], name: 'Learning' },
-    { builtUnder: [homeLogTodayTestID], name: 'PrimaryButton' },
-    { builtUnder: [tabTestID('index')], name: 'BottomNavigation' },
-    { builtUnder: [tabTestID('log/index')], name: 'BottomNavigation' },
-    { builtUnder: [tabTestID('history')], name: 'BottomNavigation' },
-    { builtUnder: [tabTestID('settings/index')], name: 'BottomNavigation' },
-  ];
 }
 
 /** What the one button says, read off the glass rather than off the label handed to it. */
@@ -111,7 +87,7 @@ describe('day one says what the ring needs and the first period she logs draws i
 
     it('draws no ring, and the drawing of day one places none either', () => {
       expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
-      expect(thePartsOfTheMockup('todayEmpty').map((part) => part.name)).not.toContain('CycleRing');
+      expect(thePartsTheDayOneDrawingNames().map((part) => part.name)).not.toContain('CycleRing');
       expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
     });
 
@@ -134,14 +110,14 @@ describe('day one says what the ring needs and the first period she logs draws i
     });
 
     it('is held to the parts the drawing places, in the drawing order, and to no other list', () => {
-      expect(thePartsOfTheMockup('todayEmpty').map((part) => part.name)).toEqual(
-        theDrawingPlaces().map((part) => part.name),
+      expect(thePartsTheDayOneDrawingNames().map((part) => part.name)).toEqual(
+        thePartsOfTheDayOneDrawing().map((part) => part.name),
       );
     });
 
     it('answers for every part of the drawing, in the order the drawing places them', () => {
-      expect(partsMissing(theDrawingPlaces(), theIdentifiersDrawn())).toEqual([]);
-      expect(theDrawingPlaces()).toHaveLength(9);
+      expect(partsMissing(thePartsOfTheDayOneDrawing(), theIdentifiersDrawn())).toEqual([]);
+      expect(thePartsOfTheDayOneDrawing()).toHaveLength(9);
     });
 
     it('puts the way to log today under everything she reads, which is last in the body', () => {
