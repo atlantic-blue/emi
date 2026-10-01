@@ -36,6 +36,7 @@ async function sheOpensTheCalendar(chosen?: string): Promise<Painted> {
         onBack={() => undefined}
         onChoose={chose}
         onContinue={continued}
+        onWayPast={() => undefined}
       />
     </OnAPhone>,
   );

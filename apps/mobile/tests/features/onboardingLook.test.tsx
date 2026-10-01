@@ -219,6 +219,7 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
           onBack={() => undefined}
           onChoose={() => undefined}
           onContinue={() => undefined}
+          onWayPast={() => undefined}
         />
       </OnAPhone>,
     );
@@ -346,6 +347,7 @@ describe('the first run carries the design system', () => {
             onBack={stepsBack}
             onChoose={() => undefined}
             onContinue={() => undefined}
+            onWayPast={() => undefined}
           />
         </OnAPhone>,
       );
@@ -475,6 +477,7 @@ describe('the first run carries the design system', () => {
             onBack={() => undefined}
             onChoose={() => undefined}
             onContinue={() => undefined}
+            onWayPast={() => undefined}
           />
         </OnAPhone>,
       );
@@ -495,6 +498,7 @@ describe('the first run carries the design system', () => {
             onBack={() => undefined}
             onChoose={() => undefined}
             onContinue={() => undefined}
+            onWayPast={() => undefined}
           />
         </OnAPhone>,
       );

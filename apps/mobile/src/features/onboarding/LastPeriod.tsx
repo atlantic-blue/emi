@@ -26,6 +26,8 @@ interface Props {
   readonly onChoose: (day: string) => void;
   readonly onContinue: () => void;
   readonly onBack: () => void;
+  /** The way past, for a woman who has read the question and cannot name the day. */
+  readonly onWayPast: () => void;
 }
 
 /**
@@ -34,7 +36,14 @@ interface Props {
  * It is the one question with no way past it. SCREEN-1 makes this answer the one the first run
  * cannot do without, so the frame is given no Skip and the button waits until she has picked a day.
  */
-export function LastPeriod({ now, chosen, onChoose, onContinue, onBack }: Props): ReactNode {
+export function LastPeriod({
+  now,
+  chosen,
+  onChoose,
+  onContinue,
+  onBack,
+  onWayPast,
+}: Props): ReactNode {
   const today = localDay(now);
 
   return (
@@ -45,8 +54,10 @@ export function LastPeriod({ now, chosen, onChoose, onContinue, onBack }: Props)
       linesComeFirst
       onAction={onContinue}
       onBack={onBack}
+      onWayPast={onWayPast}
       screen="lastPeriod"
       title={firstRunCopy.lastPeriod.title}
+      wayPastLabel={firstRunCopy.lastPeriod.wayPast}
     >
       <View style={styles.named} testID={namedDaysTestID}>
         {daysBackFrom(today, 2).map((day) => {

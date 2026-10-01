@@ -29,6 +29,14 @@ interface Props {
   /** Left out where the way past is the plain one, and then the frame writes its own word. */
   readonly skipLabel?: string;
   /**
+   * Left out where the answer is required, and then no way past is drawn under the body. The Skip
+   * above sits over the question; this one sits under it, where a woman who has read the question
+   * and cannot answer it is looking.
+   */
+  readonly onWayPast?: () => void;
+  /** Left out where the way past is the plain one, and then the frame writes its own word. */
+  readonly wayPastLabel?: string;
+  /**
    * The lines stand above what she is asked rather than under it. A screen whose question is tall
    * enough to fill the glass puts the lines under it out of sight, and a line she has to scroll to
    * reach is a line she reads after she has answered, which is too late for a line about what Emi
@@ -42,6 +50,9 @@ export const onboardingActionTestID = 'onboarding-action';
 export const onboardingProgressTestID = 'onboarding-progress';
 export const onboardingBackTestID = 'onboarding-back';
 export const onboardingSkipTestID = 'onboarding-skip';
+export const onboardingTitleTestID = 'onboarding-title';
+export const onboardingLinesTestID = 'onboarding-lines';
+export const onboardingWayPastTestID = 'onboarding-way-past';
 
 /** Points. The arrow is read at the size the rest of the set is read at. */
 const BACK_MARK_SIZE = 22;

@@ -52,6 +52,15 @@ Feature: She opens Emi and logs her first period
     And she presses and holds the ring
     Then the only thing she could type into was her name
 
+  Scenario: SCREEN-1, she says she does not remember when her last period started and the first run moves on
+    Given she has never opened Emi before
+    When she opens Emi
+    And she skips the tour Emi opens with
+    And she reaches the question about when her last period started
+    And she says she does not remember
+    Then she is being asked how long her cycle runs
+    And the question she could not answer is behind her
+
   Scenario: SCREEN-2, the home screen shows the ring, the day of her cycle and the phase she is in
     Given her phone holds six cycles of her own
     When she opens Emi

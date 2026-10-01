@@ -163,6 +163,7 @@ import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldTo
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
 import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
@@ -177,7 +178,10 @@ import { resetExpoSecureStore } from '../apps/mobile/tests/fixtures/expoSecureSt
 import { firstForecastActionTestID } from '../apps/mobile/src/features/onboarding/FirstForecast';
 import { promiseActionTestID } from '../apps/mobile/src/features/onboarding/ThePromise';
 import { whatEmiDoesActionTestID } from '../apps/mobile/src/features/onboarding/WhatEmiDoesWithIt';
-import { sheAnswersEveryQuestion } from '../apps/mobile/tests/fixtures/theFirstRun';
+import {
+  sheAnswersEveryQuestion,
+  sheReachesTheLastPeriodQuestion,
+} from '../apps/mobile/tests/fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
 import {
   aBleedingDay,
@@ -1312,6 +1316,44 @@ defineFeature(feature, (test) => {
       // phone holds are the two the questions asked her for.
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(settingKeys.filter((key) => /account|email|password|sign.?in/i.test(key))).toEqual([]);
+    });
+  });
+
+  test('SCREEN-1, she says she does not remember when her last period started and the first run moves on', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
+    });
+
+    and('she reaches the question about when her last period started', async () => {
+      await sheReachesTheLastPeriodQuestion();
+
+      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+    });
+
+    and('she says she does not remember', async () => {
+      await shePresses(onboardingWayPastTestID);
+    });
+
+    then('she is being asked how long her cycle runs', () => {
+      expect(app.pathname()).toBe('/onboarding/cycle-length');
+      expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
+    });
+
+    and('the question she could not answer is behind her', () => {
+      expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
     });
   });
 

@@ -50,6 +50,12 @@ export const firstRunCopy = {
       words('onboarding.lastPeriod.line.privacy'),
     ],
     action: words('onboarding.lastPeriod.action'),
+    /**
+     * The sentence the question about the period before already offers, under the same key. Two
+     * questions a woman may be unable to answer, and one sentence for both of them, because a
+     * second key is a second sentence in three languages the moment somebody edits one of them.
+     */
+    wayPast: words('onboarding.periodBefore.skip'),
   },
   periodBefore: {
     title: words('onboarding.periodBefore.title'),

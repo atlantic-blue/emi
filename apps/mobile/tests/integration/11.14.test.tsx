@@ -119,6 +119,7 @@ async function theScreenOnAnIPhone16(): Promise<PlacedBox[]> {
         onBack={() => undefined}
         onChoose={() => undefined}
         onContinue={() => undefined}
+        onWayPast={() => undefined}
       />
     </OnAPhone>,
   );

@@ -56,6 +56,19 @@ export interface HerAnswers {
  * A question she is not given an answer for is skipped, because only the last period is required
  * and a walk that presses on without answering would be left standing on the screen.
  */
+/**
+ * The welcome and the two questions she may pass, pressed past, which leaves her looking at the
+ * question about when her last period started.
+ *
+ * A walk that is about that question starts here rather than answering it, because the question
+ * is the thing under test and `sheAnswersEveryQuestion` answers it on the way through.
+ */
+export async function sheReachesTheLastPeriodQuestion(): Promise<void> {
+  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+  await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+}
+
 export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void> {
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));
 

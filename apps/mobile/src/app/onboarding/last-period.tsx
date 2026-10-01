@@ -15,6 +15,7 @@ export default function LastPeriodRoute(): ReactNode {
       onBack={() => router.back()}
       onChoose={setPeriodStartedOn}
       onContinue={() => router.push('/onboarding/period-before')}
+      onWayPast={() => undefined}
     />
   );
 }
