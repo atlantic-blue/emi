@@ -98,6 +98,7 @@ export const spanish: CatalogueIn<'es'> = {
     other: 'Fase de ovulación, un ciclo de {count} días',
   },
   'cycle.phaseLine.period': 'Tu periodo, día {day} de unos {days}',
+  'cycle.ring.of': 'de {length}',
   'cycle.ring.spoken': 'Día {day} de {length}, {phase}',
 
   'export.again': 'Crearlos de nuevo',
@@ -253,6 +254,7 @@ export const spanish: CatalogueIn<'es'> = {
   'home.waiting.trend.read': 'Emi no dibuja nada de nada, y no guarda datos de ejemplo.',
   'home.trend.spoken':
     'Tus últimos {cycles}, de {shortest} a {longest} días, sobre el rango publicado de {low} a {high} días.',
+  'home.week.today': 'HOY',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Cancelar',

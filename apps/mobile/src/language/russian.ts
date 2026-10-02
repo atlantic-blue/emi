@@ -104,6 +104,7 @@ export const russian: CatalogueIn<'ru'> = {
     many: 'Фаза овуляции, цикл {count} дней',
   },
   'cycle.phaseLine.period': 'Менструация, день {day} из примерно {days}',
+  'cycle.ring.of': 'из {length}',
   'cycle.ring.spoken': 'День {day} из {length}, {phase}',
 
   'export.again': 'Создать заново',
@@ -262,6 +263,7 @@ export const russian: CatalogueIn<'ru'> = {
   'home.waiting.trend.read': 'Emi ничего не рисует из ничего и не хранит примерных данных.',
   'home.trend.spoken':
     'Ваши последние {cycles}, от {shortest} до {longest} дней, на опубликованном диапазоне от {low} до {high} дней.',
+  'home.week.today': 'СЕГОДНЯ',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Отмена',

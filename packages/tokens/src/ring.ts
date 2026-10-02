@@ -57,6 +57,12 @@ export const PHASE_NAME_ROLE: TypeRoleName = 'label-sm';
 /** The role the cycle day takes, which is the monospaced face the design system gives a figure. */
 export const CYCLE_DAY_ROLE: TypeRoleName = 'data-lg';
 
+/**
+ * The role the length of the cycle takes, on the line under the day. It says what the figure above
+ * it is counted out of, so it is read after the figure and never instead of it.
+ */
+export const CYCLE_LENGTH_ROLE: TypeRoleName = 'body-sm';
+
 /** A whole turn of the ring, which the arcs and the gaps between them share. */
 export const FULL_TURN_DEGREES = 360;
 
@@ -253,6 +259,88 @@ export function ringGeometry({ cycleLengthDays, day, phases }: RingInput): RingG
     beadDegrees:
       today.startDegrees + ((day - today.firstDay + 0.5) / today.days) * today.sweepDegrees,
   };
+}
+
+/** The two strengths one phase is painted in: the days she has lived, and the days ahead of her. */
+export type ArcStrength = 'elapsed' | 'ahead';
+
+/** One stroke of the track, as the renderer is asked to draw it. */
+export interface PaintedArc {
+  readonly phase: PhaseName;
+  readonly strength: ArcStrength;
+  /** Where the path starts, which is pulled in from the arc by the reach of a round end. */
+  readonly startDegrees: number;
+  readonly sweepDegrees: number;
+  /** Whether the two ends are drawn round. A stroke with no room for two keeps them square. */
+  readonly roundEnds: boolean;
+}
+
+/**
+ * How far past its path a round end is painted, as an angle of the ring it is drawn on. A round
+ * end is a half disc of half the track width, so it reaches that far along the track.
+ */
+export function roundEndDegrees(radius: number, trackWidth = RING_TRACK_WIDTH): number {
+  return ((trackWidth / 2 / radius) * FULL_TURN_DEGREES) / (2 * Math.PI);
+}
+
+/**
+ * One stroke, pulled in so that what is painted covers the degrees it stands for and no more.
+ *
+ * Two round ends across a gap of 3 degrees reach 16 points into 5.9 points of ground, which
+ * closes the boundary contract SEE-1 holds the ring to. Pulling the path in by the reach of its
+ * own end puts the ground back, and a stroke too short to carry two round ends keeps square ones
+ * rather than painting itself wider than the day it stands for.
+ */
+function pulledIn(
+  startDegrees: number,
+  sweepDegrees: number,
+  reach: number,
+): Pick<PaintedArc, 'startDegrees' | 'sweepDegrees' | 'roundEnds'> {
+  if (sweepDegrees <= reach * 2) {
+    return { startDegrees, sweepDegrees, roundEnds: false };
+  }
+
+  return {
+    startDegrees: startDegrees + reach,
+    sweepDegrees: sweepDegrees - reach * 2,
+    roundEnds: true,
+  };
+}
+
+/**
+ * The strokes one ring is painted with, in the order they are drawn.
+ *
+ * A phase with days ahead of her is painted once across the whole arc at a fifth, and the days
+ * she has lived are painted over it at full strength. The two therefore never meet as two round
+ * ends in the middle of a phase, which would open a notch there and read as a boundary that her
+ * cycle does not have.
+ */
+export function paintedArcs(
+  geometry: RingGeometry,
+  radius: number,
+  trackWidth = RING_TRACK_WIDTH,
+): PaintedArc[] {
+  const reach = roundEndDegrees(radius, trackWidth);
+  const painted: PaintedArc[] = [];
+
+  for (const arc of geometry.arcs) {
+    if (arc.sweepDegrees - arc.elapsedDegrees > 0) {
+      painted.push({
+        phase: arc.phase,
+        strength: 'ahead',
+        ...pulledIn(arc.startDegrees, arc.sweepDegrees, reach),
+      });
+    }
+    if (arc.elapsedDegrees > 0) {
+      painted.push({
+        phase: arc.phase,
+        strength: 'elapsed',
+        ...pulledIn(arc.startDegrees, arc.elapsedDegrees, reach),
+      });
+    }
+  }
+
+  return painted;
 }
 
 /** Every degree the ring covers: the arcs it draws plus the ground it leaves between them. */

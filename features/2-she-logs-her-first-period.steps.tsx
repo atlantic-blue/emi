@@ -32,7 +32,6 @@ import {
   MINIMUM_TAP_TARGET,
   type PhaseName,
   RING_OPEN_MILLISECONDS,
-  RING_TRACK_WIDTH,
   colour,
   colours,
   contrastRatio,
@@ -56,10 +55,14 @@ import { RoundIconButton } from '../apps/mobile/src/components/RoundIconButton';
 import {
   cycleRingTestID,
   ringArcTestID,
-  ringBeadTestID,
   ringTrackTestID,
 } from '../apps/mobile/src/components/CycleRing';
-import { cycleCopy, ringSpokenLabel } from '../apps/mobile/src/features/cycle/copy';
+import {
+  cycleCopy,
+  ringCycleLengthWords,
+  ringSpokenLabel,
+  weekTodayWord,
+} from '../apps/mobile/src/features/cycle/copy';
 import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
 import { OnAPhone } from '../apps/mobile/tests/fixtures/theSafeArea';
 import { learningStatedLengthTestID } from '../apps/mobile/src/features/forecast/Learning';
@@ -173,7 +176,12 @@ import {
 } from '../apps/mobile/src/features/home/copy';
 import { logFlowDoneTestID, logFlowTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
-import { weekDayTestID, weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
+import {
+  weekDateTestID,
+  weekDayTestID,
+  weekLetterTestID,
+  weekStripTestID,
+} from '../apps/mobile/src/features/home/WeekStrip';
 import {
   herNumberTestID,
   homeNumbersTestID,
@@ -217,7 +225,11 @@ import {
   ordinal,
   statedLengthSentence,
 } from '../apps/mobile/src/features/forecast/copy';
-import { monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
+import {
+  monthLabel,
+  startOfMonth,
+  weekdayLetter,
+} from '../apps/mobile/src/features/onboarding/days';
 import {
   defaultCycleLengthDays,
   forecastFromHerAnswers,
@@ -458,6 +470,15 @@ import {
 } from '../apps/mobile/tests/fixtures/whatSheLoggedToday';
 import { daysNamedIn, sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
 import {
+  type DrawnArc,
+  theArcsOnTheRing,
+  theBeadDegrees,
+  theBeadSheSees,
+  theEndsOfTheArcs,
+  theGroundBetweenTheArcs,
+  theMiddleOfTheRing,
+} from '../apps/mobile/tests/fixtures/theRingSheReads';
+import {
   herCyclesVaryBy,
   herLastCycleRuns,
   herLastPeriodRuns,
@@ -669,87 +690,6 @@ async function sheAnswersEveryQuestionOfTheFirstRun(): Promise<void> {
 /** What the ring says about the day she is on, read off the ring and not off the arithmetic. */
 function theRingSays(): string {
   return String(screen.getByTestId(cycleRingTestID).props.accessibilityLabel);
-}
-
-/** One arc of the track, as it was drawn, measured in degrees clockwise from twelve o'clock. */
-interface DrawnArc {
-  readonly phase: string;
-  readonly startDegrees: number;
-  readonly sweepDegrees: number;
-}
-
-/** The ring is square, so the canvas it was drawn on gives its centre and its radius. */
-function theRingCanvas(): { centre: number; radius: number } {
-  const style = StyleSheet.flatten(screen.getByTestId(cycleRingTestID).props.style) ?? {};
-  const diameter = Number((style as { height?: unknown }).height);
-
-  return { centre: diameter / 2, radius: (diameter - RING_TRACK_WIDTH) / 2 };
-}
-
-/** Where a point on the drawing sits on the ring, clockwise from twelve o'clock. */
-function degreesAt(x: number, y: number): number {
-  const { centre } = theRingCanvas();
-  const turned = (Math.atan2(y - centre, x - centre) * 180) / Math.PI + 90;
-
-  return (turned + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
-}
-
-/** The two ends of one drawn path, read off the `d` the renderer put on the glass. */
-function endsOf(path: string): { from: number; to: number } {
-  const numbers = path.match(/-?\d+(?:\.\d+)?/g) ?? [];
-
-  if (numbers.length < 9) {
-    throw new Error(`${JSON.stringify(path)} is not an arc this ring drew`);
-  }
-
-  return {
-    from: degreesAt(Number(numbers[0]), Number(numbers[1])),
-    to: degreesAt(Number(numbers[7]), Number(numbers[8])),
-  };
-}
-
-/**
- * The arcs the ring actually drew, measured off the paths rather than recomputed. A phase draws
- * the days she has lived, the days ahead of her, or both, and the two together are its one arc.
- */
-function theArcsOnTheRing(): DrawnArc[] {
-  const drawn: DrawnArc[] = [];
-
-  for (const phase of ['period', 'follicular', 'ovulation', 'luteal'] as const) {
-    const elapsed = screen.queryByTestId(ringArcTestID(phase, 'elapsed'));
-    const ahead = screen.queryByTestId(ringArcTestID(phase, 'ahead'));
-
-    if (elapsed === null && ahead === null) {
-      continue;
-    }
-
-    const first = endsOf(String((elapsed ?? ahead)?.props.d));
-    const last = endsOf(String((ahead ?? elapsed)?.props.d));
-    const sweep = (last.to - first.from + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
-
-    drawn.push({ phase, startDegrees: first.from, sweepDegrees: sweep });
-  }
-
-  return drawn.sort((one, other) => one.startDegrees - other.startDegrees);
-}
-
-/** The ground between one arc and the next, and between the last arc and the first. */
-function theGroundBetweenTheArcs(): number[] {
-  const arcs = theArcsOnTheRing();
-
-  return arcs.map((arc, at) => {
-    const next = arcs[(at + 1) % arcs.length] as DrawnArc;
-    const ends = arc.startDegrees + arc.sweepDegrees;
-
-    return (next.startDegrees - ends + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
-  });
-}
-
-/** Where the bead sits on the ring, read off the circle the renderer drew. */
-function theBeadDegrees(): number {
-  const bead = screen.getByTestId(ringBeadTestID);
-
-  return degreesAt(Number(bead.props.cx), Number(bead.props.cy));
 }
 
 /** The three sentences of the first card, which is the first thing Emi ever says to her. */
@@ -4988,6 +4928,130 @@ defineFeature(feature, (test) => {
       await shePresses(daySheetTestID);
 
       expect(app.pathname()).toBe(`/day/${sheWasSentTo}`);
+    });
+  });
+
+  // The ring and the week above it are the two drawings she reads before she reads a word, so
+  // both are proved on the screen she actually opens rather than against either part on its own.
+  //
+  // It runs before the scenario below rather than after it, which is where the feature file reads
+  // it. That one draws the four buttons on a page of its own, outside the provider the
+  // application wraps them in, and the font loader never settles again in this file afterwards:
+  // every later scenario that drives the router waits for a screen that never arrives.
+  test('SCREEN-2, the ring and the week strip take the redesign look', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const herCycle = { cycleLengthDays: 28, dayOfCycle: 2, periodDays: 4 };
+
+    /** Her week, in the order the strip drew it, named by the day each column stands for. */
+    const theColumnsOfHerWeek = (): string[] => {
+      const named = weekDayTestID('');
+
+      return screen
+        .queryAllByTestId(new RegExp(`^${named}`))
+        .map((column) => String(column.props.testID).slice(named.length));
+    };
+
+    /** What one column of the strip wrote in place of the letter of its weekday. */
+    const theLetterOver = (day: string): string =>
+      textIn(screen.getByTestId(weekLetterTestID(day))).join('');
+
+    /** How the disc around one date is drawn, which is the whole of what that day says. */
+    const theDiscOn = (day: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(weekDateTestID(day)).props.style) ?? {}) as Record<
+        string,
+        unknown
+      >;
+
+    given('her phone holds six cycles of her own', async () => {
+      // The length of her period is one of her answers at the first run, so the arc ahead of her
+      // covers the days she is expected to bleed on rather than only the days she already logged.
+      await herPhoneHolds(
+        whenSheOpensIt,
+        herRecordedDays(herCycle),
+        herCycle.cycleLengthDays,
+        herCycle.periodDays,
+      );
+    });
+
+    when('she opens Emi and reads the ring and the week above it', async () => {
+      await sheOpens('/');
+
+      expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
+      expect(screen.getByTestId(weekStripTestID)).toBeTruthy();
+      expect(theColumnsOfHerWeek()).toHaveLength(7);
+    });
+
+    then(
+      'the middle of the ring names her phase, then the day she is on, then the length of her cycle',
+      () => {
+        expect(theMiddleOfTheRing()).toEqual([
+          phaseLabel.period,
+          String(herCycle.dayOfCycle),
+          ringCycleLengthWords(herCycle.cycleLengthDays),
+        ]);
+      },
+    );
+
+    and(
+      'every arc ends in a round end, and ground still shows at every boundary between two phases',
+      () => {
+        const ends = theEndsOfTheArcs();
+        const ground = theGroundBetweenTheArcs();
+
+        expect(ends.length).toBeGreaterThan(1);
+        expect(ends.filter((end) => end !== 'round')).toEqual([]);
+
+        // Ground first, and the measured width second, because a boundary of no degrees is a
+        // change of colour and nothing else.
+        expect(ground.length).toBeGreaterThan(1);
+        for (const gap of ground) {
+          expect(gap).toBeGreaterThan(0);
+          expect(gap).toBeCloseTo(GAP_DEGREES, 2);
+        }
+      },
+    );
+
+    and('the bead on today is a white disc with a dark line around it', () => {
+      expect(theBeadSheSees()).toEqual({ fill: colour.card, line: colour.text });
+    });
+
+    and(
+      'the days she bled are filled discs, and the day her period is expected on is a dashed outline',
+      () => {
+        const filled = theColumnsOfHerWeek().filter(
+          (day) => theDiscOn(day)['backgroundColor'] === colour.period,
+        );
+        const outlined = theColumnsOfHerWeek().filter(
+          (day) => theDiscOn(day)['borderStyle'] === 'dashed',
+        );
+
+        expect(filled.length).toBeGreaterThan(0);
+        expect(outlined.length).toBeGreaterThan(0);
+
+        for (const day of outlined) {
+          expect(theDiscOn(day)).toMatchObject({
+            borderColor: colour.period,
+            borderStyle: 'dashed',
+          });
+          expect(theDiscOn(day)['backgroundColor']).toBeUndefined();
+        }
+      },
+    );
+
+    and('the column she is on is named TODAY in place of its weekday letter', () => {
+      const hers = theColumnsOfHerWeek().filter((day) => day === today);
+
+      expect(hers).toEqual([today]);
+      expect(theLetterOver(today)).toBe(weekTodayWord());
+      expect(theLetterOver(today)).not.toBe(weekdayLetter(today));
+
+      for (const day of theColumnsOfHerWeek().filter((column) => column !== today)) {
+        expect(theLetterOver(day)).toBe(weekdayLetter(day));
+      }
     });
   });
 
