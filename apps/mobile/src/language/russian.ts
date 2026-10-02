@@ -85,8 +85,8 @@ export const russian: CatalogueIn<'ru'> = {
   'cycle.figures.quoted':
     'Каждая цифра приведена словами исследования, которое её сообщает, чтобы вы могли её проверить, а не поверить на слово.',
   'cycle.figures.title': 'Откуда взяты эти цифры',
-  'cycle.noRing.line': 'Кольцу нужны месячные. Отметьте день, когда шла кровь, и оно появится.',
-  'cycle.noRing.title': 'Пока нечего рисовать',
+  'cycle.noRing.line': 'Отметьте день, когда шла кровь, и ваш цикл появится здесь.',
+  'cycle.noRing.title': 'Ваше кольцо ждёт',
   'cycle.phaseLine.day': 'День {day}',
   'cycle.phaseLine.follicular': {
     one: 'Фолликулярная фаза, цикл {count} день',
@@ -160,11 +160,11 @@ export const russian: CatalogueIn<'ru'> = {
   'forecast.confidence.low': 'низкая',
   'forecast.confidence.medium': 'средняя',
   'forecast.confidence.sentence': 'Уверенность {word}, по вашим последним {cycles} циклам',
-  'forecast.cycleMoves': 'Ваш цикл смещается, поэтому диапазон шире.',
+  'forecast.cycleMoves': 'Ваш цикл заметно смещается, поэтому диапазон шире.',
   'forecast.cyclesWanted': {
-    one: 'Emi нужен ещё {count} полный цикл, чтобы сказать, насколько она уверена.',
-    few: 'Emi нужно ещё {count} полных цикла, чтобы сказать, насколько она уверена.',
-    many: 'Emi нужно ещё {count} полных циклов, чтобы сказать, насколько она уверена.',
+    one: 'Нам нужен ещё {count} полный цикл, чтобы сказать, насколько мы уверены.',
+    few: 'Нам нужно ещё {count} полных цикла, чтобы сказать, насколько мы уверены.',
+    many: 'Нам нужно ещё {count} полных циклов, чтобы сказать, насколько мы уверены.',
   },
   'forecast.fertileWindow': 'Фертильное окно',
   /**
@@ -173,13 +173,12 @@ export const russian: CatalogueIn<'ru'> = {
    */
   'forecast.fertileWindow.sentence':
     'Оценка по вашим последним {cycles} циклам. Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
-  'forecast.nextPeriod': 'Следующие месячные',
+  'forecast.nextPeriod': 'Ваши следующие месячные',
   'forecast.range.sameMonth': 'С {from} по {to} {month}',
   'forecast.range.spansMonths': 'С {from} {fromMonth} по {to} {toMonth}',
   'forecast.range.spansYears': 'С {from} {fromMonth} {fromYear} по {to} {toMonth} {toYear}',
-  'forecast.statedLength':
-    'До тех пор Emi считает цикл в {days} дней, ту длину, которую вы указали при первом запуске.',
-  'forecast.stillLearning': 'Ещё учится',
+  'forecast.statedLength': 'Пока мы считаем по циклу в {days} дней, который вы нам назвали.',
+  'forecast.stillLearning': 'Мы ещё узнаём вас',
 
   'history.back': 'Назад',
   'history.cycleDayCount': { one: '{count} день', few: '{count} дня', many: '{count} дней' },
@@ -206,10 +205,11 @@ export const russian: CatalogueIn<'ru'> = {
   'history.runningWithPeriod': '{running}, пока {periodDays} с кровью',
   'history.title': 'История',
 
-  'home.doctorRecord': 'Вы просили запись для врача. Откройте экспорт.',
+  'home.doctorRecord': 'Вы хотели запись для врача. Она готова в любой момент, в разделе Экспорт.',
   'home.cycles.line':
     'Полоса показывает один ваш цикл, первым идёт текущий. Нажмите на полосу, чтобы прочитать этот цикл в разделе Обзор.',
   'home.greeting': 'Здравствуйте, {name}',
+  'home.greeting.noName': 'Здравствуйте',
   'home.logToday': 'Записать сегодня',
   'home.loggedToday.andTheLast': '{said} и {last}',
   'home.loggedToday.energy': 'энергия',
@@ -230,35 +230,37 @@ export const russian: CatalogueIn<'ru'> = {
   'home.numbers.published': 'Опубликовано',
   'home.numbers.range': 'от {low} до {high}',
   'home.numbers.upTo': 'до {days}',
-  'home.painLine': 'Вы сказали, что эти дни тяжёлые. Отметьте боль первой.',
+  'home.painLine':
+    'Вы сказали нам, что эти дни бывают тяжёлыми. Начните с того, насколько сильно болит.',
   'home.patterns.beforePeriod': 'примерно за {days} до месячных',
   'home.patterns.card': '{name}, {when}',
   'home.patterns.line':
-    'Симптом, который вы отметили один или два раза, не закономерность, и Emi его так не называет.',
+    'Симптом, который вы отметили один или два раза, не закономерность, и мы не назовём его так.',
   'home.patterns.onCycleDay': 'около дня {day} вашего цикла',
   'home.patterns.press': 'Что возвращается, полностью',
   'home.roundAction.period': 'Месячные',
   'home.roundAction.symptoms': 'Симптомы',
   // График её последних полных циклов на опубликованном диапазоне. Подпись и фраза под ним
   // считают циклы, которые нарисовал график, поэтому женщина с тремя никогда не прочитает шесть.
-  'home.trend.allInside': 'Все ваши последние {cycles} остались внутри полосы.',
-  'home.trend.caption': 'Ваши последние {cycles}. Полоса показывает опубликованный диапазон.',
+  'home.trend.allInside': 'Все ваши последние {cycles} попали внутрь полосы.',
+  'home.trend.caption':
+    'Ваши последние {cycles}. Затенённая полоса показывает опубликованный диапазон.',
   'home.trend.cycleCount': {
     one: '{count} полный цикл',
     few: '{count} полных цикла',
     many: '{count} полных циклов',
   },
-  'home.trend.outside': '{outside} из ваших последних {cycles} вышли за пределы полосы.',
+  'home.trend.outside': '{outside} из ваших последних {cycles} попали за пределы полосы.',
   'home.trend.press': 'Те же циклы, полностью',
   'home.waiting.cycles.heading': 'Ваши циклы',
-  'home.waiting.cycles.needs': 'Ваши три числа появятся со вторыми месячными.',
-  'home.waiting.cycles.read': 'Emi прочитала {cycles}.',
+  'home.waiting.cycles.needs': 'Ваши числа появятся со вторыми месячными.',
+  'home.waiting.cycles.read': 'Пока мы видели {cycles}.',
   'home.waiting.patterns.heading': 'Что возвращается',
   'home.waiting.trend.heading': 'Тенденции цикла',
   'home.waiting.trend.needs': {
-    one: 'График появится, когда будет завершён {count} цикл.',
-    few: 'График появится, когда будут завершены {count} цикла.',
-    many: 'График появится, когда будет завершено {count} циклов.',
+    one: 'Ваш график появится, когда будет завершён {count} цикл.',
+    few: 'Ваш график появится, когда будут завершены {count} цикла.',
+    many: 'Ваш график появится, когда будет завершено {count} циклов.',
   },
   'home.waiting.trend.read': 'Emi ничего не рисует из ничего и не хранит примерных данных.',
   'home.trend.spoken':

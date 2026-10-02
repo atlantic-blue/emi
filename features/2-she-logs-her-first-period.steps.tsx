@@ -917,6 +917,16 @@ function herCompleteCycles(): number {
   return listCycles(herDatabase()).filter((cycle) => cycle.lengthDays !== null).length;
 }
 
+/**
+ * What each of the three sections says it needs, in the order the screen draws them. Written out
+ * by hand: a sentence read off the catalogue it is holding moves with it and catches nothing.
+ */
+const theThreeSectionsSayTheyNeed: readonly string[] = [
+  'Your numbers arrive with your second period.',
+  'Your chart appears once 2 cycles are complete.',
+  'Emi names a symptom once it has come back in 3 cycles.',
+];
+
 /** The drawing of day one, below the ring, which places a waiting section for each of the three. */
 const theDrawingOfWhatArrivesLater = 'todayEmptyBody';
 
@@ -4019,9 +4029,12 @@ defineFeature(feature, (test) => {
     );
 
     and('each one says what it needs before Emi can draw it', () => {
-      expect(said.map((each) => each.needs)).toEqual(
-        theWaitingSectionsTheDrawingPlaces(theDrawingOfWhatArrivesLater).map((each) => each.needs),
+      // The drawing settles how many sections stand here. The sentences are the copy of
+      // https://github.com/atlantic-blue/emi/issues/248, which was settled after it was drawn.
+      expect(said).toHaveLength(
+        theWaitingSectionsTheDrawingPlaces(theDrawingOfWhatArrivesLater).length,
       );
+      expect(said.map((each) => each.needs)).toEqual(theThreeSectionsSayTheyNeed);
     });
 
     and('where a section counts her own cycles, it names the count her phone holds', () => {
@@ -5556,108 +5569,6 @@ defineFeature(feature, (test) => {
 
   // The four parts she presses, measured off a page carrying all of them at once, and the one of
   // them a real screen already draws, measured on that screen.
-  test('SCREEN-2, the buttons take the redesign shapes', ({ given, when, and, then }) => {
-    const styleOfPart = (testID: string): Record<string, unknown> =>
-      (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<string, unknown>;
-
-    const styleOfTheWordsIn = (testID: string): Record<string, unknown> => {
-      const [words] = screen.getByTestId(testID).children;
-
-      return (StyleSheet.flatten(
-        (words as unknown as { props: { style?: unknown } }).props.style,
-      ) ?? {}) as Record<string, unknown>;
-    };
-
-    const everythingPressable = (): { props: Record<string, unknown> }[] =>
-      [...screen.queryAllByRole('button'), ...screen.queryAllByRole('link')] as unknown as {
-        props: Record<string, unknown>;
-      }[];
-
-    given('a screen carrying every action Emi can ask her to take', async () => {
-      await render(
-        <View>
-          <PrimaryButton label="Save" onPress={() => undefined} testID="writes" />
-          <SecondaryButton label="Cancel" onPress={() => undefined} testID="beside" />
-          <TextLink label="I do not remember" onPress={() => undefined} testID="quiet" />
-          <RoundIconButton
-            accessibilityLabel="Go back"
-            icon="chevron"
-            onPress={() => undefined}
-            testID="round"
-          />
-        </View>,
-      );
-    });
-
-    when('she reads it without reading a word of it', () => {
-      expect(everythingPressable()).toHaveLength(4);
-    });
-
-    then(
-      'the action that writes her data is the only filled pill, in the one colour that acts',
-      () => {
-        expect(styleOfPart('writes')).toMatchObject({
-          backgroundColor: colours.accent.value,
-          borderRadius: radius.full,
-        });
-        expect(styleOfTheWordsIn('writes')).toMatchObject({ color: colours.onAccent.value });
-
-        const filled = ['writes', 'beside', 'quiet', 'round'].filter(
-          (part) => styleOfPart(part)['backgroundColor'] === colours.accent.value,
-        );
-
-        expect(filled).toEqual(['writes']);
-      },
-    );
-
-    and('the action beside it is a quieter pill with no fill of its own', () => {
-      expect(styleOfPart('beside')).toMatchObject({
-        backgroundColor: colours.field.value,
-        borderRadius: radius.full,
-      });
-      expect(styleOfPart('beside')['borderWidth']).toBeUndefined();
-    });
-
-    and('the quiet action is words alone, with no ground and no rule under them', () => {
-      expect(styleOfPart('quiet')['backgroundColor']).toBeUndefined();
-      expect(styleOfPart('quiet')['borderWidth']).toBeUndefined();
-      expect(styleOfTheWordsIn('quiet')).toMatchObject({ color: colours.accent.value });
-      expect(screen.getByTestId('quiet').children).toHaveLength(1);
-    });
-
-    and('the round action is a disc carrying a drawing and no words', () => {
-      expect(styleOfPart('round')).toMatchObject({
-        borderRadius: radius.full,
-        height: MINIMUM_TAP_TARGET,
-        width: MINIMUM_TAP_TARGET,
-      });
-      expect(screen.getByLabelText('Go back')).toBeTruthy();
-      expect(screen.getByTestId('round').children).toHaveLength(1);
-    });
-
-    and(
-      'her thumb reaches every one of them, because none is under forty four points',
-      async () => {
-        expect(controlsTooSmallToPress(everythingPressable())).toEqual([]);
-
-        // The page above is built for the measurement. This is the screen she actually opens first,
-        // so the shape is proved where she meets it and not only where it is declared.
-        screen.unmount();
-        await render(
-          <OnAPhone>
-            <WhatEmiIs onContinue={() => undefined} />
-          </OnAPhone>,
-        );
-
-        expect(styleOfPart(onboardingActionTestID)).toMatchObject({
-          backgroundColor: colours.accent.value,
-          borderRadius: radius.full,
-        });
-        expect(controlsTooSmallToPress(everythingPressable())).toEqual([]);
-      },
-    );
-  });
-
   test('SCREEN-2, the home screen says hi to her by name', ({ given, when, and, then }) => {
     let app: OpenApp;
 
@@ -5757,6 +5668,108 @@ defineFeature(feature, (test) => {
 
           expect({ language, naming }).toEqual({ language, naming: [...theTwoLinesThatNameEmi] });
         }
+      },
+    );
+  });
+
+  test('SCREEN-2, the buttons take the redesign shapes', ({ given, when, and, then }) => {
+    const styleOfPart = (testID: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<string, unknown>;
+
+    const styleOfTheWordsIn = (testID: string): Record<string, unknown> => {
+      const [words] = screen.getByTestId(testID).children;
+
+      return (StyleSheet.flatten(
+        (words as unknown as { props: { style?: unknown } }).props.style,
+      ) ?? {}) as Record<string, unknown>;
+    };
+
+    const everythingPressable = (): { props: Record<string, unknown> }[] =>
+      [...screen.queryAllByRole('button'), ...screen.queryAllByRole('link')] as unknown as {
+        props: Record<string, unknown>;
+      }[];
+
+    given('a screen carrying every action Emi can ask her to take', async () => {
+      await render(
+        <View>
+          <PrimaryButton label="Save" onPress={() => undefined} testID="writes" />
+          <SecondaryButton label="Cancel" onPress={() => undefined} testID="beside" />
+          <TextLink label="I do not remember" onPress={() => undefined} testID="quiet" />
+          <RoundIconButton
+            accessibilityLabel="Go back"
+            icon="chevron"
+            onPress={() => undefined}
+            testID="round"
+          />
+        </View>,
+      );
+    });
+
+    when('she reads it without reading a word of it', () => {
+      expect(everythingPressable()).toHaveLength(4);
+    });
+
+    then(
+      'the action that writes her data is the only filled pill, in the one colour that acts',
+      () => {
+        expect(styleOfPart('writes')).toMatchObject({
+          backgroundColor: colours.accent.value,
+          borderRadius: radius.full,
+        });
+        expect(styleOfTheWordsIn('writes')).toMatchObject({ color: colours.onAccent.value });
+
+        const filled = ['writes', 'beside', 'quiet', 'round'].filter(
+          (part) => styleOfPart(part)['backgroundColor'] === colours.accent.value,
+        );
+
+        expect(filled).toEqual(['writes']);
+      },
+    );
+
+    and('the action beside it is a quieter pill with no fill of its own', () => {
+      expect(styleOfPart('beside')).toMatchObject({
+        backgroundColor: colours.field.value,
+        borderRadius: radius.full,
+      });
+      expect(styleOfPart('beside')['borderWidth']).toBeUndefined();
+    });
+
+    and('the quiet action is words alone, with no ground and no rule under them', () => {
+      expect(styleOfPart('quiet')['backgroundColor']).toBeUndefined();
+      expect(styleOfPart('quiet')['borderWidth']).toBeUndefined();
+      expect(styleOfTheWordsIn('quiet')).toMatchObject({ color: colours.accent.value });
+      expect(screen.getByTestId('quiet').children).toHaveLength(1);
+    });
+
+    and('the round action is a disc carrying a drawing and no words', () => {
+      expect(styleOfPart('round')).toMatchObject({
+        borderRadius: radius.full,
+        height: MINIMUM_TAP_TARGET,
+        width: MINIMUM_TAP_TARGET,
+      });
+      expect(screen.getByLabelText('Go back')).toBeTruthy();
+      expect(screen.getByTestId('round').children).toHaveLength(1);
+    });
+
+    and(
+      'her thumb reaches every one of them, because none is under forty four points',
+      async () => {
+        expect(controlsTooSmallToPress(everythingPressable())).toEqual([]);
+
+        // The page above is built for the measurement. This is the screen she actually opens first,
+        // so the shape is proved where she meets it and not only where it is declared.
+        screen.unmount();
+        await render(
+          <OnAPhone>
+            <WhatEmiIs onContinue={() => undefined} />
+          </OnAPhone>,
+        );
+
+        expect(styleOfPart(onboardingActionTestID)).toMatchObject({
+          backgroundColor: colours.accent.value,
+          borderRadius: radius.full,
+        });
+        expect(controlsTooSmallToPress(everythingPressable())).toEqual([]);
       },
     );
   });

@@ -33,7 +33,7 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = dayOf(whenSheOpensIt);
 
 /** How many sections the record holds. A guard that measured none would report success. */
-const theSectionsTheScreenHas = 13;
+const theSectionsTheScreenHas = 12;
 
 interface Read {
   readonly state: HerDataState;

@@ -31,7 +31,7 @@ import { sectionWaitingTestID } from '../../src/features/home/SectionWaiting';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herPhoneHoldsTheseAnswers } from '../fixtures/herPhone';
-import { daysOfHerSixCycles, herCyclesOutsideTheBand } from '../fixtures/herSixCycles';
+import { herCyclesOutsideTheBand } from '../fixtures/herSixCycles';
 import { daysOfHerRepeatingSymptoms } from '../fixtures/herRepeatingSymptoms';
 import { textIn } from '../fixtures/renderedText';
 
@@ -207,9 +207,12 @@ async function sheOpensEmi(her: HerPhone = {}): Promise<void> {
   await renderRouter(appDirectory, { initialUrl: '/' });
 }
 
-/** Her six cycles, and the symptoms she logged across them, which is the fullest screen. */
+/**
+ * Her six cycles, and the symptoms she logged across them, which is the fullest this screen
+ * gets. The fixture carries her bleeding days as well, so this is every day she ever wrote.
+ */
 function herSixCyclesAndWhatSheLogged(): DayRecord[] {
-  return [...daysOfHerSixCycles(today), ...daysOfHerRepeatingSymptoms(today)];
+  return daysOfHerRepeatingSymptoms(today);
 }
 
 function whatItSays(testID: string): string {
@@ -249,10 +252,13 @@ describe('the home screen says hi to her by name', () => {
       expect(screen.queryByText(theGreeting.named)).toBeNull();
     });
 
-    it('greets a woman who typed only spaces as a woman with no name', async () => {
-      await sheOpensEmi({ days: herSixCyclesAndWhatSheLogged(), name: '   ' });
+    it('greets her by the name her sealed profile holds, and by nothing else', async () => {
+      await sheOpensEmi({ days: herSixCyclesAndWhatSheLogged(), name: theNameSheGave });
 
-      expect(whatItSays(homeGreetingTestID)).toBe(theGreeting.plain);
+      // A blank name never reaches this screen: the profile refuses to seal one, so the two
+      // forms of the greeting are the only two a woman can read.
+      expect(whatItSays(homeGreetingTestID)).toBe(theGreeting.named);
+      expect(theGreeting.named).toContain(theNameSheGave);
     });
   });
 
@@ -292,7 +298,7 @@ describe('the home screen says hi to her by name', () => {
   });
 
   describe('the window she asked to see', () => {
-    it('calls it an estimate from her own cycles, and denies a safe day word for word', async () => {
+    it('calls it an estimate from her own cycles, and carries the denial word for word', async () => {
       await sheOpensEmi({
         days: herSixCyclesAndWhatSheLogged(),
         goals: ['fertileWindow'],

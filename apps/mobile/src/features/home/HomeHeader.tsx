@@ -23,8 +23,9 @@ const theMarkIsAsTallAsTheWord = typeScale['headline-lg'].size;
 
 interface Props {
   /**
-   * The name in her profile, and nothing at all where she skipped the question or gave none. Then
-   * no greeting is drawn, because a woman who kept her name is not greeted by a blank line.
+   * The name in her profile, and nothing at all where she skipped the question or gave none. The
+   * greeting is drawn either way: without a name it is hi on its own, which is a sentence, so a
+   * woman who kept her name is greeted rather than read a line with a hole in it.
    */
   readonly name?: string;
 }
@@ -44,11 +45,9 @@ export function HomeHeader({ name }: Props): ReactNode {
         </Text>
       </View>
 
-      {name === undefined ? null : (
-        <Text style={styles.greeting} testID={homeGreetingTestID}>
-          {greeting(name)}
-        </Text>
-      )}
+      <Text style={styles.greeting} testID={homeGreetingTestID}>
+        {greeting(name)}
+      </Text>
     </View>
   );
 }

@@ -57,6 +57,31 @@ const sheSaidHerCycleRuns = 29;
 /** The drawing this step builds: day one, and the sections her own days cannot fill yet. */
 const theDrawing = 'todayEmptyBody';
 
+/**
+ * What each waiting section says on a phone that holds nothing, written out by hand. A sentence
+ * read off the catalogue it is holding moves with it and catches nothing.
+ */
+const theWordsOfEachWaitingSection = [
+  {
+    heading: 'Your cycles',
+    needs: 'Your numbers arrive with your second period.',
+    read: "So far we've seen 0 complete cycles.",
+    section: 'cycles',
+  },
+  {
+    heading: 'Cycle trends',
+    needs: 'Your chart appears once 2 cycles are complete.',
+    read: 'Emi draws nothing from nothing, and it holds no sample data.',
+    section: 'trend',
+  },
+  {
+    heading: 'What comes back',
+    needs: 'Emi names a symptom once it has come back in 3 cycles.',
+    read: '0 of yours are complete.',
+    section: 'patterns',
+  },
+];
+
 /** Points. Contract SCREEN-2 keeps every word of this screen at this size or under. */
 const theLargestAWordMayBeDrawn = 14;
 
@@ -154,13 +179,21 @@ describe('a section her data cannot fill carries one sentence and no chart', () 
       ]);
     });
 
-    it('says what each section needs and how far off she is, in the words the drawing carries', () => {
+    it('says what each section needs and how far off she is, in the shape the drawing carries', () => {
       const drawing = theWaitingSectionsTheDrawingPlaces(theDrawing);
+      const glass = theWaitingSectionsOnTheGlass(waitingSections);
 
-      expect(theWaitingSectionsOnTheGlass(waitingSections)).toEqual(
-        drawing.map((said, where) => ({ ...said, section: waitingSections[where] })),
-      );
+      // The drawing settles the shape: three sections, in its order, each under its own heading,
+      // and which of them carries a second line about how far off she is. The words are the
+      // catalogue’s, written out below, because the drawing was made before the copy of
+      // https://github.com/atlantic-blue/emi/issues/248 settled them.
       expect(drawing).toHaveLength(3);
+      expect(glass.map((said) => said.section)).toEqual([...waitingSections]);
+      expect(glass.map((said) => said.heading)).toEqual(drawing.map((said) => said.heading));
+      expect(glass.map((said) => said.read !== undefined)).toEqual(
+        drawing.map((said) => said.read !== undefined),
+      );
+      expect(glass).toEqual(theWordsOfEachWaitingSection);
     });
 
     it('names the count it read out of her phone, and the thresholds the arithmetic holds', () => {
