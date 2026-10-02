@@ -4880,6 +4880,130 @@ defineFeature(feature, (test) => {
     });
   });
 
+  // The ring and the week above it are the two drawings she reads before she reads a word, so
+  // both are proved on the screen she actually opens rather than against either part on its own.
+  //
+  // It runs before the scenario below rather than after it, which is where the feature file reads
+  // it. That one draws the four buttons on a page of its own, outside the provider the
+  // application wraps them in, and the font loader never settles again in this file afterwards:
+  // every later scenario that drives the router waits for a screen that never arrives.
+  test('SCREEN-2, the ring and the week strip take the redesign look', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const herCycle = { cycleLengthDays: 28, dayOfCycle: 2, periodDays: 4 };
+
+    /** Her week, in the order the strip drew it, named by the day each column stands for. */
+    const theColumnsOfHerWeek = (): string[] => {
+      const named = weekDayTestID('');
+
+      return screen
+        .queryAllByTestId(new RegExp(`^${named}`))
+        .map((column) => String(column.props.testID).slice(named.length));
+    };
+
+    /** What one column of the strip wrote in place of the letter of its weekday. */
+    const theLetterOver = (day: string): string =>
+      textIn(screen.getByTestId(weekLetterTestID(day))).join('');
+
+    /** How the disc around one date is drawn, which is the whole of what that day says. */
+    const theDiscOn = (day: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(weekDateTestID(day)).props.style) ?? {}) as Record<
+        string,
+        unknown
+      >;
+
+    given('her phone holds six cycles of her own', async () => {
+      // The length of her period is one of her answers at the first run, so the arc ahead of her
+      // covers the days she is expected to bleed on rather than only the days she already logged.
+      await herPhoneHolds(
+        whenSheOpensIt,
+        herRecordedDays(herCycle),
+        herCycle.cycleLengthDays,
+        herCycle.periodDays,
+      );
+    });
+
+    when('she opens Emi and reads the ring and the week above it', async () => {
+      await sheOpens('/');
+
+      expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
+      expect(screen.getByTestId(weekStripTestID)).toBeTruthy();
+      expect(theColumnsOfHerWeek()).toHaveLength(7);
+    });
+
+    then(
+      'the middle of the ring names her phase, then the day she is on, then the length of her cycle',
+      () => {
+        expect(theMiddleOfTheRing()).toEqual([
+          phaseLabel.period,
+          String(herCycle.dayOfCycle),
+          ringCycleLengthWords(herCycle.cycleLengthDays),
+        ]);
+      },
+    );
+
+    and(
+      'every arc ends in a round end, and ground still shows at every boundary between two phases',
+      () => {
+        const ends = theEndsOfTheArcs();
+        const ground = theGroundBetweenTheArcs();
+
+        expect(ends.length).toBeGreaterThan(1);
+        expect(ends.filter((end) => end !== 'round')).toEqual([]);
+
+        // Ground first, and the measured width second, because a boundary of no degrees is a
+        // change of colour and nothing else.
+        expect(ground.length).toBeGreaterThan(1);
+        for (const gap of ground) {
+          expect(gap).toBeGreaterThan(0);
+          expect(gap).toBeCloseTo(GAP_DEGREES, 2);
+        }
+      },
+    );
+
+    and('the bead on today is a white disc with a dark line around it', () => {
+      expect(theBeadSheSees()).toEqual({ fill: colour.card, line: colour.text });
+    });
+
+    and(
+      'the days she bled are filled discs, and the day her period is expected on is a dashed outline',
+      () => {
+        const filled = theColumnsOfHerWeek().filter(
+          (day) => theDiscOn(day)['backgroundColor'] === colour.period,
+        );
+        const outlined = theColumnsOfHerWeek().filter(
+          (day) => theDiscOn(day)['borderStyle'] === 'dashed',
+        );
+
+        expect(filled.length).toBeGreaterThan(0);
+        expect(outlined.length).toBeGreaterThan(0);
+
+        for (const day of outlined) {
+          expect(theDiscOn(day)).toMatchObject({
+            borderColor: colour.period,
+            borderStyle: 'dashed',
+          });
+          expect(theDiscOn(day)['backgroundColor']).toBeUndefined();
+        }
+      },
+    );
+
+    and('the column she is on is named TODAY in place of its weekday letter', () => {
+      const hers = theColumnsOfHerWeek().filter((day) => day === today);
+
+      expect(hers).toEqual([today]);
+      expect(theLetterOver(today)).toBe(weekTodayWord());
+      expect(theLetterOver(today)).not.toBe(weekdayLetter(today));
+
+      for (const day of theColumnsOfHerWeek().filter((column) => column !== today)) {
+        expect(theLetterOver(day)).toBe(weekdayLetter(day));
+      }
+    });
+  });
+
   // The four parts she presses, measured off a page carrying all of them at once, and the one of
   // them a real screen already draws, measured on that screen.
   test('SCREEN-2, the buttons take the redesign shapes', ({ given, when, and, then }) => {
@@ -4982,118 +5106,6 @@ defineFeature(feature, (test) => {
         expect(controlsTooSmallToPress(everythingPressable())).toEqual([]);
       },
     );
-  });
-
-  // The ring and the week above it are the two drawings she reads before she reads a word, so
-  // both are proved on the screen she actually opens rather than against either part on its own.
-  test('SCREEN-2, the ring and the week strip take the redesign look', ({
-    given,
-    when,
-    then,
-    and,
-  }) => {
-    const herCycle = { cycleLengthDays: 28, dayOfCycle: 2, periodDays: 4 };
-
-    /** Her week, in the order the strip drew it, named by the day each column stands for. */
-    const theColumnsOfHerWeek = (): string[] => {
-      const named = weekDayTestID('');
-
-      return screen
-        .queryAllByTestId(new RegExp(`^${named}`))
-        .map((column) => String(column.props.testID).slice(named.length));
-    };
-
-    /** What one column of the strip wrote in place of the letter of its weekday. */
-    const theLetterOver = (day: string): string =>
-      textIn(screen.getByTestId(weekLetterTestID(day))).join('');
-
-    /** How the disc around one date is drawn, which is the whole of what that day says. */
-    const theDiscOn = (day: string): Record<string, unknown> =>
-      (StyleSheet.flatten(screen.getByTestId(weekDateTestID(day)).props.style) ?? {}) as Record<
-        string,
-        unknown
-      >;
-
-    given('her phone holds six cycles of her own', async () => {
-      await herPhoneHolds(whenSheOpensIt, herRecordedDays(herCycle));
-    });
-
-    when('she opens Emi and reads the ring and the week above it', async () => {
-      await sheOpens('/');
-
-      expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
-      expect(screen.getByTestId(weekStripTestID)).toBeTruthy();
-      expect(theColumnsOfHerWeek()).toHaveLength(7);
-    });
-
-    then(
-      'the middle of the ring names her phase, then the day she is on, then the length of her cycle',
-      () => {
-        expect(theMiddleOfTheRing()).toEqual([
-          phaseLabel.period,
-          String(herCycle.dayOfCycle),
-          ringCycleLengthWords(herCycle.cycleLengthDays),
-        ]);
-      },
-    );
-
-    and(
-      'every arc ends in a round end, and ground still shows at every boundary between two phases',
-      () => {
-        const ends = theEndsOfTheArcs();
-        const ground = theGroundBetweenTheArcs();
-
-        expect(ends.length).toBeGreaterThan(1);
-        expect(ends.filter((end) => end !== 'round')).toEqual([]);
-
-        // Ground first, and the measured width second, because a boundary of no degrees is a
-        // change of colour and nothing else.
-        expect(ground.length).toBeGreaterThan(1);
-        for (const gap of ground) {
-          expect(gap).toBeGreaterThan(0);
-          expect(gap).toBeCloseTo(GAP_DEGREES, 2);
-        }
-      },
-    );
-
-    and('the bead on today is a white disc with a dark line around it', () => {
-      expect(theBeadSheSees()).toEqual({ fill: colour.card, line: colour.text });
-    });
-
-    and(
-      'the days she bled are filled discs, and the day her period is expected on is a dashed outline',
-      () => {
-        const filled = theColumnsOfHerWeek().filter(
-          (day) => theDiscOn(day)['backgroundColor'] === colour.period,
-        );
-        const outlined = theColumnsOfHerWeek().filter(
-          (day) => theDiscOn(day)['borderStyle'] === 'dashed',
-        );
-
-        expect(filled.length).toBeGreaterThan(0);
-        expect(outlined.length).toBeGreaterThan(0);
-
-        for (const day of outlined) {
-          expect(theDiscOn(day)).toMatchObject({
-            borderColor: colour.period,
-            borderStyle: 'dashed',
-          });
-          expect(theDiscOn(day)['backgroundColor']).toBeUndefined();
-        }
-      },
-    );
-
-    and('the column she is on is named TODAY in place of its weekday letter', () => {
-      const hers = theColumnsOfHerWeek().filter((day) => day === today);
-
-      expect(hers).toEqual([today]);
-      expect(theLetterOver(today)).toBe(weekTodayWord());
-      expect(theLetterOver(today)).not.toBe(weekdayLetter(today));
-
-      for (const day of theColumnsOfHerWeek().filter((column) => column !== today)) {
-        expect(theLetterOver(day)).toBe(weekdayLetter(day));
-      }
-    });
   });
 });
 

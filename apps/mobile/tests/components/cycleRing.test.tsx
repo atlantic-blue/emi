@@ -28,6 +28,7 @@ import {
 } from '../../src/components/CycleRing';
 import { ringCycleLengthWords } from '../../src/features/cycle/copy';
 import { textIn } from '../fixtures/renderedText';
+import { theEndOfTheArc } from '../fixtures/theRingSheReads';
 
 /**
  * Her own cycles, as the four phase spans the ring is handed. A short one, a long one, and one
@@ -268,9 +269,7 @@ describe('the ring on the screen', () => {
     expect(screen.getByTestId(ringArcTestID('ovulation', 'ahead')).props.d).toBe(
       arcPath(centre, radius, ovulation.startDegrees + end, ovulation.sweepDegrees - end * 2),
     );
-    expect(screen.getByTestId(ringArcTestID('ovulation', 'ahead')).props.strokeLinecap).toBe(
-      'round',
-    );
+    expect(theEndOfTheArc('ovulation', 'ahead')).toBe('round');
   });
 
   it('keeps square ends on a stroke with no room for two round ones', async () => {
@@ -284,8 +283,8 @@ describe('the ring on the screen', () => {
     const lived = ringGeometry({ ...longCycle, day: 1 }).arcs[0]!.elapsedDegrees;
 
     expect(lived).toBeLessThan(end * 2);
-    expect(screen.getByTestId(ringArcTestID('period', 'elapsed')).props.strokeLinecap).toBe('butt');
-    expect(screen.getByTestId(ringArcTestID('period', 'ahead')).props.strokeLinecap).toBe('round');
+    expect(theEndOfTheArc('period', 'elapsed')).toBe('butt');
+    expect(theEndOfTheArc('period', 'ahead')).toBe('round');
   });
 
   it('writes the phase, the day and the length of the cycle, down the middle in that order', async () => {

@@ -30,6 +30,24 @@ interface Painted {
   readonly props: Record<string, unknown>;
 }
 
+/**
+ * How a stroke ends, in the order the drawing layer numbers them. react-native-svg hands the end
+ * down as its place in this list rather than as the word, and brand/screens/asHtml.ts turns it
+ * back into the word for a browser from the same list.
+ */
+const theEnds: readonly string[] = ['butt', 'round', 'square'];
+
+/** How one stroke is ended, in words, whichever way the drawing layer passed it down. */
+function theEndOf(stroke: Painted): string {
+  const given = stroke.props['strokeLinecap'];
+
+  if (typeof given === 'number') {
+    return theEnds[given] ?? String(given);
+  }
+
+  return given === undefined ? 'butt' : String(given);
+}
+
 /** The ring is square, so the canvas it was drawn on gives its centre and its radius. */
 export function theRingCanvas(): { centre: number; radius: number } {
   const style = StyleSheet.flatten(screen.getByTestId(cycleRingTestID).props.style) ?? {};
@@ -65,7 +83,7 @@ export function endsOf(path: string): { from: number; to: number } {
  * track, and a square end reaches nothing at all.
  */
 function theReachOfTheEndsOf(stroke: Painted): number {
-  if (stroke.props['strokeLinecap'] !== 'round') {
+  if (theEndOf(stroke) !== 'round') {
     return 0;
   }
 
@@ -131,9 +149,12 @@ export function theGroundBetweenTheArcs(): number[] {
 
 /** How each end of every stroke of the ring is drawn, one answer for each stroke. */
 export function theEndsOfTheArcs(): string[] {
-  return phaseNames
-    .flatMap(theStrokesOf)
-    .map((stroke) => String(stroke.props['strokeLinecap'] ?? 'butt'));
+  return phaseNames.flatMap(theStrokesOf).map(theEndOf);
+}
+
+/** How the one stroke of a phase at that strength is ended, in words. */
+export function theEndOfTheArc(phase: PhaseName, strength: 'elapsed' | 'ahead'): string {
+  return theEndOf(screen.getByTestId(ringArcTestID(phase, strength)) as unknown as Painted);
 }
 
 /** Where the bead sits on the ring, read off the circle the renderer drew. */
