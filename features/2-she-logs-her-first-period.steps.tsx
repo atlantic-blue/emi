@@ -4821,6 +4821,7 @@ defineFeature(feature, (test) => {
 
       expect(app.pathname()).toBe(`/day/${sheWasSentTo}`);
     });
+  });
 
   // The four parts she presses, measured off a page carrying all of them at once, and the one of
   // them a real screen already draws, measured on that screen.
