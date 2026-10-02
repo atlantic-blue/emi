@@ -38,6 +38,8 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.editPeriod.removed': 'Вы убрали {days}.',
   'calendar.editPeriod.save': 'Сохранить',
   'calendar.editPeriod.title': 'Изменить мои месячные',
+  'calendar.legend.fertile': 'Фертильные',
+  'calendar.legend.period': 'Менструация',
   'calendar.month.april': 'апреля',
   'calendar.month.august': 'августа',
   'calendar.month.december': 'декабря',

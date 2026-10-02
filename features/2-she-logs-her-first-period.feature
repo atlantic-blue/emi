@@ -545,6 +545,18 @@ Feature: She opens Emi and logs her first period
     And the screen above the bar leaves exactly the room the bar draws
     And pressing each column opens the screen behind it and moves the accent onto it
 
+  Scenario: SCREEN-4, the month grid takes the redesign look
+    Given her phone holds three recorded cycles
+    When she opens the month
+    Then every date sits in a disc of its own, with the day of her cycle above it
+    And the days she bled are filled with the colour of her period
+    And every fertile day the ring counts is tinted
+    And the one day the forecast names as the estimated ovulation is filled
+    And a legend above the grid names her period and her fertile days
+    When she presses the day the drawing names
+    Then a panel at the foot names that day, over the way to her whole period
+    And pressing that panel opens the day it names
+
   Scenario: SCREEN-2, the buttons take the redesign shapes
     Given a screen carrying every action Emi can ask her to take
     When she reads it without reading a word of it

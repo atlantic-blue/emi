@@ -30,6 +30,8 @@ export const english = {
   'calendar.editPeriod.removed': 'You took {days} off.',
   'calendar.editPeriod.save': 'Save',
   'calendar.editPeriod.title': 'Edit my period',
+  'calendar.legend.fertile': 'Fertile',
+  'calendar.legend.period': 'Period',
   'calendar.month.april': 'April',
   'calendar.month.august': 'August',
   'calendar.month.december': 'December',
