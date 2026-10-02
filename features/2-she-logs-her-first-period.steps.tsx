@@ -47,11 +47,27 @@ import {
 } from '@emi/tokens';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
+import { useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, View } from 'react-native';
 import { render, waitFor, within } from '@testing-library/react-native';
 
 import { PrimaryButton, SecondaryButton, TextLink } from '../apps/mobile/src/components/Button';
 import { RoundIconButton } from '../apps/mobile/src/components/RoundIconButton';
+import { Chip } from '../apps/mobile/src/components/Chip';
+import {
+  MultiChoiceRow,
+  SingleChoiceRow,
+  rowCheckTestID,
+  rowDiscTestID,
+  rowRingTestID,
+} from '../apps/mobile/src/components/ChoiceRow';
+import {
+  SelectableTile,
+  tileBeadTestID,
+  tileCheckTestID,
+} from '../apps/mobile/src/components/SelectableTile';
+import { Stepper, stepperReadingTestID } from '../apps/mobile/src/components/Stepper';
+import { TextField } from '../apps/mobile/src/components/TextField';
 import {
   cycleRingTestID,
   ringArcTestID,
@@ -546,6 +562,9 @@ jest.mock('expo-secure-store', () =>
 jest.mock('expo-crypto', () => jest.requireActual('../apps/mobile/tests/fixtures/expoCrypto'));
 
 const feature = loadFeature(join(__dirname, '2-she-logs-her-first-period.feature'));
+
+/** A handler a measurement does not drive, where the part under it takes one all the same. */
+const nothing = (): void => undefined;
 
 const appDirectory = join(__dirname, '..', 'apps', 'mobile', 'src', 'app');
 
@@ -5563,6 +5582,212 @@ defineFeature(feature, (test) => {
 
         expect(app.pathname()).toBe('/onboarding/hold');
         expect(textIn(screen.getByTestId(holdScreenTestID))).toContain(theHoldStillSays);
+      },
+    );
+  });
+
+  // Every answer she can be asked to choose, on one page, each one held in both states. The answers
+  // are the prototype's own, so the page reads as a question of Emi rather than as a measurement.
+  test('SCREEN-2, the option rows and chips take the redesign look', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const answers = ['Yes, most months', 'No, it moves', 'I do not know yet'];
+
+    const styleOfPart = (testID: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<string, unknown>;
+
+    const styleOfTheWordsIn = (testID: string): Record<string, unknown> => {
+      const [words] = screen.getByTestId(testID).children;
+
+      return (StyleSheet.flatten(
+        (words as unknown as { props: { style?: unknown } }).props.style,
+      ) ?? {}) as Record<string, unknown>;
+    };
+
+    const drawingIn = (testID: string): string => String(screen.getByTestId(testID).props['xml']);
+
+    const everythingPressable = (): Control[] =>
+      [
+        ...screen.queryAllByRole('button'),
+        ...screen.queryAllByRole('radio'),
+        ...screen.queryAllByRole('checkbox'),
+      ] as unknown as Control[];
+
+    const filledRows = (): string[] =>
+      answers.filter((answer) => styleOfPart(answer)['backgroundColor'] === colours.accent.value);
+
+    function AQuestionOfHers(): React.ReactNode {
+      const [held, setHeld] = useState(answers[0]);
+
+      return (
+        <View>
+          {answers.map((answer) => (
+            <SingleChoiceRow
+              isChosen={held === answer}
+              key={answer}
+              label={answer}
+              onPress={() => {
+                setHeld(answer);
+              }}
+              testID={answer}
+            />
+          ))}
+          <MultiChoiceRow isChosen={false} label="Symptoms" onPress={nothing} testID="any" />
+          <Chip isChosen={false} label="Anxious" onPress={nothing} testID="resting-word" />
+          <Chip isChosen label="Low" onPress={nothing} testID="chosen-word" />
+          <SelectableTile
+            icon="mood"
+            isChosen={false}
+            onPress={nothing}
+            testID="resting-tile"
+            title="Mood"
+          />
+          <SelectableTile
+            icon="sleep"
+            isChosen
+            onPress={nothing}
+            testID="chosen-tile"
+            title="Sleep"
+          />
+          <TextField label="Your name" onChange={nothing} testID="field" value="Maria" />
+          <Stepper
+            canGoDown
+            canGoUp
+            downLabel="Shorter"
+            onDown={nothing}
+            onUp={nothing}
+            reading="28 days"
+            testID="days"
+            upLabel="Longer"
+          />
+        </View>
+      );
+    }
+
+    given('a question carrying every answer Emi can ask her to choose', async () => {
+      await render(<AQuestionOfHers />);
+    });
+
+    when('she looks at it without reading a word of it', () => {
+      expect(screen.getByTestId(answers[0] ?? '')).toBeTruthy();
+    });
+
+    then('the answer she chose is the only filled row, and it carries a check', () => {
+      expect(filledRows()).toEqual([answers[0]]);
+      expect(styleOfTheWordsIn(answers[0] ?? '')).toMatchObject({
+        color: colours.onAccent.value,
+      });
+      expect(styleOfPart(rowDiscTestID(answers[0] ?? ''))).toMatchObject({
+        backgroundColor: colours.onAccent.value,
+        borderRadius: radius.full,
+      });
+      expect(drawingIn(rowCheckTestID(answers[0] ?? ''))).toContain(colours.accent.value);
+    });
+
+    and(
+      'the answers she did not choose keep the quiet ground and the words she reads everywhere',
+      () => {
+        for (const answer of answers.slice(1)) {
+          expect(styleOfPart(answer)).toMatchObject({ backgroundColor: colours.field.value });
+          expect(styleOfTheWordsIn(answer)).toMatchObject({ color: colours.text.value });
+          expect(screen.queryByTestId(rowDiscTestID(answer))).toBeNull();
+        }
+      },
+    );
+
+    and('a question she may answer more than once leaves an empty ring beside each answer', () => {
+      expect(styleOfPart(rowRingTestID('any'))).toMatchObject({
+        borderColor: colours.disabledLabel.value,
+        borderRadius: radius.full,
+      });
+      expect(styleOfPart(rowRingTestID('any'))['backgroundColor']).toBeUndefined();
+    });
+
+    and(
+      'the word she turned on is the only filled pill, and the ones she left are outlined',
+      () => {
+        expect(styleOfPart('chosen-word')).toMatchObject({
+          backgroundColor: colours.accent.value,
+          borderColor: colours.accent.value,
+          borderRadius: radius.full,
+        });
+        expect(styleOfTheWordsIn('chosen-word')).toMatchObject({ color: colours.onAccent.value });
+        expect(styleOfPart('resting-word')).toMatchObject({
+          backgroundColor: colours.card.value,
+          borderColor: colours.line.value,
+          borderRadius: radius.full,
+        });
+      },
+    );
+
+    and('the category she chose is tinted and carries a check in its corner', () => {
+      expect(styleOfPart('chosen-tile')).toMatchObject({
+        backgroundColor: colours.accentSoft.value,
+        borderColor: colours.accent.value,
+      });
+      expect(styleOfPart(tileBeadTestID('chosen-tile'))).toMatchObject({
+        backgroundColor: colours.accent.value,
+        borderRadius: radius.full,
+      });
+      expect(drawingIn(tileCheckTestID('chosen-tile'))).toContain(colours.onAccent.value);
+      expect(styleOfPart('resting-tile')).toMatchObject({
+        backgroundColor: colours.card.value,
+        borderColor: colours.line.value,
+      });
+      expect(screen.queryByTestId(tileBeadTestID('resting-tile'))).toBeNull();
+    });
+
+    and('the line she types into takes the colour that acts while she is in it', async () => {
+      const resting = Number(styleOfPart('field')['borderWidth']);
+
+      await act(async () => {
+        fireEvent(screen.getByTestId('field'), 'focus');
+      });
+
+      expect(styleOfPart('field')).toMatchObject({
+        borderColor: colours.accent.value,
+        borderRadius: radius.md,
+      });
+      expect(Number(styleOfPart('field')['borderWidth'])).toBeGreaterThan(resting);
+    });
+
+    and('the number she is holding sits on a band of its own', () => {
+      expect(styleOfPart('days')).toMatchObject({
+        backgroundColor: colours.accentSoft.value,
+        borderRadius: radius.lg,
+      });
+      expect(styleOfPart(stepperReadingTestID('days'))).toMatchObject({
+        color: colours.text.value,
+      });
+    });
+
+    and('her thumb reaches every one of them, because none is under forty four points', () => {
+      expect(everythingPressable().length).toBeGreaterThanOrEqual(8);
+      expect(controlsTooSmallToPress(everythingPressable())).toEqual([]);
+      expect(Number(styleOfPart('field')['minHeight'])).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
+    });
+
+    when('she presses an answer she did not choose', async () => {
+      await act(async () => {
+        fireEvent.press(screen.getByTestId(answers[1] ?? ''));
+      });
+    });
+
+    then(
+      'that answer is hers, the answer she held before is not, and each one says so out loud',
+      () => {
+        expect(filledRows()).toEqual([answers[1]]);
+        expect(screen.queryByTestId(rowDiscTestID(answers[1] ?? ''))).toBeTruthy();
+        expect(screen.queryByTestId(rowDiscTestID(answers[0] ?? ''))).toBeNull();
+        expect(screen.getByTestId(answers[1] ?? '').props['accessibilityState']).toMatchObject({
+          checked: true,
+        });
+        expect(screen.getByTestId(answers[0] ?? '').props['accessibilityState']).toMatchObject({
+          checked: false,
+        });
       },
     );
   });

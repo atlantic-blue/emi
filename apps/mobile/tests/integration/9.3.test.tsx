@@ -12,12 +12,17 @@ import { Card } from '../../src/components/Card';
 import {
   MultiChoiceRow,
   SingleChoiceRow,
-  checkboxMarkTestID,
+  rowCheckTestID,
+  rowRingTestID,
 } from '../../src/components/ChoiceRow';
 import { Chip } from '../../src/components/Chip';
 import { ProgressBar, progressFillTestID } from '../../src/components/ProgressBar';
 import { RoundIconButton } from '../../src/components/RoundIconButton';
-import { SelectableTile, tileBeadTestID } from '../../src/components/SelectableTile';
+import {
+  SelectableTile,
+  tileBeadTestID,
+  tileWellTestID,
+} from '../../src/components/SelectableTile';
 import {
   Stepper,
   stepperDownTestID,
@@ -84,6 +89,10 @@ function theStyleOfTheWordsIn(testID: string): Record<string, unknown> {
 
   return (StyleSheet.flatten((words as unknown as { props: { style?: unknown } }).props.style) ??
     {}) as Record<string, unknown>;
+}
+
+function theDrawingIn(testID: string): string {
+  return String(screen.getByTestId(testID).props['xml']);
 }
 
 /** Everything on the screen a thumb can land on, which is what contract SEE-3 measures. */
@@ -248,12 +257,13 @@ describe('a component that writes a colour of its own fails the lint', () => {
       expect(theStyleOf('field')).toMatchObject({
         backgroundColor: colour.card,
         borderColor: colour.line,
-        borderRadius: radius.lg,
+        borderRadius: radius.md,
         borderWidth: stroke.hairline,
         color: colour.text,
-        padding: space.spaceMd,
+        paddingHorizontal: space.spaceLg,
         ...textStyle('body-lg'),
       });
+      expect(Number(theStyleOf('field')['minHeight'])).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
     });
 
     it('takes the accent as its border while she is in it, and never a glow', async () => {
@@ -264,6 +274,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
       });
 
       expect(theStyleOf('field')).toMatchObject({ borderColor: colour.accent });
+      expect(Number(theStyleOf('field')['borderWidth'])).toBeGreaterThan(stroke.hairline);
       expect(theStyleOf('field')['boxShadow']).toBeUndefined();
     });
 
@@ -295,13 +306,12 @@ describe('a component that writes a colour of its own fails the lint', () => {
       );
     }
 
-    it('stands the two circles on the card ground, inside a recessed well', async () => {
+    it('stands the two circles on the card ground, on a band of the soft accent', async () => {
       await theStepper();
 
       expect(theStyleOf(stepper)).toMatchObject({
-        backgroundColor: colour.field,
-        borderRadius: radius.xl,
-        padding: space.spaceMd,
+        backgroundColor: colour.accentSoft,
+        borderRadius: radius.lg,
       });
       expect(theStyleOf(stepperDownTestID(stepper))).toMatchObject({
         backgroundColor: colour.card,
@@ -311,12 +321,12 @@ describe('a component that writes a colour of its own fails the lint', () => {
       });
     });
 
-    it('sets the number in the monospaced face, so a digit holds its place as she presses', async () => {
+    it('reads the number she holds at the size the prototype reads a chosen value', async () => {
       await theStepper();
 
       expect(
         StyleSheet.flatten(screen.getByTestId(stepperReadingTestID(stepper)).props.style),
-      ).toMatchObject({ color: colour.text, ...textStyle('data-lg') });
+      ).toMatchObject({ color: colour.text, ...textStyle('display-lg-mobile') });
     });
 
     it('keeps a button at its boundary in place, spent rather than gone', async () => {
@@ -333,7 +343,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
   });
 
   describe('the rows she picks from', () => {
-    it('steps the ground up and the words on, so a chosen row is never colour alone', async () => {
+    it('fills the chosen row and checks it, so a chosen row is never colour alone', async () => {
       await render(
         <View>
           <SingleChoiceRow isChosen label="Regular" onPress={nothing} testID="chosen" />
@@ -342,14 +352,22 @@ describe('a component that writes a colour of its own fails the lint', () => {
       );
 
       expect(theStyleOf('chosen')).toMatchObject({
-        backgroundColor: colour.field,
-        borderRadius: radius.lg,
+        backgroundColor: colour.accent,
+        borderRadius: radius.md,
       });
       expect(theStyleOf('resting')).toMatchObject({
         backgroundColor: colour.field,
       });
-      expect(theStyleOfTheWordsIn('chosen')).toMatchObject({ color: colour.text });
-      expect(theStyleOfTheWordsIn('resting')).toMatchObject({ color: colour.secondaryText });
+      expect(theStyleOfTheWordsIn('chosen')).toMatchObject({
+        color: colour.onAccent,
+        ...textStyle('choice-lg'),
+      });
+      expect(theStyleOfTheWordsIn('resting')).toMatchObject({
+        color: colour.text,
+        ...textStyle('choice-lg'),
+      });
+      expect(theDrawingIn(rowCheckTestID('chosen'))).toContain(colour.accent);
+      expect(screen.queryByTestId(rowCheckTestID('resting'))).toBeNull();
     });
 
     it('says which control it is, so a screen reader hears one of a set or any of a set', async () => {
@@ -370,20 +388,27 @@ describe('a component that writes a colour of its own fails the lint', () => {
       expect(screen.getByRole('checkbox')).toBeTruthy();
     });
 
-    it('draws a ticked box at the tightest corner, with its mark in the accent', async () => {
-      await render(<MultiChoiceRow isChosen label="Symptoms" onPress={nothing} testID="any" />);
+    it('leaves an empty ring where she has not answered, and a check where she has', async () => {
+      await render(
+        <View>
+          <MultiChoiceRow isChosen label="Symptoms" onPress={nothing} testID="any" />
+          <MultiChoiceRow isChosen={false} label="My period" onPress={nothing} testID="none" />
+        </View>,
+      );
 
       // The mark is a drawing from the icon set rather than a written character, so the colour it
       // is stroked in is read off the drawing itself.
-      expect(theStyleOf('any')).toBeTruthy();
-      expect(String(screen.getByTestId(checkboxMarkTestID('any')).props['xml'])).toContain(
-        colour.accent,
-      );
+      expect(theDrawingIn(rowCheckTestID('any'))).toContain(colour.accent);
+      expect(theStyleOf(rowRingTestID('none'))).toMatchObject({
+        borderColor: colour.disabledLabel,
+        borderRadius: radius.full,
+      });
+      expect(screen.queryByTestId(rowRingTestID('any'))).toBeNull();
     });
   });
 
   describe('the word she turns on and off', () => {
-    it('rests on the recessed ground and takes the accent as its border when she picks it', async () => {
+    it('rests as an outlined pill on the plain surface, and fills when she picks it', async () => {
       await render(
         <View>
           <Chip isChosen={false} label="Today" onPress={nothing} testID="resting" />
@@ -392,16 +417,17 @@ describe('a component that writes a colour of its own fails the lint', () => {
       );
 
       expect(theStyleOf('resting')).toMatchObject({
-        backgroundColor: colour.field,
+        backgroundColor: colour.card,
         borderColor: colour.line,
-        borderRadius: radius.lg,
-        borderWidth: stroke.hairline,
+        borderRadius: radius.full,
       });
       expect(theStyleOf('chosen')).toMatchObject({
-        backgroundColor: colour.field,
+        backgroundColor: colour.accent,
         borderColor: colour.accent,
+        borderRadius: radius.full,
       });
       expect(theStyleOfTheWordsIn('resting')).toMatchObject({ color: colour.text });
+      expect(theStyleOfTheWordsIn('chosen')).toMatchObject({ color: colour.onAccent });
     });
   });
 
@@ -429,11 +455,17 @@ describe('a component that writes a colour of its own fails the lint', () => {
       );
 
       expect(theStyleOf('chosen')).toMatchObject({
-        backgroundColor: colour.field,
+        backgroundColor: colour.accentSoft,
+        borderColor: colour.accent,
         borderRadius: radius.xl,
       });
       expect(theStyleOf('resting')).toMatchObject({
-        backgroundColor: colour.field,
+        backgroundColor: colour.card,
+        borderColor: colour.line,
+      });
+      expect(theStyleOf(tileWellTestID('resting'))).toMatchObject({
+        backgroundColor: colour.accentTile,
+        borderRadius: radius.full,
       });
       expect(theStyleOf(tileBeadTestID('chosen'))).toMatchObject({
         backgroundColor: colour.accent,

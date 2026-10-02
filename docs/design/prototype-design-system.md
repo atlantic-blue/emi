@@ -146,6 +146,16 @@ typography:
     fontSize: '15px'
     fontWeight: '700'
     lineHeight: '21px'
+  choice-lg:
+    fontFamily: 'Figtree'
+    fontSize: '15px'
+    fontWeight: '600'
+    lineHeight: '21px'
+  choice-sm:
+    fontFamily: 'Figtree'
+    fontSize: '14px'
+    fontWeight: '700'
+    lineHeight: '20px'
   label-md:
     fontFamily: 'Figtree'
     fontSize: '13px'

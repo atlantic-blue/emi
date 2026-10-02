@@ -161,7 +161,7 @@ export const colours: Readonly<Record<ColourName, ColourToken>> = {
   text: {
     value: '#2E2224',
     roles: ['text'],
-    textOn: ['ground', 'card', 'field'],
+    textOn: ['ground', 'card', 'field', 'accentSoft'],
   },
   /** A label, a caption and the quieter half of a row. */
   secondaryText: {

@@ -21,6 +21,17 @@ const whatTheyDrewBefore = {
   lineHeight: 24,
 } as const;
 
+/**
+ * What a row's words measure since the redesign of 2026-10-01, written out for the same reason as
+ * the four above: read from the token the row drew from, the case would agree with itself.
+ */
+const whatARowDrawsAtNow = {
+  fontFamily: 'Figtree-SemiBold',
+  fontSize: 15,
+  letterSpacing: 0,
+  lineHeight: 21,
+} as const;
+
 function nothing(): void {}
 
 function theStyleOf(testID: string): Record<string, unknown> {
@@ -40,8 +51,8 @@ function theStyleOfTheWordsIn(testID: string): Record<string, unknown> {
 
 describe('the body-md role retires into body-lg', () => {
   describe('the role list the design system names', () => {
-    it('holds thirteen roles, and body-md is not one of them', () => {
-      expect(typeRoleNames).toHaveLength(13);
+    it('holds fifteen roles, and body-md is not one of them', () => {
+      expect(typeRoleNames).toHaveLength(15);
       expect(typeRoleNames).not.toContain('body-md');
       expect(Object.keys(typeScale)).not.toContain('body-md');
     });
@@ -62,13 +73,17 @@ describe('the body-md role retires into body-lg', () => {
     });
   });
 
-  describe('the row she picks', () => {
-    it('draws the words of an unpicked row at the size and the face they drew at before', async () => {
+  // The redesign of 2026-10-01 moved a row's words onto a role of their own, so the row no longer
+  // witnesses this retirement. What it must still do is stay off the retired name, and draw the
+  // same words whether she has picked the row or not.
+  describe('the row she picks, which the redesign moved onto a role of its own', () => {
+    it('draws the words of an unpicked row at the role the redesign names, not the retired one', async () => {
       await render(
         <SingleChoiceRow isChosen={false} label="Every day" onPress={nothing} testID="row" />,
       );
 
-      expect(theStyleOfTheWordsIn('row')).toMatchObject(whatTheyDrewBefore);
+      expect(theStyleOfTheWordsIn('row')).toMatchObject(whatARowDrawsAtNow);
+      expect(theStyleOfTheWordsIn('row')['fontSize']).not.toBe(whatTheyDrewBefore.fontSize);
     });
 
     it('draws the words of a picked row at the same size and face, so picking moves no type', async () => {
@@ -76,7 +91,7 @@ describe('the body-md role retires into body-lg', () => {
         <SingleChoiceRow isChosen={true} label="Every day" onPress={nothing} testID="row" />,
       );
 
-      expect(theStyleOfTheWordsIn('row')).toMatchObject(whatTheyDrewBefore);
+      expect(theStyleOfTheWordsIn('row')).toMatchObject(whatARowDrawsAtNow);
     });
 
     it('draws the words of a row she can pick many of at the same size and face', async () => {
@@ -84,7 +99,7 @@ describe('the body-md role retires into body-lg', () => {
         <MultiChoiceRow isChosen={false} label="Cramps" onPress={nothing} testID="row" />,
       );
 
-      expect(theStyleOfTheWordsIn('row')).toMatchObject(whatTheyDrewBefore);
+      expect(theStyleOfTheWordsIn('row')).toMatchObject(whatARowDrawsAtNow);
     });
   });
 });

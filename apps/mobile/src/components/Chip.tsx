@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
@@ -6,8 +6,9 @@ import { Pressable, StyleSheet, Text } from 'react-native';
  * One word she turns on and off. The quickest control in the product, and the smallest, so the
  * tap floor of contract SEE-3 decides its height and the padding only pushes a longer word past it.
  *
- * A chosen chip steps its ground up and takes the accent as its border, so the two states differ
- * by a line as well as by a fill.
+ * A chip she has not turned on is an outline on the plain surface, and one she has turned on fills
+ * with the one colour that acts. So a row of them reads as a row of words until she picks from it,
+ * and what she picked is the only thing filled in.
  */
 
 interface Props {
@@ -16,6 +17,12 @@ interface Props {
   readonly onPress: () => void;
   readonly testID?: string;
 }
+
+/**
+ * Points. The outline of a chip. The document draws it between the hairline of a rule and the
+ * stroke of a drawing, so it is neither token and it is named here.
+ */
+const CHIP_BORDER = 1.5;
 
 export function Chip({ label, isChosen, onPress, testID }: Props): ReactNode {
   return (
@@ -26,7 +33,7 @@ export function Chip({ label, isChosen, onPress, testID }: Props): ReactNode {
       style={isChosen ? [styles.chip, styles.chosen] : styles.chip}
       testID={testID}
     >
-      <Text style={styles.label}>{label}</Text>
+      <Text style={isChosen ? styles.labelChosen : styles.label}>{label}</Text>
     </Pressable>
   );
 }
@@ -34,22 +41,26 @@ export function Chip({ label, isChosen, onPress, testID }: Props): ReactNode {
 const styles = StyleSheet.create({
   chip: {
     alignItems: 'center',
-    backgroundColor: colour.field,
+    backgroundColor: colour.card,
     borderColor: colour.line,
-    borderRadius: radius.lg,
-    borderWidth: stroke.hairline,
+    borderRadius: radius.full,
+    borderWidth: CHIP_BORDER,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceMd,
+    paddingHorizontal: space.spaceLg,
     paddingVertical: space.spaceSm,
   },
   chosen: {
-    backgroundColor: colour.field,
+    backgroundColor: colour.accent,
     borderColor: colour.accent,
   },
   label: {
     color: colour.text,
-    ...textStyle('body-sm'),
+    ...textStyle('choice-lg'),
+  },
+  labelChosen: {
+    color: colour.onAccent,
+    ...textStyle('choice-lg'),
   },
 });

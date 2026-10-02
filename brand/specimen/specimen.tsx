@@ -34,6 +34,8 @@ export const specimenSentences: Readonly<Record<TypeRoleName, string>> = {
   'body-sm': 'The ring needs a period. Log a day you bled and it appears.',
   'button-lg': 'Log today',
   'button-md': 'Not now',
+  'choice-lg': 'Yes, most months',
+  'choice-sm': 'Mood',
   'label-md': 'DAY 14 / CYCLE 29 DAYS',
   'label-sm': 'STEP 1 OF 3',
   'data-lg': '14',
