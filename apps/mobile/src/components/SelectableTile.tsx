@@ -37,6 +37,16 @@ export function tileBeadTestID(testID: string): string {
   return `${testID}-bead`;
 }
 
+/** The check inside that bead, named so a test can read the colour it is drawn in. */
+export function tileCheckTestID(testID: string): string {
+  return `${testID}-check`;
+}
+
+/** The round well the drawing sits in, named so a test can read the tint behind it. */
+export function tileWellTestID(testID: string): string {
+  return `${testID}-well`;
+}
+
 export function SelectableTile({
   icon,
   title,

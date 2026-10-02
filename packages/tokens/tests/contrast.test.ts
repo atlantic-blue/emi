@@ -38,7 +38,7 @@ describe('a colour that fails the contrast floor cannot be added', () => {
 
   it('measures every pair the palette approves, and says how many', () => {
     expect(textNames).toHaveLength(15);
-    expect(approved).toHaveLength(34);
+    expect(approved).toHaveLength(35);
   });
 
   it('names the token and the ratio when a colour is moved below the floor', () => {

@@ -30,9 +30,19 @@ const RADIO_CORE = 8;
 /** Points. The tick inside a ticked box, on the twenty four point grid the set is drawn on. */
 const TICK_SIZE = 16;
 
-/** The tick inside a ticked box, named so a test can read the colour it is drawn in. */
-export function checkboxMarkTestID(testID: string): string {
-  return `${testID}-mark`;
+/** The disc that says a row is chosen, named so a test can read the ground it is drawn on. */
+export function rowDiscTestID(testID: string): string {
+  return `${testID}-disc`;
+}
+
+/** The check inside that disc, named so a test can read the colour it is drawn in. */
+export function rowCheckTestID(testID: string): string {
+  return `${testID}-check`;
+}
+
+/** The empty ring of an answer she has not given, where she may give more than one. */
+export function rowRingTestID(testID: string): string {
+  return `${testID}-ring`;
 }
 
 /** One of a set. Pressing a chosen row does nothing, the way a radio control behaves anywhere. */
@@ -73,7 +83,7 @@ export function MultiChoiceRow({ label, isChosen, onPress, testID }: Props): Rea
               colour={colour.accent}
               name="check"
               size={TICK_SIZE}
-              testID={testID === undefined ? undefined : checkboxMarkTestID(testID)}
+              testID={testID === undefined ? undefined : rowCheckTestID(testID)}
             />
           ) : null}
         </View>

@@ -565,3 +565,17 @@ Feature: She opens Emi and logs her first period
     And the quiet action is words alone, with no ground and no rule under them
     And the round action is a disc carrying a drawing and no words
     And her thumb reaches every one of them, because none is under forty four points
+
+  Scenario: SCREEN-2, the option rows and chips take the redesign look
+    Given a question carrying every answer Emi can ask her to choose
+    When she looks at it without reading a word of it
+    Then the answer she chose is the only filled row, and it carries a check
+    And the answers she did not choose keep the quiet ground and the words she reads everywhere
+    And a question she may answer more than once leaves an empty ring beside each answer
+    And the word she turned on is the only filled pill, and the ones she left are outlined
+    And the category she chose is tinted and carries a check in its corner
+    And the line she types into takes the colour that acts while she is in it
+    And the number she is holding sits on a band of its own
+    And her thumb reaches every one of them, because none is under forty four points
+    When she presses an answer she did not choose
+    Then that answer is hers, the answer she held before is not, and each one says so out loud

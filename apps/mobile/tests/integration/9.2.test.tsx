@@ -98,7 +98,7 @@ const approved: readonly Pair[] = colourNames
 describe('a text colour below the contrast floor fails the build', () => {
   describe('the floor the palette is held to', () => {
     it('measures every approved pair, so an empty set is not read as a pass', () => {
-      expect(approved).toHaveLength(34);
+      expect(approved).toHaveLength(35);
       expect(approved.filter((pair) => pair.ratio < CONTRAST_FLOOR).map(report)).toEqual([]);
     });
 
