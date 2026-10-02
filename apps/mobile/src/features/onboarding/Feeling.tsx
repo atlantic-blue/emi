@@ -1,11 +1,11 @@
 import type { Feeling as HowSheFeelsAboutIt } from '@emi/crypto';
-import { space } from '@emi/tokens';
+import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { SingleChoiceRow } from '../../components/ChoiceRow';
 import { OnboardingScreen } from './OnboardingScreen';
-import { feelingChoices, feelingLabels, firstRunCopy } from './copy';
+import { feelingChoices, feelingLabels, feelingReplies, firstRunCopy } from './copy';
 
 /** The row for one answer, named so a test presses the answer rather than a position in a list. */
 export function feelingTestID(answer: HowSheFeelsAboutIt): string {
@@ -55,11 +55,21 @@ export function Feeling({ chosen, onChoose, onContinue, onBack, onSkip }: Props)
             testID={feelingTestID(answer)}
           />
         ))}
+        {chosen === undefined ? null : (
+          <Text style={styles.reply} testID={feelingReplyTestID}>
+            {feelingReplies[chosen]}
+          </Text>
+        )}
       </View>
     </OnboardingScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  reply: {
+    color: colour.secondaryText,
+    ...textStyle('body-sm'),
+    paddingHorizontal: space.spaceXs,
+  },
   rows: { gap: space.spaceSm },
 });
