@@ -104,9 +104,18 @@ export function colourFrom(value: unknown): string | undefined {
   if (typeof value === 'string') {
     return value;
   }
-  if (value === null || typeof value !== 'object' || !('payload' in value)) {
+  if (value === null || typeof value !== 'object') {
     return undefined;
   }
+  if (!('payload' in value) && !('brushRef' in value)) {
+    return undefined;
+  }
+  const brush = (value as { brushRef?: unknown }).brushRef;
+
+  if (typeof brush === 'string') {
+    return `url(#${brush})`;
+  }
+
   const packed = (value as { payload: unknown }).payload;
   if (typeof packed !== 'number') {
     return undefined;
@@ -231,6 +240,66 @@ function scrolled(node: RenderedNode): string {
 }
 
 /**
+ * The stops of a gradient. react-native-svg hands them down as one flat array, alternating the
+ * place along the gradient with the colour at that place, and it packs that colour as alpha, red,
+ * green and blue in a single integer. A browser wants an element for each pair, with the alpha
+ * written apart from the colour, so the pairs are unpacked rather than passed on.
+ */
+function gradientStops(value: unknown): string {
+  if (!Array.isArray(value)) {
+    return '';
+  }
+
+  const stops: string[] = [];
+
+  for (let pair = 0; pair + 1 < value.length; pair += 2) {
+    const at: unknown = value[pair];
+    const packed: unknown = value[pair + 1];
+
+    if (typeof at !== 'number' || typeof packed !== 'number') {
+      continue;
+    }
+
+    stops.push(
+      `<stop${attributes([
+        ['offset', at],
+        ['stop-color', colourFrom({ payload: packed })],
+        ['stop-opacity', ((packed >>> 24) & 0xff) / 0xff],
+      ])} />`,
+    );
+  }
+
+  return stops.join('');
+}
+
+/** A share of the box the gradient fills, which the platform writes either as a percentage or as a fraction. */
+function share(value: unknown): number {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string' && value.endsWith('%')) {
+    return Number(value.slice(0, -1)) / 100;
+  }
+
+  return Number(value);
+}
+
+/**
+ * The ellipse a radial gradient reaches out to, as a browser can draw it.
+ *
+ * react-native-svg takes two radii and draws an ellipse. A browser takes one radius and draws a
+ * circle, so the same ellipse is written as the unit circle under a transform that stretches it by
+ * each radius and moves it to the centre. It is the same shape in another coordinate system rather
+ * than a shape this file chose.
+ */
+function ellipseOf(props: Record<string, unknown>): string {
+  const [across, down] = [share(props.cx), share(props.cy)];
+  const [wide, tall] = [share(props.rx), share(props.ry)];
+
+  return `translate(${across} ${down}) scale(${wide} ${tall})`;
+}
+
+/**
  * The markup for one node. A host component this screen does not use falls through to a plain box,
  * which keeps its children on the page rather than dropping them without a word.
  */
@@ -277,6 +346,26 @@ export function markupOf(node: unknown): string {
             .join(' '),
         ],
       ])}>${drawnChildren(drawn)}</svg>`;
+    case 'RNSVGDefs':
+      return `<defs>${drawnChildren(drawn)}</defs>`;
+    case 'RNSVGLinearGradient':
+      return `<linearGradient${attributes([
+        ['id', props.name],
+        ['x1', props.x1],
+        ['y1', props.y1],
+        ['x2', props.x2],
+        ['y2', props.y2],
+      ])}>${gradientStops(props.gradient)}</linearGradient>`;
+    case 'RNSVGRadialGradient':
+      // Centred on nothing and one unit wide, because the transform carries both the centre and the
+      // two radii. Writing them twice would draw the ellipse twice as far out as it reaches.
+      return `<radialGradient${attributes([
+        ['id', props.name],
+        ['cx', 0],
+        ['cy', 0],
+        ['r', 1],
+        ['gradientTransform', ellipseOf(props)],
+      ])}>${gradientStops(props.gradient)}</radialGradient>`;
     case 'RNSVGGroup':
       return `<g${attributes(written(drawn, PAINT, true))}>${drawnChildren(drawn)}</g>`;
     case 'RNSVGPath':
