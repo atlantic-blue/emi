@@ -1,13 +1,15 @@
-import { colour, radius, space, stroke } from '@emi/tokens';
+import { colour, radius, space } from '@emi/tokens';
 import { floatingShadow } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 /**
- * The three layers the design system names, as one component.
+ * The layers the design system names, as one component.
  *
- * Depth is a tonal step and a hairline here. A floating sheet is the same box as a card with the
- * one ambient shadow the document allows, and that is the only shadow anywhere in the product.
+ * A card is plain paper: a ground, a corner and nothing drawn around it, so a column of them reads
+ * as a journal rather than as a column of boxes. Depth is a tonal step here. A floating sheet is
+ * the same box as a card with the one ambient shadow the document allows, and that is the only
+ * shadow anywhere in the product.
  */
 
 /**
@@ -28,6 +30,7 @@ export function Card({ layer = 'card', testID, children }: Props): ReactNode {
       style={[
         styles.card,
         layer === 'recessed' && styles.recessed,
+        layer === 'dark' && styles.dark,
         layer === 'floating' && styles.floating,
       ]}
       testID={testID}
@@ -40,11 +43,12 @@ export function Card({ layer = 'card', testID, children }: Props): ReactNode {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colour.card,
-    borderColor: colour.line,
     borderRadius: radius.xl,
-    borderWidth: stroke.hairline,
     padding: space.spaceLg,
   },
+  // The one surface that reverses. Its words take the white the palette measured on it, which is
+  // the same white the accent carries.
+  dark: { backgroundColor: colour.darkCard },
   floating: { boxShadow: floatingShadow },
   recessed: { backgroundColor: colour.field },
 });

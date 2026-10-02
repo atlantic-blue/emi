@@ -61,7 +61,7 @@ The function `contrastRatio` in `packages/tokens/src/colour.ts` measures every r
 contrast test reads the same function. Level AA of the Web Content Accessibility Guidelines asks for
 4.5 to 1 for normal text. A pair below 4.5 is refused here, and the test refuses it too.
 
-These 35 pairs are approved:
+These 36 pairs are approved:
 
 - text on ground is 14.57 to 1
 - text on card is 15.32 to 1
@@ -95,6 +95,7 @@ These 35 pairs are approved:
 - follicularInk on card is 15.32 to 1
 - ovulationInk on ground is 6.49 to 1
 - ovulationInk on card is 6.82 to 1
+- ovulationInk on washWarm is 5.74 to 1
 - lutealInk on ground is 7.48 to 1
 - lutealInk on card is 7.87 to 1
 - platformBlue on card is 4.94 to 1
