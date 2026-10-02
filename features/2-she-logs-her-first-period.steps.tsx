@@ -91,7 +91,11 @@ import {
 } from '../apps/mobile/src/features/cycle/copy';
 import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
 import { OnAPhone } from '../apps/mobile/tests/fixtures/theSafeArea';
-import { learningStatedLengthTestID } from '../apps/mobile/src/features/forecast/Learning';
+import {
+  learningCyclesWantedTestID,
+  learningStatedLengthTestID,
+  learningTestID,
+} from '../apps/mobile/src/features/forecast/Learning';
 import { type CycleRow, listCycles } from '../apps/mobile/src/data/cycleRepository';
 import type { Database } from '../apps/mobile/src/data/database';
 import {
@@ -662,6 +666,104 @@ function herRecordedDays(her: HerCycles): DayRecord[] {
   return records;
 }
 
+/**
+ * Her phone four days into the first period she ever logged, with the name she gave or none at all.
+ * Nothing is complete yet, so the forecast is the one that cannot say how sure it is.
+ */
+async function herPhoneHoldsOnePeriodAnd(name?: string): Promise<void> {
+  const started = addDays(today, -3);
+  const records: DayRecord[] = [0, 1, 2, 3].map((day) => aBleedingDay(addDays(started, day)));
+
+  await herPhoneHoldsTheseAnswers(
+    whenSheOpensIt,
+    {
+      kind: 'profile',
+      cycleLengthDays: sheSaysHerCycleRuns,
+      ...(name === undefined ? {} : { name }),
+      recordedAt: whenSheOpensIt.toISOString(),
+    },
+    records,
+  );
+}
+
+/**
+ * The words the screen she opens says after this step, each under the key that holds it. They are
+ * written out here rather than read off the catalogue, because a sentence read off the thing it is
+ * holding moves with it and catches nothing.
+ */
+const theHomeScreenSaysInEnglish: Readonly<Record<string, string>> = {
+  'cycle.noRing.line': 'Log a day you bled and your cycle appears here.',
+  'cycle.noRing.title': 'Your ring is waiting',
+  'forecast.confidence.sentence': '{word} confidence, based on your last {cycles} cycles',
+  'forecast.cycleMoves': 'Your cycle moves around, so the range is wider.',
+  'forecast.fertileWindow.sentence':
+    'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.nextPeriod': 'Your next period',
+  'forecast.statedLength': "Until then, we're using the {days} day cycle you told us about.",
+  'forecast.stillLearning': 'Still getting to know you',
+  'home.cycles.line':
+    'Each strip is one of your cycles, starting with this one. Tap one to see it in full.',
+  'home.doctorRecord':
+    "You wanted a record for your doctor. It's ready whenever you are, in Export.",
+  'home.greeting': 'Hi, {name}',
+  'home.greeting.noName': 'Hi',
+  'home.painLine': 'You told us these days can be hard. Start with how much it hurts.',
+  'home.patterns.line':
+    "A symptom you logged once or twice isn't a pattern, so we won't call it one.",
+  'home.trend.allInside': 'All of your last {cycles} fell inside the band.',
+  'home.trend.caption': 'Your last {cycles}. The shaded band is the published range.',
+  'home.trend.outside': '{outside} of your last {cycles} fell outside the band.',
+  'home.waiting.cycles.needs': 'Your numbers arrive with your second period.',
+  'home.waiting.cycles.read': "So far we've seen {cycles}.",
+  'home.waiting.trend.read': 'Emi draws nothing from nothing, and it holds no sample data.',
+};
+
+/** The two keys of this screen whose words change with the number, and every form of each. */
+const theHomeScreenCountsInEnglish: Readonly<Record<string, readonly string[]>> = {
+  'forecast.cyclesWanted': [
+    'We need {count} more full cycle before we can say how sure we are.',
+    'We need {count} more full cycles before we can say how sure we are.',
+  ],
+  'home.waiting.trend.needs': [
+    'Your chart appears once {count} cycle is complete.',
+    'Your chart appears once {count} cycles are complete.',
+  ],
+};
+
+/** Every key the screen she opens says, the plain ones and the counted ones together. */
+const theKeysOfTheScreenSheOpens: readonly string[] = [
+  ...Object.keys(theHomeScreenSaysInEnglish),
+  ...Object.keys(theHomeScreenCountsInEnglish),
+];
+
+/**
+ * The two lines of this screen that name Emi on purpose: the denial the fertile window carries
+ * word for word, and the one sentence `sampleWording.ts` allows about drawing nothing.
+ */
+const theTwoLinesThatNameEmi: readonly string[] = [
+  'forecast.fertileWindow.sentence',
+  'home.waiting.trend.read',
+];
+
+/** How each language writes the second person, which is who this screen is talking to. */
+const howEachLanguageSaysYou: Readonly<Record<Language, RegExp>> = {
+  en: /(?<!\p{Letter})(you|your)(?!\p{Letter})/iu,
+  es: /(?<!\p{Letter})(tu|tus|tú|te|ti)(?!\p{Letter})/iu,
+  ru: /(?<!\p{Letter})(вы|ваш|ваши|вас|вам)/iu,
+};
+
+/** One language's catalogue, read by key rather than by type, so a new key needs no cast. */
+function theCatalogueOf(language: Language): Readonly<Record<string, Words>> {
+  return Object.fromEntries(Object.entries(catalogueOf(language)));
+}
+
+/** Every word this screen says in one language, out of that language's own catalogue. */
+function theWordsOfTheScreenSheOpensIn(language: Language, keys = theKeysOfTheScreenSheOpens) {
+  const catalogue = theCatalogueOf(language);
+
+  return keys.flatMap((key) => formsOf(catalogue[key] ?? ''));
+}
+
 /** Six periods, four days each, and a Monday she opened at the time and said nothing happened on. */
 function herSixPeriodsAndAWrongMonday(): DayRecord[] {
   const cycleLengthDays = 28;
@@ -843,6 +945,16 @@ function whatAWaitingSectionSays(section: WaitingDrawn): string {
 function herCompleteCycles(): number {
   return listCycles(herDatabase()).filter((cycle) => cycle.lengthDays !== null).length;
 }
+
+/**
+ * What each of the three sections says it needs, in the order the screen draws them. Written out
+ * by hand: a sentence read off the catalogue it is holding moves with it and catches nothing.
+ */
+const theThreeSectionsSayTheyNeed: readonly string[] = [
+  'Your numbers arrive with your second period.',
+  'Your chart appears once 2 cycles are complete.',
+  'Emi names a symptom once it has come back in 3 cycles.',
+];
 
 /** The drawing of day one, below the ring, which places a waiting section for each of the three. */
 const theDrawingOfWhatArrivesLater = 'todayEmptyBody';
@@ -2415,8 +2527,8 @@ defineFeature(feature, (test) => {
       expect(whatItSays(homeHeaderWordTestID)).toBe('Emi');
     });
 
-    and('the greeting reads Hello, Ada', () => {
-      expect(whatItSays(homeGreetingTestID)).toBe('Hello, Ada');
+    and('the greeting reads Hi, Ada', () => {
+      expect(whatItSays(homeGreetingTestID)).toBe('Hi, Ada');
       expect(whatItSays(homeGreetingTestID)).toBe(greeting(theNameSheGave));
     });
 
@@ -2425,23 +2537,21 @@ defineFeature(feature, (test) => {
       expect(partsMissing(theHeaderOfTheDrawing(), whatTheScreenSheOpensDrew())).toEqual([]);
     });
 
-    and(
-      'a woman who gave no name reads the mark and the word, and no greeting at all',
-      async () => {
-        await app.close();
-        resetExpoSqlite();
-        resetExpoSecureStore();
-        await herPhoneHoldsHerDaysAnd(whenSheOpensIt, today);
-        await sheOpens('/');
+    and('a woman who gave no name reads the mark, the word, and hi on its own', async () => {
+      await app.close();
+      resetExpoSqlite();
+      resetExpoSecureStore();
+      await herPhoneHoldsHerDaysAnd(whenSheOpensIt, today);
+      await sheOpens('/');
 
-        expect(whatTheHeaderDrew()).toEqual([
-          homeHeaderTestID,
-          homeHeaderMarkTestID,
-          homeHeaderWordTestID,
-        ]);
-        expect(screen.queryByTestId(homeGreetingTestID)).toBeNull();
-      },
-    );
+      expect(whatTheHeaderDrew()).toEqual([
+        homeHeaderTestID,
+        homeHeaderMarkTestID,
+        homeHeaderWordTestID,
+        homeGreetingTestID,
+      ]);
+      expect(whatItSays(homeGreetingTestID)).toBe('Hi');
+    });
   });
 
   test('SCREEN-2, she reads the cycle day of every day of her week without pressing anything', ({
@@ -3948,9 +4058,12 @@ defineFeature(feature, (test) => {
     );
 
     and('each one says what it needs before Emi can draw it', () => {
-      expect(said.map((each) => each.needs)).toEqual(
-        theWaitingSectionsTheDrawingPlaces(theDrawingOfWhatArrivesLater).map((each) => each.needs),
+      // The drawing settles how many sections stand here. The sentences are the copy of
+      // https://github.com/atlantic-blue/emi/issues/248, which was settled after it was drawn.
+      expect(said).toHaveLength(
+        theWaitingSectionsTheDrawingPlaces(theDrawingOfWhatArrivesLater).length,
       );
+      expect(said.map((each) => each.needs)).toEqual(theThreeSectionsSayTheyNeed);
     });
 
     and('where a section counts her own cycles, it names the count her phone holds', () => {
@@ -5867,6 +5980,109 @@ defineFeature(feature, (test) => {
 
   // The four parts she presses, measured off a page carrying all of them at once, and the one of
   // them a real screen already draws, measured on that screen.
+  test('SCREEN-2, the home screen says hi to her by name', ({ given, when, and, then }) => {
+    let app: OpenApp;
+
+    given(
+      'she gave the name Ada at her first run, and her phone holds the one period she logged',
+      async () => {
+        await herPhoneHoldsOnePeriodAnd(theNameSheGave);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('the top of the screen says hi to her by the name she gave', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(whatItSays(homeGreetingTestID)).toBe(`Hi, ${theNameSheGave}`);
+    });
+
+    and(
+      'the forecast that cannot say how sure it is tells her it is still getting to know her',
+      () => {
+        expect(textIn(screen.getByTestId(learningTestID))).toContain(
+          theHomeScreenSaysInEnglish['forecast.stillLearning'],
+        );
+        expect(whatItSays(learningTestID)).not.toContain('confidence');
+      },
+    );
+
+    and(
+      'it asks for the cycles it still wants as we, and names the length she told them about',
+      () => {
+        expect(whatItSays(learningCyclesWantedTestID)).toBe(
+          `We need ${CYCLES_BEFORE_A_FORECAST} more full cycles before we can say how sure we are.`,
+        );
+        expect(whatItSays(learningStatedLengthTestID)).toBe(
+          `Until then, we're using the ${sheSaysHerCycleRuns} day cycle you told us about.`,
+        );
+      },
+    );
+
+    and(
+      'a woman who gave no name reads hi on its own, with no gap where a name would be',
+      async () => {
+        await app.close();
+        resetExpoSqlite();
+        resetExpoSecureStore();
+        await herPhoneHoldsOnePeriodAnd();
+        await sheOpens('/');
+
+        expect(whatItSays(homeGreetingTestID)).toBe('Hi');
+        expect(whatItSays(homeGreetingTestID)).not.toContain(theNameSheGave);
+        expect(whatItSays(homeGreetingTestID).trim()).toBe(whatItSays(homeGreetingTestID));
+      },
+    );
+
+    and(
+      'every word this screen says is in all three languages, and each one talks to her as you',
+      () => {
+        for (const [key, said] of Object.entries(theHomeScreenSaysInEnglish)) {
+          expect({ key, said: theCatalogueOf('en')[key] }).toEqual({ key, said });
+        }
+
+        for (const [key, forms] of Object.entries(theHomeScreenCountsInEnglish)) {
+          expect({ key, forms: theWordsOfTheScreenSheOpensIn('en', [key]) }).toEqual({
+            key,
+            forms: [...forms],
+          });
+        }
+
+        for (const language of languages) {
+          const missing = theKeysOfTheScreenSheOpens.filter(
+            (key) => theWordsOfTheScreenSheOpensIn(language, [key]).join('').length === 0,
+          );
+
+          expect({ language, missing }).toEqual({ language, missing: [] });
+          expect({
+            language,
+            asYou: howEachLanguageSaysYou[language].test(
+              theWordsOfTheScreenSheOpensIn(language).join('\n'),
+            ),
+          }).toEqual({ language, asYou: true });
+        }
+
+        expect(languages.length).toBe(3);
+      },
+    );
+
+    and(
+      'the only two that name Emi are the fertile window denial and the line about sample data',
+      () => {
+        for (const language of languages) {
+          const naming = theKeysOfTheScreenSheOpens.filter((key) =>
+            theWordsOfTheScreenSheOpensIn(language, [key]).join('\n').includes('Emi'),
+          );
+
+          expect({ language, naming }).toEqual({ language, naming: [...theTwoLinesThatNameEmi] });
+        }
+      },
+    );
+  });
+
   test('SCREEN-2, the buttons take the redesign shapes', ({ given, when, and, then }) => {
     const styleOfPart = (testID: string): Record<string, unknown> =>
       (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<string, unknown>;

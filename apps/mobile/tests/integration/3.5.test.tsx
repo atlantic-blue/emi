@@ -131,7 +131,7 @@ describe('Emi says it is still learning until the second cycle completes', () =>
       await sheOpensEmi(nothingButTheFirstRun);
 
       expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
-        'Emi needs 2 more complete cycles before it says how sure it is.',
+        'We need 2 more full cycles before we can say how sure we are.',
       );
     });
 
@@ -139,7 +139,7 @@ describe('Emi says it is still learning until the second cycle completes', () =>
       await sheOpensEmi(onePeriodAfterThat);
 
       expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
-        'Emi needs 1 more complete cycle before it says how sure it is.',
+        'We need 1 more full cycle before we can say how sure we are.',
       );
     });
 
@@ -148,7 +148,7 @@ describe('Emi says it is still learning until the second cycle completes', () =>
         await sheOpensEmi(has);
 
         expect(screen.getByTestId(learningStatedLengthTestID)).toHaveTextContent(
-          `Until then Emi counts a cycle of ${sheSaidHerCycleRuns} days, the length you gave at the first run.`,
+          `Until then, we're using the ${sheSaidHerCycleRuns} day cycle you told us about.`,
         );
       });
     }
@@ -169,11 +169,11 @@ describe('Emi says it is still learning until the second cycle completes', () =>
       await sheOpensEmi(onePeriodAfterThat);
 
       expect(textIn(screen.toJSON())).toEqual([
-        'Next period',
+        'Your next period',
         rangeSentence(startWhileLearning(theLastStartOf(onePeriodAfterThat), sheSaidHerCycleRuns)),
-        'Still learning',
-        'Emi needs 1 more complete cycle before it says how sure it is.',
-        `Until then Emi counts a cycle of ${sheSaidHerCycleRuns} days, the length you gave at the first run.`,
+        'Still getting to know you',
+        'We need 1 more full cycle before we can say how sure we are.',
+        `Until then, we're using the ${sheSaidHerCycleRuns} day cycle you told us about.`,
       ]);
     });
   });
@@ -195,7 +195,7 @@ describe('Emi says it is still learning until the second cycle completes', () =>
       await sheOpensEmi(twoPeriodsAfterThat);
 
       expect(screen.getByTestId(nextPeriodConfidenceTestID)).toHaveTextContent(
-        'High confidence, from your last 2 cycles',
+        'High confidence, based on your last 2 cycles',
       );
     });
   });

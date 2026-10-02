@@ -240,7 +240,7 @@ describe('after the upgrade the cycle length is sealed and the setting table doe
       await renderRouter(appDirectory, { initialUrl: '/' });
 
       expect(screen.getByTestId(learningStatedLengthTestID)).toHaveTextContent(
-        new RegExp(`\\b${sheSaidHerCycleRuns} days\\b`),
+        new RegExp(`\\b${sheSaidHerCycleRuns} day cycle\\b`),
       );
       expect(everySetting(database).map((row) => row.key)).not.toContain(statedCycleLengthKey);
       expect(readProfile(database, herProfileVault())?.cycleLengthDays).toBe(sheSaidHerCycleRuns);

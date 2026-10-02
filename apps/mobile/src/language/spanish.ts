@@ -82,8 +82,8 @@ export const spanish: CatalogueIn<'es'> = {
   'cycle.figures.quoted':
     'Cada cifra se cita con las palabras del estudio que la informa, para que puedas comprobarla en vez de creerla.',
   'cycle.figures.title': 'De dónde vienen estas cifras',
-  'cycle.noRing.line': 'El anillo necesita un periodo. Registra un día en que sangraste y aparece.',
-  'cycle.noRing.title': 'Todavía no hay nada que dibujar',
+  'cycle.noRing.line': 'Registra un día en que sangraste y tu ciclo aparece aquí.',
+  'cycle.noRing.title': 'Tu anillo está esperando',
   'cycle.phaseLine.day': 'Día {day}',
   'cycle.phaseLine.follicular': {
     one: 'Fase folicular, un ciclo de {count} día',
@@ -155,11 +155,11 @@ export const spanish: CatalogueIn<'es'> = {
   'forecast.confidence.high': 'alta',
   'forecast.confidence.low': 'baja',
   'forecast.confidence.medium': 'media',
-  'forecast.confidence.sentence': 'Confianza {word}, a partir de tus últimos {cycles} ciclos',
-  'forecast.cycleMoves': 'Tu ciclo se mueve, así que el rango es más amplio.',
+  'forecast.confidence.sentence': 'Confianza {word}, según tus últimos {cycles} ciclos',
+  'forecast.cycleMoves': 'Tu ciclo se mueve bastante, así que el rango es más amplio.',
   'forecast.cyclesWanted': {
-    one: 'Emi necesita {count} ciclo completo más antes de decir cuánta confianza tiene.',
-    other: 'Emi necesita {count} ciclos completos más antes de decir cuánta confianza tiene.',
+    one: 'Necesitamos {count} ciclo completo más para decirte cuánta confianza tenemos.',
+    other: 'Necesitamos {count} ciclos completos más para decirte cuánta confianza tenemos.',
   },
   'forecast.fertileWindow': 'Ventana fértil',
   /**
@@ -167,15 +167,14 @@ export const spanish: CatalogueIn<'es'> = {
    * comes before it, and a string literal on its own puts a quotation mark there instead.
    */
   'forecast.fertileWindow.sentence':
-    'Una estimación a partir de tus últimos {cycles} ciclos. Emi nunca dice que un día es seguro, porque ninguno lo es.',
-  'forecast.nextPeriod': 'Próximo periodo',
+    'Una estimación según tus últimos {cycles} ciclos. Emi nunca dice que un día es seguro, porque ninguno lo es.',
+  'forecast.nextPeriod': 'Tu próximo periodo',
   'forecast.range.sameMonth': 'Entre el {from} y el {to} de {month}',
   'forecast.range.spansMonths': 'Entre el {from} de {fromMonth} y el {to} de {toMonth}',
   'forecast.range.spansYears':
     'Entre el {from} de {fromMonth} de {fromYear} y el {to} de {toMonth} de {toYear}',
-  'forecast.statedLength':
-    'Hasta entonces Emi cuenta un ciclo de {days} días, la duración que indicaste al empezar.',
-  'forecast.stillLearning': 'Todavía aprendiendo',
+  'forecast.statedLength': 'Hasta entonces usamos el ciclo de {days} días que nos indicaste.',
+  'forecast.stillLearning': 'Todavía te estamos conociendo',
 
   'history.back': 'Atrás',
   'history.cycleDayCount': { one: '{count} día', other: '{count} días' },
@@ -201,10 +200,12 @@ export const spanish: CatalogueIn<'es'> = {
   'history.runningWithPeriod': '{running}, {periodDays} de sangrado hasta ahora',
   'history.title': 'Historial',
 
-  'home.doctorRecord': 'Pediste un registro para tu médico. Abre la exportación.',
+  'home.doctorRecord':
+    'Querías un registro para tu médico. Está listo cuando quieras, en Exportar.',
   'home.cycles.line':
-    'Cada franja es uno de tus ciclos, primero el que estás viviendo. Pulsa una franja para leer ese ciclo en Análisis.',
+    'Cada franja es uno de tus ciclos, empezando por este. Pulsa una para verla completa.',
   'home.greeting': 'Hola, {name}',
+  'home.greeting.noName': 'Hola',
   'home.logToday': 'Registrar hoy',
   'home.loggedToday.andTheLast': '{said} y {last}',
   'home.loggedToday.energy': 'energía',
@@ -226,30 +227,30 @@ export const spanish: CatalogueIn<'es'> = {
   'home.numbers.published': 'Publicado',
   'home.numbers.range': 'de {low} a {high}',
   'home.numbers.upTo': 'hasta {days}',
-  'home.painLine': 'Dijiste que estos días son difíciles. Registra el dolor primero.',
+  'home.painLine': 'Nos dijiste que estos días pueden ser difíciles. Empieza por cuánto te duele.',
   'home.patterns.beforePeriod': 'unos {days} antes de tu periodo',
   'home.patterns.card': '{name}, {when}',
   'home.patterns.line':
-    'Un síntoma que registraste una o dos veces no es un patrón, y Emi no lo llama así.',
+    'Un síntoma que registraste una o dos veces no es un patrón, y no lo llamaremos así.',
   'home.patterns.onCycleDay': 'hacia el día {day} de tu ciclo',
   'home.patterns.press': 'Lo que vuelve, completo',
   'home.roundAction.period': 'Regla',
   'home.roundAction.symptoms': 'Síntomas',
   // El gráfico de sus últimos ciclos completos sobre el rango publicado. El pie y la frase debajo
   // cuentan los ciclos que dibujó el gráfico, así que una mujer con tres nunca lee seis.
-  'home.trend.allInside': 'Todos tus últimos {cycles} quedaron dentro de la banda.',
-  'home.trend.caption': 'Tus últimos {cycles}. La banda es el rango publicado.',
+  'home.trend.allInside': 'Todos tus últimos {cycles} cayeron dentro de la banda.',
+  'home.trend.caption': 'Tus últimos {cycles}. La banda sombreada es el rango publicado.',
   'home.trend.cycleCount': { one: '{count} ciclo completo', other: '{count} ciclos completos' },
-  'home.trend.outside': '{outside} de tus últimos {cycles} quedaron fuera de la banda.',
+  'home.trend.outside': '{outside} de tus últimos {cycles} cayeron fuera de la banda.',
   'home.trend.press': 'Los mismos ciclos, completos',
   'home.waiting.cycles.heading': 'Tus ciclos',
-  'home.waiting.cycles.needs': 'Tus tres cifras llegan con tu segundo periodo.',
-  'home.waiting.cycles.read': 'Emi ha leído {cycles}.',
+  'home.waiting.cycles.needs': 'Tus cifras llegan con tu segundo periodo.',
+  'home.waiting.cycles.read': 'Hasta ahora hemos visto {cycles}.',
   'home.waiting.patterns.heading': 'Lo que vuelve',
   'home.waiting.trend.heading': 'Tendencias del ciclo',
   'home.waiting.trend.needs': {
-    one: 'El gráfico llega cuando {count} ciclo esté completo.',
-    other: 'El gráfico llega cuando {count} ciclos estén completos.',
+    one: 'Tu gráfico aparece cuando {count} ciclo esté completo.',
+    other: 'Tu gráfico aparece cuando {count} ciclos estén completos.',
   },
   'home.waiting.trend.read': 'Emi no dibuja nada de nada, y no guarda datos de ejemplo.',
   'home.trend.spoken':
