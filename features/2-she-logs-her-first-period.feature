@@ -573,3 +573,12 @@ Feature: She opens Emi and logs her first period
     And each tint fades to nothing, so no phase leaves an edge across the screen
     And a screen that knows no phase yet draws the soft wash every other screen draws
     And no colour of a wash is ever drawn as a word, because colour is all it carries
+
+  Scenario: SCREEN-2, the ring and the week strip take the redesign look
+    Given her phone holds six cycles of her own
+    When she opens Emi and reads the ring and the week above it
+    Then the middle of the ring names her phase, then the day she is on, then the length of her cycle
+    And every arc ends in a round end, and ground still shows at every boundary between two phases
+    And the bead on today is a white disc with a dark line around it
+    And the days she bled are filled discs, and the day her period is expected on is a dashed outline
+    And the column she is on is named TODAY in place of its weekday letter

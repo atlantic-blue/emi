@@ -91,6 +91,8 @@ export interface DrawnArc {
   readonly d: string;
   readonly stroke: string;
   readonly opacity: number;
+  /** Whether the two ends of the stroke are painted round. */
+  readonly roundEnds: boolean;
 }
 
 /** The arcs of one ring, in the order they are drawn: the days ahead, then the days she has had. */
@@ -106,6 +108,7 @@ export function arcsOf(geometry: RingGeometry): DrawnArc[] {
         d: arcPath(centre, trackRadius, arc.startDegrees + arc.elapsedDegrees, ahead),
         stroke,
         opacity: DAYS_AHEAD_STRENGTH,
+        roundEnds: false,
       });
     }
     if (arc.elapsedDegrees > 0) {
@@ -113,6 +116,7 @@ export function arcsOf(geometry: RingGeometry): DrawnArc[] {
         d: arcPath(centre, trackRadius, arc.startDegrees, arc.elapsedDegrees),
         stroke,
         opacity: 1,
+        roundEnds: false,
       });
     }
   }

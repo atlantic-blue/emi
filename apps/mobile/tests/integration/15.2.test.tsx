@@ -13,6 +13,7 @@ import {
   weekLetterTestID,
   weekStripTestID,
 } from '../../src/features/home/WeekStrip';
+import { weekTodayWord } from '../../src/features/cycle/copy';
 import { weekdayColumnNames } from '../../src/features/onboarding/days';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -135,10 +136,16 @@ describe('she reads the cycle day of every day of her week without pressing anyt
       expect(marks.slice(5)).toEqual(['plain', 'plain']);
     });
 
-    it('names every weekday by its own letter, from the catalogue', () => {
+    it('names every weekday by its own letter, and the day she is on by its word', () => {
+      // The column she is on carries the word rather than the letter, which is the redesign of
+      // step 22.8. The other six are the letters of the catalogue, in the catalogue's order.
       expect(theDaysOfHerWeek().map((day) => theLetterOver(day))).toEqual(
-        weekdayColumnNames.map((name) => name.slice(0, 1)),
+        weekdayColumnNames.map((name, column) =>
+          theDaysOfHerWeek()[column] === theDaySheOpensIt ? weekTodayWord() : name.slice(0, 1),
+        ),
       );
+      expect(theDaysOfHerWeek()).toContain(theDaySheOpensIt);
+      expect(theLetterOver(theDaySheOpensIt)).toBe(weekTodayWord());
     });
 
     it('puts the cycle day above the date, under the letter of the weekday', () => {

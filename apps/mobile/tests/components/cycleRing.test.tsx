@@ -26,6 +26,8 @@ import {
   ringBeadTestID,
   ringTrackTestID,
 } from '../../src/components/CycleRing';
+import { ringCycleLengthWords } from '../../src/features/cycle/copy';
+import { textIn } from '../fixtures/renderedText';
 
 /**
  * Her own cycles, as the four phase spans the ring is handed. A short one, a long one, and one
@@ -246,34 +248,55 @@ describe('the ring on the screen', () => {
     expect(screen.queryByTestId(ringArcTestID('period', 'ahead'))).toBeNull();
   });
 
-  it('draws each arc where the geometry says, so the picture and the phone agree', async () => {
+  it('pulls each arc in by its round end, so the paint lands where the geometry says', async () => {
     reduceMotion(false);
     await render(<CycleRing {...longCycle} day={30} />);
 
     const centre = { x: RING_DIAMETER / 2, y: RING_DIAMETER / 2 };
     const radius = (RING_DIAMETER - RING_TRACK_WIDTH) / 2;
+    // A round end is painted half the width of the track past the point the path stops at, so the
+    // path is pulled in by that much at each end and the paint covers the degrees of the arc.
+    const end = ((RING_TRACK_WIDTH / 2 / radius) * FULL_TURN_DEGREES) / (2 * Math.PI);
     const geometry = ringGeometry({ ...longCycle, day: 30 });
     const ovulation = geometry.arcs[2]!;
 
     expect(screen.getByTestId(ringArcTestID('ovulation', 'elapsed')).props.d).toBe(
-      arcPath(centre, radius, ovulation.startDegrees, ovulation.elapsedDegrees),
+      arcPath(centre, radius, ovulation.startDegrees + end, ovulation.elapsedDegrees - end * 2),
     );
+    // The days ahead are painted across the whole phase and the days she lived over them, so the
+    // two never meet as two round ends and no notch opens in the middle of a phase.
     expect(screen.getByTestId(ringArcTestID('ovulation', 'ahead')).props.d).toBe(
-      arcPath(
-        centre,
-        radius,
-        ovulation.startDegrees + ovulation.elapsedDegrees,
-        ovulation.sweepDegrees - ovulation.elapsedDegrees,
-      ),
+      arcPath(centre, radius, ovulation.startDegrees + end, ovulation.sweepDegrees - end * 2),
+    );
+    expect(screen.getByTestId(ringArcTestID('ovulation', 'ahead')).props.strokeLinecap).toBe(
+      'round',
     );
   });
 
-  it('writes the phase in words and the day in the middle, so colour is never the only cue', async () => {
+  it('keeps square ends on a stroke with no room for two round ones', async () => {
+    reduceMotion(false);
+    const radius = (RING_DIAMETER - RING_TRACK_WIDTH) / 2;
+    const end = ((RING_TRACK_WIDTH / 2 / radius) * FULL_TURN_DEGREES) / (2 * Math.PI);
+    // Day one of a long cycle: the day she has lived is a sliver, and a round end at each of its
+    // two ends would paint it wider than the day it stands for.
+    await render(<CycleRing {...longCycle} day={1} />);
+
+    const lived = ringGeometry({ ...longCycle, day: 1 }).arcs[0]!.elapsedDegrees;
+
+    expect(lived).toBeLessThan(end * 2);
+    expect(screen.getByTestId(ringArcTestID('period', 'elapsed')).props.strokeLinecap).toBe('butt');
+    expect(screen.getByTestId(ringArcTestID('period', 'ahead')).props.strokeLinecap).toBe('round');
+  });
+
+  it('writes the phase, the day and the length of the cycle, down the middle in that order', async () => {
     reduceMotion(false);
     await render(<CycleRing {...longCycle} day={30} />);
 
-    expect(screen.getByText(phaseLabel.ovulation)).toBeTruthy();
-    expect(screen.getByText('30')).toBeTruthy();
+    expect(textIn(screen.getByTestId(cycleRingTestID))).toEqual([
+      phaseLabel.ovulation,
+      '30',
+      ringCycleLengthWords(longCycle.cycleLengthDays),
+    ]);
     expect(screen.getByTestId(cycleRingTestID).props.accessibilityLabel).toBe(
       'Day 30 of 45, ovulation',
     );

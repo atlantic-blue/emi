@@ -183,7 +183,7 @@ export function theMarkOnTheDate(day: string): DayMark {
   if (style.backgroundColor !== undefined && style.backgroundColor !== 'transparent') {
     return 'bled';
   }
-  if (style.borderStyle === 'dotted') {
+  if (style.borderStyle === 'dashed') {
     return 'forecast';
   }
 
