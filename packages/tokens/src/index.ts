@@ -11,3 +11,4 @@ export * from './ring';
 export * from './space';
 export * from './text';
 export * from './type';
+export * from './wash';
