@@ -40,6 +40,7 @@ import {
   phaseNames,
   radius,
   stroke,
+  textStyle,
   washNames,
   washOfPhase,
   washStops,
@@ -48,10 +49,19 @@ import {
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { useState } from 'react';
-import { AccessibilityInfo, Animated, StyleSheet, View } from 'react-native';
+import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
 import { render, waitFor, within } from '@testing-library/react-native';
 
 import { PrimaryButton, SecondaryButton, TextLink } from '../apps/mobile/src/components/Button';
+import { Card } from '../apps/mobile/src/components/Card';
+import { LockLine, lockLineIconTestID } from '../apps/mobile/src/components/LockLine';
+import {
+  SettingsRow,
+  rowChevronTestID,
+  rowDrawingTestID,
+  rowTileTestID,
+} from '../apps/mobile/src/components/SettingsRow';
+import { StatusPill, pillPalette, pillTones } from '../apps/mobile/src/components/StatusPill';
 import { RoundIconButton } from '../apps/mobile/src/components/RoundIconButton';
 import { Chip } from '../apps/mobile/src/components/Chip';
 import {
@@ -5887,6 +5897,182 @@ defineFeature(feature, (test) => {
         });
       },
     );
+  });
+
+  // Every surface a section of a screen is raised onto, on one page, with the three small parts
+  // that sit on them. The page is read without reading a word of it, the way she reads a screen
+  // before she reads its words.
+  test('SCREEN-2, the cards and rows take the redesign look', ({ given, when, and, then }) => {
+    const theWordsOfTheRow = 'Your answers';
+    const theLineUnderIt = 'The eight things you told Emi at the first run';
+    const whatTheRowOpens = 'Your name, your year of birth and six answers';
+
+    const styleOfPart = (testID: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<string, unknown>;
+
+    const styleOfWords = (words: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByText(words).props.style) ?? {}) as Record<string, unknown>;
+
+    const drawingIn = (testID: string): string => String(screen.getByTestId(testID).props['xml']);
+
+    const onTheDarkCard = StyleSheet.create({ words: { color: colours.onAccent.value } });
+
+    function EverySurfaceSheReads(): React.ReactNode {
+      const [isOpen, setIsOpen] = useState(false);
+
+      return (
+        <View>
+          <Card testID="plain-surface">
+            <Text>Her cycle, raised onto paper</Text>
+          </Card>
+          <Card layer="dark" testID="reversed-surface">
+            <Text style={onTheDarkCard.words}>Only you can read your days</Text>
+          </Card>
+          <SettingsRow
+            icon="note"
+            label={theWordsOfTheRow}
+            line={theLineUnderIt}
+            onPress={() => {
+              setIsOpen(true);
+            }}
+            testID="answers-row"
+          />
+          {isOpen ? (
+            <Card testID="what-the-row-opened">
+              <Text>{whatTheRowOpens}</Text>
+            </Card>
+          ) : null}
+          {pillTones.map((tone) => (
+            <StatusPill key={tone} label={tone} testID={tone} tone={tone} />
+          ))}
+          <LockLine testID="her-privacy" words="Only you can read this." />
+        </View>
+      );
+    }
+
+    given('a page carrying every surface Emi raises a section onto', async () => {
+      await render(<EverySurfaceSheReads />);
+    });
+
+    when('she looks at it without reading a word of it', () => {
+      expect(screen.getByTestId('plain-surface')).toBeTruthy();
+    });
+
+    then(
+      'the plain surface is white, with no line around it, at the one corner a card takes',
+      () => {
+        expect(styleOfPart('plain-surface')).toMatchObject({
+          backgroundColor: colours.card.value,
+          borderRadius: radius.xl,
+        });
+        expect(styleOfPart('plain-surface')['borderWidth']).toBeUndefined();
+        expect(styleOfPart('plain-surface')['borderColor']).toBeUndefined();
+        expect(styleOfPart('plain-surface')['boxShadow']).toBeUndefined();
+      },
+    );
+
+    and(
+      'the one surface that reverses carries the dark ground, and the white it was measured with',
+      () => {
+        expect(styleOfPart('reversed-surface')).toMatchObject({
+          backgroundColor: colours.darkCard.value,
+          borderRadius: radius.xl,
+        });
+        expect(colours.onAccent.textOn).toContain('darkCard');
+        expect(
+          contrastRatio(colours.onAccent.value, colours.darkCard.value),
+        ).toBeGreaterThanOrEqual(CONTRAST_FLOOR);
+      },
+    );
+
+    and(
+      'a row she can press carries a drawing at one end, a word, and the mark that points the way on',
+      () => {
+        expect(styleOfPart(rowTileTestID('answers-row'))).toMatchObject({
+          backgroundColor: colours.field.value,
+          borderRadius: radius.DEFAULT,
+        });
+        expect(drawingIn(rowDrawingTestID('answers-row'))).toContain(colours.text.value);
+        expect(styleOfWords(theWordsOfTheRow)).toMatchObject({ color: colours.text.value });
+        expect(styleOfWords(theLineUnderIt)).toMatchObject({
+          color: colours.secondaryText.value,
+        });
+        expect(drawingIn(rowChevronTestID('answers-row'))).toContain(colours.quietIcon.value);
+      },
+    );
+
+    and(
+      'a pill is small, round at both ends, and in the one pair of colours its tone was measured as',
+      () => {
+        for (const tone of pillTones) {
+          expect(styleOfPart(tone)).toMatchObject({
+            backgroundColor: colours[pillPalette[tone].ground].value,
+            borderRadius: radius.full,
+          });
+          expect(styleOfWords(tone)).toMatchObject({
+            color: colours[pillPalette[tone].ink].value,
+            ...textStyle('label-sm'),
+          });
+          expect(styleOfPart(tone)['minHeight']).toBeUndefined();
+        }
+
+        expect(pillTones).toHaveLength(3);
+      },
+    );
+
+    and('every pill tone is a pair the contrast test measures, over the floor it holds', () => {
+      const unmeasured = pillTones.filter(
+        (tone) => !colours[pillPalette[tone].ink].textOn.includes(pillPalette[tone].ground),
+      );
+
+      expect(unmeasured).toEqual([]);
+
+      const under = pillTones.filter(
+        (tone) =>
+          contrastRatio(
+            colours[pillPalette[tone].ink].value,
+            colours[pillPalette[tone].ground].value,
+          ) < CONTRAST_FLOOR,
+      );
+
+      expect(under).toEqual([]);
+      expect(pillPalette.apricot).toEqual({ ground: 'washWarm', ink: 'ovulationInk' });
+    });
+
+    and('the line about her privacy carries the drawing of a lock beside its words', () => {
+      expect(drawingIn(lockLineIconTestID('her-privacy'))).toContain(colours.secondaryText.value);
+      expect(styleOfWords('Only you can read this.')).toMatchObject({
+        color: colours.secondaryText.value,
+      });
+      expect(styleOfPart('her-privacy')).toMatchObject({ flexDirection: 'row' });
+    });
+
+    and('her thumb reaches every row, because none is under forty four points', () => {
+      const rows = screen.queryAllByRole('button') as unknown as Control[];
+
+      expect(rows).toHaveLength(1);
+      expect(controlsTooSmallToPress(rows)).toEqual([]);
+      expect(Number(styleOfPart('answers-row')['minHeight'])).toBeGreaterThanOrEqual(
+        MINIMUM_TAP_TARGET,
+      );
+    });
+
+    when('she presses the row that opens what she already told Emi', async () => {
+      expect(screen.queryByText(whatTheRowOpens)).toBeNull();
+
+      await act(async () => {
+        fireEvent.press(screen.getByTestId('answers-row'));
+      });
+    });
+
+    then('that row answers her, and it still says out loud what it opens', () => {
+      // The press is only half of it. What she is left looking at is the thing the row opened,
+      // with the row still above it saying where she came from.
+      expect(screen.getByText(whatTheRowOpens)).toBeTruthy();
+      expect(screen.getByTestId('what-the-row-opened')).toBeTruthy();
+      expect(screen.getByLabelText(theWordsOfTheRow)).toBeTruthy();
+      expect(drawingIn(rowChevronTestID('answers-row'))).toContain(colours.quietIcon.value);
+    });
   });
 
   // The four parts she presses, measured off a page carrying all of them at once, and the one of

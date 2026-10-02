@@ -39,7 +39,7 @@ describe('a colour that fails the contrast floor cannot be added', () => {
 
   it('measures every pair the palette approves, and says how many', () => {
     expect(textNames).toHaveLength(15);
-    expect(approved).toHaveLength(35);
+    expect(approved).toHaveLength(36);
   });
 
   it('names the token and the ratio when a colour is moved below the floor', () => {
@@ -146,9 +146,9 @@ describe('a colour that fails the contrast floor cannot be added', () => {
   });
 
   // A wash is four colours and a shape, so it has no ratio of its own: what a word drawn on it
-  // would measure against depends on where on the screen that word sits. So the wash is kept out of
-  // the measuring entirely, and the way that is enforced is that no colour it runs through carries a
-  // word anywhere, on it or on anything else.
+  // would measure against depends on where on the screen that word sits. So a gradient is kept out
+  // of the measuring entirely, and the way that is enforced is that no colour it runs through is a
+  // text colour, and none of them carries a word while it is a gradient.
   it('never measures a wash, because a gradient has no one value to measure', () => {
     for (const name of washNames) {
       const stops = washStops(washes[name]);
@@ -160,6 +160,18 @@ describe('a colour that fails the contrast floor cannot be added', () => {
     }
 
     expect(approved.filter((pair) => washNames.some((name) => name === pair.text))).toEqual([]);
+  });
+
+  // The warm stop is the one value a part also paints flat: it is the ground of the apricot pill.
+  // A flat surface has one value and one ratio, so that pair is measured here, while the gradient
+  // the same value runs through is not.
+  it('measures the warm stop where a pill paints it flat, and still refuses it as a word', () => {
+    expect(hasRole('washWarm', 'text')).toBe(false);
+    expect(colours.washWarm.textOn).toEqual([]);
+    expect(colours.ovulationInk.textOn).toContain('washWarm');
+    expect(report(measure('ovulationInk', 'washWarm'))).toBe(
+      'ovulationInk on washWarm is 5.74 to 1',
+    );
   });
 
   it('refuses a colour that carries transparency, because its ratio depends on what is behind it', () => {
