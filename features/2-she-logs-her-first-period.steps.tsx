@@ -216,7 +216,10 @@ import {
   weekCellTestIDs,
   weekTestID,
 } from '../apps/mobile/src/features/onboarding/Calendar';
-import { HOLD_MILLISECONDS } from '../apps/mobile/src/features/onboarding/HoldToBegin';
+import {
+  HOLD_MILLISECONDS,
+  holdScreenTestID,
+} from '../apps/mobile/src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
@@ -272,7 +275,10 @@ import {
   promiseActionTestID,
   thePromiseTestID,
 } from '../apps/mobile/src/features/onboarding/ThePromise';
-import { whatEmiDoesActionTestID } from '../apps/mobile/src/features/onboarding/WhatEmiDoesWithIt';
+import {
+  whatEmiDoesActionTestID,
+  whatEmiDoesTitleTestID,
+} from '../apps/mobile/src/features/onboarding/WhatEmiDoesWithIt';
 import {
   sheAnswersEveryQuestion,
   sheAnswersEveryQuestionWithNoDate,
@@ -5319,6 +5325,154 @@ defineFeature(feature, (test) => {
       },
     );
   });
+  /**
+   * The forecast is the first thing Emi says back to her, so it says it to her: the name she
+   * typed at the second question opens the sentence, and a woman who gave none reads a clean one.
+   * The three screens between it and the hold talk to her as you.
+   */
+  test('SCREEN-1, her first forecast is addressed to her', ({ given, when, then, and }) => {
+    const theTitleOfHerForecast = {
+      named: `${theNameSheGives}, here's your next period`,
+      plain: "Here's your next period",
+    };
+    const theTitleOfWhatWeWillDo = {
+      named: `${theNameSheGives}, here's what we'll do with your answers`,
+      plain: "Here's what we'll do with your answers",
+    };
+    const thePromiseStillSays = 'Only you can read your days.';
+    const theHoldStillSays = 'Your cycle. Your data. Your key.';
+
+    /** The keys of the four screens from the forecast to the hold, in every language. */
+    const theseScreens: readonly string[] = [
+      'onboarding.firstForecast.',
+      'onboarding.promise.',
+      'onboarding.whatEmiDoes.',
+      'onboarding.hold.',
+    ];
+
+    let app: OpenApp;
+
+    const theTitleSheIsReading = (testID: string): string[] => textIn(screen.getByTestId(testID));
+
+    /** Her phone forgets her, so the next woman through the questions is a new one. */
+    async function anotherWomanOpensEmi(): Promise<void> {
+      await app.close();
+      resetExpoSqlite();
+      resetExpoSecureStore();
+      app = await sheOpens('/');
+      await sheSkipsTheTour();
+    }
+
+    /**
+     * The welcome and the twelve questions, with her last period answered and the rest passed,
+     * which leaves her standing on the forecast rather than on the hold.
+     */
+    async function sheAnswersEverythingAndReachesHerForecast(name?: string): Promise<void> {
+      await shePresses(onboardingActionTestID);
+
+      if (name === undefined) {
+        await shePresses(onboardingSkipTestID);
+      } else {
+        await fireEvent.changeText(screen.getByTestId(nameFieldTestID), name);
+        await shePresses(onboardingActionTestID);
+      }
+
+      await shePresses(onboardingSkipTestID);
+      await shePresses(dayTestID(herPeriodStarted));
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingActionTestID);
+
+      for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePresses(onboardingSkipTestID);
+      }
+    }
+
+    /** Every word of the four screens in one language, out of that language's own catalogue. */
+    function theWordsOfTheseScreensIn(language: Language): string[] {
+      const catalogue = catalogueOf(language);
+
+      return wordKeys
+        .filter((key) => theseScreens.some((screen) => key.startsWith(screen)))
+        .flatMap((key) => formsOf(catalogue[key]));
+    }
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi, skips the tour, gives her name, and answers every question', async () => {
+      app = await sheOpens('/');
+      await sheSkipsTheTour();
+      await sheAnswersEverythingAndReachesHerForecast(theNameSheGives);
+    });
+
+    then('the forecast she reads is addressed to her by the name she gave', () => {
+      expect(app.pathname()).toBe('/onboarding/first-forecast');
+      expect(theTitleSheIsReading(firstForecastTitleTestID)).toEqual([theTitleOfHerForecast.named]);
+    });
+
+    and(
+      'a woman who gave no name reads the same forecast, with no gap where a name would be',
+      async () => {
+        await anotherWomanOpensEmi();
+        await sheAnswersEverythingAndReachesHerForecast();
+
+        expect(app.pathname()).toBe('/onboarding/first-forecast');
+        expect(theTitleSheIsReading(firstForecastTitleTestID)).toEqual([
+          theTitleOfHerForecast.plain,
+        ]);
+        expect(screen.queryByText(theTitleOfHerForecast.named)).toBeNull();
+      },
+    );
+
+    and('the screen that reads her answers back is addressed to her too', async () => {
+      await anotherWomanOpensEmi();
+      await sheAnswersEverythingAndReachesHerForecast(theNameSheGives);
+      await shePresses(firstForecastActionTestID);
+
+      expect(app.pathname()).toBe('/onboarding/the-promise');
+      expect(textIn(screen.getByTestId(thePromiseTestID))).toContain(thePromiseStillSays);
+
+      await shePresses(promiseActionTestID);
+
+      expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
+      expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatWeWillDo.named]);
+
+      // And the plain sentence for a woman Emi cannot greet, read on the same screen.
+      await anotherWomanOpensEmi();
+      await sheAnswersEverythingAndReachesHerForecast();
+      await shePresses(firstForecastActionTestID);
+      await shePresses(promiseActionTestID);
+
+      expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatWeWillDo.plain]);
+    });
+
+    and(
+      'the promise and the hold talk to her as you, in each of the three languages she can read them in',
+      async () => {
+        for (const language of languages) {
+          const read = theWordsOfTheseScreensIn(language).join('\n');
+
+          expect({ language, asWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
+            language,
+            asWe: true,
+          });
+          expect(
+            interfaceClaimsIn(`the four screens in ${language}`, read).map(describeClaim),
+          ).toEqual([]);
+        }
+
+        expect(languages.length).toBe(3);
+
+        // And she reads the hold at the end of the walk, which is the round trip the catalogue
+        // above cannot prove on its own.
+        await shePresses(whatEmiDoesActionTestID);
+
+        expect(app.pathname()).toBe('/onboarding/hold');
+        expect(textIn(screen.getByTestId(holdScreenTestID))).toContain(theHoldStillSays);
+      },
+    );
+  });
+
   // Every answer she can be asked to choose, on one page, each one held in both states. The answers
   // are the prototype's own, so the page reads as a question of Emi rather than as a measurement.
   test('SCREEN-2, the option rows and chips take the redesign look', ({

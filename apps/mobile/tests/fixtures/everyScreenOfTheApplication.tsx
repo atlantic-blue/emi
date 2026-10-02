@@ -88,7 +88,9 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [thePromiseTestID, (): ReactElement => <ThePromise onContinue={nothing} />],
   [
     whatEmiDoesTestID,
-    (): ReactElement => <WhatEmiDoesWithIt focus={['mood']} onContinue={nothing} />,
+    (): ReactElement => (
+      <WhatEmiDoesWithIt focus={['mood']} name={undefined} onContinue={nothing} />
+    ),
   ],
   [
     firstForecastTestID,
@@ -96,6 +98,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       <FirstForecast
         cycleLengthDays={28}
         forecast={{ ...learning, start: { from: '2026-06-06', to: '2026-06-10' } }}
+        name={undefined}
         onContinue={nothing}
       />
     ),

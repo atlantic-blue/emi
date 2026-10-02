@@ -13,6 +13,7 @@ import {
   whatComesFirstWhenSheLogs,
   whatEmiDoesCards,
   whatEmiDoesCopy,
+  whatEmiDoesTitle,
 } from './copy';
 
 /**
@@ -24,6 +25,7 @@ import {
  */
 
 export const whatEmiDoesTestID = 'onboarding-what-emi-does';
+export const whatEmiDoesTitleTestID = 'what-emi-does-title';
 export const whatEmiDoesActionTestID = 'what-emi-does-action';
 
 export function whatEmiDoesCardTestID(card: WhatEmiDoesCard): string {
@@ -46,10 +48,12 @@ const DISC_DIAMETER = 44;
 interface Props {
   /** The groups she pressed, in the order she pressed them, and empty where she pressed none. */
   readonly focus: readonly Focus[];
+  /** Nothing at all where she gave no name, and then the screen reads her the plain sentence. */
+  readonly name: string | undefined;
   readonly onContinue: () => void;
 }
 
-export function WhatEmiDoesWithIt({ focus, onContinue }: Props): ReactNode {
+export function WhatEmiDoesWithIt({ focus, name, onContinue }: Props): ReactNode {
   const said: Readonly<Record<WhatEmiDoesCard, { readonly title: string; readonly line: string }>> =
     {
       forecast: whatEmiDoesCopy.forecast,
@@ -60,8 +64,8 @@ export function WhatEmiDoesWithIt({ focus, onContinue }: Props): ReactNode {
   return (
     <Screen testID={whatEmiDoesTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
-        <Text accessibilityRole="header" style={styles.title}>
-          {whatEmiDoesCopy.title}
+        <Text accessibilityRole="header" style={styles.title} testID={whatEmiDoesTitleTestID}>
+          {whatEmiDoesTitle(name)}
         </Text>
 
         <View style={styles.cards}>

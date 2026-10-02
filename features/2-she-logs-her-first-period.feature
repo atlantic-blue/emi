@@ -612,3 +612,11 @@ Feature: She opens Emi and logs her first period
     And a woman who gives no name reads the same question, with no gap where a name would be
     And picking that her cycle moves around answers her with the reply to that answer
     And every question that keeps an answer tells her only she can read it, in all three languages
+
+  Scenario: SCREEN-1, her first forecast is addressed to her
+    Given she has never opened Emi before
+    When she opens Emi, skips the tour, gives her name, and answers every question
+    Then the forecast she reads is addressed to her by the name she gave
+    And a woman who gave no name reads the same forecast, with no gap where a name would be
+    And the screen that reads her answers back is addressed to her too
+    And the promise and the hold talk to her as you, in each of the three languages she can read them in

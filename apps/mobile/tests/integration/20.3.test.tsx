@@ -162,20 +162,20 @@ describe('the first run with no date ends on a forecast that says it is still le
       expect(partsMissing(thePartsOfTheForecastWithNoDate(), theIdentifiersDrawn())).toEqual([]);
     });
 
-    it('says Emi has no date to count from', () => {
+    it('says they have no date to start from yet', () => {
       expect(textIn(screen.getByTestId(firstForecastTitleTestID))).toEqual([
         firstRunCopy.firstForecast.noDate.title,
       ]);
     });
 
-    it('says the first period she logs starts everything, then names the length she gave', () => {
+    it('tells her to log her next period, then names the length she gave', () => {
       expect(textIn(screen.getByTestId(firstForecastLinesTestID))).toEqual([
         firstRunCopy.firstForecast.noDate.first,
         statedLengthSentence(sheSaysHerCycleRuns),
       ]);
     });
 
-    it('says Emi is still learning, and how many complete cycles it needs', () => {
+    it('says it is still learning, and how many full cycles it needs', () => {
       expect(textIn(screen.getByTestId(firstForecastStillLearningTestID))).toEqual([
         learningCopy.stillLearning,
         cyclesBeforeAForecastSentence(CYCLES_BEFORE_A_FORECAST),
@@ -192,7 +192,7 @@ describe('the first run with no date ends on a forecast that says it is still le
       );
     });
 
-    it('says Emi builds no forecast from a date it guessed', () => {
+    it('says it will not guess a date on day one', () => {
       expect(textIn(screen.getByTestId(firstForecastNoGuessTestID))).toEqual([
         firstRunCopy.firstForecast.noDate.guess,
       ]);
