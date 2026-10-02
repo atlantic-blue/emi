@@ -450,35 +450,35 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.tour.count': '{step} de {of}',
   'onboarding.tour.range.action': 'Siguiente',
   'onboarding.tour.range.line.arithmetic':
-    'Esto es aritmética sobre tus propios registros. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
+    'Todo es aritmética sobre tus propios registros. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
   'onboarding.tour.range.line.confidence':
-    'Junto al rango escribe confianza alta, media o baja, y cuántos ciclos tuyos contó.',
+    'Al lado te decimos cuánta certeza tenemos, y de cuántos de tus ciclos viene.',
   'onboarding.tour.range.line.learning':
-    'Emi necesita 2 ciclos completos antes de hacer un pronóstico. Hasta entonces dice que todavía está aprendiendo, y cuenta con la duración de ciclo que le des.',
+    'Después de dos ciclos completos, el pronóstico se construye con los tuyos. Hasta entonces contamos con la duración de ciclo que nos digas.',
   'onboarding.tour.range.line.range':
-    'Emi dice que tu próximo periodo cae entre dos días. Nunca nombra un solo día, porque un día que nombra es un día en el que puede equivocarse.',
-  'onboarding.tour.range.title': 'Un rango, y cuánta certeza tiene Emi.',
+    'Tu próximo periodo llegará entre dos días. Te mostramos los dos, porque el cuerpo no llega al día exacto.',
+  'onboarding.tour.range.title': 'Un rango, no una adivinanza.',
   'onboarding.tour.records.action': 'Siguiente',
   'onboarding.tour.records.line.log':
-    'Registra flujo, ánimo, energía, temperatura, peso y más de 70 síntomas, en una sola hoja.',
+    'Registra tu flujo, ánimo, energía, sueño, temperatura, peso y más de 70 síntomas, todo en una hoja.',
   'onboarding.tour.records.line.patterns':
-    'Después de seis ciclos Emi nombra los síntomas que volvieron en el mismo punto en 3 de ellos o más. Un síntoma que registraste una vez no es un patrón, y Emi no lo llama así.',
-  'onboarding.tour.records.title': 'Lo que escribes, leído de vuelta.',
+    'Después de seis ciclos te mostramos los síntomas que volvieron en el mismo punto en al menos tres de ellos. Un día malo es solo un día malo, y no lo llamamos un patrón.',
+  'onboarding.tour.records.title': 'Cuéntale cómo te sientes. Mira lo que vuelve.',
   'onboarding.tour.ring.action': 'Siguiente',
   'onboarding.tour.ring.line.arcs':
-    'Cuatro arcos dividen el anillo: los días que sangras, los días que vienen después, los días alrededor de la ovulación, y los días antes de tu próximo periodo.',
+    'Los cuatro colores son las cuatro partes de tu ciclo: tu periodo, los días que vienen después, los días alrededor de la ovulación y los días antes de tu próximo periodo.',
   'onboarding.tour.ring.line.ring':
-    'El anillo es tu ciclo. Una cuenta marca hoy, y el número que hay dentro es el día en el que estás.',
-  'onboarding.tour.ring.title': 'Tu ciclo, en un solo anillo.',
+    'El punto es hoy. El número que hay dentro te dice en qué día de tu ciclo estás.',
+  'onboarding.tour.ring.title': 'Este anillo es tu ciclo.',
   'onboarding.tour.skip': 'Omitir',
   'onboarding.tour.yours.action': 'Continuar',
   'onboarding.tour.yours.line.encrypted':
-    'Cada día que registras se cifra en este teléfono, con una clave que nunca sale de él. El servidor guarda el resultado y no puede leer ni un solo día.',
+    'Todo lo que registras se cifra en este teléfono, con una clave que nunca sale de él. Nuestro servidor solo guarda una copia cerrada que no puede abrir.',
   'onboarding.tour.yours.line.price':
-    'Un mes gratis, después 29,99 libras al año. No hay versión gratuita, porque una versión gratuita se paga con tus datos.',
+    'Tu primer mes es gratis, después cuesta 29,99 libras al año. No hay versión gratuita, porque una aplicación gratuita se paga con tus datos.',
   'onboarding.tour.yours.line.recovery':
-    'Un código de recuperación que guardas lleva tu historial a un teléfono nuevo. Nadie en Emi puede abrir tu historial, así que nadie en Emi puede entregarlo.',
-  'onboarding.tour.yours.title': 'Tuyo, y sigue siendo tuyo.',
+    'Guarda tu código de recuperación y tu historial te sigue a un teléfono nuevo. No podemos abrir tu historial, así que no podemos entregarlo a nadie.',
+  'onboarding.tour.yours.title': 'Tus días son solo tuyos.',
   'onboarding.welcome.action': 'Continuar',
   'onboarding.welcome.line.noAccount':
     'No hay ninguna cuenta. Emi nunca te pide tu correo electrónico ni una contraseña.',

@@ -117,37 +117,36 @@ application, so neither gets a card.
 
 Status: designed
 
-The copy follows the rule the first run already follows, which is written at the top of
-`apps/mobile/src/features/onboarding/copy.ts`. Say what happens. Never congratulate. No exclamation
-mark. Write the number.
+The copy follows the voice in `docs/design/voice.md`, which the first run follows too. Talk to
+her and not about Emi. Write "you" and "we". Use contractions, short sentences, and one idea on a
+line. Never borrow what Emi does not have.
 
 The words go in `tourCopy`, in the same file, so a test reads them without rendering a screen.
 
 ### Card 1 of 4, from feature 2
 
-Title: Your cycle, in one ring.
+Title: This ring is your cycle.
 
-Line: The ring is your cycle. A bead marks today, and the number inside it is the day you are on.
+Line: The dot is today. The number inside it tells you which day of your cycle you're on.
 
-Line: Four arcs divide the ring: the days you bleed, the days after them, the days around
-ovulation, and the days before your next period.
+Line: The four colours are the four parts of your cycle: your period, the days after it, the days
+around ovulation, and the days before your next period.
 
 Action: Next.
 
 ### Card 2 of 4, from feature 3
 
-Title: A range, and how sure Emi is.
+Title: A range, not a guess.
 
-Line: Emi says your next period falls between two days. It never names one day, because a day it
-names is a day it can get wrong.
+Line: Your next period will come somewhere between two days. We show you both, because bodies
+don't run to the day.
 
-Line: Beside the range it writes high, medium or low confidence, and how many of your own cycles it
-counted.
+Line: Next to it, we tell you how sure we are, and how many of your cycles that comes from.
 
-Line: Emi needs 2 complete cycles before it forecasts. Until then it says it is still learning, and
-counts by the cycle length you give it.
+Line: After two full cycles, the forecast is built from yours. Until then, we work from the cycle
+length you tell us.
 
-Line: This is arithmetic on your own records. Emi is not a contraceptive. Emi is not a medical
+Line: It's all arithmetic on your own records. Emi is not a contraceptive. Emi is not a medical
 device.
 
 Action: Next.
@@ -157,33 +156,38 @@ in `tools/pipeline/forbiddenClaims.ts` accepts a denial only where a full stop c
 denial written as a string of its own is read as a claim and fails the build. The line in
 `copy.ts` today carries the same shape, for the same reason.
 
-The denial sits on this card rather than on the last one, because this is the card that makes a
-claim about a forecast. The welcome screen of the first run keeps its own copy of the two sentences.
-She reads them twice, four cards apart, and that is the correct number of times.
+The two denials are the one place the voice allows Emi to be the subject of a sentence. They sit on
+this card rather than on the last one, because this is the card that makes a claim about a forecast.
+The welcome screen of the first run keeps its own copy of the two sentences. She reads them twice,
+four cards apart, and that is the correct number of times.
 
 ### Card 3 of 4, from feature 4
 
-Title: What you write, read back to you.
+Title: Tell it how you feel. See what comes back.
 
-Line: Log flow, mood, energy, temperature, weight and more than 70 symptoms, in one sheet.
+Line: Log your flow, mood, energy, sleep, temperature, weight and more than 70 symptoms, all on one
+sheet.
 
-Line: After six cycles Emi names the symptoms that came back at the same point in 3 of them or
-more. A symptom you logged once is not a pattern, and Emi does not call it one.
+Line: After six cycles, we show you the symptoms that came back at the same point in at least three
+of them. One bad day is just one bad day, and we won't call it a pattern.
 
 Action: Next.
 
+Sleep is one of the eight symptom groups in `packages/cycle/src/symptoms.ts`, so the list names
+something she can actually log.
+
 ### Card 4 of 4, from features 5, 6 and 7
 
-Title: Yours, and it stays yours.
+Title: Your days are yours alone.
 
-Line: Every day you log is encrypted on this phone, with a key that never leaves it. The server
-holds the result and cannot read one day of it.
+Line: Everything you log is encrypted on this phone, with a key that never leaves it. Our server
+only holds a locked copy it can't open.
 
-Line: A recovery code you keep brings your history to a new phone. Nobody at Emi can open your
-history, so nobody at Emi can hand it to anybody.
+Line: Keep your recovery code, and your history follows you to a new phone. We can't open your
+history, so we can never hand it to anyone.
 
-Line: One month free, then 29.99 pounds a year. There is no free version, because a free version is
-paid for with your data.
+Line: Your first month is free, then it's 29.99 pounds a year. There's no free version, because a
+free app is paid for with your data.
 
 Action: Continue.
 
