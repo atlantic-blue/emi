@@ -181,15 +181,21 @@ import {
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
-import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
+import {
+  tourScreenTestID,
+  tourSkipTestID,
+} from '../apps/mobile/src/features/onboarding/TourScreen';
 import {
   settingsExportTestID,
   settingsScreenTestID,
 } from '../apps/mobile/src/features/settings/SettingsScreen';
 import {
+  type TourCard,
   cyclesBeforeAForecastSentence,
   firstRunCopy,
   firstRunScreenCount,
+  tourCards,
+  tourCopy,
 } from '../apps/mobile/src/features/onboarding/copy';
 import {
   learningCopy,
@@ -385,6 +391,8 @@ import {
   whatHerPhoneHolds,
 } from '../apps/mobile/tests/fixtures/theStatesOfHerData';
 import { catalogueFilesOf, samplesUnder } from '../tools/pipeline/sampleWording';
+import { approvedDenials, describeClaim, searchableText } from '../tools/pipeline/forbiddenClaims';
+import { interfaceClaimsIn } from '../tools/pipeline/interfaceClaims';
 import {
   type Described,
   type Screen,
@@ -408,7 +416,14 @@ import {
   thePartsOfTheDrawingOfARefusedDay,
   whatTheRefusalDrew,
 } from '../apps/mobile/tests/fixtures/theDayEmiRefuses';
-import { words } from '../apps/mobile/src/language';
+import {
+  type Language,
+  type Words,
+  catalogueOf,
+  languages,
+  wordKeys,
+  words,
+} from '../apps/mobile/src/language';
 import {
   herPhoneHoldsNothingForToday,
   theDrawingAfterSheLogged,
@@ -714,6 +729,42 @@ function theBeadDegrees(): number {
   const bead = screen.getByTestId(ringBeadTestID);
 
   return degreesAt(Number(bead.props.cx), Number(bead.props.cy));
+}
+
+/** The three sentences of the first card, which is the first thing Emi ever says to her. */
+const whatTheFirstCardSays = {
+  title: 'This ring is your cycle.',
+  dot: "The dot is today. The number inside it tells you which day of your cycle you're on.",
+  colours:
+    'The four colours are the four parts of your cycle: your period, the days after it, the days around ovulation, and the days before your next period.',
+};
+
+/**
+ * How each language writes the first person plural. The voice says Emi tells her what we do for
+ * her, so each catalogue carries its own form of it rather than the English word.
+ */
+const howEachLanguageSaysWe: Readonly<Record<Language, RegExp>> = {
+  en: /(?<!\p{Letter})(we|our)(?!\p{Letter})/iu,
+  es: /(?<!\p{Letter})(nos|nuestro|nuestra)(?!\p{Letter})|mos(?!\p{Letter})/iu,
+  ru: /(?<!\p{Letter})(мы|наш)/iu,
+};
+
+/** Which card of the tour she is on, read off the screen rather than counted by the step. */
+function theCardOfTheTourSheIsOn(): TourCard | undefined {
+  return tourCards.find((card) => screen.queryByTestId(tourScreenTestID(card)) !== null);
+}
+
+function formsOf(held: Words): string[] {
+  return typeof held === 'string' ? [held] : Object.values(held);
+}
+
+/** Every word of the four cards in one language, out of that language's own catalogue. */
+function theWordsOfTheTourIn(language: Language): string[] {
+  const catalogue = catalogueOf(language);
+
+  return wordKeys
+    .filter((key) => key.startsWith('onboarding.tour.'))
+    .flatMap((key) => formsOf(catalogue[key]));
 }
 
 /** The way out of the tour, which is on every card and leaves her on the first question. */
@@ -4815,6 +4866,97 @@ defineFeature(feature, (test) => {
 
       expect(app.pathname()).toBe(`/day/${sheWasSentTo}`);
     });
+  });
+
+  test('SCREEN-1, the tour tells her the ring is her cycle', ({ given, when, then, and }) => {
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    then(
+      'the first thing she reads says the ring is her cycle, the dot is today, and what the number inside it means',
+      () => {
+        expect(theCardOfTheTourSheIsOn()).toBe('ring');
+
+        const card = within(screen.getByTestId(tourScreenTestID('ring')));
+
+        expect(card.getByText(whatTheFirstCardSays.title)).toBeTruthy();
+        expect(card.getByText(whatTheFirstCardSays.dot)).toBeTruthy();
+        expect(card.getByText(whatTheFirstCardSays.colours)).toBeTruthy();
+      },
+    );
+
+    and('the card speaks to her as you, and names Emi nowhere', () => {
+      const said = [tourCopy.ring.title, ...tourCopy.ring.lines];
+
+      for (const line of said) {
+        expect({ line, toHer: /(?<!\p{Letter})(you|your)(?!\p{Letter})/iu.test(line) }).toEqual({
+          line,
+          toHer: true,
+        });
+        expect(line).not.toContain('Emi');
+      }
+    });
+
+    and(
+      'the four cards say what we do for her, in each of the three languages she can read them in',
+      () => {
+        for (const language of languages) {
+          const said = theWordsOfTheTourIn(language);
+          const read = said.join('\n');
+
+          // A denial names Emi on purpose, so the two of them come out before the rest is read.
+          expect({ language, aboutEmi: searchableText(read).includes('Emi') }).toEqual({
+            language,
+            aboutEmi: false,
+          });
+          expect({ language, toHerAsWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
+            language,
+            toHerAsWe: true,
+          });
+          expect(said.length).toBeGreaterThan(12);
+        }
+
+        expect(languages.length).toBe(3);
+      },
+    );
+
+    and(
+      'the card that names a forecast still denies the two claims, and no card says a word a screen refuses',
+      () => {
+        const theFirstDenial = 'Emi is not a c';
+        const theSecondDenial = 'Emi is not a m';
+        const denial = (beginning: string): string => {
+          const found = approvedDenials.find((each) => each.startsWith(beginning));
+
+          if (found === undefined) {
+            throw new Error(`no approved denial starts with "${beginning}"`);
+          }
+
+          return found;
+        };
+
+        const denying = tourCopy.range.lines.filter((line) =>
+          line.includes(denial(theFirstDenial)),
+        );
+
+        expect(denying).toHaveLength(1);
+        expect(denying[0]).toContain(denial(theSecondDenial));
+        // The gate reads a denial as a claim unless a full stop comes before it.
+        expect(denying[0]?.startsWith(denial(theFirstDenial))).toBe(false);
+
+        for (const language of languages) {
+          const claims = interfaceClaimsIn(
+            `the tour in ${language}`,
+            theWordsOfTheTourIn(language).join('\n'),
+          );
+
+          expect(claims.map(describeClaim)).toEqual([]);
+        }
+      },
+    );
   });
 });
 
