@@ -13,6 +13,7 @@ import {
   whatComesFirstWhenSheLogs,
   whatEmiDoesCards,
   whatEmiDoesCopy,
+  whatEmiDoesTitle,
 } from './copy';
 
 /**
@@ -52,7 +53,7 @@ interface Props {
   readonly onContinue: () => void;
 }
 
-export function WhatEmiDoesWithIt({ focus, onContinue }: Props): ReactNode {
+export function WhatEmiDoesWithIt({ focus, name, onContinue }: Props): ReactNode {
   const said: Readonly<Record<WhatEmiDoesCard, { readonly title: string; readonly line: string }>> =
     {
       forecast: whatEmiDoesCopy.forecast,
@@ -64,7 +65,7 @@ export function WhatEmiDoesWithIt({ focus, onContinue }: Props): ReactNode {
     <Screen testID={whatEmiDoesTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <Text accessibilityRole="header" style={styles.title} testID={whatEmiDoesTitleTestID}>
-          {whatEmiDoesCopy.title}
+          {whatEmiDoesTitle(name)}
         </Text>
 
         <View style={styles.cards}>

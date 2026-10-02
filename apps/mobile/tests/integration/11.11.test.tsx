@@ -213,13 +213,13 @@ describe('the promise says only what the product does', () => {
       ]);
     });
 
-    it('says the key stays on the phone and that only the result is sent', async () => {
+    it('says each day is locked on this phone and that only the locked copy is sent', async () => {
       await sheOpensEmi();
 
       await sheReachesThePromise();
 
       expect(theWordsOf(thePromiseTestID)).toContain(
-        'Emi encrypts each day on the phone, with a key that stays on the phone, and sends only the result.',
+        'Every day you log is locked on this phone, and only the locked copy is sent.',
       );
     });
 
@@ -286,7 +286,7 @@ describe('the promise says only what the product does', () => {
 
       expect(theLogCard()).toEqual([
         words('onboarding.whatEmiDoes.log.title'),
-        'Mood and energy come first when you log, as you chose.',
+        'Mood and energy come first when you log, just as you asked.',
       ]);
     });
 
@@ -295,7 +295,7 @@ describe('the promise says only what the product does', () => {
 
       await sheReachesWhatEmiDoes(['energy', 'mood']);
 
-      expect(theLogCard()[1]).toBe('Energy and mood come first when you log, as you chose.');
+      expect(theLogCard()[1]).toBe('Energy and mood come first when you log, just as you asked.');
     });
 
     it('names one group on its own, and says comes rather than come', async () => {
@@ -303,7 +303,7 @@ describe('the promise says only what the product does', () => {
 
       await sheReachesWhatEmiDoes(['sleep']);
 
-      expect(theLogCard()[1]).toBe('Sleep comes first when you log, as you chose.');
+      expect(theLogCard()[1]).toBe('Sleep comes first when you log, just as you asked.');
     });
 
     it('names all six where she pressed all six', async () => {
@@ -315,7 +315,7 @@ describe('the promise says only what the product does', () => {
         expect(theLogCard()[1]?.toLowerCase()).toContain(focusLabels[group].toLowerCase());
       }
       expect(theLogCard()[1]).toBe(
-        'Sleep, mood, energy, skin and hair, digestion and pain come first when you log, as you chose.',
+        'Sleep, mood, energy, skin and hair, digestion and pain come first when you log, just as you asked.',
       );
     });
 
@@ -326,9 +326,9 @@ describe('the promise says only what the product does', () => {
 
       expect(theLogCard()).toEqual([
         words('onboarding.whatEmiDoes.log.title'),
-        'The log opens in its usual order.',
+        "You'll see the usual order when you log.",
       ]);
-      expect(theLogCard()[1]).not.toMatch(/as you chose/);
+      expect(theLogCard()[1]).not.toMatch(/just as you asked/);
     });
 
     it('draws one thing beside each card, and every card carries one', async () => {
@@ -505,10 +505,10 @@ describe('the promise says only what the product does', () => {
     it('builds the log line from the groups it is given and from nothing else', () => {
       expect(whatComesFirstWhenSheLogs([])).toBe(whatEmiDoesCopy.log.usual);
       expect(whatComesFirstWhenSheLogs(['pain'])).toBe(
-        'Pain comes first when you log, as you chose.',
+        'Pain comes first when you log, just as you asked.',
       );
       expect(whatComesFirstWhenSheLogs(['pain', 'skin'])).toBe(
-        'Pain and skin and hair come first when you log, as you chose.',
+        'Pain and skin and hair come first when you log, just as you asked.',
       );
     });
   });

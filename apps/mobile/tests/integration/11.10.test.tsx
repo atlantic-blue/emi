@@ -222,7 +222,7 @@ describe('her first forecast is a range, before anything is written', () => {
       );
     });
 
-    it('says Emi is still learning, and what it says after two cycles', async () => {
+    it('says it is still getting to know her cycle, and what comes after two cycles', async () => {
       await sheOpensEmi();
 
       await sheReachesHerFirstForecast();
@@ -271,7 +271,7 @@ describe('her first forecast is a range, before anything is written', () => {
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
     });
 
-    it('says it has no date to count from, where she reached it without a day', async () => {
+    it('says they have no date to start from, where she reached it without a day', async () => {
       const app = renderRouter(appDirectory, { initialUrl: '/onboarding/first-forecast' });
 
       await app;

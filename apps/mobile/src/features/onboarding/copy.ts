@@ -331,6 +331,20 @@ export function todayTitle(name: string | undefined): string {
     : words('onboarding.today.titleNamed', undefined, { name });
 }
 
+/**
+ * The title of the first forecast, which is the first thing Emi says back about her own body. It
+ * greets her by the name she gave twelve questions earlier, and a woman who gave none reads the
+ * plain sentence rather than a gap.
+ *
+ * The state with no date keeps its own title and no name: there is nothing to tell her yet, and a
+ * greeting on that sentence would dress an absence up as an answer.
+ */
+export function firstForecastTitle(name: string | undefined): string {
+  return name === undefined
+    ? firstRunCopy.firstForecast.title
+    : words('onboarding.firstForecast.titleNamed', undefined, { name });
+}
+
 /** What a screen reader says for one year of the wheel, because a bare number says nothing. */
 export function birthYearLabel(year: number): string {
   return words('onboarding.birthYear.year', undefined, { year });
@@ -443,6 +457,16 @@ export const whatEmiDoesCopy = {
   },
   action: words('onboarding.whatEmiDoes.action'),
 } as const;
+
+/**
+ * The title of the screen that reads her own answers back, which greets her by name for the same
+ * reason the forecast does: the three cards on it are about her and nobody else.
+ */
+export function whatEmiDoesTitle(name: string | undefined): string {
+  return name === undefined
+    ? whatEmiDoesCopy.title
+    : words('onboarding.whatEmiDoes.titleNamed', undefined, { name });
+}
 
 /**
  * A group named inside a sentence rather than at the head of its section. Every language Emi ships

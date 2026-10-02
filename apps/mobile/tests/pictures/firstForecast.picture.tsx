@@ -88,7 +88,7 @@ describe('her first forecast, drawn for somebody to look at', () => {
   it('renders the screen a woman who gave no date at all reads', async () => {
     await drawn(
       'No date to count from',
-      'She passed the question about her last period, so there is nothing to count from and no range. Emi says what it has and what the first period she logs will do.',
+      'She passed the question about her last period, so there is nothing to count from and no range. The screen says what it has, and what logging her next period will do.',
       {},
     );
   });
