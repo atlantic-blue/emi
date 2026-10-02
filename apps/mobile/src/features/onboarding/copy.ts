@@ -18,8 +18,8 @@ import {
 } from './firstRun';
 
 /**
- * The words of the first run. Section 9.7 of the design sets the rules they follow: say what
- * happens, never congratulate, no exclamation mark, write the number.
+ * The words of the first run. `docs/design/voice.md` sets the rules they follow: talk to her and
+ * not about Emi, write "you" and "we", use contractions, and give her a way out of every question.
  */
 export const firstRunCopy = {
   welcome: {

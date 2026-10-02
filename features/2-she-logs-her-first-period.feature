@@ -573,3 +573,11 @@ Feature: She opens Emi and logs her first period
     And each tint fades to nothing, so no phase leaves an edge across the screen
     And a screen that knows no phase yet draws the soft wash every other screen draws
     And no colour of a wash is ever drawn as a word, because colour is all it carries
+
+  Scenario: SCREEN-1, the tour tells her the ring is her cycle
+    Given she has never opened Emi before
+    When she opens Emi
+    Then the first thing she reads says the ring is her cycle, the dot is today, and what the number inside it means
+    And the card speaks to her as you, and names Emi nowhere
+    And the four cards say what we do for her, in each of the three languages she can read them in
+    And the card that names a forecast still denies the two claims, and no card says a word a screen refuses
