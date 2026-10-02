@@ -100,12 +100,6 @@ export function identifiersOf(section: Section, identifier: string): boolean {
 
 export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
   {
-    draws: { named: [homeGreetingTestID] },
-    fills: (hers) => hers.gaveAName,
-    name: 'the greeting',
-    simplyGoes: 'a woman who kept her name is not greeted by a blank line',
-  },
-  {
     draws: { prefixed: ['home-week-cycle-day-'] },
     fills: (hers) => hers.dayOfHerCycle !== undefined,
     name: 'the day of her cycle over each date of her week',
@@ -228,6 +222,7 @@ export const theFrameOfTheScreenSheOpens: Draws = {
     homeHeaderTestID,
     homeHeaderMarkTestID,
     homeHeaderWordTestID,
+    homeGreetingTestID,
     weekStripTestID,
     homeForecastTestID,
     ...roundActions.map(roundActionTestID),

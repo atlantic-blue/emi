@@ -218,8 +218,8 @@ print([typeof Intl.Collator, typeof Intl.DateTimeFormat, typeof Intl.NumberForma
     const held = askTheScreen(binary);
 
     expect(held.error).toBeUndefined();
-    expect(held.plurals?.one).toContain('1 more complete cycle');
-    expect(held.plurals?.two).toContain('2 more complete cycles');
+    expect(held.plurals?.one).toContain('1 more full cycle');
+    expect(held.plurals?.two).toContain('2 more full cycles');
   });
 
   it('is read by the compiler the build ships, in the syntax the source wrote', () => {

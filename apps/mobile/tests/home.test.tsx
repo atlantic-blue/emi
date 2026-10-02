@@ -45,13 +45,15 @@ describe('the home screen', () => {
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
     expect(textIn(screen.toJSON())).toEqual([
       homeCopy.wordmark,
+      // A woman who gave no name is greeted anyway, with hi on its own and no gap after it.
+      'Hi',
       cycleCopy.noRing.title,
       cycleCopy.noRing.line,
       homeCopy.roundAction.period,
       homeCopy.roundAction.symptoms,
-      'Still learning',
-      'Emi needs 2 more complete cycles before it says how sure it is.',
-      'Until then Emi counts a cycle of 28 days, the length you gave at the first run.',
+      'Still getting to know you',
+      'We need 2 more full cycles before we can say how sure we are.',
+      "Until then, we're using the 28 day cycle you told us about.",
       homeCopy.logToday,
     ]);
   });

@@ -40,28 +40,28 @@ const sixRegularCycles: WhatSheSees = {
   recorded: 'six cycles of 28 days',
   set: veryRegular,
   range: 'Between the 19th and the 21st of July',
-  confidence: 'High confidence, from your last 6 cycles',
+  confidence: 'High confidence, based on your last 6 cycles',
 };
 
 const oneLongCycleAmongSix: WhatSheSees = {
   recorded: 'the same six cycles with one of 40 days among them',
   set: oneLongCycle,
   range: 'Between the 27th of July and the 6th of August',
-  confidence: 'Medium confidence, from your last 6 cycles',
+  confidence: 'Medium confidence, based on your last 6 cycles',
 };
 
 const sixIrregularCycles: WhatSheSees = {
   recorded: 'six cycles running from 24 days to 41 days',
   set: genuinelyIrregular,
   range: 'Between the 6th and the 18th of August',
-  confidence: 'Low confidence, from your last 6 cycles',
+  confidence: 'Low confidence, based on your last 6 cycles',
 };
 
 const twoCyclesAndNoMore: WhatSheSees = {
   recorded: 'two cycles and nothing before them',
   set: twoCyclesExactly,
   range: 'Between the 27th and the 29th of May',
-  confidence: 'High confidence, from your last 2 cycles',
+  confidence: 'High confidence, based on your last 2 cycles',
 };
 
 const whatSheSees: readonly WhatSheSees[] = [

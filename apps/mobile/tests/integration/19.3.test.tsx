@@ -234,9 +234,9 @@ describe('every section of the screen she opens is drawn from her own data or ab
     });
 
     it('draws what she asked for at every state, because an answer is hers from the first', () => {
-      for (const section of ['the greeting', 'the record for her doctor']) {
-        expect(whereItWasDrawn(section)).toEqual(states.map((state) => state.name));
-      }
+      expect(whereItWasDrawn('the record for her doctor')).toEqual(
+        states.map((state) => state.name),
+      );
     });
   });
 
@@ -257,7 +257,7 @@ describe('every section of the screen she opens is drawn from her own data or ab
       );
 
       expect(quiet.filter((section) => (section.simplyGoes ?? '').length === 0)).toEqual([]);
-      expect(quiet).toHaveLength(8);
+      expect(quiet).toHaveLength(7);
     });
   });
 });
