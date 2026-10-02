@@ -16,6 +16,7 @@ import {
 } from '../../src/components/ChoiceRow';
 import { Chip } from '../../src/components/Chip';
 import { ProgressBar, progressFillTestID } from '../../src/components/ProgressBar';
+import { RoundIconButton } from '../../src/components/RoundIconButton';
 import { SelectableTile, tileBeadTestID } from '../../src/components/SelectableTile';
 import {
   Stepper,
@@ -147,7 +148,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
     });
   });
 
-  describe('the three ways Emi asks her to do something', () => {
+  describe('the four ways Emi asks her to do something', () => {
     const label = 'Save';
 
     it('draws the affirmative action on the accent, in the words measured against it', async () => {
@@ -155,11 +156,11 @@ describe('a component that writes a colour of its own fails the lint', () => {
 
       expect(theStyleOf('action')).toMatchObject({
         backgroundColor: colour.accent,
-        borderRadius: radius.lg,
+        borderRadius: radius.full,
       });
       expect(theStyleOfTheWordsIn('action')).toMatchObject({
         color: colour.onAccent,
-        ...textStyle('label-md'),
+        ...textStyle('button-lg'),
       });
     });
 
@@ -200,19 +201,24 @@ describe('a component that writes a colour of its own fails the lint', () => {
       expect(pressed).toEqual([]);
     });
 
-    it('holds the action beside it in a hairline, because it carries no fill of its own', async () => {
+    it('sits the action beside it on the recessed ground, with no border of its own', async () => {
       await render(<SecondaryButton label={label} onPress={nothing} testID="beside" />);
 
       expect(theStyleOf('beside')).toMatchObject({
-        backgroundColor: colour.card,
-        borderColor: colour.line,
-        borderRadius: radius.lg,
-        borderWidth: stroke.hairline,
+        backgroundColor: colour.field,
+        borderRadius: radius.full,
       });
-      expect(theStyleOfTheWordsIn('beside')).toMatchObject({ color: colour.text });
+      expect(theStyleOf('beside')['borderWidth']).toBeUndefined();
+      expect(theStyleOfTheWordsIn('beside')).toMatchObject({
+        color: colour.text,
+        ...textStyle('button-md'),
+      });
     });
 
-    it('steps the action beside it to the recessed ground while her thumb is down', async () => {
+    // Its ready ground is the recessed one, so a press has nowhere quieter to go inside a closed
+    // palette. The case stays so that a press which does start moving the ground is decided rather
+    // than arrived at.
+    it('keeps the ground of the action beside it while her thumb is down', async () => {
       await render(<SecondaryButton label={label} onPress={nothing} testID="beside" />);
 
       await act(async () => {
@@ -222,21 +228,16 @@ describe('a component that writes a colour of its own fails the lint', () => {
       expect(theStyleOf('beside')).toMatchObject({ backgroundColor: colour.field });
     });
 
-    it('draws the quiet action as words with a rule under them, and no ground at all', async () => {
+    it('draws the quiet action as words in the colour that acts, and nothing else', async () => {
       await render(<TextLink label={label} onPress={nothing} testID="quiet" />);
-
-      const [, rule] = screen.getByTestId('quiet').children;
 
       expect(theStyleOf('quiet')['backgroundColor']).toBeUndefined();
       expect(theStyleOf('quiet')['borderWidth']).toBeUndefined();
-      expect(theStyleOfTheWordsIn('quiet')).toMatchObject({ color: colour.text });
-      expect(
-        StyleSheet.flatten((rule as unknown as { props: { style?: unknown } }).props.style),
-      ).toMatchObject({
-        backgroundColor: colour.text,
-        height: stroke.hairline,
-        marginTop: 4,
+      expect(theStyleOfTheWordsIn('quiet')).toMatchObject({
+        color: colour.accent,
+        ...textStyle('button-md'),
       });
+      expect(screen.getByTestId('quiet').children).toHaveLength(1);
     });
   });
 
@@ -524,6 +525,12 @@ describe('a component that writes a colour of its own fails the lint', () => {
           <PrimaryButton label="Save" onPress={nothing} testID="accent" />
           <SecondaryButton label="Cancel" onPress={nothing} testID="secondaryText" />
           <TextLink label="Export" onPress={nothing} testID="link" />
+          <RoundIconButton
+            accessibilityLabel="Go back"
+            icon="chevron"
+            onPress={nothing}
+            testID="round"
+          />
           <Stepper
             canGoDown
             canGoUp
@@ -550,7 +557,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
 
       const pressable = everythingPressable();
 
-      expect(pressable.length).toBe(9);
+      expect(pressable.length).toBe(10);
       expect(controlsTooSmallToPress(pressable)).toEqual([]);
     });
   });

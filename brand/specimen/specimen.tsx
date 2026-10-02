@@ -32,6 +32,8 @@ export const specimenSentences: Readonly<Record<TypeRoleName, string>> = {
   'headline-sm': 'Your cycle is worked out on this phone.',
   'body-lg': 'Predicted on your phone. Encrypted at rest. Shared with nobody.',
   'body-sm': 'The ring needs a period. Log a day you bled and it appears.',
+  'button-lg': 'Log today',
+  'button-md': 'Not now',
   'label-md': 'DAY 14 / CYCLE 29 DAYS',
   'label-sm': 'STEP 1 OF 3',
   'data-lg': '14',

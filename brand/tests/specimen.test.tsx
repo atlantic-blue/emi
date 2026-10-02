@@ -109,7 +109,7 @@ describe('the type specimen a person looks at', () => {
       .map((role) => role);
 
     expect(missing).toEqual([]);
-    expect(typeRoleNames).toHaveLength(11);
+    expect(typeRoleNames).toHaveLength(13);
   });
 
   it('writes the size and the line height beside each sample, so the picture names what it shows', () => {
