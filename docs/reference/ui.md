@@ -183,7 +183,7 @@ What a tint is painted with, numbered the same way the tint itself is.
 ### `Wash`
 
 ```
-function Wash({ height = WASH_HEIGHT }: Props)
+function Wash({ phase, height = WASH_HEIGHT }: Props)
 ```
 
 The wash at the top of a screen, in the colours of the phase she is in.

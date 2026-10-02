@@ -956,22 +956,36 @@ The four washes as data, in the order the design document lists them.
 ```
 interface WashTint {
   readonly colour: ColourName;
+  /** How wide the ellipse is, as a percentage of the width of the wash. */
   readonly widthPercent: number;
+  /** How tall it is, as a percentage of the height of the wash. */
   readonly heightPercent: number;
+  /** Where its centre sits, as a percentage across the wash. */
   readonly acrossPercent: number;
+  /** Where its centre sits, as a percentage down the wash. */
   readonly downPercent: number;
+  /**
+   * How far along its own radius it has faded to nothing. Past this it is transparent, so the tint
+   * leaves no edge anywhere on the screen.
+   */
   readonly fadedByPercent: number;
 }
 ```
 
-One of the two tints a wash carries: an ellipse reaching in from a corner, fading to nothing.
+One of the two tints a wash carries: an ellipse reaching in from a corner and fading to nothing.
+
+The prototype writes its size and its centre as a share of the wash it fills rather than in
+pixels, so they stay shares here and a wash drawn at any height keeps the shape it was drawn at.
 
 ### `Wash`
 
 ```
 interface Wash {
+  /** The two tints, in the order the prototype stacks them, the topmost one first. */
   readonly tints: readonly [WashTint, WashTint];
+  /** The top of the field the tints sit on. */
   readonly from: ColourName;
+  /** What it reaches at the bottom, which is the ground the rest of the screen sits on. */
   readonly to: ColourName;
 }
 ```
@@ -984,7 +998,9 @@ One wash: two tints over a field that falls to the ground the rest of the screen
 const washes: Readonly<Record<WashName, Wash>>
 ```
 
-The four washes. None of them carries its colours yet.
+The four washes, each one the colours the design document names for it, in the order the document
+lists them. `tests/designSystem.test.ts` reads this against that document, so a stop that drifts
+from it fails the run.
 
 ### `washOfPhase`
 
@@ -992,7 +1008,8 @@ The four washes. None of them carries its colours yet.
 const washOfPhase: Readonly<Record<PhaseName, WashName>>
 ```
 
-Which wash each phase takes.
+Which wash each phase takes. No screen of the prototype shows a follicular day, so nothing pins
+a wash of its own to it, and it takes the neutral one every screen with no phase takes.
 
 ### `washFor`
 
@@ -1005,15 +1022,17 @@ The wash of the phase she is in, or the soft one where there is no cycle to read
 ### `washStops`
 
 ```
-function washStops(_wash: Wash): readonly ColourName[]
+function washStops(wash: Wash): readonly ColourName[]
 ```
 
-The four colours a wash runs through, in the order the design document lists them.
+The four colours a wash runs through, in the order the design document lists them: the two tints,
+the top of the field, then the ground.
 
 ### `WASH_HEIGHT`
 
 ```
-const WASH_HEIGHT = 0
+const WASH_HEIGHT = 460
 ```
 
-How tall the wash is drawn, in points.
+How tall the wash is drawn, in points. The four home screens of the prototype all paint it at
+this height; a screen that wants another passes its own, because the prototype paints ten.
