@@ -630,3 +630,12 @@ Feature: She opens Emi and logs her first period
     And a woman who gave no name reads hi on its own, with no gap where a name would be
     And every word this screen says is in all three languages, and each one talks to her as you
     And the only two that name Emi are the fertile window denial and the line about sample data
+
+  Scenario: SCREEN-4, she logs bleeding that is not her period in plain words
+    Given she is in the middle of her month, with six cycles behind her
+    When she opens the log and says the bleeding was light
+    Then the line beside the flow asks her about bleeding that is not her period
+    And marking it tells her the day is in her record, and that no cycle starts from it
+    And her phone holds that day with the mark on it, and counts the cycles it counted before
+    And the log and the period editor say all of this in each of the three languages, as you
+    And none of those words gives her advice, raises an alarm, or names Emi

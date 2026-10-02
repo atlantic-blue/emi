@@ -375,14 +375,14 @@ describe('unexpected bleeding never starts a cycle', () => {
   });
 
   describe('the words she reads while she does it', () => {
-    it('carries the line the brand brief sets, word for word', async () => {
+    it('carries the invitation the voice sets, word for word', async () => {
       await herPhoneHolds(whenSheOpensIt, herSixPeriods());
       await sheOpens('/log');
 
       await shePicks('spotting');
 
       expect(unexpectedBleedingCopy.invitation).toBe(
-        'Not your period? Log it. Emi will track the pattern.',
+        "Bleeding that isn't your period? Log it here, and we'll keep an eye on the pattern.",
       );
       expect(screen.getByTestId(unexpectedBleedingLineTestID)).toHaveTextContent(
         unexpectedBleedingCopy.invitation,

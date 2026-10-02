@@ -403,7 +403,7 @@ describe('mood and energy are saved and read back', () => {
 
       expect(screen.queryByTestId('symptom-chip-irritable')).toBeNull();
       expect(screen.getByTestId('no-symptom-found')).toHaveTextContent(
-        'No symptom matches irritable',
+        'No symptoms match irritable',
       );
     });
 
