@@ -299,6 +299,20 @@ export function daysBetweenSentence(days: number): string {
   return words('onboarding.periodBefore.between', days);
 }
 
+/**
+ * The question about the year she was born, which greets her by the name she just gave. The
+ * screen that asks it again from Privacy knows her name already, so it asks the plain question
+ * and reads the title above.
+ */
+export function birthYearTitle(_name: string | undefined): string {
+  return firstRunCopy.birthYear.title;
+}
+
+/** The last question of the first run, which is about her day and so carries her name. */
+export function todayTitle(_name: string | undefined): string {
+  return firstRunCopy.today.title;
+}
+
 /** What a screen reader says for one year of the wheel, because a bare number says nothing. */
 export function birthYearLabel(year: number): string {
   return words('onboarding.birthYear.year', undefined, { year });

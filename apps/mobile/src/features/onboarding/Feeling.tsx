@@ -12,6 +12,9 @@ export function feelingTestID(answer: HowSheFeelsAboutIt): string {
   return `feeling-${answer}`;
 }
 
+/** The line her answer is answered on, named so a test reads the reply and not a position. */
+export const feelingReplyTestID = 'feeling-reply';
+
 interface Props {
   /** Nothing at all until she picks, because the screen opens on no answer of its own. */
   readonly chosen: HowSheFeelsAboutIt | undefined;

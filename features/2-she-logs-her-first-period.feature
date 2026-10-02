@@ -581,3 +581,11 @@ Feature: She opens Emi and logs her first period
     And the card speaks to her as you, and names Emi nowhere
     And the four cards say what we do for her, in each of the three languages she can read them in
     And the card that names a forecast still denies the two claims, and no card says a word a screen refuses
+
+  Scenario: SCREEN-1, the first run greets her by the name she gave
+    Given she has never opened Emi before
+    When she opens Emi, skips the tour, and gives her name
+    Then the question after it greets her by the name she gave
+    And a woman who gives no name reads the same question, with no gap where a name would be
+    And picking that her cycle moves around answers her with the reply to that answer
+    And every question that keeps an answer tells her only she can read it, in all three languages

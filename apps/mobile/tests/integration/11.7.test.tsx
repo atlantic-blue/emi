@@ -263,7 +263,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    it('says Emi encrypts her answers on this phone, and promises nothing else', async () => {
+    it('says she may pick as many as she likes, and that only she can read them', async () => {
       await sheOpensEmi();
 
       await sheReachesTheGoals();
@@ -272,7 +272,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       // Each line is named on its own rather than read off the copy, so a line taken out of the
       // screen fails here instead of leaving a shorter list that still agrees with itself.
       expect(screen.getByText(words('onboarding.goals.line.chooseAll'))).toBeTruthy();
-      expect(screen.getByText(words('onboarding.goals.line.encrypted'))).toBeTruthy();
+      expect(screen.getByText('Only you can read this.')).toBeTruthy();
       expect(firstRunCopy.goals.lines).toHaveLength(2);
     });
 
