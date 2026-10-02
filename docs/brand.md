@@ -192,7 +192,7 @@ fill.
 
 Status: built
 
-The scale has 11 roles in three faces. The headings are set in Figtree, the words she reads at
+The scale has 13 roles in three faces. The headings are set in Figtree, the words she reads at
 length are set in Figtree, and every number is set in JetBrains Mono. A line height below 1.2 times
 the size fails the token test, and the role that sits under it is named with the rest.
 
@@ -203,6 +203,8 @@ the size fails the token test, and the role that sits under it is named with the
 - `headline-sm` is 18 points over 24 at weight 800, which is 1.33 times the size, set in Figtree.
 - `body-lg` is 16 points over 24 at weight 400, which is 1.50 times the size, set in Figtree.
 - `body-sm` is 14 points over 20 at weight 400, which is 1.43 times the size, set in Figtree.
+- `button-lg` is 16 points over 22 at weight 700, which is 1.38 times the size, set in Figtree.
+- `button-md` is 15 points over 21 at weight 700, which is 1.40 times the size, set in Figtree.
 - `label-md` is 13 points over 18 at weight 700, which is 1.38 times the size, set in Figtree.
 - `label-sm` is 11 points over 15 at weight 600, letter spacing 0.22, which is 1.36 times the size, set in Figtree.
 - `data-lg` is 24 points over 30 at weight 500, letter spacing -0.48, which is 1.25 times the size, set in JetBrains Mono.

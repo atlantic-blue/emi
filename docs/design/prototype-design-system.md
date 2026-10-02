@@ -136,6 +136,16 @@ typography:
     fontSize: '14px'
     fontWeight: '400'
     lineHeight: '20px'
+  button-lg:
+    fontFamily: 'Figtree'
+    fontSize: '16px'
+    fontWeight: '700'
+    lineHeight: '22px'
+  button-md:
+    fontFamily: 'Figtree'
+    fontSize: '15px'
+    fontWeight: '700'
+    lineHeight: '21px'
   label-md:
     fontFamily: 'Figtree'
     fontSize: '13px'
