@@ -347,21 +347,22 @@ export const english = {
   'onboarding.feeling.title': 'How do you feel about your period?',
   'onboarding.firstForecast.action': 'Continue',
   'onboarding.firstForecast.line.learning':
-    'Emi is still learning. After two cycles it says how sure it is.',
+    "We're still getting to know your cycle. After two cycles, we'll tell you how sure we are.",
   'onboarding.firstForecast.noDate.cycles': {
-    one: 'Emi needs {count} complete cycle before it forecasts.',
-    other: 'Emi needs {count} complete cycles before it forecasts.',
+    one: 'We need {count} full cycle before we can forecast.',
+    other: 'We need {count} full cycles before we can forecast.',
   },
-  'onboarding.firstForecast.noDate.first': 'The first period you log starts everything.',
+  'onboarding.firstForecast.noDate.first': 'Log your next period and your forecast starts there.',
   'onboarding.firstForecast.noDate.guess':
-    'Emi builds no forecast from a date it guessed, because a guess on day one is a false sentence on day one.',
-  'onboarding.firstForecast.noDate.title': 'Emi has no date to count from',
+    "We won't guess a date on day one, because a guess would only mislead you.",
+  'onboarding.firstForecast.noDate.title': "We don't have a date to start from yet",
   'onboarding.firstForecast.onThisPhone.line':
-    'Emi works out the range on this phone, from the dates you gave.',
-  'onboarding.firstForecast.onThisPhone.title': 'Worked out on this phone',
-  'onboarding.firstForecast.title': 'Your next period',
+    'This comes from the dates you just gave us, worked out right here on your phone.',
+  'onboarding.firstForecast.onThisPhone.title': 'Worked out on your phone',
+  'onboarding.firstForecast.title': "Here's your next period",
+  'onboarding.firstForecast.titleNamed': "{name}, here's your next period",
   'onboarding.firstForecast.why.line':
-    'A cycle can move by a few days from one month to the next. A range says that. One date would hide it.',
+    "Cycles shift by a few days from month to month. A single date would pretend they don't.",
   'onboarding.firstForecast.why.title': 'Why a range?',
   'onboarding.focus.action': 'Continue',
   'onboarding.focus.line.first': "We'll put them first when you log your day.",
@@ -375,16 +376,16 @@ export const english = {
   'onboarding.goals.line.chooseAll': 'Pick as many as you like.',
   'onboarding.goals.title': 'What would you like help with?',
   'onboarding.hold.action': 'Hold to begin',
-  'onboarding.hold.held': 'Holding',
+  'onboarding.hold.held': 'Keep holding',
   'onboarding.hold.instruction': 'Press and hold the ring to begin.',
   // What she reads when the write refuses. It says nothing was kept, because nothing was: the
   // day, the answers and the marker go in one transaction or none of them do.
-  'onboarding.hold.refused': 'Emi kept nothing. Press and hold the ring again.',
+  'onboarding.hold.refused': "That didn't save. Press and hold the ring again.",
   // True only because the hold is the one moment the first run writes. The key is made there if
   // this phone holds none, and it is kept in the keychain rather than anywhere a screen may name.
   'onboarding.hold.sealed':
-    "Holding the ring saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
-  'onboarding.hold.title': 'Your cycle, your data, your key.',
+    "When you hold the ring, we save your answers and lock them with a key that lives in this phone's keychain.",
+  'onboarding.hold.title': 'Your cycle. Your data. Your key.',
   'onboarding.lastPeriod.action': 'Continue',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
@@ -428,13 +429,14 @@ export const english = {
   'onboarding.periodLength.skip': "I'm not sure",
   'onboarding.periodLength.title': 'How many days does your period usually last?',
   'onboarding.promise.action': 'Continue',
-  'onboarding.promise.delete.line': 'Delete everything removes every day from this phone.',
-  'onboarding.promise.delete.title': 'Delete everything, in one press',
+  'onboarding.promise.delete.line': 'One press removes every day from this phone.',
+  'onboarding.promise.delete.title': 'Delete it all, any time',
   'onboarding.promise.encrypted.line':
-    'Emi encrypts each day on the phone, with a key that stays on the phone, and sends only the result.',
-  'onboarding.promise.encrypted.title': 'Encrypted on this phone, with a key only you hold',
-  'onboarding.promise.noTracking.line': 'Emi asks for no password and carries no tracking tools.',
-  'onboarding.promise.noTracking.title': 'No password, no tracking tools',
+    'Every day you log is locked on this phone, and only the locked copy is sent.',
+  'onboarding.promise.encrypted.title': 'Encrypted with a key only you hold',
+  'onboarding.promise.noTracking.line':
+    "We don't ask for a password, and Emi carries no tracking tools.",
+  'onboarding.promise.noTracking.title': 'No password, no trackers',
   'onboarding.promise.title': 'Only you can read your days.',
   'onboarding.regularity.action': 'Continue',
   'onboarding.regularity.choice.moves': 'No, it moves around',
@@ -505,18 +507,20 @@ export const english = {
   'onboarding.welcome.title': 'Hi, welcome to Emi!',
   'onboarding.whatEmiDoes.action': 'Continue',
   'onboarding.whatEmiDoes.forecast.line':
-    'A range first. It gets narrower as Emi learns your cycles.',
-  'onboarding.whatEmiDoes.forecast.title': 'Your forecast: a range, and how sure Emi is',
+    'A range to start with. It gets narrower as we learn your cycle.',
+  'onboarding.whatEmiDoes.forecast.title': 'Your forecast',
   'onboarding.whatEmiDoes.log.and': 'and',
   'onboarding.whatEmiDoes.log.chosen': {
-    one: '{groups} comes first when you log, as you chose.',
-    other: '{groups} come first when you log, as you chose.',
+    one: '{groups} comes first when you log, just as you asked.',
+    other: '{groups} come first when you log, just as you asked.',
   },
-  'onboarding.whatEmiDoes.log.title': 'Your log: what you see first',
-  'onboarding.whatEmiDoes.log.usual': 'The log opens in its usual order.',
-  'onboarding.whatEmiDoes.privacy.line': 'Encrypted on this phone. Nobody else can read it.',
-  'onboarding.whatEmiDoes.privacy.title': 'Your privacy: only you can read any of it',
-  'onboarding.whatEmiDoes.title': 'Here is what Emi does with what you told it',
+  'onboarding.whatEmiDoes.log.title': 'Your log',
+  'onboarding.whatEmiDoes.log.usual': "You'll see the usual order when you log.",
+  'onboarding.whatEmiDoes.privacy.line':
+    "It's all encrypted on this phone. Nobody else can read it.",
+  'onboarding.whatEmiDoes.privacy.title': 'Your privacy',
+  'onboarding.whatEmiDoes.title': "Here's what we'll do with your answers",
+  'onboarding.whatEmiDoes.titleNamed': "{name}, here's what we'll do with your answers",
 
   'recovery.before.action': 'Show my code',
   'recovery.before.line.nobody':

@@ -229,7 +229,7 @@ describe('she answers everything, leaves before the hold, and nothing is written
       });
     }
 
-    it('fills as she holds, and says she is holding', async () => {
+    it('fills as she holds, and asks her to keep holding', async () => {
       await theRing();
       await herThumbGoesDown();
 

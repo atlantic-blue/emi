@@ -7,7 +7,7 @@ import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import { learningCopy, rangeSentence, statedLengthSentence } from '../forecast/copy';
-import { cyclesBeforeAForecastSentence, firstRunCopy } from './copy';
+import { cyclesBeforeAForecastSentence, firstForecastTitle, firstRunCopy } from './copy';
 
 /**
  * The first thing Emi says back to her, after twelve questions and before the hold that writes
@@ -39,10 +39,12 @@ interface Props {
   readonly forecast: ForecastResult;
   /** The length she gave at the cycle length question, named while Emi has no cycle of hers. */
   readonly cycleLengthDays: number;
+  /** Nothing at all where she gave no name, and then the forecast reads the plain sentence. */
+  readonly name: string | undefined;
   readonly onContinue: () => void;
 }
 
-export function FirstForecast({ cycleLengthDays, forecast, onContinue }: Props): ReactNode {
+export function FirstForecast({ cycleLengthDays, forecast, name, onContinue }: Props): ReactNode {
   const start = forecast.start;
 
   return (
@@ -51,7 +53,7 @@ export function FirstForecast({ cycleLengthDays, forecast, onContinue }: Props):
         {start === undefined ? (
           <WithNoDate cycleLengthDays={cycleLengthDays} />
         ) : (
-          <WithARange start={start} />
+          <WithARange name={name} start={start} />
         )}
       </ScrollView>
 
@@ -66,12 +68,18 @@ export function FirstForecast({ cycleLengthDays, forecast, onContinue }: Props):
   );
 }
 
-function WithARange({ start }: { readonly start: DayRange }): ReactNode {
+function WithARange({
+  name,
+  start,
+}: {
+  readonly name: string | undefined;
+  readonly start: DayRange;
+}): ReactNode {
   return (
     <>
       <View>
         <Text accessibilityRole="header" style={styles.title} testID={firstForecastTitleTestID}>
-          {firstRunCopy.firstForecast.title}
+          {firstForecastTitle(name)}
         </Text>
         <Text style={styles.range} testID={firstForecastRangeTestID}>
           {rangeSentence(start)}

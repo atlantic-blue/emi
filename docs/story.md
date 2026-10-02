@@ -179,7 +179,7 @@ Then it asks her to press and hold the ring. That hold is the only moment the fi
 key is made if this phone has none, and the day she gave, her answers and the marker go in one
 transaction. A woman who walks away at any question leaves nothing behind, and a write that fails
 half way leaves nothing behind either. A phone asking for less motion draws no filling arc, and the
-words in the ring say she is holding instead.
+words in the ring ask her to keep holding instead.
 
 ![The hold, before her thumb goes down and half way through](../brand/screens/hold-to-begin.png)
 
