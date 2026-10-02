@@ -59,6 +59,7 @@
     "generate:answer-cycle-length-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answerCycleLength.picture",
     "generate:calendar-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern calendar.picture",
     "generate:edit-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern editPeriod.picture",
+    "generate:wash-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern wash.picture",
     "generate:answers-again-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answersAgain.picture",
     "test": "npm run test:workspace && npm run test:mobile && npm run test:behaviour",
     "test:workspace": "jest --ci --config jest.node.config.js",

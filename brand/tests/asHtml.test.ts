@@ -87,6 +87,97 @@ describe('a picture of a screen draws what a field holds', () => {
     });
   });
 
+  // Without these three cases the gradients fell through to a plain box, so a wash drew as nothing
+  // at all and the picture said the application paints no colour at the top of the screen.
+  describe('a gradient inside a drawing', () => {
+    /** The wash of the period phase, as react-native-svg hands it down: packed, and flattened. */
+    const theField = {
+      type: 'RNSVGLinearGradient',
+      props: {
+        name: 'wash-field-gradient',
+        x1: '0',
+        y1: '0',
+        x2: '0',
+        y2: '1',
+        gradient: [0, -8996, 1, -1805],
+      },
+      children: [],
+    };
+
+    const aTint = {
+      type: 'RNSVGRadialGradient',
+      props: {
+        name: 'wash-tint-1-gradient',
+        cx: '85%',
+        cy: '0%',
+        rx: '120%',
+        ry: '70%',
+        gradient: [0, -10566, 0.6, 16766650],
+      },
+      children: [],
+    };
+
+    it('writes a gradient under the name a shape can reach it by', () => {
+      expect(markupOf(theField)).toContain('<linearGradient id="wash-field-gradient"');
+      expect(markupOf(aTint)).toContain('<radialGradient id="wash-tint-1-gradient"');
+    });
+
+    it('unpacks each stop into its place, its colour and how much of it is there', () => {
+      const drawn = markupOf(theField);
+
+      expect(drawn).toContain('offset="0"');
+      expect(drawn).toContain(`stop-color="${colour.accentSoft.toLowerCase()}"`);
+      expect(drawn).toContain('offset="1"');
+      expect(drawn).toContain(`stop-color="${colour.ground.toLowerCase()}"`);
+      expect(drawn).toContain('stop-opacity="1"');
+    });
+
+    it('keeps a tint fading to nothing, rather than dropping the alpha and drawing a band', () => {
+      const drawn = markupOf(aTint);
+
+      expect(drawn).toContain('offset="0.6"');
+      expect(drawn).toContain('stop-opacity="0"');
+      expect(drawn.match(new RegExp(colour.washAmber.toLowerCase(), 'g'))).toHaveLength(2);
+    });
+
+    // A browser draws a circle where react-native-svg draws an ellipse, so the same ellipse is
+    // written as the unit circle under a transform. Both radii have to survive that or the tint
+    // comes out round.
+    it('writes the ellipse as a transform, so both radii survive', () => {
+      const drawn = markupOf(aTint);
+
+      expect(drawn).toContain('gradientTransform="translate(0.85 0) scale(1.2 0.7)"');
+      expect(drawn).toContain('r="1"');
+      expect(drawn).not.toContain('rx=');
+    });
+
+    it('points a shape at the gradient it is painted with', () => {
+      const painted = {
+        type: 'RNSVGRect',
+        props: {
+          x: '0',
+          y: '0',
+          width: '100%',
+          height: '100%',
+          fill: { type: 1, brushRef: 'wash-field-gradient' },
+          propList: ['fill'],
+        },
+        children: [],
+      };
+
+      expect(markupOf(painted)).toContain('fill="url(#wash-field-gradient)"');
+      expect(markupOf(painted)).not.toContain('fill="none"');
+    });
+
+    it('keeps the gradients inside the definitions they were declared in', () => {
+      const defs = { type: 'RNSVGDefs', props: {}, children: [theField, aTint] };
+      const drawn = markupOf(defs);
+
+      expect(drawn.startsWith('<defs>')).toBe(true);
+      expect(drawn).toContain('<linearGradient');
+      expect(drawn).toContain('<radialGradient');
+    });
+  });
   describe('a node the renderer has no case for', () => {
     it('still keeps its children on the page', () => {
       const unknown = { type: 'RCTSomethingElse', props: {}, children: ['a word'] };
