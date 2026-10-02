@@ -10,6 +10,7 @@ import {
   RING_DIAMETER,
   RING_TRACK_WIDTH,
   RingGeometry,
+  CYCLE_LENGTH_ROLE,
   arcPath,
   beadPalette,
   colour,
@@ -17,6 +18,7 @@ import {
   fontFile,
   fontFiles,
   letterSpacingOf,
+  paintedArcs,
   phaseLabel,
   phasePalette,
   pointOnRing,
@@ -91,33 +93,18 @@ export interface DrawnArc {
   readonly d: string;
   readonly stroke: string;
   readonly opacity: number;
+  /** Whether the two ends of the stroke are painted round. */
+  readonly roundEnds: boolean;
 }
 
 /** The arcs of one ring, in the order they are drawn: the days ahead, then the days she has had. */
 export function arcsOf(geometry: RingGeometry): DrawnArc[] {
-  const drawn: DrawnArc[] = [];
-
-  for (const arc of geometry.arcs) {
-    const stroke = colour[phasePalette[arc.phase].fill];
-    const ahead = arc.sweepDegrees - arc.elapsedDegrees;
-
-    if (ahead > 0) {
-      drawn.push({
-        d: arcPath(centre, trackRadius, arc.startDegrees + arc.elapsedDegrees, ahead),
-        stroke,
-        opacity: DAYS_AHEAD_STRENGTH,
-      });
-    }
-    if (arc.elapsedDegrees > 0) {
-      drawn.push({
-        d: arcPath(centre, trackRadius, arc.startDegrees, arc.elapsedDegrees),
-        stroke,
-        opacity: 1,
-      });
-    }
-  }
-
-  return drawn;
+  return paintedArcs(geometry, trackRadius).map((painted) => ({
+    d: arcPath(centre, trackRadius, painted.startDegrees, painted.sweepDegrees),
+    stroke: colour[phasePalette[painted.phase].fill],
+    opacity: painted.strength === 'ahead' ? DAYS_AHEAD_STRENGTH : 1,
+    roundEnds: painted.roundEnds,
+  }));
 }
 
 function faceClass(file: FontFile): string {
@@ -173,6 +160,7 @@ function styleSheet(fontsBase: string): string {
   letter-spacing: ${letterSpacingOf(typeScale[PHASE_NAME_ROLE].size, typeScale[PHASE_NAME_ROLE].letterSpacingEm)}px;
   text-transform: uppercase;
 }`,
+    `.length { color: ${colour.secondaryText}; font-size: ${typeScale[CYCLE_LENGTH_ROLE].size}px; line-height: ${typeScale[CYCLE_LENGTH_ROLE].lineHeight}px; }`,
     `.title { font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; margin-top: 12px; }`,
     `.note { color: ${colour.secondaryText}; font-size: ${typeScale['body-sm'].size}px; line-height: ${typeScale['body-sm'].lineHeight}px; }`,
     `.heading { font-size: ${typeScale['headline-lg'].size}px; line-height: ${typeScale['headline-lg'].lineHeight}px; }`,
@@ -194,6 +182,7 @@ function Ring({ ring }: { ring: DrawnRing }): Html {
               fill="none"
               opacity={arc.opacity}
               stroke={arc.stroke}
+              stroke-linecap={arc.roundEnds ? 'round' : 'butt'}
               stroke-width={RING_TRACK_WIDTH}
             />
           ))}
@@ -207,13 +196,14 @@ function Ring({ ring }: { ring: DrawnRing }): Html {
           />
         </svg>
         <div class="middle">
-          <div class={`day ${faceClass(figures)}`}>{ring.day}</div>
           <div
             class={`phase ${faceClass(wordsBold)}`}
             style={`color: ${colour[phasePalette[geometry.phase].ink]}`}
           >
             {phaseLabel[geometry.phase]}
           </div>
+          <div class={`day ${faceClass(figures)}`}>{ring.day}</div>
+          <div class={`length ${faceClass(words)}`}>of {ring.cycleLengthDays}</div>
         </div>
       </div>
       <div class={`title ${faceClass(wordsBold)}`}>{ring.title}</div>

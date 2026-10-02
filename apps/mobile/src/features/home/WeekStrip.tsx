@@ -1,8 +1,16 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import {
+  MINIMUM_TAP_TARGET,
+  type TypeRoleName,
+  colour,
+  radius,
+  space,
+  stroke,
+  textStyle,
+} from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text, type TextStyle, View, type ViewStyle } from 'react-native';
 
-import { herDayLabel } from '../cycle/copy';
+import { herDayLabel, weekTodayWord } from '../cycle/copy';
 import type { DayMark, HerDay } from '../cycle/herWeek';
 
 /**
@@ -10,9 +18,9 @@ import type { DayMark, HerDay } from '../cycle/herWeek';
  * weekday, the day of her cycle, and the date under that.
  *
  * She reads where she is without pressing anything, so every day states itself. A day she bled is
- * filled, today is ringed, and a day her period is expected to run into is a dotted outline: three
- * different shapes rather than three strengths of one colour, which design section 3 holds every
- * cue to.
+ * filled, today is ringed and named, and a day her period is expected to run into is a dashed
+ * outline: different shapes rather than three strengths of one colour, which design section 3
+ * holds every cue to.
  *
  * Every day is also the way into her month, so the row she already reads is the way in and nothing
  * new goes in the header or in the dock.
@@ -37,7 +45,10 @@ export function weekDateTestID(day: string): string {
 }
 
 /** How wide and how tall the disc around a date is drawn, in points. */
-const THE_DATE_IS_A_DISC_OF = 32;
+const THE_DATE_IS_A_DISC_OF = 40;
+
+/** Every day of the row is pressed to reach her month, so the date takes the role of a word she presses. */
+const THE_DATE_IS_WRITTEN_AS: TypeRoleName = 'button-lg';
 
 interface Props {
   readonly days: readonly HerDay[];
@@ -60,7 +71,7 @@ export function WeekStrip({ days, today, onOpenMonth }: Props): ReactNode {
           testID={weekDayTestID(day.day)}
         >
           <Text style={styles.letter} testID={weekLetterTestID(day.day)}>
-            {day.letter}
+            {day.mark === 'today' ? weekTodayWord() : day.letter}
           </Text>
 
           {day.cycleDay === undefined ? null : (
@@ -70,9 +81,7 @@ export function WeekStrip({ days, today, onOpenMonth }: Props): ReactNode {
           )}
 
           <View style={[styles.date, theMark[day.mark]]} testID={weekDateTestID(day.day)}>
-            <Text style={day.mark === 'bled' ? styles.dateOnFill : styles.dateNumber}>
-              {day.date}
-            </Text>
+            <Text style={theDateInk[day.mark]}>{day.date}</Text>
           </View>
         </Pressable>
       ))}
@@ -89,7 +98,7 @@ const theMark: Readonly<Record<DayMark, ViewStyle>> = StyleSheet.create({
   bled: { backgroundColor: colour.period },
   forecast: {
     borderColor: colour.period,
-    borderStyle: 'dotted',
+    borderStyle: 'dashed',
     borderWidth: stroke.icon,
   },
   plain: {},
@@ -98,6 +107,20 @@ const theMark: Readonly<Record<DayMark, ViewStyle>> = StyleSheet.create({
     borderStyle: 'solid',
     borderWidth: stroke.icon,
   },
+});
+
+/**
+ * What colour the date itself is written in, state by state. A day she has not reached is written
+ * in the colour of its own broken line, so the estimate reads as one thing rather than as a date
+ * standing inside somebody else's outline.
+ */
+const theDateInk: Readonly<Record<DayMark, TextStyle>> = StyleSheet.create({
+  // A number on the period fill takes the ground colour rather than the ink of the phase, because
+  // SEE-2 keeps a word off a fill and a figure on one is held to the same floor.
+  bled: { color: colour.card, ...textStyle(THE_DATE_IS_WRITTEN_AS) },
+  forecast: { color: colour.period, ...textStyle(THE_DATE_IS_WRITTEN_AS) },
+  plain: { color: colour.text, ...textStyle(THE_DATE_IS_WRITTEN_AS) },
+  today: { color: colour.text, ...textStyle(THE_DATE_IS_WRITTEN_AS) },
 });
 
 const styles = StyleSheet.create({
@@ -113,16 +136,6 @@ const styles = StyleSheet.create({
     height: THE_DATE_IS_A_DISC_OF,
     justifyContent: 'center',
     width: THE_DATE_IS_A_DISC_OF,
-  },
-  dateNumber: {
-    color: colour.text,
-    ...textStyle('body-sm'),
-  },
-  // A number on the period fill takes the ground colour rather than the ink of the phase, because
-  // SEE-2 keeps a word off a fill and a figure on one is held to the same floor.
-  dateOnFill: {
-    color: colour.card,
-    ...textStyle('body-sm'),
   },
   // A day of the row is what she presses to reach her month, so it carries the floor SEE-3 sets
   // rather than the width of the disc inside it. Seven of them need 308 points and the row has 327

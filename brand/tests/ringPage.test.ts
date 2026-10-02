@@ -29,6 +29,18 @@ describe('the picture of the ring', () => {
   });
 
   it('draws each arc where the geometry puts it, which is where the phone draws it too', () => {
+    // A round end is painted half the width of the track past the point the path stops at, so
+    // every stroke is pulled in by that much at each end and the ground between two phases is
+    // the gap the geometry names. A stroke with no room for two round ends keeps square ones.
+    const end = ((RING_TRACK_WIDTH / 2 / trackRadius) * FULL_TURN_DEGREES) / (2 * Math.PI);
+    const pulledIn = (startDegrees: number, sweepDegrees: number) =>
+      sweepDegrees <= end * 2
+        ? { d: arcPath(centre, trackRadius, startDegrees, sweepDegrees), roundEnds: false }
+        : {
+            d: arcPath(centre, trackRadius, startDegrees + end, sweepDegrees - end * 2),
+            roundEnds: true,
+          };
+
     for (const ring of drawnRings) {
       const geometry = ringGeometry(ring);
       const expected = geometry.arcs.flatMap((arc) => {
@@ -36,19 +48,17 @@ describe('the picture of the ring', () => {
         const ahead = arc.sweepDegrees - arc.elapsedDegrees;
 
         return [
+          // The days ahead are painted across the whole phase and the days she lived over them,
+          // so the two never meet as two round ends in the middle of a phase.
           ahead > 0
             ? {
-                d: arcPath(centre, trackRadius, arc.startDegrees + arc.elapsedDegrees, ahead),
+                ...pulledIn(arc.startDegrees, arc.sweepDegrees),
                 stroke,
                 opacity: DAYS_AHEAD_STRENGTH,
               }
             : undefined,
           arc.elapsedDegrees > 0
-            ? {
-                d: arcPath(centre, trackRadius, arc.startDegrees, arc.elapsedDegrees),
-                stroke,
-                opacity: 1,
-              }
+            ? { ...pulledIn(arc.startDegrees, arc.elapsedDegrees), stroke, opacity: 1 }
             : undefined,
         ].filter((drawn) => drawn !== undefined);
       });
@@ -56,6 +66,14 @@ describe('the picture of the ring', () => {
       expect(arcsOf(geometry)).toEqual(expected);
       expect(coveredDegrees(geometry)).toBeCloseTo(FULL_TURN_DEGREES, 9);
     }
+  });
+
+  it('paints a round end on every arc long enough to carry two of them', () => {
+    const painted = drawnRings.flatMap((ring) => arcsOf(ringGeometry(ring)));
+
+    expect(painted.length).toBeGreaterThan(8);
+    expect(painted.filter((arc) => arc.roundEnds)).not.toHaveLength(0);
+    expect(page).toContain('stroke-linecap="round"');
   });
 
   it('writes one drawing for each ring, with the day and the phase inside it', () => {

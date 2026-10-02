@@ -94,6 +94,7 @@ export const english = {
     other: 'Ovulation phase, a cycle of {count} days',
   },
   'cycle.phaseLine.period': 'Your period, day {day} of about {days}',
+  'cycle.ring.of': 'of {length}',
   'cycle.ring.spoken': 'Day {day} of {length}, {phase}',
 
   'export.again': 'Make them again',
@@ -252,6 +253,7 @@ export const english = {
   'home.waiting.trend.read': 'Emi draws nothing from nothing, and it holds no sample data.',
   'home.trend.spoken':
     'Your last {cycles}, from {shortest} to {longest} days, over the published range of {low} to {high} days.',
+  'home.week.today': 'TODAY',
   'home.wordmark': 'Emi',
 
   'lock.cancel': 'Cancel',
