@@ -295,11 +295,15 @@ export const colours: Readonly<Record<ColourName, ColourToken>> = {
     roles: ['fill'],
     textOn: [],
   },
-  /** The name of the ovulation phase, written on the ground. */
+  /**
+   * The name of the ovulation phase, written on the ground, and the ink of the apricot pill. That
+   * pill paints the warm stop of the wash flat, and a flat surface has one value and one ratio, so
+   * the pair is measured here while the gradient the same value runs through is not.
+   */
   ovulationInk: {
     value: '#8A4A1C',
     roles: ['text'],
-    textOn: ['ground', 'card'],
+    textOn: ['ground', 'card', 'washWarm'],
   },
   /** The arc of the luteal days. */
   luteal: {

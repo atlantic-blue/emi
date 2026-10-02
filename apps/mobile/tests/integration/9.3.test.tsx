@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, colours, radius, space, stroke, textStyle } from '@emi/tokens';
 import { dockPanelTestID, floatingShadow } from '@emi/ui';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { StyleSheet, View } from 'react-native';
@@ -474,17 +474,31 @@ describe('a component that writes a colour of its own fails the lint', () => {
     });
   });
 
-  describe('the three layers', () => {
-    it('draws a card at the container corner, inside a hairline, on the card ground', async () => {
+  describe('the four layers', () => {
+    it('draws a card at the container corner, on the card ground, with no line around it', async () => {
       await render(<Card testID="card">{null}</Card>);
 
       expect(theStyleOf('card')).toMatchObject({
         backgroundColor: colour.card,
-        borderColor: colour.line,
         borderRadius: radius.xl,
-        borderWidth: stroke.hairline,
         padding: space.spaceLg,
       });
+      expect(theStyleOf('card')['borderWidth']).toBeUndefined();
+      expect(theStyleOf('card')['borderColor']).toBeUndefined();
+    });
+
+    it('reverses the one surface that reverses, and keeps the corner of a card', async () => {
+      await render(
+        <Card layer="dark" testID="card">
+          {null}
+        </Card>,
+      );
+
+      expect(theStyleOf('card')).toMatchObject({
+        backgroundColor: colour.darkCard,
+        borderRadius: radius.xl,
+      });
+      expect(colours.onAccent.textOn).toContain('darkCard');
     });
 
     it('recesses a supplementary panel by a tonal step and nothing else', async () => {

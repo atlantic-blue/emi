@@ -222,8 +222,10 @@ the white that the accent carries.
 
 Each screen draws a soft wash across its top, tinted by the phase she is in. The wash is four
 gradients, one for the period, one for the days after it, one for ovulation and one for the luteal
-phase, and each runs from a warm stop through a rose or an amber stop to the ground. A wash is
-never a ground for text, because a gradient has no one value to measure.
+phase, and each runs from a warm stop through a rose or an amber stop to the ground. A gradient is
+never a ground for text, because it has no one value to measure. Where a part paints one stop of a
+wash flat, that surface does have one value, so its pair is measured like any other: the warm stop
+is the ground of the status pill that says how much Emi knows about a figure.
 
 ### The accents and the states
 

@@ -571,6 +571,19 @@ Feature: She opens Emi and logs her first period
     When she presses an answer she did not choose
     Then that answer is hers, the answer she held before is not, and each one says so out loud
 
+  Scenario: SCREEN-2, the cards and rows take the redesign look
+    Given a page carrying every surface Emi raises a section onto
+    When she looks at it without reading a word of it
+    Then the plain surface is white, with no line around it, at the one corner a card takes
+    And the one surface that reverses carries the dark ground, and the white it was measured with
+    And a row she can press carries a drawing at one end, a word, and the mark that points the way on
+    And a pill is small, round at both ends, and in the one pair of colours its tone was measured as
+    And every pill tone is a pair the contrast test measures, over the floor it holds
+    And the line about her privacy carries the drawing of a lock beside its words
+    And her thumb reaches every row, because none is under forty four points
+    When she presses the row that opens what she already told Emi
+    Then that row answers her, and it still says out loud what it opens
+
   Scenario: SCREEN-2, the buttons take the redesign shapes
     Given a screen carrying every action Emi can ask her to take
     When she reads it without reading a word of it
