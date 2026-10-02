@@ -7,8 +7,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
  * One category in the grid she logs a day from. A drawing, what it is, and what is recorded there
  * today, in a box the whole of which takes the press.
  *
- * A chosen tile carries a bead in the corner as well as a step in the ground, because the grid is
- * read at a glance and a fill alone at that size is a colour difference and nothing more.
+ * The drawing sits in a round well of its own, so the grid reads as a row of symbols before it
+ * reads as a row of words. A chosen tile is marked twice over: the box takes the soft tint, and a
+ * check sits in its corner, because the grid is read at a glance and a tint alone at that size is a
+ * colour difference and nothing more.
  */
 
 interface Props {
@@ -24,14 +26,26 @@ interface Props {
   readonly testID?: string;
 }
 
-/** Points. The height the document draws the tile at, which holds a drawing and two lines. */
-const TILE_HEIGHT = 112;
+/** Points. The height the document draws the tile at, which holds a well and two lines. */
+const TILE_HEIGHT = 92;
 
-/** Points. The drawing inside a tile, which is larger than the one in a row. */
-const TILE_ICON = 26;
+/** Points. The round well the drawing sits in. */
+const WELL_SIZE = 40;
 
-/** Points. The bead that says a tile is chosen. */
-const BEAD_SIZE = 8;
+/** Points. The drawing inside that well. */
+const TILE_ICON = 22;
+
+/** Points. The bead that says a tile is chosen, which holds the check. */
+const BEAD_SIZE = 20;
+
+/** Points. The check inside that bead, on the twenty four point grid of the icon set. */
+const CHECK_SIZE = 12;
+
+/**
+ * Points. The outline of the box. The document draws it between the hairline of a rule and the
+ * stroke of a drawing, so it is neither token and it is named here.
+ */
+const TILE_BORDER = 1.5;
 
 export function tileBeadTestID(testID: string): string {
   return `${testID}-bead`;
@@ -63,45 +77,84 @@ export function SelectableTile({
       style={isChosen ? [styles.tile, styles.chosen] : styles.tile}
       testID={testID}
     >
-      <View style={styles.top}>
+      {isChosen ? (
+        <View style={styles.bead} testID={tileBeadTestID(testID)}>
+          <Icon
+            colour={colour.onAccent}
+            name="check"
+            size={CHECK_SIZE}
+            testID={tileCheckTestID(testID)}
+          />
+        </View>
+      ) : null}
+      <View style={styles.well} testID={tileWellTestID(testID)}>
         <Icon
           colour={isChosen ? colour.accent : colour.secondaryText}
           name={icon}
           size={TILE_ICON}
         />
-        {isChosen ? <View style={styles.bead} testID={tileBeadTestID(testID)} /> : null}
       </View>
-      <View>
-        <Text style={styles.title}>{title}</Text>
-        {note === undefined ? null : <Text style={styles.note}>{note}</Text>}
-      </View>
+      <Text style={styles.title}>{title}</Text>
+      {note === undefined ? null : (
+        <Text style={isChosen ? styles.noteChosen : styles.note}>{note}</Text>
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  // The bead sits over the corner of the box rather than in the column, so the drawing and the
+  // words stay centred whether she has chosen the tile or not.
   bead: {
+    alignItems: 'center',
     backgroundColor: colour.accent,
     borderRadius: radius.full,
     height: BEAD_SIZE,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: space.spaceSm,
+    top: space.spaceSm,
     width: BEAD_SIZE,
   },
-  chosen: { backgroundColor: colour.field },
+  chosen: {
+    backgroundColor: colour.accentSoft,
+    borderColor: colour.accent,
+  },
   note: {
     color: colour.secondaryText,
+    textAlign: 'center',
+    ...textStyle('data-sm'),
+  },
+  // The quiet grey of a note falls under the contrast floor on the soft tint, so a chosen tile
+  // writes its note in the ink measured against that tint.
+  noteChosen: {
+    color: colour.accentSoftInk,
+    textAlign: 'center',
     ...textStyle('data-sm'),
   },
   tile: {
-    backgroundColor: colour.field,
+    alignItems: 'center',
+    backgroundColor: colour.card,
+    borderColor: colour.line,
     borderRadius: radius.xl,
-    height: TILE_HEIGHT,
-    justifyContent: 'space-between',
+    borderWidth: TILE_BORDER,
+    gap: space.spaceSm,
+    justifyContent: 'center',
+    minHeight: TILE_HEIGHT,
     minWidth: MINIMUM_TAP_TARGET,
-    padding: space.spaceMd,
+    padding: space.spaceSm,
   },
   title: {
     color: colour.text,
-    ...textStyle('label-md'),
+    textAlign: 'center',
+    ...textStyle('choice-sm'),
   },
-  top: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
+  well: {
+    alignItems: 'center',
+    backgroundColor: colour.accentTile,
+    borderRadius: radius.full,
+    height: WELL_SIZE,
+    justifyContent: 'center',
+    width: WELL_SIZE,
+  },
 });

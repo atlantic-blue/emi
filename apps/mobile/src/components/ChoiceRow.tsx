@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -7,8 +7,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
  * The two rows she picks from: one of a set, or any number of a set.
  *
  * Both draw the whole row as the target rather than the small control at the end of it, and both
- * mark a chosen row three ways: the ground steps up, the words go from the secondary colour to the
- * primary one, and the control fills. Colour is never the only cue.
+ * mark the answer she gave twice over: the row fills with the one colour that acts, and it carries
+ * a check on a white disc. Colour is never the only cue.
+ *
+ * A row she may answer more than once keeps an empty ring until she answers it, because a column of
+ * rows with nothing at the end of them does not say that more than one of them can be hers.
  */
 
 interface Props {
@@ -21,14 +24,20 @@ interface Props {
 /** Points. The document draws the row at this height, well above the tap floor of SEE-3. */
 const ROW_HEIGHT = 56;
 
-/** Points. The control at the end of the row, which sits inside a target of the full floor. */
-const CONTROL_SIZE = 20;
+/** Points. The disc a chosen row carries the check on. */
+const DISC_SIZE = 22;
 
-/** Points. The filled core of a chosen radio, inside the ring that holds it. */
-const RADIO_CORE = 8;
+/** Points. The check inside that disc, on the twenty four point grid the icon set is drawn on. */
+const CHECK_SIZE = 14;
 
-/** Points. The tick inside a ticked box, on the twenty four point grid the set is drawn on. */
-const TICK_SIZE = 16;
+/** Points. The ring of an answer she has not given, where more than one answer can be hers. */
+const RING_SIZE = 20;
+
+/**
+ * Points. The outline of that ring. The document draws it between the hairline of a rule and the
+ * stroke of a drawing, so it is neither token and it is named here.
+ */
+const RING_WIDTH = 1.5;
 
 /** The disc that says a row is chosen, named so a test can read the ground it is drawn on. */
 export function rowDiscTestID(testID: string): string {
@@ -45,6 +54,20 @@ export function rowRingTestID(testID: string): string {
   return `${testID}-ring`;
 }
 
+/** The mark of a chosen row, which both row kinds draw the same way. */
+function ChosenMark({ testID }: { readonly testID?: string }): ReactNode {
+  return (
+    <View style={styles.disc} testID={testID === undefined ? undefined : rowDiscTestID(testID)}>
+      <Icon
+        colour={colour.accent}
+        name="check"
+        size={CHECK_SIZE}
+        testID={testID === undefined ? undefined : rowCheckTestID(testID)}
+      />
+    </View>
+  );
+}
+
 /** One of a set. Pressing a chosen row does nothing, the way a radio control behaves anywhere. */
 export function SingleChoiceRow({ label, isChosen, onPress, testID }: Props): ReactNode {
   return (
@@ -56,16 +79,12 @@ export function SingleChoiceRow({ label, isChosen, onPress, testID }: Props): Re
       testID={testID}
     >
       <Text style={isChosen ? styles.labelChosen : styles.label}>{label}</Text>
-      <View style={styles.target}>
-        <View style={isChosen ? [styles.radio, styles.radioChosen] : styles.radio}>
-          {isChosen ? <View style={styles.core} /> : null}
-        </View>
-      </View>
+      {isChosen ? <ChosenMark testID={testID} /> : null}
     </Pressable>
   );
 }
 
-/** Any number of a set. The tick is a drawing from the icon set rather than a written character. */
+/** Any number of a set. The check is a drawing from the icon set rather than a written character. */
 export function MultiChoiceRow({ label, isChosen, onPress, testID }: Props): ReactNode {
   return (
     <Pressable
@@ -76,82 +95,55 @@ export function MultiChoiceRow({ label, isChosen, onPress, testID }: Props): Rea
       testID={testID}
     >
       <Text style={isChosen ? styles.labelChosen : styles.label}>{label}</Text>
-      <View style={styles.target}>
-        <View style={isChosen ? [styles.box, styles.boxChosen] : styles.box}>
-          {isChosen ? (
-            <Icon
-              colour={colour.accent}
-              name="check"
-              size={TICK_SIZE}
-              testID={testID === undefined ? undefined : rowCheckTestID(testID)}
-            />
-          ) : null}
-        </View>
-      </View>
+      {isChosen ? (
+        <ChosenMark testID={testID} />
+      ) : (
+        <View
+          style={styles.ring}
+          testID={testID === undefined ? undefined : rowRingTestID(testID)}
+        />
+      )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  box: {
+  disc: {
     alignItems: 'center',
-    backgroundColor: colour.card,
-    borderColor: colour.quietIcon,
-    borderRadius: radius.sm,
-    borderWidth: stroke.hairline,
-    height: CONTROL_SIZE,
-    justifyContent: 'center',
-    width: CONTROL_SIZE,
-  },
-  boxChosen: { borderColor: colour.accent },
-  core: {
-    backgroundColor: colour.ground,
+    backgroundColor: colour.onAccent,
     borderRadius: radius.full,
-    height: RADIO_CORE,
-    width: RADIO_CORE,
+    height: DISC_SIZE,
+    justifyContent: 'center',
+    width: DISC_SIZE,
   },
   label: {
-    color: colour.secondaryText,
-    flexShrink: 1,
-    ...textStyle('body-lg'),
-  },
-  labelChosen: {
     color: colour.text,
     flexShrink: 1,
-    ...textStyle('body-lg'),
+    ...textStyle('choice-lg'),
   },
-  radio: {
-    alignItems: 'center',
-    backgroundColor: colour.card,
-    borderColor: colour.quietIcon,
+  labelChosen: {
+    color: colour.onAccent,
+    flexShrink: 1,
+    ...textStyle('choice-lg'),
+  },
+  ring: {
+    borderColor: colour.disabledLabel,
     borderRadius: radius.full,
-    borderWidth: stroke.hairline,
-    height: CONTROL_SIZE,
-    justifyContent: 'center',
-    width: CONTROL_SIZE,
-  },
-  radioChosen: {
-    backgroundColor: colour.accent,
-    borderColor: colour.accent,
+    borderWidth: RING_WIDTH,
+    height: RING_SIZE,
+    width: RING_SIZE,
   },
   row: {
     alignItems: 'center',
     backgroundColor: colour.field,
-    borderRadius: radius.lg,
+    borderRadius: radius.md,
     flexDirection: 'row',
+    gap: space.spaceMd,
     justifyContent: 'space-between',
     minHeight: ROW_HEIGHT,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceMd,
-    paddingVertical: space.spaceSm,
+    paddingHorizontal: space.spaceLg,
+    paddingVertical: space.spaceMd,
   },
-  rowChosen: { backgroundColor: colour.field },
-  // The control is twenty points across and sits in a box of the full tap floor, so a press that
-  // lands beside it still lands on it.
-  target: {
-    alignItems: 'center',
-    height: MINIMUM_TAP_TARGET,
-    justifyContent: 'center',
-    width: MINIMUM_TAP_TARGET,
-  },
+  rowChosen: { backgroundColor: colour.accent },
 });

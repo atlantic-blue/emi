@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { OnAPhone } from '../fixtures/theSafeArea';
 import { StyleSheet } from 'react-native';
 
-import { CycleLength } from '../../src/features/onboarding/CycleLength';
+import { CycleLength, cycleLengthTestID } from '../../src/features/onboarding/CycleLength';
 import { HerName } from '../../src/features/onboarding/HerName';
 import {
   chosenDayMarkTestID,
@@ -22,7 +22,7 @@ import { Feeling } from '../../src/features/onboarding/Feeling';
 import { Focus } from '../../src/features/onboarding/Focus';
 import { Goals } from '../../src/features/onboarding/Goals';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
-import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
+import { PeriodLength, periodLengthTestID } from '../../src/features/onboarding/PeriodLength';
 import { Regularity } from '../../src/features/onboarding/Regularity';
 import { Today } from '../../src/features/onboarding/Today';
 import { progressFillTestID } from '../../src/components/ProgressBar';
@@ -410,14 +410,29 @@ describe('the first run carries the design system', () => {
   });
 
   describe('the question she is being asked', () => {
+    /**
+     * The number she is holding on a number question, which the prototype of 2026-10-01 paints
+     * larger than the question itself. It is the one run of text the question does not outsize, and
+     * it is read by its own name so that nothing else on the screen gains the exception.
+     */
+    const theNumberSheIsHolding = (): string[] =>
+      [cycleLengthTestID, periodLengthTestID]
+        .map((name) => screen.queryByTestId(name))
+        .filter((node) => node !== null)
+        .map((node) => String(node.props.children));
+
     for (const where of firstRunScreens) {
       it(`is the largest thing the frame writes on ${where}`, async () => {
         await sheIsLookingAt(where);
 
         const asked = String(screen.getByRole('header').props.children);
+        const held = theNumberSheIsHolding();
         const runs = sizedTextIn(screen.toJSON());
         const question = runs.find((run) => run.text === asked);
-        const beside = runs.filter((run) => run.text !== asked && run.points !== undefined);
+        const beside = runs.filter(
+          (run) =>
+            run.text !== asked && run.points !== undefined && !held.includes(run.text.trim()),
+        );
 
         expect(question?.points).toBe(typeScale['headline-lg'].size);
         expect(beside.length).toBeGreaterThan(0);

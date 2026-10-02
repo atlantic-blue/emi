@@ -5,8 +5,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 /**
  * A number she moves one step at a time, held between a floor and a ceiling.
  *
- * The number is set in the monospaced face so a digit does not shift sideways as she presses, and
- * the two buttons are circles at the tap floor exactly, which is what the document draws.
+ * The prototype draws every number question as the value she holds on a band of the soft tint, so
+ * the number sits on that band at the size the prototype reads it, and the two buttons are circles
+ * at the tap floor exactly, on the plain surface.
  *
  * A button at its boundary is spent rather than absent: it keeps its place, so the row does not
  * move under her thumb on the press that reaches the end.
@@ -41,6 +42,9 @@ export function stepperReadingTestID(testID: string): string {
 /** The two marks, written rather than drawn, because the icon set holds no minus. */
 const DOWN_MARK = '-';
 const UP_MARK = '+';
+
+/** Points. The height the document draws the band of a chosen value at. */
+const BAND_HEIGHT = 58;
 
 export function Stepper({
   reading,
@@ -90,8 +94,10 @@ export function Stepper({
 }
 
 const styles = StyleSheet.create({
+  // The quiet grey of a caption falls under the contrast floor on the soft tint, so the word under
+  // the number takes the ink measured against that tint.
   caption: {
-    color: colour.secondaryText,
+    color: colour.accentSoftInk,
     ...textStyle('label-sm'),
   },
   mark: {
@@ -101,7 +107,7 @@ const styles = StyleSheet.create({
   middle: { alignItems: 'center', gap: space.spaceXs },
   reading: {
     color: colour.text,
-    ...textStyle('data-lg'),
+    ...textStyle('display-lg-mobile'),
   },
   spent: { backgroundColor: colour.field },
   spentMark: {
@@ -118,10 +124,11 @@ const styles = StyleSheet.create({
   },
   well: {
     alignItems: 'center',
-    backgroundColor: colour.field,
-    borderRadius: radius.xl,
+    backgroundColor: colour.accentSoft,
+    borderRadius: radius.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: space.spaceMd,
+    minHeight: BAND_HEIGHT,
+    paddingHorizontal: space.spaceMd,
   },
 });

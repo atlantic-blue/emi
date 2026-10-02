@@ -822,7 +822,7 @@ The whole style for one role of the design system. The face and the weight pick 
 type FaceName = 'display' | 'text' | 'data';
 ```
 
-The three faces of the design system, and the thirteen roles it names for them. The roles keep
+The three faces of the design system, and the fifteen roles it names for them. The roles keep
 the names the design system gives them, so a reader can hold the two open side by side and a test
 can read one against the other.
 
@@ -859,13 +859,15 @@ type TypeRoleName =
   | 'body-sm'
   | 'button-lg'
   | 'button-md'
+  | 'choice-lg'
+  | 'choice-sm'
   | 'label-md'
   | 'label-sm'
   | 'data-lg'
   | 'data-sm';
 ```
 
-The thirteen roles the design system names, in its own words.
+The fifteen roles the design system names, in its own words.
 
 ### `TypeRole`
 
@@ -891,7 +893,7 @@ chosen at the call site is one that drifts.
 const typeScale: Readonly<Record<TypeRoleName, TypeRole>>
 ```
 
-The thirteen roles, copied from the design system's own front matter. A role that drifts from it
+The fifteen roles, copied from the design system's own front matter. A role that drifts from it
 fails `packages/tokens/tests/designSystem.test.ts`, which reads the document. The document and
 a screen both measure in px, so a size here is the size the document writes.
 

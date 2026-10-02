@@ -61,11 +61,12 @@ The function `contrastRatio` in `packages/tokens/src/colour.ts` measures every r
 contrast test reads the same function. Level AA of the Web Content Accessibility Guidelines asks for
 4.5 to 1 for normal text. A pair below 4.5 is refused here, and the test refuses it too.
 
-These 34 pairs are approved:
+These 35 pairs are approved:
 
 - text on ground is 14.57 to 1
 - text on card is 15.32 to 1
 - text on field is 13.98 to 1
+- text on accentSoft is 12.06 to 1
 - secondaryText on ground is 5.42 to 1
 - secondaryText on card is 5.70 to 1
 - secondaryText on field is 5.20 to 1
@@ -192,7 +193,7 @@ fill.
 
 Status: built
 
-The scale has 13 roles in three faces. The headings are set in Figtree, the words she reads at
+The scale has 15 roles in three faces. The headings are set in Figtree, the words she reads at
 length are set in Figtree, and every number is set in JetBrains Mono. A line height below 1.2 times
 the size fails the token test, and the role that sits under it is named with the rest.
 
@@ -205,6 +206,8 @@ the size fails the token test, and the role that sits under it is named with the
 - `body-sm` is 14 points over 20 at weight 400, which is 1.43 times the size, set in Figtree.
 - `button-lg` is 16 points over 22 at weight 700, which is 1.38 times the size, set in Figtree.
 - `button-md` is 15 points over 21 at weight 700, which is 1.40 times the size, set in Figtree.
+- `choice-lg` is 15 points over 21 at weight 600, which is 1.40 times the size, set in Figtree.
+- `choice-sm` is 14 points over 20 at weight 700, which is 1.43 times the size, set in Figtree.
 - `label-md` is 13 points over 18 at weight 700, which is 1.38 times the size, set in Figtree.
 - `label-sm` is 11 points over 15 at weight 600, letter spacing 0.22, which is 1.36 times the size, set in Figtree.
 - `data-lg` is 24 points over 30 at weight 500, letter spacing -0.48, which is 1.25 times the size, set in JetBrains Mono.
