@@ -20,6 +20,7 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const theCaveat = [
   'Rendered from the trees the first forecast screen produced under the test runner, at 393 by',
   '852 points, which is the glass of an iPhone 16, and not captured from a phone.',
+  'Each screen is drawn for a woman who gave her name as Ada, which the title reads back to her.',
   'Reproduce with: npm run generate:first-forecast-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
@@ -28,6 +29,9 @@ const theCaveat = [
 const herPeriodStarted = '2026-05-09';
 const theOneBefore = '2026-04-11';
 const sheSaidHerCycleRuns = 28;
+
+/** The name she typed at the second question, which the title of the forecast greets her by. */
+const sheIsCalled = 'Ada';
 
 const screens: DrawnScreen[] = [];
 
@@ -52,6 +56,7 @@ async function drawn(
       <FirstForecast
         cycleLengthDays={sheSaidHerCycleRuns}
         forecast={herForecast(answers)}
+        name={sheIsCalled}
         onContinue={() => undefined}
       />
     </OnAPhone>,

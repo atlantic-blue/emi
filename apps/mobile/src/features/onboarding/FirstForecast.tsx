@@ -39,6 +39,8 @@ interface Props {
   readonly forecast: ForecastResult;
   /** The length she gave at the cycle length question, named while Emi has no cycle of hers. */
   readonly cycleLengthDays: number;
+  /** Nothing at all where she gave no name, and then the forecast reads the plain sentence. */
+  readonly name: string | undefined;
   readonly onContinue: () => void;
 }
 

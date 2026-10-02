@@ -490,7 +490,11 @@ describe('the promise says only what the product does', () => {
 
       await render(
         <OnAPhone>
-          <WhatEmiDoesWithIt focus={[]} onContinue={() => pressed.push('continue')} />
+          <WhatEmiDoesWithIt
+            focus={[]}
+            name={undefined}
+            onContinue={() => pressed.push('continue')}
+          />
         </OnAPhone>,
       );
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));

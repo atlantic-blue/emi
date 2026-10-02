@@ -459,6 +459,7 @@ describe('her first forecast is a range, before anything is written', () => {
           <FirstForecast
             cycleLengthDays={herCycleLengthDays}
             forecast={theLearningStateWithARange}
+            name={undefined}
             onContinue={() => pressed.push('continue')}
           />
         </OnAPhone>,
@@ -474,6 +475,7 @@ describe('her first forecast is a range, before anything is written', () => {
           <FirstForecast
             cycleLengthDays={herCycleLengthDays}
             forecast={theLearningStateWithARange}
+            name={undefined}
             onContinue={() => undefined}
           />
         </OnAPhone>,
