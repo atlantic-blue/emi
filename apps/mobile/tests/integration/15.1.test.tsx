@@ -38,6 +38,9 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = dayOf(whenSheOpensIt);
 
+/** What the header says to a woman who gave no name, which is hi with nothing after it. */
+const theGreetingWithNoName = 'Hi';
+
 /** The role the word takes, and the size the design system holds that role at. */
 const theRoleTheWordTakes = 'headline-lg';
 const theWordIsDrawnAt = 28;
@@ -128,13 +131,15 @@ describe('the screen she opens names Emi and greets her by the name she gave', (
       await sheOpensEmi();
     });
 
-    it('draws the mark and the word, and no greeting line at all', () => {
+    it('draws the mark, the word, and hi on its own, with no gap where a name would be', () => {
       expect(whatTheHeaderDrew()).toEqual([
         homeHeaderTestID,
         homeHeaderMarkTestID,
         homeHeaderWordTestID,
+        homeGreetingTestID,
       ]);
-      expect(screen.queryByTestId(homeGreetingTestID)).toBeNull();
+      expect(whatItSays(homeGreetingTestID)).toBe(theGreetingWithNoName);
+      expect(whatItSays(homeGreetingTestID)).not.toContain(theNameSheGave);
     });
   });
 

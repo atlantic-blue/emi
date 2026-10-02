@@ -114,13 +114,13 @@ describe('the words the forecast is written in', () => {
 
     it('reads as the word and the number of cycles behind it', () => {
       expect(confidenceSentence(forecastFromRecorded(veryRegular))).toBe(
-        'High confidence, from your last 6 cycles',
+        'High confidence, based on your last 6 cycles',
       );
       expect(confidenceSentence(forecastFromRecorded(oneLongCycle))).toBe(
-        'Medium confidence, from your last 6 cycles',
+        'Medium confidence, based on your last 6 cycles',
       );
       expect(confidenceSentence(forecastFromRecorded(genuinelyIrregular))).toBe(
-        'Low confidence, from your last 6 cycles',
+        'Low confidence, based on your last 6 cycles',
       );
     });
 

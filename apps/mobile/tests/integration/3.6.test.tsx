@@ -25,6 +25,7 @@ import { migrate } from '../../src/data/schema';
 import { writeProfile } from '../../src/data/profileRepository';
 import { writeSetting } from '../../src/data/settingRepository';
 import { cycleCopy } from '../../src/features/cycle/copy';
+import { homeCopy } from '../../src/features/home/copy';
 import { logDay, recordedDays } from '../../src/features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../src/features/cycle/ringInput';
 import { learningCyclesWantedTestID, learningTestID } from '../../src/features/forecast/Learning';
@@ -349,7 +350,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
       expect(screen.getByTestId(learningTestID)).toBeTruthy();
       expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
-        'Emi needs 1 more complete cycle before it says how sure it is.',
+        'We need 1 more full cycle before we can say how sure we are.',
       );
       expect(screen.queryByTestId(nextPeriodRangeTestID)).toBeNull();
     });
@@ -414,7 +415,12 @@ describe('the ring shows the forecast the arithmetic produced', () => {
         </OnAPhone>,
       );
 
-      expect(theWordsAStrangerCouldRead().map((run) => run.text)).toContain(cycleCopy.noRing.line);
+      // The sentence where the ring would be names none of the four words any more, so the one
+      // a stranger could read on this screen is the label of the round action into the log.
+      expect(theWordsAStrangerCouldRead().map((run) => run.text)).toContain(
+        homeCopy.roundAction.period,
+      );
+      expect(theWordsAStrangerCouldRead().length).toBeGreaterThan(0);
       expect(drawnTooLarge()).toEqual([]);
     });
 

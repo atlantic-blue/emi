@@ -78,8 +78,8 @@ export const english = {
   'cycle.figures.quoted':
     'Each figure is quoted in the words the paper reports it in, so you can check it rather than trust it.',
   'cycle.figures.title': 'Where these figures come from',
-  'cycle.noRing.line': 'The ring needs a period. Log a day you bled and it appears.',
-  'cycle.noRing.title': 'Nothing to draw yet',
+  'cycle.noRing.line': 'Log a day you bled and your cycle appears here.',
+  'cycle.noRing.title': 'Your ring is waiting',
   'cycle.phaseLine.day': 'Day {day}',
   'cycle.phaseLine.follicular': {
     one: 'Follicular phase, a cycle of {count} day',
@@ -148,11 +148,11 @@ export const english = {
   'forecast.confidence.high': 'High',
   'forecast.confidence.low': 'Low',
   'forecast.confidence.medium': 'Medium',
-  'forecast.confidence.sentence': '{word} confidence, from your last {cycles} cycles',
-  'forecast.cycleMoves': 'Your cycle moves, so the range is wider.',
+  'forecast.confidence.sentence': '{word} confidence, based on your last {cycles} cycles',
+  'forecast.cycleMoves': 'Your cycle moves around, so the range is wider.',
   'forecast.cyclesWanted': {
-    one: 'Emi needs {count} more complete cycle before it says how sure it is.',
-    other: 'Emi needs {count} more complete cycles before it says how sure it is.',
+    one: 'We need {count} more full cycle before we can say how sure we are.',
+    other: 'We need {count} more full cycles before we can say how sure we are.',
   },
   'forecast.fertileWindow': 'Fertile window',
   /**
@@ -160,15 +160,14 @@ export const english = {
    * comes before it, and a string literal on its own puts a quotation mark there instead.
    */
   'forecast.fertileWindow.sentence':
-    'An estimate from your last {cycles} cycles. Emi never says a day is safe, because no day is.',
-  'forecast.nextPeriod': 'Next period',
+    'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.nextPeriod': 'Your next period',
   'forecast.range.sameMonth': 'Between the {from} and the {to} of {month}',
   'forecast.range.spansMonths': 'Between the {from} of {fromMonth} and the {to} of {toMonth}',
   'forecast.range.spansYears':
     'Between the {from} of {fromMonth} {fromYear} and the {to} of {toMonth} {toYear}',
-  'forecast.statedLength':
-    'Until then Emi counts a cycle of {days} days, the length you gave at the first run.',
-  'forecast.stillLearning': 'Still learning',
+  'forecast.statedLength': "Until then, we're using the {days} day cycle you told us about.",
+  'forecast.stillLearning': 'Still getting to know you',
 
   'history.back': 'Back',
   'history.cycleDayCount': { one: '{count} day', other: '{count} days' },
@@ -195,10 +194,14 @@ export const english = {
 
   // The line a woman who asked for a record for her doctor reads. It names her own answer back
   // to her, and it says what the press does rather than saying what the record is for.
-  'home.doctorRecord': 'You asked for a record for your doctor. Open the export.',
+  'home.doctorRecord':
+    "You wanted a record for your doctor. It's ready whenever you are, in Export.",
   'home.cycles.line':
-    'Each strip is one of your cycles, the one you are in first. Press a strip to read that cycle on Insights.',
-  'home.greeting': 'Hello, {name}',
+    'Each strip is one of your cycles, starting with this one. Tap one to see it in full.',
+  'home.greeting': 'Hi, {name}',
+  // What she reads where she gave no name. She is greeted either way, so the top of the screen
+  // never opens on a blank line, and nothing stands where a name would be.
+  'home.greeting.noName': 'Hi',
   // The one button of a screen with no ring. As soon as a ring is drawn the two round actions
   // are the way into the log, so this label is read on day one and nowhere else.
   'home.logToday': 'Log today',
@@ -225,30 +228,30 @@ export const english = {
   'home.numbers.published': 'Published',
   'home.numbers.range': '{low} to {high}',
   'home.numbers.upTo': 'up to {days}',
-  'home.painLine': 'You said these days are hard. Log the pain first.',
+  'home.painLine': 'You told us these days can be hard. Start with how much it hurts.',
   'home.patterns.beforePeriod': 'about {days} before your period',
   'home.patterns.card': '{name}, {when}',
   'home.patterns.line':
-    'A symptom you logged once or twice is not a pattern, and Emi does not name it one.',
+    "A symptom you logged once or twice isn't a pattern, so we won't call it one.",
   'home.patterns.onCycleDay': 'about day {day} of your cycle',
   'home.patterns.press': 'What comes back, in full',
   'home.roundAction.period': 'Period',
   'home.roundAction.symptoms': 'Symptoms',
   // The chart of her last complete cycles over the published range. The caption and the sentence
   // under it count the cycles the chart drew, so a woman with three of them is never told six.
-  'home.trend.allInside': 'All of your last {cycles} ran inside the band.',
-  'home.trend.caption': 'Your last {cycles}. The band is the published range.',
+  'home.trend.allInside': 'All of your last {cycles} fell inside the band.',
+  'home.trend.caption': 'Your last {cycles}. The shaded band is the published range.',
   'home.trend.cycleCount': { one: '{count} complete cycle', other: '{count} complete cycles' },
-  'home.trend.outside': '{outside} of your last {cycles} ran outside the band.',
+  'home.trend.outside': '{outside} of your last {cycles} fell outside the band.',
   'home.trend.press': 'The same cycles, in full',
   'home.waiting.cycles.heading': 'Your cycles',
-  'home.waiting.cycles.needs': 'Your three numbers arrive with your second period.',
-  'home.waiting.cycles.read': 'Emi has read {cycles}.',
+  'home.waiting.cycles.needs': 'Your numbers arrive with your second period.',
+  'home.waiting.cycles.read': "So far we've seen {cycles}.",
   'home.waiting.patterns.heading': 'What comes back',
   'home.waiting.trend.heading': 'Cycle trends',
   'home.waiting.trend.needs': {
-    one: 'The chart arrives once {count} cycle is complete.',
-    other: 'The chart arrives once {count} cycles are complete.',
+    one: 'Your chart appears once {count} cycle is complete.',
+    other: 'Your chart appears once {count} cycles are complete.',
   },
   'home.waiting.trend.read': 'Emi draws nothing from nothing, and it holds no sample data.',
   'home.trend.spoken':

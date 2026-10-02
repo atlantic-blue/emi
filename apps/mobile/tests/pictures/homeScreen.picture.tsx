@@ -63,7 +63,7 @@ interface Recorded {
   readonly set: RecordedSet;
   /** Left out where she has recorded nothing at all, which draws no ring. */
   readonly recorded?: 'nothing';
-  /** Left out where she gave no name, and then the screen greets her with nothing. */
+  /** Left out where she gave no name, and then the screen greets her with hi on its own. */
   readonly name?: string;
   /** Left out where she passed the question by, and then nothing is said about the width. */
   readonly regularity?: Regularity;

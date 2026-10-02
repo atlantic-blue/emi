@@ -86,11 +86,14 @@ export function publishedFigureReads(figure: PublishedFigure): string {
 }
 
 /**
- * How Emi says hello to her by the name she gave. A woman who gave none is not greeted at all,
- * so this is never called with an empty name and never draws an empty line.
+ * How Emi says hi to her. A woman who gave a name is greeted by it, and a woman who gave none is
+ * greeted anyway, by a line that stands on its own rather than carrying a gap where a name would
+ * be. So the greeting is one sentence or the other and never a sentence with nothing filled in.
  */
-export function greeting(name: string): string {
-  return words('home.greeting', undefined, { name });
+export function greeting(name?: string): string {
+  return name === undefined
+    ? words('home.greeting.noName')
+    : words('home.greeting', undefined, { name });
 }
 
 /**

@@ -253,9 +253,9 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     Then the header is the first thing on the screen she opens
     And it carries the mark, then the word Emi, then the greeting
-    And the greeting reads Hello, Ada
+    And the greeting reads Hi, Ada
     And the drawing of this screen puts that header first, and the screen answers for it
-    And a woman who gave no name reads the mark and the word, and no greeting at all
+    And a woman who gave no name reads the mark, the word, and hi on its own
 
   Scenario: SCREEN-2, she reads the cycle day of every day of her week without pressing anything
     Given her phone holds four recorded period days, the last of them today
@@ -620,3 +620,13 @@ Feature: She opens Emi and logs her first period
     And a woman who gave no name reads the same forecast, with no gap where a name would be
     And the screen that reads her answers back is addressed to her too
     And the promise and the hold talk to her as you, in each of the three languages she can read them in
+
+  Scenario: SCREEN-2, the home screen says hi to her by name
+    Given she gave the name Ada at her first run, and her phone holds the one period she logged
+    When she opens Emi
+    Then the top of the screen says hi to her by the name she gave
+    And the forecast that cannot say how sure it is tells her it is still getting to know her
+    And it asks for the cycles it still wants as we, and names the length she told them about
+    And a woman who gave no name reads hi on its own, with no gap where a name would be
+    And every word this screen says is in all three languages, and each one talks to her as you
+    And the only two that name Emi are the fertile window denial and the line about sample data

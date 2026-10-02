@@ -46,6 +46,9 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const herPeriodStarted = '2026-05-09';
 
 const herName = 'Ada';
+
+/** What the header says to a woman who gave no name, which is hi with nothing after it. */
+const theGreetingWithNoName = 'Hi';
 const herBirthYear = 1991;
 
 /**
@@ -233,14 +236,14 @@ describe('she gives her name and the home screen greets her by it', () => {
       expect(Object.keys(held ?? {}).sort()).toEqual(['cycleLengthDays', 'kind', 'recordedAt']);
     });
 
-    it('leave her home screen with no greeting on it, and not an empty line', async () => {
+    it('leave her home screen saying hi to her, with no gap where a name would be', async () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
       await sheHoldsTheRing();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
-      expect(screen.queryByTestId(homeGreetingTestID)).toBeNull();
+      expect(screen.getByTestId(homeGreetingTestID)).toHaveTextContent(theGreetingWithNoName);
     });
 
     it('forget the year she picked before she pressed the way past it', async () => {
@@ -290,7 +293,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await sheHoldsTheRing();
 
       expect((await herProfile())?.name).toBeUndefined();
-      expect(screen.queryByTestId(homeGreetingTestID)).toBeNull();
+      expect(screen.getByTestId(homeGreetingTestID)).toHaveTextContent(theGreetingWithNoName);
     });
   });
 

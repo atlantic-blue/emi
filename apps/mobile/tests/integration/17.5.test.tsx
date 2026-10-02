@@ -121,6 +121,9 @@ const herLastPeriod = [
 ];
 
 const herNewName = 'Marta';
+
+/** What the header says to a woman who gave no name, which is hi with nothing after it. */
+const theGreetingWithNoName = 'Hi';
 const herNewBirthYear = 1988;
 const herNewPeriodLength = 7;
 const herNewRegularity: Regularity = 'regular';
@@ -526,7 +529,7 @@ describe('she changes any answer she gave and the screen that reads it follows',
       expect(textIn(screen.getByTestId(homeGreetingTestID))).toEqual([greeting(herNewName)]);
     });
 
-    it('goes away for a woman who clears the field, because that is the answer she gave', async () => {
+    it('becomes hi on its own for a woman who clears the field, which is her answer', async () => {
       await herPhoneIsSetUp();
       await sheOpensTheApplication();
       await sheOpensTheRow('name');
@@ -534,7 +537,7 @@ describe('she changes any answer she gave and the screen that reads it follows',
       await shePresses(answerSaveTestID);
       await sheGoesBackToTheScreenSheOpens();
 
-      expect(screen.queryByTestId(homeGreetingTestID)).toBeNull();
+      expect(textIn(screen.getByTestId(homeGreetingTestID))).toEqual([theGreetingWithNoName]);
       expect((await theSealedRow()).name).toBeUndefined();
     });
   });
