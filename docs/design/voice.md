@@ -43,8 +43,8 @@ Every gate in the pipeline still applies, unchanged.
 - `tools/pipeline/singleDayForecast.ts` keeps the two single day fields out of the interface.
 - `tools/pipeline/screenWords.ts` refuses a word written into a screen instead of the catalogue.
 
-The two denials travel word for word, after a full stop, on each screen that names a forecast:
-Emi is not a contraceptive. Emi is not a medical device.
+The two denials travel word for word on each screen that names a forecast, and a full stop comes
+before each of them. Emi is not a contraceptive. Emi is not a medical device.
 
 ## Where the words live
 
