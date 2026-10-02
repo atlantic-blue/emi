@@ -20,6 +20,8 @@ claim against the code that makes it. These documents are the readable half of t
   comment that sits on it in the source. It is generated too.
 - `design/mockups/` holds the approved mockups stage: 52 screens drawn as markup, and the check
   that holds a rendered screen against the drawing it names.
+- `design/voice.md` holds the nine rules every word she reads follows, and the gates that hold
+  the honesty of those words in place.
 - `design/` holds the designs and the reviews that are not part of the eight documents above.
   `design/structure-review-2026-09-20.md` reads the shape of the code on one day: the
   measurements, eight findings, and a numbered path the operator chooses from. It changes no

@@ -454,35 +454,35 @@ export const english = {
   'onboarding.tour.count': '{step} of {of}',
   'onboarding.tour.range.action': 'Next',
   'onboarding.tour.range.line.arithmetic':
-    'This is arithmetic on your own records. Emi is not a contraceptive. Emi is not a medical device.',
+    "It's all arithmetic on your own records. Emi is not a contraceptive. Emi is not a medical device.",
   'onboarding.tour.range.line.confidence':
-    'Beside the range it writes high, medium or low confidence, and how many of your own cycles it counted.',
+    'Next to it, we tell you how sure we are, and how many of your cycles that comes from.',
   'onboarding.tour.range.line.learning':
-    'Emi needs 2 complete cycles before it forecasts. Until then it says it is still learning, and counts by the cycle length you give it.',
+    'After two full cycles, the forecast is built from yours. Until then, we work from the cycle length you tell us.',
   'onboarding.tour.range.line.range':
-    'Emi says your next period falls between two days. It never names one day, because a day it names is a day it can get wrong.',
-  'onboarding.tour.range.title': 'A range, and how sure Emi is.',
+    "Your next period will come somewhere between two days. We show you both, because bodies don't run to the day.",
+  'onboarding.tour.range.title': 'A range, not a guess.',
   'onboarding.tour.records.action': 'Next',
   'onboarding.tour.records.line.log':
-    'Log flow, mood, energy, temperature, weight and more than 70 symptoms, in one sheet.',
+    'Log your flow, mood, energy, sleep, temperature, weight and more than 70 symptoms, all on one sheet.',
   'onboarding.tour.records.line.patterns':
-    'After six cycles Emi names the symptoms that came back at the same point in 3 of them or more. A symptom you logged once is not a pattern, and Emi does not call it one.',
-  'onboarding.tour.records.title': 'What you write, read back to you.',
+    "After six cycles, we show you the symptoms that came back at the same point in at least three of them. One bad day is just one bad day, and we won't call it a pattern.",
+  'onboarding.tour.records.title': 'Tell it how you feel. See what comes back.',
   'onboarding.tour.ring.action': 'Next',
   'onboarding.tour.ring.line.arcs':
-    'Four arcs divide the ring: the days you bleed, the days after them, the days around ovulation, and the days before your next period.',
+    'The four colours are the four parts of your cycle: your period, the days after it, the days around ovulation, and the days before your next period.',
   'onboarding.tour.ring.line.ring':
-    'The ring is your cycle. A bead marks today, and the number inside it is the day you are on.',
-  'onboarding.tour.ring.title': 'Your cycle, in one ring.',
+    "The dot is today. The number inside it tells you which day of your cycle you're on.",
+  'onboarding.tour.ring.title': 'This ring is your cycle.',
   'onboarding.tour.skip': 'Skip',
   'onboarding.tour.yours.action': 'Continue',
   'onboarding.tour.yours.line.encrypted':
-    'Every day you log is encrypted on this phone, with a key that never leaves it. The server holds the result and cannot read one day of it.',
+    "Everything you log is encrypted on this phone, with a key that never leaves it. Our server only holds a locked copy it can't open.",
   'onboarding.tour.yours.line.price':
-    'One month free, then 29.99 pounds a year. There is no free version, because a free version is paid for with your data.',
+    "Your first month is free, then it's 29.99 pounds a year. There's no free version, because a free app is paid for with your data.",
   'onboarding.tour.yours.line.recovery':
-    'A recovery code you keep brings your history to a new phone. Nobody at Emi can open your history, so nobody at Emi can hand it to anybody.',
-  'onboarding.tour.yours.title': 'Yours, and it stays yours.',
+    "Keep your recovery code, and your history follows you to a new phone. We can't open your history, so we can never hand it to anyone.",
+  'onboarding.tour.yours.title': 'Your days are yours alone.',
   'onboarding.welcome.action': 'Continue',
   'onboarding.welcome.line.noAccount':
     'There is no account. Emi never asks for your email address or a password.',
