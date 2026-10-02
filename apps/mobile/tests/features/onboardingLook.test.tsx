@@ -7,6 +7,7 @@ import { CycleLength } from '../../src/features/onboarding/CycleLength';
 import { HerName } from '../../src/features/onboarding/HerName';
 import {
   chosenDayMarkTestID,
+  dateDiscTestID,
   dayTestID,
   earlierMonthTestID,
   laterMonthTestID,
@@ -431,7 +432,7 @@ describe('the first run carries the design system', () => {
     it('is marked three ways, so colour is never the only cue', async () => {
       await sheIsLookingAt('lastPeriod');
 
-      const square = flattened(dayTestID(threeDaysBack));
+      const square = flattened(dateDiscTestID(threeDaysBack));
 
       expect(square.backgroundColor).toBe(colour.accent);
       expect(square.borderColor).toBe(colour.accentSoftInk);
@@ -441,11 +442,11 @@ describe('the first run carries the design system', () => {
     it('is the only square marked, so one day is chosen and not two', async () => {
       await sheIsLookingAt('lastPeriod');
 
-      const others = [today, '2026-05-12'].map((day) => flattened(dayTestID(day)));
+      const others = [today, '2026-05-12'].map((day) => flattened(dateDiscTestID(day)));
 
       expect(screen.queryAllByTestId(chosenDayMarkTestID)).toHaveLength(1);
-      expect(others.map((each) => each.backgroundColor)).toEqual([colour.field, colour.field]);
-      expect(others.map((each) => each.borderColor)).toEqual([colour.field, colour.field]);
+      expect(others.map((each) => each.backgroundColor)).toEqual([undefined, undefined]);
+      expect(others.map((each) => each.borderColor)).toEqual([colour.card, colour.card]);
       expect(screen.getByTestId(dayTestID(threeDaysBack))).toBeSelected();
       expect(screen.getByTestId(dayTestID(today))).not.toBeSelected();
     });

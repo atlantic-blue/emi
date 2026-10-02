@@ -536,6 +536,27 @@ Feature: She opens Emi and logs her first period
     And a colour the prototype paints under the contrast floor records the value Emi builds instead
     And the ink of each phase is readable on the ground the ring writes the phase name on
 
+  Scenario: SCREEN-2, the dock takes the redesign look and keeps its routes
+    Given her phone holds six cycles of her own
+    When she opens Emi and reads the dock across the foot of the screen
+    Then the dock is a white bar that reaches both edges of the glass, under one hairline
+    And each of the four columns takes an equal share of the width, with its word under its drawing
+    And the drawing in the column she is on is stroked in the accent, and the other three in the quiet dock colour
+    And the screen above the bar leaves exactly the room the bar draws
+    And pressing each column opens the screen behind it and moves the accent onto it
+
+  Scenario: SCREEN-4, the month grid takes the redesign look
+    Given her phone holds three recorded cycles
+    When she opens the month
+    Then every date sits in a disc of its own, with the day of her cycle above it
+    And the days she bled are filled with the colour of her period
+    And every fertile day the ring counts is tinted
+    And the one day the forecast names as the estimated ovulation is filled
+    And a legend above the grid names her period and her fertile days
+    When she presses the day the drawing names
+    Then a panel at the foot names that day, over the way to her whole period
+    And pressing that panel opens the day it names
+
   Scenario: SCREEN-2, the top wash takes the colours of the phase of today
     Given the four phases of a cycle, and the wash the design document names for each of them
     When the wash at the top of the screen is drawn for the phase she is in

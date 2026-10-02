@@ -2,7 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@e
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { SecondaryButton } from '../../components/Button';
+import { PrimaryButton } from '../../components/Button';
 import { Screen } from '../../components/Screen';
 import { aDayOutOfReachLabel, herDayLabel } from '../cycle/copy';
 import type { HerDay } from '../cycle/herWeek';
@@ -11,6 +11,7 @@ import { monthLabel } from '../onboarding/days';
 import { CycleMonth, type MonthSquare } from './CycleMonth';
 import { DaySheet } from './DaySheet';
 import { calendarCopy, daySheetWords } from './copy';
+import type { DayPhase } from './herMonthPhases';
 import type { WhatTheSheetSays } from './theDaySheet';
 
 export const calendarScreenTestID = 'calendar-screen';
@@ -23,6 +24,8 @@ export const calendarHeadingTestID = 'calendar-screen-heading';
 export const calendarEarlierTestID = 'calendar-screen-earlier';
 export const calendarLaterTestID = 'calendar-screen-later';
 export const calendarEditPeriodTestID = 'calendar-screen-edit-period';
+/** The panel at the foot: the day she pressed, over the way to her whole period. */
+export const calendarPanelTestID = 'calendar-screen-panel';
 
 interface Props {
   /** The month she is reading, named by any day in it. */
@@ -31,6 +34,14 @@ interface Props {
   readonly today: string;
   /** The days of that month, each one carrying its cycle day and what happened on it. */
   readonly days: readonly HerDay[];
+  /**
+   * The phase one date of that month fell in, as the cycle layer already read it. The month colours
+   * a date by what this answers and works none of it out itself.
+   *
+   * Left out where the screen is stood up with no cycles behind it, and then no date carries a
+   * phase, which is what a month holding none of her cycles draws anyway.
+   */
+  readonly phaseOn?: (day: string) => DayPhase | undefined;
   /**
    * The day she pressed, worked out, or nothing at all until she presses one. A sheet naming a
    * day she did not choose would be Emi choosing for her.
@@ -64,6 +75,7 @@ export function CalendarScreen({
   month,
   today,
   days,
+  phaseOn,
   shePressed,
   onBack,
   onToday,
@@ -82,25 +94,21 @@ export function CalendarScreen({
       throw new Error(`the month drew ${day} and the cycle says nothing about it`);
     }
 
+    const phase = phaseOn?.(day);
+    const saidAboutIt = {
+      mark: hers.mark,
+      role: 'button' as const,
+      ...(hers.cycleDay === undefined ? {} : { cycleDay: hers.cycleDay }),
+      ...(phase === undefined ? {} : { ovulating: phase.ovulating, phase: phase.phase }),
+    };
+
     // One rule decides whether a day opens, and the address she could type it into reads the same
     // one, so the month never offers a day the day itself would refuse.
     if (refusalFor({ day, today }) !== undefined) {
-      return {
-        label: aDayOutOfReachLabel(hers, today),
-        mark: hers.mark,
-        outOfReach: true,
-        role: 'button',
-        ...(hers.cycleDay === undefined ? {} : { cycleDay: hers.cycleDay }),
-      };
+      return { ...saidAboutIt, label: aDayOutOfReachLabel(hers, today), outOfReach: true };
     }
 
-    return {
-      label: herDayLabel(hers, today),
-      mark: hers.mark,
-      onPress: () => onPressDay(day),
-      role: 'button',
-      ...(hers.cycleDay === undefined ? {} : { cycleDay: hers.cycleDay }),
-    };
+    return { ...saidAboutIt, label: herDayLabel(hers, today), onPress: () => onPressDay(day) };
   };
 
   return (
@@ -156,17 +164,18 @@ export function CalendarScreen({
               </Pressable>
             </View>
           }
+          legend
           month={month}
           squareOf={squareOf}
           testID={calendarMonthTestID}
         />
 
-        {shePressed === undefined ? null : (
-          <DaySheet {...daySheetWords(shePressed)} onPress={() => onOpenDay(shePressed.day)} />
-        )}
+        <View style={styles.foot} testID={calendarPanelTestID}>
+          {shePressed === undefined ? null : (
+            <DaySheet {...daySheetWords(shePressed)} onPress={() => onOpenDay(shePressed.day)} />
+          )}
 
-        <View style={styles.foot}>
-          <SecondaryButton
+          <PrimaryButton
             label={calendarCopy.editPeriod}
             onPress={onEditPeriod}
             testID={calendarEditPeriodTestID}
@@ -179,9 +188,29 @@ export function CalendarScreen({
 
 const styles = StyleSheet.create({
   body: { flexGrow: 1, paddingHorizontal: space.spaceLg, paddingVertical: space.spaceXl },
-  // The way to the whole period sits under everything else and is pushed to the foot, because a day
-  // she presses is what she came for and correcting a period is the rarer thing.
-  foot: { justifyContent: 'flex-end', marginTop: 'auto', paddingTop: space.spaceLg },
+  // The panel at the foot. It carries the day she pressed over the way to her whole period, and it
+  // runs to both edges of the glass, so it reads as a surface the month sits behind rather than as
+  // two more rows of the month.
+  //
+  // The negative margin is the padding of the body given back. A panel inside that padding would
+  // leave a strip of the ground down each side of a sheet the prototype draws edge to edge.
+  foot: {
+    backgroundColor: colour.card,
+    borderTopLeftRadius: radius.xxl,
+    borderTopRightRadius: radius.xxl,
+    gap: space.spaceMd,
+    justifyContent: 'flex-end',
+    marginBottom: -space.spaceXl,
+    marginHorizontal: -space.spaceLg,
+    marginTop: 'auto',
+    paddingBottom: space.spaceXl,
+    paddingHorizontal: space.spaceLg,
+    paddingTop: space.spaceLg,
+    shadowColor: colour.text,
+    shadowOffset: { height: -2, width: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+  },
   // The two ways to another month and the title share one row, and the distance between them is
   // the one the first run's month keeps. Five boxes in the header above would need 406 points of
   // the 345 an iPhone 16 leaves, and the month name is what would be cut.

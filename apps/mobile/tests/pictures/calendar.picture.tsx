@@ -5,6 +5,7 @@ import { render } from '@testing-library/react-native';
 import { listCycles } from '../../src/data/cycleRepository';
 import { CalendarScreen } from '../../src/features/calendar/CalendarScreen';
 import { herMonth } from '../../src/features/calendar/herMonth';
+import { theDayPhaseOn } from '../../src/features/calendar/herMonthPhases';
 import {
   type HerReading,
   type WhatTheSheetSays,
@@ -141,6 +142,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
         onOpenDay={() => undefined}
         onPressDay={() => undefined}
         onToday={() => undefined}
+        phaseOn={(day) => theDayPhaseOn(herReadingOn(state.today).from, day)}
         today={state.today}
         {...(theSheetFor(state) === undefined ? {} : { shePressed: theSheetFor(state) })}
       />

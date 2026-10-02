@@ -15,7 +15,10 @@ import {
 } from '@emi/cycle';
 import {
   Wash,
+  bottomNavigationTestID,
+  deepestHomeIndicator,
   dockPanelTestID,
+  dockRoom,
   tabTestID,
   washFieldGradientID,
   washFieldTestID,
@@ -25,15 +28,18 @@ import {
   CONTRAST_FLOOR,
   FULL_TURN_DEGREES,
   GAP_DEGREES,
+  ICON_SIZE,
   MINIMUM_TAP_TARGET,
   type PhaseName,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
+  colour,
   colours,
   contrastRatio,
   hasRole,
   phaseLabel,
   phaseNames,
+  stroke,
   washNames,
   washOfPhase,
   washStops,
@@ -67,10 +73,12 @@ import { readSetting, settingKeys } from '../apps/mobile/src/data/settingReposit
 import {
   calendarBackTestID,
   calendarEarlierTestID,
+  calendarEditPeriodTestID,
   calendarLaterTestID,
   calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
 import { daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
+import { monthLegendCopy } from '../apps/mobile/src/features/calendar/copy';
 import { DAYS_IN_A_WEEK } from '../apps/mobile/src/features/cycle/herWeek';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
@@ -158,7 +166,7 @@ import {
   patternCardReads,
   patternWhenReads,
 } from '../apps/mobile/src/features/home/copy';
-import { logFlowDoneTestID } from '../apps/mobile/src/features/log/LogFlow';
+import { logFlowDoneTestID, logFlowTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
 import { weekDayTestID, weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
 import {
@@ -184,7 +192,10 @@ import {
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
-import { settingsExportTestID } from '../apps/mobile/src/features/settings/SettingsScreen';
+import {
+  settingsExportTestID,
+  settingsScreenTestID,
+} from '../apps/mobile/src/features/settings/SettingsScreen';
 import {
   cyclesBeforeAForecastSentence,
   firstRunCopy,
@@ -285,7 +296,15 @@ import {
   theSquaresTheMonthDrew,
   theSquaresTooShortForAThumb,
   thePhaseTheRingSaysOn,
+  theDateInkOn,
+  theDiscAroundTheDate,
+  theFertileDaysTheRingCounts,
+  theLegendDots,
+  theLegendSheReads,
+  theOvulationDayTheForecastNames,
+  thePhaseGroundOn,
   theWeekMeasuredOn,
+  whatThePanelHolds,
   whatTheMonthScreenDrew,
 } from '../apps/mobile/tests/fixtures/theMonthSheOpens';
 import {
@@ -609,7 +628,7 @@ async function shePresses(testID: string): Promise<void> {
 }
 
 /**
- * The columns of the dock, in the order it drew them, read off the capsule rather than asked for
+ * The columns of the dock, in the order it drew them, read off the bar rather than asked for
  * by name. Asking for them by name reads back the order of the ask.
  */
 function theColumnsOfTheDock(): string[] {
@@ -4501,6 +4520,133 @@ defineFeature(feature, (test) => {
     });
   });
 
+  // The dock is the one piece of chrome every screen she can reach carries, so its redesign is
+  // read with the navigator under it. A bar that lost one of its four routes is a bar that broke
+  // the product, and nothing drawn against the component alone would say so.
+  test('SCREEN-2, the dock takes the redesign look and keeps its routes', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const theFourColumns = [
+      { label: 'Today', name: 'index', reaches: homeScreenTestID },
+      { label: 'Log', name: 'log/index', reaches: logFlowTestID },
+      { label: 'Insights', name: 'history', reaches: historyScreenTestID },
+      { label: 'Privacy', name: 'settings/index', reaches: settingsScreenTestID },
+    ];
+
+    /** Points. The height the prototype gives a column of the bar. */
+    const theColumnHeight = 52;
+
+    /** The drawing and the word of one column, which is everything a column holds. */
+    const theColumn = (
+      name: string,
+    ): { readonly drawing: Record<string, unknown>; readonly word: Record<string, unknown> } => {
+      const [drawing, word] = screen.getByTestId(tabTestID(name)).children;
+      const propsOf = (held: unknown): Record<string, unknown> =>
+        (held as { props: Record<string, unknown> }).props;
+
+      return { drawing: propsOf(drawing), word: propsOf(word) };
+    };
+
+    /**
+     * The colour the drawing of a column is stroked in. The word beside it takes its colour from a
+     * class, and this tier compiles no theme, so a class resolves to nothing here. The word's own
+     * colour is read in `apps/mobile/tests/integration/22.7.test.tsx`, which compiles the theme.
+     */
+    const theDrawingColourOf = (name: string): unknown => theColumn(name).drawing['stroke'];
+
+    given('her phone holds six cycles of her own', async () => {
+      await herPhoneHolds(
+        whenSheOpensIt,
+        herRecordedDays({ cycleLengthDays: 28, periodDays: 4, dayOfCycle: 2 }),
+      );
+    });
+
+    when('she opens Emi and reads the dock across the foot of the screen', async () => {
+      await sheOpens('/');
+
+      expect(screen.getByTestId(bottomNavigationTestID)).toBeTruthy();
+      expect(theColumnsOfTheDock()).toEqual(theFourColumns.map((column) => tabTestID(column.name)));
+    });
+
+    then('the dock is a white bar that reaches both edges of the glass, under one hairline', () => {
+      const bar = flattenedStyleOf(bottomNavigationTestID);
+
+      expect(bar).toMatchObject({
+        backgroundColor: colour.card,
+        borderTopColor: colour.line,
+        borderTopWidth: stroke.hairline,
+        bottom: 0,
+        left: 0,
+        position: 'absolute',
+        right: 0,
+      });
+      // A bar rather than a capsule standing over her screen, so there is no corner, no hairline
+      // on the other three edges, and none of the one shadow the design system allows a panel.
+      expect(bar['borderRadius']).toBeUndefined();
+      expect(bar['borderWidth']).toBeUndefined();
+      expect(bar['boxShadow']).toBeUndefined();
+    });
+
+    and(
+      'each of the four columns takes an equal share of the width, with its word under its drawing',
+      () => {
+        for (const column of theFourColumns) {
+          const drawn = flattenedStyleOf(tabTestID(column.name));
+
+          expect(drawn).toMatchObject({ flex: 1, minHeight: theColumnHeight });
+          expect(drawn['backgroundColor']).toBeUndefined();
+          expect(theColumn(column.name).drawing['width']).toBe(ICON_SIZE);
+          expect(theColumn(column.name).word['children']).toBe(column.label);
+        }
+      },
+    );
+
+    and(
+      'the drawing in the column she is on is stroked in the accent, and the other three in the quiet dock colour',
+      () => {
+        expect(theDrawingColourOf('index')).toBe(colour.accent);
+
+        for (const column of theFourColumns.slice(1)) {
+          expect(theDrawingColourOf(column.name)).toBe(colour.dockQuiet);
+        }
+      },
+    );
+
+    and('the screen above the bar leaves exactly the room the bar draws', () => {
+      // The room is the sum of what the bar draws on the phone that keeps the most glass for
+      // itself, read off the bar rather than typed beside the code it describes. The runner hands
+      // the screens no insets, so the room the phone keeps arrives from the token the dock pads
+      // itself by, which `22.7` holds against the inset a phone with an island reports.
+      const room =
+        Number(flattenedStyleOf(dockPanelTestID)['paddingTop']) +
+        Number(flattenedStyleOf(tabTestID('index'))['minHeight']) +
+        deepestHomeIndicator;
+
+      expect(dockRoom).toBe(room);
+      expect(flattenedStyleOf(homeScreenTestID)['paddingBottom']).toBe(dockRoom);
+    });
+
+    and(
+      'pressing each column opens the screen behind it and moves the accent onto it',
+      async () => {
+        for (const column of theFourColumns) {
+          await shePresses(tabTestID(column.name));
+
+          expect(screen.getByTestId(column.reaches)).toBeTruthy();
+          expect(screen.getByTestId(bottomNavigationTestID)).toBeTruthy();
+          expect(theDrawingColourOf(column.name)).toBe(colour.accent);
+
+          for (const other of theFourColumns.filter((each) => each.name !== column.name)) {
+            expect(theDrawingColourOf(other.name)).toBe(colour.dockQuiet);
+          }
+        }
+      },
+    );
+  });
+
   // The palette the home screen is drawn in comes from the prototype, through the front matter of
   // the design document, into the token package. This is the first link of that chain, and the one
   // place a colour can enter without anything reading it.
@@ -4703,6 +4849,91 @@ defineFeature(feature, (test) => {
       expect(stops.flatMap((stop) => colours[stop].textOn)).toEqual([]);
     });
   });
+
+  // The redesign of the month, read as she reads it: the phases she never saw on this grid before,
+  // the two words that say what the colours mean, and the panel that names the day she pressed.
+  test('SCREEN-4, the month grid takes the redesign look', ({ given, when, and, then }) => {
+    let app: OpenApp;
+    let sheWasSentTo = '';
+
+    given('her phone holds three recorded cycles', async () => {
+      jest.setSystemTime(whenSheOpensTheMonth());
+      await herPhoneHoldsThreeRecordedCycles(whenSheOpensTheMonth());
+    });
+
+    when('she opens the month', async () => {
+      app = await sheOpens('/calendar');
+    });
+
+    then('every date sits in a disc of its own, with the day of her cycle above it', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(theSquaresTheMonthDrew().length).toBeGreaterThan(theColumnsOfTheDrawing().length);
+      expect(theSquaresCountingTheirCycleDayBelowTheDate()).toEqual([]);
+
+      for (const day of theSquaresTheMonthDrew()) {
+        expect(theDiscAroundTheDate(day).width).toBe(theDiscAroundTheDate(day).height);
+        expect(theCycleDayOver(day)).toBe(theDayTheRingSaysOn(day));
+      }
+    });
+
+    and('the days she bled are filled with the colour of her period', () => {
+      expect(theDaysTheDrawingFills().length).toBeGreaterThan(1);
+
+      for (const day of theDaysTheDrawingFills()) {
+        expect(thePhaseGroundOn(day)).toBe(colour.period);
+        expect(theDateInkOn(day)).toBe(colour.onAccent);
+      }
+    });
+
+    and('every fertile day the ring counts is tinted', () => {
+      const tinted = theFertileDaysTheRingCounts().filter(
+        (day) => day !== theOvulationDayTheForecastNames(),
+      );
+
+      expect(tinted.length).toBeGreaterThan(0);
+
+      for (const day of tinted) {
+        expect(thePhaseGroundOn(day)).toBe(colour.washWarm);
+        expect(theDateInkOn(day)).toBe(colour.ovulationInk);
+      }
+    });
+
+    and('the one day the forecast names as the estimated ovulation is filled', () => {
+      const ovulation = String(theOvulationDayTheForecastNames());
+
+      expect(theOvulationDayTheForecastNames()).toBeDefined();
+      expect(theFertileDaysTheRingCounts()).toContain(ovulation);
+      expect(thePhaseGroundOn(ovulation)).toBe(colour.ovulation);
+      expect(theDateInkOn(ovulation)).toBe(colour.text);
+    });
+
+    and('a legend above the grid names her period and her fertile days', () => {
+      expect(theLegendSheReads()).toEqual({
+        fertile: monthLegendCopy.fertile,
+        period: monthLegendCopy.period,
+      });
+      expect(theLegendDots()).toEqual({ fertile: colour.ovulation, period: colour.period });
+    });
+
+    when('she presses the day the drawing names', async () => {
+      sheWasSentTo = theDayTheDrawingsSheetNames();
+      await shePresses(dayTestID(sheWasSentTo));
+    });
+
+    then('a panel at the foot names that day, over the way to her whole period', () => {
+      const held = whatThePanelHolds();
+
+      expect(theSheetSheReads()?.lead).toContain(String(Number(sheWasSentTo.slice(8, 10))));
+      expect(held.indexOf(daySheetTestID)).toBeGreaterThanOrEqual(0);
+      expect(held.indexOf(daySheetTestID)).toBeLessThan(held.indexOf(calendarEditPeriodTestID));
+    });
+
+    and('pressing that panel opens the day it names', async () => {
+      await shePresses(daySheetTestID);
+
+      expect(app.pathname()).toBe(`/day/${sheWasSentTo}`);
+    });
+  });
 });
 
 interface Drawn {
@@ -4771,6 +5002,14 @@ function theScreenSheIsLookingAt(): unknown {
   }
 
   return JSON.parse(JSON.stringify(found));
+}
+
+/** Every style a node carries, flattened into the one the platform draws it from. */
+function flattenedStyleOf(testID: string): Record<string, unknown> {
+  return (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<
+    string,
+    unknown
+  >;
 }
 
 /** The value an animated style holds right now, which is what she is looking at. */
