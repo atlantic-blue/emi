@@ -100,8 +100,8 @@ export const editPeriodCopy = {
 } as const;
 
 /**
- * What Emi holds, said above the grid, so she knows which period she is about to correct and how
- * much of it Emi already has.
+ * What she has marked, said above the grid, so she knows which period she is about to correct and
+ * how much of it is already down.
  */
 export function whatEmiHoldsSaid(held: readonly string[]): string {
   const first = held[0];

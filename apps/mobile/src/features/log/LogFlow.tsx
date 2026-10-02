@@ -16,7 +16,8 @@ import { UnexpectedBleeding } from './UnexpectedBleeding';
 
 /**
  * The ring sits above the picker, so the thing her answer changes is the thing she is looking at
- * while she answers. Design section 9.7 sets the words: say what happens, and never congratulate.
+ * while she answers. `docs/design/voice.md` sets the words: ask her about her day, and talk to her
+ * rather than about Emi.
  */
 export const logFlowCopy = {
   title: words('log.flow.title'),
