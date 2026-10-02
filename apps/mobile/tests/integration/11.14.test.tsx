@@ -13,6 +13,7 @@ import {
   onboardingActionTestID,
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
+import type { Language } from '../../src/language';
 import { english } from '../../src/language/english';
 import { russian } from '../../src/language/russian';
 import { spanish } from '../../src/language/spanish';
@@ -39,7 +40,14 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const herPeriodStarted = '2026-05-09';
 
-const thePrivacyLine = 'onboarding.lastPeriod.line.privacy';
+const theKeyOfThePrivacyLine = 'onboarding.onlyYou';
+
+/** The one line the five questions that keep an answer all read, in each language. */
+const thePrivacyLine: Readonly<Record<Language, string>> = {
+  en: 'Only you can read this.',
+  es: 'Solo tú puedes leer esto.',
+  ru: 'Это можете прочитать только вы.',
+};
 
 interface Instance {
   readonly type: unknown;
@@ -149,7 +157,7 @@ describe('she reads that Emi encrypts her last period before she chooses the day
 
       const drawn = theOrderOfTheScreen();
 
-      expect(whereTheWordsAre(drawn, english[thePrivacyLine])).toBeLessThan(
+      expect(whereTheWordsAre(drawn, thePrivacyLine.en)).toBeLessThan(
         whereTheBoxNamed(drawn, calendarTestID),
       );
     });
@@ -166,7 +174,7 @@ describe('she reads that Emi encrypts her last period before she chooses the day
   describe('what she is shown on the glass of an iPhone 16', () => {
     it('ends the line about encryption above the foot of what she is shown', async () => {
       const drawn = await theScreenOnAnIPhone16();
-      const line = theBoxSaying(drawn, english[thePrivacyLine]);
+      const line = theBoxSaying(drawn, thePrivacyLine.en);
       const shown = theOnlyBoxOfType(drawn, scrollingView);
 
       expect(line.top + line.height).toBeLessThanOrEqual(shown.top + shown.height);
@@ -174,7 +182,7 @@ describe('she reads that Emi encrypts her last period before she chooses the day
 
     it('draws the calendar under it, where she reaches it by reading on', async () => {
       const drawn = await theScreenOnAnIPhone16();
-      const line = theBoxSaying(drawn, english[thePrivacyLine]);
+      const line = theBoxSaying(drawn, thePrivacyLine.en);
 
       expect(theBoxNamed(drawn, calendarTestID).top).toBeGreaterThanOrEqual(line.top + line.height);
     });
@@ -182,11 +190,16 @@ describe('she reads that Emi encrypts her last period before she chooses the day
 
   describe('the words she reads', () => {
     it('are the ones the first run already carried, in all three languages', () => {
-      expect([english[thePrivacyLine], russian[thePrivacyLine], spanish[thePrivacyLine]]).toEqual([
-        'Emi encrypts this on the phone before it goes anywhere.',
-        'Emi шифрует это на телефоне, прежде чем что-то куда-то отправится.',
-        'Emi cifra esto en el teléfono antes de que salga a ningún sitio.',
-      ]);
+      for (const [language, catalogue] of [
+        ['en', english],
+        ['es', spanish],
+        ['ru', russian],
+      ] as const) {
+        expect(Object.entries(catalogue)).toContainEqual([
+          theKeyOfThePrivacyLine,
+          thePrivacyLine[language],
+        ]);
+      }
     });
   });
 });

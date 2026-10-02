@@ -566,6 +566,39 @@ Feature: She opens Emi and logs her first period
     And the round action is a disc carrying a drawing and no words
     And her thumb reaches every one of them, because none is under forty four points
 
+  Scenario: SCREEN-2, the top wash takes the colours of the phase of today
+    Given the four phases of a cycle, and the wash the design document names for each of them
+    When the wash at the top of the screen is drawn for the phase she is in
+    Then it runs through the colours that phase names, from its own tint down to the ground
+    And each tint fades to nothing, so no phase leaves an edge across the screen
+    And a screen that knows no phase yet draws the soft wash every other screen draws
+    And no colour of a wash is ever drawn as a word, because colour is all it carries
+
+  Scenario: SCREEN-2, the ring and the week strip take the redesign look
+    Given her phone holds six cycles of her own
+    When she opens Emi and reads the ring and the week above it
+    Then the middle of the ring names her phase, then the day she is on, then the length of her cycle
+    And every arc ends in a round end, and ground still shows at every boundary between two phases
+    And the bead on today is a white disc with a dark line around it
+    And the days she bled are filled discs, and the day her period is expected on is a dashed outline
+    And the column she is on is named TODAY in place of its weekday letter
+
+  Scenario: SCREEN-1, the tour tells her the ring is her cycle
+    Given she has never opened Emi before
+    When she opens Emi
+    Then the first thing she reads says the ring is her cycle, the dot is today, and what the number inside it means
+    And the card speaks to her as you, and names Emi nowhere
+    And the four cards say what we do for her, in each of the three languages she can read them in
+    And the card that names a forecast still denies the two claims, and no card says a word a screen refuses
+
+  Scenario: SCREEN-1, the first run greets her by the name she gave
+    Given she has never opened Emi before
+    When she opens Emi, skips the tour, and gives her name
+    Then the question after it greets her by the name she gave
+    And a woman who gives no name reads the same question, with no gap where a name would be
+    And picking that her cycle moves around answers her with the reply to that answer
+    And every question that keeps an answer tells her only she can read it, in all three languages
+
   Scenario: SCREEN-2, the option rows and chips take the redesign look
     Given a question carrying every answer Emi can ask her to choose
     When she looks at it without reading a word of it

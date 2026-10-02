@@ -1,7 +1,9 @@
 import {
+  type ArcStrength,
   BEAD_HALO_WIDTH,
   BEAD_RADIUS,
   CYCLE_DAY_ROLE,
+  CYCLE_LENGTH_ROLE,
   DAYS_AHEAD_STRENGTH,
   PHASE_NAME_ROLE,
   type PhaseName,
@@ -12,6 +14,7 @@ import {
   arcPath,
   beadPalette,
   colour,
+  paintedArcs,
   phaseLabel,
   phasePalette,
   pointOnRing,
@@ -23,7 +26,7 @@ import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-import { ringSpokenLabel } from '../features/cycle/copy';
+import { ringCycleLengthWords, ringSpokenLabel } from '../features/cycle/copy';
 
 /**
  * The ring of design section 9.5, drawn from the days of her own cycle. It carries the meaning so
@@ -37,7 +40,7 @@ export const cycleRingTestID = 'cycle-ring';
 export const ringBeadTestID = 'ring-bead';
 export const ringTrackTestID = 'ring-track';
 
-export type ArcStrength = 'elapsed' | 'ahead';
+export type { ArcStrength };
 
 export function ringArcTestID(phase: PhaseName, strength: ArcStrength): string {
   return `ring-arc-${phase}-${strength}`;
@@ -63,38 +66,18 @@ export function CycleRing({
   const bead = pointOnRing(centre, radius, geometry.beadDegrees);
   const opening = useOpeningMotion();
 
-  const arcs: ReactNode[] = [];
-
-  for (const arc of geometry.arcs) {
-    const fill = colour[phasePalette[arc.phase].fill];
-    const ahead = arc.sweepDegrees - arc.elapsedDegrees;
-
-    if (ahead > 0) {
-      arcs.push(
-        <Path
-          d={arcPath(centre, radius, arc.startDegrees + arc.elapsedDegrees, ahead)}
-          fill="none"
-          key={ringArcTestID(arc.phase, 'ahead')}
-          opacity={DAYS_AHEAD_STRENGTH}
-          stroke={fill}
-          strokeWidth={RING_TRACK_WIDTH}
-          testID={ringArcTestID(arc.phase, 'ahead')}
-        />,
-      );
-    }
-    if (arc.elapsedDegrees > 0) {
-      arcs.push(
-        <Path
-          d={arcPath(centre, radius, arc.startDegrees, arc.elapsedDegrees)}
-          fill="none"
-          key={ringArcTestID(arc.phase, 'elapsed')}
-          stroke={fill}
-          strokeWidth={RING_TRACK_WIDTH}
-          testID={ringArcTestID(arc.phase, 'elapsed')}
-        />,
-      );
-    }
-  }
+  const arcs = paintedArcs(geometry, radius).map((painted) => (
+    <Path
+      d={arcPath(centre, radius, painted.startDegrees, painted.sweepDegrees)}
+      fill="none"
+      key={ringArcTestID(painted.phase, painted.strength)}
+      opacity={painted.strength === 'ahead' ? DAYS_AHEAD_STRENGTH : undefined}
+      stroke={colour[phasePalette[painted.phase].fill]}
+      strokeLinecap={painted.roundEnds ? 'round' : 'butt'}
+      strokeWidth={RING_TRACK_WIDTH}
+      testID={ringArcTestID(painted.phase, painted.strength)}
+    />
+  ));
 
   return (
     <View
@@ -122,10 +105,11 @@ export function CycleRing({
         </Svg>
       </Animated.View>
       <View pointerEvents="none" style={styles.middle}>
-        <Text style={styles.day}>{day}</Text>
         <Text style={[styles.phase, { color: colour[phasePalette[geometry.phase].ink] }]}>
           {phaseLabel[geometry.phase]}
         </Text>
+        <Text style={styles.day}>{day}</Text>
+        <Text style={styles.cycleLength}>{ringCycleLengthWords(cycleLengthDays)}</Text>
       </View>
     </View>
   );
@@ -190,6 +174,10 @@ function useOpeningMotion(): OpeningMotion {
 const OPENS_FROM = 0.94;
 
 const styles = StyleSheet.create({
+  cycleLength: {
+    color: colour.secondaryText,
+    ...textStyle(CYCLE_LENGTH_ROLE),
+  },
   day: {
     color: colour.text,
     ...textStyle(CYCLE_DAY_ROLE),

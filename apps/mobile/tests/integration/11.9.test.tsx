@@ -189,7 +189,7 @@ describe('what she feels today is her first logged day', () => {
       expect(todayIcons['low-mood']).toBe('mood');
     });
 
-    it('calls the way past it Nothing to add, and the way on Save today', async () => {
+    it('calls the way past it Nothing today, and the way on Save', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
@@ -202,17 +202,16 @@ describe('what she feels today is her first logged day', () => {
       );
     });
 
-    it('says she can skip it, and that Emi encrypts it on this phone', async () => {
+    it('says she can pick anything that fits, or skip it', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
 
       expect(screen.getByText(firstRunCopy.today.title)).toBeTruthy();
-      // The two lines are named on their own rather than read off the copy, so a line taken out
-      // of the screen fails here instead of leaving a shorter list that agrees with itself.
-      expect(screen.getByText(words('onboarding.today.line.skip'))).toBeTruthy();
-      expect(screen.getByText(words('onboarding.today.line.encrypted'))).toBeTruthy();
-      expect(firstRunCopy.today.lines).toHaveLength(2);
+      // The line is named on its own rather than read off the copy, so a line taken out of the
+      // screen fails here instead of leaving a shorter list that agrees with itself.
+      expect(screen.getByText('Pick anything that fits, or skip it.')).toBeTruthy();
+      expect(firstRunCopy.today.lines).toHaveLength(1);
     });
 
     it('waits for a tile before the way on is hers to press', async () => {
@@ -459,6 +458,7 @@ describe('what she feels today is her first logged day', () => {
         <OnAPhone>
           <Today
             chosen={[]}
+            name={undefined}
             onBack={() => undefined}
             onPress={(slug) => pressed.push(slug)}
             onSave={() => undefined}
@@ -476,6 +476,7 @@ describe('what she feels today is her first logged day', () => {
         <OnAPhone>
           <Today
             chosen={['calm']}
+            name={undefined}
             onBack={() => undefined}
             onPress={() => undefined}
             onSave={() => undefined}

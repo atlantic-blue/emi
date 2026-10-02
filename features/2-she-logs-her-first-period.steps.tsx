@@ -14,11 +14,15 @@ import {
   symptomGroups,
 } from '@emi/cycle';
 import {
+  Wash,
   bottomNavigationTestID,
   deepestHomeIndicator,
   dockPanelTestID,
   dockRoom,
   tabTestID,
+  washFieldGradientID,
+  washFieldTestID,
+  washTintGradientID,
 } from '@emi/ui';
 import {
   CONTRAST_FLOOR,
@@ -28,14 +32,18 @@ import {
   MINIMUM_TAP_TARGET,
   type PhaseName,
   RING_OPEN_MILLISECONDS,
-  RING_TRACK_WIDTH,
   colour,
   colours,
   contrastRatio,
+  hasRole,
   phaseLabel,
   phaseNames,
   radius,
   stroke,
+  washNames,
+  washOfPhase,
+  washStops,
+  washes,
 } from '@emi/tokens';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
@@ -63,10 +71,14 @@ import { TextField } from '../apps/mobile/src/components/TextField';
 import {
   cycleRingTestID,
   ringArcTestID,
-  ringBeadTestID,
   ringTrackTestID,
 } from '../apps/mobile/src/components/CycleRing';
-import { cycleCopy, ringSpokenLabel } from '../apps/mobile/src/features/cycle/copy';
+import {
+  cycleCopy,
+  ringCycleLengthWords,
+  ringSpokenLabel,
+  weekTodayWord,
+} from '../apps/mobile/src/features/cycle/copy';
 import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
 import { OnAPhone } from '../apps/mobile/tests/fixtures/theSafeArea';
 import { learningStatedLengthTestID } from '../apps/mobile/src/features/forecast/Learning';
@@ -180,7 +192,12 @@ import {
 } from '../apps/mobile/src/features/home/copy';
 import { logFlowDoneTestID, logFlowTestID } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
-import { weekDayTestID, weekStripTestID } from '../apps/mobile/src/features/home/WeekStrip';
+import {
+  weekDateTestID,
+  weekDayTestID,
+  weekLetterTestID,
+  weekStripTestID,
+} from '../apps/mobile/src/features/home/WeekStrip';
 import {
   herNumberTestID,
   homeNumbersTestID,
@@ -188,6 +205,10 @@ import {
 } from '../apps/mobile/src/features/home/MeasuredRow';
 import { longerTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { nameFieldTestID } from '../apps/mobile/src/features/onboarding/HerName';
+import {
+  regularityReplyTestID,
+  regularityTestID,
+} from '../apps/mobile/src/features/onboarding/Regularity';
 import { yearTestID } from '../apps/mobile/src/components/YearWheel';
 import { periodLengthTestID } from '../apps/mobile/src/features/onboarding/PeriodLength';
 import {
@@ -201,24 +222,35 @@ import {
   onboardingBackTestID,
   onboardingProgressTestID,
   onboardingSkipTestID,
+  onboardingTitleTestID,
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
-import { tourSkipTestID } from '../apps/mobile/src/features/onboarding/TourScreen';
+import {
+  tourScreenTestID,
+  tourSkipTestID,
+} from '../apps/mobile/src/features/onboarding/TourScreen';
 import {
   settingsExportTestID,
   settingsScreenTestID,
 } from '../apps/mobile/src/features/settings/SettingsScreen';
 import {
+  type TourCard,
   cyclesBeforeAForecastSentence,
   firstRunCopy,
   firstRunScreenCount,
+  tourCards,
+  tourCopy,
 } from '../apps/mobile/src/features/onboarding/copy';
 import {
   learningCopy,
   ordinal,
   statedLengthSentence,
 } from '../apps/mobile/src/features/forecast/copy';
-import { monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
+import {
+  monthLabel,
+  startOfMonth,
+  weekdayLetter,
+} from '../apps/mobile/src/features/onboarding/days';
 import {
   defaultCycleLengthDays,
   forecastFromHerAnswers,
@@ -407,6 +439,8 @@ import {
   whatHerPhoneHolds,
 } from '../apps/mobile/tests/fixtures/theStatesOfHerData';
 import { catalogueFilesOf, samplesUnder } from '../tools/pipeline/sampleWording';
+import { approvedDenials, describeClaim, searchableText } from '../tools/pipeline/forbiddenClaims';
+import { interfaceClaimsIn } from '../tools/pipeline/interfaceClaims';
 import {
   type Described,
   type Screen,
@@ -420,6 +454,12 @@ import {
   prototypeDirectory,
   screenSuffix,
 } from '../tools/pipeline/prototype';
+import {
+  gradientNamed,
+  paintedWith,
+  stopsOf,
+  washColoursOf,
+} from '../apps/mobile/tests/fixtures/theWashOnTheGlass';
 import { thePartsOfTheForecastWithNoDate } from '../apps/mobile/tests/fixtures/theFirstForecastWithNoDate';
 import {
   type WaitingDrawn,
@@ -430,7 +470,14 @@ import {
   thePartsOfTheDrawingOfARefusedDay,
   whatTheRefusalDrew,
 } from '../apps/mobile/tests/fixtures/theDayEmiRefuses';
-import { words } from '../apps/mobile/src/language';
+import {
+  type Language,
+  type Words,
+  catalogueOf,
+  languages,
+  wordKeys,
+  words,
+} from '../apps/mobile/src/language';
 import {
   herPhoneHoldsNothingForToday,
   theDrawingAfterSheLogged,
@@ -443,6 +490,15 @@ import {
   theSymptomsTheRowNames,
 } from '../apps/mobile/tests/fixtures/whatSheLoggedToday';
 import { daysNamedIn, sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
+import {
+  type DrawnArc,
+  theArcsOnTheRing,
+  theBeadDegrees,
+  theBeadSheSees,
+  theEndsOfTheArcs,
+  theGroundBetweenTheArcs,
+  theMiddleOfTheRing,
+} from '../apps/mobile/tests/fixtures/theRingSheReads';
 import {
   herCyclesVaryBy,
   herLastCycleRuns,
@@ -660,85 +716,40 @@ function theRingSays(): string {
   return String(screen.getByTestId(cycleRingTestID).props.accessibilityLabel);
 }
 
-/** One arc of the track, as it was drawn, measured in degrees clockwise from twelve o'clock. */
-interface DrawnArc {
-  readonly phase: string;
-  readonly startDegrees: number;
-  readonly sweepDegrees: number;
-}
-
-/** The ring is square, so the canvas it was drawn on gives its centre and its radius. */
-function theRingCanvas(): { centre: number; radius: number } {
-  const style = StyleSheet.flatten(screen.getByTestId(cycleRingTestID).props.style) ?? {};
-  const diameter = Number((style as { height?: unknown }).height);
-
-  return { centre: diameter / 2, radius: (diameter - RING_TRACK_WIDTH) / 2 };
-}
-
-/** Where a point on the drawing sits on the ring, clockwise from twelve o'clock. */
-function degreesAt(x: number, y: number): number {
-  const { centre } = theRingCanvas();
-  const turned = (Math.atan2(y - centre, x - centre) * 180) / Math.PI + 90;
-
-  return (turned + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
-}
-
-/** The two ends of one drawn path, read off the `d` the renderer put on the glass. */
-function endsOf(path: string): { from: number; to: number } {
-  const numbers = path.match(/-?\d+(?:\.\d+)?/g) ?? [];
-
-  if (numbers.length < 9) {
-    throw new Error(`${JSON.stringify(path)} is not an arc this ring drew`);
-  }
-
-  return {
-    from: degreesAt(Number(numbers[0]), Number(numbers[1])),
-    to: degreesAt(Number(numbers[7]), Number(numbers[8])),
-  };
-}
+/** The three sentences of the first card, which is the first thing Emi ever says to her. */
+const whatTheFirstCardSays = {
+  title: 'This ring is your cycle.',
+  dot: "The dot is today. The number inside it tells you which day of your cycle you're on.",
+  colours:
+    'The four colours are the four parts of your cycle: your period, the days after it, the days around ovulation, and the days before your next period.',
+};
 
 /**
- * The arcs the ring actually drew, measured off the paths rather than recomputed. A phase draws
- * the days she has lived, the days ahead of her, or both, and the two together are its one arc.
+ * How each language writes the first person plural. The voice says Emi tells her what we do for
+ * her, so each catalogue carries its own form of it rather than the English word.
  */
-function theArcsOnTheRing(): DrawnArc[] {
-  const drawn: DrawnArc[] = [];
+const howEachLanguageSaysWe: Readonly<Record<Language, RegExp>> = {
+  en: /(?<!\p{Letter})(we|our)(?!\p{Letter})/iu,
+  es: /(?<!\p{Letter})(nos|nuestro|nuestra)(?!\p{Letter})|mos(?!\p{Letter})/iu,
+  ru: /(?<!\p{Letter})(мы|наш)/iu,
+};
 
-  for (const phase of ['period', 'follicular', 'ovulation', 'luteal'] as const) {
-    const elapsed = screen.queryByTestId(ringArcTestID(phase, 'elapsed'));
-    const ahead = screen.queryByTestId(ringArcTestID(phase, 'ahead'));
-
-    if (elapsed === null && ahead === null) {
-      continue;
-    }
-
-    const first = endsOf(String((elapsed ?? ahead)?.props.d));
-    const last = endsOf(String((ahead ?? elapsed)?.props.d));
-    const sweep = (last.to - first.from + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
-
-    drawn.push({ phase, startDegrees: first.from, sweepDegrees: sweep });
-  }
-
-  return drawn.sort((one, other) => one.startDegrees - other.startDegrees);
+/** Which card of the tour she is on, read off the screen rather than counted by the step. */
+function theCardOfTheTourSheIsOn(): TourCard | undefined {
+  return tourCards.find((card) => screen.queryByTestId(tourScreenTestID(card)) !== null);
 }
 
-/** The ground between one arc and the next, and between the last arc and the first. */
-function theGroundBetweenTheArcs(): number[] {
-  const arcs = theArcsOnTheRing();
-
-  return arcs.map((arc, at) => {
-    const next = arcs[(at + 1) % arcs.length] as DrawnArc;
-    const ends = arc.startDegrees + arc.sweepDegrees;
-
-    return (next.startDegrees - ends + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
-  });
+function formsOf(held: Words): string[] {
+  return typeof held === 'string' ? [held] : Object.values(held);
 }
 
-/** Where the bead sits on the ring, read off the circle the renderer drew. */
-function theBeadDegrees(): number {
-  const bead = screen.getByTestId(ringBeadTestID);
+/** Every word of the four cards in one language, out of that language's own catalogue. */
+function theWordsOfTheTourIn(language: Language): string[] {
+  const catalogue = catalogueOf(language);
 
-  return degreesAt(Number(bead.props.cx), Number(bead.props.cy));
+  return wordKeys
+    .filter((key) => key.startsWith('onboarding.tour.'))
+    .flatMap((key) => formsOf(catalogue[key]));
 }
 
 /** The way out of the tour, which is on every card and leaves her on the first question. */
@@ -4757,6 +4768,108 @@ defineFeature(feature, (test) => {
     });
   });
 
+  // The wash is the quietest cue Emi has: colour across the top of the screen and not one word, so
+  // a stranger at arm's length reads warmth and nothing else. It has to be the phase's own colours
+  // rather than a decoration, and the colours have to be the ones the design document names, which
+  // is the chain this walks from the document to what reaches the glass.
+  test('SCREEN-2, the top wash takes the colours of the phase of today', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const repositoryRoot = join(__dirname, '..');
+    let named: Readonly<Record<string, readonly string[]>> = {};
+    const drawn = new Map<string, string[]>();
+
+    /** The colours one wash ran through on the glass, the two tints first, then the field. */
+    const washOnTheGlass = async (phase?: PhaseName): Promise<string[]> => {
+      const painted = await render(<Wash phase={phase} />);
+      const tree = painted.toJSON();
+      const tints = ([1, 2] as const).map((at) =>
+        washColoursOf(stopsOf(gradientNamed(tree, washTintGradientID(at)))),
+      );
+
+      expect(paintedWith(tree, washFieldTestID)).toBe(washFieldGradientID);
+
+      return [...tints.flat(), ...washColoursOf(stopsOf(gradientNamed(tree, washFieldGradientID)))];
+    };
+
+    given(
+      'the four phases of a cycle, and the wash the design document names for each of them',
+      () => {
+        named = describedIn(readFileSync(join(repositoryRoot, designSystemDocument), 'utf8')).wash;
+
+        expect(phaseNames).toHaveLength(4);
+        expect(Object.keys(named).sort()).toEqual(['luteal', 'ovulation', 'period', 'soft']);
+        for (const wash of Object.values(named)) {
+          expect(wash).toHaveLength(4);
+        }
+      },
+    );
+
+    when('the wash at the top of the screen is drawn for the phase she is in', async () => {
+      for (const phase of phaseNames) {
+        drawn.set(phase, await washOnTheGlass(phase));
+      }
+
+      expect([...drawn.keys()]).toEqual([...phaseNames]);
+    });
+
+    then(
+      'it runs through the colours that phase names, from its own tint down to the ground',
+      () => {
+        for (const phase of phaseNames) {
+          const written = named[washOfPhase[phase]];
+
+          expect(written).toBeDefined();
+          expect(drawn.get(phase)?.map((value) => value.toLowerCase())).toEqual(
+            (written ?? []).map((value) => value.toLowerCase()),
+          );
+          expect(drawn.get(phase)?.at(-1)?.toLowerCase()).toBe(
+            String(named['soft']?.at(-1)).toLowerCase(),
+          );
+        }
+      },
+    );
+
+    and('each tint fades to nothing, so no phase leaves an edge across the screen', async () => {
+      for (const phase of phaseNames) {
+        const painted = await render(<Wash phase={phase} />);
+
+        for (const at of [1, 2] as const) {
+          const stops = stopsOf(gradientNamed(painted.toJSON(), washTintGradientID(at)));
+          const last = stops.at(-1);
+
+          expect(stops).toHaveLength(2);
+          expect(stops[0]?.opacity).toBe(1);
+          expect(last?.opacity).toBe(0);
+          expect(last?.colour).toBe(stops[0]?.colour);
+        }
+      }
+    });
+
+    and(
+      'a screen that knows no phase yet draws the soft wash every other screen draws',
+      async () => {
+        const soft = (named['soft'] ?? []).map((value) => value.toLowerCase());
+
+        expect((await washOnTheGlass(undefined)).map((value) => value.toLowerCase())).toEqual(soft);
+        expect((await washOnTheGlass('follicular')).map((value) => value.toLowerCase())).toEqual(
+          soft,
+        );
+      },
+    );
+
+    and('no colour of a wash is ever drawn as a word, because colour is all it carries', () => {
+      const stops = washNames.flatMap((name) => washStops(washes[name]));
+
+      expect(stops).toHaveLength(16);
+      expect(stops.filter((stop) => hasRole(stop, 'text'))).toEqual([]);
+      expect(stops.flatMap((stop) => colours[stop].textOn)).toEqual([]);
+    });
+  });
+
   // The redesign of the month, read as she reads it: the phases she never saw on this grid before,
   // the two words that say what the colours mean, and the panel that names the day she pressed.
   test('SCREEN-4, the month grid takes the redesign look', ({ given, when, and, then }) => {
@@ -4842,6 +4955,370 @@ defineFeature(feature, (test) => {
     });
   });
 
+  // The ring and the week above it are the two drawings she reads before she reads a word, so
+  // both are proved on the screen she actually opens rather than against either part on its own.
+  //
+  // It runs before the scenario below rather than after it, which is where the feature file reads
+  // it. That one draws the four buttons on a page of its own, outside the provider the
+  // application wraps them in, and the font loader never settles again in this file afterwards:
+  // every later scenario that drives the router waits for a screen that never arrives.
+  test('SCREEN-2, the ring and the week strip take the redesign look', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const herCycle = { cycleLengthDays: 28, dayOfCycle: 2, periodDays: 4 };
+
+    /** Her week, in the order the strip drew it, named by the day each column stands for. */
+    const theColumnsOfHerWeek = (): string[] => {
+      const named = weekDayTestID('');
+
+      return screen
+        .queryAllByTestId(new RegExp(`^${named}`))
+        .map((column) => String(column.props.testID).slice(named.length));
+    };
+
+    /** What one column of the strip wrote in place of the letter of its weekday. */
+    const theLetterOver = (day: string): string =>
+      textIn(screen.getByTestId(weekLetterTestID(day))).join('');
+
+    /** How the disc around one date is drawn, which is the whole of what that day says. */
+    const theDiscOn = (day: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(weekDateTestID(day)).props.style) ?? {}) as Record<
+        string,
+        unknown
+      >;
+
+    given('her phone holds six cycles of her own', async () => {
+      // The length of her period is one of her answers at the first run, so the arc ahead of her
+      // covers the days she is expected to bleed on rather than only the days she already logged.
+      await herPhoneHolds(
+        whenSheOpensIt,
+        herRecordedDays(herCycle),
+        herCycle.cycleLengthDays,
+        herCycle.periodDays,
+      );
+    });
+
+    when('she opens Emi and reads the ring and the week above it', async () => {
+      await sheOpens('/');
+
+      expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
+      expect(screen.getByTestId(weekStripTestID)).toBeTruthy();
+      expect(theColumnsOfHerWeek()).toHaveLength(7);
+    });
+
+    then(
+      'the middle of the ring names her phase, then the day she is on, then the length of her cycle',
+      () => {
+        expect(theMiddleOfTheRing()).toEqual([
+          phaseLabel.period,
+          String(herCycle.dayOfCycle),
+          ringCycleLengthWords(herCycle.cycleLengthDays),
+        ]);
+      },
+    );
+
+    and(
+      'every arc ends in a round end, and ground still shows at every boundary between two phases',
+      () => {
+        const ends = theEndsOfTheArcs();
+        const ground = theGroundBetweenTheArcs();
+
+        expect(ends.length).toBeGreaterThan(1);
+        expect(ends.filter((end) => end !== 'round')).toEqual([]);
+
+        // Ground first, and the measured width second, because a boundary of no degrees is a
+        // change of colour and nothing else.
+        expect(ground.length).toBeGreaterThan(1);
+        for (const gap of ground) {
+          expect(gap).toBeGreaterThan(0);
+          expect(gap).toBeCloseTo(GAP_DEGREES, 2);
+        }
+      },
+    );
+
+    and('the bead on today is a white disc with a dark line around it', () => {
+      expect(theBeadSheSees()).toEqual({ fill: colour.card, line: colour.text });
+    });
+
+    and(
+      'the days she bled are filled discs, and the day her period is expected on is a dashed outline',
+      () => {
+        const filled = theColumnsOfHerWeek().filter(
+          (day) => theDiscOn(day)['backgroundColor'] === colour.period,
+        );
+        const outlined = theColumnsOfHerWeek().filter(
+          (day) => theDiscOn(day)['borderStyle'] === 'dashed',
+        );
+
+        expect(filled.length).toBeGreaterThan(0);
+        expect(outlined.length).toBeGreaterThan(0);
+
+        for (const day of outlined) {
+          expect(theDiscOn(day)).toMatchObject({
+            borderColor: colour.period,
+            borderStyle: 'dashed',
+          });
+          expect(theDiscOn(day)['backgroundColor']).toBeUndefined();
+        }
+      },
+    );
+
+    and('the column she is on is named TODAY in place of its weekday letter', () => {
+      const hers = theColumnsOfHerWeek().filter((day) => day === today);
+
+      expect(hers).toEqual([today]);
+      expect(theLetterOver(today)).toBe(weekTodayWord());
+      expect(theLetterOver(today)).not.toBe(weekdayLetter(today));
+
+      for (const day of theColumnsOfHerWeek().filter((column) => column !== today)) {
+        expect(theLetterOver(day)).toBe(weekdayLetter(day));
+      }
+    });
+  });
+
+  test('SCREEN-1, the tour tells her the ring is her cycle', ({ given, when, then, and }) => {
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    then(
+      'the first thing she reads says the ring is her cycle, the dot is today, and what the number inside it means',
+      () => {
+        expect(theCardOfTheTourSheIsOn()).toBe('ring');
+
+        const card = within(screen.getByTestId(tourScreenTestID('ring')));
+
+        expect(card.getByText(whatTheFirstCardSays.title)).toBeTruthy();
+        expect(card.getByText(whatTheFirstCardSays.dot)).toBeTruthy();
+        expect(card.getByText(whatTheFirstCardSays.colours)).toBeTruthy();
+      },
+    );
+
+    and('the card speaks to her as you, and names Emi nowhere', () => {
+      const said = [tourCopy.ring.title, ...tourCopy.ring.lines];
+
+      for (const line of said) {
+        expect({ line, toHer: /(?<!\p{Letter})(you|your)(?!\p{Letter})/iu.test(line) }).toEqual({
+          line,
+          toHer: true,
+        });
+        expect(line).not.toContain('Emi');
+      }
+    });
+
+    and(
+      'the four cards say what we do for her, in each of the three languages she can read them in',
+      () => {
+        for (const language of languages) {
+          const said = theWordsOfTheTourIn(language);
+          const read = said.join('\n');
+
+          // A denial names Emi on purpose, so the two of them come out before the rest is read.
+          expect({ language, aboutEmi: searchableText(read).includes('Emi') }).toEqual({
+            language,
+            aboutEmi: false,
+          });
+          expect({ language, toHerAsWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
+            language,
+            toHerAsWe: true,
+          });
+          expect(said.length).toBeGreaterThan(12);
+        }
+
+        expect(languages.length).toBe(3);
+      },
+    );
+
+    and(
+      'the card that names a forecast still denies the two claims, and no card says a word a screen refuses',
+      () => {
+        const theFirstDenial = 'Emi is not a c';
+        const theSecondDenial = 'Emi is not a m';
+        const denial = (beginning: string): string => {
+          const found = approvedDenials.find((each) => each.startsWith(beginning));
+
+          if (found === undefined) {
+            throw new Error(`no approved denial starts with "${beginning}"`);
+          }
+
+          return found;
+        };
+
+        const denying = tourCopy.range.lines.filter((line) =>
+          line.includes(denial(theFirstDenial)),
+        );
+
+        expect(denying).toHaveLength(1);
+        expect(denying[0]).toContain(denial(theSecondDenial));
+        // The gate reads a denial as a claim unless a full stop comes before it.
+        expect(denying[0]?.startsWith(denial(theFirstDenial))).toBe(false);
+
+        for (const language of languages) {
+          const claims = interfaceClaimsIn(
+            `the tour in ${language}`,
+            theWordsOfTheTourIn(language).join('\n'),
+          );
+
+          expect(claims.map(describeClaim)).toEqual([]);
+        }
+      },
+    );
+  });
+
+  /**
+   * The first run as a conversation. The name she typed comes back at the question after it, a
+   * woman who gave none reads a clean question, and an answer she gives is answered where she
+   * gave it.
+   */
+  test('SCREEN-1, the first run greets her by the name she gave', ({ given, when, then, and }) => {
+    const theQuestionAfterHerName = `Nice to meet you, ${theNameSheGives}. What year were you born?`;
+    const theSameQuestionWithNoName = 'What year were you born?';
+    const theReplyToACycleThatMoves =
+      "That's common. We'll start with a wider range and narrow it as we learn yours.";
+    const theReplyToACycleSheIsNotSureOf = "That's fine. Your log will tell us soon enough.";
+
+    /** The one line about who can read her answers, written out in each language she reads. */
+    const onlyYouCanReadThis: Readonly<Record<Language, string>> = {
+      en: 'Only you can read this.',
+      es: 'Solo tú puedes leer esto.',
+      ru: 'Это можете прочитать только вы.',
+    };
+
+    /** The one key behind that line, which is why five questions cannot drift apart saying it. */
+    const theKeyOfThatLine = 'onboarding.onlyYou';
+
+    let app: OpenApp;
+
+    const theQuestionSheIsReading = (): string =>
+      String(screen.getByTestId(onboardingTitleTestID).props.children);
+
+    /** Her phone forgets her, so the next woman through the questions is a new one. */
+    async function anotherWomanOpensEmi(): Promise<void> {
+      await app.close();
+      resetExpoSqlite();
+      resetExpoSecureStore();
+      app = await sheOpens('/');
+      await sheSkipsTheTour();
+    }
+
+    /** Past the welcome and the six questions before it, standing on the one about her cycle. */
+    async function sheReachesTheQuestionAboutARegularCycle(): Promise<void> {
+      await sheReachesTheLastPeriodQuestion();
+      await shePresses(dayTestID(herPeriodStarted));
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
+    }
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi, skips the tour, and gives her name', async () => {
+      app = await sheOpens('/');
+      await sheSkipsTheTour();
+      await shePresses(onboardingActionTestID);
+      await fireEvent.changeText(screen.getByTestId(nameFieldTestID), theNameSheGives);
+      await shePresses(onboardingActionTestID);
+    });
+
+    then('the question after it greets her by the name she gave', () => {
+      expect(app.pathname()).toBe('/onboarding/year-of-birth');
+      expect(theQuestionSheIsReading()).toBe(theQuestionAfterHerName);
+      expect(screen.getByText(theQuestionAfterHerName)).toBeTruthy();
+    });
+
+    and(
+      'a woman who gives no name reads the same question, with no gap where a name would be',
+      async () => {
+        await anotherWomanOpensEmi();
+        await shePresses(onboardingActionTestID);
+        await shePresses(onboardingSkipTestID);
+
+        expect(app.pathname()).toBe('/onboarding/year-of-birth');
+        expect(theQuestionSheIsReading()).toBe(theSameQuestionWithNoName);
+        expect(screen.queryByText(theQuestionAfterHerName)).toBeNull();
+      },
+    );
+
+    and(
+      'picking that her cycle moves around answers her with the reply to that answer',
+      async () => {
+        await anotherWomanOpensEmi();
+        await sheReachesTheQuestionAboutARegularCycle();
+
+        expect(app.pathname()).toBe('/onboarding/regularity');
+        expect(screen.queryByText(theReplyToACycleThatMoves)).toBeNull();
+
+        await shePresses(regularityTestID('moves'));
+
+        expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(
+          theReplyToACycleThatMoves,
+        );
+        expect(screen.queryByText(theReplyToACycleSheIsNotSureOf)).toBeNull();
+
+        // She can change her mind, and then she is answered about the answer she holds now.
+        await shePresses(regularityTestID('unknown'));
+
+        expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(
+          theReplyToACycleSheIsNotSureOf,
+        );
+        expect(screen.queryByText(theReplyToACycleThatMoves)).toBeNull();
+      },
+    );
+
+    and(
+      'every question that keeps an answer tells her only she can read it, in all three languages',
+      async () => {
+        for (const language of languages) {
+          const held: Readonly<Record<string, Words>> = Object.fromEntries(
+            Object.entries(catalogueOf(language)),
+          );
+
+          expect({ language, said: held[theKeyOfThatLine] }).toEqual({
+            language,
+            said: onlyYouCanReadThis[language],
+          });
+        }
+
+        expect(languages.length).toBe(3);
+
+        // And she reads it on each of the five questions that keep an answer, which is the round
+        // trip the catalogue above cannot prove on its own.
+        await anotherWomanOpensEmi();
+        await shePresses(onboardingActionTestID);
+
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+
+        await shePresses(onboardingSkipTestID);
+
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+
+        await shePresses(onboardingSkipTestID);
+
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+
+        await shePresses(dayTestID(herPeriodStarted));
+        await shePresses(onboardingActionTestID);
+        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingActionTestID);
+        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingSkipTestID);
+
+        expect(app.pathname()).toBe('/onboarding/feeling');
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+
+        await shePresses(onboardingSkipTestID);
+
+        expect(app.pathname()).toBe('/onboarding/goals');
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+      },
+    );
+  });
   // The four parts she presses, measured off a page carrying all of them at once, and the one of
   // them a real screen already draws, measured on that screen.
   test('SCREEN-2, the buttons take the redesign shapes', ({ given, when, and, then }) => {

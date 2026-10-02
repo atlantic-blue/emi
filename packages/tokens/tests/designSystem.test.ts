@@ -10,6 +10,7 @@ import {
   typeRoleNames,
   typeScale,
 } from '../src/type';
+import { washNames, washStops, washes } from '../src/wash';
 
 /**
  * The token package against the document it was copied from. The token package is the only place a
@@ -72,6 +73,49 @@ export function valuesIn(document: string, block: string): Record<string, string
   return values;
 }
 
+/**
+ * A block of the front matter whose entries are lists rather than single values, read as it is
+ * written. The same reader rather than parser as the one above: two indents for the name of a list,
+ * four for each item of it, and anything else is refused rather than guessed at.
+ */
+export function listsIn(document: string, block: string): Record<string, string[]> {
+  const front = document.split('---')[1];
+
+  if (front === undefined) {
+    throw new Error(`the design system has no front matter, so it names no ${block}`);
+  }
+
+  const lists: Record<string, string[]> = {};
+  let name: string | undefined;
+  let reading = false;
+
+  for (const line of front.split('\n')) {
+    if (new RegExp(`^${block}:\\s*$`).test(line)) {
+      reading = true;
+      continue;
+    }
+    if (!reading) {
+      continue;
+    }
+    if (/^\S/.test(line)) {
+      break;
+    }
+
+    const opened = /^ {2}([A-Za-z-]+):\s*$/.exec(line);
+    if (opened?.[1] !== undefined) {
+      name = opened[1];
+      lists[name] = [];
+      continue;
+    }
+
+    const item = /^ {4}- *'?([^']*?)'? *$/.exec(line);
+    if (item?.[1] !== undefined && name !== undefined) {
+      lists[name]?.push(item[1]);
+    }
+  }
+
+  return lists;
+}
 /** The document writes a name in kebab case and the token package writes it in camel case. */
 export function camelCase(name: string): string {
   return name.replace(/-([a-z])/g, (_whole, letter: string) => letter.toUpperCase());
@@ -246,5 +290,47 @@ describe('the corners and the spacing say what the design system says', () => {
     const held = space[camelCase(name) as keyof typeof space];
 
     expect(held).toBe(pointsOf(String(spacingInTheDocument[name])));
+  });
+});
+
+const washesInTheDocument = listsIn(document, 'wash');
+
+describe('the washes say what the design system says', () => {
+  it('reads the block, so an empty read is not taken for agreement', () => {
+    expect(Object.keys(washesInTheDocument).sort()).toEqual([
+      'luteal',
+      'ovulation',
+      'period',
+      'soft',
+    ]);
+    expect(washesInTheDocument['soft']).toHaveLength(4);
+  });
+
+  it('holds the same four washes, under the same names', () => {
+    expect([...washNames].sort()).toEqual(Object.keys(washesInTheDocument).sort());
+  });
+
+  it.each(washNames)('runs %s through the stops the document names, in that order', (name) => {
+    const held = washStops(washes[name]).map((stop) => colour[stop].toLowerCase());
+    const written = (washesInTheDocument[name] ?? []).map((value) => value.toLowerCase());
+
+    expect(written).toHaveLength(4);
+    expect(held).toEqual(written);
+  });
+
+  it('names a stop rather than writing one, so a wash carries no colour of its own', () => {
+    const stops = washNames.flatMap((name) => washStops(washes[name]));
+
+    expect(stops).toHaveLength(16);
+    expect(stops.filter((stop) => !colourNames.includes(stop))).toEqual([]);
+  });
+
+  it('ends every wash on the ground the rest of the screen sits on', () => {
+    expect(washNames.map((name) => washes[name].to)).toEqual([
+      'ground',
+      'ground',
+      'ground',
+      'ground',
+    ]);
   });
 });

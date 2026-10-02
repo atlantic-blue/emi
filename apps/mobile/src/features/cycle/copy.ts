@@ -25,6 +25,19 @@ export function ringSpokenLabel(day: number, cycleLengthDays: number, phase: str
   });
 }
 
+/**
+ * The line under the day in the middle of the ring: how long the cycle it counts in runs. The
+ * day above it is a figure alone, and this is what says what that figure is counted out of.
+ */
+export function ringCycleLengthWords(cycleLengthDays: number): string {
+  return words('cycle.ring.of', undefined, { length: cycleLengthDays });
+}
+
+/** What the strip writes over today, in place of the letter every other weekday carries. */
+export function weekTodayWord(): string {
+  return words('home.week.today');
+}
+
 /** The two things the line under her week says: her cycle day, and the phase she is in. */
 export interface PhaseLineWords {
   /** The day of her cycle, which is the part drawn large enough to read across a room. */

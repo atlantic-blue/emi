@@ -51,8 +51,12 @@ const theYearInTheMiddleFiveYearsOn = 2001;
 const theLineThatWent = 'Nothing in Emi reads this yet.';
 const theKeyThatWent = 'onboarding.birthYear.line.noReader';
 
-/** What the screen still says about the year, so a screen drawn empty cannot pass for this. */
-const theLineThatStayed = 'Emi encrypts this on the phone before it goes anywhere.';
+/** What the screen says about the year now, so a screen drawn empty cannot pass for this. */
+const theLineThatStayed = 'Cycles change across the years, so it helps to know where you are.';
+
+/** The one line the five questions that keep an answer all read, under the line above. */
+const theLineAboutWhoReadsIt = 'Only you can read this.';
+const theKeyOfThatLine = 'onboarding.onlyYou';
 
 interface Wheel {
   readonly props: {
@@ -125,13 +129,14 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
       expect(screen.getByTestId('onboarding-birthYear')).toBeTruthy();
       expect(screen.queryByText(theLineThatWent)).toBeNull();
       expect(screen.getByText(theLineThatStayed)).toBeTruthy();
-      expect(firstRunCopy.birthYear.lines).toEqual([theLineThatStayed]);
+      expect(screen.getByText(theLineAboutWhoReadsIt)).toBeTruthy();
+      expect(firstRunCopy.birthYear.lines).toEqual([theLineThatStayed, theLineAboutWhoReadsIt]);
     });
 
     it('is gone from all three languages, so no screen can draw it again', () => {
       for (const catalogue of [english, russian, spanish]) {
         expect(Object.keys(catalogue)).not.toContain(theKeyThatWent);
-        expect(Object.keys(catalogue)).toContain('onboarding.birthYear.line.sealed');
+        expect(Object.keys(catalogue)).toContain(theKeyOfThatLine);
       }
 
       expect(wordKeys as readonly string[]).not.toContain(theKeyThatWent);
@@ -141,11 +146,11 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
       for (const language of ['english', 'russian', 'spanish']) {
         const file = readFileSync(join(languageDirectory, `${language}.ts`), 'utf8');
 
-        expect(file).toContain('onboarding.birthYear.line.sealed');
+        expect(file).toContain(theKeyOfThatLine);
         expect(file).not.toContain(theKeyThatWent);
       }
 
-      expect(english['onboarding.birthYear.line.sealed']).toBe(theLineThatStayed);
+      expect(Object.entries(english)).toContainEqual([theKeyOfThatLine, theLineAboutWhoReadsIt]);
     });
   });
 
@@ -164,6 +169,7 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
         <OnAPhone>
           <YearOfBirth
             chosen={undefined}
+            name={undefined}
             now={whenAnotherWomanOpensIt}
             onBack={() => undefined}
             onChoose={() => undefined}

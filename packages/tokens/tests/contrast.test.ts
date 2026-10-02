@@ -8,6 +8,7 @@ import {
   relativeLuminance,
 } from '../src/colour';
 import { phaseNames, phasePalette } from '../src/ring';
+import { washNames, washStops, washes } from '../src/wash';
 
 interface Pair {
   readonly text: ColourName;
@@ -142,6 +143,23 @@ describe('a colour that fails the contrast floor cannot be added', () => {
       true,
       true,
     ]);
+  });
+
+  // A wash is four colours and a shape, so it has no ratio of its own: what a word drawn on it
+  // would measure against depends on where on the screen that word sits. So the wash is kept out of
+  // the measuring entirely, and the way that is enforced is that no colour it runs through carries a
+  // word anywhere, on it or on anything else.
+  it('never measures a wash, because a gradient has no one value to measure', () => {
+    for (const name of washNames) {
+      const stops = washStops(washes[name]);
+
+      expect(stops).toHaveLength(4);
+      expect(stops.filter((stop) => hasRole(stop, 'text'))).toEqual([]);
+      expect(stops.flatMap((stop) => colours[stop].textOn)).toEqual([]);
+      expect(new Set(stops.map((stop) => colours[stop].value)).size).toBeGreaterThan(1);
+    }
+
+    expect(approved.filter((pair) => washNames.some((name) => name === pair.text))).toEqual([]);
   });
 
   it('refuses a colour that carries transparency, because its ratio depends on what is behind it', () => {

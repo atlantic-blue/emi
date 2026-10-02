@@ -226,7 +226,7 @@ describe('a hard period day offers the pain log first', () => {
       // Each line is named on its own rather than read off the copy, so a line taken out of the
       // screen fails here instead of leaving a shorter list that still agrees with itself.
       expect(screen.getByText(words('onboarding.feeling.line.talks'))).toBeTruthy();
-      expect(screen.getByText(words('onboarding.feeling.line.encrypted'))).toBeTruthy();
+      expect(screen.getByText('Only you can read this.')).toBeTruthy();
       expect(firstRunCopy.feeling.lines).toHaveLength(2);
     });
 

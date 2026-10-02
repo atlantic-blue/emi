@@ -18,37 +18,34 @@ import {
 } from './firstRun';
 
 /**
- * The words of the first run. Section 9.7 of the design sets the rules they follow: say what
- * happens, never congratulate, no exclamation mark, write the number.
+ * The words of the first run. `docs/design/voice.md` sets the rules they follow: talk to her and
+ * not about Emi, write "you" and "we", use contractions, and give her a way out of every question.
  */
 export const firstRunCopy = {
   welcome: {
     title: words('onboarding.welcome.title'),
     lines: [
-      words('onboarding.welcome.line.nothingSent'),
+      words('onboarding.welcome.line.questions'),
       words('onboarding.welcome.line.noAccount'),
-      words('onboarding.welcome.line.showsYou'),
+      words('onboarding.welcome.line.onThisPhone'),
     ],
     action: words('onboarding.welcome.action'),
   },
   name: {
     title: words('onboarding.name.title'),
-    lines: [words('onboarding.name.line.greets'), words('onboarding.name.line.sealed')],
+    lines: [words('onboarding.name.line.greets'), words('onboarding.onlyYou')],
     label: words('onboarding.name.label'),
     hint: words('onboarding.name.hint'),
     action: words('onboarding.name.action'),
   },
   birthYear: {
     title: words('onboarding.birthYear.title'),
-    lines: [words('onboarding.birthYear.line.sealed')],
+    lines: [words('onboarding.birthYear.line.years'), words('onboarding.onlyYou')],
     action: words('onboarding.birthYear.action'),
   },
   lastPeriod: {
     title: words('onboarding.lastPeriod.title'),
-    lines: [
-      words('onboarding.lastPeriod.line.remember'),
-      words('onboarding.lastPeriod.line.privacy'),
-    ],
+    lines: [words('onboarding.lastPeriod.line.remember'), words('onboarding.onlyYou')],
     action: words('onboarding.lastPeriod.action'),
     /**
      * The sentence the question about the period before already offers, under the same key. Two
@@ -59,10 +56,7 @@ export const firstRunCopy = {
   },
   periodBefore: {
     title: words('onboarding.periodBefore.title'),
-    lines: [
-      words('onboarding.periodBefore.line.remember'),
-      words('onboarding.periodBefore.line.surer'),
-    ],
+    lines: [words('onboarding.periodBefore.line.remember')],
     action: words('onboarding.periodBefore.action'),
     skip: words('onboarding.periodBefore.skip'),
     outOfRange: words('onboarding.periodBefore.outOfRange', undefined, {
@@ -94,12 +88,12 @@ export const firstRunCopy = {
   },
   feeling: {
     title: words('onboarding.feeling.title'),
-    lines: [words('onboarding.feeling.line.talks'), words('onboarding.feeling.line.encrypted')],
+    lines: [words('onboarding.feeling.line.talks'), words('onboarding.onlyYou')],
     action: words('onboarding.feeling.action'),
   },
   goals: {
     title: words('onboarding.goals.title'),
-    lines: [words('onboarding.goals.line.chooseAll'), words('onboarding.goals.line.encrypted')],
+    lines: [words('onboarding.goals.line.chooseAll'), words('onboarding.onlyYou')],
     action: words('onboarding.goals.action'),
   },
   focus: {
@@ -109,7 +103,7 @@ export const firstRunCopy = {
   },
   today: {
     title: words('onboarding.today.title'),
-    lines: [words('onboarding.today.line.skip'), words('onboarding.today.line.encrypted')],
+    lines: [words('onboarding.today.line.skip')],
     action: words('onboarding.today.action'),
     skip: words('onboarding.today.skip'),
   },
@@ -186,6 +180,16 @@ export const regularityLabels: Readonly<Record<Regularity, string>> = {
   unknown: words('onboarding.regularity.choice.unknown'),
 };
 
+/**
+ * What Emi says back when she picks one. Her answer moves one sentence under the forecast, so the
+ * reply says that and never that the range itself changes.
+ */
+export const regularityReplies: Readonly<Record<Regularity, string>> = {
+  regular: words('onboarding.regularity.reply.regular'),
+  moves: words('onboarding.regularity.reply.moves'),
+  unknown: words('onboarding.regularity.reply.unknown'),
+};
+
 /** The order the screen offers them in, which the record above cannot carry. */
 export const regularityChoices: readonly Regularity[] = regularityValues;
 
@@ -198,6 +202,13 @@ export const feelingLabels: Readonly<Record<Feeling, string>> = {
   fine: words('onboarding.feeling.choice.fine'),
   hard: words('onboarding.feeling.choice.hard'),
   understand: words('onboarding.feeling.choice.understand'),
+};
+
+/** What Emi says back when she picks one, which is a difference in the words and nothing more. */
+export const feelingReplies: Readonly<Record<Feeling, string>> = {
+  fine: words('onboarding.feeling.reply.fine'),
+  hard: words('onboarding.feeling.reply.hard'),
+  understand: words('onboarding.feeling.reply.understand'),
 };
 
 /** The order the screen offers them in, which the record above cannot carry. */
@@ -297,6 +308,27 @@ export function nameTooLongLine(characters: number): string {
 /** The cycle she lived, counted between the two starts she gave. */
 export function daysBetweenSentence(days: number): string {
   return words('onboarding.periodBefore.between', days);
+}
+
+/**
+ * The question about the year she was born, which greets her by the name she gave one screen
+ * earlier. A woman who gave none reads the plain question, and so does the screen that asks it
+ * again from Privacy, where her name is already on the row above it.
+ *
+ * A function rather than a constant, because the catalogue is read once when this file loads and
+ * she types her name long after that.
+ */
+export function birthYearTitle(name: string | undefined): string {
+  return name === undefined
+    ? firstRunCopy.birthYear.title
+    : words('onboarding.birthYear.titleNamed', undefined, { name });
+}
+
+/** The last question, which asks about her day, so it asks her by name where she gave one. */
+export function todayTitle(name: string | undefined): string {
+  return name === undefined
+    ? firstRunCopy.today.title
+    : words('onboarding.today.titleNamed', undefined, { name });
 }
 
 /** What a screen reader says for one year of the wheel, because a bare number says nothing. */
