@@ -1,14 +1,15 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
 /**
  * The three ways Emi asks her to do something: the affirmative action, the one beside it, and the
  * quiet one that is a sentence rather than a box.
  *
- * Every one of them is at least forty eight points high, which is above the forty four contract
- * SEE-3 fixes, and none of them is a rectangle of colour alone: the secondary carries a hairline
- * and the link carries a rule, so a screen read without colour still shows three different things.
+ * Each is a capsule or no box at all, so the three differ by fill and by height as well as by
+ * colour: the affirmative action is the only one filled with the colour that acts, it stands four
+ * points taller than the one beside it, and the quiet action carries no ground. Every one of them
+ * clears the forty four points contract SEE-3 fixes.
  */
 
 interface ActionProps {
@@ -19,11 +20,17 @@ interface ActionProps {
   readonly testID?: string;
 }
 
-/** Points. The document asks for at least forty eight, which is four above the tap floor. */
-const BUTTON_HEIGHT = 48;
+/** Points. The affirmative action stands taller than the one beside it, which is how they differ. */
+const AFFIRMATIVE_HEIGHT = 52;
 
-/** Points. The rule of a text link sits this far under the words it belongs to. */
-const UNDERLINE_GAP = 4;
+/** Points. The action beside it, four points shorter, and still above the tap floor. */
+const QUIETER_HEIGHT = 48;
+
+/**
+ * Points. The capsule of the affirmative action is padded past every other control in the set,
+ * because a capsule reads as a capsule only when its ends are clear of the word inside it.
+ */
+const AFFIRMATIVE_SIDES = 40;
 
 /**
  * Whether her thumb is on this control, and the two handlers that say so.
@@ -67,17 +74,22 @@ export function PrimaryButton({ label, isReady = true, onPress, testID }: Action
       onPressOut={onPressOut}
       style={
         isReady
-          ? [styles.button, heldDown ? styles.primaryHeldDown : styles.primary]
-          : [styles.button, styles.spent]
+          ? [
+              styles.capsule,
+              styles.affirmativeSize,
+              styles.affirmative,
+              heldDown ? styles.affirmativeHeldDown : null,
+            ]
+          : [styles.capsule, styles.affirmativeSize, styles.spent]
       }
       testID={testID}
     >
-      <Text style={isReady ? styles.primaryLabel : styles.spentLabel}>{label}</Text>
+      <Text style={isReady ? styles.affirmativeLabel : styles.spentLabel}>{label}</Text>
     </Pressable>
   );
 }
 
-/** The action beside the affirmative one. A hairline holds it, because it carries no fill. */
+/** The action beside the affirmative one. It sits in the recessed ground and carries no fill. */
 export function SecondaryButton({
   label,
   isReady = true,
@@ -96,20 +108,17 @@ export function SecondaryButton({
       onPressOut={onPressOut}
       style={
         isReady
-          ? [styles.button, styles.secondary, heldDown ? styles.secondaryHeldDown : null]
-          : [styles.button, styles.spent]
+          ? [styles.capsule, styles.quieter, heldDown ? styles.quieterHeldDown : null]
+          : [styles.capsule, styles.quieter, styles.spent]
       }
       testID={testID}
     >
-      <Text style={isReady ? styles.secondaryLabel : styles.spentLabel}>{label}</Text>
+      <Text style={isReady ? styles.quieterLabel : styles.spentLabel}>{label}</Text>
     </Pressable>
   );
 }
 
-/**
- * The quiet action. The rule under the words is drawn rather than set as a text decoration,
- * because React Native offsets no underline and a rule against the letters is not the design.
- */
+/** The quiet action. Words in the colour that acts, and nothing drawn around or under them. */
 export function TextLink({ label, isReady = true, onPress, testID }: ActionProps): ReactNode {
   return (
     <Pressable
@@ -121,19 +130,30 @@ export function TextLink({ label, isReady = true, onPress, testID }: ActionProps
       testID={testID}
     >
       <Text style={isReady ? styles.linkLabel : styles.spentLabel}>{label}</Text>
-      <View style={isReady ? styles.rule : styles.spentRule} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
+  affirmative: { backgroundColor: colour.accent },
+  affirmativeHeldDown: { backgroundColor: colour.accent },
+  affirmativeLabel: {
+    color: colour.onAccent,
+    ...textStyle('button-lg'),
+  },
+  // Carried by the spent state too, so a screen does not move when the answer she is missing
+  // arrives.
+  affirmativeSize: {
+    minHeight: AFFIRMATIVE_HEIGHT,
+    paddingHorizontal: AFFIRMATIVE_SIDES,
+  },
+  capsule: {
     alignItems: 'center',
-    borderRadius: radius.lg,
+    borderRadius: radius.full,
     justifyContent: 'center',
-    minHeight: BUTTON_HEIGHT,
+    minHeight: QUIETER_HEIGHT,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceLg,
+    paddingHorizontal: space.marginMd,
   },
   link: {
     alignItems: 'center',
@@ -143,33 +163,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceSm,
   },
   linkLabel: {
+    color: colour.accent,
+    ...textStyle('button-md'),
+  },
+  quieter: { backgroundColor: colour.field },
+  // Its ready ground is already the recessed one, so a press has nowhere quieter to go inside a
+  // closed palette.
+  quieterHeldDown: { backgroundColor: colour.field },
+  quieterLabel: {
     color: colour.text,
-    ...textStyle('label-md'),
-  },
-  primary: { backgroundColor: colour.accent },
-  primaryHeldDown: { backgroundColor: colour.accent },
-  primaryLabel: {
-    color: colour.onAccent,
-    ...textStyle('label-md'),
-  },
-  rule: {
-    backgroundColor: colour.text,
-    height: stroke.hairline,
-    marginTop: UNDERLINE_GAP,
-    width: '100%',
-  },
-  secondary: {
-    backgroundColor: colour.card,
-    borderColor: colour.line,
-    borderWidth: stroke.hairline,
-  },
-  secondaryHeldDown: { backgroundColor: colour.field },
-  secondaryLabel: {
-    color: colour.text,
-    ...textStyle('label-md'),
+    ...textStyle('button-md'),
   },
   // A spent action keeps a measured pair rather than fading: an opacity nobody measured is a
-  // contrast ratio nobody knows, and contract TOKEN-2 exists to stop exactly that.
+  // contrast ratio nobody knows, and contract TOKEN-2 exists to stop exactly that. The hairline is
+  // what says unavailable without colour, since the ground is the one a ready quieter action has.
   spent: {
     backgroundColor: colour.field,
     borderColor: colour.line,
@@ -177,12 +184,6 @@ const styles = StyleSheet.create({
   },
   spentLabel: {
     color: colour.secondaryText,
-    ...textStyle('label-md'),
-  },
-  spentRule: {
-    backgroundColor: colour.secondaryText,
-    height: stroke.hairline,
-    marginTop: UNDERLINE_GAP,
-    width: '100%',
+    ...textStyle('button-md'),
   },
 });

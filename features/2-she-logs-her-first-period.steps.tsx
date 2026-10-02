@@ -30,16 +30,20 @@ import {
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
   colour,
+  colours,
   contrastRatio,
   phaseLabel,
   phaseNames,
+  radius,
   stroke,
 } from '@emi/tokens';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
-import { AccessibilityInfo, Animated, StyleSheet } from 'react-native';
-import { waitFor, within } from '@testing-library/react-native';
+import { AccessibilityInfo, Animated, StyleSheet, View } from 'react-native';
+import { render, waitFor, within } from '@testing-library/react-native';
 
+import { PrimaryButton, SecondaryButton, TextLink } from '../apps/mobile/src/components/Button';
+import { RoundIconButton } from '../apps/mobile/src/components/RoundIconButton';
 import {
   cycleRingTestID,
   ringArcTestID,
@@ -47,6 +51,8 @@ import {
   ringTrackTestID,
 } from '../apps/mobile/src/components/CycleRing';
 import { cycleCopy, ringSpokenLabel } from '../apps/mobile/src/features/cycle/copy';
+import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
+import { OnAPhone } from '../apps/mobile/tests/fixtures/theSafeArea';
 import { learningStatedLengthTestID } from '../apps/mobile/src/features/forecast/Learning';
 import { type CycleRow, listCycles } from '../apps/mobile/src/data/cycleRepository';
 import type { Database } from '../apps/mobile/src/data/database';
@@ -4815,6 +4821,110 @@ defineFeature(feature, (test) => {
 
       expect(app.pathname()).toBe(`/day/${sheWasSentTo}`);
     });
+  });
+
+  // The four parts she presses, measured off a page carrying all of them at once, and the one of
+  // them a real screen already draws, measured on that screen.
+  test('SCREEN-2, the buttons take the redesign shapes', ({ given, when, and, then }) => {
+    const styleOfPart = (testID: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<string, unknown>;
+
+    const styleOfTheWordsIn = (testID: string): Record<string, unknown> => {
+      const [words] = screen.getByTestId(testID).children;
+
+      return (StyleSheet.flatten(
+        (words as unknown as { props: { style?: unknown } }).props.style,
+      ) ?? {}) as Record<string, unknown>;
+    };
+
+    const everythingPressable = (): { props: Record<string, unknown> }[] =>
+      [...screen.queryAllByRole('button'), ...screen.queryAllByRole('link')] as unknown as {
+        props: Record<string, unknown>;
+      }[];
+
+    given('a screen carrying every action Emi can ask her to take', async () => {
+      await render(
+        <View>
+          <PrimaryButton label="Save" onPress={() => undefined} testID="writes" />
+          <SecondaryButton label="Cancel" onPress={() => undefined} testID="beside" />
+          <TextLink label="I do not remember" onPress={() => undefined} testID="quiet" />
+          <RoundIconButton
+            accessibilityLabel="Go back"
+            icon="chevron"
+            onPress={() => undefined}
+            testID="round"
+          />
+        </View>,
+      );
+    });
+
+    when('she reads it without reading a word of it', () => {
+      expect(everythingPressable()).toHaveLength(4);
+    });
+
+    then(
+      'the action that writes her data is the only filled pill, in the one colour that acts',
+      () => {
+        expect(styleOfPart('writes')).toMatchObject({
+          backgroundColor: colours.accent.value,
+          borderRadius: radius.full,
+        });
+        expect(styleOfTheWordsIn('writes')).toMatchObject({ color: colours.onAccent.value });
+
+        const filled = ['writes', 'beside', 'quiet', 'round'].filter(
+          (part) => styleOfPart(part)['backgroundColor'] === colours.accent.value,
+        );
+
+        expect(filled).toEqual(['writes']);
+      },
+    );
+
+    and('the action beside it is a quieter pill with no fill of its own', () => {
+      expect(styleOfPart('beside')).toMatchObject({
+        backgroundColor: colours.field.value,
+        borderRadius: radius.full,
+      });
+      expect(styleOfPart('beside')['borderWidth']).toBeUndefined();
+    });
+
+    and('the quiet action is words alone, with no ground and no rule under them', () => {
+      expect(styleOfPart('quiet')['backgroundColor']).toBeUndefined();
+      expect(styleOfPart('quiet')['borderWidth']).toBeUndefined();
+      expect(styleOfTheWordsIn('quiet')).toMatchObject({ color: colours.accent.value });
+      expect(screen.getByTestId('quiet').children).toHaveLength(1);
+    });
+
+    and('the round action is a disc carrying a drawing and no words', () => {
+      expect(styleOfPart('round')).toMatchObject({
+        borderRadius: radius.full,
+        height: MINIMUM_TAP_TARGET,
+        width: MINIMUM_TAP_TARGET,
+      });
+      expect(screen.getByLabelText('Go back')).toBeTruthy();
+      expect(screen.getByTestId('round').children).toHaveLength(1);
+    });
+
+    and(
+      'her thumb reaches every one of them, because none is under forty four points',
+      async () => {
+        expect(controlsTooSmallToPress(everythingPressable())).toEqual([]);
+
+        // The page above is built for the measurement. This is the screen she actually opens first,
+        // so the shape is proved where she meets it and not only where it is declared.
+        screen.unmount();
+        await render(
+          <OnAPhone>
+            <WhatEmiIs onContinue={() => undefined} />
+          </OnAPhone>,
+        );
+
+        expect(styleOfPart(onboardingActionTestID)).toMatchObject({
+          backgroundColor: colours.accent.value,
+          borderRadius: radius.full,
+        });
+        expect(controlsTooSmallToPress(everythingPressable())).toEqual([]);
+      },
+    );
   });
 });
 
