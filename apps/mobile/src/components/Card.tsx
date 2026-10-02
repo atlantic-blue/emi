@@ -10,8 +10,11 @@ import { StyleSheet, View } from 'react-native';
  * one ambient shadow the document allows, and that is the only shadow anywhere in the product.
  */
 
-/** Layer 1 is a card or a recessed panel. Layer 2 is a sheet that floats over a screen. */
-export type CardLayer = 'card' | 'recessed' | 'floating';
+/**
+ * Layer 1 is a card, a recessed panel or the one surface that reverses. Layer 2 is a sheet that
+ * floats over a screen.
+ */
+export type CardLayer = 'card' | 'recessed' | 'dark' | 'floating';
 
 interface Props {
   readonly layer?: CardLayer;
