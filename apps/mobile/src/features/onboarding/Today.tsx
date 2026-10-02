@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { SelectableTile } from '../../components/SelectableTile';
 import { OnboardingScreen } from './OnboardingScreen';
-import { firstRunCopy, todayChoices, todayLabels } from './copy';
+import { firstRunCopy, todayChoices, todayLabels, todayTitle } from './copy';
 import type { TodaySymptom } from './firstRun';
 
 /** The tile for one feeling, named so a test presses the feeling rather than a place in the grid. */
@@ -30,6 +30,8 @@ export const todayIcons: Readonly<Record<TodaySymptom, IconName>> = {
 interface Props {
   /** The feelings she has pressed so far, in the order she pressed them, and empty until she does. */
   readonly chosen: readonly TodaySymptom[];
+  /** Nothing at all where she gave no name, and then the question is asked without one. */
+  readonly name: string | undefined;
   readonly onPress: (slug: TodaySymptom) => void;
   readonly onSave: () => void;
   readonly onBack: () => void;
@@ -44,7 +46,7 @@ interface Props {
  * A woman who presses nothing gets no row for today at all, so the way past this question and the
  * way on with nothing pressed say the same thing, and only the way past is drawn.
  */
-export function Today({ chosen, onPress, onSave, onBack, onSkip }: Props): ReactNode {
+export function Today({ chosen, name, onPress, onSave, onBack, onSkip }: Props): ReactNode {
   return (
     <OnboardingScreen
       actionIsReady={chosen.length > 0}
@@ -55,7 +57,7 @@ export function Today({ chosen, onPress, onSave, onBack, onSkip }: Props): React
       onSkip={onSkip}
       screen="today"
       skipLabel={firstRunCopy.today.skip}
-      title={firstRunCopy.today.title}
+      title={todayTitle(name)}
     >
       <View style={styles.grid}>
         {todayChoices.map((slug) => (

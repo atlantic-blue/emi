@@ -68,9 +68,9 @@ const theWordForSettings: Readonly<Record<Language, string>> = {
 
 /** What the screen says first, written out rather than read off the catalogue it is checking. */
 const theLineThatStayed: Readonly<Record<Language, string>> = {
-  en: 'Emi puts these first when you log a day.',
-  es: 'Emi pone esto primero cuando anotas un día.',
-  ru: 'Emi ставит это первым, когда вы записываете день.',
+  en: "We'll put them first when you log your day.",
+  es: 'Lo pondremos primero cuando anotes tu día.',
+  ru: 'Мы поставим это первым, когда вы будете записывать день.',
 };
 
 const theCatalogueOf: Readonly<Record<Language, Catalogue>> = {

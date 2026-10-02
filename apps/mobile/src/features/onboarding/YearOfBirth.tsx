@@ -2,11 +2,13 @@ import type { ReactNode } from 'react';
 
 import { YearWheel } from '../../components/YearWheel';
 import { OnboardingScreen } from './OnboardingScreen';
-import { birthYearLabel, firstRunCopy } from './copy';
+import { birthYearLabel, birthYearTitle, firstRunCopy } from './copy';
 import { birthYearsOffered, middleBirthYear } from './firstRun';
 
 interface Props {
   readonly now: Date;
+  /** Nothing at all where she gave no name, and then the question is asked without one. */
+  readonly name: string | undefined;
   readonly chosen: number | undefined;
   readonly onChoose: (year: number) => void;
   readonly onContinue: () => void;
@@ -27,6 +29,7 @@ interface Props {
  */
 export function YearOfBirth({
   now,
+  name,
   chosen,
   onChoose,
   onContinue,
@@ -42,7 +45,7 @@ export function YearOfBirth({
       onBack={onBack}
       onSkip={onSkip}
       screen="birthYear"
-      title={firstRunCopy.birthYear.title}
+      title={birthYearTitle(name)}
     >
       <YearWheel
         chosen={chosen}

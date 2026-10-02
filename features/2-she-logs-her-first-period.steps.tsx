@@ -189,6 +189,10 @@ import {
 } from '../apps/mobile/src/features/home/MeasuredRow';
 import { longerTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { nameFieldTestID } from '../apps/mobile/src/features/onboarding/HerName';
+import {
+  regularityReplyTestID,
+  regularityTestID,
+} from '../apps/mobile/src/features/onboarding/Regularity';
 import { yearTestID } from '../apps/mobile/src/components/YearWheel';
 import { periodLengthTestID } from '../apps/mobile/src/features/onboarding/PeriodLength';
 import {
@@ -202,6 +206,7 @@ import {
   onboardingBackTestID,
   onboardingProgressTestID,
   onboardingSkipTestID,
+  onboardingTitleTestID,
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import {
@@ -5146,6 +5151,155 @@ defineFeature(feature, (test) => {
     );
   });
 
+  /**
+   * The first run as a conversation. The name she typed comes back at the question after it, a
+   * woman who gave none reads a clean question, and an answer she gives is answered where she
+   * gave it.
+   */
+  test('SCREEN-1, the first run greets her by the name she gave', ({ given, when, then, and }) => {
+    const theQuestionAfterHerName = `Nice to meet you, ${theNameSheGives}. What year were you born?`;
+    const theSameQuestionWithNoName = 'What year were you born?';
+    const theReplyToACycleThatMoves =
+      "That's common. We'll start with a wider range and narrow it as we learn yours.";
+    const theReplyToACycleSheIsNotSureOf = "That's fine. Your log will tell us soon enough.";
+
+    /** The one line about who can read her answers, written out in each language she reads. */
+    const onlyYouCanReadThis: Readonly<Record<Language, string>> = {
+      en: 'Only you can read this.',
+      es: 'Solo tú puedes leer esto.',
+      ru: 'Это можете прочитать только вы.',
+    };
+
+    /** The one key behind that line, which is why five questions cannot drift apart saying it. */
+    const theKeyOfThatLine = 'onboarding.onlyYou';
+
+    let app: OpenApp;
+
+    const theQuestionSheIsReading = (): string =>
+      String(screen.getByTestId(onboardingTitleTestID).props.children);
+
+    /** Her phone forgets her, so the next woman through the questions is a new one. */
+    async function anotherWomanOpensEmi(): Promise<void> {
+      await app.close();
+      resetExpoSqlite();
+      resetExpoSecureStore();
+      app = await sheOpens('/');
+      await sheSkipsTheTour();
+    }
+
+    /** Past the welcome and the six questions before it, standing on the one about her cycle. */
+    async function sheReachesTheQuestionAboutARegularCycle(): Promise<void> {
+      await sheReachesTheLastPeriodQuestion();
+      await shePresses(dayTestID(herPeriodStarted));
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingSkipTestID);
+    }
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi, skips the tour, and gives her name', async () => {
+      app = await sheOpens('/');
+      await sheSkipsTheTour();
+      await shePresses(onboardingActionTestID);
+      await fireEvent.changeText(screen.getByTestId(nameFieldTestID), theNameSheGives);
+      await shePresses(onboardingActionTestID);
+    });
+
+    then('the question after it greets her by the name she gave', () => {
+      expect(app.pathname()).toBe('/onboarding/year-of-birth');
+      expect(theQuestionSheIsReading()).toBe(theQuestionAfterHerName);
+      expect(screen.getByText(theQuestionAfterHerName)).toBeTruthy();
+    });
+
+    and(
+      'a woman who gives no name reads the same question, with no gap where a name would be',
+      async () => {
+        await anotherWomanOpensEmi();
+        await shePresses(onboardingActionTestID);
+        await shePresses(onboardingSkipTestID);
+
+        expect(app.pathname()).toBe('/onboarding/year-of-birth');
+        expect(theQuestionSheIsReading()).toBe(theSameQuestionWithNoName);
+        expect(screen.queryByText(theQuestionAfterHerName)).toBeNull();
+      },
+    );
+
+    and(
+      'picking that her cycle moves around answers her with the reply to that answer',
+      async () => {
+        await anotherWomanOpensEmi();
+        await sheReachesTheQuestionAboutARegularCycle();
+
+        expect(app.pathname()).toBe('/onboarding/regularity');
+        expect(screen.queryByText(theReplyToACycleThatMoves)).toBeNull();
+
+        await shePresses(regularityTestID('moves'));
+
+        expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(
+          theReplyToACycleThatMoves,
+        );
+        expect(screen.queryByText(theReplyToACycleSheIsNotSureOf)).toBeNull();
+
+        // She can change her mind, and then she is answered about the answer she holds now.
+        await shePresses(regularityTestID('unknown'));
+
+        expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(
+          theReplyToACycleSheIsNotSureOf,
+        );
+        expect(screen.queryByText(theReplyToACycleThatMoves)).toBeNull();
+      },
+    );
+
+    and(
+      'every question that keeps an answer tells her only she can read it, in all three languages',
+      async () => {
+        for (const language of languages) {
+          const held: Readonly<Record<string, Words>> = Object.fromEntries(
+            Object.entries(catalogueOf(language)),
+          );
+
+          expect({ language, said: held[theKeyOfThatLine] }).toEqual({
+            language,
+            said: onlyYouCanReadThis[language],
+          });
+        }
+
+        expect(languages.length).toBe(3);
+
+        // And she reads it on each of the five questions that keep an answer, which is the round
+        // trip the catalogue above cannot prove on its own.
+        await anotherWomanOpensEmi();
+        await shePresses(onboardingActionTestID);
+
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+
+        await shePresses(onboardingSkipTestID);
+
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+
+        await shePresses(onboardingSkipTestID);
+
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+
+        await shePresses(dayTestID(herPeriodStarted));
+        await shePresses(onboardingActionTestID);
+        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingActionTestID);
+        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingSkipTestID);
+
+        expect(app.pathname()).toBe('/onboarding/feeling');
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+
+        await shePresses(onboardingSkipTestID);
+
+        expect(app.pathname()).toBe('/onboarding/goals');
+        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+      },
+    );
+  });
   // The four parts she presses, measured off a page carrying all of them at once, and the one of
   // them a real screen already draws, measured on that screen.
   test('SCREEN-2, the buttons take the redesign shapes', ({ given, when, and, then }) => {

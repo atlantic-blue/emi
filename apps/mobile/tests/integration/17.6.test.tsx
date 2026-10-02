@@ -73,9 +73,9 @@ const theKeyThatStayed = 'onboarding.focus.line.first';
 
 /** What she is promised, in each language, written out rather than read off what it checks. */
 const thePromise: Readonly<Record<Language, string>> = {
-  en: 'You can change these in Privacy.',
-  es: 'Puedes cambiarlo en Privacidad.',
-  ru: 'Вы можете изменить это в разделе Приватность.',
+  en: 'You can change this any time in Privacy.',
+  es: 'Puedes cambiarlo cuando quieras en Privacidad.',
+  ru: 'Вы можете изменить это в любой момент в разделе Приватность.',
 };
 
 /** The name of the screen the promise sends her to, which is the word the dock carries. */
@@ -94,9 +94,9 @@ const theWordThatWent: Readonly<Record<Language, string>> = {
 
 /** What the screen says first, written out rather than read off the catalogue it is checking. */
 const theLineThatStayed: Readonly<Record<Language, string>> = {
-  en: 'Emi puts these first when you log a day.',
-  es: 'Emi pone esto primero cuando anotas un día.',
-  ru: 'Emi ставит это первым, когда вы записываете день.',
+  en: "We'll put them first when you log your day.",
+  es: 'Lo pondremos primero cuando anotes tu día.',
+  ru: 'Мы поставим это первым, когда вы будете записывать день.',
 };
 
 const theCatalogueOf: Readonly<Record<Language, Catalogue>> = {

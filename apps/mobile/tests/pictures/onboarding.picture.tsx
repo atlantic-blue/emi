@@ -30,6 +30,9 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
  * runner is pointed at it by `npm run generate:onboarding-picture`.
  */
 
+/** The name she typed on the second screen, which the two questions after it greet her by. */
+const theNameSheGave = 'Ada';
+
 /** Midday, and away from any summer time change, so the day list reads the same anywhere. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
@@ -70,10 +73,11 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Three of twelve',
-    note: 'The year she was born, with nothing picked for her. The wheel opens on 1996, thirty\n      years back, which the drawing cannot show: it draws every list from the top.',
+    note: 'The year she was born, under the name she gave on the screen before. Nothing is picked\n      for her, and the wheel opens on 1996, thirty years back, which the drawing cannot show:\n      it draws every list from the top.',
     element: (
       <YearOfBirth
         chosen={undefined}
+        name={theNameSheGave}
         now={whenSheOpensIt}
         onBack={() => undefined}
         onChoose={() => undefined}
@@ -138,10 +142,10 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Eight of twelve',
-    note: 'Three rows and none of them chosen for her, so the way on waits. It moves one sentence\n      under the forecast and never the range.',
+    note: 'Three rows, none of them chosen for her until she presses one, and a reply under them\n      once she has. It moves one sentence under the forecast and never the range.',
     element: (
       <Regularity
-        chosen={undefined}
+        chosen="moves"
         onBack={() => undefined}
         onChoose={() => undefined}
         onContinue={() => undefined}
@@ -190,10 +194,11 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Twelve of twelve',
-    note: 'What she feels today, which becomes her first logged day. Pressing nothing is the way\n      past it, and then today gets no row at all.',
+    note: 'What she feels today, asked by the name she gave, which becomes her first logged day.\n      Pressing nothing is the way past it, and then today gets no row at all.',
     element: (
       <Today
         chosen={['cramps', 'fatigue']}
+        name={theNameSheGave}
         onBack={() => undefined}
         onPress={() => undefined}
         onSave={() => undefined}
