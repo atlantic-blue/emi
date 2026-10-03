@@ -29,6 +29,8 @@ export const holdRingTestID = 'hold-ring';
 export const holdCoreTestID = 'hold-core';
 export const holdProgressTestID = 'hold-progress';
 export const holdRefusedTestID = 'hold-refused';
+export const holdTitleTestID = 'hold-title';
+export const holdSaidTestID = 'hold-said';
 
 /** How long her thumb stays down, in milliseconds. Screen 19 holds for this long. */
 export const HOLD_MILLISECONDS = 2500;
@@ -119,11 +121,11 @@ export function HoldToBegin({ onHeld }: Props): ReactNode {
   const filled = (heldFor / HOLD_MILLISECONDS) * FULL_TURN_DEGREES;
 
   return (
-    <Screen testID={holdScreenTestID}>
+    <Screen drawsTheWash testID={holdScreenTestID}>
       <View style={styles.body}>
         <View style={styles.header}>
           <Icon colour={colour.accent} name="ring" size={MARK_SIZE} />
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" style={styles.title} testID={holdTitleTestID}>
             {firstRunCopy.hold.title}
           </Text>
         </View>
@@ -162,7 +164,7 @@ export function HoldToBegin({ onHeld }: Props): ReactNode {
             </Pressable>
           </View>
 
-          <View style={styles.said}>
+          <View style={styles.said} testID={holdSaidTestID}>
             <Text style={styles.instruction}>{firstRunCopy.hold.instruction}</Text>
             {refused ? (
               <Text style={styles.refused} testID={holdRefusedTestID}>

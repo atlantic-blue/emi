@@ -1,3 +1,4 @@
+import { washTestID } from '@emi/ui';
 import { render } from '@testing-library/react-native';
 
 import {
@@ -61,7 +62,9 @@ describe('a rendered screen is held against the mockup screen it names', () => {
     });
 
     it('is read by the identifiers it carries rather than by its words', () => {
-      expect(theIdentifiersDrawn()).toEqual([
+      // The wash across the top is colour and carries no words, so it is read out of the list the
+      // comparison walks rather than held as a part of the screen.
+      expect(theIdentifiersDrawn().filter((drawn) => !drawn.startsWith(washTestID))).toEqual([
         thePromiseTestID,
         promiseLineTestID('encrypted'),
         promiseLineTestID('noTracking'),

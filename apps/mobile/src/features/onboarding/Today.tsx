@@ -51,6 +51,8 @@ export function Today({ chosen, name, onPress, onSave, onBack, onSkip }: Props):
     <OnboardingScreen
       actionIsReady={chosen.length > 0}
       actionLabel={firstRunCopy.today.action}
+      header="word"
+      headerWord={firstRunCopy.today.header}
       lines={firstRunCopy.today.lines}
       onAction={onSave}
       onBack={onBack}

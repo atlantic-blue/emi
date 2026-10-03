@@ -634,6 +634,18 @@ Feature: She opens Emi and logs her first period
     And the screen that reads her answers back is addressed to her too
     And the promise and the hold talk to her as you, in each of the three languages she can read them in
 
+  Scenario: SCREEN-1, the first run screens match the redesign prototype
+    Given she has never opened Emi before
+    When she reads every screen of the first run, from the welcome to the hold
+    Then each one carries the wash across the top of the glass
+    And each question she answers stands on a white sheet that reaches both edges of that glass
+    And the drop stands over the sheet, and the bar sits between the way back and the way past
+    And the step she is on is written out, so she knows how much is left without counting
+    And the welcome writes that step and draws no bar
+    And the first run log names the day in the middle of its header and draws no bar
+    And the question that keeps an answer carries the promise that only she can read it
+    And each screen draws every part its own drawing names, in the order the drawing places them
+
   Scenario: SCREEN-2, the home screen says hi to her by name
     Given she gave the name Ada at her first run, and her phone holds the one period she logged
     When she opens Emi

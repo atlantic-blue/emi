@@ -48,7 +48,7 @@ export function FirstForecast({ cycleLengthDays, forecast, name, onContinue }: P
   const start = forecast.start;
 
   return (
-    <Screen testID={firstForecastTestID}>
+    <Screen drawsTheWash testID={firstForecastTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         {start === undefined ? (
           <WithNoDate cycleLengthDays={cycleLengthDays} />

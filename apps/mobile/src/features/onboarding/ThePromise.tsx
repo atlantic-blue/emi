@@ -40,7 +40,7 @@ const DISC_DIAMETER = 44;
 
 export function ThePromise({ onContinue }: { readonly onContinue: () => void }): ReactNode {
   return (
-    <Screen testID={thePromiseTestID}>
+    <Screen drawsTheWash testID={thePromiseTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <Text accessibilityRole="header" style={styles.title}>
           {promiseCopy.title}

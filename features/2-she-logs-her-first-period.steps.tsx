@@ -92,6 +92,17 @@ import {
 import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
 import { OnAPhone } from '../apps/mobile/tests/fixtures/theSafeArea';
 import {
+  type FirstRunDrawing,
+  howManyPartsTheFirstRunIsHeldTo,
+  sheIsLookingAt,
+  theDifferencesTheStepKeeps,
+  theFirstRunDrawings,
+  theQuestionsTheBarCounts,
+  theWashIsAtTheTop,
+  theWidthOfTheSheet,
+  whatTheScreenDoesNotAnswerFor,
+} from '../apps/mobile/tests/fixtures/theFirstRunLook';
+import {
   learningCyclesWantedTestID,
   learningStatedLengthTestID,
   learningTestID,
@@ -241,8 +252,13 @@ import {
 import {
   onboardingActionTestID,
   onboardingBackTestID,
+  onboardingEmblemTestID,
+  onboardingHeaderWordTestID,
+  onboardingLockTestID,
   onboardingProgressTestID,
+  onboardingSheetTestID,
   onboardingSkipTestID,
+  onboardingStepLabelTestID,
   onboardingTitleTestID,
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
@@ -265,6 +281,7 @@ import {
   cyclesBeforeAForecastSentence,
   firstRunCopy,
   firstRunScreenCount,
+  stepLabel,
   tourCards,
   tourCopy,
 } from '../apps/mobile/src/features/onboarding/copy';
@@ -5766,6 +5783,147 @@ defineFeature(feature, (test) => {
 
         expect(app.pathname()).toBe('/onboarding/hold');
         expect(textIn(screen.getByTestId(holdScreenTestID))).toContain(theHoldStillSays);
+      },
+    );
+  });
+
+  /**
+   * The whole first run, read screen by screen against the drawing of each one. It renders the
+   * screens rather than walking the router, because the comparison reads what one screen drew and
+   * a walk would hold only the screens a walk happens to reach.
+   *
+   * It runs before the three scenarios that draw a page of parts, and after every scenario that
+   * drives the application, so nothing here decides what another scenario can open.
+   */
+  test('SCREEN-1, the first run screens match the redesign prototype', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const washedAtTheTop: FirstRunDrawing[] = [];
+    const unanswered: Record<string, string[]> = {};
+
+    const styleOfPart = (testID: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<string, unknown>;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she reads every screen of the first run, from the welcome to the hold', async () => {
+      for (const drawing of theFirstRunDrawings) {
+        await sheIsLookingAt(drawing);
+
+        if (theWashIsAtTheTop()) {
+          washedAtTheTop.push(drawing);
+        }
+
+        unanswered[drawing] = whatTheScreenDoesNotAnswerFor(drawing);
+      }
+    });
+
+    then('each one carries the wash across the top of the glass', () => {
+      expect(washedAtTheTop).toEqual([...theFirstRunDrawings]);
+      expect(washedAtTheTop.length).toBeGreaterThan(20);
+    });
+
+    and(
+      'each question she answers stands on a white sheet that reaches both edges of that glass',
+      async () => {
+        for (const drawing of theQuestionsTheBarCounts) {
+          await sheIsLookingAt(drawing);
+
+          const sheet = styleOfPart(onboardingSheetTestID);
+
+          expect({ drawing, ground: sheet['backgroundColor'] }).toEqual({
+            drawing,
+            ground: colour.card,
+          });
+          expect(theWidthOfTheSheet()).toBe(anIPhone16.width);
+          expect(sheet['borderTopLeftRadius']).toBe(radius.xxl);
+          expect(sheet['borderTopRightRadius']).toBe(radius.xxl);
+        }
+      },
+    );
+
+    and(
+      'the drop stands over the sheet, and the bar sits between the way back and the way past',
+      async () => {
+        await sheIsLookingAt('name');
+
+        const drawn = theIdentifiersDrawn();
+        const emblem = styleOfPart(onboardingEmblemTestID);
+
+        expect(emblem['width']).toBe(emblem['height']);
+        expect(drawn.indexOf(onboardingEmblemTestID)).toBeLessThan(
+          drawn.indexOf(onboardingSheetTestID),
+        );
+        expect(drawn.indexOf(onboardingBackTestID)).toBeLessThan(
+          drawn.indexOf(onboardingProgressTestID),
+        );
+        expect(drawn.indexOf(onboardingProgressTestID)).toBeLessThan(
+          drawn.indexOf(onboardingSkipTestID),
+        );
+      },
+    );
+
+    and(
+      'the step she is on is written out, so she knows how much is left without counting',
+      async () => {
+        await sheIsLookingAt('feeling');
+
+        expect(screen.getByTestId(onboardingStepLabelTestID)).toHaveTextContent(
+          stepLabel('feeling'),
+        );
+      },
+    );
+
+    and('the welcome writes that step and draws no bar', async () => {
+      await sheIsLookingAt('welcome');
+
+      expect(screen.getByTestId(onboardingStepLabelTestID)).toHaveTextContent(stepLabel('welcome'));
+      expect(screen.queryByTestId(onboardingProgressTestID)).toBeNull();
+    });
+
+    and(
+      'the first run log names the day in the middle of its header and draws no bar',
+      async () => {
+        await sheIsLookingAt('todayFirstRun');
+
+        expect(screen.getByTestId(onboardingHeaderWordTestID)).toHaveTextContent(
+          firstRunCopy.today.header,
+        );
+        expect(screen.getByTestId(onboardingTitleTestID)).toHaveTextContent(
+          firstRunCopy.today.title,
+        );
+        expect(screen.queryByTestId(onboardingProgressTestID)).toBeNull();
+        expect(screen.queryByTestId(onboardingStepLabelTestID)).toBeNull();
+      },
+    );
+
+    and(
+      'the question that keeps an answer carries the promise that only she can read it',
+      async () => {
+        await sheIsLookingAt('name');
+
+        expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(firstRunCopy.onlyYou);
+        expect(screen.getByTestId(lockLineIconTestID(onboardingLockTestID))).toBeTruthy();
+      },
+    );
+
+    and(
+      'each screen draws every part its own drawing names, in the order the drawing places them',
+      () => {
+        const differs = Object.entries(unanswered)
+          .filter(([, missing]) => missing.length > 0)
+          .map(([drawing, missing]) => `${drawing}: ${String(missing.length)}`)
+          .sort();
+        const kept = Object.entries(theDifferencesTheStepKeeps)
+          .map(([drawing, missing]) => `${drawing}: ${String(missing ?? 0)}`)
+          .sort();
+
+        expect(Object.keys(unanswered)).toHaveLength(theFirstRunDrawings.length);
+        expect(differs).toEqual(kept);
+        expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(140);
       },
     );
   });

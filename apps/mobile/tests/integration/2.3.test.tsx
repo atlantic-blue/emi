@@ -318,7 +318,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       const app = await sheOpensEmi();
 
       expect(app.pathname()).toBe('/onboarding/welcome');
-      expect(theScreen('welcome').getByLabelText(stepLabel('welcome'))).toBeTruthy();
+      expect(theScreen('welcome').getByText(stepLabel('welcome'))).toBeTruthy();
     });
 
     it('tells her what Emi is and what it will not do', async () => {
