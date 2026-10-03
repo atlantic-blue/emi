@@ -300,19 +300,38 @@ import {
   tourSkipTestID,
 } from '../apps/mobile/src/features/onboarding/TourScreen';
 import {
+  settingsAssuranceTestID,
   settingsDeleteTestID,
   settingsExportTestID,
+  settingsRowsTestID,
   settingsScreenTestID,
+  settingsTitleTestID,
 } from '../apps/mobile/src/features/settings/SettingsScreen';
 import {
   deleteActionTestID,
+  deleteGoesTestID,
   deleteScreenTestID,
   deletedScreenTestID,
+  goesMarkTestID,
 } from '../apps/mobile/src/features/settings/DeleteEverything';
+import {
+  yourAnswerRowTestID,
+  yourAnswersRowsTestID,
+} from '../apps/mobile/src/features/settings/YourAnswers';
+import { theAnswerSheGave, yourAnswerRows } from '../apps/mobile/src/features/settings/herAnswers';
+import { settingsCopy } from '../apps/mobile/src/features/settings/copy';
+import {
+  exportLockLineTestID,
+  exportTileTestID,
+  theExportTiles,
+} from '../apps/mobile/src/features/export/ExportScreen';
+import { rowGroupRuleTestID } from '../apps/mobile/src/components/RowGroup';
+import { exportCopy } from '../apps/mobile/src/features/export/copy';
 import {
   type TourCard,
   cyclesBeforeAForecastSentence,
   firstRunCopy,
+  promiseCopy,
   firstRunScreenCount,
   stepLabel,
   tourCards,
@@ -500,6 +519,24 @@ import {
   whenSheReadsHerCycles,
   whereTheInsightsDrew,
 } from '../apps/mobile/tests/fixtures/theInsightsLook';
+import {
+  type PrivacyDrawing,
+  herAnswers,
+  privacyDrew,
+  sheIsLookingAtPrivacy,
+  thePartNamesTheStagePlaces as thePartNamesPrivacyPlaces,
+  thePrivacyDrawings,
+  theRowsOfHerAnswers,
+  theRowsOfPrivacy,
+  theRowsOnTheGlass,
+  theScreenOf as thePrivacyScreenOf,
+  theStyleOf as theStyleOnPrivacy,
+  theWashIsAtTheTopOfPrivacy,
+  whatPrivacyDoesNotAnswerFor,
+  whatTheDrawingAsksFor as whatThePrivacyDrawingAsksFor,
+  whenSheOpensPrivacy,
+  wherePrivacyDrew,
+} from '../apps/mobile/tests/fixtures/thePrivacyLook';
 import { textDrawnOnAPhaseFill } from '../apps/mobile/tests/fixtures/phaseInk';
 import {
   theDaySheReachesHerLutealPhase,
@@ -6471,6 +6508,138 @@ defineFeature(feature, (test) => {
         }
 
         expect(howManyInsightsPartsAreHeldTo()).toBeGreaterThan(40);
+      },
+    );
+  });
+
+  // The five screens that carry the privacy promise, walked the way she walks them: out of the
+  // dock into Privacy, into her answers, into one of them, and out to the two files and to the one
+  // press that empties the phone.
+  test('SCREEN-2, the Privacy screens match the redesign prototype', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const washedAtTheTop: PrivacyDrawing[] = [];
+    const unanswered: Record<string, string[]> = {};
+
+    given('her phone holds the eight answers she gave and the three days she bled', () => {
+      jest.setSystemTime(whenSheOpensPrivacy);
+    });
+
+    when(
+      'she opens Privacy from the dock and walks it: her answers, her cycle length, the two files and delete everything',
+      async () => {
+        for (const drawing of thePrivacyDrawings) {
+          await sheIsLookingAtPrivacy(drawing);
+
+          if (theWashIsAtTheTopOfPrivacy()) {
+            washedAtTheTop.push(drawing);
+          }
+
+          unanswered[drawing] = whatPrivacyDoesNotAnswerFor(drawing);
+        }
+      },
+    );
+
+    then('each of those screens carries the wash across the top of the glass', () => {
+      expect(washedAtTheTop).toEqual([...thePrivacyDrawings]);
+      expect(washedAtTheTop).toHaveLength(5);
+    });
+
+    and('Privacy tells her above the rows that only she can read her days', async () => {
+      await sheIsLookingAtPrivacy('privacyNext');
+
+      const from = thePrivacyScreenOf('privacyNext');
+      const said = textIn(screen.getByTestId(settingsAssuranceTestID)).join(' ');
+
+      expect(theStyleOnPrivacy(settingsAssuranceTestID).backgroundColor).toBe(colour.darkCard);
+      expect(said).toContain(promiseCopy.title);
+      expect(wherePrivacyDrew(settingsTitleTestID, from)).toBeLessThan(
+        wherePrivacyDrew(settingsAssuranceTestID, from),
+      );
+      expect(wherePrivacyDrew(settingsAssuranceTestID, from)).toBeLessThan(
+        wherePrivacyDrew(settingsRowsTestID, from),
+      );
+    });
+
+    and(
+      'every row of Privacy stands on one card, with its own drawing and the mark that points on',
+      () => {
+        expect(theStyleOnPrivacy(settingsRowsTestID).backgroundColor).toBe(colour.card);
+        expect(theStyleOnPrivacy(settingsRowsTestID).borderRadius).toBe(radius.xl);
+        expect(theRowsOnTheGlass(theRowsOfPrivacy)).toEqual([...theRowsOfPrivacy]);
+
+        for (const row of theRowsOfPrivacy) {
+          expect(theStyleOnPrivacy(rowTileTestID(row)).backgroundColor).toBe(colour.field);
+        }
+
+        for (let at = 1; at < theRowsOfPrivacy.length; at += 1) {
+          expect(
+            theStyleOnPrivacy(rowGroupRuleTestID(settingsRowsTestID, at)).backgroundColor,
+          ).toBe(colour.line);
+        }
+      },
+    );
+
+    and(
+      'her eight answers stand on one card, each one reading back the answer she gave',
+      async () => {
+        await sheIsLookingAtPrivacy('yourAnswers');
+
+        expect(theStyleOnPrivacy(yourAnswersRowsTestID).backgroundColor).toBe(colour.card);
+        expect(theRowsOnTheGlass(theRowsOfHerAnswers)).toEqual([...theRowsOfHerAnswers]);
+
+        for (const row of yourAnswerRows) {
+          const said = textIn(screen.getByTestId(yourAnswerRowTestID(row))).join(' ');
+
+          expect(said).toContain(theAnswerSheGave(row, herAnswers));
+          expect(privacyDrew(rowChevronTestID(yourAnswerRowTestID(row)))).toBe(true);
+        }
+      },
+    );
+
+    and('each of the two files she can take away is drawn as a tile of its own', async () => {
+      await sheIsLookingAtPrivacy('export');
+
+      expect(theExportTiles).toHaveLength(2);
+
+      for (const tile of theExportTiles) {
+        expect(theStyleOnPrivacy(exportTileTestID(tile)).backgroundColor).toBe(colour.card);
+        expect(textIn(screen.getByTestId(exportTileTestID(tile))).join(' ').length).toBeGreaterThan(
+          0,
+        );
+      }
+    });
+
+    and('the lock sits beside the line that says nothing is sent anywhere', () => {
+      expect(privacyDrew(lockLineIconTestID(exportLockLineTestID))).toBe(true);
+      expect(textIn(screen.getByTestId(exportLockLineTestID)).join(' ')).toBe(exportCopy.where);
+    });
+
+    and('delete everything names the five things that go, each one with its own mark', async () => {
+      await sheIsLookingAtPrivacy('delete');
+
+      expect(theStyleOnPrivacy(deleteGoesTestID).backgroundColor).toBe(colour.card);
+      expect(settingsCopy.delete.goes).toHaveLength(5);
+
+      for (let at = 0; at < settingsCopy.delete.goes.length; at += 1) {
+        expect(privacyDrew(goesMarkTestID(at))).toBe(true);
+      }
+    });
+
+    and(
+      'each screen draws every part its own drawing names, in the order the drawing places them',
+      () => {
+        expect(Object.keys(unanswered)).toHaveLength(thePrivacyDrawings.length);
+
+        for (const drawing of thePrivacyDrawings) {
+          expect(whatThePrivacyDrawingAsksFor(drawing).map((part) => part.name)).toEqual(
+            thePartNamesPrivacyPlaces(drawing),
+          );
+          expect(unanswered[drawing]).toEqual([]);
+        }
       },
     );
   });

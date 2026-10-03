@@ -22,6 +22,31 @@ export const exportActionTestID = 'export-action';
 export const exportHeldTestID = 'export-held';
 export const exportFailedTestID = 'export-failed';
 
+/** The header of the screen, which the drawing names as the part the title sits inside. */
+export const exportHeaderTestID = 'export-header';
+
+/** The title in that header. */
+export const exportTitleTestID = 'export-title';
+
+/** The line that says what the two files are. */
+export const exportWhatTestID = 'export-what';
+
+/** The card the two files are read back on, once she has asked for them. */
+export const exportMadeTestID = 'export-made';
+
+/** The line that says nothing is sent anywhere, with a lock beside it. */
+export const exportLockLineTestID = 'export-lock-line';
+
+/** The two files, as the two tiles the prototype draws above the card. */
+export const theExportTiles = ['doctor', 'application'] as const;
+
+export type ExportTile = (typeof theExportTiles)[number];
+
+/** One of those tiles, named so a test can read the ground behind it and the words on it. */
+export function exportTileTestID(tile: ExportTile): string {
+  return `export-tile-${tile}`;
+}
+
 export function exportFileTestID(name: string): string {
   return `export-file-${name}`;
 }

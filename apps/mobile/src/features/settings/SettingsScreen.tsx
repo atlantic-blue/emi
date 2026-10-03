@@ -8,6 +8,11 @@ import { settingsCopy } from './copy';
 export const settingsScreenTestID = 'settings-screen';
 export const settingsTitleTestID = 'settings-title';
 export const settingsBackTestID = 'settings-back';
+/** The dark card over the rows, which says who can read her days. */
+export const settingsAssuranceTestID = 'settings-assurance';
+
+/** The one card the rows stand on, which is what carries the hairline between two of them. */
+export const settingsRowsTestID = 'settings-rows';
 
 /**
  * The rows of Privacy, in the order she reads them, and the whole of the screen.

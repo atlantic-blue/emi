@@ -14,6 +14,21 @@ export const goesTestID = (at: number): string => `delete-goes-${at}`;
 export const deleteRefusedTestID = 'delete-refused';
 export const serverNotReachedTestID = 'delete-server-not-reached';
 
+/** The heading of the screen. */
+export const deleteTitleTestID = 'delete-title';
+
+/** The sentence under it, which says the press cannot be undone. */
+export const deleteLineTestID = 'delete-line';
+
+/** The white square the drawing stands in, over the heading. */
+export const deleteEmblemTestID = 'delete-emblem';
+
+/** The one card the five things that go stand on. */
+export const deleteGoesTestID = 'delete-goes-card';
+
+/** The mark beside one of those five lines, named so a test can read that it is drawn. */
+export const goesMarkTestID = (at: number): string => `delete-goes-${at}-mark`;
+
 /**
  * Where she is: reading it, waiting on it, looking at a phone that holds nothing, looking at a
  * phone that holds nothing while the server was never told, or looking at the one case where the

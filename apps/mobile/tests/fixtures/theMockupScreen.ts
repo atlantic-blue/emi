@@ -61,6 +61,7 @@ import { changeCycleLengthStepperTestID } from '../../src/features/settings/Chan
 import { settingsTitleTestID } from '../../src/features/settings/SettingsScreen';
 import {
   yourAnswersBackTestID,
+  yourAnswersHeaderTestID,
   yourAnswersTitleTestID,
 } from '../../src/features/settings/YourAnswers';
 
@@ -135,6 +136,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   // names nothing, so the header is what answers for that part.
   Text: [
     settingsTitleTestID,
+    yourAnswersHeaderTestID,
     yourAnswersTitleTestID,
     answerHeaderTestID,
     answerLinesTestID,

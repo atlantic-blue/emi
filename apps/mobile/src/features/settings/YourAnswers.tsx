@@ -17,6 +17,12 @@ export const yourAnswersScreenTestID = 'your-answers-screen';
 export const yourAnswersTitleTestID = 'your-answers-title';
 export const yourAnswersBackTestID = 'your-answers-back';
 
+/** The header of the screen, which the drawing names as the part the title sits inside. */
+export const yourAnswersHeaderTestID = 'your-answers-header';
+
+/** The one card the eight rows stand on, which carries the hairline between two of them. */
+export const yourAnswersRowsTestID = 'your-answers-rows';
+
 export function yourAnswerRowTestID(row: YourAnswerRow): string {
   return `your-answers-row-${row}`;
 }
