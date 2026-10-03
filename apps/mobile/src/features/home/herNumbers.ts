@@ -1,4 +1,9 @@
-import type { ForecastResult, PublishedFigure, PublishedMeasurement } from '@emi/cycle';
+import type {
+  ForecastResult,
+  PublishedFigure,
+  PublishedMeasurement,
+  PublishedValue,
+} from '@emi/cycle';
 import { publishedFigures, toOneDecimalPlace } from '@emi/cycle';
 
 import type { CycleRow } from '../../data/cycleRepository';
@@ -10,6 +15,42 @@ import type { CycleRow } from '../../data/cycleRepository';
  * which is the whole of this section: a tracker that prints a word over a number has turned
  * arithmetic on her own days into a verdict about her body.
  */
+
+/**
+ * Where one of her figures sits against the figure a paper reports for the same measurement.
+ *
+ * Three answers and no fourth, because the words are the three the operator approved. `within` is
+ * inside every bound the paper reports and `wider` is outside it, at either end, which is how
+ * `ranOutsideTheBand` already reads the same range for the chart. `noFigure` is the answer where no
+ * published figure was handed in at all, and nothing here says whether either number is right.
+ */
+export type FigureStanding = 'noFigure' | 'within' | 'wider';
+
+/**
+ * Her figure against the published one. A paper reports a bound, a pair of bounds or a mean, and
+ * each of the three is read as the edge of what was published.
+ */
+export function howHerNumberSits(
+  hers: number,
+  published: PublishedValue | undefined,
+): FigureStanding {
+  if (published === undefined) {
+    return 'noFigure';
+  }
+
+  if (published.kind === 'range') {
+    return hers < published.low || hers > published.high ? 'wider' : 'within';
+  }
+
+  if (published.kind === 'upper-bound') {
+    return hers > published.high ? 'wider' : 'within';
+  }
+
+  // The deviation around the mean is not added to it. The cohort figure a woman is reading her own
+  // variation against is the mean itself, and a bound of the mean plus its deviation would call a
+  // spread of five days ordinary when the paper reports two and a half.
+  return hers > published.mean ? 'wider' : 'within';
+}
 
 /** One measurement of hers, and the published figure it sits beside. */
 export interface MeasuredNumber {

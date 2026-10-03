@@ -97,7 +97,7 @@ interface Props {
 
 export function FiguresScreen({ figures, onBack }: Props): ReactNode {
   return (
-    <Screen testID={figuresScreenTestID}>
+    <Screen drawsTheWash testID={figuresScreenTestID}>
       <View style={styles.header} testID={figuresHeaderTestID}>
         <Pressable
           accessibilityLabel={figuresCopy.back}

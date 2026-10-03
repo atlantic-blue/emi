@@ -197,9 +197,7 @@ const styles = StyleSheet.create({
   trend: {
     alignSelf: 'stretch',
     backgroundColor: colour.card,
-    borderColor: colour.line,
-    borderRadius: radius.lg,
-    borderWidth: 1,
+    borderRadius: radius.xl,
     padding: space.spaceMd,
   },
 });

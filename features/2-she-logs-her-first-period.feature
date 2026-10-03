@@ -678,6 +678,17 @@ Feature: She opens Emi and logs her first period
     And her whole period names the days she added and the day she took off, in her own language
     And each screen draws every part its own drawing names, in the order the drawing places them
 
+  Scenario: SCREEN-2, the Insights screens match the redesign prototype
+    Given her phone holds six cycles she bled through and the two symptoms that came back
+    When she reads her cycles back: Insights, her three numbers, where the figures come from, her cycles as strips, her trend and what comes back
+    Then each of those screens carries the wash across the top of the glass
+    And each of her three numbers says where it sits against the published figure, in her own words
+    And a figure of hers that runs past what the paper reports reads wider, and no pill names her
+    And her strips, her trend and every card of what comes back stand on the card ground
+    And every card of what comes back carries its own round drawing
+    And Insights offers the way back as the quieter capsule, under the rows she came to read
+    And each screen draws every part its own drawing names, in the order the drawing places them
+
   Scenario: SCREEN-2, the home screen says hi to her by name
     Given she gave the name Ada at her first run, and her phone holds the one period she logged
     When she opens Emi

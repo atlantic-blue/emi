@@ -9,6 +9,7 @@ import {
   textStyle,
 } from '@emi/tokens';
 import type { ReactNode } from 'react';
+import { Icon } from '@emi/ui';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
@@ -25,7 +26,13 @@ import { cycleLengthSentence, cycleSentence, historyCopy, patternSentence } from
  * contrast floor, because three of the four fills fail as text.
  */
 
+/** Points. The mark that says a row opens, read at the size every other row reads it at. */
+const theMarkOnward = 18;
+
 export const historyScreenTestID = 'history-screen';
+export const historyTitleTestID = 'history-title';
+export const historyPatternsHeadingTestID = 'history-patterns-heading';
+export const historyCyclesHeadingTestID = 'history-cycles-heading';
 export const historyBackTestID = 'history-back';
 export const historyCyclesTestID = 'history-cycles';
 export const historyPatternsTestID = 'history-patterns';
@@ -107,11 +114,14 @@ function CycleRow({
       style={[styles.row, opened ? styles.opened : null]}
       testID={historyCycleTestID(cycle.startedOn)}
     >
-      <Text style={styles.rowTitle}>{cycleSentence(cycle.startedOn, cycle.endedOn)}</Text>
-      <Text style={styles.rowLine}>
-        {cycleLengthSentence(cycle.lengthDays, cycle.periodLengthDays)}
-      </Text>
-      <PhaseBar cycle={cycle} />
+      <View style={styles.said}>
+        <Text style={styles.rowTitle}>{cycleSentence(cycle.startedOn, cycle.endedOn)}</Text>
+        <Text style={styles.rowLine}>
+          {cycleLengthSentence(cycle.lengthDays, cycle.periodLengthDays)}
+        </Text>
+        <PhaseBar cycle={cycle} />
+      </View>
+      <Icon colour={colour.quietIcon} name="chevron" size={theMarkOnward} />
     </Pressable>
   );
 }
@@ -134,16 +144,19 @@ function PatternRow({
       style={[styles.row, opened ? styles.opened : null]}
       testID={historyPatternTestID(pattern.slug)}
     >
-      <Text style={styles.rowTitle}>{pattern.name}</Text>
-      <Text style={styles.rowLine}>
-        {patternSentence(pattern.anchor, pattern.day, pattern.cyclesWithIt, pattern.cyclesRead)}
-      </Text>
-      <Text
-        style={[styles.phaseName, { color: colour[phasePalette[pattern.phase].ink] }]}
-        testID={historyPatternPhaseTestID(pattern.slug)}
-      >
-        {phaseLabel[pattern.phase]}
-      </Text>
+      <View style={styles.said}>
+        <Text style={styles.rowTitle}>{pattern.name}</Text>
+        <Text style={styles.rowLine}>
+          {patternSentence(pattern.anchor, pattern.day, pattern.cyclesWithIt, pattern.cyclesRead)}
+        </Text>
+        <Text
+          style={[styles.phaseName, { color: colour[phasePalette[pattern.phase].ink] }]}
+          testID={historyPatternPhaseTestID(pattern.slug)}
+        >
+          {phaseLabel[pattern.phase]}
+        </Text>
+      </View>
+      <Icon colour={colour.quietIcon} name="chevron" size={theMarkOnward} />
     </Pressable>
   );
 }
@@ -156,13 +169,17 @@ export function HistoryScreen({
   onBack,
 }: Props): ReactNode {
   return (
-    <Screen testID={historyScreenTestID}>
+    <Screen drawsTheWash testID={historyScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" style={styles.title} testID={historyTitleTestID}>
           {historyCopy.title}
         </Text>
 
-        <Text accessibilityRole="header" style={styles.heading}>
+        <Text
+          accessibilityRole="header"
+          style={styles.heading}
+          testID={historyPatternsHeadingTestID}
+        >
           {historyCopy.patterns}
         </Text>
         {history.patterns.length === 0 ? (
@@ -182,7 +199,7 @@ export function HistoryScreen({
           </View>
         )}
 
-        <Text accessibilityRole="header" style={styles.heading}>
+        <Text accessibilityRole="header" style={styles.heading} testID={historyCyclesHeadingTestID}>
           {historyCopy.cycles}
         </Text>
         {history.cycles.length === 0 ? (
@@ -223,7 +240,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: colour.field,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     justifyContent: 'center',
     marginTop: space.spaceLg,
     minHeight: MINIMUM_TAP_TARGET,
@@ -254,16 +271,22 @@ const styles = StyleSheet.create({
     ...textStyle('label-sm'),
     marginTop: space.spaceXs,
   },
+  // Plain paper with no line drawn around it, which is the card of the redesign: a column of rows
+  // reads as a journal rather than as a column of boxes.
   row: {
+    alignItems: 'center',
     backgroundColor: colour.card,
-    borderColor: colour.line,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    justifyContent: 'center',
+    borderRadius: radius.xl,
+    columnGap: space.spaceSm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
     padding: space.spaceMd,
   },
+  // The words take whatever width the mark leaves, so a long date wraps inside the row rather than
+  // pushing the mark off the card.
+  said: { flexGrow: 1, flexShrink: 1 },
   // The cycle or the symptom she arrived at from the screen she opens, drawn with the accent
   // border so she can see which row she asked for. The mark is a width as well as a colour.
   opened: {
