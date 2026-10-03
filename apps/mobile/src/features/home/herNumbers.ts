@@ -34,10 +34,22 @@ export function howHerNumberSits(
   hers: number,
   published: PublishedValue | undefined,
 ): FigureStanding {
-  void hers;
-  void published;
+  if (published === undefined) {
+    return 'noFigure';
+  }
 
-  return 'noFigure';
+  if (published.kind === 'range') {
+    return hers < published.low || hers > published.high ? 'wider' : 'within';
+  }
+
+  if (published.kind === 'upper-bound') {
+    return hers > published.high ? 'wider' : 'within';
+  }
+
+  // The deviation around the mean is not added to it. The cohort figure a woman is reading her own
+  // variation against is the mean itself, and a bound of the mean plus its deviation would call a
+  // spread of five days ordinary when the paper reports two and a half.
+  return hers > published.mean ? 'wider' : 'within';
 }
 
 /** One measurement of hers, and the published figure it sits beside. */

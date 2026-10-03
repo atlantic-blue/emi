@@ -3,6 +3,8 @@ import { MINIMUM_TAP_TARGET, colour, phasePalette, radius, space, textStyle } fr
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { Icon } from '@emi/ui';
+
 import type { ReadCycle } from '../cycle/cyclesRead';
 import { cycleLengthSentence, cycleSentence } from '../history/copy';
 
@@ -18,6 +20,9 @@ import { cycleLengthSentence, cycleSentence } from '../history/copy';
  * A fill carries no text at all, which is contract SEE-2: three of the four fail as a background
  * for words, so the shape of a cycle is colour and the words sit above it.
  */
+
+/** Points. The mark that says a strip opens, read at the size every other row reads it at. */
+const theMarkOnward = 18;
 
 export const homeCyclesTestID = 'home-cycles';
 
@@ -76,11 +81,14 @@ function CycleStrip({
       style={styles.strip}
       testID={cycleStripTestID(cycle.startedOn)}
     >
-      <Text style={styles.days}>{cycleSentence(cycle.startedOn, cycle.endedOn)}</Text>
-      <Text style={styles.length} testID={cycleStripLengthTestID(cycle.startedOn)}>
-        {cycleLengthSentence(cycle.lengthDays, cycle.periodLengthDays)}
-      </Text>
-      <PhaseFills cycle={cycle} />
+      <View style={styles.said}>
+        <Text style={styles.days}>{cycleSentence(cycle.startedOn, cycle.endedOn)}</Text>
+        <Text style={styles.length} testID={cycleStripLengthTestID(cycle.startedOn)}>
+          {cycleLengthSentence(cycle.lengthDays, cycle.periodLengthDays)}
+        </Text>
+        <PhaseFills cycle={cycle} />
+      </View>
+      <Icon colour={colour.quietIcon} name="chevron" size={theMarkOnward} />
     </Pressable>
   );
 }
@@ -119,15 +127,21 @@ const styles = StyleSheet.create({
     color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
+  // Plain paper with no line drawn around it, which is the card of the redesign: a column of
+  // strips reads as a journal rather than as a column of boxes.
   strip: {
+    alignItems: 'center',
     backgroundColor: colour.card,
-    borderColor: colour.line,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    justifyContent: 'center',
+    borderRadius: radius.xl,
+    columnGap: space.spaceSm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
     padding: space.spaceMd,
   },
+  // The words and the bar take whatever width the chevron leaves, so a long date wraps inside the
+  // strip rather than pushing the mark off the card.
+  said: { flexShrink: 1, flexGrow: 1 },
   strips: { alignSelf: 'stretch', gap: space.spaceSm },
 });

@@ -8,7 +8,8 @@ import { MINIMUM_TAP_TARGET, colour, radius } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
-import { cycleStripTestID, homeCyclesTestID } from '../../src/features/home/CycleStrip';
+import { homeCyclesTestID } from '../../src/features/home/CycleStrip';
+import { stripsSheReads } from '../../src/features/home/herCycles';
 import { homeTrendTestID } from '../../src/features/home/CycleTrend';
 import { homeCyclesLineTestID } from '../../src/features/home/HomeScreen';
 import {
@@ -20,11 +21,7 @@ import {
 } from '../../src/features/home/MeasuredRow';
 import { patternCardTestID, patternCardTileTestID } from '../../src/features/home/PatternCard';
 import { homeCopy } from '../../src/features/home/copy';
-import {
-  historyBackTestID,
-  historyCycleTestID,
-  historyTitleTestID,
-} from '../../src/features/history/HistoryScreen';
+import { historyBackTestID, historyTitleTestID } from '../../src/features/history/HistoryScreen';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { theSymptomsThatCameBack } from '../fixtures/herRepeatingSymptoms';
@@ -34,10 +31,11 @@ import {
   howManyPartsAreHeldTo,
   sheIsLookingAtHerNumbersOverCyclesOf,
   sheIsLookingAtTheInsights,
-  theCyclesHerPhoneHeld,
   theInsightsDrawings,
   thePartNamesTheStagePlaces,
+  theRowsInsightsDrew,
   theScreenOf,
+  theStripsSheRead,
   theStyleOf,
   theThreeMeasurements,
   theWashIsAtTheTopOfTheInsights,
@@ -221,7 +219,10 @@ describe('the Insights screens match the redesign prototype', () => {
 
     it('names the published figure on the row, so neither number is left without an owner', () => {
       for (const measures of theThreeMeasurements) {
-        expect(whatItSays(publishedNumberTestID(measures))).toContain(homeCopy.numbers.published);
+        expect(whatItSays(measuredRowTestID(measures))).toContain(homeCopy.numbers.published);
+        expect(whatItSays(publishedNumberTestID(measures))).not.toContain(
+          homeCopy.numbers.published,
+        );
       }
     });
   });
@@ -232,13 +233,11 @@ describe('the Insights screens match the redesign prototype', () => {
     });
 
     it('stands every strip on the card ground with the corner of the redesign and no border', () => {
-      const strips = theCyclesHerPhoneHeld();
+      const strips = theStripsSheRead();
 
-      expect(strips.length).toBeGreaterThan(1);
+      expect(strips).toHaveLength(stripsSheReads);
 
-      for (const startedOn of strips) {
-        const strip = theStyleOf(cycleStripTestID(startedOn));
-
+      for (const strip of strips.map(theStyleOf)) {
         expect(strip.backgroundColor).toBe(colour.card);
         expect(strip.borderRadius).toBe(radius.xl);
         expect(strip.borderWidth ?? 0).toBe(0);
@@ -299,13 +298,11 @@ describe('the Insights screens match the redesign prototype', () => {
     });
 
     it('stands every row on the card ground with the corner of the redesign and no border', () => {
-      const rows = theCyclesHerPhoneHeld();
+      const rows = theRowsInsightsDrew();
 
       expect(rows.length).toBeGreaterThan(1);
 
-      for (const startedOn of rows) {
-        const row = theStyleOf(historyCycleTestID(startedOn));
-
+      for (const row of rows.map(theStyleOf)) {
         expect(row.backgroundColor).toBe(colour.card);
         expect(row.borderRadius).toBe(radius.xl);
         expect(row.borderWidth ?? 0).toBe(0);

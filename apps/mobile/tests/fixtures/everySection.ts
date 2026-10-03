@@ -32,7 +32,7 @@ import {
 } from '../../src/features/home/HomeScreen';
 import { emptyRingTestID } from '../../src/features/home/EmptyRing';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
-import { homeNumbersTestID } from '../../src/features/home/MeasuredRow';
+import { homeNumbersHeadingTestID, homeNumbersTestID } from '../../src/features/home/MeasuredRow';
 import { homePatternsTestID } from '../../src/features/home/PatternCard';
 import { phaseLineTestID } from '../../src/features/home/PhaseLine';
 import {
@@ -161,7 +161,12 @@ export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
   },
   {
     draws: {
-      named: [homeNumbersTestID, homeFiguresLineTestID, homeFiguresPressTestID],
+      named: [
+        homeNumbersTestID,
+        homeNumbersHeadingTestID,
+        homeFiguresLineTestID,
+        homeFiguresPressTestID,
+      ],
       prefixed: ['home-measured-'],
     },
     fills: (hers) => hers.completeCycles >= cyclesBeforeEmiCanMeasureHer,

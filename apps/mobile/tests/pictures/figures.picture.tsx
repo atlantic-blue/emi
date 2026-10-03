@@ -23,7 +23,7 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 const theCaveat = [
   'Rendered from the tree the page produced under the test runner, at 390 by 844 points, and not',
   'captured from a phone. The page loads the same font files the application loads, so the words',
-  'are drawn in Plus Jakarta Sans. The room kept at the top and the bottom is the room an iPhone',
+  'are drawn in Figtree. The room kept at the top and the bottom is the room an iPhone',
   'with a dynamic island keeps for itself, which is 59 points and 34 points. The figures and the',
   'papers are the ones packages/cycle holds, read at render and not typed into this file.',
   'Reproduce with: npm run generate:figures-picture.',

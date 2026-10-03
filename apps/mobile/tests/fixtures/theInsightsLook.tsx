@@ -41,6 +41,7 @@ import {
   historyWaitingTestID,
 } from '../../src/features/history/HistoryScreen';
 
+import { resetExpoSqlite } from '../data/expoSqlite';
 import { dayOf, herDatabase, herPhoneHolds } from './herPhone';
 import { daysOfHerRepeatingSymptoms, theSymptomsThatCameBack } from './herRepeatingSymptoms';
 import { daysOfHerSixCycles, herCycleLengths } from './herSixCycles';
@@ -137,6 +138,26 @@ function theCyclesHerPhoneHolds(): string[] {
  */
 export function theCyclesHerPhoneHeld(): string[] {
   return theCyclesHerPhoneHolds();
+}
+
+/**
+ * The strips the screen actually drew, in its order.
+ *
+ * Her phone holds more cycles than the screen she opens draws as strips, so a case reads the strips
+ * off the glass rather than off the database. A case that walked every cycle on her phone would ask
+ * for a strip the section never draws.
+ */
+export function theStripsSheRead(): string[] {
+  const strips = theCyclesHerPhoneHolds().map(cycleStripTestID);
+
+  return theIdentifiersDrawn().filter((identifier) => strips.includes(identifier));
+}
+
+/** The cycle rows Insights actually drew, in its order, read off the glass for the same reason. */
+export function theRowsInsightsDrew(): string[] {
+  const rows = theCyclesHerPhoneHolds().map(historyCycleTestID);
+
+  return theIdentifiersDrawn().filter((identifier) => rows.includes(identifier));
 }
 
 /**
@@ -367,6 +388,7 @@ export async function sheIsLookingAtTheInsights(drawing: InsightsDrawing): Promi
     theScreenSheWasOn = null;
   }
 
+  resetExpoSqlite();
   await herPhoneHolds(whenSheReadsHerCycles, herDaysBehind(drawing), sheSaidHerCycleRuns);
   theScreenSheWasOn = await renderRouter(appDirectory, { initialUrl: theAddressOf(drawing) });
 }
@@ -388,6 +410,7 @@ export async function sheIsLookingAtHerNumbersOverCyclesOf(
 
   const days = daysOfHerSixCycles(dayOf(whenSheReadsHerCycles), lengths);
 
+  resetExpoSqlite();
   await herPhoneHolds(whenSheReadsHerCycles, days, sheSaidHerCycleRuns);
   theScreenSheWasOn = await renderRouter(appDirectory, { initialUrl: '/' });
 }

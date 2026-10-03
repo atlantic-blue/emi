@@ -487,10 +487,10 @@ import {
   howManyPartsAreHeldTo as howManyInsightsPartsAreHeldTo,
   sheIsLookingAtHerNumbersOverCyclesOf,
   sheIsLookingAtTheInsights,
-  theCyclesHerPhoneHeld,
   theInsightsDrawings,
   thePartNamesTheStagePlaces,
   theScreenOf as theInsightsScreenOf,
+  theStripsSheRead,
   theStyleOf as theStyleOnTheInsights,
   theWashIsAtTheTopOfTheInsights,
   theWordsOfThePillOn,
@@ -6336,11 +6336,9 @@ defineFeature(feature, (test) => {
         resetExpoSqlite();
         await sheIsLookingAtTheInsights('todayCycles');
 
-        for (const startedOn of theCyclesHerPhoneHeld()) {
-          expect(theStyleOnTheInsights(cycleStripTestID(startedOn)).backgroundColor).toBe(
-            colour.card,
-          );
-          expect(theStyleOnTheInsights(cycleStripTestID(startedOn)).borderRadius).toBe(radius.xl);
+        for (const strip of theStripsSheRead()) {
+          expect(theStyleOnTheInsights(strip).backgroundColor).toBe(colour.card);
+          expect(theStyleOnTheInsights(strip).borderRadius).toBe(radius.xl);
         }
 
         expect(theStyleOnTheInsights(homeTrendTestID).backgroundColor).toBe(colour.card);
