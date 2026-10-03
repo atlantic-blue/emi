@@ -33,6 +33,7 @@ import { aDayRecord } from '../fixtures/dayRecord';
 import { herDatabase } from '../fixtures/herPhone';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herKeyIsInTheKeychain, herRandom, herVault } from '../fixtures/herVault';
+import { readableIn } from '../fixtures/whatIsReadable';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -77,26 +78,6 @@ function rawPayloads(): Uint8Array[] {
   return handle
     .all<{ payload: Uint8Array }>('SELECT payload FROM day_log ORDER BY day')
     .map((row) => row.payload);
-}
-
-/**
- * Whether a word survived into the payload, in any spelling a leak could arrive in: the word
- * itself, and the two encodings something that wrote it encoded would have used.
- *
- * The word is spelled every way and the payload is read once, never the other way round. Reading
- * the whole payload back as base64 and looking for a plain word finds a coincidence and calls it a
- * leak: three letters of the base64 alphabet fall into that order in about one payload in two
- * thousand, which is how the slug below turned a merge red.
- */
-function readableIn(payload: Uint8Array, word: string): boolean {
-  const held = Buffer.from(payload).toString('latin1');
-  const spellings = [
-    word,
-    Buffer.from(word, 'utf8').toString('base64'),
-    Buffer.from(word, 'utf8').toString('hex'),
-  ];
-
-  return spellings.some((spelling) => held.includes(spelling));
 }
 
 /** What a plain payload looked like before this step: canonical json, readable by anybody. */

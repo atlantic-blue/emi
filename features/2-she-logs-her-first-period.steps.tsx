@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { type DayRecord } from '@emi/crypto';
+import { type DayRecord, profileBytes } from '@emi/crypto';
 import {
   CYCLE_LENGTH_HIGH_DAYS,
   CYCLE_LENGTH_LOW_DAYS,
@@ -366,6 +366,7 @@ import {
   thePartsTheDayOneDrawingNames,
 } from '../apps/mobile/tests/fixtures/theDrawingOfDayOne';
 import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
+import { readableIn, theFieldAndItsValue } from '../apps/mobile/tests/fixtures/whatIsReadable';
 import {
   aBleedingDay,
   dayOf,
@@ -1056,6 +1057,35 @@ interface OpenApp {
  * renderRouter hangs its own readers on the promise it returns, so the promise is kept and the
  * resolved view is kept beside it.
  */
+/**
+ * The field and the value together, which is how the length she stated would read if her answers
+ * were never sealed. The number alone is two digits, and two digits fall side by side in a payload
+ * of random bytes about once in six hundred payloads.
+ */
+const theCycleLengthUnderItsField = theFieldAndItsValue('cycleLengthDays', sheSaysHerCycleRuns);
+
+/** The one row her answers sit in, as the bytes on the disk, read through no repository. */
+function theRowHerAnswersSitIn(): Uint8Array {
+  const held = herDatabase().all<{ payload: Uint8Array }>('SELECT payload FROM profile')[0];
+
+  if (held === undefined) {
+    throw new Error('this phone holds no profile row, so her first run wrote nothing to read');
+  }
+
+  return held.payload;
+}
+
+/** The same answers as a plain payload: canonical json, which anybody holding the row could read. */
+async function herAnswersInPlainWords(): Promise<Uint8Array> {
+  const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
+
+  if (held === undefined) {
+    throw new Error('this phone holds no profile, so there are no answers to write out plainly');
+  }
+
+  return profileBytes(held, { now: whenSheFinishesTheHold });
+}
+
 async function sheOpens(at: string): Promise<OpenApp> {
   const app = renderRouter(appDirectory, { initialUrl: at });
   const view = await app;
@@ -1516,6 +1546,52 @@ defineFeature(feature, (test) => {
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         sheSaysHerCycleRuns,
       );
+    });
+  });
+
+  test('SCREEN-1, her stated cycle length is not readable in the sealed profile', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    and('she skips the tour Emi opens with', async () => {
+      await sheSkipsTheTour();
+    });
+
+    and('she answers every question of the first run', async () => {
+      await sheAnswersEveryQuestionOfTheFirstRun();
+    });
+
+    and('she presses and holds the ring', async () => {
+      await sheHoldsTheRing();
+    });
+
+    then('her phone holds the cycle length she gave', async () => {
+      expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
+        sheSaysHerCycleRuns,
+      );
+    });
+
+    and('the row her answers sit in does not hold that number in plain words', () => {
+      // The row as the bytes on the disk, read with no repository between it and the scenario,
+      // and under the key her first run drew for itself rather than any key a test knows.
+      expect(readableIn(theRowHerAnswersSitIn(), theCycleLengthUnderItsField)).toBe(false);
+    });
+
+    and('the row is not her answers in plain words, which do hold the number', async () => {
+      const plain = await herAnswersInPlainWords();
+
+      // The same search, held to finding the number, because a search that finds nothing passes
+      // the step above it and proves nothing about the seal.
+      expect(readableIn(plain, theCycleLengthUnderItsField)).toBe(true);
+      expect(Buffer.from(theRowHerAnswersSitIn())).not.toEqual(Buffer.from(plain));
     });
   });
 

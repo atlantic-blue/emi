@@ -16,6 +16,16 @@ Feature: She opens Emi and logs her first period
     And her phone holds the day she said her period started
     And her phone holds the cycle length she gave
 
+  Scenario: SCREEN-1, her stated cycle length is not readable in the sealed profile
+    Given she has never opened Emi before
+    When she opens Emi
+    And she skips the tour Emi opens with
+    And she answers every question of the first run
+    And she presses and holds the ring
+    Then her phone holds the cycle length she gave
+    And the row her answers sit in does not hold that number in plain words
+    And the row is not her answers in plain words, which do hold the number
+
   Scenario: SCREEN-1, she answers everything, leaves before the hold, and nothing is written
     Given she has never opened Emi before
     When she opens Emi
