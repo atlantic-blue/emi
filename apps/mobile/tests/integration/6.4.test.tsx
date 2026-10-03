@@ -80,9 +80,7 @@ describe('the vault key is recovered from the code alone', () => {
       );
 
       expect(
-        screen.getByText(
-          'Nobody at Emi can recover it for you. An Emi that could recover your code would be an Emi that could read your days.',
-        ),
+        screen.getByText("We can't recover it for you. If we could, we could read your days."),
       ).toBeTruthy();
       expect(screen.queryByTestId(recoveryCodeTestID)).toBeNull();
     });

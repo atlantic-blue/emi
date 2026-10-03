@@ -81,7 +81,7 @@ export const spanish: CatalogueIn<'es'> = {
   'cycle.figures.periodDuration': 'Duración de la regla',
   'cycle.figures.printed': 'Cada estudio se nombra como lo imprime su revista.',
   'cycle.figures.quoted':
-    'Cada cifra se cita con las palabras del estudio que la informa, para que puedas comprobarla en vez de creerla.',
+    'Cada cifra se cita con las palabras del propio estudio, para que puedas comprobarla tú misma.',
   'cycle.figures.title': 'De dónde vienen estas cifras',
   'cycle.noRing.line': 'Registra un día en que sangraste y tu ciclo aparece aquí.',
   'cycle.noRing.title': 'Tu anillo está esperando',
@@ -140,17 +140,16 @@ export const spanish: CatalogueIn<'es'> = {
     'Esto es todo lo que registraste en Emi. Emi no es un dispositivo médico.',
   'export.document.title': 'Tu registro',
   'export.document.yes': 'Sí',
-  'export.failed':
-    'Los archivos no se pudieron escribir. Puede que no quede espacio en el teléfono.',
+  'export.failed': 'No pudimos guardar los archivos. Puede que a tu teléfono no le quede espacio.',
   'export.held': '{days} y {cycles}.',
   'export.make': 'Crear los archivos',
   'export.making': 'Creándolos',
   'export.share': 'Compartir',
   'export.title': 'Exportar',
   'export.what':
-    'Dos archivos. Uno que puedes leer y dar a un médico, y otro que puede leer otra aplicación.',
+    'Dos archivos: uno que puedes leer o dar a tu médico, y otro que puede abrir otra aplicación.',
   'export.where':
-    'No se envía nada a ninguna parte. Los archivos se crean en este teléfono y tú eliges quién los recibe.',
+    'No se envía nada a ninguna parte. Los archivos se crean en este teléfono, y tú decides quién los recibe.',
 
   // The word sits inside the sentence rather than opening it, so it is written in lower case.
   'forecast.confidence.high': 'alta',
@@ -184,9 +183,9 @@ export const spanish: CatalogueIn<'es'> = {
   'history.cycleRange': 'del {from} al {to}',
   'history.cycles': 'Tus ciclos',
   'history.dayReads': 'el {ordinal} de {month}',
-  'history.noCycles':
-    'Todavía no hay ningún ciclo registrado. Registra un día en que sangraste y esto se rellena.',
-  'history.nothingRepeats': 'Nada ha vuelto en 3 ciclos todavía.',
+  'history.noCycles': 'Todavía no hay ciclos. Registra un día en que sangraste y esto se rellena.',
+  'history.nothingRepeats':
+    'Nada ha vuelto en 3 ciclos todavía. Sigue registrando y te lo mostraremos.',
   'history.pattern.cycleDay': 'Hacia el día {day} de tu ciclo',
   'history.pattern.evidence': 'en {withIt} de tus últimos {read} ciclos',
   'history.pattern.line': '{when}, {evidence}',
@@ -195,7 +194,7 @@ export const spanish: CatalogueIn<'es'> = {
     one: '{count} de los tuyos está completo.',
     other: '{count} de los tuyos están completos.',
   },
-  'history.patternsNeed': 'Emi nombra un síntoma cuando ha vuelto en {needs} ciclos.',
+  'history.patternsNeed': 'Te señalaremos un síntoma cuando haya vuelto en {needs} ciclos.',
   'history.patterns': 'Lo que vuelve',
   'history.running': 'Todavía en curso',
   'history.runningWithPeriod': '{running}, {periodDays} de sangrado hasta ahora',
@@ -266,8 +265,8 @@ export const spanish: CatalogueIn<'es'> = {
    */
   'lock.cover.wordmark': 'emi',
   'lock.locked.action': 'Desbloquear',
-  'lock.locked.line': 'Desbloquea con tu cara, tu huella o tu código.',
-  'lock.locked.refused': 'Emi sigue bloqueada. Pulsa Desbloquear para intentarlo otra vez.',
+  'lock.locked.line': 'Usa tu cara, tu huella o tu código para abrirla.',
+  'lock.locked.refused': 'Sigue bloqueada. Toca Desbloquear para intentarlo otra vez.',
   'lock.locked.title': 'Emi está bloqueada.',
   'lock.locked.wordmark': 'emi',
   /** What the platform prompt says. The platform draws it, so Emi writes only this line. */
@@ -517,31 +516,28 @@ export const spanish: CatalogueIn<'es'> = {
 
   'recovery.before.action': 'Mostrar mi código',
   'recovery.before.line.nobody':
-    'Nadie en Emi puede recuperarlo por ti. Una Emi que pudiera recuperar tu código sería una Emi que podría leer tus días.',
+    'No podemos recuperarlo por ti. Si pudiéramos, podríamos leer tus días.',
   'recovery.before.line.onlyWay':
-    'Emi está a punto de mostrarte un código de recuperación. Es la única forma de volver a tus ciclos si pierdes este teléfono.',
-  'recovery.before.line.paper':
-    'Escríbelo en papel. Guarda el papel donde guardas otros papeles que importan.',
+    'Ahora verás un código de recuperación. Es la única forma de recuperar tus ciclos si pierdes este teléfono.',
+  'recovery.before.line.paper': 'Escríbelo en papel y guárdalo con tus otros papeles importantes.',
   'recovery.before.title': 'Tus datos están atados a este teléfono',
   'recovery.code.action': 'Lo he escrito',
   'recovery.code.line.once':
-    '{count} caracteres. Emi los muestra una vez y no los guarda en ninguna parte.',
+    '{count} caracteres. Solo los verás una vez, y no guardamos ninguna copia.',
   'recovery.code.line.writeDown':
-    'Escríbelos ahora. La siguiente pantalla te pide que los escribas de nuevo.',
+    'Escríbelos ahora. Después te pediremos que los escribas de nuevo.',
   'recovery.code.title': 'Tu código de recuperación',
   'recovery.confirm.action': 'Hecho',
   'recovery.confirm.label': 'Tu código de recuperación de {count} caracteres',
-  'recovery.confirm.line.checks': 'Emi compara lo que escribes con el código que te mostró.',
-  'recovery.confirm.line.case':
-    'Emi lee las mayúsculas y las minúsculas igual, y no tiene en cuenta los espacios que pongas.',
-  'recovery.confirm.title': 'Escribe el código de nuevo',
-  'recovery.confirm.wrong':
-    'Ese no es el código que Emi te mostró. Léelo del papel y escríbelo otra vez.',
+  'recovery.confirm.line.checks': 'Solo para comprobar que lo tienes bien.',
+  'recovery.confirm.line.case': 'Las mayúsculas y los espacios no importan.',
+  'recovery.confirm.title': 'Escribe tu código de nuevo',
+  'recovery.confirm.wrong': 'No coincide. Mira tu papel e inténtalo otra vez.',
   'recovery.step': 'Paso {step} de {of}',
 
   'settings.answer.back': 'Atrás',
   'settings.answer.cancel': 'Cancelar',
-  'settings.answer.gaveAtFirstRun': 'Al empezar indicaste {answer}.',
+  'settings.answer.gaveAtFirstRun': 'Nos dijiste {answer} al empezar.',
   'settings.answer.save': 'Guardar',
   'settings.answers.back': 'Atrás',
   'settings.answers.birthYear': 'Año de nacimiento',
@@ -562,22 +558,22 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.delete.goes.key': 'La clave que abre cualquiera de esas cosas',
   'settings.delete.goes.settings': 'Tus ajustes',
   'settings.delete.line':
-    'Una pulsación y desaparece. No hay vuelta atrás, ni periodo de espera, y nadie en Emi puede recuperarlo, porque nadie en Emi puede leerlo.',
+    'Una pulsación y desaparece. No hay vuelta atrás ni periodo de espera. Nadie en Emi puede recuperarlo, porque nadie en Emi puede leerlo.',
   'settings.delete.refused':
-    'Tus días ya no están. Este teléfono no ha soltado una cosa que Emi guarda en el llavero. Pulsa otra vez.',
+    'Tus días ya no están, pero tu teléfono se ha quedado con una cosa en el llavero. Pulsa otra vez para terminar.',
   'settings.delete.title': 'Borrarlo todo',
   'settings.delete.working': 'Borrando',
   'settings.deleted.action': 'Empezar de nuevo',
   'settings.deleted.line':
-    'Este teléfono no guarda nada sobre ti. Emi empieza desde un anillo vacío.',
+    'Este teléfono ya no guarda nada sobre ti. Puedes empezar de nuevo cuando quieras.',
   'settings.deleted.title': 'Ya no está.',
   'settings.deleted.withoutTheServer':
-    'Emi no pudo llegar al servidor para quitar tu cuenta de él. Nada puede abrir lo que hay allí ahora: la única clave estaba en este teléfono, y se fue con tus días.',
+    'No pudimos llegar a nuestro servidor para quitar tu cuenta. Nada puede abrir lo que queda allí: la única clave estaba en este teléfono, y se fue con tus días.',
   'settings.settings.answers': 'Tus respuestas',
-  'settings.settings.answersLine': 'Las ocho cosas que le contaste a Emi al empezar',
+  'settings.settings.answersLine': 'Lo que nos contaste al empezar',
   'settings.settings.back': 'Atrás',
   'settings.settings.delete': 'Borrarlo todo',
-  'settings.settings.deleteLine': 'Una pulsación, y no hay vuelta atrás',
+  'settings.settings.deleteLine': 'Una pulsación, y desaparece para siempre',
   'settings.settings.export': 'Exportar',
   'settings.settings.exportLine': 'Dos archivos, creados en este teléfono',
   'settings.settings.lock': 'Bloqueo',

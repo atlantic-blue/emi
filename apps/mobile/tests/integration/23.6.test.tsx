@@ -317,8 +317,8 @@ describe('delete everything tells her it is gone in plain words', () => {
   });
 
   describe('the two deletes that did not finish cleanly', () => {
-    it('tells her the keychain held one thing, and what pressing again does about it', () => {
-      render(
+    it('tells her the keychain held one thing, and what pressing again does about it', async () => {
+      await render(
         <OnAPhone>
           <DeleteEverything
             onBack={() => undefined}
@@ -332,8 +332,8 @@ describe('delete everything tells her it is gone in plain words', () => {
       expect(whatItSays(deleteRefusedTestID)).toBe(theDeleteScreenSays.refused);
     });
 
-    it('tells her our server was not reached, and that the key went with her days', () => {
-      render(
+    it('tells her our server was not reached, and that the key went with her days', async () => {
+      await render(
         <OnAPhone>
           <DeleteEverything
             onBack={() => undefined}
@@ -370,8 +370,8 @@ describe('delete everything tells her it is gone in plain words', () => {
       expect(whatItSays(historyWaitingTestID)).toBe(theInsightsScreenSays.nothingRepeats);
     });
 
-    it('says a figure is quoted in the paper own words, so she can check it herself', () => {
-      render(
+    it('says a figure is quoted in the paper own words, so she can check it herself', async () => {
+      await render(
         <OnAPhone>
           <FiguresScreen figures={publishedFigures} onBack={() => undefined} />
         </OnAPhone>,
@@ -382,8 +382,8 @@ describe('delete everything tells her it is gone in plain words', () => {
   });
 
   describe('the export screen', () => {
-    it('says what the two files are, in terms of who she can hand each one to', () => {
-      render(
+    it('says what the two files are, in terms of who she can hand each one to', async () => {
+      await render(
         <OnAPhone>
           <ExportScreen
             canShare
@@ -399,7 +399,7 @@ describe('delete everything tells her it is gone in plain words', () => {
     });
 
     it('says we could not save them, and names the phone as the likely reason', async () => {
-      render(
+      await render(
         <OnAPhone>
           <ExportScreen
             canShare
@@ -417,8 +417,8 @@ describe('delete everything tells her it is gone in plain words', () => {
   });
 
   describe('the lock she comes back to', () => {
-    it('tells her what to use to open it, rather than naming the act of unlocking', () => {
-      render(
+    it('tells her what to use to open it, rather than naming the act of unlocking', async () => {
+      await render(
         <OnAPhone>
           <LockScreen onUnlock={() => undefined} wasRefused={false} />
         </OnAPhone>,
@@ -428,8 +428,8 @@ describe('delete everything tells her it is gone in plain words', () => {
       expect(screen.getByText(theLockSays.line)).toBeTruthy();
     });
 
-    it('says it is still locked once she has cancelled the prompt, in four words', () => {
-      render(
+    it('says it is still locked once she has cancelled the prompt, in four words', async () => {
+      await render(
         <OnAPhone>
           <LockScreen onUnlock={() => undefined} wasRefused />
         </OnAPhone>,
@@ -443,7 +443,7 @@ describe('delete everything tells her it is gone in plain words', () => {
     it('says we cannot recover it, and why that is the same as not reading her days', async () => {
       const { store, recovery } = await herPhoneWithARecoveryCode();
 
-      render(
+      await render(
         <OnAPhone>
           <RecoverySetup
             now={() => whenSheOpensIt}
@@ -462,7 +462,7 @@ describe('delete everything tells her it is gone in plain words', () => {
     it('says she will see the characters once, and that we keep no copy', async () => {
       const { store, recovery } = await herPhoneWithARecoveryCode();
 
-      render(
+      await render(
         <OnAPhone>
           <RecoverySetup
             now={() => whenSheOpensIt}
@@ -482,7 +482,7 @@ describe('delete everything tells her it is gone in plain words', () => {
     it('asks her to type her code back, and says the capitals and the spaces do not matter', async () => {
       const { store, recovery } = await herPhoneWithARecoveryCode();
 
-      render(
+      await render(
         <OnAPhone>
           <RecoverySetup
             now={() => whenSheOpensIt}
