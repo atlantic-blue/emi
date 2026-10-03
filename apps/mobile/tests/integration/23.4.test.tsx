@@ -115,7 +115,7 @@ const herTrendReads = {
 
 const whatComesBackReads = {
   line: "A symptom you logged once or twice isn't a pattern, so we won't call it one.",
-  waitingNeeds: `Emi names a symptom once it has come back in ${cyclesBeforeAPattern} cycles.`,
+  waitingNeeds: `We'll point out a symptom once it's come back in ${cyclesBeforeAPattern} cycles.`,
 };
 
 /** Every key the screen she opens says, so the voice below is read over all of them at once. */
