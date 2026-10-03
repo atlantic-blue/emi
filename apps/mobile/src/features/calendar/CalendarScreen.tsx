@@ -2,7 +2,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@e
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { PrimaryButton } from '../../components/Button';
+import { SecondaryButton } from '../../components/Button';
 import { Screen } from '../../components/Screen';
 import { aDayOutOfReachLabel, herDayLabel } from '../cycle/copy';
 import type { HerDay } from '../cycle/herWeek';
@@ -112,7 +112,7 @@ export function CalendarScreen({
   };
 
   return (
-    <Screen testID={calendarScreenTestID}>
+    <Screen drawsTheWash testID={calendarScreenTestID} washPhase={phaseOn?.(today)?.phase}>
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.header} testID={calendarHeaderTestID}>
           <Pressable
@@ -175,7 +175,7 @@ export function CalendarScreen({
             <DaySheet {...daySheetWords(shePressed)} onPress={() => onOpenDay(shePressed.day)} />
           )}
 
-          <PrimaryButton
+          <SecondaryButton
             label={calendarCopy.editPeriod}
             onPress={onEditPeriod}
             testID={calendarEditPeriodTestID}

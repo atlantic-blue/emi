@@ -127,7 +127,7 @@ import {
   calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
 import { daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
-import { monthLegendCopy } from '../apps/mobile/src/features/calendar/copy';
+import { editPeriodCopy, monthLegendCopy } from '../apps/mobile/src/features/calendar/copy';
 import { DAYS_IN_A_WEEK } from '../apps/mobile/src/features/cycle/herWeek';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
@@ -245,7 +245,13 @@ import {
   patternCardReads,
   patternWhenReads,
 } from '../apps/mobile/src/features/home/copy';
-import { logFlowDoneTestID, logFlowTestID } from '../apps/mobile/src/features/log/LogFlow';
+import {
+  logFlowDoneTestID,
+  logFlowFlowCardTestID,
+  logFlowSavedTestID,
+  logFlowSymptomsCardTestID,
+  logFlowTestID,
+} from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
 import {
   weekDateTestID,
@@ -456,7 +462,26 @@ import {
   whatTheRangePickerDrew,
   whenSheOpensEmi,
 } from '../apps/mobile/tests/fixtures/thePeriodSheCorrects';
-import { editPeriodSaveTestID } from '../apps/mobile/src/features/calendar/PeriodRangePicker';
+import {
+  editPeriodChangeTestID,
+  editPeriodKeyTestID,
+  editPeriodSaveTestID,
+} from '../apps/mobile/src/features/calendar/PeriodRangePicker';
+import {
+  type LogOrCalendarDrawing,
+  howManyDifferencesAreKeptFor,
+  howManyPartsAreHeldTo,
+  sheIsLookingAtTheLogOrCalendar,
+  theChangeKeyNames,
+  theLogAndCalendarDrawings,
+  theScreenOf,
+  theStyleOf,
+  theWashIsAtTheTopOfTheLogOrCalendar,
+  theWordsOfTheKeyEntry,
+  whatTheLogOrCalendarDoesNotAnswerFor,
+  whenSheReads,
+  whereTheLogOrCalendarDrew,
+} from '../apps/mobile/tests/fixtures/theLogAndCalendarLook';
 import { textDrawnOnAPhaseFill } from '../apps/mobile/tests/fixtures/phaseInk';
 import {
   theDaySheReachesHerLutealPhase,
@@ -6147,6 +6172,145 @@ defineFeature(feature, (test) => {
         expect(Object.keys(unanswered)).toHaveLength(theTodayDrawings.length);
         expect(differs).toEqual(kept);
         expect(howManyPartsTheTodayScreensAreHeldTo()).toBeGreaterThan(50);
+      },
+    );
+  });
+
+  /**
+   * The screens she writes a day on and the screens she corrects one on, each read against the
+   * drawing of it. Every one is opened through its own address, so what a case reads is the screen
+   * she would reach, with the dock under it where a dock reaches it.
+   */
+  test('SCREEN-4, the Log and calendar screens match the redesign prototype', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const washedAtTheTop: LogOrCalendarDrawing[] = [];
+    const unanswered: Record<string, number> = {};
+
+    given(
+      'her phone holds the period she is in, the month behind it and the answers of her first run',
+      () => {
+        jest.useFakeTimers();
+      },
+    );
+
+    when(
+      'she opens the log, a day she lived, a day Emi refuses, her month and her whole period',
+      async () => {
+        for (const drawing of theLogAndCalendarDrawings) {
+          resetExpoSqlite();
+          jest.setSystemTime(whenSheReads(drawing));
+          await sheIsLookingAtTheLogOrCalendar(drawing);
+
+          if (theWashIsAtTheTopOfTheLogOrCalendar()) {
+            washedAtTheTop.push(drawing);
+          }
+
+          unanswered[drawing] = whatTheLogOrCalendarDoesNotAnswerFor(drawing).length;
+        }
+      },
+    );
+
+    then('each of those screens carries the wash across the top of the glass', () => {
+      expect(washedAtTheTop).toEqual([...theLogAndCalendarDrawings]);
+      expect(washedAtTheTop.length).toBeGreaterThan(6);
+    });
+
+    and(
+      'the log stands her flow in one card and her symptoms in a second one under it',
+      async () => {
+        resetExpoSqlite();
+        jest.setSystemTime(whenSheReads('log'));
+        await sheIsLookingAtTheLogOrCalendar('log');
+
+        expect(theStyleOf(logFlowFlowCardTestID).backgroundColor).toBe(colour.card);
+        expect(theStyleOf(logFlowSymptomsCardTestID).backgroundColor).toBe(colour.card);
+        expect(whereTheLogOrCalendarDrew(logFlowFlowCardTestID)).toBeLessThan(
+          whereTheLogOrCalendarDrew(logFlowSymptomsCardTestID),
+        );
+      },
+    );
+
+    and(
+      'the line that says where the day is kept sits under her symptoms, over the one wide button',
+      () => {
+        expect(whereTheLogOrCalendarDrew(logFlowSavedTestID)).toBeGreaterThan(
+          whereTheLogOrCalendarDrew(logFlowSymptomsCardTestID),
+        );
+        expect(whereTheLogOrCalendarDrew(logFlowSavedTestID)).toBeLessThan(
+          whereTheLogOrCalendarDrew(logFlowDoneTestID),
+        );
+        expect(theStyleOf(logFlowDoneTestID).backgroundColor).toBe(colour.accent);
+        expect(theStyleOf(logFlowDoneTestID).borderRadius).toBe(radius.full);
+      },
+    );
+
+    and(
+      'the way off a day Emi refuses is the quieter capsule, not a word among words',
+      async () => {
+        resetExpoSqlite();
+        jest.setSystemTime(whenSheReads('dayRefused'));
+        await sheIsLookingAtTheLogOrCalendar('dayRefused');
+
+        expect(theStyleOf(dayRefusedBackTestID).backgroundColor).toBe(colour.field);
+        expect(theStyleOf(dayRefusedBackTestID).borderRadius).toBe(radius.full);
+        expect(Number(theStyleOf(dayRefusedBackTestID).minHeight)).toBeGreaterThanOrEqual(
+          MINIMUM_TAP_TARGET,
+        );
+      },
+    );
+
+    and(
+      'the way to her whole period sits under the day she pressed, as the quieter capsule',
+      async () => {
+        resetExpoSqlite();
+        jest.setSystemTime(whenSheReads('calendar'));
+        await sheIsLookingAtTheLogOrCalendar('calendar');
+
+        const from = theScreenOf('calendar');
+
+        expect(whereTheLogOrCalendarDrew(daySheetTestID, from)).toBeLessThan(
+          whereTheLogOrCalendarDrew(calendarEditPeriodTestID, from),
+        );
+        expect(theStyleOf(calendarEditPeriodTestID).backgroundColor).toBe(colour.field);
+        expect(theStyleOf(calendarEditPeriodTestID).borderRadius).toBe(radius.full);
+      },
+    );
+
+    and(
+      'her whole period names the days she added and the day she took off, in her own language',
+      async () => {
+        resetExpoSqlite();
+        jest.setSystemTime(whenSheReads('editPeriod'));
+        await sheIsLookingAtTheLogOrCalendar('editPeriod');
+
+        const from = theScreenOf('editPeriod');
+
+        expect(theChangeKeyNames()).toEqual(['added', 'takenOff']);
+        expect(theWordsOfTheKeyEntry('added')).toBe(editPeriodCopy.added);
+        expect(theWordsOfTheKeyEntry('takenOff')).toBe(editPeriodCopy.takenOff);
+        expect(whereTheLogOrCalendarDrew(editPeriodKeyTestID, from)).toBeLessThan(
+          whereTheLogOrCalendarDrew(editPeriodChangeTestID, from),
+        );
+      },
+    );
+
+    and(
+      'each screen draws every part its own drawing names, in the order the drawing places them',
+      () => {
+        const kept = Object.fromEntries(
+          theLogAndCalendarDrawings.map((drawing) => [
+            drawing,
+            howManyDifferencesAreKeptFor(drawing),
+          ]),
+        );
+
+        expect(Object.keys(unanswered)).toHaveLength(theLogAndCalendarDrawings.length);
+        expect(unanswered).toEqual(kept);
+        expect(howManyPartsAreHeldTo()).toBeGreaterThan(55);
       },
     );
   });

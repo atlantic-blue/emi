@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, space, stroke, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -10,7 +10,7 @@ import type { HerDay } from '../cycle/herWeek';
 import { refusalFor } from '../log/editDay';
 import { CycleMonth, type MonthSquare } from './CycleMonth';
 import { editPeriodCopy, whatEmiHoldsSaid, whatSheChangedSaid } from './copy';
-import { sheCanSave, whatSheChanged } from './savePeriod';
+import { type WhatSheChanged, sheCanSave, whatSheChanged } from './savePeriod';
 
 export const editPeriodScreenTestID = 'edit-period';
 export const editPeriodHeaderTestID = 'edit-period-header';
@@ -21,6 +21,19 @@ export const editPeriodLeadTestID = 'edit-period-lead';
 export const editPeriodChangeTestID = 'edit-period-change';
 export const editPeriodSaveTestID = 'edit-period-save';
 export const periodRangePickerTestID = 'period-range-picker';
+
+/** The two kinds of change she can make to the period Emi holds. */
+export const periodChanges = ['added', 'takenOff'] as const;
+
+export type PeriodChange = (typeof periodChanges)[number];
+
+/** The key under the grid, which names the changes she has made since the screen opened. */
+export const editPeriodKeyTestID = 'edit-period-key';
+
+/** One entry of that key: the cue a changed square carries, and the word for that change. */
+export function editPeriodKeyEntryTestID(change: PeriodChange): string {
+  return `${editPeriodKeyTestID}-${change}`;
+}
 
 /** Points. The arrow is read at the size every other way back is read at. */
 const BACK_MARK_SIZE = 22;
@@ -94,6 +107,56 @@ export function PeriodRangePicker({
   return <CycleMonth month={month} squareOf={squareOf} testID={periodRangePickerTestID} />;
 }
 
+/** Points. The cue of an entry, read at the size of the word beside it rather than as a square. */
+const THE_CUE_IS_A_DISC_OF = 14;
+
+/**
+ * What she changed since the screen opened, as the key to the two cues the grid uses.
+ *
+ * The prototype lists her period as rows and writes the word on the row she changed. The grid
+ * draws a square of about forty points, which no second word fits inside, so the word stands under
+ * the grid beside the cue it names: a filled square with a tick is a day she added, and a square
+ * with neither is a day she took off.
+ *
+ * An entry is drawn only for a change she has made, so the words appear exactly where the drawing
+ * shows them and a screen she has not touched carries none.
+ */
+function ChangeKey({ changed }: { readonly changed: WhatSheChanged }): ReactNode {
+  const entries = [
+    {
+      change: 'added' as const,
+      cue: styles.cueAdded,
+      said: editPeriodCopy.added,
+      shown: changed.added.length > 0,
+    },
+    {
+      change: 'takenOff' as const,
+      cue: styles.cueTakenOff,
+      said: editPeriodCopy.takenOff,
+      shown: changed.removed.length > 0,
+    },
+  ].filter((entry) => entry.shown);
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  return (
+    <View style={styles.key} testID={editPeriodKeyTestID}>
+      {entries.map((entry) => (
+        <View
+          key={entry.change}
+          style={styles.keyEntry}
+          testID={editPeriodKeyEntryTestID(entry.change)}
+        >
+          <View style={[styles.cue, entry.cue]} />
+          <Text style={styles.keyWord}>{entry.said}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
 interface Props extends PickerProps {
   /** The days Emi held when she opened the screen, which is what the line under the grid counts from. */
   readonly held: readonly string[];
@@ -122,7 +185,7 @@ export function EditPeriodScreen({
   const changed = whatSheChanged({ held, ticked });
 
   return (
-    <Screen testID={editPeriodScreenTestID}>
+    <Screen drawsTheWash testID={editPeriodScreenTestID}>
       <View style={styles.header} testID={editPeriodHeaderTestID}>
         <Pressable
           accessibilityLabel={editPeriodCopy.back}
@@ -162,6 +225,8 @@ export function EditPeriodScreen({
           ticked={ticked}
           today={today}
         />
+
+        <ChangeKey changed={changed} />
 
         <Text style={styles.change} testID={editPeriodChangeTestID}>
           {ticked.length === 0 ? editPeriodCopy.noDayLeft : whatSheChangedSaid(changed)}
@@ -204,6 +269,28 @@ const styles = StyleSheet.create({
   cancelLabel: {
     color: colour.accent,
     ...textStyle('label-md'),
+  },
+  cue: {
+    borderColor: colour.accent,
+    borderRadius: radius.full,
+    // A border with no style named is a border a browser does not draw, so the picture of this
+    // screen would show the word with nothing beside it.
+    borderStyle: 'solid',
+    borderWidth: stroke.icon,
+    height: THE_CUE_IS_A_DISC_OF,
+    width: THE_CUE_IS_A_DISC_OF,
+  },
+  cueAdded: { backgroundColor: colour.accent },
+  cueTakenOff: { borderColor: colour.secondaryText },
+  key: {
+    flexDirection: 'row',
+    gap: space.spaceLg,
+    marginTop: space.spaceMd,
+  },
+  keyEntry: { alignItems: 'center', flexDirection: 'row', gap: space.spaceSm },
+  keyWord: {
+    color: colour.accent,
+    ...textStyle('label-sm'),
   },
   // What she changed sits under the grid rather than over it, because the grid is the answer and
   // this line is what Emi read back off it.

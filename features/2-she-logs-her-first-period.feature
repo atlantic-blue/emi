@@ -667,6 +667,17 @@ Feature: She opens Emi and logs her first period
     And the lock she comes back through carries the wordmark, the disc and the one button
     And each state draws every part its own drawing names, in the order the drawing places them
 
+  Scenario: SCREEN-4, the Log and calendar screens match the redesign prototype
+    Given her phone holds the period she is in, the month behind it and the answers of her first run
+    When she opens the log, a day she lived, a day Emi refuses, her month and her whole period
+    Then each of those screens carries the wash across the top of the glass
+    And the log stands her flow in one card and her symptoms in a second one under it
+    And the line that says where the day is kept sits under her symptoms, over the one wide button
+    And the way off a day Emi refuses is the quieter capsule, not a word among words
+    And the way to her whole period sits under the day she pressed, as the quieter capsule
+    And her whole period names the days she added and the day she took off, in her own language
+    And each screen draws every part its own drawing names, in the order the drawing places them
+
   Scenario: SCREEN-2, the home screen says hi to her by name
     Given she gave the name Ada at her first run, and her phone holds the one period she logged
     When she opens Emi
