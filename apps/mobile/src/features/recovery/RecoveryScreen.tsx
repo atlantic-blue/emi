@@ -1,6 +1,6 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
 import { type RecoveryScreen as Which, recoveryStepLabel } from './copy';
@@ -34,18 +34,20 @@ export function RecoveryScreen({
   children,
 }: Props): ReactNode {
   return (
-    <Screen testID={`recovery-${screen}`}>
+    <Screen drawsTheWash testID={`recovery-${screen}`}>
       <ScrollView contentContainerStyle={styles.body}>
         <Text style={styles.step}>{recoveryStepLabel(screen)}</Text>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" style={styles.title} testID={recoveryTitleTestID}>
           {title}
         </Text>
-        {lines.map((line) => (
-          <Text key={line} style={styles.line}>
-            {line}
-          </Text>
-        ))}
         {children}
+        <View testID={recoveryLinesTestID}>
+          {lines.map((line) => (
+            <Text key={line} style={styles.line}>
+              {line}
+            </Text>
+          ))}
+        </View>
       </ScrollView>
       <Pressable
         accessibilityRole="button"

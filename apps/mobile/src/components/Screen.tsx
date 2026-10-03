@@ -1,5 +1,5 @@
 import { colour } from '@emi/tokens';
-import { useRoomAtTheFoot } from '@emi/ui';
+import { Wash, useRoomAtTheFoot } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,10 +24,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface Props {
   readonly testID?: string;
+  /**
+   * The soft gradient the prototype paints across the top of a screen. It is asked for here rather
+   * than drawn on every ground, because the flows take it one at a time and a screen that has not
+   * been redrawn yet would otherwise carry the new colour under the old layout.
+   */
+  readonly drawsTheWash?: boolean;
   readonly children: ReactNode;
 }
 
-export function Screen({ testID, children }: Props): ReactNode {
+export function Screen({ testID, drawsTheWash = false, children }: Props): ReactNode {
   const insets = useSafeAreaInsets();
   const roomForTheDock = useRoomAtTheFoot();
 
@@ -44,6 +50,11 @@ export function Screen({ testID, children }: Props): ReactNode {
       ]}
       testID={testID}
     >
+      {drawsTheWash ? (
+        <View pointerEvents="none" style={styles.wash}>
+          <Wash />
+        </View>
+      ) : null}
       {children}
     </View>
   );
@@ -51,4 +62,6 @@ export function Screen({ testID, children }: Props): ReactNode {
 
 const styles = StyleSheet.create({
   screen: { backgroundColor: colour.ground, flex: 1 },
+  // Colour and nothing else, so it is drawn behind everything on the screen and takes no touch.
+  wash: { left: 0, position: 'absolute', right: 0, top: 0 },
 });

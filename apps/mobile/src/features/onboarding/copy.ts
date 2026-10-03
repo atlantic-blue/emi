@@ -103,6 +103,11 @@ export const firstRunCopy = {
   },
   today: {
     title: words('onboarding.today.title'),
+    /**
+     * The word in the middle of its header, which names the day she is logging. The catalogue
+     * already holds that word for the calendar in all three languages, and a second key for it
+     * would be a second sentence the moment somebody edited one of them.
+     */
     header: words('calendar.today'),
     lines: [words('onboarding.today.line.skip')],
     action: words('onboarding.today.action'),

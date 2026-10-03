@@ -121,11 +121,11 @@ export function HoldToBegin({ onHeld }: Props): ReactNode {
   const filled = (heldFor / HOLD_MILLISECONDS) * FULL_TURN_DEGREES;
 
   return (
-    <Screen testID={holdScreenTestID}>
+    <Screen drawsTheWash testID={holdScreenTestID}>
       <View style={styles.body}>
         <View style={styles.header}>
           <Icon colour={colour.accent} name="ring" size={MARK_SIZE} />
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" style={styles.title} testID={holdTitleTestID}>
             {firstRunCopy.hold.title}
           </Text>
         </View>
@@ -164,7 +164,7 @@ export function HoldToBegin({ onHeld }: Props): ReactNode {
             </Pressable>
           </View>
 
-          <View style={styles.said}>
+          <View style={styles.said} testID={holdSaidTestID}>
             <Text style={styles.instruction}>{firstRunCopy.hold.instruction}</Text>
             {refused ? (
               <Text style={styles.refused} testID={holdRefusedTestID}>

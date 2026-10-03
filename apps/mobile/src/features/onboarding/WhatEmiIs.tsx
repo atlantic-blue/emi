@@ -8,6 +8,7 @@ export function WhatEmiIs({ onContinue }: { readonly onContinue: () => void }): 
   return (
     <OnboardingScreen
       actionLabel={firstRunCopy.welcome.action}
+      header="label"
       lines={firstRunCopy.welcome.lines}
       onAction={onContinue}
       screen="welcome"

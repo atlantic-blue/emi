@@ -62,7 +62,7 @@ export function WhatEmiDoesWithIt({ focus, name, onContinue }: Props): ReactNode
     };
 
   return (
-    <Screen testID={whatEmiDoesTestID}>
+    <Screen drawsTheWash testID={whatEmiDoesTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <Text accessibilityRole="header" style={styles.title} testID={whatEmiDoesTitleTestID}>
           {whatEmiDoesTitle(name)}

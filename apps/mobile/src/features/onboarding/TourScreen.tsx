@@ -67,7 +67,7 @@ export function TourScreen({ card, onNext, onBack, onSkip }: Props): ReactNode {
   const at = tourCards.indexOf(card);
 
   return (
-    <Screen testID={tourScreenTestID(card)}>
+    <Screen drawsTheWash testID={tourScreenTestID(card)}>
       <View style={styles.header}>
         <Icon colour={colour.accent} name="ring" size={MARK_SIZE} testID={tourMarkTestID} />
         <View style={styles.headerEnd}>
@@ -81,11 +81,11 @@ export function TourScreen({ card, onNext, onBack, onSkip }: Props): ReactNode {
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <View style={styles.band}>{pictureOf(card)}</View>
 
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" style={styles.title} testID={tourTitleTestID}>
           {said.title}
         </Text>
 
-        <Card>
+        <Card testID={tourLinesTestID}>
           {said.lines.map((line, index) => (
             <Text key={line} style={index === 0 ? styles.line : [styles.line, styles.lineAfter]}>
               {line}
