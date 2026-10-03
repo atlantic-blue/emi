@@ -214,6 +214,14 @@ screen.
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
 with `npm run generate:past-day-picture`.
 
+A day ahead of today is refused, and so is an address that is not a date. Emi says which of the two
+it is and offers the way back.
+
+![The two days Emi refuses](../brand/screens/day-refused.png)
+
+Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
+with `npm run generate:day-refused-picture`.
+
 ## Feature 3: Emi predicts, and says how sure it is
 
 Emi works out when her next period is likely to start, and it says so as a range with a confidence

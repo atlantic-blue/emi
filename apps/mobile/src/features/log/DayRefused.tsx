@@ -1,8 +1,9 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
+import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { words } from '../../language';
+import { SecondaryButton } from '../../components/Button';
 import { Screen } from '../../components/Screen';
 import type { DayRefusal } from './editDay';
 
@@ -36,47 +37,36 @@ export function DayRefused({ refusal, onBack }: Props): ReactNode {
   const said = dayRefusedCopy[refusal];
 
   return (
-    <Screen testID={dayRefusedTestID}>
+    <Screen drawsTheWash testID={dayRefusedTestID}>
       <View style={styles.body}>
-        <Text accessibilityRole="header" style={styles.title} testID={dayRefusedTitleTestID}>
-          {said.title}
-        </Text>
-        <Text style={styles.line} testID={dayRefusedLineTestID}>
-          {said.line}
-        </Text>
+        <View style={styles.said}>
+          <Text accessibilityRole="header" style={styles.title} testID={dayRefusedTitleTestID}>
+            {said.title}
+          </Text>
+          <Text style={styles.line} testID={dayRefusedLineTestID}>
+            {said.line}
+          </Text>
+        </View>
 
-        <Pressable
-          accessibilityRole="button"
+        <SecondaryButton
+          label={dayRefusedBackLabel}
           onPress={onBack}
-          style={styles.back}
           testID={dayRefusedBackTestID}
-        >
-          <Text style={styles.backLabel}>{dayRefusedBackLabel}</Text>
-        </Pressable>
+        />
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  back: {
-    alignItems: 'center',
-    backgroundColor: colour.accent,
-    borderRadius: radius.md,
-    justifyContent: 'center',
-    marginTop: space.spaceXl,
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceLg,
-  },
-  backLabel: {
-    color: colour.card,
-    ...textStyle('body-lg'),
-  },
   body: {
     flex: 1,
+    gap: space.spaceLg,
     padding: space.spaceLg,
   },
+  // The two sentences stand together in the middle of the glass, with the way back at the foot,
+  // which is where every other screen of the prototype puts the thing she presses.
+  said: { flexGrow: 1, justifyContent: 'center' },
   line: {
     color: colour.secondaryText,
     ...textStyle('body-lg'),

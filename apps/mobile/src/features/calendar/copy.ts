@@ -92,7 +92,11 @@ function theLine(cycle: string | undefined, logged: string | undefined): string 
 
 /** The words of the period picker. */
 export const editPeriodCopy = {
+  /** The marker on a day she has added to the period since the screen opened. */
+  added: words('calendar.editPeriod.addedDay'),
   back: words('calendar.editPeriod.back'),
+  /** The marker on a day she has taken off it. */
+  takenOff: words('calendar.editPeriod.takenOffDay'),
   cancel: words('calendar.editPeriod.cancel'),
   noDayLeft: words('calendar.editPeriod.noDayLeft'),
   save: words('calendar.editPeriod.save'),

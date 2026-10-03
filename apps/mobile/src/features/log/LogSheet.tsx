@@ -20,7 +20,12 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-
 
 import { EnergyScale } from './EnergyScale';
 import { MoodPicker } from './MoodPicker';
-import { SymptomGroupSection, groupHeadings, symptomGroupTestID } from './SymptomGroup';
+import {
+  SymptomGroupSection,
+  groupHeadings,
+  symptomGroupHeadingTestID,
+  symptomGroupTestID,
+} from './SymptomGroup';
 import { Temperature } from './Temperature';
 import { Weight } from './Weight';
 import { sectionsFor } from './search';
@@ -208,6 +213,7 @@ export function LogSheet({
                   ? found(section.symptoms.length)
                   : groupHeadings[section.group]
               }
+              headingTestID={symptomGroupHeadingTestID(section.group ?? 'found')}
               onToggle={toggle}
               picked={picked}
               symptoms={section.symptoms}
