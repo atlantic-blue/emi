@@ -76,7 +76,7 @@ export const english = {
   'cycle.figures.periodDuration': 'Period length',
   'cycle.figures.printed': 'A paper is named here as its journal prints it.',
   'cycle.figures.quoted':
-    'Each figure is quoted in the words the paper reports it in, so you can check it rather than trust it.',
+    "Each figure is quoted in the paper's own words, so you can check it for yourself.",
   'cycle.figures.title': 'Where these figures come from',
   'cycle.noRing.line': 'Log a day you bled and your cycle appears here.',
   'cycle.noRing.title': 'Your ring is waiting',
@@ -134,16 +134,16 @@ export const english = {
   'export.document.what': 'This is everything you logged in Emi. Emi is not a medical device.',
   'export.document.title': 'Your record',
   'export.document.yes': 'Yes',
-  'export.failed': 'The files could not be written. There may be no room left on the phone.',
+  'export.failed': "We couldn't save the files. Your phone may be out of space.",
   'export.held': '{days} and {cycles}.',
   'export.make': 'Make the files',
   'export.making': 'Making them',
   'export.share': 'Share',
   'export.title': 'Export',
   'export.what':
-    'Two files. One you can read and give to a doctor, one another application can read.',
+    'Two files: one you can read or give to your doctor, and one another app can open.',
   'export.where':
-    'Nothing is sent anywhere. The files are made on this phone and you choose who gets them.',
+    'Nothing is sent anywhere. The files are made on this phone, and you decide who gets them.',
 
   'forecast.confidence.high': 'High',
   'forecast.confidence.low': 'Low',
@@ -176,8 +176,9 @@ export const english = {
   'history.cycleRange': '{from} to {to}',
   'history.cycles': 'Your cycles',
   'history.dayReads': 'the {ordinal} of {month}',
-  'history.noCycles': 'No cycle is recorded yet. Log a day you bled and this fills in.',
-  'history.nothingRepeats': 'Nothing has come back in 3 cycles yet.',
+  'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
+  'history.nothingRepeats':
+    "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
   'history.pattern.cycleDay': 'About day {day} of your cycle',
   'history.pattern.evidence': 'in {withIt} of your last {read} cycles',
   'history.pattern.line': '{when}, {evidence}',
@@ -186,7 +187,7 @@ export const english = {
     one: '{count} of yours is complete.',
     other: '{count} of yours are complete.',
   },
-  'history.patternsNeed': 'Emi names a symptom once it has come back in {needs} cycles.',
+  'history.patternsNeed': "We'll point out a symptom once it's come back in {needs} cycles.",
   'history.patterns': 'What comes back',
   'history.running': 'Still running',
   'history.runningWithPeriod': '{running}, {periodDays} of bleeding so far',
@@ -266,8 +267,8 @@ export const english = {
    */
   'lock.cover.wordmark': 'emi',
   'lock.locked.action': 'Unlock',
-  'lock.locked.line': 'Unlock with your face, your fingerprint or your passcode.',
-  'lock.locked.refused': 'Emi is still locked. Press Unlock to try again.',
+  'lock.locked.line': 'Use your face, your fingerprint or your passcode to open it.',
+  'lock.locked.refused': 'Still locked. Tap Unlock to try again.',
   'lock.locked.title': 'Emi is locked.',
   'lock.locked.wordmark': 'emi',
   /** What the platform prompt says. The platform draws it, so Emi writes only this line. */
@@ -528,30 +529,27 @@ export const english = {
 
   'recovery.before.action': 'Show my code',
   'recovery.before.line.nobody':
-    'Nobody at Emi can recover it for you. An Emi that could recover your code would be an Emi that could read your days.',
+    "We can't recover it for you. If we could, we could read your days.",
   'recovery.before.line.onlyWay':
-    'Emi is about to show you a recovery code. It is the only way back to your cycles if you lose this phone.',
-  'recovery.before.line.paper':
-    'Write it on paper. Keep the paper where you keep other paper that matters.',
+    "Next, you'll see a recovery code. It's the only way to get your cycles back if you lose this phone.",
+  'recovery.before.line.paper': 'Write it on paper and keep it with your other important papers.',
   'recovery.before.title': 'Your data is locked to this phone',
-  'recovery.code.action': 'I have written it down',
-  'recovery.code.line.once': '{count} characters. Emi shows them once and stores them nowhere.',
-  'recovery.code.line.writeDown':
-    'Write them down now. The next screen asks you to type them back.',
+  'recovery.code.action': "I've written it down",
+  'recovery.code.line.once':
+    "{count} characters. You'll only see them once, and we don't keep a copy.",
+  'recovery.code.line.writeDown': "Write them down now. Next, you'll type them back.",
   'recovery.code.title': 'Your recovery code',
   'recovery.confirm.action': 'Done',
   'recovery.confirm.label': 'Your {count} character recovery code',
-  'recovery.confirm.line.checks': 'Emi checks what you type against the code it showed you.',
-  'recovery.confirm.line.case':
-    'Emi reads upper case and lower case the same way, and ignores the spaces you put in.',
-  'recovery.confirm.title': 'Type the code back',
-  'recovery.confirm.wrong':
-    'That is not the code Emi showed you. Read it off the paper and type it again.',
+  'recovery.confirm.line.checks': "Just to check you've got it right.",
+  'recovery.confirm.line.case': "Capitals and spaces don't matter.",
+  'recovery.confirm.title': 'Type your code back',
+  'recovery.confirm.wrong': "That doesn't match. Check your paper and try again.",
   'recovery.step': 'Step {step} of {of}',
 
   'settings.answer.back': 'Back',
   'settings.answer.cancel': 'Cancel',
-  'settings.answer.gaveAtFirstRun': 'You gave {answer} at the first run.',
+  'settings.answer.gaveAtFirstRun': 'You told us {answer} when you started.',
   'settings.answer.save': 'Save',
   'settings.answers.back': 'Back',
   'settings.answers.birthYear': 'Year of birth',
@@ -572,21 +570,22 @@ export const english = {
   'settings.delete.goes.key': 'The key that opens any of it',
   'settings.delete.goes.settings': 'Your settings',
   'settings.delete.line':
-    'One press and it is gone. There is no undo, no waiting period, and nobody at Emi can bring it back, because nobody at Emi can read it.',
+    "One press and it's gone. No undo, no waiting period. Nobody at Emi can bring it back, because nobody at Emi can read it.",
   'settings.delete.refused':
-    'Your days are gone. This phone would not let go of one thing Emi keeps in the keychain. Press again.',
+    'Your days are gone, but your phone held on to one thing in the keychain. Press again to finish.',
   'settings.delete.title': 'Delete everything',
   'settings.delete.working': 'Deleting',
   'settings.deleted.action': 'Start again',
-  'settings.deleted.line': 'This phone holds nothing about you. Emi starts from an empty ring.',
-  'settings.deleted.title': 'It is gone.',
+  'settings.deleted.line':
+    'This phone holds nothing about you now. You can start fresh whenever you like.',
+  'settings.deleted.title': "It's gone.",
   'settings.deleted.withoutTheServer':
-    'Emi could not reach the server to take your account off it. Nothing can open what is up there now: the only key was on this phone, and it went with your days.',
+    "We couldn't reach our server to remove your account. Nothing can open what's left there: the only key was on this phone, and it went with your days.",
   'settings.settings.answers': 'Your answers',
-  'settings.settings.answersLine': 'The eight things you told Emi at the first run',
+  'settings.settings.answersLine': 'What you told us when you started',
   'settings.settings.back': 'Back',
   'settings.settings.delete': 'Delete everything',
-  'settings.settings.deleteLine': 'One press, and there is no undo',
+  'settings.settings.deleteLine': "One press, and it's gone for good",
   'settings.settings.export': 'Export',
   'settings.settings.exportLine': 'Two files, made on this phone',
   'settings.settings.lock': 'Lock',

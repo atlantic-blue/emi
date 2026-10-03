@@ -76,7 +76,7 @@ const theWordsOfEachWaitingSection = [
   },
   {
     heading: 'What comes back',
-    needs: 'Emi names a symptom once it has come back in 3 cycles.',
+    needs: "We'll point out a symptom once it's come back in 3 cycles.",
     read: '0 of yours are complete.',
     section: 'patterns',
   },

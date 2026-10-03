@@ -240,7 +240,7 @@ describe('the lock shows when she comes back to the application', () => {
       expect(whatSheCanRead()).not.toContain(theSymptom.name);
     });
 
-    it('says Emi is still locked, and asks the phone again when she presses Unlock', async () => {
+    it('says it is still locked, and asks the phone again when she presses Unlock', async () => {
       sheAnswersThePrompt(cancelled, unlocked);
 
       await sheLeavesEmi();

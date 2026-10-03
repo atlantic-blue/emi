@@ -251,9 +251,15 @@ import {
   tourSkipTestID,
 } from '../apps/mobile/src/features/onboarding/TourScreen';
 import {
+  settingsDeleteTestID,
   settingsExportTestID,
   settingsScreenTestID,
 } from '../apps/mobile/src/features/settings/SettingsScreen';
+import {
+  deleteActionTestID,
+  deleteScreenTestID,
+  deletedScreenTestID,
+} from '../apps/mobile/src/features/settings/DeleteEverything';
 import {
   type TourCard,
   cyclesBeforeAForecastSentence,
@@ -279,7 +285,10 @@ import {
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
 import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
 import { aDayRecord } from '../apps/mobile/tests/fixtures/dayRecord';
-import { resetExpoSecureStore } from '../apps/mobile/tests/fixtures/expoSecureStore';
+import {
+  itemsInTheKeychain,
+  resetExpoSecureStore,
+} from '../apps/mobile/tests/fixtures/expoSecureStore';
 import {
   firstForecastActionTestID,
   firstForecastLinesTestID,
@@ -846,6 +855,74 @@ const adviceAndAlarm: readonly string[] = [
   'alert',
 ];
 
+/**
+ * The words the privacy screens, the insights screen, the lock and the recovery code say after
+ * this step, each under the key that holds it. Written out here rather than read off the catalogue,
+ * because a sentence read off the thing it is holding moves with it and catches nothing.
+ */
+const thePrivacyScreensSayInEnglish: Readonly<Record<string, string>> = {
+  'cycle.figures.quoted':
+    "Each figure is quoted in the paper's own words, so you can check it for yourself.",
+  'export.failed': "We couldn't save the files. Your phone may be out of space.",
+  'export.what':
+    'Two files: one you can read or give to your doctor, and one another app can open.',
+  'export.where':
+    'Nothing is sent anywhere. The files are made on this phone, and you decide who gets them.',
+  'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
+  'history.nothingRepeats':
+    "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
+  'history.patternsNeed': "We'll point out a symptom once it's come back in {needs} cycles.",
+  'lock.locked.line': 'Use your face, your fingerprint or your passcode to open it.',
+  'lock.locked.refused': 'Still locked. Tap Unlock to try again.',
+  'lock.locked.title': 'Emi is locked.',
+  'recovery.before.line.nobody':
+    "We can't recover it for you. If we could, we could read your days.",
+  'recovery.before.line.onlyWay':
+    "Next, you'll see a recovery code. It's the only way to get your cycles back if you lose this phone.",
+  'recovery.before.line.paper': 'Write it on paper and keep it with your other important papers.',
+  'recovery.code.action': "I've written it down",
+  'recovery.code.line.once':
+    "{count} characters. You'll only see them once, and we don't keep a copy.",
+  'recovery.code.line.writeDown': "Write them down now. Next, you'll type them back.",
+  'recovery.confirm.line.case': "Capitals and spaces don't matter.",
+  'recovery.confirm.line.checks': "Just to check you've got it right.",
+  'recovery.confirm.title': 'Type your code back',
+  'recovery.confirm.wrong': "That doesn't match. Check your paper and try again.",
+  'settings.answer.gaveAtFirstRun': 'You told us {answer} when you started.',
+  'settings.delete.line':
+    "One press and it's gone. No undo, no waiting period. Nobody at Emi can bring it back, because nobody at Emi can read it.",
+  'settings.delete.refused':
+    'Your days are gone, but your phone held on to one thing in the keychain. Press again to finish.',
+  'settings.deleted.line':
+    'This phone holds nothing about you now. You can start fresh whenever you like.',
+  'settings.deleted.title': "It's gone.",
+  'settings.deleted.withoutTheServer':
+    "We couldn't reach our server to remove your account. Nothing can open what's left there: the only key was on this phone, and it went with your days.",
+  'settings.settings.answersLine': 'What you told us when you started',
+  'settings.settings.deleteLine': "One press, and it's gone for good",
+};
+
+const theKeysOfThePrivacyScreens: readonly string[] = Object.keys(thePrivacyScreensSayInEnglish);
+
+/**
+ * The two lines of these screens that name Emi on purpose: the claim about who cannot bring her
+ * days back, and the lock, which names the application it is holding shut.
+ */
+const theTwoPrivacyLinesThatNameEmi: readonly string[] = [
+  'lock.locked.title',
+  'settings.delete.line',
+];
+
+/** Every word these screens say in one language, out of that language's own catalogue. */
+function theWordsOfThePrivacyScreensIn(
+  language: Language,
+  keys: readonly string[] = theKeysOfThePrivacyScreens,
+): string[] {
+  const catalogue = theCatalogueOf(language);
+
+  return keys.flatMap((key) => formsOf(catalogue[key] ?? ''));
+}
+
 /** How many complete cycles her phone holds in the middle of her month, before she logs anything. */
 const theCyclesBehindHer = 6;
 
@@ -1050,7 +1127,7 @@ function herCompleteCycles(): number {
 const theThreeSectionsSayTheyNeed: readonly string[] = [
   'Your numbers arrive with your second period.',
   'Your chart appears once 2 cycles are complete.',
-  'Emi names a symptom once it has come back in 3 cycles.',
+  "We'll point out a symptom once it's come back in 3 cycles.",
 ];
 
 /** The drawing of day one, below the ring, which places a waiting section for each of the three. */
@@ -3739,7 +3816,7 @@ defineFeature(feature, (test) => {
 
     and('she is told every figure is quoted in the words the paper reports it in', () => {
       expect(whatItSays(figuresQuotedTestID)).toBe(
-        'Each figure is quoted in the words the paper reports it in, so you can check it rather than trust it.',
+        "Each figure is quoted in the paper's own words, so you can check it for yourself.",
       );
     });
 
@@ -5904,7 +5981,7 @@ defineFeature(feature, (test) => {
   // before she reads its words.
   test('SCREEN-2, the cards and rows take the redesign look', ({ given, when, and, then }) => {
     const theWordsOfTheRow = 'Your answers';
-    const theLineUnderIt = 'The eight things you told Emi at the first run';
+    const theLineUnderIt = 'What you told us when you started';
     const whatTheRowOpens = 'Your name, your year of birth and six answers';
 
     const styleOfPart = (testID: string): Record<string, unknown> =>
@@ -6278,6 +6355,90 @@ defineFeature(feature, (test) => {
             holds: false,
           });
         }
+      }
+    });
+  });
+
+  test('SCREEN-2, delete everything tells her it is gone in plain words', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    given('she has six cycles of her own on this phone', async () => {
+      await herPhoneHolds(whenSheOpensIt, herSixPeriodsAndAWrongMonday());
+
+      expect(listDayLogs(herDatabase()).length).toBeGreaterThan(0);
+    });
+
+    when('she opens Privacy and reads the row that would delete everything', async () => {
+      await sheOpens('/settings');
+
+      expect(whatItSays(settingsDeleteTestID)).toContain(
+        thePrivacyScreensSayInEnglish['settings.settings.deleteLine'],
+      );
+    });
+
+    and('she walks to the screen behind that row and reads what one press costs', async () => {
+      await shePresses(settingsDeleteTestID);
+
+      expect(whatItSays(deleteScreenTestID)).toContain(
+        thePrivacyScreensSayInEnglish['settings.delete.line'],
+      );
+    });
+
+    and('she presses delete everything', async () => {
+      await shePresses(deleteActionTestID);
+      await waitFor(() => expect(screen.getByTestId(deletedScreenTestID)).toBeTruthy());
+    });
+
+    then('she reads that it is gone, and that she can start fresh whenever she likes', () => {
+      const said = whatItSays(deletedScreenTestID);
+
+      expect(said).toContain(thePrivacyScreensSayInEnglish['settings.deleted.title']);
+      expect(said).toContain(thePrivacyScreensSayInEnglish['settings.deleted.line']);
+      expect(said).not.toContain('empty ring');
+    });
+
+    and('her phone holds none of her days and nothing in the keychain', () => {
+      expect(listDayLogs(herDatabase())).toEqual([]);
+      expect(itemsInTheKeychain()).toEqual({});
+    });
+
+    and('these screens say all of this in each of the three languages, as you and as we', () => {
+      for (const [key, said] of Object.entries(thePrivacyScreensSayInEnglish)) {
+        expect({ key, said: theCatalogueOf('en')[key] }).toEqual({ key, said });
+      }
+
+      for (const language of languages) {
+        const missing = theKeysOfThePrivacyScreens.filter(
+          (key) => theWordsOfThePrivacyScreensIn(language, [key]).join('').length === 0,
+        );
+        const read = theWordsOfThePrivacyScreensIn(language).join('\n');
+
+        expect({ language, missing }).toEqual({ language, missing: [] });
+        expect({
+          language,
+          asWe: howEachLanguageSaysWe[language].test(read),
+          asYou: howEachLanguageSaysYou[language].test(read),
+        }).toEqual({ language, asWe: true, asYou: true });
+      }
+
+      expect(languages.length).toBe(3);
+    });
+
+    and('the only two lines that name Emi are the claim about her days and the lock itself', () => {
+      for (const language of languages) {
+        const naming = theKeysOfThePrivacyScreens
+          .filter((key) =>
+            theWordsOfThePrivacyScreensIn(language, [key]).join('\n').includes('Emi'),
+          )
+          .sort();
+
+        expect({ language, naming }).toEqual({
+          language,
+          naming: [...theTwoPrivacyLinesThatNameEmi].sort(),
+        });
       }
     });
   });

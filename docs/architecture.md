@@ -390,7 +390,7 @@ claim in this product that cannot check itself.
 
 A server that cannot be reached does not stop any of it. A woman who presses delete wants her days
 gone now, and a radio she cannot use is no reason to leave readable days on the phone in her hand.
-So the phone is emptied either way and the screen says what happened: Emi could not reach the server,
+So the phone is emptied either way and the screen says what happened: we could not reach our server,
 and nothing can open what is up there, because the only key was on this phone and it went with her
 days. A refusal from the api is read the same way, since an unknown account and a signature that
 does not verify are answered identically by design, and the honest reading of a refusal is that the

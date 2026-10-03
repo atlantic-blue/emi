@@ -83,7 +83,7 @@ export const russian: CatalogueIn<'ru'> = {
   'cycle.figures.periodDuration': 'Длительность менструации',
   'cycle.figures.printed': 'Каждое исследование названо так, как его печатает журнал.',
   'cycle.figures.quoted':
-    'Каждая цифра приведена словами исследования, которое её сообщает, чтобы вы могли её проверить, а не поверить на слово.',
+    'Каждая цифра приведена словами самого исследования, чтобы вы могли проверить её сами.',
   'cycle.figures.title': 'Откуда взяты эти цифры',
   'cycle.noRing.line': 'Отметьте день, когда шла кровь, и ваш цикл появится здесь.',
   'cycle.noRing.title': 'Ваше кольцо ждёт',
@@ -145,15 +145,16 @@ export const russian: CatalogueIn<'ru'> = {
   'export.document.what': 'Это всё, что вы записали в Emi. Emi не является медицинским изделием.',
   'export.document.title': 'Ваша запись',
   'export.document.yes': 'Да',
-  'export.failed': 'Не удалось записать файлы. Возможно, на телефоне не осталось места.',
+  'export.failed': 'Мы не смогли сохранить файлы. Возможно, на вашем телефоне не осталось места.',
   'export.held': '{days} и {cycles}.',
   'export.make': 'Создать файлы',
   'export.making': 'Создаём',
   'export.share': 'Поделиться',
   'export.title': 'Экспорт',
-  'export.what': 'Два файла. Один можно прочитать и отдать врачу, другой читает другое приложение.',
+  'export.what':
+    'Два файла: один вы можете прочитать или отдать врачу, другой откроет другое приложение.',
   'export.where':
-    'Никуда ничего не отправляется. Файлы создаются на этом телефоне, и вы выбираете, кто их получит.',
+    'Никуда ничего не отправляется. Файлы создаются на этом телефоне, и вы решаете, кто их получит.',
 
   // The word sits inside the sentence rather than opening it, so it is written in lower case.
   'forecast.confidence.high': 'высокая',
@@ -187,9 +188,9 @@ export const russian: CatalogueIn<'ru'> = {
   'history.cycleRange': 'с {from} по {to}',
   'history.cycles': 'Ваши циклы',
   'history.dayReads': '{ordinal} {month}',
-  'history.noCycles':
-    'Пока нет ни одного цикла. Отметьте день, когда шла кровь, и здесь появится запись.',
-  'history.nothingRepeats': 'Пока ничто не повторилось за 3 цикла.',
+  'history.noCycles': 'Циклов пока нет. Отметьте день, когда шла кровь, и здесь появится запись.',
+  'history.nothingRepeats':
+    'Пока ничто не повторилось за 3 цикла. Продолжайте отмечать, и мы вам покажем.',
   'history.pattern.cycleDay': 'Около дня {day} вашего цикла',
   'history.pattern.evidence': 'в {withIt} из ваших последних {read} циклов',
   'history.pattern.line': '{when}, {evidence}',
@@ -199,7 +200,7 @@ export const russian: CatalogueIn<'ru'> = {
     few: 'У вас завершено {count}.',
     many: 'У вас завершено {count}.',
   },
-  'history.patternsNeed': 'Emi называет симптом, когда он вернулся за {needs} цикла.',
+  'history.patternsNeed': 'Мы укажем на симптом, когда он вернётся за {needs} цикла.',
   'history.patterns': 'Что возвращается',
   'history.running': 'Ещё идёт',
   'history.runningWithPeriod': '{running}, пока {periodDays} с кровью',
@@ -275,9 +276,8 @@ export const russian: CatalogueIn<'ru'> = {
    */
   'lock.cover.wordmark': 'emi',
   'lock.locked.action': 'Разблокировать',
-  'lock.locked.line': 'Разблокируйте лицом, отпечатком пальца или кодом.',
-  'lock.locked.refused':
-    'Emi всё ещё заблокирована. Нажмите Разблокировать, чтобы попробовать снова.',
+  'lock.locked.line': 'Откройте её лицом, отпечатком пальца или кодом.',
+  'lock.locked.refused': 'Всё ещё заблокировано. Нажмите Разблокировать, чтобы попробовать снова.',
   'lock.locked.title': 'Emi заблокирована.',
   'lock.locked.wordmark': 'emi',
   /** What the platform prompt says. The platform draws it, so Emi writes only this line. */
@@ -539,30 +539,27 @@ export const russian: CatalogueIn<'ru'> = {
 
   'recovery.before.action': 'Показать мой код',
   'recovery.before.line.nobody':
-    'Никто в Emi не может восстановить его за вас. Emi, которая могла бы восстановить ваш код, могла бы читать ваши дни.',
+    'Мы не можем восстановить его за вас. Если бы могли, то могли бы читать ваши дни.',
   'recovery.before.line.onlyWay':
-    'Emi сейчас покажет вам код восстановления. Это единственный путь назад к вашим циклам, если вы потеряете этот телефон.',
+    'Сейчас вы увидите код восстановления. Это единственный способ вернуть ваши циклы, если вы потеряете этот телефон.',
   'recovery.before.line.paper':
-    'Запишите его на бумаге. Держите бумагу там, где держите другие важные бумаги.',
+    'Запишите его на бумаге и держите вместе с другими важными бумагами.',
   'recovery.before.title': 'Ваши данные привязаны к этому телефону',
   'recovery.code.action': 'Я записала',
-  'recovery.code.line.once': '{count} знаков. Emi показывает их один раз и нигде не хранит.',
-  'recovery.code.line.writeDown':
-    'Запишите их сейчас. На следующем экране Emi попросит ввести их обратно.',
+  'recovery.code.line.once': '{count} знаков. Вы увидите их только один раз, и мы не храним копию.',
+  'recovery.code.line.writeDown': 'Запишите их сейчас. Дальше мы попросим ввести их обратно.',
   'recovery.code.title': 'Ваш код восстановления',
   'recovery.confirm.action': 'Готово',
   'recovery.confirm.label': 'Ваш код восстановления из {count} знаков',
-  'recovery.confirm.line.checks': 'Emi сверяет то, что вы вводите, с кодом, который показала.',
-  'recovery.confirm.line.case':
-    'Emi читает заглавные и строчные буквы одинаково и не учитывает пробелы, которые вы поставите.',
-  'recovery.confirm.title': 'Введите код обратно',
-  'recovery.confirm.wrong':
-    'Это не тот код, который показала Emi. Прочитайте его с бумаги и введите снова.',
+  'recovery.confirm.line.checks': 'Просто чтобы проверить, что вы записали его верно.',
+  'recovery.confirm.line.case': 'Заглавные буквы и пробелы не важны.',
+  'recovery.confirm.title': 'Введите ваш код обратно',
+  'recovery.confirm.wrong': 'Не совпадает. Посмотрите на бумагу и попробуйте снова.',
   'recovery.step': 'Шаг {step} из {of}',
 
   'settings.answer.back': 'Назад',
   'settings.answer.cancel': 'Отмена',
-  'settings.answer.gaveAtFirstRun': 'В начале вы указали {answer}.',
+  'settings.answer.gaveAtFirstRun': 'В начале вы сказали нам {answer}.',
   'settings.answer.save': 'Сохранить',
   'settings.answers.back': 'Назад',
   'settings.answers.birthYear': 'Год рождения',
@@ -583,21 +580,22 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.delete.goes.key': 'Ключ, который открывает всё это',
   'settings.delete.goes.settings': 'Ваши настройки',
   'settings.delete.line':
-    'Одно нажатие, и всё исчезнет. Отменить нельзя, ждать не нужно, и никто в Emi не вернёт это обратно, потому что никто в Emi не может это прочитать.',
+    'Одно нажатие, и всё исчезнет. Отменить нельзя, ждать не нужно. Никто в Emi не вернёт это обратно, потому что никто в Emi не может это прочитать.',
   'settings.delete.refused':
-    'Ваши дни удалены. Этот телефон не отдал одну вещь, которую Emi держит в связке ключей. Нажмите ещё раз.',
+    'Ваши дни удалены, но ваш телефон оставил у себя одну вещь в связке ключей. Нажмите ещё раз, чтобы закончить.',
   'settings.delete.title': 'Удалить всё',
   'settings.delete.working': 'Удаляем',
   'settings.deleted.action': 'Начать заново',
-  'settings.deleted.line': 'Этот телефон не хранит о вас ничего. Emi начинает с пустого кольца.',
+  'settings.deleted.line':
+    'Теперь этот телефон не хранит о вас ничего. Вы можете начать заново, когда захотите.',
   'settings.deleted.title': 'Всё удалено.',
   'settings.deleted.withoutTheServer':
-    'Emi не смогла связаться с сервером, чтобы убрать вашу учётную запись. Теперь то, что там осталось, не открыть ничем: единственный ключ был на этом телефоне и ушёл вместе с вашими днями.',
+    'Мы не смогли связаться с нашим сервером, чтобы удалить вашу учётную запись. То, что там осталось, не открыть ничем: единственный ключ был на этом телефоне и ушёл вместе с вашими днями.',
   'settings.settings.answers': 'Ваши ответы',
-  'settings.settings.answersLine': 'Восемь вещей, которые вы рассказали Emi в начале',
+  'settings.settings.answersLine': 'То, что вы рассказали нам в начале',
   'settings.settings.back': 'Назад',
   'settings.settings.delete': 'Удалить всё',
-  'settings.settings.deleteLine': 'Одно нажатие, и вернуть будет нельзя',
+  'settings.settings.deleteLine': 'Одно нажатие, и всё исчезнет навсегда',
   'settings.settings.export': 'Экспорт',
   'settings.settings.exportLine': 'Два файла, созданные на этом телефоне',
   'settings.settings.lock': 'Блокировка',

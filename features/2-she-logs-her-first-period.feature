@@ -652,3 +652,13 @@ Feature: She opens Emi and logs her first period
     And her phone holds that day with the mark on it, and counts the cycles it counted before
     And the log and the period editor say all of this in each of the three languages, as you
     And none of those words gives her advice, raises an alarm, or names Emi
+
+  Scenario: SCREEN-2, delete everything tells her it is gone in plain words
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and reads the row that would delete everything
+    And she walks to the screen behind that row and reads what one press costs
+    And she presses delete everything
+    Then she reads that it is gone, and that she can start fresh whenever she likes
+    And her phone holds none of her days and nothing in the keychain
+    And these screens say all of this in each of the three languages, as you and as we
+    And the only two lines that name Emi are the claim about her days and the lock itself

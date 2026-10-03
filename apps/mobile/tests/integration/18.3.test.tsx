@@ -63,7 +63,7 @@ const theAddressOfThePage = '/cycles/figures';
 /** The words of the page, written out here rather than read off the catalogue. */
 const theTitleOfThePage = 'Where these figures come from';
 const theQuotedLine =
-  'Each figure is quoted in the words the paper reports it in, so you can check it rather than trust it.';
+  "Each figure is quoted in the paper's own words, so you can check it for yourself.";
 const thePrintedLine = 'A paper is named here as its journal prints it.';
 const thePressUnderTheLine = 'Where these figures come from';
 
@@ -250,7 +250,7 @@ describe('she reaches the page that says where each published figure comes from'
       expect(whatItSays(figuresScreenTestID)).not.toContain(theWordsTheDrawingCarries);
     });
 
-    it('says under the rows that every figure is quoted in the words the paper reports it in', () => {
+    it('says under the rows that every figure is quoted in the words of the paper itself', () => {
       expect(whatItSays(figuresQuotedTestID)).toBe(theQuotedLine);
       expect(whatItSays(figuresPrintedTestID)).toBe(thePrintedLine);
     });
