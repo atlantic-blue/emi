@@ -31,6 +31,18 @@ export const logFlowDoneTestID = 'log-flow-done';
 export const logFlowNoRingTestID = 'log-flow-no-ring';
 export const logFlowSavedTestID = 'log-flow-saved';
 
+/** The date she is writing, which the drawing places over the heading of the flow. */
+export const logFlowWhenTestID = 'log-flow-when';
+
+/** The heading over the flow picker, which is the question the card below it answers. */
+export const logFlowTitleTestID = 'log-flow-title';
+
+/** The card the flow she picks stands in. */
+export const logFlowFlowCardTestID = 'log-flow-flow-card';
+
+/** The card her symptoms stand in, under the flow. */
+export const logFlowSymptomsCardTestID = 'log-flow-symptoms-card';
+
 /** The block the groups under the flow picker are drawn in, so a test reads them in her order. */
 export const logFlowGroupsTestID = 'log-flow-groups';
 

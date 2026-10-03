@@ -22,6 +22,19 @@ export const editPeriodChangeTestID = 'edit-period-change';
 export const editPeriodSaveTestID = 'edit-period-save';
 export const periodRangePickerTestID = 'period-range-picker';
 
+/** The two kinds of change she can make to the period Emi holds. */
+export const periodChanges = ['added', 'takenOff'] as const;
+
+export type PeriodChange = (typeof periodChanges)[number];
+
+/** The key under the grid, which names the changes she has made since the screen opened. */
+export const editPeriodKeyTestID = 'edit-period-key';
+
+/** One entry of that key: the cue a changed square carries, and the word for that change. */
+export function editPeriodKeyEntryTestID(change: PeriodChange): string {
+  return `${editPeriodKeyTestID}-${change}`;
+}
+
 /** Points. The arrow is read at the size every other way back is read at. */
 const BACK_MARK_SIZE = 22;
 

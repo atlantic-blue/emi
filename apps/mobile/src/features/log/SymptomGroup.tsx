@@ -29,6 +29,11 @@ export function symptomGroupTestID(group: GroupName | 'found'): string {
   return `symptom-group-${group}`;
 }
 
+/** The heading over one set of chips, which every drawing of the log names above its group. */
+export function symptomGroupHeadingTestID(group: GroupName | 'found'): string {
+  return `${symptomGroupTestID(group)}-heading`;
+}
+
 export interface SymptomChipProps {
   readonly symptom: Symptom;
   readonly isPicked: boolean;
