@@ -1,4 +1,5 @@
 import type { DayRecord, ProfileRecord } from '@emi/crypto';
+import { washFieldTestID, washTestID, washTintTestID } from '@emi/ui';
 
 import {
   homeGreetingTestID,
@@ -66,6 +67,9 @@ export const theIdentifiersOfTheHeader: readonly string[] = [
  *
  * The route tree wraps the screen in the lock, which draws an identifier of its own above it, so a
  * walk of the whole glass answers the lock where the question is about the screen.
+ *
+ * The wash is left out of it. It is drawn first and it carries colour and no words, so a reader
+ * asking what the screen says would otherwise be answered by a gradient.
  */
 export function whatTheScreenSheOpensDrew(): string[] {
   const drawn = theIdentifiersDrawn();
@@ -75,8 +79,16 @@ export function whatTheScreenSheOpensDrew(): string[] {
     throw new Error('the screen she opens was not on the glass');
   }
 
-  return drawn.slice(at + 1);
+  return drawn.slice(at + 1).filter((identifier) => !theIdentifiersOfTheWash.includes(identifier));
 }
+
+/** Every identifier the wash draws, which is the whole of what the reader above leaves out. */
+const theIdentifiersOfTheWash: readonly string[] = [
+  washTestID,
+  washFieldTestID,
+  washTintTestID(1),
+  washTintTestID(2),
+];
 
 /** Everything the header drew, in the order the screen drew it, and nothing from below it. */
 export function whatTheHeaderDrew(): string[] {

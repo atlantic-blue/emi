@@ -203,19 +203,46 @@ function aBleedingDay(day: string): DayRecord {
   return { day, flow: 'medium', recordedAt: `${day}T08:00:00.000Z` };
 }
 
-/** The four days of the period the drawings are worked out from, today being the fourth. */
-export function herFourRecordedPeriodDays(): DayRecord[] {
-  return Array.from({ length: 4 }, (_unused, index) =>
-    aBleedingDay(addDays(herPeriodStartedOn, index)),
-  );
+/**
+ * How many complete cycles stand behind the one she is in.
+ *
+ * The drawings name a settled forecast, and a forecast is settled by her own complete cycles
+ * rather than by the length she gave, so the phone has to hold enough of them. Six is the number
+ * the forecast takes its median over, which is what the drawing's own pill says it read.
+ */
+export const herCyclesBehindToday = 6;
+
+/** The periods behind the one she is in, each one four days long, oldest first. */
+function herCyclesBefore(): DayRecord[] {
+  const days: DayRecord[] = [];
+
+  for (let back = herCyclesBehindToday; back >= 1; back -= 1) {
+    const started = addDays(herPeriodStartedOn, -back * sheSaidHerCycleRuns);
+
+    for (let day = 0; day < 4; day += 1) {
+      days.push(aBleedingDay(addDays(started, day)));
+    }
+  }
+
+  return days;
 }
 
-/** The same four days, with the two symptoms the drawing of the screen she comes back to names. */
+/** Her six cycles, and the four days of the period she is in, today being the fourth. */
+export function herFourRecordedPeriodDays(): DayRecord[] {
+  return [
+    ...herCyclesBefore(),
+    ...Array.from({ length: 4 }, (_unused, index) =>
+      aBleedingDay(addDays(herPeriodStartedOn, index)),
+    ),
+  ];
+}
+
+/** The same days, with the two symptoms the drawing of the screen she comes back to names. */
 export function herDaysWithTodayMarked(): DayRecord[] {
   const today = addDays(herPeriodStartedOn, 3);
 
   return [
-    ...herFourRecordedPeriodDays().slice(0, 3),
+    ...herFourRecordedPeriodDays().slice(0, -1),
     { day: today, symptoms: ['cramps', 'low-mood'], recordedAt: `${today}T19:00:00.000Z` },
   ];
 }
@@ -304,14 +331,20 @@ export function theWashIsAtTheTopOfTheTodayScreen(): boolean {
   return screen.queryByTestId(washTestID) !== null;
 }
 
-/** The parts the second design of the same route places, which nothing is held to. */
+/**
+ * The parts the second design of the same route places, which nothing is held to.
+ *
+ * The key is written out at the call rather than read off the constant above. The gate over the
+ * mockups stage reads the literal there, so a key handed in as a name is a drawing nobody can tell
+ * is missing. A case holds the constant to the same word.
+ */
 export function thePartsOfTheSecondDesign(): string[] {
-  return thePartsOfTheMockup(theSecondDesignOfTheRoute).map((part) => part.name);
+  return thePartsOfTheMockup('today').map((part) => part.name);
 }
 
 /** The parts the drawing of the reminder places, which nothing is built for. */
 export function thePartsOfTheReminderDrawing(): Part[] {
-  return thePartsOfTheMockup(theDrawingNothingIsBuiltFor);
+  return thePartsOfTheMockup('notification');
 }
 
 /** Where the screen she opens drew one part, counted from the screen itself downwards. */

@@ -260,7 +260,7 @@ describe('she reads her phase and her cycle day as words from across the room', 
       );
 
       expect(partsMissing(theTopOfTheDrawing('todayNext'), withoutTheLine)).toEqual([
-        `the drawing names PhaseLine, built under ${phaseLineTestID}, and the screen draws none of them after ${weekStripTestID}`,
+        `the drawing names PhaseLine, built under ${phaseLineTestID}, and the screen draws none of them after ${cycleRingTestID}`,
       ]);
     });
   });

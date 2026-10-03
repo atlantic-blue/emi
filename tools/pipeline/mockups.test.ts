@@ -87,8 +87,8 @@ describe('the approved mockups stage, as the repository reads it', () => {
       expect(partsOfTheScreen(theStage, 'todayNext')).toEqual([
         'HomeHeader',
         'WeekStrip',
-        'PhaseLine',
         'CycleRing',
+        'PhaseLine',
         'RoundAction',
         'RoundAction',
         'NextPeriod',

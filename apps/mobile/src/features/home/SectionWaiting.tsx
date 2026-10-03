@@ -1,4 +1,5 @@
 import { colour, radius, space, textStyle } from '@emi/tokens';
+import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -59,34 +60,46 @@ interface Props {
 export function SectionWaiting({ section, heading, needs, read }: Props): ReactNode {
   return (
     <View style={styles.section}>
-      <Text
-        accessibilityRole="header"
-        style={styles.heading}
-        testID={sectionWaitingHeadingTestID(section)}
-      >
-        {heading}
-      </Text>
+      <View style={styles.tile} testID={sectionWaitingTileTestID(section)}>
+        <Icon colour={colour.secondaryText} name="lock" size={theMarkInTheTile} />
+      </View>
 
-      <View style={styles.said} testID={sectionWaitingTestID(section)}>
-        <Text style={styles.needs} testID={sectionWaitingNeedsTestID(section)}>
-          {needs}
+      <View style={styles.what}>
+        <Text
+          accessibilityRole="header"
+          style={styles.heading}
+          testID={sectionWaitingHeadingTestID(section)}
+        >
+          {heading}
         </Text>
-        {read === undefined ? null : (
-          <Text style={styles.read} testID={sectionWaitingReadTestID(section)}>
-            {read}
+
+        <View style={styles.said} testID={sectionWaitingTestID(section)}>
+          <Text style={styles.needs} testID={sectionWaitingNeedsTestID(section)}>
+            {needs}
           </Text>
-        )}
+          {read === undefined ? null : (
+            <Text style={styles.read} testID={sectionWaitingReadTestID(section)}>
+              {read}
+            </Text>
+          )}
+        </View>
       </View>
     </View>
   );
 }
 
+/** Points. The lock inside the tile, drawn under the width of the tile that carries it. */
+const theMarkInTheTile = 20;
+
+/** Points. The tile, which is narrower than a tap target because nothing in it is pressed. */
+const theTileIsThisWide = 40;
+
 const styles = StyleSheet.create({
-  // The heading sits above the block rather than inside it, which is where the drawing puts it, so
-  // the section she cannot read yet is named the same way the filled one will be.
+  // The heading sits over the two lines, where the drawing puts it, so the section she cannot read
+  // yet is named the same way the filled one will be.
   heading: {
-    color: colour.secondaryText,
-    ...textStyle('label-sm'),
+    color: colour.text,
+    ...textStyle('label-md'),
     marginBottom: space.spaceXs,
   },
   // What it needs takes the ink of the surface, because that is the sentence she came away with.
@@ -99,12 +112,28 @@ const styles = StyleSheet.create({
     color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
-  said: {
+  said: { rowGap: space.spaceXs },
+  // The whole section is one card, with the mark beside what it says rather than above it, which
+  // is the shape every other card of the redesign is drawn in.
+  section: {
+    alignSelf: 'stretch',
     backgroundColor: colour.card,
-    borderRadius: radius.md,
-    paddingHorizontal: space.spaceMd,
-    paddingVertical: space.spaceSm,
-    rowGap: space.spaceXs,
+    borderRadius: radius.xl,
+    flexDirection: 'row',
+    gap: space.spaceMd,
+    marginTop: space.spaceLg,
+    padding: space.spaceLg,
   },
-  section: { alignSelf: 'stretch', marginTop: space.spaceLg },
+  // The lock says the section is closed rather than empty, and it takes the recessed ground so it
+  // reads as part of the card rather than as a second thing on it.
+  tile: {
+    alignItems: 'center',
+    backgroundColor: colour.field,
+    borderRadius: radius.DEFAULT,
+    height: theTileIsThisWide,
+    justifyContent: 'center',
+    width: theTileIsThisWide,
+  },
+  // The words take the room the tile leaves, so a long sentence wraps inside the card.
+  what: { flexShrink: 1 },
 });

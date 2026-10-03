@@ -43,7 +43,7 @@ const theTrendSitsThisFarDown = 1450;
 const theCaveat = [
   'Rendered from the tree the home screen produced under the test runner, at 390 by 844 points,',
   'and not captured from a phone. The page loads the same font files the application loads, so the',
-  'words are drawn in Plus Jakarta Sans. Reproduce with: npm run generate:trend-picture.',
+  'words are drawn in Figtree. Reproduce with: npm run generate:trend-picture.',
   'The room kept at the top and the bottom is the room an iPhone with a dynamic island keeps for',
   `itself. The screen is laid out whole and moved up ${String(theTrendSitsThisFarDown)} points, which is what`,
   'scrolling does, so the foot of it is in the frame.',

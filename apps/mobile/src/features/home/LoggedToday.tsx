@@ -6,10 +6,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { homeCopy } from './copy';
 
 /**
- * The row under the phase line that reads back what she marked today.
+ * The row under the two round actions that reads back what she marked today.
  *
  * It opens the log on the symptom groups, which is where she came from, so the way to correct what
  * she just recorded is the thing she is looking at rather than a second walk through the actions.
+ *
+ * The mark at the head of it says the day is in her record. That is the whole point of the row: she
+ * pressed save and she wants to see that Emi kept it, before she reads back what she said.
  *
  * The line takes the small size because a flow is named in it and contract SCREEN-2 holds the four
  * words a stranger would recognise under 14 points on this screen.
@@ -28,6 +31,9 @@ export const loggedTodayMarkTestID = 'home-logged-today-mark';
 /** Points. The mark that says the row opens something, at the size the other rows of Emi draw it. */
 const OPENS_MARK_SIZE = 18;
 
+/** Points. The mark inside the tile, drawn under the width of the tile that carries it. */
+const THE_MARK_IN_THE_TILE = 22;
+
 interface Props {
   /** What she marked today, already in her own words, and never an empty line. */
   readonly marked: string;
@@ -43,6 +49,15 @@ export function LoggedToday({ marked, onPress }: Props): ReactNode {
       style={styles.row}
       testID={loggedTodayTestID}
     >
+      <View style={styles.tile} testID={loggedTodayTileTestID}>
+        <Icon
+          colour={colour.ovulationInk}
+          name="check"
+          size={THE_MARK_IN_THE_TILE}
+          testID={loggedTodayMarkTestID}
+        />
+      </View>
+
       <View style={styles.said}>
         <Text style={styles.lead} testID={loggedTodayLeadTestID}>
           {homeCopy.loggedToday.lead}
@@ -51,6 +66,7 @@ export function LoggedToday({ marked, onPress }: Props): ReactNode {
           {marked}
         </Text>
       </View>
+
       <Icon colour={colour.quietIcon} name="chevron" size={OPENS_MARK_SIZE} />
     </Pressable>
   );
@@ -58,26 +74,34 @@ export function LoggedToday({ marked, onPress }: Props): ReactNode {
 
 const styles = StyleSheet.create({
   lead: {
-    color: colour.text,
-    ...textStyle('body-lg'),
+    color: colour.secondaryText,
+    ...textStyle('label-md'),
   },
   line: {
-    color: colour.secondaryText,
-    ...textStyle('body-sm'),
+    color: colour.text,
+    ...textStyle('body-lg'),
   },
   row: {
     alignItems: 'center',
     backgroundColor: colour.card,
-    borderRadius: radius.md,
+    borderRadius: radius.xl,
     flexDirection: 'row',
     gap: space.spaceMd,
-    justifyContent: 'space-between',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceMd,
-    paddingVertical: space.spaceSm,
+    padding: space.spaceMd,
   },
-  // The words take the room the mark leaves, so a long line wraps inside the row rather than
-  // pushing the mark off the right of the screen.
-  said: { flexShrink: 1, rowGap: space.spaceXs },
+  // The words take the room the tile and the mark leave, so a long line wraps inside the row
+  // rather than pushing the mark off the right of the screen.
+  said: { flexGrow: 1, flexShrink: 1, rowGap: space.spaceXs },
+  // The tile takes the warm pair of the palette, which is the one the contrast test measured a
+  // mark on. It is as wide as a thumb needs even though nothing inside it is pressed on its own.
+  tile: {
+    alignItems: 'center',
+    backgroundColor: colour.washWarm,
+    borderRadius: radius.md,
+    height: MINIMUM_TAP_TARGET,
+    justifyContent: 'center',
+    width: MINIMUM_TAP_TARGET,
+  },
 });

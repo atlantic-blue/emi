@@ -1,3 +1,5 @@
+import { washFieldTestID, washTestID, washTintTestID } from '@emi/ui';
+
 import { cycleRingTestID, ringBeadTestID, ringTrackTestID } from '../../src/components/CycleRing';
 import { fertileWindowTestID } from '../../src/features/forecast/FertileWindow';
 import { learningTestID } from '../../src/features/forecast/Learning';
@@ -28,11 +30,17 @@ import {
   homeTrendCountTestID,
   homeTrendPressTestID,
 } from '../../src/features/home/HomeScreen';
+import { emptyRingTestID } from '../../src/features/home/EmptyRing';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
 import { homeNumbersTestID } from '../../src/features/home/MeasuredRow';
 import { homePatternsTestID } from '../../src/features/home/PatternCard';
 import { phaseLineTestID } from '../../src/features/home/PhaseLine';
-import { roundActionTestID, roundActions } from '../../src/features/home/RoundAction';
+import {
+  roundActionDiscTestID,
+  roundActionDrawingTestID,
+  roundActionTestID,
+  roundActions,
+} from '../../src/features/home/RoundAction';
 import { sectionWaitingTestID } from '../../src/features/home/SectionWaiting';
 import { weekStripTestID } from '../../src/features/home/WeekStrip';
 import type { HerData } from './theStatesOfHerData';
@@ -118,7 +126,13 @@ export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
     },
     fills: (hers) => hers.recordedDays > 0,
     insteadDraws: {
-      named: [homeNoRingTestID, homeNoRingTitleTestID, homeNoRingLineTestID, homeLogTodayTestID],
+      named: [
+        homeNoRingTestID,
+        emptyRingTestID,
+        homeNoRingTitleTestID,
+        homeNoRingLineTestID,
+        homeLogTodayTestID,
+      ],
     },
     name: 'the ring',
   },
@@ -214,10 +228,17 @@ export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
  * The dates and the weekday letters of her week are here because they come off the calendar, which
  * needs no recorded day. The day of her cycle above each date is the part her own days fill, and it
  * is a section above.
+ *
+ * The wash is here too. It is tinted by the phase of today, so a different day paints a different
+ * colour, but the gradient itself is drawn on every state of the screen and carries no words.
  */
 export const theFrameOfTheScreenSheOpens: Draws = {
   named: [
     'lock-screens',
+    washTestID,
+    washFieldTestID,
+    washTintTestID(1),
+    washTintTestID(2),
     homeScreenTestID,
     homeHeaderTestID,
     homeHeaderMarkTestID,
@@ -226,6 +247,8 @@ export const theFrameOfTheScreenSheOpens: Draws = {
     weekStripTestID,
     homeForecastTestID,
     ...roundActions.map(roundActionTestID),
+    ...roundActions.map(roundActionDiscTestID),
+    ...roundActions.map(roundActionDrawingTestID),
   ],
   prefixed: ['home-week-day-', 'home-week-letter-', 'home-week-date-', 'bottom-navigation'],
 };

@@ -1,10 +1,20 @@
 import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
 import type { ForecastResult } from '@emi/cycle';
-import { type IconName, MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
+import {
+  type IconName,
+  MINIMUM_TAP_TARGET,
+  colour,
+  radius,
+  ringGeometry,
+  space,
+  textStyle,
+} from '@emi/tokens';
+import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PrimaryButton } from '../../components/Button';
+import { Card } from '../../components/Card';
 import { CycleRing } from '../../components/CycleRing';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
@@ -15,6 +25,7 @@ import { NextPeriodOrLearning } from '../forecast/Learning';
 import { whatSheMarkedOn } from '../log/copy';
 import { CycleStrips } from './CycleStrip';
 import { CycleTrend } from './CycleTrend';
+import { EmptyRing } from './EmptyRing';
 import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
 import { PhaseLine } from './PhaseLine';
@@ -53,8 +64,15 @@ export { sectionWaitingTestID, waitingSections } from './SectionWaiting';
  */
 const theRoundActions: readonly { action: RoundActionName; icon: IconName }[] = [
   { action: 'period', icon: 'drop' },
-  { action: 'symptoms', icon: 'sun' },
+  { action: 'symptoms', icon: 'plus' },
 ];
+
+/** Points. The drop inside the empty ring of day one, and the drop beside the forecast. */
+const theDropInTheEmptyRing = 36;
+const theDropInTheTile = 22;
+
+/** Points. The gap the drawing leaves between the two discs, which is wider than any space step. */
+const theRoomBetweenTheActions = 48;
 
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
@@ -213,7 +231,11 @@ export function HomeScreen({
   const marked = whatSheMarkedOn(loggedToday);
 
   return (
-    <Screen testID={homeScreenTestID}>
+    <Screen
+      drawsTheWash
+      testID={homeScreenTestID}
+      washPhase={ring === undefined ? undefined : ringGeometry(ring).phase}
+    >
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <HomeHeader name={name} />
 
@@ -223,32 +245,29 @@ export function HomeScreen({
           </View>
         )}
 
-        {ring === undefined ? null : (
-          <View style={styles.phaseLine}>
-            <PhaseLine ring={ring} />
-          </View>
-        )}
-
-        {marked === undefined ? null : (
-          <View style={styles.logged}>
-            <LoggedToday marked={marked} onPress={onSymptoms} />
-          </View>
-        )}
-
         {ring ? (
           <CycleRing {...ring} />
         ) : (
           <View style={styles.noRing} testID={homeNoRingTestID}>
-            <Text
-              accessibilityRole="header"
-              style={styles.noRingTitle}
-              testID={homeNoRingTitleTestID}
-            >
-              {cycleCopy.noRing.title}
-            </Text>
+            <EmptyRing>
+              <Icon colour={colour.accent} name="drop" size={theDropInTheEmptyRing} />
+              <Text
+                accessibilityRole="header"
+                style={styles.noRingTitle}
+                testID={homeNoRingTitleTestID}
+              >
+                {cycleCopy.noRing.title}
+              </Text>
+            </EmptyRing>
             <Text style={styles.noRingLine} testID={homeNoRingLineTestID}>
               {cycleCopy.noRing.line}
             </Text>
+          </View>
+        )}
+
+        {ring === undefined ? null : (
+          <View style={styles.phaseLine}>
+            <PhaseLine ring={ring} />
           </View>
         )}
 
@@ -264,12 +283,29 @@ export function HomeScreen({
           ))}
         </View>
 
+        {marked === undefined ? null : (
+          <View style={styles.logged}>
+            <LoggedToday marked={marked} onPress={onSymptoms} />
+          </View>
+        )}
+
         <View style={styles.forecast} testID={homeForecastTestID}>
-          <NextPeriodOrLearning
-            cycleLengthDays={cycleLengthDays}
-            regularity={regularity}
-            result={forecast}
-          />
+          <Card>
+            <View style={styles.forecastRow}>
+              {forecast.kind === 'learning' ? null : (
+                <View style={styles.forecastTile}>
+                  <Icon colour={colour.accent} name="drop" size={theDropInTheTile} />
+                </View>
+              )}
+              <View style={styles.forecastSaid}>
+                <NextPeriodOrLearning
+                  cycleLengthDays={cycleLengthDays}
+                  regularity={regularity}
+                  result={forecast}
+                />
+              </View>
+            </View>
+          </Card>
         </View>
 
         {theFertileWindowIsOffered(goals, forecast) ? (
@@ -494,15 +530,29 @@ const styles = StyleSheet.create({
     color: colour.accent,
     ...textStyle('body-sm'),
   },
-  forecast: { marginTop: space.spaceLg },
-  // The row sits between the line and the ring, which is where the drawing of this screen places
-  // it: she reads the day she is on, then what she already said about it, then the ring.
+  forecast: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.margin },
+  // The drop stands beside what the forecast says rather than above it, so the card reads as one
+  // row of the journal and the two ends of the range keep the width of the card.
+  forecastRow: { alignItems: 'center', flexDirection: 'row', gap: space.spaceMd },
+  forecastSaid: { flexShrink: 1 },
+  forecastTile: {
+    alignItems: 'center',
+    backgroundColor: colour.accentSoft,
+    borderRadius: radius.md,
+    height: MINIMUM_TAP_TARGET,
+    justifyContent: 'center',
+    width: MINIMUM_TAP_TARGET,
+  },
+  // The row sits under the two round actions, which is where the drawing of this screen places
+  // it: she reads the day she is on, then the presses she can make, then what she already said.
   logged: {
     alignSelf: 'stretch',
-    marginBottom: space.spaceLg,
+    marginTop: space.spaceLg,
     paddingHorizontal: space.margin,
   },
   noRing: { alignItems: 'center', paddingHorizontal: space.spaceLg },
+  // The title stands inside the outline rather than above it, so it reads as the ring saying what
+  // it needs. The room under it is the room the line below the outline needs.
   // Her three numbers sit under the forecast they were read from, and above the ways off the
   // screen, because they are something to read rather than somewhere to go.
   numbers: { alignSelf: 'stretch', paddingHorizontal: space.spaceLg },
@@ -510,13 +560,13 @@ const styles = StyleSheet.create({
   // them: she reads the day she is on, then the one press she makes about it.
   roundActions: {
     flexDirection: 'row',
-    gap: space.spaceXl,
+    gap: theRoomBetweenTheActions,
     justifyContent: 'center',
     marginTop: space.spaceLg,
   },
-  // The line sits between her week and the ring, which is where the drawing of this screen places
-  // it: she reads the days, then the day she is on, then the ring that draws it.
-  phaseLine: { alignSelf: 'stretch', marginBottom: space.spaceLg },
+  // The line sits under the ring, which is where the drawing of this screen places it: the ring
+  // carries the day in colour and the line says the same day in words under it.
+  phaseLine: { alignSelf: 'stretch', marginTop: space.spaceMd },
   // Her week sits between the header and the ring, which is where the drawing of this screen
   // places it, and it is the first thing she reads because it answers where she is.
   week: { alignSelf: 'stretch', marginBottom: space.spaceLg },
@@ -546,7 +596,8 @@ const styles = StyleSheet.create({
   noRingTitle: {
     color: colour.text,
     ...textStyle('headline-md'),
-    marginBottom: space.spaceXs,
+    marginTop: space.spaceXs,
+    textAlign: 'center',
   },
   // The one button sits at the foot of the body, under everything she reads, because a screen with
   // no ring on it is a screen asking her for one thing and the ask goes last.

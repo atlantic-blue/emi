@@ -1,4 +1,4 @@
-import { colour } from '@emi/tokens';
+import { type PhaseName, colour } from '@emi/tokens';
 import { Wash, useRoomAtTheFoot } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -30,10 +30,16 @@ interface Props {
    * been redrawn yet would otherwise carry the new colour under the old layout.
    */
   readonly drawsTheWash?: boolean;
+  /**
+   * The phase of today, where the screen knows it. The wash is then painted in that phase's own
+   * tints rather than in the soft pair, which is how the prototype tells one day from another
+   * before she reads a word. A screen that knows no phase passes none and draws the soft wash.
+   */
+  readonly washPhase?: PhaseName;
   readonly children: ReactNode;
 }
 
-export function Screen({ testID, drawsTheWash = false, children }: Props): ReactNode {
+export function Screen({ testID, drawsTheWash = false, washPhase, children }: Props): ReactNode {
   const insets = useSafeAreaInsets();
   const roomForTheDock = useRoomAtTheFoot();
 
@@ -52,7 +58,7 @@ export function Screen({ testID, drawsTheWash = false, children }: Props): React
     >
       {drawsTheWash ? (
         <View pointerEvents="none" style={styles.wash}>
-          <Wash />
+          <Wash phase={washPhase} />
         </View>
       ) : null}
       {children}
