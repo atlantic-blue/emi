@@ -75,11 +75,12 @@ describe('she reads her phase and her cycle day as words from across the room', 
   });
 
   describe('the drawings the line is held to', () => {
-    it('places the line third, after the header and the strip, and says what it is built under', () => {
-      const [header, strip, line] = theTopOfTheDrawing('todayNext');
+    it('places the line fourth, under the ring, and says what it is built under', () => {
+      const [header, strip, ring, line] = theTopOfTheDrawing('todayNext');
 
       expect(header?.name).toBe('HomeHeader');
       expect(strip?.name).toBe('WeekStrip');
+      expect(ring?.name).toBe('CycleRing');
       expect(line?.name).toBe('PhaseLine');
       expect(line?.builtUnder).toContain(phaseLineTestID);
     });
@@ -101,17 +102,17 @@ describe('she reads her phase and her cycle day as words from across the room', 
       await sheOpensEmiOn(whenSheOpensIt);
     });
 
-    it('answers for the three parts the drawing places at the top of the screen', () => {
+    it('answers for the four parts the drawing places at the top of the screen', () => {
       expect(partsMissing(theTopOfTheDrawing('todayNext'), whatTheScreenSheOpensDrew())).toEqual(
         [],
       );
     });
 
-    it('draws the line under her week and above the ring', () => {
+    it('draws the line under her week and under the ring', () => {
       const drawn = whatTheScreenSheOpensDrew();
 
       expect(drawn.indexOf(phaseLineTestID)).toBeGreaterThan(drawn.indexOf(weekStripTestID));
-      expect(drawn.indexOf(phaseLineTestID)).toBeLessThan(drawn.indexOf(cycleRingTestID));
+      expect(drawn.indexOf(phaseLineTestID)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
       expect(drawn.indexOf(weekStripTestID)).toBeGreaterThan(drawn.indexOf(homeHeaderTestID));
     });
 
@@ -259,7 +260,7 @@ describe('she reads her phase and her cycle day as words from across the room', 
       );
 
       expect(partsMissing(theTopOfTheDrawing('todayNext'), withoutTheLine)).toEqual([
-        `the drawing names PhaseLine, built under ${phaseLineTestID}, and the screen draws none of them after ${weekStripTestID}`,
+        `the drawing names PhaseLine, built under ${phaseLineTestID}, and the screen draws none of them after ${cycleRingTestID}`,
       ]);
     });
   });

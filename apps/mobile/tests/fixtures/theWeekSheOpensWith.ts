@@ -1,6 +1,7 @@
 import type { DayRecord, ProfileRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET } from '@emi/tokens';
+import { washFieldTestID, washTestID, washTintTestID } from '@emi/ui';
 import { screen } from '@testing-library/react-native';
 import { StyleSheet, type ViewStyle } from 'react-native';
 
@@ -129,6 +130,9 @@ export function theDaysOfHerWeek(): string[] {
  * Everything the screen she opens drew, from itself downwards. The route tree wraps the screen in
  * the lock, which draws an identifier of its own above it, so a walk of the whole glass answers
  * the lock where the question is about the screen.
+ *
+ * The wash is left out of it. It is drawn first and it carries colour and no words, so a reader
+ * asking what the screen says would otherwise be answered by a gradient.
  */
 export function whatTheScreenSheOpensDrew(): string[] {
   const drawn = theIdentifiersDrawn();
@@ -138,8 +142,16 @@ export function whatTheScreenSheOpensDrew(): string[] {
     throw new Error('the screen she opens was not on the glass');
   }
 
-  return drawn.slice(at + 1);
+  return drawn.slice(at + 1).filter((identifier) => !theWashIsDrawnUnder.includes(identifier));
 }
+
+/** Every identifier the wash draws, which is the whole of what the reader above leaves out. */
+const theWashIsDrawnUnder: readonly string[] = [
+  washTestID,
+  washFieldTestID,
+  washTintTestID(1),
+  washTintTestID(2),
+];
 
 /** What a day of the strip is drawn under, without the day itself, so a reader can match on it. */
 const aDayOfTheBuiltStrip = weekDayTestID('');

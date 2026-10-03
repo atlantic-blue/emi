@@ -17,7 +17,7 @@ import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 import { theDrawingOfTheSymptoms, theLogProblems } from '../fixtures/theLogSheLandsOn';
-import { partsMissing } from '../fixtures/theMockupScreen';
+import { partsMissing, thePartsOfTheMockup } from '../fixtures/theMockupScreen';
 import { theFourWordsDrawnTooLargeOn } from '../fixtures/thePhaseLineSheReads';
 import { theDaySheOpensIt, whatTheScreenSheOpensDrew } from '../fixtures/theWeekSheOpensWith';
 import {
@@ -86,13 +86,24 @@ describe('she records a symptom and the screen she started on shows it', () => {
       expect(theDrawingPlacesTheRow(theDrawingAfterSheLogged)).toBe(true);
     });
 
-    it('places it between the phase line and the ring', () => {
+    it('places it under the two round actions, which stand under the ring and its line', () => {
       expect(theScreenDownToTheRing(theDrawingAfterSheLogged).map((part) => part.name)).toEqual([
         'HomeHeader',
         'WeekStrip',
-        'PhaseLine',
-        thePartTheDrawingNames,
         'CycleRing',
+      ]);
+      expect(thePartsOfTheMockup('todayLogged').map((part) => part.name)).toEqual([
+        'HomeHeader',
+        'WeekStrip',
+        'CycleRing',
+        'PhaseLine',
+        'RoundAction',
+        'RoundAction',
+        thePartTheDrawingNames,
+        'BottomNavigation',
+        'BottomNavigation',
+        'BottomNavigation',
+        'BottomNavigation',
       ]);
     });
 
@@ -146,11 +157,11 @@ describe('she records a symptom and the screen she started on shows it', () => {
       ).toEqual([]);
     });
 
-    it('draws the row between the phase line and the ring, where the drawing puts it', () => {
+    it('draws the row under the ring and its line, where the drawing puts it', () => {
       const drawn = whatTheScreenSheOpensDrew();
 
       expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(phaseLineTestID));
-      expect(drawn.indexOf(loggedTodayTestID)).toBeLessThan(drawn.indexOf(cycleRingTestID));
+      expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
     });
 
     it('heads the row with the words the catalogue holds for it', () => {

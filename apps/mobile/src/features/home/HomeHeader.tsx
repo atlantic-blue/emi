@@ -59,14 +59,12 @@ const styles = StyleSheet.create({
     color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
-  // The mark and the word sit at one end and the greeting at the other. The row is stretched
-  // because the body it sits in centres what it holds, and a header narrower than the glass would
-  // take the greeting away from the edge it belongs on.
+  // The mark and the word stand over the greeting, in the middle of the glass. There is no
+  // account and nothing to count, so nothing is pushed to either margin and the row reads as one
+  // block rather than as two things at opposite ends of an empty line.
   header: {
     alignItems: 'center',
     alignSelf: 'stretch',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: space.spaceLg,
     paddingHorizontal: space.margin,
   },

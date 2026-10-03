@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     flexDirection: 'row',
     gap: space.spaceSm,
+    justifyContent: 'center',
     paddingHorizontal: space.margin,
   },
   // The phase takes the ink partner of its own phase, never the fill, which is SEE-2. The role is

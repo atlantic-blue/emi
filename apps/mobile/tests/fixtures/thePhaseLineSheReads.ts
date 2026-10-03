@@ -33,7 +33,7 @@ const theDrawings: Readonly<Record<string, () => Part[]>> = {
   todayNext: () => thePartsOfTheMockup('todayNext'),
 };
 
-/** The header, the strip and the line, which is what the top of the screen carries once this is built. */
+/** The header, the strip, the ring and the line, which is what the top of the screen carries. */
 export function theTopOfTheDrawing(key: string): Part[] {
   const parts = theDrawings[key];
 
@@ -43,7 +43,7 @@ export function theTopOfTheDrawing(key: string): Part[] {
     );
   }
 
-  return parts().slice(0, 3);
+  return parts().slice(0, 4);
 }
 
 /** The line as one drawing draws it: the day it names, and the phase it names it in. */
