@@ -26,7 +26,7 @@ const aDaySheCouldHaveNamed = '2026-05-09';
  * The drawing places six parts. The count is written out so that a comparison which read nothing
  * cannot pass as a comparison every part answered.
  */
-const theDrawingHasParts = 6;
+const theDrawingHasParts = 10;
 
 let sheWasTakenOn = 0;
 
@@ -59,7 +59,11 @@ describe('she says she does not remember when her last period started and the fi
   describe('the drawing the comparison reads', () => {
     it('places a way past between the lines she reads and the action', () => {
       expect(thePartsOfTheWayPastDrawing().map((part) => part.name)).toEqual([
+        'TextLink',
         'ProgressBar',
+        'StepLabel',
+        'DropEmblem',
+        'QuestionSheet',
         'OnboardingScreen',
         'Calendar',
         'OnboardingScreen',
@@ -152,7 +156,10 @@ describe('she says she does not remember when her last period started and the fi
         TextLink: ['a-link-nobody-drew'],
       };
 
+      // The drawing places two links, the way back and the way past, so a record naming neither
+      // of them is refused twice, and each refusal says where the walk had reached.
       expect(partsMissing(thePartsTheScreenKeepsInOrder(nowhere), theIdentifiersDrawn())).toEqual([
+        'the drawing names TextLink, built under a-link-nobody-drew, and the screen draws none of them anywhere on the screen',
         `the drawing names TextLink, built under a-link-nobody-drew, and the screen draws none of them after ${calendarTestID}`,
       ]);
     });

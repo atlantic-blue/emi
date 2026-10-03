@@ -29,6 +29,8 @@ export const holdRingTestID = 'hold-ring';
 export const holdCoreTestID = 'hold-core';
 export const holdProgressTestID = 'hold-progress';
 export const holdRefusedTestID = 'hold-refused';
+export const holdTitleTestID = 'hold-title';
+export const holdSaidTestID = 'hold-said';
 
 /** How long her thumb stays down, in milliseconds. Screen 19 holds for this long. */
 export const HOLD_MILLISECONDS = 2500;

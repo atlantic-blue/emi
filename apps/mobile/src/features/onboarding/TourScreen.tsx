@@ -24,6 +24,8 @@ export const tourBackTestID = 'tour-back';
 export const tourCountTestID = 'tour-count';
 export const tourMarkTestID = 'tour-mark';
 export const tourEmblemTestID = 'tour-emblem';
+export const tourTitleTestID = 'tour-title';
+export const tourLinesTestID = 'tour-lines';
 
 export function tourScreenTestID(card: TourCard): string {
   return `tour-${card}`;

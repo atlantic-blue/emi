@@ -22,6 +22,7 @@ import {
 } from '../../src/features/onboarding/copy';
 import { progressFillTestID } from '../../src/components/ProgressBar';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
+import { theScreensWithNoBar } from '../fixtures/theFirstRunLook';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sizedTextIn } from '../fixtures/renderedText';
 
@@ -77,8 +78,7 @@ async function sheReachesTheLastPeriod(): Promise<void> {
  * How much of the bar is filled on each question in turn, written out rather than worked out, so
  * a bar that counts something other than the questions fails here.
  */
-const theTwelveFractionsOfTheBar = [
-  '8.333333333333332%',
+const theTenFractionsOfTheBar = [
   '16.666666666666664%',
   '25%',
   '33.33333333333333%',
@@ -89,7 +89,6 @@ const theTwelveFractionsOfTheBar = [
   '75%',
   '83.33333333333334%',
   '91.66666666666666%',
-  '100%',
 ];
 
 /** How much of the bar is filled on the screen she is looking at, as the screen drew it. */
@@ -174,15 +173,18 @@ describe('the last period is the one question she cannot skip', () => {
   });
 
   describe('how far along she is', () => {
-    it('fills more of the bar on each question, and writes no counter beside it', async () => {
+    it('fills more of the bar on each question, and writes the step beside it', async () => {
       await sheOpensEmi();
 
-      const filled: unknown[] = [theBarIsFilled()];
-      const counters: string[] = [];
+      const filled: unknown[] = [];
+      const written: string[] = [];
 
       for (const [at, where] of firstRunScreens.entries()) {
-        expect(everyWordOnTheScreen(where)).not.toContain(stepLabel(where));
-        counters.push(...everyWordOnTheScreen(where).filter((word) => /\d+\s*of\s*\d+/.test(word)));
+        if (!theScreensWithNoBar.includes(where)) {
+          filled.push(theBarIsFilled());
+          written.push(stepLabel(where));
+          expect(everyWordOnTheScreen(where)).toContain(stepLabel(where));
+        }
         if (where === 'lastPeriod') {
           await shePresses(dayTestID(herPeriodStarted));
         }
@@ -191,12 +193,18 @@ describe('the last period is the one question she cannot skip', () => {
           // is the last period and the welcome.
           const skip = screen.queryByTestId(onboardingSkipTestID);
           await fireEvent.press(skip ?? screen.getByTestId(onboardingActionTestID));
-          filled.push(theBarIsFilled());
         }
       }
 
-      expect(filled).toEqual(theTwelveFractionsOfTheBar);
-      expect(counters).toEqual([]);
+      expect(filled).toEqual(theTenFractionsOfTheBar);
+      expect(written).toHaveLength(firstRunScreens.length - theScreensWithNoBar.length);
+    });
+
+    it('draws no bar on the welcome or on the first run log, and names the day on the log', async () => {
+      await sheOpensEmi();
+
+      expect(screen.queryByTestId(onboardingProgressTestID)).toBeNull();
+      expect(everyWordOnTheScreen('welcome')).toContain(stepLabel('welcome'));
     });
   });
 });

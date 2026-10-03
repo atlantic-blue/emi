@@ -103,6 +103,7 @@ export const firstRunCopy = {
   },
   today: {
     title: words('onboarding.today.title'),
+    header: words('calendar.today'),
     lines: [words('onboarding.today.line.skip')],
     action: words('onboarding.today.action'),
     skip: words('onboarding.today.skip'),
@@ -135,6 +136,7 @@ export const firstRunCopy = {
   },
   back: words('onboarding.back'),
   skip: words('onboarding.skip'),
+  onlyYou: words('onboarding.onlyYou'),
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
   fewerDays: words('onboarding.periodLength.shorter'),

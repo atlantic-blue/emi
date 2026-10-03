@@ -44,6 +44,7 @@ import {
   defaultCycleLengthDays,
   defaultPeriodLengthDays,
 } from '../../src/features/onboarding/firstRun';
+import { theScreensWithNoBar } from '../fixtures/theFirstRunLook';
 import { sizedTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 
@@ -279,6 +280,10 @@ describe('the first run carries the design system', () => {
     const theFill = progressFillTestID(onboardingProgressTestID);
 
     for (const [at, where] of firstRunScreens.entries()) {
+      if (theScreensWithNoBar.includes(where)) {
+        continue;
+      }
+
       it(`fills ${String(at + 1)} of ${String(firstRunScreens.length)} of the bar on ${where}`, async () => {
         await sheIsLookingAt(where);
 
@@ -290,11 +295,21 @@ describe('the first run carries the design system', () => {
     }
 
     it('draws a bar rather than leaving the words to carry it alone', async () => {
-      await sheIsLookingAt('welcome');
+      await sheIsLookingAt('name');
 
       expect(flattened(onboardingProgressTestID).height).toBeGreaterThan(0);
       expect(flattened(onboardingProgressTestID).backgroundColor).toBe(colour.field);
       expect(flattened(theFill).backgroundColor).toBe(colour.accent);
+    });
+
+    it('leaves the bar off the welcome, which asks her nothing, and off the first run log', async () => {
+      await sheIsLookingAt('welcome');
+
+      expect(screen.queryByTestId(onboardingProgressTestID)).toBeNull();
+
+      await sheIsLookingAt('today');
+
+      expect(screen.queryByTestId(onboardingProgressTestID)).toBeNull();
     });
 
     it('says the whole of it out loud, because a fraction of a line reads as nothing', async () => {
@@ -311,14 +326,21 @@ describe('the first run carries the design system', () => {
     });
 
     for (const where of firstRunScreens) {
-      it(`writes no counter on ${where}, because a counter reads as a form to fill in`, async () => {
+      it(`writes the step she is on out on ${where}, so she reads it rather than counting`, async () => {
         await sheIsLookingAt(where);
 
         const drawn = sizedTextIn(screen.toJSON()).map((run) => run.text);
 
         expect(drawn.length).toBeGreaterThan(0);
-        expect(drawn).not.toContain(stepLabel(where));
-        expect(drawn.filter((run) => /\d+\s*(of|\/|·)\s*\d+/.test(run))).toEqual([]);
+
+        if (where === 'today') {
+          expect(drawn).not.toContain(stepLabel(where));
+          expect(drawn).toContain(firstRunCopy.today.header);
+
+          return;
+        }
+
+        expect(drawn).toContain(stepLabel(where));
       });
     }
   });

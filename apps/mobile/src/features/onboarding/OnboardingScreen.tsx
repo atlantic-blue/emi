@@ -53,6 +53,11 @@ export const onboardingSkipTestID = 'onboarding-skip';
 export const onboardingTitleTestID = 'onboarding-title';
 export const onboardingLinesTestID = 'onboarding-lines';
 export const onboardingWayPastTestID = 'onboarding-way-past';
+export const onboardingStepLabelTestID = 'onboarding-step-label';
+export const onboardingEmblemTestID = 'onboarding-emblem';
+export const onboardingSheetTestID = 'onboarding-sheet';
+export const onboardingHeaderWordTestID = 'onboarding-header-word';
+export const onboardingLockTestID = 'onboarding-lock';
 
 /** Points. The arrow is read at the size the rest of the set is read at. */
 const BACK_MARK_SIZE = 22;

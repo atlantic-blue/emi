@@ -1,8 +1,12 @@
 import { calendarTestID } from '../../src/features/onboarding/Calendar';
 import {
   onboardingActionTestID,
+  onboardingBackTestID,
+  onboardingEmblemTestID,
   onboardingLinesTestID,
   onboardingProgressTestID,
+  onboardingSheetTestID,
+  onboardingStepLabelTestID,
   onboardingTitleTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
@@ -32,19 +36,26 @@ import {
 export const theDrawingOfTheWayPast = 'lastPeriodNext';
 
 /** Where the drawing places the lines, which is the one part the screen answers out of order. */
-export const theLinesAreAt = 3;
+export const theLinesAreAt = 7;
 
 /** What each part of that drawing is built under on the question she reads. */
 export function theIdentifiersOfTheLastPeriodScreen(): PartIdentifiers {
   return {
     ...theIdentifiersOfAPart,
     Calendar: [calendarTestID],
+    DropEmblem: [onboardingEmblemTestID],
+    QuestionSheet: [onboardingSheetTestID],
+    StepLabel: [onboardingStepLabelTestID],
     // The drawing names the question and the lines under it by the name of the frame both stand
     // in, so the frame answers for both and the walk takes them in the order it meets them.
     OnboardingScreen: [onboardingTitleTestID, onboardingLinesTestID],
     PrimaryButton: [...(theIdentifiersOfAPart.PrimaryButton ?? []), onboardingActionTestID],
     ProgressBar: [onboardingProgressTestID],
-    TextLink: [...(theIdentifiersOfAPart.TextLink ?? []), onboardingWayPastTestID],
+    TextLink: [
+      ...(theIdentifiersOfAPart.TextLink ?? []),
+      onboardingBackTestID,
+      onboardingWayPastTestID,
+    ],
   };
 }
 

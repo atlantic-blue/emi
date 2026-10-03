@@ -274,9 +274,37 @@ function alongTheColumnOrRow(
     return 0;
   }
 
+  const outOfFlow = children.filter((child) => standsOutOfTheFlow(styleUnder(child, node)));
+  const inFlow = children.filter((child) => !standsOutOfTheFlow(styleUnder(child, node)));
+
+  for (const child of outOfFlow) {
+    const childStyle = styleUnder(child, node);
+
+    laid(
+      child,
+      node,
+      { height: undefined, width: insideWidth - marginsAcross(childStyle) },
+      contentTop + held(childStyle, ['top']),
+      onto,
+    );
+  }
+
+  if (inFlow.length === 0) {
+    return 0;
+  }
+
   return style.flexDirection === 'row'
-    ? acrossTheRow(node, style, children, insideWidth, contentTop, onto)
-    : downTheColumn(node, style, children, insideWidth, ownHeight, contentTop, onto);
+    ? acrossTheRow(node, style, inFlow, insideWidth, contentTop, onto)
+    : downTheColumn(node, style, inFlow, insideWidth, ownHeight, contentTop, onto);
+}
+
+/**
+ * Whether a box is lifted off the column it sits in. A box placed by its own edges takes no room
+ * from its brothers and sisters, so the wash across the top of a screen leaves the question under
+ * it exactly where it was.
+ */
+function standsOutOfTheFlow(style: Style): boolean {
+  return style.position === 'absolute';
 }
 
 function acrossTheRow(

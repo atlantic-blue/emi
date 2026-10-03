@@ -21,6 +21,8 @@ interface Props {
 }
 
 export const recoveryActionTestID = 'recovery-action';
+export const recoveryTitleTestID = 'recovery-title';
+export const recoveryLinesTestID = 'recovery-lines';
 
 export function RecoveryScreen({
   screen,
