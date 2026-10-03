@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { type ProfileRecord, profileKeys, recordKeys } from '@emi/crypto';
+import { type ProfileRecord, profileBytes, profileKeys, recordKeys } from '@emi/crypto';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
 import type { Database } from '../../src/data/database';
@@ -21,6 +21,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, herDatabase } from '../fixtures/herPhone';
 import { herKeyIsInTheKeychain, herProfileVault, herVault } from '../fixtures/herVault';
 import { aProfileRecord } from '../fixtures/profileRecord';
+import { readableIn, theFieldAndItsValue } from '../fixtures/whatIsReadable';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -62,6 +63,29 @@ async function aPhoneThatStatedItInTheSettingTable(
   writeSetting(database, 'tourSeenAt', sheAnsweredAt.toISOString());
 
   return database;
+}
+
+/**
+ * The field and the value together, which is how the number would read if her answers were never
+ * sealed. The number alone is two digits, and two digits fall side by side in a payload of random
+ * bytes about once in six hundred payloads.
+ */
+const theNumberUnderItsField = theFieldAndItsValue('cycleLengthDays', sheSaidHerCycleRuns);
+
+/** The payload column as the bytes on the disk, read with no repository between it and the test. */
+function thePayloadHerAnswersSitIn(database: Database): Uint8Array | undefined {
+  return database.all<{ payload: Uint8Array }>('SELECT payload FROM profile')[0]?.payload;
+}
+
+/** The same answers as a plain payload: canonical json, which anybody holding the row could read. */
+function herAnswersInPlainWords(database: Database): Uint8Array {
+  const held = readProfile(database, herProfileVault());
+
+  if (held === undefined) {
+    throw new Error('this phone holds no profile, so there are no answers to write out plainly');
+  }
+
+  return profileBytes(held, { now: sheUpgradedAt });
 }
 
 /** The setting table as the bytes on the disk, read with no repository between it and the test. */
@@ -118,11 +142,22 @@ describe('after the upgrade the cycle length is sealed and the setting table doe
       const database = await aPhoneThatStatedItInTheSettingTable();
       moved(database);
 
-      const payload = profileRow(database)?.payload;
+      const payload = thePayloadHerAnswersSitIn(database);
+
       expect(payload).toBeDefined();
-      expect(Buffer.from(payload as Uint8Array).toString('utf8')).not.toContain(
-        String(sheSaidHerCycleRuns),
+      expect(readableIn(payload as Uint8Array, theNumberUnderItsField)).toBe(false);
+      expect(Buffer.from(payload as Uint8Array)).not.toEqual(
+        Buffer.from(herAnswersInPlainWords(database)),
       );
+    });
+
+    it('is read by a search that finds the number in her answers in plain words', async () => {
+      // The search itself, held to finding something, because a search that finds nothing passes
+      // the case above it and proves nothing about the seal.
+      const database = await aPhoneThatStatedItInTheSettingTable();
+      moved(database);
+
+      expect(readableIn(herAnswersInPlainWords(database), theNumberUnderItsField)).toBe(true);
     });
 
     it('reads back through the one function a screen asks', async () => {
