@@ -205,7 +205,7 @@ describe('every language says the same things', () => {
     it('are Spanish on a Spanish phone, and the count picks the form', () => {
       readingIn('es');
 
-      expect(words('log.flow.title')).toBe('Tu flujo');
+      expect(words('log.flow.title')).toBe('¿Cómo es tu flujo hoy?');
       expect(words('export.dayCount', 1)).toBe('1 día');
       expect(words('export.dayCount', 3)).toBe('3 días');
     });
