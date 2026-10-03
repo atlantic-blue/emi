@@ -128,8 +128,17 @@ async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(routedScreen.getByTestId(testID));
 }
 
+/**
+ * The rows the screen drew, in its order.
+ *
+ * A row draws its symbol in a tile and the mark that points on, each under an identifier of its
+ * own that begins with the row's, so a reading by prefix alone would count one row four times.
+ * The identifier of a row is that prefix and one word, which is what this asks for.
+ */
 function theRowsSheReads(): string[] {
-  return theIdentifiersDrawn().filter((identifier) => identifier.startsWith(theRowPrefix));
+  const aRow = new RegExp(`^${theRowPrefix}[a-z]+$`);
+
+  return theIdentifiersDrawn().filter((identifier) => aRow.test(identifier));
 }
 
 function theWordsIn(testID: string): string {

@@ -143,6 +143,8 @@ export const spanish: CatalogueIn<'es'> = {
   'export.document.title': 'Tu registro',
   'export.document.yes': 'Sí',
   'export.failed': 'No pudimos guardar los archivos. Puede que a tu teléfono no le quede espacio.',
+  'export.forADoctor': 'Para un médico',
+  'export.forAnApplication': 'Para una aplicación',
   'export.held': '{days} y {cycles}.',
   'export.make': 'Crear los archivos',
   'export.making': 'Creándolos',

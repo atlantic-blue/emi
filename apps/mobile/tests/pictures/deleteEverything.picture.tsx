@@ -18,7 +18,7 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const theCaveat = [
   'Rendered from the tree the delete screen produced under the test runner, at 390 by 844 points,',
   'and not captured from a phone. The page loads the same font files the application loads, so the',
-  'words are drawn in Plus Jakarta Sans.',
+  'words are drawn in Figtree.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
@@ -32,7 +32,7 @@ interface State {
 const theStates: readonly State[] = [
   {
     title: 'Before she presses',
-    note: 'What goes is listed first, and the way back out is an ordinary button beside the one that deletes.',
+    note: 'What goes is listed first, each line with its own mark, and the way back out is the quiet link under the one that deletes.',
     stage: 'ready',
   },
   {

@@ -43,6 +43,7 @@
     "generate:last-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern lastPeriod.picture",
     "generate:history-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern history.picture",
     "generate:export-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern export.picture",
+    "generate:export-screen-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern exportScreen.picture",
     "generate:delete-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern deleteEverything.picture",
     "generate:welcome-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern welcome.picture",
     "generate:cycle-length-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern cycleLength.picture",

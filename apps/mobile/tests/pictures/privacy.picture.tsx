@@ -17,7 +17,7 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 const theCaveat = [
   'Rendered from the tree the screen produced under the test runner, at 390 by 844 points, and not',
   'captured from a phone. The page loads the same font files the application loads, so the words',
-  'are drawn in Plus Jakarta Sans. The room kept at the top and the bottom is the room an iPhone',
+  'are drawn in Figtree. The room kept at the top and the bottom is the room an iPhone',
   'with a dynamic island keeps for itself, which is 59 points and 34 points. The dock is not drawn,',
   'because the screen is rendered on its own rather than inside the navigator.',
   'Reproduce with: npm run generate:privacy-picture.',
@@ -25,8 +25,9 @@ const theCaveat = [
 
 const theTitle = 'The screen the dock opens';
 const theNote = [
-  'Four rows: her answers, the lock, the export and the way out. Each one says what it holds under',
-  'its name, and her answers opens the screen that reads her first run back to her.',
+  'The promise stands over four rows: her answers, the lock, the export and the way out. Each row',
+  'says what it holds under its name, and her answers opens the screen that reads her first run',
+  'back to her.',
 ].join(' ');
 
 const screens: DrawnScreen[] = [];

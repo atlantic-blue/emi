@@ -27,7 +27,7 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 const theCaveat = [
   'Rendered from the trees the screens produced under the test runner, at 390 by 844 points, and',
   'not captured from a phone. The page loads the same font files the application loads, so the',
-  'words are drawn in Plus Jakarta Sans. The room kept at the top and the bottom is the room an',
+  'words are drawn in Figtree. The room kept at the top and the bottom is the room an',
   'iPhone with a dynamic island keeps for itself, which is 59 points and 34 points. The answers are',
   'the ones a fixture carries, and not a profile read off a device. A wheel is drawn at its top,',
   'because the markup carries no scroll position, and a screen taller than the glass draws past the',
