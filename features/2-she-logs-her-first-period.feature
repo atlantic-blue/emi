@@ -689,6 +689,18 @@ Feature: She opens Emi and logs her first period
     And Insights offers the way back as the quieter capsule, under the rows she came to read
     And each screen draws every part its own drawing names, in the order the drawing places them
 
+  Scenario: SCREEN-2, the Privacy screens match the redesign prototype
+    Given her phone holds the eight answers she gave and the three days she bled
+    When she opens Privacy from the dock and walks it: her answers, her cycle length, the two files and delete everything
+    Then each of those screens carries the wash across the top of the glass
+    And Privacy tells her above the rows that only she can read her days
+    And every row of Privacy stands on one card, with its own drawing and the mark that points on
+    And her eight answers stand on one card, each one reading back the answer she gave
+    And each of the two files she can take away is drawn as a tile of its own
+    And the lock sits beside the line that says nothing is sent anywhere
+    And delete everything names the five things that go, each one with its own mark
+    And each screen draws every part its own drawing names, in the order the drawing places them
+
   Scenario: SCREEN-2, the home screen says hi to her by name
     Given she gave the name Ada at her first run, and her phone holds the one period she logged
     When she opens Emi

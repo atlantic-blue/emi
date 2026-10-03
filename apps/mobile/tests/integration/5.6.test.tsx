@@ -332,7 +332,7 @@ describe('after deleting, the database and the keychain are both empty', () => {
       await sheOpensEmi();
       await sheWalksToTheDeleteScreen();
 
-      const onTheScreen = screen.queryAllByRole('button');
+      const onTheScreen = [...screen.queryAllByRole('button'), ...screen.queryAllByRole('link')];
 
       expect(onTheScreen.length).toBeGreaterThan(1);
       expect(controlsTooSmallToPress(onTheScreen)).toEqual([]);
@@ -343,7 +343,12 @@ describe('after deleting, the database and the keychain are both empty', () => {
       await sheWalksToTheDeleteScreen();
       await shePresses(deleteActionTestID);
 
-      expect(controlsTooSmallToPress(screen.queryAllByRole('button'))).toEqual([]);
+      expect(
+        controlsTooSmallToPress([
+          ...screen.queryAllByRole('button'),
+          ...screen.queryAllByRole('link'),
+        ]),
+      ).toEqual([]);
     });
   });
 

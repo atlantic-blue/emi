@@ -148,6 +148,8 @@ export const russian: CatalogueIn<'ru'> = {
   'export.document.title': 'Ваша запись',
   'export.document.yes': 'Да',
   'export.failed': 'Мы не смогли сохранить файлы. Возможно, на вашем телефоне не осталось места.',
+  'export.forADoctor': 'Для врача',
+  'export.forAnApplication': 'Для приложения',
   'export.held': '{days} и {cycles}.',
   'export.make': 'Создать файлы',
   'export.making': 'Создаём',

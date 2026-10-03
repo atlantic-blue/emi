@@ -1,9 +1,9 @@
-import { MINIMUM_TAP_TARGET, colour, space, stroke, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PrimaryButton } from '../../components/Button';
+import { RoundIconButton } from '../../components/RoundIconButton';
 import { Screen } from '../../components/Screen';
 import { answerCopy, gaveAtFirstRunSentence } from './copy';
 
@@ -16,9 +16,6 @@ export const answerQuestionTestID = 'answer-question';
 export const answerLinesTestID = 'answer-lines';
 export const answerHeldTestID = 'answer-held';
 export const answerSaveTestID = 'answer-save';
-
-/** Points. The arrow is read at the size the first run reads its own arrow at. */
-const BACK_MARK_SIZE = 22;
 
 /** The set holds one chevron, pointing the way on, so the way back is the same drawing turned. */
 const TURNED_AROUND = [{ rotate: '180deg' }] as const;
@@ -65,19 +62,16 @@ export function AnswerScreen({
   children,
 }: Props): ReactNode {
   return (
-    <Screen testID={answerScreenTestID}>
+    <Screen drawsTheWash testID={answerScreenTestID}>
       <View style={styles.header} testID={answerHeaderTestID}>
-        <Pressable
-          accessibilityLabel={answerCopy.back}
-          accessibilityRole="button"
-          onPress={onCancel}
-          style={styles.back}
-          testID={answerBackTestID}
-        >
-          <View style={styles.backMark}>
-            <Icon colour={colour.text} name="chevron" size={BACK_MARK_SIZE} />
-          </View>
-        </Pressable>
+        <View style={styles.backMark}>
+          <RoundIconButton
+            accessibilityLabel={answerCopy.back}
+            icon="chevron"
+            onPress={onCancel}
+            testID={answerBackTestID}
+          />
+        </View>
 
         <Text accessibilityRole="header" style={styles.title} testID={answerTitleTestID}>
           {title}
@@ -130,12 +124,6 @@ const styles = StyleSheet.create({
   // The control takes the room the words leave, so it sits in the middle of the glass rather than
   // under the last paragraph.
   asked: { flexGrow: 1, justifyContent: 'center', paddingVertical: space.spaceXl },
-  back: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-  },
   backMark: { transform: TURNED_AROUND },
   body: {
     flexGrow: 1,
@@ -154,16 +142,12 @@ const styles = StyleSheet.create({
     color: colour.accent,
     ...textStyle('label-md'),
   },
-  footer: {
-    borderTopColor: colour.line,
-    borderTopWidth: stroke.hairline,
-    padding: space.spaceLg,
-  },
+  footer: { padding: space.margin },
   header: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: space.spaceSm,
+    paddingHorizontal: space.spaceMd,
     paddingTop: space.spaceSm,
   },
   line: {
@@ -172,12 +156,19 @@ const styles = StyleSheet.create({
   },
   question: {
     color: colour.text,
+    textAlign: 'center',
     ...textStyle('headline-md'),
   },
-  said: { rowGap: space.spaceSm },
+  said: {
+    backgroundColor: colour.card,
+    borderRadius: radius.xl,
+    padding: space.spaceLg,
+    rowGap: space.spaceSm,
+  },
   scroll: { flex: 1 },
   title: {
     color: colour.text,
-    ...textStyle('label-md'),
+    textAlign: 'center',
+    ...textStyle('headline-sm'),
   },
 });

@@ -23,7 +23,7 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 const theCaveat = [
   'Rendered from the trees the screens produced under the test runner, at 390 by 844 points, and',
   'not captured from a phone. The page loads the same font files the application loads, so the',
-  'words are drawn in Plus Jakarta Sans. The room kept at the top and the bottom is the room an',
+  'words are drawn in Figtree. The room kept at the top and the bottom is the room an',
   'iPhone with a dynamic island keeps for itself, which is 59 points and 34 points. The answers are',
   'the ones the drawing of this screen carries, and not a profile read off a device.',
   'Reproduce with: npm run generate:your-answers-picture.',
@@ -67,7 +67,7 @@ describe('her first run read back to her, drawn for somebody to look at', () => 
   it('renders it for a woman who answered every question', async () => {
     await draw(
       'Your answers',
-      'Eight rows, which is exactly the eight the hold sealed. The four short answers read on the question line and the four sentences read under it.',
+      'Eight rows on one card, which is exactly the eight the hold sealed. Each one reads her own answer at the end of its row.',
     );
   });
 

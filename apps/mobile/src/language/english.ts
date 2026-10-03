@@ -137,6 +137,8 @@ export const english = {
   'export.document.title': 'Your record',
   'export.document.yes': 'Yes',
   'export.failed': "We couldn't save the files. Your phone may be out of space.",
+  'export.forADoctor': 'For a doctor',
+  'export.forAnApplication': 'For an application',
   'export.held': '{days} and {cycles}.',
   'export.make': 'Make the files',
   'export.making': 'Making them',

@@ -31,17 +31,6 @@ export const yourAnswerRows = [
 export type YourAnswerRow = (typeof yourAnswerRows)[number];
 
 /**
- * The rows short enough to read on the same line as the question. The four below carry a word or
- * a number; the other four carry a sentence, which goes under the question instead.
- */
-export const answersReadBesideTheQuestion: readonly YourAnswerRow[] = [
-  'name',
-  'birthYear',
-  'cycleLength',
-  'periodLength',
-];
-
-/**
  * What she gave for one question, or nothing at all where she skipped it.
  *
  * Nothing at all is the answer, so the row is drawn with the question and no value under it. A

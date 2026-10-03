@@ -1,7 +1,9 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import { colour, radius, space, textStyle } from '@emi/tokens';
+import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { PrimaryButton, TextLink } from '../../components/Button';
 import { Screen } from '../../components/Screen';
 import { settingsCopy } from './copy';
 
@@ -13,6 +15,30 @@ export const startAgainTestID = 'delete-start-again';
 export const goesTestID = (at: number): string => `delete-goes-${at}`;
 export const deleteRefusedTestID = 'delete-refused';
 export const serverNotReachedTestID = 'delete-server-not-reached';
+
+/** The heading of the screen. */
+export const deleteTitleTestID = 'delete-title';
+
+/** The sentence under it, which says the press cannot be undone. */
+export const deleteLineTestID = 'delete-line';
+
+/** The white square the drawing stands in, over the heading. */
+export const deleteEmblemTestID = 'delete-emblem';
+
+/** The one card the five things that go stand on. */
+export const deleteGoesTestID = 'delete-goes-card';
+
+/** The mark beside one of those five lines, named so a test can read that it is drawn. */
+export const goesMarkTestID = (at: number): string => `delete-goes-${at}-mark`;
+
+/** Points. The square the drawing stands in over the heading, which holds one drawing and no word. */
+const EMBLEM_SIZE = 80;
+
+/** Points. The bin inside that square. */
+const EMBLEM_ICON = 38;
+
+/** Points. The mark beside one line of the card, read at the size of the words beside it. */
+const GOES_MARK = 18;
 
 /**
  * Where she is: reading it, waiting on it, looking at a phone that holds nothing, looking at a
@@ -41,7 +67,7 @@ interface Props {
 export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Props): ReactNode {
   if (stage === 'deleted' || stage === 'deleted-without-the-server') {
     return (
-      <Screen testID={deletedScreenTestID}>
+      <Screen drawsTheWash testID={deletedScreenTestID}>
         <ScrollView contentContainerStyle={styles.body}>
           <Text accessibilityRole="header" style={styles.title}>
             {settingsCopy.deleted.title}
@@ -52,14 +78,13 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
               {settingsCopy.deleted.withoutTheServer}
             </Text>
           ) : null}
-          <Pressable
-            accessibilityRole="button"
-            onPress={onStartAgain}
-            style={styles.action}
-            testID={startAgainTestID}
-          >
-            <Text style={styles.actionLabel}>{settingsCopy.deleted.action}</Text>
-          </Pressable>
+          <View style={styles.foot}>
+            <PrimaryButton
+              label={settingsCopy.deleted.action}
+              onPress={onStartAgain}
+              testID={startAgainTestID}
+            />
+          </View>
         </ScrollView>
       </Screen>
     );
@@ -68,12 +93,18 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
   const working = stage === 'working';
 
   return (
-    <Screen testID={deleteScreenTestID}>
+    <Screen drawsTheWash testID={deleteScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <View style={styles.emblem} testID={deleteEmblemTestID}>
+          <Icon colour={colour.accent} name="delete" size={EMBLEM_ICON} />
+        </View>
+
+        <Text accessibilityRole="header" style={styles.title} testID={deleteTitleTestID}>
           {settingsCopy.delete.title}
         </Text>
-        <Text style={styles.line}>{settingsCopy.delete.line}</Text>
+        <Text style={styles.line} testID={deleteLineTestID}>
+          {settingsCopy.delete.line}
+        </Text>
 
         {stage === 'refused' ? (
           <Text style={styles.refused} testID={deleteRefusedTestID}>
@@ -81,84 +112,72 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
           </Text>
         ) : null}
 
-        <View style={styles.goes}>
+        <View style={styles.goes} testID={deleteGoesTestID}>
           {settingsCopy.delete.goes.map((each, at) => (
-            <Text key={each} style={styles.goesLine} testID={goesTestID(at)}>
-              {each}
-            </Text>
+            <View key={each} style={styles.goesRow}>
+              <Icon
+                colour={colour.accent}
+                name="close"
+                size={GOES_MARK}
+                testID={goesMarkTestID(at)}
+              />
+              <Text style={styles.goesLine} testID={goesTestID(at)}>
+                {each}
+              </Text>
+            </View>
           ))}
         </View>
 
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ disabled: working }}
-          disabled={working}
-          onPress={onDelete}
-          style={styles.action}
-          testID={deleteActionTestID}
-        >
-          <Text style={styles.actionLabel}>
-            {working ? settingsCopy.delete.working : settingsCopy.delete.action}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          accessibilityRole="button"
-          disabled={working}
-          onPress={onBack}
-          style={styles.back}
-          testID={deleteBackTestID}
-        >
-          <Text style={styles.backLabel}>{settingsCopy.delete.back}</Text>
-        </Pressable>
+        <View style={styles.foot}>
+          <PrimaryButton
+            isReady={!working}
+            label={working ? settingsCopy.delete.working : settingsCopy.delete.action}
+            onPress={onDelete}
+            testID={deleteActionTestID}
+          />
+          <TextLink
+            isReady={!working}
+            label={settingsCopy.delete.back}
+            onPress={onBack}
+            testID={deleteBackTestID}
+          />
+        </View>
       </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  action: {
-    alignItems: 'center',
-    backgroundColor: colour.accent,
-    borderRadius: radius.md,
-    justifyContent: 'center',
-    marginTop: space.spaceXl,
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceLg,
-  },
-  actionLabel: {
-    color: colour.card,
-    ...textStyle('body-lg'),
-  },
-  back: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: space.spaceSm,
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceLg,
-  },
-  backLabel: {
-    color: colour.secondaryText,
-    ...textStyle('body-lg'),
-  },
   body: {
     flexGrow: 1,
-    paddingHorizontal: space.spaceLg,
+    paddingHorizontal: space.margin,
     paddingVertical: space.spaceXl,
   },
+  emblem: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: colour.card,
+    borderRadius: radius.xxl,
+    height: EMBLEM_SIZE,
+    justifyContent: 'center',
+    marginBottom: space.spaceMd,
+    width: EMBLEM_SIZE,
+  },
+  // The one thing at the foot of the screen, held down by the room the card above it leaves.
+  foot: { marginTop: 'auto', rowGap: space.spaceMd },
   goes: {
-    borderTopColor: colour.line,
-    borderTopWidth: stroke.hairline,
+    backgroundColor: colour.card,
+    borderRadius: radius.xl,
     marginTop: space.spaceLg,
-    paddingTop: space.spaceMd,
+    padding: space.spaceLg,
+    rowGap: space.spaceMd,
   },
   goesLine: {
-    color: colour.secondaryText,
-    ...textStyle('body-sm'),
-    marginTop: space.spaceXs,
+    color: colour.text,
+    flexShrink: 1,
+    ...textStyle('choice-lg'),
   },
+  goesRow: { alignItems: 'center', flexDirection: 'row', gap: space.spaceMd },
   refused: {
     color: colour.text,
     ...textStyle('body-lg'),
@@ -166,11 +185,13 @@ const styles = StyleSheet.create({
   },
   line: {
     color: colour.secondaryText,
+    textAlign: 'center',
     ...textStyle('body-lg'),
     marginTop: space.spaceMd,
   },
   title: {
     color: colour.text,
+    textAlign: 'center',
     ...textStyle('headline-lg'),
   },
 });

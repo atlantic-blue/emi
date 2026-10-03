@@ -21,7 +21,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
  */
 
 interface Props {
-  readonly icon: IconName;
+  /**
+   * Left out by a list whose rows carry no symbol, which is the screen that reads her eight answers
+   * back: the prototype draws a tile on the rows of Privacy and on none of those.
+   */
+  readonly icon?: IconName;
   readonly label: string;
   /** What the row opens, under its name. Left out where there is nothing true to say yet. */
   readonly line?: string;
@@ -67,7 +71,7 @@ function RowBody({
   opens,
   testID,
 }: {
-  readonly icon: IconName;
+  readonly icon?: IconName;
   readonly label: string;
   readonly line?: string;
   readonly value?: string;
@@ -76,14 +80,16 @@ function RowBody({
 }): ReactNode {
   return (
     <>
-      <View style={styles.tile} testID={testID === undefined ? undefined : rowTileTestID(testID)}>
-        <Icon
-          colour={colour.text}
-          name={icon}
-          size={ROW_ICON}
-          testID={testID === undefined ? undefined : rowDrawingTestID(testID)}
-        />
-      </View>
+      {icon === undefined ? null : (
+        <View style={styles.tile} testID={testID === undefined ? undefined : rowTileTestID(testID)}>
+          <Icon
+            colour={colour.text}
+            name={icon}
+            size={ROW_ICON}
+            testID={testID === undefined ? undefined : rowDrawingTestID(testID)}
+          />
+        </View>
+      )}
       <View style={styles.words}>
         <Text style={styles.label}>{label}</Text>
         {line === undefined ? null : <Text style={styles.line}>{line}</Text>}

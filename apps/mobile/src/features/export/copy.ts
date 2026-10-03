@@ -10,6 +10,8 @@ export const exportCopy = {
   title: words('export.title'),
   back: words('export.back'),
   what: words('export.what'),
+  forADoctor: words('export.forADoctor'),
+  forAnApplication: words('export.forAnApplication'),
   where: words('export.where'),
   make: words('export.make'),
   making: words('export.making'),
