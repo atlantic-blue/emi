@@ -136,6 +136,10 @@ import {
   flowOptionTestID,
   flowPickerTestID,
 } from '../apps/mobile/src/features/log/FlowPicker';
+import {
+  unexpectedBleedingLineTestID,
+  unexpectedBleedingMarkTestID,
+} from '../apps/mobile/src/features/log/UnexpectedBleeding';
 import { opensOnParameter, theSymptoms } from '../apps/mobile/src/features/log/askedGroup';
 import {
   historyArcTestID,
@@ -779,6 +783,99 @@ function theWordsOfTheScreenSheOpensIn(language: Language, keys = theKeysOfTheSc
   const catalogue = theCatalogueOf(language);
 
   return keys.flatMap((key) => formsOf(catalogue[key] ?? ''));
+}
+
+/**
+ * The words the log and the period editor say after this step, each under the key that holds it.
+ * They are written out here rather than read off the catalogue, because a sentence read off the
+ * thing it is holding moves with it and catches nothing.
+ */
+const theLogAndTheEditorSayInEnglish: Readonly<Record<string, string>> = {
+  'calendar.editPeriod.added': 'Added {days}.',
+  'calendar.editPeriod.leadWithNoDay': 'Tap the days you bled. Nothing is marked this month yet.',
+  'calendar.editPeriod.noDayLeft': 'A period needs at least one day. Tap a day you bled.',
+  'calendar.editPeriod.removed': 'Removed {days}.',
+  'log.day.notADay.line': "That date isn't in the calendar.",
+  'log.day.notADay.title': "That's not a day",
+  'log.day.notYet.line': "That day hasn't happened yet. You can log today or any day before it.",
+  'log.day.notYet.title': 'Not yet',
+  'log.energy.heading': "How's your energy?",
+  'log.energy.name.3': 'Okay',
+  'log.flow.saved': 'Saved on your phone.',
+  'log.flow.title': "How's your flow today?",
+  'log.sheet.noMatch': 'No symptoms match {query}',
+  'log.temperature.hint': 'Take it before you get up.',
+  'log.unexpected.invitation':
+    "Bleeding that isn't your period? Log it here, and we'll keep an eye on the pattern.",
+  'log.unexpected.marked': "Saved to your record. It won't count as the start of a cycle.",
+  'log.weight.hint': 'Once a day is plenty.',
+};
+
+/** The one key of these two screens whose words change with the number, and both forms of it. */
+const theEditorCountsInEnglish: Readonly<Record<string, readonly string[]>> = {
+  'calendar.editPeriod.lead': [
+    'Tap the days you bled. You have {count} day marked, from {date}.',
+    'Tap the days you bled. You have {count} days marked, from {date}.',
+  ],
+};
+
+/** Every key this step rewrites, the plain ones and the counted one together. */
+const theKeysOfTheLogAndTheEditor: readonly string[] = [
+  ...Object.keys(theLogAndTheEditorSayInEnglish),
+  ...Object.keys(theEditorCountsInEnglish),
+];
+
+/** Every word the log and the editor say in one language, out of that language's own catalogue. */
+function theWordsOfTheLogAndTheEditorIn(
+  language: Language,
+  keys: readonly string[] = theKeysOfTheLogAndTheEditor,
+): string[] {
+  const catalogue = theCatalogueOf(language);
+
+  return keys.flatMap((key) => formsOf(catalogue[key] ?? ''));
+}
+
+/**
+ * Words that turn her record into a question for a doctor, and words that make a spot sound like
+ * an emergency. A woman who is told to worry stops logging, and the pattern she came for is built
+ * out of the days she keeps logging.
+ */
+const adviceAndAlarm: readonly string[] = [
+  'doctor',
+  'nurse',
+  'clinic',
+  'consult',
+  'seek',
+  'advice',
+  'should',
+  'recommend',
+  'treatment',
+  'diagnosis',
+  'abnormal',
+  'unusual',
+  'warning',
+  'worry',
+  'concern',
+  'serious',
+  'danger',
+  'urgent',
+  'risk',
+  'alert',
+];
+
+/** How many complete cycles her phone holds in the middle of her month, before she logs anything. */
+const theCyclesBehindHer = 6;
+
+/** The day of the open cycle she is standing on: the middle of her month, nowhere near a period. */
+const herMiddleOfTheMonth: HerCycles = {
+  cycleLengthDays: 28,
+  periodDays: 4,
+  dayOfCycle: 14,
+};
+
+/** The day each cycle her phone holds started on, which a mark in the middle must leave alone. */
+function theCycleStartsOnHerPhone(): string[] {
+  return theCyclesHerPhoneHolds().map((cycle) => cycle.startedOn);
 }
 
 /** Six periods, four days each, and a Monday she opened at the time and said nothing happened on. */
@@ -6239,6 +6336,108 @@ defineFeature(feature, (test) => {
         }
       },
     );
+  });
+
+  test('SCREEN-4, she logs bleeding that is not her period in plain words', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let theCyclesSheHadBefore: string[];
+
+    given('she is in the middle of her month, with six cycles behind her', async () => {
+      await herPhoneHolds(whenSheOpensIt, herRecordedDays(herMiddleOfTheMonth));
+      theCyclesSheHadBefore = theCycleStartsOnHerPhone();
+
+      expect(herCompleteCycles()).toBe(theCyclesBehindHer);
+    });
+
+    when('she opens the log and says the bleeding was light', async () => {
+      await sheOpens('/log');
+      await shePresses(flowOptionTestID('light'));
+    });
+
+    then('the line beside the flow asks her about bleeding that is not her period', () => {
+      expect(whatItSays(unexpectedBleedingLineTestID)).toBe(
+        theLogAndTheEditorSayInEnglish['log.unexpected.invitation'],
+      );
+    });
+
+    and(
+      'marking it tells her the day is in her record, and that no cycle starts from it',
+      async () => {
+        await shePresses(unexpectedBleedingMarkTestID);
+
+        expect(whatItSays(unexpectedBleedingLineTestID)).toBe(
+          theLogAndTheEditorSayInEnglish['log.unexpected.marked'],
+        );
+      },
+    );
+
+    and(
+      'her phone holds that day with the mark on it, and counts the cycles it counted before',
+      () => {
+        expect(whatWasRecordedOn(today)).toMatchObject({
+          bleedingIsUnexpected: true,
+          day: today,
+          flow: 'light',
+        });
+        expect(theCycleStartsOnHerPhone()).toEqual(theCyclesSheHadBefore);
+        expect(herCompleteCycles()).toBe(theCyclesBehindHer);
+      },
+    );
+
+    and(
+      'the log and the period editor say all of this in each of the three languages, as you',
+      () => {
+        for (const [key, said] of Object.entries(theLogAndTheEditorSayInEnglish)) {
+          expect({ key, said: theCatalogueOf('en')[key] }).toEqual({ key, said });
+        }
+
+        for (const [key, forms] of Object.entries(theEditorCountsInEnglish)) {
+          expect({ key, forms: theWordsOfTheLogAndTheEditorIn('en', [key]) }).toEqual({
+            key,
+            forms: [...forms],
+          });
+        }
+
+        for (const language of languages) {
+          const missing = theKeysOfTheLogAndTheEditor.filter(
+            (key) => theWordsOfTheLogAndTheEditorIn(language, [key]).join('').length === 0,
+          );
+
+          expect({ language, missing }).toEqual({ language, missing: [] });
+          expect({
+            language,
+            asYou: howEachLanguageSaysYou[language].test(
+              theWordsOfTheLogAndTheEditorIn(language).join('\n'),
+            ),
+          }).toEqual({ language, asYou: true });
+        }
+
+        expect(languages.length).toBe(3);
+      },
+    );
+
+    and('none of those words gives her advice, raises an alarm, or names Emi', () => {
+      for (const language of languages) {
+        const naming = theKeysOfTheLogAndTheEditor.filter((key) =>
+          theWordsOfTheLogAndTheEditorIn(language, [key]).join('\n').includes('Emi'),
+        );
+
+        expect({ language, naming }).toEqual({ language, naming: [] });
+      }
+
+      for (const line of theWordsOfTheLogAndTheEditorIn('en')) {
+        for (const word of adviceAndAlarm) {
+          expect({ line, holds: new RegExp(`\\b${word}`, 'i').test(line) }).toEqual({
+            line,
+            holds: false,
+          });
+        }
+      }
+    });
   });
 
   test('SCREEN-2, the buttons take the redesign shapes', ({ given, when, and, then }) => {

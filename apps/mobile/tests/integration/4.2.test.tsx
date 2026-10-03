@@ -183,7 +183,7 @@ describe('a symptom is found by search and saved in one action', () => {
       await sheSearchesFor('hangover');
 
       expect(screen.getByTestId('no-symptom-found')).toHaveTextContent(
-        'No symptom matches hangover',
+        'No symptoms match hangover',
       );
       expect(screen.queryAllByTestId(/^symptom-chip-/)).toHaveLength(0);
     });
