@@ -26,6 +26,9 @@ import { cycleLengthSentence, cycleSentence, historyCopy, patternSentence } from
  */
 
 export const historyScreenTestID = 'history-screen';
+export const historyTitleTestID = 'history-title';
+export const historyPatternsHeadingTestID = 'history-patterns-heading';
+export const historyCyclesHeadingTestID = 'history-cycles-heading';
 export const historyBackTestID = 'history-back';
 export const historyCyclesTestID = 'history-cycles';
 export const historyPatternsTestID = 'history-patterns';

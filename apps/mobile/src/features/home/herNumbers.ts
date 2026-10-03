@@ -1,4 +1,9 @@
-import type { ForecastResult, PublishedFigure, PublishedMeasurement } from '@emi/cycle';
+import type {
+  ForecastResult,
+  PublishedFigure,
+  PublishedMeasurement,
+  PublishedValue,
+} from '@emi/cycle';
 import { publishedFigures, toOneDecimalPlace } from '@emi/cycle';
 
 import type { CycleRow } from '../../data/cycleRepository';
@@ -10,6 +15,30 @@ import type { CycleRow } from '../../data/cycleRepository';
  * which is the whole of this section: a tracker that prints a word over a number has turned
  * arithmetic on her own days into a verdict about her body.
  */
+
+/**
+ * Where one of her figures sits against the figure a paper reports for the same measurement.
+ *
+ * Three answers and no fourth, because the words are the three the operator approved. `within` is
+ * inside every bound the paper reports and `wider` is outside it, at either end, which is how
+ * `ranOutsideTheBand` already reads the same range for the chart. `noFigure` is the answer where no
+ * published figure was handed in at all, and nothing here says whether either number is right.
+ */
+export type FigureStanding = 'noFigure' | 'within' | 'wider';
+
+/**
+ * Her figure against the published one. A paper reports a bound, a pair of bounds or a mean, and
+ * each of the three is read as the edge of what was published.
+ */
+export function howHerNumberSits(
+  hers: number,
+  published: PublishedValue | undefined,
+): FigureStanding {
+  void hers;
+  void published;
+
+  return 'noFigure';
+}
 
 /** One measurement of hers, and the published figure it sits beside. */
 export interface MeasuredNumber {

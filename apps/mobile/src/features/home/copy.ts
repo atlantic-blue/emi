@@ -27,6 +27,12 @@ export const homeCopy = {
     published: words('home.numbers.published'),
     line: words('home.numbers.line'),
     press: words('home.numbers.press'),
+    /** What the pill on a row says, one word for each answer the comparison gives. */
+    standing: {
+      noFigure: words('home.numbers.noFigure'),
+      within: words('home.numbers.within'),
+      wider: words('home.numbers.wider'),
+    },
   },
   trend: {
     press: words('home.trend.press'),

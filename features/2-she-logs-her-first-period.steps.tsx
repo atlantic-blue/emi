@@ -148,6 +148,7 @@ import {
   historyPatternTestID,
   historyPatternsTestID,
   historyScreenTestID,
+  historyTitleTestID,
   historyWaitingTestID,
 } from '../apps/mobile/src/features/history/HistoryScreen';
 import {
@@ -481,6 +482,23 @@ import {
   whenSheReads,
   whereTheLogOrCalendarDrew,
 } from '../apps/mobile/tests/fixtures/theLogAndCalendarLook';
+import {
+  type InsightsDrawing,
+  howManyPartsAreHeldTo as howManyInsightsPartsAreHeldTo,
+  sheIsLookingAtHerNumbersOverCyclesOf,
+  sheIsLookingAtTheInsights,
+  theCyclesHerPhoneHeld,
+  theInsightsDrawings,
+  thePartNamesTheStagePlaces,
+  theScreenOf as theInsightsScreenOf,
+  theStyleOf as theStyleOnTheInsights,
+  theWashIsAtTheTopOfTheInsights,
+  theWordsOfThePillOn,
+  whatTheDrawingAsksFor,
+  whatTheInsightsDoNotAnswerFor,
+  whenSheReadsHerCycles,
+  whereTheInsightsDrew,
+} from '../apps/mobile/tests/fixtures/theInsightsLook';
 import { textDrawnOnAPhaseFill } from '../apps/mobile/tests/fixtures/phaseInk';
 import {
   theDaySheReachesHerLutealPhase,
@@ -621,6 +639,7 @@ import {
   homePatternsTestID,
   patternCardEvidenceTestID,
   patternCardTestID,
+  patternCardTileTestID,
   patternCardWhenTestID,
 } from '../apps/mobile/src/features/home/PatternCard';
 import {
@@ -6235,6 +6254,149 @@ defineFeature(feature, (test) => {
         expect(Object.keys(unanswered)).toHaveLength(theLogAndCalendarDrawings.length);
         expect(unanswered).toEqual(kept);
         expect(howManyPartsAreHeldTo()).toBeGreaterThan(55);
+      },
+    );
+  });
+
+  // The payoff for a year of logging, in the shapes the approved redesign draws. A pill says where
+  // one of her figures sits against a published one, and nothing on any of the six screens turns
+  // arithmetic on her own days into a verdict about her body.
+  test('SCREEN-2, the Insights screens match the redesign prototype', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const washedAtTheTop: InsightsDrawing[] = [];
+    const unanswered: Record<string, string[]> = {};
+
+    given('her phone holds six cycles she bled through and the two symptoms that came back', () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(whenSheReadsHerCycles);
+    });
+
+    when(
+      'she reads her cycles back: Insights, her three numbers, where the figures come from, her cycles as strips, her trend and what comes back',
+      async () => {
+        for (const drawing of theInsightsDrawings) {
+          resetExpoSqlite();
+          await sheIsLookingAtTheInsights(drawing);
+
+          if (theWashIsAtTheTopOfTheInsights()) {
+            washedAtTheTop.push(drawing);
+          }
+
+          unanswered[drawing] = whatTheInsightsDoNotAnswerFor(drawing);
+        }
+      },
+    );
+
+    then('each of those screens carries the wash across the top of the glass', () => {
+      expect(washedAtTheTop).toEqual([...theInsightsDrawings]);
+      expect(washedAtTheTop.length).toBe(6);
+    });
+
+    and(
+      'each of her three numbers says where it sits against the published figure, in her own words',
+      async () => {
+        resetExpoSqlite();
+        await sheIsLookingAtTheInsights('todayNumbers');
+
+        expect(theWordsOfThePillOn('cycle-length')).toBe(homeCopy.numbers.standing.within);
+        expect(theWordsOfThePillOn('period-duration')).toBe(homeCopy.numbers.standing.within);
+        expect(theWordsOfThePillOn('cycle-length-variation')).toBe(homeCopy.numbers.standing.wider);
+      },
+    );
+
+    and(
+      'a figure of hers that runs past what the paper reports reads wider, and no pill names her',
+      async () => {
+        resetExpoSqlite();
+        await sheIsLookingAtHerNumbersOverCyclesOf([28, 29, 30, 28, 31, 40]);
+
+        expect(theWordsOfThePillOn('cycle-length')).toBe(homeCopy.numbers.standing.wider);
+
+        const said = [
+          homeCopy.numbers.standing.within,
+          homeCopy.numbers.standing.wider,
+          homeCopy.numbers.standing.noFigure,
+        ]
+          .join(' ')
+          .toLowerCase();
+
+        for (const word of ['normal', 'abnormal', 'irregular']) {
+          expect(said).not.toContain(word);
+        }
+      },
+    );
+
+    and(
+      'her strips, her trend and every card of what comes back stand on the card ground',
+      async () => {
+        resetExpoSqlite();
+        await sheIsLookingAtTheInsights('todayCycles');
+
+        for (const startedOn of theCyclesHerPhoneHeld()) {
+          expect(theStyleOnTheInsights(cycleStripTestID(startedOn)).backgroundColor).toBe(
+            colour.card,
+          );
+          expect(theStyleOnTheInsights(cycleStripTestID(startedOn)).borderRadius).toBe(radius.xl);
+        }
+
+        expect(theStyleOnTheInsights(homeTrendTestID).backgroundColor).toBe(colour.card);
+        expect(theStyleOnTheInsights(homeTrendTestID).borderRadius).toBe(radius.xl);
+
+        for (const symptom of theSymptomsThatCameBack) {
+          expect(theStyleOnTheInsights(patternCardTestID(symptom.slug)).backgroundColor).toBe(
+            colour.card,
+          );
+          expect(theStyleOnTheInsights(patternCardTestID(symptom.slug)).borderRadius).toBe(
+            radius.xl,
+          );
+        }
+      },
+    );
+
+    and('every card of what comes back carries its own round drawing', () => {
+      for (const symptom of theSymptomsThatCameBack) {
+        expect(theStyleOnTheInsights(patternCardTileTestID(symptom.slug)).borderRadius).toBe(
+          radius.full,
+        );
+      }
+    });
+
+    and(
+      'Insights offers the way back as the quieter capsule, under the rows she came to read',
+      async () => {
+        resetExpoSqlite();
+        await sheIsLookingAtTheInsights('history');
+
+        const from = theInsightsScreenOf('history');
+
+        expect(theStyleOnTheInsights(historyBackTestID).backgroundColor).toBe(colour.field);
+        expect(theStyleOnTheInsights(historyBackTestID).borderRadius).toBe(radius.full);
+        expect(Number(theStyleOnTheInsights(historyBackTestID).minHeight)).toBeGreaterThanOrEqual(
+          MINIMUM_TAP_TARGET,
+        );
+        expect(whereTheInsightsDrew(historyTitleTestID, from)).toBeLessThan(
+          whereTheInsightsDrew(historyBackTestID, from),
+        );
+      },
+    );
+
+    and(
+      'each screen draws every part its own drawing names, in the order the drawing places them',
+      () => {
+        expect(Object.keys(unanswered)).toHaveLength(theInsightsDrawings.length);
+
+        for (const drawing of theInsightsDrawings) {
+          expect(whatTheDrawingAsksFor(drawing).map((part) => part.name)).toEqual(
+            thePartNamesTheStagePlaces(drawing),
+          );
+          expect(unanswered[drawing]).toEqual([]);
+        }
+
+        expect(howManyInsightsPartsAreHeldTo()).toBeGreaterThan(40);
       },
     );
   });

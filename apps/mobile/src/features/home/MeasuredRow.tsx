@@ -15,8 +15,16 @@ import { herNumberReads, measurementName, publishedFigureReads } from './copy';
 
 export const homeNumbersTestID = 'home-numbers';
 
+/** The heading over the three rows, which names whose numbers they are. */
+export const homeNumbersHeadingTestID = 'home-numbers-heading';
+
 export function measuredRowTestID(measures: PublishedMeasurement): string {
   return `home-measured-${measures}`;
+}
+
+/** The pill on one row, which says where her figure sits against the published one. */
+export function measuredPillTestID(measures: PublishedMeasurement): string {
+  return `${measuredRowTestID(measures)}-pill`;
 }
 
 export function herNumberTestID(measures: PublishedMeasurement): string {

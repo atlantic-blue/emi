@@ -26,6 +26,11 @@ export function patternCardTestID(slug: string): string {
   return `home-pattern-${slug}`;
 }
 
+/** The round drawing at the head of one card, which the redesign gives every card of the set. */
+export function patternCardTileTestID(slug: string): string {
+  return `home-pattern-tile-${slug}`;
+}
+
 /** The lead of one card: the symptom, and where in her cycle it keeps landing. */
 export function patternCardWhenTestID(slug: string): string {
   return `home-pattern-when-${slug}`;
