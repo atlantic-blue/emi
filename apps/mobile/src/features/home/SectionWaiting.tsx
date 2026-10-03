@@ -38,6 +38,11 @@ export function sectionWaitingReadTestID(section: WaitingSection): string {
   return `${sectionWaitingTestID(section)}-read`;
 }
 
+/** The tile at the head of the card, which carries the mark that says the section is not open yet. */
+export function sectionWaitingTileTestID(section: WaitingSection): string {
+  return `${sectionWaitingTestID(section)}-tile`;
+}
+
 interface Props {
   readonly section: WaitingSection;
   /** The heading over it, which is the heading the filled section would have carried. */

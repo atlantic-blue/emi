@@ -160,7 +160,9 @@ import {
 import { stripsSheReads } from '../apps/mobile/src/features/home/herCycles';
 import { cyclesBeforeAPattern } from '../apps/mobile/src/features/home/herPatterns';
 import {
+  sectionWaitingNeedsTestID,
   sectionWaitingTestID,
+  sectionWaitingTileTestID,
   waitingSections,
 } from '../apps/mobile/src/features/home/SectionWaiting';
 import { patternsWaitingSentence } from '../apps/mobile/src/features/cycle/patternsWaiting';
@@ -205,7 +207,31 @@ import {
   figuresQuotedTestID,
   figuresScreenTestID,
 } from '../apps/mobile/src/features/cycle/CitationRow';
-import { loggedTodayTestID } from '../apps/mobile/src/features/home/LoggedToday';
+import {
+  loggedTodayMarkTestID,
+  loggedTodayTestID,
+  loggedTodayTileTestID,
+} from '../apps/mobile/src/features/home/LoggedToday';
+import {
+  roundActionDiscTestID,
+  roundActionDrawingTestID,
+} from '../apps/mobile/src/features/home/RoundAction';
+import {
+  lockDiscTestID,
+  lockWordmarkTestID,
+  unlockTestID,
+} from '../apps/mobile/src/features/lock/LockScreen';
+import {
+  type TodayDrawing,
+  howManyPartsTheTodayScreensAreHeldTo,
+  sheIsLookingAtTheTodayScreen,
+  theDifferencesTheTodayStepKeeps,
+  theTodayDrawings,
+  theWashIsAtTheTopOfTheTodayScreen,
+  whatTheTodayScreenDoesNotAnswerFor,
+  whenSheOpens,
+  whereTheScreenDrew,
+} from '../apps/mobile/tests/fixtures/theTodayLook';
 import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
 import {
   cycleLengthSentence,
@@ -3106,7 +3132,7 @@ defineFeature(feature, (test) => {
       expect(theRowIsOnTheScreen()).toBe(true);
       expect(theRowSheReads().lead).toBe(homeCopy.loggedToday.lead);
       expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(phaseLineTestID));
-      expect(drawn.indexOf(loggedTodayTestID)).toBeLessThan(drawn.indexOf(cycleRingTestID));
+      expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
     });
 
     and('the line under it names both symptoms she marked, and no symptom she did not', () => {
@@ -5924,6 +5950,127 @@ defineFeature(feature, (test) => {
         expect(Object.keys(unanswered)).toHaveLength(theFirstRunDrawings.length);
         expect(differs).toEqual(kept);
         expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(140);
+      },
+    );
+  });
+
+  /**
+   * The screen she opens every day, read in each of its states against the drawing of that state.
+   * It opens the real route, so the dock each drawing places under the screen is on the glass with
+   * it, and the states that need days behind them get them written before the route opens.
+   */
+  test('SCREEN-2, the Today screens match the redesign prototype', ({ given, when, and, then }) => {
+    const washedAtTheTop: TodayDrawing[] = [];
+    const unanswered: Record<string, string[]> = {};
+
+    const styleOfPart = (testID: string): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as Record<string, unknown>;
+
+    const drawingIn = (testID: string): string => String(screen.getByTestId(testID).props['xml']);
+
+    given('her phone holds the period she is in and the answers of her first run', () => {
+      jest.useFakeTimers();
+      jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    });
+
+    when('she opens Emi and reads the screen she opens in each of its states', async () => {
+      for (const drawing of theTodayDrawings) {
+        resetExpoSqlite();
+        jest.setSystemTime(whenSheOpens(drawing));
+        await sheIsLookingAtTheTodayScreen(drawing);
+
+        if (theWashIsAtTheTopOfTheTodayScreen()) {
+          washedAtTheTop.push(drawing);
+        }
+
+        unanswered[drawing] = whatTheTodayScreenDoesNotAnswerFor(drawing);
+      }
+    });
+
+    then('each state carries the wash across the top of the glass', () => {
+      expect(washedAtTheTop).toEqual([...theTodayDrawings]);
+      expect(washedAtTheTop.length).toBeGreaterThan(5);
+    });
+
+    and('the ring stands above the line that names the phase she is in', async () => {
+      resetExpoSqlite();
+      jest.setSystemTime(whenSheOpens('todayLuteal'));
+      await sheIsLookingAtTheTodayScreen('todayLuteal');
+
+      expect(whereTheScreenDrew(cycleRingTestID)).toBeGreaterThan(-1);
+      expect(whereTheScreenDrew(cycleRingTestID)).toBeLessThan(whereTheScreenDrew(phaseLineTestID));
+    });
+
+    and(
+      'the two round actions stand under that line, the period one filled and the symptoms one white',
+      () => {
+        expect(whereTheScreenDrew(phaseLineTestID)).toBeLessThan(
+          whereTheScreenDrew(roundActionTestID('period')),
+        );
+        expect(styleOfPart(roundActionDiscTestID('period'))['backgroundColor']).toBe(colour.accent);
+        expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.onAccent);
+        expect(styleOfPart(roundActionDiscTestID('symptoms'))['backgroundColor']).toBe(colour.card);
+        expect(drawingIn(roundActionDrawingTestID('symptoms'))).toContain(colour.text);
+      },
+    );
+
+    and(
+      'what she logged today stands under them, in a card with the mark that says Emi kept it',
+      async () => {
+        resetExpoSqlite();
+        jest.setSystemTime(whenSheOpens('todayLogged'));
+        await sheIsLookingAtTheTodayScreen('todayLogged');
+
+        expect(whereTheScreenDrew(roundActionTestID('symptoms'))).toBeLessThan(
+          whereTheScreenDrew(loggedTodayTestID),
+        );
+        expect(styleOfPart(loggedTodayTestID)['backgroundColor']).toBe(colour.card);
+        expect(styleOfPart(loggedTodayTileTestID)['borderRadius']).toBe(radius.md);
+        expect(drawingIn(loggedTodayMarkTestID)).toContain(colour.ovulationInk);
+      },
+    );
+
+    and(
+      'a section her days cannot fill yet is one card with one sentence, and it draws no chart',
+      async () => {
+        resetExpoSqlite();
+        jest.setSystemTime(whenSheOpens('todayEmptyBody'));
+        await sheIsLookingAtTheTodayScreen('todayEmptyBody');
+
+        for (const section of waitingSections) {
+          expect(screen.getByTestId(sectionWaitingTileTestID(section))).toBeTruthy();
+          expect(screen.getByTestId(sectionWaitingNeedsTestID(section))).toBeTruthy();
+        }
+
+        expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
+      },
+    );
+
+    and(
+      'the lock she comes back through carries the wordmark, the disc and the one button',
+      async () => {
+        await sheIsLookingAtTheTodayScreen('lock');
+
+        expect(screen.getByTestId(lockWordmarkTestID)).toBeTruthy();
+        expect(styleOfPart(lockDiscTestID)['backgroundColor']).toBe(colour.card);
+        expect(styleOfPart(unlockTestID)['borderRadius']).toBe(radius.full);
+      },
+    );
+
+    and(
+      'each state draws every part its own drawing names, in the order the drawing places them',
+      () => {
+        const differs = Object.entries(unanswered)
+          .filter(([, missing]) => missing.length > 0)
+          .map(([drawing, missing]) => `${drawing}: ${String(missing.length)}`)
+          .sort();
+        const kept = Object.entries(theDifferencesTheTodayStepKeeps)
+          .map(([drawing, missing]) => `${drawing}: ${String(missing ?? 0)}`)
+          .sort();
+
+        expect(Object.keys(unanswered)).toHaveLength(theTodayDrawings.length);
+        expect(differs).toEqual(kept);
+        expect(howManyPartsTheTodayScreensAreHeldTo()).toBeGreaterThan(50);
       },
     );
   });

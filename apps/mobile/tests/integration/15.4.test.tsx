@@ -93,8 +93,8 @@ describe('she starts a log from the screen she opens in one press', () => {
       expect(names).toEqual([
         'HomeHeader',
         'WeekStrip',
-        'PhaseLine',
         'CycleRing',
+        'PhaseLine',
         'RoundAction',
         'RoundAction',
       ]);

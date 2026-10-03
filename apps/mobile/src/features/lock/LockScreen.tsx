@@ -6,6 +6,12 @@ import { Screen } from '../../components/Screen';
 import { lockCopy } from './copy';
 
 export const lockScreenTestID = 'lock-screen';
+export const lockWordmarkTestID = 'lock-wordmark';
+export const lockTitleTestID = 'lock-title';
+export const lockLineTestID = 'lock-line';
+
+/** The white disc the lock drawing stands on, which is the one shape above the words. */
+export const lockDiscTestID = 'lock-disc';
 export const unlockTestID = 'lock-unlock';
 
 interface Props {

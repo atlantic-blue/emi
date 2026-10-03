@@ -26,6 +26,16 @@ export function roundActionTestID(name: RoundActionName): string {
   return `${roundActionStem}${name}`;
 }
 
+/** The disc itself, which is filled on the period action and white on the symptoms one. */
+export function roundActionDiscTestID(name: RoundActionName): string {
+  return `${roundActionTestID(name)}-disc`;
+}
+
+/** The drawing inside the disc, which takes the one ink the palette measured on that disc. */
+export function roundActionDrawingTestID(name: RoundActionName): string {
+  return `${roundActionTestID(name)}-drawing`;
+}
+
 /** Points. The disc is wider than the floor a touch needs, so the drawing inside it has room. */
 const theDiscIsThisWide = 64;
 

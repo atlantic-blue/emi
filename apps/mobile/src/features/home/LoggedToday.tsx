@@ -19,6 +19,12 @@ export const loggedTodayTestID = 'home-logged-today';
 export const loggedTodayLeadTestID = 'home-logged-today-lead';
 export const loggedTodayLineTestID = 'home-logged-today-line';
 
+/** The tile at the head of the row, which carries the mark that says the day is in her record. */
+export const loggedTodayTileTestID = 'home-logged-today-tile';
+
+/** The mark inside that tile. */
+export const loggedTodayMarkTestID = 'home-logged-today-mark';
+
 /** Points. The mark that says the row opens something, at the size the other rows of Emi draw it. */
 const OPENS_MARK_SIZE = 18;
 

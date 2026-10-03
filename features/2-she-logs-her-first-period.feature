@@ -646,6 +646,17 @@ Feature: She opens Emi and logs her first period
     And the question that keeps an answer carries the promise that only she can read it
     And each screen draws every part its own drawing names, in the order the drawing places them
 
+  Scenario: SCREEN-2, the Today screens match the redesign prototype
+    Given her phone holds the period she is in and the answers of her first run
+    When she opens Emi and reads the screen she opens in each of its states
+    Then each state carries the wash across the top of the glass
+    And the ring stands above the line that names the phase she is in
+    And the two round actions stand under that line, the period one filled and the symptoms one white
+    And what she logged today stands under them, in a card with the mark that says Emi kept it
+    And a section her days cannot fill yet is one card with one sentence, and it draws no chart
+    And the lock she comes back through carries the wordmark, the disc and the one button
+    And each state draws every part its own drawing names, in the order the drawing places them
+
   Scenario: SCREEN-2, the home screen says hi to her by name
     Given she gave the name Ada at her first run, and her phone holds the one period she logged
     When she opens Emi

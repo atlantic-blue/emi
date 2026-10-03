@@ -51,22 +51,9 @@ export const thePartTheDrawingNames = 'LoggedToday';
 /** The part the ring is drawn as, which is where the top of this screen stops. */
 const theRing = 'CycleRing';
 
-/**
- * The parts one drawing places from the top of the screen down to the ring.
- *
- * The row sits between the phase line and the ring, so a comparison that stopped above the ring
- * would never see the row drawn below it.
- */
+/** The parts one drawing places from the top of the screen down to the ring. */
 export function theScreenDownToTheRing(key: string): Part[] {
-  const read = theDrawings[key];
-
-  if (read === undefined) {
-    throw new Error(
-      `this step is held to todayNext and todayLogged, and it was asked for "${key}"`,
-    );
-  }
-
-  const parts = read();
+  const parts = theEveryPartOf(key);
   const ring = parts.map((part) => part.name).indexOf(theRing);
 
   if (ring < 0) {
@@ -76,9 +63,26 @@ export function theScreenDownToTheRing(key: string): Part[] {
   return parts.slice(0, ring + 1);
 }
 
-/** Whether one drawing places the row at all. */
+/**
+ * Whether one drawing places the row at all, read off the whole drawing. The row stands under the
+ * round actions, which is below the ring, so a reader that stopped at the ring would answer no for
+ * every drawing.
+ */
 export function theDrawingPlacesTheRow(key: string): boolean {
-  return theScreenDownToTheRing(key).some((part) => part.name === thePartTheDrawingNames);
+  return theEveryPartOf(key).some((part) => part.name === thePartTheDrawingNames);
+}
+
+/** Every part one drawing places, which is what both readers above are answered from. */
+function theEveryPartOf(key: string): Part[] {
+  const read = theDrawings[key];
+
+  if (read === undefined) {
+    throw new Error(
+      `this step is held to todayNext and todayLogged, and it was asked for "${key}"`,
+    );
+  }
+
+  return read();
 }
 
 const theRowOfTheDrawing = /<li class="row"[^>]*data-to="([^"]*)"[^>]*>([\s\S]*?)<\/li>/;
