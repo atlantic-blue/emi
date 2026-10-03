@@ -29,9 +29,15 @@ export function symptomGroupTestID(group: GroupName | 'found'): string {
   return `symptom-group-${group}`;
 }
 
-/** The heading over one set of chips, which every drawing of the log names above its group. */
+/**
+ * The heading over one set of chips, which every drawing of the log names above its group.
+ *
+ * It is named outside the group's own identifier on purpose. A screen reads its groups by the
+ * names beginning `symptom-group`, so a heading named under one of them would be read back as a
+ * group of its own.
+ */
 export function symptomGroupHeadingTestID(group: GroupName | 'found'): string {
-  return `${symptomGroupTestID(group)}-heading`;
+  return `symptom-heading-${group}`;
 }
 
 export interface SymptomChipProps {
@@ -58,6 +64,8 @@ export function SymptomChip({ symptom, isPicked, onToggle }: SymptomChipProps) {
 
 export interface SymptomGroupProps {
   readonly heading: string;
+  /** What the heading is named on the glass, where the screen holds its headings to a drawing. */
+  readonly headingTestID?: string;
   readonly symptoms: readonly Symptom[];
   readonly picked: readonly string[];
   readonly onToggle: (slug: string) => void;
@@ -66,6 +74,7 @@ export interface SymptomGroupProps {
 
 export function SymptomGroupSection({
   heading,
+  headingTestID,
   symptoms,
   picked,
   onToggle,
@@ -73,7 +82,7 @@ export function SymptomGroupSection({
 }: SymptomGroupProps) {
   return (
     <View style={styles.section} testID={testID}>
-      <Text accessibilityRole="header" style={styles.heading}>
+      <Text accessibilityRole="header" style={styles.heading} testID={headingTestID}>
         {heading}
       </Text>
       <View style={styles.chips} testID={`${testID}-chips`}>

@@ -1,9 +1,12 @@
 import { type Flow, type SymptomGroup, isBleeding, symptomsInGroup } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
+import { colour, ringGeometry, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { PrimaryButton } from '../../components/Button';
+import { Card } from '../../components/Card';
 import { CycleRing } from '../../components/CycleRing';
+import { LockLine } from '../../components/LockLine';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
@@ -11,7 +14,12 @@ import { words } from '../../language';
 import { dayLabel } from '../onboarding/days';
 import type { OpensOn } from './askedGroup';
 import { FlowPicker } from './FlowPicker';
-import { SymptomGroupSection, groupHeadings, symptomGroupTestID } from './SymptomGroup';
+import {
+  SymptomGroupSection,
+  groupHeadings,
+  symptomGroupHeadingTestID,
+  symptomGroupTestID,
+} from './SymptomGroup';
 import { UnexpectedBleeding } from './UnexpectedBleeding';
 
 /**
@@ -106,6 +114,7 @@ export function LogFlow({
           <SymptomGroupSection
             key={each}
             heading={groupHeadings[each]}
+            headingTestID={symptomGroupHeadingTestID(each)}
             onToggle={(slug) => onToggleSymptom?.(slug)}
             picked={symptoms}
             symptoms={symptomsInGroup(each)}
@@ -114,9 +123,44 @@ export function LogFlow({
         ))}
       </View>
     );
+  // The group an address named stands above the flow, in a card of its own, wherever the rest of
+  // them stand. A woman who came here by a line offering that group came for it, and feature 11
+  // holds it above the picker for exactly that reason.
+  const theGroupSheCameFor =
+    group === undefined ? null : (
+      <Card>
+        <SymptomGroupSection
+          heading={groupHeadings[group]}
+          headingTestID={symptomGroupHeadingTestID(group)}
+          onToggle={(slug) => onToggleSymptom?.(slug)}
+          picked={symptoms}
+          symptoms={symptomsInGroup(group)}
+          testID={logFlowGroupTestID(group)}
+        />
+      </Card>
+    );
+  const theSymptoms =
+    theGroups === null ? null : <Card testID={logFlowSymptomsCardTestID}>{theGroups}</Card>;
+
+  // The flow and the symptoms are each one card, and the card the drawing puts first is the one she
+  // came for: a woman who pressed the symptoms action reads her symptoms first and the flow under
+  // them, and the Log column of the dock opens the other way round.
+  const theFlow = (
+    <Card testID={logFlowFlowCardTestID}>
+      <Text accessibilityRole="header" style={styles.title} testID={logFlowTitleTestID}>
+        {logFlowCopy.title}
+      </Text>
+      <FlowPicker chosen={chosen} onPick={onPick} />
+      {sheBled && <UnexpectedBleeding marked={marked} onMark={onMark} />}
+    </Card>
+  );
 
   return (
-    <Screen testID={logFlowTestID}>
+    <Screen
+      drawsTheWash
+      testID={logFlowTestID}
+      washPhase={ring === undefined ? undefined : ringGeometry(ring).phase}
+    >
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.ring}>
           {ring ? (
@@ -131,59 +175,30 @@ export function LogFlow({
           )}
         </View>
 
-        <Text style={styles.when}>{dayLabel(day, today)}</Text>
-        {group === undefined ? null : (
-          <SymptomGroupSection
-            heading={groupHeadings[group]}
-            onToggle={(slug) => onToggleSymptom?.(slug)}
-            picked={symptoms}
-            symptoms={symptomsInGroup(group)}
-            testID={logFlowGroupTestID(group)}
-          />
-        )}
-        {opensOn === 'symptoms' ? theGroups : null}
-        <Text accessibilityRole="header" style={styles.title}>
-          {logFlowCopy.title}
+        <Text style={styles.when} testID={logFlowWhenTestID}>
+          {dayLabel(day, today)}
         </Text>
-        <FlowPicker chosen={chosen} onPick={onPick} />
-        {sheBled && <UnexpectedBleeding marked={marked} onMark={onMark} />}
-        {chosen !== undefined && (
-          <Text style={styles.line} testID={logFlowSavedTestID}>
-            {logFlowCopy.saved}
-          </Text>
-        )}
 
-        {opensOn === 'symptoms' ? null : theGroups}
+        {theGroupSheCameFor}
+        {opensOn === 'symptoms' ? theSymptoms : null}
+        {theFlow}
+        {opensOn === 'symptoms' ? null : theSymptoms}
+
+        {chosen === undefined ? null : (
+          <LockLine testID={logFlowSavedTestID} words={logFlowCopy.saved} />
+        )}
       </ScrollView>
 
-      <Pressable
-        accessibilityRole="button"
-        onPress={onDone}
-        style={styles.done}
-        testID={logFlowDoneTestID}
-      >
-        <Text style={styles.doneLabel}>{logFlowCopy.done}</Text>
-      </Pressable>
+      <View style={styles.foot}>
+        <PrimaryButton label={logFlowCopy.done} onPress={onDone} testID={logFlowDoneTestID} />
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   body: { gap: space.spaceMd, padding: space.spaceLg, paddingTop: space.spaceXl },
-  done: {
-    alignItems: 'center',
-    backgroundColor: colour.accent,
-    borderRadius: radius.md,
-    justifyContent: 'center',
-    margin: space.spaceLg,
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceLg,
-  },
-  doneLabel: {
-    color: colour.card,
-    ...textStyle('body-lg'),
-  },
+  foot: { padding: space.spaceLg },
   line: {
     color: colour.secondaryText,
     ...textStyle('body-lg'),
@@ -196,7 +211,8 @@ const styles = StyleSheet.create({
   ring: { alignItems: 'center', marginBottom: space.spaceMd },
   title: {
     color: colour.text,
-    ...textStyle('headline-lg'),
+    ...textStyle('headline-md'),
+    marginBottom: space.spaceMd,
   },
   when: {
     color: colour.secondaryText,
