@@ -112,7 +112,7 @@ export const approvedDenials: readonly string[] = [
   'Emi draws nothing from nothing, and it holds no sample data.',
   // Spanish and Russian, word for word as the catalogues write them.
   'Emi no dibuja nada de nada, y no guarda datos de ejemplo.',
-  'Emi ничего не рисует из ничего и не хранит примерных данных.',
+  'Emi ничего не рисует из ничего и не подставляет примерных данных.',
 ];
 
 export interface Sample {
