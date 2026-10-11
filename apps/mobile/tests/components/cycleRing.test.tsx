@@ -249,6 +249,17 @@ describe('the ring on the screen', () => {
     expect(screen.queryByTestId(ringArcTestID('period', 'ahead'))).toBeNull();
   });
 
+  it('draws the days ahead as solid as the days she has reached when it is asked to', async () => {
+    reduceMotion(false);
+    await render(<CycleRing {...usualCycle} day={9} daysAhead="full" />);
+
+    const elapsed = screen.getByTestId(ringArcTestID('follicular', 'elapsed'));
+    const ahead = screen.getByTestId(ringArcTestID('follicular', 'ahead'));
+
+    expect(elapsed.props.opacity).toBeUndefined();
+    expect(ahead.props.opacity).toBeUndefined();
+  });
+
   it('pulls each arc in by its round end, so the paint lands where the geometry says', async () => {
     reduceMotion(false);
     await render(<CycleRing {...longCycle} day={30} />);

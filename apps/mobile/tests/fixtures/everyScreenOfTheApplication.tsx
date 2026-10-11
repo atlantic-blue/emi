@@ -79,12 +79,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       />
     ),
   ],
-  [
-    tourScreenTestID('ring'),
-    (): ReactElement => (
-      <TourScreen card="ring" onBack={nothing} onNext={nothing} onSkip={nothing} />
-    ),
-  ],
+  [tourScreenTestID, (): ReactElement => <TourScreen onNext={nothing} onSkip={nothing} />],
   [thePromiseTestID, (): ReactElement => <ThePromise onContinue={nothing} />],
   [
     whatEmiDoesTestID,

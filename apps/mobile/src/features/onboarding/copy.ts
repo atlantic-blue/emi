@@ -25,9 +25,9 @@ export const firstRunCopy = {
   welcome: {
     title: words('onboarding.welcome.title'),
     lines: [
-      words('onboarding.welcome.line.questions'),
-      words('onboarding.welcome.line.noAccount'),
       words('onboarding.welcome.line.onThisPhone'),
+      words('onboarding.welcome.line.noAccount'),
+      words('onboarding.welcome.line.whatEmiIs'),
     ],
     action: words('onboarding.welcome.action'),
   },
@@ -358,62 +358,28 @@ export function birthYearLabel(year: number): string {
 }
 
 /**
- * The four cards she reads before Emi asks her anything. Each one carries one promise the feature
- * map already makes, and the card that claims a forecast carries the two denials with it.
+ * The one card she reads after the welcome and before Emi asks her anything: what the ring is, and
+ * what Emi costs.
  *
  * The words live here rather than in a screen, so a test reads them without rendering anything and
  * the wording gate reads them in one place.
  */
-export const tourCards = ['ring', 'range', 'records', 'yours'] as const;
-
-export type TourCard = (typeof tourCards)[number];
-
-export const tourCardCount = tourCards.length;
-
 export const tourCopy = {
-  ring: {
-    title: words('onboarding.tour.ring.title'),
-    lines: [words('onboarding.tour.ring.line.ring'), words('onboarding.tour.ring.line.arcs')],
-    action: words('onboarding.tour.ring.action'),
+  title: words('onboarding.tour.ring.title'),
+  lines: [words('onboarding.tour.ring.line.bead'), words('onboarding.tour.ring.line.arcs')],
+  legend: {
+    period: words('onboarding.tour.ring.legend.period'),
+    follicular: words('onboarding.tour.ring.legend.after'),
+    ovulation: words('onboarding.tour.ring.legend.ovulation'),
+    luteal: words('onboarding.tour.ring.legend.before'),
   },
-  range: {
-    title: words('onboarding.tour.range.title'),
-    lines: [
-      words('onboarding.tour.range.line.range'),
-      words('onboarding.tour.range.line.confidence'),
-      words('onboarding.tour.range.line.learning'),
-      words('onboarding.tour.range.line.arithmetic'),
-    ],
-    action: words('onboarding.tour.range.action'),
+  price: {
+    title: words('onboarding.tour.price.title'),
+    line: words('onboarding.tour.price.line'),
   },
-  records: {
-    title: words('onboarding.tour.records.title'),
-    lines: [
-      words('onboarding.tour.records.line.log'),
-      words('onboarding.tour.records.line.patterns'),
-    ],
-    action: words('onboarding.tour.records.action'),
-  },
-  yours: {
-    title: words('onboarding.tour.yours.title'),
-    lines: [
-      words('onboarding.tour.yours.line.encrypted'),
-      words('onboarding.tour.yours.line.recovery'),
-      words('onboarding.tour.yours.line.price'),
-    ],
-    action: words('onboarding.tour.yours.action'),
-  },
+  action: words('onboarding.tour.ring.action'),
   skip: words('onboarding.tour.skip'),
-  back: words('onboarding.tour.back'),
 } as const;
-
-/** How far through she is, said as a count and never as a step, because a card asks her nothing. */
-export function tourCountLabel(card: TourCard): string {
-  return words('onboarding.tour.count', undefined, {
-    step: tourCards.indexOf(card) + 1,
-    of: tourCardCount,
-  });
-}
 
 /**
  * The three lines of the promise, in the order she reads them. A list as well as the record below,

@@ -1,31 +1,20 @@
-import { readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 
-import { fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
+import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
-import { approvedDenials, describeClaim } from '../../../../tools/pipeline/forbiddenClaims';
-import { interfaceClaimsIn } from '../../../../tools/pipeline/interfaceClaims';
 import { cycleRingTestID } from '../../src/components/CycleRing';
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
 import { readProfile } from '../../src/data/profileRepository';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
+import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
 import {
   tourActionTestID,
-  tourBackTestID,
-  tourCountTestID,
-  tourEmblemTestID,
   tourScreenTestID,
   tourSkipTestID,
 } from '../../src/features/onboarding/TourScreen';
-import {
-  type TourCard,
-  firstRunCopy,
-  tourCards,
-  tourCopy,
-  tourCountLabel,
-} from '../../src/features/onboarding/copy';
+import { firstRunCopy, tourCopy } from '../../src/features/onboarding/copy';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { markTourSeen, tourIsSeen } from '../../src/features/onboarding/tour';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
@@ -39,21 +28,6 @@ jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
 jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
-const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
-
-/**
- * A denial taken off the approved list rather than written out, so this file carries no claim of
- * its own and the repository wide scan reads it with every other file.
- */
-function theDenialStartingWith(beginning: string): string {
-  const found = approvedDenials.find((denial) => denial.startsWith(beginning));
-
-  if (found === undefined) {
-    throw new Error(`no approved denial starts with "${beginning}"`);
-  }
-
-  return found;
-}
 const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 
 /** Well away from any summer time change, so the calendar below reads the same in any timezone. */
@@ -99,32 +73,12 @@ function aMigratedPhone(): Database {
   return database;
 }
 
-function theCard(card: TourCard) {
-  return within(screen.getByTestId(tourScreenTestID(card)));
-}
-
 async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
-/** Which card is drawn right now, read off the screen rather than counted by the test. */
-function theCardSheIsOn(): TourCard | undefined {
-  return tourCards.find((card) => screen.queryByTestId(tourScreenTestID(card)) !== null);
-}
-
-async function sheReadsEveryCard(): Promise<TourCard[]> {
-  const read: TourCard[] = [];
-
-  for (let pressed = 0; pressed < tourCards.length; pressed += 1) {
-    const on = theCardSheIsOn();
-
-    if (on !== undefined) {
-      read.push(on);
-    }
-    await shePresses(tourActionTestID);
-  }
-
-  return read;
+function theTourIsShown(): boolean {
+  return screen.queryByTestId(tourScreenTestID) !== null;
 }
 
 /** Every question of the first run, answered, so a case can end on her home screen. */
@@ -141,16 +95,7 @@ function everyControlOnTheScreen(): string[] {
   return tooSmallToPress([...screen.queryAllByRole('button'), ...screen.queryAllByRole('link')]);
 }
 
-/** Every string of the tour, as the file that holds them is read by the wording gate. */
-function everyWordOfTheTour(): string {
-  return [
-    ...tourCards.flatMap((card) => [tourCopy[card].title, ...tourCopy[card].lines]),
-    tourCopy.skip,
-    tourCopy.back,
-  ].join('\n');
-}
-
-describe('Skip on any card lands on the welcome screen and the tour does not come back', () => {
+describe('the welcome comes first, the tour follows it, and the tour does not come back', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -163,167 +108,98 @@ describe('Skip on any card lands on the welcome screen and the tour does not com
   });
 
   describe('the first time she opens Emi', () => {
-    it('shows her the first card, because she has been told nothing yet', async () => {
+    it('shows her the welcome, and not the tour', async () => {
       const app = await sheOpensEmi();
 
-      expect(app.pathname()).toBe('/onboarding/tour');
-      expect(theCard('ring').getByTestId(tourCountTestID)).toHaveTextContent('1 of 4');
-      expect(screen.queryByTestId('onboarding-welcome')).toBeNull();
-    });
-
-    it('draws the ring on the first card, so she sees one before she is asked for a day', async () => {
-      await sheOpensEmi();
-
-      expect(theCard('ring').getByTestId(cycleRingTestID)).toBeTruthy();
-    });
-
-    it('carries no progress bar, because a card asks her for nothing', async () => {
-      await sheOpensEmi();
-
-      expect(theCard('ring').queryByTestId('onboarding-progress')).toBeNull();
-      expect(screen.queryByTestId('onboarding-progress')).toBeNull();
-    });
-
-    it('offers no way back from the first card, because nothing is behind it', async () => {
-      await sheOpensEmi();
-
-      expect(theCard('ring').queryByTestId(tourBackTestID)).toBeNull();
-
-      await shePresses(tourActionTestID);
-      expect(theCard('range').getByTestId(tourBackTestID)).toBeTruthy();
-    });
-  });
-
-  describe('the four cards', () => {
-    it('are read in the order the tour names them, and end on the welcome screen', async () => {
-      const app = await sheOpensEmi();
-
-      const read = await sheReadsEveryCard();
-
-      expect(read).toEqual([...tourCards]);
       expect(app.pathname()).toBe('/onboarding/welcome');
       expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
+      expect(theTourIsShown()).toBe(false);
     });
 
-    it('carry the title, every line and the count each one holds in the copy', async () => {
-      await sheOpensEmi();
-
-      for (const card of tourCards) {
-        const shown = theCard(card);
-
-        expect(shown.getByText(tourCopy[card].title)).toBeTruthy();
-        for (const line of tourCopy[card].lines) {
-          expect(shown.getByText(line)).toBeTruthy();
-        }
-        expect(shown.getByTestId(tourCountTestID)).toHaveTextContent(tourCountLabel(card));
-        expect(shown.getByTestId(tourActionTestID)).toHaveTextContent(tourCopy[card].action);
-        await shePresses(tourActionTestID);
-      }
-    });
-
-    it('draw the emblem on the last card and none on the two in the middle', async () => {
-      await sheOpensEmi();
-
-      expect(screen.queryByTestId(tourEmblemTestID)).toBeNull();
-      await shePresses(tourActionTestID);
-      expect(screen.queryByTestId(cycleRingTestID)).toBeNull();
-      expect(screen.queryByTestId(tourEmblemTestID)).toBeNull();
-      await shePresses(tourActionTestID);
-      expect(screen.queryByTestId(tourEmblemTestID)).toBeNull();
-      await shePresses(tourActionTestID);
-      expect(theCard('yours').getByTestId(tourEmblemTestID)).toBeTruthy();
-    });
-
-    it('let her read a card again, and put her back where she was', async () => {
-      await sheOpensEmi();
-
-      await shePresses(tourActionTestID);
-      await shePresses(tourActionTestID);
-      expect(theCardSheIsOn()).toBe('records');
-
-      await shePresses(tourBackTestID);
-      expect(theCardSheIsOn()).toBe('range');
-
-      await shePresses(tourActionTestID);
-      expect(theCardSheIsOn()).toBe('records');
-    });
-
-    it('hold every control at 44 points or more on both axes', async () => {
-      await sheOpensEmi();
-
-      const measured: string[][] = [];
-
-      for (let pressed = 0; pressed < tourCards.length; pressed += 1) {
-        measured.push(everyControlOnTheScreen());
-        await shePresses(tourActionTestID);
-      }
-
-      expect(measured).toEqual([[], [], [], []]);
-    });
-  });
-
-  describe('the action on the last card', () => {
-    it('leaves her on the welcome screen with the instant written', async () => {
+    it('shows her the tour when she continues from the welcome', async () => {
       const app = await sheOpensEmi();
 
-      await sheReadsEveryCard();
+      await shePresses(onboardingActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/welcome');
-      expect(readSetting(herDatabase(), 'tourSeenAt')).toBe(whenSheOpensIt.toISOString());
+      expect(app.pathname()).toBe('/onboarding/tour');
+      expect(theTourIsShown()).toBe(true);
+      expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
     });
   });
 
-  describe('Skip, pressed on a card', () => {
-    for (const card of tourCards) {
-      it(`on ${card} lands her on the welcome screen with the instant written`, async () => {
+  describe('the tour', () => {
+    it('is one card, so it draws no count, no way back and no progress bar', async () => {
+      await sheOpensEmi();
+      await shePresses(onboardingActionTestID);
+
+      expect(screen.queryByText('1 of 4')).toBeNull();
+      expect(screen.queryByTestId('tour-back')).toBeNull();
+      expect(screen.queryByTestId('onboarding-progress')).toBeNull();
+      expect(screen.getByTestId(tourActionTestID)).toHaveTextContent(tourCopy.action);
+    });
+
+    it('holds every control at 44 points or more on both axes', async () => {
+      await sheOpensEmi();
+      await shePresses(onboardingActionTestID);
+
+      expect(everyControlOnTheScreen()).toEqual([]);
+    });
+  });
+
+  for (const [way, testID] of [
+    ['Next', tourActionTestID],
+    ['Skip', tourSkipTestID],
+  ] as const) {
+    describe(`${way}, pressed on the tour`, () => {
+      it('lands her on the first question with the instant written', async () => {
         const app = await sheOpensEmi();
 
-        for (const before of tourCards.slice(0, tourCards.indexOf(card))) {
-          expect(theCardSheIsOn()).toBe(before);
-          await shePresses(tourActionTestID);
-        }
-        expect(theCardSheIsOn()).toBe(card);
+        await shePresses(onboardingActionTestID);
+        await shePresses(testID);
 
-        await shePresses(tourSkipTestID);
-
-        expect(app.pathname()).toBe('/onboarding/welcome');
-        expect(screen.getByTestId('onboarding-welcome')).toBeTruthy();
+        expect(app.pathname()).toBe('/onboarding/name');
+        expect(screen.getByTestId('onboarding-name')).toBeTruthy();
         expect(readSetting(herDatabase(), 'tourSeenAt')).toBe(whenSheOpensIt.toISOString());
       });
-    }
-
-    it('never steps over the two questions and reaches her home screen', async () => {
-      const app = await sheOpensEmi();
-
-      await shePresses(tourSkipTestID);
-
-      expect(app.pathname()).not.toBe('/');
-      expect(screen.queryByTestId('home-screen')).toBeNull();
-      expect(screen.getByText(firstRunCopy.welcome.title)).toBeTruthy();
     });
-  });
+  }
 
   describe('the launch after she has seen it', () => {
-    it('shows the first question and no card at all', async () => {
+    it('shows the welcome, and the welcome leads to the first question with no tour', async () => {
       writeSetting(aMigratedPhone(), 'tourSeenAt', whenSheOpensIt.toISOString());
 
       const app = await sheOpensEmi();
 
       expect(app.pathname()).toBe('/onboarding/welcome');
-      expect(theCardSheIsOn()).toBeUndefined();
+
+      await shePresses(onboardingActionTestID);
+
+      expect(app.pathname()).toBe('/onboarding/name');
+      expect(theTourIsShown()).toBe(false);
     });
 
     it('shows her home screen once she has answered every question', async () => {
       const app = await sheOpensEmi();
 
-      await shePresses(tourSkipTestID);
       await sheAnswersEveryQuestionOfTheFirstRun();
 
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId('home-screen')).toBeTruthy();
+      expect(readSetting(herDatabase(), 'tourSeenAt')).toBe(whenSheOpensIt.toISOString());
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         defaultCycleLengthDays + 1,
       );
+    });
+
+    it('never lets the tour step over the questions to her home screen', async () => {
+      const app = await sheOpensEmi();
+
+      await shePresses(onboardingActionTestID);
+      await shePresses(tourSkipTestID);
+
+      expect(app.pathname()).not.toBe('/');
+      expect(screen.queryByTestId('home-screen')).toBeNull();
+      expect(screen.queryByText(firstRunCopy.welcome.title)).toBeNull();
     });
   });
 
@@ -341,38 +217,6 @@ describe('Skip on any card lands on the welcome screen and the tour does not com
 
     it('is absent on a phone that has never been through it', () => {
       expect(tourIsSeen(aMigratedPhone())).toBe(false);
-    });
-  });
-
-  describe('the words of the four cards', () => {
-    it('carry none of the wording a screen refuses, and are more than twelve of them', () => {
-      const said = everyWordOfTheTour();
-
-      expect(interfaceClaimsIn('the tour', said).map(describeClaim)).toEqual([]);
-      expect(said.split('\n').length).toBeGreaterThan(12);
-    });
-
-    it('deny the two claims on the card that names a forecast, each after a full stop', () => {
-      const theFirstDenial = theDenialStartingWith('Emi is not a c');
-      const theSecondDenial = theDenialStartingWith('Emi is not a m');
-      const denying = tourCopy.range.lines.filter((line) => line.includes(theFirstDenial));
-
-      expect(denying).toHaveLength(1);
-      expect(denying[0]).toContain(theSecondDenial);
-      // A denial is read as a claim unless a full stop comes before it, so the line opens with a
-      // sentence of its own and the wording gate accepts the two that follow.
-      expect(denying[0]?.startsWith(theFirstDenial)).toBe(false);
-    });
-
-    it('name the four cards in the copy and nowhere else, so a screen writes no word', () => {
-      const source = readFileSync(
-        join(repositoryRoot, 'apps/mobile/src/features/onboarding/TourScreen.tsx'),
-        'utf8',
-      );
-
-      for (const card of tourCards) {
-        expect(source).not.toContain(tourCopy[card].title);
-      }
     });
   });
 });

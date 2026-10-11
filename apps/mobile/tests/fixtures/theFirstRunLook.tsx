@@ -54,6 +54,7 @@ import {
   TourScreen,
   tourActionTestID,
   tourLinesTestID,
+  tourPriceTestID,
   tourSkipTestID,
   tourTitleTestID,
 } from '../../src/features/onboarding/TourScreen';
@@ -138,8 +139,8 @@ const nothing = (): void => undefined;
  * rather than screens of their own, so the run is nineteen screens drawn twenty one ways.
  */
 export const theFirstRunDrawings = [
-  'tour',
   'welcome',
+  'tour',
   'name',
   'yearOfBirth',
   'lastPeriod',
@@ -257,7 +258,7 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
     CycleRing: [cycleRingTestID],
     PrimaryButton: [tourActionTestID],
     TextLink: [tourSkipTestID],
-    TourScreen: [tourTitleTestID, tourLinesTestID],
+    TourScreen: [tourTitleTestID, tourLinesTestID, tourPriceTestID],
   },
   welcome: theFrame,
   // The drawing names the sentence about her own groups as a part of its own, and the built screen
@@ -282,9 +283,9 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // day before she picks one. Measured on the glass when the line about encryption moved.
   lastPeriod: 1,
   lastPeriodNext: 1,
-  // The drawing of the tour is one page carrying the first card and the card about the price, and
-  // the built tour draws one card at a time. The card about the price is the fourth of four.
-  tour: 1,
+  // The mockups put the step above the drop, and the redesign canvas puts the drop above the step.
+  // The canvas is the later drawing, so the welcome follows it.
+  welcome: 1,
   // The drawing and the prototype both put a pill at the foot of the hold. Emi's hold is the ring
   // itself: the press and hold is the write, and a second control that wrote would be a second way
   // to begin.
@@ -299,7 +300,7 @@ export async function sheIsLookingAt(drawing: FirstRunDrawing): Promise<void> {
 function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
   switch (drawing) {
     case 'tour':
-      return <TourScreen card="ring" onBack={nothing} onNext={nothing} onSkip={nothing} />;
+      return <TourScreen onNext={nothing} onSkip={nothing} />;
     case 'welcome':
       return <WhatEmiIs onContinue={nothing} />;
     case 'name':
