@@ -3,6 +3,9 @@
 
 .DEFAULT_GOAL := help
 
+# Expo's own port. Another Metro server can hold it, so `make ios PORT=8082` picks another.
+PORT ?= 8081
+
 .PHONY: help install check format lint typecheck test test-workspace test-mobile test-behaviour ios iphone android web pictures clean
 
 help: ## print the targets, and this is the default goal
@@ -47,8 +50,9 @@ test-mobile: ## run the tests of the application
 test-behaviour: ## run the scenarios, one feature file for each feature
 	npm run test:behaviour
 
-ios: ## run the application on an iOS simulator
-	npm run ios --workspace apps/mobile
+ios: ## run the application on an iOS simulator, on the Metro port PORT
+	npm run pods --workspace apps/mobile
+	npm run ios --workspace apps/mobile -- --port $(PORT)
 
 iphone: ## run the application on an iPhone plugged into this machine
 	npm run iphone --workspace apps/mobile

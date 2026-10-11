@@ -126,6 +126,19 @@ describe('one word runs what somebody needs', () => {
     });
   });
 
+  describe('the ios target builds after an install', () => {
+    it('installs the pods before it builds, because an install empties what pod install copies', () => {
+      expect(recipeOf('ios')).toEqual([
+        'npm run pods --workspace apps/mobile',
+        'npm run ios --workspace apps/mobile -- --port $(PORT)',
+      ]);
+    });
+
+    it('takes the port from the command line, and keeps the Expo port when none is given', () => {
+      expect(makefile).toMatch(/^PORT \?= 8081$/m);
+    });
+  });
+
   describe('every target runs a script somebody wrote', () => {
     it('reads a run out of the targets that run one, so agreement is never two empty lists', () => {
       expect(scriptRuns.length).toBeGreaterThan(1);

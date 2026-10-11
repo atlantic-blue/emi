@@ -8,6 +8,7 @@
     "start": "expo start",
     "ios": "expo run:ios",
     "iphone": "expo run:ios --device",
+    "pods": "test ! -d ios || pod install --project-directory=ios",
     "android": "expo start --android",
     "web": "expo start --web",
     "export:web": "expo export --platform web",
