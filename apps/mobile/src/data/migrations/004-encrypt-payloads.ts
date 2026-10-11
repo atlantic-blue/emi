@@ -65,7 +65,7 @@ export function encryptPlainPayloads(db: Database, vault: DayVault, now: Date): 
 }
 
 /** The shape check the service makes, with no key, because the question here is only the format. */
-function isEnvelope(payload: Uint8Array): boolean {
+export function isEnvelope(payload: Uint8Array): boolean {
   try {
     readEnvelope(payload);
     return true;

@@ -345,6 +345,12 @@ export const russian: CatalogueIn<'ru'> = {
   'log.weight.heading': 'Вес',
   'log.weight.hint': 'Одного раза в день достаточно.',
 
+  'lostKey.action': 'Удалить и начать заново',
+  'lostKey.line.days': 'Ваши дни всё ещё на этом телефоне, но ключ, который их открывает, пропал.',
+  'lostKey.line.nobody': 'Без этого ключа их не откроет никто, даже Emi.',
+  'lostKey.refused': 'Часть данных не удалось удалить. Нажмите ещё раз, чтобы закончить.',
+  'lostKey.title': 'Emi не может открыть ваши дни',
+  'lostKey.working': 'Удаляем',
   'onboarding.back': 'Назад',
   'onboarding.birthYear.action': 'Дальше',
   'onboarding.birthYear.line.years':
