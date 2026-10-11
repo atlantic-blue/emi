@@ -328,6 +328,12 @@ export const english = {
   'log.weight.heading': 'Weight',
   'log.weight.hint': 'Once a day is plenty.',
 
+  'lostKey.action': 'Delete and start again',
+  'lostKey.line.days': 'Your days are still on this phone, but the key that opens them is gone.',
+  'lostKey.line.nobody': 'Nobody can open them without that key, not even Emi.',
+  'lostKey.refused': 'Some of it could not be deleted. Press again to finish.',
+  'lostKey.title': 'Emi cannot open your days',
+  'lostKey.working': 'Deleting',
   'onboarding.back': 'Back',
   'onboarding.birthYear.action': 'Continue',
   'onboarding.birthYear.line.years':

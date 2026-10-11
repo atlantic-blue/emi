@@ -327,6 +327,12 @@ export const spanish: CatalogueIn<'es'> = {
   'log.weight.heading': 'Peso',
   'log.weight.hint': 'Una vez al día es suficiente.',
 
+  'lostKey.action': 'Borrar y empezar de nuevo',
+  'lostKey.line.days': 'Tus días siguen en este teléfono, pero la clave que los abre ya no está.',
+  'lostKey.line.nobody': 'Nadie puede abrirlos sin esa clave, ni siquiera Emi.',
+  'lostKey.refused': 'No se pudo borrar todo. Pulsa otra vez para terminar.',
+  'lostKey.title': 'Emi no puede abrir tus días',
+  'lostKey.working': 'Borrando',
   'onboarding.back': 'Atrás',
   'onboarding.birthYear.action': 'Continuar',
   'onboarding.birthYear.line.years':

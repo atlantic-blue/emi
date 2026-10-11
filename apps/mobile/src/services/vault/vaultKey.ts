@@ -31,6 +31,7 @@ export const vaultKeyItem = 'emi.vaultKey.v1';
  */
 export type VaultKeyRefusal =
   | 'vault-key-already-exists'
+  | 'vault-key-is-lost'
   | 'vault-key-is-the-wrong-length'
   | 'vault-key-is-not-base64'
   | 'random-source-is-the-wrong-length'

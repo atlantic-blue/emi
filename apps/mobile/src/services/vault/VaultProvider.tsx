@@ -2,10 +2,14 @@ import { type ReactNode, createContext, useCallback, useContext, useEffect, useS
 
 import { useDatabase } from '../../data/DatabaseProvider';
 import { type HerVaults, runTheLaunchPasses } from '../../data/launchPasses';
+import { LostKey, type LostKeyStage } from '../../features/lostKey/LostKey';
+import { serverAccountDelete } from '../sync/deleteAccount';
 import { type DayVault, dayVault } from './dayVault';
 import { expoKeychain } from './keychain';
+import { keyOnThisPhone } from './lostKey';
 import { type ProfileVault, profileVault } from './profileVault';
-import { phoneRandom, vaultKey } from './vaultKey';
+import { phoneRandom, VaultKeyError } from './vaultKey';
+import { deleteEverything, nothingIsLeft } from './wipe';
 
 /** Her vaults, asked for rather than held, so the key they carry is the key the keychain holds. */
 export type MakeHerVaults = () => Promise<HerVaults>;
@@ -32,15 +36,20 @@ const MakingContext = createContext<MakeHerVaults | undefined>(undefined);
 export function VaultProvider({ children }: { readonly children: ReactNode }): ReactNode {
   const database = useDatabase();
   const [vaults, setVaults] = useState<HerVaults | undefined>(undefined);
+  const [lostKey, setLostKey] = useState<LostKeyStage | undefined>(undefined);
 
   useEffect(() => {
     let stillMounted = true;
 
-    void vaultKey(expoKeychain(), phoneRandom).then((key) => {
+    void keyOnThisPhone(expoKeychain(), phoneRandom, database).then((held) => {
       if (!stillMounted) {
         return;
       }
-      const opened = vaultsFor(key);
+      if (held.kind === 'lost') {
+        setLostKey('ready');
+        return;
+      }
+      const opened = vaultsFor(held.key);
       runTheLaunchPasses(database, opened, new Date());
       setVaults(opened);
     });
@@ -60,13 +69,44 @@ export function VaultProvider({ children }: { readonly children: ReactNode }): R
    * than under the one this component happened to start with.
    */
   const makeHerVaults = useCallback(async () => {
-    const key = await vaultKey(expoKeychain(), phoneRandom);
-    const made = vaultsFor(key);
+    const held = await keyOnThisPhone(expoKeychain(), phoneRandom, database);
+
+    if (held.kind === 'lost') {
+      throw new VaultKeyError(
+        'vault-key-is-lost',
+        'this phone holds sealed rows and no key, and a new key would open none of them',
+      );
+    }
+    const made = vaultsFor(held.key);
 
     setVaults(made);
 
     return made;
-  }, []);
+  }, [database]);
+
+  /**
+   * Her answer on the lost key screen. Everything goes, the way the delete screen takes it, and a
+   * key is made only once the database holds nothing a new key would fail to open.
+   */
+  const onStartAgain = useCallback(() => {
+    const keychain = expoKeychain();
+
+    setLostKey('working');
+    void deleteEverything(database, keychain, serverAccountDelete(keychain))
+      .then(async (outcome) => {
+        if (!nothingIsLeft(outcome)) {
+          setLostKey('refused');
+          return;
+        }
+        await makeHerVaults();
+        setLostKey(undefined);
+      })
+      .catch(() => setLostKey('refused'));
+  }, [database, makeHerVaults]);
+
+  if (lostKey) {
+    return <LostKey onStartAgain={onStartAgain} stage={lostKey} />;
+  }
 
   if (!vaults) {
     return null;
