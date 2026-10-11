@@ -1,3 +1,4 @@
+import { EnvelopeError } from '@emi/crypto';
 import type { Cycle, DayRecord } from '@emi/cycle';
 import { cyclesFrom } from '@emi/cycle';
 
@@ -40,12 +41,30 @@ export interface DaysAndCycles {
  * Every day she recorded, as the reader answers them. The reader's own type travels through, so a
  * caller holding a reader that opens the whole day reads the whole day back and never has to go to
  * the table a second time for the part this package does not care about.
+ *
+ * A day whose envelope does not open is left out, and its row stays in the table. One changed
+ * byte would otherwise take every screen that reads her days down with it. The application writes
+ * nothing to a log (contract VAULT-1), so the row is skipped without a word.
  */
 export function recordedDays<Opened extends DayRecord>(
   db: Database,
   readDay: (payload: Uint8Array) => Opened,
 ): Opened[] {
-  return listDayLogs(db).map((row) => readDay(row.payload));
+  return listDayLogs(db).flatMap((row) => openedOrNothing(row.payload, readDay));
+}
+
+function openedOrNothing<Opened extends DayRecord>(
+  payload: Uint8Array,
+  readDay: (payload: Uint8Array) => Opened,
+): Opened[] {
+  try {
+    return [readDay(payload)];
+  } catch (error) {
+    if (error instanceof EnvelopeError) {
+      return [];
+    }
+    throw error;
+  }
 }
 
 export function rebuildCycles(db: Database, readDay: ReadDay, now: Date): CycleRow[] {

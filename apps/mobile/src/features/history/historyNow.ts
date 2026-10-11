@@ -2,10 +2,10 @@ import { PATTERN_WINDOW_CYCLES } from '@emi/cycle';
 
 import { listCycles } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
-import { listDayLogs } from '../../data/dayLogRepository';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ReadCycle } from '../cycle/cyclesRead';
 import { cyclesRead } from '../cycle/cyclesRead';
+import { recordedDays } from '../cycle/rebuild';
 import type { ReadPattern } from '../cycle/patternsRead';
 import { patternsNeedCycles, patternsRead } from '../cycle/patternsRead';
 
@@ -37,7 +37,7 @@ export function historyNow(db: Database, vault: DayVault): History {
   const cycles = listCycles(db);
   // The whole record, and not the part the cycle arithmetic reads: a pattern is made of the
   // symptoms and the moods, which no other reader of this table needs.
-  const records = listDayLogs(db).map((row) => vault.open(row.payload));
+  const records = recordedDays(db, vault.open);
   const complete = cycles.filter((cycle) => cycle.lengthDays !== null);
   // Read once, through the reader the screen she opens reads, so one cycle cannot be two shapes.
   const read = cyclesRead({ cycles, records });
