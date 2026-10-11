@@ -32,7 +32,7 @@ export const russian: CatalogueIn<'ru'> = {
     many: 'Нажмите дни с кровотечением. У вас отмечено {count} дней, с {date}.',
   },
   'calendar.editPeriod.leadWithNoDay':
-    'Нажмите дни с кровотечением. В этом месяце пока ничего не отмечено.',
+    'Укажите дни с месячными. В этом месяце пока ничего не отмечено.',
   'calendar.editPeriod.noDayLeft':
     'Менструации нужен хотя бы один день. Нажмите день с кровотечением.',
   'calendar.editPeriod.nothingChanged': 'Пока нечего сохранять.',
@@ -40,7 +40,7 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.editPeriod.save': 'Сохранить',
   'calendar.editPeriod.takenOffDay': 'Убран',
   'calendar.editPeriod.title': 'Изменить мои месячные',
-  'calendar.legend.fertile': 'Фертильные',
+  'calendar.legend.fertile': 'Фертильные дни',
   'calendar.legend.period': 'Менструация',
   'calendar.month.april': 'апреля',
   'calendar.month.august': 'августа',
@@ -271,7 +271,7 @@ export const russian: CatalogueIn<'ru'> = {
     few: 'Ваш график появится, когда будут завершены {count} цикла.',
     many: 'Ваш график появится, когда будет завершено {count} циклов.',
   },
-  'home.waiting.trend.read': 'Emi ничего не рисует из ничего и не хранит примерных данных.',
+  'home.waiting.trend.read': 'Emi ничего не рисует из ничего и не подставляет примерных данных.',
   'home.trend.spoken':
     'Ваши последние {cycles}, от {shortest} до {longest} дней, на опубликованном диапазоне от {low} до {high} дней.',
   'home.week.today': 'СЕГОДНЯ',
