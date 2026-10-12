@@ -4,12 +4,17 @@ import { StyleSheet, View } from 'react-native';
 
 import { SelectableTile } from '../../components/SelectableTile';
 import { OnboardingScreen } from './OnboardingScreen';
-import { firstRunCopy, todayChoices, todayLabels, todayTitle } from './copy';
+import { firstRunCopy, todayChoices, todayLabels } from './copy';
 import type { TodaySymptom } from './firstRun';
 
 /** The tile for one feeling, named so a test presses the feeling rather than a place in the grid. */
 export function todayTestID(slug: TodaySymptom): string {
   return `today-${slug}`;
+}
+
+/** The place in the grid one tile stands in, named so a test can read how many share a row. */
+export function todayCellTestID(slug: TodaySymptom): string {
+  return `today-cell-${slug}`;
 }
 
 /**
@@ -30,11 +35,10 @@ export const todayIcons: Readonly<Record<TodaySymptom, IconName>> = {
 interface Props {
   /** The feelings she has pressed so far, in the order she pressed them, and empty until she does. */
   readonly chosen: readonly TodaySymptom[];
-  /** Nothing at all where she gave no name, and then the question is asked without one. */
-  readonly name: string | undefined;
   readonly onPress: (slug: TodaySymptom) => void;
   readonly onSave: () => void;
   readonly onBack: () => void;
+  /** Skip at the top and "Nothing to add" under the button. Both go on and write no day. */
   readonly onSkip: () => void;
 }
 
@@ -43,10 +47,10 @@ interface Props {
  * about her. What she presses here becomes today's own row, so her history opens with a day she
  * lived rather than with a day Emi worked out.
  *
- * A woman who presses nothing gets no row for today at all, so the way past this question and the
- * way on with nothing pressed say the same thing, and only the way past is drawn.
+ * The button waits for a tile, so Emi never saves a day she did not choose. Skip and "Nothing to
+ * add" are two ways past one question: both go on and write no row for today.
  */
-export function Today({ chosen, name, onPress, onSave, onBack, onSkip }: Props): ReactNode {
+export function Today({ chosen, onPress, onSave, onBack, onSkip }: Props): ReactNode {
   return (
     <OnboardingScreen
       actionIsReady={chosen.length > 0}
@@ -57,13 +61,17 @@ export function Today({ chosen, name, onPress, onSave, onBack, onSkip }: Props):
       onAction={onSave}
       onBack={onBack}
       onSkip={onSkip}
+      onWayPast={onSkip}
+      promiseSits="underTheAnswer"
+      question={firstRunCopy.today.question}
       screen="today"
-      skipLabel={firstRunCopy.today.skip}
-      title={todayTitle(name)}
+      title={firstRunCopy.today.title}
+      wayPastLabel={firstRunCopy.today.nothingToAdd}
+      wayPastSits="underTheAction"
     >
       <View style={styles.grid}>
         {todayChoices.map((slug) => (
-          <View key={slug} style={styles.cell}>
+          <View key={slug} style={styles.cell} testID={todayCellTestID(slug)}>
             <SelectableTile
               icon={todayIcons[slug]}
               isChosen={chosen.includes(slug)}
@@ -81,8 +89,8 @@ export function Today({ chosen, name, onPress, onSave, onBack, onSkip }: Props):
 }
 
 const styles = StyleSheet.create({
-  // Two to a row, each one taking what is left of the row after the gap, so a long word widens
-  // its tile rather than being cut.
-  cell: { flexBasis: '45%', flexGrow: 1 },
+  // Three to a row, as the redesign draws them, each one taking what is left of the row after the
+  // two gaps, so the six feelings stand in two rows of three.
+  cell: { flexBasis: '30%', flexGrow: 1 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
 });

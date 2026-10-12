@@ -64,8 +64,9 @@ const theQuestionAboutTheYear = {
 };
 
 const theLastQuestion = {
-  named: `${theNameSheGives}, how are you feeling today?`,
-  plain: 'How are you feeling today?',
+  plain: 'How are you today?',
+  oldNamed: `${theNameSheGives}, how are you feeling today?`,
+  oldPlain: 'How are you feeling today?',
 };
 
 /** What the question about her cycle answered her with, before the redesign took the reply away. */
@@ -349,29 +350,20 @@ describe('the first run questions use her name and reply to her answers', () => 
   });
 
   describe('the last question of the first run', () => {
-    it('asks how she feels today by the name she gave', async () => {
-      await render(
-        <OnAPhone>
-          <Today
-            chosen={[]}
-            name={theNameSheGives}
-            onBack={() => undefined}
-            onPress={() => undefined}
-            onSave={() => undefined}
-            onSkip={() => undefined}
-          />
-        </OnAPhone>,
-      );
+    it('asks the plain question of a woman who gave her name, as the redesign draws it', async () => {
+      const app = await sheWalksTo('today', theNameSheGives);
 
-      expect(theQuestionSheIsReading()).toBe(theLastQuestion.named);
+      expect(app.getPathname()).toBe('/onboarding/today');
+      expect(theQuestionSheIsReading()).toBe(theLastQuestion.plain);
+      expect(screen.queryByText(theLastQuestion.oldNamed)).toBeNull();
+      expect(screen.queryByText(theLastQuestion.oldPlain)).toBeNull();
     });
 
-    it('asks it plainly of a woman who gave no name', async () => {
+    it('asks the same plain question of a woman who gave no name', async () => {
       await render(
         <OnAPhone>
           <Today
             chosen={[]}
-            name={undefined}
             onBack={() => undefined}
             onPress={() => undefined}
             onSave={() => undefined}
@@ -383,11 +375,18 @@ describe('the first run questions use her name and reply to her answers', () => 
       expect(theQuestionSheIsReading()).toBe(theLastQuestion.plain);
     });
 
-    it('still carries the name she typed eleven questions earlier', async () => {
-      const app = await sheWalksTo('today', theNameSheGives);
+    it('carries only the plain form in all three languages, so no screen can greet her there', () => {
+      for (const language of languages) {
+        const held = theCatalogueOf(language);
 
-      expect(app.getPathname()).toBe('/onboarding/today');
-      expect(theQuestionSheIsReading()).toBe(theLastQuestion.named);
+        expect({ language, named: 'onboarding.today.titleNamed' in held }).toEqual({
+          language,
+          named: false,
+        });
+        expect(String(held['onboarding.today.title'])).not.toContain('{name}');
+      }
+
+      expect(languages.length).toBe(3);
     });
   });
 
