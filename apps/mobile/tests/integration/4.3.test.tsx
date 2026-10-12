@@ -147,8 +147,8 @@ describe('mood and energy are saved and read back', () => {
       const database = migrated();
       await sheOpensTheSheet(database);
 
-      expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(10);
-      expect(loggableMoods()).toHaveLength(10);
+      expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(12);
+      expect(loggableMoods()).toHaveLength(12);
       for (const mood of loggableMoods()) {
         expect(screen.getByTestId(`mood-chip-${mood.slug}`)).not.toBeChecked();
       }
@@ -187,7 +187,7 @@ describe('mood and energy are saved and read back', () => {
       );
 
       expect(screen.queryByTestId('mood-chip-calm')).toBeNull();
-      expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(9);
+      expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(11);
     });
   });
 

@@ -259,9 +259,9 @@ from her day log rather than written by hand, which is a table and not a thing t
 
 A period tracker that only holds bleeding days tells her what she already knows. This feature is
 everything else about a day: her mood, her energy, a waking temperature, a weight, and seventy
-symptoms she can look through or search. One press of save writes the whole day.
+two symptoms she can look through or search. One press of save writes the whole day.
 
-She says how she feels. The sheet opens with the ten moods, then energy from one to five, then the
+She says how she feels. The sheet opens with the twelve moods, then energy from one to five, then the
 two measurements, then the other sixty symptoms in seven groups. Nothing here is typed twice: a
 symptom is a slug that never changes, so six cycles of her history still point at it after the
 wording on the chip is rewritten.

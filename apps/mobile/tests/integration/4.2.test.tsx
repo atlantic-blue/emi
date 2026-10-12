@@ -123,15 +123,15 @@ describe('a symptom is found by search and saved in one action', () => {
       }
     });
 
-    it('offers all seventy, so nothing in the catalogue is unreachable', async () => {
+    it('offers all seventy two, so nothing in the catalogue is unreachable', async () => {
       const database = migrated();
       await sheOpensTheSheet(database);
 
       // The mood group is reached through the picker at the top of the sheet, not through this
-      // list, so the seventy arrive as sixty chips and ten mood chips.
-      expect(loggableSymptoms()).toHaveLength(70);
+      // list, so the seventy two arrive as sixty chips and twelve mood chips.
+      expect(loggableSymptoms()).toHaveLength(72);
       expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(60);
-      expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(10);
+      expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(12);
     });
   });
 

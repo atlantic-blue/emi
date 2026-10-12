@@ -5,7 +5,7 @@ what a package is for. These pages say what it offers, what each function refuse
 values are in range.
 
 - `content.md` is `@emi/content`, 23 exported symbols across 6 files.
-- `crypto.md` is `@emi/crypto`, 114 exported symbols across 8 files.
+- `crypto.md` is `@emi/crypto`, 131 exported symbols across 8 files.
 - `cycle.md` is `@emi/cycle`, 110 exported symbols across 9 files.
 - `tokens.md` is `@emi/tokens`, 96 exported symbols across 9 files.
 - `ui.md` is `@emi/ui`, 21 exported symbols across 11 files.

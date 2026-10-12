@@ -231,7 +231,11 @@ Output: the same bytes every time, for the same record.
 
 Errors: a key the shape does not name, in either record. In a day record, a temperature outside
 34.0 to 42.0 degrees Celsius. A weight outside 20.0 to 400.0 kilograms. An energy outside 1 to 5. A
-note longer than 2000 characters. A symptom slug that is not in the catalogue. A missing day. In a
+note longer than 2000 characters. A symptom slug that is not in the catalogue. A missing day. A
+sex, a sex drive, an orgasm answer, a discharge or an ovulation popup answer that
+`docs/design/data-model.md` does not list. A product, a food or a sign of ovulation that it does
+not list, the same one twice, or an empty list. The answer "nothing yet" beside a sign. Signs
+of ovulation without the popup answered, or the popup answered without signs. In a
 profile record, a name longer than 40 characters once the spaces at each end are taken off, or a
 name carrying a line break. A year of birth outside 1940 to the current year less nine. A cycle
 length outside 21 to 45 days. A period length outside 1 to 15 days. A regularity, a feeling, a goal

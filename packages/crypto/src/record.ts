@@ -26,8 +26,77 @@ export interface DayRecord {
   readonly temperatureCelsius?: number;
   readonly weightKilograms?: number;
   readonly note?: string;
+  readonly sex?: Sex;
+  readonly sexDrive?: SexDrive;
+  readonly orgasm?: Orgasm;
+  readonly discharge?: Discharge;
+  readonly products?: readonly Product[];
+  readonly food?: readonly Food[];
+  readonly ovulationSigns?: readonly OvulationSign[];
+  readonly ovulationPopup?: OvulationPopup;
   readonly recordedAt: string;
 }
+
+/** "No sex", "Protected" and "Unprotected" on the Sex page. `none` is an answer, absent is not. */
+export const sexValues = ['none', 'protected', 'unprotected'] as const;
+/** Her answer to "Did you have sex today?". A record without it says she gave no answer. */
+export type Sex = (typeof sexValues)[number];
+
+/** "Sex drive" on the Sex page: low, neutral or high. */
+export const sexDriveValues = ['low', 'neutral', 'high'] as const;
+/** How strong her desire felt that day, as she judged it. */
+export type SexDrive = (typeof sexDriveValues)[number];
+
+/** "Orgasm" on the Sex page. `rather-not-say` is an answer she chose, so Emi keeps it. */
+export const orgasmValues = ['yes', 'no', 'rather-not-say'] as const;
+/** Her answer about orgasm on a day she recorded sex, or a day she did not. */
+export type Orgasm = (typeof orgasmValues)[number];
+
+/** "Discharge" on the Period page, one value a day. `none` is an answer, absent is not. */
+export const dischargeValues = [
+  'none',
+  'sticky',
+  'creamy',
+  'egg-white',
+  'watery',
+  'unusual',
+] as const;
+/** What she noticed in her underwear that day. One value, never a list. */
+export type Discharge = (typeof dischargeValues)[number];
+
+/** "What you used" on the Period page. She can pick several. */
+export const productValues = ['pad', 'tampon', 'cup', 'period-underwear', 'liner'] as const;
+/** A thing she wore to catch blood or discharge that day. */
+export type Product = (typeof productValues)[number];
+
+/** The Food row of the Cycle phase diary. She can pick several. */
+export const foodValues = ['cravings', 'hungry', 'little-appetite', 'sweet', 'salty'] as const;
+/** Appetite and cravings she noticed, as the diary of her phase records them. */
+export type Food = (typeof foodValues)[number];
+
+/** Her answer "Nothing yet" to the ovulation popup, which stands alone in the list. */
+export const nothingYet = 'nothing-yet';
+
+/** The chips of the ovulation popup. She can pick several signs, or "Nothing yet" alone. */
+export const ovulationSignValues = [
+  'egg-white-discharge',
+  'pain-on-one-side',
+  'tender-breasts',
+  'higher-sex-drive',
+  'positive-ovulation-test',
+  'higher-temperature',
+  nothingYet,
+] as const;
+/** A body sign she noticed around ovulation, or her answer that she noticed none yet. */
+export type OvulationSign = (typeof ovulationSignValues)[number];
+
+/**
+ * What she did with the ovulation popup on that day. Any value means the popup showed, so it does
+ * not show again the same day.
+ */
+export const ovulationPopupValues = ['answered', 'dismissed'] as const;
+/** Whether she answered the popup or closed it with "Not now". */
+export type OvulationPopup = (typeof ovulationPopupValues)[number];
 
 /**
  * Every value of `Flow`, as data, because a type cannot be read at run time. The test holds the
@@ -45,11 +114,19 @@ export const flowValues = [
 export const recordKeys: readonly string[] = [
   'bleedingIsUnexpected',
   'day',
+  'discharge',
   'energy',
   'flow',
+  'food',
   'moods',
   'note',
+  'orgasm',
+  'ovulationPopup',
+  'ovulationSigns',
+  'products',
   'recordedAt',
+  'sex',
+  'sexDrive',
   'symptoms',
   'temperatureCelsius',
   'weightKilograms',
@@ -118,6 +195,7 @@ export function recordProblems(
     }),
   );
   problems.push(...noteProblems(held.note));
+  problems.push(...newFieldProblems(held));
 
   return problems;
 }
@@ -287,6 +365,86 @@ function noteProblems(value: unknown): readonly string[] {
   return characters > longestNote
     ? [`a note holds at most ${longestNote} characters, this one holds ${characters}`]
     : [];
+}
+
+/**
+ * The fields the Sex, Period and Cycle phase pages and the ovulation popup write. Each one is
+ * checked against its own list, so a value a later screen invents cannot reach an envelope.
+ */
+function newFieldProblems(held: Readonly<Record<string, unknown>>): readonly string[] {
+  return [
+    ...oneOfProblems(held.sex, { field: 'sex', values: sexValues }),
+    ...oneOfProblems(held.sexDrive, { field: 'a sex drive', values: sexDriveValues }),
+    ...oneOfProblems(held.orgasm, { field: 'an orgasm answer', values: orgasmValues }),
+    ...oneOfProblems(held.discharge, { field: 'a discharge', values: dischargeValues }),
+    ...listOfProblems(held.products, { field: 'a product', values: productValues }),
+    ...listOfProblems(held.food, { field: 'a food', values: foodValues }),
+    ...listOfProblems(held.ovulationSigns, {
+      field: 'a sign of ovulation',
+      values: ovulationSignValues,
+    }),
+    ...oneOfProblems(held.ovulationPopup, {
+      field: 'an ovulation popup answer',
+      values: ovulationPopupValues,
+    }),
+    ...ovulationAnswerProblems(held.ovulationSigns, held.ovulationPopup),
+  ];
+}
+
+interface AllowedValues {
+  readonly field: string;
+  readonly values: readonly string[];
+}
+
+function oneOfProblems(value: unknown, allowed: AllowedValues): readonly string[] {
+  if (value === undefined || allowed.values.includes(value as string)) {
+    return [];
+  }
+  return [`${allowed.field} is one of ${allowed.values.join(', ')}, this one is ${shown(value)}`];
+}
+
+/** An empty list is refused, because an absent field already says she recorded nothing. */
+function listOfProblems(value: unknown, allowed: AllowedValues): readonly string[] {
+  if (value === undefined) {
+    return [];
+  }
+  if (!Array.isArray(value)) {
+    return [`${allowed.field} list is a list, this one is ${shown(value)}`];
+  }
+  if (value.length === 0) {
+    return [`${allowed.field} list is left out rather than written empty`];
+  }
+
+  const unknown = (value as readonly unknown[]).filter(
+    (item) => !allowed.values.includes(item as string),
+  );
+  if (unknown.length > 0) {
+    return [
+      `${allowed.field} is one of ${allowed.values.join(', ')}, these are not: ` +
+        unknown.map(shown).join(', '),
+    ];
+  }
+
+  return new Set(value).size === value.length
+    ? []
+    : [`${allowed.field} list names the same value twice`];
+}
+
+/**
+ * Signs go with an answered popup and nothing else, and "nothing yet" is an answer on its own. A
+ * popup she closed carries no signs, because she gave none.
+ */
+function ovulationAnswerProblems(signs: unknown, popup: unknown): readonly string[] {
+  if (!Array.isArray(signs)) {
+    return popup === 'answered' ? ['an answered ovulation popup carries the signs she picked'] : [];
+  }
+  if (popup !== 'answered') {
+    return ['signs of ovulation are written only with the ovulation popup answered'];
+  }
+  if (signs.includes(nothingYet) && signs.length > 1) {
+    return ['the answer nothing yet stands alone, with no sign beside it'];
+  }
+  return [];
 }
 
 function shown(value: unknown): string {

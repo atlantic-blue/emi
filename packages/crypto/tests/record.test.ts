@@ -122,6 +122,14 @@ describe('the plaintext of a day', () => {
         temperatureCelsius: 36.6,
         weightKilograms: 64.2,
         note: 'a long afternoon',
+        sex: 'protected',
+        sexDrive: 'neutral',
+        orgasm: 'no',
+        discharge: 'creamy',
+        products: ['pad'],
+        food: ['hungry'],
+        ovulationSigns: ['higher-temperature'],
+        ovulationPopup: 'answered',
         recordedAt: '2026-03-14T21:05:00.000Z',
       };
 
