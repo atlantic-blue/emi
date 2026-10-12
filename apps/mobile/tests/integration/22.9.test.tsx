@@ -29,7 +29,7 @@ import {
   theDayTheDrawingsSheetNames,
   theDaysOfTheDrawnMonth,
   theDaysTheDrawingFills,
-  theFertileDaysTheRingCounts,
+  theFertileDaysTheForecastNames,
   theLegendDots,
   theLegendSheReads,
   theMarkOnTheSquare,
@@ -127,11 +127,13 @@ describe('the month grid takes the redesign look', () => {
   });
 
   describe('her fertile days', () => {
-    it('tint the disc of every day the ring counts inside that window', async () => {
+    it('tint the disc of every day inside the fertile window the forecast names', async () => {
       await sheOpensTheMonth();
 
-      const tinted = theFertileDaysTheRingCounts().filter(
-        (day) => day !== theOvulationDayTheForecastNames(),
+      // A day she bled is filled over the top of the tint, because what she recorded wins.
+      const bled = new Set(theDaysTheDrawingFills());
+      const tinted = theFertileDaysTheForecastNames().filter(
+        (day) => day !== theOvulationDayTheForecastNames() && !bled.has(day),
       );
 
       expect(tinted.length).toBeGreaterThan(0);
@@ -148,7 +150,7 @@ describe('the month grid takes the redesign look', () => {
       const ovulation = String(theOvulationDayTheForecastNames());
 
       expect(theOvulationDayTheForecastNames()).toBeDefined();
-      expect(theFertileDaysTheRingCounts()).toContain(ovulation);
+      expect(theFertileDaysTheForecastNames()).toContain(ovulation);
       expect(thePhaseGroundOn(ovulation)).toBe(colour.ovulation);
       expect(theDateInkOn(ovulation)).toBe(colour.text);
     });
@@ -156,7 +158,7 @@ describe('the month grid takes the redesign look', () => {
     it('leave a day outside that window with no ground under its date', async () => {
       await sheOpensTheMonth();
 
-      const fertile = new Set(theFertileDaysTheRingCounts());
+      const fertile = new Set(theFertileDaysTheForecastNames());
       const bled = new Set(theDaysTheDrawingFills());
       const plain = theDaysOfTheDrawnMonth().filter(
         (day) => !fertile.has(day) && !bled.has(day) && theMarkOnTheSquare(day) === 'plain',

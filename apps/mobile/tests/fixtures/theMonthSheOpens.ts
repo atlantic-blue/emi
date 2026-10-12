@@ -747,12 +747,20 @@ export function theDaysOfTheDrawnMonth(): string[] {
 }
 
 /**
- * The days of the drawn month the ring itself counts as fertile, which is the arc it draws around
- * ovulation. The month is held to this rather than to a list typed here, so a month that decided a
- * window of its own would be caught by the thing it may not disagree with.
+ * The days of the drawn month inside the fertile window her forecast names, read off the same
+ * forecast every screen reads. The window is not the ovulation phase the ring draws, which is
+ * narrower, so the month is held to the forecast and a month that tinted the phase is caught.
  */
-export function theFertileDaysTheRingCounts(): string[] {
-  return theDaysOfTheDrawnMonth().filter((day) => thePhaseTheRingSaysOn(day) === 'ovulation');
+export function theFertileDaysTheForecastNames(): string[] {
+  return theDaysOfTheDrawnMonth().filter((day) => {
+    const forecast = forecastOf(herReading(day).cycles, sheSaidHerCycleRuns);
+
+    return (
+      forecast.kind === 'forecast' &&
+      day >= forecast.fertileWindow.from &&
+      day <= forecast.fertileWindow.to
+    );
+  });
 }
 
 /**

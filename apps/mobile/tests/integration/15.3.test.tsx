@@ -20,8 +20,10 @@ import { textIn } from '../fixtures/renderedText';
 import { partsMissing } from '../fixtures/theMockupScreen';
 import {
   theDaySheReachesHerLutealPhase,
+  theDayTheLutealDrawingNames,
   theFillOf,
   theFourWordsDrawnOn,
+  theFirstLutealDayTheRuleGives,
   theFourWordsDrawnTooLargeOn,
   theGroundThePhaseLineIsDrawnOn,
   theInkOf,
@@ -163,9 +165,19 @@ describe('she reads her phase and her cycle day as words from across the room', 
       );
     });
 
-    it('names the day the luteal drawing names, which is the day the ring says she is on', () => {
-      expect(thePhaseLineSheReads().day).toBe(theLutealDayTheDrawingDraws);
+    it('names the first luteal day the phase rule gives, which is the day the ring says she is on', () => {
+      expect(thePhaseLineSheReads().day).toBe(theFirstLutealDayTheRuleGives);
       expect(thePhaseLineSheReads().day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
+    });
+
+    it('names the ovulation phase on the day the older luteal drawing names', async () => {
+      resetExpoSqlite();
+      resetExpoSecureStore();
+      await sheOpensEmiOn(new Date(`${theDayTheLutealDrawingNames}T12:00:00.000Z`));
+
+      expect(thePhaseLineSheReads().day).toBe(theLutealDayTheDrawingDraws);
+      expect(thePhaseLineSheReads().phase.toLowerCase()).toContain('ovulation');
+      expect(thePhaseLineSheReads().phase.toLowerCase()).not.toContain('luteal');
     });
 
     it('names the luteal phase in words, and writes it in the luteal ink', () => {

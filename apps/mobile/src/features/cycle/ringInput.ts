@@ -1,10 +1,13 @@
-import type { DayRecord, Forecast } from '@emi/cycle';
 import {
+  type DayRecord,
+  type Forecast,
   FERTILE_DAYS_AFTER_OVULATION,
   FERTILE_DAYS_BEFORE_OVULATION,
-  LUTEAL_LENGTH_DAYS,
+  type CycleDays,
+  cyclePhaseDays,
   daysBetween,
   isBleeding,
+  ovulationDayWhileLearning,
 } from '@emi/cycle';
 import type { PhaseSpan } from '@emi/tokens';
 
@@ -44,6 +47,8 @@ export interface RingInputFrom {
 export interface CycleShape {
   readonly cycleLengthDays: number;
   readonly periodDays: number;
+  /** The cycle day of the forecast ovulation, which the ovulation phase is counted around. */
+  readonly ovulationDay: number;
   /** The first cycle day of the fertile window, counting from one. */
   readonly fertileFromDay: number;
   /** The last cycle day of the fertile window. */
@@ -51,22 +56,36 @@ export interface CycleShape {
 }
 
 /**
- * The four arcs, from the days they cover. A short cycle runs its fertile window into its period,
- * and a phase never takes a day from the phase before it, so the days that are left over are what
- * each phase gets.
+ * The four arcs, from the phase rule in `@emi/cycle`. The arcs never overlap, so the period arc is
+ * days 1 to the period length and the follicular arc is the days after it up to the ovulation
+ * phase. The follicular phase itself starts on day 1 and holds the period: the ring draws the
+ * period over it because the period is the phase she is in while she bleeds.
  */
 export function phasesOf(shape: CycleShape): PhaseSpan[] {
-  const length = shape.cycleLengthDays;
-  const period = Math.max(0, Math.min(shape.periodDays, length));
-  const follicularEnds = Math.max(period, shape.fertileFromDay - 1);
-  const ovulationEnds = Math.max(follicularEnds, Math.min(length, shape.fertileToDay));
+  const phases = cyclePhaseDays({
+    cycleLengthDays: shape.cycleLengthDays,
+    periodLengthDays: shape.periodDays,
+    ovulationDay: shape.ovulationDay,
+  });
+  const periodDays = phases.period.to;
 
   return [
-    { phase: 'period', days: period },
-    { phase: 'follicular', days: follicularEnds - period },
-    { phase: 'ovulation', days: ovulationEnds - follicularEnds },
-    { phase: 'luteal', days: length - ovulationEnds },
+    { phase: 'period', days: periodDays },
+    { phase: 'follicular', days: phases.follicular.to - periodDays },
+    { phase: 'ovulation', days: phases.ovulation.to - phases.ovulation.from + 1 },
+    { phase: 'luteal', days: phases.luteal.to - phases.luteal.from + 1 },
   ];
+}
+
+/**
+ * The days the calendar marks fertile. This is the fertile window, a separate thing from the
+ * ovulation phase, and a period day is never marked fertile because what she recorded wins.
+ */
+export function fertileDaysOf(shape: CycleShape): CycleDays {
+  const period = Math.max(0, Math.min(shape.periodDays, shape.cycleLengthDays));
+  const from = Math.max(period + 1, shape.fertileFromDay);
+
+  return { from, to: Math.max(from - 1, Math.min(shape.cycleLengthDays, shape.fertileToDay)) };
 }
 
 /**
@@ -75,11 +94,12 @@ export function phasesOf(shape: CycleShape): PhaseSpan[] {
  * section 8 counts from, so the learning state and the forecast divide a cycle the same way.
  */
 export function shapeFromLength(cycleLengthDays: number, periodDays: number): CycleShape {
-  const ovulationDay = cycleLengthDays + 1 - LUTEAL_LENGTH_DAYS;
+  const ovulationDay = ovulationDayWhileLearning(cycleLengthDays);
 
   return {
     cycleLengthDays,
     periodDays,
+    ovulationDay,
     fertileFromDay: ovulationDay - FERTILE_DAYS_BEFORE_OVULATION,
     fertileToDay: ovulationDay + FERTILE_DAYS_AFTER_OVULATION,
   };
@@ -96,11 +116,16 @@ export function shapeFromForecast(
   cycleLengthDays: number,
   periodDays: number,
 ): CycleShape {
+  const fertileToDay = daysBetween(startedOn, forecast.fertileWindow.to) + 1;
+
   return {
     cycleLengthDays,
     periodDays,
+    // Counted back from the end of the window rather than read off the forecast, which is how the
+    // calendar names the same day, so the two can never disagree.
+    ovulationDay: fertileToDay - FERTILE_DAYS_AFTER_OVULATION,
     fertileFromDay: daysBetween(startedOn, forecast.fertileWindow.from) + 1,
-    fertileToDay: daysBetween(startedOn, forecast.fertileWindow.to) + 1,
+    fertileToDay,
   };
 }
 
@@ -109,6 +134,17 @@ export function shapeFromForecast(
  * picture of somebody else's month.
  */
 export function ringInputFor(from: RingInputFrom): RingInput | undefined {
+  const read = cycleShapeFor(from);
+
+  return read === undefined
+    ? undefined
+    : { cycleLengthDays: read.shape.cycleLengthDays, day: read.day, phases: phasesOf(read.shape) };
+}
+
+/** The day she is on and the shape of the cycle holding it, which the ring and the month read. */
+export function cycleShapeFor(
+  from: RingInputFrom,
+): { readonly day: number; readonly shape: CycleShape } | undefined {
   const open = from.cycles[from.cycles.length - 1];
   if (!open) {
     return undefined;
@@ -135,7 +171,7 @@ export function ringInputFor(from: RingInputFrom): RingInput | undefined {
       ? shapeFromForecast(open.startedOn, forecast, cycleLengthDays, periodDays)
       : shapeFromLength(cycleLengthDays, periodDays);
 
-  return { cycleLengthDays, day, phases: phasesOf(shape) };
+  return { day, shape };
 }
 
 /**

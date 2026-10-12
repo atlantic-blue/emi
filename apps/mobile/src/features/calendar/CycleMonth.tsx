@@ -111,6 +111,8 @@ export interface MonthSquare {
    * grid that asks her to pick a day, and then no date carries a phase ground.
    */
   readonly phase?: PhaseName;
+  /** True inside the fertile window, which is wider than the ovulation phase and marked apart. */
+  readonly fertile?: boolean;
   /** True on the one day of that phase the forecast names as the estimated ovulation. */
   readonly ovulating?: boolean;
   /** The day she picked, where the screen asks her to pick one. */
@@ -230,7 +232,7 @@ function theGroundOfThePhase(square: MonthSquare): ViewStyle | undefined {
     return styles.discOvulation;
   }
 
-  return square.phase === 'ovulation' ? styles.discFertile : undefined;
+  return square.fertile === true ? styles.discFertile : undefined;
 }
 
 /**
@@ -242,7 +244,7 @@ function theNumber(square: MonthSquare, chosen: boolean): TextStyle[] | TextStyl
     return [styles.dayNumber, styles.dayNumberOnFill];
   }
 
-  if (square.ovulating !== true && square.phase === 'ovulation') {
+  if (square.ovulating !== true && square.fertile === true) {
     return [styles.dayNumber, styles.dayNumberOnTheWindow];
   }
 

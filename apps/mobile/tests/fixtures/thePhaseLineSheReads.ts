@@ -1,4 +1,4 @@
-import { addDays } from '@emi/cycle';
+import { addDays, cyclePhaseDays, ovulationDayWhileLearning } from '@emi/cycle';
 import { type PhaseName, colour, phaseNames, phasePalette } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
@@ -12,7 +12,11 @@ import {
 import { colourOf } from './phaseInk';
 import { sizedTextIn, textIn } from './renderedText';
 import { type Part, thePartsOfTheMockup, theMarkupOfTheMockup } from './theMockupScreen';
-import { herPeriodStartedOn } from './theWeekSheOpensWith';
+import {
+  herPeriodStartedOn,
+  sheSaidHerCycleRuns,
+  sheSaidHerPeriodRunsFor,
+} from './theWeekSheOpensWith';
 
 /**
  * The line under her week: the drawings it is held to, and the two days it is read on.
@@ -88,10 +92,24 @@ export const theDayOfHerPeriodTheDrawingDraws = thePhaseLineOfTheDrawing('todayN
 export const theLutealDayTheDrawingDraws = thePhaseLineOfTheDrawing('todayLuteal').day;
 
 /**
- * The day of the calendar she reaches her luteal phase on, counted from the day her period started
- * rather than typed, so the cycle day the drawing names and the day the test opens are one number.
+ * The first luteal day of her cycle under the phase rule, contract CYCLE-6. The older drawing
+ * names day 21 of 31, which the rule now puts in the ovulation phase, so the luteal screen opens on
+ * the first day the rule calls luteal rather than on the day the drawing names.
  */
+export const theFirstLutealDayTheRuleGives = cyclePhaseDays({
+  cycleLengthDays: sheSaidHerCycleRuns,
+  periodLengthDays: sheSaidHerPeriodRunsFor,
+  ovulationDay: ovulationDayWhileLearning(sheSaidHerCycleRuns),
+}).luteal.from;
+
+/** The day of the calendar she reaches her luteal phase on, counted from her period's start. */
 export const theDaySheReachesHerLutealPhase = addDays(
+  herPeriodStartedOn,
+  theFirstLutealDayTheRuleGives - 1,
+);
+
+/** The day of the calendar the older luteal drawing is drawn on. */
+export const theDayTheLutealDrawingNames = addDays(
   herPeriodStartedOn,
   theLutealDayTheDrawingDraws - 1,
 );
