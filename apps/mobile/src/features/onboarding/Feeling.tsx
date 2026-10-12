@@ -1,19 +1,16 @@
 import type { Feeling as HowSheFeelsAboutIt } from '@emi/crypto';
-import { colour, space, textStyle } from '@emi/tokens';
+import { space } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { SingleChoiceRow } from '../../components/ChoiceRow';
 import { OnboardingScreen } from './OnboardingScreen';
-import { feelingChoices, feelingLabels, feelingReplies, firstRunCopy } from './copy';
+import { feelingChoices, feelingLabels, firstRunCopy } from './copy';
 
 /** The row for one answer, named so a test presses the answer rather than a position in a list. */
 export function feelingTestID(answer: HowSheFeelsAboutIt): string {
   return `feeling-${answer}`;
 }
-
-/** The line her answer is answered on, named so a test reads the reply and not a position. */
-export const feelingReplyTestID = 'feeling-reply';
 
 interface Props {
   /** Nothing at all until she picks, because the screen opens on no answer of its own. */
@@ -30,12 +27,14 @@ interface Props {
  *
  * No answer is chosen for her, for the same reason the regularity screen chooses none: a row
  * filled in before she touches it puts a statement about her in her profile that she never made.
+ * The redesign answers her pick with the check on the row and says nothing back under it.
  */
 export function Feeling({ chosen, onChoose, onContinue, onBack, onSkip }: Props): ReactNode {
   return (
     <OnboardingScreen
       actionIsReady={chosen !== undefined}
       actionLabel={firstRunCopy.feeling.action}
+      linesAlign="center"
       lines={firstRunCopy.feeling.lines}
       onAction={onContinue}
       onBack={onBack}
@@ -55,21 +54,11 @@ export function Feeling({ chosen, onChoose, onContinue, onBack, onSkip }: Props)
             testID={feelingTestID(answer)}
           />
         ))}
-        {chosen === undefined ? null : (
-          <Text style={styles.reply} testID={feelingReplyTestID}>
-            {feelingReplies[chosen]}
-          </Text>
-        )}
       </View>
     </OnboardingScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  reply: {
-    color: colour.secondaryText,
-    ...textStyle('body-sm'),
-    paddingHorizontal: space.spaceXs,
-  },
   rows: { gap: space.spaceSm },
 });

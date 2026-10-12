@@ -59,10 +59,6 @@ const theKeyThatWent = 'onboarding.birthYear.line.noReader';
 /** The reason the screen gave for the year, which the redesign canvas does not draw. */
 const theReasonThatWent = 'Cycles change across the years, so it helps to know where you are.';
 
-/** The one line the other questions that keep an answer read. */
-const theLineAboutWhoReadsIt = 'Only you can read this.';
-const theKeyOfThatLine = 'onboarding.onlyYou';
-
 /** What the year question says at its foot now, in the redesign's words. */
 const theLineAboutEncryption = 'Emi encrypts this on the phone before it goes anywhere.';
 
@@ -147,7 +143,6 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
     it('is gone from all three languages, so no screen can draw it again', () => {
       for (const catalogue of [english, russian, spanish]) {
         expect(Object.keys(catalogue)).not.toContain(theKeyThatWent);
-        expect(Object.keys(catalogue)).toContain(theKeyOfThatLine);
       }
 
       expect(wordKeys as readonly string[]).not.toContain(theKeyThatWent);
@@ -157,11 +152,14 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
       for (const language of ['english', 'russian', 'spanish']) {
         const file = readFileSync(join(languageDirectory, `${language}.ts`), 'utf8');
 
-        expect(file).toContain(theKeyOfThatLine);
         expect(file).not.toContain(theKeyThatWent);
+        expect(file).not.toContain(theLineThatWent);
       }
 
-      expect(Object.entries(english)).toContainEqual([theKeyOfThatLine, theLineAboutWhoReadsIt]);
+      expect(Object.entries(english)).toContainEqual([
+        'onboarding.encrypts',
+        theLineAboutEncryption,
+      ]);
     });
   });
 

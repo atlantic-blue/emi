@@ -214,12 +214,13 @@ describe('the first run screens match the redesign prototype', () => {
   });
 
   describe('the promise about what Emi does with her answer', () => {
-    // The two questions the redesign has redrawn say what the canvas says. The rest still say the
-    // line they said before.
-    const thePromiseOn: Readonly<Partial<Record<string, string>>> = {
+    // Each question says what the canvas draws at its foot.
+    const thePromiseOn: Readonly<Record<string, string>> = {
       name: firstRunCopy.encrypts,
       yearOfBirth: firstRunCopy.encrypts,
       lastPeriod: firstRunCopy.encrypts,
+      feeling: firstRunCopy.encryptedHere,
+      goals: firstRunCopy.encryptsYourAnswers,
     };
 
     for (const drawing of theQuestionsThatPromiseHerPrivacy) {
@@ -227,7 +228,7 @@ describe('the first run screens match the redesign prototype', () => {
         await sheIsLookingAt(drawing);
 
         expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-          thePromiseOn[drawing] ?? firstRunCopy.onlyYou,
+          thePromiseOn[drawing] ?? 'a question with no promise on the canvas',
         );
         expect(screen.getByTestId(lockLineIconTestID(onboardingLockTestID))).toBeTruthy();
       });
