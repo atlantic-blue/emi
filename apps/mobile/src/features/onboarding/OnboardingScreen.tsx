@@ -29,6 +29,8 @@ export type OnboardingHeader = 'bar' | 'label' | 'word';
 interface Props {
   readonly screen: FirstRunScreen;
   readonly title: string;
+  /** A second line of the question, under the title. Left out where the title is the question. */
+  readonly question?: string;
   readonly lines: readonly string[];
   readonly actionLabel: string;
   readonly actionIsReady?: boolean;
@@ -54,6 +56,8 @@ interface Props {
    * does with the answer.
    */
   readonly linesComeFirst?: boolean;
+  /** The questions about her cycle centre their lines under the answer, as the redesign draws them. */
+  readonly linesAlign?: 'start' | 'center';
   /** The three shapes above. The ten questions take the bar, which is why it is the default. */
   readonly header?: OnboardingHeader;
   /** The word the row carries in place of the bar. Only the first run log names one. */
@@ -73,6 +77,7 @@ export const onboardingEmblemTestID = 'onboarding-emblem';
 export const onboardingSheetTestID = 'onboarding-sheet';
 export const onboardingHeaderWordTestID = 'onboarding-header-word';
 export const onboardingLockTestID = 'onboarding-lock';
+export const onboardingQuestionTestID = 'onboarding-question';
 
 /** Points. The arrow is read at the size the rest of the set is read at. */
 const BACK_MARK_SIZE = 22;
@@ -96,6 +101,7 @@ const TURNED_AROUND = [{ rotate: '180deg' }] as const;
 export function OnboardingScreen({
   screen,
   title,
+  question,
   lines,
   actionLabel,
   actionIsReady = true,
@@ -106,6 +112,7 @@ export function OnboardingScreen({
   onWayPast,
   wayPastLabel,
   linesComeFirst = false,
+  linesAlign = 'start',
   header = 'bar',
   headerWord,
   children,
@@ -122,7 +129,7 @@ export function OnboardingScreen({
   // same reason the lines move: read after she answers is read too late.
   const said = (
     <>
-      <TheLinesSheReads onTheSheet={onTheSheet} lines={lines} />
+      <TheLinesSheReads align={linesAlign} onTheSheet={onTheSheet} lines={lines} />
       {linesComeFirst ? promiseLine : null}
     </>
   );
@@ -133,6 +140,12 @@ export function OnboardingScreen({
       <Text accessibilityRole="header" style={styles.title} testID={onboardingTitleTestID}>
         {title}
       </Text>
+
+      {question === undefined ? null : (
+        <Text style={styles.question} testID={onboardingQuestionTestID}>
+          {question}
+        </Text>
+      )}
 
       {linesComeFirst ? said : null}
 
@@ -231,9 +244,9 @@ export function OnboardingScreen({
           <ScrollView contentContainerStyle={styles.sheetBody} style={styles.scroll}>
             {asked}
           </ScrollView>
-          {wayPast}
           <View style={styles.sheetFoot}>
             {promiseAtTheFoot}
+            {wayPast}
             {action}
           </View>
         </View>
@@ -242,9 +255,9 @@ export function OnboardingScreen({
           <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
             {asked}
           </ScrollView>
-          {wayPast}
           <View style={styles.footer}>
             {promiseAtTheFoot}
+            {wayPast}
             {action}
           </View>
         </>
@@ -271,9 +284,11 @@ function thePromiseIn(lines: readonly string[]): string | undefined {
 function TheLinesSheReads({
   lines,
   onTheSheet,
+  align,
 }: {
   readonly lines: readonly string[];
   readonly onTheSheet: boolean;
+  readonly align: 'start' | 'center';
 }): ReactNode {
   const said = lines.filter((line) => !thePromises.includes(line));
 
@@ -284,7 +299,10 @@ function TheLinesSheReads({
   return onTheSheet ? (
     <View style={styles.lines} testID={onboardingLinesTestID}>
       {said.map((line) => (
-        <Text key={line} style={styles.line}>
+        <Text
+          key={line}
+          style={align === 'center' ? [styles.line, styles.lineCentred] : styles.line}
+        >
           {line}
         </Text>
       ))}
@@ -349,6 +367,7 @@ const styles = StyleSheet.create({
     color: colour.secondaryText,
     ...textStyle('body-lg'),
   },
+  lineCentred: { textAlign: 'center' },
   lineAfter: {
     borderTopColor: colour.line,
     borderTopWidth: 1,
@@ -359,6 +378,12 @@ const styles = StyleSheet.create({
   // The promise sits over the button, centred while it fits on one line and read from the left
   // when it wraps.
   lock: { alignItems: 'center', paddingBottom: space.spaceMd },
+  question: {
+    color: colour.secondaryText,
+    marginBottom: space.spaceSm,
+    textAlign: 'center',
+    ...textStyle('body-lg'),
+  },
   row: { alignItems: 'center', flexDirection: 'row', gap: space.spaceMd },
   // The middle takes whatever the two ends leave, so the button sits on the bottom edge of the
   // glass on a screen with one line and on a screen with ninety days on it alike.
@@ -403,8 +428,8 @@ const styles = StyleSheet.create({
     ...textStyle('headline-lg'),
     marginBottom: space.spaceMd,
   },
-  // The way past stands outside the scrolling middle, under what she was asked and over the one
-  // thing she can press. A question as tall as a month would otherwise put it below the fold,
-  // which is where a woman who has just found she cannot answer is least likely to look.
-  wayPast: { alignItems: 'center', paddingTop: space.spaceMd },
+  // The way past stands outside the scrolling middle, under the promise and over the one thing she
+  // can press, as the redesign draws it. A question as tall as a month would otherwise put it below
+  // the fold, which is where a woman who has just found she cannot answer is least likely to look.
+  wayPast: { alignItems: 'center', paddingBottom: space.spaceSm },
 });

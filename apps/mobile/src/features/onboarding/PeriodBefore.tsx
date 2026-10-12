@@ -1,15 +1,14 @@
-import { addDays, daysBetween } from '@emi/cycle';
+import { addDays } from '@emi/cycle';
 import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text } from 'react-native';
 
 import { Calendar } from './Calendar';
 import { OnboardingScreen } from './OnboardingScreen';
-import { daysBetweenSentence, firstRunCopy } from './copy';
+import { firstRunCopy } from './copy';
 import { localDay } from './days';
 import { defaultCycleLengthDays, maximumCycleLengthDays, periodBeforeIsInRange } from './firstRun';
 
-export const periodBeforeGapTestID = 'period-before-gap';
 export const periodBeforeRefusedTestID = 'period-before-refused';
 
 interface Props {
@@ -24,8 +23,9 @@ interface Props {
 }
 
 /**
- * The period before the one she just gave. Two starts are one cycle she lived, and a cycle she
- * lived is worth more to the first forecast than the length she estimates on the next screen.
+ * The period before the one she just gave. Two starts are one complete cycle she lived, so a
+ * forecast from her own cycles comes one cycle sooner. The first forecast itself is still counted
+ * from her last start and the length she states on the next screen.
  *
  * Every square of the month takes a press, including the ones the answer cannot be, because a day
  * that does nothing when she presses it tells her nothing about why. She presses it and the screen
@@ -47,12 +47,14 @@ export function PeriodBefore({
       actionIsReady={isInRange}
       actionLabel={firstRunCopy.periodBefore.action}
       lines={firstRunCopy.periodBefore.lines}
+      linesAlign="center"
       onAction={onAdd}
       onBack={onBack}
-      onSkip={onSkip}
+      onWayPast={onSkip}
+      question={firstRunCopy.periodBefore.question}
       screen="periodBefore"
-      skipLabel={firstRunCopy.periodBefore.skip}
       title={firstRunCopy.periodBefore.title}
+      wayPastLabel={firstRunCopy.periodBefore.skip}
     >
       <Calendar
         canChoose={() => true}
@@ -64,12 +66,6 @@ export function PeriodBefore({
         today={localDay(now)}
       />
 
-      {chosen !== undefined && isInRange ? (
-        <Text style={styles.gap} testID={periodBeforeGapTestID}>
-          {daysBetweenSentence(daysBetween(chosen, lastPeriodStartedOn))}
-        </Text>
-      ) : null}
-
       {chosen !== undefined && !isInRange ? (
         <Text style={styles.refused} testID={periodBeforeRefusedTestID}>
           {firstRunCopy.periodBefore.outOfRange}
@@ -80,14 +76,6 @@ export function PeriodBefore({
 }
 
 const styles = StyleSheet.create({
-  // The cycle she lived, said back to her the moment she picks the day, because that number is
-  // the whole reason the question is asked.
-  gap: {
-    color: colour.text,
-    marginTop: space.spaceMd,
-    ...textStyle('body-lg'),
-    textAlign: 'center',
-  },
   refused: {
     color: colour.accent,
     marginTop: space.spaceMd,

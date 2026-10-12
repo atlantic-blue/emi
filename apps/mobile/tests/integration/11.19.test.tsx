@@ -49,6 +49,9 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 /** The phone the pill was seen touching the title on, and the narrowest glass Emi is built for. */
 const bothPhones: readonly Phone[] = [anIPhone16, aSmallIPhone];
 
+/** The role the month name is set in, which is the redesign's small heading over the days. */
+const theTitleRole = 'headline-sm';
+
 /** Points. What a pill puts round its own words: the padding each side and the line it carries. */
 const thePillAroundTheWords = 2 * space.spaceMd + 2 * stroke.hairline;
 
@@ -112,7 +115,7 @@ function theWidestTitleIn(language: Language): string {
   const titles = theMonthKeys.map((key) => `${theWordFor(key, language)} ${theYearBeside}`);
 
   return titles.reduce((widest, title) =>
-    theWidthOfWords(title, 'headline-md') > theWidthOfWords(widest, 'headline-md') ? title : widest,
+    theWidthOfWords(title, theTitleRole) > theWidthOfWords(widest, theTitleRole) ? title : widest,
   );
 }
 
@@ -164,7 +167,7 @@ function theHeaderIn(phone: Phone, language: Language): MeasuredWordRow {
   return theHeader(phone, {
     earlier: theWidthOfWords(theWordFor('onboarding.lastPeriod.earlier', language), 'body-sm'),
     later: theWidthOfWords(theWordFor('onboarding.lastPeriod.later', language), 'body-sm'),
-    title: theWidthOfWords(theWidestTitleIn(language), 'headline-md'),
+    title: theWidthOfWords(theWidestTitleIn(language), theTitleRole),
   });
 }
 
@@ -217,7 +220,7 @@ describe('the month title never touches the way to another month', () => {
     );
 
     it.each(everyPhoneAndLanguage)(
-      'gives up its own width and leaves both pills theirs on $phone.name reading $language',
+      'never takes more than its own width and leaves both pills theirs on $phone.name reading $language',
       async ({ phone, language }) => {
         await sheReachesHerLastPeriod();
 
@@ -227,7 +230,9 @@ describe('the month title never touches the way to another month', () => {
             theWidthOfWords(theWordFor(key, language), 'body-sm') + thePillAroundTheWords,
           );
 
-        expect(title).toBeLessThan(theWidthOfWords(theWidestTitleIn(language), 'headline-md'));
+        expect(title).toBeLessThanOrEqual(
+          toATenthOfAPoint(theWidthOfWords(theWidestTitleIn(language), theTitleRole)),
+        );
         expect(earlier).toBe(pill('onboarding.lastPeriod.earlier'));
         expect(later).toBe(pill('onboarding.lastPeriod.later'));
       },

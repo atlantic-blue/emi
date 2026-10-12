@@ -7,13 +7,12 @@ import {
   laterMonthTestID,
   monthTestID,
 } from '../../src/features/onboarding/Calendar';
-import { LastPeriod, namedDayTestID } from '../../src/features/onboarding/LastPeriod';
+import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import { longestLookBackDays } from '../../src/features/onboarding/firstRun';
 
 /** Well away from any summer time change, so the grid below reads the same in any timezone. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = '2026-05-14';
-const yesterday = '2026-05-13';
 const tomorrow = '2026-05-15';
 /** The oldest day the first run accepts, ninety days back, and the day before it. */
 const oldest = '2026-02-13';
@@ -180,31 +179,12 @@ describe('she picks the day her last period started from a month calendar', () =
     });
   });
 
-  describe('the two answers she gives most often', () => {
-    it('names today and yesterday, so she does not count squares', async () => {
+  describe('the named days the redesign took away', () => {
+    it('offers no Today and no Yesterday beside the month, only its squares', async () => {
       await sheOpensTheCalendar();
 
-      expect(screen.getByTestId(namedDayTestID(today))).toHaveTextContent('Today');
-      expect(screen.getByTestId(namedDayTestID(yesterday))).toHaveTextContent('Yesterday');
-    });
-
-    it('answers with the same day the square under it would', async () => {
-      const painted = await sheOpensTheCalendar();
-
-      await shePresses(namedDayTestID(yesterday));
-
-      expect(painted.chose).toHaveBeenCalledWith(yesterday);
-    });
-
-    it('is marked when she has chosen that day', async () => {
-      await sheOpensTheCalendar(today);
-
-      expect(screen.getByTestId(namedDayTestID(today)).props.accessibilityState).toMatchObject({
-        selected: true,
-      });
-      expect(screen.getByTestId(namedDayTestID(yesterday)).props.accessibilityState).toMatchObject({
-        selected: false,
-      });
+      expect(screen.queryByText('Yesterday')).toBeNull();
+      expect(screen.queryAllByTestId(/^named-day-/)).toHaveLength(0);
     });
   });
 
@@ -219,7 +199,7 @@ describe('she picks the day her last period started from a month calendar', () =
     it('gives every square the role of a choice in a set', async () => {
       await sheOpensTheCalendar();
 
-      expect(screen.getAllByRole('radio')).toHaveLength(31 + 2);
+      expect(screen.getAllByRole('radio')).toHaveLength(31);
     });
   });
 });

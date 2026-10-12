@@ -623,7 +623,7 @@ Feature: She opens Emi and logs her first period
     When she opens Emi, reads the welcome, skips the tour, and gives her name
     Then the question after it asks the year plainly, as the redesign draws it
     And a woman who gives no name reads the same question, with no gap where a name would be
-    And picking that her cycle moves around answers her with the reply to that answer
+    And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
     And every question that keeps an answer carries a line about her privacy, in all three languages
 
   Scenario: SCREEN-1, her first forecast is addressed to her

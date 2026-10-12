@@ -21,6 +21,7 @@ import {
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { learningRangeTestID, learningTestID } from '../../src/features/forecast/Learning';
@@ -43,6 +44,7 @@ import {
   describeSingleDayUse,
   singleDayUsesUnder,
 } from '../../../../tools/pipeline/singleDayForecast';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -115,14 +117,15 @@ async function sheReachesHerFirstForecast(
   await shePresses(onboardingActionTestID);
 
   if (answers.periodBeforeStartedOn === undefined) {
-    await shePresses(onboardingSkipTestID);
+    await shePresses(onboardingWayPastTestID);
   } else {
     await shePresses(dayTestID(answers.periodBeforeStartedOn));
     await shePresses(onboardingActionTestID);
   }
 
+  await shePresses(cycleLengthDaysTestID(answers.cycleLengthDays ?? herCycleLengthDays));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);

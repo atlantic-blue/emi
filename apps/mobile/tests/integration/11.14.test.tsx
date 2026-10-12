@@ -12,6 +12,7 @@ import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import type { Language } from '../../src/language';
 import { english } from '../../src/language/english';
@@ -40,14 +41,17 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const herPeriodStarted = '2026-05-09';
 
-const theKeyOfThePrivacyLine = 'onboarding.onlyYou';
+const theKeyOfThePrivacyLine = 'onboarding.encrypts';
 
-/** The one line the five questions that keep an answer all read, in each language. */
+/** The line the redesign draws at the foot of this question, in each language. */
 const thePrivacyLine: Readonly<Record<Language, string>> = {
-  en: 'Only you can read this.',
-  es: 'Solo tú puedes leer esto.',
-  ru: 'Это можете прочитать только вы.',
+  en: 'Emi encrypts this on the phone before it goes anywhere.',
+  es: 'Emi lo cifra en el teléfono antes de que vaya a ningún sitio.',
+  ru: 'Emi шифрует это на телефоне, прежде чем оно куда-либо отправится.',
 };
+
+/** The line this question carried above the days before the redesign moved it. */
+const theOldPrivacyLine = 'Only you can read this.';
 
 interface Instance {
   readonly type: unknown;
@@ -138,7 +142,7 @@ async function theScreenOnAnIPhone16(): Promise<PlacedBox[]> {
   return drawn;
 }
 
-describe('she reads that Emi encrypts her last period before she chooses the day', () => {
+describe('she reads that Emi encrypts her last period at the foot of the sheet', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -152,17 +156,33 @@ describe('she reads that Emi encrypts her last period before she chooses the day
   });
 
   describe('the order she reads the screen in', () => {
-    it('says what Emi does with the day before it draws the days', async () => {
+    it('draws the days first and says what Emi does with the day under them', async () => {
       await sheReachesHerLastPeriod();
 
       const drawn = theOrderOfTheScreen();
 
-      expect(whereTheWordsAre(drawn, thePrivacyLine.en)).toBeLessThan(
+      expect(whereTheWordsAre(drawn, thePrivacyLine.en)).toBeGreaterThan(
         whereTheBoxNamed(drawn, calendarTestID),
       );
     });
 
-    it('still takes the day she picks after she has read it', async () => {
+    it('puts the line over the way past and the button, where the redesign draws it', async () => {
+      await sheReachesHerLastPeriod();
+
+      const drawn = theOrderOfTheScreen();
+      const line = whereTheWordsAre(drawn, thePrivacyLine.en);
+
+      expect(line).toBeLessThan(whereTheBoxNamed(drawn, onboardingWayPastTestID));
+      expect(line).toBeLessThan(whereTheBoxNamed(drawn, onboardingActionTestID));
+    });
+
+    it('no longer says the old line above the days', async () => {
+      await sheReachesHerLastPeriod();
+
+      expect(screen.queryByText(theOldPrivacyLine)).toBeNull();
+    });
+
+    it('still takes the day she picks', async () => {
       await sheReachesHerLastPeriod();
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
@@ -172,19 +192,20 @@ describe('she reads that Emi encrypts her last period before she chooses the day
   });
 
   describe('what she is shown on the glass of an iPhone 16', () => {
-    it('ends the line about encryption above the foot of what she is shown', async () => {
+    it('keeps the line out of the part that scrolls, so it is always in view', async () => {
       const drawn = await theScreenOnAnIPhone16();
       const line = theBoxSaying(drawn, thePrivacyLine.en);
       const shown = theOnlyBoxOfType(drawn, scrollingView);
 
-      expect(line.top + line.height).toBeLessThanOrEqual(shown.top + shown.height);
+      expect(line.top).toBeGreaterThanOrEqual(shown.top + shown.height);
     });
 
-    it('draws the calendar under it, where she reaches it by reading on', async () => {
+    it('draws the calendar above it', async () => {
       const drawn = await theScreenOnAnIPhone16();
       const line = theBoxSaying(drawn, thePrivacyLine.en);
+      const calendar = theBoxNamed(drawn, calendarTestID);
 
-      expect(theBoxNamed(drawn, calendarTestID).top).toBeGreaterThanOrEqual(line.top + line.height);
+      expect(calendar.top).toBeLessThan(line.top);
     });
   });
 

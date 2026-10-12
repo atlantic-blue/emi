@@ -16,6 +16,7 @@ import { focusTestID } from '../../src/features/onboarding/Focus';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy, focusNamesInASentence } from '../../src/features/onboarding/copy';
 import { answerSaveTestID, answerScreenTestID } from '../../src/features/settings/AnswerScreen';
@@ -42,6 +43,7 @@ import { theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn } from '../fixtures/renderedText';
 import { sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -138,9 +140,10 @@ async function sheReachesTheFocus(): Promise<{ pathname: () => string }> {
   await shePresses(onboardingSkipTestID);
   await shePresses(dayTestID(herPeriodStarted));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
+  await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);

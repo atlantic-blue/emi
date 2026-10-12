@@ -34,6 +34,7 @@ import { firstForecastActionTestID } from '../../src/features/onboarding/FirstFo
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy, goalLabels } from '../../src/features/onboarding/copy';
 import {
@@ -50,6 +51,7 @@ import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixture
 import { sizedTextIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -136,9 +138,10 @@ async function sheReachesTheGoals(): Promise<void> {
   await shePresses(onboardingSkipTestID);
   await shePresses(dayTestID(herPeriodStarted));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
+  await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
 }
@@ -206,9 +209,10 @@ describe('the fertile window shows only for her who asked for it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(feelingTestID('hard'));
       await shePresses(onboardingActionTestID);

@@ -15,6 +15,7 @@ import {
   onboardingSheetTestID,
   onboardingStepLabelTestID,
   onboardingTitleTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy, firstRunScreens, stepLabel } from '../../src/features/onboarding/copy';
 import {
@@ -85,11 +86,17 @@ describe('the first run screens match the redesign prototype', () => {
     });
 
     it('says which part each screen draws out of place, so a silent gap cannot hide in the count', async () => {
+      await sheIsLookingAt('periodLength');
+
+      expect(whatTheScreenDoesNotAnswerFor('periodLength')).toContain(
+        `the drawing names OnboardingScreen, built under ${onboardingTitleTestID} or ${onboardingLinesTestID}, and the screen draws none of them after ${onboardingWayPastTestID}`,
+      );
+    });
+
+    it('draws the lines of the last period under the days, where the drawing puts them', async () => {
       await sheIsLookingAt('lastPeriod');
 
-      expect(whatTheScreenDoesNotAnswerFor('lastPeriod')).toEqual([
-        `the drawing names OnboardingScreen, built under ${onboardingTitleTestID} or ${onboardingLinesTestID}, and the screen draws none of them after calendar`,
-      ]);
+      expect(whatTheScreenDoesNotAnswerFor('lastPeriod')).toEqual([]);
     });
   });
 
@@ -212,6 +219,7 @@ describe('the first run screens match the redesign prototype', () => {
     const thePromiseOn: Readonly<Partial<Record<string, string>>> = {
       name: firstRunCopy.encrypts,
       yearOfBirth: firstRunCopy.encrypts,
+      lastPeriod: firstRunCopy.encrypts,
     };
 
     for (const drawing of theQuestionsThatPromiseHerPrivacy) {

@@ -1,59 +1,53 @@
 import type { ReactNode } from 'react';
 
-import {
-  Stepper,
-  stepperDownTestID,
-  stepperReadingTestID,
-  stepperUpTestID,
-} from '../../components/Stepper';
+import { NumberWheel } from '../../components/NumberWheel';
 import { OnboardingScreen } from './OnboardingScreen';
 import { cycleLengthDaysLabel, firstRunCopy } from './copy';
-import { maximumCycleLengthDays, minimumCycleLengthDays } from './firstRun';
+import { cycleLengthsOffered, defaultCycleLengthDays } from './firstRun';
 
-export const cycleLengthStepperTestID = 'cycle-length';
-export const shorterTestID = stepperDownTestID(cycleLengthStepperTestID);
-export const longerTestID = stepperUpTestID(cycleLengthStepperTestID);
-export const cycleLengthTestID = stepperReadingTestID(cycleLengthStepperTestID);
+export const cycleLengthWheelTestID = 'cycle-length-wheel';
+export const cycleLengthPillTestID = 'cycle-length-pill';
+
+/** The row for one length, named so a test presses the length rather than a place on the wheel. */
+export function cycleLengthDaysTestID(days: number): string {
+  return `cycle-length-${days}`;
+}
 
 interface Props {
-  readonly days: number;
-  readonly onChange: (days: number) => void;
+  /** Nothing at all until she turns the wheel or taps a length. */
+  readonly chosen: number | undefined;
+  readonly onChoose: (days: number) => void;
   readonly onDone: () => void;
   readonly onBack: () => void;
 }
 
 /**
- * The last of the three questions, and the answer the first forecast is made from.
+ * How long her cycle runs, roughly, picked on a wheel that holds every length Emi accepts.
  *
- * The number is the largest thing on the screen because it is the answer, and it is set in the
- * monospaced face so a digit does not shift sideways as she presses.
- *
- * Done writes nothing. It carries her to the hold, which is the one moment the first run writes,
- * so Done stays available: she can come back to this question from the hold and go on again.
+ * The wheel opens on 28 days, but that is a place to start and not an answer: Done waits until she
+ * turns the wheel or taps a length, so Emi never keeps a length she did not give.
  */
-export function CycleLength({ days, onChange, onDone, onBack }: Props): ReactNode {
+export function CycleLength({ chosen, onChoose, onDone, onBack }: Props): ReactNode {
   return (
     <OnboardingScreen
+      actionIsReady={chosen !== undefined}
       actionLabel={firstRunCopy.cycleLength.action}
       lines={firstRunCopy.cycleLength.lines}
+      linesAlign="center"
       onAction={onDone}
       onBack={onBack}
       screen="cycleLength"
       title={firstRunCopy.cycleLength.title}
     >
-      <Stepper
-        canGoDown={days > minimumCycleLengthDays}
-        canGoUp={days < maximumCycleLengthDays}
-        downLabel={firstRunCopy.shorter}
-        onDown={() => {
-          onChange(days - 1);
-        }}
-        onUp={() => {
-          onChange(days + 1);
-        }}
-        reading={cycleLengthDaysLabel(days)}
-        testID={cycleLengthStepperTestID}
-        upLabel={firstRunCopy.longer}
+      <NumberWheel
+        chosen={chosen}
+        labelOf={cycleLengthDaysLabel}
+        onChoose={onChoose}
+        opensOn={defaultCycleLengthDays}
+        pillTestID={cycleLengthPillTestID}
+        testID={cycleLengthWheelTestID}
+        testIDOf={cycleLengthDaysTestID}
+        values={cycleLengthsOffered}
       />
     </OnboardingScreen>
   );

@@ -17,6 +17,7 @@ import {
   onboardingActionTestID,
   onboardingBackTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { YEAR_ROW_HEIGHT, yearTestID, yearWheelTestID } from '../../src/components/YearWheel';
 import { firstRunCopy, nameTooLongLine } from '../../src/features/onboarding/copy';
@@ -34,6 +35,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -255,9 +257,10 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(`day-${herPeriodStarted}`);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
@@ -280,9 +283,10 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(`day-${herPeriodStarted}`);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);

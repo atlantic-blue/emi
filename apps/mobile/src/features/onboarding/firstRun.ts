@@ -44,10 +44,26 @@ export const minimumPeriodLengthDays = shortestPeriodLengthDays;
 export const maximumPeriodLengthDays = longestPeriodLengthDays;
 
 /**
- * Days. The number the stepper opens on, which is the middle of the range most periods fall in
- * rather than an average Emi has measured.
+ * Days. The number the wheel opens on, which is the middle of the range most periods fall in
+ * rather than an average Emi has measured. It is a place to start, never an answer.
  */
 export const defaultPeriodLengthDays = 5;
+
+function everyDayBetween(from: number, to: number): readonly number[] {
+  return Array.from({ length: to - from + 1 }, (_unused, at) => from + at);
+}
+
+/** Every cycle length the wheel offers, shortest first, which is every length the hold accepts. */
+export const cycleLengthsOffered: readonly number[] = everyDayBetween(
+  minimumCycleLengthDays,
+  maximumCycleLengthDays,
+);
+
+/** Every period length the wheel offers, shortest first, which is every length the hold accepts. */
+export const periodLengthsOffered: readonly number[] = everyDayBetween(
+  minimumPeriodLengthDays,
+  maximumPeriodLengthDays,
+);
 
 /** She picks a start day from this many days back, and can edit any older day once she is inside. */
 export const longestLookBackDays = 90;
@@ -125,7 +141,8 @@ export interface FirstRunAnswers {
    * days she gives it and never from a day it chose, so nothing stands in for this one.
    */
   readonly periodStartedOn?: string;
-  readonly cycleLengthDays: number;
+  /** How long she says her cycle runs. Left out only where no length was picked on the wheel. */
+  readonly cycleLengthDays?: number;
   /**
    * The start before that one, left out where she does not remember it. Where she gives it, the
    * two starts are one cycle she lived, which is worth more than the length she estimated.
@@ -375,7 +392,10 @@ export function forecastFromHerAnswers(answers: HerForecastAnswers): ForecastRes
       : [{ day: answers.periodStartedOn, flow: firstRunFlow }]),
   ];
 
-  return forecastFrom(cyclesFrom(days), { statedCycleLengthDays: answers.cycleLengthDays });
+  return forecastFrom(
+    cyclesFrom(days),
+    answers.cycleLengthDays === undefined ? {} : { statedCycleLengthDays: answers.cycleLengthDays },
+  );
 }
 
 /** Her day is sealed under one of these and her answers under the other, both under her one key. */
@@ -415,7 +435,7 @@ function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
     kind: 'profile',
     ...(answers.name === undefined ? {} : { name: answers.name }),
     ...(answers.birthYear === undefined ? {} : { birthYear: answers.birthYear }),
-    cycleLengthDays: answers.cycleLengthDays,
+    ...(answers.cycleLengthDays === undefined ? {} : { cycleLengthDays: answers.cycleLengthDays }),
     ...(answers.periodLengthDays === undefined
       ? {}
       : { periodLengthDays: answers.periodLengthDays }),
@@ -467,7 +487,7 @@ export function completeFirstRun(
       `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days, and ${answers.periodBeforeStartedOn} is ${daysBetween(answers.periodBeforeStartedOn, theDaySheGave)} days before ${theDaySheGave}`,
     );
   }
-  if (!cycleLengthIsInRange(answers.cycleLengthDays)) {
+  if (answers.cycleLengthDays !== undefined && !cycleLengthIsInRange(answers.cycleLengthDays)) {
     throw new FirstRunError(
       'cycle-length-is-out-of-range',
       `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days, this one is ${answers.cycleLengthDays}`,

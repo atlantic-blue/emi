@@ -14,7 +14,7 @@ import {
   firstForecastActionTestID,
   firstForecastTestID,
 } from '../../src/features/onboarding/FirstForecast';
-import { longerTestID } from '../../src/features/onboarding/CycleLength';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { HOLD_MILLISECONDS } from '../../src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
@@ -30,6 +30,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { sheHoldsTheRing } from '../fixtures/theHold';
+import { shePassesTheQuestion } from '../fixtures/theFirstRun';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -99,14 +100,12 @@ async function sheReachesTheQuestionSheCannotAnswer(): Promise<void> {
  * The length is the one answer she gives, so a profile that reads back holds something of hers.
  */
 async function sheAnswersTheRest(feelsToday: readonly TodaySymptom[] = []): Promise<void> {
-  for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
-    await shePresses(longerTestID);
-  }
+  await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
   await shePresses(onboardingActionTestID);
 
   for (let question = 1; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
-    await shePresses(onboardingSkipTestID);
+    await shePassesTheQuestion();
   }
 
   if (feelsToday.length === 0) {
@@ -236,14 +235,11 @@ describe('the way past the last period question passes the period before with it
       await sheReachesTheQuestionSheCannotAnswer();
       await shePresses(onboardingWayPastTestID);
 
-      for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
-        await shePresses(longerTestID);
-      }
-
+      await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
       await shePresses(onboardingActionTestID);
 
       for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
-        await shePresses(onboardingSkipTestID);
+        await shePassesTheQuestion();
       }
 
       expect(app.pathname()).not.toBe('/onboarding/last-period');

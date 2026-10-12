@@ -11,17 +11,14 @@ import {
 import { interfaceClaimsIn } from '../../../../tools/pipeline/interfaceClaims';
 import { type Language, type Words, catalogueOf, languages, wordKeys } from '../../src/language';
 import { Feeling, feelingReplyTestID, feelingTestID } from '../../src/features/onboarding/Feeling';
-import {
-  Regularity,
-  regularityReplyTestID,
-  regularityTestID,
-} from '../../src/features/onboarding/Regularity';
+import { Regularity } from '../../src/features/onboarding/Regularity';
 import { Today } from '../../src/features/onboarding/Today';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
   onboardingTitleTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { nameFieldTestID } from '../../src/features/onboarding/HerName';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
@@ -33,6 +30,7 @@ import { writeSetting } from '../../src/data/settingRepository';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { OnAPhone } from '../fixtures/theSafeArea';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -70,12 +68,12 @@ const theLastQuestion = {
   plain: 'How are you feeling today?',
 };
 
-/** What each thing she can say about her cycle is answered with. */
-const theRepliesAboutHerCycle = {
-  regular: "Good to know. We'll still show a range, because even regular cycles move a little.",
-  moves: "That's common. We'll start with a wider range and narrow it as we learn yours.",
-  unknown: "That's fine. Your log will tell us soon enough.",
-} as const;
+/** What the question about her cycle answered her with, before the redesign took the reply away. */
+const theOldRepliesAboutHerCycle: readonly string[] = [
+  "Good to know. We'll still show a range, because even regular cycles move a little.",
+  "That's common. We'll start with a wider range and narrow it as we learn yours.",
+  "That's fine. Your log will tell us soon enough.",
+];
 
 /** What each thing she can say about how she feels is answered with. */
 const theRepliesAboutHowSheFeels = {
@@ -108,9 +106,9 @@ const theKeysThatWent: readonly string[] = [
 
 /** The answers she picks from on the two questions that answer her, in her own words. */
 const theAnswersAboutHerCycle: readonly string[] = [
-  'Yes, pretty much',
-  'No, it moves around',
-  "I'm not sure yet",
+  'Yes, most months',
+  'No, it moves',
+  'I do not know yet',
 ];
 
 const theAnswersAboutHowSheFeels: readonly string[] = [
@@ -147,12 +145,15 @@ const theGreeting = 'onboarding.welcome.title';
 
 /**
  * The screens the redesign has redrawn are written as the design writes them, and the design names
- * Emi in them by name: the welcome, the question about her name, and the line about encryption.
+ * Emi in them by name: the welcome, the question about her name, the line about encryption, and
+ * the lines under her period length and her regularity.
  */
 const theWelcomeNamingEmi = [
   theKeyOfTheLineAboutEncryption,
   'onboarding.name.line.greets',
   'onboarding.name.title',
+  'onboarding.periodLength.line.logged',
+  'onboarding.regularity.line.explains',
   'onboarding.welcome.line.noAccount',
   'onboarding.welcome.line.whatEmiIs',
   theGreeting,
@@ -236,9 +237,10 @@ async function sheWalksTo(
   await shePresses(onboardingActionTestID);
   await shePresses(dayTestID(herPeriodStarted));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
+  await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
 
   if (question === 'regularity') {
     return whereSheIs;
@@ -369,12 +371,12 @@ describe('the first run questions use her name and reply to her answers', () => 
   });
 
   describe('the reply under the answers', () => {
-    for (const [answer, reply] of Object.entries(theRepliesAboutHerCycle)) {
-      it(`answers "${answer}" about her cycle, and says none of the other replies`, async () => {
+    for (const answer of ['regular', 'moves', 'unknown'] as const) {
+      it(`says nothing back about her cycle once she picks "${answer}", as the redesign draws it`, async () => {
         await render(
           <OnAPhone>
             <Regularity
-              chosen={answer as keyof typeof theRepliesAboutHerCycle}
+              chosen={answer}
               onBack={() => undefined}
               onChoose={() => undefined}
               onContinue={() => undefined}
@@ -383,12 +385,10 @@ describe('the first run questions use her name and reply to her answers', () => 
           </OnAPhone>,
         );
 
-        expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(reply);
+        expect(screen.queryByTestId('regularity-reply')).toBeNull();
         expect(
-          Object.values(theRepliesAboutHerCycle).filter(
-            (each) => screen.queryByText(each) !== null,
-          ),
-        ).toEqual([reply]);
+          theOldRepliesAboutHerCycle.filter((each) => screen.queryByText(each) !== null),
+        ).toEqual([]);
       });
     }
 
@@ -415,22 +415,6 @@ describe('the first run questions use her name and reply to her answers', () => 
       });
     }
 
-    it('says nothing about her cycle until she picks, because a reply to nothing is Emi talking to itself', async () => {
-      await render(
-        <OnAPhone>
-          <Regularity
-            chosen={undefined}
-            onBack={() => undefined}
-            onChoose={() => undefined}
-            onContinue={() => undefined}
-            onSkip={() => undefined}
-          />
-        </OnAPhone>,
-      );
-
-      expect(screen.queryByTestId(regularityReplyTestID)).toBeNull();
-    });
-
     it('says nothing about how she feels until she picks, for the same reason', async () => {
       await render(
         <OnAPhone>
@@ -447,31 +431,8 @@ describe('the first run questions use her name and reply to her answers', () => 
       expect(screen.queryByTestId(feelingReplyTestID)).toBeNull();
     });
 
-    it('answers the answer she holds now, so changing her mind changes the reply', async () => {
-      const app = await sheWalksTo('regularity');
-
-      expect(app.getPathname()).toBe('/onboarding/regularity');
-
-      await shePresses(regularityTestID('moves'));
-
-      expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(
-        theRepliesAboutHerCycle.moves,
-      );
-
-      await shePresses(regularityTestID('regular'));
-
-      expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(
-        theRepliesAboutHerCycle.regular,
-      );
-      expect(screen.queryByText(theRepliesAboutHerCycle.moves)).toBeNull();
-      expect(screen.getByTestId(regularityTestID('moves'))).not.toBeChecked();
-    });
-
     it('is written in every language, and never the English reply left behind', () => {
       const keys = [
-        ...Object.keys(theRepliesAboutHerCycle).map(
-          (answer) => `onboarding.regularity.reply.${answer}`,
-        ),
         ...Object.keys(theRepliesAboutHowSheFeels).map(
           (answer) => `onboarding.feeling.reply.${answer}`,
         ),
@@ -490,7 +451,7 @@ describe('the first run questions use her name and reply to her answers', () => 
         });
       }
 
-      expect(keys).toHaveLength(6);
+      expect(keys).toHaveLength(3);
     });
   });
 

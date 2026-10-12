@@ -45,7 +45,7 @@ export const firstRunCopy = {
   },
   lastPeriod: {
     title: words('onboarding.lastPeriod.title'),
-    lines: [words('onboarding.lastPeriod.line.remember'), words('onboarding.onlyYou')],
+    lines: [words('onboarding.lastPeriod.line.remember'), words('onboarding.encrypts')],
     action: words('onboarding.lastPeriod.action'),
     /**
      * The sentence the question about the period before already offers, under the same key. Two
@@ -56,6 +56,7 @@ export const firstRunCopy = {
   },
   periodBefore: {
     title: words('onboarding.periodBefore.title'),
+    question: words('onboarding.periodBefore.question'),
     lines: [words('onboarding.periodBefore.line.remember')],
     action: words('onboarding.periodBefore.action'),
     skip: words('onboarding.periodBefore.skip'),
@@ -68,7 +69,10 @@ export const firstRunCopy = {
     title: words('onboarding.cycleLength.title'),
     lines: [
       words('onboarding.cycleLength.line.count'),
-      words('onboarding.cycleLength.line.corrects'),
+      words('onboarding.cycleLength.line.held', undefined, {
+        maximum: maximumCycleLengthDays,
+        minimum: minimumCycleLengthDays,
+      }),
     ],
     action: words('onboarding.cycleLength.action'),
   },
@@ -188,16 +192,6 @@ export const regularityLabels: Readonly<Record<Regularity, string>> = {
   unknown: words('onboarding.regularity.choice.unknown'),
 };
 
-/**
- * What Emi says back when she picks one. Her answer moves one sentence under the forecast, so the
- * reply says that and never that the range itself changes.
- */
-export const regularityReplies: Readonly<Record<Regularity, string>> = {
-  regular: words('onboarding.regularity.reply.regular'),
-  moves: words('onboarding.regularity.reply.moves'),
-  unknown: words('onboarding.regularity.reply.unknown'),
-};
-
 /** The order the screen offers them in, which the record above cannot carry. */
 export const regularityChoices: readonly Regularity[] = regularityValues;
 
@@ -311,11 +305,6 @@ export function periodLengthDaysLabel(days: number): string {
 /** Why the name she typed is refused, which names the bound rather than repeating the number. */
 export function nameTooLongLine(characters: number): string {
   return words('onboarding.name.tooLong', characters);
-}
-
-/** The cycle she lived, counted between the two starts she gave. */
-export function daysBetweenSentence(days: number): string {
-  return words('onboarding.periodBefore.between', days);
 }
 
 /** The last question, which asks about her day, so it asks her by name where she gave one. */

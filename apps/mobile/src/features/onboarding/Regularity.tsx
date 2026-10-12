@@ -1,19 +1,16 @@
 import type { Regularity as HowSteadyItIs } from '@emi/crypto';
-import { colour, space, textStyle } from '@emi/tokens';
+import { space } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { SingleChoiceRow } from '../../components/ChoiceRow';
 import { OnboardingScreen } from './OnboardingScreen';
-import { firstRunCopy, regularityChoices, regularityLabels, regularityReplies } from './copy';
+import { firstRunCopy, regularityChoices, regularityLabels } from './copy';
 
 /** The row for one answer, named so a test presses the answer rather than a position in a list. */
 export function regularityTestID(answer: HowSteadyItIs): string {
   return `regularity-${answer}`;
 }
-
-/** The line her answer is answered on, named so a test reads the reply and not a position. */
-export const regularityReplyTestID = 'regularity-reply';
 
 interface Props {
   /** Nothing at all until she picks, because the screen opens on no answer of its own. */
@@ -38,6 +35,7 @@ export function Regularity({ chosen, onChoose, onContinue, onBack, onSkip }: Pro
       actionIsReady={chosen !== undefined}
       actionLabel={firstRunCopy.regularity.action}
       lines={firstRunCopy.regularity.lines}
+      linesAlign="center"
       onAction={onContinue}
       onBack={onBack}
       onSkip={onSkip}
@@ -56,21 +54,11 @@ export function Regularity({ chosen, onChoose, onContinue, onBack, onSkip }: Pro
             testID={regularityTestID(answer)}
           />
         ))}
-        {chosen === undefined ? null : (
-          <Text style={styles.reply} testID={regularityReplyTestID}>
-            {regularityReplies[chosen]}
-          </Text>
-        )}
       </View>
     </OnboardingScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  reply: {
-    color: colour.secondaryText,
-    ...textStyle('body-sm'),
-    paddingHorizontal: space.spaceXs,
-  },
   rows: { gap: space.spaceSm },
 });

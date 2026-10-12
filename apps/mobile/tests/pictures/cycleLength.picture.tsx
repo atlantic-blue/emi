@@ -4,13 +4,13 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { CycleLength } from '../../src/features/onboarding/CycleLength';
 import {
   defaultCycleLengthDays,
-  minimumCycleLengthDays,
+  maximumCycleLengthDays,
 } from '../../src/features/onboarding/firstRun';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 
 /**
- * The last question of the first run, drawn at the three states of its stepper. The bounds come
+ * The cycle length question of the first run, drawn at three states of its wheel. The bounds come
  * from the module the screen itself reads, so a change to what a cycle may be changes the picture.
  *
  * It is not part of the suite: the file is named for a picture rather than for a test, and the
@@ -29,24 +29,24 @@ const theCaveat = [
 interface State {
   readonly title: string;
   readonly note: string;
-  readonly days: number;
+  readonly chosen: number | undefined;
 }
 
 const theStates: readonly State[] = [
   {
-    title: 'The number it starts on',
-    note: `${defaultCycleLengthDays} days, which is the one she changes rather than the one she is told.`,
-    days: defaultCycleLengthDays,
+    title: 'The number it opens on',
+    note: `${defaultCycleLengthDays} days in the middle, chosen by nobody, so Done waits.`,
+    chosen: undefined,
   },
   {
-    title: 'Three presses longer',
-    note: 'One press moves one day, so the number is hers and not a list she picks from.',
-    days: defaultCycleLengthDays + 3,
+    title: 'Two days longer, chosen',
+    note: 'The length she picked reads with its unit, and Done takes her on.',
+    chosen: defaultCycleLengthDays + 2,
   },
   {
-    title: 'At the shortest cycle Emi takes',
-    note: `${minimumCycleLengthDays} days. The minus is spent and takes no press.`,
-    days: minimumCycleLengthDays,
+    title: 'At the longest cycle Emi takes',
+    note: `${maximumCycleLengthDays} days. The wheel holds nothing past it.`,
+    chosen: maximumCycleLengthDays,
   },
 ];
 
@@ -54,9 +54,9 @@ async function drawn(state: State): Promise<DrawnScreen> {
   const view = await render(
     <OnAPhone>
       <CycleLength
-        days={state.days}
+        chosen={state.chosen}
         onBack={() => undefined}
-        onChange={() => undefined}
+        onChoose={() => undefined}
         onDone={() => undefined}
       />
     </OnAPhone>,

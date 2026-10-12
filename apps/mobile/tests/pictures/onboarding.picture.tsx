@@ -14,10 +14,6 @@ import { Regularity } from '../../src/features/onboarding/Regularity';
 import { Today } from '../../src/features/onboarding/Today';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
-import {
-  defaultCycleLengthDays,
-  defaultPeriodLengthDays,
-} from '../../src/features/onboarding/firstRun';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { iPhone16Size } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
@@ -101,7 +97,7 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Five of twelve',
-    note: 'The period before that one, picked twenty eight days back, with the cycle it makes said\n      under the month. She may leave this one unanswered.',
+    note: 'The period before that one, picked twenty eight days back. She may leave this one\n      unanswered with the link over the button.',
     element: (
       <PeriodBefore
         chosen="2026-04-13"
@@ -116,12 +112,12 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Six of twelve',
-    note: 'The answer the first forecast is made from.',
+    note: 'The length the first forecast is counted with, on a wheel that opens on 28 days and\n      keeps nothing until she turns it or taps a length.',
     element: (
       <CycleLength
-        days={defaultCycleLengthDays}
+        chosen={undefined}
         onBack={() => undefined}
-        onChange={() => undefined}
+        onChoose={() => undefined}
         onDone={() => undefined}
       />
     ),
@@ -131,9 +127,9 @@ const theScreens: readonly Screen[] = [
     note: 'It is what the period arc is drawn at until she logs a period end of her own, and she\n      may answer that she is not sure.',
     element: (
       <PeriodLength
-        days={defaultPeriodLengthDays}
+        chosen={undefined}
         onBack={() => undefined}
-        onChange={() => undefined}
+        onChoose={() => undefined}
         onDone={() => undefined}
         onNotSure={() => undefined}
       />
@@ -141,7 +137,7 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Eight of twelve',
-    note: 'Three rows, none of them chosen for her until she presses one, and a reply under them\n      once she has. It moves one sentence under the forecast and never the range.',
+    note: 'Three rows, none of them chosen for her until she presses one. It moves one sentence\n      under the forecast and never the range.',
     element: (
       <Regularity
         chosen="moves"

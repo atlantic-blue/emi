@@ -13,6 +13,7 @@ import {
   onboardingBackTestID,
   onboardingProgressTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import {
   type FirstRunScreen,
@@ -25,6 +26,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { theScreensWithNoBar } from '../fixtures/theFirstRunLook';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sizedTextIn } from '../fixtures/renderedText';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -188,11 +190,16 @@ describe('the last period is the one question she cannot skip', () => {
         if (where === 'lastPeriod') {
           await shePresses(dayTestID(herPeriodStarted));
         }
+        if (where === 'cycleLength') {
+          await shePresses(cycleLengthDaysTestID(28));
+        }
         if (at + 1 < firstRunScreens.length) {
           // The way past a question where it has one, and the answer where it does not, which
-          // is the last period and the welcome.
+          // is the last period, the cycle length and the welcome.
           const skip = screen.queryByTestId(onboardingSkipTestID);
-          await fireEvent.press(skip ?? screen.getByTestId(onboardingActionTestID));
+          const wayPast =
+            where === 'lastPeriod' ? null : screen.queryByTestId(onboardingWayPastTestID);
+          await fireEvent.press(skip ?? wayPast ?? screen.getByTestId(onboardingActionTestID));
         }
       }
 

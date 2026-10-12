@@ -11,14 +11,15 @@ import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
+import { WHEEL_ROW_HEIGHT } from '../../src/components/NumberWheel';
 import {
-  fewerDaysTestID,
-  moreDaysTestID,
-  periodLengthTestID,
+  periodLengthDaysTestID,
+  periodLengthWheelTestID,
 } from '../../src/features/onboarding/PeriodLength';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy, periodLengthDaysLabel } from '../../src/features/onboarding/copy';
 import {
@@ -37,6 +38,7 @@ import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/her
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -111,13 +113,9 @@ async function sheReachesThePeriodLength(): Promise<void> {
   await shePresses(onboardingSkipTestID);
   await shePresses(dayTestID(herPeriodStarted));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
+  await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
-}
-
-/** What she reads on the stepper, which is the answer this question is asking for. */
-function theStepperReads(): string {
-  return String(screen.getByTestId(periodLengthTestID).props.children);
 }
 
 const centre = RING_DIAMETER / 2;
@@ -199,50 +197,68 @@ describe('the period arc follows what she said until she logs her own', () => {
       theTourIsBehindHer();
     });
 
-    it('opens on five days and moves one day at a time', async () => {
+    it('opens the wheel on five days, with nothing chosen and Done waiting', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesThePeriodLength();
 
       expect(app.pathname()).toBe('/onboarding/period-length');
-      expect(theStepperReads()).toBe(periodLengthDaysLabel(defaultPeriodLengthDays));
+      expect(
+        screen.getByTestId(periodLengthDaysTestID(defaultPeriodLengthDays)),
+      ).not.toBeSelected();
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
 
-      await shePresses(moreDaysTestID);
+      await shePresses(onboardingActionTestID);
 
-      expect(theStepperReads()).toBe(periodLengthDaysLabel(defaultPeriodLengthDays + 1));
-
-      await shePresses(fewerDaysTestID);
-      await shePresses(fewerDaysTestID);
-
-      expect(theStepperReads()).toBe(periodLengthDaysLabel(defaultPeriodLengthDays - 1));
+      expect(app.pathname()).toBe('/onboarding/period-length');
     });
 
-    it('stops at one day, because a day of bleeding is already a period', async () => {
+    it('chooses the length she taps, which reads with its unit, and lets her on', async () => {
+      const app = await sheOpensEmi();
+
+      await sheReachesThePeriodLength();
+      await shePresses(periodLengthDaysTestID(sheSaysHerPeriodRuns));
+
+      expect(screen.getByTestId(periodLengthDaysTestID(sheSaysHerPeriodRuns))).toBeSelected();
+      expect(screen.getByTestId(periodLengthDaysTestID(sheSaysHerPeriodRuns))).toHaveTextContent(
+        periodLengthDaysLabel(sheSaysHerPeriodRuns),
+      );
+
+      await shePresses(onboardingActionTestID);
+
+      expect(app.pathname()).toBe('/onboarding/regularity');
+    });
+
+    it('chooses the length the wheel settles on when she turns it', async () => {
       await sheOpensEmi();
 
       await sheReachesThePeriodLength();
-      for (let pressed = defaultPeriodLengthDays; pressed > minimumPeriodLengthDays; pressed -= 1) {
-        await shePresses(fewerDaysTestID);
-      }
+      await fireEvent(screen.getByTestId(periodLengthWheelTestID), 'momentumScrollEnd', {
+        nativeEvent: { contentOffset: { x: 0, y: (sheSaysHerPeriodRuns - 1) * WHEEL_ROW_HEIGHT } },
+      });
 
-      expect(theStepperReads()).toBe(periodLengthDaysLabel(minimumPeriodLengthDays));
-      expect(screen.getByTestId(fewerDaysTestID)).toBeDisabled();
-
-      await shePresses(fewerDaysTestID);
-
-      expect(theStepperReads()).toBe(periodLengthDaysLabel(minimumPeriodLengthDays));
+      expect(screen.getByTestId(periodLengthDaysTestID(sheSaysHerPeriodRuns))).toBeSelected();
+      expect(screen.getByTestId(onboardingActionTestID)).not.toBeDisabled();
     });
 
-    it('stops at fifteen days, beyond which the number is a typing mistake', async () => {
+    it('runs from one day to fifteen, and offers nothing outside them', async () => {
       await sheOpensEmi();
 
       await sheReachesThePeriodLength();
-      for (let pressed = defaultPeriodLengthDays; pressed < maximumPeriodLengthDays; pressed += 1) {
-        await shePresses(moreDaysTestID);
-      }
 
-      expect(theStepperReads()).toBe(periodLengthDaysLabel(maximumPeriodLengthDays));
-      expect(screen.getByTestId(moreDaysTestID)).toBeDisabled();
+      expect(screen.getByTestId(periodLengthDaysTestID(minimumPeriodLengthDays))).toBeTruthy();
+      expect(screen.getByTestId(periodLengthDaysTestID(maximumPeriodLengthDays))).toBeTruthy();
+      expect(screen.queryByTestId(periodLengthDaysTestID(minimumPeriodLengthDays - 1))).toBeNull();
+      expect(screen.queryByTestId(periodLengthDaysTestID(maximumPeriodLengthDays + 1))).toBeNull();
+    });
+
+    it('draws no stepper, because the redesign asks on a wheel', async () => {
+      await sheOpensEmi();
+
+      await sheReachesThePeriodLength();
+
+      expect(screen.queryByTestId('period-length-down')).toBeNull();
+      expect(screen.queryByTestId('period-length-up')).toBeNull();
     });
 
     it('says what it is asking for, and what happens if she is not sure', async () => {
@@ -254,7 +270,8 @@ describe('the period arc follows what she said until she logs her own', () => {
       for (const line of firstRunCopy.periodLength.lines) {
         expect(screen.getByText(line)).toBeTruthy();
       }
-      expect(screen.getByTestId(onboardingSkipTestID)).toHaveTextContent(
+      expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
         firstRunCopy.periodLength.skip,
       );
       expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent(
@@ -266,7 +283,7 @@ describe('the period arc follows what she said until she logs her own', () => {
       const app = await sheOpensEmi();
 
       await sheReachesThePeriodLength();
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
 
       expect(app.pathname()).toBe('/onboarding/regularity');
     });
