@@ -2,6 +2,7 @@ import { join } from 'node:path';
 
 import { findSymptom } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 
 import type { DayVault } from '../../src/services/vault/dayVault';
@@ -9,16 +10,23 @@ import { listDayLogs } from '../../src/data/dayLogRepository';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { words } from '../../src/language';
+import { catalogueOf, languages } from '../../src/language';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
+  onboardingLockTestID,
+  onboardingQuestionTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { Today, todayIcons, todayTestID } from '../../src/features/onboarding/Today';
-import { firstRunCopy, todayLabels } from '../../src/features/onboarding/copy';
+import {
+  Today,
+  todayCellTestID,
+  todayIcons,
+  todayTestID,
+} from '../../src/features/onboarding/Today';
+import { todayLabels } from '../../src/features/onboarding/copy';
 import {
   type FirstRunRefusal,
   type TodaySymptom,
@@ -88,6 +96,32 @@ async function sheReachesToday(periodStartedOn: string = herPeriodStarted): Prom
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
+}
+
+/**
+ * The test ids on the screen she stands on, in the order it draws them from top to bottom. The
+ * questions behind it stay mounted in the stack, so the walk reads only the today screen.
+ */
+function theOrderOnTheScreen(): string[] {
+  const found: string[] = [];
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      node.forEach(walk);
+      return;
+    }
+    if (node === null || typeof node !== 'object') {
+      return;
+    }
+    const drawn = node as { props?: { testID?: unknown }; children?: unknown };
+    if (typeof drawn.props?.testID === 'string') {
+      found.push(drawn.props.testID);
+    }
+    walk(drawn.children ?? null);
+  };
+
+  walk(screen.getByTestId('onboarding-today'));
+
+  return found;
 }
 
 /** Every day she sealed, opened again with the key her own phone drew at the hold. */
@@ -192,29 +226,99 @@ describe('what she feels today is her first logged day', () => {
       expect(todayIcons['low-mood']).toBe('mood');
     });
 
-    it('calls the way past it Nothing today, and the way on Save', async () => {
+    it('calls the way past Skip at the top and Nothing to add, and the way on Save today', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
 
-      expect(screen.getByTestId(onboardingSkipTestID)).toHaveTextContent(
-        words('onboarding.today.skip'),
+      expect(screen.getByTestId(onboardingSkipTestID)).toHaveTextContent('Skip');
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent('Nothing to add');
+      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Save today');
+      expect(screen.queryByText('Nothing today')).toBeNull();
+      expect(screen.queryByText('Save')).toBeNull();
+    });
+
+    it('asks how she is today, and says under the title that she can skip it', async () => {
+      await sheOpensEmi();
+
+      await sheReachesToday();
+
+      expect(screen.getByText('How are you today?')).toBeTruthy();
+      expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent('You can skip this.');
+      expect(screen.queryByText('How are you feeling today?')).toBeNull();
+      expect(screen.queryByText('Pick anything that fits, or skip it.')).toBeNull();
+    });
+
+    it('carries none of the old words in any of the three languages', () => {
+      for (const language of languages) {
+        const held = Object.keys(catalogueOf(language));
+
+        for (const key of [
+          'onboarding.today.skip',
+          'onboarding.today.line.skip',
+          'onboarding.today.titleNamed',
+        ]) {
+          expect({ language, key, held: held.includes(key) }).toEqual({
+            language,
+            key,
+            held: false,
+          });
+        }
+      }
+
+      expect(languages).toHaveLength(3);
+    });
+
+    it('says under the tiles that Emi encrypts the day on this phone', async () => {
+      await sheOpensEmi();
+
+      await sheReachesToday();
+
+      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
+        'Emi encrypts it on this phone.',
       );
-      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent(
-        words('onboarding.today.action'),
+
+      const order = theOrderOnTheScreen();
+
+      expect(order.indexOf(todayTestID('low-mood'))).toBeLessThan(
+        order.indexOf(onboardingLockTestID),
+      );
+      expect(order.indexOf(onboardingLockTestID)).toBeLessThan(
+        order.indexOf(onboardingActionTestID),
       );
     });
 
-    it('says she can pick anything that fits, or skip it', async () => {
+    it('draws Nothing to add under Save today, as the redesign draws it', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
 
-      expect(screen.getByText(firstRunCopy.today.title)).toBeTruthy();
-      // The line is named on its own rather than read off the copy, so a line taken out of the
-      // screen fails here instead of leaving a shorter list that agrees with itself.
-      expect(screen.getByText('Pick anything that fits, or skip it.')).toBeTruthy();
-      expect(firstRunCopy.today.lines).toHaveLength(1);
+      const order = theOrderOnTheScreen();
+
+      expect(order.indexOf(onboardingActionTestID)).toBeGreaterThan(-1);
+      expect(order.indexOf(onboardingWayPastTestID)).toBeGreaterThan(
+        order.indexOf(onboardingActionTestID),
+      );
+    });
+
+    it('stands the six tiles three to a row, as the redesign draws them', async () => {
+      await sheOpensEmi();
+
+      await sheReachesToday();
+
+      for (const slug of todaySymptoms) {
+        const cell = screen.getByTestId(todayCellTestID(slug));
+        const basis = Number.parseFloat(
+          String((StyleSheet.flatten(cell.props.style) as { flexBasis?: string }).flexBasis),
+        );
+
+        // Three fit on a row and a fourth does not.
+        expect({ slug, three: basis * 3 <= 100, four: basis * 4 > 100 }).toEqual({
+          slug,
+          three: true,
+          four: true,
+        });
+      }
     });
 
     it('waits for a tile before the way on is hers to press', async () => {
@@ -257,6 +361,25 @@ describe('what she feels today is her first logged day', () => {
 
       await sheReachesToday();
       await shePresses(onboardingSkipTestID);
+
+      expect(app.pathname()).toBe('/onboarding/first-forecast');
+    });
+
+    it('hands her to her first forecast from Nothing to add too', async () => {
+      const app = await sheOpensEmi();
+
+      await sheReachesToday();
+      await shePresses(onboardingWayPastTestID);
+
+      expect(app.pathname()).toBe('/onboarding/first-forecast');
+    });
+
+    it('hands her to her first forecast from Save today, once she picks a tile', async () => {
+      const app = await sheOpensEmi();
+
+      await sheReachesToday();
+      await shePresses(todayTestID('headache'));
+      await shePresses(onboardingActionTestID);
 
       expect(app.pathname()).toBe('/onboarding/first-forecast');
     });
@@ -357,6 +480,20 @@ describe('what she feels today is her first logged day', () => {
       expect(sealed).toHaveLength(1);
       expect(sealed[0]?.flow).toBe(firstRunFlow);
       expect(sealed[0] && 'symptoms' in sealed[0]).toBe(false);
+    });
+
+    it('forgets the tiles she pressed before she pressed Nothing to add', async () => {
+      await sheOpensEmi();
+
+      await sheReachesToday();
+      await shePresses(todayTestID('cramps'));
+      await shePresses(todayTestID('fatigue'));
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(firstForecastActionTestID);
+      await sheReadsThePromise();
+      await sheHoldsTheRing();
+
+      expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);
     });
 
     it('forgets the tiles she pressed before she pressed the way past it', async () => {
@@ -461,7 +598,6 @@ describe('what she feels today is her first logged day', () => {
         <OnAPhone>
           <Today
             chosen={[]}
-            name={undefined}
             onBack={() => undefined}
             onPress={(slug) => pressed.push(slug)}
             onSave={() => undefined}
@@ -479,7 +615,6 @@ describe('what she feels today is her first logged day', () => {
         <OnAPhone>
           <Today
             chosen={['calm']}
-            name={undefined}
             onBack={() => undefined}
             onPress={() => undefined}
             onSave={() => undefined}

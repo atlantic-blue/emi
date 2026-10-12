@@ -26,9 +26,6 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
  * runner is pointed at it by `npm run generate:onboarding-picture`.
  */
 
-/** The name she typed on the second screen, which the two questions after it greet her by. */
-const theNameSheGave = 'Ada';
-
 /** Midday, and away from any summer time change, so the day list reads the same anywhere. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
@@ -189,11 +186,10 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Twelve of twelve',
-    note: 'What she feels today, asked by the name she gave, which becomes her first logged day.\n      Pressing nothing is the way past it, and then today gets no row at all.',
+    note: 'What she feels today, which becomes her first logged day. Save today waits for a tile.\n      Skip and Nothing to add both go on, and then today gets no row at all.',
     element: (
       <Today
         chosen={['cramps', 'fatigue']}
-        name={theNameSheGave}
         onBack={() => undefined}
         onPress={() => undefined}
         onSave={() => undefined}

@@ -41,6 +41,17 @@ Feature: She opens Emi and logs her first period
     And her phone holds one day, the day she said her period started
     And her phone holds the time of the hold, and one instant on all three of her answers
 
+  Scenario: SCREEN-1, she picks a tile on her first day and then says she has nothing to add
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the question about how she is today
+    Then Save today waits until she picks a tile
+    When she picks cramps
+    And she presses Nothing to add
+    Then she is looking at her first forecast
+    When she reads on and presses and holds the ring
+    Then her phone holds one day, the day she said her period started
+
   Scenario: SCREEN-1, the first run asks its questions and the hold after them
     Given she has never opened Emi before
     When she opens Emi

@@ -58,6 +58,16 @@ interface Props {
   readonly linesComeFirst?: boolean;
   /** The questions about her cycle centre their lines under the answer, as the redesign draws them. */
   readonly linesAlign?: 'start' | 'center';
+  /**
+   * Where the promise about her privacy stands. The questions put it at the foot, over the button.
+   * The first run log draws it right under the tiles, because there it is about the day she picks.
+   */
+  readonly promiseSits?: 'atTheFoot' | 'underTheAnswer';
+  /**
+   * Where the way past stands against the button. The first run log draws it under the button, as
+   * the second of two ways on, and every other screen draws it over the button.
+   */
+  readonly wayPastSits?: 'overTheAction' | 'underTheAction';
   /** The three shapes above. The ten questions take the bar, which is why it is the default. */
   readonly header?: OnboardingHeader;
   /** The word the row carries in place of the bar. Only the first run log names one. */
@@ -113,6 +123,8 @@ export function OnboardingScreen({
   wayPastLabel,
   linesComeFirst = false,
   linesAlign = 'start',
+  promiseSits = 'atTheFoot',
+  wayPastSits = 'overTheAction',
   header = 'bar',
   headerWord,
   children,
@@ -127,13 +139,14 @@ export function OnboardingScreen({
     );
   // A screen whose lines come first keeps the promise with them, above what she is asked, for the
   // same reason the lines move: read after she answers is read too late.
+  const promiseIsUnderTheAnswer = promiseSits === 'underTheAnswer';
   const said = (
     <>
       <TheLinesSheReads align={linesAlign} onTheSheet={onTheSheet} lines={lines} />
       {linesComeFirst ? promiseLine : null}
     </>
   );
-  const promiseAtTheFoot = linesComeFirst ? null : promiseLine;
+  const promiseAtTheFoot = linesComeFirst || promiseIsUnderTheAnswer ? null : promiseLine;
 
   const asked = (
     <>
@@ -151,13 +164,15 @@ export function OnboardingScreen({
 
       <View style={styles.asked}>{children}</View>
 
+      {promiseIsUnderTheAnswer && !linesComeFirst ? promiseLine : null}
+
       {linesComeFirst ? null : said}
     </>
   );
 
   const wayPast =
     onWayPast === undefined ? null : (
-      <View style={styles.wayPast}>
+      <View style={wayPastSits === 'underTheAction' ? styles.wayPastUnder : styles.wayPast}>
         <TextLink
           label={wayPastLabel ?? firstRunCopy.skip}
           onPress={onWayPast}
@@ -246,19 +261,22 @@ export function OnboardingScreen({
           </ScrollView>
           <View style={styles.sheetFoot}>
             {promiseAtTheFoot}
-            {wayPast}
-            {action}
+            <TheWaysOn action={action} wayPast={wayPast} wayPastSits={wayPastSits} />
           </View>
         </View>
       ) : (
         <>
-          <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
+          <ScrollView
+            contentContainerStyle={
+              header === 'word' ? [styles.body, styles.bodyStacked] : styles.body
+            }
+            style={styles.scroll}
+          >
             {asked}
           </ScrollView>
           <View style={styles.footer}>
             {promiseAtTheFoot}
-            {wayPast}
-            {action}
+            <TheWaysOn action={action} wayPast={wayPast} wayPastSits={wayPastSits} />
           </View>
         </>
       )}
@@ -266,11 +284,35 @@ export function OnboardingScreen({
   );
 }
 
-/** The lines about her privacy. Each one is drawn apart, at the foot, with the lock beside it. */
+/** The button and the way past, in the order the screen draws them. */
+function TheWaysOn({
+  action,
+  wayPast,
+  wayPastSits,
+}: {
+  readonly action: ReactNode;
+  readonly wayPast: ReactNode;
+  readonly wayPastSits: 'overTheAction' | 'underTheAction';
+}): ReactNode {
+  return wayPastSits === 'underTheAction' ? (
+    <>
+      {action}
+      {wayPast}
+    </>
+  ) : (
+    <>
+      {wayPast}
+      {action}
+    </>
+  );
+}
+
+/** The lines about her privacy. Each one is drawn apart from the others, with the lock beside it. */
 const thePromises: readonly string[] = [
   firstRunCopy.encrypts,
   firstRunCopy.encryptedHere,
   firstRunCopy.encryptsYourAnswers,
+  firstRunCopy.encryptsIt,
 ];
 
 function thePromiseIn(lines: readonly string[]): string | undefined {
@@ -343,6 +385,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
     paddingTop: space.spaceMd,
   },
+  // The first run log stacks its question, its tiles and its promise from the top, as the
+  // redesign draws them, rather than spreading them down the glass.
+  bodyStacked: { justifyContent: 'flex-start' },
   emblem: {
     alignItems: 'center',
     backgroundColor: colour.washWarm,
@@ -436,4 +481,5 @@ const styles = StyleSheet.create({
   // can press, as the redesign draws it. A question as tall as a month would otherwise put it below
   // the fold, which is where a woman who has just found she cannot answer is least likely to look.
   wayPast: { alignItems: 'center', paddingBottom: space.spaceSm },
+  wayPastUnder: { alignItems: 'center', paddingTop: space.spaceSm },
 });

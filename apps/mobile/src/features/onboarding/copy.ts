@@ -114,9 +114,10 @@ export const firstRunCopy = {
      * would be a second sentence the moment somebody edited one of them.
      */
     header: words('calendar.today'),
-    lines: [words('onboarding.today.line.skip')],
+    question: words('onboarding.today.question'),
+    lines: [words('onboarding.encryptsIt')],
     action: words('onboarding.today.action'),
-    skip: words('onboarding.today.skip'),
+    nothingToAdd: words('onboarding.today.nothingToAdd'),
   },
   firstForecast: {
     title: words('onboarding.firstForecast.title'),
@@ -149,6 +150,7 @@ export const firstRunCopy = {
   encrypts: words('onboarding.encrypts'),
   encryptedHere: words('onboarding.encryptedHere'),
   encryptsYourAnswers: words('onboarding.encryptsYourAnswers'),
+  encryptsIt: words('onboarding.encryptsIt'),
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
   fewerDays: words('onboarding.periodLength.shorter'),
@@ -300,13 +302,6 @@ export function periodLengthDaysLabel(days: number): string {
 /** Why the name she typed is refused, which names the bound rather than repeating the number. */
 export function nameTooLongLine(characters: number): string {
   return words('onboarding.name.tooLong', characters);
-}
-
-/** The last question, which asks about her day, so it asks her by name where she gave one. */
-export function todayTitle(name: string | undefined): string {
-  return name === undefined
-    ? firstRunCopy.today.title
-    : words('onboarding.today.titleNamed', undefined, { name });
 }
 
 /**

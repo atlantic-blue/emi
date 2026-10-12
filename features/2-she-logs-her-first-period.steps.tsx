@@ -266,6 +266,7 @@ import {
   publishedNumberTestID,
 } from '../apps/mobile/src/features/home/MeasuredRow';
 import { cycleLengthDaysTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
+import { todayTestID } from '../apps/mobile/src/features/onboarding/Today';
 import { nameFieldTestID } from '../apps/mobile/src/features/onboarding/HerName';
 import { regularityTestID } from '../apps/mobile/src/features/onboarding/Regularity';
 import { yearTestID } from '../apps/mobile/src/components/YearWheel';
@@ -1727,6 +1728,73 @@ defineFeature(feature, (test) => {
         ).toBe(whenSheFinishesTheHold.toISOString());
       },
     );
+  });
+
+  test('SCREEN-1, she picks a tile on her first day and then says she has nothing to add', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she reaches the question about how she is today', async () => {
+      await sheReadsTheWelcome();
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(dayTestID(herPeriodStarted));
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+
+      expect(app.pathname()).toBe('/onboarding/today');
+    });
+
+    then('Save today waits until she picks a tile', () => {
+      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Save today');
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
+    });
+
+    when('she picks cramps', async () => {
+      await shePresses(todayTestID('cramps'));
+
+      expect(screen.getByTestId(todayTestID('cramps'))).toBeSelected();
+      expect(screen.getByTestId(onboardingActionTestID)).not.toBeDisabled();
+    });
+
+    and('she presses Nothing to add', async () => {
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent('Nothing to add');
+
+      await shePresses(onboardingWayPastTestID);
+    });
+
+    then('she is looking at her first forecast', () => {
+      expect(app.pathname()).toBe('/onboarding/first-forecast');
+      expect(listDayLogs(herDatabase())).toEqual([]);
+    });
+
+    when('she reads on and presses and holds the ring', async () => {
+      await shePresses(firstForecastActionTestID);
+      await shePresses(promiseActionTestID);
+      await shePresses(whatEmiDoesActionTestID);
+      await sheHoldsTheRing();
+    });
+
+    then('her phone holds one day, the day she said her period started', () => {
+      expect(listDayLogs(herDatabase()).map((row) => row.day)).toEqual([herPeriodStarted]);
+    });
   });
 
   test('SCREEN-1, the first run asks its questions and the hold after them', ({

@@ -289,6 +289,9 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put a line under the year. The redesign canvas draws no line there, only the
   // promise at the foot, so the year follows the canvas.
   yearOfBirth: 1,
+  // The mockups put a line under the tiles. The redesign canvas puts "You can skip this." under the
+  // title and only the promise under the tiles, so today follows the canvas.
+  todayFirstRun: 1,
   // The drawing and the prototype both put a pill at the foot of the hold. Emi's hold is the ring
   // itself: the press and hold is the write, and a second control that wrote would be a second way
   // to begin.
@@ -403,14 +406,7 @@ function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
       );
     case 'todayFirstRun':
       return (
-        <Today
-          chosen={[]}
-          name={undefined}
-          onBack={nothing}
-          onPress={nothing}
-          onSave={nothing}
-          onSkip={nothing}
-        />
+        <Today chosen={[]} onBack={nothing} onPress={nothing} onSave={nothing} onSkip={nothing} />
       );
     case 'firstForecast':
       return (
