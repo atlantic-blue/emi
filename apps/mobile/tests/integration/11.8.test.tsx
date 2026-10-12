@@ -4,6 +4,7 @@ import type { Focus } from '@emi/crypto';
 import { focusValues } from '@emi/crypto';
 import { type SymptomGroup, addDays, symptomGroups } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 
 import { readProfile } from '../../src/data/profileRepository';
@@ -14,7 +15,12 @@ import { LogSheet } from '../../src/features/log/LogSheet';
 import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import { groupsInHerOrder } from '../../src/features/log/herOrder';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
-import { Focus as FocusScreen, focusIcons, focusTestID } from '../../src/features/onboarding/Focus';
+import {
+  Focus as FocusScreen,
+  focusCellTestID,
+  focusIcons,
+  focusTestID,
+} from '../../src/features/onboarding/Focus';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
@@ -222,17 +228,37 @@ describe('the log opens on what she said changes with her cycle', () => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    it('says Emi puts these first when she logs a day, and where she changes them', async () => {
+    it('says Emi puts these first when she logs a day, and nothing about where she changes them', async () => {
       await sheOpensEmi();
 
       await sheReachesTheFocus();
 
-      expect(screen.getByText(firstRunCopy.focus.title)).toBeTruthy();
-      // Each line is named on its own rather than read off the copy, so a line taken out of the
-      // screen fails here instead of leaving a shorter list that still agrees with itself.
-      expect(screen.getByText(words('onboarding.focus.line.first'))).toBeTruthy();
-      expect(screen.getByText(words('onboarding.focus.line.privacy'))).toBeTruthy();
-      expect(firstRunCopy.focus.lines).toHaveLength(2);
+      // Each line is written out rather than read off the copy, so a line reworded or taken out of
+      // the screen fails here instead of leaving a shorter list that still agrees with itself.
+      expect(screen.getByText('Which of these change with your cycle?')).toBeTruthy();
+      expect(screen.getByText('Emi puts these first when you log a day.')).toBeTruthy();
+      expect(screen.queryByText('You can change this any time in Privacy.')).toBeNull();
+      expect(firstRunCopy.focus.lines).toHaveLength(1);
+    });
+
+    it('stands the six groups three to a row, as the redesign draws them', async () => {
+      await sheOpensEmi();
+
+      await sheReachesTheFocus();
+
+      for (const group of focusValues) {
+        const cell = screen.getByTestId(focusCellTestID(group));
+        const basis = Number.parseFloat(
+          String((StyleSheet.flatten(cell.props.style) as { flexBasis?: string }).flexBasis),
+        );
+
+        // Three fit on a row and a fourth does not.
+        expect({ group, three: basis * 3 <= 100, four: basis * 4 > 100 }).toEqual({
+          group,
+          three: true,
+          four: true,
+        });
+      }
     });
 
     it('hands her to today, whether she answers it or passes it by', async () => {

@@ -68,11 +68,11 @@ const theWordForSettings: Readonly<Record<Language, string>> = {
   ru: 'настройк',
 };
 
-/** What the screen says first, written out rather than read off the catalogue it is checking. */
+/** What the screen says under the grid, in the redesign's words, written out rather than read. */
 const theLineThatStayed: Readonly<Record<Language, string>> = {
-  en: "We'll put them first when you log your day.",
-  es: 'Lo pondremos primero cuando anotes tu día.',
-  ru: 'Мы поставим это первым, когда вы будете записывать день.',
+  en: 'Emi puts these first when you log a day.',
+  es: 'Emi los pone primero cuando anotas un día.',
+  ru: 'Emi ставит это первым, когда вы записываете день.',
 };
 
 const theCatalogueOf: Readonly<Record<Language, Catalogue>> = {

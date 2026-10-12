@@ -12,6 +12,11 @@ export function focusTestID(group: FocusGroup): string {
   return `focus-${group}`;
 }
 
+/** The place in the grid one tile stands in, named so a test can read how many share a row. */
+export function focusCellTestID(group: FocusGroup): string {
+  return `focus-cell-${group}`;
+}
+
 /**
  * The drawing on each tile. A map rather than a list, so a seventh value arriving in `Focus`
  * leaves this file failing to compile rather than leaving one tile with no drawing on it.
@@ -47,6 +52,7 @@ export function Focus({ chosen, onPress, onContinue, onBack, onSkip }: Props): R
     <OnboardingScreen
       actionIsReady={chosen.length > 0}
       actionLabel={firstRunCopy.focus.action}
+      linesAlign="center"
       lines={firstRunCopy.focus.lines}
       onAction={onContinue}
       onBack={onBack}
@@ -56,7 +62,7 @@ export function Focus({ chosen, onPress, onContinue, onBack, onSkip }: Props): R
     >
       <View style={styles.grid}>
         {focusChoices.map((group) => (
-          <View key={group} style={styles.cell}>
+          <View key={group} style={styles.cell} testID={focusCellTestID(group)}>
             <SelectableTile
               icon={focusIcons[group]}
               isChosen={chosen.includes(group)}
@@ -74,8 +80,8 @@ export function Focus({ chosen, onPress, onContinue, onBack, onSkip }: Props): R
 }
 
 const styles = StyleSheet.create({
-  // Two to a row, each one taking what is left of the row after the gap, so a long group name
-  // widens its tile rather than being cut.
-  cell: { flexBasis: '45%', flexGrow: 1 },
+  // Three to a row, as the redesign draws them, each one taking what is left of the row after the
+  // two gaps, so the six groups stand in two rows of three.
+  cell: { flexBasis: '30%', flexGrow: 1 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
 });

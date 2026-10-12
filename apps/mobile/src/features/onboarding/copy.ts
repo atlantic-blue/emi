@@ -18,8 +18,8 @@ import {
 } from './firstRun';
 
 /**
- * The words of the first run. `docs/design/voice.md` sets the rules they follow: talk to her and
- * not about Emi, write "you" and "we", use contractions, and give her a way out of every question.
+ * The words of the first run, as the approved redesign writes them: talk to her as "you", name Emi
+ * by name rather than as "we", and give her a way out of every question.
  */
 export const firstRunCopy = {
   welcome: {
@@ -92,17 +92,18 @@ export const firstRunCopy = {
   },
   feeling: {
     title: words('onboarding.feeling.title'),
-    lines: [words('onboarding.feeling.line.talks'), words('onboarding.onlyYou')],
+    lines: [words('onboarding.feeling.line.talks'), words('onboarding.encryptedHere')],
     action: words('onboarding.feeling.action'),
   },
   goals: {
     title: words('onboarding.goals.title'),
-    lines: [words('onboarding.goals.line.chooseAll'), words('onboarding.onlyYou')],
+    question: words('onboarding.goals.line.chooseAll'),
+    lines: [words('onboarding.encryptsYourAnswers')],
     action: words('onboarding.goals.action'),
   },
   focus: {
     title: words('onboarding.focus.title'),
-    lines: [words('onboarding.focus.line.first'), words('onboarding.focus.line.privacy')],
+    lines: [words('onboarding.focus.line.first')],
     action: words('onboarding.focus.action'),
   },
   today: {
@@ -145,8 +146,9 @@ export const firstRunCopy = {
   },
   back: words('onboarding.back'),
   skip: words('onboarding.skip'),
-  onlyYou: words('onboarding.onlyYou'),
   encrypts: words('onboarding.encrypts'),
+  encryptedHere: words('onboarding.encryptedHere'),
+  encryptsYourAnswers: words('onboarding.encryptsYourAnswers'),
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
   fewerDays: words('onboarding.periodLength.shorter'),
@@ -204,13 +206,6 @@ export const feelingLabels: Readonly<Record<Feeling, string>> = {
   fine: words('onboarding.feeling.choice.fine'),
   hard: words('onboarding.feeling.choice.hard'),
   understand: words('onboarding.feeling.choice.understand'),
-};
-
-/** What Emi says back when she picks one, which is a difference in the words and nothing more. */
-export const feelingReplies: Readonly<Record<Feeling, string>> = {
-  fine: words('onboarding.feeling.reply.fine'),
-  hard: words('onboarding.feeling.reply.hard'),
-  understand: words('onboarding.feeling.reply.understand'),
 };
 
 /** The order the screen offers them in, which the record above cannot carry. */

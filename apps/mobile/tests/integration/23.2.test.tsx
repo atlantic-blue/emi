@@ -10,7 +10,7 @@ import {
 } from '../../../../tools/pipeline/forbiddenClaims';
 import { interfaceClaimsIn } from '../../../../tools/pipeline/interfaceClaims';
 import { type Language, type Words, catalogueOf, languages, wordKeys } from '../../src/language';
-import { Feeling, feelingReplyTestID, feelingTestID } from '../../src/features/onboarding/Feeling';
+import { Feeling, feelingTestID } from '../../src/features/onboarding/Feeling';
 import { Regularity } from '../../src/features/onboarding/Regularity';
 import { Today } from '../../src/features/onboarding/Today';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
@@ -75,14 +75,14 @@ const theOldRepliesAboutHerCycle: readonly string[] = [
   "That's fine. Your log will tell us soon enough.",
 ];
 
-/** What each thing she can say about how she feels is answered with. */
-const theRepliesAboutHowSheFeels = {
+/** What each thing she could say about how she feels was answered with, before the redesign. */
+const theOldRepliesAboutHowSheFeels = {
   fine: "Then we'll keep things short.",
   hard: "We hear you. We'll show you when it's coming, so you can plan around it.",
   understand: "You're in the right place. The more you log, the more it makes sense.",
 } as const;
 
-/** The one line about who can read her answers, in each language she reads Emi in. */
+/** The line the questions about how she feels and her goals read, before the redesign. */
 const onlyYouCanReadThis: Readonly<Record<Language, string>> = {
   en: 'Only you can read this.',
   es: 'Solo tú puedes leer esto.',
@@ -90,6 +90,22 @@ const onlyYouCanReadThis: Readonly<Record<Language, string>> = {
 };
 
 const theKeyOfThatLine = 'onboarding.onlyYou';
+
+/** The line the redesign draws at the foot of the question about how she feels. */
+const encryptedOnThisPhone: Readonly<Record<Language, string>> = {
+  en: 'Encrypted on this phone.',
+  es: 'Cifrado en este teléfono.',
+  ru: 'Зашифровано на этом телефоне.',
+};
+const theKeyOfEncryptedOnThisPhone = 'onboarding.encryptedHere';
+
+/** The line the redesign draws at the foot of the question about her goals. */
+const emiEncryptsYourAnswers: Readonly<Record<Language, string>> = {
+  en: 'Emi encrypts your answers on this phone. Nobody else can read them.',
+  es: 'Emi cifra tus respuestas en este teléfono. Nadie más puede leerlas.',
+  ru: 'Emi шифрует ваши ответы на этом телефоне. Никто другой не может их прочитать.',
+};
+const theKeyOfEmiEncryptsYourAnswers = 'onboarding.encryptsYourAnswers';
 
 /** The line the redesign puts at the foot of the questions it has redrawn. */
 const theLineAboutEncryption = 'Emi encrypts this on the phone before it goes anywhere.';
@@ -112,12 +128,12 @@ const theAnswersAboutHerCycle: readonly string[] = [
 ];
 
 const theAnswersAboutHowSheFeels: readonly string[] = [
-  "I'm fine with it",
-  "Honestly, it's hard most months",
-  'I want to understand it better',
+  'I am fine with it',
+  'It is hard, most months',
+  'I want to understand it',
 ];
 
-/** How each language writes the first person plural, which is how the questions name Emi now. */
+/** How each language writes the first person plural, which the questions no longer speak in. */
 const howEachLanguageSaysWe: Readonly<Record<Language, RegExp>> = {
   en: /(?<!\p{Letter})(we|our|let's)(?!\p{Letter})/iu,
   es: /(?<!\p{Letter})(nos|nuestro|nuestra)(?!\p{Letter})|mos(?!\p{Letter})/iu,
@@ -150,6 +166,10 @@ const theGreeting = 'onboarding.welcome.title';
  */
 const theWelcomeNamingEmi = [
   theKeyOfTheLineAboutEncryption,
+  theKeyOfEmiEncryptsYourAnswers,
+  'onboarding.feeling.line.talks',
+  'onboarding.focus.line.first',
+  'onboarding.goals.title',
   'onboarding.name.line.greets',
   'onboarding.name.title',
   'onboarding.periodLength.line.logged',
@@ -167,14 +187,15 @@ function theCatalogueOf(language: Language): Readonly<Record<string, Words>> {
   return Object.fromEntries(Object.entries(catalogueOf(language)));
 }
 
-/** Every key of the twelve questions, and the one line the five that keep an answer all read. */
+/** Every key of the twelve questions, and the lines about encryption they read at their foot. */
 function theKeysOfTheQuestions(): string[] {
   return [
     ...wordKeys.filter((key) =>
       theScreensOfTheQuestions.some((asked) => key.startsWith(`onboarding.${asked}.`)),
     ),
-    theKeyOfThatLine,
     theKeyOfTheLineAboutEncryption,
+    theKeyOfEncryptedOnThisPhone,
+    theKeyOfEmiEncryptsYourAnswers,
   ];
 }
 
@@ -392,12 +413,12 @@ describe('the first run questions use her name and reply to her answers', () => 
       });
     }
 
-    for (const [answer, reply] of Object.entries(theRepliesAboutHowSheFeels)) {
-      it(`answers "${answer}" about how she feels, and says none of the other replies`, async () => {
+    for (const answer of Object.keys(theOldRepliesAboutHowSheFeels)) {
+      it(`says nothing back about how she feels once she picks "${answer}", as the redesign draws it`, async () => {
         await render(
           <OnAPhone>
             <Feeling
-              chosen={answer as keyof typeof theRepliesAboutHowSheFeels}
+              chosen={answer as keyof typeof theOldRepliesAboutHowSheFeels}
               onBack={() => undefined}
               onChoose={() => undefined}
               onContinue={() => undefined}
@@ -406,48 +427,27 @@ describe('the first run questions use her name and reply to her answers', () => 
           </OnAPhone>,
         );
 
-        expect(screen.getByTestId(feelingReplyTestID)).toHaveTextContent(reply);
+        expect(screen.getByTestId(feelingTestID(answer as 'fine'))).toBeChecked();
+        expect(screen.queryByTestId('feeling-reply')).toBeNull();
         expect(
-          Object.values(theRepliesAboutHowSheFeels).filter(
+          Object.values(theOldRepliesAboutHowSheFeels).filter(
             (each) => screen.queryByText(each) !== null,
           ),
-        ).toEqual([reply]);
+        ).toEqual([]);
       });
     }
 
-    it('says nothing about how she feels until she picks, for the same reason', async () => {
-      await render(
-        <OnAPhone>
-          <Feeling
-            chosen={undefined}
-            onBack={() => undefined}
-            onChoose={() => undefined}
-            onContinue={() => undefined}
-            onSkip={() => undefined}
-          />
-        </OnAPhone>,
+    it('keeps no reply about how she feels in any language, so no screen can draw one again', () => {
+      const keys = Object.keys(theOldRepliesAboutHowSheFeels).map(
+        (answer) => `onboarding.feeling.reply.${answer}`,
       );
 
-      expect(screen.queryByTestId(feelingReplyTestID)).toBeNull();
-    });
+      for (const language of languages) {
+        const held = Object.keys(theCatalogueOf(language));
 
-    it('is written in every language, and never the English reply left behind', () => {
-      const keys = [
-        ...Object.keys(theRepliesAboutHowSheFeels).map(
-          (answer) => `onboarding.feeling.reply.${answer}`,
-        ),
-      ];
-
-      for (const key of keys) {
-        const said = languages.map((language) => String(theCatalogueOf(language)[key]));
-
-        expect({ key, missing: said.filter((each) => each === 'undefined') }).toEqual({
-          key,
-          missing: [],
-        });
-        expect({ key, theEnglishOneAgain: said[0] === said[1] || said[0] === said[2] }).toEqual({
-          key,
-          theEnglishOneAgain: false,
+        expect({ language, left: keys.filter((key) => held.includes(key)) }).toEqual({
+          language,
+          left: [],
         });
       }
 
@@ -455,19 +455,37 @@ describe('the first run questions use her name and reply to her answers', () => 
     });
   });
 
-  describe('the one line about who can read her answers', () => {
-    it('is one line in each of the three languages', () => {
+  describe('the lines about who can read her answers', () => {
+    it('are the redesign words in each of the three languages', () => {
       for (const language of languages) {
-        expect({ language, said: theCatalogueOf(language)[theKeyOfThatLine] }).toEqual({
+        const held = theCatalogueOf(language);
+
+        expect({
           language,
-          said: onlyYouCanReadThis[language],
+          feeling: held[theKeyOfEncryptedOnThisPhone],
+          goals: held[theKeyOfEmiEncryptsYourAnswers],
+        }).toEqual({
+          language,
+          feeling: encryptedOnThisPhone[language],
+          goals: emiEncryptsYourAnswers[language],
         });
       }
 
       expect(languages.length).toBe(3);
     });
 
-    it('took the place of the five lines that each said it in their own words', () => {
+    it('took the place of the line only you can read this, which no catalogue holds now', () => {
+      for (const language of languages) {
+        const keys = Object.keys(catalogueOf(language));
+
+        expect({ language, left: keys.includes(theKeyOfThatLine) }).toEqual({
+          language,
+          left: false,
+        });
+      }
+    });
+
+    it('keeps out the five lines that each said it in their own words before', () => {
       for (const language of languages) {
         const keys = Object.keys(catalogueOf(language));
 
@@ -475,7 +493,6 @@ describe('the first run questions use her name and reply to her answers', () => 
           language,
           left: [],
         });
-        expect(keys).toContain(theKeyOfThatLine);
       }
 
       expect(theKeysThatWent).toHaveLength(5);
@@ -488,18 +505,21 @@ describe('the first run questions use her name and reply to her answers', () => 
       expect(screen.queryByText(onlyYouCanReadThis.en)).toBeNull();
     });
 
-    it('is read on the question about how she feels', async () => {
+    it('is read on the question about how she feels, in the redesign words', async () => {
       const app = await sheWalksTo('feeling');
 
       expect(app.getPathname()).toBe('/onboarding/feeling');
-      expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+      expect(screen.getByText(encryptedOnThisPhone.en)).toBeTruthy();
+      expect(screen.queryByText(onlyYouCanReadThis.en)).toBeNull();
     });
 
     it('says nothing about a cipher, a standard or a day that is safe', () => {
       for (const language of languages) {
-        const claims = interfaceClaimsIn(`the line in ${language}`, onlyYouCanReadThis[language]);
+        for (const line of [encryptedOnThisPhone[language], emiEncryptsYourAnswers[language]]) {
+          const claims = interfaceClaimsIn(`the line in ${language}`, line);
 
-        expect(claims.map(describeClaim)).toEqual([]);
+          expect(claims.map(describeClaim)).toEqual([]);
+        }
       }
     });
   });
@@ -537,7 +557,7 @@ describe('the first run questions use her name and reply to her answers', () => 
       expect(theAnswersAboutHowSheFeels).toHaveLength(3);
     });
 
-    it('names Emi only on the welcome and speaks as we after it, in each of the three languages', () => {
+    it('names Emi where the redesign names it and never speaks as we, in each of the three languages', () => {
       for (const language of languages) {
         const keys = theKeysOfTheQuestions();
         const read = theWordsOfTheQuestionsIn(language).join('\n');
@@ -552,7 +572,7 @@ describe('the first run questions use her name and reply to her answers', () => 
         });
         expect({ language, asWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
           language,
-          asWe: true,
+          asWe: false,
         });
       }
     });

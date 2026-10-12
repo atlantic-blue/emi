@@ -67,38 +67,24 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 /** A day inside the ninety the first run reaches back over, for the walk through the questions. */
 const herPeriodStarted = dayOf(new Date('2026-05-09T12:00:00.000Z'));
 
-/** The key the promise is drawn from, which the first run screen reads after the question. */
+/** The key the promise was drawn from, which the redesign does not draw on the focus screen. */
 const theKeyOfThePromise = 'onboarding.focus.line.privacy';
 
-/** The key the screen already drew, so a screen drawn empty cannot pass for this. */
+/** The key the screen still draws, so a screen drawn empty cannot pass for this. */
 const theKeyThatStayed = 'onboarding.focus.line.first';
 
-/** What she is promised, in each language, written out rather than read off what it checks. */
+/** What she was promised, in each language, written out rather than read off what it checks. */
 const thePromise: Readonly<Record<Language, string>> = {
   en: 'You can change this any time in Privacy.',
   es: 'Puedes cambiarlo cuando quieras en Privacidad.',
   ru: 'Вы можете изменить это в любой момент в разделе Приватность.',
 };
 
-/** The name of the screen the promise sends her to, which is the word the dock carries. */
-const theWordForPrivacy: Readonly<Record<Language, string>> = {
-  en: 'Privacy',
-  es: 'Privacidad',
-  ru: 'Приватность',
-};
-
-/** The word the promise used to name, which named a screen the dock stopped carrying. */
-const theWordThatWent: Readonly<Record<Language, string>> = {
-  en: 'Settings',
-  es: 'Ajustes',
-  ru: 'настройк',
-};
-
-/** What the screen says first, written out rather than read off the catalogue it is checking. */
+/** What the screen says under the grid, in the redesign's words. */
 const theLineThatStayed: Readonly<Record<Language, string>> = {
-  en: "We'll put them first when you log your day.",
-  es: 'Lo pondremos primero cuando anotes tu día.',
-  ru: 'Мы поставим это первым, когда вы будете записывать день.',
+  en: 'Emi puts these first when you log a day.',
+  es: 'Emi los pone primero cuando anotas un día.',
+  ru: 'Emi ставит это первым, когда вы записываете день.',
 };
 
 const theCatalogueOf: Readonly<Record<Language, Catalogue>> = {
@@ -176,7 +162,7 @@ async function herSealedFocus(): Promise<readonly Focus[] | undefined> {
   return held.focus;
 }
 
-describe('the focus screen promises Privacy and Privacy does it', () => {
+describe('the focus screen no longer says it, and Privacy still changes the answer', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -190,49 +176,42 @@ describe('the focus screen promises Privacy and Privacy does it', () => {
     jest.useRealTimers();
   });
 
-  describe('the promise on the focus screen', () => {
-    it('names Privacy on the screen she reaches in the first run, under the line that was always there', async () => {
+  describe('the promise the redesign took off the focus screen', () => {
+    it('is gone from the screen she reaches in the first run, which keeps the line about the log', async () => {
       const app = await sheReachesTheFocus();
 
       expect(app.pathname()).toBe('/onboarding/focus');
       expect(screen.getByText(theLineThatStayed.en)).toBeTruthy();
-      expect(screen.getByText(thePromise.en)).toBeTruthy();
-      expect(everythingSheReadsOnTheFocus()).toContain(theWordForPrivacy.en);
-      expect(firstRunCopy.focus.lines).toEqual([theLineThatStayed.en, thePromise.en]);
+      expect(screen.queryByText(thePromise.en)).toBeNull();
+      expect(firstRunCopy.focus.lines).toEqual([theLineThatStayed.en]);
     });
 
     it.each([...languages])(
-      'names Privacy on the screen a phone reading %s draws',
+      'is gone from the screen a phone reading %s draws',
       async (language) => {
         await theFocusScreenIn(language);
 
         const read = everythingSheReadsOnTheFocus();
 
         expect(read).toContain(theLineThatStayed[language]);
-        expect(read).toContain(thePromise[language]);
-        expect(read).toContain(theWordForPrivacy[language]);
+        expect(read).not.toContain(thePromise[language]);
       },
     );
 
-    it('names the screen the dock carries, and never the name that screen used to have', () => {
+    it('is gone from all three catalogues, so no screen can draw it again', () => {
       for (const language of languages) {
-        expect(theCatalogueOf[language][theKeyOfThePromise]).toBe(thePromise[language]);
-        expect(thePromise[language]).toContain(theWordForPrivacy[language]);
-        expect(thePromise[language]).not.toContain(theWordThatWent[language]);
+        expect(Object.keys(theCatalogueOf[language])).not.toContain(theKeyOfThePromise);
         expect(theCatalogueOf[language][theKeyThatStayed]).toBe(theLineThatStayed[language]);
       }
 
-      expect(wordKeys as readonly string[]).toContain(theKeyOfThePromise);
+      expect(wordKeys as readonly string[]).not.toContain(theKeyOfThePromise);
       expect(languages).toHaveLength(3);
     });
   });
 
-  describe('the walk the promise sends her on', () => {
+  describe('the walk the promise used to send her on', () => {
     it('reaches her focus through Privacy and her answers, and changes it', async () => {
       await sheReachesTheFocus();
-
-      expect(screen.getByText(thePromise.en)).toBeTruthy();
-
       await sheFinishesTheFirstRun();
 
       expect(await herSealedFocus()).toEqual([theGroupSheNamesFirst]);

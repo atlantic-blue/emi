@@ -5633,15 +5633,27 @@ defineFeature(feature, (test) => {
     const theOldReplyToACycleThatMoves =
       "That's common. We'll start with a wider range and narrow it as we learn yours.";
 
-    /** The one line about who can read her answers, written out in each language she reads. */
-    const onlyYouCanReadThis: Readonly<Record<Language, string>> = {
-      en: 'Only you can read this.',
-      es: 'Solo tú puedes leer esto.',
-      ru: 'Это можете прочитать только вы.',
+    /**
+     * The lines about who can read her answers, written out in each language she reads, by the key
+     * each is drawn from. The redesign draws a different line at the foot of different questions.
+     */
+    const theLinesAboutHerPrivacy: Readonly<Record<string, Readonly<Record<Language, string>>>> = {
+      'onboarding.encrypts': {
+        en: 'Emi encrypts this on the phone before it goes anywhere.',
+        es: 'Emi lo cifra en el teléfono antes de que vaya a ningún sitio.',
+        ru: 'Emi шифрует это на телефоне, прежде чем оно куда-либо отправится.',
+      },
+      'onboarding.encryptedHere': {
+        en: 'Encrypted on this phone.',
+        es: 'Cifrado en este teléfono.',
+        ru: 'Зашифровано на этом телефоне.',
+      },
+      'onboarding.encryptsYourAnswers': {
+        en: 'Emi encrypts your answers on this phone. Nobody else can read them.',
+        es: 'Emi cifra tus respuestas en este teléfono. Nadie más puede leerlas.',
+        ru: 'Emi шифрует ваши ответы на этом телефоне. Никто другой не может их прочитать.',
+      },
     };
-
-    /** The one key behind that line, which is why five questions cannot drift apart saying it. */
-    const theKeyOfThatLine = 'onboarding.onlyYou';
 
     let app: OpenApp;
 
@@ -5719,17 +5731,20 @@ defineFeature(feature, (test) => {
             Object.entries(catalogueOf(language)),
           );
 
-          expect({ language, said: held[theKeyOfThatLine] }).toEqual({
-            language,
-            said: onlyYouCanReadThis[language],
-          });
+          for (const [key, said] of Object.entries(theLinesAboutHerPrivacy)) {
+            expect({ language, key, said: held[key] }).toEqual({
+              language,
+              key,
+              said: said[language],
+            });
+          }
         }
 
         expect(languages.length).toBe(3);
 
         // And she reads a line about her privacy on each of the five questions that keep an
-        // answer, which is the round trip the catalogue above cannot prove on its own. The three
-        // questions the redesign has redrawn say what the canvas says.
+        // answer, which is the round trip the catalogue above cannot prove on its own. Each
+        // question says what the canvas draws at its foot.
         await anotherWomanOpensEmi();
 
         expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
@@ -5751,12 +5766,12 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
 
         expect(app.pathname()).toBe('/onboarding/feeling');
-        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+        expect(screen.getByText(firstRunCopy.encryptedHere)).toBeTruthy();
 
         await shePresses(onboardingSkipTestID);
 
         expect(app.pathname()).toBe('/onboarding/goals');
-        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+        expect(screen.getByText(firstRunCopy.encryptsYourAnswers)).toBeTruthy();
       },
     );
   });

@@ -38,6 +38,7 @@ export function Goals({ chosen, onPress, onContinue, onBack, onSkip }: Props): R
       onAction={onContinue}
       onBack={onBack}
       onSkip={onSkip}
+      question={firstRunCopy.goals.question}
       screen="goals"
       title={firstRunCopy.goals.title}
     >

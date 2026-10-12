@@ -8,7 +8,6 @@ import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
 import { readDayLog } from '../../src/data/dayLogRepository';
-import { words } from '../../src/language';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
@@ -21,6 +20,8 @@ import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import {
   onboardingActionTestID,
+  onboardingLinesTestID,
+  onboardingLockTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
@@ -226,12 +227,31 @@ describe('a hard period day offers the pain log first', () => {
 
       await sheReachesTheFeeling();
 
-      expect(screen.getByText(firstRunCopy.feeling.title)).toBeTruthy();
-      // Each line is named on its own rather than read off the copy, so a line taken out of the
-      // screen fails here instead of leaving a shorter list that still agrees with itself.
-      expect(screen.getByText(words('onboarding.feeling.line.talks'))).toBeTruthy();
-      expect(screen.getByText('Only you can read this.')).toBeTruthy();
+      // Each line is written out rather than read off the copy, so a line reworded or taken out of
+      // the screen fails here instead of leaving a shorter list that still agrees with itself.
+      expect(screen.getByText('How you feel about it')).toBeTruthy();
+      expect(screen.getByTestId(onboardingLinesTestID)).toHaveTextContent(
+        'This changes how Emi talks to you, and nothing else.',
+      );
+      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
+        'Encrypted on this phone.',
+      );
+      expect(screen.queryByText('Only you can read this.')).toBeNull();
       expect(firstRunCopy.feeling.lines).toHaveLength(2);
+    });
+
+    it('offers the three answers in the redesign words', async () => {
+      await sheOpensEmi();
+
+      await sheReachesTheFeeling();
+
+      expect(screen.getByTestId(feelingTestID('fine'))).toHaveTextContent('I am fine with it');
+      expect(screen.getByTestId(feelingTestID('hard'))).toHaveTextContent(
+        'It is hard, most months',
+      );
+      expect(screen.getByTestId(feelingTestID('understand'))).toHaveTextContent(
+        'I want to understand it',
+      );
     });
 
     it('hands her on to the goals, whether she answers it or passes it by', async () => {

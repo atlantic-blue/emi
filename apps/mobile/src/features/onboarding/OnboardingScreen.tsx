@@ -267,7 +267,11 @@ export function OnboardingScreen({
 }
 
 /** The lines about her privacy. Each one is drawn apart, at the foot, with the lock beside it. */
-const thePromises: readonly string[] = [firstRunCopy.onlyYou, firstRunCopy.encrypts];
+const thePromises: readonly string[] = [
+  firstRunCopy.encrypts,
+  firstRunCopy.encryptedHere,
+  firstRunCopy.encryptsYourAnswers,
+];
 
 function thePromiseIn(lines: readonly string[]): string | undefined {
   return lines.find((line) => thePromises.includes(line));

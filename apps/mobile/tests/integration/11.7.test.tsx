@@ -13,7 +13,6 @@ import { listCycles } from '../../src/data/cycleRepository';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { words } from '../../src/language';
 import {
   homeDoctorRecordTestID,
   homeFertileWindowTestID,
@@ -30,9 +29,13 @@ import { forecastOf } from '../../src/features/forecast/fromCache';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { goalTestID } from '../../src/features/onboarding/Goals';
+import { rowCheckTestID, rowRingTestID } from '../../src/components/ChoiceRow';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
+  onboardingLinesTestID,
+  onboardingLockTestID,
+  onboardingQuestionTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
@@ -267,17 +270,52 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    it('says she may pick as many as she likes, and that only she can read them', async () => {
+    it('says under the question that she may choose all that apply, and that Emi encrypts her answers', async () => {
       await sheOpensEmi();
 
       await sheReachesTheGoals();
 
-      expect(screen.getByText(firstRunCopy.goals.title)).toBeTruthy();
-      // Each line is named on its own rather than read off the copy, so a line taken out of the
-      // screen fails here instead of leaving a shorter list that still agrees with itself.
-      expect(screen.getByText(words('onboarding.goals.line.chooseAll'))).toBeTruthy();
-      expect(screen.getByText('Only you can read this.')).toBeTruthy();
-      expect(firstRunCopy.goals.lines).toHaveLength(2);
+      // Each line is written out rather than read off the copy, so a line reworded or moved fails
+      // here instead of leaving a shorter list that still agrees with itself.
+      expect(screen.getByText('What do you want Emi to help with?')).toBeTruthy();
+      expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
+        'Choose all that apply.',
+      );
+      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
+        'Emi encrypts your answers on this phone. Nobody else can read them.',
+      );
+      // The hint stands under the title now, so nothing is left to say under the list.
+      expect(screen.queryByTestId(onboardingLinesTestID)).toBeNull();
+      expect(screen.queryByText('Pick as many as you like.')).toBeNull();
+      expect(screen.queryByText('Only you can read this.')).toBeNull();
+      expect(firstRunCopy.goals.lines).toHaveLength(1);
+    });
+
+    it('offers the four goals in the redesign words, each with an empty ring until she picks it', async () => {
+      await sheOpensEmi();
+
+      await sheReachesTheGoals();
+
+      expect(screen.getByTestId(goalTestID('forecast'))).toHaveTextContent(
+        'Know when my period comes',
+      );
+      expect(screen.getByTestId(goalTestID('symptoms'))).toHaveTextContent(
+        'Understand my symptoms',
+      );
+      expect(screen.getByTestId(goalTestID('fertileWindow'))).toHaveTextContent(
+        'See my fertile window, as an estimate',
+      );
+      expect(screen.getByTestId(goalTestID('doctorRecord'))).toHaveTextContent(
+        'Keep a record for my doctor',
+      );
+      for (const goal of goalValues) {
+        expect(screen.getByTestId(rowRingTestID(goalTestID(goal)))).toBeTruthy();
+      }
+
+      await shePresses(goalTestID('symptoms'));
+
+      expect(screen.queryByTestId(rowRingTestID(goalTestID('symptoms')))).toBeNull();
+      expect(screen.getByTestId(rowCheckTestID(goalTestID('symptoms')))).toBeTruthy();
     });
 
     it('hands her on to the focus, whether she answers it or passes it by', async () => {

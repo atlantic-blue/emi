@@ -283,6 +283,9 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put the step above the drop, and the redesign canvas puts the drop above the step.
   // The canvas is the later drawing, so the welcome follows it.
   welcome: 1,
+  // The mockups put the hint under the goals. The redesign canvas puts it under the title, so the
+  // goals follow the canvas.
+  goals: 1,
   // The mockups put a line under the year. The redesign canvas draws no line there, only the
   // promise at the foot, so the year follows the canvas.
   yearOfBirth: 1,
