@@ -156,8 +156,8 @@ describe('an icon drawn at a second stroke weight fails the build', () => {
       expect(refusalsIn(`${name}.svg`, fileFor(name))).toEqual([]);
     });
 
-    it('takes the set to twenty eight, with the four added and nothing dropped', () => {
-      expect(iconNames).toHaveLength(28);
+    it('holds the four tiles in a set of thirty two, with nothing dropped', () => {
+      expect(iconNames).toHaveLength(32);
       for (const name of theTiles) {
         expect(iconNames).toContain(name);
       }

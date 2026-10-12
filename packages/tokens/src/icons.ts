@@ -20,10 +20,14 @@ export type IconName =
   | 'energy'
   | 'export'
   | 'headache'
+  | 'info'
+  | 'key'
   | 'lock'
   | 'mood'
   | 'note'
   | 'pain'
+  | 'person'
+  | 'phone'
   | 'plus'
   | 'ring'
   | 'search'
@@ -77,10 +81,14 @@ export const iconNames: readonly IconName[] = [
   'energy',
   'export',
   'headache',
+  'info',
+  'key',
   'lock',
   'mood',
   'note',
   'pain',
+  'person',
+  'phone',
   'plus',
   'ring',
   'search',
@@ -177,6 +185,18 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     strokeWidth: stroke.icon,
     body: '<circle cx="12" cy="12" r="8.25" /> <path d="m11.2 3.9 2.2 3.6-2.8 2.9 2.6 3.4-2.4 2.9 1.8 3.1" />',
   },
+  info: {
+    name: 'info',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<circle cx="12" cy="12" r="8.5" /> <path d="M12 11v5.5M12 7.8v.4" />',
+  },
+  key: {
+    name: 'key',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<circle cx="8" cy="12" r="4" /> <path d="M12 12h8.5M17.5 12v3M20.5 12v2" />',
+  },
   lock: {
     name: 'lock',
     size: ICON_SIZE,
@@ -200,6 +220,18 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<circle cx="12" cy="12" r="1.6" /> <path d="M7.4 7.4a6.5 6.5 0 0 0 0 9.2" /> <path d="M16.6 16.6a6.5 6.5 0 0 0 0-9.2" /> <path d="M4.3 4.3a10.9 10.9 0 0 0 0 15.4" /> <path d="M19.7 19.7a10.9 10.9 0 0 0 0-15.4" />',
+  },
+  person: {
+    name: 'person',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<circle cx="12" cy="8.5" r="4" /> <path d="M4.5 20.5c1.2-3.6 4.1-5.5 7.5-5.5s6.3 1.9 7.5 5.5" />',
+  },
+  phone: {
+    name: 'phone',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<rect x="7" y="3" width="10" height="18" rx="2" /> <path d="M11 18h2" />',
   },
   plus: {
     name: 'plus',

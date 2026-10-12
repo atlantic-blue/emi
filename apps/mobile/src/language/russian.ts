@@ -106,6 +106,7 @@ export const russian: CatalogueIn<'ru'> = {
     many: 'Фаза овуляции, цикл {count} дней',
   },
   'cycle.phaseLine.period': 'Менструация, день {day} из примерно {days}',
+  'cycle.ring.day': 'День',
   'cycle.ring.of': 'из {length}',
   'cycle.ring.spoken': 'День {day} из {length}, {phase}',
 
@@ -492,46 +493,26 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.today.skip': 'Ничего сегодня',
   'onboarding.today.title': 'Как вы себя чувствуете сегодня?',
   'onboarding.today.titleNamed': '{name}, как вы себя чувствуете сегодня?',
-  'onboarding.tour.back': 'Назад',
-  'onboarding.tour.count': '{step} из {of}',
-  'onboarding.tour.range.action': 'Дальше',
-  'onboarding.tour.range.line.arithmetic':
-    'Это всё арифметика по вашим собственным записям. Emi не является средством контрацепции. Emi не является медицинским изделием.',
-  'onboarding.tour.range.line.confidence':
-    'Рядом мы пишем, насколько мы уверены и из скольких ваших циклов это посчитано.',
-  'onboarding.tour.range.line.learning':
-    'После двух полных циклов прогноз строится по вашим циклам. До этого мы считаем по длине цикла, которую вы указали.',
-  'onboarding.tour.range.line.range':
-    'Следующая менструация начнётся между двумя днями. Мы показываем оба, потому что тело не приходит точно в день.',
-  'onboarding.tour.range.title': 'Диапазон, а не догадка.',
-  'onboarding.tour.records.action': 'Дальше',
-  'onboarding.tour.records.line.log':
-    'Записывайте выделения, настроение, энергию, сон, пищевые привычки, температуру, вес и более 70 симптомов на одном листе.',
-  'onboarding.tour.records.line.patterns':
-    'После шести циклов мы показываем симптомы, которые вернулись в той же точке цикла хотя бы в трёх из них. Один плохой день это просто один плохой день, и мы не называем его закономерностью.',
-  'onboarding.tour.records.title': 'Расскажите, как вы себя чувствуете. Посмотрите, что вернётся.',
+  'onboarding.tour.price.line': 'Первый месяц бесплатно, затем 29,99 фунта в год.',
+  'onboarding.tour.price.title': 'Ваше, и остаётся вашим',
   'onboarding.tour.ring.action': 'Дальше',
+  'onboarding.tour.ring.legend.after': 'После неё',
+  'onboarding.tour.ring.legend.before': 'Перед следующей',
+  'onboarding.tour.ring.legend.ovulation': 'Овуляция',
+  'onboarding.tour.ring.legend.period': 'Менструация',
   'onboarding.tour.ring.line.arcs':
-    'Четыре цвета показывают четыре части вашего цикла: менструацию, дни после неё, дни вокруг овуляции и дни перед следующей менструацией.',
-  'onboarding.tour.ring.line.ring':
-    'Точка отмечает сегодня. Число внутри говорит, какой день цикла у вас сейчас.',
-  'onboarding.tour.ring.title': 'Это кольцо и есть ваш цикл.',
+    'Четыре дуги делят кольцо: дни менструации, дни после неё, дни вокруг овуляции и дни перед следующей менструацией.',
+  'onboarding.tour.ring.line.bead':
+    'Кольцо и есть ваш цикл. Точка отмечает сегодня, а число внутри показывает, какой у вас день.',
+  'onboarding.tour.ring.title': 'Ваш цикл в одном кольце.',
   'onboarding.tour.skip': 'Пропустить',
-  'onboarding.tour.yours.action': 'Дальше',
-  'onboarding.tour.yours.line.encrypted':
-    'Всё, что вы записываете, шифруется на этом телефоне ключом, который его никогда не покидает. Наш сервер хранит только закрытую копию, которую не может открыть.',
-  'onboarding.tour.yours.line.price':
-    'Первый месяц бесплатно, затем 29,99 фунта в год. Бесплатной версии нет, потому что за бесплатное приложение платят вашими данными.',
-  'onboarding.tour.yours.line.recovery':
-    'Сохраните код восстановления, и ваша история перейдёт на новый телефон. Мы не можем открыть вашу историю, поэтому не можем никому её передать.',
-  'onboarding.tour.yours.title': 'Ваши дни принадлежат только вам.',
-  'onboarding.welcome.action': 'Начнём',
-  'onboarding.welcome.line.noAccount': 'Ни учётной записи, ни почты, ни пароля.',
-  'onboarding.welcome.line.onThisPhone':
-    'Всё считается на этом телефоне. Emi не является средством контрацепции. Emi не является медицинским изделием.',
-  'onboarding.welcome.line.questions':
-    'Давайте познакомимся с вашим циклом. Несколько вопросов, и любой можно пропустить.',
-  'onboarding.welcome.title': 'Привет, добро пожаловать в Emi!',
+  'onboarding.welcome.action': 'Продолжить',
+  'onboarding.welcome.line.noAccount':
+    'Учётной записи нет. Emi никогда не спрашивает вашу почту или пароль.',
+  'onboarding.welcome.line.onThisPhone': 'Ваш цикл считается на этом телефоне.',
+  'onboarding.welcome.line.whatEmiIs':
+    'Emi показывает то, что говорят ваши собственные записи, и ничего больше. Emi не является средством контрацепции. Emi не является медицинским изделием.',
+  'onboarding.welcome.title': 'Emi изучает ваш цикл. Ваши данные остаются у вас.',
   'onboarding.whatEmiDoes.action': 'Дальше',
   'onboarding.whatEmiDoes.forecast.line':
     'Сначала диапазон. Он становится уже, когда мы узнаём ваш цикл.',

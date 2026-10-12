@@ -24,7 +24,6 @@ import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
-import { tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
@@ -52,14 +51,13 @@ const today = dayOf(whenSheOpensIt);
 const sheSaysHerCycleRuns = defaultCycleLengthDays + 2;
 
 /**
- * Her first run, end to end, from the tour to the hold, without a day for her last period.
+ * Her first run, end to end, from the welcome to the hold, without a day for her last period.
  *
  * The walk is the whole point of this file: the screen she lands on is reached by using Emi and
  * never by seeding a phone, so nothing a fixture writes can stand in for what the hold wrote.
  */
 async function sheWalksTheFirstRunWithNoDate(): Promise<void> {
   await renderRouter(appDirectory, { initialUrl: '/' });
-  await fireEvent.press(screen.getByTestId(tourSkipTestID));
   await sheAnswersEveryQuestionWithNoDate({ cycleLengthDays: sheSaysHerCycleRuns });
   await sheHoldsTheRing();
 }
@@ -163,7 +161,6 @@ describe('she completes the first run with no date, logs a period, and reads a r
   describe('the walk itself, so a pass cannot come from a screen that was never reached', () => {
     it('presses the hold the first run ends on, which no seeded phone ever draws', async () => {
       await renderRouter(appDirectory, { initialUrl: '/' });
-      await fireEvent.press(screen.getByTestId(tourSkipTestID));
       await sheAnswersEveryQuestionWithNoDate({ cycleLengthDays: sheSaysHerCycleRuns });
 
       expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();

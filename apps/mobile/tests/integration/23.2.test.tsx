@@ -141,6 +141,13 @@ const theScreensOfTheQuestions: readonly string[] = [
 /** The one line that names Emi on purpose, because the product's name is the point of it. */
 const theGreeting = 'onboarding.welcome.title';
 
+/** The welcome is drawn as the design writes it, and the design names Emi in it by name. */
+const theWelcomeNamingEmi = [
+  'onboarding.welcome.line.noAccount',
+  'onboarding.welcome.line.whatEmiIs',
+  theGreeting,
+];
+
 function formsOf(held: Words): string[] {
   return typeof held === 'string' ? [held] : Object.values(held);
 }
@@ -525,14 +532,14 @@ describe('the first run questions use her name and reply to her answers', () => 
   });
 
   describe('the voice the questions are written in', () => {
-    it('carries one exclamation mark in the whole first run, which is the greeting', () => {
+    it('carries no exclamation mark in the whole first run', () => {
       for (const language of languages) {
         const keys = theKeysOfTheQuestions();
         const loud = keys.filter((key) =>
           theWordsOfTheQuestionsIn(language, [key]).some((line) => line.includes('!')),
         );
 
-        expect({ language, loud }).toEqual({ language, loud: [theGreeting] });
+        expect({ language, loud }).toEqual({ language, loud: [] });
       }
     });
 
@@ -557,17 +564,19 @@ describe('the first run questions use her name and reply to her answers', () => 
       expect(theAnswersAboutHowSheFeels).toHaveLength(3);
     });
 
-    it('talks to her as you and about Emi as we, in each of the three languages', () => {
+    it('names Emi only on the welcome and speaks as we after it, in each of the three languages', () => {
       for (const language of languages) {
         const keys = theKeysOfTheQuestions();
         const read = theWordsOfTheQuestionsIn(language).join('\n');
 
-        // A denial names Emi on purpose, so the two of them come out before the rest is read.
         const naming = keys.filter((key) =>
           searchableText(theWordsOfTheQuestionsIn(language, [key]).join('\n')).includes('Emi'),
         );
 
-        expect({ language, naming }).toEqual({ language, naming: [theGreeting] });
+        expect({ language, naming: [...naming].sort() }).toEqual({
+          language,
+          naming: theWelcomeNamingEmi,
+        });
         expect({ language, asWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
           language,
           asWe: true,

@@ -101,6 +101,7 @@ export const spanish: CatalogueIn<'es'> = {
     other: 'Fase de ovulación, un ciclo de {count} días',
   },
   'cycle.phaseLine.period': 'Tu periodo, día {day} de unos {days}',
+  'cycle.ring.day': 'Día',
   'cycle.ring.of': 'de {length}',
   'cycle.ring.spoken': 'Día {day} de {length}, {phase}',
 
@@ -470,46 +471,26 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.today.skip': 'Nada hoy',
   'onboarding.today.title': '¿Cómo te sientes hoy?',
   'onboarding.today.titleNamed': '{name}, ¿cómo te sientes hoy?',
-  'onboarding.tour.back': 'Atrás',
-  'onboarding.tour.count': '{step} de {of}',
-  'onboarding.tour.range.action': 'Siguiente',
-  'onboarding.tour.range.line.arithmetic':
-    'Todo es aritmética sobre tus propios registros. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
-  'onboarding.tour.range.line.confidence':
-    'Al lado te decimos cuánta certeza tenemos, y de cuántos de tus ciclos viene.',
-  'onboarding.tour.range.line.learning':
-    'Después de dos ciclos completos, el pronóstico se construye con los tuyos. Hasta entonces contamos con la duración de ciclo que nos digas.',
-  'onboarding.tour.range.line.range':
-    'Tu próximo periodo llegará entre dos días. Te mostramos los dos, porque el cuerpo no llega al día exacto.',
-  'onboarding.tour.range.title': 'Un rango, no una adivinanza.',
-  'onboarding.tour.records.action': 'Siguiente',
-  'onboarding.tour.records.line.log':
-    'Registra tu flujo, ánimo, energía, sueño, temperatura, peso y más de 70 síntomas, todo en una hoja.',
-  'onboarding.tour.records.line.patterns':
-    'Después de seis ciclos te mostramos los síntomas que volvieron en el mismo punto en al menos tres de ellos. Un día malo es solo un día malo, y no lo llamamos un patrón.',
-  'onboarding.tour.records.title': 'Cuéntale cómo te sientes. Mira lo que vuelve.',
+  'onboarding.tour.price.line': 'Un mes gratis, después 29,99 libras al año.',
+  'onboarding.tour.price.title': 'Tuyo, y sigue siendo tuyo',
   'onboarding.tour.ring.action': 'Siguiente',
+  'onboarding.tour.ring.legend.after': 'Después',
+  'onboarding.tour.ring.legend.before': 'Antes del siguiente',
+  'onboarding.tour.ring.legend.ovulation': 'Ovulación',
+  'onboarding.tour.ring.legend.period': 'Periodo',
   'onboarding.tour.ring.line.arcs':
-    'Los cuatro colores son las cuatro partes de tu ciclo: tu periodo, los días que vienen después, los días alrededor de la ovulación y los días antes de tu próximo periodo.',
-  'onboarding.tour.ring.line.ring':
-    'El punto es hoy. El número que hay dentro te dice en qué día de tu ciclo estás.',
-  'onboarding.tour.ring.title': 'Este anillo es tu ciclo.',
+    'Cuatro arcos dividen el anillo: los días que sangras, los días después, los días alrededor de la ovulación y los días antes de tu próximo periodo.',
+  'onboarding.tour.ring.line.bead':
+    'El anillo es tu ciclo. Un punto marca hoy, y el número de dentro es el día en que estás.',
+  'onboarding.tour.ring.title': 'Tu ciclo, en un anillo.',
   'onboarding.tour.skip': 'Omitir',
-  'onboarding.tour.yours.action': 'Continuar',
-  'onboarding.tour.yours.line.encrypted':
-    'Todo lo que registras se cifra en este teléfono, con una clave que nunca sale de él. Nuestro servidor solo guarda una copia cerrada que no puede abrir.',
-  'onboarding.tour.yours.line.price':
-    'Tu primer mes es gratis, después cuesta 29,99 libras al año. No hay versión gratuita, porque una aplicación gratuita se paga con tus datos.',
-  'onboarding.tour.yours.line.recovery':
-    'Guarda tu código de recuperación y tu historial te sigue a un teléfono nuevo. No podemos abrir tu historial, así que no podemos entregarlo a nadie.',
-  'onboarding.tour.yours.title': 'Tus días son solo tuyos.',
-  'onboarding.welcome.action': 'Empecemos',
-  'onboarding.welcome.line.noAccount': 'Sin cuenta, sin correo, sin contraseña.',
-  'onboarding.welcome.line.onThisPhone':
-    'Todo se calcula en este teléfono. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
-  'onboarding.welcome.line.questions':
-    'Vamos a conocer tu ciclo. Son unas preguntas, y puedes saltarte cualquiera.',
-  'onboarding.welcome.title': '¡Hola, bienvenida a Emi!',
+  'onboarding.welcome.action': 'Continuar',
+  'onboarding.welcome.line.noAccount':
+    'No hay cuenta. Emi nunca te pide tu correo ni una contraseña.',
+  'onboarding.welcome.line.onThisPhone': 'Tu ciclo se calcula en este teléfono.',
+  'onboarding.welcome.line.whatEmiIs':
+    'Emi te muestra lo que dicen tus propios registros, y nada más. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
+  'onboarding.welcome.title': 'Emi aprende tu ciclo. Tus datos son tuyos.',
   'onboarding.whatEmiDoes.action': 'Continuar',
   'onboarding.whatEmiDoes.forecast.line':
     'Primero un rango. Se estrecha a medida que conocemos tu ciclo.',

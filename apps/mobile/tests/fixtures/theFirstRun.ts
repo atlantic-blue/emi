@@ -19,11 +19,14 @@ import { todayTestID } from '../../src/features/onboarding/Today';
 import { goalTestID } from '../../src/features/onboarding/Goals';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import { yearTestID } from '../../src/components/YearWheel';
+import { tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import {
   type TodaySymptom,
   defaultCycleLengthDays,
   defaultPeriodLengthDays,
 } from '../../src/features/onboarding/firstRun';
+
+const theWelcomeTestID = 'onboarding-welcome';
 
 export interface HerAnswers {
   readonly periodStartedOn: string;
@@ -62,16 +65,33 @@ export type HerAnswersWithNoDate = Omit<HerAnswers, 'periodBeforeStartedOn' | 'p
  * is the thing under test and `sheAnswersEveryQuestion` answers it on the way through.
  */
 export async function sheReachesTheLastPeriodQuestion(): Promise<void> {
-  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  await sheReadsTheWelcome();
   await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
   await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+}
+
+/**
+ * The welcome, and the tour behind it on a phone that has not shown it yet. A phone seeded with the
+ * tour already read goes from the welcome straight to her name, and a walk that has already passed
+ * both starts at her name.
+ */
+export async function sheReadsTheWelcome(): Promise<void> {
+  if (screen.queryByTestId(theWelcomeTestID) !== null) {
+    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  }
+
+  const theWayPastTheTour = screen.queryByTestId(tourSkipTestID);
+
+  if (theWayPastTheTour !== null) {
+    await fireEvent.press(theWayPastTheTour);
+  }
 }
 
 /** The welcome, her name and the year she was born, which leaves her at the last period question. */
 async function sheAnswersWhatComesBeforeHerLastPeriod(
   answers: HerAnswersWithNoDate,
 ): Promise<void> {
-  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  await sheReadsTheWelcome();
 
   if (answers.name === undefined) {
     await fireEvent.press(screen.getByTestId(onboardingSkipTestID));

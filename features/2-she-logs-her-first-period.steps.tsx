@@ -328,13 +328,11 @@ import {
 import { rowGroupRuleTestID } from '../apps/mobile/src/components/RowGroup';
 import { exportCopy } from '../apps/mobile/src/features/export/copy';
 import {
-  type TourCard,
   cyclesBeforeAForecastSentence,
   firstRunCopy,
   promiseCopy,
   firstRunScreenCount,
   stepLabel,
-  tourCards,
   tourCopy,
 } from '../apps/mobile/src/features/onboarding/copy';
 import {
@@ -379,6 +377,7 @@ import {
   sheAnswersEveryQuestion,
   sheAnswersEveryQuestionWithNoDate,
   sheReachesTheLastPeriodQuestion,
+  sheReadsTheWelcome,
 } from '../apps/mobile/tests/fixtures/theFirstRun';
 import {
   thePartsOfTheDayOneDrawing,
@@ -596,7 +595,7 @@ import {
   whatHerPhoneHolds,
 } from '../apps/mobile/tests/fixtures/theStatesOfHerData';
 import { catalogueFilesOf, samplesUnder } from '../tools/pipeline/sampleWording';
-import { approvedDenials, describeClaim, searchableText } from '../tools/pipeline/forbiddenClaims';
+import { describeClaim } from '../tools/pipeline/forbiddenClaims';
 import { interfaceClaimsIn } from '../tools/pipeline/interfaceClaims';
 import {
   type Described,
@@ -1162,14 +1161,6 @@ function theRingSays(): string {
   return String(screen.getByTestId(cycleRingTestID).props.accessibilityLabel);
 }
 
-/** The three sentences of the first card, which is the first thing Emi ever says to her. */
-const whatTheFirstCardSays = {
-  title: 'This ring is your cycle.',
-  dot: "The dot is today. The number inside it tells you which day of your cycle you're on.",
-  colours:
-    'The four colours are the four parts of your cycle: your period, the days after it, the days around ovulation, and the days before your next period.',
-};
-
 /**
  * How each language writes the first person plural. The voice says Emi tells her what we do for
  * her, so each catalogue carries its own form of it rather than the English word.
@@ -1180,26 +1171,22 @@ const howEachLanguageSaysWe: Readonly<Record<Language, RegExp>> = {
   ru: /(?<!\p{Letter})(мы|наш)/iu,
 };
 
-/** Which card of the tour she is on, read off the screen rather than counted by the step. */
-function theCardOfTheTourSheIsOn(): TourCard | undefined {
-  return tourCards.find((card) => screen.queryByTestId(tourScreenTestID(card)) !== null);
-}
-
 function formsOf(held: Words): string[] {
   return typeof held === 'string' ? [held] : Object.values(held);
 }
 
-/** Every word of the four cards in one language, out of that language's own catalogue. */
-function theWordsOfTheTourIn(language: Language): string[] {
+/** Every word of the welcome and the tour in one language, out of that language's own catalogue. */
+function theWordsOfTheFirstOpenIn(language: Language): string[] {
   const catalogue = catalogueOf(language);
 
   return wordKeys
-    .filter((key) => key.startsWith('onboarding.tour.'))
+    .filter((key) => key.startsWith('onboarding.tour.') || key.startsWith('onboarding.welcome.'))
     .flatMap((key) => formsOf(catalogue[key]));
 }
 
-/** The way out of the tour, which is on every card and leaves her on the first question. */
+/** The welcome, then the way out of the tour behind it, which leaves her on the first question. */
 async function sheSkipsTheTour(): Promise<void> {
+  await shePresses(onboardingActionTestID);
   await shePresses(tourSkipTestID);
 }
 
@@ -1549,10 +1536,6 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
-    });
-
     and('she answers every question of the first run', async () => {
       await sheAnswersEveryQuestionOfTheFirstRun();
     });
@@ -1596,10 +1579,6 @@ defineFeature(feature, (test) => {
 
     when('she opens Emi', async () => {
       await sheOpens('/');
-    });
-
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
     });
 
     and('she answers every question of the first run', async () => {
@@ -1646,10 +1625,6 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
-    });
-
     and('she answers every question of the first run', async () => {
       await sheAnswersEveryQuestionOfTheFirstRun();
       expect(app.pathname()).toBe('/onboarding/hold');
@@ -1686,14 +1661,10 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
-    });
-
     and(
       'she answers every question, and presses Done a second time before the screen goes',
       async () => {
-        await shePresses(onboardingActionTestID);
+        await sheReadsTheWelcome();
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
         await shePresses(dayTestID(herPeriodStarted));
@@ -1773,14 +1744,10 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
+    and('she answers every question of the first run', async () => {
       visited.push(app.pathname());
       whatEachScreenSaid.push(screen.getByText(firstRunCopy.welcome.title).props.children);
-    });
-
-    and('she answers every question of the first run', async () => {
-      await shePresses(onboardingActionTestID);
+      await sheReadsTheWelcome();
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
@@ -1863,12 +1830,10 @@ defineFeature(feature, (test) => {
       everyFieldShePassed.push(...fieldsDrawn());
     });
 
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
-    });
-
     and('she answers every question of the first run', async () => {
       await shePresses(onboardingActionTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(tourSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
@@ -1931,10 +1896,6 @@ defineFeature(feature, (test) => {
 
     when('she opens Emi', async () => {
       app = await sheOpens('/');
-    });
-
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
     });
 
     and('she reaches the question about when her last period started', async () => {
@@ -2376,11 +2337,13 @@ defineFeature(feature, (test) => {
       await sheOpens('/');
     });
 
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
+    and('she reads the welcome and skips the tour', async () => {
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
       await shePresses(onboardingActionTestID);
+      measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
+
+      await shePresses(tourSkipTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
       await shePresses(onboardingSkipTestID);
@@ -2401,7 +2364,7 @@ defineFeature(feature, (test) => {
     then(
       'every control on each screen of the first run is at least 44 points on both axes, apart from a day square of the month',
       () => {
-        expect(measured).toEqual([[], [], [], [], [], []]);
+        expect(measured).toEqual([[], [], [], [], [], [], []]);
         expect(screen.getByTestId(periodLengthTestID)).toBeTruthy();
       },
     );
@@ -2421,7 +2384,6 @@ defineFeature(feature, (test) => {
 
     and('she reaches the question about her last period', async () => {
       await sheSkipsTheTour();
-      await shePresses(onboardingActionTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
     });
@@ -4745,15 +4707,11 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
-      whereSheIsNow();
-    });
-
     and(
       'she gives her name and the year she was born, and reaches the question about her last period',
       async () => {
-        await shePresses(onboardingActionTestID);
+        whereSheIsNow();
+        await sheReadsTheWelcome();
         whereSheIsNow();
         await fireEvent.changeText(screen.getByTestId(nameFieldTestID), theNameSheGives);
         await shePresses(onboardingActionTestID);
@@ -4854,10 +4812,6 @@ defineFeature(feature, (test) => {
 
     when('she opens Emi', async () => {
       app = await sheOpens('/');
-    });
-
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
     });
 
     and('she reaches the question about when her last period started', async () => {
@@ -4961,10 +4915,6 @@ defineFeature(feature, (test) => {
 
     when('she opens Emi', async () => {
       app = await sheOpens('/');
-    });
-
-    and('she skips the tour Emi opens with', async () => {
-      await sheSkipsTheTour();
     });
 
     and(
@@ -5582,7 +5532,12 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-1, the tour tells her the ring is her cycle', ({ given, when, then, and }) => {
+  test('SCREEN-1, the welcome and the tour say what the redesign says', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     given('she has never opened Emi before', () => undefined);
 
     when('she opens Emi', async () => {
@@ -5590,85 +5545,77 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'the first thing she reads says the ring is her cycle, the dot is today, and what the number inside it means',
+      'the first thing she reads is the welcome, saying Emi learns her cycle and she keeps her data',
       () => {
-        expect(theCardOfTheTourSheIsOn()).toBe('ring');
+        const welcome = within(screen.getByTestId('onboarding-welcome'));
 
-        const card = within(screen.getByTestId(tourScreenTestID('ring')));
-
-        expect(card.getByText(whatTheFirstCardSays.title)).toBeTruthy();
-        expect(card.getByText(whatTheFirstCardSays.dot)).toBeTruthy();
-        expect(card.getByText(whatTheFirstCardSays.colours)).toBeTruthy();
+        expect(welcome.getByText('Emi learns your cycle. You keep your data.')).toBeTruthy();
+        expect(screen.queryByTestId(tourScreenTestID)).toBeNull();
       },
     );
 
-    and('the card speaks to her as you, and names Emi nowhere', () => {
-      const said = [tourCopy.ring.title, ...tourCopy.ring.lines];
+    and(
+      'the welcome says where her cycle is worked out, that there is no account, and what Emi is not',
+      () => {
+        const welcome = within(screen.getByTestId('onboarding-welcome'));
 
-      for (const line of said) {
-        expect({ line, toHer: /(?<!\p{Letter})(you|your)(?!\p{Letter})/iu.test(line) }).toEqual({
-          line,
-          toHer: true,
-        });
-        expect(line).not.toContain('Emi');
-      }
-    });
+        expect(welcome.getByText('Your cycle is worked out on this phone.')).toBeTruthy();
+        expect(
+          welcome.getByText(
+            'There is no account. Emi never asks for your email address or a password.',
+          ),
+        ).toBeTruthy();
+        expect(
+          welcome.getByText(
+            'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
+          ),
+        ).toBeTruthy();
+      },
+    );
 
     and(
-      'the four cards say what we do for her, in each of the three languages she can read them in',
-      () => {
-        for (const language of languages) {
-          const said = theWordsOfTheTourIn(language);
-          const read = said.join('\n');
+      'the tour after it draws the ring with its legend, says what the ring is, and names the price',
+      async () => {
+        await shePresses(onboardingActionTestID);
 
-          // A denial names Emi on purpose, so the two of them come out before the rest is read.
-          expect({ language, aboutEmi: searchableText(read).includes('Emi') }).toEqual({
-            language,
-            aboutEmi: false,
-          });
-          expect({ language, toHerAsWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
-            language,
-            toHerAsWe: true,
-          });
-          expect(said.length).toBeGreaterThan(12);
+        const tour = within(screen.getByTestId(tourScreenTestID));
+
+        expect(tour.getByTestId(cycleRingTestID)).toBeTruthy();
+        for (const word of ['Period', 'After it', 'Ovulation', 'Before the next']) {
+          expect(tour.getByText(word)).toBeTruthy();
         }
-
-        expect(languages.length).toBe(3);
+        expect(tour.getByText('Your cycle, in one ring.')).toBeTruthy();
+        for (const line of tourCopy.lines) {
+          expect(tour.getByText(line)).toBeTruthy();
+        }
+        expect(tour.getByText('One month free, then 29.99 pounds a year.')).toBeTruthy();
       },
     );
 
     and(
-      'the card that names a forecast still denies the two claims, and no card says a word a screen refuses',
+      'the welcome and the tour are in her own language, and say no word a screen refuses',
       () => {
-        const theFirstDenial = 'Emi is not a c';
-        const theSecondDenial = 'Emi is not a m';
-        const denial = (beginning: string): string => {
-          const found = approvedDenials.find((each) => each.startsWith(beginning));
+        const english = theWordsOfTheFirstOpenIn('en');
 
-          if (found === undefined) {
-            throw new Error(`no approved denial starts with "${beginning}"`);
+        for (const language of languages) {
+          const said = theWordsOfTheFirstOpenIn(language);
+
+          if (language !== 'en') {
+            expect({ language, same: said.filter((line) => english.includes(line)) }).toEqual({
+              language,
+              same: [],
+            });
           }
 
-          return found;
-        };
-
-        const denying = tourCopy.range.lines.filter((line) =>
-          line.includes(denial(theFirstDenial)),
-        );
-
-        expect(denying).toHaveLength(1);
-        expect(denying[0]).toContain(denial(theSecondDenial));
-        // The gate reads a denial as a claim unless a full stop comes before it.
-        expect(denying[0]?.startsWith(denial(theFirstDenial))).toBe(false);
-
-        for (const language of languages) {
           const claims = interfaceClaimsIn(
-            `the tour in ${language}`,
-            theWordsOfTheTourIn(language).join('\n'),
+            `the welcome and the tour in ${language}`,
+            said.join('\n'),
           );
 
           expect(claims.map(describeClaim)).toEqual([]);
         }
+
+        expect(languages.length).toBe(3);
       },
     );
   });
@@ -5721,10 +5668,9 @@ defineFeature(feature, (test) => {
 
     given('she has never opened Emi before', () => undefined);
 
-    when('she opens Emi, skips the tour, and gives her name', async () => {
+    when('she opens Emi, reads the welcome, skips the tour, and gives her name', async () => {
       app = await sheOpens('/');
       await sheSkipsTheTour();
-      await shePresses(onboardingActionTestID);
       await fireEvent.changeText(screen.getByTestId(nameFieldTestID), theNameSheGives);
       await shePresses(onboardingActionTestID);
     });
@@ -5739,7 +5685,6 @@ defineFeature(feature, (test) => {
       'a woman who gives no name reads the same question, with no gap where a name would be',
       async () => {
         await anotherWomanOpensEmi();
-        await shePresses(onboardingActionTestID);
         await shePresses(onboardingSkipTestID);
 
         expect(app.pathname()).toBe('/onboarding/year-of-birth');
@@ -5793,7 +5738,6 @@ defineFeature(feature, (test) => {
         // And she reads it on each of the five questions that keep an answer, which is the round
         // trip the catalogue above cannot prove on its own.
         await anotherWomanOpensEmi();
-        await shePresses(onboardingActionTestID);
 
         expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
 
@@ -5861,12 +5805,10 @@ defineFeature(feature, (test) => {
     }
 
     /**
-     * The welcome and the twelve questions, with her last period answered and the rest passed,
+     * The twelve questions after the welcome, with her last period answered and the rest passed,
      * which leaves her standing on the forecast rather than on the hold.
      */
     async function sheAnswersEverythingAndReachesHerForecast(name?: string): Promise<void> {
-      await shePresses(onboardingActionTestID);
-
       if (name === undefined) {
         await shePresses(onboardingSkipTestID);
       } else {
@@ -5896,11 +5838,14 @@ defineFeature(feature, (test) => {
 
     given('she has never opened Emi before', () => undefined);
 
-    when('she opens Emi, skips the tour, gives her name, and answers every question', async () => {
-      app = await sheOpens('/');
-      await sheSkipsTheTour();
-      await sheAnswersEverythingAndReachesHerForecast(theNameSheGives);
-    });
+    when(
+      'she opens Emi, reads the welcome, skips the tour, gives her name, and answers every question',
+      async () => {
+        app = await sheOpens('/');
+        await sheSkipsTheTour();
+        await sheAnswersEverythingAndReachesHerForecast(theNameSheGives);
+      },
+    );
 
     then('the forecast she reads is addressed to her by the name she gave', () => {
       expect(app.pathname()).toBe('/onboarding/first-forecast');

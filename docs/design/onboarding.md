@@ -24,6 +24,28 @@ application in the simulator and said the product is unusable at the beginning, 
 cannot see what Emi offers. This document designs the tour that shows her, and it repairs the screen
 she lands on afterwards.
 
+## The tour as it ships now
+
+The redesign canvas replaced the four cards below with one card, and moved the tour after the
+welcome. Read this section first. The sections after it record the four card design it replaced.
+
+```mermaid
+flowchart LR
+  W["Welcome"] --> T["Tour, one card"] --> N["Name"] --> Q["The rest of the first run"]
+  T -- "Skip" --> N
+```
+
+- The welcome is the first screen. It says "Emi learns your cycle. You keep your data." and three
+  lines: the cycle is worked out on this phone, there is no account, and what Emi is not, with the
+  two denials.
+- The welcome does not say "Nothing is sent anywhere". The delete sends a request to the server, so
+  the sentence is not true.
+- The tour is one card: the ring at day 12 of a 29 day cycle with every arc at full colour, a
+  legend for the four parts, two lines on what the ring is, and the price. Next and Skip both write
+  `tourSeenAt` and go to the name question.
+- A phone that holds her answers but has not shown the tour still shows it once, and then goes home.
+- The cards about the range, the records and the key are removed. They have no board on the canvas.
+
 ## How to read this document
 
 Status: designed

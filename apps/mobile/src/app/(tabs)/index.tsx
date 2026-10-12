@@ -135,14 +135,14 @@ export default function HomeRoute(): ReactNode {
     }, [database, profiles, today, vault]),
   );
 
-  // The tour comes first, because a woman asked for the day her last period started has been
-  // told nothing about what the answer buys her.
-  if (!tourIsDone) {
-    return <Redirect href="/onboarding/tour" />;
-  }
-
+  // The welcome comes first and leads into the tour, so a woman with no answers starts there.
   if (!isDone) {
     return <Redirect href="/onboarding/welcome" />;
+  }
+
+  // A woman whose answers are held on a phone that has not shown her the tour still reads it.
+  if (!tourIsDone) {
+    return <Redirect href="/onboarding/tour" />;
   }
 
   return (

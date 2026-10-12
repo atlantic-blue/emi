@@ -26,7 +26,7 @@ import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-import { ringCycleLengthWords, ringSpokenLabel } from '../features/cycle/copy';
+import { ringCycleLengthWords, ringDayWord, ringSpokenLabel } from '../features/cycle/copy';
 
 /**
  * The ring of design section 9.5, drawn from the days of her own cycle. It carries the meaning so
@@ -52,6 +52,10 @@ interface Props {
   readonly day: number;
   readonly phases: readonly PhaseSpan[];
   readonly diameter?: number;
+  /** Faded marks the days still to come. A ring drawn for nobody has none to come, so it is full. */
+  readonly daysAhead?: 'faded' | 'full';
+  /** What the word over the day names. A ring drawn for nobody has no phase of hers to name. */
+  readonly centreWord?: 'phase' | 'day';
 }
 
 export function CycleRing({
@@ -59,6 +63,8 @@ export function CycleRing({
   day,
   phases,
   diameter = RING_DIAMETER,
+  daysAhead = 'faded',
+  centreWord = 'phase',
 }: Props): ReactNode {
   const geometry = ringGeometry({ cycleLengthDays, day, phases });
   const centre = { x: diameter / 2, y: diameter / 2 };
@@ -71,7 +77,9 @@ export function CycleRing({
       d={arcPath(centre, radius, painted.startDegrees, painted.sweepDegrees)}
       fill="none"
       key={ringArcTestID(painted.phase, painted.strength)}
-      opacity={painted.strength === 'ahead' ? DAYS_AHEAD_STRENGTH : undefined}
+      opacity={
+        painted.strength === 'ahead' && daysAhead === 'faded' ? DAYS_AHEAD_STRENGTH : undefined
+      }
       stroke={colour[phasePalette[painted.phase].fill]}
       strokeLinecap={painted.roundEnds ? 'round' : 'butt'}
       strokeWidth={RING_TRACK_WIDTH}
@@ -105,10 +113,14 @@ export function CycleRing({
         </Svg>
       </Animated.View>
       <View pointerEvents="none" style={styles.middle}>
-        <Text style={[styles.phase, { color: colour[phasePalette[geometry.phase].ink] }]}>
-          {phaseLabel[geometry.phase]}
-        </Text>
-        <Text style={styles.day}>{day}</Text>
+        {centreWord === 'day' ? (
+          <Text style={styles.dayWord}>{ringDayWord()}</Text>
+        ) : (
+          <Text style={[styles.phase, { color: colour[phasePalette[geometry.phase].ink] }]}>
+            {phaseLabel[geometry.phase]}
+          </Text>
+        )}
+        <Text style={centreWord === 'day' ? styles.dayAsTheSubject : styles.day}>{day}</Text>
         <Text style={styles.cycleLength}>{ringCycleLengthWords(cycleLengthDays)}</Text>
       </View>
     </View>
@@ -181,6 +193,16 @@ const styles = StyleSheet.create({
   day: {
     color: colour.text,
     ...textStyle(CYCLE_DAY_ROLE),
+  },
+  // Where the ring names the day rather than a phase, the day is what the ring is drawn to show, so
+  // it takes the display size the design gives it.
+  dayAsTheSubject: {
+    color: colour.text,
+    ...textStyle('display-lg'),
+  },
+  dayWord: {
+    color: colour.secondaryText,
+    ...textStyle(PHASE_NAME_ROLE),
   },
   middle: {
     alignItems: 'center',

@@ -9,7 +9,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, her first run ends on the home screen with her period recorded
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she answers every question of the first run
     And she presses and holds the ring
     Then she is looking at the home screen
@@ -19,7 +18,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, her stated cycle length is not readable in the sealed profile
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she answers every question of the first run
     And she presses and holds the ring
     Then her phone holds the cycle length she gave
@@ -29,7 +27,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she answers everything, leaves before the hold, and nothing is written
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she answers every question of the first run
     And she closes Emi at the hold, without holding the ring
     Then her phone holds no day, no answers and no marker
@@ -38,7 +35,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she presses Done twice and her first run is written once
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she answers every question, and presses Done a second time before the screen goes
     And she presses and holds the ring
     Then she is looking at the home screen
@@ -48,7 +44,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the first run asks its questions and the hold after them
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she answers every question of the first run
     And she presses and holds the ring
     Then she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today
@@ -57,7 +52,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she answers every question of the first run
     And she presses and holds the ring
     Then the only thing she could type into was her name
@@ -65,7 +59,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she says she does not remember when her last period started and the first run moves on
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she reaches the question about when her last period started
     And she says she does not remember
     Then she is being asked how long her cycle runs
@@ -74,7 +67,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the way past the last period question passes the period before with it
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she gives her name and the year she was born, and reaches the question about her last period
     And she says she does not remember
     Then she is being asked how long her cycle runs
@@ -87,7 +79,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the first run with no date ends on a forecast that says it is still learning
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she reaches the question about when her last period started
     And she says she does not remember
     And she answers the rest of the questions
@@ -185,7 +176,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SEE-3, every control of the first run is at least 44 points on both axes, apart from a day square
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
+    And she reads the welcome and skips the tour
     Then every control on each screen of the first run is at least 44 points on both axes, apart from a day square of the month
 
   Scenario: SEE-3, a square of the calendar keeps its height and takes its width from the month
@@ -523,7 +514,6 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she completes the first run with no date, logs a period, and reads a ring
     Given she has never opened Emi before
     When she opens Emi
-    And she skips the tour Emi opens with
     And she answers every question of the first run, and says she does not remember her last period
     And she presses and holds the ring
     Then she is looking at the screen that says what the ring needs
@@ -620,17 +610,17 @@ Feature: She opens Emi and logs her first period
     And the days she bled are filled discs, and the day her period is expected on is a dashed outline
     And the column she is on is named TODAY in place of its weekday letter
 
-  Scenario: SCREEN-1, the tour tells her the ring is her cycle
+  Scenario: SCREEN-1, the welcome and the tour say what the redesign says
     Given she has never opened Emi before
     When she opens Emi
-    Then the first thing she reads says the ring is her cycle, the dot is today, and what the number inside it means
-    And the card speaks to her as you, and names Emi nowhere
-    And the four cards say what we do for her, in each of the three languages she can read them in
-    And the card that names a forecast still denies the two claims, and no card says a word a screen refuses
+    Then the first thing she reads is the welcome, saying Emi learns her cycle and she keeps her data
+    And the welcome says where her cycle is worked out, that there is no account, and what Emi is not
+    And the tour after it draws the ring with its legend, says what the ring is, and names the price
+    And the welcome and the tour are in her own language, and say no word a screen refuses
 
   Scenario: SCREEN-1, the first run greets her by the name she gave
     Given she has never opened Emi before
-    When she opens Emi, skips the tour, and gives her name
+    When she opens Emi, reads the welcome, skips the tour, and gives her name
     Then the question after it greets her by the name she gave
     And a woman who gives no name reads the same question, with no gap where a name would be
     And picking that her cycle moves around answers her with the reply to that answer
@@ -638,7 +628,7 @@ Feature: She opens Emi and logs her first period
 
   Scenario: SCREEN-1, her first forecast is addressed to her
     Given she has never opened Emi before
-    When she opens Emi, skips the tour, gives her name, and answers every question
+    When she opens Emi, reads the welcome, skips the tour, gives her name, and answers every question
     Then the forecast she reads is addressed to her by the name she gave
     And a woman who gave no name reads the same forecast, with no gap where a name would be
     And the screen that reads her answers back is addressed to her too

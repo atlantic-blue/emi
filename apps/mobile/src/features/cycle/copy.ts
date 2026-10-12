@@ -25,6 +25,11 @@ export function ringSpokenLabel(day: number, cycleLengthDays: number, phase: str
   });
 }
 
+/** The word over the day in the middle of a ring that names the day rather than the phase. */
+export function ringDayWord(): string {
+  return words('cycle.ring.day');
+}
+
 /**
  * The line under the day in the middle of the ring: how long the cycle it counts in runs. The
  * day above it is a figure alone, and this is what says what that figure is counted out of.
