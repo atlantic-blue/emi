@@ -15,6 +15,7 @@ import {
   fontNameFor,
   fonts,
   phaseLabel,
+  phaseNameInk,
   phaseNames,
   phasePalette,
   ringGeometry,
@@ -28,6 +29,7 @@ import {
   cycleRingTestID,
   ringArcTestID,
   ringBeadTestID,
+  ringNameTestID,
   ringTrackTestID,
 } from '../../src/components/CycleRing';
 import { listCycles } from '../../src/data/cycleRepository';
@@ -293,9 +295,45 @@ describe('the phase name is written in its ink and never on its own fill', () =>
 
       expect(colourOf(theWrittenName(phase))).toBe(colour[phasePalette[phase].ink]);
       expect(textDrawnOnAPhaseFill(screen.toJSON())).toEqual([]);
+      // Contract changed by the todayPhases board: the bead of Today is a disc of the text colour
+      // with a card colour halo, outside the band. The plain ring keeps the card disc, above.
       expect(drawnColour(screen.getByTestId(ringBeadTestID).props.fill)).toBe(
+        colour[beadPalette.halo],
+      );
+      expect(drawnColour(screen.getByTestId(ringBeadTestID).props.stroke)).toBe(
         colour[beadPalette.fill],
       );
+    });
+
+    it('writes each phase name on its own arc in the measured name colour', async () => {
+      // Contract SEE-2 changed with the todayPhases board: a phase fill may carry one word, its own
+      // phase name on the ring of Today, in the colour phaseNameInk gives it.
+      const her = herHomeScreen(aDayIn('follicular'));
+
+      await render(
+        <OnAPhone>
+          <HomeScreen
+            cycleLengthDays={herCycle.cycleLengthDays}
+            forecast={her.forecast}
+            onExport={() => undefined}
+            onLogPain={() => undefined}
+            onLogToday={() => undefined}
+            onPeriod={() => undefined}
+            onSymptoms={() => undefined}
+            ring={her.ring}
+          />
+        </OnAPhone>,
+      );
+
+      const written = phaseNames.filter((phase) => screen.queryByTestId(ringNameTestID(phase)));
+
+      expect(written.length).toBeGreaterThan(0);
+
+      for (const phase of written) {
+        const name = drawnColour(screen.getByTestId(ringNameTestID(phase)).props.fill);
+
+        expect(name).toBe(colour[phaseNameInk[phase]]);
+      }
     });
   });
 });

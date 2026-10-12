@@ -2,11 +2,17 @@ import { join } from 'node:path';
 
 import type { DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
-import { FULL_TURN_DEGREES, GAP_DEGREES, RING_DIAMETER, phaseLabel, phaseNames } from '@emi/tokens';
+import {
+  FULL_TURN_DEGREES,
+  GAP_DEGREES,
+  NAMED_RING_DIAMETER,
+  phaseLabel,
+  phaseNames,
+} from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
-import { cycleRingTestID, ringArcTestID } from '../../src/components/CycleRing';
+import { cycleRingTestID, ringWholeArcTestID } from '../../src/components/CycleRing';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
@@ -118,7 +124,8 @@ async function sheReachesThePeriodLength(): Promise<void> {
   await shePresses(onboardingActionTestID);
 }
 
-const centre = RING_DIAMETER / 2;
+/** The ring of Today is drawn at its own diameter, so its centre is half of that. */
+const centre = NAMED_RING_DIAMETER / 2;
 
 /** The last point of an arc path, which is where that arc stops on the track. */
 const ENDS_AT = /([\d.-]+) ([\d.-]+)$/;
@@ -132,22 +139,18 @@ function degreesAt(x: number, y: number): number {
 
 /** Every phase the ring drew an arc for, which is every phase her cycle had a day for. */
 function thePhasesDrawn(): number {
-  return phaseNames.filter(
-    (phase) =>
-      screen.queryByTestId(ringArcTestID(phase, 'elapsed')) !== null ||
-      screen.queryByTestId(ringArcTestID(phase, 'ahead')) !== null,
-  ).length;
+  return phaseNames.filter((phase) => screen.queryByTestId(ringWholeArcTestID(phase)) !== null)
+    .length;
 }
 
 /**
  * How many days the period arc covers, measured off the drawing rather than read out of the
  * arithmetic that made it. The period arc opens the ring at the top, so where it stops is the
- * whole of it, and the days it stands for are that share of the turn the arcs were given.
+ * whole of it, and the days it stands for are that share of the turn the arcs were given. The
+ * ring of Today paints each arc once, whole, so the period arc is one stroke.
  */
 function thePeriodArcCoversDays(): number {
-  const drawn = ['ahead', 'elapsed'] as const;
-  const ends = drawn
-    .map((strength) => screen.queryByTestId(ringArcTestID('period', strength)))
+  const ends = [screen.queryByTestId(ringWholeArcTestID('period'))]
     .filter((arc) => arc !== null)
     .map((arc) => ENDS_AT.exec(String(arc.props.d)))
     .filter((found) => found !== null)

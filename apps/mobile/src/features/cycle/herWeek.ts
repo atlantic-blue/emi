@@ -3,7 +3,7 @@ import type { PhaseSpan } from '@emi/tokens';
 
 import type { CycleRow } from '../../data/cycleRepository';
 import { forecastOf } from '../forecast/fromCache';
-import { startOfWeek, weekdayLetter } from '../onboarding/days';
+import { weekdayLetter } from '../onboarding/days';
 import { type RingInput, type RingInputFrom, ringInputFor } from './ringInput';
 
 /**
@@ -125,16 +125,6 @@ export function herDaysOn(from: HerDaysFrom, days: readonly string[]): HerDay[] 
       mark: markOf({ bled, cycleDay, day, expected, ring, today: from.today }),
     };
   });
-}
-
-/** Her week, Monday to Sunday, with today somewhere in it. */
-export function herWeek(from: HerDaysFrom): HerDay[] {
-  const monday = startOfWeek(from.today);
-
-  return herDaysOn(
-    from,
-    Array.from({ length: DAYS_IN_A_WEEK }, (_unused, index) => addDays(monday, index)),
-  );
 }
 
 interface MarkFrom {

@@ -2,33 +2,26 @@ import { join } from 'node:path';
 
 import { addDays } from '@emi/cycle';
 import { screen } from '@testing-library/react-native';
-import { renderRouter } from 'expo-router/testing-library';
+import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
-import { cycleRingTestID } from '../../src/components/CycleRing';
-import { homeHeaderTestID } from '../../src/features/home/HomeHeader';
-import {
-  weekCycleDayTestID,
-  weekDateTestID,
-  weekLetterTestID,
-  weekStripTestID,
-} from '../../src/features/home/WeekStrip';
-import { weekTodayWord } from '../../src/features/cycle/copy';
-import { weekdayColumnNames } from '../../src/features/onboarding/days';
+import { cycleRingTestID, ringCentreDayTestID } from '../../src/components/CycleRing';
+import { homeCalendarTestID, homeHeaderTestID } from '../../src/features/home/HomeHeader';
+import { homeCopy } from '../../src/features/home/copy';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { partsMissing } from '../fixtures/theMockupScreen';
+import { theDifferencesTheTodayStepKeeps, theTodayDepartures } from '../fixtures/theTodayLook';
 import {
   herPhoneHoldsFourRecordedPeriodDays,
   herPhoneHoldsNoDayAtAll,
+  theCalendarButton,
+  theDayTheRingCentreSays,
   theDayTheRingSaysFor,
   theDaySheOpensIt,
-  theDaysOfHerWeek,
   theDaysOfTheDrawingsStrip,
-  theDaysTheStripDrew,
   theHeaderAndTheStripOfTheDrawing,
-  theLetterOver,
-  theStripSheReads,
+  whatIsLeftOfTheStrip,
   whatTheScreenSheOpensDrew,
 } from '../fixtures/theWeekSheOpensWith';
 
@@ -41,7 +34,7 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 /** Midday on the Thursday of the drawing, well away from any change of the clocks. */
 const whenSheOpensIt = new Date(`${theDaySheOpensIt}T12:00:00.000Z`);
 
-/** The Sunday at the end of the same week, which is the same strip with today at the other end. */
+/** The Sunday at the end of the same week, three days further into her cycle. */
 const whenSheReachesTheSunday = new Date(`${addDays(theDaySheOpensIt, 3)}T12:00:00.000Z`);
 
 async function sheOpensEmi(): Promise<void> {
@@ -49,7 +42,12 @@ async function sheOpensEmi(): Promise<void> {
   await renderRouter(appDirectory, { initialUrl: '/' });
 }
 
-describe('she reads the cycle day of every day of her week without pressing anything', () => {
+/**
+ * Contract changed by the todayPhases board: the strip of seven days is gone from Today. The day of
+ * her cycle is read in the middle of the ring, and her month is one press away on the calendar
+ * button in the top bar.
+ */
+describe('she reads the day of her cycle without pressing anything, and reaches her month in one press', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -65,167 +63,100 @@ describe('she reads the cycle day of every day of her week without pressing anyt
     jest.restoreAllMocks();
   });
 
-  describe('the drawing the strip is held to', () => {
-    it('places the strip second, after the header, and says what each is drawn under', () => {
+  describe('the drawing the screen is held to', () => {
+    it('places the strip second, after the header, and nothing says it is built', () => {
       const [header, strip] = theHeaderAndTheStripOfTheDrawing();
 
       expect(header?.name).toBe('HomeHeader');
       expect(strip?.name).toBe('WeekStrip');
-      expect(strip?.builtUnder).toContain(weekStripTestID);
+      expect(strip?.builtUnder).toEqual([]);
     });
 
-    it('draws a week of seven days, three of them behind today and three ahead', () => {
-      const drawn = theDaysOfTheDrawingsStrip();
+    it('still draws a week of seven days in the older drawing, which is what the departure is from', () => {
+      expect(theDaysOfTheDrawingsStrip()).toHaveLength(7);
+    });
 
-      expect(drawn).toHaveLength(7);
-      expect(drawn.map((day) => day.mark)).toEqual([
-        'bled',
-        'bled',
-        'bled',
-        'today',
-        'forecast',
-        'plain',
-        'plain',
+    it('records the strip as a departure of every drawing with a ring, with its reason', () => {
+      expect(theTodayDepartures.map((departure) => departure.part)).toEqual([
+        'WeekStrip',
+        'WeekStrip',
+        'WeekStrip',
       ]);
-    });
-
-    it('counts the cycle day up from one across the week', () => {
-      expect(theDaysOfTheDrawingsStrip().map((day) => day.cycleDay)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+      expect(theTodayDepartures.every((departure) => departure.reason.includes('calendar'))).toBe(
+        true,
+      );
+      expect(theDifferencesTheTodayStepKeeps).toEqual({
+        todayLogged: 1,
+        todayLuteal: 1,
+        todayNext: 1,
+      });
     });
   });
 
-  describe('the week she reads, on a phone holding four recorded period days', () => {
+  describe('the screen she reads, on a phone holding four recorded period days', () => {
     beforeEach(async () => {
       await sheOpensEmi();
     });
 
-    it('answers for the strip the drawing places after the header', () => {
-      expect(partsMissing(theHeaderAndTheStripOfTheDrawing(), whatTheScreenSheOpensDrew())).toEqual(
-        [],
-      );
+    it('draws no part of the strip of seven days', () => {
+      expect(whatIsLeftOfTheStrip()).toEqual([]);
     });
 
-    it('draws the strip under the header and above the ring', () => {
+    it('draws the calendar button in the header, above the ring', () => {
       const drawn = whatTheScreenSheOpensDrew();
 
       expect(drawn[0]).toBe(homeHeaderTestID);
-      expect(drawn.indexOf(weekStripTestID)).toBeGreaterThan(drawn.indexOf(homeHeaderTestID));
-      expect(drawn.indexOf(weekStripTestID)).toBeLessThan(drawn.indexOf(cycleRingTestID));
+      expect(drawn.indexOf(homeCalendarTestID)).toBeGreaterThan(drawn.indexOf(homeHeaderTestID));
+      expect(drawn.indexOf(homeCalendarTestID)).toBeLessThan(drawn.indexOf(cycleRingTestID));
     });
 
-    it('draws her whole week, Monday to Sunday, with today in it', () => {
-      expect(theDaysTheStripDrew()).toEqual(theDaysOfHerWeek());
-      expect(theDaysTheStripDrew()).toHaveLength(7);
-      expect(theDaysTheStripDrew()).toContain(theDaySheOpensIt);
+    it('names the calendar button for a screen reader, as a button', () => {
+      expect(theCalendarButton().props.accessibilityLabel).toBe(homeCopy.calendar);
+      expect(screen.getByTestId(homeCalendarTestID).props.accessibilityRole).toBe('button');
     });
 
-    it('draws the date, the cycle day and the state the drawing gives every day of that week', () => {
-      expect(
-        theStripSheReads().map(({ cycleDay, date, mark }) => ({ cycleDay, date, mark })),
-      ).toEqual(
-        theDaysOfTheDrawingsStrip().map(({ cycleDay, date, mark }) => ({ cycleDay, date, mark })),
-      );
-    });
-
-    it('fills the three days behind today, rings today, and dots the day her period runs into', () => {
-      const marks = theStripSheReads().map((day) => day.mark);
-
-      expect(marks.slice(0, 3)).toEqual(['bled', 'bled', 'bled']);
-      expect(marks[3]).toBe('today');
-      expect(marks[4]).toBe('forecast');
-      expect(marks.slice(5)).toEqual(['plain', 'plain']);
-    });
-
-    it('names every weekday by its own letter, and the day she is on by its word', () => {
-      // The column she is on carries the word rather than the letter, which is the redesign of
-      // step 22.8. The other six are the letters of the catalogue, in the catalogue's order.
-      expect(theDaysOfHerWeek().map((day) => theLetterOver(day))).toEqual(
-        weekdayColumnNames.map((name, column) =>
-          theDaysOfHerWeek()[column] === theDaySheOpensIt ? weekTodayWord() : name.slice(0, 1),
-        ),
-      );
-      expect(theDaysOfHerWeek()).toContain(theDaySheOpensIt);
-      expect(theLetterOver(theDaySheOpensIt)).toBe(weekTodayWord());
-    });
-
-    it('puts the cycle day above the date, under the letter of the weekday', () => {
-      const three = [
-        weekLetterTestID(theDaySheOpensIt),
-        weekCycleDayTestID(theDaySheOpensIt),
-        weekDateTestID(theDaySheOpensIt),
-      ];
-      const drawn = screen
-        .queryAllByTestId(/.+/)
-        .map((element) => String(element.props.testID))
-        .filter((identifier) => three.includes(identifier));
-
-      expect(drawn).toEqual(three);
+    it('writes the day of her cycle in the middle of the ring, without a press', () => {
+      expect(screen.getByTestId(ringCentreDayTestID)).toBeTruthy();
+      expect(theDayTheRingCentreSays()).toBe(theDayTheRingSaysFor(theDaySheOpensIt));
+      expect(theDayTheRingCentreSays()).toBe(4);
     });
   });
 
-  describe('the cycle day she reads over each date', () => {
-    beforeEach(async () => {
-      await sheOpensEmi();
-    });
+  describe('the press that reaches her month', () => {
+    it('opens her month on the day she is on when she presses the calendar button', async () => {
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensIt);
+      const app = renderRouter(appDirectory, { initialUrl: '/' });
 
-    it('is the day the ring says for that date, on every day of the week', () => {
-      const read = theStripSheReads().map((day) => day.cycleDay);
+      await app;
+      await fireEvent.press(screen.getByTestId(homeCalendarTestID));
 
-      expect(read).toEqual(theDaysOfHerWeek().map((day) => theDayTheRingSaysFor(day)));
-      // The ring answering nothing for all seven would make the line above compare two empty
-      // lists, so the days are counted as well as compared.
-      expect(read.filter((day) => Number.isInteger(day))).toHaveLength(7);
-    });
-
-    it('is the day the ring draws inside itself, on the day she is actually looking at', () => {
-      const today = theStripSheReads().find((day) => day.mark === 'today');
-
-      expect(today?.cycleDay).toBe(theDayTheRingSaysFor(theDaySheOpensIt));
+      expect(app.getPathname()).toBe('/calendar');
+      expect(app.getSearchParams()).toEqual({ day: theDaySheOpensIt });
     });
   });
 
-  describe('the week of a woman who has recorded nothing', () => {
+  describe('the screen of a woman who has recorded nothing', () => {
     beforeEach(async () => {
       await herPhoneHoldsNoDayAtAll(whenSheOpensIt);
       await renderRouter(appDirectory, { initialUrl: '/' });
     });
 
-    it('still draws her seven days, with no cycle day over any of them', () => {
-      expect(theDaysTheStripDrew()).toHaveLength(7);
-      expect(theStripSheReads().every((day) => Number.isNaN(day.cycleDay))).toBe(true);
-    });
-
-    it('rings today and leaves every other day plain', () => {
-      expect(theStripSheReads().map((day) => day.mark)).toEqual([
-        'plain',
-        'plain',
-        'plain',
-        'today',
-        'plain',
-        'plain',
-        'plain',
-      ]);
+    it('draws no strip and no day of a cycle, and still offers her the calendar', () => {
+      expect(whatIsLeftOfTheStrip()).toEqual([]);
+      expect(screen.queryByTestId(ringCentreDayTestID)).toBeNull();
+      expect(screen.getByTestId(homeCalendarTestID)).toBeTruthy();
     });
   });
 
-  describe('what the comparison says when the strip is missing', () => {
+  describe('what the comparison says about the strip', () => {
     beforeEach(async () => {
       await sheOpensEmi();
     });
 
-    it('names the strip, and says what it is built under', () => {
-      const withoutTheStrip = whatTheScreenSheOpensDrew().filter(
-        (identifier) => identifier !== weekStripTestID,
+    it('names the strip as the one part of the top of the drawing the screen does not build', () => {
+      expect(partsMissing(theHeaderAndTheStripOfTheDrawing(), whatTheScreenSheOpensDrew())).toEqual(
+        ['the drawing names WeekStrip, and nothing says which test identifier it is built under'],
       );
-
-      expect(partsMissing(theHeaderAndTheStripOfTheDrawing(), withoutTheStrip)).toEqual([
-        `the drawing names WeekStrip, built under ${weekStripTestID}, and the screen draws none of them after ${homeHeaderTestID}`,
-      ]);
-    });
-
-    it('counts the days, so a strip drawing six of them is not a week', () => {
-      expect(theDaysTheStripDrew()).toHaveLength(theDaysOfTheDrawingsStrip().length);
-      expect(theDaysTheStripDrew()).not.toHaveLength(6);
     });
   });
 
@@ -236,15 +167,9 @@ describe('she reads the cycle day of every day of her week without pressing anyt
       await renderRouter(appDirectory, { initialUrl: '/' });
     });
 
-    it('is the same seven days, so the strip is her week and not a window that moves', () => {
-      expect(theDaysTheStripDrew()).toEqual(theDaysOfHerWeek());
-    });
-
-    it('rings the last day of the strip, because that is the day she is on', () => {
-      const marks = theStripSheReads().map((day) => day.mark);
-
-      expect(marks[marks.length - 1]).toBe('today');
-      expect(marks.slice(0, 4)).toEqual(['bled', 'bled', 'bled', 'bled']);
+    it('writes the day the ring says for the Sunday in its middle, three days on', () => {
+      expect(theDayTheRingCentreSays()).toBe(theDayTheRingSaysFor(addDays(theDaySheOpensIt, 3)));
+      expect(theDayTheRingCentreSays()).toBe(7);
     });
   });
 });

@@ -1,6 +1,6 @@
 # The icon set
 
-Thirty three line symbols at one weight, so the interface reads as one hand drew it.
+Thirty four line symbols at one weight, so the interface reads as one hand drew it.
 
 ## The rules every drawing follows
 
@@ -15,7 +15,7 @@ Thirty three line symbols at one weight, so the interface reads as one hand drew
 
 drop, calendar, ring, mood, energy, pain, sleep, temperature, weight, note, lock, export, delete,
 settings, chevron, close, plus, check, search, spotting, sun, edit, chart, shield, skin, digestion,
-headache, bloating, phone, person, info, key, bell.
+headache, bloating, phone, person, info, key, bell, phase.
 
 `spotting` is the mark for unexpected bleeding: a smaller drop with three marks beside it, so it
 reads apart from `drop` at 24 points.
@@ -63,3 +63,6 @@ that has to be refused.
 
 Regenerate the sheet whenever a drawing changes. The sheet is five columns wide, so its height
 moves every time the set crosses a row.
+
+`phase` is a circle with one quarter closed off, which marks a phase of her cycle on the card
+under the ring of Today and on the Cycle phase action.

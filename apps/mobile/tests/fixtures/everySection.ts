@@ -1,14 +1,22 @@
 import { washFieldTestID, washTestID, washTintTestID } from '@emi/ui';
 
-import { cycleRingTestID, ringBeadTestID, ringTrackTestID } from '../../src/components/CycleRing';
+import {
+  cycleRingTestID,
+  ringBeadTestID,
+  ringCentreDayTestID,
+  ringCentreLengthTestID,
+  ringCentrePhaseTestID,
+  ringTrackTestID,
+} from '../../src/components/CycleRing';
 import { fertileWindowTestID } from '../../src/features/forecast/FertileWindow';
 import { learningTestID } from '../../src/features/forecast/Learning';
 import { nextPeriodTestID } from '../../src/features/forecast/NextPeriod';
 import { homeCyclesTestID } from '../../src/features/home/CycleStrip';
 import { homeTrendTestID } from '../../src/features/home/CycleTrend';
 import {
+  homeCalendarTestID,
   homeGreetingTestID,
-  homeHeaderMarkTestID,
+  homeHeaderAvatarTestID,
   homeHeaderTestID,
   homeHeaderWordTestID,
 } from '../../src/features/home/HomeHeader';
@@ -34,7 +42,11 @@ import { emptyRingTestID } from '../../src/features/home/EmptyRing';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
 import { homeNumbersHeadingTestID, homeNumbersTestID } from '../../src/features/home/MeasuredRow';
 import { homePatternsTestID } from '../../src/features/home/PatternCard';
-import { phaseLineTestID } from '../../src/features/home/PhaseLine';
+import {
+  phaseCardDaysTestID,
+  phaseCardLineTestID,
+  phaseCardTestID,
+} from '../../src/features/home/PhaseCard';
 import {
   roundActionDiscTestID,
   roundActionDrawingTestID,
@@ -42,7 +54,6 @@ import {
   roundActions,
 } from '../../src/features/home/RoundAction';
 import { sectionWaitingTestID } from '../../src/features/home/SectionWaiting';
-import { weekStripTestID } from '../../src/features/home/WeekStrip';
 import type { HerData } from './theStatesOfHerData';
 import { theIdentifiersDrawn } from './theMockupScreen';
 
@@ -57,8 +68,8 @@ import { theIdentifiersDrawn } from './theMockupScreen';
  * guard that reads the same constant as the code cannot catch a threshold that moved, so the two
  * are written out twice on purpose and a change to one has to be made to the other.
  *
- * The frame below carries what no amount of her data moves: the box, the mark, the dates of her
- * week, the two round actions and the dock. Every identifier the screen draws belongs to one
+ * The frame below carries what no amount of her data moves: the box, the top bar with its disc
+ * and its calendar button, the two round actions and the dock. Every identifier the screen draws belongs to one
  * section or to the frame, so the next section cannot arrive without an entry here.
  */
 
@@ -108,21 +119,22 @@ export function identifiersOf(section: Section, identifier: string): boolean {
 
 export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
   {
-    draws: { prefixed: ['home-week-cycle-day-'] },
+    draws: { named: [ringCentrePhaseTestID, ringCentreDayTestID, ringCentreLengthTestID] },
     fills: (hers) => hers.dayOfHerCycle !== undefined,
-    name: 'the day of her cycle over each date of her week',
-    simplyGoes: 'the dates stay, because they are the calendar, so only the number goes',
+    name: 'the day of her cycle in the middle of the ring',
+    simplyGoes:
+      'it is written inside the ring, so it goes with the ring and the two lines replace both',
   },
   {
-    draws: { named: [phaseLineTestID], prefixed: [`${phaseLineTestID}-`] },
+    draws: { named: [phaseCardTestID, phaseCardDaysTestID, phaseCardLineTestID] },
     fills: (hers) => hers.dayOfHerCycle !== undefined,
-    name: 'the line that names the day of her cycle',
+    name: 'the card that names her phase and its days',
     simplyGoes: 'the two lines in place of the ring say what the top of the screen needs first',
   },
   {
     draws: {
       named: [cycleRingTestID, ringTrackTestID, ringBeadTestID],
-      prefixed: ['ring-arc-'],
+      prefixed: ['ring-arc-', 'ring-name-'],
     },
     fills: (hers) => hers.recordedDays > 0,
     insteadDraws: {
@@ -230,9 +242,8 @@ export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
 /**
  * The frame of the screen: everything her days do not move.
  *
- * The dates and the weekday letters of her week are here because they come off the calendar, which
- * needs no recorded day. The day of her cycle above each date is the part her own days fill, and it
- * is a section above.
+ * The calendar button is here because it opens her month whatever she has recorded. The day of
+ * her cycle is the part her own days fill, and it is a section above.
  *
  * The wash is here too. It is tinted by the phase of today, so a different day paints a different
  * colour, but the gradient itself is drawn on every state of the screen and carries no words.
@@ -246,16 +257,16 @@ export const theFrameOfTheScreenSheOpens: Draws = {
     washTintTestID(2),
     homeScreenTestID,
     homeHeaderTestID,
-    homeHeaderMarkTestID,
+    homeHeaderAvatarTestID,
     homeHeaderWordTestID,
     homeGreetingTestID,
-    weekStripTestID,
+    homeCalendarTestID,
     homeForecastTestID,
     ...roundActions.map(roundActionTestID),
     ...roundActions.map(roundActionDiscTestID),
     ...roundActions.map(roundActionDrawingTestID),
   ],
-  prefixed: ['home-week-day-', 'home-week-letter-', 'home-week-date-', 'bottom-navigation'],
+  prefixed: ['bottom-navigation'],
 };
 
 /** One section as it stood at one state of her data. */

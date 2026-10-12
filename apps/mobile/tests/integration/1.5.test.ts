@@ -6,7 +6,7 @@ import { ICON_CORNER, ICON_SIZE, type IconName, icon, iconNames, icons, stroke }
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
 const drawingDirectory = join(repositoryRoot, 'brand', 'icons');
 
-/** The thirty three the design asks for, in the order the steps named them. */
+/** The thirty four the design asks for, in the order the steps named them. */
 const theSet: readonly string[] = [
   'drop',
   'calendar',
@@ -41,6 +41,7 @@ const theSet: readonly string[] = [
   'info',
   'key',
   'bell',
+  'phase',
 ];
 
 function drawingFiles(): readonly string[] {
@@ -103,9 +104,9 @@ describe('every icon in the set shares one stroke weight', () => {
   });
 
   describe('a screen names an icon rather than carrying a path', () => {
-    it('names the thirty three the design asks for', () => {
+    it('names the thirty four the design asks for', () => {
       expect([...everyName].sort()).toEqual([...theSet].sort());
-      expect(everyName).toHaveLength(33);
+      expect(everyName).toHaveLength(34);
     });
 
     it('gives back the drawing for a name', () => {

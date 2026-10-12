@@ -89,25 +89,14 @@ export const russian: CatalogueIn<'ru'> = {
   'cycle.figures.title': 'Откуда взяты эти цифры',
   'cycle.noRing.line': 'Отметьте день, когда шла кровь, и ваш цикл появится здесь.',
   'cycle.noRing.title': 'Ваше кольцо ждёт',
-  'cycle.phaseLine.day': 'День {day}',
-  'cycle.phaseLine.follicular': {
-    one: 'Фолликулярная фаза, цикл {count} день',
-    few: 'Фолликулярная фаза, цикл {count} дня',
-    many: 'Фолликулярная фаза, цикл {count} дней',
-  },
-  'cycle.phaseLine.luteal': {
-    one: 'Лютеиновая фаза, цикл {count} день',
-    few: 'Лютеиновая фаза, цикл {count} дня',
-    many: 'Лютеиновая фаза, цикл {count} дней',
-  },
-  'cycle.phaseLine.ovulation': {
-    one: 'Фаза овуляции, цикл {count} день',
-    few: 'Фаза овуляции, цикл {count} дня',
-    many: 'Фаза овуляции, цикл {count} дней',
-  },
-  'cycle.phaseLine.period': 'Менструация, день {day} из примерно {days}',
+  'cycle.phaseName.period': 'Месячные',
+  'cycle.phaseName.follicular': 'Фолликулярная',
+  'cycle.phaseName.ovulation': 'Овуляция',
+  'cycle.phaseName.luteal': 'Лютеиновая',
   'cycle.ring.day': 'День',
+  'cycle.ring.dayNumber': 'День {day}',
   'cycle.ring.of': 'из {length}',
+  'cycle.ring.ofAbout': 'из примерно {length}',
   'cycle.ring.spoken': 'День {day} из {length}, {phase}',
 
   'export.again': 'Создать заново',
@@ -214,6 +203,7 @@ export const russian: CatalogueIn<'ru'> = {
   'home.doctorRecord': 'Вы хотели запись для врача. Она готова в любой момент, в разделе Экспорт.',
   'home.cycles.line':
     'Полоса показывает один ваш цикл, первым идёт текущий. Нажмите на полосу, чтобы прочитать этот цикл в разделе Обзор.',
+  'home.calendar': 'Календарь',
   'home.greeting': 'Здравствуйте, {name}',
   'home.greeting.noName': 'Здравствуйте',
   'home.logToday': 'Записать сегодня',
@@ -247,6 +237,18 @@ export const russian: CatalogueIn<'ru'> = {
     'Симптом, который вы отметили один или два раза, не закономерность, и мы не назовём его так.',
   'home.patterns.onCycleDay': 'около дня {day} вашего цикла',
   'home.patterns.press': 'Что возвращается, полностью',
+  'home.phaseCard.period.day': 'Менструальная фаза, день {from}',
+  'home.phaseCard.period.days': 'Менструальная фаза, дни с {from} по {to}',
+  'home.phaseCard.period.line': 'Дни, когда идут месячные.',
+  'home.phaseCard.follicular.day': 'Фолликулярная фаза, день {from}',
+  'home.phaseCard.follicular.days': 'Фолликулярная фаза, дни с {from} по {to}',
+  'home.phaseCard.follicular.line': 'Дни после месячных, до овуляции.',
+  'home.phaseCard.ovulation.day': 'Фаза овуляции, день {from}',
+  'home.phaseCard.ovulation.days': 'Фаза овуляции, дни с {from} по {to}',
+  'home.phaseCard.ovulation.line': 'Энергии обычно больше всего.',
+  'home.phaseCard.luteal.day': 'Лютеиновая фаза, день {from}',
+  'home.phaseCard.luteal.days': 'Лютеиновая фаза, дни с {from} по {to}',
+  'home.phaseCard.luteal.line': 'Дни после овуляции, до следующих месячных.',
   'home.roundAction.period': 'Месячные',
   'home.roundAction.symptoms': 'Симптомы',
   // График её последних полных циклов на опубликованном диапазоне. Подпись и фраза под ним
@@ -274,8 +276,7 @@ export const russian: CatalogueIn<'ru'> = {
   'home.waiting.trend.read': 'Emi ничего не рисует из ничего и не подставляет примерных данных.',
   'home.trend.spoken':
     'Ваши последние {cycles}, от {shortest} до {longest} дней, на опубликованном диапазоне от {low} до {high} дней.',
-  'home.week.today': 'СЕГОДНЯ',
-  'home.wordmark': 'Emi',
+  'home.wordmark': 'emi',
 
   'lock.cancel': 'Отмена',
   /**

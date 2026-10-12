@@ -1,5 +1,5 @@
 import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
-import type { ForecastResult } from '@emi/cycle';
+import type { CyclePhaseDays, ForecastResult } from '@emi/cycle';
 import {
   type IconName,
   MINIMUM_TAP_TARGET,
@@ -18,7 +18,6 @@ import { Card } from '../../components/Card';
 import { CycleRing } from '../../components/CycleRing';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
-import type { HerDay } from '../cycle/herWeek';
 import type { RingInput } from '../cycle/ringInput';
 import { FertileWindow } from '../forecast/FertileWindow';
 import { NextPeriodOrLearning } from '../forecast/Learning';
@@ -28,10 +27,9 @@ import { CycleTrend } from './CycleTrend';
 import { EmptyRing } from './EmptyRing';
 import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
-import { PhaseLine } from './PhaseLine';
+import { PhaseCard } from './PhaseCard';
 import { RoundAction, type RoundActionName } from './RoundAction';
 import { SectionWaiting } from './SectionWaiting';
-import { WeekStrip } from './WeekStrip';
 import { MeasuredRows } from './MeasuredRow';
 import { PatternCards } from './PatternCard';
 import { cyclesOutsideReads, cyclesWaitingReads, homeCopy, trendWaitingReads } from './copy';
@@ -51,11 +49,10 @@ import { patternsWaiting } from '../cycle/patternsWaiting';
  * arcs draw and what the sentence names are the same answer read twice.
  */
 
-export { homeGreetingTestID } from './HomeHeader';
+export { homeCalendarTestID, homeGreetingTestID } from './HomeHeader';
 export { roundActionTestID, roundActions } from './RoundAction';
 export { loggedTodayTestID } from './LoggedToday';
-export { phaseLineTestID } from './PhaseLine';
-export { weekStripTestID } from './WeekStrip';
+export { phaseCardTestID } from './PhaseCard';
 export { sectionWaitingTestID, waitingSections } from './SectionWaiting';
 
 /**
@@ -95,11 +92,11 @@ interface Props {
   /** The cycle she is in, or nothing at all before a day is recorded. */
   readonly ring: RingInput | undefined;
   /**
-   * The week she is in, Monday to Sunday, worked out from the same cycle cache the ring is. It
-   * arrives already worked out, so the strip and the ring cannot count her days two ways.
+   * The days of each phase of the cycle she is in, by the phase rule, read from the same cycle
+   * cache the ring is. The card under the ring names the days of the phase she is in.
    */
-  readonly week?: readonly HerDay[];
-  /** Her own day, which is what a day of the strip is named against for a screen reader. */
+  readonly phaseDays?: CyclePhaseDays;
+  /** Her own day, which the calendar button opens her month on. */
   readonly today?: string;
   /**
    * Today as she left it, read out of the same days the ring and the strip are built from, and
@@ -187,7 +184,7 @@ interface Props {
   readonly onLogPain: () => void;
   /** The way out, which only the card a woman who asked for it reads takes her by. */
   readonly onExport: () => void;
-  /** The way into her month, which every day of her week takes her by, naming the day she pressed. */
+  /** The way into her month, which the calendar button in the top bar takes her by. */
   readonly onOpenMonth?: (day: string) => void;
   /** The way to one cycle on the Insights screen, which a strip takes her by. */
   readonly onOpenCycle?: (startedOn: string) => void;
@@ -202,7 +199,7 @@ interface Props {
 
 export function HomeScreen({
   ring,
-  week,
+  phaseDays,
   today,
   loggedToday,
   forecast,
@@ -237,16 +234,15 @@ export function HomeScreen({
       washPhase={ring === undefined ? undefined : ringGeometry(ring).phase}
     >
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
-        <HomeHeader name={name} />
-
-        {week === undefined || today === undefined ? null : (
-          <View style={styles.week}>
-            <WeekStrip days={week} onOpenMonth={onOpenMonth} today={today} />
-          </View>
-        )}
+        <HomeHeader
+          name={name}
+          onOpenCalendar={
+            onOpenMonth === undefined || today === undefined ? undefined : () => onOpenMonth(today)
+          }
+        />
 
         {ring ? (
-          <CycleRing {...ring} />
+          <CycleRing {...ring} look="named" />
         ) : (
           <View style={styles.noRing} testID={homeNoRingTestID}>
             <EmptyRing>
@@ -265,9 +261,12 @@ export function HomeScreen({
           </View>
         )}
 
-        {ring === undefined ? null : (
-          <View style={styles.phaseLine}>
-            <PhaseLine ring={ring} />
+        {ring === undefined || phaseDays === undefined ? null : (
+          <View style={styles.phaseCard}>
+            <PhaseCard
+              days={phaseDays[ringGeometry(ring).phase]}
+              phase={ringGeometry(ring).phase}
+            />
           </View>
         )}
 
@@ -564,12 +563,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: space.spaceLg,
   },
-  // The line sits under the ring, which is where the drawing of this screen places it: the ring
-  // carries the day in colour and the line says the same day in words under it.
-  phaseLine: { alignSelf: 'stretch', marginTop: space.spaceMd },
-  // Her week sits between the header and the ring, which is where the drawing of this screen
-  // places it, and it is the first thing she reads because it answers where she is.
-  week: { alignSelf: 'stretch', marginBottom: space.spaceLg },
+  // The card sits under the ring and names the phase she is in and its days.
+  phaseCard: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.margin },
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it
   // takes the small size rather than the body size a sentence would otherwise get.
   noRingLine: {

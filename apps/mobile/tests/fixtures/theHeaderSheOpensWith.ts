@@ -2,8 +2,9 @@ import type { DayRecord, ProfileRecord } from '@emi/crypto';
 import { washFieldTestID, washTestID, washTintTestID } from '@emi/ui';
 
 import {
+  homeCalendarTestID,
   homeGreetingTestID,
-  homeHeaderMarkTestID,
+  homeHeaderAvatarTestID,
   homeHeaderTestID,
   homeHeaderWordTestID,
 } from '../../src/features/home/HomeHeader';
@@ -26,6 +27,10 @@ import {
  * The drawing names the header as one part and names nothing inside it: the mark, the word and the
  * greeting carry no component of their own. So the order inside the header is read off the markup,
  * and the record below joins each of the three to the identifier the built header draws it under.
+ *
+ * The built header departs from that drawing in two places, both from the approved todayPhases
+ * board: the avatar disc stands where the drawing puts the ring mark, and a calendar button the
+ * drawing does not have closes the row on the right, in place of the strip of seven days.
  */
 
 /** The name she gave at the first run, and the greeting the header reads from it. */
@@ -45,11 +50,19 @@ export function everyPartOfTheDrawing(): Part[] {
 }
 
 /**
+ * Why the drawing's mark is answered by the avatar disc. The mockups stage still draws the ring
+ * mark, and nobody edits a drawing by hand, so the departure is written here rather than hidden.
+ */
+export const whyTheAvatarStandsForTheMark =
+  'the todayPhases board puts the avatar disc with her initial where the drawing puts the ring mark';
+
+/**
  * The three things the header carries, each with the identifier the built header draws it under.
- * The order is held to the drawing by `theOrderTheDrawingPlacesThemIn`.
+ * The order is held to the drawing by `theOrderTheDrawingPlacesThemIn`. The drawing's mark is
+ * answered by the avatar disc, for the reason above, so the order still holds part for part.
  */
 export const theHeaderCarries: readonly Part[] = [
-  { builtUnder: [homeHeaderMarkTestID], name: 'mark' },
+  { builtUnder: [homeHeaderAvatarTestID], name: 'mark' },
   { builtUnder: [homeHeaderWordTestID], name: 'word' },
   { builtUnder: [homeGreetingTestID], name: 'greeting' },
 ];
@@ -57,10 +70,14 @@ export const theHeaderCarries: readonly Part[] = [
 /** The header and everything in it, so a walk of the whole screen is cut to what this step builds. */
 export const theIdentifiersOfTheHeader: readonly string[] = [
   homeHeaderTestID,
-  homeHeaderMarkTestID,
+  homeHeaderAvatarTestID,
   homeHeaderWordTestID,
   homeGreetingTestID,
+  homeCalendarTestID,
 ];
+
+/** The identifier the ring mark was drawn under, which the header no longer draws at all. */
+export const theMarkTheHeaderNoLongerDraws = 'home-header-mark';
 
 /**
  * Everything the screen she opens drew, from itself downwards.

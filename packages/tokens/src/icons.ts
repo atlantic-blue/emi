@@ -28,6 +28,7 @@ export type IconName =
   | 'note'
   | 'pain'
   | 'person'
+  | 'phase'
   | 'phone'
   | 'plus'
   | 'ring'
@@ -90,6 +91,7 @@ export const iconNames: readonly IconName[] = [
   'note',
   'pain',
   'person',
+  'phase',
   'phone',
   'plus',
   'ring',
@@ -234,6 +236,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<circle cx="12" cy="8.5" r="4" /> <path d="M4.5 20.5c1.2-3.6 4.1-5.5 7.5-5.5s6.3 1.9 7.5 5.5" />',
+  },
+  phase: {
+    name: 'phase',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<circle cx="12" cy="12" r="8" /> <path d="M12 4a8 8 0 0 1 8 8h-8z" />',
   },
   phone: {
     name: 'phone',

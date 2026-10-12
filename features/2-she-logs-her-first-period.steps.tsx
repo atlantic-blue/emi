@@ -37,6 +37,7 @@ import {
   contrastRatio,
   hasRole,
   phaseLabel,
+  phaseNameInk,
   phaseNames,
   radius,
   stroke,
@@ -81,13 +82,18 @@ import { TextField } from '../apps/mobile/src/components/TextField';
 import {
   cycleRingTestID,
   ringArcTestID,
+  ringCentreDayTestID,
+  ringCentreLengthTestID,
+  ringCentrePhaseTestID,
+  ringNameTestID,
   ringTrackTestID,
+  ringWholeArcTestID,
 } from '../apps/mobile/src/components/CycleRing';
 import {
   cycleCopy,
-  ringCycleLengthWords,
+  ringAboutLengthWords,
+  ringDayNumberWords,
   ringSpokenLabel,
-  weekTodayWord,
 } from '../apps/mobile/src/features/cycle/copy';
 import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
 import { OnAPhone } from '../apps/mobile/tests/fixtures/theSafeArea';
@@ -128,7 +134,7 @@ import {
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
 import { daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
 import { editPeriodCopy, monthLegendCopy } from '../apps/mobile/src/features/calendar/copy';
-import { DAYS_IN_A_WEEK } from '../apps/mobile/src/features/cycle/herWeek';
+import { dayParameter } from '../apps/mobile/src/features/calendar/askedMonth';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
 import {
@@ -194,8 +200,9 @@ import {
   roundActionTestID,
 } from '../apps/mobile/src/features/home/HomeScreen';
 import {
+  homeCalendarTestID,
   homeGreetingTestID,
-  homeHeaderMarkTestID,
+  homeHeaderAvatarTestID,
   homeHeaderTestID,
   homeHeaderWordTestID,
 } from '../apps/mobile/src/features/home/HomeHeader';
@@ -227,13 +234,15 @@ import {
   howManyPartsTheTodayScreensAreHeldTo,
   sheIsLookingAtTheTodayScreen,
   theDifferencesTheTodayStepKeeps,
+  theTodayDepartures,
   theTodayDrawings,
   theWashIsAtTheTopOfTheTodayScreen,
   whatTheTodayScreenDoesNotAnswerFor,
   whenSheOpens,
   whereTheScreenDrew,
+  whyTheStripIsGone,
 } from '../apps/mobile/tests/fixtures/theTodayLook';
-import { phaseLineTestID } from '../apps/mobile/src/features/home/PhaseLine';
+import { phaseCardTestID } from '../apps/mobile/src/features/home/PhaseCard';
 import {
   cycleLengthSentence,
   cycleSentence,
@@ -254,12 +263,6 @@ import {
   logFlowTestID,
 } from '../apps/mobile/src/features/log/LogFlow';
 import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
-import {
-  weekDateTestID,
-  weekDayTestID,
-  weekLetterTestID,
-  weekStripTestID,
-} from '../apps/mobile/src/features/home/WeekStrip';
 import {
   herNumberTestID,
   homeNumbersTestID,
@@ -347,11 +350,7 @@ import {
   tourCopy,
 } from '../apps/mobile/src/features/onboarding/copy';
 import { ordinal, statedLengthSentence } from '../apps/mobile/src/features/forecast/copy';
-import {
-  monthLabel,
-  startOfMonth,
-  weekdayLetter,
-} from '../apps/mobile/src/features/onboarding/days';
+import { monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
 import {
   defaultCycleLengthDays,
   defaultPeriodLengthDays,
@@ -411,6 +410,7 @@ import {
   theHeaderCarries,
   theHeaderOfTheDrawing,
   theNameSheGave,
+  theMarkTheHeaderNoLongerDraws,
   theOrderTheDrawingPlacesThemIn,
   whatTheHeaderDrew,
   whatTheScreenSheOpensDrew,
@@ -555,9 +555,10 @@ import {
   theFourWordsDrawnOn,
   theFourWordsDrawnTooLargeOn,
   theInkOf,
+  theIdentifiersOfTheLineThatIsGone,
+  thePhaseCardOnTheGlass,
   thePhaseLineOfTheDrawing,
-  thePhaseLineOnTheGlass,
-  thePhaseLineSheReads,
+  thePhaseSheReads,
   theTopOfTheDrawing,
 } from '../apps/mobile/tests/fixtures/thePhaseLineSheReads';
 import {
@@ -578,15 +579,12 @@ import {
 } from '../apps/mobile/tests/fixtures/theLogSheLandsOn';
 import {
   herPhoneHoldsFourRecordedPeriodDays,
+  theCalendarButton,
+  theCalendarButtonTooSmallToPress,
+  theDayTheRingCentreSays,
   theDayTheRingSaysFor,
-  theDaysOfHerWeekTooSmallToPress,
-  theStripMeasuredOn,
   theDaySheOpensIt,
-  theDaysOfHerWeek,
-  theDaysOfTheDrawingsStrip,
-  theDaysTheStripDrew,
-  theMarkOnTheDate,
-  theStripSheReads,
+  whatIsLeftOfTheStrip,
 } from '../apps/mobile/tests/fixtures/theWeekSheOpensWith';
 import { partsMissing, theIdentifiersDrawn } from '../apps/mobile/tests/fixtures/theMockupScreen';
 import {
@@ -662,8 +660,8 @@ import {
   theBeadDegrees,
   theBeadSheSees,
   theEndsOfTheArcs,
+  theColourDrawn,
   theGroundBetweenTheArcs,
-  theMiddleOfTheRing,
 } from '../apps/mobile/tests/fixtures/theRingSheReads';
 import {
   herCyclesVaryBy,
@@ -733,6 +731,14 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = dayOf(whenSheOpensIt);
 
 /** The Thursday of the week the drawing shows, which the week strip scenario is read on. */
+/**
+ * What a comparison of the top of a drawing of Today says once the strip is gone: the todayPhases
+ * board replaces the strip with the calendar button, and theTodayLook.tsx records the difference.
+ */
+const theStripTheCalendarReplaced = [
+  'the drawing names WeekStrip, and nothing says which test identifier it is built under',
+];
+
 const whenSheOpensTheStrip = new Date(`${theDaySheOpensIt}T12:00:00.000Z`);
 
 /** Midday on the day the drawing of the month rings, which is the day she opens it on. */
@@ -856,8 +862,8 @@ const theHomeScreenSaysInEnglish: Readonly<Record<string, string>> = {
     'Each strip is one of your cycles, starting with this one. Tap one to see it in full.',
   'home.doctorRecord':
     "You wanted a record for your doctor. It's ready whenever you are, in Export.",
-  'home.greeting': 'Hi, {name}',
-  'home.greeting.noName': 'Hi',
+  'home.greeting': 'Hello, {name}',
+  'home.greeting.noName': 'Hello',
   'home.painLine': 'You told us these days can be hard. Start with how much it hurts.',
   'home.patterns.line':
     "A symptom you logged once or twice isn't a pattern, so we won't call it one.",
@@ -2186,9 +2192,9 @@ defineFeature(feature, (test) => {
 
     and('the ring says she is on day 2 of 28, in the period phase', () => {
       expect(theRingSays()).toBe('Day 2 of 28, period');
-      // The day is read inside the ring rather than anywhere on the glass, because the week
-      // strip draws a date and a cycle day too, and a number found loose could be either.
-      expect(within(screen.getByTestId(cycleRingTestID)).getByText('2')).toBeTruthy();
+      // The day is read inside the ring rather than anywhere on the glass, so a number found loose
+      // elsewhere on the screen cannot answer for it. The ring of Today writes it as Day 2.
+      expect(within(screen.getByTestId(cycleRingTestID)).getByText('Day 2')).toBeTruthy();
       expect(within(screen.getByTestId(cycleRingTestID)).getByText(phaseLabel.period)).toBeTruthy();
     });
 
@@ -2450,6 +2456,7 @@ defineFeature(feature, (test) => {
     then('a phase of no days is not drawn at all', () => {
       expect(screen.queryByTestId(ringArcTestID('follicular', 'elapsed'))).toBeNull();
       expect(screen.queryByTestId(ringArcTestID('follicular', 'ahead'))).toBeNull();
+      expect(screen.queryByTestId(ringWholeArcTestID('follicular'))).toBeNull();
       expect(theArcsOnTheRing().map((arc) => arc.phase)).not.toContain('follicular');
     });
 
@@ -3076,7 +3083,7 @@ defineFeature(feature, (test) => {
     );
   });
 
-  test('SCREEN-2, the screen she opens names Emi and greets her by the name she gave', ({
+  test('SCREEN-2, the screen she opens names emi and greets her by the name she gave', ({
     given,
     when,
     and,
@@ -3098,17 +3105,32 @@ defineFeature(feature, (test) => {
       expect(whatTheScreenSheOpensDrew()[0]).toBe(homeHeaderTestID);
     });
 
-    and('it carries the mark, then the word Emi, then the greeting', () => {
-      // The order comes off the drawing rather than off this file, so the three below are the
-      // three the drawing places and not three somebody typed in an order that suited them.
-      expect(theOrderTheDrawingPlacesThemIn()).toEqual(theHeaderCarries.map((part) => part.name));
-      expect(partsMissing(theHeaderCarries, whatTheScreenSheOpensDrew())).toEqual([]);
-      expect(whatItSays(homeHeaderWordTestID)).toBe('Emi');
+    and(
+      'it carries her initial in a disc, then the word emi, then the greeting, then the calendar button',
+      () => {
+        // The order comes off the drawing rather than off this file. The drawing's mark is
+        // answered by the avatar disc, which the todayPhases board puts in its place.
+        expect(theOrderTheDrawingPlacesThemIn()).toEqual(theHeaderCarries.map((part) => part.name));
+        expect(partsMissing(theHeaderCarries, whatTheScreenSheOpensDrew())).toEqual([]);
+        expect(whatTheHeaderDrew()).toEqual([
+          homeHeaderTestID,
+          homeHeaderAvatarTestID,
+          homeHeaderWordTestID,
+          homeGreetingTestID,
+          homeCalendarTestID,
+        ]);
+        expect(whatItSays(homeHeaderAvatarTestID)).toBe('A');
+        expect(whatItSays(homeHeaderWordTestID)).toBe('emi');
+      },
+    );
+
+    and('the greeting reads Hello, Ada', () => {
+      expect(whatItSays(homeGreetingTestID)).toBe('Hello, Ada');
+      expect(whatItSays(homeGreetingTestID)).toBe(greeting(theNameSheGave));
     });
 
-    and('the greeting reads Hi, Ada', () => {
-      expect(whatItSays(homeGreetingTestID)).toBe('Hi, Ada');
-      expect(whatItSays(homeGreetingTestID)).toBe(greeting(theNameSheGave));
+    and('the ring mark the older header carried is gone', () => {
+      expect(screen.queryByTestId(theMarkTheHeaderNoLongerDraws)).toBeNull();
     });
 
     and('the drawing of this screen puts that header first, and the screen answers for it', () => {
@@ -3116,7 +3138,7 @@ defineFeature(feature, (test) => {
       expect(partsMissing(theHeaderOfTheDrawing(), whatTheScreenSheOpensDrew())).toEqual([]);
     });
 
-    and('a woman who gave no name reads the mark, the word, and hi on its own', async () => {
+    and('a woman who gave no name reads the disc, the word, and hello on its own', async () => {
       await app.close();
       resetExpoSqlite();
       resetExpoSecureStore();
@@ -3125,15 +3147,17 @@ defineFeature(feature, (test) => {
 
       expect(whatTheHeaderDrew()).toEqual([
         homeHeaderTestID,
-        homeHeaderMarkTestID,
+        homeHeaderAvatarTestID,
         homeHeaderWordTestID,
         homeGreetingTestID,
+        homeCalendarTestID,
       ]);
-      expect(whatItSays(homeGreetingTestID)).toBe('Hi');
+      expect(whatItSays(homeHeaderAvatarTestID)).toBe('');
+      expect(whatItSays(homeGreetingTestID)).toBe('Hello');
     });
   });
 
-  test('SCREEN-2, she reads the cycle day of every day of her week without pressing anything', ({
+  test('SCREEN-2, she reads the day of her cycle without pressing anything, and the week strip is gone', ({
     given,
     when,
     and,
@@ -3150,53 +3174,37 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    then('she reads her whole week, seven days, without pressing anything', () => {
-      expect(app.pathname()).toBe('/');
-      expect(screen.getByTestId(weekStripTestID)).toBeTruthy();
-      expect(theDaysTheStripDrew()).toEqual(theDaysOfHerWeek());
-      expect(theDaysTheStripDrew()).toHaveLength(theDaysOfTheDrawingsStrip().length);
-      expect(theDaysTheStripDrew()).toContain(theDaySheOpensIt);
+    then(
+      'she reads the day of her cycle in the middle of the ring without pressing anything',
+      () => {
+        expect(app.pathname()).toBe('/');
+        expect(screen.getByTestId(ringCentreDayTestID)).toBeTruthy();
+        expect(theDayTheRingCentreSays()).toBe(4);
+      },
+    );
+
+    and('that is the day the ring says for today', () => {
+      expect(theDayTheRingCentreSays()).toBe(theDayTheRingSaysFor(theDaySheOpensIt));
     });
 
-    and('above every date is the day of her cycle that date falls on', () => {
-      // The cycle days come off the drawing rather than off this file, so the seven below are the
-      // seven the drawing counts and not seven somebody typed in an order that suited them.
-      expect(theStripSheReads().map((day) => day.cycleDay)).toEqual(
-        theDaysOfTheDrawingsStrip().map((day) => day.cycleDay),
+    and('no part of the strip of seven days is drawn', () => {
+      expect(whatIsLeftOfTheStrip()).toEqual([]);
+    });
+
+    and('the calendar button in the top bar stands above the ring, where the strip was', () => {
+      const drawn = whatTheScreenSheOpensDrew();
+
+      expect(drawn.indexOf(homeCalendarTestID)).toBeGreaterThan(drawn.indexOf(homeHeaderTestID));
+      expect(drawn.indexOf(homeCalendarTestID)).toBeLessThan(drawn.indexOf(cycleRingTestID));
+    });
+
+    and('the strip is the one part of the top of the drawing the screen does not build', () => {
+      expect(partsMissing(theTopOfTheDrawing('todayNext'), whatTheScreenSheOpensDrew())).toEqual(
+        theStripTheCalendarReplaced,
       );
-    });
-
-    and('every one of those is the day the ring says for that date', () => {
-      const read = theStripSheReads().map((day) => day.cycleDay);
-
-      expect(read).toEqual(theDaysOfHerWeek().map((day) => theDayTheRingSaysOn(day)));
-      expect(read.filter((day) => Number.isInteger(day))).toHaveLength(
-        theDaysOfTheDrawingsStrip().length,
-      );
-    });
-
-    and('the three days behind today are filled, because she bled on them', () => {
-      expect(
-        theStripSheReads()
-          .slice(0, 3)
-          .map((day) => day.mark),
-      ).toEqual(['bled', 'bled', 'bled']);
-    });
-
-    and('today is ringed', () => {
-      expect(theMarkOnTheDate(theDaySheOpensIt)).toBe('today');
-    });
-
-    and('tomorrow is a dotted outline, because her period is expected to run into it', () => {
-      expect(theMarkOnTheDate(addDays(theDaySheOpensIt, 1))).toBe('forecast');
-    });
-
-    and('the two days after that are plain', () => {
-      expect(
-        theStripSheReads()
-          .slice(5)
-          .map((day) => day.mark),
-      ).toEqual(['plain', 'plain']);
+      expect(theTodayDepartures.filter((departure) => departure.drawing === 'todayNext')).toEqual([
+        { drawing: 'todayNext', part: 'WeekStrip', reason: whyTheStripIsGone },
+      ]);
     });
   });
 
@@ -3221,25 +3229,22 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'under her week she reads the day of her cycle, in type large enough to read across a room',
+      'in the middle of the ring she reads Day and the day of her cycle, in type large enough to read across a room',
       () => {
         expect(app.pathname()).toBe('/');
-        // The parts and their order come off the drawing rather than off this file, so the line
-        // sits where the drawing puts it and not where a test would accept it.
-        expect(partsMissing(theTopOfTheDrawing('todayNext'), whatTheScreenSheOpensDrew())).toEqual(
-          [],
+        expect(thePhaseSheReads().daySaid).toBe(
+          `Day ${String(thePhaseLineOfTheDrawing('todayNext').day)}`,
         );
-        expect(thePhaseLineSheReads().day).toBe(thePhaseLineOfTheDrawing('todayNext').day);
-        expect(thePhaseLineSheReads().day).toBe(theDayTheRingSaysFor(theDaySheOpensIt));
+        expect(thePhaseSheReads().day).toBe(theDayTheRingSaysFor(theDaySheOpensIt));
       },
     );
 
-    and('the phase she is in is written beside it, in words', () => {
-      expect(thePhaseLineSheReads().phase.toLowerCase()).toContain('period');
+    and('the phase she is in is written over it, in words', () => {
+      expect(thePhaseSheReads().phase).toBe('Period');
     });
 
-    and('the day of her cycle is drawn far larger than the phase beside it', () => {
-      const read = thePhaseLineSheReads();
+    and('the day of her cycle is drawn far larger than the phase over it', () => {
+      const read = thePhaseSheReads();
 
       expect(read.dayPoints).toBeGreaterThan(read.phasePoints ?? 0);
       expect(read.dayPoints).toBeGreaterThan(theLargestTheyMayBeDrawn * 2);
@@ -3254,16 +3259,29 @@ defineFeature(feature, (test) => {
     );
 
     and('the phase is written in the ink of that phase, and never on the colour of it', () => {
-      expect(thePhaseLineSheReads().phaseColour).toBe(theInkOf('period'));
-      expect(thePhaseLineSheReads().phaseColour).not.toBe(theFillOf('period'));
-      // The strip above the line draws a date on the period fill, which is a figure rather than
-      // a word, so the reading is of the line and it is of something.
-      expect(textIn(thePhaseLineOnTheGlass()).length).toBeGreaterThan(0);
-      expect(textDrawnOnAPhaseFill(thePhaseLineOnTheGlass())).toEqual([]);
+      expect(thePhaseSheReads().phaseColour).toBe(theInkOf('period'));
+      expect(thePhaseSheReads().phaseColour).not.toBe(theFillOf('period'));
+      expect(textIn(thePhaseCardOnTheGlass()).length).toBeGreaterThan(0);
+      expect(textDrawnOnAPhaseFill(thePhaseCardOnTheGlass())).toEqual([]);
     });
 
+    and(
+      'under the ring a card names the phase and its days, and the line under the ring is gone',
+      () => {
+        const drawn = whatTheScreenSheOpensDrew();
+
+        expect(drawn.indexOf(phaseCardTestID)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
+        expect(thePhaseSheReads().cardDays).toMatch(/^Period phase, days? \d+/);
+        expect(
+          theIdentifiersDrawn().filter((identifier) =>
+            theIdentifiersOfTheLineThatIsGone.includes(identifier),
+          ),
+        ).toEqual([]);
+      },
+    );
+
     and('the same screen three weeks later reads her luteal phase the same way', async () => {
-      const onHerPeriodDay = thePhaseLineSheReads();
+      const onHerPeriodDay = thePhaseSheReads();
 
       await app.close();
       resetExpoSqlite();
@@ -3273,14 +3291,15 @@ defineFeature(feature, (test) => {
       await herPhoneHoldsFourRecordedPeriodDays(threeWeeksLater);
       await sheOpens('/');
 
-      const inHerLutealPhase = thePhaseLineSheReads();
+      const inHerLutealPhase = thePhaseSheReads();
 
       expect(partsMissing(theTopOfTheDrawing('todayLuteal'), whatTheScreenSheOpensDrew())).toEqual(
-        [],
+        theStripTheCalendarReplaced,
       );
       expect(inHerLutealPhase.day).toBe(theFirstLutealDayTheRuleGives);
       expect(inHerLutealPhase.day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
-      expect(inHerLutealPhase.phase.toLowerCase()).toContain('luteal');
+      expect(inHerLutealPhase.phase).toBe('Luteal');
+      expect(inHerLutealPhase.cardDays).toMatch(/^Luteal phase, days? \d+/);
       expect(inHerLutealPhase.phaseColour).toBe(theInkOf('luteal'));
       // The four words stay where they are whatever the phase, so the word she reads here is
       // drawn at the size the period day drew its own.
@@ -3312,7 +3331,7 @@ defineFeature(feature, (test) => {
       // The parts, their order and the count all come off the drawing, so a third action fails
       // here and the failure names the number the drawing places.
       expect(partsMissing(theScreenDownToTheRoundActions(), whatTheScreenSheOpensDrew())).toEqual(
-        [],
+        theStripTheCalendarReplaced,
       );
       expect(roundActionProblems()).toEqual([]);
       expect(theRoundActionsOnTheGlass()).toHaveLength(2);
@@ -3464,7 +3483,7 @@ defineFeature(feature, (test) => {
           theScreenDownToTheRing(theDrawingBeforeSheLogged),
           whatTheScreenSheOpensDrew(),
         ),
-      ).toEqual([]);
+      ).toEqual(theStripTheCalendarReplaced);
     });
 
     when('she presses the symptoms action under the ring', async () => {
@@ -3493,7 +3512,7 @@ defineFeature(feature, (test) => {
 
       expect(theRowIsOnTheScreen()).toBe(true);
       expect(theRowSheReads().lead).toBe(homeCopy.loggedToday.lead);
-      expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(phaseLineTestID));
+      expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(phaseCardTestID));
       expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
     });
 
@@ -3511,7 +3530,7 @@ defineFeature(feature, (test) => {
       expect(theDrawingPlacesTheRow(theDrawingAfterSheLogged)).toBe(true);
       expect(
         partsMissing(theScreenDownToTheRing(theDrawingAfterSheLogged), whatTheScreenSheOpensDrew()),
-      ).toEqual([]);
+      ).toEqual(theStripTheCalendarReplaced);
     });
 
     and('pressing what she logged opens the log on the symptom groups again', async () => {
@@ -3598,14 +3617,14 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-4, she reaches a month from the screen she opens by pressing her week', ({
+  test('SCREEN-4, she reaches a month from the screen she opens by pressing the calendar button', ({
     given,
     when,
     and,
     then,
   }) => {
     let app: OpenApp;
-    let theDayShePressed: string;
+    let theMonthSheReached: string;
 
     given('her phone holds three recorded cycles', async () => {
       jest.setSystemTime(whenSheOpensTheMonth());
@@ -3616,17 +3635,15 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    then('every day of the week she is reading is at least 44 points on both axes', () => {
+    then('the calendar button in the top bar is at least 44 points on both axes', () => {
       expect(app.pathname()).toBe('/');
-      expect(theDaysTheStripDrew()).toHaveLength(DAYS_IN_A_WEEK);
-      expect(theDaysOfHerWeekTooSmallToPress()).toEqual([]);
+      expect(theCalendarButtonTooSmallToPress()).toEqual([]);
       expect(MINIMUM_TAP_TARGET).toBe(44);
     });
 
-    and('the seven of them fit across the narrowest phone Emi is built for', () => {
-      const strip = theStripMeasuredOn(aSmallIPhone.width);
-
-      expect(strip.theDaysNeed).toBeLessThanOrEqual(strip.room);
+    and('it is named the calendar for somebody listening, as a button', () => {
+      expect(theCalendarButton().props.accessibilityLabel).toBe(homeCopy.calendar);
+      expect(screen.getByTestId(homeCalendarTestID).props.accessibilityRole).toBe('button');
     });
 
     and('the dock still holds the four columns it held, and nothing else', () => {
@@ -3634,14 +3651,17 @@ defineFeature(feature, (test) => {
       expect(theColumnsOfTheDock()).toHaveLength(4);
     });
 
-    when('she presses a day of that week', async () => {
-      theDayShePressed = String(theDaysTheStripDrew()[0]);
-      await shePresses(weekDayTestID(theDayShePressed));
+    when('she presses the calendar button', async () => {
+      await shePresses(homeCalendarTestID);
     });
 
-    then('she is reading the month that day falls in', () => {
+    then('she is reading the month today falls in', () => {
+      const today = dayOf(whenSheOpensTheMonth());
+
       expect(app.pathname()).toBe('/calendar');
-      expect(theMonthSheReads()).toBe(monthLabel(startOfMonth(theDayShePressed)));
+      expect(app.searchParams()[dayParameter]).toBe(today);
+      expect(theMonthSheReads()).toBe(monthLabel(startOfMonth(today)));
+      theMonthSheReached = theMonthSheReads();
     });
 
     and(
@@ -3659,21 +3679,17 @@ defineFeature(feature, (test) => {
       await shePresses(calendarBackTestID);
     });
 
-    then('she is on the screen she opened, reading her week again', () => {
+    then('she is on the screen she opened, and no strip of seven days is drawn on it', () => {
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
-      expect(theDaysTheStripDrew()).toHaveLength(DAYS_IN_A_WEEK);
+      expect(whatIsLeftOfTheStrip()).toEqual([]);
     });
 
-    and('pressing a different day of the same week reaches the same month', async () => {
-      const another = theDaysTheStripDrew().find((day) => day !== theDayShePressed);
-
-      expect(another).toBeDefined();
-      await shePresses(weekDayTestID(String(another)));
+    and('pressing the calendar button again reaches the same month', async () => {
+      await shePresses(homeCalendarTestID);
 
       expect(app.pathname()).toBe('/calendar');
-      expect(startOfMonth(String(another))).toBe(startOfMonth(theDayShePressed));
-      expect(theMonthSheReads()).toBe(monthLabel(startOfMonth(theDayShePressed)));
+      expect(theMonthSheReads()).toBe(theMonthSheReached);
     });
   });
 
@@ -3998,8 +4014,8 @@ defineFeature(feature, (test) => {
       herNextPeriodWasExpectedOn = theDayHerNextPeriodMayStartOn();
     });
 
-    and('she presses a day of the week she is reading', async () => {
-      await shePresses(weekDayTestID(theDaySheOpensEmi()));
+    and('she presses the calendar button in the top bar', async () => {
+      await shePresses(homeCalendarTestID);
     });
 
     then('she is reading the month that day falls in', () => {
@@ -5665,7 +5681,7 @@ defineFeature(feature, (test) => {
   // it. That one draws the four buttons on a page of its own, outside the provider the
   // application wraps them in, and the font loader never settles again in this file afterwards:
   // every later scenario that drives the router waits for a screen that never arrives.
-  test('SCREEN-2, the ring and the week strip take the redesign look', ({
+  test('SCREEN-2, the ring and the top bar take the todayPhases look', ({
     given,
     when,
     then,
@@ -5673,25 +5689,11 @@ defineFeature(feature, (test) => {
   }) => {
     const herCycle = { cycleLengthDays: 28, dayOfCycle: 2, periodDays: 4 };
 
-    /** Her week, in the order the strip drew it, named by the day each column stands for. */
-    const theColumnsOfHerWeek = (): string[] => {
-      const named = weekDayTestID('');
-
-      return screen
-        .queryAllByTestId(new RegExp(`^${named}`))
-        .map((column) => String(column.props.testID).slice(named.length));
-    };
-
-    /** What one column of the strip wrote in place of the letter of its weekday. */
-    const theLetterOver = (day: string): string =>
-      textIn(screen.getByTestId(weekLetterTestID(day))).join('');
-
-    /** How the disc around one date is drawn, which is the whole of what that day says. */
-    const theDiscOn = (day: string): Record<string, unknown> =>
-      (StyleSheet.flatten(screen.getByTestId(weekDateTestID(day)).props.style) ?? {}) as Record<
-        string,
-        unknown
-      >;
+    /** What the middle of the ring of Today writes, top to bottom. */
+    const theMiddleOfTheRingOfToday = (): string[] =>
+      [ringCentrePhaseTestID, ringCentreDayTestID, ringCentreLengthTestID].map((testID) =>
+        textIn(screen.getByTestId(testID)).join(''),
+      );
 
     given('her phone holds six cycles of her own', async () => {
       // The length of her period is one of her answers at the first run, so the arc ahead of her
@@ -5704,33 +5706,32 @@ defineFeature(feature, (test) => {
       );
     });
 
-    when('she opens Emi and reads the ring and the week above it', async () => {
+    when('she opens Emi and reads the ring and the top bar above it', async () => {
       await sheOpens('/');
 
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
-      expect(screen.getByTestId(weekStripTestID)).toBeTruthy();
-      expect(theColumnsOfHerWeek()).toHaveLength(7);
+      expect(screen.getByTestId(homeHeaderTestID)).toBeTruthy();
     });
 
     then(
-      'the middle of the ring names her phase, then the day she is on, then the length of her cycle',
+      'the middle of the ring names her phase, then Day and the day she is on, then about the length of her cycle',
       () => {
-        expect(theMiddleOfTheRing()).toEqual([
-          phaseLabel.period,
-          String(herCycle.dayOfCycle),
-          ringCycleLengthWords(herCycle.cycleLengthDays),
+        expect(theMiddleOfTheRingOfToday()).toEqual([
+          'Period',
+          ringDayNumberWords(herCycle.dayOfCycle),
+          ringAboutLengthWords(herCycle.cycleLengthDays),
         ]);
       },
     );
 
     and(
-      'every arc ends in a round end, and ground still shows at every boundary between two phases',
+      'every arc is painted whole with a square end, and ground still shows at every boundary between two phases',
       () => {
         const ends = theEndsOfTheArcs();
         const ground = theGroundBetweenTheArcs();
 
         expect(ends.length).toBeGreaterThan(1);
-        expect(ends.filter((end) => end !== 'round')).toEqual([]);
+        expect(ends.filter((end) => end !== 'butt')).toEqual([]);
 
         // Ground first, and the measured width second, because a boundary of no degrees is a
         // change of colour and nothing else.
@@ -5742,44 +5743,28 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('the bead on today is a white disc with a dark line around it', () => {
-      expect(theBeadSheSees()).toEqual({ fill: colour.card, line: colour.text });
+    and('each phase name is written along its own arc, in the colour measured on that arc', () => {
+      const written = phaseNames.filter((phase) => screen.queryByTestId(ringNameTestID(phase)));
+
+      expect(written.length).toBeGreaterThan(0);
+      for (const phase of written) {
+        expect(theColourDrawn(screen.getByTestId(ringNameTestID(phase)).props.fill)).toBe(
+          colour[phaseNameInk[phase]],
+        );
+      }
+    });
+
+    and('the bead on today is a dark disc with a white line around it, outside the band', () => {
+      expect(theBeadSheSees()).toEqual({ fill: colour.text, line: colour.card });
     });
 
     and(
-      'the days she bled are filled discs, and the day her period is expected on is a dashed outline',
+      'the strip of seven days is gone, and the calendar button closes the top bar on the right',
       () => {
-        const filled = theColumnsOfHerWeek().filter(
-          (day) => theDiscOn(day)['backgroundColor'] === colour.period,
-        );
-        const outlined = theColumnsOfHerWeek().filter(
-          (day) => theDiscOn(day)['borderStyle'] === 'dashed',
-        );
-
-        expect(filled.length).toBeGreaterThan(0);
-        expect(outlined.length).toBeGreaterThan(0);
-
-        for (const day of outlined) {
-          expect(theDiscOn(day)).toMatchObject({
-            borderColor: colour.period,
-            borderStyle: 'dashed',
-          });
-          expect(theDiscOn(day)['backgroundColor']).toBeUndefined();
-        }
+        expect(whatIsLeftOfTheStrip()).toEqual([]);
+        expect(whatTheHeaderDrew().at(-1)).toBe(homeCalendarTestID);
       },
     );
-
-    and('the column she is on is named TODAY in place of its weekday letter', () => {
-      const hers = theColumnsOfHerWeek().filter((day) => day === today);
-
-      expect(hers).toEqual([today]);
-      expect(theLetterOver(today)).toBe(weekTodayWord());
-      expect(theLetterOver(today)).not.toBe(weekdayLetter(today));
-
-      for (const day of theColumnsOfHerWeek().filter((column) => column !== today)) {
-        expect(theLetterOver(day)).toBe(weekdayLetter(day));
-      }
-    });
   });
 
   test('SCREEN-1, the welcome and the tour say what the redesign says', ({
@@ -6369,19 +6354,19 @@ defineFeature(feature, (test) => {
       expect(washedAtTheTop.length).toBeGreaterThan(5);
     });
 
-    and('the ring stands above the line that names the phase she is in', async () => {
+    and('the ring stands above the card that names the phase she is in', async () => {
       resetExpoSqlite();
       jest.setSystemTime(whenSheOpens('todayLuteal'));
       await sheIsLookingAtTheTodayScreen('todayLuteal');
 
       expect(whereTheScreenDrew(cycleRingTestID)).toBeGreaterThan(-1);
-      expect(whereTheScreenDrew(cycleRingTestID)).toBeLessThan(whereTheScreenDrew(phaseLineTestID));
+      expect(whereTheScreenDrew(cycleRingTestID)).toBeLessThan(whereTheScreenDrew(phaseCardTestID));
     });
 
     and(
-      'the two round actions stand under that line, the period one filled and the symptoms one white',
+      'the two round actions stand under that card, the period one filled and the symptoms one white',
       () => {
-        expect(whereTheScreenDrew(phaseLineTestID)).toBeLessThan(
+        expect(whereTheScreenDrew(phaseCardTestID)).toBeLessThan(
           whereTheScreenDrew(roundActionTestID('period')),
         );
         expect(styleOfPart(roundActionDiscTestID('period'))['backgroundColor']).toBe(colour.accent);
@@ -6435,7 +6420,7 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'each state draws every part its own drawing names, in the order the drawing places them',
+      'each state draws every part its own drawing names in its order, but the parts it records as differences',
       () => {
         const differs = Object.entries(unanswered)
           .filter(([, missing]) => missing.length > 0)
@@ -7248,7 +7233,7 @@ defineFeature(feature, (test) => {
 
   // The four parts she presses, measured off a page carrying all of them at once, and the one of
   // them a real screen already draws, measured on that screen.
-  test('SCREEN-2, the home screen says hi to her by name', ({ given, when, and, then }) => {
+  test('SCREEN-2, the home screen says hello to her by name', ({ given, when, and, then }) => {
     let app: OpenApp;
 
     given(
@@ -7262,10 +7247,10 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    then('the top of the screen says hi to her by the name she gave', () => {
+    then('the top of the screen says hello to her by the name she gave', () => {
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
-      expect(whatItSays(homeGreetingTestID)).toBe(`Hi, ${theNameSheGave}`);
+      expect(whatItSays(homeGreetingTestID)).toBe(`Hello, ${theNameSheGave}`);
     });
 
     and(
@@ -7291,7 +7276,7 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'a woman who gave no name reads hi on its own, with no gap where a name would be',
+      'a woman who gave no name reads hello on its own, with no gap where a name would be',
       async () => {
         await app.close();
         resetExpoSqlite();
@@ -7299,7 +7284,7 @@ defineFeature(feature, (test) => {
         await herPhoneHoldsOnePeriodAnd();
         await sheOpens('/');
 
-        expect(whatItSays(homeGreetingTestID)).toBe('Hi');
+        expect(whatItSays(homeGreetingTestID)).toBe('Hello');
         expect(whatItSays(homeGreetingTestID)).not.toContain(theNameSheGave);
         expect(whatItSays(homeGreetingTestID).trim()).toBe(whatItSays(homeGreetingTestID));
       },

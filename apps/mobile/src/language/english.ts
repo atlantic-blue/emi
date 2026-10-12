@@ -82,22 +82,14 @@ export const english = {
   'cycle.figures.title': 'Where these figures come from',
   'cycle.noRing.line': 'Log a day you bled and your cycle appears here.',
   'cycle.noRing.title': 'Your ring is waiting',
-  'cycle.phaseLine.day': 'Day {day}',
-  'cycle.phaseLine.follicular': {
-    one: 'Follicular phase, a cycle of {count} day',
-    other: 'Follicular phase, a cycle of {count} days',
-  },
-  'cycle.phaseLine.luteal': {
-    one: 'Luteal phase, a cycle of {count} day',
-    other: 'Luteal phase, a cycle of {count} days',
-  },
-  'cycle.phaseLine.ovulation': {
-    one: 'Ovulation phase, a cycle of {count} day',
-    other: 'Ovulation phase, a cycle of {count} days',
-  },
-  'cycle.phaseLine.period': 'Your period, day {day} of about {days}',
+  'cycle.phaseName.period': 'Period',
+  'cycle.phaseName.follicular': 'Follicular',
+  'cycle.phaseName.ovulation': 'Ovulation',
+  'cycle.phaseName.luteal': 'Luteal',
   'cycle.ring.day': 'Day',
+  'cycle.ring.dayNumber': 'Day {day}',
   'cycle.ring.of': 'of {length}',
+  'cycle.ring.ofAbout': 'of about {length}',
   'cycle.ring.spoken': 'Day {day} of {length}, {phase}',
 
   'export.again': 'Make them again',
@@ -204,10 +196,11 @@ export const english = {
     "You wanted a record for your doctor. It's ready whenever you are, in Export.",
   'home.cycles.line':
     'Each strip is one of your cycles, starting with this one. Tap one to see it in full.',
-  'home.greeting': 'Hi, {name}',
+  'home.calendar': 'The calendar',
+  'home.greeting': 'Hello, {name}',
   // What she reads where she gave no name. She is greeted either way, so the top of the screen
   // never opens on a blank line, and nothing stands where a name would be.
-  'home.greeting.noName': 'Hi',
+  'home.greeting.noName': 'Hello',
   // The one button of a screen with no ring. As soon as a ring is drawn the two round actions
   // are the way into the log, so this label is read on day one and nowhere else.
   'home.logToday': 'Log today',
@@ -244,6 +237,18 @@ export const english = {
     "A symptom you logged once or twice isn't a pattern, so we won't call it one.",
   'home.patterns.onCycleDay': 'about day {day} of your cycle',
   'home.patterns.press': 'What comes back, in full',
+  'home.phaseCard.period.day': 'Period phase, day {from}',
+  'home.phaseCard.period.days': 'Period phase, days {from} to {to}',
+  'home.phaseCard.period.line': 'The days you bleed.',
+  'home.phaseCard.follicular.day': 'Follicular phase, day {from}',
+  'home.phaseCard.follicular.days': 'Follicular phase, days {from} to {to}',
+  'home.phaseCard.follicular.line': 'The days after your period, before ovulation.',
+  'home.phaseCard.ovulation.day': 'Ovulation phase, day {from}',
+  'home.phaseCard.ovulation.days': 'Ovulation phase, days {from} to {to}',
+  'home.phaseCard.ovulation.line': 'Energy is often at its highest.',
+  'home.phaseCard.luteal.day': 'Luteal phase, day {from}',
+  'home.phaseCard.luteal.days': 'Luteal phase, days {from} to {to}',
+  'home.phaseCard.luteal.line': 'The days after ovulation, before your next period.',
   'home.roundAction.period': 'Period',
   'home.roundAction.symptoms': 'Symptoms',
   // The chart of her last complete cycles over the published range. The caption and the sentence
@@ -265,8 +270,7 @@ export const english = {
   'home.waiting.trend.read': 'Emi draws nothing from nothing, and it holds no sample data.',
   'home.trend.spoken':
     'Your last {cycles}, from {shortest} to {longest} days, over the published range of {low} to {high} days.',
-  'home.week.today': 'TODAY',
-  'home.wordmark': 'Emi',
+  'home.wordmark': 'emi',
 
   'lock.cancel': 'Cancel',
   /**

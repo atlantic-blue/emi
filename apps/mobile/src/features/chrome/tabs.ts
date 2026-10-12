@@ -17,8 +17,8 @@ export interface Tab extends NavigationTab {
 }
 
 export const tabs: readonly Tab[] = [
-  { name: 'index', label: words('tab.today'), icon: 'sun' },
-  { name: 'log/index', label: words('tab.log'), icon: 'edit' },
+  { name: 'index', label: words('tab.today'), icon: 'calendar' },
+  { name: 'log/index', label: words('tab.log'), icon: 'drop' },
   { name: 'history', label: words('tab.insights'), icon: 'chart' },
   { name: 'settings/index', label: words('tab.privacy'), icon: 'shield' },
 ];

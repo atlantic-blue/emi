@@ -1,76 +1,106 @@
-import { colour, space, textStyle, typeScale } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { greeting, homeCopy } from './copy';
+import { greeting, homeCopy, initialOf } from './copy';
 
 /**
- * The header of the screen she opens: the mark, the word Emi and the greeting.
- *
- * Nothing else. There is no account and nothing to count, so the row carries no picture of her and
- * no badge. The mark is the ring of the set rather than the brand file, because the set is what the
- * application already draws every icon from.
+ * The top bar of Today: her initial on the left, the word and the greeting in the middle, and the
+ * calendar on the right. The calendar button is the way from Today to her month.
  */
 
 export const homeHeaderTestID = 'home-header';
-export const homeHeaderMarkTestID = 'home-header-mark';
+export const homeHeaderAvatarTestID = 'home-header-avatar';
 export const homeHeaderWordTestID = 'home-header-word';
 export const homeGreetingTestID = 'home-greeting';
+export const homeCalendarTestID = 'home-calendar';
 
-/** The mark is drawn as tall as the word, so the two read as one mark rather than as two things. */
-const theMarkIsAsTallAsTheWord = typeScale['headline-lg'].size;
+/** Points. The drawing of the person where she gave no name, and of the calendar. */
+const theIconInADisc = 22;
 
 interface Props {
-  /**
-   * The name in her profile, and nothing at all where she skipped the question or gave none. The
-   * greeting is drawn either way: without a name it is hi on its own, which is a sentence, so a
-   * woman who kept her name is greeted rather than read a line with a hole in it.
-   */
+  /** The name in her profile, and nothing at all where she skipped the question or gave none. */
   readonly name?: string;
+  /** The way to her month. The button is not drawn where the caller offers none. */
+  readonly onOpenCalendar?: () => void;
 }
 
-export function HomeHeader({ name }: Props): ReactNode {
+export function HomeHeader({ name, onOpenCalendar }: Props): ReactNode {
+  const initial = initialOf(name);
+
   return (
     <View style={styles.header} testID={homeHeaderTestID}>
-      <View style={styles.mark}>
-        <Icon
-          colour={colour.accent}
-          name="ring"
-          size={theMarkIsAsTallAsTheWord}
-          testID={homeHeaderMarkTestID}
-        />
+      <View accessible={false} style={styles.avatar} testID={homeHeaderAvatarTestID}>
+        {initial === undefined ? (
+          <Icon colour={colour.accent} name="person" size={theIconInADisc} />
+        ) : (
+          <Text style={styles.initial}>{initial}</Text>
+        )}
+      </View>
+
+      <View style={styles.middle}>
         <Text accessibilityRole="header" style={styles.word} testID={homeHeaderWordTestID}>
           {homeCopy.wordmark}
         </Text>
+        <Text style={styles.greeting} testID={homeGreetingTestID}>
+          {greeting(name)}
+        </Text>
       </View>
 
-      <Text style={styles.greeting} testID={homeGreetingTestID}>
-        {greeting(name)}
-      </Text>
+      {onOpenCalendar === undefined ? (
+        <View style={styles.disc} />
+      ) : (
+        <Pressable
+          accessibilityLabel={homeCopy.calendar}
+          accessibilityRole="button"
+          onPress={onOpenCalendar}
+          style={[styles.disc, styles.calendar]}
+          testID={homeCalendarTestID}
+        >
+          <Icon colour={colour.text} name="calendar" size={theIconInADisc} />
+        </Pressable>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // Her name is the one word on this screen that is hers, so it stays at the small size, which is
-  // what SCREEN-2 holds the whole screen to.
+  avatar: {
+    alignItems: 'center',
+    backgroundColor: colour.card,
+    borderRadius: radius.full,
+    height: MINIMUM_TAP_TARGET,
+    justifyContent: 'center',
+    width: MINIMUM_TAP_TARGET,
+  },
+  calendar: { backgroundColor: colour.card },
+  disc: {
+    alignItems: 'center',
+    borderRadius: radius.full,
+    height: MINIMUM_TAP_TARGET,
+    justifyContent: 'center',
+    width: MINIMUM_TAP_TARGET,
+  },
   greeting: {
     color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
-  // The mark and the word stand over the greeting, in the middle of the glass. There is no
-  // account and nothing to count, so nothing is pushed to either margin and the row reads as one
-  // block rather than as two things at opposite ends of an empty line.
   header: {
     alignItems: 'center',
     alignSelf: 'stretch',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: space.spaceLg,
     paddingHorizontal: space.margin,
   },
-  mark: { alignItems: 'center', flexDirection: 'row', gap: space.spaceSm },
+  initial: {
+    color: colour.accent,
+    ...textStyle('headline-sm'),
+  },
+  middle: { alignItems: 'center', flexShrink: 1 },
   word: {
-    color: colour.text,
-    ...textStyle('headline-lg'),
+    color: colour.accent,
+    ...textStyle('headline-md'),
   },
 });

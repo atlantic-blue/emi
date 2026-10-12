@@ -33,7 +33,7 @@ async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
 }
 
 describe('the home screen', () => {
-  it('shows the word Emi', async () => {
+  it('shows the word emi', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
@@ -45,8 +45,8 @@ describe('the home screen', () => {
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
     expect(textIn(screen.toJSON())).toEqual([
       homeCopy.wordmark,
-      // A woman who gave no name is greeted anyway, with hi on its own and no gap after it.
-      'Hi',
+      // A woman who gave no name is greeted anyway, with hello on its own and no gap after it.
+      'Hello',
       cycleCopy.noRing.title,
       cycleCopy.noRing.line,
       homeCopy.roundAction.period,

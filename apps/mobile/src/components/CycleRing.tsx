@@ -5,6 +5,14 @@ import {
   CYCLE_DAY_ROLE,
   CYCLE_LENGTH_ROLE,
   DAYS_AHEAD_STRENGTH,
+  NAMED_RING_BEAD_ORBIT,
+  NAMED_RING_BEAD_RADIUS,
+  NAMED_RING_DIAMETER,
+  NAMED_RING_RADIUS,
+  NAMED_RING_TRACK_WIDTH,
+  PHASE_NAME_ON_ARC_POINTS,
+  PHASE_NAME_ON_ARC_SPACING,
+  PHASE_NAME_ON_ARC_WEIGHT,
   PHASE_NAME_ROLE,
   type PhaseName,
   type PhaseSpan,
@@ -14,7 +22,11 @@ import {
   arcPath,
   beadPalette,
   colour,
+  fontNameFor,
+  namePath,
   paintedArcs,
+  phaseNameInk,
+  phaseNameOnArc,
   phaseLabel,
   phasePalette,
   pointOnRing,
@@ -24,9 +36,16 @@ import {
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Circle, Defs, Path, Text as SvgText, TextPath } from 'react-native-svg';
 
-import { ringCycleLengthWords, ringDayWord, ringSpokenLabel } from '../features/cycle/copy';
+import {
+  phaseName,
+  ringAboutLengthWords,
+  ringCycleLengthWords,
+  ringDayNumberWords,
+  ringDayWord,
+  ringSpokenLabel,
+} from '../features/cycle/copy';
 
 /**
  * The ring of design section 9.5, drawn from the days of her own cycle. It carries the meaning so
@@ -46,6 +65,19 @@ export function ringArcTestID(phase: PhaseName, strength: ArcStrength): string {
   return `ring-arc-${phase}-${strength}`;
 }
 
+/** One arc of the ring of Today, which is painted whole rather than in two strengths. */
+export function ringWholeArcTestID(phase: PhaseName): string {
+  return `ring-arc-${phase}-whole`;
+}
+
+export function ringNameTestID(phase: PhaseName): string {
+  return `ring-name-${phase}`;
+}
+
+export const ringCentrePhaseTestID = 'ring-centre-phase';
+export const ringCentreDayTestID = 'ring-centre-day';
+export const ringCentreLengthTestID = 'ring-centre-length';
+
 interface Props {
   readonly cycleLengthDays: number;
   /** The day she is on, counting from one. */
@@ -56,6 +88,11 @@ interface Props {
   readonly daysAhead?: 'faded' | 'full';
   /** What the word over the day names. A ring drawn for nobody has no phase of hers to name. */
   readonly centreWord?: 'phase' | 'day';
+  /**
+   * The ring of Today writes the four phase names along a thicker band, draws every arc at full
+   * strength so each name is measured on its own fill, and says the day as "Day N".
+   */
+  readonly look?: 'plain' | 'named';
 }
 
 export function CycleRing({
@@ -65,7 +102,31 @@ export function CycleRing({
   diameter = RING_DIAMETER,
   daysAhead = 'faded',
   centreWord = 'phase',
+  look = 'plain',
 }: Props): ReactNode {
+  return look === 'named' ? (
+    <NamedRing cycleLengthDays={cycleLengthDays} day={day} phases={phases} />
+  ) : (
+    <PlainRing
+      centreWord={centreWord}
+      cycleLengthDays={cycleLengthDays}
+      day={day}
+      daysAhead={daysAhead}
+      diameter={diameter}
+      phases={phases}
+    />
+  );
+}
+
+/** The ring of the tour and the log: a thin track, with the days ahead of her faded. */
+function PlainRing({
+  cycleLengthDays,
+  day,
+  phases,
+  diameter,
+  daysAhead,
+  centreWord,
+}: Required<Omit<Props, 'look'>>): ReactNode {
   const geometry = ringGeometry({ cycleLengthDays, day, phases });
   const centre = { x: diameter / 2, y: diameter / 2 };
   const radius = (diameter - RING_TRACK_WIDTH) / 2;
@@ -125,6 +186,112 @@ export function CycleRing({
       </View>
     </View>
   );
+}
+
+/** The ring of Today: the four names along a thick band, and the day in the middle in words. */
+function NamedRing({
+  cycleLengthDays,
+  day,
+  phases,
+}: Pick<Props, 'cycleLengthDays' | 'day' | 'phases'>): ReactNode {
+  const geometry = ringGeometry({ cycleLengthDays, day, phases });
+  const diameter = NAMED_RING_DIAMETER;
+  const centre = { x: diameter / 2, y: diameter / 2 };
+  const bead = pointOnRing(centre, NAMED_RING_BEAD_ORBIT, geometry.beadDegrees);
+  const opening = useOpeningMotion();
+  const today = phaseName(geometry.phase);
+
+  // Each arc is painted once, whole and at full strength, with square ends as the board draws
+  // them, so every name is read against its own fill and nothing else.
+  const arcs = geometry.arcs.map((arc) => (
+    <Path
+      d={arcPath(centre, NAMED_RING_RADIUS, arc.startDegrees, arc.sweepDegrees)}
+      fill="none"
+      key={ringWholeArcTestID(arc.phase)}
+      stroke={colour[phasePalette[arc.phase].fill]}
+      strokeLinecap="butt"
+      strokeWidth={NAMED_RING_TRACK_WIDTH}
+      testID={ringWholeArcTestID(arc.phase)}
+    />
+  ));
+
+  const names = geometry.arcs.map((arc) => ({
+    arc,
+    ...phaseNameOnArc(arc, phaseName(arc.phase)),
+  }));
+
+  return (
+    <View
+      accessibilityLabel={ringSpokenLabel(day, cycleLengthDays, today)}
+      accessibilityRole="image"
+      accessible
+      style={[styles.ring, { height: diameter, width: diameter }]}
+      testID={cycleRingTestID}
+    >
+      <Animated.View
+        style={{ opacity: opening.opacity, transform: [{ scale: opening.scale }] }}
+        testID={ringTrackTestID}
+      >
+        <Svg height={diameter} width={diameter}>
+          <Defs>
+            {names.map(({ arc }) => (
+              <Path
+                d={namePath(centre, NAMED_RING_RADIUS, arc)}
+                id={namePathID(arc.phase)}
+                key={namePathID(arc.phase)}
+              />
+            ))}
+          </Defs>
+          {arcs}
+          {names
+            .filter((name) => name.fit !== 'none')
+            .map(({ arc, written }) => (
+              <SvgText
+                alignmentBaseline="central"
+                fill={colour[phaseNameInk[arc.phase]]}
+                fontFamily={fontNameFor('text', PHASE_NAME_ON_ARC_WEIGHT)}
+                fontSize={PHASE_NAME_ON_ARC_POINTS}
+                key={ringNameTestID(arc.phase)}
+                letterSpacing={PHASE_NAME_ON_ARC_SPACING}
+                testID={ringNameTestID(arc.phase)}
+                textAnchor="middle"
+              >
+                <TextPath href={`#${namePathID(arc.phase)}`} startOffset="50%">
+                  {written}
+                </TextPath>
+              </SvgText>
+            ))}
+          <Circle
+            cx={bead.x}
+            cy={bead.y}
+            fill={colour[beadPalette.halo]}
+            r={NAMED_RING_BEAD_RADIUS}
+            stroke={colour[beadPalette.fill]}
+            strokeWidth={BEAD_HALO_WIDTH}
+            testID={ringBeadTestID}
+          />
+        </Svg>
+      </Animated.View>
+      <View pointerEvents="none" style={styles.middle}>
+        <Text
+          style={[styles.phase, { color: colour[phasePalette[geometry.phase].ink] }]}
+          testID={ringCentrePhaseTestID}
+        >
+          {today}
+        </Text>
+        <Text style={styles.dayAsTheSubject} testID={ringCentreDayTestID}>
+          {ringDayNumberWords(day)}
+        </Text>
+        <Text style={styles.cycleLength} testID={ringCentreLengthTestID}>
+          {ringAboutLengthWords(cycleLengthDays)}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+function namePathID(phase: PhaseName): string {
+  return `phase-name-path-${phase}`;
 }
 
 interface OpeningMotion {
