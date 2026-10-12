@@ -121,7 +121,7 @@ Feature: She opens Emi and logs her first period
     Then she is reading her first forecast, and Emi says it has no date to count from
     And a line says the first period she logs starts everything
     And a line names the cycle length she gave, and no length Emi picked
-    And the card says Emi is still learning, and how many complete cycles it needs
+    And the card says Emi is still learning, how many complete cycles it needs, and why it does not guess
     And a line says Emi builds no forecast from a date it guessed
     And no range and no date is written anywhere on that screen
     And that is the drawing of the first forecast with no date, part for part, in its order
@@ -662,10 +662,10 @@ Feature: She opens Emi and logs her first period
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
     And every question that keeps an answer carries a line about her privacy, in all three languages
 
-  Scenario: SCREEN-1, her first forecast is addressed to her
+  Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it are addressed to her
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, gives her name, and answers every question
-    Then the forecast she reads is addressed to her by the name she gave
+    Then the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name
     And a woman who gave no name reads the same forecast, with no gap where a name would be
     And the screen that reads her answers back is addressed to her too
     And the promise and the hold talk to her as you, in each of the three languages she can read them in

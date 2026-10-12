@@ -93,7 +93,6 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       <FirstForecast
         cycleLengthDays={28}
         forecast={{ ...learning, start: { from: '2026-06-06', to: '2026-06-10' } }}
-        name={undefined}
         onContinue={nothing}
       />
     ),

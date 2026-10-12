@@ -380,26 +380,46 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.feeling.line.talks': 'Это меняет только то, как Emi с вами говорит.',
   'onboarding.feeling.title': 'Как вы к этому относитесь',
   'onboarding.firstForecast.action': 'Продолжить',
-  'onboarding.firstForecast.line.learning':
-    'Мы пока узнаём ваш цикл. После двух циклов мы скажем, насколько мы уверены.',
-  'onboarding.firstForecast.noDate.cycles': {
-    one: 'Нам нужен {count} полный цикл, прежде чем мы сможем сделать прогноз.',
-    few: 'Нам нужно {count} полных цикла, прежде чем мы сможем сделать прогноз.',
-    many: 'Нам нужно {count} полных циклов, прежде чем мы сможем сделать прогноз.',
+  'onboarding.firstForecast.needs': {
+    one: 'Emi нужен {count} полный цикл, чтобы прогнозировать по вашим собственным циклам, поэтому Emi ещё учится.',
+    few: 'Emi нужно {count} полных цикла, чтобы прогнозировать по вашим собственным циклам, поэтому Emi ещё учится.',
+    many: 'Emi нужно {count} полных циклов, чтобы прогнозировать по вашим собственным циклам, поэтому Emi ещё учится.',
   },
-  'onboarding.firstForecast.noDate.first':
-    'Запишите следующие месячные, и ваш прогноз начнётся с них.',
+  'onboarding.firstForecast.noDate.cycles': {
+    one: 'Emi нужен {count} полный цикл, чтобы прогнозировать по вашим собственным циклам.',
+    few: 'Emi нужно {count} полных цикла, чтобы прогнозировать по вашим собственным циклам.',
+    many: 'Emi нужно {count} полных циклов, чтобы прогнозировать по вашим собственным циклам.',
+  },
+  'onboarding.firstForecast.noDate.first': 'Первые месячные, которые вы запишете, запускают всё.',
   'onboarding.firstForecast.noDate.guess':
-    'Мы не будем угадывать дату в первый день, потому что догадка только введёт вас в заблуждение.',
-  'onboarding.firstForecast.noDate.title': 'У нас пока нет даты, с которой можно начать',
+    'Emi не строит прогноз от угаданной даты, потому что догадка в первый день была бы ложным утверждением в первый же день.',
+  'onboarding.firstForecast.noDate.length': {
+    one: 'С этого дня Emi считает цикл в {count} день, длину, которую вы указали.',
+    few: 'С этого дня Emi считает цикл в {count} дня, длину, которую вы указали.',
+    many: 'С этого дня Emi считает цикл в {count} дней, длину, которую вы указали.',
+  },
+  'onboarding.firstForecast.noDate.title': 'У Emi нет даты для отсчёта',
   'onboarding.firstForecast.onThisPhone.line':
-    'Это посчитано по датам, которые вы только что дали, прямо здесь, на вашем телефоне.',
-  'onboarding.firstForecast.onThisPhone.title': 'Посчитано на вашем телефоне',
-  'onboarding.firstForecast.title': 'Вот ваши следующие месячные',
-  'onboarding.firstForecast.titleNamed': '{name}, вот ваши следующие месячные',
-  'onboarding.firstForecast.why.line':
-    'Цикл сдвигается на несколько дней от месяца к месяцу. Одна дата делала бы вид, что это не так.',
+    'Расчёт идёт здесь. Ни один ваш цикл никуда не отправляется для расчёта.',
+  'onboarding.firstForecast.onThisPhone.title': 'Посчитано на этом телефоне',
+  'onboarding.firstForecast.stillLearning': 'Ещё учится',
+  'onboarding.firstForecast.title': 'Ваши следующие месячные',
+  'onboarding.firstForecast.why.counts': {
+    one: 'Пока их меньше {needs}, Emi отсчитывает от ваших последних месячных указанную вами длину: {count} день.',
+    few: 'Пока их меньше {needs}, Emi отсчитывает от ваших последних месячных указанную вами длину: {count} дня.',
+    many: 'Пока их меньше {needs}, Emi отсчитывает от ваших последних месячных указанную вами длину: {count} дней.',
+  },
+  'onboarding.firstForecast.why.read': {
+    one: 'У Emi есть {count} полный цикл.',
+    few: 'У Emi есть {count} полных цикла.',
+    many: 'У Emi есть {count} полных циклов.',
+  },
   'onboarding.firstForecast.why.title': 'Почему диапазон?',
+  'onboarding.firstForecast.why.width': {
+    one: 'Диапазон идёт на {count} день в обе стороны от этого дня.',
+    few: 'Диапазон идёт на {count} дня в обе стороны от этого дня.',
+    many: 'Диапазон идёт на {count} дней в обе стороны от этого дня.',
+  },
   'onboarding.focus.action': 'Продолжить',
   'onboarding.focus.line.first': 'Emi ставит это первым, когда вы записываете день.',
   'onboarding.focus.title': 'Что из этого меняется вместе с циклом?',

@@ -134,10 +134,9 @@ export const firstRunCopy = {
   },
   firstForecast: {
     title: words('onboarding.firstForecast.title'),
-    learning: words('onboarding.firstForecast.line.learning'),
+    stillLearning: words('onboarding.firstForecast.stillLearning'),
     why: {
       title: words('onboarding.firstForecast.why.title'),
-      line: words('onboarding.firstForecast.why.line'),
     },
     onThisPhone: {
       title: words('onboarding.firstForecast.onThisPhone.title'),
@@ -321,16 +320,44 @@ export function stepLabel(screen: FirstRunScreen): string {
   });
 }
 
-/** How she reads the cycle length she is setting, which is a count and takes the form to match. */
 /**
- * How many complete cycles Emi wants before it forecasts at all. A woman who gave no date reads
- * this instead of a range, and the number handed in is the one the arithmetic asks for, so the
- * sentence cannot state a count the rule behind it disagrees with.
+ * How many complete cycles Emi wants before it forecasts from her own cycles. The number handed in
+ * is the one the arithmetic asks for, so the sentence cannot state a count the rule disagrees with.
  */
 export function cyclesBeforeAForecastSentence(cycles: number): string {
   return words('onboarding.firstForecast.noDate.cycles', cycles);
 }
 
+/** The same count, said under a range that the stated length made rather than her own cycles. */
+export function stillLearningSentence(cycles: number): string {
+  return words('onboarding.firstForecast.needs', cycles);
+}
+
+/** The length she gave, which Emi counts from the first period she logs. */
+export function countsFromTheFirstPeriodSentence(cycleLengthDays: number): string {
+  return words('onboarding.firstForecast.noDate.length', cycleLengthDays);
+}
+
+/**
+ * Why the answer is a range, in three sentences, each read off a number the arithmetic used: the
+ * complete cycles it has, the cycles it waits for, the length she gave and the days either side.
+ */
+export function whyARangeSentences(counted: {
+  readonly completeCycles: number;
+  readonly needsCycles: number;
+  readonly cycleLengthDays: number;
+  readonly daysEitherSide: number;
+}): string[] {
+  return [
+    words('onboarding.firstForecast.why.read', counted.completeCycles),
+    words('onboarding.firstForecast.why.counts', counted.cycleLengthDays, {
+      needs: counted.needsCycles,
+    }),
+    words('onboarding.firstForecast.why.width', counted.daysEitherSide),
+  ];
+}
+
+/** How she reads the cycle length she is setting, which is a count and takes the form to match. */
 export function cycleLengthDaysLabel(days: number): string {
   return words('onboarding.cycleLength.days', days);
 }
@@ -343,20 +370,6 @@ export function periodLengthDaysLabel(days: number): string {
 /** Why the name she typed is refused, which names the bound rather than repeating the number. */
 export function nameTooLongLine(characters: number): string {
   return words('onboarding.name.tooLong', characters);
-}
-
-/**
- * The title of the first forecast, which is the first thing Emi says back about her own body. It
- * greets her by the name she gave twelve questions earlier, and a woman who gave none reads the
- * plain sentence rather than a gap.
- *
- * The state with no date keeps its own title and no name: there is nothing to tell her yet, and a
- * greeting on that sentence would dress an absence up as an answer.
- */
-export function firstForecastTitle(name: string | undefined): string {
-  return name === undefined
-    ? firstRunCopy.firstForecast.title
-    : words('onboarding.firstForecast.titleNamed', undefined, { name });
 }
 
 /** What a screen reader says for one year of the wheel, because a bare number says nothing. */

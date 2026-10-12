@@ -14,6 +14,7 @@ import {
   firstForecastNoGuessTestID,
   firstForecastOnThisPhoneTestID,
   firstForecastRangeTestID,
+  firstForecastRingTestID,
   firstForecastStillLearningTestID,
   firstForecastTestID,
   firstForecastTitleTestID,
@@ -161,24 +162,36 @@ describe('the first run with no date ends on a forecast that says it is still le
       expect(partsMissing(thePartsOfTheForecastWithNoDate(), theIdentifiersDrawn())).toEqual([]);
     });
 
-    it('says they have no date to start from yet', () => {
+    it('says Emi has no date to count from, under the dotted ring the redesign draws', () => {
+      expect(screen.getByTestId(firstForecastRingTestID)).toBeTruthy();
       expect(textIn(screen.getByTestId(firstForecastTitleTestID))).toEqual([
-        firstRunCopy.firstForecast.noDate.title,
+        'Emi has no date to count from',
       ]);
     });
 
-    it('tells her to log her next period, then names the length she gave', () => {
+    it('says the first period she logs starts everything, then names the length she gave', () => {
       expect(textIn(screen.getByTestId(firstForecastLinesTestID))).toEqual([
-        firstRunCopy.firstForecast.noDate.first,
-        statedLengthSentence(sheSaysHerCycleRuns),
+        'The first period you log starts everything.',
+        `From that day Emi counts a cycle of ${String(sheSaysHerCycleRuns)} days, the length you gave.`,
       ]);
     });
 
-    it('says it is still learning, and how many full cycles it needs', () => {
+    it('says it is still learning inside the card, how many complete cycles it needs, and why it does not guess', () => {
       expect(textIn(screen.getByTestId(firstForecastStillLearningTestID))).toEqual([
-        learningCopy.stillLearning,
+        'Still learning',
         cyclesBeforeAForecastSentence(CYCLES_BEFORE_A_FORECAST),
+        firstRunCopy.firstForecast.noDate.guess,
       ]);
+      expect(cyclesBeforeAForecastSentence(CYCLES_BEFORE_A_FORECAST)).toBe(
+        'Emi needs 2 complete cycles before it forecasts from your own cycles.',
+      );
+    });
+
+    it('carries none of the old words, which said Emi was using the length before any day was logged', () => {
+      expect(everythingItSays()).not.toContain("We don't have a date to start from yet");
+      expect(everythingItSays()).not.toContain(statedLengthSentence(sheSaysHerCycleRuns));
+      expect(everythingItSays()).not.toContain(learningCopy.stillLearning);
+      expect(everythingItSays()).not.toMatch(/until then/i);
     });
 
     it('counts the cycles the arithmetic asks for, and not a number of its own', () => {
@@ -193,7 +206,7 @@ describe('the first run with no date ends on a forecast that says it is still le
 
     it('says it will not guess a date on day one', () => {
       expect(textIn(screen.getByTestId(firstForecastNoGuessTestID))).toEqual([
-        firstRunCopy.firstForecast.noDate.guess,
+        'Emi builds no forecast from a date it guessed, because a guess on day one is a false sentence on day one.',
       ]);
     });
 

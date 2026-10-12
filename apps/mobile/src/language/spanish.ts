@@ -361,24 +361,41 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.feeling.line.talks': 'Esto cambia cómo te habla Emi, y nada más.',
   'onboarding.feeling.title': 'Cómo te sientes con ello',
   'onboarding.firstForecast.action': 'Continuar',
-  'onboarding.firstForecast.line.learning':
-    'Todavía estamos conociendo tu ciclo. Después de dos ciclos te diremos cuánta confianza tenemos.',
-  'onboarding.firstForecast.noDate.cycles': {
-    one: 'Necesitamos {count} ciclo completo antes de poder hacer una previsión.',
-    other: 'Necesitamos {count} ciclos completos antes de poder hacer una previsión.',
+  'onboarding.firstForecast.needs': {
+    one: 'Emi necesita {count} ciclo completo antes de prever a partir de tus propios ciclos, así que todavía está aprendiendo.',
+    other:
+      'Emi necesita {count} ciclos completos antes de prever a partir de tus propios ciclos, así que todavía está aprendiendo.',
   },
-  'onboarding.firstForecast.noDate.first': 'Anota tu próxima regla y tu previsión empieza ahí.',
+  'onboarding.firstForecast.noDate.cycles': {
+    one: 'Emi necesita {count} ciclo completo antes de prever a partir de tus propios ciclos.',
+    other: 'Emi necesita {count} ciclos completos antes de prever a partir de tus propios ciclos.',
+  },
+  'onboarding.firstForecast.noDate.first': 'La primera regla que anotes lo pone todo en marcha.',
   'onboarding.firstForecast.noDate.guess':
-    'No vamos a adivinar una fecha el primer día, porque una suposición solo te llevaría por mal camino.',
-  'onboarding.firstForecast.noDate.title': 'Todavía no tenemos una fecha desde la que empezar',
+    'Emi no crea ninguna previsión a partir de una fecha adivinada, porque una suposición el primer día es una frase falsa el primer día.',
+  'onboarding.firstForecast.noDate.length': {
+    one: 'Desde ese día Emi cuenta un ciclo de {count} día, la duración que indicaste.',
+    other: 'Desde ese día Emi cuenta un ciclo de {count} días, la duración que indicaste.',
+  },
+  'onboarding.firstForecast.noDate.title': 'Emi no tiene una fecha desde la que contar',
   'onboarding.firstForecast.onThisPhone.line':
-    'Esto sale de las fechas que acabas de darnos, calculado aquí mismo en tu teléfono.',
-  'onboarding.firstForecast.onThisPhone.title': 'Calculado en tu teléfono',
-  'onboarding.firstForecast.title': 'Aquí está tu próxima regla',
-  'onboarding.firstForecast.titleNamed': '{name}, aquí está tu próxima regla',
-  'onboarding.firstForecast.why.line':
-    'Los ciclos se mueven unos días de un mes a otro. Una sola fecha haría como si no.',
+    'El cálculo se hace aquí. Ningún ciclo tuyo se envía a ningún sitio para calcularlo.',
+  'onboarding.firstForecast.onThisPhone.title': 'Calculado en este teléfono',
+  'onboarding.firstForecast.stillLearning': 'Todavía aprendiendo',
+  'onboarding.firstForecast.title': 'Tu próxima regla',
+  'onboarding.firstForecast.why.counts': {
+    one: 'Hasta que lea {needs}, cuenta el {count} día que indicaste desde tu última regla.',
+    other: 'Hasta que lea {needs}, cuenta los {count} días que indicaste desde tu última regla.',
+  },
+  'onboarding.firstForecast.why.read': {
+    one: 'Emi ha leído {count} ciclo completo.',
+    other: 'Emi ha leído {count} ciclos completos.',
+  },
   'onboarding.firstForecast.why.title': '¿Por qué un rango?',
+  'onboarding.firstForecast.why.width': {
+    one: 'El rango abarca {count} día a cada lado de ese día.',
+    other: 'El rango abarca {count} días a cada lado de ese día.',
+  },
   'onboarding.focus.action': 'Continuar',
   'onboarding.focus.line.first': 'Emi los pone primero cuando anotas un día.',
   'onboarding.focus.title': '¿Cuáles de estos cambian con tu ciclo?',
