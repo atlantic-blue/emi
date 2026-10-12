@@ -26,6 +26,7 @@ import { type MeasuredNumber, herNumbers } from '../../features/home/herNumbers'
 import { herPatterns } from '../../features/home/herPatterns';
 import type { ReadPattern } from '../../features/cycle/patternsRead';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
+import { useRescheduleHerReminder } from '../../features/reminder/rescheduleHerReminder';
 import { localDay } from '../../features/onboarding/days';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
@@ -125,6 +126,7 @@ export default function HomeRoute(): ReactNode {
   const { isDone, tourIsDone } = useFirstRun();
   const [today] = useState(() => localDay(new Date()));
   const [shown, setShown] = useState(() => whatSheIsLookingAt(database, vault, profiles, today));
+  const rescheduleTheReminder = useRescheduleHerReminder();
 
   // She logs a day and comes back to this screen rather than to a new one, so the rows are read
   // again every time it is looked at. Reading them once at the first render would leave the ring
@@ -132,7 +134,10 @@ export default function HomeRoute(): ReactNode {
   useFocusEffect(
     useCallback(() => {
       setShown(whatSheIsLookingAt(database, vault, profiles, today));
-    }, [database, profiles, today, vault]),
+      // The home screen is where she lands after the hold and every time Emi opens, so the
+      // reminder is worked out again here from the forecast this screen has just read.
+      rescheduleTheReminder();
+    }, [database, profiles, rescheduleTheReminder, today, vault]),
   );
 
   // The welcome comes first and leads into the tour, so a woman with no answers starts there.

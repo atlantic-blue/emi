@@ -1,6 +1,6 @@
 # The icon set
 
-Thirty two line symbols at one weight, so the interface reads as one hand drew it.
+Thirty three line symbols at one weight, so the interface reads as one hand drew it.
 
 ## The rules every drawing follows
 
@@ -15,7 +15,7 @@ Thirty two line symbols at one weight, so the interface reads as one hand drew i
 
 drop, calendar, ring, mood, energy, pain, sleep, temperature, weight, note, lock, export, delete,
 settings, chevron, close, plus, check, search, spotting, sun, edit, chart, shield, skin, digestion,
-headache, bloating, phone, person, info, key.
+headache, bloating, phone, person, info, key, bell.
 
 `spotting` is the mark for unexpected bleeding: a smaller drop with three marks beside it, so it
 reads apart from `drop` at 24 points.
@@ -35,6 +35,9 @@ which is the refusal in BRAND-4.
 `phone`, `person` and `info` stand beside the three lines of the welcome: where the cycle is
 worked out, that there is no account, and what Emi is not. `key` marks the price, because what
 she pays for is a key only she holds.
+
+`bell` stands over the sample of the reminder in the first run, which is the one thing Emi raises
+while it is closed.
 
 ## Adding one
 

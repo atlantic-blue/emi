@@ -131,6 +131,8 @@ async function sheReachesHerFirstForecast(
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
+  // The reminder, which "Not now" passes without asking the phone anything.
+  await shePresses(onboardingSkipTestID);
 }
 
 /** The words of the range she is reading, on whichever screen names it. */
@@ -181,7 +183,7 @@ describe('her first forecast is a range, before anything is written', () => {
   });
 
   describe('the screen she reaches after the last question', () => {
-    it('is where the last question hands her, whether she answered it or passed it by', async () => {
+    it('is where the reminder hands her, once the last question is behind her', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesHerFirstForecast();

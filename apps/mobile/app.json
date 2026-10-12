@@ -27,6 +27,8 @@
       "bundler": "metro"
     },
     "plugins": [
+      "./plugins/withoutRemoteNotifications.ts",
+      "expo-notifications",
       "expo-router",
       [
         "expo-local-authentication",

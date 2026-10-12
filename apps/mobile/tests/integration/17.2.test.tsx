@@ -53,8 +53,8 @@ const theRowPrefix = settingsAnswersTestID.slice(0, -'answers'.length);
  * Which built row answers for each row the drawing places, in the drawing's own order.
  *
  * A row with nothing under `builtUnder` is a row this step leaves out. The reminder is the only
- * one: it is milestone 11 of the design, it waits for a device, and the drawing stays the record
- * of where it goes.
+ * one: she chooses it in the first run, no screen changes it afterwards yet, and the drawing stays
+ * the record of where that row goes.
  */
 interface DrawnRow {
   /** Where the drawing sends the row, or null where it sends it nowhere. */

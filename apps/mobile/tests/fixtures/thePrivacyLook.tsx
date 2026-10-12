@@ -100,8 +100,9 @@ export type PrivacyDrawing = (typeof thePrivacyDrawings)[number];
 export const theSecondDesignOfTheRoute = 'settings';
 
 /**
- * The reminder. It is a feature of its own, so no screen, no route and no store exist for it, and
- * the drawing stays the record of where it goes.
+ * The screen that changes the reminder. She chooses the reminder in the first run and it is held in
+ * the setting table, but no screen and no route change it afterwards yet, and the drawing stays the
+ * record of where that screen goes.
  */
 export const theDrawingNothingIsBuiltFor = 'reminderSettings';
 
@@ -163,7 +164,7 @@ function theDrawingOfPrivacy(): PartOfADrawing[] {
       name: 'AnswerRow',
       builtUnder: [],
       ownedBy:
-        'the reminder, which is a feature of its own with no route and no store yet, and the row step 17.2 already names as the one it leaves out',
+        'the reminder, which she chooses in the first run and which no screen changes afterwards yet, and the row step 17.2 already names as the one it leaves out',
     },
     { name: 'AnswerRow', builtUnder: [settingsExportTestID] },
     { name: 'AnswerRow', builtUnder: [settingsDeleteTestID] },

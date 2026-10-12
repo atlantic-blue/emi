@@ -324,6 +324,8 @@ describe('the log opens on what she said changes with her cycle', () => {
       await shePresses(focusTestID('sleep'));
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      // The reminder stands after the last question, and "Not now" passes it.
+      await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();
       await sheHoldsTheRing();

@@ -94,7 +94,10 @@ export type TodayDrawing = (typeof theTodayDrawings)[number];
  */
 export const theSecondDesignOfTheRoute = 'today';
 
-/** The drawing of the reminder. The reminder is a feature of its own and nothing is built for it. */
+/**
+ * The drawing of the reminder on the lock screen. The phone draws that screen and Emi only writes
+ * the words, so nothing on Emi's own glass answers for it.
+ */
 export const theDrawingNothingIsBuiltFor = 'notification';
 
 /** Where the dock draws each of its four columns, in the order the drawing places them. */

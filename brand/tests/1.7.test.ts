@@ -267,9 +267,9 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
       expect(page).toContain(`stroke-width="${icon.strokeWidth}"`);
     });
 
-    it('shows thirty two and no thirty third', () => {
-      expect(iconNames).toHaveLength(32);
-      expect(page.match(/class="icon-cell"/g)).toHaveLength(32);
+    it('shows thirty three and no thirty fourth', () => {
+      expect(iconNames).toHaveLength(33);
+      expect(page.match(/class="icon-cell"/g)).toHaveLength(33);
     });
   });
 

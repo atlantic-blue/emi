@@ -266,6 +266,8 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      // The reminder stands after the last question, and "Not now" passes it.
+      await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();
       await sheHoldsTheRing();
@@ -291,6 +293,8 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      // The reminder stands after the last question, and "Not now" passes it.
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();

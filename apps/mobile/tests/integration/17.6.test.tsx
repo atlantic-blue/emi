@@ -146,6 +146,8 @@ async function sheFinishesTheFirstRun(): Promise<void> {
   await shePresses(focusTestID(theGroupSheNamesFirst));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
+  // The reminder stands after the last question, and "Not now" passes it.
+  await shePresses(onboardingSkipTestID);
   await shePresses(firstForecastActionTestID);
   await sheReadsThePromise();
   await sheHoldsTheRing();

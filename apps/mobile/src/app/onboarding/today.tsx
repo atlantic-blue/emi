@@ -13,10 +13,10 @@ export default function TodayRoute(): ReactNode {
       chosen={symptoms}
       onBack={() => router.back()}
       onPress={pressSymptom}
-      onSave={() => router.push('/onboarding/first-forecast')}
+      onSave={() => router.push('/onboarding/reminder')}
       onSkip={() => {
         forgetToday();
-        router.push('/onboarding/first-forecast');
+        router.push('/onboarding/reminder');
       }}
     />
   );

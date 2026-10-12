@@ -8,6 +8,7 @@ export type SettingKey =
   | 'articleAnswer'
   | 'firstRunCompletedAt'
   | 'lockOnReturn'
+  | 'reminderLead'
   | 'temperatureUnit'
   | 'tourSeenAt'
   | 'weightUnit';
@@ -16,6 +17,7 @@ export const settingKeys: readonly SettingKey[] = [
   'articleAnswer',
   'firstRunCompletedAt',
   'lockOnReturn',
+  'reminderLead',
   'temperatureUnit',
   'tourSeenAt',
   'weightUnit',

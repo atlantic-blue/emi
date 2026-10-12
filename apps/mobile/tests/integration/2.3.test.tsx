@@ -167,6 +167,11 @@ async function sheSkipsToday(): Promise<void> {
   await fireEvent.press(theScreen('today').getByTestId(onboardingSkipTestID));
 }
 
+/** "Not now" on the reminder, which goes on, writes nothing and asks the phone nothing. */
+async function sheSaysNotNowToTheReminder(): Promise<void> {
+  await fireEvent.press(theScreen('reminder').getByTestId(onboardingSkipTestID));
+}
+
 /** The way on from her first forecast, which is a screen she reads rather than answers. */
 async function sheReadsHerFirstForecast(): Promise<void> {
   await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
@@ -403,7 +408,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       );
     });
 
-    it('asks her twelve questions, holds once, and asks nothing else', async () => {
+    it('asks her thirteen questions, holds once, and asks nothing else', async () => {
       const app = await sheOpensEmi();
       const visited = [app.pathname()];
 
@@ -432,6 +437,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
+      await sheSaysNotNowToTheReminder();
+      visited.push(app.pathname());
       await sheReadsHerFirstForecast();
       visited.push(app.pathname());
       await fireEvent.press(screen.getByTestId(promiseActionTestID));
@@ -453,6 +460,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/goals',
         '/onboarding/focus',
         '/onboarding/today',
+        '/onboarding/reminder',
         '/onboarding/first-forecast',
         '/onboarding/the-promise',
         '/onboarding/what-emi-does-with-it',
@@ -492,6 +500,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'period-before.tsx',
         'period-length.tsx',
         'regularity.tsx',
+        'reminder.tsx',
         'today.tsx',
         'welcome.tsx',
         'year-of-birth.tsx',
@@ -647,6 +656,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsTheGoals();
       await sheSkipsTheFocus();
       await sheSkipsToday();
+      await sheSaysNotNowToTheReminder();
       await sheReadsHerFirstForecast();
       await sheReadsThePromise();
       await sheHoldsTheRing();
@@ -724,6 +734,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsToday();
       expect(controlsTooSmallToPress()).toEqual([]);
 
+      await sheSaysNotNowToTheReminder();
+      expect(controlsTooSmallToPress()).toEqual([]);
+
       await sheReadsHerFirstForecast();
       expect(controlsTooSmallToPress()).toEqual([]);
 
@@ -787,6 +800,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsTheGoals();
       await sheSkipsTheFocus();
       await sheSkipsToday();
+      await sheSaysNotNowToTheReminder();
       await sheReadsHerFirstForecast();
       await sheReadsThePromise();
       await sheHoldsTheRing();

@@ -33,6 +33,12 @@ import { readSetting, writeSetting } from '../../data/settingRepository';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
 import { setLockOnReturn } from '../lock/lockSetting';
+import {
+  type ReminderLead,
+  reminderLeadIsOffered,
+  reminderLeads,
+  writeReminderLead,
+} from '../reminder/reminder';
 import { localDay } from './days';
 
 export const minimumCycleLengthDays = 21;
@@ -185,6 +191,12 @@ export interface FirstRunAnswers {
    * for the reason the goals above are never written empty.
    */
   readonly symptoms?: readonly TodaySymptom[];
+  /**
+   * When she asked to be reminded before her next period. Left out where she said "Not now", and
+   * where the phone refused to raise notifications, because a reminder the phone will not raise is
+   * a choice that does nothing.
+   */
+  readonly reminderLead?: ReminderLead;
 }
 
 export type FirstRunRefusal =
@@ -203,6 +215,7 @@ export type FirstRunRefusal =
   | 'focus-is-chosen-twice'
   | 'symptom-is-not-in-the-catalogue'
   | 'symptom-is-chosen-twice'
+  | 'reminder-is-not-one-of-the-three'
   | 'first-run-is-already-done';
 
 export class FirstRunError extends Error {
@@ -568,6 +581,12 @@ export function completeFirstRun(
       `a symptom is chosen once, these were chosen twice: ${[...new Set(feltTwice)].join(', ')}`,
     );
   }
+  if (answers.reminderLead !== undefined && !reminderLeadIsOffered(answers.reminderLead)) {
+    throw new FirstRunError(
+      'reminder-is-not-one-of-the-three',
+      `a reminder is one of ${reminderLeads.join(', ')}, this one is ${answers.reminderLead}`,
+    );
+  }
   if (firstRunIsDone(db)) {
     throw new FirstRunError('first-run-is-already-done', 'the first run is already done');
   }
@@ -609,6 +628,9 @@ export function completeFirstRun(
     // fails to seal takes the cache with it and leaves the database as it was.
     rebuildCyclesWithin(db, vaults.day.open, now);
     writeProfile(db, vaults.profile, { profile: herProfile(answers, now), now });
+    if (answers.reminderLead !== undefined) {
+      writeReminderLead(db, answers.reminderLead);
+    }
     writeSetting(db, 'firstRunCompletedAt', now.toISOString());
     setLockOnReturn(db, true);
     db.execute('COMMIT');

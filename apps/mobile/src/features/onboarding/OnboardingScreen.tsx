@@ -72,6 +72,14 @@ interface Props {
   readonly header?: OnboardingHeader;
   /** The word the row carries in place of the bar. Only the first run log names one. */
   readonly headerWord?: string;
+  /**
+   * Whether the question stands in the white sheet under the emblem. The questions do. The reminder
+   * keeps the bar and draws neither, because what stands at the top of it is the notification she
+   * would read, on the ground of the screen.
+   */
+  readonly standsOnTheSheet?: boolean;
+  /** What stands above the title, where a screen shows her something before it asks. */
+  readonly above?: ReactNode;
   readonly children?: ReactNode;
 }
 
@@ -127,9 +135,11 @@ export function OnboardingScreen({
   wayPastSits = 'overTheAction',
   header = 'bar',
   headerWord,
+  standsOnTheSheet = header === 'bar',
+  above,
   children,
 }: Props): ReactNode {
-  const onTheSheet = header === 'bar';
+  const onTheSheet = standsOnTheSheet;
   const promise = thePromiseIn(lines);
   const promiseLine =
     promise === undefined ? null : (
@@ -150,6 +160,8 @@ export function OnboardingScreen({
 
   const asked = (
     <>
+      {above}
+
       <Text accessibilityRole="header" style={styles.title} testID={onboardingTitleTestID}>
         {title}
       </Text>
@@ -246,7 +258,7 @@ export function OnboardingScreen({
         )}
       </View>
 
-      {header === 'word' ? null : (
+      {header === 'word' || (header === 'bar' && !standsOnTheSheet) ? null : (
         <View style={styles.emblemRow}>
           <View style={styles.emblem} testID={onboardingEmblemTestID}>
             <Icon colour={colour.accent} name="drop" size={EMBLEM_DROP_SIZE} />
@@ -268,7 +280,7 @@ export function OnboardingScreen({
         <>
           <ScrollView
             contentContainerStyle={
-              header === 'word' ? [styles.body, styles.bodyStacked] : styles.body
+              header === 'label' ? styles.body : [styles.body, styles.bodyStacked]
             }
             style={styles.scroll}
           >
@@ -313,6 +325,7 @@ const thePromises: readonly string[] = [
   firstRunCopy.encryptedHere,
   firstRunCopy.encryptsYourAnswers,
   firstRunCopy.encryptsIt,
+  firstRunCopy.remindsOnThisPhone,
 ];
 
 function thePromiseIn(lines: readonly string[]): string | undefined {

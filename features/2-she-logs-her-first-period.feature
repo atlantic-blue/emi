@@ -48,16 +48,41 @@ Feature: She opens Emi and logs her first period
     Then Save today waits until she picks a tile
     When she picks cramps
     And she presses Nothing to add
+    Then she is asked whether Emi should remind her
+    When she says Not now
     Then she is looking at her first forecast
     When she reads on and presses and holds the ring
     Then her phone holds one day, the day she said her period started
+
+  Scenario: SCREEN-1, she asks Emi to remind her two days before the range starts
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the reminder after the first day she logs
+    Then Remind me waits until she picks when
+    And the sample on the screen names a forecast and a day, and nothing about her body
+    When she picks two days before
+    And she presses Remind me and her phone allows it
+    Then her phone asked her once, after she pressed
+    And she is looking at her first forecast
+    When she reads on and presses and holds the ring
+    Then her phone holds one reminder, at nine in the morning two days before the range she was shown
+
+  Scenario: SCREEN-1, her phone refuses the reminder and the first run goes on
+    Given she has never opened Emi before
+    And her phone will refuse notifications
+    When she opens Emi
+    And she reaches the reminder after the first day she logs
+    And she picks one day before and presses Remind me
+    Then she is looking at her first forecast
+    When she reads on and presses and holds the ring
+    Then her phone holds no reminder and no choice of one
 
   Scenario: SCREEN-1, the first run asks its questions and the hold after them
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
     And she presses and holds the ring
-    Then she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today
+    Then she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her
     And there was no further question to answer
 
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
@@ -81,7 +106,7 @@ Feature: She opens Emi and logs her first period
     And she gives her name and the year she was born, and reaches the question about her last period
     And she says she does not remember
     Then she is being asked how long her cycle runs
-    And the counter reads step 6 of 12, the twelve steps the first run always had
+    And the counter reads step 6 of 13, the twelve steps the first run had and the reminder
     When she answers the rest of the questions and presses and holds the ring
     Then she was never asked when the period before that started
     And she is looking at the screen that says the ring needs a period
