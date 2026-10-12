@@ -1,5 +1,6 @@
 import type { Database } from '../../data/database';
 import { rebuildTheFile, writeOverWhatIsRemoved } from '../../data/freePages';
+import { cancelHerReminder } from '../notifications/localReminder';
 import type { ServerDelete, ServerDeleteOutcome } from '../sync/deleteAccount';
 import { syncKeychainItems } from '../sync/deviceKey';
 import type { SecureStore } from './keychain';
@@ -35,6 +36,12 @@ export interface WipeOutcome {
   readonly keychainItems: readonly string[];
   /** The items the platform would not let go of, which is a delete that did not finish. */
   readonly keychainItemsRefused: readonly string[];
+  /**
+   * Whether the reminder is still scheduled on the phone. The reminder is the one thing Emi leaves
+   * with the operating system, and one that survived a delete would be raised for a forecast that
+   * no longer exists.
+   */
+  readonly reminderLeft: boolean;
   /** Rows left in the database afterwards, counted by reading it back. */
   readonly rowsLeft: number;
   /** Free pages left in the file afterwards, which is where deleted rows would still sit. */
@@ -158,12 +165,14 @@ export async function deleteEverything(
   const serverAccount = await whatTheServerSaid(server);
   const tables = emptyTheDatabase(db);
   const keychain = await emptyTheKeychain(store);
+  const reminderLeft = !(await takeTheReminderOff());
 
   return {
     serverAccount,
     tables,
     keychainItems: keychain.removed,
     keychainItemsRefused: keychain.refused,
+    reminderLeft,
     rowsLeft: rowsHeld(db),
     freePagesLeft: freePagesHeld(db),
     pagesLeft: pagesHeld(db),
@@ -182,9 +191,24 @@ async function whatTheServerSaid(server: ServerDelete): Promise<ServerDeleteOutc
   }
 }
 
+/**
+ * Whether the scheduler took the reminder off. A refusal is carried out rather than thrown, so the
+ * rest of the delete still runs and the screen can say the delete did not finish.
+ */
+async function takeTheReminderOff(): Promise<boolean> {
+  try {
+    await cancelHerReminder();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Whether the delete finished on this phone, read from what the storage now holds. */
 export function nothingIsLeft(outcome: WipeOutcome): boolean {
-  return outcome.rowsLeft === 0 && outcome.keychainItemsRefused.length === 0;
+  return (
+    outcome.rowsLeft === 0 && outcome.keychainItemsRefused.length === 0 && !outcome.reminderLeft
+  );
 }
 
 /**

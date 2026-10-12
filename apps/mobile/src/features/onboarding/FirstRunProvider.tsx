@@ -10,7 +10,9 @@ import {
 } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
+import { askToRemindHer } from '../../services/notifications/localReminder';
 import { useHerVaultsMade } from '../../services/vault/VaultProvider';
+import type { ReminderLead } from '../reminder/reminder';
 import {
   type TodaySymptom,
   firstRunIsDone,
@@ -47,6 +49,13 @@ interface FirstRun {
   /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
   readonly nameTyped: string;
   readonly birthYear: number | undefined;
+  /** Nothing at all until she presses one of the three, and nothing again after "Not now". */
+  readonly reminderLead: ReminderLead | undefined;
+  /**
+   * Whether the phone refused to raise notifications when she asked for a reminder. The first run
+   * asks the phone once, and a refusal is not asked again on the way back through.
+   */
+  readonly reminderWasRefused: boolean;
   readonly setPeriodStartedOn: (day: string) => void;
   /** Nothing is the answer "I do not remember" leaves behind, so the setter takes it as well. */
   readonly setPeriodBeforeStartedOn: (day: string | undefined) => void;
@@ -78,6 +87,16 @@ interface FirstRun {
   readonly setNameTyped: (typed: string) => void;
   /** Nothing is the answer a Skip leaves behind, so the setter takes it as well as a year. */
   readonly setBirthYear: (year: number | undefined) => void;
+  /** One of the three pressed, which replaces the one she pressed before it. */
+  readonly chooseReminder: (lead: ReminderLead) => void;
+  /** "Not now" and Skip: the choice goes, and the phone is not asked anything. */
+  readonly forgetTheReminder: () => void;
+  /**
+   * "Remind me". The phone draws its own dialog and she answers it there. Allowed keeps her choice
+   * for the hold to write. Refused drops it, so the hold writes no reminder and nothing is
+   * scheduled. A phone already refused is not asked a second time.
+   */
+  readonly askForTheReminder: () => Promise<void>;
   /**
    * The hold, and the one thing in the first run that writes. It makes her key if this phone
    * holds none, then writes her day, her answers and the marker in one transaction.
@@ -122,6 +141,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [symptoms, setSymptoms] = useState<readonly TodaySymptom[]>([]);
   const [nameTyped, setNameTyped] = useState('');
   const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
+  const [reminderLead, setReminderLead] = useState<ReminderLead | undefined>(undefined);
+  const [reminderWasRefused, setReminderWasRefused] = useState(false);
   const writing = useRef(false);
 
   const writeEverything = useCallback(async () => {
@@ -145,6 +166,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
           symptoms,
           name: nameSheGave(nameTyped),
           birthYear,
+          reminderLead,
         },
         new Date(),
       );
@@ -165,8 +187,32 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     periodLengthDays,
     periodStartedOn,
     regularity,
+    reminderLead,
     symptoms,
   ]);
+
+  const chooseReminder = useCallback((lead: ReminderLead) => {
+    setReminderLead(lead);
+  }, []);
+
+  const forgetTheReminder = useCallback(() => {
+    setReminderLead(undefined);
+  }, []);
+
+  const askForTheReminder = useCallback(async () => {
+    if (reminderWasRefused) {
+      setReminderLead(undefined);
+      return;
+    }
+    // A phone that cannot answer is read as a refusal, so the first run goes on either way and
+    // never writes a reminder the phone cannot raise.
+    const answer = await askToRemindHer().catch(() => 'refused' as const);
+
+    if (answer === 'refused') {
+      setReminderWasRefused(true);
+      setReminderLead(undefined);
+    }
+  }, [reminderWasRefused]);
 
   const pressGoal = useCallback((goal: Goal) => {
     setGoals((chosen) => goalsAfterPressing(chosen, goal));
@@ -214,6 +260,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setSymptoms([]);
     setNameTyped('');
     setBirthYear(undefined);
+    setReminderLead(undefined);
+    setReminderWasRefused(false);
     setIsDone(firstRunIsDone(database));
     setTourIsDone(tourIsSeen(database));
   }, [database]);
@@ -233,6 +281,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       symptoms,
       nameTyped,
       birthYear,
+      reminderLead,
+      reminderWasRefused,
       setPeriodStartedOn,
       setPeriodBeforeStartedOn,
       forgetTheDates,
@@ -248,11 +298,17 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       forgetToday,
       setNameTyped,
       setBirthYear,
+      chooseReminder,
+      forgetTheReminder,
+      askForTheReminder,
       leaveTheTour,
       writeEverything,
       reread,
     }),
     [
+      askForTheReminder,
+      chooseReminder,
+      forgetTheReminder,
       birthYear,
       cycleLengthDays,
       feeling,
@@ -273,6 +329,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       periodLengthDays,
       periodStartedOn,
       regularity,
+      reminderLead,
+      reminderWasRefused,
       reread,
       tourIsDone,
       writeEverything,

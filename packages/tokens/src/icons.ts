@@ -7,6 +7,7 @@ import { stroke } from './space';
  * The symbols of the set. The set is closed, so a screen cannot ask for a drawing nobody made.
  */
 export type IconName =
+  | 'bell'
   | 'bloating'
   | 'calendar'
   | 'chart'
@@ -68,6 +69,7 @@ export const ICON_CORNER = 2;
 
 /** The set as data, so a test can walk every drawing without naming them one at a time. */
 export const iconNames: readonly IconName[] = [
+  'bell',
   'bloating',
   'calendar',
   'chart',
@@ -107,6 +109,12 @@ export const iconNames: readonly IconName[] = [
  * here, because the next run writes over it.
  */
 export const icons: Readonly<Record<IconName, Icon>> = {
+  bell: {
+    name: 'bell',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z" /> <path d="M10 20.5a2 2 0 0 0 4 0" />',
+  },
   bloating: {
     name: 'bloating',
     size: ICON_SIZE,

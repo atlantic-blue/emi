@@ -10,6 +10,7 @@ import {
 } from '@emi/crypto';
 
 import { words } from '../../language';
+import { type ReminderLead, reminderLeads } from '../reminder/reminder';
 import {
   type TodaySymptom,
   maximumCycleLengthDays,
@@ -119,6 +120,18 @@ export const firstRunCopy = {
     action: words('onboarding.today.action'),
     nothingToAdd: words('onboarding.today.nothingToAdd'),
   },
+  reminder: {
+    title: words('onboarding.reminder.title'),
+    action: words('onboarding.reminder.action'),
+    notNow: words('onboarding.reminder.notNow'),
+    /**
+     * The two names the sample banner carries: the word in the square, as the lock cover writes it,
+     * and the name of the application over the line, as the home screen writes it. Both are held in
+     * the catalogue already, and Emi is never translated.
+     */
+    tile: words('lock.cover.wordmark'),
+    name: words('home.wordmark'),
+  },
   firstForecast: {
     title: words('onboarding.firstForecast.title'),
     learning: words('onboarding.firstForecast.line.learning'),
@@ -151,6 +164,12 @@ export const firstRunCopy = {
   encryptedHere: words('onboarding.encryptedHere'),
   encryptsYourAnswers: words('onboarding.encryptsYourAnswers'),
   encryptsIt: words('onboarding.encryptsIt'),
+  /**
+   * The promise the reminder makes, which is about the reminder and nothing else. The redesign's
+   * own sentence says nothing is sent anywhere, and the delete sends one request, so the sentence
+   * names the reminder.
+   */
+  remindsOnThisPhone: words('onboarding.reminder.promise'),
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
   fewerDays: words('onboarding.periodLength.shorter'),
@@ -179,6 +198,7 @@ export const firstRunScreens = [
   'goals',
   'focus',
   'today',
+  'reminder',
 ] as const;
 
 export type FirstRunScreen = (typeof firstRunScreens)[number];
@@ -267,6 +287,27 @@ export const todayLabels: Readonly<Record<TodaySymptom, string>> = {
 
 /** The order the screen offers them in, which the map above cannot carry. */
 export const todayChoices: readonly TodaySymptom[] = todaySymptoms;
+
+/**
+ * The words of the three moments she can be reminded at. A map for the reason the five above are
+ * maps: a fourth lead leaves this file failing to compile rather than leaving her a choice with no
+ * word on it.
+ */
+export const reminderLabels: Readonly<Record<ReminderLead, string>> = {
+  twoDaysBefore: words('onboarding.reminder.choice.twoDaysBefore'),
+  oneDayBefore: words('onboarding.reminder.choice.oneDayBefore'),
+  onTheDay: words('onboarding.reminder.choice.onTheDay'),
+};
+
+/** The line under the question once she has chosen, which says when the reminder comes. */
+export const reminderLines: Readonly<Record<ReminderLead, string>> = {
+  twoDaysBefore: words('onboarding.reminder.line.twoDaysBefore'),
+  oneDayBefore: words('onboarding.reminder.line.oneDayBefore'),
+  onTheDay: words('onboarding.reminder.line.onTheDay'),
+};
+
+/** The order the screen offers them in, which the maps above cannot carry. */
+export const reminderChoices: readonly ReminderLead[] = reminderLeads;
 
 /**
  * How far along she is, said in words. Nothing draws it: the bar carries the position on the

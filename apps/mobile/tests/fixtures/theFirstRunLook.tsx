@@ -51,6 +51,12 @@ import {
 } from '../../src/features/onboarding/ThePromise';
 import { Today, todayTestID } from '../../src/features/onboarding/Today';
 import {
+  Reminder,
+  reminderLineTestID,
+  reminderPreviewTestID,
+  reminderTestID,
+} from '../../src/features/onboarding/Reminder';
+import {
   TourScreen,
   tourActionTestID,
   tourLinesTestID,
@@ -133,7 +139,7 @@ const nothing = (): void => undefined;
  * Every drawing of the first run this step holds a screen to, in the order she meets them.
  *
  * `lastPeriodNext` and `firstForecastLearning` are second states of a screen already in the list
- * rather than screens of their own, so the run is nineteen screens drawn twenty one ways.
+ * rather than screens of their own, so the run is twenty one screens drawn twenty three ways.
  */
 export const theFirstRunDrawings = [
   'welcome',
@@ -150,6 +156,7 @@ export const theFirstRunDrawings = [
   'goals',
   'focus',
   'todayFirstRun',
+  'reminder',
   'firstForecast',
   'firstForecastLearning',
   'thePromise',
@@ -251,6 +258,12 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
     ThePromise: [thePromiseTestID],
   },
   todayFirstRun: { ...theFrame, SelectableTile: [todayTestID('cramps')] },
+  reminder: {
+    ...theFrame,
+    OnboardingScreen: [onboardingTitleTestID, reminderLineTestID],
+    ReminderPreview: [reminderPreviewTestID],
+    SingleChoiceRow: [reminderTestID('twoDaysBefore')],
+  },
   tour: {
     CycleRing: [cycleRingTestID],
     PrimaryButton: [tourActionTestID],
@@ -292,6 +305,9 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put a line under the tiles. The redesign canvas puts "You can skip this." under the
   // title and only the promise under the tiles, so today follows the canvas.
   todayFirstRun: 1,
+  // The mockups put the sample under the question and "Not now" over the button. The redesign
+  // canvas puts the sample at the top and "Not now" under "Remind me", so the reminder follows it.
+  reminder: 2,
   // The drawing and the prototype both put a pill at the foot of the hold. Emi's hold is the ring
   // itself: the press and hold is the write, and a second control that wrote would be a second way
   // to begin.
@@ -408,6 +424,17 @@ function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
       return (
         <Today chosen={[]} onBack={nothing} onPress={nothing} onSave={nothing} onSkip={nothing} />
       );
+    // The drawing has the first of the three moments pressed, so the screen is drawn with it.
+    case 'reminder':
+      return (
+        <Reminder
+          chosen="twoDaysBefore"
+          onBack={nothing}
+          onChoose={nothing}
+          onNotNow={nothing}
+          onRemind={nothing}
+        />
+      );
     case 'firstForecast':
       return (
         <FirstForecast
@@ -472,6 +499,8 @@ export function whatTheDrawingAsksFor(drawing: FirstRunDrawing): Part[] {
       return thePartsOfTheMockupWithoutItsNotes('focus', theIdentifiersOf.focus);
     case 'todayFirstRun':
       return thePartsOfTheMockupWithoutItsNotes('todayFirstRun', theIdentifiersOf.todayFirstRun);
+    case 'reminder':
+      return thePartsOfTheMockupWithoutItsNotes('reminder', theIdentifiersOf.reminder);
     case 'firstForecast':
       return thePartsOfTheMockupWithoutItsNotes('firstForecast', theIdentifiersOf.firstForecast);
     case 'firstForecastLearning':

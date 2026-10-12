@@ -11,6 +11,7 @@ import { Goals } from '../../src/features/onboarding/Goals';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
 import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
 import { Regularity } from '../../src/features/onboarding/Regularity';
+import { Reminder } from '../../src/features/onboarding/Reminder';
 import { Today } from '../../src/features/onboarding/Today';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
@@ -30,7 +31,7 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
 const theCaveat = [
-  'Rendered from the trees the twelve first run screens produced under the test runner, at 393 by',
+  'Rendered from the trees the thirteen first run screens produced under the test runner, at 393 by',
   '852 points, which is the glass of an iPhone 16, and not captured from a phone.',
   'The number names the monospaced',
   'face, which no screen loads yet, so it falls back here and on a phone. Reproduce with:',
@@ -47,12 +48,12 @@ interface Screen {
 
 const theScreens: readonly Screen[] = [
   {
-    title: 'One of twelve',
+    title: 'One of thirteen',
     note: 'What Emi is, and what it will not do. She is asked for nothing here.',
     element: <WhatEmiIs onContinue={() => undefined} />,
   },
   {
-    title: 'Two of twelve',
+    title: 'Two of thirteen',
     note: 'What Emi should call her. The one field in the first run, and it carries a way past it.',
     element: (
       <HerName
@@ -65,7 +66,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Three of twelve',
+    title: 'Three of thirteen',
     note: 'The year she was born, under the name she gave on the screen before. Nothing is picked\n      for her, and the wheel opens on 1996, thirty years back, which the drawing cannot show:\n      it draws every list from the top.',
     element: (
       <YearOfBirth
@@ -79,7 +80,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Four of twelve',
+    title: 'Four of thirteen',
     note: 'She picks the day her last period started from the month she is in. The eleventh is\n      chosen, and the days after today take no press.',
     element: (
       <LastPeriod
@@ -93,7 +94,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Five of twelve',
+    title: 'Five of thirteen',
     note: 'The period before that one, picked twenty eight days back. She may leave this one\n      unanswered with the link over the button.',
     element: (
       <PeriodBefore
@@ -108,7 +109,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Six of twelve',
+    title: 'Six of thirteen',
     note: 'The length the first forecast is counted with, on a wheel that opens on 28 days and\n      keeps nothing until she turns it or taps a length.',
     element: (
       <CycleLength
@@ -120,7 +121,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Seven of twelve',
+    title: 'Seven of thirteen',
     note: 'It is what the period arc is drawn at until she logs a period end of her own, and she\n      may answer that she is not sure.',
     element: (
       <PeriodLength
@@ -133,7 +134,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Eight of twelve',
+    title: 'Eight of thirteen',
     note: 'Three rows, none of them chosen for her until she presses one. It moves one sentence\n      under the forecast and never the range.',
     element: (
       <Regularity
@@ -146,7 +147,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Nine of twelve',
+    title: 'Nine of thirteen',
     note: 'It moves one line on the home screen, on the days inside her period, and nothing else\n      anywhere.',
     element: (
       <Feeling
@@ -159,7 +160,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Ten of twelve',
+    title: 'Ten of thirteen',
     note: 'The one question she may answer more than once. Each box she ticks adds one card to her\n      home screen, and ticking none is the way past it.',
     element: (
       <Goals
@@ -172,7 +173,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Eleven of twelve',
+    title: 'Eleven of thirteen',
     note: 'The last answer she gives. The order she presses the tiles in is the order her log sheet\n      puts the groups in, and pressing none leaves the log as it is for everybody.',
     element: (
       <Focus
@@ -185,7 +186,7 @@ const theScreens: readonly Screen[] = [
     ),
   },
   {
-    title: 'Twelve of twelve',
+    title: 'Twelve of thirteen',
     note: 'What she feels today, which becomes her first logged day. Save today waits for a tile.\n      Skip and Nothing to add both go on, and then today gets no row at all.',
     element: (
       <Today
@@ -194,6 +195,19 @@ const theScreens: readonly Screen[] = [
         onPress={() => undefined}
         onSave={() => undefined}
         onSkip={() => undefined}
+      />
+    ),
+  },
+  {
+    title: 'Thirteen of thirteen',
+    note: 'The reminder, with the words the lock screen will carry. Remind me waits for a moment and\n      only then asks the phone. Not now and Skip go on and ask nothing.',
+    element: (
+      <Reminder
+        chosen="twoDaysBefore"
+        onBack={() => undefined}
+        onChoose={() => undefined}
+        onNotNow={() => undefined}
+        onRemind={() => undefined}
       />
     ),
   },

@@ -72,8 +72,11 @@ const herPeriodStarted = '2026-05-09';
 
 const theNameSheGives = 'Ada';
 
-/** The questions after the cycle length: period length, regular, feeling, goals, focus, today. */
-const theQuestionsLeftAfterTheCycleLength = 6;
+/**
+ * The questions after the cycle length: period length, regular, feeling, goals, focus, today and
+ * the reminder.
+ */
+const theQuestionsLeftAfterTheCycleLength = 7;
 
 const theTitleOfHerForecast = {
   named: `${theNameSheGives}, here's your next period`,
@@ -261,6 +264,7 @@ async function sheWalksToHerForecast(walk: HerWalk = {}): Promise<{
     }
 
     await shePresses(onboardingActionTestID);
+    await shePresses(onboardingSkipTestID);
     await shePresses(onboardingSkipTestID);
   }
 

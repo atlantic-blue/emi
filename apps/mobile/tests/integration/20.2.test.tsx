@@ -56,9 +56,10 @@ const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISEC
 
 /**
  * The questions between the cycle length and the three screens she reads rather than answers:
- * her period length, how steady her cycle is, how she feels, her goals, her focus and today.
+ * her period length, how steady her cycle is, how she feels, her goals, her focus, today and the
+ * reminder.
  */
-const theQuestionsLeftAfterTheCycleLength = 6;
+const theQuestionsLeftAfterTheCycleLength = 7;
 
 function herDatabase(): Database {
   return expoDatabase(openDatabaseSync(databaseFileName));
@@ -104,7 +105,8 @@ async function sheAnswersTheRest(feelsToday: readonly TodaySymptom[] = []): Prom
 
   await shePresses(onboardingActionTestID);
 
-  for (let question = 1; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+  // Today and the reminder are answered below, so the loop stops two short of the count.
+  for (let question = 2; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
     await shePassesTheQuestion();
   }
 
@@ -118,6 +120,8 @@ async function sheAnswersTheRest(feelsToday: readonly TodaySymptom[] = []): Prom
     await shePresses(onboardingActionTestID);
   }
 
+  // The reminder stands after the last question, and "Not now" passes it.
+  await shePresses(onboardingSkipTestID);
   await shePresses(firstForecastActionTestID);
   await shePresses(promiseActionTestID);
   await shePresses(whatEmiDoesActionTestID);

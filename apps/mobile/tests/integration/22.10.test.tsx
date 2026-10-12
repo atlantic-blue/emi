@@ -81,7 +81,7 @@ describe('the first run screens match the redesign prototype', () => {
     }
 
     it('is held to every part of every drawing, and the count is the check', () => {
-      expect(theFirstRunDrawings).toHaveLength(22);
+      expect(theFirstRunDrawings).toHaveLength(23);
       expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(140);
     });
 
@@ -243,7 +243,7 @@ describe('the first run screens match the redesign prototype', () => {
   });
 
   describe('what the look did not change', () => {
-    it('asks the same twelve questions, in the same order', () => {
+    it('asks the same twelve questions in the same order, and then the reminder', () => {
       expect(firstRunScreens).toEqual([
         'welcome',
         'name',
@@ -257,6 +257,7 @@ describe('the first run screens match the redesign prototype', () => {
         'goals',
         'focus',
         'today',
+        'reminder',
       ]);
     });
 

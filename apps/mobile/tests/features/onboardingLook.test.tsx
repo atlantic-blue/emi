@@ -29,6 +29,7 @@ import {
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
+import { Reminder } from '../../src/features/onboarding/Reminder';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
 import {
@@ -58,6 +59,7 @@ const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = [
   'goals',
   'focus',
   'today',
+  'reminder',
 ];
 
 /** The questions whose way past the redesign draws over the button rather than in the header. */
@@ -191,6 +193,20 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
           onPress={() => undefined}
           onSave={() => undefined}
           onSkip={() => undefined}
+        />
+      </OnAPhone>,
+    );
+    return;
+  }
+  if (at === 'reminder') {
+    await render(
+      <OnAPhone>
+        <Reminder
+          chosen={undefined}
+          onBack={() => undefined}
+          onChoose={() => undefined}
+          onNotNow={() => undefined}
+          onRemind={() => undefined}
         />
       </OnAPhone>,
     );

@@ -25,8 +25,9 @@ export const settingsRowsTestID = 'settings-rows';
  *
  * A row is an answer she already gave, the lock, or one of the two ways out. Nothing else is a
  * row, so the screen cannot grow into a menu without this list growing first, where somebody has
- * to decide about it. The drawing carries a fifth row for the reminder. The reminder is not built,
- * so the row it will take is not drawn and the drawing is the record of where it goes.
+ * to decide about it. The drawing carries a fifth row for the reminder. She chooses the reminder in
+ * the first run and this phone schedules it, but no screen changes it afterwards yet, so the row it
+ * will take is not drawn and the drawing is the record of where it goes.
  */
 export const settingsRows = ['answers', 'lock', 'export', 'delete'] as const;
 

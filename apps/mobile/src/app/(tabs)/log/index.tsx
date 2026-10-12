@@ -21,6 +21,7 @@ import {
 } from '../../../features/log/askedGroup';
 import { groupsUnderTheFlow } from '../../../features/log/herOrder';
 import { useFirstRun } from '../../../features/onboarding/FirstRunProvider';
+import { useRescheduleHerReminder } from '../../../features/reminder/rescheduleHerReminder';
 import { statedFocus } from '../../../features/onboarding/firstRun';
 import { localDay } from '../../../features/onboarding/days';
 import { useProfileVault, useVault } from '../../../services/vault/VaultProvider';
@@ -46,6 +47,8 @@ export default function LogFlowRoute(): ReactNode {
   // A write lands in the database, which React cannot see, so the write says it happened and the
   // day and the ring are read again on the render that follows.
   const [, sheWrote] = useReducer((writes: number) => writes + 1, 0);
+  // A flow can start a period, which moves the forecast, so the reminder is worked out again.
+  const rescheduleTheReminder = useRescheduleHerReminder();
 
   useFocusEffect(
     useCallback(() => {
@@ -62,8 +65,9 @@ export default function LogFlowRoute(): ReactNode {
         now: new Date(),
       });
       sheWrote();
+      rescheduleTheReminder();
     },
-    [database, today, vault],
+    [database, rescheduleTheReminder, today, vault],
   );
 
   // The write is the whole day, so a mark needs the flow it belongs to. A day she logged no flow

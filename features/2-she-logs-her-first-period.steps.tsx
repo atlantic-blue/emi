@@ -267,6 +267,15 @@ import {
 } from '../apps/mobile/src/features/home/MeasuredRow';
 import { cycleLengthDaysTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { todayTestID } from '../apps/mobile/src/features/onboarding/Today';
+import {
+  reminderPreviewWordsTestID,
+  reminderTestID,
+} from '../apps/mobile/src/features/onboarding/Reminder';
+import {
+  resetExpoNotifications,
+  theRemindersOnThePhone,
+  timesThePhoneAsked,
+} from '../apps/mobile/tests/fixtures/expoNotifications';
 import { nameFieldTestID } from '../apps/mobile/src/features/onboarding/HerName';
 import { regularityTestID } from '../apps/mobile/src/features/onboarding/Regularity';
 import { yearTestID } from '../apps/mobile/src/components/YearWheel';
@@ -710,6 +719,9 @@ jest.mock('expo-secure-store', () =>
   jest.requireActual('../apps/mobile/tests/fixtures/expoSecureStore'),
 );
 jest.mock('expo-crypto', () => jest.requireActual('../apps/mobile/tests/fixtures/expoCrypto'));
+jest.mock('expo-notifications', () =>
+  jest.requireActual('../apps/mobile/tests/fixtures/expoNotifications'),
+);
 
 const feature = loadFeature(join(__dirname, '2-she-logs-her-first-period.feature'));
 
@@ -742,14 +754,15 @@ const theYearSheWasBornIn = 1994;
  * How many steps the counter has always said, written out by hand rather than read off the list
  * of screens, so a question that quietly leaves the first run is named here.
  */
-const theStepsOfTheFirstRun = 12;
+const theStepsOfTheFirstRun = 13;
 const theCycleLengthIsStepSix = 6;
 
 /**
  * The questions between the cycle length and the three screens she reads rather than answers:
- * her period length, how steady her cycle is, how she feels, her goals, her focus and today.
+ * her period length, how steady her cycle is, how she feels, her goals, her focus, today and the
+ * reminder.
  */
-const theQuestionsLeftAfterTheCycleLength = 6;
+const theQuestionsLeftAfterTheCycleLength = 7;
 
 /** When the hold ends, which is the instant everything she answered is written at. */
 const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
@@ -1691,6 +1704,7 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingSkipTestID);
         await shePresses(firstForecastActionTestID);
         await shePresses(promiseActionTestID);
         await shePresses(whatEmiDoesActionTestID);
@@ -1780,6 +1794,17 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingWayPastTestID);
     });
 
+    then('she is asked whether Emi should remind her', () => {
+      expect(app.pathname()).toBe('/onboarding/reminder');
+      expect(listDayLogs(herDatabase())).toEqual([]);
+    });
+
+    when('she says Not now', async () => {
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent('Not now');
+
+      await shePresses(onboardingWayPastTestID);
+    });
+
     then('she is looking at her first forecast', () => {
       expect(app.pathname()).toBe('/onboarding/first-forecast');
       expect(listDayLogs(herDatabase())).toEqual([]);
@@ -1794,6 +1819,152 @@ defineFeature(feature, (test) => {
 
     then('her phone holds one day, the day she said her period started', () => {
       expect(listDayLogs(herDatabase()).map((row) => row.day)).toEqual([herPeriodStarted]);
+    });
+  });
+
+  /** Past every question and the first day she logs, which leaves her on the reminder. */
+  async function sheReachesTheReminder(): Promise<void> {
+    await sheReadsTheWelcome();
+    await shePresses(onboardingSkipTestID);
+    await shePresses(onboardingSkipTestID);
+    await shePresses(dayTestID(herPeriodStarted));
+    await shePresses(onboardingActionTestID);
+    await shePresses(onboardingWayPastTestID);
+    await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
+    await shePresses(onboardingActionTestID);
+    await shePresses(onboardingWayPastTestID);
+    await shePresses(onboardingSkipTestID);
+    await shePresses(onboardingSkipTestID);
+    await shePresses(onboardingSkipTestID);
+    await shePresses(onboardingSkipTestID);
+    await shePresses(onboardingSkipTestID);
+  }
+
+  /** The forecast, the promise, what Emi does with it, and the hold. */
+  async function sheReadsOnAndHolds(): Promise<void> {
+    await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
+    await shePresses(promiseActionTestID);
+    await shePresses(whatEmiDoesActionTestID);
+    await sheHoldsTheRing();
+  }
+
+  test('SCREEN-1, she asks Emi to remind her two days before the range starts', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => {
+      resetExpoNotifications('allow');
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she reaches the reminder after the first day she logs', async () => {
+      await sheReachesTheReminder();
+
+      expect(app.pathname()).toBe('/onboarding/reminder');
+    });
+
+    then('Remind me waits until she picks when', () => {
+      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Remind me');
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
+    });
+
+    and('the sample on the screen names a forecast and a day, and nothing about her body', () => {
+      expect(screen.getByTestId(reminderPreviewWordsTestID)).toHaveTextContent(
+        'Your forecast starts in two days.',
+      );
+      expect(screen.queryByText(/period/i)).toBeNull();
+    });
+
+    when('she picks two days before', async () => {
+      await shePresses(reminderTestID('twoDaysBefore'));
+
+      expect(screen.getByTestId(reminderTestID('twoDaysBefore'))).toBeSelected();
+      expect(timesThePhoneAsked()).toBe(0);
+    });
+
+    and('she presses Remind me and her phone allows it', async () => {
+      await shePresses(onboardingActionTestID);
+      await screen.findByTestId(firstForecastActionTestID);
+    });
+
+    then('her phone asked her once, after she pressed', () => {
+      expect(timesThePhoneAsked()).toBe(1);
+    });
+
+    and('she is looking at her first forecast', () => {
+      expect(app.pathname()).toBe('/onboarding/first-forecast');
+    });
+
+    when('she reads on and presses and holds the ring', async () => {
+      await sheReadsOnAndHolds();
+    });
+
+    then(
+      'her phone holds one reminder, at nine in the morning two days before the range she was shown',
+      async () => {
+        const forecast = forecastFromHerAnswers({
+          periodStartedOn: herPeriodStarted,
+          cycleLengthDays: sheSaysHerCycleRuns,
+        });
+        const [year, month, day] = (forecast.start?.from ?? '').split('-').map(Number);
+
+        expect(readSetting(herDatabase(), 'reminderLead')).toBe('twoDaysBefore');
+        await waitFor(() => {
+          expect(theRemindersOnThePhone().map((reminder) => reminder.at)).toEqual([
+            new Date(year ?? 0, (month ?? 1) - 1, (day ?? 1) - 2, 9, 0, 0, 0),
+          ]);
+        });
+      },
+    );
+  });
+
+  test('SCREEN-1, her phone refuses the reminder and the first run goes on', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    and('her phone will refuse notifications', () => {
+      resetExpoNotifications('refuse');
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she reaches the reminder after the first day she logs', async () => {
+      await sheReachesTheReminder();
+    });
+
+    and('she picks one day before and presses Remind me', async () => {
+      await shePresses(reminderTestID('oneDayBefore'));
+      await shePresses(onboardingActionTestID);
+      await screen.findByTestId(firstForecastActionTestID);
+    });
+
+    then('she is looking at her first forecast', () => {
+      expect(app.pathname()).toBe('/onboarding/first-forecast');
+      expect(timesThePhoneAsked()).toBe(1);
+    });
+
+    when('she reads on and presses and holds the ring', async () => {
+      await sheReadsOnAndHolds();
+    });
+
+    then('her phone holds no reminder and no choice of one', () => {
+      expect(readSetting(herDatabase(), 'reminderLead')).toBeUndefined();
+      expect(theRemindersOnThePhone()).toEqual([]);
     });
   });
 
@@ -1842,6 +2013,8 @@ defineFeature(feature, (test) => {
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
+      await shePresses(onboardingSkipTestID);
+      visited.push(app.pathname());
       await shePresses(firstForecastActionTestID);
       visited.push(app.pathname());
       await shePresses(promiseActionTestID);
@@ -1855,7 +2028,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today',
+      'she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her',
       () => {
         expect(visited).toEqual([
           '/onboarding/welcome',
@@ -1870,6 +2043,7 @@ defineFeature(feature, (test) => {
           '/onboarding/goals',
           '/onboarding/focus',
           '/onboarding/today',
+          '/onboarding/reminder',
           '/onboarding/first-forecast',
           '/onboarding/the-promise',
           '/onboarding/what-emi-does-with-it',
@@ -1920,6 +2094,8 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(onboardingWayPastTestID);
+      everyFieldShePassed.push(...fieldsDrawn());
+      await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
@@ -4803,15 +4979,20 @@ defineFeature(feature, (test) => {
       expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
     });
 
-    and('the counter reads step 6 of 12, the twelve steps the first run always had', () => {
-      expect(screen.getByTestId(onboardingProgressTestID).props.accessibilityValue).toMatchObject({
-        max: theStepsOfTheFirstRun,
-        now: theCycleLengthIsStepSix,
-      });
-      // The total is counted off the list of screens, so the number written out here is what
-      // catches a question quietly leaving the run.
-      expect(firstRunScreenCount).toBe(theStepsOfTheFirstRun);
-    });
+    and(
+      'the counter reads step 6 of 13, the twelve steps the first run had and the reminder',
+      () => {
+        expect(screen.getByTestId(onboardingProgressTestID).props.accessibilityValue).toMatchObject(
+          {
+            max: theStepsOfTheFirstRun,
+            now: theCycleLengthIsStepSix,
+          },
+        );
+        // The total is counted off the list of screens, so the number written out here is what
+        // catches a question quietly leaving the run.
+        expect(firstRunScreenCount).toBe(theStepsOfTheFirstRun);
+      },
+    );
 
     when('she answers the rest of the questions and presses and holds the ring', async () => {
       await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));

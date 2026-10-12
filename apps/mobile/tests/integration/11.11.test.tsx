@@ -139,6 +139,8 @@ async function sheReachesThePromise(focus: readonly Focus[] = []): Promise<void>
   }
 
   await shePresses(onboardingSkipTestID);
+  // The reminder stands after the last question, and "Not now" passes it.
+  await shePresses(onboardingSkipTestID);
   await shePresses(firstForecastActionTestID);
 }
 

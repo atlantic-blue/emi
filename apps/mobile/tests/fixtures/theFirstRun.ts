@@ -21,6 +21,8 @@ import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import { yearTestID } from '../../src/components/YearWheel';
 import { tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import { type TodaySymptom, defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
+import { reminderTestID } from '../../src/features/onboarding/Reminder';
+import type { ReminderLead } from '../../src/features/reminder/reminder';
 
 const theWelcomeTestID = 'onboarding-welcome';
 
@@ -45,6 +47,12 @@ export interface HerAnswers {
   /** Left out where she skips the question, which is what a walk that is about something else does. */
   readonly name?: string;
   readonly birthYear?: number;
+  /**
+   * Left out where she presses "Not now", which is what a walk that is about something else does.
+   * Given, she presses the moment and "Remind me", and the phone answers whatever the test's
+   * scheduler is set to answer.
+   */
+  readonly reminder?: ReminderLead;
 }
 
 /**
@@ -166,10 +174,26 @@ async function sheAnswersWhatComesAfterHerLastPeriod(answers: HerAnswersWithNoDa
     await fireEvent.press(screen.getByTestId(onboardingActionTestID));
   }
 
+  await sheAnswersTheReminder(answers.reminder);
+
   // The last question is behind her, and three screens she reads rather than answers stand between
   // it and the hold: the forecast, the promise, and what Emi does with what she said.
-  await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
+  await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
   await sheReadsThePromise();
+}
+
+/**
+ * The reminder after the first day she logs. "Not now" where she gives no moment, and otherwise the
+ * moment and "Remind me", which asks the phone before it goes on.
+ */
+export async function sheAnswersTheReminder(lead: ReminderLead | undefined): Promise<void> {
+  if (lead === undefined) {
+    await fireEvent.press(screen.getByTestId(onboardingWayPastTestID));
+    return;
+  }
+
+  await fireEvent.press(screen.getByTestId(reminderTestID(lead)));
+  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
 }
 
 /**

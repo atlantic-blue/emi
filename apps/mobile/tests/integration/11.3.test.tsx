@@ -373,6 +373,8 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      // The reminder stands after the last question, and "Not now" passes it.
+      await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();
       await sheHoldsTheRing();

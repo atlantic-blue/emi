@@ -13,6 +13,7 @@ import { savePeriodRange, thePeriodEmiHoldsIn } from '../../features/calendar/sa
 import type { HerDay } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
+import { useRescheduleHerReminder } from '../../features/reminder/rescheduleHerReminder';
 import { localDay, startOfMonth } from '../../features/onboarding/days';
 import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
 import type { DayVault } from '../../services/vault/dayVault';
@@ -71,6 +72,7 @@ export default function EditPeriodRoute(): ReactNode {
   const month = theMonthAskedFor(asked) ?? startOfMonth(today);
   const [hers] = useState(() => herPeriodIn(database, vault, profiles, today, month));
   const [ticked, setTicked] = useState<readonly string[]>(() => hers.held);
+  const rescheduleTheReminder = useRescheduleHerReminder();
 
   const leave = useCallback(() => {
     if (router.canGoBack()) {
@@ -82,8 +84,9 @@ export default function EditPeriodRoute(): ReactNode {
 
   const save = useCallback(() => {
     savePeriodRange(database, vault, { held: hers.held, now: new Date(), ticked, today });
+    rescheduleTheReminder();
     leave();
-  }, [database, hers.held, leave, ticked, today, vault]);
+  }, [database, hers.held, leave, rescheduleTheReminder, ticked, today, vault]);
 
   const toggle = useCallback((day: string) => {
     setTicked((hersNow) =>

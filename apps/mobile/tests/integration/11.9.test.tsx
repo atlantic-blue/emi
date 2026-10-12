@@ -356,32 +356,32 @@ describe('what she feels today is her first logged day', () => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    it('hands her to her first forecast, whether she saves the day or passes it by', async () => {
+    it('hands her to the reminder, whether she saves the day or passes it by', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesToday();
       await shePresses(onboardingSkipTestID);
 
-      expect(app.pathname()).toBe('/onboarding/first-forecast');
+      expect(app.pathname()).toBe('/onboarding/reminder');
     });
 
-    it('hands her to her first forecast from Nothing to add too', async () => {
+    it('hands her to the reminder from Nothing to add too', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesToday();
       await shePresses(onboardingWayPastTestID);
 
-      expect(app.pathname()).toBe('/onboarding/first-forecast');
+      expect(app.pathname()).toBe('/onboarding/reminder');
     });
 
-    it('hands her to her first forecast from Save today, once she picks a tile', async () => {
+    it('hands her to the reminder from Save today, once she picks a tile', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesToday();
       await shePresses(todayTestID('headache'));
       await shePresses(onboardingActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/first-forecast');
+      expect(app.pathname()).toBe('/onboarding/reminder');
     });
 
     it('has written nothing at all while she stands on it', async () => {
@@ -489,6 +489,8 @@ describe('what she feels today is her first logged day', () => {
       await shePresses(todayTestID('cramps'));
       await shePresses(todayTestID('fatigue'));
       await shePresses(onboardingWayPastTestID);
+      // The reminder stands after the last question, and "Not now" passes it.
+      await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();
       await sheHoldsTheRing();
@@ -502,6 +504,8 @@ describe('what she feels today is her first logged day', () => {
       await sheReachesToday();
       await shePresses(todayTestID('cramps'));
       await shePresses(todayTestID('fatigue'));
+      await shePresses(onboardingSkipTestID);
+      // The reminder stands after the last question, and "Not now" passes it.
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();

@@ -9,6 +9,7 @@ import { DayRefused } from '../../features/log/DayRefused';
 import { LogFlow } from '../../features/log/LogFlow';
 import { editFlow, flowOn, refusalFor, unexpectedOn } from '../../features/log/editDay';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
+import { useRescheduleHerReminder } from '../../features/reminder/rescheduleHerReminder';
 import { localDay } from '../../features/onboarding/days';
 import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
 
@@ -28,6 +29,8 @@ export default function DayRoute(): ReactNode {
   // A write lands in the database, which React cannot see, so the write says it happened and the
   // day and the ring are read again on the render that follows.
   const [, sheWrote] = useReducer((writes: number) => writes + 1, 0);
+  // A flow on a day she already lived can move the start of a cycle, and the forecast with it.
+  const rescheduleTheReminder = useRescheduleHerReminder();
 
   const day = String(date ?? '');
   const refusal = refusalFor({ day, today });
@@ -50,8 +53,9 @@ export default function DayRoute(): ReactNode {
         today,
       });
       sheWrote();
+      rescheduleTheReminder();
     },
-    [database, day, today, vault],
+    [database, day, rescheduleTheReminder, today, vault],
   );
 
   // The write is the whole day, so a mark needs the flow it belongs to. A day she logged no flow

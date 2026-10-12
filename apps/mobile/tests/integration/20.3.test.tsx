@@ -57,9 +57,9 @@ const sheSaysHerCycleRuns = defaultCycleLengthDays + 2;
 
 /**
  * The questions between the cycle length and the screen this step draws: her period length, how
- * steady her cycle is, how she feels, her goals, her focus and today.
+ * steady her cycle is, how she feels, her goals, her focus, today and the reminder.
  */
-const theQuestionsLeftAfterTheCycleLength = 6;
+const theQuestionsLeftAfterTheCycleLength = 7;
 
 /**
  * The drawing places five parts. The count is written out so that a comparison which read nothing
