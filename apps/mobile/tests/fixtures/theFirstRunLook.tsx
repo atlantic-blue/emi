@@ -2,7 +2,7 @@ import type { ForecastResult } from '@emi/cycle';
 import { washTestID } from '@emi/ui';
 import { render, screen } from '@testing-library/react-native';
 
-import { CycleLength, cycleLengthTestID } from '../../src/features/onboarding/CycleLength';
+import { CycleLength, cycleLengthWheelTestID } from '../../src/features/onboarding/CycleLength';
 import { Feeling, feelingTestID } from '../../src/features/onboarding/Feeling';
 import {
   FirstForecast,
@@ -41,7 +41,7 @@ import {
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
-import { PeriodLength, periodLengthTestID } from '../../src/features/onboarding/PeriodLength';
+import { PeriodLength, periodLengthWheelTestID } from '../../src/features/onboarding/PeriodLength';
 import { Regularity, regularityTestID } from '../../src/features/onboarding/Regularity';
 import {
   ThePromise,
@@ -68,10 +68,7 @@ import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
 import { calendarTestID } from '../../src/features/onboarding/Calendar';
 import type { FirstRunScreen } from '../../src/features/onboarding/copy';
-import {
-  defaultCycleLengthDays,
-  defaultPeriodLengthDays,
-} from '../../src/features/onboarding/firstRun';
+import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { cycleRingTestID } from '../../src/components/CycleRing';
 import { yearWheelTestID } from '../../src/components/YearWheel';
 import {
@@ -212,7 +209,7 @@ const theRecoveryFrame: PartIdentifiers = {
 
 /** What each part of each drawing is built under, drawing by drawing. */
 const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
-  cycleLength: { ...theFrame, Stepper: [cycleLengthTestID] },
+  cycleLength: { ...theFrame, Stepper: [cycleLengthWheelTestID] },
   feeling: { ...theFrame, SingleChoiceRow: [feelingTestID('fine')] },
   firstForecast: {
     Card: [firstForecastWhyTestID, firstForecastOnThisPhoneTestID],
@@ -240,7 +237,7 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   lastPeriodNext: { ...theFrame, Calendar: [calendarTestID] },
   name: { ...theFrame, TextField: [nameFieldTestID] },
   periodBefore: { ...theFrame, Calendar: [calendarTestID] },
-  periodLength: { ...theFrame, Stepper: [periodLengthTestID] },
+  periodLength: { ...theFrame, Stepper: [periodLengthWheelTestID] },
   recoveryCode: {
     ...theRecoveryFrame,
     Text: [recoveryTitleTestID, recoveryCodeTestID, recoveryLinesTestID],
@@ -279,10 +276,10 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
  * exactly like a comparison the screen answered.
  */
 export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing, number>>> = {
-  // The lines stand above the days rather than under them, so she reads what Emi does with the
-  // day before she picks one. Measured on the glass when the line about encryption moved.
-  lastPeriod: 1,
-  lastPeriodNext: 1,
+  // The mockups put the way past in the header. The redesign canvas puts it over the button, so
+  // every part above it is counted as drawn before it.
+  periodBefore: 6,
+  periodLength: 6,
   // The mockups put the step above the drop, and the redesign canvas puts the drop above the step.
   // The canvas is the later drawing, so the welcome follows it.
   welcome: 1,
@@ -349,19 +346,14 @@ function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
       );
     case 'cycleLength':
       return (
-        <CycleLength
-          days={defaultCycleLengthDays}
-          onBack={nothing}
-          onChange={nothing}
-          onDone={nothing}
-        />
+        <CycleLength chosen={undefined} onBack={nothing} onChoose={nothing} onDone={nothing} />
       );
     case 'periodLength':
       return (
         <PeriodLength
-          days={defaultPeriodLengthDays}
+          chosen={undefined}
           onBack={nothing}
-          onChange={nothing}
+          onChoose={nothing}
           onDone={nothing}
           onNotSure={nothing}
         />

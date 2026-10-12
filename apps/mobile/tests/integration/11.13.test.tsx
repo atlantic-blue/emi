@@ -14,7 +14,6 @@ import {
   weekCellTestIDs,
   weekTestID,
 } from '../../src/features/onboarding/Calendar';
-import { namedDaysTestID } from '../../src/features/onboarding/LastPeriod';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -103,15 +102,6 @@ function theTouchOf(control: { props: { hitSlop?: unknown } }): { left: number; 
   const side = (name: string): number => (typeof slop[name] === 'number' ? slop[name] : 0);
 
   return { left: side('left'), right: side('right') };
-}
-
-function theNamedDays(): { row: Box; cells: Box[] } {
-  const row = screen.getByTestId(namedDaysTestID);
-
-  return {
-    row: row as unknown as Box,
-    cells: within(row).getAllByTestId(/^named-day-\d/) as unknown as Box[],
-  };
 }
 
 describe('the calendar of her last period fits on an iPhone 16', () => {
@@ -217,26 +207,13 @@ describe('the calendar of her last period fits on an iPhone 16', () => {
     );
   });
 
-  describe('the named days above the calendar', () => {
-    it.each(bothPhones)('end inside the glass on $name', async (phone) => {
+  describe('the named days the redesign took away', () => {
+    it('draws no Today and no Yesterday above the calendar', async () => {
       await sheOpensEmi();
       await sheReachesHerLastPeriod();
 
-      const { row, cells } = theNamedDays();
-      const measured = theRow(row, cells, phone.width);
-
-      expect(measured.rightEdge).toBeLessThanOrEqual(measured.width);
-    });
-
-    it.each(bothPhones)('are each as wide as a thumb needs on $name', async (phone) => {
-      await sheOpensEmi();
-      await sheReachesHerLastPeriod();
-
-      const { row, cells } = theNamedDays();
-
-      for (const width of theRow(row, cells, phone.width).cellWidths) {
-        expect(width).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
-      }
+      expect(screen.queryByTestId('named-days')).toBeNull();
+      expect(screen.queryAllByTestId(/^named-day-/)).toHaveLength(0);
     });
   });
 });

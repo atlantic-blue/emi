@@ -339,17 +339,17 @@ export const english = {
   'onboarding.birthYear.action': 'Continue',
   'onboarding.birthYear.title': 'What year were you born?',
   'onboarding.birthYear.year': 'Born in {year}',
-  'onboarding.cycleLength.action': "That's about right",
-  // The stepper runs from 21 to 45, so the count never reaches one and the screen said days
-  // whatever she set. Moving the words kept it that way.
-  'onboarding.cycleLength.days': '{count} days',
+  'onboarding.cycleLength.action': 'Done',
+  'onboarding.cycleLength.days': {
+    one: '{count} day',
+    other: '{count} days',
+  },
   'onboarding.cycleLength.line.count':
-    'From the first day of one period to the day before the next. A rough guess is fine.',
-  'onboarding.cycleLength.line.corrects':
-    "Once we've seen two of your cycles, we'll use your real number.",
+    'Count the first day of one period to the day before the next.',
+  'onboarding.cycleLength.line.held': 'Held between {minimum} and {maximum} days.',
   'onboarding.cycleLength.longer': 'One day longer',
   'onboarding.cycleLength.shorter': 'One day shorter',
-  'onboarding.cycleLength.title': 'How long is your cycle, usually?',
+  'onboarding.cycleLength.title': 'How long is your cycle, roughly?',
   'onboarding.encrypts': 'Emi encrypts this on the phone before it goes anywhere.',
   'onboarding.feeling.action': 'Continue',
   'onboarding.feeling.choice.fine': "I'm fine with it",
@@ -408,7 +408,8 @@ export const english = {
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
   'onboarding.lastPeriod.later': 'Later',
   'onboarding.lastPeriod.laterMonth': 'Later month',
-  'onboarding.lastPeriod.line.remember': 'Tap the first day you bled. Close enough is fine.',
+  'onboarding.lastPeriod.line.remember':
+    'The first day you bled. The nearest day you remember is close enough.',
   'onboarding.lastPeriod.title': 'When did your last period start?',
   'onboarding.name.action': 'Continue',
   'onboarding.name.hint': 'Your first name',
@@ -423,26 +424,23 @@ export const english = {
   // languages that drift the moment somebody edits one of them.
   'onboarding.onlyYou': 'Only you can read this.',
   'onboarding.periodBefore.action': 'Add it',
-  'onboarding.periodBefore.between': {
-    one: '{count} day apart',
-    other: '{count} days apart',
-  },
   'onboarding.periodBefore.line.remember':
-    'If you remember when it started, your first forecast will be closer.',
+    'Each one you add brings a forecast from your own cycles one cycle sooner.',
   'onboarding.periodBefore.outOfRange':
     'Cycles run from {minimum} to {maximum} days. Try a day in that range.',
-  'onboarding.periodBefore.skip': "I don't remember",
-  'onboarding.periodBefore.title': 'And the one before that?',
+  'onboarding.periodBefore.question': 'Do you remember when the period before that started?',
+  'onboarding.periodBefore.skip': 'I do not remember',
+  'onboarding.periodBefore.title': 'The period before',
   'onboarding.periodLength.action': 'Done',
   'onboarding.periodLength.days': {
     one: '{count} day',
     other: '{count} days',
   },
-  'onboarding.periodLength.line.count': 'From the first day of bleeding to the last.',
-  'onboarding.periodLength.line.logged': "Once you've logged a few, we'll use those instead.",
+  'onboarding.periodLength.line.count': 'From the first day of bleeding until it stops.',
+  'onboarding.periodLength.line.logged': 'Emi uses the days you log instead, once you log them.',
   'onboarding.periodLength.longer': 'One day longer',
   'onboarding.periodLength.shorter': 'One day shorter',
-  'onboarding.periodLength.skip': "I'm not sure",
+  'onboarding.periodLength.skip': 'I am not sure',
   'onboarding.periodLength.title': 'How many days does your period usually last?',
   'onboarding.promise.action': 'Continue',
   'onboarding.promise.delete.line': 'One press removes every day from this phone.',
@@ -455,17 +453,11 @@ export const english = {
   'onboarding.promise.noTracking.title': 'No password, no trackers',
   'onboarding.promise.title': 'Only you can read your days.',
   'onboarding.regularity.action': 'Continue',
-  'onboarding.regularity.choice.moves': 'No, it moves around',
-  'onboarding.regularity.choice.regular': 'Yes, pretty much',
-  'onboarding.regularity.choice.unknown': "I'm not sure yet",
-  'onboarding.regularity.line.explains':
-    'Regular means it comes after about the same number of days each time.',
-  'onboarding.regularity.reply.moves':
-    "That's common. We'll start with a wider range and narrow it as we learn yours.",
-  'onboarding.regularity.reply.regular':
-    "Good to know. We'll still show a range, because even regular cycles move a little.",
-  'onboarding.regularity.reply.unknown': "That's fine. Your log will tell us soon enough.",
-  'onboarding.regularity.title': 'Is your cycle regular?',
+  'onboarding.regularity.choice.moves': 'No, it moves',
+  'onboarding.regularity.choice.regular': 'Yes, most months',
+  'onboarding.regularity.choice.unknown': 'I do not know yet',
+  'onboarding.regularity.line.explains': 'This only changes how Emi explains your forecast.',
+  'onboarding.regularity.title': 'Regular',
   'onboarding.skip': 'Skip',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.today.action': 'Save',

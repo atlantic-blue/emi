@@ -1,24 +1,10 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Icon } from '@emi/ui';
 import { Calendar } from './Calendar';
 import { OnboardingScreen } from './OnboardingScreen';
 import { firstRunCopy } from './copy';
-import { dayLabel, daysBackFrom, localDay } from './days';
+import { localDay } from './days';
 import { oldestPeriodStart, periodStartIsInRange } from './firstRun';
-
-/** The named answers sit beside the grid, so pressing today is not a search through the squares. */
-export function namedDayTestID(day: string): string {
-  return `named-day-${day}`;
-}
-
-export const namedDaysTestID = 'named-days';
-export const chosenNameMarkTestID = 'named-day-chosen-mark';
-
-/** Points. The tick sits beside a word in a pill, so it is drawn at the size of the word. */
-const NAME_MARK_SIZE = 16;
 
 interface Props {
   readonly now: Date;
@@ -34,8 +20,8 @@ interface Props {
  * The day her last period started, picked from a calendar rather than typed.
  *
  * The day the first forecast is counted from, so the button waits until she has picked one. A
- * woman who cannot name it reads the question, finds she cannot answer it, and takes the way past
- * under the days, which is why that control sits there rather than in the header above them.
+ * woman who cannot name it takes "I do not remember" over the button, which is always drawn,
+ * because she must always be able to go on.
  */
 export function LastPeriod({
   now,
@@ -52,7 +38,7 @@ export function LastPeriod({
       actionIsReady={chosen !== undefined}
       actionLabel={firstRunCopy.lastPeriod.action}
       lines={firstRunCopy.lastPeriod.lines}
-      linesComeFirst
+      linesAlign="center"
       onAction={onContinue}
       onBack={onBack}
       onWayPast={onWayPast}
@@ -60,34 +46,6 @@ export function LastPeriod({
       title={firstRunCopy.lastPeriod.title}
       wayPastLabel={firstRunCopy.lastPeriod.wayPast}
     >
-      <View style={styles.named} testID={namedDaysTestID}>
-        {daysBackFrom(today, 2).map((day) => {
-          const isChosen = day === chosen;
-
-          return (
-            <Pressable
-              accessibilityRole="radio"
-              accessibilityState={{ selected: isChosen }}
-              key={day}
-              onPress={() => onChoose(day)}
-              style={isChosen ? [styles.name, styles.nameChosen] : styles.name}
-              testID={namedDayTestID(day)}
-            >
-              <Text
-                style={isChosen ? [styles.nameLabel, styles.nameChosenLabel] : styles.nameLabel}
-              >
-                {dayLabel(day, today)}
-              </Text>
-              {isChosen ? (
-                <View testID={chosenNameMarkTestID}>
-                  <Icon colour={colour.card} name="check" size={NAME_MARK_SIZE} />
-                </View>
-              ) : null}
-            </Pressable>
-          );
-        })}
-      </View>
-
       <Calendar
         canChoose={(day) => periodStartIsInRange(day, today)}
         chosen={chosen}
@@ -100,27 +58,3 @@ export function LastPeriod({
     </OnboardingScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  name: {
-    alignItems: 'center',
-    backgroundColor: colour.card,
-    borderColor: colour.line,
-    borderRadius: radius.full,
-    borderWidth: stroke.icon,
-    flex: 1,
-    flexDirection: 'row',
-    gap: space.spaceSm,
-    justifyContent: 'center',
-    minHeight: MINIMUM_TAP_TARGET,
-    minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceMd,
-  },
-  nameChosen: { backgroundColor: colour.accent, borderColor: colour.accentSoftInk },
-  nameChosenLabel: { color: colour.card },
-  nameLabel: {
-    color: colour.secondaryText,
-    ...textStyle('body-lg'),
-  },
-  named: { flexDirection: 'row', gap: space.spaceSm, marginTop: space.spaceSm },
-});

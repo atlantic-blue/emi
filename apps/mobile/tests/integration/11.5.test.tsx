@@ -22,6 +22,7 @@ import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import { firstRunCopy, regularityLabels } from '../../src/features/onboarding/copy';
@@ -43,6 +44,7 @@ import { herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -119,9 +121,10 @@ async function sheReachesTheRegularity(): Promise<void> {
   await shePresses(onboardingSkipTestID);
   await shePresses(dayTestID(herPeriodStarted));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
+  await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingWayPastTestID);
 }
 
 /** The two ends of the range, as the screen writes them, read off the block she is looking at. */

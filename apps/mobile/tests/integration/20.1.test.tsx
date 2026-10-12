@@ -4,7 +4,6 @@ import { calendarTestID, dayTestID } from '../../src/features/onboarding/Calenda
 import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import {
   onboardingActionTestID,
-  onboardingLinesTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy } from '../../src/features/onboarding/copy';
@@ -93,10 +92,8 @@ describe('she says she does not remember when her last period started and the fi
       expect(partsMissing(thePartsTheScreenKeepsInOrder(), theIdentifiersDrawn())).toEqual([]);
     });
 
-    it('draws the lines above the days, which is the one place it differs from the drawing', () => {
-      expect(partsMissing(thePartsOfTheWayPastDrawing(), theIdentifiersDrawn())).toEqual([
-        `the drawing names OnboardingScreen, built under onboarding-title or ${onboardingLinesTestID}, and the screen draws none of them after ${calendarTestID}`,
-      ]);
+    it('draws the lines under the days, where the drawing of the way past puts them', () => {
+      expect(partsMissing(thePartsOfTheWayPastDrawing(), theIdentifiersDrawn())).toEqual([]);
     });
 
     it('offers the way past under the days and above the action', () => {

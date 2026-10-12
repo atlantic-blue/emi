@@ -440,7 +440,7 @@ describe('she changes her cycle length and the forecast on the screen she opens 
       for (const key of [
         'onboarding.cycleLength.title',
         'onboarding.cycleLength.line.count',
-        'onboarding.cycleLength.line.corrects',
+        'onboarding.cycleLength.line.held',
         'onboarding.cycleLength.shorter',
         'onboarding.cycleLength.longer',
       ] as const) {

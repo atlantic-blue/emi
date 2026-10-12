@@ -10,9 +10,9 @@ export default function CycleLengthRoute(): ReactNode {
 
   return (
     <CycleLength
-      days={cycleLengthDays}
+      chosen={cycleLengthDays}
       onBack={() => router.back()}
-      onChange={setCycleLengthDays}
+      onChoose={setCycleLengthDays}
       onDone={() => router.push('/onboarding/period-length')}
     />
   );

@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { OnAPhone } from '../fixtures/theSafeArea';
 import { StyleSheet } from 'react-native';
 
-import { CycleLength, cycleLengthTestID } from '../../src/features/onboarding/CycleLength';
+import { CycleLength } from '../../src/features/onboarding/CycleLength';
 import { HerName } from '../../src/features/onboarding/HerName';
 import {
   chosenDayMarkTestID,
@@ -13,16 +13,12 @@ import {
   laterMonthTestID,
   monthTestID,
 } from '../../src/features/onboarding/Calendar';
-import {
-  LastPeriod,
-  chosenNameMarkTestID,
-  namedDayTestID,
-} from '../../src/features/onboarding/LastPeriod';
+import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import { Feeling } from '../../src/features/onboarding/Feeling';
 import { Focus } from '../../src/features/onboarding/Focus';
 import { Goals } from '../../src/features/onboarding/Goals';
 import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
-import { PeriodLength, periodLengthTestID } from '../../src/features/onboarding/PeriodLength';
+import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
 import { Regularity } from '../../src/features/onboarding/Regularity';
 import { Today } from '../../src/features/onboarding/Today';
 import { progressFillTestID } from '../../src/components/ProgressBar';
@@ -31,6 +27,7 @@ import {
   onboardingBackTestID,
   onboardingProgressTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
@@ -40,10 +37,6 @@ import {
   firstRunScreens,
   stepLabel,
 } from '../../src/features/onboarding/copy';
-import {
-  defaultCycleLengthDays,
-  defaultPeriodLengthDays,
-} from '../../src/features/onboarding/firstRun';
 import { theScreensWithNoBar } from '../fixtures/theFirstRunLook';
 import { sizedTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
@@ -60,13 +53,18 @@ import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = [
   'name',
   'birthYear',
-  'periodBefore',
-  'periodLength',
   'regularity',
   'feeling',
   'goals',
   'focus',
   'today',
+];
+
+/** The questions whose way past the redesign draws over the button rather than in the header. */
+const theQuestionsWithTheWayPastOverTheButton: readonly FirstRunScreen[] = [
+  'lastPeriod',
+  'periodBefore',
+  'periodLength',
 ];
 
 /** Midday, and away from any summer time change, so the calendar reads the same in any timezone. */
@@ -132,9 +130,9 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
     await render(
       <OnAPhone>
         <PeriodLength
-          days={defaultPeriodLengthDays}
+          chosen={undefined}
           onBack={() => undefined}
-          onChange={() => undefined}
+          onChoose={() => undefined}
           onDone={() => undefined}
           onNotSure={() => undefined}
         />
@@ -231,9 +229,9 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
   await render(
     <OnAPhone>
       <CycleLength
-        days={defaultCycleLengthDays}
+        chosen={undefined}
         onBack={() => undefined}
-        onChange={() => undefined}
+        onChoose={() => undefined}
         onDone={() => undefined}
       />
     </OnAPhone>,
@@ -438,32 +436,25 @@ describe('the first run carries the design system', () => {
         expect(skip === null).toBe(!offered);
       });
     }
+
+    for (const where of theQuestionsWithTheWayPastOverTheButton) {
+      it(`is drawn over the button on ${where}, where the redesign puts it`, async () => {
+        await sheIsLookingAt(where);
+
+        expect(screen.getByTestId(onboardingWayPastTestID)).toBeTruthy();
+      });
+    }
   });
 
   describe('the question she is being asked', () => {
-    /**
-     * The number she is holding on a number question, which the prototype of 2026-10-01 paints
-     * larger than the question itself. It is the one run of text the question does not outsize, and
-     * it is read by its own name so that nothing else on the screen gains the exception.
-     */
-    const theNumberSheIsHolding = (): string[] =>
-      [cycleLengthTestID, periodLengthTestID]
-        .map((name) => screen.queryByTestId(name))
-        .filter((node) => node !== null)
-        .map((node) => String(node.props.children));
-
     for (const where of firstRunScreens) {
       it(`is the largest thing the frame writes on ${where}`, async () => {
         await sheIsLookingAt(where);
 
         const asked = String(screen.getByRole('header').props.children);
-        const held = theNumberSheIsHolding();
         const runs = sizedTextIn(screen.toJSON());
         const question = runs.find((run) => run.text === asked);
-        const beside = runs.filter(
-          (run) =>
-            run.text !== asked && run.points !== undefined && !held.includes(run.text.trim()),
-        );
+        const beside = runs.filter((run) => run.text !== asked && run.points !== undefined);
 
         expect(question?.points).toBe(typeScale['headline-lg'].size);
         expect(beside.length).toBeGreaterThan(0);
@@ -508,47 +499,6 @@ describe('the first run carries the design system', () => {
     });
   });
 
-  describe('the two answers she presses most often', () => {
-    it('marks the one she chose by a tick as well as by a ground', async () => {
-      await render(
-        <OnAPhone>
-          <LastPeriod
-            chosen={today}
-            now={whenSheOpensIt}
-            onBack={() => undefined}
-            onChoose={() => undefined}
-            onContinue={() => undefined}
-            onWayPast={() => undefined}
-          />
-        </OnAPhone>,
-      );
-
-      const chosen = flattened(namedDayTestID(today));
-
-      expect(chosen.backgroundColor).toBe(colour.accent);
-      expect(chosen.borderColor).toBe(colour.accentSoftInk);
-      expect(screen.getByTestId(chosenNameMarkTestID)).toBeTruthy();
-    });
-
-    it('leaves the one she did not choose on the quiet ground, with no tick', async () => {
-      await render(
-        <OnAPhone>
-          <LastPeriod
-            chosen={today}
-            now={whenSheOpensIt}
-            onBack={() => undefined}
-            onChoose={() => undefined}
-            onContinue={() => undefined}
-            onWayPast={() => undefined}
-          />
-        </OnAPhone>,
-      );
-
-      expect(flattened(namedDayTestID('2026-05-13')).backgroundColor).toBe(colour.card);
-      expect(screen.queryAllByTestId(chosenNameMarkTestID)).toHaveLength(1);
-    });
-  });
-
   describe('the month she is looking at', () => {
     it('is named above the squares, at the size a heading takes', async () => {
       await sheIsLookingAt('lastPeriod');
@@ -557,19 +507,17 @@ describe('the first run carries the design system', () => {
 
       expect(screen.getByTestId(monthTestID)).toHaveTextContent('May 2026');
       expect(heading.color).toBe(colour.text);
-      expect(heading.fontSize).toBe(typeScale['headline-md'].size);
+      expect(heading.fontSize).toBe(typeScale['headline-sm'].size);
     });
 
-    it('draws a handle she can still press as a pill, and a spent one without it', async () => {
+    it('draws the way to another month as a small word, not a pill, and fades a spent one', async () => {
       await sheIsLookingAt('lastPeriod');
 
       const live = flattened(earlierMonthTestID);
       const spent = flattened(laterMonthTestID);
 
-      expect(live.backgroundColor).toBe(colour.accentSoft);
-      expect(live.borderColor).toBe(colour.accent);
-      expect(spent.backgroundColor).not.toBe(live.backgroundColor);
-      expect(spent.borderColor).not.toBe(live.borderColor);
+      expect(live.backgroundColor).toBeUndefined();
+      expect(spent.backgroundColor).toBeUndefined();
       expect(Number(spent.opacity)).toBeLessThan(Number(live.opacity ?? 1));
     });
 

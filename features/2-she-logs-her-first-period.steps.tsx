@@ -265,14 +265,14 @@ import {
   homeNumbersTestID,
   publishedNumberTestID,
 } from '../apps/mobile/src/features/home/MeasuredRow';
-import { longerTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
+import { cycleLengthDaysTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
 import { nameFieldTestID } from '../apps/mobile/src/features/onboarding/HerName';
-import {
-  regularityReplyTestID,
-  regularityTestID,
-} from '../apps/mobile/src/features/onboarding/Regularity';
+import { regularityTestID } from '../apps/mobile/src/features/onboarding/Regularity';
 import { yearTestID } from '../apps/mobile/src/components/YearWheel';
-import { periodLengthTestID } from '../apps/mobile/src/features/onboarding/PeriodLength';
+import {
+  periodLengthDaysTestID,
+  periodLengthWheelTestID,
+} from '../apps/mobile/src/features/onboarding/PeriodLength';
 import {
   dayTestID,
   weekCellTestIDs,
@@ -347,6 +347,7 @@ import {
 } from '../apps/mobile/src/features/onboarding/days';
 import {
   defaultCycleLengthDays,
+  defaultPeriodLengthDays,
   forecastFromHerAnswers,
 } from '../apps/mobile/src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
@@ -377,6 +378,7 @@ import {
   sheAnswersEveryQuestion,
   sheAnswersEveryQuestionWithNoDate,
   sheReachesTheLastPeriodQuestion,
+  shePassesTheQuestion,
   sheReadsTheWelcome,
 } from '../apps/mobile/tests/fixtures/theFirstRun';
 import {
@@ -1669,13 +1671,12 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
         await shePresses(dayTestID(herPeriodStarted));
         await shePresses(onboardingActionTestID);
-        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingWayPastTestID);
 
-        for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
-          await shePresses(longerTestID);
-        }
+        await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
         await shePresses(onboardingActionTestID);
+        await shePresses(periodLengthDaysTestID(defaultPeriodLengthDays));
 
         // Both presses land before the screen redraws. That is what her second press meets
         // while the question after it is still on its way.
@@ -1756,11 +1757,12 @@ defineFeature(feature, (test) => {
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       visited.push(app.pathname());
+      await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
       visited.push(app.pathname());
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
@@ -1842,16 +1844,14 @@ defineFeature(feature, (test) => {
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       everyFieldShePassed.push(...fieldsDrawn());
 
-      for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
-        await shePresses(longerTestID);
-      }
+      await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
       await shePresses(onboardingActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
@@ -2354,9 +2354,10 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingActionTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
+      await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
     });
@@ -2365,7 +2366,7 @@ defineFeature(feature, (test) => {
       'every control on each screen of the first run is at least 44 points on both axes, apart from a day square of the month',
       () => {
         expect(measured).toEqual([[], [], [], [], [], [], []]);
-        expect(screen.getByTestId(periodLengthTestID)).toBeTruthy();
+        expect(screen.getByTestId(periodLengthWheelTestID)).toBeTruthy();
       },
     );
   });
@@ -4745,15 +4746,13 @@ defineFeature(feature, (test) => {
     });
 
     when('she answers the rest of the questions and presses and holds the ring', async () => {
-      for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
-        await shePresses(longerTestID);
-      }
+      await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
       await shePresses(onboardingActionTestID);
       whereSheIsNow();
 
       for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
-        await shePresses(onboardingSkipTestID);
+        await shePassesTheQuestion();
         whereSheIsNow();
       }
 
@@ -4825,14 +4824,12 @@ defineFeature(feature, (test) => {
     });
 
     and('she answers the rest of the questions', async () => {
-      for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
-        await shePresses(longerTestID);
-      }
+      await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
       await shePresses(onboardingActionTestID);
 
       for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
-        await shePresses(onboardingSkipTestID);
+        await shePassesTheQuestion();
       }
     });
 
@@ -5633,9 +5630,8 @@ defineFeature(feature, (test) => {
   }) => {
     const theQuestionAfterHerName = `Nice to meet you, ${theNameSheGives}. What year were you born?`;
     const theSameQuestionWithNoName = 'What year were you born?';
-    const theReplyToACycleThatMoves =
+    const theOldReplyToACycleThatMoves =
       "That's common. We'll start with a wider range and narrow it as we learn yours.";
-    const theReplyToACycleSheIsNotSureOf = "That's fine. Your log will tell us soon enough.";
 
     /** The one line about who can read her answers, written out in each language she reads. */
     const onlyYouCanReadThis: Readonly<Record<Language, string>> = {
@@ -5666,9 +5662,10 @@ defineFeature(feature, (test) => {
       await sheReachesTheLastPeriodQuestion();
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
     }
 
     given('she has never opened Emi before', () => undefined);
@@ -5699,28 +5696,18 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'picking that her cycle moves around answers her with the reply to that answer',
+      'picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it',
       async () => {
         await anotherWomanOpensEmi();
         await sheReachesTheQuestionAboutARegularCycle();
 
         expect(app.pathname()).toBe('/onboarding/regularity');
-        expect(screen.queryByText(theReplyToACycleThatMoves)).toBeNull();
 
         await shePresses(regularityTestID('moves'));
 
-        expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(
-          theReplyToACycleThatMoves,
-        );
-        expect(screen.queryByText(theReplyToACycleSheIsNotSureOf)).toBeNull();
-
-        // She can change her mind, and then she is answered about the answer she holds now.
-        await shePresses(regularityTestID('unknown'));
-
-        expect(screen.getByTestId(regularityReplyTestID)).toHaveTextContent(
-          theReplyToACycleSheIsNotSureOf,
-        );
-        expect(screen.queryByText(theReplyToACycleThatMoves)).toBeNull();
+        expect(screen.getByTestId(regularityTestID('moves'))).toBeChecked();
+        expect(screen.queryByText(theOldReplyToACycleThatMoves)).toBeNull();
+        expect(screen.getByText(firstRunCopy.regularity.lines[0] ?? '')).toBeTruthy();
       },
     );
 
@@ -5741,7 +5728,7 @@ defineFeature(feature, (test) => {
         expect(languages.length).toBe(3);
 
         // And she reads a line about her privacy on each of the five questions that keep an
-        // answer, which is the round trip the catalogue above cannot prove on its own. The two
+        // answer, which is the round trip the catalogue above cannot prove on its own. The three
         // questions the redesign has redrawn say what the canvas says.
         await anotherWomanOpensEmi();
 
@@ -5753,13 +5740,14 @@ defineFeature(feature, (test) => {
 
         await shePresses(onboardingSkipTestID);
 
-        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
 
         await shePresses(dayTestID(herPeriodStarted));
         await shePresses(onboardingActionTestID);
-        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingWayPastTestID);
+        await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
         await shePresses(onboardingActionTestID);
-        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingWayPastTestID);
         await shePresses(onboardingSkipTestID);
 
         expect(app.pathname()).toBe('/onboarding/feeling');
@@ -5825,11 +5813,12 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingSkipTestID);
       await shePresses(dayTestID(herPeriodStarted));
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
 
       for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
-        await shePresses(onboardingSkipTestID);
+        await shePassesTheQuestion();
       }
     }
 

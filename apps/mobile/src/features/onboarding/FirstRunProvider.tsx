@@ -13,7 +13,6 @@ import { useDatabase } from '../../data/DatabaseProvider';
 import { useHerVaultsMade } from '../../services/vault/VaultProvider';
 import {
   type TodaySymptom,
-  defaultCycleLengthDays,
   firstRunIsDone,
   focusAfterPressing,
   goalsAfterPressing,
@@ -31,7 +30,8 @@ interface FirstRun {
   readonly periodStartedOn: string | undefined;
   /** The start before that one, and nothing at all where she does not remember it. */
   readonly periodBeforeStartedOn: string | undefined;
-  readonly cycleLengthDays: number;
+  /** Nothing at all until she turns the wheel or taps a length. */
+  readonly cycleLengthDays: number | undefined;
   /** Nothing at all where she said she is not sure, which is that question's way past it. */
   readonly periodLengthDays: number | undefined;
   /** Nothing at all where she skipped the question, which leaves the forecast saying nothing. */
@@ -113,7 +113,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [tourIsDone, setTourIsDone] = useState(() => tourIsSeen(database));
   const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
   const [periodBeforeStartedOn, setPeriodBeforeStartedOn] = useState<string | undefined>(undefined);
-  const [cycleLengthDays, setCycleLengthDays] = useState(defaultCycleLengthDays);
+  const [cycleLengthDays, setCycleLengthDays] = useState<number | undefined>(undefined);
   const [periodLengthDays, setPeriodLengthDays] = useState<number | undefined>(undefined);
   const [regularity, setRegularity] = useState<Regularity | undefined>(undefined);
   const [feeling, setFeeling] = useState<Feeling | undefined>(undefined);
@@ -205,7 +205,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const reread = useCallback(() => {
     setPeriodStartedOn(undefined);
     setPeriodBeforeStartedOn(undefined);
-    setCycleLengthDays(defaultCycleLengthDays);
+    setCycleLengthDays(undefined);
     setPeriodLengthDays(undefined);
     setRegularity(undefined);
     setFeeling(undefined);

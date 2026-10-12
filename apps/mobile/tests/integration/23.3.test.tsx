@@ -46,6 +46,8 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { textIn } from '../fixtures/renderedText';
 import { OnAPhone } from '../fixtures/theSafeArea';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { shePassesTheQuestion } from '../fixtures/theFirstRun';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -241,15 +243,16 @@ async function sheWalksToHerForecast(walk: HerWalk = {}): Promise<{
   } else {
     await shePresses(dayTestID(walk.day));
     await shePresses(onboardingActionTestID);
-    await shePresses(onboardingSkipTestID);
+    await shePresses(onboardingWayPastTestID);
   }
 
+  await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
 
   const passed = walk.focus === undefined ? theQuestionsLeftAfterTheCycleLength : 4;
 
   for (let question = 0; question < passed; question += 1) {
-    await shePresses(onboardingSkipTestID);
+    await shePassesTheQuestion();
   }
 
   if (walk.focus !== undefined) {

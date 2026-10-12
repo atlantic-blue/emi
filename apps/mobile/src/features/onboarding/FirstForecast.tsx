@@ -37,8 +37,11 @@ export const firstForecastActionTestID = 'first-forecast-action';
 interface Props {
   /** What the arithmetic answered for the days she gave, which carries no range where she gave none. */
   readonly forecast: ForecastResult;
-  /** The length she gave at the cycle length question, named while Emi has no cycle of hers. */
-  readonly cycleLengthDays: number;
+  /**
+   * The length she gave at the cycle length question, named while Emi has no cycle of hers. Nothing
+   * at all where she gave none, and then no length is named, because Emi names no length it picked.
+   */
+  readonly cycleLengthDays: number | undefined;
   /** Nothing at all where she gave no name, and then the forecast reads the plain sentence. */
   readonly name: string | undefined;
   readonly onContinue: () => void;
@@ -111,7 +114,11 @@ function WithARange({
  * The count comes from the arithmetic's own number rather than from a number written here, and the
  * length is the one she gave, said in the sentence the home screen says it in.
  */
-function WithNoDate({ cycleLengthDays }: { readonly cycleLengthDays: number }): ReactNode {
+function WithNoDate({
+  cycleLengthDays,
+}: {
+  readonly cycleLengthDays: number | undefined;
+}): ReactNode {
   return (
     <>
       <View>
@@ -120,7 +127,9 @@ function WithNoDate({ cycleLengthDays }: { readonly cycleLengthDays: number }): 
         </Text>
         <View style={styles.lines} testID={firstForecastLinesTestID}>
           <Text style={styles.line}>{firstRunCopy.firstForecast.noDate.first}</Text>
-          <Text style={styles.line}>{statedLengthSentence(cycleLengthDays)}</Text>
+          {cycleLengthDays === undefined ? null : (
+            <Text style={styles.line}>{statedLengthSentence(cycleLengthDays)}</Text>
+          )}
         </View>
       </View>
 

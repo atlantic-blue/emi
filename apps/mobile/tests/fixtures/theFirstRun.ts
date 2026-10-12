@@ -1,8 +1,8 @@
 import type { Feeling, Focus, Goal, Regularity } from '@emi/crypto';
 import { fireEvent, screen } from '@testing-library/react-native';
 
-import { longerTestID } from '../../src/features/onboarding/CycleLength';
-import { fewerDaysTestID, moreDaysTestID } from '../../src/features/onboarding/PeriodLength';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { periodLengthDaysTestID } from '../../src/features/onboarding/PeriodLength';
 import { nameFieldTestID } from '../../src/features/onboarding/HerName';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
@@ -20,11 +20,7 @@ import { goalTestID } from '../../src/features/onboarding/Goals';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import { yearTestID } from '../../src/components/YearWheel';
 import { tourSkipTestID } from '../../src/features/onboarding/TourScreen';
-import {
-  type TodaySymptom,
-  defaultCycleLengthDays,
-  defaultPeriodLengthDays,
-} from '../../src/features/onboarding/firstRun';
+import { type TodaySymptom, defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 
 const theWelcomeTestID = 'onboarding-welcome';
 
@@ -32,7 +28,7 @@ export interface HerAnswers {
   readonly periodStartedOn: string;
   /** Left out where she does not remember the period before, which is that question's Skip. */
   readonly periodBeforeStartedOn?: string;
-  /** Left out where the walk does not care, and then the number the screen offers is kept. */
+  /** Left out where the walk does not care, and then she taps the length the wheel opens on. */
   readonly cycleLengthDays?: number;
   /** Left out where she answers that she is not sure, which is that question's way past it. */
   readonly periodLengthDays?: number;
@@ -114,23 +110,15 @@ async function sheAnswersWhatComesBeforeHerLastPeriod(
  * period.
  */
 async function sheAnswersWhatComesAfterHerLastPeriod(answers: HerAnswersWithNoDate): Promise<void> {
-  const asked = answers.cycleLengthDays ?? defaultCycleLengthDays;
-  for (let pressed = defaultCycleLengthDays; pressed < asked; pressed += 1) {
-    await fireEvent.press(screen.getByTestId(longerTestID));
-  }
-
+  await fireEvent.press(
+    screen.getByTestId(cycleLengthDaysTestID(answers.cycleLengthDays ?? defaultCycleLengthDays)),
+  );
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));
 
   if (answers.periodLengthDays === undefined) {
-    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+    await fireEvent.press(screen.getByTestId(onboardingWayPastTestID));
   } else {
-    for (let pressed = defaultPeriodLengthDays; pressed < answers.periodLengthDays; pressed += 1) {
-      await fireEvent.press(screen.getByTestId(moreDaysTestID));
-    }
-    for (let pressed = defaultPeriodLengthDays; pressed > answers.periodLengthDays; pressed -= 1) {
-      await fireEvent.press(screen.getByTestId(fewerDaysTestID));
-    }
-
+    await fireEvent.press(screen.getByTestId(periodLengthDaysTestID(answers.periodLengthDays)));
     await fireEvent.press(screen.getByTestId(onboardingActionTestID));
   }
 
@@ -200,7 +188,7 @@ export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void
   await fireEvent.press(screen.getByTestId(onboardingActionTestID));
 
   if (answers.periodBeforeStartedOn === undefined) {
-    await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
+    await fireEvent.press(screen.getByTestId(onboardingWayPastTestID));
   } else {
     await fireEvent.press(screen.getByTestId(dayTestID(answers.periodBeforeStartedOn)));
     await fireEvent.press(screen.getByTestId(onboardingActionTestID));
@@ -220,6 +208,16 @@ export async function sheAnswersEveryQuestionWithNoDate(
   await sheAnswersWhatComesBeforeHerLastPeriod(answers);
   await fireEvent.press(screen.getByTestId(onboardingWayPastTestID));
   await sheAnswersWhatComesAfterHerLastPeriod(answers);
+}
+
+/**
+ * The way past the question she is on, wherever the screen draws it: the Skip in the header, or
+ * the link over the button on the questions the redesign moved it down to.
+ */
+export async function shePassesTheQuestion(): Promise<void> {
+  const skip = screen.queryByTestId(onboardingSkipTestID);
+
+  await fireEvent.press(skip ?? screen.getByTestId(onboardingWayPastTestID));
 }
 
 /**

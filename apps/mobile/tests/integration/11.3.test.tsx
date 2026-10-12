@@ -20,18 +20,19 @@ import { dayTestID, earlierMonthTestID } from '../../src/features/onboarding/Cal
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
+  onboardingQuestionTestID,
   onboardingSkipTestID,
+  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import {
-  periodBeforeGapTestID,
-  periodBeforeRefusedTestID,
-} from '../../src/features/onboarding/PeriodBefore';
-import { daysBetweenSentence, firstRunCopy } from '../../src/features/onboarding/copy';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { periodBeforeRefusedTestID } from '../../src/features/onboarding/PeriodBefore';
+import { firstRunCopy } from '../../src/features/onboarding/copy';
 import {
   type FirstRunRefusal,
   type FirstRunVaults,
   FirstRunError,
   completeFirstRun,
+  forecastFromHerAnswers,
   maximumCycleLengthDays,
   minimumCycleLengthDays,
 } from '../../src/features/onboarding/firstRun';
@@ -174,21 +175,42 @@ describe('the period before makes her first forecast from a cycle she lived', ()
   });
 
   describe('the period she remembers', () => {
-    it('is asked for after her last period, and says how far apart the two are', async () => {
+    it('is asked for after her last period, with the question under the title', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesThePeriodBefore();
 
       expect(app.pathname()).toBe('/onboarding/period-before');
       expect(screen.getByText(firstRunCopy.periodBefore.title)).toBeTruthy();
-      expect(screen.queryByTestId(periodBeforeGapTestID)).toBeNull();
+      expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
+        firstRunCopy.periodBefore.question,
+      );
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
 
       await shePresses(dayTestID(theOneBefore));
 
-      expect(screen.getByTestId(periodBeforeGapTestID)).toHaveTextContent(
-        daysBetweenSentence(theCycleSheLived),
-      );
       expect(screen.getByTestId(onboardingActionTestID)).not.toBeDisabled();
+    });
+
+    it('no longer says back how far apart the two days are, which the redesign does not draw', async () => {
+      await sheOpensEmi();
+
+      await sheReachesThePeriodBefore();
+      await shePresses(dayTestID(theOneBefore));
+
+      expect(screen.queryByTestId('period-before-gap')).toBeNull();
+      expect(screen.queryByText(`${String(theCycleSheLived)} days apart`)).toBeNull();
+    });
+
+    it('offers the way past over the button, and no Skip in the header', async () => {
+      await sheOpensEmi();
+
+      await sheReachesThePeriodBefore();
+
+      expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
+        firstRunCopy.periodBefore.skip,
+      );
     });
 
     it('becomes a second sealed day, and one whole cycle behind her forecast', async () => {
@@ -290,7 +312,6 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       // refusal built without them would still match itself.
       expect(firstRunCopy.periodBefore.outOfRange).toContain(String(minimumCycleLengthDays));
       expect(firstRunCopy.periodBefore.outOfRange).toContain(String(maximumCycleLengthDays));
-      expect(screen.queryByTestId(periodBeforeGapTestID)).toBeNull();
 
       await shePresses(onboardingActionTestID);
 
@@ -343,9 +364,10 @@ describe('the period before makes her first forecast from a cycle she lived', ()
 
       await sheReachesThePeriodBefore();
       await shePresses(dayTestID(theOneBefore));
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingWayPastTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
@@ -372,9 +394,27 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent(
         firstRunCopy.periodBefore.action,
       );
-      expect(screen.getByTestId(onboardingSkipTestID)).toHaveTextContent(
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
         firstRunCopy.periodBefore.skip,
       );
+    });
+
+    it('promise only what the period before buys: a forecast from her own cycles a cycle sooner', () => {
+      const withTheOneBefore = forecastFromHerAnswers({
+        periodStartedOn: herPeriodStarted,
+        periodBeforeStartedOn: theOneBefore,
+        cycleLengthDays: 28,
+      });
+      const withoutIt = forecastFromHerAnswers({
+        periodStartedOn: herPeriodStarted,
+        cycleLengthDays: 28,
+      });
+
+      // The first range is counted from her last start and the length she states either way.
+      expect(withTheOneBefore.start).toEqual(withoutIt.start);
+      // What changes is the count of her own cycles, one of the two a forecast of her own needs.
+      expect(withTheOneBefore.kind === 'learning' && withTheOneBefore.completeCycles).toBe(1);
+      expect(withoutIt.kind === 'learning' && withoutIt.completeCycles).toBe(0);
     });
   });
 });

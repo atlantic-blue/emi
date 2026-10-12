@@ -6,7 +6,7 @@ import { fireEvent, renderRouter } from 'expo-router/testing-library';
 
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { longerTestID } from '../../src/features/onboarding/CycleLength';
+import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import {
   firstForecastActionTestID,
   firstForecastLearningTestID,
@@ -41,6 +41,7 @@ import {
   theIdentifiersOfTheForecastWithNoDate,
   thePartsOfTheForecastWithNoDate,
 } from '../fixtures/theFirstForecastWithNoDate';
+import { shePassesTheQuestion } from '../fixtures/theFirstRun';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -96,14 +97,12 @@ async function sheAnswersEverythingButTheDate(): Promise<void> {
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingWayPastTestID);
 
-  for (let pressed = defaultCycleLengthDays; pressed < sheSaysHerCycleRuns; pressed += 1) {
-    await shePresses(longerTestID);
-  }
+  await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
   await shePresses(onboardingActionTestID);
 
   for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
-    await shePresses(onboardingSkipTestID);
+    await shePassesTheQuestion();
   }
 }
 

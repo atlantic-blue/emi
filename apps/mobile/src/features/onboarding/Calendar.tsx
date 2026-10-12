@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, space, stroke, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -115,28 +115,29 @@ export function Calendar({
 }
 
 const styles = StyleSheet.create({
+  // The month name stands in the middle, as the redesign draws it. The two ways to another month sit
+  // small at either side of it, because a period can start last month and the design draws no way
+  // there.
   heading: {
     alignItems: 'center',
     flexDirection: 'row',
     gap: space.spaceSm,
     justifyContent: 'space-between',
-    marginBottom: space.spaceMd,
+    marginBottom: space.spaceSm,
   },
   // The title is the only box in the row that gives way. A month name is longer in Spanish than
-  // in English and longer again in a face the phone substitutes, and the two pills have a thumb to
-  // hold, so the width comes off the words and never off the way to another month.
+  // in English, so the width comes off the words and never off the way to another month.
   month: {
     color: colour.text,
     flexShrink: 1,
-    ...textStyle('headline-md'),
+    textAlign: 'center',
+    ...textStyle('headline-sm'),
   },
-  // A handle she can still press is a pill she can see. A spent one keeps its words and loses the
-  // pill, so the difference is a shape and not only a strength of colour.
+  // A plain word rather than a pill: the design draws the month name alone, so the way to another
+  // month is as quiet as it can be while it still takes a thumb.
   page: {
     alignItems: 'center',
-    backgroundColor: colour.accentSoft,
-    borderColor: colour.accent,
-    borderRadius: radius.md,
+    borderColor: colour.card,
     borderWidth: stroke.hairline,
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
@@ -144,13 +145,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceMd,
   },
   pageLabel: {
-    color: colour.accentSoftInk,
+    color: colour.accent,
     ...textStyle('body-sm'),
   },
-  pageSpent: {
-    backgroundColor: colour.card,
-    borderColor: colour.card,
-    opacity: 0.4,
-  },
+  // A spent handle keeps its place, so the month name does not move under her thumb.
+  pageSpent: { opacity: 0.4 },
   pageSpentLabel: { color: colour.secondaryText },
 });
