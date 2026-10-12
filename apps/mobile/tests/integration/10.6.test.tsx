@@ -15,6 +15,7 @@ import {
   HOLD_MILLISECONDS,
   HOLD_TICK_MILLISECONDS,
   HoldToBegin,
+  holdButtonTestID,
   holdCoreTestID,
   holdProgressTestID,
   holdRefusedTestID,
@@ -134,7 +135,7 @@ describe('she answers everything, leaves before the hold, and nothing is written
     });
   });
 
-  describe('she presses and holds the ring', () => {
+  describe('she presses and holds the button', () => {
     it('writes her day, her answers and the marker together, and leaves her on her home screen', async () => {
       const app = await sheOpensEmi();
       await sheAnswersEveryQuestion();
@@ -219,13 +220,13 @@ describe('she answers everything, leaves before the hold, and nothing is written
 
     async function herThumbGoesDown(): Promise<void> {
       await act(async () => {
-        fireEvent(screen.getByTestId(holdCoreTestID), 'pressIn');
+        fireEvent(screen.getByTestId(holdButtonTestID), 'pressIn');
       });
     }
 
     async function herThumbComesUp(): Promise<void> {
       await act(async () => {
-        fireEvent(screen.getByTestId(holdCoreTestID), 'pressOut');
+        fireEvent(screen.getByTestId(holdButtonTestID), 'pressOut');
       });
     }
 
@@ -233,7 +234,7 @@ describe('she answers everything, leaves before the hold, and nothing is written
       await theRing();
       await herThumbGoesDown();
 
-      expect(screen.getByTestId(holdCoreTestID)).toHaveTextContent(firstRunCopy.hold.held);
+      expect(screen.getByTestId(holdButtonTestID)).toHaveTextContent(firstRunCopy.hold.held);
       await act(async () => {
         jest.advanceTimersByTime(HOLD_MILLISECONDS / 2);
       });
@@ -293,7 +294,69 @@ describe('she answers everything, leaves before the hold, and nothing is written
 
       expect(held).toBe(0);
       expect(screen.queryByTestId(holdProgressTestID)).toBeNull();
-      expect(screen.getByTestId(holdCoreTestID)).toHaveTextContent(firstRunCopy.hold.action);
+      expect(screen.getByTestId(holdButtonTestID)).toHaveTextContent(firstRunCopy.hold.action);
+    });
+
+    it('writes nothing on a tap, because only a whole hold begins', async () => {
+      let held = 0;
+      await theRing(() => {
+        held += 1;
+
+        return Promise.resolve();
+      });
+
+      await act(async () => {
+        fireEvent.press(screen.getByTestId(holdButtonTestID));
+      });
+      await herThumbGoesDown();
+      await herThumbComesUp();
+      await act(async () => {
+        jest.advanceTimersByTime(HOLD_MILLISECONDS * 2);
+      });
+
+      expect(held).toBe(0);
+      expect(screen.queryByTestId(holdProgressTestID)).toBeNull();
+    });
+
+    it('offers one control, the button, and the ring above it takes no press', async () => {
+      let held = 0;
+      await theRing(() => {
+        held += 1;
+
+        return Promise.resolve();
+      });
+
+      expect(screen.getAllByRole('button')).toHaveLength(1);
+      expect(screen.getByRole('button')).toHaveTextContent(firstRunCopy.hold.action);
+      expect(screen.getByTestId(holdCoreTestID).props.onResponderGrant).toBeUndefined();
+      expect(screen.getByTestId(holdCoreTestID).props.accessibilityRole).toBeUndefined();
+
+      await act(async () => {
+        fireEvent(screen.getByTestId(holdCoreTestID), 'pressIn');
+      });
+      await act(async () => {
+        jest.advanceTimersByTime(HOLD_MILLISECONDS * 2);
+      });
+
+      expect(held).toBe(0);
+    });
+
+    it('fills the ring as her thumb stays on the button, from nothing to the whole turn', async () => {
+      await theRing();
+
+      expect(screen.queryByTestId(holdProgressTestID)).toBeNull();
+
+      await herThumbGoesDown();
+      await act(async () => {
+        jest.advanceTimersByTime(HOLD_MILLISECONDS / 4);
+      });
+      const early = String(screen.getByTestId(holdProgressTestID).props.d);
+
+      await act(async () => {
+        jest.advanceTimersByTime(HOLD_MILLISECONDS / 2);
+      });
+
+      expect(String(screen.getByTestId(holdProgressTestID).props.d)).not.toBe(early);
     });
 
     it('writes once when her thumb comes back down on a hold it already gave', async () => {

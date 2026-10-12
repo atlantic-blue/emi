@@ -5,14 +5,14 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import {
   HOLD_MILLISECONDS,
   HoldToBegin,
-  holdCoreTestID,
+  holdButtonTestID,
 } from '../../src/features/onboarding/HoldToBegin';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 
 /**
  * The hold, drawn at rest and part way through, for somebody to look at. The second state is
- * reached by holding the ring rather than by setting a number, so the picture shows what her
+ * reached by holding the button rather than by setting a number, so the picture shows what her
  * thumb produces.
  *
  * It is not part of the suite: the file is named for a picture rather than for a test, and the
@@ -21,7 +21,7 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 
 const theCaveat = [
   'Rendered from the tree the hold screen produced under the test runner, at 390 by 844 points,',
-  'and not captured from a phone. The second state was reached by holding the ring for half of',
+  'and not captured from a phone. The second state was reached by holding the button for half of',
   'the hold, with the phone allowing motion. A phone asking for less motion draws no arc at all.',
   'Reproduce with: npm run generate:hold-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
@@ -73,7 +73,7 @@ describe('the hold, drawn for somebody to look at', () => {
     const view = await theHoldScreen();
 
     await act(async () => {
-      fireEvent(screen.getByTestId(holdCoreTestID), 'pressIn');
+      fireEvent(screen.getByTestId(holdButtonTestID), 'pressIn');
     });
     await act(async () => {
       jest.advanceTimersByTime(HOLD_MILLISECONDS / 2);

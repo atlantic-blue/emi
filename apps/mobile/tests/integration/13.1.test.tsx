@@ -5,6 +5,8 @@ import {
   ThePromise,
   promiseActionTestID,
   promiseLineTestID,
+  promiseLinesTestID,
+  promiseShieldTestID,
   thePromiseTestID,
 } from '../../src/features/onboarding/ThePromise';
 import { OnAPhone } from '../fixtures/theSafeArea';
@@ -20,9 +22,8 @@ import {
  * The promise drawing places three parts. The count is written out so that a comparison which
  * read nothing cannot pass as a comparison every part answered.
  *
- * The promise is the screen this reads because it was built before the drawings arrived and this
- * step changes nothing about it. A match here is the comparison working rather than a screen bent
- * to fit the drawing. Its key is written out at each call, because a key built at run time is a
+ * The promise is the screen this reads because its drawing names few parts, so a match here is
+ * the comparison working rather than a long list happening to line up. Its key is written out at each call, because a key built at run time is a
  * key the check on the stage cannot read.
  */
 const theDrawingHasParts = 3;
@@ -66,6 +67,8 @@ describe('a rendered screen is held against the mockup screen it names', () => {
       // comparison walks rather than held as a part of the screen.
       expect(theIdentifiersDrawn().filter((drawn) => !drawn.startsWith(washTestID))).toEqual([
         thePromiseTestID,
+        promiseShieldTestID,
+        promiseLinesTestID,
         promiseLineTestID('encrypted'),
         promiseLineTestID('noTracking'),
         promiseLineTestID('delete'),

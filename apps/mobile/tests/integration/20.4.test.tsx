@@ -23,7 +23,7 @@ import { homeCopy } from '../../src/features/home/copy';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
-import { holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
+import { holdButtonTestID } from '../../src/features/onboarding/HoldToBegin';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
@@ -163,7 +163,7 @@ describe('she completes the first run with no date, logs a period, and reads a r
       await renderRouter(appDirectory, { initialUrl: '/' });
       await sheAnswersEveryQuestionWithNoDate({ cycleLengthDays: sheSaysHerCycleRuns });
 
-      expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
+      expect(screen.getByTestId(holdButtonTestID)).toBeTruthy();
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
 
       await sheHoldsTheRing();

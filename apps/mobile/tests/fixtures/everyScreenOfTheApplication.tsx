@@ -83,9 +83,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [thePromiseTestID, (): ReactElement => <ThePromise onContinue={nothing} />],
   [
     whatEmiDoesTestID,
-    (): ReactElement => (
-      <WhatEmiDoesWithIt focus={['mood']} name={undefined} onContinue={nothing} />
-    ),
+    (): ReactElement => <WhatEmiDoesWithIt focus={['mood']} onContinue={nothing} />,
   ],
   [
     firstForecastTestID,

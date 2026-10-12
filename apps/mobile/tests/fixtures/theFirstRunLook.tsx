@@ -21,7 +21,7 @@ import { Goals, goalTestID } from '../../src/features/onboarding/Goals';
 import { HerName, nameFieldTestID } from '../../src/features/onboarding/HerName';
 import {
   HoldToBegin,
-  holdCoreTestID,
+  holdButtonTestID,
   holdRingTestID,
   holdSaidTestID,
   holdTitleTestID,
@@ -46,7 +46,7 @@ import { Regularity, regularityTestID } from '../../src/features/onboarding/Regu
 import {
   ThePromise,
   promiseActionTestID,
-  promiseLineTestID,
+  promiseLinesTestID,
   thePromiseTestID,
 } from '../../src/features/onboarding/ThePromise';
 import { Today, todayTestID } from '../../src/features/onboarding/Today';
@@ -238,7 +238,7 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   hold: {
     CycleRing: [holdRingTestID],
     HoldToBegin: [holdTitleTestID, holdSaidTestID],
-    PrimaryButton: [holdCoreTestID],
+    PrimaryButton: [holdButtonTestID],
   },
   lastPeriod: { ...theFrame, Calendar: [calendarTestID] },
   lastPeriodNext: { ...theFrame, Calendar: [calendarTestID] },
@@ -253,7 +253,7 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   recoverySetup: theRecoveryFrame,
   regularity: { ...theFrame, SingleChoiceRow: [regularityTestID('regular')] },
   thePromise: {
-    Card: [promiseLineTestID('encrypted')],
+    Card: [promiseLinesTestID],
     PrimaryButton: [promiseActionTestID],
     ThePromise: [thePromiseTestID],
   },
@@ -308,10 +308,6 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put the sample under the question and "Not now" over the button. The redesign
   // canvas puts the sample at the top and "Not now" under "Remind me", so the reminder follows it.
   reminder: 2,
-  // The drawing and the prototype both put a pill at the foot of the hold. Emi's hold is the ring
-  // itself: the press and hold is the write, and a second control that wrote would be a second way
-  // to begin.
-  hold: 1,
 };
 
 /** The screen she is looking at, rendered on a phone that keeps part of its glass. */
@@ -454,7 +450,7 @@ function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
     case 'thePromise':
       return <ThePromise onContinue={nothing} />;
     case 'whatEmiDoesWithIt':
-      return <WhatEmiDoesWithIt focus={[]} name={undefined} onContinue={nothing} />;
+      return <WhatEmiDoesWithIt focus={[]} onContinue={nothing} />;
     case 'hold':
       return <HoldToBegin onHeld={() => Promise.resolve()} />;
     case 'recoverySetup':

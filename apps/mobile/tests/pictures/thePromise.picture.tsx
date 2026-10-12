@@ -10,8 +10,8 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 
 /**
  * The two screens between her first forecast and the hold, drawn for somebody to look at. The
- * screen that reads her answers back is drawn twice, because the one card built from an answer
- * says two different things: the groups she pressed, or the order everybody gets.
+ * screen that reads her answers back is drawn twice, because the one section built from an answer
+ * draws two different things: the groups she pressed, or the groups everybody opens with.
  *
  * It is not part of the suite: the file is named for a picture rather than for a test, and the
  * runner is pointed at it by `npm run generate:promise-picture`.
@@ -20,14 +20,10 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 const theCaveat = [
   'Rendered from the trees the two screens produced under the test runner, at 393 by 852 points,',
   'which is the glass of an iPhone 16, and not captured from a phone.',
-  'The screen that reads her answers back is drawn for a woman who gave her name as Ada.',
   'Reproduce with: npm run generate:promise-picture.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
   'island keeps for itself, which is 59 points and 34 points.',
 ].join(' ');
-
-/** The name she typed at the second question, which the title of the third screen reads back. */
-const sheIsCalled = 'Ada';
 
 const screens: DrawnScreen[] = [];
 
@@ -44,7 +40,7 @@ describe('the promise and what Emi does with it, drawn for somebody to look at',
   it('renders the promise', async () => {
     await drawn(
       'The promise',
-      'Three lines, each one a thing the product does today. Nothing about the hardware the key sits in, and no standard anybody has checked Emi against.',
+      'Three lines on one card, each one a thing the product does today. No line says a copy of her days is sent, because no build sends one.',
       <ThePromise onContinue={() => undefined} />,
     );
   });
@@ -52,20 +48,16 @@ describe('the promise and what Emi does with it, drawn for somebody to look at',
   it('renders what Emi does with it, for a woman who named two groups', async () => {
     await drawn(
       'What Emi does with it, after she named two groups',
-      'The middle card names the groups she pressed on the focus screen, in the order she pressed them, because that is the order her log will open in.',
-      <WhatEmiDoesWithIt
-        focus={['mood', 'energy']}
-        name={sheIsCalled}
-        onContinue={() => undefined}
-      />,
+      'The log section draws the groups she pressed on the focus screen as chips, in the order she pressed them, because that is the order her log will open in.',
+      <WhatEmiDoesWithIt focus={['mood', 'energy']} onContinue={() => undefined} />,
     );
   });
 
   it('renders what Emi does with it, for a woman who named none', async () => {
     await drawn(
       'What Emi does with it, after she named none',
-      'The same card says what she will open instead, because a woman who pressed nothing named nothing to come first.',
-      <WhatEmiDoesWithIt focus={[]} name={sheIsCalled} onContinue={() => undefined} />,
+      'The same section draws the groups her log opens with for everybody, so it never stands empty.',
+      <WhatEmiDoesWithIt focus={[]} onContinue={() => undefined} />,
     );
   });
 

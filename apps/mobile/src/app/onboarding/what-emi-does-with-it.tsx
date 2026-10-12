@@ -2,7 +2,6 @@ import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
-import { nameSheGave } from '../../features/onboarding/firstRun';
 import { WhatEmiDoesWithIt } from '../../features/onboarding/WhatEmiDoesWithIt';
 
 /**
@@ -10,13 +9,7 @@ import { WhatEmiDoesWithIt } from '../../features/onboarding/WhatEmiDoesWithIt';
  */
 export default function WhatEmiDoesWithItRoute(): ReactNode {
   const router = useRouter();
-  const { focus, nameTyped } = useFirstRun();
+  const { focus } = useFirstRun();
 
-  return (
-    <WhatEmiDoesWithIt
-      focus={focus}
-      name={nameSheGave(nameTyped)}
-      onContinue={() => router.push('/onboarding/hold')}
-    />
-  );
+  return <WhatEmiDoesWithIt focus={focus} onContinue={() => router.push('/onboarding/hold')} />;
 }

@@ -8,8 +8,11 @@ import {
   goalValues,
   regularityValues,
 } from '@emi/crypto';
+import type { SymptomGroup } from '@emi/cycle';
 
 import { words } from '../../language';
+import { groupHeadings } from '../log/SymptomGroup';
+import { theGroupsSheSeesFirst } from '../log/herOrder';
 import { type ReminderLead, reminderLeads } from '../reminder/reminder';
 import {
   type TodaySymptom,
@@ -412,19 +415,10 @@ export type PromiseLine = (typeof promiseLines)[number];
 export const promiseCopy = {
   title: words('onboarding.promise.title'),
   lines: {
-    encrypted: {
-      title: words('onboarding.promise.encrypted.title'),
-      line: words('onboarding.promise.encrypted.line'),
-    },
-    noTracking: {
-      title: words('onboarding.promise.noTracking.title'),
-      line: words('onboarding.promise.noTracking.line'),
-    },
-    delete: {
-      title: words('onboarding.promise.delete.title'),
-      line: words('onboarding.promise.delete.line'),
-    },
-  } satisfies Readonly<Record<PromiseLine, { readonly title: string; readonly line: string }>>,
+    encrypted: words('onboarding.promise.encrypted'),
+    noTracking: words('onboarding.promise.noTracking'),
+    delete: words('onboarding.promise.delete'),
+  } satisfies Readonly<Record<PromiseLine, string>>,
   action: words('onboarding.promise.action'),
 } as const;
 
@@ -441,7 +435,7 @@ export const whatEmiDoesCopy = {
   },
   log: {
     title: words('onboarding.whatEmiDoes.log.title'),
-    usual: words('onboarding.whatEmiDoes.log.usual'),
+    line: words('onboarding.whatEmiDoes.log.line'),
     and: words('onboarding.whatEmiDoes.log.and'),
   },
   privacy: {
@@ -450,16 +444,6 @@ export const whatEmiDoesCopy = {
   },
   action: words('onboarding.whatEmiDoes.action'),
 } as const;
-
-/**
- * The title of the screen that reads her own answers back, which greets her by name for the same
- * reason the forecast does: the three cards on it are about her and nobody else.
- */
-export function whatEmiDoesTitle(name: string | undefined): string {
-  return name === undefined
-    ? whatEmiDoesCopy.title
-    : words('onboarding.whatEmiDoes.titleNamed', undefined, { name });
-}
 
 /**
  * A group named inside a sentence rather than at the head of its section. Every language Emi ships
@@ -480,9 +464,15 @@ function insideASentence(label: string): string {
  * in the same sentence, and two joinings would put the comma in two places.
  */
 export function focusNamesInASentence(groups: readonly Focus[]): string {
-  const named = groups.map((group, at) =>
-    at === 0 ? focusLabels[group] : insideASentence(focusLabels[group]),
+  return joinedAsASentence(
+    groups.map((group, at) =>
+      at === 0 ? focusLabels[group] : insideASentence(focusLabels[group]),
+    ),
   );
+}
+
+/** Names joined the way a sentence lists them: commas, then the word for and before the last. */
+function joinedAsASentence(named: readonly string[]): string {
   const last = named.at(-1);
   const before = named.slice(0, -1);
 
@@ -494,16 +484,26 @@ export function focusNamesInASentence(groups: readonly Focus[]): string {
 }
 
 /**
- * What the log card says: the groups she pressed, in the order she pressed them, or the order
- * everybody gets where she pressed none. A woman who pressed none named nothing to come first, so
- * the card says what she will open rather than reading her an empty list back.
+ * Groups named after a colon, where no name opens the sentence, so every one of them is written as
+ * a common noun.
  */
-export function whatComesFirstWhenSheLogs(groups: readonly Focus[]): string {
-  if (groups.length === 0) {
-    return whatEmiDoesCopy.log.usual;
+function groupsAfterAColon(groups: readonly SymptomGroup[]): string {
+  return joinedAsASentence(groups.map((group) => insideASentence(groupHeadings[group])));
+}
+
+/**
+ * What the log section says under her chips: the groups she pressed, in the order she pressed
+ * them, or the groups the log opens with for everybody where she pressed none. Either way the
+ * sentence names the same groups the chips above it draw.
+ */
+export function whatComesFirstWhenSheLogs(chosen: readonly Focus[]): string {
+  if (chosen.length === 0) {
+    return words('onboarding.whatEmiDoes.log.usual', undefined, {
+      groups: groupsAfterAColon(theGroupsSheSeesFirst(chosen)),
+    });
   }
 
-  return words('onboarding.whatEmiDoes.log.chosen', groups.length, {
-    groups: focusNamesInASentence(groups),
+  return words('onboarding.whatEmiDoes.log.chosen', chosen.length, {
+    groups: groupsAfterAColon(chosen),
   });
 }

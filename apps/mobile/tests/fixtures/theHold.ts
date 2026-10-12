@@ -1,9 +1,9 @@
 import { act, fireEvent, screen } from '@testing-library/react-native';
 
-import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
+import { HOLD_MILLISECONDS, holdButtonTestID } from '../../src/features/onboarding/HoldToBegin';
 
 /**
- * Her thumb on the ring for the whole hold, and the write it sets off, run to the end.
+ * Her thumb on the hold button for the whole hold, and the write it sets off, run to the end.
  *
  * The hold is the one moment the first run writes, so every walk that expects a row goes through
  * here. It needs the timers to be fake, because it waits the hold out rather than sleeping, and
@@ -11,7 +11,7 @@ import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding
  */
 export async function sheHoldsTheRing(): Promise<void> {
   await act(async () => {
-    fireEvent(screen.getByTestId(holdCoreTestID), 'pressIn');
+    fireEvent(screen.getByTestId(holdButtonTestID), 'pressIn');
   });
   await act(async () => {
     jest.advanceTimersByTime(HOLD_MILLISECONDS);

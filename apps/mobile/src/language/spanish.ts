@@ -408,11 +408,11 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.goals.title': '¿Con qué quieres que te ayude Emi?',
   'onboarding.hold.action': 'Mantén para empezar',
   'onboarding.hold.held': 'Sigue manteniendo',
-  'onboarding.hold.instruction': 'Mantén pulsado el anillo para empezar.',
-  'onboarding.hold.refused': 'Eso no se guardó. Mantén pulsado el anillo otra vez.',
+  'onboarding.hold.instruction': 'Mantén pulsado el botón para empezar.',
+  'onboarding.hold.refused': 'Eso no se guardó. Mantén pulsado el botón otra vez.',
   'onboarding.hold.sealed':
-    'Cuando mantienes el anillo, guardamos tus respuestas y las cerramos con una clave que vive en el llavero de este teléfono.',
-  'onboarding.hold.title': 'Tu ciclo. Tus datos. Tu clave.',
+    'Mantener el botón guarda tus respuestas, selladas con tu clave. Emi crea la clave y la guarda en el llavero de este teléfono.',
+  'onboarding.hold.title': 'Tu ciclo, tus datos, tu clave.',
   'onboarding.lastPeriod.action': 'Continuar',
   'onboarding.lastPeriod.earlier': 'Anterior',
   'onboarding.lastPeriod.earlierMonth': 'Mes anterior',
@@ -448,14 +448,9 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.periodLength.skip': 'No lo tengo claro',
   'onboarding.periodLength.title': '¿Cuántos días suele durar tu periodo?',
   'onboarding.promise.action': 'Continuar',
-  'onboarding.promise.delete.line': 'Una pulsación quita cada día de este teléfono.',
-  'onboarding.promise.delete.title': 'Bórralo todo, cuando quieras',
-  'onboarding.promise.encrypted.line':
-    'Cada día que anotas queda cerrado en este teléfono, y solo se envía la copia cerrada.',
-  'onboarding.promise.encrypted.title': 'Cifrado con una clave que solo tienes tú',
-  'onboarding.promise.noTracking.line':
-    'No te pedimos ninguna contraseña, y Emi no lleva herramientas de seguimiento.',
-  'onboarding.promise.noTracking.title': 'Sin contraseña, sin rastreadores',
+  'onboarding.promise.delete': 'Borra todo, con una sola pulsación',
+  'onboarding.promise.encrypted': 'Cifrado en este teléfono, con una clave que solo tienes tú',
+  'onboarding.promise.noTracking': 'Sin contraseña, sin herramientas de seguimiento',
   'onboarding.promise.title': 'Solo tú puedes leer tus días.',
   'onboarding.regularity.action': 'Continuar',
   'onboarding.regularity.choice.moves': 'No, se mueve',
@@ -507,21 +502,20 @@ export const spanish: CatalogueIn<'es'> = {
     'Emi te muestra lo que dicen tus propios registros, y nada más. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
   'onboarding.welcome.title': 'Emi aprende tu ciclo. Tus datos son tuyos.',
   'onboarding.whatEmiDoes.action': 'Continuar',
-  'onboarding.whatEmiDoes.forecast.line':
-    'Primero un rango. Se estrecha a medida que conocemos tu ciclo.',
+  'onboarding.whatEmiDoes.forecast.line': 'Un rango, y cuánta confianza tiene Emi',
   'onboarding.whatEmiDoes.forecast.title': 'Tu previsión',
   'onboarding.whatEmiDoes.log.and': 'y',
   'onboarding.whatEmiDoes.log.chosen': {
-    one: '{groups} va primero cuando anotas un día, justo como pediste.',
-    other: '{groups} van primero cuando anotas un día, justo como pediste.',
+    one: 'Tu registro muestra primero el grupo que elegiste: {groups}.',
+    other: 'Tu registro muestra primero los grupos que elegiste: {groups}.',
   },
+  'onboarding.whatEmiDoes.log.line': 'Lo que ves primero',
   'onboarding.whatEmiDoes.log.title': 'Tu registro',
-  'onboarding.whatEmiDoes.log.usual': 'Verás el orden habitual cuando anotes un día.',
-  'onboarding.whatEmiDoes.privacy.line':
-    'Todo está cifrado en este teléfono. Nadie más puede leerlo.',
+  'onboarding.whatEmiDoes.log.usual':
+    'Tu registro se abre en el orden habitual, empezando por {groups}.',
+  'onboarding.whatEmiDoes.privacy.line': 'Solo tú puedes leer todo esto',
   'onboarding.whatEmiDoes.privacy.title': 'Tu privacidad',
-  'onboarding.whatEmiDoes.title': 'Esto es lo que haremos con tus respuestas',
-  'onboarding.whatEmiDoes.titleNamed': '{name}, esto es lo que haremos con tus respuestas',
+  'onboarding.whatEmiDoes.title': 'Esto es lo que Emi hace con lo que le contaste',
 
   'recovery.before.action': 'Mostrar mi código',
   'recovery.before.line.nobody':

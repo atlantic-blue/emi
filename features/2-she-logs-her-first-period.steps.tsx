@@ -1553,7 +1553,7 @@ defineFeature(feature, (test) => {
       await sheAnswersEveryQuestionOfTheFirstRun();
     });
 
-    and('she presses and holds the ring', async () => {
+    and('she presses and holds Hold to begin', async () => {
       await sheHoldsTheRing();
     });
 
@@ -1598,7 +1598,7 @@ defineFeature(feature, (test) => {
       await sheAnswersEveryQuestionOfTheFirstRun();
     });
 
-    and('she presses and holds the ring', async () => {
+    and('she presses and holds Hold to begin', async () => {
       await sheHoldsTheRing();
     });
 
@@ -1643,7 +1643,7 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/onboarding/hold');
     });
 
-    and('she closes Emi at the hold, without holding the ring', async () => {
+    and('she closes Emi at the hold, without holding Hold to begin', async () => {
       await app.close();
     });
 
@@ -1708,7 +1708,7 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('she presses and holds the ring', async () => {
+    and('she presses and holds Hold to begin', async () => {
       await sheHoldsTheRing();
     });
 
@@ -1807,7 +1807,7 @@ defineFeature(feature, (test) => {
       expect(listDayLogs(herDatabase())).toEqual([]);
     });
 
-    when('she reads on and presses and holds the ring', async () => {
+    when('she reads on and presses and holds Hold to begin', async () => {
       await shePresses(firstForecastActionTestID);
       await shePresses(promiseActionTestID);
       await shePresses(whatEmiDoesActionTestID);
@@ -1899,7 +1899,7 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/onboarding/first-forecast');
     });
 
-    when('she reads on and presses and holds the ring', async () => {
+    when('she reads on and presses and holds Hold to begin', async () => {
       await sheReadsOnAndHolds();
     });
 
@@ -1955,7 +1955,7 @@ defineFeature(feature, (test) => {
       expect(timesThePhoneAsked()).toBe(1);
     });
 
-    when('she reads on and presses and holds the ring', async () => {
+    when('she reads on and presses and holds Hold to begin', async () => {
       await sheReadsOnAndHolds();
     });
 
@@ -2020,7 +2020,7 @@ defineFeature(feature, (test) => {
       visited.push(app.pathname());
     });
 
-    and('she presses and holds the ring', async () => {
+    and('she presses and holds Hold to begin', async () => {
       await sheHoldsTheRing();
     });
 
@@ -2112,7 +2112,7 @@ defineFeature(feature, (test) => {
       everyFieldShePassed.push(...fieldsDrawn());
     });
 
-    and('she presses and holds the ring', async () => {
+    and('she presses and holds Hold to begin', async () => {
       await sheHoldsTheRing();
     });
 
@@ -4991,7 +4991,7 @@ defineFeature(feature, (test) => {
       },
     );
 
-    when('she answers the rest of the questions and presses and holds the ring', async () => {
+    when('she answers the rest of the questions and presses and holds Hold to begin', async () => {
       await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
       await shePresses(onboardingActionTestID);
@@ -5173,7 +5173,7 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('she presses and holds the ring', async () => {
+    and('she presses and holds Hold to begin', async () => {
       await sheHoldsTheRing();
     });
 
@@ -6028,9 +6028,9 @@ defineFeature(feature, (test) => {
   /**
    * The forecast is the first thing Emi says back to her, so it says it to her: the name she
    * typed at the second question opens the sentence, and a woman who gave none reads a clean one.
-   * The three screens between it and the hold talk to her as you.
+   * The three screens between it and the hold speak in the name of Emi and never as we.
    */
-  test('SCREEN-1, her first forecast reads the redesign label, and the screens after it are addressed to her', ({
+  test('SCREEN-1, her first forecast reads the redesign label, and the screens after it speak in the name of Emi', ({
     given,
     when,
     then,
@@ -6040,12 +6040,12 @@ defineFeature(feature, (test) => {
       theOldGreeting: `${theNameSheGives}, here's your next period`,
       plain: 'Your next period',
     };
-    const theTitleOfWhatWeWillDo = {
-      named: `${theNameSheGives}, here's what we'll do with your answers`,
-      plain: "Here's what we'll do with your answers",
+    const theTitleOfWhatEmiDoes = {
+      now: 'Here is what Emi does with what you told it',
+      theOldGreeting: `${theNameSheGives}, here's what we'll do with your answers`,
     };
     const thePromiseStillSays = 'Only you can read your days.';
-    const theHoldStillSays = 'Your cycle. Your data. Your key.';
+    const theHoldNowSays = 'Your cycle, your data, your key.';
 
     /** The keys of the four screens from the forecast to the hold, in every language. */
     const theseScreens: readonly string[] = [
@@ -6137,37 +6137,41 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('the screen that reads her answers back is addressed to her too', async () => {
-      await anotherWomanOpensEmi();
-      await sheAnswersEverythingAndReachesHerForecast(theNameSheGives);
-      await shePresses(firstForecastActionTestID);
+    and(
+      'the screen that reads her answers back is titled in the name of Emi, for a woman who gave her name and for one who did not',
+      async () => {
+        await anotherWomanOpensEmi();
+        await sheAnswersEverythingAndReachesHerForecast(theNameSheGives);
+        await shePresses(firstForecastActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/the-promise');
-      expect(textIn(screen.getByTestId(thePromiseTestID))).toContain(thePromiseStillSays);
+        expect(app.pathname()).toBe('/onboarding/the-promise');
+        expect(textIn(screen.getByTestId(thePromiseTestID))).toContain(thePromiseStillSays);
 
-      await shePresses(promiseActionTestID);
+        await shePresses(promiseActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
-      expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatWeWillDo.named]);
+        expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
+        expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatEmiDoes.now]);
+        expect(screen.queryByText(theTitleOfWhatEmiDoes.theOldGreeting)).toBeNull();
 
-      // And the plain sentence for a woman Emi cannot greet, read on the same screen.
-      await anotherWomanOpensEmi();
-      await sheAnswersEverythingAndReachesHerForecast();
-      await shePresses(firstForecastActionTestID);
-      await shePresses(promiseActionTestID);
+        // And the same title for a woman Emi was never given a name for.
+        await anotherWomanOpensEmi();
+        await sheAnswersEverythingAndReachesHerForecast();
+        await shePresses(firstForecastActionTestID);
+        await shePresses(promiseActionTestID);
 
-      expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatWeWillDo.plain]);
-    });
+        expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatEmiDoes.now]);
+      },
+    );
 
     and(
-      'the promise and the hold talk to her as you, in each of the three languages she can read them in',
+      'the promise and the hold never talk as we, in each of the three languages she can read them in',
       async () => {
         for (const language of languages) {
           const read = theWordsOfTheseScreensIn(language).join('\n');
 
           expect({ language, asWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
             language,
-            asWe: true,
+            asWe: false,
           });
           expect(
             interfaceClaimsIn(`the four screens in ${language}`, read).map(describeClaim),
@@ -6181,7 +6185,7 @@ defineFeature(feature, (test) => {
         await shePresses(whatEmiDoesActionTestID);
 
         expect(app.pathname()).toBe('/onboarding/hold');
-        expect(textIn(screen.getByTestId(holdScreenTestID))).toContain(theHoldStillSays);
+        expect(textIn(screen.getByTestId(holdScreenTestID))).toContain(theHoldNowSays);
       },
     );
   });

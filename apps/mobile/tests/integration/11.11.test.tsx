@@ -24,19 +24,23 @@ import {
 import {
   ThePromise,
   promiseActionTestID,
-  promiseIcons,
+  promiseDrawings,
   promiseLineTestID,
+  promiseShieldTestID,
   thePromiseTestID,
 } from '../../src/features/onboarding/ThePromise';
 import {
   WhatEmiDoesWithIt,
   whatEmiDoesActionTestID,
   whatEmiDoesCardTestID,
-  whatEmiDoesIcons,
+  whatEmiDoesChipTestID,
+  whatEmiDoesLabelInks,
+  whatEmiDoesLogLineTestID,
+  whatEmiDoesRangeTestID,
   whatEmiDoesTestID,
+  whatEmiDoesTitleTestID,
 } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import {
-  focusLabels,
   promiseLines,
   whatComesFirstWhenSheLogs,
   whatEmiDoesCards,
@@ -155,9 +159,14 @@ function theWordsOf(testID: string): string {
   return textIn(screen.getByTestId(testID)).join(' ');
 }
 
-/** What the log card reads, which is the one card built from an answer she gave. */
+/** What the log section reads, which is the one section built from an answer she gave. */
 function theLogCard(): string[] {
   return textIn(screen.getByTestId(whatEmiDoesCardTestID('log')));
+}
+
+/** The sentence under her chips. */
+function theLogLine(): string {
+  return textIn(screen.getByTestId(whatEmiDoesLogLineTestID)).join(' ');
 }
 
 /** The file as it stands, with the cipher written into the first line of it. */
@@ -198,34 +207,37 @@ describe('the promise says only what the product does', () => {
       expect(theWordsOf(thePromiseTestID)).toContain('Only you can read your days.');
     });
 
-    it('carries three lines, each one a thing the product does today', async () => {
+    it('carries three lines of one sentence each, in the words the redesign writes', async () => {
       await sheOpensEmi();
 
       await sheReachesThePromise();
 
       expect(promiseLines).toEqual(['encrypted', 'noTracking', 'delete']);
       expect(textIn(screen.getByTestId(promiseLineTestID('encrypted')))).toEqual([
-        words('onboarding.promise.encrypted.title'),
-        words('onboarding.promise.encrypted.line'),
+        'Encrypted on this phone, with a key only you hold',
       ]);
       expect(textIn(screen.getByTestId(promiseLineTestID('noTracking')))).toEqual([
-        words('onboarding.promise.noTracking.title'),
-        words('onboarding.promise.noTracking.line'),
+        'No password, no tracking tools',
       ]);
       expect(textIn(screen.getByTestId(promiseLineTestID('delete')))).toEqual([
-        words('onboarding.promise.delete.title'),
-        words('onboarding.promise.delete.line'),
+        'Delete everything, in one press',
       ]);
     });
 
-    it('says each day is locked on this phone and that only the locked copy is sent', async () => {
+    it('no longer says a locked copy is sent, because no build sends one', async () => {
       await sheOpensEmi();
 
       await sheReachesThePromise();
 
-      expect(theWordsOf(thePromiseTestID)).toContain(
-        'Every day you log is locked on this phone, and only the locked copy is sent.',
-      );
+      expect(theWordsOf(thePromiseTestID)).not.toMatch(/sent|copy/i);
+    });
+
+    it('stands under a shield, with the title centred', async () => {
+      await sheOpensEmi();
+
+      await sheReachesThePromise();
+
+      expect(screen.getByTestId(promiseShieldTestID)).toBeTruthy();
     });
 
     it('names no hardware, no audit, no cloud and nobody who could read a day', async () => {
@@ -246,8 +258,10 @@ describe('the promise says only what the product does', () => {
 
       await sheReachesThePromise();
 
-      expect(Object.keys(promiseIcons).sort()).toEqual([...promiseLines].sort());
-      expect(promiseIcons.encrypted).toBe('lock');
+      expect(Object.keys(promiseDrawings).sort()).toEqual([...promiseLines].sort());
+      expect(promiseDrawings.encrypted.icon).toBe('key');
+      expect(promiseDrawings.noTracking.icon).toBe('search');
+      expect(promiseDrawings.delete.icon).toBe('delete');
     });
 
     it('hands her to what Emi does with it when she presses Continue', async () => {
@@ -267,31 +281,46 @@ describe('the promise says only what the product does', () => {
   });
 
   describe('what Emi does with what she said', () => {
-    it('reads her answers back as three cards', async () => {
+    it('reads her answers back as three labelled sections, in the redesign words', async () => {
       await sheOpensEmi();
 
       await sheReachesWhatEmiDoes();
 
       expect(whatEmiDoesCards).toEqual(['forecast', 'log', 'privacy']);
-      expect(screen.getByText(words('onboarding.whatEmiDoes.title'))).toBeTruthy();
+      expect(textIn(screen.getByTestId(whatEmiDoesTitleTestID))).toEqual([
+        'Here is what Emi does with what you told it',
+      ]);
       expect(textIn(screen.getByTestId(whatEmiDoesCardTestID('forecast')))).toEqual([
-        words('onboarding.whatEmiDoes.forecast.title'),
-        words('onboarding.whatEmiDoes.forecast.line'),
+        'Your forecast',
+        'A range, and how sure Emi is',
       ]);
       expect(textIn(screen.getByTestId(whatEmiDoesCardTestID('privacy')))).toEqual([
-        words('onboarding.whatEmiDoes.privacy.title'),
-        words('onboarding.whatEmiDoes.privacy.line'),
+        'Your privacy',
+        'Only you can read any of it',
       ]);
     });
 
-    it('names the groups she pressed, in the order she pressed them', async () => {
+    it('draws the forecast as a range rather than as one day', async () => {
+      await sheOpensEmi();
+
+      await sheReachesWhatEmiDoes();
+
+      expect(
+        screen.getByTestId(whatEmiDoesRangeTestID, { includeHiddenElements: true }),
+      ).toBeTruthy();
+    });
+
+    it('draws a chip for each group she pressed, in the order she pressed them', async () => {
       await sheOpensEmi();
 
       await sheReachesWhatEmiDoes(['mood', 'energy']);
 
       expect(theLogCard()).toEqual([
-        words('onboarding.whatEmiDoes.log.title'),
-        'Mood and energy come first when you log, just as you asked.',
+        'Your log',
+        'What you see first',
+        'Mood',
+        'Energy',
+        'Your log shows the groups you chose first: mood and energy.',
       ]);
     });
 
@@ -300,15 +329,16 @@ describe('the promise says only what the product does', () => {
 
       await sheReachesWhatEmiDoes(['energy', 'mood']);
 
-      expect(theLogCard()[1]).toBe('Energy and mood come first when you log, just as you asked.');
+      expect(theLogLine()).toBe('Your log shows the groups you chose first: energy and mood.');
+      expect(theLogCard().slice(2, 4)).toEqual(['Energy', 'Mood']);
     });
 
-    it('names one group on its own, and says comes rather than come', async () => {
+    it('names one group on its own, and says group rather than groups', async () => {
       await sheOpensEmi();
 
       await sheReachesWhatEmiDoes(['sleep']);
 
-      expect(theLogCard()[1]).toBe('Sleep comes first when you log, just as you asked.');
+      expect(theLogLine()).toBe('Your log shows the group you chose first: sleep.');
     });
 
     it('names all six where she pressed all six', async () => {
@@ -317,28 +347,48 @@ describe('the promise says only what the product does', () => {
       await sheReachesWhatEmiDoes(focusValues);
 
       for (const group of focusValues) {
-        expect(theLogCard()[1]?.toLowerCase()).toContain(focusLabels[group].toLowerCase());
+        expect(screen.getByTestId(whatEmiDoesChipTestID(group))).toBeTruthy();
       }
-      expect(theLogCard()[1]).toBe(
-        'Sleep, mood, energy, skin and hair, digestion and pain come first when you log, just as you asked.',
+      expect(theLogLine()).toBe(
+        'Your log shows the groups you chose first: sleep, mood, energy, skin and hair, digestion and pain.',
       );
     });
 
-    it('says the log opens in its usual order where she pressed none', async () => {
+    it('shows the groups the log opens with for everybody where she pressed none, with no gap', async () => {
       await sheOpensEmi();
 
       await sheReachesWhatEmiDoes();
 
       expect(theLogCard()).toEqual([
-        words('onboarding.whatEmiDoes.log.title'),
-        "You'll see the usual order when you log.",
+        'Your log',
+        'What you see first',
+        'Mood',
+        'Energy',
+        'Pain',
+        'Your log opens in the usual order, starting with mood, energy and pain.',
       ]);
-      expect(theLogCard()[1]).not.toMatch(/just as you asked/);
+      expect(theLogLine()).not.toMatch(/you chose/);
     });
 
-    it('draws one thing beside each card, and every card carries one', async () => {
-      expect(Object.keys(whatEmiDoesIcons).sort()).toEqual([...whatEmiDoesCards].sort());
-      expect(whatEmiDoesIcons.privacy).toBe('lock');
+    it('names no group she did not press, where she pressed some', async () => {
+      await sheOpensEmi();
+
+      await sheReachesWhatEmiDoes(['sleep']);
+
+      expect(screen.queryByTestId(whatEmiDoesChipTestID('mood'))).toBeNull();
+      expect(screen.queryByTestId(whatEmiDoesChipTestID('pain'))).toBeNull();
+    });
+
+    it('labels every section in an ink of its own, and every section carries one', () => {
+      expect(Object.keys(whatEmiDoesLabelInks).sort()).toEqual([...whatEmiDoesCards].sort());
+    });
+
+    it('no longer greets her by name, because the redesign title names Emi and not her', async () => {
+      await sheOpensEmi();
+
+      await sheReachesWhatEmiDoes();
+
+      expect(theWordsOf(whatEmiDoesTestID)).not.toMatch(/we'll|your answers/i);
     });
 
     it('names no slot, no cipher and no store that is ready', async () => {
@@ -495,11 +545,7 @@ describe('the promise says only what the product does', () => {
 
       await render(
         <OnAPhone>
-          <WhatEmiDoesWithIt
-            focus={[]}
-            name={undefined}
-            onContinue={() => pressed.push('continue')}
-          />
+          <WhatEmiDoesWithIt focus={[]} onContinue={() => pressed.push('continue')} />
         </OnAPhone>,
       );
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
@@ -508,13 +554,16 @@ describe('the promise says only what the product does', () => {
     });
 
     it('builds the log line from the groups it is given and from nothing else', () => {
-      expect(whatComesFirstWhenSheLogs([])).toBe(whatEmiDoesCopy.log.usual);
+      expect(whatComesFirstWhenSheLogs([])).toBe(
+        'Your log opens in the usual order, starting with mood, energy and pain.',
+      );
       expect(whatComesFirstWhenSheLogs(['pain'])).toBe(
-        'Pain comes first when you log, just as you asked.',
+        'Your log shows the group you chose first: pain.',
       );
       expect(whatComesFirstWhenSheLogs(['pain', 'skin'])).toBe(
-        'Pain and skin and hair come first when you log, just as you asked.',
+        'Your log shows the groups you chose first: pain and skin and hair.',
       );
+      expect(whatEmiDoesCopy.log.line).toBe('What you see first');
     });
   });
 });
