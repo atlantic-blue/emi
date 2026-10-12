@@ -78,9 +78,13 @@ const theNameSheGives = 'Ada';
  */
 const theQuestionsLeftAfterTheCycleLength = 7;
 
+/**
+ * The redesign titles the forecast with a label and the range under it, and greets nobody, so the
+ * name she gave is read back on the screen after it and not here.
+ */
 const theTitleOfHerForecast = {
-  named: `${theNameSheGives}, here's your next period`,
-  plain: "Here's your next period",
+  plain: 'Your next period',
+  theOldGreeting: `${theNameSheGives}, here's your next period`,
 };
 
 const theTitleOfWhatWeWillDo = {
@@ -90,24 +94,25 @@ const theTitleOfWhatWeWillDo = {
 
 /** What the forecast says under the range, and on the two cards beside it. */
 const theForecastSays = {
-  learning:
-    "We're still getting to know your cycle. After two cycles, we'll tell you how sure we are.",
+  learning: 'Still learning',
+  needs: `Emi needs ${String(CYCLES_BEFORE_A_FORECAST)} complete cycles before it forecasts from your own cycles, so this is still learning.`,
   why: {
     title: 'Why a range?',
-    line: "Cycles shift by a few days from month to month. A single date would pretend they don't.",
+    line: 'Emi has read 0 complete cycles. Until it reads 2, it counts the 28 days you gave from your last period. The range runs 3 days either side of that day.',
   },
   onThisPhone: {
-    title: 'Worked out on your phone',
-    line: 'This comes from the dates you just gave us, worked out right here on your phone.',
+    title: 'Worked out on this phone',
+    line: 'The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.',
   },
 };
 
 /** What a woman who could not name a day reads in place of a range. */
 const theForecastWithNoDateSays = {
-  title: "We don't have a date to start from yet",
-  first: 'Log your next period and your forecast starts there.',
-  guess: "We won't guess a date on day one, because a guess would only mislead you.",
-  cycles: `We need ${CYCLES_BEFORE_A_FORECAST} full cycles before we can forecast.`,
+  title: 'Emi has no date to count from',
+  first: 'The first period you log starts everything.',
+  guess:
+    'Emi builds no forecast from a date it guessed, because a guess on day one is a false sentence on day one.',
+  cycles: `Emi needs ${String(CYCLES_BEFORE_A_FORECAST)} complete cycles before it forecasts from your own cycles.`,
 };
 
 /** The three cards of the promise, each as a title and the line under it. */
@@ -310,13 +315,14 @@ describe('her first forecast is addressed to her', () => {
   });
 
   describe('the first thing Emi says back to her', () => {
-    it('greets her by the name she gave twelve questions earlier', async () => {
+    it('reads the redesign label for a woman who gave her name, and no longer greets her by it', async () => {
       const app = await sheWalksToHerForecast({ day: herPeriodStarted, name: theNameSheGives });
 
       expect(app.pathname()).toBe('/onboarding/first-forecast');
       expect(textIn(screen.getByTestId(firstForecastTitleTestID))).toEqual([
-        theTitleOfHerForecast.named,
+        theTitleOfHerForecast.plain,
       ]);
+      expect(screen.queryByText(theTitleOfHerForecast.theOldGreeting)).toBeNull();
     });
 
     it('reads as one clean sentence for a woman who gave no name', async () => {
@@ -326,7 +332,7 @@ describe('her first forecast is addressed to her', () => {
       expect(textIn(screen.getByTestId(firstForecastTitleTestID))).toEqual([
         theTitleOfHerForecast.plain,
       ]);
-      expect(screen.queryByText(theTitleOfHerForecast.named)).toBeNull();
+      expect(screen.queryByText(theTitleOfHerForecast.theOldGreeting)).toBeNull();
     });
 
     it('reads the plain sentence for a woman who typed only spaces, because that is no name', async () => {
@@ -337,16 +343,18 @@ describe('her first forecast is addressed to her', () => {
       ]);
     });
 
-    it('says it is still getting to know her cycle, and when it will say how sure it is', async () => {
+    it('tags the range Still learning, and says how many complete cycles Emi needs', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted, name: theNameSheGives });
 
       expect(screen.getByText(theForecastSays.learning)).toBeTruthy();
+      expect(screen.getByText(theForecastSays.needs)).toBeTruthy();
     });
 
     it('says why the answer is a range, and that her phone worked it out', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted });
 
-      expect(theCardSays(firstForecastWhyTestID)).toEqual([
+      // The circles of the days come first in the card, and the words follow them.
+      expect(theCardSays(firstForecastWhyTestID).slice(-2)).toEqual([
         theForecastSays.why.title,
         theForecastSays.why.line,
       ]);
@@ -356,14 +364,14 @@ describe('her first forecast is addressed to her', () => {
       ]);
     });
 
-    it('carries the name in one form of the title and in neither other, in all three languages', () => {
+    it('carries no name in either title, and no greeting key, in all three languages', () => {
       for (const language of languages) {
         const held = theCatalogueOf(language);
 
         expect({
           language,
-          greets: String(held['onboarding.firstForecast.titleNamed']).includes('{name}'),
-        }).toEqual({ language, greets: true });
+          greeting: held['onboarding.firstForecast.titleNamed'],
+        }).toEqual({ language, greeting: undefined });
         expect(String(held['onboarding.firstForecast.title'])).not.toContain('{name}');
         expect(String(held['onboarding.firstForecast.noDate.title'])).not.toContain('{name}');
       }
@@ -584,9 +592,14 @@ describe('her first forecast is addressed to her', () => {
       expect(theKeysOfTheseScreens().length).toBeGreaterThan(20);
     });
 
-    it('talks to her as we, and names Emi on one line only', () => {
+    it('talks to her as we after the forecast, and names Emi on one line of those three screens', () => {
+      // The redesign forecast says what Emi worked out in Emi's name, so it is held apart below.
+      const afterTheForecast = theKeysOfTheseScreens().filter(
+        (key) => !key.startsWith('onboarding.firstForecast.'),
+      );
+
       for (const language of languages) {
-        const naming = theKeysOfTheseScreens().filter((key) =>
+        const naming = afterTheForecast.filter((key) =>
           searchableText(theWordsOfTheseScreensIn(language, [key]).join('\n')).includes('Emi'),
         );
 
@@ -595,6 +608,22 @@ describe('her first forecast is addressed to her', () => {
           language,
           asWe: howEachLanguageSaysWe[language].test(theWordsOfTheseScreensIn(language).join('\n')),
         }).toEqual({ language, asWe: true });
+      }
+    });
+
+    it('names Emi on the forecast and never talks as we there, as the redesign writes it', () => {
+      const theForecastKeys = theKeysOfTheseScreens().filter((key) =>
+        key.startsWith('onboarding.firstForecast.'),
+      );
+
+      for (const language of languages) {
+        const read = theWordsOfTheseScreensIn(language, theForecastKeys).join('\n');
+
+        expect({ language, namesEmi: read.includes('Emi') }).toEqual({ language, namesEmi: true });
+        expect({ language, asWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
+          language,
+          asWe: false,
+        });
       }
     });
 

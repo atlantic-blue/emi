@@ -1,26 +1,37 @@
-import { CYCLES_BEFORE_A_FORECAST, type DayRange, type ForecastResult } from '@emi/cycle';
-import { colour, space, stroke, textStyle } from '@emi/tokens';
+import {
+  DAYS_EITHER_SIDE_WHILE_LEARNING,
+  type DayRange,
+  type ForecastResult,
+  addDays,
+  toDayNumber,
+} from '@emi/cycle';
+import { ICON_SIZE, colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
-import { learningCopy, rangeSentence, statedLengthSentence } from '../forecast/copy';
-import { cyclesBeforeAForecastSentence, firstForecastTitle, firstRunCopy } from './copy';
+import { StatusPill } from '../../components/StatusPill';
+import { confidenceSentence, rangeSentence } from '../forecast/copy';
+import {
+  countsFromTheFirstPeriodSentence,
+  cyclesBeforeAForecastSentence,
+  firstRunCopy,
+  stillLearningSentence,
+  whyARangeSentences,
+} from './copy';
 
 /**
- * The first thing Emi says back to her, after twelve questions and before the hold that writes
- * them. It carries no bar, because it asks her nothing: the questions are behind her.
- *
+ * The first thing Emi says back to her, after the questions and before the hold that writes them.
  * Everything on it is worked out from the answers she is still holding in memory, by the
- * arithmetic the home screen reads, so what this screen says is what the one she lands on
- * afterwards says. Nothing is written yet.
+ * arithmetic the home screen reads. Nothing is written yet.
  *
- * The answer the arithmetic gives decides which of the two states she reads. A range is two days,
- * and the two cards under it say what the range is worth and where it was worked out, because
- * those are the two things a woman is right to ask of a forecast. No range means she gave no day,
- * and then Emi says so: a guess on day one would be a false sentence on day one.
+ * At the first run the arithmetic has at most one complete cycle, so it always answers that it is
+ * still learning. A range is then the length she gave counted from her last period, with the
+ * cohort's spread either side, and every count on the screen is read off that answer.
  */
 
 export const firstForecastTestID = 'onboarding-first-forecast';
@@ -30,33 +41,47 @@ export const firstForecastStillLearningTestID = 'first-forecast-still-learning';
 export const firstForecastNoGuessTestID = 'first-forecast-no-guess';
 export const firstForecastRangeTestID = 'first-forecast-range';
 export const firstForecastLearningTestID = 'first-forecast-learning';
+export const firstForecastDaysTestID = 'first-forecast-days';
 export const firstForecastWhyTestID = 'first-forecast-why';
 export const firstForecastOnThisPhoneTestID = 'first-forecast-on-this-phone';
+export const firstForecastNeedsTestID = 'first-forecast-needs';
+export const firstForecastRingTestID = 'first-forecast-ring';
 export const firstForecastActionTestID = 'first-forecast-action';
+
+export function firstForecastDayTestID(day: string): string {
+  return `first-forecast-day-${day}`;
+}
+
+/** Every day of the range, both ends included, so a circle stands for each day it names. */
+export function theDaysOf(range: DayRange): string[] {
+  const count = toDayNumber(range.to) - toDayNumber(range.from) + 1;
+
+  return Array.from({ length: count }, (_, offset) => addDays(range.from, offset));
+}
 
 interface Props {
   /** What the arithmetic answered for the days she gave, which carries no range where she gave none. */
   readonly forecast: ForecastResult;
-  /**
-   * The length she gave at the cycle length question, named while Emi has no cycle of hers. Nothing
-   * at all where she gave none, and then no length is named, because Emi names no length it picked.
-   */
+  /** The length she gave at the cycle length question, and nothing where she gave none. */
   readonly cycleLengthDays: number | undefined;
-  /** Nothing at all where she gave no name, and then the forecast reads the plain sentence. */
-  readonly name: string | undefined;
   readonly onContinue: () => void;
 }
 
-export function FirstForecast({ cycleLengthDays, forecast, name, onContinue }: Props): ReactNode {
-  const start = forecast.start;
-
+export function FirstForecast({ cycleLengthDays, forecast, onContinue }: Props): ReactNode {
   return (
     <Screen drawsTheWash testID={firstForecastTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
-        {start === undefined ? (
-          <WithNoDate cycleLengthDays={cycleLengthDays} />
+        {forecast.start === undefined ? (
+          <WithNoDate
+            cycleLengthDays={cycleLengthDays}
+            needsCycles={forecast.kind === 'learning' ? forecast.needsCycles : 0}
+          />
         ) : (
-          <WithARange name={name} start={start} />
+          <WithARange
+            cycleLengthDays={cycleLengthDays}
+            forecast={forecast}
+            start={forecast.start}
+          />
         )}
       </ScrollView>
 
@@ -71,137 +96,267 @@ export function FirstForecast({ cycleLengthDays, forecast, name, onContinue }: P
   );
 }
 
+/** What the why card says, each sentence read off a number the arithmetic used. */
+function whyLines(forecast: ForecastResult, cycleLengthDays: number | undefined): string[] {
+  if (forecast.kind === 'forecast') {
+    return [confidenceSentence(forecast)];
+  }
+
+  if (cycleLengthDays === undefined) {
+    return [];
+  }
+
+  return whyARangeSentences({
+    completeCycles: forecast.completeCycles,
+    cycleLengthDays,
+    daysEitherSide: DAYS_EITHER_SIDE_WHILE_LEARNING,
+    needsCycles: forecast.needsCycles,
+  });
+}
+
 function WithARange({
-  name,
+  cycleLengthDays,
+  forecast,
   start,
 }: {
-  readonly name: string | undefined;
+  readonly cycleLengthDays: number | undefined;
+  readonly forecast: ForecastResult;
   readonly start: DayRange;
 }): ReactNode {
+  const isLearning = forecast.kind === 'learning';
+
   return (
-    <>
-      <View>
-        <Text accessibilityRole="header" style={styles.title} testID={firstForecastTitleTestID}>
-          {firstForecastTitle(name)}
-        </Text>
-        <Text style={styles.range} testID={firstForecastRangeTestID}>
-          {rangeSentence(start)}
-        </Text>
-        <Text style={styles.learning} testID={firstForecastLearningTestID}>
-          {firstRunCopy.firstForecast.learning}
-        </Text>
-      </View>
+    <View style={styles.column}>
+      <Text accessibilityRole="header" style={styles.label} testID={firstForecastTitleTestID}>
+        {firstRunCopy.firstForecast.title}
+      </Text>
+      <Text style={styles.range} testID={firstForecastRangeTestID}>
+        {rangeSentence(start)}
+      </Text>
+      {isLearning ? (
+        <View style={styles.tagRow} testID={firstForecastLearningTestID}>
+          <StatusPill label={firstRunCopy.firstForecast.stillLearning} tone="accent" />
+        </View>
+      ) : null}
 
       <View style={styles.cards}>
         <Card testID={firstForecastWhyTestID}>
+          <View
+            accessibilityElementsHidden
+            importantForAccessibility="no-hide-descendants"
+            style={styles.days}
+            testID={firstForecastDaysTestID}
+          >
+            {theDaysOf(start).map((day) => (
+              <View key={day} style={styles.day} testID={firstForecastDayTestID(day)}>
+                <Text style={styles.dayNumber}>{String(Number(day.slice(8, 10)))}</Text>
+              </View>
+            ))}
+          </View>
           <Text style={styles.cardTitle}>{firstRunCopy.firstForecast.why.title}</Text>
-          <Text style={styles.cardLine}>{firstRunCopy.firstForecast.why.line}</Text>
+          <Text style={styles.cardLine}>{whyLines(forecast, cycleLengthDays).join(' ')}</Text>
         </Card>
 
         <Card testID={firstForecastOnThisPhoneTestID}>
-          <Text style={styles.cardTitle}>{firstRunCopy.firstForecast.onThisPhone.title}</Text>
-          <Text style={styles.cardLine}>{firstRunCopy.firstForecast.onThisPhone.line}</Text>
+          <View style={styles.phoneRow}>
+            <View style={styles.phoneTile}>
+              <Icon colour={colour.warmIcon} name="phone" size={ICON_SIZE} />
+            </View>
+            <View style={styles.phoneWords}>
+              <Text style={styles.cardTitle}>{firstRunCopy.firstForecast.onThisPhone.title}</Text>
+              <Text style={styles.cardLine}>{firstRunCopy.firstForecast.onThisPhone.line}</Text>
+            </View>
+          </View>
         </Card>
       </View>
-    </>
+
+      {forecast.kind === 'learning' ? (
+        <Text style={styles.needs} testID={firstForecastNeedsTestID}>
+          {stillLearningSentence(forecast.needsCycles)}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+const RING_SIZE = 160;
+const RING_BEAD = 14;
+
+/** A ring of beads with a drop in it: a cycle that has not started to be counted. */
+function TheEmptyRing(): ReactNode {
+  const radiusOfRing = (RING_SIZE - RING_BEAD) / 2;
+  // A whole number of beads, each a bead wide apart, so the ring closes with no seam.
+  const circumference = 2 * Math.PI * radiusOfRing;
+  const beadSpacing = circumference / Math.round(circumference / RING_BEAD);
+
+  return (
+    <View style={styles.ring} testID={firstForecastRingTestID}>
+      <Svg height={RING_SIZE} width={RING_SIZE}>
+        <Circle
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          fill="none"
+          r={radiusOfRing}
+          stroke={colour.emptyRing}
+          strokeDasharray={`0.01 ${String(beadSpacing - 0.01)}`}
+          strokeLinecap="round"
+          strokeWidth={RING_BEAD}
+        />
+      </Svg>
+      <View style={styles.ringDrop}>
+        <Icon colour={colour.accent} name="drop" size={ICON_SIZE * 1.5} />
+      </View>
+    </View>
   );
 }
 
 /**
  * What she reads where she passed the question about her last period. There is nothing to count
- * from, so there is no range anywhere on it, and the two cards that explain a range are not drawn.
- *
- * The count comes from the arithmetic's own number rather than from a number written here, and the
- * length is the one she gave, said in the sentence the home screen says it in.
+ * from, so there is no range anywhere on it.
  */
 function WithNoDate({
   cycleLengthDays,
+  needsCycles,
 }: {
   readonly cycleLengthDays: number | undefined;
+  readonly needsCycles: number;
 }): ReactNode {
   return (
-    <>
-      <View>
-        <Text accessibilityRole="header" style={styles.title} testID={firstForecastTitleTestID}>
-          {firstRunCopy.firstForecast.noDate.title}
-        </Text>
-        <View style={styles.lines} testID={firstForecastLinesTestID}>
-          <Text style={styles.line}>{firstRunCopy.firstForecast.noDate.first}</Text>
-          {cycleLengthDays === undefined ? null : (
-            <Text style={styles.line}>{statedLengthSentence(cycleLengthDays)}</Text>
-          )}
-        </View>
+    <View style={styles.column}>
+      <TheEmptyRing />
+      <Text accessibilityRole="header" style={styles.title} testID={firstForecastTitleTestID}>
+        {firstRunCopy.firstForecast.noDate.title}
+      </Text>
+      <View style={styles.lines} testID={firstForecastLinesTestID}>
+        <Text style={styles.firstLine}>{firstRunCopy.firstForecast.noDate.first}</Text>
+        {cycleLengthDays === undefined ? null : (
+          <Text style={styles.line}>{countsFromTheFirstPeriodSentence(cycleLengthDays)}</Text>
+        )}
       </View>
 
       <View style={styles.cards}>
         <Card testID={firstForecastStillLearningTestID}>
-          <Text style={styles.cardTitle}>{learningCopy.stillLearning}</Text>
-          <Text style={styles.cardLine}>
-            {cyclesBeforeAForecastSentence(CYCLES_BEFORE_A_FORECAST)}
+          <StatusPill label={firstRunCopy.firstForecast.stillLearning} tone="accent" />
+          <Text style={styles.cardHeading}>{cyclesBeforeAForecastSentence(needsCycles)}</Text>
+          <Text style={styles.cardSmall} testID={firstForecastNoGuessTestID}>
+            {firstRunCopy.firstForecast.noDate.guess}
           </Text>
         </Card>
-
-        <Text style={styles.noGuess} testID={firstForecastNoGuessTestID}>
-          {firstRunCopy.firstForecast.noDate.guess}
-        </Text>
       </View>
-    </>
+    </View>
   );
 }
 
+const DAY_SIZE = 36;
+
 const styles = StyleSheet.create({
-  // The middle grows and the two ends do not, so the button sits where it sits on every question
-  // she has just answered.
   body: {
     flexGrow: 1,
-    justifyContent: 'space-between',
     paddingBottom: space.spaceLg,
     paddingHorizontal: space.spaceLg,
     paddingTop: space.spaceXl,
   },
+  cardHeading: {
+    color: colour.text,
+    ...textStyle('choice-lg'),
+    marginTop: space.spaceMd,
+  },
   cardLine: {
     color: colour.secondaryText,
-    ...textStyle('body-lg'),
+    ...textStyle('body-sm'),
+  },
+  cardSmall: {
+    color: colour.secondaryText,
+    ...textStyle('body-sm'),
+    marginTop: space.spaceSm,
   },
   cardTitle: {
     color: colour.text,
-    ...textStyle('label-md'),
+    ...textStyle('headline-sm'),
     marginBottom: space.spaceXs,
   },
-  cards: { gap: space.spaceMd, marginTop: space.spaceXl },
+  cards: { alignSelf: 'stretch', gap: space.spaceMd, marginTop: space.spaceXl },
+  column: { alignItems: 'center' },
+  day: {
+    alignItems: 'center',
+    borderColor: colour.accent,
+    borderRadius: radius.full,
+    borderStyle: 'dashed',
+    borderWidth: stroke.icon,
+    height: DAY_SIZE,
+    justifyContent: 'center',
+    width: DAY_SIZE,
+  },
+  dayNumber: {
+    color: colour.accent,
+    ...textStyle('label-md'),
+  },
+  // The circles wrap rather than shrink, because a range the arithmetic widens is still one circle
+  // a day.
+  days: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: space.spaceXs,
+    justifyContent: 'center',
+    marginBottom: space.spaceLg,
+  },
+  firstLine: {
+    color: colour.text,
+    ...textStyle('choice-lg'),
+    textAlign: 'center',
+  },
   footer: {
-    borderTopColor: colour.line,
-    borderTopWidth: stroke.hairline,
     padding: space.spaceLg,
+  },
+  label: {
+    color: colour.accent,
+    ...textStyle('label-md'),
+    marginBottom: space.spaceSm,
+    textAlign: 'center',
   },
   line: {
     color: colour.secondaryText,
     ...textStyle('body-lg'),
+    textAlign: 'center',
   },
   lines: { gap: space.spaceSm },
-  // Under the range rather than beside it, because it says what the two days are worth and a
-  // woman reads the days first.
-  learning: {
+  needs: {
     color: colour.secondaryText,
-    ...textStyle('body-lg'),
+    ...textStyle('body-sm'),
+    marginTop: space.spaceXl,
+    textAlign: 'center',
   },
-  // Outside the card and in the ink the body reads at, because it is the one sentence on the
-  // screen about what Emi refuses to do, and a card would read as another aside.
-  noGuess: {
-    color: colour.text,
-    ...textStyle('body-lg'),
+  phoneRow: { alignItems: 'flex-start', flexDirection: 'row', gap: space.spaceMd },
+  phoneTile: {
+    alignItems: 'center',
+    backgroundColor: colour.washWarm,
+    borderRadius: radius.md,
+    height: ICON_SIZE * 2,
+    justifyContent: 'center',
+    width: ICON_SIZE * 2,
   },
-  // The accent, and the largest thing on the screen, because the range is what she came through
-  // twelve questions to read.
+  phoneWords: { flex: 1 },
+  // The largest thing on the screen, because the range is what she came through the questions to
+  // read.
   range: {
-    color: colour.accent,
-    ...textStyle('headline-md'),
-    marginBottom: space.spaceSm,
+    color: colour.text,
+    ...textStyle('headline-lg'),
+    textAlign: 'center',
   },
+  ring: {
+    alignItems: 'center',
+    height: RING_SIZE,
+    justifyContent: 'center',
+    marginBottom: space.spaceXl,
+    width: RING_SIZE,
+  },
+  ringDrop: { position: 'absolute' },
   scroll: { flex: 1 },
+  tagRow: { marginTop: space.spaceMd },
   title: {
     color: colour.text,
     ...textStyle('headline-lg'),
     marginBottom: space.spaceMd,
+    textAlign: 'center',
   },
 });

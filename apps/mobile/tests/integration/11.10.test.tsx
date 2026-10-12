@@ -12,7 +12,10 @@ import { readSetting, writeSetting } from '../../src/data/settingRepository';
 import {
   FirstForecast,
   firstForecastActionTestID,
+  firstForecastDayTestID,
+  firstForecastDaysTestID,
   firstForecastLearningTestID,
+  firstForecastNeedsTestID,
   firstForecastOnThisPhoneTestID,
   firstForecastRangeTestID,
   firstForecastTestID,
@@ -28,7 +31,6 @@ import { learningRangeTestID, learningTestID } from '../../src/features/forecast
 import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { cycleRingTestID } from '../../src/components/CycleRing';
 import { rangeSentence } from '../../src/features/forecast/copy';
-import { firstRunCopy } from '../../src/features/onboarding/copy';
 import { completeFirstRun, forecastFromHerAnswers } from '../../src/features/onboarding/firstRun';
 import { words } from '../../src/language';
 import { openTestDatabase } from '../data/nodeDatabase';
@@ -64,6 +66,12 @@ const herPeriodStarted = '2026-05-09';
 const theOneBefore = '2026-04-11';
 
 const herCycleLengthDays = 28;
+
+/**
+ * The circles are hidden from a screen reader, because the range sentence above them says the same
+ * days in words, so a query has to ask for hidden elements to find them.
+ */
+const theHiddenCircles = { includeHiddenElements: true } as const;
 
 /**
  * The answer a woman with one recorded day leaves the arithmetic with: still learning, and a range
@@ -227,29 +235,83 @@ describe('her first forecast is a range, before anything is written', () => {
       );
     });
 
-    it('says it is still getting to know her cycle, and what comes after two cycles', async () => {
+    it('tags the range Still learning and says the rule behind it, in the redesign words', async () => {
       await sheOpensEmi();
 
       await sheReachesHerFirstForecast();
 
-      expect(screen.getByTestId(firstForecastLearningTestID)).toHaveTextContent(
-        words('onboarding.firstForecast.line.learning'),
-      );
-      expect(screen.getByText(firstRunCopy.firstForecast.title)).toBeTruthy();
+      expect(screen.getByText('Your next period')).toBeTruthy();
+      expect(textIn(screen.getByTestId(firstForecastLearningTestID))).toEqual(['Still learning']);
+      expect(textIn(screen.getByTestId(firstForecastNeedsTestID))).toEqual([
+        `Emi needs ${String(CYCLES_BEFORE_A_FORECAST)} complete cycles before it forecasts from your own cycles, so this is still learning.`,
+      ]);
     });
 
-    it('says why the answer is a range and where it was worked out', async () => {
+    it('draws one circle for each day of the range, seven where the range runs seven days', async () => {
+      await sheOpensEmi();
+
+      await sheReachesHerFirstForecast();
+      const forecast = forecastFromHerAnswers({
+        periodStartedOn: herPeriodStarted,
+        cycleLengthDays: herCycleLengthDays,
+      });
+
+      expect(forecast.start).toEqual({ from: '2026-06-03', to: '2026-06-09' });
+      expect(textIn(screen.getByTestId(firstForecastDaysTestID, theHiddenCircles))).toEqual([
+        '3',
+        '4',
+        '5',
+        '6',
+        '7',
+        '8',
+        '9',
+      ]);
+      expect(
+        screen.getByTestId(firstForecastDayTestID('2026-06-03'), theHiddenCircles),
+      ).toBeTruthy();
+      expect(
+        screen.getByTestId(firstForecastDayTestID('2026-06-09'), theHiddenCircles),
+      ).toBeTruthy();
+      expect(
+        screen.queryByTestId(firstForecastDayTestID('2026-06-10'), theHiddenCircles),
+      ).toBeNull();
+    });
+
+    it('says why the answer is a range from the counts the arithmetic used, with no period before', async () => {
       await sheOpensEmi();
 
       await sheReachesHerFirstForecast();
 
-      expect(textIn(screen.getByTestId(firstForecastWhyTestID))).toEqual([
-        words('onboarding.firstForecast.why.title'),
-        words('onboarding.firstForecast.why.line'),
+      expect(textIn(screen.getByTestId(firstForecastWhyTestID)).slice(-2)).toEqual([
+        'Why a range?',
+        'Emi has read 0 complete cycles. Until it reads 2, it counts the 28 days you gave from your last period. The range runs 3 days either side of that day.',
       ]);
+    });
+
+    it('counts the one cycle she lived where she gave the period before it', async () => {
+      await sheOpensEmi();
+
+      await sheReachesHerFirstForecast({ periodBeforeStartedOn: theOneBefore });
+      const forecast = forecastFromHerAnswers({
+        periodStartedOn: herPeriodStarted,
+        periodBeforeStartedOn: theOneBefore,
+        cycleLengthDays: herCycleLengthDays,
+      });
+
+      expect(forecast.kind === 'learning' ? forecast.completeCycles : -1).toBe(1);
+      expect(textIn(screen.getByTestId(firstForecastWhyTestID)).join(' ')).toContain(
+        'Emi has read 1 complete cycle. Until it reads 2,',
+      );
+    });
+
+    it('says where it was worked out in the redesign words', async () => {
+      await sheOpensEmi();
+
+      await sheReachesHerFirstForecast();
+
       expect(textIn(screen.getByTestId(firstForecastOnThisPhoneTestID))).toEqual([
-        words('onboarding.firstForecast.onThisPhone.title'),
-        words('onboarding.firstForecast.onThisPhone.line'),
+        'Worked out on this phone',
+        'The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.',
       ]);
     });
 
@@ -464,7 +526,6 @@ describe('her first forecast is a range, before anything is written', () => {
           <FirstForecast
             cycleLengthDays={herCycleLengthDays}
             forecast={theLearningStateWithARange}
-            name={undefined}
             onContinue={() => pressed.push('continue')}
           />
         </OnAPhone>,
@@ -480,7 +541,6 @@ describe('her first forecast is a range, before anything is written', () => {
           <FirstForecast
             cycleLengthDays={herCycleLengthDays}
             forecast={theLearningStateWithARange}
-            name={undefined}
             onContinue={() => undefined}
           />
         </OnAPhone>,

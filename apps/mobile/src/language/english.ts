@@ -362,24 +362,41 @@ export const english = {
   'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
   'onboarding.feeling.title': 'How you feel about it',
   'onboarding.firstForecast.action': 'Continue',
-  'onboarding.firstForecast.line.learning':
-    "We're still getting to know your cycle. After two cycles, we'll tell you how sure we are.",
-  'onboarding.firstForecast.noDate.cycles': {
-    one: 'We need {count} full cycle before we can forecast.',
-    other: 'We need {count} full cycles before we can forecast.',
+  'onboarding.firstForecast.needs': {
+    one: 'Emi needs {count} complete cycle before it forecasts from your own cycles, so this is still learning.',
+    other:
+      'Emi needs {count} complete cycles before it forecasts from your own cycles, so this is still learning.',
   },
-  'onboarding.firstForecast.noDate.first': 'Log your next period and your forecast starts there.',
+  'onboarding.firstForecast.noDate.cycles': {
+    one: 'Emi needs {count} complete cycle before it forecasts from your own cycles.',
+    other: 'Emi needs {count} complete cycles before it forecasts from your own cycles.',
+  },
+  'onboarding.firstForecast.noDate.first': 'The first period you log starts everything.',
   'onboarding.firstForecast.noDate.guess':
-    "We won't guess a date on day one, because a guess would only mislead you.",
-  'onboarding.firstForecast.noDate.title': "We don't have a date to start from yet",
+    'Emi builds no forecast from a date it guessed, because a guess on day one is a false sentence on day one.',
+  'onboarding.firstForecast.noDate.length': {
+    one: 'From that day Emi counts a cycle of {count} day, the length you gave.',
+    other: 'From that day Emi counts a cycle of {count} days, the length you gave.',
+  },
+  'onboarding.firstForecast.noDate.title': 'Emi has no date to count from',
   'onboarding.firstForecast.onThisPhone.line':
-    'This comes from the dates you just gave us, worked out right here on your phone.',
-  'onboarding.firstForecast.onThisPhone.title': 'Worked out on your phone',
-  'onboarding.firstForecast.title': "Here's your next period",
-  'onboarding.firstForecast.titleNamed': "{name}, here's your next period",
-  'onboarding.firstForecast.why.line':
-    "Cycles shift by a few days from month to month. A single date would pretend they don't.",
+    'The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.',
+  'onboarding.firstForecast.onThisPhone.title': 'Worked out on this phone',
+  'onboarding.firstForecast.stillLearning': 'Still learning',
+  'onboarding.firstForecast.title': 'Your next period',
+  'onboarding.firstForecast.why.counts': {
+    one: 'Until it reads {needs}, it counts the {count} day you gave from your last period.',
+    other: 'Until it reads {needs}, it counts the {count} days you gave from your last period.',
+  },
+  'onboarding.firstForecast.why.read': {
+    one: 'Emi has read {count} complete cycle.',
+    other: 'Emi has read {count} complete cycles.',
+  },
   'onboarding.firstForecast.why.title': 'Why a range?',
+  'onboarding.firstForecast.why.width': {
+    one: 'The range runs {count} day either side of that day.',
+    other: 'The range runs {count} days either side of that day.',
+  },
   'onboarding.focus.action': 'Continue',
   'onboarding.focus.line.first': 'Emi puts these first when you log a day.',
   'onboarding.focus.title': 'Which of these change with your cycle?',

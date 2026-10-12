@@ -440,7 +440,6 @@ function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
         <FirstForecast
           cycleLengthDays={defaultCycleLengthDays}
           forecast={aForecastWithARange}
-          name={undefined}
           onContinue={nothing}
         />
       );
@@ -449,7 +448,6 @@ function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
         <FirstForecast
           cycleLengthDays={defaultCycleLengthDays}
           forecast={aForecastWithNoRange}
-          name={undefined}
           onContinue={nothing}
         />
       );

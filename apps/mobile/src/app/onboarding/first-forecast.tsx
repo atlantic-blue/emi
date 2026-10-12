@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { FirstForecast } from '../../features/onboarding/FirstForecast';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
-import { forecastFromHerAnswers, nameSheGave } from '../../features/onboarding/firstRun';
+import { forecastFromHerAnswers } from '../../features/onboarding/firstRun';
 
 /**
  * The forecast is worked out here rather than held in the provider, because it is arithmetic over
@@ -15,7 +15,7 @@ import { forecastFromHerAnswers, nameSheGave } from '../../features/onboarding/f
  */
 export default function FirstForecastRoute(): ReactNode {
   const router = useRouter();
-  const { periodStartedOn, periodBeforeStartedOn, cycleLengthDays, nameTyped } = useFirstRun();
+  const { periodStartedOn, periodBeforeStartedOn, cycleLengthDays } = useFirstRun();
   const forecast = forecastFromHerAnswers({
     cycleLengthDays,
     periodBeforeStartedOn,
@@ -26,7 +26,6 @@ export default function FirstForecastRoute(): ReactNode {
     <FirstForecast
       cycleLengthDays={cycleLengthDays}
       forecast={forecast}
-      name={nameSheGave(nameTyped)}
       onContinue={() => router.push('/onboarding/the-promise')}
     />
   );

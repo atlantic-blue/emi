@@ -338,6 +338,7 @@ import {
 import { rowGroupRuleTestID } from '../apps/mobile/src/components/RowGroup';
 import { exportCopy } from '../apps/mobile/src/features/export/copy';
 import {
+  countsFromTheFirstPeriodSentence,
   cyclesBeforeAForecastSentence,
   firstRunCopy,
   promiseCopy,
@@ -345,11 +346,7 @@ import {
   stepLabel,
   tourCopy,
 } from '../apps/mobile/src/features/onboarding/copy';
-import {
-  learningCopy,
-  ordinal,
-  statedLengthSentence,
-} from '../apps/mobile/src/features/forecast/copy';
+import { ordinal, statedLengthSentence } from '../apps/mobile/src/features/forecast/copy';
 import {
   monthLabel,
   startOfMonth,
@@ -5095,22 +5092,26 @@ defineFeature(feature, (test) => {
 
     and('a line names the cycle length she gave, and no length Emi picked', () => {
       expect(textIn(screen.getByTestId(firstForecastLinesTestID))).toContain(
-        statedLengthSentence(sheSaysHerCycleRuns),
+        countsFromTheFirstPeriodSentence(sheSaysHerCycleRuns),
       );
       expect(whatItSays(firstForecastLinesTestID)).toContain(String(sheSaysHerCycleRuns));
       expect(whatItSays(firstForecastLinesTestID)).not.toContain(String(defaultCycleLengthDays));
     });
 
-    and('the card says Emi is still learning, and how many complete cycles it needs', () => {
-      expect(textIn(screen.getByTestId(firstForecastStillLearningTestID))).toEqual([
-        learningCopy.stillLearning,
-        cyclesBeforeAForecastSentence(CYCLES_BEFORE_A_FORECAST),
-      ]);
-      // The number is the arithmetic's own, read off the answer CYCLE-3 gives her answers.
-      const answer = forecastFromHerAnswers({ cycleLengthDays: sheSaysHerCycleRuns });
+    and(
+      'the card says Emi is still learning, how many complete cycles it needs, and why it does not guess',
+      () => {
+        expect(textIn(screen.getByTestId(firstForecastStillLearningTestID))).toEqual([
+          firstRunCopy.firstForecast.stillLearning,
+          cyclesBeforeAForecastSentence(CYCLES_BEFORE_A_FORECAST),
+          firstRunCopy.firstForecast.noDate.guess,
+        ]);
+        // The number is the arithmetic's own, read off the answer CYCLE-3 gives her answers.
+        const answer = forecastFromHerAnswers({ cycleLengthDays: sheSaysHerCycleRuns });
 
-      expect(answer.kind === 'learning' ? answer.needsCycles : 0).toBe(CYCLES_BEFORE_A_FORECAST);
-    });
+        expect(answer.kind === 'learning' ? answer.needsCycles : 0).toBe(CYCLES_BEFORE_A_FORECAST);
+      },
+    );
 
     and('a line says Emi builds no forecast from a date it guessed', () => {
       expect(whatItSays(firstForecastNoGuessTestID)).toBe(firstRunCopy.firstForecast.noDate.guess);
@@ -6029,10 +6030,15 @@ defineFeature(feature, (test) => {
    * typed at the second question opens the sentence, and a woman who gave none reads a clean one.
    * The three screens between it and the hold talk to her as you.
    */
-  test('SCREEN-1, her first forecast is addressed to her', ({ given, when, then, and }) => {
+  test('SCREEN-1, her first forecast reads the redesign label, and the screens after it are addressed to her', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     const theTitleOfHerForecast = {
-      named: `${theNameSheGives}, here's your next period`,
-      plain: "Here's your next period",
+      theOldGreeting: `${theNameSheGives}, here's your next period`,
+      plain: 'Your next period',
     };
     const theTitleOfWhatWeWillDo = {
       named: `${theNameSheGives}, here's what we'll do with your answers`,
@@ -6106,10 +6112,16 @@ defineFeature(feature, (test) => {
       },
     );
 
-    then('the forecast she reads is addressed to her by the name she gave', () => {
-      expect(app.pathname()).toBe('/onboarding/first-forecast');
-      expect(theTitleSheIsReading(firstForecastTitleTestID)).toEqual([theTitleOfHerForecast.named]);
-    });
+    then(
+      'the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name',
+      () => {
+        expect(app.pathname()).toBe('/onboarding/first-forecast');
+        expect(theTitleSheIsReading(firstForecastTitleTestID)).toEqual([
+          theTitleOfHerForecast.plain,
+        ]);
+        expect(screen.queryByText(theTitleOfHerForecast.theOldGreeting)).toBeNull();
+      },
+    );
 
     and(
       'a woman who gave no name reads the same forecast, with no gap where a name would be',
@@ -6121,7 +6133,7 @@ defineFeature(feature, (test) => {
         expect(theTitleSheIsReading(firstForecastTitleTestID)).toEqual([
           theTitleOfHerForecast.plain,
         ]);
-        expect(screen.queryByText(theTitleOfHerForecast.named)).toBeNull();
+        expect(screen.queryByText(theTitleOfHerForecast.theOldGreeting)).toBeNull();
       },
     );
 
