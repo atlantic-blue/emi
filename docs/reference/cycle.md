@@ -256,8 +256,9 @@ function cyclesFrom(days: readonly DayRecord[]): Cycle[]
 ```
 
 A cycle starts on the first bleeding day that is not marked unexpected, and ends the day before
-the next such day. Days she never recorded say nothing either way, so a period is closed by a
-recorded day that carries no bleeding, never by silence.
+the next such day. Days she never recorded say nothing either way, and neither does a day that
+carries no flow, so a period is closed by a recorded flow that is not her period, never by
+silence and never by a day of symptoms alone.
 
 ### `completeCycles`
 

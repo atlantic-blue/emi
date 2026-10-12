@@ -171,8 +171,31 @@ describe('the days of one period', () => {
     expect(cyclesFrom([...bleeding, { day: '2026-01-07', flow: 'none' }])[0]?.periodDays).toBe(2);
   });
 
-  it('closes the bleeding on a day she recorded without a flow at all', () => {
+  it('leaves the bleeding open on a day she recorded without a flow at all', () => {
     const days: DayRecord[] = [{ day: '2026-01-05', flow: 'medium' }, { day: '2026-01-06' }];
+
+    expect(cyclesFrom(days)[0]?.periodDays).toBeNull();
+    expect(cyclesFrom(days)[0]?.periodDays).not.toBe(1);
+  });
+
+  it('keeps counting bleeding that comes after a day without a flow', () => {
+    const days: DayRecord[] = [
+      { day: '2026-01-05', flow: 'medium' },
+      { day: '2026-01-06' },
+      { day: '2026-01-07', flow: 'light' },
+      { day: '2026-01-08', flow: 'none' },
+    ];
+
+    expect(cyclesFrom(days)[0]?.periodDays).toBe(2);
+  });
+
+  it('still closes the bleeding on a day she said she did not bleed, after a day without a flow', () => {
+    const days: DayRecord[] = [
+      { day: '2026-01-05', flow: 'medium' },
+      { day: '2026-01-06', flow: 'none' },
+      { day: '2026-01-07' },
+      { day: '2026-01-08', flow: 'light' },
+    ];
 
     expect(cyclesFrom(days)[0]?.periodDays).toBe(1);
   });
