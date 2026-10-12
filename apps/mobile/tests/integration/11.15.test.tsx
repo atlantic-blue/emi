@@ -14,7 +14,12 @@ import {
   onboardingActionTestID,
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { YEAR_ROW_HEIGHT, yearTestID, yearWheelTestID } from '../../src/components/YearWheel';
+import {
+  YEARS_EACH_SIDE,
+  YEAR_ROW_HEIGHT,
+  yearTestID,
+  yearWheelTestID,
+} from '../../src/components/YearWheel';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
 import { firstRunCopy } from '../../src/features/onboarding/copy';
 import { birthYearsOffered } from '../../src/features/onboarding/firstRun';
@@ -51,12 +56,15 @@ const theYearInTheMiddleFiveYearsOn = 2001;
 const theLineThatWent = 'Nothing in Emi reads this yet.';
 const theKeyThatWent = 'onboarding.birthYear.line.noReader';
 
-/** What the screen says about the year now, so a screen drawn empty cannot pass for this. */
-const theLineThatStayed = 'Cycles change across the years, so it helps to know where you are.';
+/** The reason the screen gave for the year, which the redesign canvas does not draw. */
+const theReasonThatWent = 'Cycles change across the years, so it helps to know where you are.';
 
-/** The one line the five questions that keep an answer all read, under the line above. */
+/** The one line the other questions that keep an answer read. */
 const theLineAboutWhoReadsIt = 'Only you can read this.';
 const theKeyOfThatLine = 'onboarding.onlyYou';
+
+/** What the year question says at its foot now, in the redesign's words. */
+const theLineAboutEncryption = 'Emi encrypts this on the phone before it goes anywhere.';
 
 interface Wheel {
   readonly props: {
@@ -94,7 +102,9 @@ async function sheReachesTheYearSheWasBorn(): Promise<{ readonly pathname: () =>
 
 /**
  * The year she finds in the middle of the wheel, worked out the way her eye does it: the middle
- * of what the wheel shows, measured down the list of years from where the wheel opens.
+ * of what the wheel shows, measured down the list of years from where the wheel opens. The list
+ * keeps room above its first year so that year can reach the middle too, and that room is not a
+ * year.
  */
 function theYearSheFindsInTheMiddle(wheel: Wheel, now: Date): number | undefined {
   const shown = (StyleSheet.flatten(wheel.props.style) ?? {}) as { height?: number };
@@ -104,7 +114,8 @@ function theYearSheFindsInTheMiddle(wheel: Wheel, now: Date): number | undefined
     throw new Error('the wheel says nothing about how much of the list it shows');
   }
 
-  const middle = (wheel.props.contentOffset?.y ?? 0) + height / 2;
+  const middle =
+    (wheel.props.contentOffset?.y ?? 0) + height / 2 - YEARS_EACH_SIDE * YEAR_ROW_HEIGHT;
 
   return birthYearsOffered(now)[Math.floor(middle / YEAR_ROW_HEIGHT)];
 }
@@ -128,9 +139,9 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
 
       expect(screen.getByTestId('onboarding-birthYear')).toBeTruthy();
       expect(screen.queryByText(theLineThatWent)).toBeNull();
-      expect(screen.getByText(theLineThatStayed)).toBeTruthy();
-      expect(screen.getByText(theLineAboutWhoReadsIt)).toBeTruthy();
-      expect(firstRunCopy.birthYear.lines).toEqual([theLineThatStayed, theLineAboutWhoReadsIt]);
+      expect(screen.queryByText(theReasonThatWent)).toBeNull();
+      expect(screen.getByText(theLineAboutEncryption)).toBeTruthy();
+      expect(firstRunCopy.birthYear.lines).toEqual([theLineAboutEncryption]);
     });
 
     it('is gone from all three languages, so no screen can draw it again', () => {
@@ -169,7 +180,6 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
         <OnAPhone>
           <YearOfBirth
             chosen={undefined}
-            name={undefined}
             now={whenAnotherWomanOpensIt}
             onBack={() => undefined}
             onChoose={() => undefined}
@@ -208,6 +218,30 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
 
       expect(app.pathname()).toBe('/onboarding/last-period');
       expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+    });
+
+    it('becomes one when she turns the wheel, on the year it settles in the middle', async () => {
+      await sheReachesTheYearSheWasBorn();
+
+      const twoYearsOlder = theYearInTheMiddle - 2;
+      const settledAt = birthYearsOffered(whenSheOpensIt).indexOf(twoYearsOlder) * YEAR_ROW_HEIGHT;
+
+      await fireEvent(screen.getByTestId(yearWheelTestID), 'momentumScrollEnd', {
+        nativeEvent: { contentOffset: { x: 0, y: settledAt } },
+      });
+
+      expect(screen.getByTestId(yearTestID(twoYearsOlder))).toBeSelected();
+      expect(screen.getByText(`Born in ${String(twoYearsOlder)}`)).toBeTruthy();
+      expect(screen.getByTestId(onboardingActionTestID)).toBeEnabled();
+    });
+
+    it('reads the plain year in the middle until she picks one', async () => {
+      await sheReachesTheYearSheWasBorn();
+
+      expect(screen.getByTestId(yearTestID(theYearInTheMiddle))).toHaveTextContent(
+        String(theYearInTheMiddle),
+      );
+      expect(screen.queryByText(`Born in ${String(theYearInTheMiddle)}`)).toBeNull();
     });
   });
 });

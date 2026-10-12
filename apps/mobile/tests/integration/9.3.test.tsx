@@ -278,12 +278,12 @@ describe('a component that writes a colour of its own fails the lint', () => {
       expect(theStyleOf('field')['boxShadow']).toBeUndefined();
     });
 
-    it('sets the question above the box in the display face, as a prompt and not a form label', async () => {
+    it('sets the label small above the box, as the redesign draws it', async () => {
       await render(<TextField label="Name" onChange={nothing} testID="field" value="" />);
 
       expect(StyleSheet.flatten(screen.getByText('Name').props.style)).toMatchObject({
         color: colour.text,
-        ...textStyle('headline-sm'),
+        ...textStyle('label-md'),
       });
     });
   });
@@ -528,7 +528,7 @@ describe('a component that writes a colour of its own fails the lint', () => {
       await render(<ProgressBar label="Step 2 of 3" step={2} testID="bar" total={3} />);
 
       expect(theStyleOf('bar')).toMatchObject({
-        backgroundColor: colour.field,
+        backgroundColor: colour.stepTrack,
         borderRadius: radius.full,
       });
       expect(theStyleOf(progressFillTestID('bar'))).toMatchObject({

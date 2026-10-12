@@ -5,8 +5,8 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 /**
  * One line she types into, with the question above it.
  *
- * The question is set in the display face because the document asks a field to read as a prompt in
- * a journal rather than as a form label, and the words she types are body text.
+ * The label sits small above the box, as the redesign draws it, and the words she types are body
+ * text.
  *
  * The focused state thickens the border and takes the colour that acts, and never a glow. Nothing
  * in this product is lit.
@@ -72,6 +72,6 @@ const styles = StyleSheet.create({
   },
   label: {
     color: colour.text,
-    ...textStyle('headline-sm'),
+    ...textStyle('label-md'),
   },
 });

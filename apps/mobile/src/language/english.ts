@@ -337,10 +337,7 @@ export const english = {
   'lostKey.working': 'Deleting',
   'onboarding.back': 'Back',
   'onboarding.birthYear.action': 'Continue',
-  'onboarding.birthYear.line.years':
-    'Cycles change across the years, so it helps to know where you are.',
   'onboarding.birthYear.title': 'What year were you born?',
-  'onboarding.birthYear.titleNamed': 'Nice to meet you, {name}. What year were you born?',
   'onboarding.birthYear.year': 'Born in {year}',
   'onboarding.cycleLength.action': "That's about right",
   // The stepper runs from 21 to 45, so the count never reaches one and the screen said days
@@ -353,6 +350,7 @@ export const english = {
   'onboarding.cycleLength.longer': 'One day longer',
   'onboarding.cycleLength.shorter': 'One day shorter',
   'onboarding.cycleLength.title': 'How long is your cycle, usually?',
+  'onboarding.encrypts': 'Emi encrypts this on the phone before it goes anywhere.',
   'onboarding.feeling.action': 'Continue',
   'onboarding.feeling.choice.fine': "I'm fine with it",
   'onboarding.feeling.choice.hard': "Honestly, it's hard most months",
@@ -415,9 +413,8 @@ export const english = {
   'onboarding.name.action': 'Continue',
   'onboarding.name.hint': 'Your first name',
   'onboarding.name.label': 'Your name',
-  'onboarding.name.line.greets':
-    'So we can say hello. Your name stays on your home screen and nowhere else.',
-  'onboarding.name.title': 'What should we call you?',
+  'onboarding.name.line.greets': 'Emi greets you by it. Nothing else uses it.',
+  'onboarding.name.title': 'What should Emi call you?',
   'onboarding.name.tooLong': {
     one: 'Names can be up to {count} character.',
     other: 'Names can be up to {count} characters.',

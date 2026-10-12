@@ -5625,7 +5625,12 @@ defineFeature(feature, (test) => {
    * woman who gave none reads a clean question, and an answer she gives is answered where she
    * gave it.
    */
-  test('SCREEN-1, the first run greets her by the name she gave', ({ given, when, then, and }) => {
+  test('SCREEN-1, the first run asks her name and then the year she was born', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
     const theQuestionAfterHerName = `Nice to meet you, ${theNameSheGives}. What year were you born?`;
     const theSameQuestionWithNoName = 'What year were you born?';
     const theReplyToACycleThatMoves =
@@ -5675,10 +5680,10 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingActionTestID);
     });
 
-    then('the question after it greets her by the name she gave', () => {
+    then('the question after it asks the year plainly, as the redesign draws it', () => {
       expect(app.pathname()).toBe('/onboarding/year-of-birth');
-      expect(theQuestionSheIsReading()).toBe(theQuestionAfterHerName);
-      expect(screen.getByText(theQuestionAfterHerName)).toBeTruthy();
+      expect(theQuestionSheIsReading()).toBe(theSameQuestionWithNoName);
+      expect(screen.queryByText(theQuestionAfterHerName)).toBeNull();
     });
 
     and(
@@ -5720,7 +5725,7 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'every question that keeps an answer tells her only she can read it, in all three languages',
+      'every question that keeps an answer carries a line about her privacy, in all three languages',
       async () => {
         for (const language of languages) {
           const held: Readonly<Record<string, Words>> = Object.fromEntries(
@@ -5735,15 +5740,16 @@ defineFeature(feature, (test) => {
 
         expect(languages.length).toBe(3);
 
-        // And she reads it on each of the five questions that keep an answer, which is the round
-        // trip the catalogue above cannot prove on its own.
+        // And she reads a line about her privacy on each of the five questions that keep an
+        // answer, which is the round trip the catalogue above cannot prove on its own. The two
+        // questions the redesign has redrawn say what the canvas says.
         await anotherWomanOpensEmi();
 
-        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
 
         await shePresses(onboardingSkipTestID);
 
-        expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
 
         await shePresses(onboardingSkipTestID);
 
@@ -6028,15 +6034,12 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and(
-      'the question that keeps an answer carries the promise that only she can read it',
-      async () => {
-        await sheIsLookingAt('name');
+    and('the question that keeps an answer carries the promise about her privacy', async () => {
+      await sheIsLookingAt('name');
 
-        expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(firstRunCopy.onlyYou);
-        expect(screen.getByTestId(lockLineIconTestID(onboardingLockTestID))).toBeTruthy();
-      },
-    );
+      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(firstRunCopy.encrypts);
+      expect(screen.getByTestId(lockLineIconTestID(onboardingLockTestID))).toBeTruthy();
+    });
 
     and(
       'each screen draws every part its own drawing names, in the order the drawing places them',

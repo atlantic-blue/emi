@@ -2,13 +2,11 @@ import type { ReactNode } from 'react';
 
 import { YearWheel } from '../../components/YearWheel';
 import { OnboardingScreen } from './OnboardingScreen';
-import { birthYearLabel, birthYearTitle, firstRunCopy } from './copy';
+import { birthYearLabel, firstRunCopy } from './copy';
 import { birthYearsOffered, middleBirthYear } from './firstRun';
 
 interface Props {
   readonly now: Date;
-  /** Nothing at all where she gave no name, and then the question is asked without one. */
-  readonly name: string | undefined;
   readonly chosen: number | undefined;
   readonly onChoose: (year: number) => void;
   readonly onContinue: () => void;
@@ -24,12 +22,12 @@ interface Props {
  * one. A list that opened on 1940, or on the newest year it offers, would ask most women to travel
  * a long way before they reached a year they could have been born in.
  *
- * Nothing is chosen when she arrives, so Continue waits for a year. The Skip above it is the way
- * past, and it writes nothing.
+ * The year in the middle of the wheel is only a place to start. Nothing is chosen until she turns
+ * the wheel or taps a year, so Continue waits, and Emi never keeps a year she did not pick. The Skip
+ * above it is the way past, and it writes nothing.
  */
 export function YearOfBirth({
   now,
-  name,
   chosen,
   onChoose,
   onContinue,
@@ -45,7 +43,7 @@ export function YearOfBirth({
       onBack={onBack}
       onSkip={onSkip}
       screen="birthYear"
-      title={birthYearTitle(name)}
+      title={firstRunCopy.birthYear.title}
     >
       <YearWheel
         chosen={chosen}

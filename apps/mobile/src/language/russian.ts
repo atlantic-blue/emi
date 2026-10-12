@@ -354,10 +354,7 @@ export const russian: CatalogueIn<'ru'> = {
   'lostKey.working': 'Удаляем',
   'onboarding.back': 'Назад',
   'onboarding.birthYear.action': 'Дальше',
-  'onboarding.birthYear.line.years':
-    'Цикл меняется с годами, поэтому полезно знать, где вы сейчас.',
   'onboarding.birthYear.title': 'В каком году вы родились?',
-  'onboarding.birthYear.titleNamed': 'Рады знакомству, {name}. В каком году вы родились?',
   'onboarding.birthYear.year': '{year} год',
   'onboarding.cycleLength.action': 'Примерно так',
   'onboarding.cycleLength.days': '{count} дней',
@@ -368,6 +365,7 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.cycleLength.longer': 'На день больше',
   'onboarding.cycleLength.shorter': 'На день меньше',
   'onboarding.cycleLength.title': 'Какой у вас обычно цикл?',
+  'onboarding.encrypts': 'Emi шифрует это на телефоне, прежде чем оно куда-либо отправится.',
   'onboarding.feeling.action': 'Продолжить',
   'onboarding.feeling.choice.fine': 'Меня это устраивает',
   'onboarding.feeling.choice.hard': 'Честно, тяжело почти каждый месяц',
@@ -430,8 +428,8 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.name.hint': 'Только имя',
   'onboarding.name.label': 'Ваше имя',
   'onboarding.name.line.greets':
-    'Чтобы мы могли поздороваться. Имя остаётся на вашем домашнем экране и больше нигде.',
-  'onboarding.name.title': 'Как нам вас называть?',
+    'Emi здоровается с вами по нему. Больше оно нигде не используется.',
+  'onboarding.name.title': 'Как Emi вас называть?',
   'onboarding.name.tooLong': {
     one: 'В имени до {count} символа.',
     few: 'В имени до {count} символов.',

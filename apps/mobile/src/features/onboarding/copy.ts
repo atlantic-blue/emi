@@ -33,14 +33,14 @@ export const firstRunCopy = {
   },
   name: {
     title: words('onboarding.name.title'),
-    lines: [words('onboarding.name.line.greets'), words('onboarding.onlyYou')],
+    lines: [words('onboarding.name.line.greets'), words('onboarding.encrypts')],
     label: words('onboarding.name.label'),
     hint: words('onboarding.name.hint'),
     action: words('onboarding.name.action'),
   },
   birthYear: {
     title: words('onboarding.birthYear.title'),
-    lines: [words('onboarding.birthYear.line.years'), words('onboarding.onlyYou')],
+    lines: [words('onboarding.encrypts')],
     action: words('onboarding.birthYear.action'),
   },
   lastPeriod: {
@@ -142,6 +142,7 @@ export const firstRunCopy = {
   back: words('onboarding.back'),
   skip: words('onboarding.skip'),
   onlyYou: words('onboarding.onlyYou'),
+  encrypts: words('onboarding.encrypts'),
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
   fewerDays: words('onboarding.periodLength.shorter'),
@@ -315,20 +316,6 @@ export function nameTooLongLine(characters: number): string {
 /** The cycle she lived, counted between the two starts she gave. */
 export function daysBetweenSentence(days: number): string {
   return words('onboarding.periodBefore.between', days);
-}
-
-/**
- * The question about the year she was born, which greets her by the name she gave one screen
- * earlier. A woman who gave none reads the plain question, and so does the screen that asks it
- * again from Privacy, where her name is already on the row above it.
- *
- * A function rather than a constant, because the catalogue is read once when this file loads and
- * she types her name long after that.
- */
-export function birthYearTitle(name: string | undefined): string {
-  return name === undefined
-    ? firstRunCopy.birthYear.title
-    : words('onboarding.birthYear.titleNamed', undefined, { name });
 }
 
 /** The last question, which asks about her day, so it asks her by name where she gave one. */

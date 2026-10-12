@@ -618,13 +618,13 @@ Feature: She opens Emi and logs her first period
     And the tour after it draws the ring with its legend, says what the ring is, and names the price
     And the welcome and the tour are in her own language, and say no word a screen refuses
 
-  Scenario: SCREEN-1, the first run greets her by the name she gave
+  Scenario: SCREEN-1, the first run asks her name and then the year she was born
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, and gives her name
-    Then the question after it greets her by the name she gave
+    Then the question after it asks the year plainly, as the redesign draws it
     And a woman who gives no name reads the same question, with no gap where a name would be
     And picking that her cycle moves around answers her with the reply to that answer
-    And every question that keeps an answer tells her only she can read it, in all three languages
+    And every question that keeps an answer carries a line about her privacy, in all three languages
 
   Scenario: SCREEN-1, her first forecast is addressed to her
     Given she has never opened Emi before
@@ -643,7 +643,7 @@ Feature: She opens Emi and logs her first period
     And the step she is on is written out, so she knows how much is left without counting
     And the welcome writes that step and draws no bar
     And the first run log names the day in the middle of its header and draws no bar
-    And the question that keeps an answer carries the promise that only she can read it
+    And the question that keeps an answer carries the promise about her privacy
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the Today screens match the redesign prototype

@@ -336,10 +336,7 @@ export const spanish: CatalogueIn<'es'> = {
   'lostKey.working': 'Borrando',
   'onboarding.back': 'Atrás',
   'onboarding.birthYear.action': 'Continuar',
-  'onboarding.birthYear.line.years':
-    'El ciclo cambia con los años, así que ayuda saber dónde estás.',
   'onboarding.birthYear.title': '¿En qué año naciste?',
-  'onboarding.birthYear.titleNamed': 'Nos alegra conocerte, {name}. ¿En qué año naciste?',
   'onboarding.birthYear.year': 'Año {year}',
   'onboarding.cycleLength.action': 'Más o menos eso',
   'onboarding.cycleLength.days': '{count} días',
@@ -350,6 +347,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.cycleLength.longer': 'Un día más',
   'onboarding.cycleLength.shorter': 'Un día menos',
   'onboarding.cycleLength.title': '¿Cuánto dura tu ciclo, normalmente?',
+  'onboarding.encrypts': 'Emi lo cifra en el teléfono antes de que vaya a ningún sitio.',
   'onboarding.feeling.action': 'Continuar',
   'onboarding.feeling.choice.fine': 'Estoy bien con ello',
   'onboarding.feeling.choice.hard': 'La verdad, es difícil casi todos los meses',
@@ -409,9 +407,8 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.name.action': 'Continuar',
   'onboarding.name.hint': 'Tu nombre de pila',
   'onboarding.name.label': 'Tu nombre',
-  'onboarding.name.line.greets':
-    'Para poder saludarte. Tu nombre se queda en tu pantalla de inicio y en ningún otro sitio.',
-  'onboarding.name.title': '¿Cómo quieres que te llamemos?',
+  'onboarding.name.line.greets': 'Emi te saluda con él. Ninguna otra cosa lo usa.',
+  'onboarding.name.title': '¿Cómo quieres que Emi te llame?',
   'onboarding.name.tooLong': {
     one: 'Los nombres admiten hasta {count} carácter.',
     other: 'Los nombres admiten hasta {count} caracteres.',
