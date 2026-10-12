@@ -111,7 +111,22 @@ export function OnboardingScreen({
   children,
 }: Props): ReactNode {
   const onTheSheet = header === 'bar';
-  const said = <TheLinesSheReads onTheSheet={onTheSheet} lines={lines} />;
+  const promise = thePromiseIn(lines);
+  const promiseLine =
+    promise === undefined ? null : (
+      <View style={styles.lock}>
+        <LockLine testID={onboardingLockTestID} words={promise} />
+      </View>
+    );
+  // A screen whose lines come first keeps the promise with them, above what she is asked, for the
+  // same reason the lines move: read after she answers is read too late.
+  const said = (
+    <>
+      <TheLinesSheReads onTheSheet={onTheSheet} lines={lines} />
+      {linesComeFirst ? promiseLine : null}
+    </>
+  );
+  const promiseAtTheFoot = linesComeFirst ? null : promiseLine;
 
   const asked = (
     <>
@@ -217,7 +232,10 @@ export function OnboardingScreen({
             {asked}
           </ScrollView>
           {wayPast}
-          <View style={styles.sheetFoot}>{action}</View>
+          <View style={styles.sheetFoot}>
+            {promiseAtTheFoot}
+            {action}
+          </View>
         </View>
       ) : (
         <>
@@ -225,17 +243,27 @@ export function OnboardingScreen({
             {asked}
           </ScrollView>
           {wayPast}
-          <View style={styles.footer}>{action}</View>
+          <View style={styles.footer}>
+            {promiseAtTheFoot}
+            {action}
+          </View>
         </>
       )}
     </Screen>
   );
 }
 
+/** The lines about her privacy. Each one is drawn apart, at the foot, with the lock beside it. */
+const thePromises: readonly string[] = [firstRunCopy.onlyYou, firstRunCopy.encrypts];
+
+function thePromiseIn(lines: readonly string[]): string | undefined {
+  return lines.find((line) => thePromises.includes(line));
+}
+
 /**
- * The lines under the question. The promise that only she can read the answer takes the lock
- * beside it, because it is the one line on a question screen that is about her privacy and not
- * about the question, and the prototype draws it apart from the rest at the foot of the sheet.
+ * The lines under the question. The promise about her privacy is not one of them: the redesign
+ * draws it at the foot of the sheet, over the button, because it is about her and not about the
+ * question.
  *
  * On the ground, where there is no sheet, the rest of the lines are raised onto a card. Inside the
  * sheet they are not: a white card on a white sheet is a card nobody can see.
@@ -247,48 +275,34 @@ function TheLinesSheReads({
   readonly lines: readonly string[];
   readonly onTheSheet: boolean;
 }): ReactNode {
-  const said = lines.filter((line) => line !== firstRunCopy.onlyYou);
-  const promise = lines.includes(firstRunCopy.onlyYou);
+  const said = lines.filter((line) => !thePromises.includes(line));
 
-  if (said.length === 0 && !promise) {
+  if (said.length === 0) {
     return null;
   }
 
-  const read =
-    said.length === 0 ? null : onTheSheet ? (
-      <View style={styles.lines} testID={onboardingLinesTestID}>
-        {said.map((line) => (
-          <Text key={line} style={styles.line}>
-            {line}
-          </Text>
-        ))}
-      </View>
-    ) : (
-      <Card testID={onboardingLinesTestID}>
-        {said.map((line, at) => (
-          <Text key={line} style={at === 0 ? styles.line : [styles.line, styles.lineAfter]}>
-            {line}
-          </Text>
-        ))}
-      </Card>
-    );
-
-  return (
-    <>
-      {read}
-      {promise ? (
-        <View style={styles.lock}>
-          <LockLine testID={onboardingLockTestID} words={firstRunCopy.onlyYou} />
-        </View>
-      ) : null}
-    </>
+  return onTheSheet ? (
+    <View style={styles.lines} testID={onboardingLinesTestID}>
+      {said.map((line) => (
+        <Text key={line} style={styles.line}>
+          {line}
+        </Text>
+      ))}
+    </View>
+  ) : (
+    <Card testID={onboardingLinesTestID}>
+      {said.map((line, at) => (
+        <Text key={line} style={at === 0 ? styles.line : [styles.line, styles.lineAfter]}>
+          {line}
+        </Text>
+      ))}
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  // What she is asked to do takes the room the words leave, so the control she came here to press
-  // sits in the middle of the glass rather than under the last paragraph.
-  asked: { flexGrow: 1, justifyContent: 'center', paddingVertical: space.spaceLg },
+  // What she is asked to do stands right under the question, as the redesign draws it.
+  asked: { paddingVertical: space.spaceMd },
   back: {
     alignItems: 'center',
     backgroundColor: colour.card,
@@ -315,7 +329,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: EMBLEM_DIAMETER,
   },
-  emblemRow: { alignItems: 'center', paddingVertical: space.spaceSm },
+  emblemRow: {
+    alignItems: 'flex-start',
+    paddingHorizontal: space.spaceLg,
+    paddingVertical: space.spaceSm,
+  },
   footer: { padding: space.spaceLg },
   // The row keeps its height where she has no way back or no way past, so the question sits at the
   // same place on every screen of the run.
@@ -338,9 +356,9 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceMd,
   },
   lines: { gap: space.spaceSm },
-  // The promise sits at the foot of the words, centred under them, and apart from the line that
-  // answers the question.
-  lock: { alignItems: 'center', paddingTop: space.spaceMd },
+  // The promise sits over the button, centred while it fits on one line and read from the left
+  // when it wraps.
+  lock: { alignItems: 'center', paddingBottom: space.spaceMd },
   row: { alignItems: 'center', flexDirection: 'row', gap: space.spaceMd },
   // The middle takes whatever the two ends leave, so the button sits on the bottom edge of the
   // glass on a screen with one line and on a screen with ninety days on it alike.
@@ -360,7 +378,6 @@ const styles = StyleSheet.create({
   },
   sheetBody: {
     flexGrow: 1,
-    justifyContent: 'space-between',
     paddingHorizontal: space.spaceLg,
   },
   sheetFoot: { paddingBottom: space.spaceLg, paddingHorizontal: space.spaceLg },

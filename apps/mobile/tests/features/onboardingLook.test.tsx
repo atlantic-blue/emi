@@ -102,7 +102,6 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
       <OnAPhone>
         <YearOfBirth
           chosen={undefined}
-          name={undefined}
           now={whenSheOpensIt}
           onBack={() => undefined}
           onChoose={() => undefined}
@@ -298,8 +297,16 @@ describe('the first run carries the design system', () => {
       await sheIsLookingAt('name');
 
       expect(flattened(onboardingProgressTestID).height).toBeGreaterThan(0);
-      expect(flattened(onboardingProgressTestID).backgroundColor).toBe(colour.field);
+      expect(flattened(onboardingProgressTestID).backgroundColor).toBe(colour.stepTrack);
       expect(flattened(theFill).backgroundColor).toBe(colour.accent);
+    });
+
+    it('takes the room its row leaves, so the Skip beside it stays on the glass', async () => {
+      await sheIsLookingAt('name');
+
+      expect(flattened(onboardingProgressTestID).flexGrow).toBe(1);
+      expect(flattened(onboardingProgressTestID).width).toBeUndefined();
+      expect(screen.getByTestId(onboardingSkipTestID)).toBeTruthy();
     });
 
     it('leaves the bar off the welcome, which asks her nothing, and off the first run log', async () => {

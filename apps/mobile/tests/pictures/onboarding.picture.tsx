@@ -77,7 +77,6 @@ const theScreens: readonly Screen[] = [
     element: (
       <YearOfBirth
         chosen={undefined}
-        name={theNameSheGave}
         now={whenSheOpensIt}
         onBack={() => undefined}
         onChoose={() => undefined}

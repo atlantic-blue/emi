@@ -57,11 +57,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     height: '100%',
   },
+  // The track takes the room its row leaves rather than the whole row, so whatever stands beside it
+  // stays on the glass.
   track: {
-    backgroundColor: colour.field,
+    backgroundColor: colour.stepTrack,
     borderRadius: radius.full,
+    flexGrow: 1,
+    flexShrink: 1,
     height: TRACK_HEIGHT,
     overflow: 'hidden',
-    width: '100%',
   },
 });

@@ -93,6 +93,10 @@ const onlyYouCanReadThis: Readonly<Record<Language, string>> = {
 
 const theKeyOfThatLine = 'onboarding.onlyYou';
 
+/** The line the redesign puts at the foot of the questions it has redrawn. */
+const theLineAboutEncryption = 'Emi encrypts this on the phone before it goes anywhere.';
+const theKeyOfTheLineAboutEncryption = 'onboarding.encrypts';
+
 /** The five keys that each said it in their own words, and are gone now one line says it. */
 const theKeysThatWent: readonly string[] = [
   'onboarding.name.line.sealed',
@@ -141,8 +145,14 @@ const theScreensOfTheQuestions: readonly string[] = [
 /** The one line that names Emi on purpose, because the product's name is the point of it. */
 const theGreeting = 'onboarding.welcome.title';
 
-/** The welcome is drawn as the design writes it, and the design names Emi in it by name. */
+/**
+ * The screens the redesign has redrawn are written as the design writes them, and the design names
+ * Emi in them by name: the welcome, the question about her name, and the line about encryption.
+ */
 const theWelcomeNamingEmi = [
+  theKeyOfTheLineAboutEncryption,
+  'onboarding.name.line.greets',
+  'onboarding.name.title',
   'onboarding.welcome.line.noAccount',
   'onboarding.welcome.line.whatEmiIs',
   theGreeting,
@@ -163,6 +173,7 @@ function theKeysOfTheQuestions(): string[] {
       theScreensOfTheQuestions.some((asked) => key.startsWith(`onboarding.${asked}.`)),
     ),
     theKeyOfThatLine,
+    theKeyOfTheLineAboutEncryption,
   ];
 }
 
@@ -260,11 +271,12 @@ describe('the first run questions use her name and reply to her answers', () => 
   });
 
   describe('the question after she gives her name', () => {
-    it('greets her by the name she gave', async () => {
+    it('asks the plain question after she gives her name, as the redesign draws it', async () => {
       const app = await sheWalksTo('birthYear', theNameSheGives);
 
       expect(app.getPathname()).toBe('/onboarding/year-of-birth');
-      expect(theQuestionSheIsReading()).toBe(theQuestionAboutTheYear.named);
+      expect(theQuestionSheIsReading()).toBe(theQuestionAboutTheYear.plain);
+      expect(screen.queryByText(theQuestionAboutTheYear.named)).toBeNull();
     });
 
     it('asks the plain question of a woman who gave no name', async () => {
@@ -286,7 +298,6 @@ describe('the first run questions use her name and reply to her answers', () => 
         <OnAPhone>
           <YearOfBirth
             chosen={undefined}
-            name={undefined}
             now={whenSheOpensIt}
             onBack={() => undefined}
             onChoose={() => undefined}
@@ -299,14 +310,14 @@ describe('the first run questions use her name and reply to her answers', () => 
       expect(theQuestionSheIsReading()).toBe(theQuestionAboutTheYear.plain);
     });
 
-    it('carries both forms in all three languages, and only the greeting holds her name', () => {
+    it('carries only the plain form in all three languages, so no screen can greet her there', () => {
       for (const language of languages) {
         const held = theCatalogueOf(language);
 
-        expect({
+        expect({ language, named: 'onboarding.birthYear.titleNamed' in held }).toEqual({
           language,
-          greets: String(held['onboarding.birthYear.titleNamed']).includes('{name}'),
-        }).toEqual({ language, greets: true });
+          named: false,
+        });
         expect(String(held['onboarding.birthYear.title'])).not.toContain('{name}');
       }
 
@@ -509,10 +520,11 @@ describe('the first run questions use her name and reply to her answers', () => 
       expect(theKeysThatWent).toHaveLength(5);
     });
 
-    it('is read on the question about her name, and on the question after it', async () => {
+    it('gives way on the question about her name, and on the question after it, to the line about encryption', async () => {
       await sheWalksTo('birthYear', theNameSheGives);
 
-      expect(screen.getByText(onlyYouCanReadThis.en)).toBeTruthy();
+      expect(screen.getByText(theLineAboutEncryption)).toBeTruthy();
+      expect(screen.queryByText(onlyYouCanReadThis.en)).toBeNull();
     });
 
     it('is read on the question about how she feels', async () => {
