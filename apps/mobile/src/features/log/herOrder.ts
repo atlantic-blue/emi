@@ -29,3 +29,21 @@ export function groupsUnderTheFlow(
 ): readonly SymptomGroup[] {
   return groupsInHerOrder(focus).filter((group) => group !== asked);
 }
+
+/**
+ * How many groups the screen before the hold names for a woman who chose none. The log opens with
+ * every group, so these are the first few of them, named rather than left as a gap.
+ */
+export const GROUPS_NAMED_FOR_EVERYBODY = 3;
+
+/**
+ * The groups her log draws first: the ones she named, in her order, or the first groups of the
+ * order everybody else reads where she named none.
+ */
+export function theGroupsSheSeesFirst(focus: readonly SymptomGroup[]): readonly SymptomGroup[] {
+  const ordered = groupsInHerOrder(focus);
+
+  return focus.length === 0
+    ? ordered.slice(0, GROUPS_NAMED_FOR_EVERYBODY)
+    : ordered.slice(0, focus.length);
+}

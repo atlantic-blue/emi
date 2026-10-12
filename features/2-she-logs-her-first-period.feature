@@ -10,7 +10,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds the ring
+    And she presses and holds Hold to begin
     Then she is looking at the home screen
     And her phone holds the day she said her period started
     And her phone holds the cycle length she gave
@@ -19,7 +19,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds the ring
+    And she presses and holds Hold to begin
     Then her phone holds the cycle length she gave
     And the row her answers sit in does not hold that number in plain words
     And the row is not her answers in plain words, which do hold the number
@@ -28,7 +28,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she closes Emi at the hold, without holding the ring
+    And she closes Emi at the hold, without holding Hold to begin
     Then her phone holds no day, no answers and no marker
     And opening Emi again asks her the same questions
 
@@ -36,7 +36,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question, and presses Done a second time before the screen goes
-    And she presses and holds the ring
+    And she presses and holds Hold to begin
     Then she is looking at the home screen
     And her phone holds one day, the day she said her period started
     And her phone holds the time of the hold, and one instant on all three of her answers
@@ -51,7 +51,7 @@ Feature: She opens Emi and logs her first period
     Then she is asked whether Emi should remind her
     When she says Not now
     Then she is looking at her first forecast
-    When she reads on and presses and holds the ring
+    When she reads on and presses and holds Hold to begin
     Then her phone holds one day, the day she said her period started
 
   Scenario: SCREEN-1, she asks Emi to remind her two days before the range starts
@@ -64,7 +64,7 @@ Feature: She opens Emi and logs her first period
     And she presses Remind me and her phone allows it
     Then her phone asked her once, after she pressed
     And she is looking at her first forecast
-    When she reads on and presses and holds the ring
+    When she reads on and presses and holds Hold to begin
     Then her phone holds one reminder, at nine in the morning two days before the range she was shown
 
   Scenario: SCREEN-1, her phone refuses the reminder and the first run goes on
@@ -74,14 +74,14 @@ Feature: She opens Emi and logs her first period
     And she reaches the reminder after the first day she logs
     And she picks one day before and presses Remind me
     Then she is looking at her first forecast
-    When she reads on and presses and holds the ring
+    When she reads on and presses and holds Hold to begin
     Then her phone holds no reminder and no choice of one
 
   Scenario: SCREEN-1, the first run asks its questions and the hold after them
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds the ring
+    And she presses and holds Hold to begin
     Then she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her
     And there was no further question to answer
 
@@ -89,7 +89,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds the ring
+    And she presses and holds Hold to begin
     Then the only thing she could type into was her name
 
   Scenario: SCREEN-1, she says she does not remember when her last period started and the first run moves on
@@ -107,7 +107,7 @@ Feature: She opens Emi and logs her first period
     And she says she does not remember
     Then she is being asked how long her cycle runs
     And the counter reads step 6 of 13, the twelve steps the first run had and the reminder
-    When she answers the rest of the questions and presses and holds the ring
+    When she answers the rest of the questions and presses and holds Hold to begin
     Then she was never asked when the period before that started
     And she is looking at the screen that says the ring needs a period
     And her phone holds the name, the year and the length she gave, and no day at all
@@ -551,7 +551,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run, and says she does not remember her last period
-    And she presses and holds the ring
+    And she presses and holds Hold to begin
     Then she is looking at the screen that says what the ring needs
     And there is no ring, and nothing at all is drawn in place of one
     And the card counts the cycle length she gave, and no length Emi picked
@@ -662,13 +662,13 @@ Feature: She opens Emi and logs her first period
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
     And every question that keeps an answer carries a line about her privacy, in all three languages
 
-  Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it are addressed to her
+  Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it speak in the name of Emi
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, gives her name, and answers every question
     Then the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name
     And a woman who gave no name reads the same forecast, with no gap where a name would be
-    And the screen that reads her answers back is addressed to her too
-    And the promise and the hold talk to her as you, in each of the three languages she can read them in
+    And the screen that reads her answers back is titled in the name of Emi, for a woman who gave her name and for one who did not
+    And the promise and the hold never talk as we, in each of the three languages she can read them in
 
   Scenario: SCREEN-1, the first run screens match the redesign prototype
     Given she has never opened Emi before

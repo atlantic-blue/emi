@@ -212,7 +212,7 @@ describe('the Privacy screens match the redesign prototype', () => {
       expect(card.backgroundColor).toBe(colour.darkCard);
       expect(card.borderRadius).toBe(radius.xl);
       expect(whatItSays(settingsAssuranceTestID)).toContain(promiseCopy.title);
-      expect(whatItSays(settingsAssuranceTestID)).toContain(promiseCopy.lines.encrypted.title);
+      expect(whatItSays(settingsAssuranceTestID)).toContain(promiseCopy.lines.encrypted);
     });
 
     it('keeps the heading above that card, and the card above the rows', () => {

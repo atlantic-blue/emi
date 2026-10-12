@@ -23,6 +23,7 @@ import { nameFieldTestID } from '../../src/features/onboarding/HerName';
 import {
   HOLD_MILLISECONDS,
   HoldToBegin,
+  holdButtonTestID,
   holdCoreTestID,
   holdRefusedTestID,
   holdScreenTestID,
@@ -32,7 +33,11 @@ import {
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { promiseActionTestID, promiseLineTestID } from '../../src/features/onboarding/ThePromise';
+import {
+  promiseActionTestID,
+  promiseLineTestID,
+  thePromiseTestID,
+} from '../../src/features/onboarding/ThePromise';
 import {
   whatEmiDoesActionTestID,
   whatEmiDoesCardTestID,
@@ -87,9 +92,11 @@ const theTitleOfHerForecast = {
   theOldGreeting: `${theNameSheGives}, here's your next period`,
 };
 
-const theTitleOfWhatWeWillDo = {
-  named: `${theNameSheGives}, here's what we'll do with your answers`,
-  plain: "Here's what we'll do with your answers",
+/** The redesign titles this screen in Emi's name, and greets nobody, so the old two forms are gone. */
+const theTitleOfWhatEmiDoes = {
+  now: 'Here is what Emi does with what you told it',
+  theOldGreeting: `${theNameSheGives}, here's what we'll do with your answers`,
+  theOldPlain: "Here's what we'll do with your answers",
 };
 
 /** What the forecast says under the range, and on the two cards beside it. */
@@ -115,49 +122,39 @@ const theForecastWithNoDateSays = {
   cycles: `Emi needs ${String(CYCLES_BEFORE_A_FORECAST)} complete cycles before it forecasts from your own cycles.`,
 };
 
-/** The three cards of the promise, each as a title and the line under it. */
+/** The three lines of the promise, one sentence each, as the redesign writes them. */
 const thePromiseSays = {
   title: 'Only you can read your days.',
-  encrypted: {
-    title: 'Encrypted with a key only you hold',
-    line: 'Every day you log is locked on this phone, and only the locked copy is sent.',
-  },
-  noTracking: {
-    title: 'No password, no trackers',
-    line: "We don't ask for a password, and Emi carries no tracking tools.",
-  },
-  delete: {
-    title: 'Delete it all, any time',
-    line: 'One press removes every day from this phone.',
-  },
+  encrypted: 'Encrypted on this phone, with a key only you hold',
+  noTracking: 'No password, no tracking tools',
+  delete: 'Delete everything, in one press',
 };
 
-/** The three cards that read her own answers back to her. */
-const whatWeWillDoSays = {
-  forecast: {
-    title: 'Your forecast',
-    line: 'A range to start with. It gets narrower as we learn your cycle.',
-  },
+/** The three sections that read her own answers back to her, each as a label and a heading. */
+const whatEmiDoesSays = {
+  forecast: { title: 'Your forecast', line: 'A range, and how sure Emi is' },
   log: {
     title: 'Your log',
-    chosen: 'Sleep, mood and pain come first when you log, just as you asked.',
-    one: 'Sleep comes first when you log, just as you asked.',
-    usual: "You'll see the usual order when you log.",
+    line: 'What you see first',
+    chosen: 'Your log shows the groups you chose first: sleep, mood and pain.',
+    one: 'Your log shows the group you chose first: sleep.',
+    usual: 'Your log opens in the usual order, starting with mood, energy and pain.',
   },
-  privacy: {
-    title: 'Your privacy',
-    line: "It's all encrypted on this phone. Nobody else can read it.",
-  },
+  privacy: { title: 'Your privacy', line: 'Only you can read any of it' },
 };
 
-/** The moment she gives her thumb, said in three sentences and then explained in one. */
+/**
+ * The moment she gives her thumb. The redesign writes "the ring" where this writes "the button",
+ * because the button is the one thing on the screen she presses and holds.
+ */
 const theHoldSays = {
-  title: 'Your cycle. Your data. Your key.',
-  instruction: 'Press and hold the ring to begin.',
+  title: 'Your cycle, your data, your key.',
+  instruction: 'Press and hold the button to begin.',
   sealed:
-    "When you hold the ring, we save your answers and lock them with a key that lives in this phone's keychain.",
+    "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  action: 'Hold to begin',
   held: 'Keep holding',
-  refused: "That didn't save. Press and hold the ring again.",
+  refused: "That didn't save. Press and hold the button again.",
 };
 
 /** The four screens this step writes, as the catalogue names them. */
@@ -168,15 +165,12 @@ const theScreensSheReads: readonly string[] = [
   'onboarding.hold.',
 ];
 
-/** How each language writes the first person plural, which is how these four screens name Emi. */
+/** How each language writes the first person plural, which none of these four screens uses. */
 const howEachLanguageSaysWe: Readonly<Record<Language, RegExp>> = {
   en: /(?<!\p{Letter})(we|our)(?!\p{Letter})/iu,
   es: /(?<!\p{Letter})(nos|nuestro|nuestra)(?!\p{Letter})|mos(?!\p{Letter})/iu,
   ru: /(?<!\p{Letter})(мы|наш|нам)/iu,
 };
-
-/** The one line of the four that names Emi on purpose, because no password is Emi's promise. */
-const theLineThatNamesEmi = 'onboarding.promise.noTracking.line';
 
 function formsOf(held: Words): string[] {
   return typeof held === 'string' ? [held] : Object.values(held);
@@ -277,7 +271,7 @@ async function sheWalksToHerForecast(walk: HerWalk = {}): Promise<{
 }
 
 /** The screen that reads her answers back, which is two presses past the forecast. */
-async function sheReadsOnToWhatWeWillDo(): Promise<void> {
+async function sheReadsOnToWhatEmiDoes(): Promise<void> {
   await shePresses(firstForecastActionTestID);
   await shePresses(promiseActionTestID);
 }
@@ -423,115 +417,113 @@ describe('her first forecast is addressed to her', () => {
       expect(screen.getByText(thePromiseSays.title)).toBeTruthy();
     });
 
-    it('says each day is locked on this phone, and only the locked copy is sent', () => {
-      expect(theCardSays(promiseLineTestID('encrypted'))).toEqual([
-        thePromiseSays.encrypted.title,
-        thePromiseSays.encrypted.line,
-      ]);
+    it('says her days are encrypted on this phone, and says nothing is sent', () => {
+      expect(theCardSays(promiseLineTestID('encrypted'))).toEqual([thePromiseSays.encrypted]);
+      expect(textIn(screen.getByTestId(thePromiseTestID)).join(' ')).not.toMatch(/sent|copy/i);
     });
 
-    it('says there is no password and no tracker', () => {
-      expect(theCardSays(promiseLineTestID('noTracking'))).toEqual([
-        thePromiseSays.noTracking.title,
-        thePromiseSays.noTracking.line,
-      ]);
+    it('says there is no password and no tracking tool', () => {
+      expect(theCardSays(promiseLineTestID('noTracking'))).toEqual([thePromiseSays.noTracking]);
     });
 
-    it('says one press removes it all, any time', () => {
-      expect(theCardSays(promiseLineTestID('delete'))).toEqual([
-        thePromiseSays.delete.title,
-        thePromiseSays.delete.line,
-      ]);
+    it('says one press deletes everything', () => {
+      expect(theCardSays(promiseLineTestID('delete'))).toEqual([thePromiseSays.delete]);
     });
   });
 
   describe('the screen that reads her own answers back', () => {
-    it('greets her by the name she gave', async () => {
+    it('titles itself in the name of Emi and greets nobody, even a woman who gave her name', async () => {
       const app = await sheWalksToHerForecast({ day: herPeriodStarted, name: theNameSheGives });
 
-      await sheReadsOnToWhatWeWillDo();
+      await sheReadsOnToWhatEmiDoes();
 
       expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
       expect(textIn(screen.getByTestId(whatEmiDoesTitleTestID))).toEqual([
-        theTitleOfWhatWeWillDo.named,
+        theTitleOfWhatEmiDoes.now,
       ]);
+      expect(screen.queryByText(theTitleOfWhatEmiDoes.theOldGreeting)).toBeNull();
     });
 
-    it('reads as one clean sentence for a woman who gave no name', async () => {
+    it('reads the same title for a woman who gave no name', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted });
 
-      await sheReadsOnToWhatWeWillDo();
+      await sheReadsOnToWhatEmiDoes();
 
       expect(textIn(screen.getByTestId(whatEmiDoesTitleTestID))).toEqual([
-        theTitleOfWhatWeWillDo.plain,
+        theTitleOfWhatEmiDoes.now,
       ]);
-      expect(screen.queryByText(theTitleOfWhatWeWillDo.named)).toBeNull();
+      expect(screen.queryByText(theTitleOfWhatEmiDoes.theOldPlain)).toBeNull();
     });
 
-    it('tells her the range starts wide and narrows as they learn her cycle', async () => {
+    it('says the forecast is a range, and says how sure Emi is', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted });
 
-      await sheReadsOnToWhatWeWillDo();
+      await sheReadsOnToWhatEmiDoes();
 
       expect(theCardSays(whatEmiDoesCardTestID('forecast'))).toEqual([
-        whatWeWillDoSays.forecast.title,
-        whatWeWillDoSays.forecast.line,
+        whatEmiDoesSays.forecast.title,
+        whatEmiDoesSays.forecast.line,
       ]);
     });
 
-    it('names the groups she pressed, just as she asked', async () => {
+    it('names the groups she pressed back to her', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted, focus: ['sleep', 'mood', 'pain'] });
 
-      await sheReadsOnToWhatWeWillDo();
+      await sheReadsOnToWhatEmiDoes();
 
       expect(theCardSays(whatEmiDoesCardTestID('log'))).toEqual([
-        whatWeWillDoSays.log.title,
-        whatWeWillDoSays.log.chosen,
+        whatEmiDoesSays.log.title,
+        whatEmiDoesSays.log.line,
+        'Sleep',
+        'Mood',
+        'Pain',
+        whatEmiDoesSays.log.chosen,
       ]);
     });
 
     it('names one group in the singular, so the sentence is her answer and not a form', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted, focus: ['sleep'] });
 
-      await sheReadsOnToWhatWeWillDo();
+      await sheReadsOnToWhatEmiDoes();
+
+      expect(theCardSays(whatEmiDoesCardTestID('log')).at(-1)).toBe(whatEmiDoesSays.log.one);
+    });
+
+    it('shows a woman who pressed none what everybody opens with, instead of an empty list', async () => {
+      await sheWalksToHerForecast({ day: herPeriodStarted });
+
+      await sheReadsOnToWhatEmiDoes();
 
       expect(theCardSays(whatEmiDoesCardTestID('log'))).toEqual([
-        whatWeWillDoSays.log.title,
-        whatWeWillDoSays.log.one,
+        whatEmiDoesSays.log.title,
+        whatEmiDoesSays.log.line,
+        'Mood',
+        'Energy',
+        'Pain',
+        whatEmiDoesSays.log.usual,
       ]);
     });
 
-    it('tells a woman who pressed none what she will see instead of reading her an empty list', async () => {
+    it('says only she can read any of it', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted });
 
-      await sheReadsOnToWhatWeWillDo();
-
-      expect(theCardSays(whatEmiDoesCardTestID('log'))).toEqual([
-        whatWeWillDoSays.log.title,
-        whatWeWillDoSays.log.usual,
-      ]);
-    });
-
-    it('says it is all encrypted on this phone, and nobody else can read it', async () => {
-      await sheWalksToHerForecast({ day: herPeriodStarted });
-
-      await sheReadsOnToWhatWeWillDo();
+      await sheReadsOnToWhatEmiDoes();
 
       expect(theCardSays(whatEmiDoesCardTestID('privacy'))).toEqual([
-        whatWeWillDoSays.privacy.title,
-        whatWeWillDoSays.privacy.line,
+        whatEmiDoesSays.privacy.title,
+        whatEmiDoesSays.privacy.line,
       ]);
     });
 
-    it('carries the name in one form of the title and not in the other, in all three languages', () => {
+    it('carries no name and no greeting key, in all three languages', () => {
       for (const language of languages) {
         const held = theCatalogueOf(language);
 
-        expect({
+        expect({ language, title: String(held['onboarding.whatEmiDoes.title']) }).not.toEqual({
           language,
-          greets: String(held['onboarding.whatEmiDoes.titleNamed']).includes('{name}'),
-        }).toEqual({ language, greets: true });
-        expect(String(held['onboarding.whatEmiDoes.title'])).not.toContain('{name}');
+          title: expect.stringContaining('{name}'),
+        });
+        expect(Object.keys(held)).not.toContain('onboarding.whatEmiDoes.titleNamed');
       }
 
       expect(languages.length).toBe(3);
@@ -542,7 +534,7 @@ describe('her first forecast is addressed to her', () => {
     it('names the three things the hold is about, and says what the hold does', async () => {
       const app = await sheWalksToHerForecast({ day: herPeriodStarted, name: theNameSheGives });
 
-      await sheReadsOnToWhatWeWillDo();
+      await sheReadsOnToWhatEmiDoes();
       await shePresses(whatEmiDoesActionTestID);
 
       expect(app.pathname()).toBe('/onboarding/hold');
@@ -550,23 +542,25 @@ describe('her first forecast is addressed to her', () => {
       expect(read).toContain(theHoldSays.title);
       expect(read).toContain(theHoldSays.instruction);
       expect(read).toContain(theHoldSays.sealed);
+      expect(screen.getByTestId(holdButtonTestID)).toHaveTextContent(theHoldSays.action);
     });
 
     it('asks her to keep holding while her thumb is down', async () => {
       await theRing();
 
       await act(async () => {
-        fireEvent(screen.getByTestId(holdCoreTestID), 'pressIn');
+        fireEvent(screen.getByTestId(holdButtonTestID), 'pressIn');
       });
 
-      expect(screen.getByTestId(holdCoreTestID)).toHaveTextContent(theHoldSays.held);
+      expect(screen.getByTestId(holdButtonTestID)).toHaveTextContent(theHoldSays.held);
+      expect(screen.getByTestId(holdCoreTestID)).toHaveTextContent(theHoldSays.instruction);
     });
 
-    it('says the save did not happen when the write refuses, and asks for the ring again', async () => {
+    it('says the save did not happen when the write refuses, and asks for the button again', async () => {
       await theRing(() => Promise.reject(new Error('the write refused')));
 
       await act(async () => {
-        fireEvent(screen.getByTestId(holdCoreTestID), 'pressIn');
+        fireEvent(screen.getByTestId(holdButtonTestID), 'pressIn');
       });
       await act(async () => {
         jest.advanceTimersByTime(HOLD_MILLISECONDS);
@@ -592,22 +586,37 @@ describe('her first forecast is addressed to her', () => {
       expect(theKeysOfTheseScreens().length).toBeGreaterThan(20);
     });
 
-    it('talks to her as we after the forecast, and names Emi on one line of those three screens', () => {
-      // The redesign forecast says what Emi worked out in Emi's name, so it is held apart below.
-      const afterTheForecast = theKeysOfTheseScreens().filter(
-        (key) => !key.startsWith('onboarding.firstForecast.'),
-      );
+    it('never talks as we after the forecast either, and names Emi on each of those screens', () => {
+      const theScreensAfterTheForecast = [
+        'onboarding.promise.',
+        'onboarding.whatEmiDoes.',
+        'onboarding.hold.',
+      ];
 
       for (const language of languages) {
-        const naming = afterTheForecast.filter((key) =>
-          searchableText(theWordsOfTheseScreensIn(language, [key]).join('\n')).includes('Emi'),
+        const read = theWordsOfTheseScreensIn(
+          language,
+          theKeysOfTheseScreens().filter((key) => !key.startsWith('onboarding.firstForecast.')),
+        ).join('\n');
+
+        expect({ language, asWe: howEachLanguageSaysWe[language].test(read) }).toEqual({
+          language,
+          asWe: false,
+        });
+
+        const naming = theScreensAfterTheForecast.filter((prefix) =>
+          searchableText(
+            theWordsOfTheseScreensIn(
+              language,
+              theKeysOfTheseScreens().filter((key) => key.startsWith(prefix)),
+            ).join('\n'),
+          ).includes('Emi'),
         );
 
-        expect({ language, naming }).toEqual({ language, naming: [theLineThatNamesEmi] });
-        expect({
+        expect({ language, naming }).toEqual({
           language,
-          asWe: howEachLanguageSaysWe[language].test(theWordsOfTheseScreensIn(language).join('\n')),
-        }).toEqual({ language, asWe: true });
+          naming: ['onboarding.whatEmiDoes.', 'onboarding.hold.'],
+        });
       }
     });
 

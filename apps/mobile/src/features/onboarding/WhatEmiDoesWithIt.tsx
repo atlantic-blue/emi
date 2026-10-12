@@ -1,86 +1,136 @@
 import type { Focus } from '@emi/crypto';
-import { ICON_SIZE, colour, radius, space, stroke, textStyle } from '@emi/tokens';
-import type { IconName } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { type ColourName, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
+import { StatusPill } from '../../components/StatusPill';
+import { theGroupsSheSeesFirst } from '../log/herOrder';
+import { groupHeadings } from '../log/SymptomGroup';
 import {
   type WhatEmiDoesCard,
   whatComesFirstWhenSheLogs,
   whatEmiDoesCards,
   whatEmiDoesCopy,
-  whatEmiDoesTitle,
 } from './copy';
 
 /**
- * The last screen before the hold: her own answers, read back as the three things they change.
+ * The last screen before the hold: three labelled sections, each with a picture of what it means.
  *
- * The log card is the one that reads her: it names the groups she pressed on the focus screen, in
- * the order she pressed them, because that is the order her log sheet will open in. A woman who
- * pressed none is told what she will open instead of being shown an empty list.
+ * The log section is the one that reads her: its chips are the groups she pressed on the focus
+ * screen, in the order she pressed them, because that is the order her log opens in. A woman who
+ * pressed none sees the groups the log opens with for everybody, so the section never stands empty.
  */
 
 export const whatEmiDoesTestID = 'onboarding-what-emi-does';
 export const whatEmiDoesTitleTestID = 'what-emi-does-title';
 export const whatEmiDoesActionTestID = 'what-emi-does-action';
+export const whatEmiDoesRangeTestID = 'what-emi-does-range';
+export const whatEmiDoesChipsTestID = 'what-emi-does-chips';
+export const whatEmiDoesLogLineTestID = 'what-emi-does-log-line';
 
 export function whatEmiDoesCardTestID(card: WhatEmiDoesCard): string {
   return `what-emi-does-${card}`;
 }
 
+export function whatEmiDoesChipTestID(group: string): string {
+  return `what-emi-does-chip-${group}`;
+}
+
 /**
- * The drawing beside each card. A record rather than a list, so a fourth card arriving in
- * `whatEmiDoesCards` leaves this file failing to compile rather than leaving one card undrawn.
+ * The ink each section's label is written in. A record rather than a list, so a fourth section
+ * arriving in `whatEmiDoesCards` leaves this file failing to compile rather than unlabelled.
  */
-export const whatEmiDoesIcons: Readonly<Record<WhatEmiDoesCard, IconName>> = {
-  forecast: 'ring',
-  log: 'note',
-  privacy: 'lock',
+export const whatEmiDoesLabelInks: Readonly<Record<WhatEmiDoesCard, ColourName>> = {
+  forecast: 'accent',
+  log: 'ovulationInk',
+  privacy: 'lutealInk',
 };
 
-/** Points. The disc each drawing stands in, which is the tap floor even though nothing is pressed. */
-const DISC_DIAMETER = 44;
+/**
+ * The five steps of the range picture: the middle three filled, the two ends soft. It stands for
+ * a forecast that is a range of days rather than one day, and it carries no number of its own.
+ */
+export const rangeSteps: readonly boolean[] = [false, true, true, true, false];
+
+/** Points. The height of each step of the range picture. */
+const RANGE_STEP_HEIGHT = 10;
 
 interface Props {
   /** The groups she pressed, in the order she pressed them, and empty where she pressed none. */
   readonly focus: readonly Focus[];
-  /** Nothing at all where she gave no name, and then the screen reads her the plain sentence. */
-  readonly name: string | undefined;
   readonly onContinue: () => void;
 }
 
-export function WhatEmiDoesWithIt({ focus, name, onContinue }: Props): ReactNode {
-  const said: Readonly<Record<WhatEmiDoesCard, { readonly title: string; readonly line: string }>> =
-    {
-      forecast: whatEmiDoesCopy.forecast,
-      log: { title: whatEmiDoesCopy.log.title, line: whatComesFirstWhenSheLogs(focus) },
-      privacy: whatEmiDoesCopy.privacy,
-    };
+function Section({
+  card,
+  children,
+}: {
+  readonly card: WhatEmiDoesCard;
+  readonly children?: ReactNode;
+}): ReactNode {
+  return (
+    <Card testID={whatEmiDoesCardTestID(card)}>
+      <View style={styles.section}>
+        <Text style={[styles.label, { color: colour[whatEmiDoesLabelInks[card]] }]}>
+          {whatEmiDoesCopy[card].title}
+        </Text>
+        <Text style={styles.heading}>{whatEmiDoesCopy[card].line}</Text>
+        {children}
+      </View>
+    </Card>
+  );
+}
+
+function TheRange(): ReactNode {
+  return (
+    <View
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={styles.range}
+      testID={whatEmiDoesRangeTestID}
+    >
+      {rangeSteps.map((isFilled, at) => (
+        <View key={at} style={[styles.rangeStep, isFilled ? styles.filled : styles.soft]} />
+      ))}
+    </View>
+  );
+}
+
+export function WhatEmiDoesWithIt({ focus, onContinue }: Props): ReactNode {
+  const shown = theGroupsSheSeesFirst(focus);
 
   return (
     <Screen drawsTheWash testID={whatEmiDoesTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <Text accessibilityRole="header" style={styles.title} testID={whatEmiDoesTitleTestID}>
-          {whatEmiDoesTitle(name)}
+          {whatEmiDoesCopy.title}
         </Text>
 
         <View style={styles.cards}>
           {whatEmiDoesCards.map((card) => (
-            <Card key={card} testID={whatEmiDoesCardTestID(card)}>
-              <View style={styles.row}>
-                <View style={styles.disc}>
-                  <Icon colour={colour.accent} name={whatEmiDoesIcons[card]} size={ICON_SIZE} />
-                </View>
-                <View style={styles.saying}>
-                  <Text style={styles.cardTitle}>{said[card].title}</Text>
-                  <Text style={styles.cardLine}>{said[card].line}</Text>
-                </View>
-              </View>
-            </Card>
+            <Section card={card} key={card}>
+              {card === 'forecast' ? <TheRange /> : null}
+              {card === 'log' ? (
+                <>
+                  <View style={styles.chips} testID={whatEmiDoesChipsTestID}>
+                    {shown.map((group) => (
+                      <StatusPill
+                        key={group}
+                        label={groupHeadings[group]}
+                        testID={whatEmiDoesChipTestID(group)}
+                        tone="accent"
+                      />
+                    ))}
+                  </View>
+                  <Text style={styles.line} testID={whatEmiDoesLogLineTestID}>
+                    {whatComesFirstWhenSheLogs(focus)}
+                  </Text>
+                </>
+              ) : null}
+            </Section>
           ))}
         </View>
       </ScrollView>
@@ -102,36 +152,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
     paddingTop: space.spaceXl,
   },
-  cardLine: {
+  cards: { gap: space.spaceLg, marginTop: space.spaceLg },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
+  filled: { backgroundColor: colour.accent },
+  footer: { padding: space.spaceLg },
+  heading: {
+    color: colour.text,
+    ...textStyle('choice-lg'),
+  },
+  label: {
+    textTransform: 'uppercase',
+    ...textStyle('label-md'),
+  },
+  line: {
     color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
-  cardTitle: {
-    color: colour.text,
-    ...textStyle('label-md'),
-    marginBottom: space.spaceXs,
-  },
-  cards: { gap: space.spaceMd, marginTop: space.spaceLg },
-  disc: {
-    alignItems: 'center',
-    backgroundColor: colour.field,
-    borderRadius: radius.full,
-    height: DISC_DIAMETER,
-    justifyContent: 'center',
-    width: DISC_DIAMETER,
-  },
-  footer: {
-    borderTopColor: colour.line,
-    borderTopWidth: stroke.hairline,
-    padding: space.spaceLg,
-  },
-  row: { flexDirection: 'row', gap: space.spaceMd },
-  // The words take what is left of the row after the disc, so a long line wraps inside the card
-  // rather than pushing the drawing off the side of it.
-  saying: { flex: 1 },
+  range: { flexDirection: 'row', gap: space.spaceSm },
+  rangeStep: { borderRadius: radius.full, flex: 1, height: RANGE_STEP_HEIGHT },
   scroll: { flex: 1 },
+  section: { gap: space.spaceSm },
+  soft: { backgroundColor: colour.accentSoft },
   title: {
     color: colour.text,
+    textAlign: 'center',
     ...textStyle('headline-lg'),
   },
 });

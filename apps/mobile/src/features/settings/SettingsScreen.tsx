@@ -90,7 +90,7 @@ export function SettingsScreen({
           </View>
           <View style={styles.assuranceWords}>
             <Text style={styles.assuranceLead}>{promiseCopy.title}</Text>
-            <Text style={styles.assuranceLine}>{promiseCopy.lines.encrypted.title}</Text>
+            <Text style={styles.assuranceLine}>{promiseCopy.lines.encrypted}</Text>
           </View>
         </View>
 

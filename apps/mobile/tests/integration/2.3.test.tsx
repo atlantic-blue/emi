@@ -22,7 +22,7 @@ import {
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import { promiseActionTestID } from '../../src/features/onboarding/ThePromise';
 import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
-import { HOLD_MILLISECONDS, holdCoreTestID } from '../../src/features/onboarding/HoldToBegin';
+import { HOLD_MILLISECONDS, holdButtonTestID } from '../../src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -744,7 +744,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
-      expect(screen.getByTestId(holdCoreTestID)).toBeTruthy();
+      expect(screen.getByTestId(holdButtonTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
 

@@ -409,15 +409,15 @@ export const english = {
   'onboarding.goals.title': 'What do you want Emi to help with?',
   'onboarding.hold.action': 'Hold to begin',
   'onboarding.hold.held': 'Keep holding',
-  'onboarding.hold.instruction': 'Press and hold the ring to begin.',
+  'onboarding.hold.instruction': 'Press and hold the button to begin.',
   // What she reads when the write refuses. It says nothing was kept, because nothing was: the
   // day, the answers and the marker go in one transaction or none of them do.
-  'onboarding.hold.refused': "That didn't save. Press and hold the ring again.",
-  // True only because the hold is the one moment the first run writes. The key is made there if
-  // this phone holds none, and it is kept in the keychain rather than anywhere a screen may name.
+  'onboarding.hold.refused': "That didn't save. Press and hold the button again.",
+  // The key is made at launch or at the hold, whichever finds the keychain empty first, and it is
+  // kept in the keychain rather than anywhere a screen may name.
   'onboarding.hold.sealed':
-    "When you hold the ring, we save your answers and lock them with a key that lives in this phone's keychain.",
-  'onboarding.hold.title': 'Your cycle. Your data. Your key.',
+    "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  'onboarding.hold.title': 'Your cycle, your data, your key.',
   'onboarding.lastPeriod.action': 'Continue',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
@@ -457,14 +457,9 @@ export const english = {
   'onboarding.periodLength.skip': 'I am not sure',
   'onboarding.periodLength.title': 'How many days does your period usually last?',
   'onboarding.promise.action': 'Continue',
-  'onboarding.promise.delete.line': 'One press removes every day from this phone.',
-  'onboarding.promise.delete.title': 'Delete it all, any time',
-  'onboarding.promise.encrypted.line':
-    'Every day you log is locked on this phone, and only the locked copy is sent.',
-  'onboarding.promise.encrypted.title': 'Encrypted with a key only you hold',
-  'onboarding.promise.noTracking.line':
-    "We don't ask for a password, and Emi carries no tracking tools.",
-  'onboarding.promise.noTracking.title': 'No password, no trackers',
+  'onboarding.promise.delete': 'Delete everything, in one press',
+  'onboarding.promise.encrypted': 'Encrypted on this phone, with a key only you hold',
+  'onboarding.promise.noTracking': 'No password, no tracking tools',
   'onboarding.promise.title': 'Only you can read your days.',
   'onboarding.regularity.action': 'Continue',
   'onboarding.regularity.choice.moves': 'No, it moves',
@@ -516,21 +511,19 @@ export const english = {
     'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
   'onboarding.welcome.title': 'Emi learns your cycle. You keep your data.',
   'onboarding.whatEmiDoes.action': 'Continue',
-  'onboarding.whatEmiDoes.forecast.line':
-    'A range to start with. It gets narrower as we learn your cycle.',
+  'onboarding.whatEmiDoes.forecast.line': 'A range, and how sure Emi is',
   'onboarding.whatEmiDoes.forecast.title': 'Your forecast',
   'onboarding.whatEmiDoes.log.and': 'and',
   'onboarding.whatEmiDoes.log.chosen': {
-    one: '{groups} comes first when you log, just as you asked.',
-    other: '{groups} come first when you log, just as you asked.',
+    one: 'Your log shows the group you chose first: {groups}.',
+    other: 'Your log shows the groups you chose first: {groups}.',
   },
+  'onboarding.whatEmiDoes.log.line': 'What you see first',
   'onboarding.whatEmiDoes.log.title': 'Your log',
-  'onboarding.whatEmiDoes.log.usual': "You'll see the usual order when you log.",
-  'onboarding.whatEmiDoes.privacy.line':
-    "It's all encrypted on this phone. Nobody else can read it.",
+  'onboarding.whatEmiDoes.log.usual': 'Your log opens in the usual order, starting with {groups}.',
+  'onboarding.whatEmiDoes.privacy.line': 'Only you can read any of it',
   'onboarding.whatEmiDoes.privacy.title': 'Your privacy',
-  'onboarding.whatEmiDoes.title': "Here's what we'll do with your answers",
-  'onboarding.whatEmiDoes.titleNamed': "{name}, here's what we'll do with your answers",
+  'onboarding.whatEmiDoes.title': 'Here is what Emi does with what you told it',
 
   'recovery.before.action': 'Show my code',
   'recovery.before.line.nobody':
