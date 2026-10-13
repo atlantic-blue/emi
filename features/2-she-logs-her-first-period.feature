@@ -780,3 +780,12 @@ Feature: She opens Emi and logs her first period
     Then the three answers she saved are filled
     When she presses each of them again, and saves
     Then that day holds no answer about sex, and keeps its flow
+
+  Scenario: SCREEN-2, she records discharge and a product on a day
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the Period page of today
+    Then the page shows the flow she logged today, under the date of today
+    When she presses Egg white, Tampon and Liner, and saves
+    Then her phone holds that discharge and both products on today, sealed, beside the flow she logged
+    When she opens the Period page of today again
+    Then the discharge and the two products she saved are filled

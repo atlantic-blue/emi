@@ -4,12 +4,13 @@ import { words } from '../../language';
 
 /**
  * The highlights: a round tile at the top of a page that opens a short page of its own. The Sex
- * page carries two (issue 275), and the Period page adds two more to this same list.
+ * page carries two and the Period page two more (issue 275). A new one is an entry in this list.
  *
  * The text is draft text, short, plain and factual, and none of it is medical advice.
  */
 
-export type HighlightSlug = 'intercourse' | 'learn-about-sex';
+export type HighlightSlug =
+  'intercourse' | 'learn-about-sex' | 'all-about-discharge' | 'hygiene-products';
 
 export interface Highlight {
   readonly slug: HighlightSlug;
@@ -50,10 +51,42 @@ export const highlights: Readonly<Record<HighlightSlug, Highlight>> = {
       words('highlight.learnAboutSex.4'),
     ],
   },
+  'all-about-discharge': {
+    slug: 'all-about-discharge',
+    title: words('highlight.allAboutDischarge.title'),
+    icon: 'drop',
+    tile: 'accentSoft',
+    ink: 'accent',
+    paragraphs: [
+      words('highlight.allAboutDischarge.1'),
+      words('highlight.allAboutDischarge.2'),
+      words('highlight.allAboutDischarge.3'),
+      words('highlight.allAboutDischarge.4'),
+    ],
+  },
+  'hygiene-products': {
+    slug: 'hygiene-products',
+    title: words('highlight.hygieneProducts.title'),
+    icon: 'book',
+    tile: 'washWarm',
+    ink: 'ovulationInk',
+    paragraphs: [
+      words('highlight.hygieneProducts.1'),
+      words('highlight.hygieneProducts.2'),
+      words('highlight.hygieneProducts.3'),
+      words('highlight.hygieneProducts.4'),
+    ],
+  },
 };
 
 /** The highlights of the Sex page, in the order the board draws them. */
 export const sexHighlights: readonly HighlightSlug[] = ['intercourse', 'learn-about-sex'];
+
+/** The highlights of the Period page, in the order the board draws them. */
+export const periodHighlights: readonly HighlightSlug[] = [
+  'all-about-discharge',
+  'hygiene-products',
+];
 
 /** The highlight an address names, or nothing where it names none, because she can type one. */
 export function highlightFor(slug: string): Highlight | undefined {

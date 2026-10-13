@@ -166,7 +166,25 @@ export const english = {
   'forecast.statedLength': "Until then, we're using the {days} day cycle you told us about.",
   'forecast.stillLearning': 'Still getting to know you',
 
+  'highlight.allAboutDischarge.1':
+    'Discharge is fluid that comes from the vagina. It helps to keep the vagina clean and moist.',
+  'highlight.allAboutDischarge.2':
+    'It changes across the cycle. It is often sticky or creamy after a period, and clear, stretchy and wet, like egg white, around ovulation.',
+  'highlight.allAboutDischarge.3':
+    'Emi records the kind you pick each day. Your forecast does not use it.',
+  'highlight.allAboutDischarge.4':
+    'If discharge changes colour or smell, or comes with itching or pain, a doctor or a nurse can help.',
+  'highlight.allAboutDischarge.title': 'All about discharge',
   'highlight.back': 'Back',
+  'highlight.hygieneProducts.1':
+    'A pad sticks inside your underwear and soaks up blood. A liner is a thin pad for light days or for discharge.',
+  'highlight.hygieneProducts.2':
+    'A tampon and a cup go inside the vagina. A cup collects blood, and you empty it, wash it and use it again.',
+  'highlight.hygieneProducts.3':
+    'Period underwear has layers that hold blood. You wash it and wear it again.',
+  'highlight.hygieneProducts.4':
+    'Each pack says how long you can wear the product. Follow it, and change the product sooner when it is full.',
+  'highlight.hygieneProducts.title': 'Hygiene products',
   'highlight.intercourse.1':
     'Intercourse is sex in which a penis goes into the vagina. It is one kind of sex among many.',
   'highlight.intercourse.2':
@@ -549,6 +567,26 @@ export const english = {
   'onboarding.whatEmiDoes.privacy.title': 'Your privacy',
   'onboarding.whatEmiDoes.title': 'Here is what Emi does with what you told it',
 
+  'period.back': 'Back',
+  'period.day': '{weekday}, {date} {month}',
+  'period.discharge.creamy': 'Creamy',
+  'period.discharge.eggWhite': 'Egg white',
+  'period.discharge.none': 'None',
+  'period.discharge.sticky': 'Sticky',
+  'period.discharge.unusual': 'Unusual',
+  'period.discharge.watery': 'Watery',
+  'period.flow.none': 'No bleeding',
+  'period.group.discharge': 'Discharge',
+  'period.group.flow': 'Flow',
+  'period.group.products': 'What you used',
+  'period.heading': 'Your period and discharge',
+  'period.products.cup': 'Cup',
+  'period.products.liner': 'Liner',
+  'period.products.pad': 'Pad',
+  'period.products.periodUnderwear': 'Period underwear',
+  'period.products.tampon': 'Tampon',
+  'period.save': 'Save',
+  'period.title': 'Period',
   'phase.about.follicular':
     'It starts with your period and ends the day before the ovulation phase.',
   'phase.about.luteal':

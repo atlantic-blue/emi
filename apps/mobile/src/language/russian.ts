@@ -175,7 +175,25 @@ export const russian: CatalogueIn<'ru'> = {
   'forecast.statedLength': 'Пока мы считаем по циклу в {days} дней, который вы нам назвали.',
   'forecast.stillLearning': 'Мы ещё узнаём вас',
 
+  'highlight.allAboutDischarge.1':
+    'Выделения выходят из влагалища. Они помогают ему оставаться чистым и влажным.',
+  'highlight.allAboutDischarge.2':
+    'Они меняются в течение цикла. После месячных они часто липкие или кремообразные, а около овуляции прозрачные, тянущиеся и влажные, как яичный белок.',
+  'highlight.allAboutDischarge.3':
+    'Emi записывает тип, который вы выбираете каждый день. Прогноз его не использует.',
+  'highlight.allAboutDischarge.4':
+    'Если выделения изменили цвет или запах, или появились зуд или боль, вам может помочь врач или медсестра.',
+  'highlight.allAboutDischarge.title': 'Всё о выделениях',
   'highlight.back': 'Назад',
+  'highlight.hygieneProducts.1':
+    'Прокладка крепится внутри белья и впитывает кровь. Ежедневная прокладка тоньше, она для скудных дней или для выделений.',
+  'highlight.hygieneProducts.2':
+    'Тампон и чаша вводятся во влагалище. Чаша собирает кровь, а вы её опорожняете, моете и используете снова.',
+  'highlight.hygieneProducts.3':
+    'В менструальных трусах есть слои, которые удерживают кровь. Их стирают и носят снова.',
+  'highlight.hygieneProducts.4':
+    'На каждой упаковке написано, сколько можно носить средство. Следуйте этому и меняйте его раньше, если оно заполнено.',
+  'highlight.hygieneProducts.title': 'Средства гигиены',
   'highlight.intercourse.1':
     'Половым актом называют секс, при котором пенис входит во влагалище. Это один из многих видов секса.',
   'highlight.intercourse.2':
@@ -565,6 +583,26 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.whatEmiDoes.privacy.title': 'Ваша приватность',
   'onboarding.whatEmiDoes.title': 'Вот что Emi делает с тем, что вы рассказали',
 
+  'period.back': 'Назад',
+  'period.day': '{weekday}, {date} {month}',
+  'period.discharge.creamy': 'Кремообразные',
+  'period.discharge.eggWhite': 'Как яичный белок',
+  'period.discharge.none': 'Нет',
+  'period.discharge.sticky': 'Липкие',
+  'period.discharge.unusual': 'Необычные',
+  'period.discharge.watery': 'Водянистые',
+  'period.flow.none': 'Нет кровотечения',
+  'period.group.discharge': 'Выделения',
+  'period.group.flow': 'Кровотечение',
+  'period.group.products': 'Что вы использовали',
+  'period.heading': 'Месячные и выделения',
+  'period.products.cup': 'Чаша',
+  'period.products.liner': 'Ежедневная прокладка',
+  'period.products.pad': 'Прокладка',
+  'period.products.periodUnderwear': 'Менструальные трусы',
+  'period.products.tampon': 'Тампон',
+  'period.save': 'Сохранить',
+  'period.title': 'Месячные',
   'phase.about.follicular': 'Она начинается с месячных и заканчивается за день до фазы овуляции.',
   'phase.about.luteal':
     'Она начинается на следующий день после фазы овуляции и заканчивается за день до следующих месячных.',
