@@ -13,9 +13,13 @@ import {
   dateDiscTestID,
   dayTestID,
   monthLegendTestID,
-  weekTestID,
 } from '../../src/features/calendar/CycleMonth';
-import { daySheetTestID } from '../../src/features/calendar/DaySheet';
+import {
+  daySheetLeadTestID,
+  daySheetOpenTestID,
+  daySheetTestID,
+} from '../../src/features/calendar/DaySheet';
+import { editPeriodListTestID } from '../../src/features/calendar/EditPeriodScreen';
 import { monthLegendCopy } from '../../src/features/calendar/copy';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -25,7 +29,6 @@ import {
   theDateInkOn,
   theDayAheadSheCannotOpen,
   theDaySheOpensTheMonth,
-  theDayTheDrawingOutlines,
   theDayTheDrawingsSheetNames,
   theDaysOfTheDrawnMonth,
   theDaysTheDrawingFills,
@@ -33,6 +36,8 @@ import {
   theLegendDots,
   theLegendSheReads,
   theMarkOnTheSquare,
+  theDayHerNextPeriodIsForecastOn,
+  theOvulationDayOfTheForecastCycle,
   theOvulationDayTheForecastNames,
   thePanelIsAtTheFoot,
   thePhaseGroundOn,
@@ -133,7 +138,10 @@ describe('the month grid takes the redesign look', () => {
       // A day she bled is filled over the top of the tint, because what she recorded wins.
       const bled = new Set(theDaysTheDrawingFills());
       const tinted = theFertileDaysTheForecastNames().filter(
-        (day) => day !== theOvulationDayTheForecastNames() && !bled.has(day),
+        (day) =>
+          day !== theOvulationDayTheForecastNames() &&
+          day !== theOvulationDayOfTheForecastCycle() &&
+          !bled.has(day),
       );
 
       expect(tinted.length).toBeGreaterThan(0);
@@ -142,6 +150,17 @@ describe('the month grid takes the redesign look', () => {
         expect(thePhaseGroundOn(day)).toBe(colour.washWarm);
         expect(theDateInkOn(day)).toBe(colour.ovulationInk);
       }
+    });
+
+    it('reach the forecast cycle ahead of her, with its ovulation day filled (issue 270)', async () => {
+      await sheOpensTheMonth();
+      const ahead = theFertileDaysTheForecastNames().filter(
+        (day) => day >= theDayHerNextPeriodIsForecastOn(),
+      );
+
+      expect(ahead.length).toBeGreaterThan(0);
+      expect(ahead).toContain(theOvulationDayOfTheForecastCycle());
+      expect(thePhaseGroundOn(theOvulationDayOfTheForecastCycle())).toBe(colour.ovulation);
     });
 
     it('fill the one day the forecast names as the estimated ovulation', async () => {
@@ -174,33 +193,39 @@ describe('the month grid takes the redesign look', () => {
   });
 
   describe('the legend above the grid', () => {
-    it('names her period and her fertile days, in the words of the catalogue', async () => {
+    it('names her period, the forecast and her fertile days, in the words of the catalogue', async () => {
       await sheOpensTheMonth();
 
       expect(theLegendSheReads()).toEqual({
         fertile: monthLegendCopy.fertile,
+        forecast: monthLegendCopy.forecast,
         period: monthLegendCopy.period,
       });
     });
 
-    it('gives each of those words the colour the grid draws those days in', async () => {
+    it('draws each mark the way the grid draws those days: a fill, a dashed ring and a tint', async () => {
       await sheOpensTheMonth();
+      const dots = theLegendDots();
 
-      expect(theLegendDots()).toEqual({ fertile: colour.ovulation, period: colour.period });
+      expect(dots.period.fill).toBe(colour.period);
+      expect(dots.forecast).toEqual({ fill: undefined, line: colour.period, lineStyle: 'dashed' });
+      expect(dots.fertile.fill).toBe(colour.washWarm);
+      expect(dots.fertile.line).toBe(colour.ovulation);
     });
 
-    it('stands above the columns, so the words are read before the dates', async () => {
+    it('stands above the grid, so the words are read before the dates', async () => {
       await sheOpensTheMonth();
 
-      const drawn = within(screen.getByTestId(calendarMonthTestID))
-        .queryAllByTestId(/.+/)
-        .map((element) => String(element.props.testID));
+      const drawn = screen.queryAllByTestId(/.+/).map((element) => String(element.props.testID));
 
       expect(drawn).toContain(monthLegendTestID);
-      expect(drawn.indexOf(monthLegendTestID)).toBeLessThan(drawn.indexOf(weekTestID));
+      expect(drawn.indexOf(monthLegendTestID)).toBeLessThan(drawn.indexOf(calendarMonthTestID));
+      expect(
+        within(screen.getByTestId(calendarMonthTestID)).queryByTestId(monthLegendTestID),
+      ).toBeNull();
     });
 
-    it('stays off the grid that asks her to pick a day instead of reading a phase', async () => {
+    it('stays off the period editor, which is a list of days rather than a month', async () => {
       await sheOpensTheMonth();
 
       expect(theLegendSheReads()).toBeDefined();
@@ -208,18 +233,18 @@ describe('the month grid takes the redesign look', () => {
       await shePresses(calendarEditPeriodTestID);
 
       expect(screen.queryByTestId(calendarMonthTestID)).toBeNull();
-      expect(screen.queryAllByTestId(new RegExp(`^${dayTestID('')}\\d`)).length).toBeGreaterThan(7);
+      expect(screen.getByTestId(editPeriodListTestID)).toBeTruthy();
       expect(theLegendSheReads()).toBeUndefined();
     });
   });
 
   describe('the panel at the foot', () => {
-    it('holds the way to her whole period before she has pressed any day', async () => {
+    it('holds the card of today, with the way to her whole period, before she presses a day', async () => {
       await sheOpensTheMonth();
 
       expect(thePanelIsAtTheFoot()).toBe(true);
+      expect(whatThePanelHolds()).toContain(daySheetTestID);
       expect(whatThePanelHolds()).toContain(calendarEditPeriodTestID);
-      expect(screen.queryByTestId(daySheetTestID)).toBeNull();
     });
 
     it('names the day she pressed over that way, and opens the day it names', async () => {
@@ -230,39 +255,39 @@ describe('the month grid takes the redesign look', () => {
 
       const held = whatThePanelHolds();
 
-      expect(held).toContain(daySheetTestID);
-      expect(held).toContain(calendarEditPeriodTestID);
-      expect(held.indexOf(daySheetTestID)).toBeLessThan(held.indexOf(calendarEditPeriodTestID));
+      expect(held.indexOf(daySheetLeadTestID)).toBeLessThan(held.indexOf(calendarEditPeriodTestID));
 
-      await shePresses(daySheetTestID);
+      await shePresses(daySheetOpenTestID);
 
       expect(app.pathname()).toBe(`/day/${day}`);
     });
   });
 
   describe('what the look did not change', () => {
-    it('fills, outlines and rings the same days it filled, outlined and ringed before', async () => {
+    it('fills the days she bled and rings today, and only today', async () => {
       await sheOpensTheMonth();
 
       for (const day of theDaysTheDrawingFills()) {
         expect(theMarkOnTheSquare(day)).toBe('bled');
       }
 
-      expect(theMarkOnTheSquare(theDayTheDrawingOutlines())).toBe('forecast');
       expect(theMarkOnTheSquare(theDaySheOpensTheMonth())).toBe('today');
       expect(theSquaresTheMonthDrew().filter((day) => theMarkOnTheSquare(day) === 'today')).toEqual(
         [theDaySheOpensTheMonth()],
       );
     });
 
-    it('still draws a day it will not open faint, and still refuses the press', async () => {
+    it('no longer draws a day ahead of her faint, because every day is a button', async () => {
       await sheOpensTheMonth();
 
       const ahead = theDayAheadSheCannotOpen();
       const square = screen.getByTestId(dayTestID(ahead));
 
-      expect(Number(styleOf(dayTestID(ahead)).opacity)).toBeLessThan(1);
-      expect(square.props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      expect(styleOf(dayTestID(ahead)).opacity).toBeUndefined();
+      expect(square.props.accessibilityRole).toBe('button');
+      expect(square.props.accessibilityState).toEqual(
+        expect.not.objectContaining({ disabled: true }),
+      );
     });
   });
 });

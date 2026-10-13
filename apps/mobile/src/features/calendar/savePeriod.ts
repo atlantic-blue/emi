@@ -1,6 +1,7 @@
 import type { DayRecord } from '@emi/crypto';
-import { type Flow, isBleeding } from '@emi/cycle';
+import { type Flow, addDays, daysBetween, isBleeding } from '@emi/cycle';
 
+import type { CycleRow } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { DaysAndCycles } from '../cycle/rebuild';
@@ -128,15 +129,62 @@ export function savePeriodRange(db: Database, vault: DayVault, save: PeriodSave)
 }
 
 /**
- * The period Emi holds in one month: the days of it she recorded bleeding on.
+ * The period of the cycle holding a day: the days of it she recorded bleeding on, from the day the
+ * cycle started, for as long as the bleeding runs. A day ahead of her asks about the cycle she is
+ * in, because no period ahead of her is a record yet.
  *
  * It is read off her records rather than off what the month drew, because the month draws today as
  * today whether she bled on it or not, and a woman correcting the period she is having right now
  * would find that day missing from her own period.
  */
-export function thePeriodEmiHoldsIn(records: readonly DayRecord[], month: string): string[] {
-  return records
-    .filter((record) => isBleeding(record) && record.day.slice(0, 7) === month.slice(0, 7))
-    .map((record) => record.day)
-    .sort();
+export function thePeriodEmiHoldsAround(
+  records: readonly DayRecord[],
+  cycles: readonly CycleRow[],
+  { day, today }: { readonly day: string; readonly today: string },
+): string[] {
+  const asked = day > today ? today : day;
+  const holding = cycles.filter((cycle) => !cycle.isPredicted && cycle.startedOn <= asked).at(-1);
+  if (holding === undefined) {
+    return [];
+  }
+
+  const bled = new Set(records.filter((record) => isBleeding(record)).map((record) => record.day));
+  const held: string[] = [];
+  for (let each = holding.startedOn; bled.has(each); each = addDays(each, 1)) {
+    held.push(each);
+  }
+
+  return held;
+}
+
+/** How many days after the last day of her period the list offers, as the board draws it. */
+export const DAYS_LISTED_AFTER_THE_PERIOD = 2;
+
+/** The first and the last day the list of her period shows. */
+export interface DaysListed {
+  readonly from: string;
+  readonly to: string;
+}
+
+/**
+ * The days the list opens with: her period and the two days after it, so a day she forgot to mark
+ * at the end is one press away. Where Emi holds no day of that period, the list starts on the day
+ * she asked about. It never reaches past today, because a day she has not lived takes no record.
+ */
+export function theDaysListedFirst(
+  held: readonly string[],
+  { day, today }: { readonly day: string; readonly today: string },
+): DaysListed {
+  const first = held[0] ?? (day > today ? today : day);
+  const last = held.at(-1) ?? first;
+  const to = addDays(last, DAYS_LISTED_AFTER_THE_PERIOD);
+
+  return { from: first, to: to > today ? today : to };
+}
+
+/** Every day from the first to the last of the list, in order. */
+export function theDaysOf(listed: DaysListed): string[] {
+  return Array.from({ length: daysBetween(listed.from, listed.to) + 1 }, (_unused, index) =>
+    addDays(listed.from, index),
+  );
 }

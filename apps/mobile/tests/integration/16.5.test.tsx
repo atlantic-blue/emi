@@ -1,17 +1,19 @@
 import { join } from 'node:path';
 
-import { space, stroke } from '@emi/tokens';
+import { space } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 
 import {
   calendarEarlierTestID,
-  calendarHeadingTestID,
+  calendarHeaderEndTestID,
+  calendarHeaderStartTestID,
+  calendarHeaderTestID,
   calendarLaterTestID,
   calendarTitleTestID,
 } from '../../src/features/calendar/CalendarScreen';
 import { dayTestID } from '../../src/features/calendar/CycleMonth';
-import { daySheetTestID } from '../../src/features/calendar/DaySheet';
+import { daySheetOpenTestID } from '../../src/features/calendar/DaySheet';
 import { calendarCopy } from '../../src/features/calendar/copy';
 import { dayParameter } from '../../src/features/calendar/askedMonth';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
@@ -59,9 +61,6 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 /** Midday on the day the drawing of the month rings, so the month reads the same in any zone. */
 const whenSheOpensTheMonth = (): Date => new Date(`${theDaySheOpensTheMonth()}T12:00:00.000Z`);
 
-/** Points. What a pill puts round its own words: the padding each side and the line it carries. */
-const thePillAroundTheWords = 2 * space.spaceMd + 2 * stroke.hairline;
-
 /**
  * Points. Every width the title could arrive at, from nothing to far wider than any glass. A month
  * name is longer in Spanish than in English, and longer again in a face the phone substitutes for
@@ -92,8 +91,8 @@ function theDayTheAddressCarries(app: OpenApp): string {
 }
 
 /**
- * The row that carries the month title, laid out on an iPhone 16: the way to an earlier month, the
- * title, and the way to a later month.
+ * The header that carries the month title, laid out on an iPhone 16: the way back, the title, and
+ * Today. Each side keeps one fixed width, so the title stands in the middle of the glass.
  *
  * A style is the same in every language and only the words change, so one render carries every
  * case and a language arrives as a width. The title is swept rather than measured, because the
@@ -106,11 +105,11 @@ function theRowOfTheTitle(titleWidth: number): MeasuredWordRow {
   });
 
   return theRowOfWords(
-    screen.getByTestId(calendarHeadingTestID) as unknown as Box,
+    screen.getByTestId(calendarHeaderTestID) as unknown as Box,
     [
-      aCell(calendarEarlierTestID, theWidthOfWords(calendarCopy.earlier, 'body-sm')),
+      aCell(calendarHeaderStartTestID, 0),
       aCell(calendarTitleTestID, titleWidth),
-      aCell(calendarLaterTestID, theWidthOfWords(calendarCopy.later, 'body-sm')),
+      aCell(calendarHeaderEndTestID, theWidthOfWords(calendarCopy.today, 'button-md')),
     ],
     anIPhone16.width,
   );
@@ -208,7 +207,7 @@ describe('she swipes back two months and reads a day in that month', () => {
       expect(theMarkOnTheSquare(theDaySheOpensTheMonth())).toBe('today');
     });
 
-    it('reaches a month of days she has not lived, and offers her none of them', async () => {
+    it('reaches a month of days she has not lived, and names a day of it as a forecast', async () => {
       await sheOpens('/calendar');
       await shePresses(calendarLaterTestID);
 
@@ -218,7 +217,8 @@ describe('she swipes back two months and reads a day in that month', () => {
 
       await shePresses(dayTestID(aDayAheadOfHer));
 
-      expect(theSheetSheReads()).toBeUndefined();
+      expect(theSheetSheReads()?.line).toMatch(/likely to start between/);
+      expect(screen.queryByTestId(daySheetOpenTestID)).toBeNull();
     });
   });
 
@@ -240,7 +240,7 @@ describe('she swipes back two months and reads a day in that month', () => {
       const aDayOfThatMonth = `${theMonthTwoBeforeSheOpens().slice(0, 8)}14`;
 
       await shePresses(dayTestID(aDayOfThatMonth));
-      await shePresses(daySheetTestID);
+      await shePresses(daySheetOpenTestID);
 
       expect(app.pathname()).toBe(`/day/${aDayOfThatMonth}`);
 
@@ -251,7 +251,7 @@ describe('she swipes back two months and reads a day in that month', () => {
     });
   });
 
-  describe('the row the title shares with the two ways, at 393 points across', () => {
+  describe('the header the title shares with the way back and Today, at 393 points across', () => {
     it.each(everyWidthATitleCouldTake)(
       'stands a gap between the title and each way at a title of %p points',
       async (titleWidth) => {
@@ -277,17 +277,14 @@ describe('she swipes back two months and reads a day in that month', () => {
       }
     });
 
-    it('never takes a point off either way to another month', async () => {
+    it('never takes a point off the way back or Today, which keep one width each', async () => {
       await sheOpens('/calendar');
 
-      const aPillAround = (word: string): number =>
-        toATenthOfAPoint(theWidthOfWords(word, 'body-sm') + thePillAroundTheWords);
-
       for (const titleWidth of everyWidthATitleCouldTake) {
-        const [earlier, , later] = theRowOfTheTitle(titleWidth).cellWidths;
+        const [start, , end] = theRowOfTheTitle(titleWidth).cellWidths;
 
-        expect(earlier).toBe(aPillAround(calendarCopy.earlier));
-        expect(later).toBe(aPillAround(calendarCopy.later));
+        expect(start).toBe(end);
+        expect(start).toBeGreaterThanOrEqual(theWidthOfWords(calendarCopy.today, 'button-md'));
       }
     });
 
@@ -300,7 +297,7 @@ describe('she swipes back two months and reads a day in that month', () => {
     it('leaves the English month its whole width, and lets it give way past that', async () => {
       await sheOpens('/calendar');
 
-      const theWholeTitle = theWidthOfWords(monthLabel(theMonthSheOpens), 'headline-md');
+      const theWholeTitle = theWidthOfWords(monthLabel(theMonthSheOpens), 'headline-sm');
       const [, asDrawn] = theRowOfTheTitle(theWholeTitle).cellWidths;
 
       expect(asDrawn).toBe(toATenthOfAPoint(theWholeTitle));

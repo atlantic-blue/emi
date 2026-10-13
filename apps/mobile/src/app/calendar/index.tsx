@@ -15,7 +15,7 @@ import {
   type WhatTheSheetSays,
   whatTheSheetSays,
 } from '../../features/calendar/theDaySheet';
-import type { HerDay } from '../../features/cycle/herWeek';
+import { type HerDay, herDaysOn } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { addMonths, localDay, startOfMonth } from '../../features/onboarding/days';
@@ -73,7 +73,7 @@ function herMonthOf(
     days,
     phaseOn: (day) => theDayPhaseOn(from, day),
     sheetFor: (day) => {
-      const hers = days.find((each) => each.day === day);
+      const hers = days.find((each) => each.day === day) ?? herDaysOn(from, [day])[0];
 
       return hers === undefined
         ? undefined
@@ -86,6 +86,10 @@ function herMonthOf(
   };
 }
 
+function theCardFor(said: WhatTheSheetSays | undefined): { shePressed?: WhatTheSheetSays } {
+  return said === undefined ? {} : { shePressed: said };
+}
+
 export default function CalendarRoute(): ReactNode {
   const database = useDatabase();
   const vault = useVault();
@@ -96,9 +100,10 @@ export default function CalendarRoute(): ReactNode {
   const [today] = useState(() => localDay(new Date()));
   const month = theMonthAskedFor(asked) ?? startOfMonth(today);
   const [hers, setHers] = useState(() => herMonthOf(database, vault, profiles, today, month));
-  // The day she pressed, and not what the sheet says about it: she comes back from that day
-  // having changed it, and the sheet is worked out again from the days read on the way back.
-  const [shePressed, setShePressed] = useState<string | undefined>(undefined);
+  // The day she pressed, and not what the card says about it: she comes back from that day
+  // having changed it, and the card is worked out again from the days read on the way back. Until
+  // she presses a day the card names today, so the way to her whole period is always on the glass.
+  const [shePressed, setShePressed] = useState<string>(today);
 
   useFocusEffect(
     useCallback(() => {
@@ -138,14 +143,14 @@ export default function CalendarRoute(): ReactNode {
       month={month}
       onBack={leave}
       onEarlierMonth={() => sheMovesTo(addMonths(month, -1))}
-      onEditPeriod={() => router.push(`/calendar/period?${dayParameter}=${month}`)}
+      onEditPeriod={(day) => router.push(`/calendar/period?${dayParameter}=${day}`)}
       onLaterMonth={() => sheMovesTo(addMonths(month, 1))}
       onOpenDay={(day) => router.push(`/day/${day}`)}
       onPressDay={setShePressed}
       onToday={() => router.replace('/')}
       phaseOn={hers.phaseOn}
       today={today}
-      {...(shePressed === undefined ? {} : { shePressed: hers.sheetFor(shePressed) })}
+      {...theCardFor(hers.sheetFor(shePressed))}
     />
   );
 }

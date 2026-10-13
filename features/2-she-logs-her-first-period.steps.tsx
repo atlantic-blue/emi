@@ -133,8 +133,12 @@ import {
   calendarLaterTestID,
   calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
-import { daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
-import { editPeriodCopy, monthLegendCopy } from '../apps/mobile/src/features/calendar/copy';
+import { daySheetOpenTestID, daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
+import {
+  calendarCopy,
+  editPeriodCopy,
+  monthLegendCopy,
+} from '../apps/mobile/src/features/calendar/copy';
 import { dayParameter } from '../apps/mobile/src/features/calendar/askedMonth';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
 import { dayRefusedBackTestID, dayRefusedCopy } from '../apps/mobile/src/features/log/DayRefused';
@@ -398,7 +402,12 @@ import {
   tourCopy,
 } from '../apps/mobile/src/features/onboarding/copy';
 import { ordinal, statedLengthSentence } from '../apps/mobile/src/features/forecast/copy';
-import { dateWords, monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
+import {
+  dateWords,
+  monthLabel,
+  startOfMonth,
+  weekdayOf,
+} from '../apps/mobile/src/features/onboarding/days';
 import {
   defaultCycleLengthDays,
   defaultPeriodLengthDays,
@@ -476,8 +485,13 @@ import {
   herPhoneHoldsThreeRecordedCycles,
   theColumnsOfTheDrawing,
   theCycleDayOver,
-  theCycleDaysOfTheDrawing,
+  theCycleDaysAfterIssue270,
+  theCyclesAheadOfHer,
   theDatesOfTheDrawing,
+  theDayHerNextPeriodIsForecastOn,
+  theDaysOfHerNextForecastPeriod,
+  theMonthAfterSheOpens,
+  theOvulationDayOfTheForecastCycle,
   theDayAheadSheCannotOpen,
   theDayTheDrawingsSheetNames,
   theDayTheEarlierDrawingOpens,
@@ -490,7 +504,6 @@ import {
   theSheetSheReads,
   theDatesTheMonthDrew,
   theDaySheOpensTheMonth,
-  theDayTheDrawingOutlines,
   theDayTheRingSaysOn,
   theDaysTheDrawingFills,
   theEmptyBoxesOfTheDrawing,
@@ -501,7 +514,6 @@ import {
   theMonthSheReads,
   theMonthSheReadsBack,
   theMonthTheDrawingNames,
-  theRangeHerNextPeriodMayStartOn,
   theSquaresCountingTheirCycleDayBelowTheDate,
   theSquaresTakingAWidthOfTheirOwn,
   theSquaresTheMonthDrew,
@@ -540,6 +552,8 @@ import {
   theLeadSheReads,
   theMonthSheCorrects,
   thePartsOfTheRangePickerDrawing,
+  theDaysTheListDrew,
+  theTagOn,
   theWayToEditHerPeriod,
   whatHerPhoneHoldsOn,
   whatSomebodyListeningHearsOn,
@@ -548,20 +562,20 @@ import {
 } from '../apps/mobile/tests/fixtures/thePeriodSheCorrects';
 import {
   editPeriodChangeTestID,
-  editPeriodKeyTestID,
+  editPeriodListTestID,
+  editPeriodRowTestID,
   editPeriodSaveTestID,
-} from '../apps/mobile/src/features/calendar/PeriodRangePicker';
+} from '../apps/mobile/src/features/calendar/EditPeriodScreen';
 import {
   type LogOrCalendarDrawing,
   howManyDifferencesAreKeptFor,
   howManyPartsAreHeldTo,
   sheIsLookingAtTheLogOrCalendar,
-  theChangeKeyNames,
   theLogAndCalendarDrawings,
   theScreenOf,
   theStyleOf,
   theWashIsAtTheTopOfTheLogOrCalendar,
-  theWordsOfTheKeyEntry,
+  theTagsOnTheList,
   whatTheLogOrCalendarDoesNotAnswerFor,
   whenSheReads,
   whereTheLogOrCalendarDrew,
@@ -982,10 +996,11 @@ function theWordsOfTheScreenSheOpensIn(language: Language, keys = theKeysOfTheSc
  * thing it is holding moves with it and catches nothing.
  */
 const theLogAndTheEditorSayInEnglish: Readonly<Record<string, string>> = {
-  'calendar.editPeriod.added': 'Added {days}.',
-  'calendar.editPeriod.leadWithNoDay': 'Tap the days you bled. Nothing is marked this month yet.',
-  'calendar.editPeriod.noDayLeft': 'A period needs at least one day. Tap a day you bled.',
-  'calendar.editPeriod.removed': 'Removed {days}.',
+  'calendar.editPeriod.added': 'You added {days}.',
+  'calendar.editPeriod.leadWithNoDay':
+    'Press the days you bled. Emi holds no day of this period yet.',
+  'calendar.editPeriod.noDayLeft': 'A period needs at least one day. Press a day you bled.',
+  'calendar.editPeriod.removed': 'You took {days} off.',
   'log.day.notADay.line': "That date isn't in the calendar.",
   'log.day.notADay.title': "That's not a day",
   'log.day.notYet.line': 'That day has not happened. You can log today and any day behind it.',
@@ -1004,10 +1019,16 @@ const theLogAndTheEditorSayInEnglish: Readonly<Record<string, string>> = {
 /** The one key of these two screens whose words change with the number, and both forms of it. */
 const theEditorCountsInEnglish: Readonly<Record<string, readonly string[]>> = {
   'calendar.editPeriod.lead': [
-    'Tap the days you bled. You have {count} day marked, from {date}.',
-    'Tap the days you bled. You have {count} days marked, from {date}.',
+    'Press the days you bled. Emi holds {count} day, from {date}.',
+    'Press the days you bled. Emi holds {count} days, from {date}.',
   ],
 };
+
+/** The two lines of the editor the redesign board writes about what Emi holds. */
+const theEditorLinesThatNameEmi: readonly string[] = [
+  'calendar.editPeriod.lead',
+  'calendar.editPeriod.leadWithNoDay',
+];
 
 /** Every key this step rewrites, the plain ones and the counted one together. */
 const theKeysOfTheLogAndTheEditor: readonly string[] = [
@@ -4100,21 +4121,33 @@ defineFeature(feature, (test) => {
     });
 
     and('above every date is the day of her cycle that date falls on', () => {
-      // The cycle days come off the drawing rather than off this file, so the numbers below are the
-      // ones the drawing counts and not thirty somebody typed in an order that suited them.
+      // The cycle days come off the drawing rather than off this file, up to her next forecast
+      // period, where issue 270 starts the count again at 1.
       expect(theMonthSheReadsBack().map((square) => square.cycleDay)).toEqual(
-        theCycleDaysOfTheDrawing(),
+        theCycleDaysAfterIssue270(),
       );
       expect(theSquaresCountingTheirCycleDayBelowTheDate()).toEqual([]);
     });
 
-    and('every one of those is the day the ring says for that date', () => {
-      const read = theMonthSheReadsBack().map((square) => square.cycleDay);
+    and(
+      'every one of those before her next forecast period is the day the ring says for that date',
+      () => {
+        const before = theSquaresTheMonthDrew().filter(
+          (day) => day < theDayHerNextPeriodIsForecastOn(),
+        );
 
-      expect(read).toEqual(theSquaresTheMonthDrew().map((day) => theDayTheRingSaysOn(day)));
-      expect(read.filter((day) => Number.isInteger(day))).toHaveLength(
-        theDatesOfTheDrawing().length,
-      );
+        expect(before.map((day) => theCycleDayOver(day))).toEqual(
+          before.map((day) => theDayTheRingSaysOn(day)),
+        );
+        expect(before.length).toBeGreaterThan(7);
+      },
+    );
+
+    and('the count starts again at 1 on the day the forecast puts her next period on', () => {
+      const restart = theDayHerNextPeriodIsForecastOn();
+
+      expect(theCycleDayOver(restart)).toBe(1);
+      expect(theCycleDayOver(addDays(restart, 1))).toBe(2);
     });
 
     and('the days she bled are filled', () => {
@@ -4124,12 +4157,11 @@ defineFeature(feature, (test) => {
       expect(theDaysTheDrawingFills().length).toBeGreaterThan(1);
     });
 
-    and('the day her next period is expected on is a dotted outline', () => {
-      const mayStart = theRangeHerNextPeriodMayStartOn();
-
-      expect(theMarkOnTheSquare(theDayTheDrawingOutlines())).toBe('forecast');
-      expect(theMarkOnTheSquare(mayStart.from)).toBe('forecast');
-      expect(theMarkOnTheSquare(addDays(mayStart.from, -1))).toBe('plain');
+    and('the days the forecast puts her next period on are dashed rings', () => {
+      expect(theDaysOfHerNextForecastPeriod().map((day) => theMarkOnTheSquare(day))).toEqual(
+        theDaysOfHerNextForecastPeriod().map(() => 'forecast'),
+      );
+      expect(theMarkOnTheSquare(addDays(theDayHerNextPeriodIsForecastOn(), -1))).toBe('plain');
     });
 
     and('today is ringed', () => {
@@ -4250,9 +4282,11 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/calendar');
     });
 
-    then('nothing at the foot of it names a day, because she has pressed none', () => {
+    then('the card at the foot names today, because she has pressed no day', () => {
       expect(app.pathname()).toBe('/calendar');
-      expect(theSheetSheReads()).toBeUndefined();
+      expect(theSheetSheReads()?.lead).toContain(
+        `${weekdayOf(theDaySheOpensTheMonth())}, ${Number(theDaySheOpensTheMonth().slice(8, 10))}`,
+      );
     });
 
     when('she presses the day the drawing names', async () => {
@@ -4260,10 +4294,10 @@ defineFeature(feature, (test) => {
       await shePresses(dayTestID(theDaySheOpens));
     });
 
-    then('a sheet at the foot names that date in words', () => {
+    then('a card at the foot names that date in words', () => {
       const sheet = theSheetSheReads();
 
-      expect(sheet?.lead).toContain(ordinal(Number(theDaySheOpens.slice(8, 10))));
+      expect(sheet?.lead).toContain(`, ${Number(theDaySheOpens.slice(8, 10))} `);
       expect(sheet?.lead).toContain(theMonthTheDrawingNames());
     });
 
@@ -4283,14 +4317,14 @@ defineFeature(feature, (test) => {
       );
     });
 
-    and('that is the month the drawing names, down to the sheet', () => {
+    and('that is the month the drawing names, down to the card', () => {
       expect(partsMissing(theMonthAndItsSheetOfTheDrawing(), whatTheMonthScreenDrew())).toEqual([]);
       expect(theMonthSheReads()).toContain(theMonthTheDrawingNames());
       expect(theDatesTheMonthDrew()).toEqual(theDatesOfTheDrawing());
     });
 
-    when('she presses the sheet', async () => {
-      await shePresses(daySheetTestID);
+    when('she presses the open button on the card', async () => {
+      await shePresses(daySheetOpenTestID);
     });
 
     then('she is looking at that day, and at no other', () => {
@@ -4308,7 +4342,7 @@ defineFeature(feature, (test) => {
       await shePresses(logFlowDoneTestID);
     });
 
-    then('she is reading the month again, and the sheet names the flow she just picked', () => {
+    then('she is reading the month again, and the card names the flow she just picked', () => {
       const said = String(theSheetSheReads()?.line).toLowerCase();
 
       expect(app.pathname()).toBe('/calendar');
@@ -4330,12 +4364,12 @@ defineFeature(feature, (test) => {
 
       const sheet = theSheetSheReads();
 
-      expect(sheet?.lead).toContain(ordinal(Number(String(another).slice(8, 10))));
-      expect(sheet?.lead).not.toContain(ordinal(Number(theDaySheOpens.slice(8, 10))));
+      expect(sheet?.lead).toContain(`, ${Number(String(another).slice(8, 10))} `);
+      expect(sheet?.lead).not.toContain(`, ${Number(theDaySheOpens.slice(8, 10))} `);
     });
   });
 
-  test('SCREEN-4, a day that has not happened yet is refused in the month and at its address', ({
+  test('SCREEN-4, a day that has not happened yet is a forecast in the month and refused at its address', ({
     given,
     when,
     then,
@@ -4358,17 +4392,22 @@ defineFeature(feature, (test) => {
       await shePresses(dayTestID(aheadOfHer));
     });
 
-    then('she is still reading the month, and nothing at the foot of it names that day', () => {
-      expect(app.pathname()).toBe('/calendar');
-      expect(theSheetSheReads()).toBeUndefined();
-    });
+    then(
+      'she is still reading the month, and the card names that day with when her next period is likely to start',
+      () => {
+        expect(app.pathname()).toBe('/calendar');
+        expect(theSheetSheReads()?.lead).toContain(`, ${Number(aheadOfHer.slice(8, 10))} `);
+        expect(theSheetSheReads()?.line).toMatch(/^Your next period is likely to start between /);
+      },
+    );
 
-    and('that square is faint, and somebody listening is told it takes no press', () => {
+    and('the card offers no way into that day, and the square is not faint', () => {
       const square = theSquareSheSees(aheadOfHer);
 
-      expect(square.dimmed).toBe(true);
-      expect(square.saidToTakeNoPress).toBe(true);
-      expect(square.spoken).toContain(words('cycle.day.notYet'));
+      expect(screen.queryByTestId(daySheetOpenTestID)).toBeNull();
+      expect(square.dimmed).toBe(false);
+      expect(square.saidToTakeNoPress).toBe(false);
+      expect(square.spoken).not.toContain(words('cycle.day.notYet'));
     });
 
     and('a day she already lived still takes a press and names itself at the foot', async () => {
@@ -4378,7 +4417,7 @@ defineFeature(feature, (test) => {
       expect(theSquareSheSees(String(behindHer)).saidToTakeNoPress).toBe(false);
       await shePresses(dayTestID(String(behindHer)));
 
-      expect(theSheetSheReads()?.lead).toContain(ordinal(Number(String(behindHer).slice(8, 10))));
+      expect(theSheetSheReads()?.lead).toContain(`, ${Number(String(behindHer).slice(8, 10))} `);
     });
 
     when('she opens that same day ahead of her by its address', async () => {
@@ -4408,6 +4447,81 @@ defineFeature(feature, (test) => {
 
     then('her phone holds nothing on that day', () => {
       expect(whatWasRecordedOn(aheadOfHer)).toBeUndefined();
+    });
+  });
+
+  test('SCREEN-4, she reads her forecast periods in the month ahead', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    let theForecastPeriodStarts = '';
+
+    given('her phone holds three recorded cycles', async () => {
+      jest.setSystemTime(whenSheOpensTheMonth());
+      await herPhoneHoldsThreeRecordedCycles(whenSheOpensTheMonth());
+    });
+
+    when('she opens the month', async () => {
+      app = await sheOpens('/calendar');
+    });
+
+    and('she presses the way to a later month', async () => {
+      await shePresses(calendarLaterTestID);
+
+      expect(theMonthSheReads()).toBe(monthLabel(theMonthAfterSheOpens()));
+    });
+
+    then(
+      'the forecast period in that month is drawn in dashed rings, and its cycle day starts at 1',
+      () => {
+        const inThatMonth = theCyclesAheadOfHer().find(
+          (cycle) => startOfMonth(cycle.startsOn) === theMonthAfterSheOpens(),
+        );
+
+        expect(inThatMonth).toBeDefined();
+        theForecastPeriodStarts = String(inThatMonth?.startsOn);
+
+        expect(theCycleDayOver(theForecastPeriodStarts)).toBe(1);
+        expect(theMarkOnTheSquare(theForecastPeriodStarts)).toBe('forecast');
+        expect(theMarkOnTheSquare(addDays(theForecastPeriodStarts, -1))).toBe('plain');
+      },
+    );
+
+    and(
+      'the fertile window of that forecast cycle is tinted, with its ovulation day filled',
+      () => {
+        const days = theSquaresTheMonthDrew();
+        const tinted = days.filter((day) => thePhaseGroundOn(day) === colour.washWarm);
+        const filled = days.filter((day) => thePhaseGroundOn(day) === colour.ovulation);
+
+        expect(tinted.length).toBeGreaterThan(0);
+        expect(filled.length).toBeGreaterThan(0);
+      },
+    );
+
+    when('she presses the first day of that forecast period', async () => {
+      await shePresses(dayTestID(theForecastPeriodStarts));
+    });
+
+    then('the card says a later period is likely to start between that day and a later one', () => {
+      const inThatMonth = theCyclesAheadOfHer().find(
+        (cycle) => cycle.startsOn === theForecastPeriodStarts,
+      );
+      const range = inThatMonth?.mayStart;
+
+      expect(app.pathname()).toBe('/calendar');
+      expect(range).toBeDefined();
+      expect(theSheetSheReads()?.line).toContain('A later period is likely to start between');
+      expect(theSheetSheReads()?.line).toContain(String(Number(String(range?.from).slice(8, 10))));
+      expect(range?.from).toBe(theForecastPeriodStarts);
+      expect(String(range?.to) > theForecastPeriodStarts).toBe(true);
+    });
+
+    and('the card offers no way into that day', () => {
+      expect(screen.queryByTestId(daySheetOpenTestID)).toBeNull();
     });
   });
 
@@ -4461,12 +4575,12 @@ defineFeature(feature, (test) => {
       await shePresses(dayTestID(aDayOfTheMonthTwoBack));
 
       expect(theSheetSheReads()?.lead).toContain(
-        ordinal(Number(aDayOfTheMonthTwoBack.slice(8, 10))),
+        `, ${Number(aDayOfTheMonthTwoBack.slice(8, 10))} `,
       );
     });
 
-    and('she presses the sheet at the foot', async () => {
-      await shePresses(daySheetTestID);
+    and('she presses the open button on the card', async () => {
+      await shePresses(daySheetOpenTestID);
     });
 
     then('she is looking at that day, two months behind today', () => {
@@ -4562,7 +4676,7 @@ defineFeature(feature, (test) => {
       expect(theLeadSheReads()).not.toBe('');
     });
 
-    and('the four days Emi holds arrive as hers, and no other day of that month does', () => {
+    and('the four days Emi holds arrive as hers, and no other listed day does', () => {
       expect(theDaysTickedOnThePicker()).toEqual(theDaysEmiHeld);
     });
 
@@ -4570,7 +4684,7 @@ defineFeature(feature, (test) => {
       for (const day of theDaysEmiHeld) {
         expect(whatSomebodyListeningHearsOn(day)).toEqual({
           checked: true,
-          disabled: false,
+          disabled: undefined,
           role: 'checkbox',
         });
       }
@@ -4578,37 +4692,40 @@ defineFeature(feature, (test) => {
       for (const day of theDaysSheAdded) {
         expect(whatSomebodyListeningHearsOn(day)).toEqual({
           checked: false,
-          disabled: false,
+          disabled: undefined,
           role: 'checkbox',
         });
       }
     });
 
-    and('a day she has not lived yet takes no press here either', async () => {
-      const aDayAheadOfHer = addDays(theDaySheOpensEmi(), 2);
-
-      expect(whatSomebodyListeningHearsOn(aDayAheadOfHer).disabled).toBe(true);
-
-      await shePresses(dayTestID(aDayAheadOfHer));
-
-      expect(theDaysTickedOnThePicker()).toEqual(theDaysEmiHeld);
+    and('no day she has not lived yet is listed', () => {
+      expect(theDaysTheListDrew().filter((day) => day > theDaySheOpensEmi())).toEqual([]);
+      expect(theDaysTheListDrew().length).toBeGreaterThan(theDaysEmiHeld.length);
     });
 
     when('she presses the two days her period ran on after that', async () => {
       for (const day of theDaysSheAdded) {
-        await shePresses(dayTestID(day));
+        await shePresses(editPeriodRowTestID(day));
       }
 
       expect(theDaysTickedOnThePicker()).toEqual([...theDaysEmiHeld, ...theDaysSheAdded].sort());
     });
 
     and('she presses the day her period did not start on', async () => {
-      await shePresses(dayTestID(theDaySheTookOff));
+      await shePresses(editPeriodRowTestID(theDaySheTookOff));
 
       expect(theDaysTickedOnThePicker()).toEqual(theDaysSheIsLeftHolding());
     });
 
-    then('the line under the month names the two days she added and the day she took off', () => {
+    then('each of those three rows carries its tag, Added or Taken off', () => {
+      for (const day of theDaysSheAdded) {
+        expect(theTagOn(day)).toBe(editPeriodCopy.added);
+      }
+
+      expect(theTagOn(theDaySheTookOff)).toBe(editPeriodCopy.takenOff);
+    });
+
+    and('the line under the list names the two days she added and the day she took off', () => {
       const line = theChangeLineSheReads();
 
       for (const day of [...theDaysSheAdded, theDaySheTookOff]) {
@@ -6134,10 +6251,12 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/calendar');
       expect(theSquaresTheMonthDrew().length).toBeGreaterThan(theColumnsOfTheDrawing().length);
       expect(theSquaresCountingTheirCycleDayBelowTheDate()).toEqual([]);
+      expect(theMonthSheReadsBack().map((square) => square.cycleDay)).toEqual(
+        theCycleDaysAfterIssue270(),
+      );
 
       for (const day of theSquaresTheMonthDrew()) {
         expect(theDiscAroundTheDate(day).width).toBe(theDiscAroundTheDate(day).height);
-        expect(theCycleDayOver(day)).toBe(theDayTheRingSaysOn(day));
       }
     });
 
@@ -6154,7 +6273,10 @@ defineFeature(feature, (test) => {
       // A day she bled is filled over the top of the tint, because what she recorded wins.
       const bled = new Set(theDaysTheDrawingFills());
       const tinted = theFertileDaysTheForecastNames().filter(
-        (day) => day !== theOvulationDayTheForecastNames() && !bled.has(day),
+        (day) =>
+          day !== theOvulationDayTheForecastNames() &&
+          day !== theOvulationDayOfTheForecastCycle() &&
+          !bled.has(day),
       );
 
       expect(tinted.length).toBeGreaterThan(0);
@@ -6174,12 +6296,15 @@ defineFeature(feature, (test) => {
       expect(theDateInkOn(ovulation)).toBe(colour.text);
     });
 
-    and('a legend above the grid names her period and her fertile days', () => {
+    and('a legend above the grid names her period, the forecast and her fertile days', () => {
       expect(theLegendSheReads()).toEqual({
         fertile: monthLegendCopy.fertile,
+        forecast: monthLegendCopy.forecast,
         period: monthLegendCopy.period,
       });
-      expect(theLegendDots()).toEqual({ fertile: colour.ovulation, period: colour.period });
+      expect(theLegendDots().period.fill).toBe(colour.period);
+      expect(theLegendDots().forecast.lineStyle).toBe('dashed');
+      expect(theLegendDots().fertile.fill).toBe(colour.washWarm);
     });
 
     when('she presses the day the drawing names', async () => {
@@ -6187,7 +6312,7 @@ defineFeature(feature, (test) => {
       await shePresses(dayTestID(sheWasSentTo));
     });
 
-    then('a panel at the foot names that day, over the way to her whole period', () => {
+    then('a card at the foot names that day, over the way to her whole period', () => {
       const held = whatThePanelHolds();
 
       expect(theSheetSheReads()?.lead).toContain(String(Number(sheWasSentTo.slice(8, 10))));
@@ -6195,8 +6320,8 @@ defineFeature(feature, (test) => {
       expect(held.indexOf(daySheetTestID)).toBeLessThan(held.indexOf(calendarEditPeriodTestID));
     });
 
-    and('pressing that panel opens the day it names', async () => {
-      await shePresses(daySheetTestID);
+    and('pressing the open button on that card opens the day it names', async () => {
+      await shePresses(daySheetOpenTestID);
 
       expect(app.pathname()).toBe(`/day/${sheWasSentTo}`);
     });
@@ -7055,7 +7180,7 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'the way to her whole period sits under the day she pressed, as the quieter capsule',
+      'the way to her whole period sits under the day she pressed, as a link in the accent',
       async () => {
         resetExpoSqlite();
         jest.setSystemTime(whenSheReads('calendar'));
@@ -7066,13 +7191,18 @@ defineFeature(feature, (test) => {
         expect(whereTheLogOrCalendarDrew(daySheetTestID, from)).toBeLessThan(
           whereTheLogOrCalendarDrew(calendarEditPeriodTestID, from),
         );
-        expect(theStyleOf(calendarEditPeriodTestID).backgroundColor).toBe(colour.field);
-        expect(theStyleOf(calendarEditPeriodTestID).borderRadius).toBe(radius.full);
+        expect(theStyleOf(calendarEditPeriodTestID).backgroundColor).toBeUndefined();
+        expect(
+          StyleSheet.flatten(
+            within(screen.getByTestId(calendarEditPeriodTestID)).getByText(calendarCopy.editPeriod)
+              .props.style,
+          ).color,
+        ).toBe(colour.accent);
       },
     );
 
     and(
-      'her whole period names the days she added and the day she took off, in her own language',
+      'her whole period tags the days she added and the day she took off, in her own language',
       async () => {
         resetExpoSqlite();
         jest.setSystemTime(whenSheReads('editPeriod'));
@@ -7080,10 +7210,12 @@ defineFeature(feature, (test) => {
 
         const from = theScreenOf('editPeriod');
 
-        expect(theChangeKeyNames()).toEqual(['added', 'takenOff']);
-        expect(theWordsOfTheKeyEntry('added')).toBe(editPeriodCopy.added);
-        expect(theWordsOfTheKeyEntry('takenOff')).toBe(editPeriodCopy.takenOff);
-        expect(whereTheLogOrCalendarDrew(editPeriodKeyTestID, from)).toBeLessThan(
+        expect(theTagsOnTheList().map((tag) => tag.said)).toEqual([
+          editPeriodCopy.takenOff,
+          editPeriodCopy.added,
+          editPeriodCopy.added,
+        ]);
+        expect(whereTheLogOrCalendarDrew(editPeriodListTestID, from)).toBeLessThan(
           whereTheLogOrCalendarDrew(editPeriodChangeTestID, from),
         );
       },
@@ -7948,24 +8080,29 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('none of those words gives her advice, raises an alarm, or names Emi', () => {
-      for (const language of languages) {
-        const naming = theKeysOfTheLogAndTheEditor.filter((key) =>
-          theWordsOfTheLogAndTheEditorIn(language, [key]).join('\n').includes('Emi'),
-        );
+    and(
+      'none of those words gives her advice or raises an alarm, and only the lines about what Emi holds name Emi',
+      () => {
+        for (const language of languages) {
+          const naming = theKeysOfTheLogAndTheEditor.filter(
+            (key) =>
+              !theEditorLinesThatNameEmi.includes(key) &&
+              theWordsOfTheLogAndTheEditorIn(language, [key]).join('\n').includes('Emi'),
+          );
 
-        expect({ language, naming }).toEqual({ language, naming: [] });
-      }
-
-      for (const line of theWordsOfTheLogAndTheEditorIn('en')) {
-        for (const word of adviceAndAlarm) {
-          expect({ line, holds: new RegExp(`\\b${word}`, 'i').test(line) }).toEqual({
-            line,
-            holds: false,
-          });
+          expect({ language, naming }).toEqual({ language, naming: [] });
         }
-      }
-    });
+
+        for (const line of theWordsOfTheLogAndTheEditorIn('en')) {
+          for (const word of adviceAndAlarm) {
+            expect({ line, holds: new RegExp(`\\b${word}`, 'i').test(line) }).toEqual({
+              line,
+              holds: false,
+            });
+          }
+        }
+      },
+    );
   });
 
   test('SCREEN-2, delete everything tells her it is gone in plain words', ({

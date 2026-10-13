@@ -1,10 +1,17 @@
-import { addDays, daysBetween, isBleeding } from '@emi/cycle';
+import { daysBetween, isBleeding } from '@emi/cycle';
 import type { PhaseSpan } from '@emi/tokens';
 
 import type { CycleRow } from '../../data/cycleRepository';
-import { forecastOf } from '../forecast/fromCache';
+import {
+  type CycleAhead,
+  hasItsRangeOpened,
+  isAForecastPeriodDay,
+  theCycleAheadHolding,
+  theCyclesAhead,
+  theDayOfTheCycleAhead,
+} from '../calendar/forecastAhead';
 import { weekdayLetter } from '../onboarding/days';
-import { type RingInput, type RingInputFrom, ringInputFor } from './ringInput';
+import { type RingInputFrom, ringInputFor } from './ringInput';
 
 /**
  * Her days, worked out from the cycle each one falls in.
@@ -67,62 +74,40 @@ function isAPeriodDay(phases: readonly PhaseSpan[], cycleDay: number): boolean {
   return false;
 }
 
-/** How many days the period of the cycle she is in runs, which is the arc the ring draws for it. */
-function periodDaysOf(ring: RingInput | undefined): number {
-  return ring?.phases.find((span) => span.phase === 'period')?.days ?? 0;
-}
-
-/**
- * The days her next period is expected on, read off the range Emi already gives her.
- *
- * Emi never names one day for the next period, so the days marked are the whole range it may start
- * on, and the days her own period would run over from the last of them. A range of three days and a
- * period of five covers seven, and every one of them is a day she may bleed on.
- *
- * A week holds seven days, so the arcs of the cycle she is in carry every day it could mark. A
- * month reaches past the end of that cycle and into the next one, which is a forecast rather than
- * an arc, so it is read here.
- */
-function theNextPeriodExpected(
-  from: HerDaysFrom,
-  ring: RingInput | undefined,
-): ReadonlySet<string> {
-  const mayStart = forecastOf(from.cycles, from.statedCycleLengthDays).start;
-  const runs = periodDaysOf(ring);
-
-  if (mayStart === undefined || runs < 1) {
-    return new Set();
-  }
-
-  const days = daysBetween(mayStart.from, mayStart.to) + runs;
-
-  return new Set(Array.from({ length: days }, (_unused, index) => addDays(mayStart.from, index)));
-}
-
 /**
  * The days she is reading, in the order they were asked for.
  *
  * A day she recorded bleeding on is filled and today is ringed, because both are facts. A day
- * ahead of her that her period is expected on is an outline, because it is an estimate and an
+ * ahead of her that the forecast puts a period on is an outline, because it is an estimate and an
  * estimate she has not lived yet may not look like one she has.
+ *
+ * A day ahead of her inside a forecast cycle counts its cycle day from the day that forecast period
+ * starts, so the count starts again at one on each period, real or forecast.
  */
 export function herDaysOn(from: HerDaysFrom, days: readonly string[]): HerDay[] {
   const ring = ringInputFor(from);
-  const expected = theNextPeriodExpected(from, ring);
+  const ahead = theCyclesAhead(from);
   const bled = new Set(
     from.records.filter((record) => isBleeding(record)).map((record) => record.day),
   );
 
   return days.map((day) => {
+    const forecast =
+      daysBetween(from.today, day) > 0 ? theCycleAheadHolding(ahead, day) : undefined;
     const holding = cycleHolding(from.cycles, day);
-    const cycleDay = holding === undefined ? undefined : daysBetween(holding.startedOn, day) + 1;
+    const cycleDay =
+      forecast !== undefined && !hasItsRangeOpened(forecast, from.today)
+        ? theDayOfTheCycleAhead(forecast, day)
+        : holding === undefined
+          ? undefined
+          : daysBetween(holding.startedOn, day) + 1;
 
     return {
       cycleDay,
       date: Number(day.slice(8, 10)),
       day,
       letter: weekdayLetter(day),
-      mark: markOf({ bled, cycleDay, day, expected, ring, today: from.today }),
+      mark: markOf({ bled, cycleDay, day, forecast, ring, today: from.today }),
     };
   });
 }
@@ -131,12 +116,13 @@ interface MarkFrom {
   readonly bled: ReadonlySet<string>;
   readonly cycleDay: number | undefined;
   readonly day: string;
-  readonly expected: ReadonlySet<string>;
+  /** The forecast cycle holding a day ahead of her, or nothing. */
+  readonly forecast: CycleAhead | undefined;
   readonly ring: { readonly phases: readonly PhaseSpan[] } | undefined;
   readonly today: string;
 }
 
-function markOf({ bled, cycleDay, day, expected, ring, today }: MarkFrom): DayMark {
+function markOf({ bled, cycleDay, day, forecast, ring, today }: MarkFrom): DayMark {
   if (day === today) {
     return 'today';
   }
@@ -150,9 +136,12 @@ function markOf({ bled, cycleDay, day, expected, ring, today }: MarkFrom): DayMa
     return 'plain';
   }
 
-  if (ring !== undefined && cycleDay !== undefined && isAPeriodDay(ring.phases, cycleDay)) {
-    return 'forecast';
+  if (forecast !== undefined) {
+    return isAForecastPeriodDay(forecast, day) ? 'forecast' : 'plain';
   }
 
-  return expected.has(day) ? 'forecast' : 'plain';
+  // The rest of the period she is in, on the days ahead of her before the next forecast period.
+  return ring !== undefined && cycleDay !== undefined && isAPeriodDay(ring.phases, cycleDay)
+    ? 'forecast'
+    : 'plain';
 }

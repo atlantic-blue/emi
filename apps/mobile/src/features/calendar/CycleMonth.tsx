@@ -44,16 +44,24 @@ export function dateDiscTestID(day: string): string {
   return `calendar-disc-${day}`;
 }
 
+/** The ring around the disc of the day she pressed. */
+export function pickedRingTestID(day: string): string {
+  return `calendar-picked-${day}`;
+}
+
 /** The legend above the columns, which the screen reading a phase asks for. */
 export const monthLegendTestID = 'calendar-legend';
 
+/** The three things the legend names. */
+export type LegendEntry = 'period' | 'forecast' | 'fertile';
+
 /** One entry of that legend: a dot and the word beside it. */
-export function legendTestID(of: 'period' | 'fertile'): string {
+export function legendTestID(of: LegendEntry): string {
   return `calendar-legend-${of}`;
 }
 
-/** The dot of an entry, which is the colour the grid uses for those days. */
-export function legendDotTestID(of: 'period' | 'fertile'): string {
+/** The dot of an entry, which is the colour or the line the grid uses for those days. */
+export function legendDotTestID(of: LegendEntry): string {
   return `calendar-legend-dot-${of}`;
 }
 
@@ -117,6 +125,11 @@ export interface MonthSquare {
   readonly ovulating?: boolean;
   /** The day she picked, where the screen asks her to pick one. */
   readonly chosen?: boolean;
+  /**
+   * The day she pressed on a screen where a press opens a card, which carries a ring around the
+   * disc rather than a fill, so a day she bled keeps its fill while she reads it.
+   */
+  readonly picked?: boolean;
   /** A day the screen draws and will not take, which is dimmed rather than left out. */
   readonly outOfReach?: boolean;
   /** What a screen reader says about the square. */
@@ -154,17 +167,22 @@ function Square({ day, square }: SquareProps): ReactNode {
         </Text>
       )}
       <View
-        style={[
-          styles.disc,
-          theGroundOfThePhase(square),
-          theMark[square.mark],
-          chosen && styles.discChosen,
-        ]}
-        testID={dateDiscTestID(day)}
+        style={[styles.pickedRing, square.picked === true && styles.pickedRingDrawn]}
+        testID={pickedRingTestID(day)}
       >
-        <Text style={theNumber(square, chosen)} testID={dateTestID(day)}>
-          {Number(day.slice(8, 10))}
-        </Text>
+        <View
+          style={[
+            styles.disc,
+            theGroundOfThePhase(square),
+            theMark[square.mark],
+            chosen && styles.discChosen,
+          ]}
+          testID={dateDiscTestID(day)}
+        >
+          <Text style={theNumber(square, chosen)} testID={dateTestID(day)}>
+            {Number(day.slice(8, 10))}
+          </Text>
+        </View>
       </View>
       {chosen ? (
         <View testID={chosenDayMarkTestID}>
@@ -244,6 +262,10 @@ function theNumber(square: MonthSquare, chosen: boolean): TextStyle[] | TextStyl
     return [styles.dayNumber, styles.dayNumberOnFill];
   }
 
+  if (square.mark === 'forecast') {
+    return [styles.dayNumber, styles.dayNumberForecast];
+  }
+
   if (square.ovulating !== true && square.fertile === true) {
     return [styles.dayNumber, styles.dayNumberOnTheWindow];
   }
@@ -251,19 +273,31 @@ function theNumber(square: MonthSquare, chosen: boolean): TextStyle[] | TextStyl
   return styles.dayNumber;
 }
 
-/** The two things the legend names, in the order the prototype places them. */
-const theLegend: readonly { readonly of: 'period' | 'fertile'; readonly dot: ViewStyle }[] = [
+/** The three things the legend names, in the order the board places them. */
+const theLegend: readonly { readonly of: LegendEntry; readonly dot: ViewStyle }[] = [
   { dot: { backgroundColor: colour.period }, of: 'period' },
-  { dot: { backgroundColor: colour.ovulation }, of: 'fertile' },
+  {
+    dot: { borderColor: colour.period, borderStyle: 'dashed', borderWidth: stroke.icon },
+    of: 'forecast',
+  },
+  {
+    dot: {
+      backgroundColor: colour.washWarm,
+      borderColor: colour.ovulation,
+      borderStyle: 'solid',
+      borderWidth: stroke.hairline,
+    },
+    of: 'fertile',
+  },
 ];
 
 /**
- * What the two colours of the grid mean, said in words above the columns.
+ * What the marks of the grid mean, said in words above the columns.
  *
- * It is off unless a screen asks for it. Three screens draw this grid and two of them ask her to
- * pick a day, where a legend would explain colours those grids never paint.
+ * It is off unless a screen asks for it. Two screens draw this grid and the first run asks her to
+ * pick a day, where a legend would explain marks that grid never draws.
  */
-function Legend(): ReactNode {
+export function MonthLegend(): ReactNode {
   return (
     <View style={styles.legend} testID={monthLegendTestID}>
       {theLegend.map(({ of, dot }) => (
@@ -297,7 +331,7 @@ export function CycleMonth({ testID, month, heading, legend, squareOf }: Props):
     <View style={styles.calendar} testID={testID}>
       {heading}
 
-      {legend === true ? <Legend /> : null}
+      {legend === true ? <MonthLegend /> : null}
 
       <View style={styles.week} testID={weekTestID}>
         {weekdayColumnNames.map((weekday) => (
@@ -329,7 +363,7 @@ export function CycleMonth({ testID, month, heading, legend, squareOf }: Props):
  */
 const theMark: Readonly<Record<DayMark, ViewStyle>> = StyleSheet.create({
   bled: { backgroundColor: colour.period, borderColor: colour.period },
-  forecast: { borderColor: colour.period, borderStyle: 'dotted' },
+  forecast: { borderColor: colour.period, borderStyle: 'dashed' },
   plain: {},
   today: { borderColor: colour.accent, borderStyle: 'solid' },
 });
@@ -360,6 +394,7 @@ const styles = StyleSheet.create({
     color: colour.text,
     ...textStyle('body-lg'),
   },
+  dayNumberForecast: { color: colour.period, fontWeight: '800' },
   dayNumberOnFill: { color: colour.onAccent },
   dayNumberOnTheWindow: { color: colour.ovulationInk },
   dayOutOfReach: { opacity: 0.4 },
@@ -380,6 +415,19 @@ const styles = StyleSheet.create({
   discFertile: { backgroundColor: colour.washWarm, borderColor: colour.washWarm },
   discOvulation: { backgroundColor: colour.ovulation, borderColor: colour.ovulation },
   empty: { flex: 1, minHeight: MINIMUM_TAP_TARGET },
+  // The ring of the day she pressed stands a little outside the disc, with the ground between,
+  // so it is never read as the solid ring that says today.
+  pickedRing: {
+    alignItems: 'center',
+    borderColor: 'transparent',
+    borderRadius: radius.full,
+    borderWidth: stroke.icon,
+    justifyContent: 'center',
+    padding: 1,
+  },
+  // A border with no style named is a border a browser does not draw, so the pictures would show
+  // no ring at all.
+  pickedRingDrawn: { borderColor: colour.text, borderStyle: 'solid' },
   legend: {
     flexDirection: 'row',
     gap: space.spaceLg,

@@ -11,6 +11,8 @@ import {
   type WhatTheSheetSays,
   whatTheSheetSays,
 } from '../../src/features/calendar/theDaySheet';
+import { theCyclesAhead } from '../../src/features/calendar/forecastAhead';
+import { herDaysOn } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { startOfMonth } from '../../src/features/onboarding/days';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
@@ -44,11 +46,12 @@ const recordedAt = new Date('2026-09-18T20:00:00.000Z');
 const herPeriodStarts = ['2026-07-25', '2026-08-14', '2026-09-03'];
 const herPeriodRunsFor = 5;
 
-/** The two days she opens the month on: day sixteen of her cycle, and day five of the one before. */
+/** The day she opens the month on, which is day sixteen of her cycle. */
 const theDaySheOpensIt = '2026-09-18';
+/** A day she bled on, in the month before. */
 const aDaySheWasBleedingOn = '2026-08-18';
 
-/** What she marked on the day she presses, so the sheet at the foot has something to read back. */
+/** What she marked on the day she presses, so the card at the foot has something to read back. */
 const sheMarked = ['cramps', 'low-mood'];
 
 function herDays(): DayRecord[] {
@@ -74,30 +77,36 @@ function herDays(): DayRecord[] {
   ];
 }
 
-function herReadingOn(today: string): { from: HerReading; days: ReturnType<typeof herMonth> } {
+function herReading(): HerReading {
   const database = daysLogged(herDays(), recordedAt);
-  const from = {
+
+  return {
     cycles: listCycles(database),
     records: recordedDays(database, (payload) => herVault().open(payload)),
-    today,
+    today: theDaySheOpensIt,
     statedCycleLengthDays: defaultCycleLengthDays,
     statedPeriodLengthDays: herPeriodRunsFor,
   };
-
-  return { from, days: herMonth(from, startOfMonth(today)) };
 }
 
-/** The sheet as the screen works it out, for the state that shows a day she pressed. */
-function theSheetFor(state: State): WhatTheSheetSays | undefined {
-  if (state.shePressed === undefined) {
-    return undefined;
+/** The forecast period that starts in the month after, which that month opens its card on. */
+function herForecastPeriodInTheMonthAfter(): string {
+  const next = theCyclesAhead(herReading()).find((cycle) => cycle.startsOn.startsWith('2026-10'));
+
+  if (next === undefined) {
+    throw new Error('her three cycles produced no forecast period in the month after');
   }
 
-  const { from, days } = herReadingOn(state.today);
-  const hers = days.find((day) => day.day === state.shePressed);
+  return next.startsOn;
+}
+
+/** The card as the screen works it out, for the day she pressed. */
+function theSheetFor(state: State): WhatTheSheetSays {
+  const from = herReading();
+  const hers = herDaysOn(from, [state.shePressed])[0];
 
   if (hers === undefined) {
-    throw new Error(`${state.shePressed} is not a day of the month this state draws`);
+    throw new Error(`${state.shePressed} gave no day`);
   }
 
   return whatTheSheetSays(
@@ -110,31 +119,40 @@ function theSheetFor(state: State): WhatTheSheetSays | undefined {
 interface State {
   readonly title: string;
   readonly note: string;
-  readonly today: string;
-  /** The day she pressed, and nothing at all in the state she has pressed none. */
-  readonly shePressed?: string;
+  /** The month drawn, named by any day in it. */
+  readonly month: string;
+  /** The day she pressed, which the card at the foot names. */
+  readonly shePressed: string;
 }
 
 const theStates: readonly State[] = [
   {
-    title: 'The month she is in, with the day she pressed named at the foot',
-    note: 'Day sixteen. The five days she bled are filled, the days her next period is expected on are outlined, and the sheet names the day she pressed, its cycle day, its phase and what she marked on it. Pressing the sheet opens that day.',
-    today: theDaySheOpensIt,
+    title: 'The month she is in, with today named at the foot',
+    note: 'Day sixteen. The five days she bled are filled, today is ringed, and the next forecast period starts again at day 1 in dashed rings. The card names today, its cycle day, its phase and what she marked on it, over Edit my period.',
+    month: theDaySheOpensIt,
     shePressed: theDaySheOpensIt,
   },
   {
-    title: 'The month before, while she was bleeding, pressed nowhere',
-    note: 'Her period ran from the fourteenth. The day she is reading it on is ringed, and the days behind it are filled. She has pressed no day, so the foot names none.',
-    today: aDaySheWasBleedingOn,
+    title: 'The month after, with the first day of a forecast period pressed',
+    note: 'A month she has not lived. The forecast periods are dashed rings, the cycle day starts again at 1 on each of them, and the fertile window is tinted with the ovulation day filled. The card says when that period is likely to start. It has no open button, because there is nothing to record on a day ahead of her.',
+    month: '2026-10-01',
+    shePressed: herForecastPeriodInTheMonthAfter(),
+  },
+  {
+    title: 'The month before, with a day she bled on pressed',
+    note: 'Her period ran from the fourteenth. The picked day carries a ring of its own, and the card says its cycle day, its phase and that nothing else is logged. The round button opens that day.',
+    month: aDaySheWasBleedingOn,
+    shePressed: aDaySheWasBleedingOn,
   },
 ];
 
 async function drawn(state: State): Promise<DrawnScreen> {
+  const from = herReading();
   const view = await render(
     <OnAPhone>
       <CalendarScreen
-        days={herReadingOn(state.today).days}
-        month={startOfMonth(state.today)}
+        days={herMonth(from, startOfMonth(state.month))}
+        month={startOfMonth(state.month)}
         onBack={() => undefined}
         onEarlierMonth={() => undefined}
         onEditPeriod={() => undefined}
@@ -142,9 +160,9 @@ async function drawn(state: State): Promise<DrawnScreen> {
         onOpenDay={() => undefined}
         onPressDay={() => undefined}
         onToday={() => undefined}
-        phaseOn={(day) => theDayPhaseOn(herReadingOn(state.today).from, day)}
-        today={state.today}
-        {...(theSheetFor(state) === undefined ? {} : { shePressed: theSheetFor(state) })}
+        phaseOn={(day) => theDayPhaseOn(from, day)}
+        shePressed={theSheetFor(state)}
+        today={theDaySheOpensIt}
       />
     </OnAPhone>,
   );
