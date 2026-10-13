@@ -6,17 +6,18 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 /**
  * One round action under the ring: a disc carrying a drawing, and the name of the action under it.
  *
- * The two are told apart by their fill rather than by their words. Logging a period is the press
+ * The three are told apart by their fill rather than by their words. Logging a period is the press
  * she makes most, so it takes the accent and the drawing takes the one ink the palette measured on
- * the accent. Symptoms is paper, so it takes the card and the ink of the card. Reading the pair
- * needs no colour vision: one is filled and the other is not.
+ * the accent. Sex and Cycle phase are paper, so they take the card, with the heart in the accent
+ * and the phase drawing in the ink of the phase card, as the todayPhases board draws them. Reading
+ * the row needs no colour vision: the middle one is filled and the others are not.
  *
  * The name is a word contract SCREEN-2 holds to 14 points, so it takes the label role and never a
  * body role. A stranger beside her reads nothing at that size.
  */
 
-/** The actions the drawing places under the ring, in the order it places them. */
-export const roundActions = ['period', 'symptoms'] as const;
+/** The actions the todayPhases board places under the ring, in the order it places them. */
+export const roundActions = ['sex', 'period', 'phase'] as const;
 
 export type RoundActionName = (typeof roundActions)[number];
 
@@ -32,7 +33,7 @@ export function roundActionTestID(name: RoundActionName): string {
 }
 
 /**
- * The disc itself, which is filled on the period action and white on the symptoms one.
+ * The disc itself, which is filled on the period action and white on the other two.
  *
  * It is named away from the stem above on purpose. A reader counting the actions matches on that
  * stem, so a part inside an action that carried it would be counted as an action of its own.
@@ -52,10 +53,14 @@ const theDiscIsThisWide = 60;
 /** Points. The drawing inside the disc, which the mockup draws slightly above the set's size. */
 const theDrawingInTheDisc = 26;
 
+/** Points. The board gives each action this width, so a two word label stays on one line. */
+const theActionIsThisWide = 88;
+
 /** The ground each disc is drawn on, and the one ink the palette measured on that ground. */
 const thePaintOf: Readonly<Record<RoundActionName, { ground: string; ink: string }>> = {
+  sex: { ground: colour.card, ink: colour.accent },
   period: { ground: colour.accent, ink: colour.onAccent },
-  symptoms: { ground: colour.card, ink: colour.text },
+  phase: { ground: colour.card, ink: colour.ovulationInk },
 };
 
 interface Props {
@@ -98,6 +103,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
+    width: theActionIsThisWide,
   },
   // The disc lifts off the ground by the one shadow the design document allows, so the pair reads
   // as two things to press rather than as two circles printed on the paper behind them.
@@ -112,5 +118,6 @@ const styles = StyleSheet.create({
   label: {
     color: colour.text,
     ...textStyle('label-md'),
+    textAlign: 'center',
   },
 });

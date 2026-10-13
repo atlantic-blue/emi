@@ -109,7 +109,8 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
         onLogPain={nothing}
         onLogToday={nothing}
         onPeriod={nothing}
-        onSymptoms={nothing}
+        onOpenLogged={nothing}
+        onSex={nothing}
         ring={undefined}
       />
     ),

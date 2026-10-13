@@ -6,8 +6,8 @@ import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
-import { roundActionTestID } from '../../src/features/home/HomeScreen';
 import { opensOnParameter, theSymptoms } from '../../src/features/log/askedGroup';
+import { sheOpensTheSymptomGroupsFromToday } from '../fixtures/theSymptomGroupsFromToday';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import {
@@ -90,7 +90,7 @@ describe('the symptoms action opens the log on the groups and the dock still ope
     beforeEach(async () => {
       app = await sheOpensEmi();
 
-      await fireEvent.press(screen.getByTestId(roundActionTestID('symptoms')));
+      await sheOpensTheSymptomGroupsFromToday();
     });
 
     it('puts her on the log, with the symptom groups above the flow picker', () => {

@@ -118,7 +118,8 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
         onLogPain={nothing}
         onLogToday={nothing}
         onPeriod={nothing}
-        onSymptoms={nothing}
+        onOpenLogged={nothing}
+        onSex={nothing}
         ring={undefined}
       />
     ),

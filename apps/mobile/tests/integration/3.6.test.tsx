@@ -1,3 +1,4 @@
+import { tabTestID } from '@emi/ui';
 import { join } from 'node:path';
 import { OnAPhone } from '../fixtures/theSafeArea';
 
@@ -47,7 +48,6 @@ import {
   HomeScreen,
   homeForecastTestID,
   homeNoRingTestID,
-  roundActionTestID,
 } from '../../src/features/home/HomeScreen';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
@@ -186,7 +186,8 @@ async function sheOpensHerHomeScreen(her: HerPhone): Promise<void> {
         onLogPain={() => undefined}
         onLogToday={() => undefined}
         onPeriod={() => undefined}
-        onSymptoms={() => undefined}
+        onOpenLogged={() => undefined}
+        onSex={() => undefined}
         ring={her.ring}
       />
     </OnAPhone>,
@@ -373,7 +374,8 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             onLogPain={() => undefined}
             onLogToday={() => undefined}
             onPeriod={() => undefined}
-            onSymptoms={() => undefined}
+            onOpenLogged={() => undefined}
+            onSex={() => undefined}
             ring={ringInputFor({
               cycles,
               records: recordedDays(database, readDay),
@@ -402,7 +404,8 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             onLogPain={() => undefined}
             onLogToday={() => undefined}
             onPeriod={() => undefined}
-            onSymptoms={() => undefined}
+            onOpenLogged={() => undefined}
+            onSex={() => undefined}
             ring={undefined}
           />
         </OnAPhone>,
@@ -446,7 +449,8 @@ describe('the ring shows the forecast the arithmetic produced', () => {
             onLogPain={() => undefined}
             onLogToday={() => undefined}
             onPeriod={() => undefined}
-            onSymptoms={() => undefined}
+            onOpenLogged={() => undefined}
+            onSex={() => undefined}
             ring={undefined}
           />
         </OnAPhone>,
@@ -543,7 +547,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
       expect(theRingSays()).toBe(`Day 2 of ${herCycleLengthDays}, follicular`);
 
-      await fireEvent.press(screen.getByTestId(roundActionTestID('period')));
+      await fireEvent.press(screen.getByTestId(tabTestID('log/index')));
       await fireEvent.press(screen.getByTestId(flowOptionTestID('heavy')));
       await fireEvent.press(screen.getByTestId(logFlowDoneTestID));
 

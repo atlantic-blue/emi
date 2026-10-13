@@ -265,6 +265,9 @@ import {
   sexPageTestID,
 } from '../apps/mobile/src/features/sex/SexPage';
 import { sexAddress } from '../apps/mobile/src/features/sex/sexAddress';
+import { sexDayHeading } from '../apps/mobile/src/features/sex/copy';
+import { periodDayLabel } from '../apps/mobile/src/features/period/copy';
+import { sheOpensTheSymptomGroupsFromToday } from '../apps/mobile/tests/fixtures/theSymptomGroupsFromToday';
 import {
   periodChipTestID,
   periodPageDayTestID,
@@ -3608,23 +3611,32 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    then('under the ring she reads two round actions, in the order the drawing places them', () => {
-      expect(app.pathname()).toBe('/');
-      // The parts, their order and the count all come off the drawing, so a third action fails
-      // here and the failure names the number the drawing places.
-      expect(partsMissing(theScreenDownToTheRoundActions(), whatTheScreenSheOpensDrew())).toEqual(
-        theStripTheCalendarReplaced,
-      );
-      expect(roundActionProblems()).toEqual([]);
-      expect(theRoundActionsOnTheGlass()).toHaveLength(2);
+    then(
+      'under the ring she reads three round actions, Sex, Period and Cycle phase, in the order the board places them',
+      () => {
+        expect(app.pathname()).toBe('/');
+        // The order and the count come off the todayPhases board, so a fourth action fails here
+        // and the failure names the number the board places.
+        expect(partsMissing(theScreenDownToTheRoundActions(), whatTheScreenSheOpensDrew())).toEqual(
+          theStripTheCalendarReplaced,
+        );
+        expect(roundActionProblems()).toEqual([]);
+        expect(theRoundActionsOnTheGlass()).toEqual([
+          roundActionTestID('sex'),
+          roundActionTestID('period'),
+          roundActionTestID('phase'),
+        ]);
+        expect(screen.getByText('Sex')).toBeTruthy();
+        expect(screen.getByText('Cycle phase')).toBeTruthy();
 
-      const drawn = whatTheScreenSheOpensDrew();
+        const drawn = whatTheScreenSheOpensDrew();
 
-      for (const action of theRoundActionsOnTheGlass()) {
-        expect(drawn.indexOf(action)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
-        expect(drawn.indexOf(action)).toBeLessThan(drawn.indexOf(homeForecastTestID));
-      }
-    });
+        for (const action of theRoundActionsOnTheGlass()) {
+          expect(drawn.indexOf(action)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
+          expect(drawn.indexOf(action)).toBeLessThan(drawn.indexOf(homeForecastTestID));
+        }
+      },
+    );
 
     and('each of them is at least 44 points on both axes', () => {
       expect(roundActionsTooSmallToPress()).toEqual([]);
@@ -3642,14 +3654,41 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('pressing the first one puts her on the log, at the flow picker', async () => {
-      const [first] = theRoundActionsOnTheGlass();
+    and('there is no Symptoms action under the ring', () => {
+      // Named as the string it was drawn under, because the name left the product with it.
+      expect(screen.queryByTestId('home-round-action-symptoms')).toBeNull();
+      expect(screen.queryByText('Symptoms')).toBeNull();
+    });
 
-      expect(first).toBe(roundActionTestID('period'));
-      await shePresses(String(first));
+    and('pressing Sex puts her on the Sex page of today', async () => {
+      await shePresses(roundActionTestID('sex'));
 
-      expect(app.pathname()).toBe('/log');
-      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
+      expect(app.pathname()).toBe('/sex');
+      expect(screen.getByTestId(sexPageTestID)).toBeTruthy();
+      expect(screen.getByTestId(sexPageDayTestID)).toHaveTextContent(
+        sexDayHeading(dayOf(whenSheOpensTheStrip)),
+      );
+      await act(() => router.back());
+    });
+
+    and('pressing Period puts her on the Period page of today', async () => {
+      await shePresses(roundActionTestID('period'));
+
+      expect(app.pathname()).toBe('/period');
+      expect(screen.getByTestId(periodPageTestID)).toBeTruthy();
+      expect(screen.getByTestId(periodPageDayTestID)).toHaveTextContent(
+        periodDayLabel(dayOf(whenSheOpensTheStrip)),
+      );
+      expect(screen.queryByTestId(flowPickerTestID)).toBeNull();
+      await act(() => router.back());
+    });
+
+    and('pressing Cycle phase puts her on the Cycle phase page', async () => {
+      await shePresses(roundActionTestID('phase'));
+
+      expect(app.pathname()).toBe('/phase');
+      expect(screen.getByTestId(phasePageTestID)).toBeTruthy();
+      await act(() => router.back());
     });
 
     and('the dock still reaches the history and the privacy screen', async () => {
@@ -3664,7 +3703,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-2, the symptoms action opens the log on the groups and the dock still opens on the flows', ({
+  test('SCREEN-2, the Cycle phase page opens the log on the groups and the dock still opens on the flows', ({
     given,
     when,
     and,
@@ -3681,12 +3720,26 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    and('she presses the symptoms action under the ring', async () => {
-      const [, symptoms] = theRoundActionsOnTheGlass();
+    and('pressing the Log column of the dock opens the log on the flow options', async () => {
+      await shePresses(tabTestID('log/index'));
 
-      expect(symptoms).toBe(roundActionTestID('symptoms'));
-      await shePresses(String(symptoms));
+      expect(app.pathname()).toBe('/log');
+      expect(app.searchParams()[opensOnParameter]).toBeUndefined();
+      expect(theLogProblems(theDrawingOfTheFlow)).toEqual([]);
     });
+
+    and('that is the drawing of the log, which places the flow options before the groups', () => {
+      expect(whatTheDrawingOpensOn(theDrawingOfTheFlow)).toBe('flow');
+      expect(theDrawingPlaces(theDrawingOfTheFlow, 'symptoms')).toBe(true);
+    });
+
+    when(
+      'she goes back to Today, and presses Cycle phase, and then All symptoms in its diary',
+      async () => {
+        await shePresses(tabTestID('index'));
+        await sheOpensTheSymptomGroupsFromToday();
+      },
+    );
 
     then('she is on the log, and the first thing she can mark there is a symptom', () => {
       expect(app.pathname()).toBe('/log');
@@ -3714,19 +3767,6 @@ defineFeature(feature, (test) => {
       expect(whatTheDrawingOpensOn(theDrawingOfTheSymptoms)).toBe('symptoms');
       expect(theDrawingPlaces(theDrawingOfTheSymptoms, 'symptoms')).toBe(true);
       expect(theDrawingPlaces(theDrawingOfTheSymptoms, 'flow')).toBe(false);
-    });
-
-    and('pressing the Log column of the dock opens the log on the flow options', async () => {
-      await shePresses(tabTestID('log/index'));
-
-      expect(app.pathname()).toBe('/log');
-      expect(app.searchParams()[opensOnParameter]).toBeUndefined();
-      expect(theLogProblems(theDrawingOfTheFlow)).toEqual([]);
-    });
-
-    and('that is the drawing of the log, which places the flow options before the groups', () => {
-      expect(whatTheDrawingOpensOn(theDrawingOfTheFlow)).toBe('flow');
-      expect(theDrawingPlaces(theDrawingOfTheFlow, 'symptoms')).toBe(true);
     });
   });
 
@@ -3768,8 +3808,8 @@ defineFeature(feature, (test) => {
       ).toEqual(theStripTheCalendarReplaced);
     });
 
-    when('she presses the symptoms action under the ring', async () => {
-      await shePresses(roundActionTestID('symptoms'));
+    when('she presses Cycle phase, and then All symptoms in its diary', async () => {
+      await sheOpensTheSymptomGroupsFromToday();
 
       expect(app.pathname()).toBe('/log');
     });
@@ -6646,15 +6686,18 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the two round actions stand under that card, the period one filled and the symptoms one white',
+      'the three round actions stand under that card, the period one filled and the Sex and Cycle phase ones white',
       () => {
         expect(whereTheScreenDrew(phaseCardTestID)).toBeLessThan(
-          whereTheScreenDrew(roundActionTestID('period')),
+          whereTheScreenDrew(roundActionTestID('sex')),
         );
         expect(styleOfPart(roundActionDiscTestID('period'))['backgroundColor']).toBe(colour.accent);
         expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.onAccent);
-        expect(styleOfPart(roundActionDiscTestID('symptoms'))['backgroundColor']).toBe(colour.card);
-        expect(drawingIn(roundActionDrawingTestID('symptoms'))).toContain(colour.text);
+        for (const white of ['sex', 'phase'] as const) {
+          expect(styleOfPart(roundActionDiscTestID(white))['backgroundColor']).toBe(colour.card);
+        }
+        expect(drawingIn(roundActionDrawingTestID('sex'))).toContain(colour.accent);
+        expect(drawingIn(roundActionDrawingTestID('phase'))).toContain(colour.ovulationInk);
       },
     );
 
@@ -6665,7 +6708,7 @@ defineFeature(feature, (test) => {
         jest.setSystemTime(whenSheOpens('todayLogged'));
         await sheIsLookingAtTheTodayScreen('todayLogged');
 
-        expect(whereTheScreenDrew(roundActionTestID('symptoms'))).toBeLessThan(
+        expect(whereTheScreenDrew(roundActionTestID('phase'))).toBeLessThan(
           whereTheScreenDrew(loggedTodayTestID),
         );
         expect(styleOfPart(loggedTodayTestID)['backgroundColor']).toBe(colour.card);

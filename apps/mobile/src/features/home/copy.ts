@@ -12,8 +12,9 @@ export const homeCopy = {
   wordmark: words('home.wordmark'),
   calendar: words('home.calendar'),
   roundAction: {
+    sex: words('home.roundAction.sex'),
     period: words('home.roundAction.period'),
-    symptoms: words('home.roundAction.symptoms'),
+    phase: words('home.roundAction.phase'),
   },
   loggedToday: {
     lead: words('home.loggedToday.lead'),

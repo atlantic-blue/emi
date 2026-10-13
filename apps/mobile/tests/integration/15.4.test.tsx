@@ -2,7 +2,7 @@ import { join } from 'node:path';
 
 import { MINIMUM_TAP_TARGET } from '@emi/tokens';
 import { tabTestID } from '@emi/ui';
-import { screen } from '@testing-library/react-native';
+import { screen, within } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
@@ -13,19 +13,28 @@ import {
   roundActions,
 } from '../../src/features/home/HomeScreen';
 import { flowPickerTestID } from '../../src/features/log/FlowPicker';
+import { unexpectedBleedingTestID } from '../../src/features/log/UnexpectedBleeding';
+import { periodPageDayTestID, periodPageTestID } from '../../src/features/period/PeriodPage';
+import { periodDayLabel } from '../../src/features/period/copy';
+import { phasePageTestID } from '../../src/features/phase/PhasePage';
+import { sexDayHeading } from '../../src/features/sex/copy';
+import { sexPageDayTestID, sexPageTestID } from '../../src/features/sex/SexPage';
 import { settingsExportTestID } from '../../src/features/settings/SettingsScreen';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
-import { theDrawingOfTheSymptoms, theLogProblems } from '../fixtures/theLogSheLandsOn';
+import { theDrawingOfTheFlow, theLogProblems } from '../fixtures/theLogSheLandsOn';
 import { partsMissing } from '../fixtures/theMockupScreen';
 import {
   roundActionProblems,
   roundActionProblemsIn,
   roundActionsTooSmallToPress,
   theActionTheDrawingSendsTo,
+  theActionsTheBoardReplaced,
+  theDrawingActionsAccountedFor,
+  theRoundActionsOfTheBoard,
   theRoundActionsOfTheDrawing,
   theRoundActionsOnTheGlass,
-  theRoundActionsTheDrawingAsksFor,
+  theRoundActionsTheBoardAsksFor,
   theScreenDownToTheRoundActions,
 } from '../fixtures/theRoundActionsUnderTheRing';
 import {
@@ -53,6 +62,7 @@ const theWaysOffTheScreenSheHad = [
 
 interface OpenApp {
   readonly pathname: () => string;
+  readonly searchParams: () => Record<string, string | string[] | undefined>;
 }
 
 async function sheOpensEmi(): Promise<OpenApp> {
@@ -62,7 +72,10 @@ async function sheOpensEmi(): Promise<OpenApp> {
 
   await app;
 
-  return { pathname: () => app.getPathname() };
+  return {
+    pathname: () => app.getPathname(),
+    searchParams: () => app.getSearchParams(),
+  };
 }
 
 describe('she starts a log from the screen she opens in one press', () => {
@@ -101,12 +114,24 @@ describe('she starts a log from the screen she opens in one press', () => {
       expect(parts[4]?.builtUnder).toContain(roundActionTestID('period'));
     });
 
-    it('asks for the two the product builds, in its own order', () => {
-      expect(theRoundActionsTheDrawingAsksFor()).toEqual([
+    it('builds Period from the drawing, and records that the board replaces Symptoms', () => {
+      expect(theDrawingActionsAccountedFor()).toEqual([
         roundActionTestID('period'),
-        roundActionTestID('symptoms'),
+        theActionsTheBoardReplaced['logSymptoms'],
       ]);
-      expect(Object.values(theActionTheDrawingSendsTo).sort()).toEqual([...roundActions].sort());
+      expect(Object.values(theActionTheDrawingSendsTo)).toEqual(['period']);
+    });
+  });
+
+  describe('the board the actions are held to', () => {
+    it('places Sex, Period and Cycle phase, in that order, and the product builds those three', () => {
+      expect(theRoundActionsOfTheBoard).toEqual(['sex', 'period', 'phase']);
+      expect([...roundActions]).toEqual([...theRoundActionsOfTheBoard]);
+      expect(theRoundActionsTheBoardAsksFor()).toEqual([
+        roundActionTestID('sex'),
+        roundActionTestID('period'),
+        roundActionTestID('phase'),
+      ]);
     });
   });
 
@@ -115,7 +140,7 @@ describe('she starts a log from the screen she opens in one press', () => {
       await sheOpensEmi();
     });
 
-    it('answers for every part the drawing places down to the second action, but the strip the calendar button replaced', () => {
+    it('answers for every part the drawing places down to its second action, but the strip the calendar button replaced', () => {
       // The todayPhases board takes the strip off Today, so the strip is the one departure, and
       // theTodayLook.tsx records it with its reason.
       expect(partsMissing(theScreenDownToTheRoundActions(), whatTheScreenSheOpensDrew())).toEqual([
@@ -123,12 +148,27 @@ describe('she starts a log from the screen she opens in one press', () => {
       ]);
     });
 
-    it('draws the two the drawing places, in its order and no more of them', () => {
+    it('draws the three the board places, in its order and no more of them', () => {
       expect(roundActionProblems()).toEqual([]);
       expect(theRoundActionsOnTheGlass()).toEqual([
+        roundActionTestID('sex'),
         roundActionTestID('period'),
-        roundActionTestID('symptoms'),
+        roundActionTestID('phase'),
       ]);
+    });
+
+    it('labels them Sex, Period and Cycle phase', () => {
+      const labels = ['Sex', 'Period', 'Cycle phase'];
+
+      theRoundActionsOnTheGlass().forEach((identifier, at) => {
+        expect(within(screen.getByTestId(identifier)).getByText(String(labels[at]))).toBeTruthy();
+      });
+    });
+
+    it('draws no Symptoms action, because the board moves it to the Cycle phase page', () => {
+      // Named as the string it was drawn under, because the name left the product with it.
+      expect(screen.queryByTestId('home-round-action-symptoms')).toBeNull();
+      expect(screen.queryByText('Symptoms')).toBeNull();
     });
 
     it('draws them between the ring and the forecast, where the drawing puts them', () => {
@@ -154,23 +194,54 @@ describe('she starts a log from the screen she opens in one press', () => {
     });
   });
 
-  describe('the press she makes every day', () => {
-    it('puts her on the log, at the flow picker', async () => {
+  describe('each press she makes', () => {
+    it('opens the Sex page of today from Sex', async () => {
+      const app = await sheOpensEmi();
+
+      await fireEvent.press(screen.getByTestId(roundActionTestID('sex')));
+
+      expect(app.pathname()).toBe('/sex');
+      expect(app.searchParams()['day']).toBeUndefined();
+      expect(screen.getByTestId(sexPageTestID)).toBeTruthy();
+      expect(screen.getByTestId(sexPageDayTestID)).toHaveTextContent(
+        sexDayHeading(theDaySheOpensIt),
+      );
+    });
+
+    it('opens the Period page of today from Period, and no longer the log', async () => {
       const app = await sheOpensEmi();
 
       await fireEvent.press(screen.getByTestId(roundActionTestID('period')));
 
-      expect(app.pathname()).toBe('/log');
-      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
+      expect(app.pathname()).toBe('/period');
+      expect(app.searchParams()['day']).toBeUndefined();
+      expect(screen.getByTestId(periodPageTestID)).toBeTruthy();
+      expect(screen.getByTestId(periodPageDayTestID)).toHaveTextContent(
+        periodDayLabel(theDaySheOpensIt),
+      );
+      expect(screen.queryByTestId(flowPickerTestID)).toBeNull();
     });
 
-    it('takes the symptoms action to the log as well, opened on the symptom groups', async () => {
+    it('opens the Cycle phase page from Cycle phase', async () => {
       const app = await sheOpensEmi();
 
-      await fireEvent.press(screen.getByTestId(roundActionTestID('symptoms')));
+      await fireEvent.press(screen.getByTestId(roundActionTestID('phase')));
+
+      expect(app.pathname()).toBe('/phase');
+      expect(screen.getByTestId(phasePageTestID)).toBeTruthy();
+    });
+
+    it('still reaches the flow picker and the mark for a bleed that was not her period from the Log column', async () => {
+      // The Period action used to open the log at the flow picker. The Period page has the flow,
+      // and the log keeps the picker and the mark, so no way forward is lost.
+      const app = await sheOpensEmi();
+
+      await fireEvent.press(screen.getByTestId(tabTestID('log/index')));
 
       expect(app.pathname()).toBe('/log');
-      expect(theLogProblems(theDrawingOfTheSymptoms)).toEqual([]);
+      expect(theLogProblems(theDrawingOfTheFlow)).toEqual([]);
+      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
+      expect(screen.getByTestId(unexpectedBleedingTestID)).toBeTruthy();
     });
   });
 
@@ -193,27 +264,27 @@ describe('she starts a log from the screen she opens in one press', () => {
     });
   });
 
-  describe('what the comparison says when the screen and the drawing differ', () => {
+  describe('what the comparison says when the screen and the board differ', () => {
     it('names both counts, where a third action is drawn', async () => {
       await sheOpensEmi();
 
-      const asked = theRoundActionsTheDrawingAsksFor();
-      const withAThird = [...theRoundActionsOnTheGlass(), 'home-round-action-intimacy'];
+      const asked = theRoundActionsTheBoardAsksFor();
+      const withAFourth = [...theRoundActionsOnTheGlass(), 'home-round-action-symptoms'];
 
-      expect(roundActionProblemsIn(asked, withAThird)).toEqual([
-        'the drawing places 2 round action(s) and the screen draws 3',
+      expect(roundActionProblemsIn(asked, withAFourth)).toEqual([
+        'the board places 3 round action(s) and the screen draws 4',
       ]);
     });
 
-    it('names the action it expected, where the two are drawn the other way round', async () => {
+    it('names the action it expected, where the row is drawn the other way round', async () => {
       await sheOpensEmi();
 
-      const asked = theRoundActionsTheDrawingAsksFor();
+      const asked = theRoundActionsTheBoardAsksFor();
       const swapped = [...theRoundActionsOnTheGlass()].reverse();
 
       expect(roundActionProblemsIn(asked, swapped)).toEqual([
-        `the drawing places ${roundActionTestID('period')} at 1 and the screen draws ${roundActionTestID('symptoms')}`,
-        `the drawing places ${roundActionTestID('symptoms')} at 2 and the screen draws ${roundActionTestID('period')}`,
+        `the board places ${roundActionTestID('sex')} at 1 and the screen draws ${roundActionTestID('phase')}`,
+        `the board places ${roundActionTestID('phase')} at 3 and the screen draws ${roundActionTestID('sex')}`,
       ]);
     });
 

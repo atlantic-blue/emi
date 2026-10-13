@@ -56,20 +56,18 @@ export { phaseCardTestID } from './PhaseCard';
 export { sectionWaitingTestID, waitingSections } from './SectionWaiting';
 
 /**
- * The two actions and the drawing each one carries. The order is the order the drawing places
- * them in, and nothing else on this screen decides it.
+ * The three actions and the drawing each one carries. The order is the order the todayPhases board
+ * places them in, and nothing else on this screen decides it.
  */
 const theRoundActions: readonly { action: RoundActionName; icon: IconName }[] = [
+  { action: 'sex', icon: 'heart' },
   { action: 'period', icon: 'drop' },
-  { action: 'symptoms', icon: 'plus' },
+  { action: 'phase', icon: 'phase' },
 ];
 
 /** Points. The drop inside the empty ring of day one, and the drop beside the forecast. */
 const theDropInTheEmptyRing = 36;
 const theDropInTheTile = 22;
-
-/** Points. The gap the drawing leaves between the two discs, which is wider than any space step. */
-const theRoomBetweenTheActions = 48;
 
 export const homeScreenTestID = 'home-screen';
 export const homeNoRingTestID = 'home-no-ring';
@@ -170,7 +168,9 @@ interface Props {
    * the caller offers none, and then the press under the line is not drawn either.
    */
   readonly onFigures?: () => void;
-  /** The way into the log, which the round action under the ring takes her by. */
+  /** The way to the Sex page of today, which the first round action takes her by. */
+  readonly onSex: () => void;
+  /** The way to the Period page of today, which the second round action takes her by. */
   readonly onPeriod: () => void;
   /**
    * The way into the log that the one button offers, and the only way off a screen with no ring on
@@ -178,15 +178,16 @@ interface Props {
    * caller that forgot it would leave her a sentence about a ring and no way to draw one.
    */
   readonly onLogToday: () => void;
-  /** The second round action. It reaches the log too until step 5 points it at the groups. */
-  readonly onSymptoms: () => void;
+  /** The way back to what she logged today, which the row under the round actions takes her by. */
+  readonly onOpenLogged: () => void;
   /** The way to the pain group of the log, which only the line below the ring takes her by. */
   readonly onLogPain: () => void;
   /** The way out, which only the card a woman who asked for it reads takes her by. */
   readonly onExport: () => void;
   /**
-   * The way to the Cycle phase page, which the phase card under the ring takes her by. A drawing of
-   * this screen alone offers none, and then the card is not a button.
+   * The way to the Cycle phase page, which the phase card and the third round action take her by. A
+   * drawing of this screen alone offers none, and then the card is not a button and the action is
+   * not drawn. Without a ring there is no phase to open, so the action is not drawn then either.
    */
   readonly onOpenPhase?: () => void;
   /** The way into her month, which the calendar button in the top bar takes her by. */
@@ -221,8 +222,9 @@ export function HomeScreen({
   onFigures,
   onOpenCycles,
   onLogToday,
+  onSex,
   onPeriod,
-  onSymptoms,
+  onOpenLogged,
   onLogPain,
   onExport,
   onOpenPhase,
@@ -232,6 +234,11 @@ export function HomeScreen({
   onOpenPatterns,
 }: Props): ReactNode {
   const marked = whatSheMarkedOn(loggedToday);
+  const pressOf: Readonly<Record<RoundActionName, (() => void) | undefined>> = {
+    sex: onSex,
+    period: onPeriod,
+    phase: ring === undefined ? undefined : onOpenPhase,
+  };
 
   return (
     <Screen
@@ -278,20 +285,24 @@ export function HomeScreen({
         )}
 
         <View style={styles.roundActions}>
-          {theRoundActions.map((round) => (
-            <RoundAction
-              action={round.action}
-              icon={round.icon}
-              key={round.action}
-              label={homeCopy.roundAction[round.action]}
-              onPress={round.action === 'period' ? onPeriod : onSymptoms}
-            />
-          ))}
+          {theRoundActions.map((round) => {
+            const press = pressOf[round.action];
+
+            return press === undefined ? null : (
+              <RoundAction
+                action={round.action}
+                icon={round.icon}
+                key={round.action}
+                label={homeCopy.roundAction[round.action]}
+                onPress={press}
+              />
+            );
+          })}
         </View>
 
         {marked === undefined ? null : (
           <View style={styles.logged}>
-            <LoggedToday marked={marked} onPress={onSymptoms} />
+            <LoggedToday marked={marked} onPress={onOpenLogged} />
           </View>
         )}
 
@@ -549,7 +560,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: MINIMUM_TAP_TARGET,
   },
-  // The row sits under the two round actions, which is where the drawing of this screen places
+  // The row sits under the round actions, which is where the drawing of this screen places
   // it: she reads the day she is on, then the presses she can make, then what she already said.
   logged: {
     alignSelf: 'stretch',
@@ -562,11 +573,11 @@ const styles = StyleSheet.create({
   // Her three numbers sit under the forecast they were read from, and above the ways off the
   // screen, because they are something to read rather than somewhere to go.
   numbers: { alignSelf: 'stretch', paddingHorizontal: space.spaceLg },
-  // The two actions sit between the ring and the forecast, which is where the drawing places
-  // them: she reads the day she is on, then the one press she makes about it.
+  // The actions sit between the phase card and the forecast, which is where the todayPhases board
+  // places them, 12 points apart.
   roundActions: {
     flexDirection: 'row',
-    gap: theRoomBetweenTheActions,
+    gap: space.spaceMd,
     justifyContent: 'center',
     marginTop: space.spaceLg,
   },

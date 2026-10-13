@@ -24,8 +24,10 @@ async function theEmptyHomeScreen(asked: string[] = []): Promise<void> {
         onExport={() => asked.push('export')}
         onLogPain={() => asked.push('log pain')}
         onLogToday={() => asked.push('log today')}
+        onOpenLogged={() => asked.push('logged')}
+        onOpenPhase={() => asked.push('phase')}
         onPeriod={() => asked.push('period')}
-        onSymptoms={() => asked.push('symptoms')}
+        onSex={() => asked.push('sex')}
         ring={undefined}
       />
     </OnAPhone>,
@@ -39,7 +41,7 @@ describe('the home screen', () => {
     expect(screen.getByText(homeCopy.wordmark)).toBeTruthy();
   });
 
-  it('shows the wordmark, what to do next, the two round actions and the one button', async () => {
+  it('shows the wordmark, what to do next, the Sex and Period actions and the one button', async () => {
     await theEmptyHomeScreen();
 
     expect(screen.getByTestId(homeNoRingTestID)).toBeTruthy();
@@ -49,8 +51,9 @@ describe('the home screen', () => {
       'Hello',
       cycleCopy.noRing.title,
       cycleCopy.noRing.line,
+      // No ring means no phase to open, so the Cycle phase action is not drawn on this screen.
+      homeCopy.roundAction.sex,
       homeCopy.roundAction.period,
-      homeCopy.roundAction.symptoms,
       'Still getting to know you',
       'We need 2 more full cycles before we can say how sure we are.',
       "Until then, we're using the 28 day cycle you told us about.",
@@ -58,7 +61,16 @@ describe('the home screen', () => {
     ]);
   });
 
-  it('sends her to log her period when she presses the first round action', async () => {
+  it('sends her to the Sex page when she presses the first round action', async () => {
+    const asked: string[] = [];
+    await theEmptyHomeScreen(asked);
+
+    await fireEvent.press(screen.getByTestId(roundActionTestID('sex')));
+
+    expect(asked).toEqual(['sex']);
+  });
+
+  it('sends her to the Period page when she presses the second round action', async () => {
     const asked: string[] = [];
     await theEmptyHomeScreen(asked);
 
@@ -67,13 +79,13 @@ describe('the home screen', () => {
     expect(asked).toEqual(['period']);
   });
 
-  it('sends her to log a symptom when she presses the second round action', async () => {
-    const asked: string[] = [];
-    await theEmptyHomeScreen(asked);
+  it('draws no Cycle phase action and no Symptoms action while there is no ring', async () => {
+    await theEmptyHomeScreen();
 
-    await fireEvent.press(screen.getByTestId(roundActionTestID('symptoms')));
-
-    expect(asked).toEqual(['symptoms']);
+    expect(screen.queryByTestId(roundActionTestID('phase'))).toBeNull();
+    // Named as the string it was drawn under, because the name left the product with it.
+    expect(screen.queryByTestId('home-round-action-symptoms')).toBeNull();
+    expect(screen.queryByText('Symptoms')).toBeNull();
   });
 
   it('sends her to the log when she presses the one button, which has no ring to press', async () => {

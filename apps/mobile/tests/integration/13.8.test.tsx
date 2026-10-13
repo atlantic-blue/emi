@@ -50,7 +50,8 @@ function theScreenSheOpens(ring: typeof theCycleSheIsIn | undefined): ReactEleme
       onLogPain={nothing}
       onLogToday={nothing}
       onPeriod={nothing}
-      onSymptoms={nothing}
+      onOpenLogged={nothing}
+      onSex={nothing}
       ring={ring}
     />
   );

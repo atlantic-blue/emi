@@ -285,8 +285,9 @@ export const spanish: CatalogueIn<'es'> = {
   'home.phaseCard.luteal.day': 'Fase lútea, día {from}',
   'home.phaseCard.luteal.days': 'Fase lútea, días {from} a {to}',
   'home.phaseCard.luteal.line': 'Los días después de la ovulación, antes de tu próximo periodo.',
+  'home.roundAction.sex': 'Sexo',
   'home.roundAction.period': 'Regla',
-  'home.roundAction.symptoms': 'Síntomas',
+  'home.roundAction.phase': 'Fase del ciclo',
   // El gráfico de sus últimos ciclos completos sobre el rango publicado. El pie y la frase debajo
   // cuentan los ciclos que dibujó el gráfico, así que una mujer con tres nunca lee seis.
   'home.trend.allInside': 'Todos tus últimos {cycles} cayeron dentro de la banda.',
