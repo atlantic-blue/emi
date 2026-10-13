@@ -166,12 +166,13 @@ export default function HomeRoute(): ReactNode {
       onLogToday={() => router.push('/log')}
       onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}
       onOpenCycles={() => router.push('/history')}
+      onOpenLogged={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
       onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
       onOpenPhase={() => router.push('/phase')}
       onOpenPattern={(slug) => router.push(`/history?${patternParameter}=${slug}`)}
       onOpenPatterns={() => router.push('/history')}
-      onPeriod={() => router.push('/log')}
-      onSymptoms={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
+      onPeriod={() => router.push('/period')}
+      onSex={() => router.push('/sex')}
       patterns={shown.patterns}
       phaseDays={shown.phaseDays}
       regularity={shown.regularity}

@@ -6,13 +6,13 @@ import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
 import { cycleRingTestID } from '../../src/components/CycleRing';
-import { roundActionTestID } from '../../src/features/home/HomeScreen';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
 import { phaseCardTestID } from '../../src/features/home/PhaseCard';
 import { homeCopy } from '../../src/features/home/copy';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
 import { symptomChipTestID } from '../../src/features/log/SymptomGroup';
 import { opensOnParameter, theSymptoms } from '../../src/features/log/askedGroup';
+import { sheOpensTheSymptomGroupsFromToday } from '../fixtures/theSymptomGroupsFromToday';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
@@ -198,14 +198,16 @@ describe('she records a symptom and the screen she started on shows it', () => {
   describe('a symptom she marked and then took off again', () => {
     it('leaves no row, because a day holding nothing is a day she logged nothing on', async () => {
       await herPhoneHoldsNothingForToday(whenSheOpensIt);
-      await sheOpensEmi();
+      const app = await sheOpensEmi();
 
       const [first] = theSymptomsTheDrawingNames();
 
-      await shePresses(roundActionTestID('symptoms'));
+      await sheOpensTheSymptomGroupsFromToday();
       await shePresses(symptomChipTestID(String(first)));
       await shePresses(symptomChipTestID(String(first)));
       await shePresses(logFlowDoneTestID);
+
+      expect(app.pathname()).toBe('/');
 
       expect(theRowIsOnTheScreen()).toBe(false);
     });

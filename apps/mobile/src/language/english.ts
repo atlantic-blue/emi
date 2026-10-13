@@ -287,8 +287,9 @@ export const english = {
   'home.phaseCard.luteal.day': 'Luteal phase, day {from}',
   'home.phaseCard.luteal.days': 'Luteal phase, days {from} to {to}',
   'home.phaseCard.luteal.line': 'The days after ovulation, before your next period.',
+  'home.roundAction.sex': 'Sex',
   'home.roundAction.period': 'Period',
-  'home.roundAction.symptoms': 'Symptoms',
+  'home.roundAction.phase': 'Cycle phase',
   // The chart of her last complete cycles over the published range. The caption and the sentence
   // under it count the cycles the chart drew, so a woman with three of them is never told six.
   'home.trend.allInside': 'All of your last {cycles} fell inside the band.',

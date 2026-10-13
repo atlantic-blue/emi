@@ -285,7 +285,8 @@ describe('the phase name is written in its ink and never on its own fill', () =>
             onLogPain={() => undefined}
             onLogToday={() => undefined}
             onPeriod={() => undefined}
-            onSymptoms={() => undefined}
+            onOpenLogged={() => undefined}
+            onSex={() => undefined}
             ring={her.ring}
           />
         </OnAPhone>,
@@ -319,7 +320,8 @@ describe('the phase name is written in its ink and never on its own fill', () =>
             onLogPain={() => undefined}
             onLogToday={() => undefined}
             onPeriod={() => undefined}
-            onSymptoms={() => undefined}
+            onOpenLogged={() => undefined}
+            onSex={() => undefined}
             ring={her.ring}
           />
         </OnAPhone>,

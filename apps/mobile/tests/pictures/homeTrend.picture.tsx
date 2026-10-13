@@ -79,7 +79,9 @@ async function drawn(): Promise<DrawnScreen> {
           onOpenCycle={() => undefined}
           onOpenCycles={() => undefined}
           onPeriod={() => undefined}
-          onSymptoms={() => undefined}
+          onOpenLogged={() => undefined}
+          onOpenPhase={() => undefined}
+          onSex={() => undefined}
           phaseDays={phaseDaysFor(readBack)}
           ring={ringInputFor(readBack)}
           today={today}

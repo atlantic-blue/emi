@@ -1,3 +1,4 @@
+import { tabTestID } from '@emi/ui';
 import { join } from 'node:path';
 
 import type { DayRecord, Feeling } from '@emi/crypto';
@@ -412,7 +413,7 @@ describe('a hard period day offers the pain log first', () => {
       await herPhone(insideHerPeriod, 'hard');
       await sheOpensEmi();
 
-      await shePresses(roundActionTestID('period'));
+      await shePresses(tabTestID('log/index'));
 
       // Every group, not only the pain one, because the log she reached by the tab is the log she
       // reached yesterday and a group she did not ask for is a group above the picker she did not

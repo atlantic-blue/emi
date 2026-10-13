@@ -287,8 +287,9 @@ export const russian: CatalogueIn<'ru'> = {
   'home.phaseCard.luteal.day': 'Лютеиновая фаза, день {from}',
   'home.phaseCard.luteal.days': 'Лютеиновая фаза, дни с {from} по {to}',
   'home.phaseCard.luteal.line': 'Дни после овуляции, до следующих месячных.',
+  'home.roundAction.sex': 'Секс',
   'home.roundAction.period': 'Месячные',
-  'home.roundAction.symptoms': 'Симптомы',
+  'home.roundAction.phase': 'Фаза цикла',
   // График её последних полных циклов на опубликованном диапазоне. Подпись и фраза под ним
   // считают циклы, которые нарисовал график, поэтому женщина с тремя никогда не прочитает шесть.
   'home.trend.allInside': 'Все ваши последние {cycles} попали внутрь полосы.',

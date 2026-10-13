@@ -318,30 +318,33 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-2, she starts a log from the screen she opens in one press
     Given her phone holds four recorded period days, the last of them today
     When she opens Emi
-    Then under the ring she reads two round actions, in the order the drawing places them
+    Then under the ring she reads three round actions, Sex, Period and Cycle phase, in the order the board places them
     And each of them is at least 44 points on both axes
     And there is no Log today button, and no link to the history, the export or the settings
-    And pressing the first one puts her on the log, at the flow picker
+    And there is no Symptoms action under the ring
+    And pressing Sex puts her on the Sex page of today
+    And pressing Period puts her on the Period page of today
+    And pressing Cycle phase puts her on the Cycle phase page
     And the dock still reaches the history and the privacy screen
 
-  Scenario: SCREEN-2, the symptoms action opens the log on the groups and the dock still opens on the flows
+  Scenario: SCREEN-2, the Cycle phase page opens the log on the groups and the dock still opens on the flows
     Given her phone holds four recorded period days, the last of them today
     When she opens Emi
-    And she presses the symptoms action under the ring
+    And pressing the Log column of the dock opens the log on the flow options
+    And that is the drawing of the log, which places the flow options before the groups
+    When she goes back to Today, and presses Cycle phase, and then All symptoms in its diary
     Then she is on the log, and the first thing she can mark there is a symptom
     And she passed no flow option on the way to it
     And every one of her symptom groups is offered
     And she can still pick a flow on the same screen
     And the drawing of that screen places a symptom group, and places no flow picker
-    And pressing the Log column of the dock opens the log on the flow options
-    And that is the drawing of the log, which places the flow options before the groups
 
   Scenario: SCREEN-2, she records a symptom and the screen she started on shows it
     Given her phone holds the period days behind today, and nothing at all for today
     When she opens Emi
     Then nothing on the screen reads back a log for today, and there is no empty row either
     And that is the drawing of the screen she opens, which places no such row
-    When she presses the symptoms action under the ring
+    When she presses Cycle phase, and then All symptoms in its diary
     And she marks the two symptoms the drawing names
     And she saves
     Then she is back on the screen she started on
@@ -687,7 +690,7 @@ Feature: She opens Emi and logs her first period
     When she opens Emi and reads the screen she opens in each of its states
     Then each state carries the wash across the top of the glass
     And the ring stands above the card that names the phase she is in
-    And the two round actions stand under that card, the period one filled and the symptoms one white
+    And the three round actions stand under that card, the period one filled and the Sex and Cycle phase ones white
     And what she logged today stands under them, in a card with the mark that says Emi kept it
     And a section her days cannot fill yet is one card with one sentence, and it draws no chart
     And the lock she comes back through carries the wordmark, the disc and the one button

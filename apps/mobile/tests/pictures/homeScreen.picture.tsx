@@ -282,7 +282,9 @@ async function drawn(recorded: Recorded): Promise<DrawnScreen> {
       onOpenPattern={() => undefined}
       onOpenPatterns={() => undefined}
       onPeriod={() => undefined}
-      onSymptoms={() => undefined}
+      onOpenLogged={() => undefined}
+      onOpenPhase={() => undefined}
+      onSex={() => undefined}
       patterns={herPatterns({ cycles, records })}
       regularity={recorded.regularity}
       ring={ring}

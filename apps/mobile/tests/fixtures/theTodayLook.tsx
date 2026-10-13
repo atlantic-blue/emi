@@ -155,9 +155,14 @@ const theIdentifiersOf: Readonly<Record<TodayDrawing, PartIdentifiers>> = {
   },
 };
 
-/** Both round actions, in the order the drawing places them, so the walk matches each in turn. */
+/**
+ * The round actions, in the order the todayPhases board places them, so the walk matches each in
+ * turn. The older drawings place two, Period and Symptoms, and the walk matches those two parts
+ * against the first two drawn.
+ * theRoundActionsUnderTheRing.ts records why the board replaces Symptoms.
+ */
 function theRoundActions(): string[] {
-  return [roundActionTestID('period'), roundActionTestID('symptoms')];
+  return [roundActionTestID('sex'), roundActionTestID('period'), roundActionTestID('phase')];
 }
 
 /** One part a drawing of Today names that the built screen does not draw, and why. */

@@ -10,11 +10,12 @@ import { type Control, controlsTooSmallToPress } from './tapTargets';
 import { type Part, theMarkupOfTheMockup, thePartsOfTheMockup } from './theMockupScreen';
 
 /**
- * The round actions under the ring: the ones the drawing places, and the ones the screen drew.
+ * The round actions under the ring: the ones the drawing places, the ones the todayPhases board
+ * places, and the ones the screen drew.
  *
- * Everything a case holds the screen to is read off the drawing. The count in particular: a number
- * written into a test passes against itself, and the whole question of this step is that the
- * drawing places two and not three.
+ * The mockup drawing places two, Period and Symptoms. The approved todayPhases board (issue 275)
+ * places three, Sex, Period and Cycle phase, and moves Symptoms to the Cycle phase page. Nobody
+ * edits a drawing by hand, so the mockup still places two, and the screen is held to the board.
  */
 
 /** Where the drawing sends one round action, which is a key of another drawing. */
@@ -57,20 +58,42 @@ export function theRoundActionsOfTheDrawing(): Destination[] {
  */
 export const theActionTheDrawingSendsTo: Readonly<Record<Destination, RoundActionName>> = {
   log: 'period',
-  logSymptoms: 'symptoms',
 };
 
-/** What the drawing asks the screen for: one test identifier for each action, in its order. */
-export function theRoundActionsTheDrawingAsksFor(): string[] {
+/** The actions of the drawing the todayPhases board takes off Today, with the reason. */
+export const theActionsTheBoardReplaced: Readonly<Record<Destination, string>> = {
+  logSymptoms:
+    'the todayPhases board moves Symptoms to the Cycle phase page, and its diary links to all symptoms',
+};
+
+/** The round actions the todayPhases board places, in its order (issue 275, criterion 1). */
+export const theRoundActionsOfTheBoard: readonly RoundActionName[] = ['sex', 'period', 'phase'];
+
+/**
+ * Each destination of the drawing, either built as an action or replaced by the board. A
+ * destination that is neither is refused, so a new action in the drawing cannot pass unread.
+ */
+export function theDrawingActionsAccountedFor(): string[] {
   return theRoundActionsOfTheDrawing().map((to) => {
     const action = theActionTheDrawingSendsTo[to];
 
-    if (action === undefined) {
+    if (action !== undefined) {
+      return roundActionTestID(action);
+    }
+
+    const replaced = theActionsTheBoardReplaced[to];
+
+    if (replaced === undefined) {
       throw new Error(`the drawing sends a round action to "${to}", and nothing is built for it`);
     }
 
-    return roundActionTestID(action);
+    return replaced;
   });
+}
+
+/** What the board asks the screen for: one test identifier for each action, in its order. */
+export function theRoundActionsTheBoardAsksFor(): string[] {
+  return theRoundActionsOfTheBoard.map(roundActionTestID);
 }
 
 /** The parts the drawing places from the top of the screen down to the last round action. */
@@ -93,33 +116,31 @@ export function theRoundActionsOnTheGlass(): string[] {
 }
 
 /**
- * What a screen does not answer for, given the round actions the drawing places and the ones the
+ * What a screen does not answer for, given the round actions the board places and the ones the
  * screen drew. The count is named first and on its own, because a screen carrying a third action
  * differs from the drawing by a number before it differs by anything else.
  */
 export function roundActionProblemsIn(asked: readonly string[], drew: readonly string[]): string[] {
   if (asked.length === 0) {
-    throw new Error('a drawing placing no round action was compared, and it can refuse nothing');
+    throw new Error('a board placing no round action was compared, and it can refuse nothing');
   }
 
   if (asked.length !== drew.length) {
-    return [
-      `the drawing places ${asked.length} round action(s) and the screen draws ${drew.length}`,
-    ];
+    return [`the board places ${asked.length} round action(s) and the screen draws ${drew.length}`];
   }
 
   return asked
     .map((identifier, at) =>
       identifier === drew[at]
         ? null
-        : `the drawing places ${identifier} at ${at + 1} and the screen draws ${String(drew[at])}`,
+        : `the board places ${identifier} at ${at + 1} and the screen draws ${String(drew[at])}`,
     )
     .filter((problem): problem is string => problem !== null);
 }
 
-/** The screen on the glass, held against the round actions the drawing places. */
+/** The screen on the glass, held against the round actions the board places. */
 export function roundActionProblems(): string[] {
-  return roundActionProblemsIn(theRoundActionsTheDrawingAsksFor(), theRoundActionsOnTheGlass());
+  return roundActionProblemsIn(theRoundActionsTheBoardAsksFor(), theRoundActionsOnTheGlass());
 }
 
 /** Each round action the screen drew, named with its size where it is under the floor SEE-3 sets. */

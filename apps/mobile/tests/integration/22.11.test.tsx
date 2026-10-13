@@ -152,18 +152,21 @@ describe('the Today screens match the redesign prototype', () => {
     }
   });
 
-  describe('the two round actions under that card', () => {
+  describe('the three round actions under that card', () => {
     beforeEach(async () => {
       jest.setSystemTime(whenSheOpens('todayNext'));
       await sheIsLookingAtTheTodayScreen('todayNext');
     });
 
-    it('stands them under the card and above the forecast, which is the order the drawing places', () => {
+    it('stands them under the card, Sex then Period then Cycle phase, which is the order the board places', () => {
       expect(whereTheScreenDrew(phaseCardTestID)).toBeLessThan(
+        whereTheScreenDrew(roundActionTestID('sex')),
+      );
+      expect(whereTheScreenDrew(roundActionTestID('sex'))).toBeLessThan(
         whereTheScreenDrew(roundActionTestID('period')),
       );
       expect(whereTheScreenDrew(roundActionTestID('period'))).toBeLessThan(
-        whereTheScreenDrew(roundActionTestID('symptoms')),
+        whereTheScreenDrew(roundActionTestID('phase')),
       );
     });
 
@@ -172,12 +175,17 @@ describe('the Today screens match the redesign prototype', () => {
       expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.onAccent);
     });
 
-    it('leaves the symptoms disc white and draws it in the ink measured on a card', () => {
-      expect(styleOf(roundActionDiscTestID('symptoms')).backgroundColor).toBe(colour.card);
-      expect(drawingIn(roundActionDrawingTestID('symptoms'))).toContain(colour.text);
+    it('leaves the Sex disc white and draws the heart in the accent, as the board does', () => {
+      expect(styleOf(roundActionDiscTestID('sex')).backgroundColor).toBe(colour.card);
+      expect(drawingIn(roundActionDrawingTestID('sex'))).toContain(colour.accent);
     });
 
-    it('draws both discs round, at one width, and wider than a thumb needs', () => {
+    it('leaves the Cycle phase disc white and draws it in the ink of the phase card', () => {
+      expect(styleOf(roundActionDiscTestID('phase')).backgroundColor).toBe(colour.card);
+      expect(drawingIn(roundActionDrawingTestID('phase'))).toContain(colour.ovulationInk);
+    });
+
+    it('draws every disc round, at one width, and wider than a thumb needs', () => {
       for (const action of roundActions) {
         const disc = styleOf(roundActionDiscTestID(action));
 
@@ -199,7 +207,7 @@ describe('the Today screens match the redesign prototype', () => {
     });
 
     it('stands under the round actions, which is where the drawing of that state places it', () => {
-      expect(whereTheScreenDrew(roundActionTestID('symptoms'))).toBeLessThan(
+      expect(whereTheScreenDrew(roundActionTestID('phase'))).toBeLessThan(
         whereTheScreenDrew(loggedTodayTestID),
       );
     });

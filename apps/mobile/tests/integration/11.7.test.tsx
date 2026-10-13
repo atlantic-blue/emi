@@ -534,8 +534,9 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(screen.queryByTestId(homeDoctorRecordTestID)).toBeNull();
       // The ways off the screen are named one at a time, so a card that arrived by taking the
       // place of one of them fails here rather than passing on the two absences above.
+      expect(screen.getByTestId(roundActionTestID('sex'))).toBeTruthy();
       expect(screen.getByTestId(roundActionTestID('period'))).toBeTruthy();
-      expect(screen.getByTestId(roundActionTestID('symptoms'))).toBeTruthy();
+      expect(screen.getByTestId(roundActionTestID('phase'))).toBeTruthy();
       expect(screen.getByTestId(tabTestID('history'))).toBeTruthy();
       expect(screen.getByTestId(tabTestID('settings/index'))).toBeTruthy();
     });
