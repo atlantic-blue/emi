@@ -99,32 +99,35 @@ export function SymptomGroupSection({
   );
 }
 
+/** Points. The outline of a chip, as the log board draws it. */
+const CHIP_BORDER = 1.5;
+
 const styles = StyleSheet.create({
-  section: { gap: space.spaceMd, marginBottom: space.spaceLg },
+  section: { gap: space.spaceMd },
   heading: {
     color: colour.text,
-    ...textStyle('headline-md'),
+    ...textStyle('headline-sm'),
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
   chip: {
     alignItems: 'center',
-    borderRadius: radius.md,
-    borderWidth: 1,
+    borderRadius: radius.full,
+    borderWidth: CHIP_BORDER,
     justifyContent: 'center',
     // SEE-3. The chip itself is the tap target, with no hit slop behind it, so the floor decides
     // its size and the padding only ever pushes a longer name past that.
     maxWidth: '100%',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceMd,
+    paddingHorizontal: space.spaceLg,
     paddingVertical: space.spaceSm,
   },
-  chipPlain: { backgroundColor: colour.field, borderColor: colour.field },
-  chipPicked: { backgroundColor: colour.accentSoft, borderColor: colour.accent },
+  chipPlain: { backgroundColor: colour.card, borderColor: colour.line },
+  chipPicked: { backgroundColor: colour.accent, borderColor: colour.accent },
   chipLabel: {
-    color: colour.secondaryText,
-    ...textStyle('body-lg'),
+    color: colour.text,
+    ...textStyle('choice-lg'),
     textAlign: 'center',
   },
-  chipLabelPicked: { color: colour.text },
+  chipLabelPicked: { color: colour.onAccent },
 });

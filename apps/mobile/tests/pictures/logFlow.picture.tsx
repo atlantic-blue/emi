@@ -9,8 +9,9 @@ import { listCycles } from '../../src/data/cycleRepository';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { LogFlow } from '../../src/features/log/LogFlow';
-import type { OpensOn } from '../../src/features/log/askedGroup';
-import { groupsUnderTheFlow } from '../../src/features/log/herOrder';
+import { LogSymptoms } from '../../src/features/log/LogSymptoms';
+import { symptomsAskedBy } from '../../src/features/log/askedGroup';
+import { groupsInHerOrder } from '../../src/features/log/herOrder';
 import { daysOf, veryRegular } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
@@ -33,7 +34,7 @@ interface State {
   readonly chosen?: Flow;
   readonly marked: boolean;
   /** What the screen opens on, which the address she arrived by decides. */
-  readonly opensOn?: OpensOn;
+  readonly opensOn?: 'flow' | 'symptoms';
 }
 
 const theStates: readonly State[] = [
@@ -55,14 +56,14 @@ const theStates: readonly State[] = [
     marked: true,
   },
   {
-    title: 'She pressed the symptoms action',
-    note: 'Her groups are above the flow, and mood and pain come first because she said so.',
+    title: 'She pressed All symptoms',
+    note: 'The log opens on the symptoms of her two groups, with the search above them and Save at the foot.',
     marked: false,
     opensOn: 'symptoms',
   },
 ];
 
-/** The two groups she named at her first run, which is what puts them above the other six. */
+/** The two groups she named at her first run, which is what opens them first. */
 const sheSaidTheseChangeWithHerCycle = ['mood', 'pain'] as const;
 
 async function drawn(state: State): Promise<DrawnScreen> {
@@ -84,22 +85,41 @@ async function drawn(state: State): Promise<DrawnScreen> {
 
   const view = await render(
     <OnAPhone>
-      <LogFlow
-        chosen={state.chosen}
-        day={today}
-        groups={
-          state.opensOn === 'symptoms'
-            ? groupsUnderTheFlow(sheSaidTheseChangeWithHerCycle)
-            : undefined
-        }
-        marked={state.marked}
-        onDone={() => undefined}
-        onMark={() => undefined}
-        onPick={() => undefined}
-        opensOn={state.opensOn}
-        ring={ring}
-        today={today}
-      />
+      {state.opensOn === 'symptoms' ? (
+        <LogSymptoms
+          asked={
+            symptomsAskedBy({ on: 'symptoms' }, sheSaidTheseChangeWithHerCycle) ?? {
+              groups: [],
+              opensOn: 'groups',
+            }
+          }
+          focus={sheSaidTheseChangeWithHerCycle}
+          held={['cramps']}
+          leave="close"
+          onLeave={() => undefined}
+          onSave={() => undefined}
+          title="Today"
+        />
+      ) : (
+        <LogFlow
+          chosen={state.chosen}
+          day={today}
+          dones="top"
+          groups={groupsInHerOrder(sheSaidTheseChangeWithHerCycle)}
+          leave="close"
+          marked={state.marked}
+          onDone={() => undefined}
+          onLeave={() => undefined}
+          onMark={() => undefined}
+          onOpenGroup={() => undefined}
+          onPick={() => undefined}
+          onSearch={() => undefined}
+          onToggleSymptom={() => undefined}
+          ring={ring}
+          symptoms={[]}
+          title="Today"
+        />
+      )}
     </OnAPhone>,
   );
   const tree: unknown = theScreenIn(view);

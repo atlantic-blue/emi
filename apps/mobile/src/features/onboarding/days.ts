@@ -69,6 +69,11 @@ export function dayLabel(day: string, today: string): string {
     return words('calendar.yesterday');
   }
 
+  return dateWords(day);
+}
+
+/** A day as its weekday, its date and its month, whatever day today is: "Wednesday 16 September". */
+export function dateWords(day: string): string {
   const date = new Date(toDayNumber(day) * MILLISECONDS_IN_A_DAY);
 
   return `${weekdayNames[date.getUTCDay()]} ${date.getUTCDate()} ${monthNames[date.getUTCMonth()]}`;

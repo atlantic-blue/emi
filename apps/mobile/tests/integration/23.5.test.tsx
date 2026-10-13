@@ -57,9 +57,9 @@ const sheSaidHerCycleRuns = 28;
 
 /** What the flow screen says, before and after she marks a bleed as not her period. */
 const theFlowScreenSays = {
-  title: "How's your flow today?",
-  saved: 'Saved on your phone.',
-  invitation: "Bleeding that isn't your period? Log it here, and we'll keep an eye on the pattern.",
+  title: 'Your flow',
+  saved: 'Saved on this phone.',
+  invitation: "Not your period? Log it. It won't count as the start of a cycle.",
   marked: "Saved to your record. It won't count as the start of a cycle.",
 };
 
@@ -77,7 +77,7 @@ const theRefusalSays = {
   notADay: { title: "That's not a day", line: "That date isn't in the calendar." },
   notYet: {
     title: 'Not yet',
-    line: "That day hasn't happened yet. You can log today or any day before it.",
+    line: 'That day has not happened. You can log today and any day behind it.',
   },
 };
 
@@ -213,11 +213,11 @@ describe('she logs bleeding that is not her period in plain words', () => {
       await herPhoneHolds(whenSheOpensIt, herSixCyclesAndThisOne());
     });
 
-    it('asks her how her flow is today, rather than labelling the picker', async () => {
+    it('names the picker as the log board does, with no word for today, so a past day reads true', async () => {
       await sheOpens('/log');
 
       expect(screen.getByText(theFlowScreenSays.title)).toBeTruthy();
-      expect(screen.queryByText('Your flow')).toBeNull();
+      expect(screen.queryByText("How's your flow today?")).toBeNull();
     });
 
     it('tells her the flow she picked is saved on her own phone', async () => {

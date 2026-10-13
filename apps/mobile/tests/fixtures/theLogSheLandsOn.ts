@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react-native';
 
 import { logFlowTestID } from '../../src/features/log/LogFlow';
+import { logSymptomsTestID } from '../../src/features/log/LogSymptoms';
 
 import {
   type Part,
@@ -108,11 +109,13 @@ export function theDrawingPlaces(key: string, part: OpenedOn): boolean {
 /**
  * Everything the log drew, from itself downwards. The route tree wraps the screen in the lock,
  * which draws an identifier of its own above it, so a walk of the whole glass would answer the
- * lock where the question is about the log.
+ * lock where the question is about the log. The log is the day with its flow, or the same tab
+ * opened on the symptoms.
  */
 export function whatTheLogDrew(): string[] {
   const drawn = theIdentifiersDrawn();
-  const at = drawn.indexOf(logFlowTestID);
+  const onTheFlow = drawn.indexOf(logFlowTestID);
+  const at = onTheFlow < 0 ? drawn.indexOf(logSymptomsTestID) : onTheFlow;
 
   if (at < 0) {
     throw new Error('the log was not on the glass');

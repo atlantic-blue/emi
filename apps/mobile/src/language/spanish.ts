@@ -325,8 +325,7 @@ export const spanish: CatalogueIn<'es'> = {
 
   'log.day.notADay.line': 'Esa fecha no está en el calendario.',
   'log.day.notADay.title': 'Ese no es un día',
-  'log.day.notYet.line':
-    'Ese día aún no ha llegado. Puedes registrar hoy o cualquier día anterior.',
+  'log.day.notYet.line': 'Ese día no ha llegado. Puedes registrar hoy y cualquier día anterior.',
   'log.day.notYet.title': 'Todavía no',
   'log.day.back': 'Atrás',
   'log.energy.heading': '¿Cómo está tu energía?',
@@ -339,13 +338,16 @@ export const spanish: CatalogueIn<'es'> = {
   'log.energy.nothingChosen': 'Sin registrar',
   'log.energy.hint': 'Pulsa otra vez la que elegiste para quitarla',
   'log.flow.done': 'Hecho',
+  'log.flow.close': 'Cerrar',
+  'log.symptoms.title': 'Síntomas',
+  'log.symptoms.search': 'Buscar',
   'log.flow.heavy': 'Abundante',
   'log.flow.light': 'Ligero',
   'log.flow.medium': 'Medio',
   'log.flow.none': 'Ninguno',
-  'log.flow.saved': 'Guardado en tu teléfono.',
+  'log.flow.saved': 'Guardado en este teléfono.',
   'log.flow.spotting': 'Manchado',
-  'log.flow.title': '¿Cómo es tu flujo hoy?',
+  'log.flow.title': 'Tu flujo',
   'log.group.digestion': 'Digestión',
   'log.group.energy': 'Energía',
   'log.group.head': 'Cabeza',
@@ -364,7 +366,7 @@ export const spanish: CatalogueIn<'es'> = {
   'log.temperature.hint': 'Tómala antes de levantarte.',
   /** The invitation the voice sets, which asks rather than labels. */
   'log.unexpected.invitation':
-    '¿Sangras y no es tu periodo? Regístralo aquí y seguiremos el patrón.',
+    '¿No es tu periodo? Regístralo. No contará como el inicio de un ciclo.',
   'log.unexpected.mark': 'No es mi periodo',
   /** What her mark did, said as the arithmetic behaves rather than as a reassurance. */
   'log.unexpected.marked': 'Guardado en tu registro. No contará como el inicio de un ciclo.',

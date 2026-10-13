@@ -333,7 +333,8 @@ export const russian: CatalogueIn<'ru'> = {
 
   'log.day.notADay.line': 'Такой даты нет в календаре.',
   'log.day.notADay.title': 'Это не день',
-  'log.day.notYet.line': 'Этот день ещё не наступил. Отметьте сегодня или любой день до него.',
+  'log.day.notYet.line':
+    'Этот день ещё не наступил. Можно отметить сегодня и любой прошедший день.',
   'log.day.notYet.title': 'Ещё нет',
   'log.day.back': 'Назад',
   'log.energy.heading': 'Как ваша энергия?',
@@ -346,13 +347,16 @@ export const russian: CatalogueIn<'ru'> = {
   'log.energy.nothingChosen': 'Не отмечено',
   'log.energy.hint': 'Нажмите выбранное ещё раз, чтобы снять',
   'log.flow.done': 'Готово',
+  'log.flow.close': 'Закрыть',
+  'log.symptoms.title': 'Симптомы',
+  'log.symptoms.search': 'Поиск',
   'log.flow.heavy': 'Обильные',
   'log.flow.light': 'Скудные',
   'log.flow.medium': 'Средние',
   'log.flow.none': 'Нет',
-  'log.flow.saved': 'Сохранено на вашем телефоне.',
+  'log.flow.saved': 'Сохранено на этом телефоне.',
   'log.flow.spotting': 'Мазня',
-  'log.flow.title': 'Какие у вас сегодня выделения?',
+  'log.flow.title': 'Ваши выделения',
   'log.group.digestion': 'Пищеварение',
   'log.group.energy': 'Энергия',
   'log.group.head': 'Голова',
@@ -378,8 +382,7 @@ export const russian: CatalogueIn<'ru'> = {
   'log.temperature.heading': 'Температура после сна',
   'log.temperature.hint': 'Измеряйте до того, как встанете.',
   /** The invitation the voice sets, which asks rather than labels. */
-  'log.unexpected.invitation':
-    'Кровотечение, но не месячные? Отметьте это здесь, и мы проследим закономерность.',
+  'log.unexpected.invitation': 'Это не месячные? Отметьте это. Это не будет началом цикла.',
   'log.unexpected.mark': 'Это не месячные',
   /** What her mark did, said as the arithmetic behaves rather than as a reassurance. */
   'log.unexpected.marked': 'Сохранено в вашей записи. Это не будет началом цикла.',

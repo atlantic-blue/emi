@@ -55,8 +55,7 @@ import {
 import { goalsChosenLabel, yourAnswersCopy } from '../../src/features/settings/copy';
 import { homeGreetingTestID } from '../../src/features/home/HomeScreen';
 import { greeting } from '../../src/features/home/copy';
-import { logFlowGroupsTestID } from '../../src/features/log/LogFlow';
-import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
+import { groupTileTestID, groupTilesTestID } from '../../src/features/log/GroupTiles';
 import {
   feelingLabels,
   firstRunCopy,
@@ -352,15 +351,15 @@ async function theSealedRow(): Promise<ProfileRecord> {
   return held;
 }
 
-/** The groups she reads under the flow picker, in the order they are drawn down the glass. */
+/** The group tiles she reads under the flow picker, in the order they are drawn. */
 function theGroupsUnderTheFlow(): readonly string[] {
-  return within(screen.getByTestId(logFlowGroupsTestID))
-    .getAllByTestId(/^symptom-group-(?!.*-chips$)/)
-    .map((section) => String(section.props.testID));
+  return within(screen.getByTestId(groupTilesTestID))
+    .getAllByTestId(/^group-tile-/)
+    .map((tile) => String(tile.props.testID));
 }
 
 function named(groups: readonly SymptomGroup[]): readonly string[] {
-  return groups.map(symptomGroupTestID);
+  return groups.map(groupTileTestID);
 }
 
 /** Every plain row of the setting table, so a second copy of an answer has somewhere to be found. */

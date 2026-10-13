@@ -90,9 +90,10 @@ interface Props {
   readonly centreWord?: 'phase' | 'day';
   /**
    * The ring of Today writes the four phase names along a thicker band, draws every arc at full
-   * strength so each name is measured on its own fill, and says the day as "Day N".
+   * strength so each name is measured on its own fill, and says the day as "Day N". The small ring
+   * of the log carries no words inside it, because the line beside it says the day and the phase.
    */
-  readonly look?: 'plain' | 'named';
+  readonly look?: 'plain' | 'named' | 'small';
 }
 
 export function CycleRing({
@@ -104,6 +105,10 @@ export function CycleRing({
   centreWord = 'phase',
   look = 'plain',
 }: Props): ReactNode {
+  if (look === 'small') {
+    return <SmallRing cycleLengthDays={cycleLengthDays} day={day} phases={phases} />;
+  }
+
   return look === 'named' ? (
     <NamedRing cycleLengthDays={cycleLengthDays} day={day} phases={phases} />
   ) : (
@@ -286,6 +291,75 @@ function NamedRing({
           {ringAboutLengthWords(cycleLengthDays)}
         </Text>
       </View>
+    </View>
+  );
+}
+
+/** Points. The small ring of the log board: its box, the radius of its arcs and their stroke. */
+const SMALL_RING_DIAMETER = 64;
+const SMALL_RING_RADIUS = 23;
+const SMALL_RING_ARC_WIDTH = 6;
+const SMALL_RING_TRACK_WIDTH = 14;
+const SMALL_RING_BEAD_RADIUS = 8;
+const SMALL_RING_BEAD_STROKE = 3;
+
+/** Degrees left open between two arcs, so the round ends of two phases do not run into one. */
+const SMALL_RING_GAP_DEGREES = 3;
+
+/** The small ring of the log: the four arcs whole, on a pale track, with the bead and no words. */
+function SmallRing({
+  cycleLengthDays,
+  day,
+  phases,
+}: Pick<Props, 'cycleLengthDays' | 'day' | 'phases'>): ReactNode {
+  const geometry = ringGeometry({ cycleLengthDays, day, phases });
+  const centre = { x: SMALL_RING_DIAMETER / 2, y: SMALL_RING_DIAMETER / 2 };
+  const bead = pointOnRing(centre, SMALL_RING_RADIUS, geometry.beadDegrees);
+
+  return (
+    <View
+      accessibilityLabel={ringSpokenLabel(day, cycleLengthDays, phaseName(geometry.phase))}
+      accessibilityRole="image"
+      accessible
+      style={[styles.ring, { height: SMALL_RING_DIAMETER, width: SMALL_RING_DIAMETER }]}
+      testID={cycleRingTestID}
+    >
+      <Svg height={SMALL_RING_DIAMETER} width={SMALL_RING_DIAMETER}>
+        <Circle
+          cx={centre.x}
+          cy={centre.y}
+          fill="none"
+          r={SMALL_RING_RADIUS}
+          stroke={colour.card}
+          strokeOpacity={0.6}
+          strokeWidth={SMALL_RING_TRACK_WIDTH}
+        />
+        {geometry.arcs.map((arc) => (
+          <Path
+            d={arcPath(
+              centre,
+              SMALL_RING_RADIUS,
+              arc.startDegrees + SMALL_RING_GAP_DEGREES / 2,
+              Math.max(arc.sweepDegrees - SMALL_RING_GAP_DEGREES, 0),
+            )}
+            fill="none"
+            key={ringWholeArcTestID(arc.phase)}
+            stroke={colour[phasePalette[arc.phase].fill]}
+            strokeLinecap="round"
+            strokeWidth={SMALL_RING_ARC_WIDTH}
+            testID={ringWholeArcTestID(arc.phase)}
+          />
+        ))}
+        <Circle
+          cx={bead.x}
+          cy={bead.y}
+          fill={colour.card}
+          r={SMALL_RING_BEAD_RADIUS}
+          stroke={colour.text}
+          strokeWidth={SMALL_RING_BEAD_STROKE}
+          testID={ringBeadTestID}
+        />
+      </Svg>
     </View>
   );
 }

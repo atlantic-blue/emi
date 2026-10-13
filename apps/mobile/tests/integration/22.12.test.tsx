@@ -1,3 +1,4 @@
+import { symptomGroups } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 
@@ -13,11 +14,22 @@ import {
   periodRangePickerTestID,
 } from '../../src/features/calendar/PeriodRangePicker';
 import { editPeriodCopy } from '../../src/features/calendar/copy';
-import { dayRefusedBackTestID, dayRefusedTestID } from '../../src/features/log/DayRefused';
+import {
+  dayRefusedBackTestID,
+  dayRefusedCalendarTestID,
+  dayRefusedChevronTestID,
+  dayRefusedTestID,
+  dayRefusedTitleTestID,
+} from '../../src/features/log/DayRefused';
 import { flowPickerTestID } from '../../src/features/log/FlowPicker';
+import { groupTileTestID } from '../../src/features/log/GroupTiles';
+import { logHeaderLeaveTestID } from '../../src/features/log/LogHeader';
+import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
+import { dateWords } from '../../src/features/onboarding/days';
 import {
   logFlowDoneTestID,
   logFlowFlowCardTestID,
+  logFlowFootDoneTestID,
   logFlowSavedTestID,
   logFlowSymptomsCardTestID,
   logFlowTitleTestID,
@@ -30,6 +42,7 @@ import {
   howManyPartsAreHeldTo,
   sheIsLookingAtTheLogOrCalendar,
   theChangeKeyNames,
+  theDaySheAlreadyLived,
   theDifferencesThisStepKeeps,
   theLogAndCalendarDrawings,
   theScreenOf,
@@ -144,17 +157,56 @@ describe('the Log and calendar screens match the redesign prototype', () => {
       expect(whereTheLogOrCalendarDrew(logFlowSavedTestID)).toBeGreaterThan(
         whereTheLogOrCalendarDrew(logFlowSymptomsCardTestID),
       );
-      expect(whereTheLogOrCalendarDrew(logFlowSavedTestID)).toBeLessThan(
+    });
+
+    it('puts Done at the top right as a word in the accent, and no wide button at the foot', () => {
+      expect(screen.getByTestId(logFlowDoneTestID)).toHaveProp('accessibilityRole', 'link');
+      expect(whereTheLogOrCalendarDrew(logFlowDoneTestID)).toBeLessThan(
+        whereTheLogOrCalendarDrew(logFlowFlowCardTestID),
+      );
+      expect(whereTheLogOrCalendarDrew(logHeaderLeaveTestID)).toBeLessThan(
+        whereTheLogOrCalendarDrew(logFlowWhenTestID),
+      );
+      expect(screen.queryByTestId(logFlowFootDoneTestID)).toBeNull();
+    });
+
+    it('draws her symptoms as the eight group tiles and never the long list of every symptom', () => {
+      for (const group of symptomGroups) {
+        expect(screen.getByTestId(groupTileTestID(group))).toBeTruthy();
+        expect(screen.queryByTestId(symptomGroupTestID(group))).toBeNull();
+      }
+      expect(screen.queryAllByTestId(/^symptom-chip-/)).toHaveLength(0);
+    });
+  });
+
+  describe('a day she already lived', () => {
+    beforeEach(async () => {
+      jest.setSystemTime(whenSheReads('day'));
+      await sheIsLookingAtTheLogOrCalendar('day');
+    });
+
+    it('names the date in the header, with the way back on the left and Done on the right', () => {
+      expect(screen.getByTestId(logFlowWhenTestID)).toHaveTextContent(
+        dateWords(theDaySheAlreadyLived),
+      );
+      expect(whereTheLogOrCalendarDrew(logHeaderLeaveTestID)).toBeLessThan(
+        whereTheLogOrCalendarDrew(logFlowWhenTestID),
+      );
+      expect(whereTheLogOrCalendarDrew(logFlowWhenTestID)).toBeLessThan(
         whereTheLogOrCalendarDrew(logFlowDoneTestID),
       );
     });
 
-    it('asks her to finish with the one wide capsule in the accent', () => {
-      const done = theStyleOf(logFlowDoneTestID);
+    it('offers Done again at the foot, as the one wide capsule in the accent', () => {
+      const done = theStyleOf(logFlowFootDoneTestID);
 
       expect(done.backgroundColor).toBe(colour.accent);
       expect(done.borderRadius).toBe(radius.full);
       expect(Number(done.minHeight)).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
+    });
+
+    it('leaves out the note to the reader about the ring', () => {
+      expect(screen.queryByText(/The ring beside it/)).toBeNull();
     });
   });
 
@@ -175,6 +227,18 @@ describe('the Log and calendar screens match the redesign prototype', () => {
     it('is the refusal screen and draws no picker at all', () => {
       expect(screen.getByTestId(dayRefusedTestID)).toBeTruthy();
       expect(screen.queryByTestId(flowPickerTestID)).toBeNull();
+    });
+
+    it('draws the way back at the top and the calendar above the title, as the board does', () => {
+      const screenAt = theScreenOf('dayRefused');
+
+      expect(whereTheLogOrCalendarDrew(dayRefusedChevronTestID, screenAt)).toBeLessThan(
+        whereTheLogOrCalendarDrew(dayRefusedCalendarTestID, screenAt),
+      );
+      expect(whereTheLogOrCalendarDrew(dayRefusedCalendarTestID, screenAt)).toBeLessThan(
+        whereTheLogOrCalendarDrew(dayRefusedTitleTestID, screenAt),
+      );
+      expect(screen.queryByText(/An address that is not a date/)).toBeNull();
     });
   });
 

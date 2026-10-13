@@ -5,7 +5,11 @@ import { type Flow, addDays } from '@emi/cycle';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
-import { cycleRingTestID, ringArcTestID, ringBeadTestID } from '../../src/components/CycleRing';
+import {
+  cycleRingTestID,
+  ringBeadTestID,
+  ringWholeArcTestID,
+} from '../../src/components/CycleRing';
 import { readDayLog } from '../../src/data/dayLogRepository';
 import {
   dayRefusedBackTestID,
@@ -105,7 +109,7 @@ function theRingShape(): { arc: string; bead: { x: number; y: number } } {
   const bead = screen.getByTestId(ringBeadTestID);
 
   return {
-    arc: String(screen.getByTestId(ringArcTestID('period', 'elapsed')).props.d),
+    arc: String(screen.getByTestId(ringWholeArcTestID('period')).props.d),
     bead: { x: Number(bead.props.cx), y: Number(bead.props.cy) },
   };
 }

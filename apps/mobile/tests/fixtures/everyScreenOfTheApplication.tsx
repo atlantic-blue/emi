@@ -1,4 +1,4 @@
-import { publishedFigures } from '@emi/cycle';
+import { publishedFigures, symptomGroups } from '@emi/cycle';
 import type { ReactElement } from 'react';
 
 import { CalendarScreen, calendarScreenTestID } from '../../src/features/calendar/CalendarScreen';
@@ -10,6 +10,7 @@ import { Cover, coverTestID } from '../../src/features/lock/Cover';
 import { LockScreen, lockScreenTestID } from '../../src/features/lock/LockScreen';
 import { DayRefused, dayRefusedTestID } from '../../src/features/log/DayRefused';
 import { LogFlow, logFlowTestID } from '../../src/features/log/LogFlow';
+import { LogSymptoms, logSymptomsTestID } from '../../src/features/log/LogSymptoms';
 import { FirstForecast, firstForecastTestID } from '../../src/features/onboarding/FirstForecast';
 import { HoldToBegin, holdScreenTestID } from '../../src/features/onboarding/HoldToBegin';
 import { OnboardingScreen } from '../../src/features/onboarding/OnboardingScreen';
@@ -133,12 +134,34 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
     (): ReactElement => (
       <LogFlow
         day="2026-05-14"
+        dones="top"
+        groups={symptomGroups}
+        leave="close"
         marked={false}
         onDone={nothing}
+        onLeave={nothing}
         onMark={nothing}
+        onOpenGroup={nothing}
         onPick={nothing}
+        onSearch={nothing}
+        onToggleSymptom={nothing}
         ring={undefined}
-        today="2026-05-14"
+        symptoms={[]}
+        title="Today"
+      />
+    ),
+  ],
+  [
+    logSymptomsTestID,
+    (): ReactElement => (
+      <LogSymptoms
+        asked={{ groups: ['mood', 'pain'], opensOn: 'groups' }}
+        focus={[]}
+        held={['cramps']}
+        leave="close"
+        onLeave={nothing}
+        onSave={nothing}
+        title="Today"
       />
     ),
   ],

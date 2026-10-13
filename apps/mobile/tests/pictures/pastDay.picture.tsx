@@ -1,5 +1,5 @@
 import type { DayRecord, Flow } from '@emi/cycle';
-import { addDays } from '@emi/cycle';
+import { addDays, symptomGroups } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 
@@ -10,6 +10,7 @@ import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { DayRefused } from '../../src/features/log/DayRefused';
 import { LogFlow } from '../../src/features/log/LogFlow';
 import { refusalFor } from '../../src/features/log/editDay';
+import { dateWords } from '../../src/features/onboarding/days';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import { daysOf, veryRegular } from '../../../../packages/cycle/tests/fixtures/recordedSets';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
@@ -111,12 +112,21 @@ async function drawn(state: State): Promise<DrawnScreen> {
         <LogFlow
           chosen={state.chosen}
           day={thatDay}
+          dayPages={{ onPeriod: () => undefined, onSex: () => undefined }}
+          dones="top-and-foot"
+          groups={symptomGroups}
+          leave="back"
           marked={false}
           onDone={() => undefined}
+          onLeave={() => undefined}
           onMark={() => undefined}
+          onOpenGroup={() => undefined}
           onPick={() => undefined}
+          onSearch={() => undefined}
+          onToggleSymptom={() => undefined}
           ring={ringFrom(state.days)}
-          today={today}
+          symptoms={['bloating']}
+          title={dateWords(thatDay)}
         />
       ) : (
         <DayRefused onBack={() => undefined} refusal={refusal} />
