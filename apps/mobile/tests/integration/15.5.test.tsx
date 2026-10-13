@@ -6,7 +6,12 @@ import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
+import { logHeaderLeaveTestID } from '../../src/features/log/LogHeader';
+import { logSymptomsTestID } from '../../src/features/log/LogSymptoms';
+import { symptomChipTestID, symptomGroupTestID } from '../../src/features/log/SymptomGroup';
+import { symptomSearchTestID } from '../../src/features/log/SymptomSearchField';
 import { opensOnParameter, theSymptoms } from '../../src/features/log/askedGroup';
+import { theGroupsSheSeesFirst } from '../../src/features/log/herOrder';
 import { sheOpensTheSymptomGroupsFromToday } from '../fixtures/theSymptomGroupsFromToday';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -50,7 +55,7 @@ async function sheOpensEmi(): Promise<OpenApp> {
   return { pathname: () => app.getPathname(), searchParams: () => app.getSearchParams() };
 }
 
-describe('the symptoms action opens the log on the groups and the dock still opens on the flows', () => {
+describe('All symptoms opens the log on the groups and the dock still opens on the flows', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -93,7 +98,7 @@ describe('the symptoms action opens the log on the groups and the dock still ope
       await sheOpensTheSymptomGroupsFromToday();
     });
 
-    it('puts her on the log, with the symptom groups above the flow picker', () => {
+    it('puts her on the log opened on the symptom groups, as the drawing of the symptoms is', () => {
       expect(app.pathname()).toBe('/log');
       expect(theLogProblems(theDrawingOfTheSymptoms)).toEqual([]);
     });
@@ -102,11 +107,49 @@ describe('the symptoms action opens the log on the groups and the dock still ope
       expect(app.searchParams()[opensOnParameter]).toBe(theSymptoms);
     });
 
-    it('offers every group, so nothing she can record moved', () => {
-      expect(theGroupsTheLogDrew()).toHaveLength(symptomGroups.length);
+    it('opens the groups she sees first, and never the long list of every group', () => {
+      expect(theGroupsTheLogDrew()).toEqual(
+        theGroupsSheSeesFirst([]).map((group) => symptomGroupTestID(group)),
+      );
+      expect(theGroupsTheLogDrew().length).toBeLessThan(symptomGroups.length);
     });
 
-    it('leaves the flow picker on the screen, so a flow is still one press from here', () => {
+    it('offers the search, which reaches a symptom of a group that is not open', async () => {
+      await fireEvent.changeText(screen.getByTestId(symptomSearchTestID), 'insom');
+
+      expect(screen.getByTestId(symptomChipTestID('insomnia'))).toBeTruthy();
+    });
+
+    it('draws no flow picker, because the drawing of the symptoms places none', () => {
+      expect(theFlowPickerIsOnTheLog()).toBe(false);
+    });
+  });
+
+  describe('the Log column of the dock, after All symptoms', () => {
+    // The test router keeps the address of the push on the tab group, so the search parameters it
+    // reports still name the symptoms. The screen is what she reads, so the screen is checked.
+    it('opens the log on the flow once she has left the symptoms', async () => {
+      const app = await sheOpensEmi();
+
+      await sheOpensTheSymptomGroupsFromToday();
+      await fireEvent.press(screen.getByTestId(logHeaderLeaveTestID));
+      await fireEvent.press(screen.getByTestId(tabTestID('log/index')));
+
+      expect(app.pathname()).toBe('/log');
+      expect(screen.queryByTestId(logSymptomsTestID)).toBeNull();
+      expect(theLogProblems(theDrawingOfTheFlow)).toEqual([]);
+      expect(theFlowPickerIsOnTheLog()).toBe(true);
+    });
+
+    it('opens the log on the flow when she leaves the symptoms by the dock itself', async () => {
+      const app = await sheOpensEmi();
+
+      await sheOpensTheSymptomGroupsFromToday();
+      await fireEvent.press(screen.getByTestId(tabTestID('index')));
+      await fireEvent.press(screen.getByTestId(tabTestID('log/index')));
+
+      expect(app.pathname()).toBe('/log');
+      expect(screen.queryByTestId(logSymptomsTestID)).toBeNull();
       expect(theFlowPickerIsOnTheLog()).toBe(true);
     });
   });

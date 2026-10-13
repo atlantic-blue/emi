@@ -290,11 +290,27 @@ import {
 import {
   logFlowDoneTestID,
   logFlowFlowCardTestID,
+  logFlowPeriodRowTestID,
   logFlowSavedTestID,
+  logFlowSexRowTestID,
   logFlowSymptomsCardTestID,
   logFlowTestID,
+  logFlowTitleTestID,
+  logFlowWhenTestID,
 } from '../apps/mobile/src/features/log/LogFlow';
-import { symptomChipTestID } from '../apps/mobile/src/features/log/SymptomGroup';
+import { groupTileTestID } from '../apps/mobile/src/features/log/GroupTiles';
+import { logHeaderLeaveTestID } from '../apps/mobile/src/features/log/LogHeader';
+import {
+  logSymptomsCountTestID,
+  logSymptomsSaveTestID,
+  logSymptomsTestID,
+} from '../apps/mobile/src/features/log/LogSymptoms';
+import {
+  symptomChipTestID,
+  symptomGroupTestID,
+} from '../apps/mobile/src/features/log/SymptomGroup';
+import { symptomSearchTestID } from '../apps/mobile/src/features/log/SymptomSearchField';
+import { theGroupsSheSeesFirst } from '../apps/mobile/src/features/log/herOrder';
 import {
   herNumberTestID,
   homeNumbersTestID,
@@ -382,7 +398,7 @@ import {
   tourCopy,
 } from '../apps/mobile/src/features/onboarding/copy';
 import { ordinal, statedLengthSentence } from '../apps/mobile/src/features/forecast/copy';
-import { monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
+import { dateWords, monthLabel, startOfMonth } from '../apps/mobile/src/features/onboarding/days';
 import {
   defaultCycleLengthDays,
   defaultPeriodLengthDays,
@@ -615,7 +631,6 @@ import {
   theGroupsTheLogDrew,
   theLogProblems,
   whatTheDrawingOpensOn,
-  whatTheLogDrew,
 } from '../apps/mobile/tests/fixtures/theLogSheLandsOn';
 import {
   herPhoneHoldsFourRecordedPeriodDays,
@@ -973,16 +988,15 @@ const theLogAndTheEditorSayInEnglish: Readonly<Record<string, string>> = {
   'calendar.editPeriod.removed': 'Removed {days}.',
   'log.day.notADay.line': "That date isn't in the calendar.",
   'log.day.notADay.title': "That's not a day",
-  'log.day.notYet.line': "That day hasn't happened yet. You can log today or any day before it.",
+  'log.day.notYet.line': 'That day has not happened. You can log today and any day behind it.',
   'log.day.notYet.title': 'Not yet',
   'log.energy.heading': "How's your energy?",
   'log.energy.name.3': 'Okay',
-  'log.flow.saved': 'Saved on your phone.',
-  'log.flow.title': "How's your flow today?",
+  'log.flow.saved': 'Saved on this phone.',
+  'log.flow.title': 'Your flow',
   'log.sheet.noMatch': 'No symptoms match {query}',
   'log.temperature.hint': 'Take it before you get up.',
-  'log.unexpected.invitation':
-    "Bleeding that isn't your period? Log it here, and we'll keep an eye on the pattern.",
+  'log.unexpected.invitation': "Not your period? Log it. It won't count as the start of a cycle.",
   'log.unexpected.marked': "Saved to your record. It won't count as the start of a cycle.",
   'log.weight.hint': 'Once a day is plenty.',
 };
@@ -3533,6 +3547,82 @@ defineFeature(feature, (test) => {
     });
   });
 
+  test('SCREEN-4, she adds a symptom to a day she already lived and opens its Sex and Period pages', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const thatDay = addDays(theDaySheOpensIt, -2);
+    const theDayOnHerPhone = (day: string): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), day);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+    let flowSheLogged: string | undefined;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+      flowSheLogged = theDayOnHerPhone(thatDay)?.flow;
+    });
+
+    when('she opens the day before yesterday', async () => {
+      await sheOpens(`/day/${thatDay}`);
+    });
+
+    then('the screen names that date, and asks about her flow with no word for today', () => {
+      expect(screen.getByTestId(logFlowWhenTestID)).toHaveTextContent(dateWords(thatDay));
+      expect(screen.getByTestId(logFlowTitleTestID)).toHaveTextContent('Your flow');
+      expect(screen.queryByText(/today/i)).toBeNull();
+    });
+
+    when('she presses the Digestion tile, marks Bloating and presses Save', async () => {
+      await shePresses(groupTileTestID('digestion'));
+      await shePresses(symptomChipTestID('bloating'));
+      await shePresses(logSymptomsSaveTestID);
+    });
+
+    then(
+      'that day holds Bloating, sealed, beside the flow she logged, and today holds no symptom',
+      () => {
+        const held = readDayLog(herDatabase(), thatDay);
+
+        expect(flowSheLogged).toEqual(expect.any(String));
+        expect(new TextDecoder().decode(held?.payload)).not.toContain('bloating');
+        expect(theDayOnHerPhone(thatDay)).toMatchObject({
+          flow: flowSheLogged,
+          symptoms: ['bloating'],
+        });
+        expect(theDayOnHerPhone(theDaySheOpensIt)?.symptoms).toBeUndefined();
+      },
+    );
+
+    and('the day shows Bloating as a symptom she can take off', () => {
+      expect(screen.getByTestId(logFlowTestID)).toBeTruthy();
+      expect(screen.getByTestId(symptomChipTestID('bloating'))).toBeChecked();
+    });
+
+    when('she presses Sex on that day', async () => {
+      await shePresses(logFlowSexRowTestID);
+    });
+
+    then('she is on the Sex page of that day', () => {
+      expect(screen.getByTestId(sexPageTestID)).toBeTruthy();
+      expect(screen.getByTestId(sexPageDayTestID)).toHaveTextContent(sexDayHeading(thatDay));
+    });
+
+    when('she goes back to that day and presses Period', async () => {
+      await act(() => router.back());
+      await shePresses(logFlowPeriodRowTestID);
+    });
+
+    then('she is on the Period page of that day', () => {
+      expect(screen.getByTestId(periodPageTestID)).toBeTruthy();
+      expect(screen.getByTestId(periodPageDayTestID)).toHaveTextContent(periodDayLabel(thatDay));
+    });
+  });
+
   test('SCREEN-2, she records discharge and a product on a day', ({ given, when, then }) => {
     const herAnswers = [
       periodChipTestID('discharge', 'egg-white'),
@@ -3831,6 +3921,13 @@ defineFeature(feature, (test) => {
       expect(theDrawingPlaces(theDrawingOfTheFlow, 'symptoms')).toBe(true);
     });
 
+    and('the log draws a tile for each symptom group, and lists no symptom', () => {
+      for (const group of symptomGroups) {
+        expect(screen.getByTestId(groupTileTestID(group))).toBeTruthy();
+      }
+      expect(screen.queryAllByTestId(/^symptom-chip-/)).toHaveLength(0);
+    });
+
     when(
       'she goes back to Today, and presses Cycle phase, and then All symptoms in its diary',
       async () => {
@@ -3845,26 +3942,36 @@ defineFeature(feature, (test) => {
       expect(app.searchParams()[opensOnParameter]).toBe(theSymptoms);
     });
 
-    and('she passed no flow option on the way to it', () => {
-      const drawn = whatTheLogDrew();
-      const [firstGroup] = theGroupsTheLogDrew();
-
-      expect(firstGroup).toBeDefined();
-      expect(drawn.indexOf(String(firstGroup))).toBeLessThan(drawn.indexOf(flowPickerTestID));
+    and('the groups she sees first are open, and no other group', () => {
+      expect(theGroupsTheLogDrew()).toEqual(theGroupsSheSeesFirst([]).map(symptomGroupTestID));
+      expect(theGroupsTheLogDrew().length).toBeLessThan(symptomGroups.length);
     });
 
-    and('every one of her symptom groups is offered', () => {
-      expect(theGroupsTheLogDrew()).toHaveLength(symptomGroups.length);
-    });
+    and('the search finds a symptom of a group that is not open', async () => {
+      await fireEvent.changeText(screen.getByTestId(symptomSearchTestID), 'insom');
 
-    and('she can still pick a flow on the same screen', () => {
-      expect(theFlowPickerIsOnTheLog()).toBe(true);
+      expect(screen.getByTestId(symptomChipTestID('insomnia'))).toBeTruthy();
+
+      await fireEvent.changeText(screen.getByTestId(symptomSearchTestID), '');
     });
 
     and('the drawing of that screen places a symptom group, and places no flow picker', () => {
       expect(whatTheDrawingOpensOn(theDrawingOfTheSymptoms)).toBe('symptoms');
       expect(theDrawingPlaces(theDrawingOfTheSymptoms, 'symptoms')).toBe(true);
       expect(theDrawingPlaces(theDrawingOfTheSymptoms, 'flow')).toBe(false);
+      expect(theFlowPickerIsOnTheLog()).toBe(false);
+    });
+
+    when('she closes the symptoms and presses the Log column of the dock', async () => {
+      await shePresses(logHeaderLeaveTestID);
+      await shePresses(tabTestID('log/index'));
+    });
+
+    then('the log opens on the flow options again', () => {
+      expect(app.pathname()).toBe('/log');
+      expect(screen.queryByTestId(logSymptomsTestID)).toBeNull();
+      expect(theLogProblems(theDrawingOfTheFlow)).toEqual([]);
+      expect(theFlowPickerIsOnTheLog()).toBe(true);
     });
   });
 
@@ -3918,8 +4025,9 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('she saves', async () => {
-      await shePresses(logFlowDoneTestID);
+    and('she presses Save, under the count of what she picked', async () => {
+      expect(screen.getByTestId(logSymptomsCountTestID)).toBeTruthy();
+      await shePresses(logSymptomsSaveTestID);
     });
 
     then('she is back on the screen she started on', () => {
@@ -6919,16 +7027,15 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'the line that says where the day is kept sits under her symptoms, over the one wide button',
+      'the line that says where the day is kept sits under her symptoms, and Done is a word at the top',
       () => {
         expect(whereTheLogOrCalendarDrew(logFlowSavedTestID)).toBeGreaterThan(
           whereTheLogOrCalendarDrew(logFlowSymptomsCardTestID),
         );
-        expect(whereTheLogOrCalendarDrew(logFlowSavedTestID)).toBeLessThan(
-          whereTheLogOrCalendarDrew(logFlowDoneTestID),
+        expect(whereTheLogOrCalendarDrew(logFlowDoneTestID)).toBeLessThan(
+          whereTheLogOrCalendarDrew(logFlowFlowCardTestID),
         );
-        expect(theStyleOf(logFlowDoneTestID).backgroundColor).toBe(colour.accent);
-        expect(theStyleOf(logFlowDoneTestID).borderRadius).toBe(radius.full);
+        expect(screen.getByTestId(logFlowDoneTestID)).toHaveProp('accessibilityRole', 'link');
       },
     );
 

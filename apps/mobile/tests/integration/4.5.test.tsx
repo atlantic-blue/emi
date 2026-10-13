@@ -6,7 +6,7 @@ import { MINIMUM_TAP_TARGET } from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo, StyleSheet } from 'react-native';
 
-import { cycleRingTestID, ringArcTestID } from '../../src/components/CycleRing';
+import { cycleRingTestID, ringWholeArcTestID } from '../../src/components/CycleRing';
 import { listCycles } from '../../src/data/cycleRepository';
 import { readDayLog } from '../../src/data/dayLogRepository';
 import { forecastOf } from '../../src/features/forecast/fromCache';
@@ -126,7 +126,7 @@ function theRingSays(): string {
 
 /** The period arc she can see, so a day counted into her period would change the picture. */
 function thePeriodArc(): string {
-  return String(screen.getByTestId(ringArcTestID('period', 'elapsed')).props.d);
+  return String(screen.getByTestId(ringWholeArcTestID('period')).props.d);
 }
 
 function sizeOf(testID: string): { width: number; height: number } {
@@ -381,9 +381,12 @@ describe('unexpected bleeding never starts a cycle', () => {
 
       await shePicks('spotting');
 
+      // The log board says "Emi will track the pattern", and nothing reads the mark for a pattern,
+      // so the line keeps the board's first two sentences and says what the mark does.
       expect(unexpectedBleedingCopy.invitation).toBe(
-        "Bleeding that isn't your period? Log it here, and we'll keep an eye on the pattern.",
+        "Not your period? Log it. It won't count as the start of a cycle.",
       );
+      expect(unexpectedBleedingCopy.invitation).not.toMatch(/pattern/);
       expect(screen.getByTestId(unexpectedBleedingLineTestID)).toHaveTextContent(
         unexpectedBleedingCopy.invitation,
       );

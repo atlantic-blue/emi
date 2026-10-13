@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import type { DayRecord, Feeling } from '@emi/crypto';
 import { feelingValues } from '@emi/crypto';
 import { addDays, symptomGroups } from '@emi/cycle';
-import { screen, within } from '@testing-library/react-native';
+import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
@@ -14,7 +14,10 @@ import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import { homePainLineTestID, roundActionTestID } from '../../src/features/home/HomeScreen';
 import { homeCopy } from '../../src/features/home/copy';
-import { logFlowGroupTestID, logFlowGroupsTestID } from '../../src/features/log/LogFlow';
+import { flowPickerTestID } from '../../src/features/log/FlowPicker';
+import { groupTileTestID } from '../../src/features/log/GroupTiles';
+import { logSymptomsSaveTestID } from '../../src/features/log/LogSymptoms';
+import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import { painGroup } from '../../src/features/log/askedGroup';
 import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
@@ -356,18 +359,22 @@ describe('a hard period day offers the pain log first', () => {
   });
 
   describe('the log the line opens', () => {
-    it('opens the pain group, and what she presses there is written to today', async () => {
+    it('opens the pain group, and what she picks there is written to today when she saves', async () => {
       const app = await herPhone(insideHerPeriod, 'hard').then(() => sheOpensEmi());
 
       await shePresses(homePainLineTestID);
 
       expect(app.pathname()).toBe('/log');
-      expect(screen.getByTestId(logFlowGroupTestID(painGroup))).toBeTruthy();
+      expect(screen.getByTestId(symptomGroupTestID(painGroup))).toBeTruthy();
 
       await shePresses(`symptom-chip-${theSymptomShePresses}`);
 
-      expect(theSymptomsRecordedToday()).toEqual([theSymptomShePresses]);
       expect(screen.getByTestId(`symptom-chip-${theSymptomShePresses}`)).toBeChecked();
+      expect(theSymptomsRecordedToday()).toEqual([]);
+
+      await shePresses(logSymptomsSaveTestID);
+
+      expect(theSymptomsRecordedToday()).toEqual([theSymptomShePresses]);
     });
 
     it('takes the symptom off the day again when she presses it a second time', async () => {
@@ -378,6 +385,10 @@ describe('a hard period day offers the pain log first', () => {
       await shePresses(`symptom-chip-${theSymptomShePresses}`);
       await shePresses(`symptom-chip-${theSymptomShePresses}`);
 
+      expect(screen.getByTestId(`symptom-chip-${theSymptomShePresses}`)).not.toBeChecked();
+
+      await shePresses(logSymptomsSaveTestID);
+
       const row = readDayLog(herDatabase(), today);
       const record = row === undefined ? undefined : herVault().open(row.payload);
 
@@ -385,10 +396,9 @@ describe('a hard period day offers the pain log first', () => {
       // The key comes off the record rather than holding an empty list, because the canonical
       // bytes are what another phone reads back and an empty list is an answer she never gave.
       expect(record !== undefined && 'symptoms' in record).toBe(false);
-      expect(screen.getByTestId(`symptom-chip-${theSymptomShePresses}`)).not.toBeChecked();
     });
 
-    it('keeps the flow the day already carries when she presses a symptom', async () => {
+    it('keeps the flow the day already carries when she saves a symptom', async () => {
       await herPhoneHolds(
         whenSheOpensIt,
         [aBleedingDay(insideHerPeriod), aBleedingDay(today)],
@@ -401,6 +411,7 @@ describe('a hard period day offers the pain log first', () => {
 
       await shePresses(homePainLineTestID);
       await shePresses(`symptom-chip-${theSymptomShePresses}`);
+      await shePresses(logSymptomsSaveTestID);
 
       const row = readDayLog(herDatabase(), today);
       const record = row === undefined ? undefined : herVault().open(row.payload);
@@ -409,21 +420,20 @@ describe('a hard period day offers the pain log first', () => {
       expect(record?.symptoms).toEqual([theSymptomShePresses]);
     });
 
-    it('lifts no group above the picker for a woman who pressed the log itself', async () => {
+    it('opens on the flow and the eight group tiles for a woman who pressed the log itself', async () => {
       await herPhone(insideHerPeriod, 'hard');
       await sheOpensEmi();
 
       await shePresses(tabTestID('log/index'));
 
-      // Every group, not only the pain one, because the log she reached by the tab is the log she
-      // reached yesterday and a group she did not ask for is a group above the picker she did not
-      // ask for. They are all there under it, which is where the tab draws them.
-      const underThePicker = within(screen.getByTestId(logFlowGroupsTestID));
-
+      // The log she reached by the tab is the log she reached yesterday: the flow, and a tile for
+      // every group. No group is open, so no symptom of any group is listed.
+      expect(screen.getByTestId(flowPickerTestID)).toBeTruthy();
       for (const group of symptomGroups) {
-        expect(underThePicker.getByTestId(logFlowGroupTestID(group))).toBeTruthy();
+        expect(screen.getByTestId(groupTileTestID(group))).toBeTruthy();
+        expect(screen.queryByTestId(symptomGroupTestID(group))).toBeNull();
       }
-      expect(screen.getAllByTestId(`symptom-chip-${theSymptomShePresses}`)).toHaveLength(1);
+      expect(screen.queryByTestId(`symptom-chip-${theSymptomShePresses}`)).toBeNull();
     });
   });
 });

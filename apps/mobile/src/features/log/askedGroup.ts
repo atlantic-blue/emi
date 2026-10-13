@@ -1,7 +1,11 @@
 import { type SymptomGroup, symptomGroups } from '@emi/cycle';
 
+import type { SymptomsAsked } from './LogSymptoms';
+import { theGroupsSheSeesFirst } from './herOrder';
+
 /**
- * The log opens on one group when its address names one, and on the flow alone when it does not.
+ * The log opens on the symptoms of one group when its address names one, on the symptoms of her
+ * own groups when it asks for the symptoms, and on the flow when it asks for neither.
  *
  * The group travels in the address rather than in a store, so the screen she lands on is decided
  * by the link she pressed and a woman who pressed the log tab gets the log she had yesterday.
@@ -37,4 +41,33 @@ export const painGroup: SymptomGroup = 'pain';
  */
 export function groupAskedFor(asked: string | undefined): SymptomGroup | undefined {
   return symptomGroups.find((group) => group === asked);
+}
+
+/** The symptoms of the one group she pressed a tile for. */
+export function symptomsOfAGroup(group: SymptomGroup): SymptomsAsked {
+  return { groups: [group], opensOn: 'groups' };
+}
+
+/** The search, over the groups she sees first, which is where Search sends her. */
+export function symptomsBySearch(focus: readonly SymptomGroup[]): SymptomsAsked {
+  return { groups: theGroupsSheSeesFirst(focus), opensOn: 'search' };
+}
+
+/**
+ * What the address asks the log to open on: the symptoms of the group it names, the symptoms of
+ * her own groups, or nothing at all, which is the flow.
+ */
+export function symptomsAskedBy(
+  address: { readonly group?: string; readonly on?: string },
+  focus: readonly SymptomGroup[],
+): SymptomsAsked | undefined {
+  const group = groupAskedFor(address.group);
+
+  if (group !== undefined) {
+    return symptomsOfAGroup(group);
+  }
+
+  return opensOn(address.on) === 'symptoms'
+    ? { groups: theGroupsSheSeesFirst(focus), opensOn: 'groups' }
+    : undefined;
 }

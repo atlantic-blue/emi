@@ -327,7 +327,7 @@ export const english = {
 
   'log.day.notADay.line': "That date isn't in the calendar.",
   'log.day.notADay.title': "That's not a day",
-  'log.day.notYet.line': "That day hasn't happened yet. You can log today or any day before it.",
+  'log.day.notYet.line': 'That day has not happened. You can log today and any day behind it.',
   'log.day.notYet.title': 'Not yet',
   'log.day.back': 'Back',
   'log.energy.heading': "How's your energy?",
@@ -340,13 +340,16 @@ export const english = {
   'log.energy.nothingChosen': 'Not logged',
   'log.energy.hint': 'Press the one you chose again to clear it',
   'log.flow.done': 'Done',
+  'log.flow.close': 'Close',
+  'log.symptoms.title': 'Symptoms',
+  'log.symptoms.search': 'Search',
   'log.flow.heavy': 'Heavy',
   'log.flow.light': 'Light',
   'log.flow.medium': 'Medium',
   'log.flow.none': 'None',
-  'log.flow.saved': 'Saved on your phone.',
+  'log.flow.saved': 'Saved on this phone.',
   'log.flow.spotting': 'Spotting',
-  'log.flow.title': "How's your flow today?",
+  'log.flow.title': 'Your flow',
   'log.group.digestion': 'Digestion',
   'log.group.energy': 'Energy',
   'log.group.head': 'Head',
@@ -364,8 +367,7 @@ export const english = {
   'log.temperature.heading': 'Waking temperature',
   'log.temperature.hint': 'Take it before you get up.',
   /** The invitation the voice sets, which asks rather than labels. */
-  'log.unexpected.invitation':
-    "Bleeding that isn't your period? Log it here, and we'll keep an eye on the pattern.",
+  'log.unexpected.invitation': "Not your period? Log it. It won't count as the start of a cycle.",
   'log.unexpected.mark': 'Not my period',
   /** What her mark did, said as the arithmetic behaves rather than as a reassurance. */
   'log.unexpected.marked': "Saved to your record. It won't count as the start of a cycle.",

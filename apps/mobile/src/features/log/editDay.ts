@@ -3,7 +3,7 @@ import { CycleError, type Flow, toDayNumber } from '@emi/cycle';
 import type { Database } from '../../data/database';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { DayAndCycles } from '../cycle/rebuild';
-import { flowLogged, logFlow, unexpectedLogged } from './logDay';
+import { flowLogged, logFlow, logSymptoms, symptomsLogged, unexpectedLogged } from './logDay';
 
 /**
  * Which days she may open, and the one write a day she opened takes. A day behind her is a memory
@@ -82,6 +82,28 @@ export function editFlow(db: Database, vault: DayVault, edit: DayEdit): DayAndCy
     bleedingIsUnexpected: edit.bleedingIsUnexpected,
     now: edit.now,
   });
+}
+
+/** The symptoms she logged on that day, and an empty list where she logged none. */
+export function symptomsOn(db: Database, vault: DayVault, open: DayToOpen): readonly string[] {
+  requireSheCanEdit(open);
+
+  return symptomsLogged(db, vault, open.day);
+}
+
+export interface SymptomEdit extends DayToOpen {
+  readonly symptoms: readonly string[];
+  readonly now: Date;
+}
+
+/**
+ * The symptoms of a day she reopened, written as the whole list, as the log of today writes them.
+ * A day ahead of her is refused here too, so the screen is not the only thing holding the rule.
+ */
+export function editSymptoms(db: Database, vault: DayVault, edit: SymptomEdit): DayAndCycles {
+  requireSheCanEdit(edit);
+
+  return logSymptoms(db, vault, { day: edit.day, symptoms: edit.symptoms, now: edit.now });
 }
 
 function requireSheCanEdit(open: DayToOpen): void {

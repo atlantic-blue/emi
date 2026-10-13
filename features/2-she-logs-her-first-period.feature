@@ -332,12 +332,14 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     And pressing the Log column of the dock opens the log on the flow options
     And that is the drawing of the log, which places the flow options before the groups
+    And the log draws a tile for each symptom group, and lists no symptom
     When she goes back to Today, and presses Cycle phase, and then All symptoms in its diary
     Then she is on the log, and the first thing she can mark there is a symptom
-    And she passed no flow option on the way to it
-    And every one of her symptom groups is offered
-    And she can still pick a flow on the same screen
+    And the groups she sees first are open, and no other group
+    And the search finds a symptom of a group that is not open
     And the drawing of that screen places a symptom group, and places no flow picker
+    When she closes the symptoms and presses the Log column of the dock
+    Then the log opens on the flow options again
 
   Scenario: SCREEN-2, she records a symptom and the screen she started on shows it
     Given her phone holds the period days behind today, and nothing at all for today
@@ -346,7 +348,7 @@ Feature: She opens Emi and logs her first period
     And that is the drawing of the screen she opens, which places no such row
     When she presses Cycle phase, and then All symptoms in its diary
     And she marks the two symptoms the drawing names
-    And she saves
+    And she presses Save, under the count of what she picked
     Then she is back on the screen she started on
     And under the day of her cycle she reads that she logged today
     And the line under it names both symptoms she marked, and no symptom she did not
@@ -701,7 +703,7 @@ Feature: She opens Emi and logs her first period
     When she opens the log, a day she lived, a day Emi refuses, her month and her whole period
     Then each of those screens carries the wash across the top of the glass
     And the log stands her flow in one card and her symptoms in a second one under it
-    And the line that says where the day is kept sits under her symptoms, over the one wide button
+    And the line that says where the day is kept sits under her symptoms, and Done is a word at the top
     And the way off a day Emi refuses is the quieter capsule, not a word among words
     And the way to her whole period sits under the day she pressed, as the quieter capsule
     And her whole period names the days she added and the day she took off, in her own language
@@ -792,6 +794,18 @@ Feature: She opens Emi and logs her first period
     Then her phone holds that discharge and both products on today, sealed, beside the flow she logged
     When she opens the Period page of today again
     Then the discharge and the two products she saved are filled
+
+  Scenario: SCREEN-4, she adds a symptom to a day she already lived and opens its Sex and Period pages
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the day before yesterday
+    Then the screen names that date, and asks about her flow with no word for today
+    When she presses the Digestion tile, marks Bloating and presses Save
+    Then that day holds Bloating, sealed, beside the flow she logged, and today holds no symptom
+    And the day shows Bloating as a symptom she can take off
+    When she presses Sex on that day
+    Then she is on the Sex page of that day
+    When she goes back to that day and presses Period
+    Then she is on the Period page of that day
 
   Scenario: SCREEN-2, she answers the signs of ovulation popup on a day inside her fertile window
     Given her phone holds three periods a cycle apart, and today is inside her forecast fertile window

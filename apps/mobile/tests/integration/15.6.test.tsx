@@ -9,7 +9,7 @@ import { cycleRingTestID } from '../../src/components/CycleRing';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
 import { phaseCardTestID } from '../../src/features/home/PhaseCard';
 import { homeCopy } from '../../src/features/home/copy';
-import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
+import { logSymptomsSaveTestID } from '../../src/features/log/LogSymptoms';
 import { symptomChipTestID } from '../../src/features/log/SymptomGroup';
 import { opensOnParameter, theSymptoms } from '../../src/features/log/askedGroup';
 import { sheOpensTheSymptomGroupsFromToday } from '../fixtures/theSymptomGroupsFromToday';
@@ -205,7 +205,7 @@ describe('she records a symptom and the screen she started on shows it', () => {
       await sheOpensTheSymptomGroupsFromToday();
       await shePresses(symptomChipTestID(String(first)));
       await shePresses(symptomChipTestID(String(first)));
-      await shePresses(logFlowDoneTestID);
+      await shePresses(logSymptomsSaveTestID);
 
       expect(app.pathname()).toBe('/');
 

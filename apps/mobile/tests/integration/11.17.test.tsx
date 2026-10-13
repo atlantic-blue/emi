@@ -10,14 +10,11 @@ import { readDayLog } from '../../src/data/dayLogRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import { flowOptionTestID, flowPickerTestID } from '../../src/features/log/FlowPicker';
-import {
-  logFlowGroupTestID,
-  logFlowGroupsTestID,
-  logFlowTestID,
-} from '../../src/features/log/LogFlow';
+import { groupTileTestID, groupTilesTestID } from '../../src/features/log/GroupTiles';
+import { logFlowHeldTestID, logFlowTestID } from '../../src/features/log/LogFlow';
+import { logSymptomsSaveTestID, theGroupsOpened } from '../../src/features/log/LogSymptoms';
 import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
-import { painGroup } from '../../src/features/log/askedGroup';
-import { groupsUnderTheFlow } from '../../src/features/log/herOrder';
+import { painGroup, symptomsAskedBy } from '../../src/features/log/askedGroup';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
@@ -87,15 +84,20 @@ async function sheOpensTheLogTab(): Promise<void> {
   await shePresses(tabTestID(theLogTab));
 }
 
-/** The groups she reads under the flow picker, in the order they are drawn down the glass. */
+/** The group tiles she reads under the flow picker, in the order they are drawn. */
 function theGroupsUnderTheFlow(): readonly SymptomGroup[] {
-  const named = symptomGroups.map((group) => symptomGroupTestID(group));
+  const named = symptomGroups.map((group) => groupTileTestID(group));
 
-  return within(screen.getByTestId(logFlowGroupsTestID))
-    .getAllByTestId(/^symptom-group-(?!.*-chips$)/)
-    .map((section) => named.indexOf(String(section.props.testID)))
+  return within(screen.getByTestId(groupTilesTestID))
+    .getAllByTestId(/^group-tile-/)
+    .map((tile) => named.indexOf(String(tile.props.testID)))
     .filter((at) => at >= 0)
     .map((at) => symptomGroups[at] as SymptomGroup);
+}
+
+/** The groups the symptoms screen opened, each a card of chips, in the order they are drawn. */
+function theGroupsOpenedOnTheGlass(): readonly SymptomGroup[] {
+  return symptomGroups.filter((group) => screen.queryByTestId(symptomGroupTestID(group)) !== null);
 }
 
 /**
@@ -194,7 +196,8 @@ describe('she opens the log tab and her groups come first', () => {
       const drawn = theGroupsUnderTheFlow();
 
       expect([...drawn].sort()).toEqual([...symptomGroups].sort());
-      expect(screen.getAllByTestId(`symptom-chip-${theSleepSymptom}`)).toHaveLength(1);
+      // A tile opens its group, so the log lists no symptom of any group until she presses one.
+      expect(screen.queryAllByTestId(/^symptom-chip-/)).toHaveLength(0);
     });
 
     it('sit under the flow picker, which keeps the place it had on this screen', async () => {
@@ -206,17 +209,19 @@ describe('she opens the log tab and her groups come first', () => {
       const order = theOrderDownTheGlass();
 
       expect(order.indexOf(flowPickerTestID)).toBeGreaterThanOrEqual(0);
-      expect(order.indexOf(logFlowGroupsTestID)).toBeGreaterThan(order.indexOf(flowPickerTestID));
+      expect(order.indexOf(groupTilesTestID)).toBeGreaterThan(order.indexOf(flowPickerTestID));
     });
   });
 
   describe('the day one of those groups writes', () => {
-    it('carries the symptom she pressed, and the flow the day already held', async () => {
+    it('carries the symptom she saved, and the flow the day already held', async () => {
       await herPhoneHolds(whenSheOpensIt, [aBleedingDay(today)]);
       await sheOpensEmi();
 
       await sheOpensTheLogTab();
+      await shePresses(groupTileTestID('sleep'));
       await shePresses(`symptom-chip-${theSleepSymptom}`);
+      await shePresses(logSymptomsSaveTestID);
 
       const row = readDayLog(herDatabase(), today);
       const record = row === undefined ? undefined : herVault().open(row.payload);
@@ -225,86 +230,93 @@ describe('she opens the log tab and her groups come first', () => {
       expect(record?.symptoms).toEqual([theSleepSymptom]);
     });
 
+    it('writes nothing until she saves', async () => {
+      await herPhoneHolds(whenSheOpensIt, [aBleedingDay(today)]);
+      await sheOpensEmi();
+
+      await sheOpensTheLogTab();
+      await shePresses(groupTileTestID('sleep'));
+      await shePresses(`symptom-chip-${theSleepSymptom}`);
+
+      expect(theSymptomsRecordedToday()).toEqual([]);
+    });
+
     it('is still carrying both of them when she opens the tab again', async () => {
       await herPhoneHolds(whenSheOpensIt, [aBleedingDay(today)]);
       await sheOpensEmi();
 
       await sheOpensTheLogTab();
+      await shePresses(groupTileTestID('sleep'));
       await shePresses(`symptom-chip-${theSleepSymptom}`);
+      await shePresses(logSymptomsSaveTestID);
       await shePresses(tabTestID(theTodayTab));
       await sheOpensTheLogTab();
 
       expect(screen.getByTestId(flowOptionTestID('medium'))).toBeChecked();
-      expect(screen.getByTestId(`symptom-chip-${theSleepSymptom}`)).toBeChecked();
+      expect(
+        within(screen.getByTestId(logFlowHeldTestID)).getByTestId(
+          `symptom-chip-${theSleepSymptom}`,
+        ),
+      ).toBeChecked();
     });
 
-    it('lets go of the symptom again when she presses it a second time', async () => {
+    it('lets go of the symptom when she presses it on the log, without opening its group', async () => {
       await herPhoneHolds(whenSheOpensIt, [aBleedingDay(today)]);
       await sheOpensEmi();
 
       await sheOpensTheLogTab();
+      await shePresses(groupTileTestID('sleep'));
       await shePresses(`symptom-chip-${theSleepSymptom}`);
+      await shePresses(logSymptomsSaveTestID);
       await shePresses(`symptom-chip-${theSleepSymptom}`);
 
       expect(theSymptomsRecordedToday()).toEqual([]);
-      expect(screen.getByTestId(`symptom-chip-${theSleepSymptom}`)).not.toBeChecked();
+      expect(screen.queryByTestId(logFlowHeldTestID)).toBeNull();
     });
   });
 
   describe('the group the address names', () => {
-    it('stays above the flow picker, where the line that offered it put it', async () => {
+    it('opens the symptoms of that group, and no flow picker over them', async () => {
       await herPhoneHolds(whenSheOpensIt, [aBleedingDay(today)]);
       await sheOpensEmi(`/log?group=${painGroup}`);
 
-      const order = theOrderDownTheGlass();
-
-      expect(order.indexOf(logFlowGroupTestID(painGroup))).toBeLessThan(
-        order.indexOf(flowPickerTestID),
-      );
+      expect(theGroupsOpenedOnTheGlass()).toEqual([painGroup]);
+      expect(screen.queryByTestId(flowPickerTestID)).toBeNull();
     });
 
-    it('is not drawn a second time under the picker, so one press is one answer', async () => {
+    it('draws each symptom once, so one press is one answer', async () => {
       await herPhoneHolds(whenSheOpensIt, [aBleedingDay(today)]);
       await sheOpensEmi(`/log?group=${painGroup}`);
 
       expect(screen.getAllByTestId(`symptom-chip-${thePainSymptom}`)).toHaveLength(1);
-      expect(theGroupsUnderTheFlow()).not.toContain(painGroup);
     });
 
-    it('leaves every other group under the picker, in the order she reads them', async () => {
-      await herPhoneHolds(
-        whenSheOpensIt,
-        [aBleedingDay(today)],
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        ['sleep'],
-      );
+    it('opens a group that already holds a symptom of today too, so nothing she logged is hidden', async () => {
+      await herPhoneHolds(whenSheOpensIt, [{ ...aBleedingDay(today), symptoms: ['insomnia'] }]);
       await sheOpensEmi(`/log?group=${painGroup}`);
 
-      expect(theGroupsUnderTheFlow()).toEqual([
-        'sleep',
-        ...symptomGroups.filter((group) => group !== 'sleep' && group !== painGroup),
-      ]);
+      expect(theGroupsOpenedOnTheGlass()).toEqual(['pain', 'sleep']);
+      expect(screen.getByTestId(`symptom-chip-${theSleepSymptom}`)).toBeChecked();
     });
   });
 
-  describe('the order the tab asks for', () => {
-    it('is every group but the one the address named', () => {
-      expect(groupsUnderTheFlow(['sleep'], 'pain')).toEqual([
-        'sleep',
-        ...symptomGroups.filter((group) => group !== 'sleep' && group !== 'pain'),
-      ]);
+  describe('the groups the symptoms screen opens', () => {
+    it('are the asked group and every group the day holds a symptom of, in her order', () => {
+      expect(theGroupsOpened(['pain'], ['insomnia'], ['sleep'])).toEqual(['sleep', 'pain']);
+      expect(theGroupsOpened(['pain'], [])).toEqual(['pain']);
     });
 
-    it('is every group where the address named none', () => {
-      expect(groupsUnderTheFlow()).toEqual([...symptomGroups]);
-      expect(groupsUnderTheFlow(['pain'])).toEqual([
-        'pain',
-        ...symptomGroups.filter((group) => group !== 'pain'),
-      ]);
+    it('are the groups she sees first where the address asks for the symptoms', () => {
+      expect(symptomsAskedBy({ on: 'symptoms' }, ['sleep'])).toEqual({
+        groups: ['sleep'],
+        opensOn: 'groups',
+      });
+      expect(symptomsAskedBy({ on: 'symptoms' }, [])?.groups).toHaveLength(3);
+    });
+
+    it('are nothing where the address asks for neither, which is the flow', () => {
+      expect(symptomsAskedBy({}, ['sleep'])).toBeUndefined();
+      expect(symptomsAskedBy({ group: 'not-a-group' }, [])).toBeUndefined();
     });
   });
 });

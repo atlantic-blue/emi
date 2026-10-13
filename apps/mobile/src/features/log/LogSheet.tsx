@@ -16,7 +16,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/token
 
 import { words } from '../../language';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { EnergyScale } from './EnergyScale';
 import { MoodPicker } from './MoodPicker';
@@ -26,6 +26,7 @@ import {
   symptomGroupHeadingTestID,
   symptomGroupTestID,
 } from './SymptomGroup';
+import { SymptomSearchField } from './SymptomSearchField';
 import { Temperature } from './Temperature';
 import { Weight } from './Weight';
 import { sectionsFor } from './search';
@@ -186,18 +187,12 @@ export function LogSheet({
           unit={units.weight}
         />
 
-        <TextInput
-          accessibilityLabel={searchLabel}
-          autoCorrect={false}
-          onChangeText={(typed) => {
+        <SymptomSearchField
+          onType={(typed) => {
             setIsSaved(false);
             setQuery(typed);
           }}
-          placeholder={searchLabel}
-          placeholderTextColor={colour.secondaryText}
-          style={styles.search}
-          testID="symptom-search"
-          value={query}
+          query={query}
         />
 
         {sections.length === 0 ? (
@@ -244,8 +239,6 @@ export function LogSheet({
   );
 }
 
-const searchLabel = words('log.sheet.search');
-
 function found(count: number): string {
   return words('log.sheet.found', count);
 }
@@ -262,15 +255,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrolled: { gap: space.spaceLg, padding: space.spaceLg },
-  search: {
-    backgroundColor: colour.field,
-    borderRadius: radius.md,
-    color: colour.text,
-    ...textStyle('body-lg'),
-    minHeight: MINIMUM_TAP_TARGET,
-    paddingHorizontal: space.spaceMd,
-    paddingVertical: space.spaceSm,
-  },
   nothing: {
     color: colour.secondaryText,
     ...textStyle('body-lg'),

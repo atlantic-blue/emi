@@ -1,0 +1,96 @@
+import type { SymptomGroup } from '@emi/cycle';
+import { type IconName, MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
+import { Icon } from '@emi/ui';
+import type { ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { groupHeadings } from './SymptomGroup';
+
+/**
+ * The eight symptom groups as the log board draws them: a tinted tile with a drawing, and the name
+ * under it, four to a row. A press opens the symptoms of that group, so the log never lists all of
+ * them at once.
+ */
+
+export const groupTilesTestID = 'group-tiles';
+
+export function groupTileTestID(group: SymptomGroup): string {
+  return `group-tile-${group}`;
+}
+
+interface TilePaint {
+  readonly icon: IconName;
+  readonly ground: keyof typeof colour;
+  readonly ink: keyof typeof colour;
+}
+
+/** The drawing and the two colours the board gives each group. */
+export const tilePaint: Readonly<Record<SymptomGroup, TilePaint>> = {
+  mood: { icon: 'mood', ground: 'accentSoft', ink: 'accent' },
+  energy: { icon: 'energy', ground: 'field', ink: 'warmIcon' },
+  pain: { icon: 'pain', ground: 'accentSoft', ink: 'accent' },
+  digestion: { icon: 'digestion', ground: 'washWarm', ink: 'ovulationInk' },
+  skin: { icon: 'skin', ground: 'washWarm', ink: 'ovulationInk' },
+  sleep: { icon: 'sleep', ground: 'accentTile', ink: 'lutealInk' },
+  head: { icon: 'headache', ground: 'field', ink: 'warmIcon' },
+  libido: { icon: 'heart', ground: 'accentSoft', ink: 'accent' },
+};
+
+/** Points. The tile and the drawing inside it, as the board sizes them. */
+const TILE = 52;
+const TILE_ICON = 24;
+
+/** The board lays the tiles four to a row. */
+const TILES_IN_A_ROW = 4;
+
+interface Props {
+  /** The groups in the order she reads them. */
+  readonly groups: readonly SymptomGroup[];
+  readonly onOpen: (group: SymptomGroup) => void;
+}
+
+export function GroupTiles({ groups, onOpen }: Props): ReactNode {
+  return (
+    <View style={styles.grid} testID={groupTilesTestID}>
+      {groups.map((group) => {
+        const paint = tilePaint[group];
+
+        return (
+          <Pressable
+            accessibilityRole="button"
+            key={group}
+            onPress={() => onOpen(group)}
+            style={styles.tile}
+            testID={groupTileTestID(group)}
+          >
+            <View style={[styles.well, { backgroundColor: colour[paint.ground] }]}>
+              <Icon colour={colour[paint.ink]} name={paint.icon} size={TILE_ICON} />
+            </View>
+            <Text numberOfLines={2} style={styles.name}>
+              {groupHeadings[group]}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space.spaceMd },
+  name: { color: colour.text, textAlign: 'center', ...textStyle('label-md') },
+  tile: {
+    alignItems: 'center',
+    gap: space.spaceXs,
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+    width: `${100 / TILES_IN_A_ROW}%`,
+  },
+  well: {
+    alignItems: 'center',
+    borderRadius: radius.lg,
+    height: TILE,
+    justifyContent: 'center',
+    width: TILE,
+  },
+});

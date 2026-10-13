@@ -27,13 +27,25 @@ import {
 import { tabs } from '../../src/features/chrome/tabs';
 import { dayRefusedTestID } from '../../src/features/log/DayRefused';
 import { flowPickerTestID } from '../../src/features/log/FlowPicker';
+import { groupTileTestID } from '../../src/features/log/GroupTiles';
+import { logHeaderLeaveTestID } from '../../src/features/log/LogHeader';
 import {
-  logFlowDoneTestID,
+  logFlowDayTestID,
+  logFlowFootDoneTestID,
+  logFlowPhaseTestID,
   logFlowSavedTestID,
   logFlowTestID,
   logFlowTitleTestID,
   logFlowWhenTestID,
 } from '../../src/features/log/LogFlow';
+import {
+  logSymptomsCountTestID,
+  logSymptomsDoneTestID,
+  logSymptomsSaveTestID,
+  logSymptomsTitleTestID,
+  logSymptomsTestID,
+} from '../../src/features/log/LogSymptoms';
+import { symptomSearchTestID } from '../../src/features/log/SymptomSearchField';
 import { opensOnParameter, theSymptoms } from '../../src/features/log/askedGroup';
 import { unexpectedBleedingTestID } from '../../src/features/log/UnexpectedBleeding';
 import { symptomGroupHeadingTestID, symptomGroupTestID } from '../../src/features/log/SymptomGroup';
@@ -126,6 +138,11 @@ function theGroupSections(): string[] {
   return symptomGroups.map(symptomGroupTestID);
 }
 
+/** The tile of every group, which is how the log board draws a group under the flow. */
+function theGroupTiles(): string[] {
+  return symptomGroups.map(groupTileTestID);
+}
+
 /** The heading of every group, which is what the drawing names above each set of chips. */
 function theGroupHeadings(): string[] {
   return symptomGroups.map(symptomGroupHeadingTestID);
@@ -144,9 +161,22 @@ function theIdentifiersOfTheLog(): PartIdentifiers {
     BottomNavigation: theDock,
     CycleRing: [cycleRingTestID],
     FlowPicker: [flowPickerTestID],
-    PrimaryButton: [logFlowDoneTestID],
-    SymptomGroup: theGroupSections(),
-    Text: [logFlowWhenTestID, logFlowTitleTestID, logFlowSavedTestID, ...theGroupHeadings()],
+    // The search over every symptom, which the drawing names by the sheet that first held it.
+    LogSheet: [symptomSearchTestID],
+    PrimaryButton: [logFlowFootDoneTestID, logSymptomsSaveTestID],
+    // A group is a tile on the log and a card of chips on the log opened on the symptoms.
+    SymptomGroup: [...theGroupSections(), ...theGroupTiles()],
+    Text: [
+      logFlowWhenTestID,
+      logFlowDayTestID,
+      logFlowPhaseTestID,
+      logFlowTitleTestID,
+      logFlowSavedTestID,
+      logSymptomsTitleTestID,
+      logSymptomsCountTestID,
+      ...theGroupHeadings(),
+    ],
+    TextLink: [logHeaderLeaveTestID, logSymptomsDoneTestID],
     UnexpectedBleeding: [unexpectedBleedingTestID],
   };
 }
@@ -231,17 +261,17 @@ export interface ADifference {
 export const theDifferencesThisStepKeeps: readonly ADifference[] = [
   {
     because:
-      'the drawing of the log opened on the symptoms is a pushed screen with a way back and a Done beside its title, and the log is a tab she reaches by the dock, so there is no pushed header to put either on',
-    drawing: 'logSymptoms',
-    howMany: 2,
-    part: 'TextLink',
+      'the redesign log board puts Done at the top right as a word, beside the title, and draws no wide button at the foot of the log',
+    drawing: 'log',
+    howMany: 1,
+    part: 'PrimaryButton',
   },
   {
     because:
-      'the search over every symptom is built in the sheet, and nothing opens that sheet today, which the drawing itself records as a defect',
+      'the redesign logSymptoms board draws the close on the left of the title and Done on the right, so the walk meets the title after the first of the two links',
     drawing: 'logSymptoms',
     howMany: 1,
-    part: 'LogSheet',
+    part: 'TextLink',
   },
   {
     because:
@@ -439,6 +469,8 @@ export function theScreenOf(drawing: LogOrCalendarDrawing): string {
   switch (drawing) {
     case 'dayRefused':
       return dayRefusedTestID;
+    case 'logSymptoms':
+      return logSymptomsTestID;
     case 'calendar':
     case 'calendarEarlier':
       return calendarHeaderTestID;

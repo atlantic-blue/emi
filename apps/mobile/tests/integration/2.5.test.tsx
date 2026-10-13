@@ -7,7 +7,11 @@ import { phaseLabel } from '@emi/tokens';
 import { fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
-import { cycleRingTestID, ringArcTestID, ringBeadTestID } from '../../src/components/CycleRing';
+import {
+  cycleRingTestID,
+  ringBeadTestID,
+  ringWholeArcTestID,
+} from '../../src/components/CycleRing';
 import { readDayLog } from '../../src/data/dayLogRepository';
 import { flowOptionTestID, flowLabel } from '../../src/features/log/FlowPicker';
 import {
@@ -89,7 +93,7 @@ function theRingSays(): string {
 }
 
 function thePeriodArc(): string {
-  return String(screen.getByTestId(ringArcTestID('period', 'elapsed')).props.d);
+  return String(screen.getByTestId(ringWholeArcTestID('period')).props.d);
 }
 
 function theBead(): { x: number; y: number } {

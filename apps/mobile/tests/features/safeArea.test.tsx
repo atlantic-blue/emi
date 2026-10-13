@@ -1,3 +1,4 @@
+import { symptomGroups } from '@emi/cycle';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -14,6 +15,7 @@ import { Cover, coverTestID } from '../../src/features/lock/Cover';
 import { LockScreen, lockScreenTestID } from '../../src/features/lock/LockScreen';
 import { DayRefused, dayRefusedTestID } from '../../src/features/log/DayRefused';
 import { LogFlow, logFlowDoneTestID, logFlowTestID } from '../../src/features/log/LogFlow';
+import { LogSymptoms, logSymptomsTestID } from '../../src/features/log/LogSymptoms';
 import {
   OnboardingScreen,
   onboardingActionTestID,
@@ -75,12 +77,20 @@ const theFirstRun = (): ReactElement => (
 const theLoggingScreen = (): ReactElement => (
   <LogFlow
     day="2026-05-14"
+    dones="top"
+    groups={symptomGroups}
+    leave="close"
     marked={false}
     onDone={nothing}
+    onLeave={nothing}
     onMark={nothing}
+    onOpenGroup={nothing}
     onPick={nothing}
+    onSearch={nothing}
+    onToggleSymptom={nothing}
     ring={undefined}
-    today="2026-05-14"
+    symptoms={[]}
+    title="Today"
   />
 );
 
@@ -116,6 +126,20 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
     ),
   ],
   [logFlowTestID, theLoggingScreen],
+  [
+    logSymptomsTestID,
+    (): ReactElement => (
+      <LogSymptoms
+        asked={{ groups: ['mood'], opensOn: 'groups' }}
+        focus={[]}
+        held={[]}
+        leave="close"
+        onLeave={nothing}
+        onSave={nothing}
+        title="Today"
+      />
+    ),
+  ],
   [
     dayRefusedTestID,
     (): ReactElement => <DayRefused onBack={nothing} refusal="day-is-in-the-future" />,
