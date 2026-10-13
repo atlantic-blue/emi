@@ -53,6 +53,12 @@ import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVa
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
+import {
+  pastPeriodLengthTestID,
+  pastPeriodPickerDoneTestID,
+} from '../../src/features/pastPeriods/PastPeriodPicker';
+import { pastPeriodRowTestID } from '../../src/features/pastPeriods/PastPeriodsList';
 import { periodLengthDaysTestID } from '../../src/features/onboarding/PeriodLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -132,9 +138,27 @@ async function sheReachesTheLastPeriod(): Promise<void> {
   await shePresses(onboardingSkipTestID);
 }
 
-/** The way past the period before, which is the question she may leave unanswered. */
-async function sheSkipsThePeriodBefore(): Promise<void> {
-  await fireEvent.press(theScreen('periodBefore').getByTestId(onboardingWayPastTestID));
+/** Her newest period, one day long, given on the list of her last three, and the step answered. */
+async function sheGivesHerLastPeriod(): Promise<void> {
+  await sheGivesAPeriod(0, herPeriodStarted);
+  await sheAnswers('threePeriods');
+}
+
+/** The first row of the list, opened, which puts the calendar she picks its start on in front of her. */
+async function sheOpensTheDayPicker(): Promise<void> {
+  await shePresses(pastPeriodRowTestID(0));
+}
+
+/** A day pressed on the open picker, one day long, and Done. */
+async function sheFinishesThePickerOn(day: string): Promise<void> {
+  await shePresses(dayTestID(day));
+  await sheFinishesThePicker();
+}
+
+/** One day long, and Done, which gives the row the day she pressed. */
+async function sheFinishesThePicker(): Promise<void> {
+  await shePresses(pastPeriodLengthTestID(1));
+  await shePresses(pastPeriodPickerDoneTestID);
 }
 
 /** The way past the period length, which says she is not sure. */
@@ -198,7 +222,7 @@ async function sheAnswersEveryScreen(): Promise<void> {
  */
 async function shePagesBackTo(month: string): Promise<void> {
   for (let pressed = 0; pressed < 12; pressed += 1) {
-    if (theScreen('lastPeriod').queryByText(month) !== null) {
+    if (screen.queryByTestId(monthTestID)?.props.children === month) {
       return;
     }
     await shePresses(earlierMonthTestID);
@@ -354,10 +378,11 @@ describe('the first run ends on the home screen with her period recorded', () =>
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
-      await shePresses(dayTestID(herPeriodStarted));
-      await sheAnswers('lastPeriod');
       everyFieldShePassed.push(...fieldsDrawn());
-      await sheSkipsThePeriodBefore();
+      await sheOpensTheDayPicker();
+      everyFieldShePassed.push(...fieldsDrawn());
+      await sheFinishesThePickerOn(herPeriodStarted);
+      await sheAnswers('threePeriods');
       everyFieldShePassed.push(...fieldsDrawn());
       await sheGivesHerCycleLength();
       everyFieldShePassed.push(...fieldsDrawn());
@@ -408,7 +433,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       );
     });
 
-    it('asks her thirteen questions, holds once, and asks nothing else', async () => {
+    it('asks her twelve questions, holds once, and asks nothing else', async () => {
       const app = await sheOpensEmi();
       const visited = [app.pathname()];
 
@@ -418,10 +443,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
-      await shePresses(dayTestID(herPeriodStarted));
-      await sheAnswers('lastPeriod');
-      visited.push(app.pathname());
-      await sheSkipsThePeriodBefore();
+      await sheGivesHerLastPeriod();
       visited.push(app.pathname());
       await sheGivesHerCycleLength();
       visited.push(app.pathname());
@@ -451,8 +473,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/welcome',
         '/onboarding/name',
         '/onboarding/year-of-birth',
-        '/onboarding/last-period',
-        '/onboarding/period-before',
+        '/onboarding/three-periods',
         '/onboarding/cycle-length',
         '/onboarding/period-length',
         '/onboarding/regularity',
@@ -495,12 +516,11 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'feeling.tsx',
         'focus.tsx',
         'goals.tsx',
-        'last-period.tsx',
         'name.tsx',
-        'period-before.tsx',
         'period-length.tsx',
         'regularity.tsx',
         'reminder.tsx',
+        'three-periods.tsx',
         'today.tsx',
         'welcome.tsx',
         'year-of-birth.tsx',
@@ -526,12 +546,10 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(screen.queryByTestId('onboarding-name')).toBeNull();
 
       await shePresses(onboardingSkipTestID);
-      await shePresses(dayTestID(herPeriodStarted));
-      await sheAnswers('lastPeriod');
-      await sheSkipsThePeriodBefore();
+      await sheGivesHerLastPeriod();
 
       expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
-      expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
+      expect(screen.queryByTestId('onboarding-threePeriods')).toBeNull();
     });
   });
 
@@ -553,21 +571,19 @@ describe('the first run ends on the home screen with her period recorded', () =>
   });
 
   describe('before she has answered', () => {
-    it('does not move on from the day she has not picked', async () => {
+    it('does not move on from the periods she has not given', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheLastPeriod();
-      await sheAnswers('lastPeriod');
+      await sheAnswers('threePeriods');
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
+      expect(app.pathname()).toBe('/onboarding/three-periods');
     });
 
     it('keeps the cycle length she is picking inside 21 and 45 days', async () => {
       await sheOpensEmi();
       await sheReachesTheLastPeriod();
-      await shePresses(dayTestID(herPeriodStarted));
-      await sheAnswers('lastPeriod');
-      await sheSkipsThePeriodBefore();
+      await sheGivesHerLastPeriod();
 
       expect(screen.getByTestId(cycleLengthDaysTestID(minimumCycleLengthDays))).toBeTruthy();
       expect(screen.getByTestId(cycleLengthDaysTestID(maximumCycleLengthDays))).toBeTruthy();
@@ -583,9 +599,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
     it('chooses no length for her: the wheel opens on 28 days and Done waits for her pick', async () => {
       const app = await sheOpensEmi();
       await sheReachesTheLastPeriod();
-      await shePresses(dayTestID(herPeriodStarted));
-      await sheAnswers('lastPeriod');
-      await sheSkipsThePeriodBefore();
+      await sheGivesHerLastPeriod();
 
       expect(screen.getByTestId(cycleLengthDaysTestID(defaultCycleLengthDays))).not.toBeSelected();
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
@@ -611,8 +625,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
     it('offers every day of the month she is in, and no day of any other month', async () => {
       await sheOpensEmi();
       await sheReachesTheLastPeriod();
+      await sheOpensTheDayPicker();
 
-      expect(theScreen('lastPeriod').getByTestId(monthTestID)).toHaveTextContent('May 2026');
+      expect(screen.getByTestId(monthTestID)).toHaveTextContent('May 2026');
       expect(everyDayOnTheScreen()).toEqual(everyDayOfMay());
       expect(screen.getByTestId(dayTestID(today))).toBeTruthy();
       expect(screen.getByTestId(dayTestID(herPeriodStarted))).toBeTruthy();
@@ -623,32 +638,37 @@ describe('the first run ends on the home screen with her period recorded', () =>
     it('does not take a day after today, so the first run is never asked to refuse one', async () => {
       const app = await sheOpensEmi();
       await sheReachesTheLastPeriod();
+      await sheOpensTheDayPicker();
 
       await shePresses(dayTestID(tomorrow));
-      await sheAnswers('lastPeriod');
+      await shePresses(pastPeriodLengthTestID(1));
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
+      expect(screen.getByTestId(pastPeriodPickerDoneTestID)).toBeDisabled();
+      expect(app.pathname()).toBe('/onboarding/three-periods');
     });
 
     it('does not take a day further back than the first run reaches', async () => {
       const app = await sheOpensEmi();
       await sheReachesTheLastPeriod();
+      await sheOpensTheDayPicker();
       await shePagesBackTo('February 2026');
 
       await shePresses(dayTestID(oneDayTooFarBack));
-      await sheAnswers('lastPeriod');
+      await shePresses(pastPeriodLengthTestID(1));
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
+      expect(screen.getByTestId(pastPeriodPickerDoneTestID)).toBeDisabled();
+      expect(app.pathname()).toBe('/onboarding/three-periods');
     });
 
     it('takes the oldest day it does reach, and records that day', async () => {
       const app = await sheOpensEmi();
       await sheReachesTheLastPeriod();
+      await sheOpensTheDayPicker();
       await shePagesBackTo('February 2026');
 
       await shePresses(dayTestID(theOldestDaySheMayPick));
-      await sheAnswers('lastPeriod');
-      await sheSkipsThePeriodBefore();
+      await sheFinishesThePicker();
+      await sheAnswers('threePeriods');
       await sheGivesHerCycleLength(herCycleLengthDays);
       await sheSkipsThePeriodLength();
       await sheSkipsTheRegularity();
@@ -668,16 +688,18 @@ describe('the first run ends on the home screen with her period recorded', () =>
     it('goes back no further than the month holding that day', async () => {
       await sheOpensEmi();
       await sheReachesTheLastPeriod();
+      await sheOpensTheDayPicker();
       await shePagesBackTo('February 2026');
 
       await shePresses(earlierMonthTestID);
 
-      expect(theScreen('lastPeriod').getByTestId(monthTestID)).toHaveTextContent('February 2026');
+      expect(screen.getByTestId(monthTestID)).toHaveTextContent('February 2026');
     });
 
     it('keeps the day she chose when she pages away from its month and back', async () => {
       const app = await sheOpensEmi();
       await sheReachesTheLastPeriod();
+      await sheOpensTheDayPicker();
       await shePresses(dayTestID(herPeriodStarted));
 
       await shePresses(earlierMonthTestID);
@@ -688,8 +710,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
         screen.getByTestId(dayTestID(herPeriodStarted)).props.accessibilityState,
       ).toMatchObject({ selected: true });
 
-      await sheAnswers('lastPeriod');
-      await sheSkipsThePeriodBefore();
+      await sheFinishesThePicker();
+      await sheAnswers('threePeriods');
       expect(app.pathname()).toBe('/onboarding/cycle-length');
     });
   });
@@ -706,11 +728,15 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await shePresses(onboardingSkipTestID);
-      await shePresses(dayTestID(herPeriodStarted));
-      await sheAnswers('lastPeriod');
       expect(controlsTooSmallToPress()).toEqual([]);
 
-      await sheSkipsThePeriodBefore();
+      await sheOpensTheDayPicker();
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await sheFinishesThePickerOn(herPeriodStarted);
+      expect(controlsTooSmallToPress()).toEqual([]);
+
+      await sheAnswers('threePeriods');
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await sheGivesHerCycleLength();
@@ -753,6 +779,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsSizedByTheRowTheyStandIn()).toEqual([]);
 
       await sheReachesTheLastPeriod();
+      await sheOpensTheDayPicker();
 
       expect(controlsSizedByTheRowTheyStandIn()).toEqual(theSquaresOfMay());
     });
@@ -782,9 +809,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
     it('writes her first run once, whatever her second press did', async () => {
       const app = await sheOpensEmi();
       await sheReachesTheLastPeriod();
-      await shePresses(dayTestID(herPeriodStarted));
-      await sheAnswers('lastPeriod');
-      await sheSkipsThePeriodBefore();
+      await sheGivesHerLastPeriod();
       await sheGivesHerCycleLength(herCycleLengthDays);
       await shePresses(periodLengthDaysTestID(defaultPeriodLengthDays));
       const done = theScreen('periodLength').getByTestId(onboardingActionTestID);
@@ -828,9 +853,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
     it('leaves Done where she can reach it, because nothing is written on that screen', async () => {
       await sheOpensEmi();
       await sheReachesTheLastPeriod();
-      await shePresses(dayTestID(herPeriodStarted));
-      await sheAnswers('lastPeriod');
-      await sheSkipsThePeriodBefore();
+      await sheGivesHerLastPeriod();
       await shePresses(cycleLengthDaysTestID(herCycleLengthDays));
       const done = theScreen('cycleLength').getByTestId(onboardingActionTestID);
       expect(done.props.accessibilityState).toMatchObject({ disabled: false });

@@ -42,7 +42,7 @@ const herCycleLengthDays = 28;
 /** The first day of the range she was shown, worked out by the arithmetic the screens read. */
 function theFirstDayOfHerRange(periodStartedOn: string = herPeriodStarted): string {
   const forecast = forecastFromHerAnswers({
-    periodStartedOn,
+    periods: [{ startedOn: periodStartedOn, lengthDays: 1 }],
     cycleLengthDays: herCycleLengthDays,
   });
 
@@ -69,7 +69,7 @@ function herPhoneAfterTheHold(reminderLead?: (typeof reminderLeads)[number]): Da
     db,
     { day: herVault(), profile: herProfileVault() },
     {
-      periodStartedOn: herPeriodStarted,
+      periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
       cycleLengthDays: herCycleLengthDays,
       ...(reminderLead === undefined ? {} : { reminderLead }),
     },
@@ -94,7 +94,7 @@ describe('the reminder is worked out on this phone from the forecast it already 
     for (const lead of reminderLeads) {
       it(`is nine in the morning, ${String(daysBeforeTheRange[lead])} day(s) before the range, for ${lead}`, () => {
         const forecast = forecastFromHerAnswers({
-          periodStartedOn: herPeriodStarted,
+          periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
           cycleLengthDays: herCycleLengthDays,
         });
 
@@ -115,7 +115,7 @@ describe('the reminder is worked out on this phone from the forecast it already 
 
     it('is nothing at all where the moment has already gone', () => {
       const forecast = forecastFromHerAnswers({
-        periodStartedOn: herPeriodStarted,
+        periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
         cycleLengthDays: herCycleLengthDays,
       });
       const afterIt = new Date(nineOClockBefore(theFirstDayOfHerRange(), 0).getTime() + 1);

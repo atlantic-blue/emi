@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 
 import { render, screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import {
   approvedDenials,
@@ -21,7 +22,6 @@ import {
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { nameFieldTestID } from '../../src/features/onboarding/HerName';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { yearTestID } from '../../src/components/YearWheel';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import type { Database } from '../../src/data/database';
@@ -146,8 +146,6 @@ const theScreensOfTheQuestions: readonly string[] = [
   'welcome',
   'name',
   'birthYear',
-  'lastPeriod',
-  'periodBefore',
   'cycleLength',
   'periodLength',
   'regularity',
@@ -178,6 +176,7 @@ const theWelcomeNamingEmi = [
   'onboarding.welcome.line.noAccount',
   'onboarding.welcome.line.whatEmiIs',
   theGreeting,
+  'pastPeriods.line.forecast',
 ];
 
 function formsOf(held: Words): string[] {
@@ -194,6 +193,9 @@ function theKeysOfTheQuestions(): string[] {
     ...wordKeys.filter((key) =>
       theScreensOfTheQuestions.some((asked) => key.startsWith(`onboarding.${asked}.`)),
     ),
+    // Her last three periods are asked in one step whose words are shared with the screen the
+    // calendar opens, so they sit under their own name rather than under the first run's.
+    ...wordKeys.filter((key) => key.startsWith('pastPeriods.')),
     theKeyOfTheLineAboutEncryption,
     theKeyOfEncryptedOnThisPhone,
     theKeyOfEmiEncryptsYourAnswers,
@@ -257,9 +259,8 @@ async function sheWalksTo(
 
   await shePresses(yearTestID(theYearSheWasBornIn));
   await shePresses(onboardingActionTestID);
-  await shePresses(dayTestID(herPeriodStarted));
+  await sheGivesAPeriod(0, herPeriodStarted);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingWayPastTestID);

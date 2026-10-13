@@ -13,11 +13,11 @@ import {
   laterMonthTestID,
   monthTestID,
 } from '../../src/features/onboarding/Calendar';
-import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import { Feeling } from '../../src/features/onboarding/Feeling';
 import { Focus } from '../../src/features/onboarding/Focus';
 import { Goals } from '../../src/features/onboarding/Goals';
-import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
+import { ThreePeriods } from '../../src/features/onboarding/ThreePeriods';
+import { PastPeriodPicker } from '../../src/features/pastPeriods/PastPeriodPicker';
 import { PeriodLength } from '../../src/features/onboarding/PeriodLength';
 import { Regularity } from '../../src/features/onboarding/Regularity';
 import { Today } from '../../src/features/onboarding/Today';
@@ -63,11 +63,7 @@ const theQuestionsSheMaySkipToday: readonly FirstRunScreen[] = [
 ];
 
 /** The questions whose way past the redesign draws over the button rather than in the header. */
-const theQuestionsWithTheWayPastOverTheButton: readonly FirstRunScreen[] = [
-  'lastPeriod',
-  'periodBefore',
-  'periodLength',
-];
+const theQuestionsWithTheWayPastOverTheButton: readonly FirstRunScreen[] = ['periodLength'];
 
 /** Midday, and away from any summer time change, so the calendar reads the same in any timezone. */
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
@@ -112,17 +108,17 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
     );
     return;
   }
-  if (at === 'periodBefore') {
+  if (at === 'threePeriods') {
     await render(
       <OnAPhone>
-        <PeriodBefore
-          chosen={undefined}
-          lastPeriodStartedOn={threeDaysBack}
+        <ThreePeriods
           now={whenSheOpensIt}
-          onAdd={() => undefined}
           onBack={() => undefined}
-          onChoose={() => undefined}
-          onSkip={() => undefined}
+          onContinue={() => undefined}
+          onGive={() => undefined}
+          onRemove={() => undefined}
+          onWayPast={() => undefined}
+          periods={[{ lengthDays: 5, startedOn: threeDaysBack }]}
         />
       </OnAPhone>,
     );
@@ -226,21 +222,6 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
     );
     return;
   }
-  if (at === 'lastPeriod') {
-    await render(
-      <OnAPhone>
-        <LastPeriod
-          chosen={threeDaysBack}
-          now={whenSheOpensIt}
-          onBack={() => undefined}
-          onChoose={() => undefined}
-          onContinue={() => undefined}
-          onWayPast={() => undefined}
-        />
-      </OnAPhone>,
-    );
-    return;
-  }
   await render(
     <OnAPhone>
       <CycleLength
@@ -286,6 +267,23 @@ function coloursIn(node: unknown, found: Set<string>): Set<string> {
 const NO_GROUND = 'transparent';
 
 const paletteValues = new Set<string>([...Object.values(colour), NO_GROUND]);
+
+/** The sheet she picks the start of her newest period on, opened on the day she gave. */
+async function sheIsPickingADay(): Promise<void> {
+  await render(
+    <OnAPhone>
+      <PastPeriodPicker
+        oldest="2026-02-13"
+        onCancel={() => undefined}
+        onDone={() => undefined}
+        onRemove={() => undefined}
+        periods={[{ lengthDays: 5, startedOn: threeDaysBack }]}
+        row={0}
+        today={today}
+      />
+    </OnAPhone>,
+  );
+}
 
 describe('the first run carries the design system', () => {
   describe('how far along she is', () => {
@@ -333,16 +331,16 @@ describe('the first run carries the design system', () => {
     });
 
     it('says the whole of it out loud, because a fraction of a line reads as nothing', async () => {
-      await sheIsLookingAt('lastPeriod');
+      await sheIsLookingAt('threePeriods');
 
       const bar = screen.getByTestId(onboardingProgressTestID);
 
       expect(bar.props['accessibilityValue']).toEqual({
         max: firstRunScreens.length,
         min: 0,
-        now: firstRunScreens.indexOf('lastPeriod') + 1,
+        now: firstRunScreens.indexOf('threePeriods') + 1,
       });
-      expect(bar.props['accessibilityLabel']).toBe(stepLabel('lastPeriod'));
+      expect(bar.props['accessibilityLabel']).toBe(stepLabel('threePeriods'));
     });
 
     for (const where of firstRunScreens) {
@@ -367,7 +365,7 @@ describe('the first run carries the design system', () => {
 
   describe('the way back', () => {
     it('is drawn at the top of a question that has one behind it', async () => {
-      await sheIsLookingAt('lastPeriod');
+      await sheIsLookingAt('threePeriods');
 
       expect(screen.getByTestId(onboardingBackTestID)).toBeTruthy();
       expect(screen.getByTestId(onboardingBackTestID).props.accessibilityLabel).toBe(
@@ -386,13 +384,14 @@ describe('the first run carries the design system', () => {
 
       await render(
         <OnAPhone>
-          <LastPeriod
-            chosen={threeDaysBack}
+          <ThreePeriods
             now={whenSheOpensIt}
             onBack={stepsBack}
-            onChoose={() => undefined}
             onContinue={() => undefined}
+            onGive={() => undefined}
+            onRemove={() => undefined}
             onWayPast={() => undefined}
+            periods={[]}
           />
         </OnAPhone>,
       );
@@ -482,7 +481,7 @@ describe('the first run carries the design system', () => {
 
   describe('the day she picked', () => {
     it('is marked three ways, so colour is never the only cue', async () => {
-      await sheIsLookingAt('lastPeriod');
+      await sheIsPickingADay();
 
       const square = flattened(dateDiscTestID(threeDaysBack));
 
@@ -492,7 +491,7 @@ describe('the first run carries the design system', () => {
     });
 
     it('is the only square marked, so one day is chosen and not two', async () => {
-      await sheIsLookingAt('lastPeriod');
+      await sheIsPickingADay();
 
       const others = [today, '2026-05-12'].map((day) => flattened(dateDiscTestID(day)));
 
@@ -504,7 +503,7 @@ describe('the first run carries the design system', () => {
     });
 
     it('keeps a day she may not choose on the screen, drawn back rather than taken away', async () => {
-      await sheIsLookingAt('lastPeriod');
+      await sheIsPickingADay();
 
       const after = flattened(dayTestID('2026-05-20'));
 
@@ -516,7 +515,7 @@ describe('the first run carries the design system', () => {
 
   describe('the month she is looking at', () => {
     it('is named above the squares, at the size a heading takes', async () => {
-      await sheIsLookingAt('lastPeriod');
+      await sheIsPickingADay();
 
       const heading = flattened(monthTestID);
 
@@ -526,7 +525,7 @@ describe('the first run carries the design system', () => {
     });
 
     it('draws the way to another month as a small word, not a pill, and fades a spent one', async () => {
-      await sheIsLookingAt('lastPeriod');
+      await sheIsPickingADay();
 
       const live = flattened(earlierMonthTestID);
       const spent = flattened(laterMonthTestID);
@@ -537,7 +536,7 @@ describe('the first run carries the design system', () => {
     });
 
     it('says the same thing to a screen reader, on the handle that is spent', async () => {
-      await sheIsLookingAt('lastPeriod');
+      await sheIsPickingADay();
 
       expect(screen.getByTestId(laterMonthTestID).props.accessibilityState).toMatchObject({
         disabled: true,

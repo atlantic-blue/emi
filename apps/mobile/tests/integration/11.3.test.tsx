@@ -6,27 +6,36 @@ import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import type { Database } from '../../src/data/database';
 import type { DayVault } from '../../src/services/vault/dayVault';
-import { listCycles } from '../../src/data/cycleRepository';
 import { listDayLogs } from '../../src/data/dayLogRepository';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import { recordedDays } from '../../src/features/cycle/rebuild';
-import { HOLD_MILLISECONDS } from '../../src/features/onboarding/HoldToBegin';
 import { learningCyclesWantedTestID } from '../../src/features/forecast/Learning';
 import { cyclesWantedSentence } from '../../src/features/forecast/copy';
 import { homeScreenTestID } from '../../src/features/home/HomeScreen';
+import { tabTestID } from '@emi/ui';
+
+import { english } from '../../src/language';
 import { dayTestID, earlierMonthTestID } from '../../src/features/onboarding/Calendar';
-import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
+import {
+  firstForecastActionTestID,
+  firstForecastRangeTestID,
+  firstForecastStillLearningTestID,
+} from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
   onboardingQuestionTestID,
   onboardingSkipTestID,
+  onboardingStepLabelTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
-import { periodBeforeRefusedTestID } from '../../src/features/onboarding/PeriodBefore';
-import { firstRunCopy } from '../../src/features/onboarding/copy';
+import {
+  firstRunCopy,
+  firstRunScreenCount,
+  firstRunScreens,
+} from '../../src/features/onboarding/copy';
 import {
   type FirstRunRefusal,
   type FirstRunVaults,
@@ -36,6 +45,20 @@ import {
   maximumCycleLengthDays,
   minimumCycleLengthDays,
 } from '../../src/features/onboarding/firstRun';
+import { cycleLengthSentence } from '../../src/features/history/copy';
+import { historyCycleTestID } from '../../src/features/history/HistoryScreen';
+import {
+  pastPeriodLengthTestID,
+  pastPeriodPickerCancelTestID,
+  pastPeriodPickerDoneTestID,
+  pastPeriodPickerRefusedTestID,
+  pastPeriodPickerRemoveTestID,
+  pastPeriodPickerTestID,
+} from '../../src/features/pastPeriods/PastPeriodPicker';
+import { pastPeriodRowTestID } from '../../src/features/pastPeriods/PastPeriodsList';
+import { pastPeriodsCopy } from '../../src/features/pastPeriods/copy';
+import { textIn } from '../fixtures/renderedText';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { openTestDatabase } from '../data/nodeDatabase';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -53,12 +76,14 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const herPeriodStarted = '2026-05-09';
 
-/** The instant the write carries, because the hold moves her clock on by its own length. */
-const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
-
 /** Twenty eight days before the one she gave, which is one cycle she lived. */
 const theCycleSheLived = 28;
 const theOneBefore = '2026-04-11';
+/** Twenty eight days before that, the third row. */
+const theOneBeforeThat = '2026-03-14';
+
+/** The length she gives each of the three, the newest first. */
+const herLengths = [5, 6, 4] as const;
 
 /** Twenty days back, a day nearer than any cycle runs, so the screen refuses it. */
 const tooSoonBefore = '2026-04-19';
@@ -94,16 +119,20 @@ async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
-/**
- * Past the welcome, past the two questions she may skip and past her last period, standing on the
- * question every case below is about.
- */
-async function sheReachesThePeriodBefore(): Promise<void> {
+/** Past the welcome and the two questions she may skip, standing on the list of her periods. */
+async function sheReachesHerPeriods(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(herPeriodStarted));
-  await shePresses(onboardingActionTestID);
+}
+
+/** Every day she said she bled, from a start, for a length, oldest first. */
+function theDaysOf(startedOn: string, lengthDays: number): string[] {
+  return Array.from({ length: lengthDays }, (_unused, at) => {
+    const day = new Date(`${startedOn}T00:00:00.000Z`);
+    day.setUTCDate(day.getUTCDate() + at);
+    return day.toISOString().slice(0, 10);
+  });
 }
 
 /** Every day she sealed, opened again with the key her own phone drew at the hold. */
@@ -161,7 +190,7 @@ function refusalFrom(run: () => void): FirstRunRefusal {
   throw new Error('the first run accepted an answer it is written to refuse');
 }
 
-describe('the period before makes her first forecast from a cycle she lived', () => {
+describe('her last three periods, in one step of the first run', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -174,87 +203,159 @@ describe('the period before makes her first forecast from a cycle she lived', ()
     jest.useRealTimers();
   });
 
-  describe('the period she remembers', () => {
-    it('is asked for after her last period, with the question under the title', async () => {
+  describe('the step', () => {
+    it('stands after the year she was born, as one step with three rows', async () => {
       const app = await sheOpensEmi();
 
-      await sheReachesThePeriodBefore();
+      await sheReachesHerPeriods();
 
-      expect(app.pathname()).toBe('/onboarding/period-before');
-      expect(screen.getByText(firstRunCopy.periodBefore.title)).toBeTruthy();
+      expect(app.pathname()).toBe('/onboarding/three-periods');
+      expect(screen.getByText(pastPeriodsCopy.title)).toBeTruthy();
       expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
-        firstRunCopy.periodBefore.question,
+        `${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine}`,
       );
+      for (const row of [0, 1, 2]) {
+        expect(screen.getByTestId(pastPeriodRowTestID(row))).toBeTruthy();
+      }
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
+        pastPeriodsCopy.wayPast,
+      );
+      expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
+    });
 
-      await shePresses(dayTestID(theOneBefore));
+    it('counts one step where two stood, so the bar keeps its true arithmetic', async () => {
+      await sheOpensEmi();
 
+      await sheReachesHerPeriods();
+
+      expect(firstRunScreens).toContain('threePeriods');
+      expect(firstRunScreens).not.toContain('lastPeriod');
+      expect(firstRunScreens).not.toContain('periodBefore');
+      expect(firstRunScreenCount).toBe(12);
+      expect(screen.getByTestId(onboardingStepLabelTestID)).toHaveTextContent(
+        `Step ${String(firstRunScreens.indexOf('threePeriods') + 1)} of ${String(firstRunScreenCount)}`,
+      );
+    });
+
+    it('opens only the next row to give, and says every row after the first can be skipped', async () => {
+      await sheOpensEmi();
+
+      await sheReachesHerPeriods();
+
+      expect(screen.getByTestId(pastPeriodRowTestID(0))).not.toBeDisabled();
+      expect(screen.getByTestId(pastPeriodRowTestID(1))).toBeDisabled();
+      expect(screen.getByTestId(pastPeriodRowTestID(2))).toBeDisabled();
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(2)))).toContain(
+        pastPeriodsCopy.skipThisOne,
+      );
+
+      await sheGivesAPeriod(0, herPeriodStarted, 7);
+
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(0)))).toEqual(
+        expect.arrayContaining(['9 May', '7 days']),
+      );
+      expect(screen.getByTestId(pastPeriodRowTestID(1))).not.toBeDisabled();
       expect(screen.getByTestId(onboardingActionTestID)).not.toBeDisabled();
     });
 
-    it('no longer says back how far apart the two days are, which the redesign does not draw', async () => {
+    it('waits on Done until she picks a day and a length, and keeps nothing she cancels', async () => {
       await sheOpensEmi();
 
-      await sheReachesThePeriodBefore();
-      await shePresses(dayTestID(theOneBefore));
+      await sheReachesHerPeriods();
+      await shePresses(pastPeriodRowTestID(0));
 
-      expect(screen.queryByTestId('period-before-gap')).toBeNull();
-      expect(screen.queryByText(`${String(theCycleSheLived)} days apart`)).toBeNull();
-    });
+      expect(screen.getByTestId(pastPeriodPickerDoneTestID)).toBeDisabled();
+      await shePresses(dayTestID(herPeriodStarted));
+      expect(screen.getByTestId(pastPeriodPickerDoneTestID)).toBeDisabled();
+      await shePresses(pastPeriodLengthTestID(5));
+      expect(screen.getByTestId(pastPeriodPickerDoneTestID)).not.toBeDisabled();
 
-    it('offers the way past over the button, and no Skip in the header', async () => {
-      await sheOpensEmi();
+      await shePresses(pastPeriodPickerCancelTestID);
 
-      await sheReachesThePeriodBefore();
-
-      expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
-      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
-        firstRunCopy.periodBefore.skip,
+      expect(screen.queryByTestId(pastPeriodPickerTestID)).toBeNull();
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(0)))).toContain(
+        pastPeriodsCopy.addStart,
       );
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
+  });
 
-    it('becomes a second sealed day, and one whole cycle behind her forecast', async () => {
+  describe('three periods', () => {
+    it('writes every day she bled, for the length she gave each period', async () => {
       const app = await sheOpensEmi();
 
       await sheAnswersEveryQuestion({
         periodStartedOn: herPeriodStarted,
         periodBeforeStartedOn: theOneBefore,
+        periodBeforeThatStartedOn: theOneBeforeThat,
+        periodLengthDaysEach: 5,
       });
       await sheHoldsTheRing();
 
-      expect(await herSealedDays()).toEqual([
-        { day: theOneBefore, flow: 'medium', recordedAt: whenSheFinishesTheHold.toISOString() },
-        { day: herPeriodStarted, flow: 'medium', recordedAt: whenSheFinishesTheHold.toISOString() },
+      const sealed = await herSealedDays();
+      expect(sealed.map((day) => day.day)).toEqual([
+        ...theDaysOf(theOneBeforeThat, 5),
+        ...theDaysOf(theOneBefore, 5),
+        ...theDaysOf(herPeriodStarted, 5),
       ]);
-      expect(await theCyclesBehindHer()).toMatchObject([
-        { startedOn: theOneBefore, lengthDays: theCycleSheLived },
-        { startedOn: herPeriodStarted, lengthDays: null },
-      ]);
+      expect(sealed.every((day) => day.flow === 'medium')).toBe(true);
       expect(app.pathname()).toBe('/');
     });
 
-    it('reaches her home screen through the cache, which the hold leaves for her first write', async () => {
+    it('makes two complete cycles, so the forecast is ready from the first day', async () => {
+      await sheOpensEmi();
+
+      await sheReachesHerPeriods();
+      await sheGivesAPeriod(0, herPeriodStarted, herLengths[0]);
+      await sheGivesAPeriod(1, theOneBefore, herLengths[1]);
+      await sheGivesAPeriod(2, theOneBeforeThat, herLengths[2]);
+      await shePresses(onboardingActionTestID);
+      await shePresses(cycleLengthDaysTestID(28));
+      await shePresses(onboardingActionTestID);
+      // How long her period lasts takes its way past, then five questions and the reminder.
+      await shePresses(onboardingWayPastTestID);
+      for (let question = 0; question < 6; question += 1) {
+        await shePresses(onboardingSkipTestID);
+      }
+
+      expect(screen.getByTestId(firstForecastRangeTestID)).toBeTruthy();
+      expect(screen.queryByTestId(firstForecastStillLearningTestID)).toBeNull();
+
+      await shePresses(firstForecastActionTestID);
+      await sheReadsThePromise();
+      await sheHoldsTheRing();
+
+      expect(await theCyclesBehindHer()).toMatchObject([
+        { startedOn: theOneBeforeThat, lengthDays: theCycleSheLived, periodDays: herLengths[2] },
+        { startedOn: theOneBefore, lengthDays: theCycleSheLived, periodDays: herLengths[1] },
+        { startedOn: herPeriodStarted, lengthDays: null },
+      ]);
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+      expect(screen.queryByTestId(learningCyclesWantedTestID)).toBeNull();
+    });
+
+    it('lets Insights read how many days of each cycle she bled, not one', async () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({
         periodStartedOn: herPeriodStarted,
         periodBeforeStartedOn: theOneBefore,
+        periodBeforeThatStartedOn: theOneBeforeThat,
+        periodLengthDaysEach: 6,
       });
       await sheHoldsTheRing();
+      await shePresses(tabTestID('history'));
 
-      // The screen reads the cycle cache rather than her days, and the hold rebuilds it, so the
-      // cycle she lived is behind the sentence she reads: one more cycle is wanted and not two.
-      expect(listCycles(herDatabase())).toMatchObject([
-        { startedOn: theOneBefore, lengthDays: theCycleSheLived },
-        { startedOn: herPeriodStarted, lengthDays: null },
-      ]);
-      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
-      expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
-        cyclesWantedSentence({ kind: 'learning', completeCycles: 1, needsCycles: 2 }),
+      expect(textIn(screen.getByTestId(historyCycleTestID(theOneBefore))).join(' ')).toContain(
+        cycleLengthSentence(theCycleSheLived, 6),
+      );
+      expect(textIn(screen.getByTestId(historyCycleTestID(theOneBefore))).join(' ')).not.toContain(
+        cycleLengthSentence(theCycleSheLived, 1),
       );
     });
 
-    it('is refused at the hold as well, so the screen is not the only thing holding it', () => {
+    it('is refused at the hold where two starts are nearer than a cycle runs', () => {
       const database = openTestDatabase();
       migrate(database);
 
@@ -264,8 +365,10 @@ describe('the period before makes her first forecast from a cycle she lived', ()
             database,
             herVaults(),
             {
-              periodStartedOn: herPeriodStarted,
-              periodBeforeStartedOn: tooSoonBefore,
+              periods: [
+                { startedOn: herPeriodStarted, lengthDays: 5 },
+                { startedOn: tooSoonBefore, lengthDays: 5 },
+              ],
               cycleLengthDays: 28,
             },
             whenSheOpensIt,
@@ -275,19 +378,58 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       expect(listDayLogs(database)).toEqual([]);
     });
 
-    it('is written in the same transaction as her last period, so neither lands alone', () => {
+    it('is refused at the hold where a period runs longer than the arithmetic reads as one', () => {
       const database = openTestDatabase();
       migrate(database);
 
-      // The second day she gives fails to seal. Both days are written under one transaction, so
-      // the first one has to leave with it.
+      expect(
+        refusalFrom(() =>
+          completeFirstRun(
+            database,
+            herVaults(),
+            { periods: [{ startedOn: theOneBefore, lengthDays: 9 }], cycleLengthDays: 28 },
+            whenSheOpensIt,
+          ),
+        ),
+      ).toBe('past-period-length-is-out-of-range');
+    });
+
+    it('is refused at the hold where it holds more than three periods', () => {
+      const database = openTestDatabase();
+      migrate(database);
+
+      expect(
+        refusalFrom(() =>
+          completeFirstRun(
+            database,
+            herVaults(),
+            {
+              periods: [
+                { startedOn: herPeriodStarted, lengthDays: 1 },
+                { startedOn: theOneBefore, lengthDays: 1 },
+                { startedOn: theOneBeforeThat, lengthDays: 1 },
+                { startedOn: '2026-02-14', lengthDays: 1 },
+              ],
+            },
+            whenSheOpensIt,
+          ),
+        ),
+      ).toBe('more-periods-than-asked');
+    });
+
+    it('writes every day in one transaction, so no period lands alone', () => {
+      const database = openTestDatabase();
+      migrate(database);
+
       expect(() =>
         completeFirstRun(
           database,
           { day: aVaultThatFailsOnTheSecondDay(), profile: herProfileVault() },
           {
-            periodStartedOn: herPeriodStarted,
-            periodBeforeStartedOn: theOneBefore,
+            periods: [
+              { startedOn: herPeriodStarted, lengthDays: 1 },
+              { startedOn: theOneBefore, lengthDays: 1 },
+            ],
             cycleLengthDays: 28,
           },
           whenSheOpensIt,
@@ -295,128 +437,201 @@ describe('the period before makes her first forecast from a cycle she lived', ()
       ).toThrow(theSecondDayFails);
       expect(listDayLogs(database)).toEqual([]);
     });
+
+    it('never writes a day of her newest period that is still ahead of her', () => {
+      const database = openTestDatabase();
+      migrate(database);
+
+      completeFirstRun(
+        database,
+        herVaults(),
+        { periods: [{ startedOn: '2026-05-12', lengthDays: 6 }] },
+        whenSheOpensIt,
+      );
+
+      expect(listDayLogs(database).map((row) => row.day)).toEqual([
+        '2026-05-12',
+        '2026-05-13',
+        '2026-05-14',
+      ]);
+    });
+
+    it('puts what she feels today on the day she bled today, in one row', () => {
+      const database = openTestDatabase();
+      migrate(database);
+
+      completeFirstRun(
+        database,
+        herVaults(),
+        { periods: [{ startedOn: '2026-05-13', lengthDays: 3 }], symptoms: ['cramps'] },
+        whenSheOpensIt,
+      );
+
+      const today = listDayLogs(database).filter((row) => row.day === '2026-05-14');
+      expect(today).toHaveLength(1);
+      expect(herVault().open((today[0] as { payload: Uint8Array }).payload)).toMatchObject({
+        flow: 'medium',
+        symptoms: ['cramps'],
+      });
+    });
   });
 
-  describe('a day no cycle could run between', () => {
-    it('keeps her on the question and names what a cycle runs between', async () => {
-      const app = await sheOpensEmi();
-
-      await sheReachesThePeriodBefore();
-      await shePresses(dayTestID(tooSoonBefore));
-
-      expect(app.pathname()).toBe('/onboarding/period-before');
-      expect(screen.getByTestId(periodBeforeRefusedTestID)).toHaveTextContent(
-        firstRunCopy.periodBefore.outOfRange,
-      );
-      // The sentence is held to naming both bounds as well as to being the refusal, because a
-      // refusal built without them would still match itself.
-      expect(firstRunCopy.periodBefore.outOfRange).toContain(String(minimumCycleLengthDays));
-      expect(firstRunCopy.periodBefore.outOfRange).toContain(String(maximumCycleLengthDays));
-
-      await shePresses(onboardingActionTestID);
-
-      expect(app.pathname()).toBe('/onboarding/period-before');
-      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
-    });
-
-    it('is refused at the far end too, because a cycle has two bounds', async () => {
+  describe('two periods', () => {
+    it('makes one complete cycle, and the forecast is still learning', async () => {
       await sheOpensEmi();
 
-      await sheReachesThePeriodBefore();
-      await shePresses(earlierMonthTestID);
-      await shePresses(dayTestID(tooLongBefore));
+      await sheAnswersEveryQuestion({
+        periodStartedOn: herPeriodStarted,
+        periodBeforeStartedOn: theOneBefore,
+      });
+      await sheHoldsTheRing();
 
-      expect(screen.getByTestId(periodBeforeRefusedTestID)).toBeTruthy();
-      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
+      expect(await theCyclesBehindHer()).toMatchObject([
+        { startedOn: theOneBefore, lengthDays: theCycleSheLived },
+        { startedOn: herPeriodStarted, lengthDays: null },
+      ]);
+      expect(screen.getByTestId(learningCyclesWantedTestID)).toHaveTextContent(
+        cyclesWantedSentence({ kind: 'learning', completeCycles: 1, needsCycles: 2 }),
+      );
     });
+  });
 
-    it('lets her on as soon as she picks a day a cycle could run to', async () => {
+  describe('no period at all', () => {
+    it('takes "Skip, I will log as I go" and writes no day', async () => {
       const app = await sheOpensEmi();
 
-      await sheReachesThePeriodBefore();
-      await shePresses(dayTestID(tooSoonBefore));
-      await shePresses(dayTestID(theOneBefore));
-
-      expect(screen.queryByTestId(periodBeforeRefusedTestID)).toBeNull();
-
-      await shePresses(onboardingActionTestID);
+      await sheReachesHerPeriods();
+      await shePresses(onboardingWayPastTestID);
 
       expect(app.pathname()).toBe('/onboarding/cycle-length');
     });
-  });
 
-  describe('the period she does not remember', () => {
-    it('writes her last period and nothing else', async () => {
+    it('forgets every row she gave before she pressed the way past', async () => {
       await sheOpensEmi();
 
-      await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
-
-      expect(await herSealedDays()).toEqual([
-        { day: herPeriodStarted, flow: 'medium', recordedAt: whenSheFinishesTheHold.toISOString() },
-      ]);
-      expect(await theCyclesBehindHer()).toMatchObject([{ startedOn: herPeriodStarted }]);
-      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
-    });
-
-    it('forgets the day she picked before she pressed the way past it', async () => {
-      await sheOpensEmi();
-
-      await sheReachesThePeriodBefore();
-      await shePresses(dayTestID(theOneBefore));
+      await sheReachesHerPeriods();
+      await sheGivesAPeriod(0, herPeriodStarted, 5);
+      await sheGivesAPeriod(1, theOneBefore, 5);
       await shePresses(onboardingWayPastTestID);
       await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
+      // How long her period lasts takes its way past, then five questions and the reminder.
       await shePresses(onboardingWayPastTestID);
-      await shePresses(onboardingSkipTestID);
-      await shePresses(onboardingSkipTestID);
-      await shePresses(onboardingSkipTestID);
-      await shePresses(onboardingSkipTestID);
-      await shePresses(onboardingSkipTestID);
-      // The reminder stands after the last question, and "Not now" passes it.
-      await shePresses(onboardingSkipTestID);
+      for (let question = 0; question < 6; question += 1) {
+        await shePresses(onboardingSkipTestID);
+      }
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();
       await sheHoldsTheRing();
 
-      expect((await herSealedDays()).map((day) => day.day)).toEqual([herPeriodStarted]);
+      expect(await herSealedDays()).toEqual([]);
+    });
+  });
+
+  describe('a row no cycle could run to', () => {
+    it('keeps Done waiting and names what a cycle runs between', async () => {
+      await sheOpensEmi();
+
+      await sheReachesHerPeriods();
+      await sheGivesAPeriod(0, herPeriodStarted, 5);
+      await shePresses(pastPeriodRowTestID(1));
+      await shePresses(dayTestID(tooSoonBefore));
+      await shePresses(pastPeriodLengthTestID(5));
+
+      expect(screen.getByTestId(pastPeriodPickerRefusedTestID)).toHaveTextContent(
+        pastPeriodsCopy.outOfRange,
+      );
+      expect(pastPeriodsCopy.outOfRange).toContain(String(minimumCycleLengthDays));
+      expect(pastPeriodsCopy.outOfRange).toContain(String(maximumCycleLengthDays));
+      expect(screen.getByTestId(pastPeriodPickerDoneTestID)).toBeDisabled();
+
+      await shePresses(earlierMonthTestID);
+      await shePresses(dayTestID(tooLongBefore));
+      expect(screen.getByTestId(pastPeriodPickerDoneTestID)).toBeDisabled();
+    });
+
+    it('drops a row below the one she moved, once it is no longer a cycle before it', async () => {
+      await sheOpensEmi();
+
+      await sheReachesHerPeriods();
+      await sheGivesAPeriod(0, herPeriodStarted, 5);
+      await sheGivesAPeriod(1, theOneBefore, 5);
+      await shePresses(pastPeriodRowTestID(0));
+      await shePresses(dayTestID('2026-05-01'));
+      await shePresses(pastPeriodPickerDoneTestID);
+
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(0)))).toContain('1 May');
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(1)))).toContain(
+        pastPeriodsCopy.addStart,
+      );
+    });
+
+    it('takes a row off with every row below it when she removes it', async () => {
+      await sheOpensEmi();
+
+      await sheReachesHerPeriods();
+      await sheGivesAPeriod(0, herPeriodStarted, 5);
+      await sheGivesAPeriod(1, theOneBefore, 5);
+      await shePresses(pastPeriodRowTestID(0));
+      await shePresses(pastPeriodPickerRemoveTestID);
+
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(0)))).toContain(
+        pastPeriodsCopy.addStart,
+      );
+      expect(screen.getByTestId(pastPeriodRowTestID(1))).toBeDisabled();
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
+    });
+  });
+
+  describe('the two steps it replaced', () => {
+    it('are gone from the walk, the routes and the words', async () => {
+      const app = await sheOpensEmi();
+
+      await sheReachesHerPeriods();
+
+      expect(app.pathname()).not.toBe('/onboarding/last-period');
+      expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
+      expect(screen.queryByTestId('onboarding-periodBefore')).toBeNull();
+      const wordKeys = Object.keys(english);
+      expect(wordKeys).not.toContain('onboarding.lastPeriod.title');
+      expect(wordKeys).not.toContain('onboarding.periodBefore.title');
+      expect(wordKeys).not.toContain('onboarding.periodBefore.skip');
+      expect(Object.keys(firstRunCopy)).not.toContain('lastPeriod');
+      expect(Object.keys(firstRunCopy)).not.toContain('periodBefore');
+    });
+
+    it('cannot be reached by their old addresses', async () => {
+      const app = renderRouter(appDirectory, { initialUrl: '/onboarding/period-before' });
+      await app;
+
+      expect(screen.queryByTestId('onboarding-periodBefore')).toBeNull();
+      expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
     });
   });
 
   describe('the words of the screen', () => {
-    it('ask for one more period and say what adding it buys her', async () => {
-      await sheOpensEmi();
-
-      await sheReachesThePeriodBefore();
-
-      expect(screen.getByText(firstRunCopy.periodBefore.title)).toBeTruthy();
-      for (const line of firstRunCopy.periodBefore.lines) {
-        expect(screen.getByText(line)).toBeTruthy();
-      }
-      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent(
-        firstRunCopy.periodBefore.action,
-      );
-      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
-        firstRunCopy.periodBefore.skip,
-      );
-    });
-
-    it('promise only what the period before buys: a forecast from her own cycles a cycle sooner', () => {
-      const withTheOneBefore = forecastFromHerAnswers({
-        periodStartedOn: herPeriodStarted,
-        periodBeforeStartedOn: theOneBefore,
+    it('promise only what three periods buy, which the forecast rule holds to', () => {
+      const three = forecastFromHerAnswers({
+        periods: [
+          { startedOn: herPeriodStarted, lengthDays: 5 },
+          { startedOn: theOneBefore, lengthDays: 5 },
+          { startedOn: theOneBeforeThat, lengthDays: 5 },
+        ],
         cycleLengthDays: 28,
       });
-      const withoutIt = forecastFromHerAnswers({
-        periodStartedOn: herPeriodStarted,
+      const two = forecastFromHerAnswers({
+        periods: [
+          { startedOn: herPeriodStarted, lengthDays: 5 },
+          { startedOn: theOneBefore, lengthDays: 5 },
+        ],
         cycleLengthDays: 28,
       });
 
-      // The first range is counted from her last start and the length she states either way.
-      expect(withTheOneBefore.start).toEqual(withoutIt.start);
-      // What changes is the count of her own cycles, one of the two a forecast of her own needs.
-      expect(withTheOneBefore.kind === 'learning' && withTheOneBefore.completeCycles).toBe(1);
-      expect(withoutIt.kind === 'learning' && withoutIt.completeCycles).toBe(0);
+      expect(pastPeriodsCopy.forecastLine).toBe(
+        'With three periods, Emi can forecast your next ones from the first day.',
+      );
+      expect(three.kind).toBe('forecast');
+      expect(two.kind).toBe('learning');
     });
   });
 });

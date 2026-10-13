@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import type { Focus } from '@emi/crypto';
 import { focusValues } from '@emi/crypto';
@@ -12,7 +13,6 @@ import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
 import { words } from '../../src/language';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import { focusTestID } from '../../src/features/onboarding/Focus';
 import {
@@ -122,9 +122,8 @@ async function sheReachesThePromise(focus: readonly Focus[] = []): Promise<void>
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(herPeriodStarted));
+  await sheGivesAPeriod(0, herPeriodStarted);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingWayPastTestID);

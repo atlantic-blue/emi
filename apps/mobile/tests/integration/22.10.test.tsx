@@ -12,6 +12,7 @@ import {
   onboardingLinesTestID,
   onboardingLockTestID,
   onboardingProgressTestID,
+  onboardingQuestionTestID,
   onboardingSheetTestID,
   onboardingStepLabelTestID,
   onboardingTitleTestID,
@@ -19,7 +20,7 @@ import {
 } from '../../src/features/onboarding/OnboardingScreen';
 import { firstRunCopy, firstRunScreens, stepLabel } from '../../src/features/onboarding/copy';
 import {
-  type FirstRunDrawing,
+  type FirstRunLook,
   howManyPartsTheFirstRunIsHeldTo,
   sheIsLookingAt,
   theDifferencesTheStepKeeps,
@@ -31,6 +32,7 @@ import {
   whatTheScreenDoesNotAnswerFor,
 } from '../fixtures/theFirstRunLook';
 import { anIPhone16 } from '../fixtures/theWidthOfARow';
+import { pastPeriodsListTestID } from '../../src/features/pastPeriods/PastPeriodsList';
 
 /**
  * The first run, in the shapes the approved redesign draws it in.
@@ -41,16 +43,16 @@ import { anIPhone16 } from '../fixtures/theWidthOfARow';
  */
 
 /** The screens the prototype draws the drop emblem on, which is the questions and the welcome. */
-const theScreensCarryingTheEmblem: readonly FirstRunDrawing[] = [
+const theScreensCarryingTheEmblem: readonly FirstRunLook[] = [
   'welcome',
   ...theQuestionsTheBarCounts,
 ];
 
 /** The questions whose last line is the promise that only she can read the answer. */
-const theQuestionsThatPromiseHerPrivacy: readonly FirstRunDrawing[] = [
+const theQuestionsThatPromiseHerPrivacy: readonly FirstRunLook[] = [
   'name',
   'yearOfBirth',
-  'lastPeriod',
+  'threePeriods',
   'feeling',
   'goals',
 ];
@@ -81,8 +83,8 @@ describe('the first run screens match the redesign prototype', () => {
     }
 
     it('is held to every part of every drawing, and the count is the check', () => {
-      expect(theFirstRunDrawings).toHaveLength(23);
-      expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(140);
+      expect(theFirstRunDrawings).toHaveLength(20);
+      expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(130);
     });
 
     it('says which part each screen draws out of place, so a silent gap cannot hide in the count', async () => {
@@ -93,10 +95,17 @@ describe('the first run screens match the redesign prototype', () => {
       );
     });
 
-    it('draws the lines of the last period under the days, where the drawing puts them', async () => {
-      await sheIsLookingAt('lastPeriod');
+    it('draws the lines of her last three periods above the list, where the board puts them', async () => {
+      await sheIsLookingAt('threePeriods');
 
-      expect(whatTheScreenDoesNotAnswerFor('lastPeriod')).toEqual([]);
+      const drawn = screen.queryAllByTestId(/.+/).map((element) => String(element.props.testID));
+
+      expect(drawn.indexOf(onboardingQuestionTestID)).toBeLessThan(
+        drawn.indexOf(pastPeriodsListTestID),
+      );
+      expect(drawn.indexOf(pastPeriodsListTestID)).toBeLessThan(
+        drawn.indexOf(onboardingLockTestID),
+      );
     });
   });
 
@@ -218,7 +227,7 @@ describe('the first run screens match the redesign prototype', () => {
     const thePromiseOn: Readonly<Record<string, string>> = {
       name: firstRunCopy.encrypts,
       yearOfBirth: firstRunCopy.encrypts,
-      lastPeriod: firstRunCopy.encrypts,
+      threePeriods: firstRunCopy.encrypts,
       feeling: firstRunCopy.encryptedHere,
       goals: firstRunCopy.encryptsYourAnswers,
     };
@@ -243,13 +252,12 @@ describe('the first run screens match the redesign prototype', () => {
   });
 
   describe('what the look did not change', () => {
-    it('asks the same twelve questions in the same order, and then the reminder', () => {
+    it('asks eleven questions in order, her last three periods as one, and then the reminder', () => {
       expect(firstRunScreens).toEqual([
         'welcome',
         'name',
         'birthYear',
-        'lastPeriod',
-        'periodBefore',
+        'threePeriods',
         'cycleLength',
         'periodLength',
         'regularity',

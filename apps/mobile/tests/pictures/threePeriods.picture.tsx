@@ -2,13 +2,14 @@ import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
 import { render } from '@testing-library/react-native';
 
-import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
+import { ThreePeriods } from '../../src/features/onboarding/ThreePeriods';
+import type { PastPeriod } from '../../src/features/pastPeriods/pastPeriods';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { iPhone16Size } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 
 const theCaveat = [
-  'Rendered from the tree the last period screen produced under the test runner, at 393 by 852',
+  'Rendered from the tree the screen of her last three periods produced under the test runner, at 393 by 852',
   'points, which is the glass of an iPhone 16, and not captured from a phone. The page loads the',
   'same font files the application loads, so the words are drawn in Figtree.',
   'The room kept at the top and the bottom of each screen is the room an iPhone with a dynamic',
@@ -21,32 +22,36 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 interface State {
   readonly title: string;
   readonly note: string;
-  readonly chosen: string | undefined;
+  readonly periods: readonly PastPeriod[];
 }
 
 const theStates: readonly State[] = [
   {
-    title: 'The month she is in',
-    note: 'Today is the fourteenth. The days after it are drawn and take no press.',
-    chosen: undefined,
+    title: 'Nothing given yet',
+    note: 'Continue waits for one period. The way past under it is for a woman who remembers none.',
+    periods: [],
   },
   {
-    title: 'Five days back, chosen',
-    note: 'The square she pressed is marked, and the screen will now take her on.',
-    chosen: '2026-05-09',
+    title: 'Two given, the third to add',
+    note: 'Each row is a start and a length. The third row says she can skip it.',
+    periods: [
+      { startedOn: '2026-05-09', lengthDays: 7 },
+      { startedOn: '2026-04-11', lengthDays: 6 },
+    ],
   },
 ];
 
 async function drawn(state: State): Promise<DrawnScreen> {
   const view = await render(
     <OnAPhone>
-      <LastPeriod
-        chosen={state.chosen}
+      <ThreePeriods
         now={whenSheOpensIt}
         onBack={() => undefined}
-        onChoose={() => undefined}
         onContinue={() => undefined}
+        onGive={() => undefined}
+        onRemove={() => undefined}
         onWayPast={() => undefined}
+        periods={state.periods}
       />
     </OnAPhone>,
   );
@@ -59,7 +64,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
 
 const screens: DrawnScreen[] = [];
 
-describe('the last period screen, drawn for somebody to look at', () => {
+describe('the screen of her last three periods, drawn for somebody to look at', () => {
   for (const state of theStates) {
     it(`renders ${state.title.toLowerCase()}`, async () => {
       screens.push(await drawn(state));
@@ -70,10 +75,10 @@ describe('the last period screen, drawn for somebody to look at', () => {
     expect(screens).toHaveLength(theStates.length);
 
     const result = drawOrCheck({
-      name: 'last-period',
+      name: 'three-periods',
       screens: screens,
       caveat: theCaveat,
-      script: 'generate:last-period-picture',
+      script: 'generate:three-periods-picture',
       size: iPhone16Size,
     });
 

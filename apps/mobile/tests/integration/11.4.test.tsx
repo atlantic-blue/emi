@@ -11,9 +11,9 @@ import {
 } from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { cycleRingTestID, ringWholeArcTestID } from '../../src/components/CycleRing';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
@@ -117,9 +117,8 @@ async function sheReachesThePeriodLength(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(herPeriodStarted));
+  await sheGivesAPeriod(0, herPeriodStarted);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
 }
@@ -333,7 +332,7 @@ describe('the period arc follows what she said until she logs her own', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               periodLengthDays: maximumPeriodLengthDays + 1,
             },

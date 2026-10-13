@@ -4,6 +4,7 @@ import { findSymptom } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import type { DayVault } from '../../src/services/vault/dayVault';
 import { listDayLogs } from '../../src/data/dayLogRepository';
@@ -11,7 +12,6 @@ import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
 import { catalogueOf, languages } from '../../src/language';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
@@ -86,9 +86,8 @@ async function sheReachesToday(periodStartedOn: string = herPeriodStarted): Prom
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(periodStartedOn));
+  await sheGivesAPeriod(0, periodStartedOn);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingWayPastTestID);
@@ -523,7 +522,7 @@ describe('what she feels today is her first logged day', () => {
           database,
           { day: aVaultThatFailsOnTheSecondDay(), profile: herProfileVault() },
           {
-            periodStartedOn: herPeriodStarted,
+            periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
             cycleLengthDays: herCycleLengthDays,
             symptoms: ['cramps'],
           },
@@ -544,7 +543,7 @@ describe('what she feels today is her first logged day', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               symptoms: ['nonsense' as TodaySymptom],
             },
@@ -565,7 +564,7 @@ describe('what she feels today is her first logged day', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               symptoms: ['cramps', 'cramps'],
             },

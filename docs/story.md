@@ -135,14 +135,15 @@ it never does, and the two things it refuses to be.
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
 with `npm run generate:welcome-picture`.
 
-It asks when her last period started, and it opens on the month she is in. Today and yesterday sit
-above the calendar, because those are the two answers she gives most. A day she has not lived is
-drawn faint and takes no press.
+It asks for her last three periods in one list. Each row is a start date and a length, picked on a
+sheet with the month she is in and a wheel of days. She can skip the second and the third, and a
+woman who remembers none takes "Skip, I will log as I go". Three periods are two cycles she lived,
+which is what Emi needs before it forecasts from her own days.
 
-![The month calendar, with a day five back chosen](../brand/screens/last-period.png)
+![The list of her last three periods, two given](../brand/screens/three-periods.png)
 
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
-with `npm run generate:last-period-picture`.
+with `npm run generate:three-periods-picture`.
 
 It asks how long her cycle runs. The number starts at 28 days, and one press moves it by one day,
 between 21 and 45. Emi corrects this itself once it has seen two cycles of her own, and the screen

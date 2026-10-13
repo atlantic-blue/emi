@@ -95,10 +95,18 @@ function laysOut(box: Box): boolean {
   return typeof box.type === 'string' && box.type !== '';
 }
 
+/**
+ * A modal is drawn at the root of the window on a phone, so the glass starts again at it, however
+ * deep in the tree the runner draws it.
+ */
+function isAModal(box: Box): boolean {
+  return typeof box.type === 'string' && box.type.includes('Modal');
+}
+
 function upToTheGlass(box: Box): Box[] {
   const chain: Box[] = [];
 
-  for (let at: Box | null = box; at !== null; at = at.parent) {
+  for (let at: Box | null = box; at !== null && !isAModal(at); at = at.parent) {
     if (laysOut(at)) {
       chain.unshift(at);
     }

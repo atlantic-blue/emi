@@ -8,6 +8,7 @@ import { tabTestID } from '@emi/ui';
 import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { listCycles } from '../../src/data/cycleRepository';
 import { readProfile } from '../../src/data/profileRepository';
@@ -26,7 +27,6 @@ import {
 } from '../../src/features/forecast/FertileWindow';
 import { fertileWindowSentence, rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { goalTestID } from '../../src/features/onboarding/Goals';
 import { rowCheckTestID, rowRingTestID } from '../../src/components/ChoiceRow';
@@ -139,9 +139,8 @@ async function sheReachesTheGoals(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(herPeriodStarted));
+  await sheGivesAPeriod(0, herPeriodStarted);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingWayPastTestID);
@@ -210,9 +209,8 @@ describe('the fertile window shows only for her who asked for it', () => {
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingWayPastTestID);
       await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingWayPastTestID);
@@ -405,7 +403,7 @@ describe('the fertile window shows only for her who asked for it', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               goals: ['loseWeight' as Goal],
             },
@@ -426,7 +424,7 @@ describe('the fertile window shows only for her who asked for it', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               goals: ['symptoms', 'symptoms'],
             },

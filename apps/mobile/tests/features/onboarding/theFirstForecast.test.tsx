@@ -54,8 +54,10 @@ function aForecastFromSixCycles(): Forecast {
 describe('the first forecast says only what the arithmetic answered', () => {
   it('is always still learning at the first run, because two answers make at most one complete cycle', () => {
     const answer = forecastFromHerAnswers({
-      periodStartedOn: herPeriodStarted,
-      periodBeforeStartedOn: theOneBefore,
+      periods: [
+        { startedOn: herPeriodStarted, lengthDays: 1 },
+        { startedOn: theOneBefore, lengthDays: 1 },
+      ],
       cycleLengthDays: 28,
     });
 

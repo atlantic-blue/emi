@@ -5,6 +5,7 @@ import { regularityValues } from '@emi/crypto';
 import { screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { readProfile } from '../../src/data/profileRepository';
 import { listCycles } from '../../src/data/cycleRepository';
@@ -18,7 +19,6 @@ import { learningTestID } from '../../src/features/forecast/Learning';
 import { forecastCopy, rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { homeForecastTestID } from '../../src/features/home/HomeScreen';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -119,9 +119,8 @@ async function sheReachesTheRegularity(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(herPeriodStarted));
+  await sheGivesAPeriod(0, herPeriodStarted);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingWayPastTestID);
@@ -289,7 +288,7 @@ describe('her answer changes the words, never the range', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               regularity: 'sometimes' as Regularity,
             },

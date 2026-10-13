@@ -15,12 +15,8 @@ import { forecastFromHerAnswers } from '../../features/onboarding/firstRun';
  */
 export default function FirstForecastRoute(): ReactNode {
   const router = useRouter();
-  const { periodStartedOn, periodBeforeStartedOn, cycleLengthDays } = useFirstRun();
-  const forecast = forecastFromHerAnswers({
-    cycleLengthDays,
-    periodBeforeStartedOn,
-    periodStartedOn,
-  });
+  const { periods, cycleLengthDays } = useFirstRun();
+  const forecast = forecastFromHerAnswers({ cycleLengthDays, periods });
 
   return (
     <FirstForecast
