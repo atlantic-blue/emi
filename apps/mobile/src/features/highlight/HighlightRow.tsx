@@ -1,13 +1,14 @@
 import { colour, space, textStyle } from '@emi/tokens';
 import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { type HighlightSlug, highlights } from './highlights';
 
 /**
  * The row of round tiles at the top of a page, each one the way to a short page of its own. A
- * page names the highlights it carries, and the row draws them in that order.
+ * page names the highlights it carries, and the row draws them in that order. The row scrolls
+ * sideways, so a page can carry more highlights than the width of the phone holds.
  */
 
 export function highlightTestID(slug: HighlightSlug): string {
@@ -30,7 +31,12 @@ interface Props {
 
 export function HighlightRow({ slugs, onOpen, testID }: Props): ReactNode {
   return (
-    <View style={styles.row} testID={testID}>
+    <ScrollView
+      contentContainerStyle={styles.row}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      testID={testID}
+    >
       {slugs.map((slug) => {
         const highlight = highlights[slug];
 
@@ -52,7 +58,7 @@ export function HighlightRow({ slugs, onOpen, testID }: Props): ReactNode {
           </Pressable>
         );
       })}
-    </View>
+    </ScrollView>
   );
 }
 

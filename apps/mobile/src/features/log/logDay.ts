@@ -1,4 +1,4 @@
-import type { DayRecord, Orgasm, Sex, SexDrive } from '@emi/crypto';
+import type { DayRecord, Discharge, Orgasm, Product, Sex, SexDrive } from '@emi/crypto';
 import { type Flow, isBleeding } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
@@ -249,6 +249,71 @@ function answersGiven(from: SexAnswers): SexAnswers {
 
 function withoutTheSexAnswers(record: DayRecord): DayRecord {
   const { sex, sexDrive, orgasm, ...rest } = record;
+
+  return rest;
+}
+
+/** Her three answers on the Period page. A field left out is a question she did not answer. */
+export interface PeriodAnswers {
+  readonly flow?: Flow;
+  readonly discharge?: Discharge;
+  readonly products?: readonly Product[];
+}
+
+export interface PeriodLog {
+  readonly day: string;
+  /** The whole of what the page holds when she saves, so an answer she cleared is taken off. */
+  readonly answers: PeriodAnswers;
+  readonly now: Date;
+}
+
+/**
+ * One save of the Period page. The flow, the discharge and the products replace what the day held,
+ * through the same save as every other write of a day, so the flow keeps every period rule: a day
+ * closes her period only when it carries a flow, and "No bleeding" is the flow `none`.
+ *
+ * The mark that the bleeding was not her period belongs to the bleeding, so it stays only while the
+ * day still carries a bleeding flow.
+ */
+export function logPeriod(db: Database, vault: DayVault, log: PeriodLog): DayAndCycles {
+  const held = readDayLog(db, log.day);
+  const kept: Partial<DayRecord> = held ? withoutThePeriodAnswers(vault.open(held.payload)) : {};
+  const { bleedingIsUnexpected, ...rest } = kept;
+  const flow = log.answers.flow;
+  const keepsTheMark =
+    bleedingIsUnexpected === true && flow !== undefined && isBleeding({ day: log.day, flow });
+  const record: DayRecord = {
+    ...rest,
+    ...periodAnswersGiven(log.answers),
+    ...(keepsTheMark ? { bleedingIsUnexpected: true } : {}),
+    day: log.day,
+    recordedAt: log.now.toISOString(),
+  };
+  const write = { day: log.day, payload: vault.seal(record), now: log.now };
+
+  return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
+}
+
+/** The answers the day holds, so the page opens on what she saved before. */
+export function periodLogged(db: Database, vault: DayVault, day: string): PeriodAnswers {
+  const held = readDayLog(db, day);
+
+  return held ? periodAnswersGiven(vault.open(held.payload)) : {};
+}
+
+/** Only the answers she gave. An empty list of products is left off rather than written empty. */
+function periodAnswersGiven(from: PeriodAnswers): PeriodAnswers {
+  return {
+    ...(from.flow === undefined ? {} : { flow: from.flow }),
+    ...(from.discharge === undefined ? {} : { discharge: from.discharge }),
+    ...(from.products === undefined || from.products.length === 0
+      ? {}
+      : { products: from.products }),
+  };
+}
+
+function withoutThePeriodAnswers(record: DayRecord): DayRecord {
+  const { flow, discharge, products, ...rest } = record;
 
   return rest;
 }

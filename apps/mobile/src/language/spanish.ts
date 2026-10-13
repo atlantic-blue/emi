@@ -173,7 +173,25 @@ export const spanish: CatalogueIn<'es'> = {
   'forecast.statedLength': 'Hasta entonces usamos el ciclo de {days} días que nos indicaste.',
   'forecast.stillLearning': 'Todavía te estamos conociendo',
 
+  'highlight.allAboutDischarge.1':
+    'El flujo es un líquido que sale de la vagina. Ayuda a mantener la vagina limpia y húmeda.',
+  'highlight.allAboutDischarge.2':
+    'Cambia a lo largo del ciclo. Suele ser pegajoso o cremoso después de la regla, y claro, elástico y húmedo, como la clara de huevo, cerca de la ovulación.',
+  'highlight.allAboutDischarge.3':
+    'Emi guarda el tipo que eliges cada día. Tu previsión no lo usa.',
+  'highlight.allAboutDischarge.4':
+    'Si el flujo cambia de color o de olor, o viene con picor o dolor, un médico o una enfermera pueden ayudarte.',
+  'highlight.allAboutDischarge.title': 'Todo sobre el flujo',
   'highlight.back': 'Atrás',
+  'highlight.hygieneProducts.1':
+    'Una compresa se pega dentro de la ropa interior y absorbe la sangre. Un salvaslip es una compresa fina para los días ligeros o para el flujo.',
+  'highlight.hygieneProducts.2':
+    'Un tampón y una copa van dentro de la vagina. La copa recoge la sangre, y tú la vacías, la lavas y la vuelves a usar.',
+  'highlight.hygieneProducts.3':
+    'La ropa interior menstrual tiene capas que retienen la sangre. La lavas y la vuelves a usar.',
+  'highlight.hygieneProducts.4':
+    'Cada envase dice cuánto tiempo puedes llevar el producto. Síguelo, y cámbialo antes si está lleno.',
+  'highlight.hygieneProducts.title': 'Productos de higiene',
   'highlight.intercourse.1':
     'El coito es el sexo en el que un pene entra en la vagina. Es una forma de sexo entre muchas.',
   'highlight.intercourse.2':
@@ -541,6 +559,26 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.whatEmiDoes.privacy.title': 'Tu privacidad',
   'onboarding.whatEmiDoes.title': 'Esto es lo que Emi hace con lo que le contaste',
 
+  'period.back': 'Atrás',
+  'period.day': '{weekday}, {date} de {month}',
+  'period.discharge.creamy': 'Cremoso',
+  'period.discharge.eggWhite': 'Clara de huevo',
+  'period.discharge.none': 'Ninguno',
+  'period.discharge.sticky': 'Pegajoso',
+  'period.discharge.unusual': 'Inusual',
+  'period.discharge.watery': 'Acuoso',
+  'period.flow.none': 'Sin sangrado',
+  'period.group.discharge': 'Flujo',
+  'period.group.flow': 'Sangrado',
+  'period.group.products': 'Lo que usaste',
+  'period.heading': 'Tu regla y tu flujo',
+  'period.products.cup': 'Copa',
+  'period.products.liner': 'Salvaslip',
+  'period.products.pad': 'Compresa',
+  'period.products.periodUnderwear': 'Ropa interior menstrual',
+  'period.products.tampon': 'Tampón',
+  'period.save': 'Guardar',
+  'period.title': 'Regla',
   'phase.about.follicular':
     'Empieza con tu periodo y termina el día antes de la fase de ovulación.',
   'phase.about.luteal':

@@ -266,6 +266,13 @@ import {
 } from '../apps/mobile/src/features/sex/SexPage';
 import { sexAddress } from '../apps/mobile/src/features/sex/sexAddress';
 import {
+  periodChipTestID,
+  periodPageDayTestID,
+  periodPageSaveTestID,
+  periodPageTestID,
+} from '../apps/mobile/src/features/period/PeriodPage';
+import { periodAddress } from '../apps/mobile/src/features/period/periodAddress';
+import {
   cycleLengthSentence,
   cycleSentence,
   patternEvidenceSentence,
@@ -3512,6 +3519,75 @@ defineFeature(feature, (test) => {
       expect(day).not.toHaveProperty('sex');
       expect(day).not.toHaveProperty('sexDrive');
       expect(day).not.toHaveProperty('orgasm');
+    });
+  });
+
+  test('SCREEN-2, she records discharge and a product on a day', ({ given, when, then }) => {
+    const herAnswers = [
+      periodChipTestID('discharge', 'egg-white'),
+      periodChipTestID('products', 'tampon'),
+      periodChipTestID('products', 'liner'),
+    ];
+    const todayOnHerPhone = (): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), theDaySheOpensIt);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+    let app: OpenApp;
+    let flowSheLogged: string | undefined;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+      flowSheLogged = todayOnHerPhone()?.flow;
+    });
+
+    when('she opens the Period page of today', async () => {
+      app = await sheOpens(periodAddress());
+      await screen.findByTestId(periodPageTestID);
+    });
+
+    then('the page shows the flow she logged today, under the date of today', () => {
+      expect(flowSheLogged).toEqual(expect.any(String));
+      expect(
+        screen.getByTestId(periodChipTestID('flow', flowSheLogged ?? '')).props.accessibilityState,
+      ).toEqual({ selected: true });
+      expect(screen.getByTestId(periodPageDayTestID).props.children).toMatch(
+        new RegExp(`, ${Number(theDaySheOpensIt.slice(8, 10))} [A-Z][a-z]+$`),
+      );
+    });
+
+    when('she presses Egg white, Tampon and Liner, and saves', async () => {
+      for (const answer of herAnswers) {
+        await shePresses(answer);
+      }
+      await shePresses(periodPageSaveTestID);
+    });
+
+    then(
+      'her phone holds that discharge and both products on today, sealed, beside the flow she logged',
+      () => {
+        const held = readDayLog(herDatabase(), theDaySheOpensIt);
+
+        expect(new TextDecoder().decode(held?.payload)).not.toContain('egg-white');
+        expect(todayOnHerPhone()).toMatchObject({
+          flow: flowSheLogged,
+          discharge: 'egg-white',
+          products: ['tampon', 'liner'],
+        });
+      },
+    );
+
+    when('she opens the Period page of today again', async () => {
+      expect(app.pathname()).toBe('/');
+      await act(() => router.push(periodAddress()));
+      await screen.findByTestId(periodPageTestID);
+    });
+
+    then('the discharge and the two products she saved are filled', () => {
+      for (const answer of herAnswers) {
+        expect(screen.getByTestId(answer).props.accessibilityState).toEqual({ selected: true });
+      }
     });
   });
 
