@@ -243,6 +243,7 @@ export const russian: CatalogueIn<'ru'> = {
   'home.phaseCard.follicular.day': 'Фолликулярная фаза, день {from}',
   'home.phaseCard.follicular.days': 'Фолликулярная фаза, дни с {from} по {to}',
   'home.phaseCard.follicular.line': 'Дни после месячных, до овуляции.',
+  'home.phaseCard.more': 'Узнайте, что значит эта фаза для вас.',
   'home.phaseCard.ovulation.day': 'Фаза овуляции, день {from}',
   'home.phaseCard.ovulation.days': 'Фаза овуляции, дни с {from} по {to}',
   'home.phaseCard.ovulation.line': 'Энергии обычно больше всего.',
@@ -545,6 +546,111 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.whatEmiDoes.privacy.title': 'Ваша приватность',
   'onboarding.whatEmiDoes.title': 'Вот что Emi делает с тем, что вы рассказали',
 
+  'phase.about.follicular': 'Она начинается с месячных и заканчивается за день до фазы овуляции.',
+  'phase.about.luteal':
+    'Она начинается на следующий день после фазы овуляции и заканчивается за день до следующих месячных.',
+  'phase.about.ovulation':
+    'Emi ожидает овуляцию между днём {from} и днём {to}, скорее всего в день {day}.',
+  'phase.about.period': 'Это дни, когда идут месячные.',
+  'phase.back': 'Назад',
+  'phase.bar.day': 'день {from}',
+  'phase.bar.days': 'дни с {from} по {to}',
+  'phase.bar.follicular': 'Фолликулярная',
+  'phase.bar.luteal': 'Лютеиновая',
+  'phase.bar.none': 'нет дней',
+  'phase.bar.ovulation': 'Овуляция',
+  'phase.bar.period': 'Месячные',
+  'phase.chip.acne': 'Акне',
+  'phase.chip.anxious': 'Тревога',
+  'phase.chip.bloating': 'Вздутие',
+  'phase.chip.calm': 'Спокойствие',
+  'phase.chip.cramps': 'Спазмы',
+  'phase.chip.cravings': 'Тяга к еде',
+  'phase.chip.energetic': 'Энергичность',
+  'phase.chip.happy': 'Радость',
+  'phase.chip.headache': 'Головная боль',
+  'phase.chip.hungry': 'Голод',
+  'phase.chip.irritable': 'Раздражительность',
+  'phase.chip.littleAppetite': 'Мало аппетита',
+  'phase.chip.painOnOneSide': 'Боль с одной стороны',
+  'phase.chip.sad': 'Грусть',
+  'phase.chip.salty': 'Солёное',
+  'phase.chip.sweet': 'Сладкое',
+  'phase.chip.tenderBreasts': 'Чувствительная грудь',
+  'phase.day': 'День {from}.',
+  'phase.dayOf': 'День {day} из примерно {length}',
+  'phase.days': 'Дни с {from} по {to}.',
+  'phase.diary.allSymptoms': 'Все симптомы',
+  'phase.diary.emotions': 'Эмоции',
+  'phase.diary.food': 'Еда',
+  'phase.diary.heading': 'Ваш дневник этой фазы',
+  'phase.diary.note': 'Добавьте заметку о сегодняшнем дне',
+  'phase.diary.symptoms': 'Симптомы',
+  'phase.estimate.cycles': {
+    one: 'Это оценка по {count} последнему циклу.',
+    few: 'Это оценка по {count} последним циклам.',
+    many: 'Это оценка по {count} последним циклам.',
+  },
+  'phase.estimate.learning': 'Это оценка по длине цикла, которую вы указали.',
+  'phase.guide.body': 'Тело',
+  'phase.guide.close': 'Закрыть',
+  'phase.guide.follicular.body':
+    'Энергия часто растёт день за днём. Выделения могут стать заметнее.',
+  'phase.guide.follicular.food':
+    'Свежая еда, белок и клетчатка помогают, пока возвращается энергия. Ешьте регулярно.',
+  'phase.guide.follicular.mood':
+    'Многие чувствуют себя легче и любопытнее после месячных. Хорошее время, чтобы начать новое.',
+  'phase.guide.follicular.training':
+    'Многие могут сейчас тренироваться интенсивнее. Наращивайте нагрузку постепенно, с хорошей разминкой.',
+  'phase.guide.food': 'Еда',
+  'phase.guide.luteal.body':
+    'Некоторые замечают вздутие, чувствительность груди или изменения кожи перед месячными.',
+  'phase.guide.luteal.food':
+    'Тяга к еде бывает часто. Регулярное питание с цельными злаками и белком помогает чувствовать себя ровнее.',
+  'phase.guide.luteal.mood':
+    'Одни чувствуют себя спокойнее, другие к концу становятся чувствительнее. Оставьте запас в своих планах.',
+  'phase.guide.luteal.training':
+    'Ровные умеренные тренировки обычно даются лучше всего. Отдыхайте больше, если чувствуете усталость.',
+  'phase.guide.mood': 'Настроение',
+  'phase.guide.open': 'Что эта фаза может значить для вас',
+  'phase.guide.ovulation.body':
+    'Некоторые чувствуют короткую боль с одной стороны или замечают прозрачные тянущиеся выделения.',
+  'phase.guide.ovulation.food':
+    'Свежие овощи, клетчатка и достаточно воды помогают на пике эстрогена. Ешьте регулярно.',
+  'phase.guide.ovulation.mood':
+    'Многие сейчас общительнее и увереннее. Планируйте разговоры и встречи, которым нужна энергия.',
+  'phase.guide.ovulation.training':
+    'Сила и скорость часто на пике. Хорошее время для более тяжёлых тренировок, с хорошей разминкой.',
+  'phase.guide.period.body':
+    'Спазмы, боль в пояснице или усталость бывают часто. Отдыхайте, когда нужно.',
+  'phase.guide.period.food':
+    'Тёплая регулярная еда и достаточно воды помогают чувствовать себя ровнее.',
+  'phase.guide.period.mood':
+    'Некоторые в первые дни чувствуют усталость или упадок настроения. По возможности планируйте день поспокойнее.',
+  'phase.guide.period.training':
+    'Мягкое движение, например прогулка или растяжка, обычно даётся лучше всего. Делайте то, что подходит вам.',
+  'phase.guide.training': 'Тренировки',
+  'phase.name.follicular': 'Фолликулярная фаза',
+  'phase.name.luteal': 'Лютеиновая фаза',
+  'phase.name.ovulation': 'Фаза овуляции',
+  'phase.name.period': 'Менструальная фаза',
+  'phase.past.heading.follicular': 'В ваших прошлых фолликулярных фазах',
+  'phase.past.heading.luteal': 'В ваших прошлых лютеиновых фазах',
+  'phase.past.heading.ovulation': 'В ваших прошлых фазах овуляции',
+  'phase.past.heading.period': 'В ваших прошлых менструальных фазах',
+  'phase.past.nothing': 'Вы пока ничего не отмечали из этого дневника в этих фазах.',
+  'phase.past.one': {
+    one: 'Вы отметили «{first}» в {firstCount} из {count} цикла.',
+    few: 'Вы отметили «{first}» в {firstCount} из {count} циклов.',
+    many: 'Вы отметили «{first}» в {firstCount} из {count} циклов.',
+  },
+  'phase.past.two': {
+    one: 'Вы отметили «{first}» в {firstCount} из {count} цикла и «{second}» в {secondCount} из {count}.',
+    few: 'Вы отметили «{first}» в {firstCount} из {count} циклов и «{second}» в {secondCount} из {count}.',
+    many: 'Вы отметили «{first}» в {firstCount} из {count} циклов и «{second}» в {secondCount} из {count}.',
+  },
+  'phase.past.waiting': 'Emi покажет это после вашего первого полного цикла.',
+  'phase.title': 'Фаза цикла',
   'recovery.before.action': 'Показать мой код',
   'recovery.before.line.nobody':
     'Мы не можем восстановить его за вас. Если бы могли, то могли бы читать ваши дни.',

@@ -243,6 +243,7 @@ export const english = {
   'home.phaseCard.follicular.day': 'Follicular phase, day {from}',
   'home.phaseCard.follicular.days': 'Follicular phase, days {from} to {to}',
   'home.phaseCard.follicular.line': 'The days after your period, before ovulation.',
+  'home.phaseCard.more': 'See what this phase means for you.',
   'home.phaseCard.ovulation.day': 'Ovulation phase, day {from}',
   'home.phaseCard.ovulation.days': 'Ovulation phase, days {from} to {to}',
   'home.phaseCard.ovulation.line': 'Energy is often at its highest.',
@@ -529,6 +530,109 @@ export const english = {
   'onboarding.whatEmiDoes.privacy.title': 'Your privacy',
   'onboarding.whatEmiDoes.title': 'Here is what Emi does with what you told it',
 
+  'phase.about.follicular':
+    'It starts with your period and ends the day before the ovulation phase.',
+  'phase.about.luteal':
+    'It starts the day after the ovulation phase and ends the day before your next period.',
+  'phase.about.ovulation':
+    'Emi expects ovulation between day {from} and day {to}, most likely on day {day}.',
+  'phase.about.period': 'These are the days you bleed.',
+  'phase.back': 'Back',
+  'phase.bar.day': 'day {from}',
+  'phase.bar.days': 'days {from} to {to}',
+  'phase.bar.follicular': 'Follicular',
+  'phase.bar.luteal': 'Luteal',
+  'phase.bar.none': 'no days',
+  'phase.bar.ovulation': 'Ovulation',
+  'phase.bar.period': 'Period',
+  'phase.chip.acne': 'Acne',
+  'phase.chip.anxious': 'Anxious',
+  'phase.chip.bloating': 'Bloating',
+  'phase.chip.calm': 'Calm',
+  'phase.chip.cramps': 'Cramps',
+  'phase.chip.cravings': 'Cravings',
+  'phase.chip.energetic': 'Energetic',
+  'phase.chip.happy': 'Happy',
+  'phase.chip.headache': 'Headache',
+  'phase.chip.hungry': 'Hungry',
+  'phase.chip.irritable': 'Irritable',
+  'phase.chip.littleAppetite': 'Little appetite',
+  'phase.chip.painOnOneSide': 'Pain on one side',
+  'phase.chip.sad': 'Sad',
+  'phase.chip.salty': 'Salty',
+  'phase.chip.sweet': 'Sweet',
+  'phase.chip.tenderBreasts': 'Tender breasts',
+  'phase.day': 'Day {from}.',
+  'phase.dayOf': 'Day {day} of about {length}',
+  'phase.days': 'Days {from} to {to}.',
+  'phase.diary.allSymptoms': 'All symptoms',
+  'phase.diary.emotions': 'Emotions',
+  'phase.diary.food': 'Food',
+  'phase.diary.heading': 'Your diary for this phase',
+  'phase.diary.note': 'Add a note about today',
+  'phase.diary.symptoms': 'Symptoms',
+  'phase.estimate.cycles': {
+    one: 'This is an estimate from your last cycle.',
+    other: 'This is an estimate from your last {count} cycles.',
+  },
+  'phase.estimate.learning': 'This is an estimate from the cycle length you gave.',
+  'phase.guide.body': 'Body',
+  'phase.guide.close': 'Close',
+  'phase.guide.follicular.body':
+    'Energy often rises day by day. Discharge can become easier to notice.',
+  'phase.guide.follicular.food':
+    'Fresh food, protein and fibre help as your energy comes back. Keep regular meals.',
+  'phase.guide.follicular.mood':
+    'Many people feel lighter and more curious after the period. A good time to start new things.',
+  'phase.guide.follicular.training':
+    'Many people can train harder now. Build up step by step, with a proper warm up.',
+  'phase.guide.food': 'Food',
+  'phase.guide.luteal.body':
+    'Some people notice bloating, tender breasts or changes in their skin before the period.',
+  'phase.guide.luteal.food':
+    'Cravings are common. Regular meals with whole grains and protein can help you feel steady.',
+  'phase.guide.luteal.mood':
+    'Some people feel calmer, and some feel more sensitive near the end. Leave room in your plans.',
+  'phase.guide.luteal.training':
+    'Steady, moderate sessions often feel best. Rest more if you feel tired.',
+  'phase.guide.mood': 'Mood',
+  'phase.guide.open': 'What this phase can mean for you',
+  'phase.guide.ovulation.body':
+    'Some people feel a short pain on one side, or notice clear, stretchy discharge.',
+  'phase.guide.ovulation.food':
+    'Fresh vegetables, fibre and enough water help as oestrogen peaks. Keep regular meals.',
+  'phase.guide.ovulation.mood':
+    'Many people feel more social and confident now. Plan the talks and the meetings that need energy.',
+  'phase.guide.ovulation.training':
+    'Strength and speed are often at their best. A good time for harder sessions, with a proper warm up.',
+  'phase.guide.period.body':
+    'Cramps, a sore lower back or tiredness are common. Rest when you need it.',
+  'phase.guide.period.food': 'Warm, regular meals and enough water can help you feel steady.',
+  'phase.guide.period.mood':
+    'Some people feel tired or low on the first days. Plan a quieter day where you can.',
+  'phase.guide.period.training':
+    'Gentle movement, such as walking or stretching, often feels best. Do what feels right.',
+  'phase.guide.training': 'Training',
+  'phase.name.follicular': 'Follicular phase',
+  'phase.name.luteal': 'Luteal phase',
+  'phase.name.ovulation': 'Ovulation phase',
+  'phase.name.period': 'Period phase',
+  'phase.past.heading.follicular': 'In your past follicular phases',
+  'phase.past.heading.luteal': 'In your past luteal phases',
+  'phase.past.heading.ovulation': 'In your past ovulation phases',
+  'phase.past.heading.period': 'In your past period phases',
+  'phase.past.nothing': 'You noted nothing from this diary in these phases yet.',
+  'phase.past.one': {
+    one: 'You noted {first} in {firstCount} of {count} cycle.',
+    other: 'You noted {first} in {firstCount} of {count} cycles.',
+  },
+  'phase.past.two': {
+    one: 'You noted {first} in {firstCount} of {count} cycle, and {second} in {secondCount} of {count}.',
+    other:
+      'You noted {first} in {firstCount} of {count} cycles, and {second} in {secondCount} of {count}.',
+  },
+  'phase.past.waiting': 'Emi shows this after your first complete cycle.',
+  'phase.title': 'Cycle phase',
   'recovery.before.action': 'Show my code',
   'recovery.before.line.nobody':
     "We can't recover it for you. If we could, we could read your days.",

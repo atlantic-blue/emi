@@ -242,7 +242,20 @@ import {
   whereTheScreenDrew,
   whyTheStripIsGone,
 } from '../apps/mobile/tests/fixtures/theTodayLook';
-import { phaseCardTestID } from '../apps/mobile/src/features/home/PhaseCard';
+import { phaseCardPressTestID, phaseCardTestID } from '../apps/mobile/src/features/home/PhaseCard';
+import { guideAreas } from '../apps/mobile/src/features/phase/copy';
+import { phaseDiaryNoteTestID } from '../apps/mobile/src/features/phase/PhaseDiary';
+import {
+  phaseGuideAreaTestID,
+  phaseGuideCloseTestID,
+  phaseGuideTestID,
+} from '../apps/mobile/src/features/phase/PhaseGuide';
+import {
+  phasePageGuideTestID,
+  phasePageLeadTestID,
+  phasePageTestID,
+  phasePageTitleTestID,
+} from '../apps/mobile/src/features/phase/PhasePage';
 import {
   cycleLengthSentence,
   cycleSentence,
@@ -3306,6 +3319,106 @@ defineFeature(feature, (test) => {
       expect(inHerLutealPhase.phasePoints).toBe(onHerPeriodDay.phasePoints);
       expect(inHerLutealPhase.dayPoints).toBe(onHerPeriodDay.dayPoints);
       expect(theFourWordsDrawnTooLargeOn(screen.toJSON())).toEqual([]);
+    });
+  });
+
+  test('SCREEN-2, she opens the page of her phase from Today and records her diary there', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+    const herChips = [
+      'phase-diary-symptoms-cramps',
+      'phase-diary-food-hungry',
+      'phase-diary-moods-calm',
+    ];
+    const theDayOnHerPhone = (): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), theDaySheOpensIt);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she presses the phase card under the ring', async () => {
+      await screen.findByTestId(phaseCardPressTestID);
+      await shePresses(phaseCardPressTestID);
+    });
+
+    then('she is reading the page of the phase she is in, with its days in her cycle', () => {
+      expect(app.pathname()).toBe('/phase');
+      expect(screen.getByTestId(phasePageTitleTestID).props.children).toBe('Period phase');
+      expect(screen.getByTestId(phasePageLeadTestID).props.children).toMatch(
+        /^Days 1 to \d+\. These are the days you bleed\./,
+      );
+    });
+
+    when('she presses Cramps, Hungry and Calm in the diary of today', async () => {
+      for (const chip of herChips) {
+        await shePresses(chip);
+      }
+    });
+
+    and('she writes a note about today and leaves the box', async () => {
+      await fireEvent.changeText(screen.getByTestId(phaseDiaryNoteTestID), 'Slept badly');
+      await fireEvent(screen.getByTestId(phaseDiaryNoteTestID), 'endEditing');
+    });
+
+    then(
+      'her phone holds those three answers and the note on today, sealed, beside the flow she logged',
+      () => {
+        const held = readDayLog(herDatabase(), theDaySheOpensIt);
+
+        expect(new TextDecoder().decode(held?.payload)).not.toContain('Slept badly');
+        expect(theDayOnHerPhone()).toMatchObject({
+          flow: expect.any(String),
+          symptoms: ['cramps'],
+          food: ['hungry'],
+          moods: ['calm'],
+          note: 'Slept badly',
+        });
+      },
+    );
+
+    and('the three chips she pressed are filled', () => {
+      for (const chip of herChips) {
+        expect(screen.getByTestId(chip).props.accessibilityState).toEqual({ selected: true });
+      }
+    });
+
+    when('she presses What this phase can mean for you', async () => {
+      await shePresses(phasePageGuideTestID);
+    });
+
+    then(
+      'a sheet gives her Mood, Food, Body and Training for that phase, and no designer note',
+      () => {
+        expect(screen.getByTestId(phaseGuideTestID)).toBeTruthy();
+        expect(guideAreas).toEqual(['mood', 'food', 'body', 'training']);
+        for (const area of guideAreas) {
+          expect(screen.getByTestId(phaseGuideAreaTestID(area))).toBeTruthy();
+        }
+        expect(screen.queryByText(/specialist/)).toBeNull();
+      },
+    );
+
+    when('she presses Close', async () => {
+      await shePresses(phaseGuideCloseTestID);
+    });
+
+    then('the sheet is gone and she is on the page of her phase', () => {
+      expect(screen.queryByTestId(phaseGuideTestID)).toBeNull();
+      expect(screen.getByTestId(phasePageTestID)).toBeTruthy();
+      expect(app.pathname()).toBe('/phase');
     });
   });
 

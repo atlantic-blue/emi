@@ -184,6 +184,11 @@ interface Props {
   readonly onLogPain: () => void;
   /** The way out, which only the card a woman who asked for it reads takes her by. */
   readonly onExport: () => void;
+  /**
+   * The way to the Cycle phase page, which the phase card under the ring takes her by. A drawing of
+   * this screen alone offers none, and then the card is not a button.
+   */
+  readonly onOpenPhase?: () => void;
   /** The way into her month, which the calendar button in the top bar takes her by. */
   readonly onOpenMonth?: (day: string) => void;
   /** The way to one cycle on the Insights screen, which a strip takes her by. */
@@ -220,6 +225,7 @@ export function HomeScreen({
   onSymptoms,
   onLogPain,
   onExport,
+  onOpenPhase,
   onOpenMonth,
   onOpenCycle,
   onOpenPattern,
@@ -265,6 +271,7 @@ export function HomeScreen({
           <View style={styles.phaseCard}>
             <PhaseCard
               days={phaseDays[ringGeometry(ring).phase]}
+              onPress={onOpenPhase}
               phase={ringGeometry(ring).phase}
             />
           </View>
