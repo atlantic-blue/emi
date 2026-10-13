@@ -769,3 +769,14 @@ Feature: She opens Emi and logs her first period
     Then a sheet gives her Mood, Food, Body and Training for that phase, and no designer note
     When she presses Close
     Then the sheet is gone and she is on the page of her phase
+
+  Scenario: SCREEN-2, she records sex on a past day and removes it
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the Sex page of yesterday
+    Then the page asks whether she had sex yesterday, under the date of that day
+    When she presses Protected, High and Yes, and saves
+    Then her phone holds those three answers on that day, sealed, beside the flow she logged
+    When she opens the Sex page of that day again
+    Then the three answers she saved are filled
+    When she presses each of them again, and saves
+    Then that day holds no answer about sex, and keeps its flow

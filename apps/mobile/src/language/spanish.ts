@@ -173,6 +173,25 @@ export const spanish: CatalogueIn<'es'> = {
   'forecast.statedLength': 'Hasta entonces usamos el ciclo de {days} días que nos indicaste.',
   'forecast.stillLearning': 'Todavía te estamos conociendo',
 
+  'highlight.back': 'Atrás',
+  'highlight.intercourse.1':
+    'El coito es el sexo en el que un pene entra en la vagina. Es una forma de sexo entre muchas.',
+  'highlight.intercourse.2':
+    'El sexo está bien solo cuando las dos personas lo quieren. Cada persona puede decir que no, o parar, en cualquier momento.',
+  'highlight.intercourse.3':
+    'El embarazo es más probable después de un coito sin preservativo en la ventana fértil. Emi solo estima la ventana. Emi no es un anticonceptivo.',
+  'highlight.intercourse.4':
+    'El preservativo reduce la probabilidad de una infección que se transmite por el sexo. La píldora, el dispositivo intrauterino y el implante no la reducen.',
+  'highlight.intercourse.title': 'Coito',
+  'highlight.learnAboutSex.1':
+    'El deseo sexual es cuánto quieres tener sexo. Puede cambiar de un día a otro y a lo largo de tu ciclo.',
+  'highlight.learnAboutSex.2':
+    'El sueño, el estrés, una enfermedad, un medicamento y lo que sientes por tu pareja pueden cambiarlo.',
+  'highlight.learnAboutSex.3':
+    'El sexo puede sentirse bien con orgasmo o sin él. Tu respuesta aquí es tuya, y "Prefiero no decirlo" también es una respuesta.',
+  'highlight.learnAboutSex.4':
+    'Si el sexo te duele, o un cambio te preocupa, un médico o una enfermera pueden ayudarte.',
+  'highlight.learnAboutSex.title': 'Aprende más sobre el sexo',
   'history.back': 'Atrás',
   'history.cycleDayCount': { one: '{count} día', other: '{count} días' },
   'history.cycleFrom': 'Desde {day}',
@@ -693,6 +712,33 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.settings.lock': 'Bloqueo',
   'settings.settings.lockLine': 'Activado, con tu cara o tu código de acceso',
   'settings.settings.title': 'Privacidad',
+  'sex.back': 'Atrás',
+  'sex.day': '{weekday}, {date} de {month}',
+  'sex.fertile.now.sameMonth':
+    'Estás en tu ventana fértil, del {from} al {to} de {month}. Es una estimación. Esto no es un anticonceptivo.',
+  'sex.fertile.now.spansMonths':
+    'Estás en tu ventana fértil, del {from} de {fromMonth} al {to} de {toMonth}. Es una estimación. Esto no es un anticonceptivo.',
+  'sex.fertile.then.sameMonth':
+    'Estabas en tu ventana fértil, del {from} al {to} de {month}. Es una estimación. Esto no es un anticonceptivo.',
+  'sex.fertile.then.spansMonths':
+    'Estabas en tu ventana fértil, del {from} de {fromMonth} al {to} de {toMonth}. Es una estimación. Esto no es un anticonceptivo.',
+  'sex.group.orgasm': 'Orgasmo',
+  'sex.group.sex': 'Sexo',
+  'sex.group.sexDrive': 'Deseo sexual',
+  'sex.orgasm.no': 'No',
+  'sex.orgasm.ratherNotSay': 'Prefiero no decirlo',
+  'sex.orgasm.yes': 'Sí',
+  'sex.question.thatDay': '¿Tuviste sexo ese día?',
+  'sex.question.today': '¿Tuviste sexo hoy?',
+  'sex.question.yesterday': '¿Tuviste sexo ayer?',
+  'sex.save': 'Guardar',
+  'sex.sex.none': 'Sin sexo',
+  'sex.sex.with': 'Con protección',
+  'sex.sex.without': 'Sin protección',
+  'sex.sexDrive.high': 'Alto',
+  'sex.sexDrive.low': 'Bajo',
+  'sex.sexDrive.neutral': 'Neutro',
+  'sex.title': 'Sexo',
   'tab.insights': 'Análisis',
   'tab.log': 'Registro',
   'tab.privacy': 'Privacidad',

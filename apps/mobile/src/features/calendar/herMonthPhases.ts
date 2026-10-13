@@ -56,16 +56,41 @@ export function theOvulationDayOn(from: RingInputFrom, day: string): string | un
     : undefined;
 }
 
-/** Whether a date falls in the fertile window of the cycle holding it, as the cycle read it then. */
-export function isFertileOn(from: RingInputFrom, day: string): boolean {
-  const read = cycleShapeFor(asSheReadItOn(from, day));
-  if (read === undefined) {
-    return false;
+/** The first and the last date of a fertile window. */
+export interface FertileDates {
+  readonly from: string;
+  readonly to: string;
+}
+
+/**
+ * The fertile window of the cycle holding that date, as the cycle read it then, in dates. The
+ * calendar marks a date fertile when it falls inside this window, and the Sex page names the same
+ * two ends, so the note and the marks cannot name different days.
+ */
+export function theFertileWindowOn(from: RingInputFrom, day: string): FertileDates | undefined {
+  const asThen = asSheReadItOn(from, day);
+  const read = cycleShapeFor(asThen);
+  const holding = asThen.cycles[asThen.cycles.length - 1];
+  if (read === undefined || holding === undefined) {
+    return undefined;
   }
 
   const fertile = fertileDaysOf(read.shape);
+  if (fertile.to < fertile.from) {
+    return undefined;
+  }
 
-  return read.day >= fertile.from && read.day <= fertile.to;
+  return {
+    from: addDays(holding.startedOn, fertile.from - 1),
+    to: addDays(holding.startedOn, fertile.to - 1),
+  };
+}
+
+/** Whether a date falls in the fertile window of the cycle holding it, as the cycle read it then. */
+export function isFertileOn(from: RingInputFrom, day: string): boolean {
+  const window = theFertileWindowOn(from, day);
+
+  return window !== undefined && day >= window.from && day <= window.to;
 }
 
 /** What the month colours one date by, or nothing where no cycle of hers holds it. */

@@ -342,6 +342,7 @@ The name a style uses to reach that file. A style names the registered name and 
 type IconName =
   | 'bell'
   | 'bloating'
+  | 'book'
   | 'calendar'
   | 'chart'
   | 'check'
@@ -354,6 +355,7 @@ type IconName =
   | 'energy'
   | 'export'
   | 'headache'
+  | 'heart'
   | 'info'
   | 'key'
   | 'lock'

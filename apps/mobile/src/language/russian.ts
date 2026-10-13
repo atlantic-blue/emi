@@ -175,6 +175,25 @@ export const russian: CatalogueIn<'ru'> = {
   'forecast.statedLength': 'Пока мы считаем по циклу в {days} дней, который вы нам назвали.',
   'forecast.stillLearning': 'Мы ещё узнаём вас',
 
+  'highlight.back': 'Назад',
+  'highlight.intercourse.1':
+    'Половым актом называют секс, при котором пенис входит во влагалище. Это один из многих видов секса.',
+  'highlight.intercourse.2':
+    'Секс уместен, только когда его хотят оба. Каждый может сказать «нет» или остановиться в любой момент.',
+  'highlight.intercourse.3':
+    'Беременность наиболее вероятна после полового акта без презерватива в фертильное окно. Emi только оценивает окно. Emi не является средством контрацепции.',
+  'highlight.intercourse.4':
+    'Презерватив снижает вероятность инфекции, которая передаётся половым путём. Таблетки, спираль и имплант её не снижают.',
+  'highlight.intercourse.title': 'Половой акт',
+  'highlight.learnAboutSex.1':
+    'Сексуальное желание показывает, насколько вам хочется секса. Оно может меняться день ото дня и на протяжении цикла.',
+  'highlight.learnAboutSex.2':
+    'Его могут менять сон, стресс, болезнь, лекарства и ваши чувства к партнёру.',
+  'highlight.learnAboutSex.3':
+    'Секс может быть приятным с оргазмом и без него. Ваш ответ здесь принадлежит вам, и «Предпочитаю не говорить» тоже ответ.',
+  'highlight.learnAboutSex.4':
+    'Если секс причиняет боль или вас беспокоит какое-то изменение, вам может помочь врач или медсестра.',
+  'highlight.learnAboutSex.title': 'Узнать больше о сексе',
   'history.back': 'Назад',
   'history.cycleDayCount': { one: '{count} день', few: '{count} дня', many: '{count} дней' },
   'history.cycleFrom': 'С {day}',
@@ -718,6 +737,33 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.settings.lock': 'Блокировка',
   'settings.settings.lockLine': 'Включена: по лицу или по коду доступа',
   'settings.settings.title': 'Приватность',
+  'sex.back': 'Назад',
+  'sex.day': '{weekday}, {date} {month}',
+  'sex.fertile.now.sameMonth':
+    'Сейчас у вас фертильное окно, с {from} по {to} {month}. Это оценка. Это не контрацепция.',
+  'sex.fertile.now.spansMonths':
+    'Сейчас у вас фертильное окно, с {from} {fromMonth} по {to} {toMonth}. Это оценка. Это не контрацепция.',
+  'sex.fertile.then.sameMonth':
+    'В этот день у вас было фертильное окно, с {from} по {to} {month}. Это оценка. Это не контрацепция.',
+  'sex.fertile.then.spansMonths':
+    'В этот день у вас было фертильное окно, с {from} {fromMonth} по {to} {toMonth}. Это оценка. Это не контрацепция.',
+  'sex.group.orgasm': 'Оргазм',
+  'sex.group.sex': 'Секс',
+  'sex.group.sexDrive': 'Сексуальное желание',
+  'sex.orgasm.no': 'Нет',
+  'sex.orgasm.ratherNotSay': 'Предпочитаю не говорить',
+  'sex.orgasm.yes': 'Да',
+  'sex.question.thatDay': 'У вас был секс в этот день?',
+  'sex.question.today': 'У вас был секс сегодня?',
+  'sex.question.yesterday': 'У вас был секс вчера?',
+  'sex.save': 'Сохранить',
+  'sex.sex.none': 'Не было',
+  'sex.sex.with': 'С защитой',
+  'sex.sex.without': 'Без защиты',
+  'sex.sexDrive.high': 'Высокое',
+  'sex.sexDrive.low': 'Низкое',
+  'sex.sexDrive.neutral': 'Обычное',
+  'sex.title': 'Секс',
   'tab.insights': 'Обзор',
   'tab.log': 'Запись',
   'tab.privacy': 'Приватность',

@@ -9,6 +9,7 @@ import { stroke } from './space';
 export type IconName =
   | 'bell'
   | 'bloating'
+  | 'book'
   | 'calendar'
   | 'chart'
   | 'check'
@@ -21,6 +22,7 @@ export type IconName =
   | 'energy'
   | 'export'
   | 'headache'
+  | 'heart'
   | 'info'
   | 'key'
   | 'lock'
@@ -72,6 +74,7 @@ export const ICON_CORNER = 2;
 export const iconNames: readonly IconName[] = [
   'bell',
   'bloating',
+  'book',
   'calendar',
   'chart',
   'check',
@@ -84,6 +87,7 @@ export const iconNames: readonly IconName[] = [
   'energy',
   'export',
   'headache',
+  'heart',
   'info',
   'key',
   'lock',
@@ -122,6 +126,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<ellipse cx="12" cy="12" rx="6" ry="5.25" /> <path d="M3.4 9.1a7 7 0 0 0 0 5.8" /> <path d="M20.6 9.1a7 7 0 0 1 0 5.8" />',
+  },
+  book: {
+    name: 'book',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<path d="M5 4.5h9a3 3 0 0 1 3 3v12H8a3 3 0 0 1-3-3z" /> <path d="M5 16.5a3 3 0 0 1 3-3h9" />',
   },
   calendar: {
     name: 'calendar',
@@ -194,6 +204,12 @@ export const icons: Readonly<Record<IconName, Icon>> = {
     size: ICON_SIZE,
     strokeWidth: stroke.icon,
     body: '<circle cx="12" cy="12" r="8.25" /> <path d="m11.2 3.9 2.2 3.6-2.8 2.9 2.6 3.4-2.4 2.9 1.8 3.1" />',
+  },
+  heart: {
+    name: 'heart',
+    size: ICON_SIZE,
+    strokeWidth: stroke.icon,
+    body: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />',
   },
   info: {
     name: 'info',

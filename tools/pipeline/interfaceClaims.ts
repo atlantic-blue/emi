@@ -66,8 +66,23 @@ function wordClaimsIn(file: string, text: string, words: readonly string[]): Cla
   return found;
 }
 
+/**
+ * Her answers on the Sex page, from the sexPage board. Each one names what she used, which is a
+ * fact about her day and not a promise Emi makes, so the word is allowed as that exact catalogue
+ * entry and nowhere else. The same word in any other sentence, or under any other key, is refused.
+ */
+export const approvedAnswerLabels: readonly string[] = [
+  "'sex.sex.with': 'Protected'",
+  "'sex.sex.with': 'Con protección'",
+  "'sex.sex.without': 'Sin protección'",
+];
+
+function withoutAnswerLabels(source: string): string {
+  return approvedAnswerLabels.reduce((text, label) => text.split(label).join(' '), source);
+}
+
 export function interfaceClaimsIn(file: string, contents: string): Claim[] {
-  const source = withoutModuleSpecifiers(contents);
+  const source = withoutAnswerLabels(withoutModuleSpecifiers(contents));
 
   return [
     ...claimsIn(file, source, approvedDenials, forbiddenWording),

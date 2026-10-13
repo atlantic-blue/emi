@@ -74,6 +74,27 @@ export function dayLabel(day: string, today: string): string {
   return `${weekdayNames[date.getUTCDay()]} ${date.getUTCDate()} ${monthNames[date.getUTCMonth()]}`;
 }
 
+/** The name of the day of the week a date falls on, in her language. */
+export function weekdayOf(day: string): string {
+  const date = new Date(toDayNumber(day) * MILLISECONDS_IN_A_DAY);
+
+  return weekdayNames[date.getUTCDay()] ?? '';
+}
+
+/** The name of the month a date falls in, in the form her language writes after a day number. */
+export function monthOf(day: string): string {
+  toDayNumber(day);
+
+  return monthNames[Number(day.slice(5, 7)) - 1] ?? '';
+}
+
+/** The day of the month, as a plain number. */
+export function dateOf(day: string): number {
+  toDayNumber(day);
+
+  return Number(day.slice(8, 10));
+}
+
 /**
  * A month is named by its first day, so one string carries the month and the year and no second
  * shape has to be kept in step with it.
