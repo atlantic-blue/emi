@@ -1,4 +1,12 @@
-import type { DayRecord, Discharge, Orgasm, Product, Sex, SexDrive } from '@emi/crypto';
+import type {
+  DayRecord,
+  Discharge,
+  Orgasm,
+  OvulationSign,
+  Product,
+  Sex,
+  SexDrive,
+} from '@emi/crypto';
 import { type Flow, isBleeding } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
@@ -316,4 +324,36 @@ function withoutThePeriodAnswers(record: DayRecord): DayRecord {
   const { flow, discharge, products, ...rest } = record;
 
   return rest;
+}
+
+/** Her answer to the signs of ovulation popup: the signs she picked, or that she closed it. */
+export type OvulationAnswer =
+  | { readonly kind: 'answered'; readonly signs: readonly OvulationSign[] }
+  | { readonly kind: 'dismissed' };
+
+export interface OvulationLog {
+  readonly day: string;
+  readonly answer: OvulationAnswer;
+  readonly now: Date;
+}
+
+/**
+ * One answer to the popup. The day keeps everything else it holds, through the same save as every
+ * other write of a day, and the record says the popup showed, so it does not show again that day.
+ */
+export function logOvulationAnswer(db: Database, vault: DayVault, log: OvulationLog): DayAndCycles {
+  const held = readDayLog(db, log.day);
+  const kept: Partial<DayRecord> = held ? vault.open(held.payload) : {};
+  const { ovulationSigns, ovulationPopup, ...rest } = kept;
+  const record: DayRecord = {
+    ...rest,
+    ...(log.answer.kind === 'answered'
+      ? { ovulationSigns: log.answer.signs, ovulationPopup: 'answered' }
+      : { ovulationPopup: 'dismissed' }),
+    day: log.day,
+    recordedAt: log.now.toISOString(),
+  };
+  const write = { day: log.day, payload: vault.seal(record), now: log.now };
+
+  return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
 }

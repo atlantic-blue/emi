@@ -560,6 +560,21 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.whatEmiDoes.privacy.title': 'Tu privacidad',
   'onboarding.whatEmiDoes.title': 'Esto es lo que Emi hace con lo que le contaste',
 
+  'ovulation.popup.line':
+    'Emi guarda lo que notas con el día de hoy, y aparece en tu exportación. Elige todo lo que corresponda.',
+  'ovulation.popup.notNow': 'Ahora no',
+  'ovulation.popup.save': 'Guardar',
+  'ovulation.popup.title': '¿Notaste algún signo de ovulación?',
+  'ovulation.popup.window.sameMonth': 'Ventana fértil, del {from} al {to} de {month}',
+  'ovulation.popup.window.spansMonths':
+    'Ventana fértil, del {from} de {fromMonth} al {to} de {toMonth}',
+  'ovulation.sign.eggWhiteDischarge': 'Flujo como clara de huevo',
+  'ovulation.sign.higherSexDrive': 'Más deseo sexual',
+  'ovulation.sign.higherTemperature': 'Temperatura más alta',
+  'ovulation.sign.nothingYet': 'Nada todavía',
+  'ovulation.sign.painOnOneSide': 'Dolor en un lado',
+  'ovulation.sign.positiveOvulationTest': 'Test de ovulación positivo',
+  'ovulation.sign.tenderBreasts': 'Pechos sensibles',
   'period.back': 'Atrás',
   'period.day': '{weekday}, {date} de {month}',
   'period.discharge.creamy': 'Cremoso',
