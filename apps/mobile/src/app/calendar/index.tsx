@@ -7,6 +7,8 @@ import { listCycles } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
 import { readProfile } from '../../data/profileRepository';
 import { CalendarScreen } from '../../features/calendar/CalendarScreen';
+import { ForecastPopup } from '../../features/calendar/ForecastPopup';
+import { closeForToday, forecastPopupShows } from '../../features/calendar/asksForPastPeriods';
 import { dayParameter, theMonthAskedFor } from '../../features/calendar/askedMonth';
 import { herMonth } from '../../features/calendar/herMonth';
 import { type DayPhase, theDayPhaseOn } from '../../features/calendar/herMonthPhases';
@@ -57,6 +59,8 @@ interface HerMonth {
   /** The phase of one date, so the month draws the window the ring drew on that date. */
   readonly phaseOn: (day: string) => DayPhase | undefined;
   readonly sheetFor: (day: string) => WhatTheSheetSays | undefined;
+  /** Whether the sheet that asks for her past periods stands over this month. */
+  readonly asksForPastPeriods: boolean;
 }
 
 function herMonthOf(
@@ -70,6 +74,7 @@ function herMonthOf(
   const days = herMonth(from, month);
 
   return {
+    asksForPastPeriods: forecastPopupShows(database, from, month),
     days,
     phaseOn: (day) => theDayPhaseOn(from, day),
     sheetFor: (day) => {
@@ -133,24 +138,42 @@ export default function CalendarRoute(): ReactNode {
     router.replace('/');
   }, [router]);
 
+  // Both ways out of the sheet close it over this month for the rest of the day. The sheet is a
+  // modal, which draws over every screen, so it is closed before the list of periods opens.
+  const notNow = useCallback(() => {
+    closeForToday(database, month, today);
+    setHers(herMonthOf(database, vault, profiles, today, month));
+  }, [database, month, profiles, today, vault]);
+
   if (!isDone) {
     return <Redirect href="/onboarding/welcome" />;
   }
 
   return (
-    <CalendarScreen
-      days={hers.days}
-      month={month}
-      onBack={leave}
-      onEarlierMonth={() => sheMovesTo(addMonths(month, -1))}
-      onEditPeriod={(day) => router.push(`/calendar/period?${dayParameter}=${day}`)}
-      onLaterMonth={() => sheMovesTo(addMonths(month, 1))}
-      onOpenDay={(day) => router.push(`/day/${day}`)}
-      onPressDay={setShePressed}
-      onToday={() => router.replace('/')}
-      phaseOn={hers.phaseOn}
-      today={today}
-      {...theCardFor(hers.sheetFor(shePressed))}
-    />
+    <>
+      <CalendarScreen
+        days={hers.days}
+        month={month}
+        onBack={leave}
+        onEarlierMonth={() => sheMovesTo(addMonths(month, -1))}
+        onEditPeriod={(day) => router.push(`/calendar/period?${dayParameter}=${day}`)}
+        onLaterMonth={() => sheMovesTo(addMonths(month, 1))}
+        onOpenDay={(day) => router.push(`/day/${day}`)}
+        onPressDay={setShePressed}
+        onToday={() => router.replace('/')}
+        phaseOn={hers.phaseOn}
+        today={today}
+        {...theCardFor(hers.sheetFor(shePressed))}
+      />
+      {hers.asksForPastPeriods ? (
+        <ForecastPopup
+          onAddPastPeriods={() => {
+            notNow();
+            router.push('/calendar/past-periods');
+          }}
+          onNotNow={notNow}
+        />
+      ) : null}
+    </>
   );
 }

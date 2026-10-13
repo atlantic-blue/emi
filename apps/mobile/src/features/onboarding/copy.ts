@@ -47,28 +47,6 @@ export const firstRunCopy = {
     lines: [words('onboarding.encrypts')],
     action: words('onboarding.birthYear.action'),
   },
-  lastPeriod: {
-    title: words('onboarding.lastPeriod.title'),
-    lines: [words('onboarding.lastPeriod.line.remember'), words('onboarding.encrypts')],
-    action: words('onboarding.lastPeriod.action'),
-    /**
-     * The sentence the question about the period before already offers, under the same key. Two
-     * questions a woman may be unable to answer, and one sentence for both of them, because a
-     * second key is a second sentence in three languages the moment somebody edits one of them.
-     */
-    wayPast: words('onboarding.periodBefore.skip'),
-  },
-  periodBefore: {
-    title: words('onboarding.periodBefore.title'),
-    question: words('onboarding.periodBefore.question'),
-    lines: [words('onboarding.periodBefore.line.remember')],
-    action: words('onboarding.periodBefore.action'),
-    skip: words('onboarding.periodBefore.skip'),
-    outOfRange: words('onboarding.periodBefore.outOfRange', undefined, {
-      maximum: maximumCycleLengthDays,
-      minimum: minimumCycleLengthDays,
-    }),
-  },
   cycleLength: {
     title: words('onboarding.cycleLength.title'),
     lines: [
@@ -191,8 +169,7 @@ export const firstRunScreens = [
   'welcome',
   'name',
   'birthYear',
-  'lastPeriod',
-  'periodBefore',
+  'threePeriods',
   'cycleLength',
   'periodLength',
   'regularity',

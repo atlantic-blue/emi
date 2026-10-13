@@ -9,7 +9,6 @@ import { listCycles } from '../../src/data/cycleRepository';
 import { profileRow, readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   firstForecastActionTestID,
   firstForecastTestID,
@@ -31,6 +30,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import { shePassesTheQuestion } from '../fixtures/theFirstRun';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -201,7 +201,7 @@ describe('the way past the last period question passes the period before with it
     it('is forgotten, so the hold writes no day for it', async () => {
       await sheOpensEmi();
       await sheReachesTheQuestionSheCannotAnswer();
-      await shePresses(dayTestID(aDaySheCouldHaveNamed));
+      await sheGivesAPeriod(0, aDaySheCouldHaveNamed, 5);
       await shePresses(onboardingWayPastTestID);
       await sheAnswersTheRest();
       await sheHoldsTheRing();
@@ -209,19 +209,19 @@ describe('the way past the last period question passes the period before with it
       expect(listDayLogs(herDatabase())).toEqual([]);
     });
 
-    it('takes the period before she picked with it, when she walks back to press it', async () => {
+    it('takes every period she gave with it, when she walks back to press it', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheQuestionSheCannotAnswer();
-      await shePresses(dayTestID(aDaySheCouldHaveNamed));
+      await sheGivesAPeriod(0, aDaySheCouldHaveNamed, 5);
+      await sheGivesAPeriod(1, thePeriodBeforeThat, 5);
       await shePresses(onboardingActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/period-before');
+      expect(app.pathname()).toBe('/onboarding/cycle-length');
 
-      await shePresses(dayTestID(thePeriodBeforeThat));
       await shePresses(onboardingBackTestID);
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
+      expect(app.pathname()).toBe('/onboarding/three-periods');
 
       await shePresses(onboardingWayPastTestID);
       await sheAnswersTheRest();
@@ -246,7 +246,7 @@ describe('the way past the last period question passes the period before with it
         await shePassesTheQuestion();
       }
 
-      expect(app.pathname()).not.toBe('/onboarding/last-period');
+      expect(app.pathname()).not.toBe('/onboarding/three-periods');
       expect(screen.getByTestId(firstForecastTestID)).toBeTruthy();
     });
   });

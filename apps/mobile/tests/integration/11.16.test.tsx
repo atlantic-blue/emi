@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { pastPeriodRowTestID } from '../../src/features/pastPeriods/PastPeriodsList';
 
 import { MINIMUM_TAP_TARGET, space } from '@emi/tokens';
 import { within } from '@testing-library/react-native';
@@ -53,12 +54,13 @@ async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
-/** Past the welcome and past the two questions she may skip, on the question about her last one. */
+/** Past the welcome and the two questions she may skip, with the first row of her periods open. */
 async function sheReachesHerLastPeriod(): Promise<void> {
   await renderRouter(appDirectory, { initialUrl: '/' });
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
+  await shePresses(pastPeriodRowTestID(0));
 }
 
 /**

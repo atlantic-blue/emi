@@ -7,7 +7,9 @@ import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
+import { pastPeriodRowTestID } from '../../src/features/pastPeriods/PastPeriodsList';
+import { pastPeriodsCopy } from '../../src/features/pastPeriods/copy';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
@@ -25,7 +27,7 @@ import { progressFillTestID } from '../../src/components/ProgressBar';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { theScreensWithNoBar } from '../fixtures/theFirstRunLook';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
-import { sizedTextIn } from '../fixtures/renderedText';
+import { sizedTextIn, textIn } from '../fixtures/renderedText';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -81,16 +83,15 @@ async function sheReachesTheLastPeriod(): Promise<void> {
  * a bar that counts something other than the questions fails here.
  */
 const theFractionsOfTheBar = [
-  '15.384615384615385%',
-  '23.076923076923077%',
-  '30.76923076923077%',
-  '38.46153846153847%',
-  '46.15384615384615%',
-  '53.84615384615385%',
-  '61.53846153846154%',
-  '69.23076923076923%',
-  '76.92307692307693%',
-  '84.61538461538461%',
+  '16.666666666666664%',
+  '25%',
+  '33.33333333333333%',
+  '41.66666666666667%',
+  '50%',
+  '58.333333333333336%',
+  '66.66666666666666%',
+  '75%',
+  '83.33333333333334%',
   '100%',
 ];
 
@@ -110,7 +111,7 @@ function everyWordOnTheScreen(where: FirstRunScreen): string[] {
   return sizedTextIn(screen.getByTestId(`onboarding-${where}`)).map((run) => run.text);
 }
 
-describe('the last period is the one question she cannot skip', () => {
+describe('her last periods are asked in one step, with its way past under the button', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -123,15 +124,18 @@ describe('the last period is the one question she cannot skip', () => {
     jest.useRealTimers();
   });
 
-  describe('the question that has no way past it', () => {
-    it('offers her nothing to skip with, because a forecast needs this day', async () => {
+  describe('the question about her periods', () => {
+    it('offers no Skip in the header, only the way past under the button', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheLastPeriod();
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
+      expect(app.pathname()).toBe('/onboarding/three-periods');
       expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
-      expect(everyWordOnTheScreen('lastPeriod')).not.toContain(firstRunCopy.skip);
+      expect(everyWordOnTheScreen('threePeriods')).not.toContain(firstRunCopy.skip);
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
+        pastPeriodsCopy.wayPast,
+      );
     });
 
     it('leaves her on the question when she presses on without answering it', async () => {
@@ -140,18 +144,18 @@ describe('the last period is the one question she cannot skip', () => {
       await sheReachesTheLastPeriod();
       await shePresses(onboardingActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
+      expect(app.pathname()).toBe('/onboarding/three-periods');
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    it('takes her on to the next question once she has picked a day', async () => {
+    it('takes her on to the cycle length once she has given a period', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheLastPeriod();
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted, 5);
       await shePresses(onboardingActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/period-before');
+      expect(app.pathname()).toBe('/onboarding/cycle-length');
     });
   });
 
@@ -162,16 +166,16 @@ describe('the last period is the one question she cannot skip', () => {
       expect(screen.queryByTestId(onboardingBackTestID)).toBeNull();
     });
 
-    it('carries her back to the day she picked, with the day still picked', async () => {
+    it('carries her back to the periods she gave, with the period still given', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheLastPeriod();
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted, 5);
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingBackTestID);
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
-      expect(screen.getByTestId(dayTestID(herPeriodStarted))).toBeSelected();
+      expect(app.pathname()).toBe('/onboarding/three-periods');
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(0)))).toContain('9 May');
     });
   });
 
@@ -188,18 +192,18 @@ describe('the last period is the one question she cannot skip', () => {
           written.push(stepLabel(where));
           expect(everyWordOnTheScreen(where)).toContain(stepLabel(where));
         }
-        if (where === 'lastPeriod') {
-          await shePresses(dayTestID(herPeriodStarted));
+        if (where === 'threePeriods') {
+          await sheGivesAPeriod(0, herPeriodStarted, 5);
         }
         if (where === 'cycleLength') {
           await shePresses(cycleLengthDaysTestID(28));
         }
         if (at + 1 < firstRunScreens.length) {
           // The way past a question where it has one, and the answer where it does not, which
-          // is the last period, the cycle length and the welcome.
+          // is her periods, the cycle length and the welcome.
           const skip = screen.queryByTestId(onboardingSkipTestID);
           const wayPast =
-            where === 'lastPeriod' ? null : screen.queryByTestId(onboardingWayPastTestID);
+            where === 'threePeriods' ? null : screen.queryByTestId(onboardingWayPastTestID);
           await fireEvent.press(skip ?? wayPast ?? screen.getByTestId(onboardingActionTestID));
         }
       }

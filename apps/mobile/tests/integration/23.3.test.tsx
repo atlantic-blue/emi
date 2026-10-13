@@ -3,11 +3,11 @@ import { resolve } from 'node:path';
 import { CYCLES_BEFORE_A_FORECAST } from '@emi/cycle';
 import { render } from '@testing-library/react-native';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { describeClaim, searchableText } from '../../../../tools/pipeline/forbiddenClaims';
 import { interfaceClaimsIn } from '../../../../tools/pipeline/interfaceClaims';
 import { type Language, type Words, catalogueOf, languages, wordKeys } from '../../src/language';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   firstForecastActionTestID,
   firstForecastLinesTestID,
@@ -240,12 +240,10 @@ async function sheWalksToHerForecast(walk: HerWalk = {}): Promise<{
   await shePresses(onboardingSkipTestID);
 
   if (walk.day === undefined) {
-    // The way past her last period passes the question about the period before it as well.
     await shePresses(onboardingWayPastTestID);
   } else {
-    await shePresses(dayTestID(walk.day));
+    await sheGivesAPeriod(0, walk.day);
     await shePresses(onboardingActionTestID);
-    await shePresses(onboardingWayPastTestID);
   }
 
   await shePresses(cycleLengthDaysTestID(28));

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { CYCLES_BEFORE_A_FORECAST, cyclesFrom, forecastFrom } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
+import { aWalkPeriodLengthDays, sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { listCycles } from '../../src/data/cycleRepository';
 import { listDayLogs } from '../../src/data/dayLogRepository';
@@ -26,7 +27,6 @@ import {
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { learningRangeTestID, learningTestID } from '../../src/features/forecast/Learning';
 import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { cycleRingTestID } from '../../src/components/CycleRing';
@@ -121,15 +121,13 @@ async function sheReachesHerFirstForecast(
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(answers.periodStartedOn ?? herPeriodStarted));
-  await shePresses(onboardingActionTestID);
+  await sheGivesAPeriod(0, answers.periodStartedOn ?? herPeriodStarted);
 
-  if (answers.periodBeforeStartedOn === undefined) {
-    await shePresses(onboardingWayPastTestID);
-  } else {
-    await shePresses(dayTestID(answers.periodBeforeStartedOn));
-    await shePresses(onboardingActionTestID);
+  if (answers.periodBeforeStartedOn !== undefined) {
+    await sheGivesAPeriod(1, answers.periodBeforeStartedOn);
   }
+
+  await shePresses(onboardingActionTestID);
 
   await shePresses(cycleLengthDaysTestID(answers.cycleLengthDays ?? herCycleLengthDays));
   await shePresses(onboardingActionTestID);
@@ -154,7 +152,12 @@ function theRangeFor(answers: {
   readonly periodBeforeStartedOn?: string;
   readonly cycleLengthDays: number;
 }): string {
-  const forecast = forecastFromHerAnswers(answers);
+  const forecast = forecastFromHerAnswers({
+    cycleLengthDays: answers.cycleLengthDays,
+    periods: [answers.periodStartedOn, answers.periodBeforeStartedOn]
+      .filter((startedOn): startedOn is string => startedOn !== undefined)
+      .map((startedOn) => ({ startedOn, lengthDays: aWalkPeriodLengthDays })),
+  });
 
   if (forecast.start === undefined) {
     throw new Error('her answers left the arithmetic with no range to draw');
@@ -252,7 +255,7 @@ describe('her first forecast is a range, before anything is written', () => {
 
       await sheReachesHerFirstForecast();
       const forecast = forecastFromHerAnswers({
-        periodStartedOn: herPeriodStarted,
+        periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
         cycleLengthDays: herCycleLengthDays,
       });
 
@@ -293,8 +296,10 @@ describe('her first forecast is a range, before anything is written', () => {
 
       await sheReachesHerFirstForecast({ periodBeforeStartedOn: theOneBefore });
       const forecast = forecastFromHerAnswers({
-        periodStartedOn: herPeriodStarted,
-        periodBeforeStartedOn: theOneBefore,
+        periods: [
+          { startedOn: herPeriodStarted, lengthDays: 1 },
+          { startedOn: theOneBefore, lengthDays: 1 },
+        ],
         cycleLengthDays: herCycleLengthDays,
       });
 
@@ -446,8 +451,10 @@ describe('her first forecast is a range, before anything is written', () => {
           database,
           aVaultThatCannotBeRead(),
           {
-            periodStartedOn: herPeriodStarted,
-            periodBeforeStartedOn: theOneBefore,
+            periods: [
+              { startedOn: herPeriodStarted, lengthDays: 1 },
+              { startedOn: theOneBefore, lengthDays: 1 },
+            ],
             cycleLengthDays: herCycleLengthDays,
           },
           whenSheOpensIt,
@@ -467,8 +474,10 @@ describe('her first forecast is a range, before anything is written', () => {
         database,
         { day: herVault(), profile: herProfileVault() },
         {
-          periodStartedOn: herPeriodStarted,
-          periodBeforeStartedOn: theOneBefore,
+          periods: [
+            { startedOn: herPeriodStarted, lengthDays: 1 },
+            { startedOn: theOneBefore, lengthDays: 1 },
+          ],
           cycleLengthDays: herCycleLengthDays,
         },
         whenSheOpensIt,
@@ -490,16 +499,20 @@ describe('her first forecast is a range, before anything is written', () => {
         database,
         { day: herVault(), profile: herProfileVault() },
         {
-          periodStartedOn: herPeriodStarted,
-          periodBeforeStartedOn: theOneBefore,
+          periods: [
+            { startedOn: herPeriodStarted, lengthDays: 1 },
+            { startedOn: theOneBefore, lengthDays: 1 },
+          ],
           cycleLengthDays: herCycleLengthDays,
         },
         whenSheOpensIt,
       );
 
       const fromHerAnswers = forecastFromHerAnswers({
-        periodStartedOn: herPeriodStarted,
-        periodBeforeStartedOn: theOneBefore,
+        periods: [
+          { startedOn: herPeriodStarted, lengthDays: 1 },
+          { startedOn: theOneBefore, lengthDays: 1 },
+        ],
         cycleLengthDays: herCycleLengthDays,
       });
       const fromHerDays = forecastFrom(

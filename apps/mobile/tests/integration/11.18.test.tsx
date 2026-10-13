@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { getLocales } from 'expo-localization';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -108,9 +108,8 @@ async function sheReachesTheFocus(): Promise<{ pathname: () => string }> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(herPeriodStarted));
+  await sheGivesAPeriod(0, herPeriodStarted);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingWayPastTestID);

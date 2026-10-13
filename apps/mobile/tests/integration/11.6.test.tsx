@@ -1,5 +1,6 @@
 import { tabTestID } from '@emi/ui';
 import { join } from 'node:path';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import type { DayRecord, Feeling } from '@emi/crypto';
 import { feelingValues } from '@emi/crypto';
@@ -19,7 +20,6 @@ import { groupTileTestID } from '../../src/features/log/GroupTiles';
 import { logSymptomsSaveTestID } from '../../src/features/log/LogSymptoms';
 import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import { painGroup } from '../../src/features/log/askedGroup';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import {
@@ -114,9 +114,8 @@ async function sheReachesTheFeeling(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(herPeriodStarted));
+  await sheGivesAPeriod(0, herPeriodStarted);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingWayPastTestID);
@@ -175,9 +174,8 @@ describe('a hard period day offers the pain log first', () => {
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingWayPastTestID);
       await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingWayPastTestID);
@@ -306,7 +304,7 @@ describe('a hard period day offers the pain log first', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               feeling: 'sad' as Feeling,
             },

@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
 import { longestName } from '@emi/crypto';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
@@ -151,7 +152,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       expect(visited).toEqual([
         '/onboarding/name',
         '/onboarding/year-of-birth',
-        '/onboarding/last-period',
+        '/onboarding/three-periods',
       ]);
     });
 
@@ -255,9 +256,8 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(yearTestID(herBirthYear));
       await shePresses(onboardingSkipTestID);
-      await shePresses(`day-${herPeriodStarted}`);
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingWayPastTestID);
       await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingWayPastTestID);
@@ -283,9 +283,8 @@ describe('she gives her name and the home screen greets her by it', () => {
       await sheTypes(herName);
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
-      await shePresses(`day-${herPeriodStarted}`);
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingWayPastTestID);
       await shePresses(cycleLengthDaysTestID(28));
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingWayPastTestID);
@@ -339,7 +338,11 @@ describe('she gives her name and the home screen greets her by it', () => {
           completeFirstRun(
             database,
             herVaults(),
-            { periodStartedOn: herPeriodStarted, cycleLengthDays: 28, name: aNameTooLong },
+            {
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
+              cycleLengthDays: 28,
+              name: aNameTooLong,
+            },
             whenSheOpensIt,
           ),
         ),
@@ -372,7 +375,11 @@ describe('she gives her name and the home screen greets her by it', () => {
           completeFirstRun(
             database,
             herVaults(),
-            { periodStartedOn: herPeriodStarted, cycleLengthDays: 28, birthYear: tooYoungAYear },
+            {
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
+              cycleLengthDays: 28,
+              birthYear: tooYoungAYear,
+            },
             whenSheOpensIt,
           ),
         ),
@@ -391,7 +398,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(yearTestID(herBirthYear));
       await shePresses(onboardingActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
+      expect(app.pathname()).toBe('/onboarding/three-periods');
     });
   });
 

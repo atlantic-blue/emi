@@ -12,6 +12,11 @@ import {
 import { useDatabase } from '../../data/DatabaseProvider';
 import { askToRemindHer } from '../../services/notifications/localReminder';
 import { useHerVaultsMade } from '../../services/vault/VaultProvider';
+import {
+  type PastPeriod,
+  periodsAfterGiving,
+  periodsAfterRemoving,
+} from '../pastPeriods/pastPeriods';
 import type { ReminderLead } from '../reminder/reminder';
 import {
   type TodaySymptom,
@@ -28,10 +33,8 @@ interface FirstRun {
   readonly isDone: boolean;
   /** Whether she has already been shown the four cards, which is the database's answer. */
   readonly tourIsDone: boolean;
-  /** Nothing at all where she does not remember the day, which is that question's way past it. */
-  readonly periodStartedOn: string | undefined;
-  /** The start before that one, and nothing at all where she does not remember it. */
-  readonly periodBeforeStartedOn: string | undefined;
+  /** Her last periods, the newest first, and empty until she gives one or where she skips. */
+  readonly periods: readonly PastPeriod[];
   /** Nothing at all until she turns the wheel or taps a length. */
   readonly cycleLengthDays: number | undefined;
   /** Nothing at all where she said she is not sure, which is that question's way past it. */
@@ -56,13 +59,14 @@ interface FirstRun {
    * asks the phone once, and a refusal is not asked again on the way back through.
    */
   readonly reminderWasRefused: boolean;
-  readonly setPeriodStartedOn: (day: string) => void;
-  /** Nothing is the answer "I do not remember" leaves behind, so the setter takes it as well. */
-  readonly setPeriodBeforeStartedOn: (day: string | undefined) => void;
+  /** One row of the list given, which drops a row below it that is no longer one cycle before. */
+  readonly givePeriod: (row: number, period: PastPeriod) => void;
+  /** One row of the list taken off, with every row below it. */
+  readonly removePeriod: (row: number) => void;
   /**
-   * The way past the question about her last period, which passes the question about the period
-   * before with it. Both days go, because a woman who says she does not remember has answered
-   * nothing, and a day she pressed before she read the link is not an answer she gave.
+   * The way past the question about her periods. Every period goes, because a woman who says she
+   * will log as she goes has answered nothing, and a row she gave before she read the link is not
+   * an answer she gave.
    */
   readonly forgetTheDates: () => void;
   readonly setCycleLengthDays: (days: number) => void;
@@ -130,8 +134,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const makeHerVaults = useHerVaultsMade();
   const [isDone, setIsDone] = useState(() => firstRunIsDone(database));
   const [tourIsDone, setTourIsDone] = useState(() => tourIsSeen(database));
-  const [periodStartedOn, setPeriodStartedOn] = useState<string | undefined>(undefined);
-  const [periodBeforeStartedOn, setPeriodBeforeStartedOn] = useState<string | undefined>(undefined);
+  const [periods, setPeriods] = useState<readonly PastPeriod[]>([]);
   const [cycleLengthDays, setCycleLengthDays] = useState<number | undefined>(undefined);
   const [periodLengthDays, setPeriodLengthDays] = useState<number | undefined>(undefined);
   const [regularity, setRegularity] = useState<Regularity | undefined>(undefined);
@@ -155,8 +158,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
         database,
         makeHerVaults,
         {
-          periodStartedOn,
-          periodBeforeStartedOn,
+          periods,
           cycleLengthDays,
           periodLengthDays,
           regularity,
@@ -183,9 +185,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     goals,
     makeHerVaults,
     nameTyped,
-    periodBeforeStartedOn,
     periodLengthDays,
-    periodStartedOn,
+    periods,
     regularity,
     reminderLead,
     symptoms,
@@ -218,9 +219,16 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setGoals((chosen) => goalsAfterPressing(chosen, goal));
   }, []);
 
+  const givePeriod = useCallback((row: number, period: PastPeriod) => {
+    setPeriods((given) => periodsAfterGiving(given, row, period));
+  }, []);
+
+  const removePeriod = useCallback((row: number) => {
+    setPeriods((given) => periodsAfterRemoving(given, row));
+  }, []);
+
   const forgetTheDates = useCallback(() => {
-    setPeriodStartedOn(undefined);
-    setPeriodBeforeStartedOn(undefined);
+    setPeriods([]);
   }, []);
 
   const forgetTheGoals = useCallback(() => {
@@ -249,8 +257,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   }, [database]);
 
   const reread = useCallback(() => {
-    setPeriodStartedOn(undefined);
-    setPeriodBeforeStartedOn(undefined);
+    setPeriods([]);
     setCycleLengthDays(undefined);
     setPeriodLengthDays(undefined);
     setRegularity(undefined);
@@ -270,8 +277,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     () => ({
       isDone,
       tourIsDone,
-      periodStartedOn,
-      periodBeforeStartedOn,
+      periods,
       cycleLengthDays,
       periodLengthDays,
       regularity,
@@ -283,8 +289,8 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       birthYear,
       reminderLead,
       reminderWasRefused,
-      setPeriodStartedOn,
-      setPeriodBeforeStartedOn,
+      givePeriod,
+      removePeriod,
       forgetTheDates,
       setCycleLengthDays,
       setPeriodLengthDays,
@@ -317,6 +323,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       forgetTheFocus,
       forgetTheGoals,
       forgetToday,
+      givePeriod,
       goals,
       isDone,
       leaveTheTour,
@@ -325,12 +332,12 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       pressSymptom,
       symptoms,
       nameTyped,
-      periodBeforeStartedOn,
       periodLengthDays,
-      periodStartedOn,
+      periods,
       regularity,
       reminderLead,
       reminderWasRefused,
+      removePeriod,
       reread,
       tourIsDone,
       writeEverything,

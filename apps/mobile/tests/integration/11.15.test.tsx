@@ -214,8 +214,8 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
 
       await shePresses(onboardingActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/last-period');
-      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+      expect(app.pathname()).toBe('/onboarding/three-periods');
+      expect(screen.getByTestId('onboarding-threePeriods')).toBeTruthy();
     });
 
     it('becomes one when she turns the wheel, on the year it settles in the middle', async () => {

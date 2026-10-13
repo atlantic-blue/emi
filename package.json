@@ -40,7 +40,7 @@
     "generate:trend-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern homeTrend.picture",
     "generate:patterns-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern homePatterns.picture",
     "generate:flow-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern logFlow.picture",
-    "generate:last-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern lastPeriod.picture",
+    "generate:three-periods-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern threePeriods.picture",
     "generate:history-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern history.picture",
     "generate:export-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern export.picture",
     "generate:export-screen-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern exportScreen.picture",

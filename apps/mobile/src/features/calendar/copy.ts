@@ -22,6 +22,15 @@ export const calendarCopy = {
   today: words('calendar.today'),
 } as const;
 
+/** The words of the sheet that asks for her past periods over a month Emi cannot forecast. */
+export const forecastPopupCopy = {
+  eyebrow: words('calendar.forecastPopup.eyebrow'),
+  title: words('calendar.forecastPopup.title'),
+  line: words('calendar.forecastPopup.line'),
+  action: words('calendar.forecastPopup.action'),
+  notNow: words('calendar.forecastPopup.notNow'),
+} as const;
+
 /** The three words of the legend above the grid, in the order the board places them. */
 export const monthLegendCopy = {
   fertile: words('calendar.legend.fertile'),

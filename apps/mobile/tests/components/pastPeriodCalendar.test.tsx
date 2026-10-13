@@ -1,46 +1,40 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen, within } from '@testing-library/react-native';
 import { OnAPhone } from '../fixtures/theSafeArea';
 
 import {
+  calendarTestID,
   dayTestID,
   earlierMonthTestID,
   laterMonthTestID,
   monthTestID,
 } from '../../src/features/onboarding/Calendar';
-import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
-import { longestLookBackDays } from '../../src/features/onboarding/firstRun';
+import { longestLookBackDays, oldestPeriodStart } from '../../src/features/onboarding/firstRun';
+import { PastPeriodPicker } from '../../src/features/pastPeriods/PastPeriodPicker';
 
-/** Well away from any summer time change, so the grid below reads the same in any timezone. */
-const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = '2026-05-14';
 const tomorrow = '2026-05-15';
 /** The oldest day the first run accepts, ninety days back, and the day before it. */
 const oldest = '2026-02-13';
 const tooOld = '2026-02-12';
 
-interface Painted {
-  readonly chose: jest.Mock;
-  readonly continued: jest.Mock;
-}
-
-async function sheOpensTheCalendar(chosen?: string): Promise<Painted> {
-  const chose = jest.fn();
-  const continued = jest.fn();
-
+async function sheOpensTheCalendar(chosen?: string): Promise<void> {
   await render(
     <OnAPhone>
-      <LastPeriod
-        chosen={chosen}
-        now={whenSheOpensIt}
-        onBack={() => undefined}
-        onChoose={chose}
-        onContinue={continued}
-        onWayPast={() => undefined}
+      <PastPeriodPicker
+        oldest={oldestPeriodStart(today)}
+        onCancel={() => undefined}
+        onDone={() => undefined}
+        onRemove={() => undefined}
+        periods={chosen === undefined ? [] : [{ lengthDays: 5, startedOn: chosen }]}
+        row={0}
+        today={today}
       />
     </OnAPhone>,
   );
+}
 
-  return { chose, continued };
+function isChosen(day: string): boolean {
+  return screen.getByTestId(dayTestID(day)).props.accessibilityState?.selected === true;
 }
 
 async function shePresses(testID: string): Promise<void> {
@@ -53,7 +47,7 @@ function everyDayHandle(): string[] {
     .map((handle) => String(handle.props.testID));
 }
 
-describe('she picks the day her last period started from a month calendar', () => {
+describe('she picks the day her newest period started from a month calendar', () => {
   describe('the month it opens on', () => {
     it('is the month she is in, named above the squares', async () => {
       await sheOpensTheCalendar();
@@ -79,33 +73,33 @@ describe('she picks the day her last period started from a month calendar', () =
 
   describe('a day she may not choose', () => {
     it('does not answer when she presses a day after today', async () => {
-      const painted = await sheOpensTheCalendar();
+      await sheOpensTheCalendar();
 
       await shePresses(dayTestID(tomorrow));
 
-      expect(painted.chose).not.toHaveBeenCalled();
+      expect(isChosen(tomorrow)).toBe(false);
     });
 
     it('does not answer when she presses a day further back than the first run reaches', async () => {
-      const painted = await sheOpensTheCalendar();
+      await sheOpensTheCalendar();
       await shePresses(earlierMonthTestID);
       await shePresses(earlierMonthTestID);
       await shePresses(earlierMonthTestID);
 
       await shePresses(dayTestID(tooOld));
 
-      expect(painted.chose).not.toHaveBeenCalled();
+      expect(isChosen(tooOld)).toBe(false);
     });
 
     it('answers on the oldest day the first run does accept', async () => {
-      const painted = await sheOpensTheCalendar();
+      await sheOpensTheCalendar();
       await shePresses(earlierMonthTestID);
       await shePresses(earlierMonthTestID);
       await shePresses(earlierMonthTestID);
 
       await shePresses(dayTestID(oldest));
 
-      expect(painted.chose).toHaveBeenCalledWith(oldest);
+      expect(isChosen(oldest)).toBe(true);
       expect(longestLookBackDays).toBe(90);
     });
 
@@ -199,7 +193,7 @@ describe('she picks the day her last period started from a month calendar', () =
     it('gives every square the role of a choice in a set', async () => {
       await sheOpensTheCalendar();
 
-      expect(screen.getAllByRole('radio')).toHaveLength(31);
+      expect(within(screen.getByTestId(calendarTestID)).getAllByRole('radio')).toHaveLength(31);
     });
   });
 });

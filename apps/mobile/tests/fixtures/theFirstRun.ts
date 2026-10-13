@@ -4,7 +4,6 @@ import { fireEvent, screen } from '@testing-library/react-native';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { periodLengthDaysTestID } from '../../src/features/onboarding/PeriodLength';
 import { nameFieldTestID } from '../../src/features/onboarding/HerName';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -23,13 +22,22 @@ import { tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import { type TodaySymptom, defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { reminderTestID } from '../../src/features/onboarding/Reminder';
 import type { ReminderLead } from '../../src/features/reminder/reminder';
+import { sheGivesAPeriod } from './thePastPeriods';
 
 const theWelcomeTestID = 'onboarding-welcome';
 
 export interface HerAnswers {
+  /** The first row of the list of her last three periods. */
   readonly periodStartedOn: string;
-  /** Left out where she does not remember the period before, which is that question's Skip. */
+  /** The second row, left out where she does not remember it, which leaves the row empty. */
   readonly periodBeforeStartedOn?: string;
+  /** The third row, left out where she does not remember it, which leaves the row empty. */
+  readonly periodBeforeThatStartedOn?: string;
+  /**
+   * How many days each period she gives ran. Left out where the walk does not care, and then each
+   * period is one day.
+   */
+  readonly periodLengthDaysEach?: number;
   /** Left out where the walk does not care, and then she taps the length the wheel opens on. */
   readonly cycleLengthDays?: number;
   /** Left out where she answers that she is not sure, which is that question's way past it. */
@@ -59,16 +67,19 @@ export interface HerAnswers {
  * Her answers when she cannot remember when her last period started. Every other question is the
  * same question she is asked either way, so this is her answers without the two days.
  */
-export type HerAnswersWithNoDate = Omit<HerAnswers, 'periodBeforeStartedOn' | 'periodStartedOn'>;
+export type HerAnswersWithNoDate = Omit<
+  HerAnswers,
+  'periodBeforeStartedOn' | 'periodBeforeThatStartedOn' | 'periodLengthDaysEach' | 'periodStartedOn'
+>;
 
 /**
  * The welcome and the two questions she may pass, pressed past, which leaves her looking at the
- * question about when her last period started.
+ * step that asks for her last three periods.
  *
- * A walk that is about that question starts here rather than answering it, because the question
- * is the thing under test and `sheAnswersEveryQuestion` answers it on the way through.
+ * A walk that is about that step starts here rather than answering it, because the step is the
+ * thing under test and `sheAnswersEveryQuestion` answers it on the way through.
  */
-export async function sheReachesTheLastPeriodQuestion(): Promise<void> {
+export async function sheReachesTheThreePeriodsStep(): Promise<void> {
   await sheReadsTheWelcome();
   await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
   await fireEvent.press(screen.getByTestId(onboardingSkipTestID));
@@ -208,15 +219,17 @@ export async function sheAnswersTheReminder(lead: ReminderLead | undefined): Pro
 export async function sheAnswersEveryQuestion(answers: HerAnswers): Promise<void> {
   await sheAnswersWhatComesBeforeHerLastPeriod(answers);
 
-  await fireEvent.press(screen.getByTestId(dayTestID(answers.periodStartedOn)));
-  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
-
-  if (answers.periodBeforeStartedOn === undefined) {
-    await fireEvent.press(screen.getByTestId(onboardingWayPastTestID));
-  } else {
-    await fireEvent.press(screen.getByTestId(dayTestID(answers.periodBeforeStartedOn)));
-    await fireEvent.press(screen.getByTestId(onboardingActionTestID));
+  const starts = [
+    answers.periodStartedOn,
+    answers.periodBeforeStartedOn,
+    answers.periodBeforeThatStartedOn,
+  ];
+  for (const [row, startedOn] of starts.entries()) {
+    if (startedOn !== undefined) {
+      await sheGivesAPeriod(row, startedOn, answers.periodLengthDaysEach);
+    }
   }
+  await fireEvent.press(screen.getByTestId(onboardingActionTestID));
 
   await sheAnswersWhatComesAfterHerLastPeriod(answers);
 }

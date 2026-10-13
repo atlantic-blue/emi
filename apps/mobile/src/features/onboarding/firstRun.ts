@@ -15,15 +15,7 @@ import {
   shortestPeriodLengthDays,
   youngestBirthYears,
 } from '@emi/crypto';
-import {
-  type Flow,
-  type ForecastResult,
-  addDays,
-  cyclesFrom,
-  daysBetween,
-  forecastFrom,
-  isKnownSymptom,
-} from '@emi/cycle';
+import { type Flow, type ForecastResult, addDays, daysBetween, isKnownSymptom } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
 import { insertDayLog } from '../../data/dayLogRepository';
@@ -39,10 +31,20 @@ import {
   reminderLeads,
   writeReminderLead,
 } from '../reminder/reminder';
+import {
+  type PastPeriod,
+  type PastPeriodsRefusal,
+  everyDayTheyBled,
+  forecastFromPastPeriods,
+  longestCycleBetweenDays,
+  pastPeriodFlow,
+  pastPeriodsRefusal,
+  shortestCycleBetweenDays,
+} from '../pastPeriods/pastPeriods';
 import { localDay } from './days';
 
-export const minimumCycleLengthDays = 21;
-export const maximumCycleLengthDays = 45;
+export const minimumCycleLengthDays = shortestCycleBetweenDays;
+export const maximumCycleLengthDays = longestCycleBetweenDays;
 export const defaultCycleLengthDays = 28;
 
 /** Days. The bounds a stated period runs between, held where the profile holds them. */
@@ -90,22 +92,11 @@ export function periodStartIsInRange(day: string, today: string): boolean {
 }
 
 /**
- * Whether the day she gave can be the period before the one she gave. The two starts are one
- * cycle, so the distance between them is held to the bounds a cycle runs between: a day nearer
- * than that is the same period again, and a day further back leaves a cycle nobody recorded.
- */
-export function periodBeforeIsInRange(periodBefore: string, periodStartedOn: string): boolean {
-  const between = daysBetween(periodBefore, periodStartedOn);
-
-  return between >= minimumCycleLengthDays && between <= maximumCycleLengthDays;
-}
-
-/**
  * She is asked when her period started, never how heavy it was, because the heaviness changes no
  * forecast and the first run asks nothing it does not need. A record has no other way to say a day
  * was a bleeding day, so the first run writes the middle value and she can change it on the day.
  */
-export const firstRunFlow: Flow = 'medium';
+export const firstRunFlow: Flow = pastPeriodFlow;
 
 /**
  * The six feelings the last question of the first run offers, each one a slug the catalogue
@@ -143,17 +134,14 @@ export function symptomsAfterPressing(
 
 export interface FirstRunAnswers {
   /**
-   * The day her last period started, left out where she does not remember it. Emi counts from the
-   * days she gives it and never from a day it chose, so nothing stands in for this one.
+   * Her last periods, the newest first, up to three, each with its start and its length. Left out
+   * or empty where she remembers none. Emi counts from the days she gives it and never from a day
+   * it chose, so nothing stands in for them. Three starts are two cycles she lived, which is what
+   * a forecast from her own cycles needs.
    */
-  readonly periodStartedOn?: string;
+  readonly periods?: readonly PastPeriod[];
   /** How long she says her cycle runs. Left out only where no length was picked on the wheel. */
   readonly cycleLengthDays?: number;
-  /**
-   * The start before that one, left out where she does not remember it. Where she gives it, the
-   * two starts are one cycle she lived, which is worth more than the length she estimated.
-   */
-  readonly periodBeforeStartedOn?: string;
   /** Left out where she skipped the question, and then her profile carries no name at all. */
   readonly name?: string;
   /** Left out where she skipped the question. Nothing reads it, which contract SCREEN-1 names. */
@@ -200,9 +188,7 @@ export interface FirstRunAnswers {
 }
 
 export type FirstRunRefusal =
-  | 'period-start-is-in-the-future'
-  | 'period-start-is-too-long-ago'
-  | 'period-before-is-out-of-range'
+  | PastPeriodsRefusal
   | 'cycle-length-is-out-of-range'
   | 'name-is-out-of-range'
   | 'birth-year-is-out-of-range'
@@ -385,10 +371,7 @@ export function birthYearIsInRange(year: number, now: Date): boolean {
 }
 
 /** The answers a forecast is worked out from, which are the days she gave and the length she stated. */
-export type HerForecastAnswers = Pick<
-  FirstRunAnswers,
-  'cycleLengthDays' | 'periodBeforeStartedOn' | 'periodStartedOn'
->;
+export type HerForecastAnswers = Pick<FirstRunAnswers, 'cycleLengthDays' | 'periods'>;
 
 /**
  * What Emi can say about her next period while her answers are still in memory. The days handed to
@@ -396,19 +379,7 @@ export type HerForecastAnswers = Pick<
  * screen reads, so the range she is shown before the hold is the range she reads after it.
  */
 export function forecastFromHerAnswers(answers: HerForecastAnswers): ForecastResult {
-  const days = [
-    ...(answers.periodBeforeStartedOn === undefined
-      ? []
-      : [{ day: answers.periodBeforeStartedOn, flow: firstRunFlow }]),
-    ...(answers.periodStartedOn === undefined
-      ? []
-      : [{ day: answers.periodStartedOn, flow: firstRunFlow }]),
-  ];
-
-  return forecastFrom(
-    cyclesFrom(days),
-    answers.cycleLengthDays === undefined ? {} : { statedCycleLengthDays: answers.cycleLengthDays },
-  );
+  return forecastFromPastPeriods(answers.periods ?? [], answers.cycleLengthDays);
 }
 
 /** Her day is sealed under one of these and her answers under the other, both under her one key. */
@@ -460,13 +431,36 @@ function herProfile(answers: FirstRunAnswers, now: Date): ProfileRecord {
   };
 }
 
+/** The sentence a refused list of periods is thrown with, which names what was out of range. */
+function theReasonFor(
+  refused: PastPeriodsRefusal,
+  periods: readonly PastPeriod[],
+  today: string,
+): string {
+  const newest = periods[0]?.startedOn ?? '';
+
+  switch (refused) {
+    case 'more-periods-than-asked':
+      return `the first run asks for three periods, and this answer holds ${periods.length}`;
+    case 'period-start-is-in-the-future':
+      return `a period cannot start on ${newest}, which is after ${today}`;
+    case 'period-start-is-too-long-ago':
+      return `${newest} is ${daysBetween(newest, today)} days back, and the first run reaches ${longestLookBackDays}`;
+    case 'period-before-is-out-of-range':
+      return `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days between two starts`;
+    case 'past-period-length-is-out-of-range':
+      return 'a period given from memory runs from one day to the longest the cycle arithmetic reads as one period';
+  }
+}
+
 /**
  * Her two answers land together or not at all. A day written without her profile beside it would
  * send her back to the first screen and then refuse the day she picked there, which is the one
  * shape of half written first run she could not get herself out of.
  *
- * A woman who passed the question about her last period gives no day, so no day is written and
- * her profile lands on its own. The ring has nothing to draw until the first period she logs.
+ * Every day of every period she gave is written as a day she bled, not only its first day, so the
+ * length of each period is held as she gave it. A woman who passed the question about her periods
+ * gives no day, so no day is written and her profile lands on its own. The ring has nothing to draw until the first period she logs.
  */
 export function completeFirstRun(
   db: Database,
@@ -475,30 +469,11 @@ export function completeFirstRun(
   now: Date,
 ): void {
   const today = localDay(now);
-  const theDaySheGave = answers.periodStartedOn;
-  const back = theDaySheGave === undefined ? undefined : daysBetween(theDaySheGave, today);
+  const periods = answers.periods ?? [];
+  const refused = pastPeriodsRefusal(periods, { today, oldest: oldestPeriodStart(today) });
 
-  if (back !== undefined && back < 0) {
-    throw new FirstRunError(
-      'period-start-is-in-the-future',
-      `a period cannot start on ${theDaySheGave}, which is after ${today}`,
-    );
-  }
-  if (back !== undefined && back > longestLookBackDays) {
-    throw new FirstRunError(
-      'period-start-is-too-long-ago',
-      `${theDaySheGave} is ${back} days back, and the first run reaches ${longestLookBackDays}`,
-    );
-  }
-  if (
-    theDaySheGave !== undefined &&
-    answers.periodBeforeStartedOn !== undefined &&
-    !periodBeforeIsInRange(answers.periodBeforeStartedOn, theDaySheGave)
-  ) {
-    throw new FirstRunError(
-      'period-before-is-out-of-range',
-      `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days, and ${answers.periodBeforeStartedOn} is ${daysBetween(answers.periodBeforeStartedOn, theDaySheGave)} days before ${theDaySheGave}`,
-    );
+  if (refused !== undefined) {
+    throw new FirstRunError(refused, theReasonFor(refused, periods, today));
   }
   if (answers.cycleLengthDays !== undefined && !cycleLengthIsInRange(answers.cycleLengthDays)) {
     throw new FirstRunError(
@@ -591,35 +566,26 @@ export function completeFirstRun(
     throw new FirstRunError('first-run-is-already-done', 'the first run is already done');
   }
 
-  // Today and the day she bled are one row when they are one day, because `day_log_day` holds
-  // one row for a day and a second insert for it is refused rather than merged.
-  const theDaySheBledIsToday = theDaySheGave === today;
-  const recorded: DayRecord | undefined =
-    theDaySheGave === undefined
-      ? undefined
-      : {
-          day: theDaySheGave,
-          flow: firstRunFlow,
-          ...(theDaySheBledIsToday && feltToday.length > 0 ? { symptoms: feltToday } : {}),
-          recordedAt: now.toISOString(),
-        };
+  // Today and a day she bled are one row when they are one day, because `day_log_day` holds one
+  // row for a day and a second insert for it is refused rather than merged.
+  const bled = everyDayTheyBled(periods, today);
+  const sheBledToday = bled.includes(today);
+  const recordedAt = now.toISOString();
 
   db.execute('BEGIN');
   try {
-    if (answers.periodBeforeStartedOn !== undefined) {
-      const earlier: DayRecord = {
-        day: answers.periodBeforeStartedOn,
+    for (const day of bled) {
+      const recorded: DayRecord = {
+        day,
         flow: firstRunFlow,
-        recordedAt: now.toISOString(),
+        ...(day === today && feltToday.length > 0 ? { symptoms: feltToday } : {}),
+        recordedAt,
       };
 
-      insertDayLog(db, { day: earlier.day, payload: vaults.day.seal(earlier), now });
+      insertDayLog(db, { day, payload: vaults.day.seal(recorded), now });
     }
-    if (recorded !== undefined) {
-      insertDayLog(db, { day: recorded.day, payload: vaults.day.seal(recorded), now });
-    }
-    if (feltToday.length > 0 && !theDaySheBledIsToday) {
-      const felt: DayRecord = { day: today, symptoms: feltToday, recordedAt: now.toISOString() };
+    if (feltToday.length > 0 && !sheBledToday) {
+      const felt: DayRecord = { day: today, symptoms: feltToday, recordedAt };
 
       insertDayLog(db, { day: felt.day, payload: vaults.day.seal(felt), now });
     }

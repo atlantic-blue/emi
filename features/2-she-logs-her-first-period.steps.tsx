@@ -440,7 +440,7 @@ import {
 import {
   sheAnswersEveryQuestion,
   sheAnswersEveryQuestionWithNoDate,
-  sheReachesTheLastPeriodQuestion,
+  sheReachesTheThreePeriodsStep,
   shePassesTheQuestion,
   sheReadsTheWelcome,
 } from '../apps/mobile/tests/fixtures/theFirstRun';
@@ -449,6 +449,18 @@ import {
   thePartsTheDayOneDrawingNames,
 } from '../apps/mobile/tests/fixtures/theDrawingOfDayOne';
 import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
+import {
+  aWalkPeriodLengthDays,
+  sheGivesAPeriod,
+} from '../apps/mobile/tests/fixtures/thePastPeriods';
+import { pastPeriodRowTestID } from '../apps/mobile/src/features/pastPeriods/PastPeriodsList';
+import { pastPeriodsSaveTestID } from '../apps/mobile/src/features/pastPeriods/PastPeriodsScreen';
+import {
+  forecastPopupActionTestID,
+  forecastPopupNotNowTestID,
+  forecastPopupTestID,
+  forecastPopupTitleTestID,
+} from '../apps/mobile/src/features/calendar/ForecastPopup';
 import { readableIn, theFieldAndItsValue } from '../apps/mobile/tests/fixtures/whatIsReadable';
 import {
   aBleedingDay,
@@ -827,8 +839,8 @@ const theYearSheWasBornIn = 1994;
  * How many steps the counter has always said, written out by hand rather than read off the list
  * of screens, so a question that quietly leaves the first run is named here.
  */
-const theStepsOfTheFirstRun = 13;
-const theCycleLengthIsStepSix = 6;
+const theStepsOfTheFirstRun = 12;
+const theCycleLengthIsStepFive = 5;
 
 /**
  * The questions between the cycle length and the three screens she reads rather than answers:
@@ -1762,9 +1774,8 @@ defineFeature(feature, (test) => {
         await sheReadsTheWelcome();
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
-        await shePresses(dayTestID(herPeriodStarted));
+        await sheGivesAPeriod(0, herPeriodStarted);
         await shePresses(onboardingActionTestID);
-        await shePresses(onboardingWayPastTestID);
 
         await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
@@ -1841,9 +1852,8 @@ defineFeature(feature, (test) => {
       await sheReadsTheWelcome();
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingWayPastTestID);
       await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingWayPastTestID);
@@ -1906,9 +1916,8 @@ defineFeature(feature, (test) => {
     await sheReadsTheWelcome();
     await shePresses(onboardingSkipTestID);
     await shePresses(onboardingSkipTestID);
-    await shePresses(dayTestID(herPeriodStarted));
+    await sheGivesAPeriod(0, herPeriodStarted);
     await shePresses(onboardingActionTestID);
-    await shePresses(onboardingWayPastTestID);
     await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
     await shePresses(onboardingActionTestID);
     await shePresses(onboardingWayPastTestID);
@@ -1989,7 +1998,7 @@ defineFeature(feature, (test) => {
       'her phone holds one reminder, at nine in the morning two days before the range she was shown',
       async () => {
         const forecast = forecastFromHerAnswers({
-          periodStartedOn: herPeriodStarted,
+          periods: [{ startedOn: herPeriodStarted, lengthDays: aWalkPeriodLengthDays }],
           cycleLengthDays: sheSaysHerCycleRuns,
         });
         const [year, month, day] = (forecast.start?.from ?? '').split('-').map(Number);
@@ -2072,10 +2081,8 @@ defineFeature(feature, (test) => {
       visited.push(app.pathname());
       await shePresses(onboardingSkipTestID);
       visited.push(app.pathname());
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      visited.push(app.pathname());
-      await shePresses(onboardingWayPastTestID);
       visited.push(app.pathname());
       await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
@@ -2107,14 +2114,13 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her',
+      'she was asked what Emi is, her name, the year she was born, her last three periods, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her',
       () => {
         expect(visited).toEqual([
           '/onboarding/welcome',
           '/onboarding/name',
           '/onboarding/year-of-birth',
-          '/onboarding/last-period',
-          '/onboarding/period-before',
+          '/onboarding/three-periods',
           '/onboarding/cycle-length',
           '/onboarding/period-length',
           '/onboarding/regularity',
@@ -2162,10 +2168,8 @@ defineFeature(feature, (test) => {
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      everyFieldShePassed.push(...fieldsDrawn());
-      await shePresses(onboardingWayPastTestID);
       everyFieldShePassed.push(...fieldsDrawn());
 
       await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
@@ -2207,7 +2211,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-1, she says she does not remember when her last period started and the first run moves on', ({
+  test('SCREEN-1, she says she will log as she goes and the first run moves on', ({
     given,
     when,
     and,
@@ -2221,13 +2225,16 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    and('she reaches the question about when her last period started', async () => {
-      await sheReachesTheLastPeriodQuestion();
+    and('she reaches the step that asks for her last three periods', async () => {
+      await sheReachesTheThreePeriodsStep();
 
-      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+      expect(screen.getByTestId('onboarding-threePeriods')).toBeTruthy();
     });
 
-    and('she says she does not remember', async () => {
+    and('she says she will log as she goes', async () => {
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
+        'Skip, I will log as I go',
+      );
       await shePresses(onboardingWayPastTestID);
     });
 
@@ -2237,7 +2244,7 @@ defineFeature(feature, (test) => {
     });
 
     and('the question she could not answer is behind her', () => {
-      expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
+      expect(screen.queryByTestId('onboarding-threePeriods')).toBeNull();
     });
   });
 
@@ -2674,11 +2681,10 @@ defineFeature(feature, (test) => {
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
       await shePresses(onboardingSkipTestID);
-      await shePresses(dayTestID(herPeriodStarted));
-      await shePresses(onboardingActionTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
-      await shePresses(onboardingWayPastTestID);
+      await sheGivesAPeriod(0, herPeriodStarted);
+      await shePresses(onboardingActionTestID);
       measured.push(controlsTooSmallToPress(everyControlOnTheScreen()));
 
       await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
@@ -2707,10 +2713,11 @@ defineFeature(feature, (test) => {
       await sheOpens('/');
     });
 
-    and('she reaches the question about her last period', async () => {
+    and('she opens the first of her last three periods', async () => {
       await sheSkipsTheTour();
       await shePresses(onboardingSkipTestID);
       await shePresses(onboardingSkipTestID);
+      await shePresses(pastPeriodRowTestID(0));
     });
 
     then('every square of the month is as high as a thumb needs', () => {
@@ -5592,7 +5599,7 @@ defineFeature(feature, (test) => {
     );
   });
 
-  test('SCREEN-1, the way past the last period question passes the period before with it', ({
+  test('SCREEN-1, the way past the three periods step leaves no date', ({
     given,
     when,
     and,
@@ -5612,7 +5619,7 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'she gives her name and the year she was born, and reaches the question about her last period',
+      'she gives her name and the year she was born, and reaches the step that asks for her last three periods',
       async () => {
         whereSheIsNow();
         await sheReadsTheWelcome();
@@ -5624,11 +5631,11 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingActionTestID);
         whereSheIsNow();
 
-        expect(app.pathname()).toBe('/onboarding/last-period');
+        expect(app.pathname()).toBe('/onboarding/three-periods');
       },
     );
 
-    and('she says she does not remember', async () => {
+    and('she says she will log as she goes', async () => {
       await shePresses(onboardingWayPastTestID);
       whereSheIsNow();
     });
@@ -5638,20 +5645,15 @@ defineFeature(feature, (test) => {
       expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
     });
 
-    and(
-      'the counter reads step 6 of 13, the twelve steps the first run had and the reminder',
-      () => {
-        expect(screen.getByTestId(onboardingProgressTestID).props.accessibilityValue).toMatchObject(
-          {
-            max: theStepsOfTheFirstRun,
-            now: theCycleLengthIsStepSix,
-          },
-        );
-        // The total is counted off the list of screens, so the number written out here is what
-        // catches a question quietly leaving the run.
-        expect(firstRunScreenCount).toBe(theStepsOfTheFirstRun);
-      },
-    );
+    and('the counter reads step 5 of 12, one step for her last three periods', () => {
+      expect(screen.getByTestId(onboardingProgressTestID).props.accessibilityValue).toMatchObject({
+        max: theStepsOfTheFirstRun,
+        now: theCycleLengthIsStepFive,
+      });
+      // The total is counted off the list of screens, so the number written out here is what
+      // catches a question quietly leaving the run.
+      expect(firstRunScreenCount).toBe(theStepsOfTheFirstRun);
+    });
 
     when('she answers the rest of the questions and presses and holds Hold to begin', async () => {
       await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
@@ -5674,11 +5676,14 @@ defineFeature(feature, (test) => {
       whereSheIsNow();
     });
 
-    then('she was never asked when the period before that started', () => {
+    then('she was never asked for a period again, on a step of its own', () => {
+      expect(everyScreenSheReached).not.toContain('/onboarding/last-period');
       expect(everyScreenSheReached).not.toContain('/onboarding/period-before');
-      expect(screen.queryByTestId('onboarding-periodBefore')).toBeNull();
-      // A walk that pressed nothing reaches no period before question either, so the screens she
-      // did reach are read as well.
+      expect(
+        everyScreenSheReached.filter((path) => path === '/onboarding/three-periods'),
+      ).toHaveLength(1);
+      // A walk that pressed nothing reaches no period question either, so the screens she did
+      // reach are read as well.
       expect(everyScreenSheReached).toContain('/onboarding/cycle-length');
       expect(everyScreenSheReached).toContain('/onboarding/hold');
     });
@@ -5721,13 +5726,16 @@ defineFeature(feature, (test) => {
       app = await sheOpens('/');
     });
 
-    and('she reaches the question about when her last period started', async () => {
-      await sheReachesTheLastPeriodQuestion();
+    and('she reaches the step that asks for her last three periods', async () => {
+      await sheReachesTheThreePeriodsStep();
 
-      expect(screen.getByTestId('onboarding-lastPeriod')).toBeTruthy();
+      expect(screen.getByTestId('onboarding-threePeriods')).toBeTruthy();
     });
 
-    and('she says she does not remember', async () => {
+    and('she says she will log as she goes', async () => {
+      expect(screen.getByTestId(onboardingWayPastTestID)).toHaveTextContent(
+        'Skip, I will log as I go',
+      );
       await shePresses(onboardingWayPastTestID);
     });
 
@@ -5798,7 +5806,7 @@ defineFeature(feature, (test) => {
         expect(screen.getByTestId(firstForecastActionTestID)).toBeTruthy();
         expect(screen.queryByTestId(onboardingBackTestID)).toBeNull();
         expect(screen.queryByTestId(onboardingWayPastTestID)).toBeNull();
-        expect(screen.queryByTestId('onboarding-lastPeriod')).toBeNull();
+        expect(screen.queryByTestId('onboarding-threePeriods')).toBeNull();
       },
     );
 
@@ -5827,7 +5835,7 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'she answers every question of the first run, and says she does not remember her last period',
+      'she answers every question of the first run, and says she will log her periods as she goes',
       async () => {
         await sheAnswersEveryQuestionWithNoDate({ cycleLengthDays: sheSaysHerCycleRuns });
 
@@ -6562,10 +6570,9 @@ defineFeature(feature, (test) => {
 
     /** Past the welcome and the six questions before it, standing on the one about her cycle. */
     async function sheReachesTheQuestionAboutARegularCycle(): Promise<void> {
-      await sheReachesTheLastPeriodQuestion();
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheReachesTheThreePeriodsStep();
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingWayPastTestID);
       await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingWayPastTestID);
@@ -6648,9 +6655,8 @@ defineFeature(feature, (test) => {
 
         expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
 
-        await shePresses(dayTestID(herPeriodStarted));
+        await sheGivesAPeriod(0, herPeriodStarted);
         await shePresses(onboardingActionTestID);
-        await shePresses(onboardingWayPastTestID);
         await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
         await shePresses(onboardingActionTestID);
         await shePresses(onboardingWayPastTestID);
@@ -6722,9 +6728,8 @@ defineFeature(feature, (test) => {
       }
 
       await shePresses(onboardingSkipTestID);
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      await shePresses(onboardingWayPastTestID);
       await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
 
@@ -6867,7 +6872,7 @@ defineFeature(feature, (test) => {
 
     then('each one carries the wash across the top of the glass', () => {
       expect(washedAtTheTop).toEqual([...theFirstRunDrawings]);
-      expect(washedAtTheTop.length).toBeGreaterThan(20);
+      expect(washedAtTheTop).toHaveLength(20);
     });
 
     and(
@@ -6964,7 +6969,7 @@ defineFeature(feature, (test) => {
 
         expect(Object.keys(unanswered)).toHaveLength(theFirstRunDrawings.length);
         expect(differs).toEqual(kept);
-        expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(140);
+        expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(130);
       },
     );
   });
@@ -8186,6 +8191,178 @@ defineFeature(feature, (test) => {
           naming: [...theTwoPrivacyLinesThatNameEmi].sort(),
         });
       }
+    });
+  });
+
+  test('SCREEN-1, she gives her last three periods and her first forecast is ready', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const theOneBefore = addDays(herPeriodStarted, -28);
+    const theOneBeforeThat = addDays(herPeriodStarted, -56);
+    const eachLastedDays = 5;
+    let sheSawARange = false;
+    let sheSawStillLearning = true;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    and('she reaches the step that asks for her last three periods', async () => {
+      await sheReachesTheThreePeriodsStep();
+    });
+
+    then('the step asks for three periods, and says the third can be skipped', () => {
+      expect(screen.getByTestId(onboardingTitleTestID)).toHaveTextContent(
+        'Your last three periods',
+      );
+      expect(screen.getByTestId(pastPeriodRowTestID(0))).toBeTruthy();
+      expect(screen.getByTestId(pastPeriodRowTestID(1))).toBeTruthy();
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(2))).join(' ')).toContain(
+        'Skip this one if you do not remember',
+      );
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
+    });
+
+    when(
+      'she gives three periods, each with the day it started and the days it lasted',
+      async () => {
+        await sheGivesAPeriod(0, herPeriodStarted, eachLastedDays);
+        await sheGivesAPeriod(1, theOneBefore, eachLastedDays);
+        await sheGivesAPeriod(2, theOneBeforeThat, eachLastedDays);
+        await shePresses(onboardingActionTestID);
+      },
+    );
+
+    and('she answers the rest of the questions and presses and holds Hold to begin', async () => {
+      await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
+      await shePresses(onboardingActionTestID);
+
+      for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePassesTheQuestion();
+      }
+
+      sheSawARange = screen.queryByTestId(firstForecastRangeTestID) !== null;
+      sheSawStillLearning = screen.queryByTestId(firstForecastStillLearningTestID) !== null;
+
+      await shePresses(firstForecastActionTestID);
+      await shePresses(promiseActionTestID);
+      await shePresses(whatEmiDoesActionTestID);
+      await sheHoldsTheRing();
+    });
+
+    then('her phone holds every bleeding day of the three periods, and no other day', () => {
+      const theDaysSheBled = [theOneBeforeThat, theOneBefore, herPeriodStarted].flatMap((start) =>
+        Array.from({ length: eachLastedDays }, (_unused, at) => addDays(start, at)),
+      );
+
+      expect(
+        listDayLogs(herDatabase())
+          .map((log) => log.day)
+          .sort(),
+      ).toEqual(theDaysSheBled.filter((day) => day <= today).sort());
+    });
+
+    and('her forecast is ready, and not still learning', () => {
+      expect(sheSawARange).toBe(true);
+      expect(sheSawStillLearning).toBe(false);
+    });
+
+    and('Insights reads the period length she gave', async () => {
+      await shePresses(tabTestID('history'));
+
+      expect(textIn(screen.getByTestId(historyCycleTestID(theOneBefore))).join(' ')).toContain(
+        cycleLengthSentence(28, eachLastedDays),
+      );
+    });
+  });
+
+  test('SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast', ({
+    given,
+    when,
+    then,
+  }) => {
+    let app: OpenApp;
+    const theMonthAfterNext = addDays(startOfMonth(today), 62);
+
+    function aForecastIsDrawn(): boolean {
+      return theSquaresTheMonthDrew().some((day) => theMarkOnTheSquare(day) === 'forecast');
+    }
+
+    given('her phone holds one period and the cycle length she gave', async () => {
+      await herPhoneHoldsTheseAnswers(
+        whenSheOpensIt,
+        {
+          kind: 'profile',
+          cycleLengthDays: sheSaysHerCycleRuns,
+          recordedAt: whenSheOpensIt.toISOString(),
+        },
+        Array.from({ length: 5 }, (_unused, at) => aBleedingDay(addDays(herPeriodStarted, at))),
+      );
+    });
+
+    when('she opens the month after next', async () => {
+      app = await sheOpens(`/calendar?day=${theMonthAfterNext}`);
+    });
+
+    then(
+      'a sheet asks her to add her last three periods, with Add past periods and Not now',
+      () => {
+        expect(screen.getByTestId(forecastPopupTitleTestID)).toHaveTextContent(
+          'Add your last three periods',
+        );
+        expect(screen.getByTestId(forecastPopupActionTestID)).toHaveTextContent('Add past periods');
+        expect(screen.getByTestId(forecastPopupNotNowTestID)).toHaveTextContent('Not now');
+        expect(aForecastIsDrawn()).toBe(false);
+      },
+    );
+
+    when('she presses Not now', async () => {
+      await shePresses(forecastPopupNotNowTestID);
+    });
+
+    then('the sheet is gone, and it does not come back over that month today', async () => {
+      expect(screen.queryByTestId(forecastPopupTestID)).toBeNull();
+
+      await app.close();
+      app = await sheOpens(`/calendar?day=${theMonthAfterNext}`);
+
+      expect(screen.queryByTestId(forecastPopupTestID)).toBeNull();
+    });
+
+    when(
+      'she opens the month after that, and the sheet asks again, and she presses Add past periods',
+      async () => {
+        await shePresses(calendarLaterTestID);
+
+        expect(screen.getByTestId(forecastPopupTestID)).toBeTruthy();
+
+        await shePresses(forecastPopupActionTestID);
+      },
+    );
+
+    then('she reads the list of her last three periods, with the one her phone holds given', () => {
+      expect(app.pathname()).toBe('/calendar/past-periods');
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(0)))).toEqual(
+        expect.arrayContaining(['9 May', '5 days']),
+      );
+    });
+
+    when('she gives the two periods before it and saves', async () => {
+      await sheGivesAPeriod(1, addDays(herPeriodStarted, -28), 5);
+      await sheGivesAPeriod(2, addDays(herPeriodStarted, -56), 5);
+      await shePresses(pastPeriodsSaveTestID);
+    });
+
+    then('the month she was reading draws a forecast, and the sheet is gone', () => {
+      expect(app.pathname()).toBe('/calendar');
+      expect(listDayLogs(herDatabase())).toHaveLength(15);
+      expect(aForecastIsDrawn()).toBe(true);
+      expect(screen.queryByTestId(forecastPopupTestID)).toBeNull();
     });
   });
 

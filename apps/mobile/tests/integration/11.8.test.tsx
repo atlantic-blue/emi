@@ -6,6 +6,7 @@ import { type SymptomGroup, addDays, symptomGroups } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
@@ -14,7 +15,6 @@ import { words } from '../../src/language';
 import { LogSheet } from '../../src/features/log/LogSheet';
 import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import { groupsInHerOrder } from '../../src/features/log/herOrder';
-import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   Focus as FocusScreen,
   focusCellTestID,
@@ -93,9 +93,8 @@ async function sheReachesTheFocus(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
-  await shePresses(dayTestID(herPeriodStarted));
+  await sheGivesAPeriod(0, herPeriodStarted);
   await shePresses(onboardingActionTestID);
-  await shePresses(onboardingWayPastTestID);
   await shePresses(cycleLengthDaysTestID(28));
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingWayPastTestID);
@@ -361,7 +360,7 @@ describe('the log opens on what she said changes with her cycle', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               focus: ['libido' as Focus],
             },
@@ -382,7 +381,7 @@ describe('the log opens on what she said changes with her cycle', () => {
             database,
             { day: herVault(), profile: herProfileVault() },
             {
-              periodStartedOn: herPeriodStarted,
+              periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
               cycleLengthDays: herCycleLengthDays,
               focus: ['pain', 'pain'],
             },

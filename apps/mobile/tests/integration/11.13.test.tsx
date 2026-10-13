@@ -3,6 +3,8 @@ import { join } from 'node:path';
 import { space } from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { within } from '@testing-library/react-native';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
+import { pastPeriodRowTestID } from '../../src/features/pastPeriods/PastPeriodsList';
 
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
@@ -65,18 +67,21 @@ async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
-/** Past the welcome and past the two questions she may skip, on the question about her last one. */
+/** Past the welcome and the two questions she may skip, with the first row of her periods open. */
 async function sheReachesHerLastPeriod(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
+  await shePresses(pastPeriodRowTestID(0));
 }
 
-/** One question further on, where the same grid asks for the period before that one. */
+/** The first row given, with the second row open, where the same grid asks for the period before. */
 async function sheReachesThePeriodBefore(): Promise<void> {
-  await sheReachesHerLastPeriod();
-  await shePresses(dayTestID(herPeriodStarted));
   await shePresses(onboardingActionTestID);
+  await shePresses(onboardingSkipTestID);
+  await shePresses(onboardingSkipTestID);
+  await sheGivesAPeriod(0, herPeriodStarted);
+  await shePresses(pastPeriodRowTestID(1));
 }
 
 /**

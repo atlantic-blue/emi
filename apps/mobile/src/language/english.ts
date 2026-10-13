@@ -46,6 +46,12 @@ export const english = {
   'calendar.editPeriod.save': 'Save',
   'calendar.editPeriod.takenOffDay': 'Taken off',
   'calendar.editPeriod.title': 'Edit my period',
+  'calendar.forecastPopup.action': 'Add past periods',
+  'calendar.forecastPopup.eyebrow': 'Forecast from day one',
+  'calendar.forecastPopup.line':
+    'Emi needs a few cycles before it can forecast the months ahead. Add the start of your last three periods, and the forecast is ready now.',
+  'calendar.forecastPopup.notNow': 'Not now',
+  'calendar.forecastPopup.title': 'Add your last three periods',
   'calendar.legend.fertile': 'Fertile',
   'calendar.legend.forecast': 'Forecast',
   'calendar.legend.period': 'Period',
@@ -490,14 +496,10 @@ export const english = {
   'onboarding.hold.sealed':
     "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
   'onboarding.hold.title': 'Your cycle, your data, your key.',
-  'onboarding.lastPeriod.action': 'Continue',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
   'onboarding.lastPeriod.later': 'Later',
   'onboarding.lastPeriod.laterMonth': 'Later month',
-  'onboarding.lastPeriod.line.remember':
-    'The first day you bled. The nearest day you remember is close enough.',
-  'onboarding.lastPeriod.title': 'When did your last period start?',
   'onboarding.name.action': 'Continue',
   'onboarding.name.hint': 'Your first name',
   'onboarding.name.label': 'Your name',
@@ -509,14 +511,6 @@ export const english = {
   },
   // One line for the five questions that keep an answer, rather than five sentences in three
   // languages that drift the moment somebody edits one of them.
-  'onboarding.periodBefore.action': 'Add it',
-  'onboarding.periodBefore.line.remember':
-    'Each one you add brings a forecast from your own cycles one cycle sooner.',
-  'onboarding.periodBefore.outOfRange':
-    'Cycles run from {minimum} to {maximum} days. Try a day in that range.',
-  'onboarding.periodBefore.question': 'Do you remember when the period before that started?',
-  'onboarding.periodBefore.skip': 'I do not remember',
-  'onboarding.periodBefore.title': 'The period before',
   'onboarding.periodLength.action': 'Done',
   'onboarding.periodLength.days': {
     one: '{count} day',
@@ -611,6 +605,24 @@ export const english = {
   'ovulation.sign.painOnOneSide': 'Pain on one side',
   'ovulation.sign.positiveOvulationTest': 'Positive ovulation test',
   'ovulation.sign.tenderBreasts': 'Tender breasts',
+  'pastPeriods.action': 'Continue',
+  'pastPeriods.addStart': 'Add the start date',
+  'pastPeriods.cancel': 'Cancel',
+  'pastPeriods.line.estimate': 'Add what you remember. An estimate is fine.',
+  'pastPeriods.line.forecast':
+    'With three periods, Emi can forecast your next ones from the first day.',
+  'pastPeriods.picker.done': 'Done',
+  'pastPeriods.picker.length': 'How many days did it last?',
+  'pastPeriods.picker.outOfRange':
+    'Cycles run from {minimum} to {maximum} days. Try a day in that range.',
+  'pastPeriods.picker.remove': 'Remove this period',
+  'pastPeriods.picker.start': 'When did it start?',
+  'pastPeriods.picker.title': 'Period {number}',
+  'pastPeriods.row.date': '{date} {month}',
+  'pastPeriods.save': 'Save',
+  'pastPeriods.skipThisOne': 'Skip this one if you do not remember',
+  'pastPeriods.title': 'Your last three periods',
+  'pastPeriods.wayPast': 'Skip, I will log as I go',
   'period.back': 'Back',
   'period.day': '{weekday}, {date} {month}',
   'period.discharge.creamy': 'Creamy',

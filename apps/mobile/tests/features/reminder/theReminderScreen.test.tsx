@@ -62,7 +62,7 @@ async function shePresses(testID: string): Promise<void> {
 /** Nine in the morning of the day that many days before the range she was shown. */
 function theMomentSheWasPromised(daysBefore: number): Date {
   const forecast = forecastFromHerAnswers({
-    periodStartedOn: herPeriodStarted,
+    periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }],
     cycleLengthDays: herCycleLengthDays,
   });
   const [year, month, day] = (forecast.start?.from ?? '').split('-').map(Number);
@@ -96,13 +96,13 @@ describe('the reminder, after the first day she logs', () => {
   });
 
   describe('the screen', () => {
-    it('is where the first day she logs hands her, and it is the last step of thirteen', async () => {
+    it('is where the first day she logs hands her, and it is the last step of twelve', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesTheReminder(herPeriodStarted);
 
       expect(app.pathname()).toBe('/onboarding/reminder');
-      expect(screen.getByTestId(onboardingStepLabelTestID)).toHaveTextContent('Step 13 of 13');
+      expect(screen.getByTestId(onboardingStepLabelTestID)).toHaveTextContent('Step 12 of 12');
     });
 
     it('asks the design question, offers its three moments, and chooses none of them for her', async () => {

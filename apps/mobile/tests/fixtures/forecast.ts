@@ -50,7 +50,7 @@ export function asSheLoggedIt(set: RecordedSet, cycleLengthDays: number): Databa
   completeFirstRun(
     database,
     { day: herVault(), profile: herProfileVault() },
-    { periodStartedOn: firstDay.day, cycleLengthDays },
+    { periods: [{ startedOn: firstDay.day, lengthDays: 1 }], cycleLengthDays },
     atNoonOn(firstDay.day),
   );
 

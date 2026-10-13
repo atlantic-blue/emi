@@ -14,10 +14,10 @@ export default function YearOfBirthRoute(): ReactNode {
       now={new Date()}
       onBack={() => router.back()}
       onChoose={setBirthYear}
-      onContinue={() => router.push('/onboarding/last-period')}
+      onContinue={() => router.push('/onboarding/three-periods')}
       onSkip={() => {
         setBirthYear(undefined);
-        router.push('/onboarding/last-period');
+        router.push('/onboarding/three-periods');
       }}
     />
   );

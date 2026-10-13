@@ -16,6 +16,7 @@ import {
   onboardingSkipTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import { monthLabel } from '../../src/features/onboarding/days';
+import { pastPeriodRowTestID } from '../../src/features/pastPeriods/PastPeriodsList';
 import { english } from '../../src/language/english';
 import { type Language, languages } from '../../src/language/language';
 import { russian } from '../../src/language/russian';
@@ -136,6 +137,7 @@ async function sheReachesHerLastPeriod(): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
+  await shePresses(pastPeriodRowTestID(0));
 }
 
 /**

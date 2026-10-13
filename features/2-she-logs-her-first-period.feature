@@ -1,7 +1,7 @@
 Feature: She opens Emi and logs her first period
 
   She arrives knowing nothing about Emi and Emi knows nothing about her. A few questions and one
-  hold later her last period is recorded and the ring is drawn from her own days.
+  hold later her last periods are recorded and the ring is drawn from her own days.
 
   Every scenario below is named for the contract it proves. The contracts are in
   docs/contracts.md and the map from feature to contract is in docs/features.md.
@@ -82,7 +82,7 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     And she answers every question of the first run
     And she presses and holds Hold to begin
-    Then she was asked what Emi is, her name, the year she was born, when her last period started, when the period before that started, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her
+    Then she was asked what Emi is, her name, the year she was born, her last three periods, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her
     And there was no further question to answer
 
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
@@ -92,31 +92,42 @@ Feature: She opens Emi and logs her first period
     And she presses and holds Hold to begin
     Then the only thing she could type into was her name
 
-  Scenario: SCREEN-1, she says she does not remember when her last period started and the first run moves on
+  Scenario: SCREEN-1, she says she will log as she goes and the first run moves on
     Given she has never opened Emi before
     When she opens Emi
-    And she reaches the question about when her last period started
-    And she says she does not remember
+    And she reaches the step that asks for her last three periods
+    And she says she will log as she goes
     Then she is being asked how long her cycle runs
     And the question she could not answer is behind her
 
-  Scenario: SCREEN-1, the way past the last period question passes the period before with it
+  Scenario: SCREEN-1, the way past the three periods step leaves no date
     Given she has never opened Emi before
     When she opens Emi
-    And she gives her name and the year she was born, and reaches the question about her last period
-    And she says she does not remember
+    And she gives her name and the year she was born, and reaches the step that asks for her last three periods
+    And she says she will log as she goes
     Then she is being asked how long her cycle runs
-    And the counter reads step 6 of 13, the twelve steps the first run had and the reminder
+    And the counter reads step 5 of 12, one step for her last three periods
     When she answers the rest of the questions and presses and holds Hold to begin
-    Then she was never asked when the period before that started
+    Then she was never asked for a period again, on a step of its own
     And she is looking at the screen that says the ring needs a period
     And her phone holds the name, the year and the length she gave, and no day at all
+
+  Scenario: SCREEN-1, she gives her last three periods and her first forecast is ready
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    Then the step asks for three periods, and says the third can be skipped
+    When she gives three periods, each with the day it started and the days it lasted
+    And she answers the rest of the questions and presses and holds Hold to begin
+    Then her phone holds every bleeding day of the three periods, and no other day
+    And her forecast is ready, and not still learning
+    And Insights reads the period length she gave
 
   Scenario: SCREEN-1, the first run with no date ends on a forecast that says it is still learning
     Given she has never opened Emi before
     When she opens Emi
-    And she reaches the question about when her last period started
-    And she says she does not remember
+    And she reaches the step that asks for her last three periods
+    And she says she will log as she goes
     And she answers the rest of the questions
     Then she is reading her first forecast, and Emi says it has no date to count from
     And a line says the first period she logs starts everything
@@ -218,7 +229,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SEE-3, a square of the calendar keeps its height and takes its width from the month
     Given she has never opened Emi before
     When she opens Emi
-    And she reaches the question about her last period
+    And she opens the first of her last three periods
     Then every square of the month is as high as a thumb needs
     And the seven squares of a week fill the width the calendar gives them on an iPhone 16
     And no square ends past the right edge of the calendar
@@ -567,7 +578,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, she completes the first run with no date, logs a period, and reads a ring
     Given she has never opened Emi before
     When she opens Emi
-    And she answers every question of the first run, and says she does not remember her last period
+    And she answers every question of the first run, and says she will log her periods as she goes
     And she presses and holds Hold to begin
     Then she is looking at the screen that says what the ring needs
     And there is no ring, and nothing at all is drawn in place of one
@@ -829,3 +840,14 @@ Feature: She opens Emi and logs her first period
     And the sheet is gone and she is on Today
     When she opens Today again the same day
     Then the sheet does not show again
+
+  Scenario: SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast
+    Given her phone holds one period and the cycle length she gave
+    When she opens the month after next
+    Then a sheet asks her to add her last three periods, with Add past periods and Not now
+    When she presses Not now
+    Then the sheet is gone, and it does not come back over that month today
+    When she opens the month after that, and the sheet asks again, and she presses Add past periods
+    Then she reads the list of her last three periods, with the one her phone holds given
+    When she gives the two periods before it and saves
+    Then the month she was reading draws a forecast, and the sheet is gone

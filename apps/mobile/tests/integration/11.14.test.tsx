@@ -7,8 +7,9 @@ import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import type { Database } from '../../src/data/database';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { calendarTestID, dayTestID } from '../../src/features/onboarding/Calendar';
-import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
+import { ThreePeriods } from '../../src/features/onboarding/ThreePeriods';
+import { pastPeriodsListTestID } from '../../src/features/pastPeriods/PastPeriodsList';
+import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -92,7 +93,7 @@ function theOrderOfTheScreen(): Instance[] {
       .flatMap((child) => walk(child)),
   ];
 
-  return walk(screen.getByTestId('onboarding-lastPeriod') as unknown as Instance);
+  return walk(screen.getByTestId('onboarding-threePeriods') as unknown as Instance);
 }
 
 function whereTheWordsAre(boxes: readonly Instance[], words: string): number {
@@ -125,13 +126,14 @@ function whereTheBoxNamed(boxes: readonly Instance[], testID: string): number {
 async function theScreenOnAnIPhone16(): Promise<PlacedBox[]> {
   const view = await render(
     <OnAPhone>
-      <LastPeriod
-        chosen={undefined}
+      <ThreePeriods
         now={whenSheOpensIt}
         onBack={() => undefined}
-        onChoose={() => undefined}
         onContinue={() => undefined}
+        onGive={() => undefined}
+        onRemove={() => undefined}
         onWayPast={() => undefined}
+        periods={[]}
       />
     </OnAPhone>,
   );
@@ -142,7 +144,7 @@ async function theScreenOnAnIPhone16(): Promise<PlacedBox[]> {
   return drawn;
 }
 
-describe('she reads that Emi encrypts her last period at the foot of the sheet', () => {
+describe('she reads that Emi encrypts her last periods at the foot of the sheet', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -156,13 +158,13 @@ describe('she reads that Emi encrypts her last period at the foot of the sheet',
   });
 
   describe('the order she reads the screen in', () => {
-    it('draws the days first and says what Emi does with the day under them', async () => {
+    it('draws the periods first and says what Emi does with them under the list', async () => {
       await sheReachesHerLastPeriod();
 
       const drawn = theOrderOfTheScreen();
 
       expect(whereTheWordsAre(drawn, thePrivacyLine.en)).toBeGreaterThan(
-        whereTheBoxNamed(drawn, calendarTestID),
+        whereTheBoxNamed(drawn, pastPeriodsListTestID),
       );
     });
 
@@ -182,12 +184,12 @@ describe('she reads that Emi encrypts her last period at the foot of the sheet',
       expect(screen.queryByText(theOldPrivacyLine)).toBeNull();
     });
 
-    it('still takes the day she picks', async () => {
+    it('still takes the period she gives', async () => {
       await sheReachesHerLastPeriod();
-      await shePresses(dayTestID(herPeriodStarted));
+      await sheGivesAPeriod(0, herPeriodStarted, 5);
       await shePresses(onboardingActionTestID);
 
-      expect(screen.getByTestId('onboarding-periodBefore')).toBeTruthy();
+      expect(screen.getByTestId('onboarding-cycleLength')).toBeTruthy();
     });
   });
 
@@ -200,10 +202,10 @@ describe('she reads that Emi encrypts her last period at the foot of the sheet',
       expect(line.top).toBeGreaterThanOrEqual(shown.top + shown.height);
     });
 
-    it('draws the calendar above it', async () => {
+    it('draws the list of her periods above it', async () => {
       const drawn = await theScreenOnAnIPhone16();
       const line = theBoxSaying(drawn, thePrivacyLine.en);
-      const calendar = theBoxNamed(drawn, calendarTestID);
+      const calendar = theBoxNamed(drawn, pastPeriodsListTestID);
 
       expect(calendar.top).toBeLessThan(line.top);
     });

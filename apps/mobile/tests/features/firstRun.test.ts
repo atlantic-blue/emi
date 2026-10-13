@@ -70,7 +70,7 @@ describe('the answers she gives on the first run', () => {
       completeFirstRun(
         database,
         herVaults(),
-        { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
+        { periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }], cycleLengthDays: 30 },
         sheAnswered,
       );
 
@@ -90,7 +90,7 @@ describe('the answers she gives on the first run', () => {
       completeFirstRun(
         database,
         herVaults(),
-        { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
+        { periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }], cycleLengthDays: 30 },
         sheAnswered,
       );
 
@@ -116,7 +116,7 @@ describe('the answers she gives on the first run', () => {
           completeFirstRun(
             database,
             herVaults(),
-            { periodStartedOn: '2026-05-15', cycleLengthDays: 28 },
+            { periods: [{ startedOn: '2026-05-15', lengthDays: 1 }], cycleLengthDays: 28 },
             sheAnswered,
           ),
         ),
@@ -133,7 +133,7 @@ describe('the answers she gives on the first run', () => {
           completeFirstRun(
             database,
             herVaults(),
-            { periodStartedOn: tooFar, cycleLengthDays: 28 },
+            { periods: [{ startedOn: tooFar, lengthDays: 1 }], cycleLengthDays: 28 },
             sheAnswered,
           ),
         ),
@@ -142,7 +142,7 @@ describe('the answers she gives on the first run', () => {
         completeFirstRun(
           database,
           herVaults(),
-          { periodStartedOn: tooFar, cycleLengthDays: 28 },
+          { periods: [{ startedOn: tooFar, lengthDays: 1 }], cycleLengthDays: 28 },
           sheAnswered,
         ),
       ).toThrow(new RegExp(`${longestLookBackDays}`));
@@ -159,7 +159,7 @@ describe('the answers she gives on the first run', () => {
         completeFirstRun(
           migrated(),
           herVaults(),
-          { periodStartedOn: day, cycleLengthDays: 28 },
+          { periods: [{ startedOn: day, lengthDays: 1 }], cycleLengthDays: 28 },
           sheAnswered,
         );
 
@@ -197,7 +197,7 @@ describe('the answers she gives on the first run', () => {
             completeFirstRun(
               database,
               herVaults(),
-              { periodStartedOn: herPeriodStarted, cycleLengthDays: days },
+              { periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }], cycleLengthDays: days },
               sheAnswered,
             ),
           ),
@@ -213,7 +213,7 @@ describe('the answers she gives on the first run', () => {
       completeFirstRun(
         database,
         herVaults(),
-        { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
+        { periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }], cycleLengthDays: 30 },
         sheAnswered,
       );
 
@@ -221,7 +221,7 @@ describe('the answers she gives on the first run', () => {
         completeFirstRun(
           database,
           herVaults(),
-          { periodStartedOn: '2026-05-10', cycleLengthDays: 29 },
+          { periods: [{ startedOn: '2026-05-10', lengthDays: 1 }], cycleLengthDays: 29 },
           sheAnswered,
         ),
       ).toThrow(/already done/);
@@ -237,7 +237,7 @@ describe('the answers she gives on the first run', () => {
         completeFirstRun(
           refusing(database, 'setting'),
           herVaults(),
-          { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
+          { periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }], cycleLengthDays: 30 },
           sheAnswered,
         ),
       ).toThrow(/refused/);
@@ -246,7 +246,7 @@ describe('the answers she gives on the first run', () => {
       completeFirstRun(
         database,
         herVaults(),
-        { periodStartedOn: herPeriodStarted, cycleLengthDays: 30 },
+        { periods: [{ startedOn: herPeriodStarted, lengthDays: 1 }], cycleLengthDays: 30 },
         sheAnswered,
       );
       expect(readDayLog(database, herPeriodStarted)?.revision).toBe(1);

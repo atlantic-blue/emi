@@ -26,7 +26,6 @@ import {
   holdSaidTestID,
   holdTitleTestID,
 } from '../../src/features/onboarding/HoldToBegin';
-import { LastPeriod } from '../../src/features/onboarding/LastPeriod';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
@@ -40,7 +39,7 @@ import {
   onboardingTitleTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { PeriodBefore } from '../../src/features/onboarding/PeriodBefore';
+import { ThreePeriods } from '../../src/features/onboarding/ThreePeriods';
 import { PeriodLength, periodLengthWheelTestID } from '../../src/features/onboarding/PeriodLength';
 import { Regularity, regularityTestID } from '../../src/features/onboarding/Regularity';
 import {
@@ -72,7 +71,6 @@ import {
 } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import { WhatEmiIs } from '../../src/features/onboarding/WhatEmiIs';
 import { YearOfBirth } from '../../src/features/onboarding/YearOfBirth';
-import { calendarTestID } from '../../src/features/onboarding/Calendar';
 import type { FirstRunScreen } from '../../src/features/onboarding/copy';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { cycleRingTestID } from '../../src/components/CycleRing';
@@ -138,17 +136,15 @@ const nothing = (): void => undefined;
 /**
  * Every drawing of the first run this step holds a screen to, in the order she meets them.
  *
- * `lastPeriodNext` and `firstForecastLearning` are second states of a screen already in the list
- * rather than screens of their own, so the run is twenty one screens drawn twenty three ways.
+ * `firstForecastLearning` is a second state of a screen already in the list rather than a screen
+ * of its own, so the run is nineteen screens drawn twenty ways. The list of her last three periods
+ * replaced the two drawings of the last period and the one of the period before.
  */
 export const theFirstRunDrawings = [
   'welcome',
   'tour',
   'name',
   'yearOfBirth',
-  'lastPeriod',
-  'lastPeriodNext',
-  'periodBefore',
   'cycleLength',
   'periodLength',
   'regularity',
@@ -170,6 +166,13 @@ export const theFirstRunDrawings = [
 export type FirstRunDrawing = (typeof theFirstRunDrawings)[number];
 
 /**
+ * A screen of the first run she can be shown, which is every drawing of the mockups stage and the
+ * list of her last three periods. That list is drawn on the redesign canvas only, so it is held to
+ * the frame here and to the canvas board by its own tests, not to a drawing of the older stage.
+ */
+export type FirstRunLook = FirstRunDrawing | 'threePeriods';
+
+/**
  * The two screens of the run that draw no bar. The welcome asks her nothing, and the first run log
  * names the day in the middle of its header instead, which is what the prototype draws.
  */
@@ -179,11 +182,10 @@ export const theScreensWithNoBar: readonly FirstRunScreen[] = ['welcome', 'today
  * The ten questions the prototype draws a bar on. The welcome asks her nothing, and the first run
  * log takes a header naming the day instead, so neither of them is counted along.
  */
-export const theQuestionsTheBarCounts: readonly FirstRunDrawing[] = [
+export const theQuestionsTheBarCounts: readonly FirstRunLook[] = [
   'name',
   'yearOfBirth',
-  'lastPeriod',
-  'periodBefore',
+  'threePeriods',
   'cycleLength',
   'periodLength',
   'regularity',
@@ -240,10 +242,7 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
     HoldToBegin: [holdTitleTestID, holdSaidTestID],
     PrimaryButton: [holdButtonTestID],
   },
-  lastPeriod: { ...theFrame, Calendar: [calendarTestID] },
-  lastPeriodNext: { ...theFrame, Calendar: [calendarTestID] },
   name: { ...theFrame, TextField: [nameFieldTestID] },
-  periodBefore: { ...theFrame, Calendar: [calendarTestID] },
   periodLength: { ...theFrame, Stepper: [periodLengthWheelTestID] },
   recoveryCode: {
     ...theRecoveryFrame,
@@ -291,7 +290,6 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
 export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing, number>>> = {
   // The mockups put the way past in the header. The redesign canvas puts it over the button, so
   // every part above it is counted as drawn before it.
-  periodBefore: 6,
   periodLength: 6,
   // The mockups put the step above the drop, and the redesign canvas puts the drop above the step.
   // The canvas is the later drawing, so the welcome follows it.
@@ -311,11 +309,11 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
 };
 
 /** The screen she is looking at, rendered on a phone that keeps part of its glass. */
-export async function sheIsLookingAt(drawing: FirstRunDrawing): Promise<void> {
+export async function sheIsLookingAt(drawing: FirstRunLook): Promise<void> {
   await render(<OnAPhone>{theScreenOf(drawing)}</OnAPhone>);
 }
 
-function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
+function theScreenOf(drawing: FirstRunLook): React.ReactElement {
   switch (drawing) {
     case 'tour':
       return <TourScreen onNext={nothing} onSkip={nothing} />;
@@ -336,30 +334,16 @@ function theScreenOf(drawing: FirstRunDrawing): React.ReactElement {
           onSkip={nothing}
         />
       );
-    // The question is one screen, and the two drawings are the same screen: the way past is drawn
-    // on both, and the drawing of it without one names one part fewer.
-    case 'lastPeriod':
-    case 'lastPeriodNext':
+    case 'threePeriods':
       return (
-        <LastPeriod
-          chosen={threeDaysBack}
+        <ThreePeriods
           now={whenSheOpensIt}
           onBack={nothing}
-          onChoose={nothing}
           onContinue={nothing}
+          onGive={nothing}
+          onRemove={nothing}
           onWayPast={nothing}
-        />
-      );
-    case 'periodBefore':
-      return (
-        <PeriodBefore
-          chosen={undefined}
-          lastPeriodStartedOn={threeDaysBack}
-          now={whenSheOpensIt}
-          onAdd={nothing}
-          onBack={nothing}
-          onChoose={nothing}
-          onSkip={nothing}
+          periods={[{ lengthDays: 5, startedOn: threeDaysBack }]}
         />
       );
     case 'cycleLength':
@@ -473,12 +457,6 @@ export function whatTheDrawingAsksFor(drawing: FirstRunDrawing): Part[] {
       return thePartsOfTheMockupWithoutItsNotes('name', theIdentifiersOf.name);
     case 'yearOfBirth':
       return thePartsOfTheMockupWithoutItsNotes('yearOfBirth', theIdentifiersOf.yearOfBirth);
-    case 'lastPeriod':
-      return thePartsOfTheMockupWithoutItsNotes('lastPeriod', theIdentifiersOf.lastPeriod);
-    case 'lastPeriodNext':
-      return thePartsOfTheMockupWithoutItsNotes('lastPeriodNext', theIdentifiersOf.lastPeriodNext);
-    case 'periodBefore':
-      return thePartsOfTheMockupWithoutItsNotes('periodBefore', theIdentifiersOf.periodBefore);
     case 'cycleLength':
       return thePartsOfTheMockupWithoutItsNotes('cycleLength', theIdentifiersOf.cycleLength);
     case 'periodLength':
