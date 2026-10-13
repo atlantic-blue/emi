@@ -21,7 +21,6 @@ import {
   herPhoneHoldsThreeRecordedCycles,
   theColumnsOfTheDrawing,
   theCycleDayOver,
-  theCycleDaysOfTheDrawing,
   theDatesOfTheDrawing,
   theDatesTheMonthDrew,
   theDaySheOpensTheMonth,
@@ -36,7 +35,9 @@ import {
   theMonthSheReads,
   theMonthSheReadsBack,
   theMonthTheDrawingNames,
-  theRangeHerNextPeriodMayStartOn,
+  theCycleDaysAfterIssue270,
+  theDayHerNextPeriodIsForecastOn,
+  theDaysOfHerNextForecastPeriod,
   theSquaresCountingTheirCycleDayBelowTheDate,
   theSquaresTakingAWidthOfTheirOwn,
   theSquaresTheMonthDrew,
@@ -111,11 +112,11 @@ describe('she opens a month and reads the cycle day of every day in it', () => {
   });
 
   describe('the day of her cycle', () => {
-    it('is written over every date, and it is the number the drawing counts', async () => {
+    it('is written over every date, as the drawing counts up to her next forecast period', async () => {
       await sheOpensTheMonth();
 
       expect(theMonthSheReadsBack().map((square) => square.cycleDay)).toEqual(
-        theCycleDaysOfTheDrawing(),
+        theCycleDaysAfterIssue270(),
       );
     });
 
@@ -126,23 +127,26 @@ describe('she opens a month and reads the cycle day of every day in it', () => {
       expect(theSquaresTheMonthDrew().length).toBeGreaterThan(theColumnsOfTheDrawing().length);
     });
 
-    it('is the day the ring says for that date, on every date of the month', async () => {
+    it('is the day the ring says for that date, on every date before her next forecast period', async () => {
       await sheOpensTheMonth();
-
-      const read = theSquaresTheMonthDrew().map((day) => theCycleDayOver(day));
-
-      expect(read).toEqual(theSquaresTheMonthDrew().map((day) => theDayTheRingSaysOn(day)));
-      expect(read.filter((day) => Number.isInteger(day))).toHaveLength(
-        theDatesOfTheDrawing().length,
+      const before = theSquaresTheMonthDrew().filter(
+        (day) => day < theDayHerNextPeriodIsForecastOn(),
       );
+
+      expect(before.map((day) => theCycleDayOver(day))).toEqual(
+        before.map((day) => theDayTheRingSaysOn(day)),
+      );
+      expect(before.length).toBeGreaterThan(theColumnsOfTheDrawing().length);
     });
 
-    it('counts on past the length of the cycle she is in, because that cycle has not closed', async () => {
+    it('starts again at 1 on the day the forecast puts her next period on (issue 270)', async () => {
       await sheOpensTheMonth();
+      const restart = theDayHerNextPeriodIsForecastOn();
 
-      const last = theSquaresTheMonthDrew().at(-1) ?? '';
-
-      expect(theCycleDayOver(last)).toBeGreaterThan(theCycleDayOver(theDaySheOpensTheMonth()) ?? 0);
+      expect(theCycleDayOver(restart)).toBe(1);
+      expect(theCycleDayOver(addDays(restart, 1))).toBe(2);
+      // The old count ran on past the end of the cycle she is in.
+      expect(theCycleDayOver(restart)).not.toBe(theDayTheRingSaysOn(restart));
     });
   });
 
@@ -157,20 +161,19 @@ describe('she opens a month and reads the cycle day of every day in it', () => {
       expect(theDaysTheDrawingFills()).toHaveLength(herPeriodRunsFor());
     });
 
-    it('outlines the days her next period is expected on, and the day the drawing outlines', async () => {
+    it('rings every day the forecast puts her next period on, from its first day', async () => {
       await sheOpensTheMonth();
-      const mayStart = theRangeHerNextPeriodMayStartOn();
 
-      expect(theMarkOnTheSquare(theDayTheDrawingOutlines())).toBe('forecast');
-      expect(theMarkOnTheSquare(mayStart.from)).toBe('forecast');
-      expect(theMarkOnTheSquare(mayStart.to)).toBe('forecast');
+      expect(theDaysOfHerNextForecastPeriod().map((day) => theMarkOnTheSquare(day))).toEqual(
+        theDaysOfHerNextForecastPeriod().map(() => 'forecast'),
+      );
+      expect(theDaysOfHerNextForecastPeriod()).toContain(theDayTheDrawingOutlines());
     });
 
-    it('leaves the day before that range plain, so the outline says something', async () => {
+    it('leaves the day before that period plain, so the ring says something', async () => {
       await sheOpensTheMonth();
-      const mayStart = theRangeHerNextPeriodMayStartOn();
 
-      expect(theMarkOnTheSquare(addDays(mayStart.from, -1))).toBe('plain');
+      expect(theMarkOnTheSquare(addDays(theDayHerNextPeriodIsForecastOn(), -1))).toBe('plain');
     });
 
     it('rings today, and rings nothing else', async () => {

@@ -1,6 +1,6 @@
 import type { DayRecord, ProfileRecord } from '@emi/crypto';
 import { addDays, cyclesFrom } from '@emi/cycle';
-import { screen, within } from '@testing-library/react-native';
+import { screen } from '@testing-library/react-native';
 
 import { listCycles } from '../../src/data/cycleRepository';
 import { readDayLog } from '../../src/data/dayLogRepository';
@@ -8,13 +8,13 @@ import {
   editPeriodChangeTestID,
   editPeriodScreenTestID,
   editPeriodHeaderTestID,
-  editPeriodBackTestID,
   editPeriodCancelTestID,
   editPeriodLeadTestID,
+  editPeriodListTestID,
+  editPeriodRowTestID,
   editPeriodSaveTestID,
-  periodRangePickerTestID,
-} from '../../src/features/calendar/PeriodRangePicker';
-import { chosenDayMarkTestID, dayTestID } from '../../src/features/calendar/CycleMonth';
+  editPeriodTagTestID,
+} from '../../src/features/calendar/EditPeriodScreen';
 import { calendarEditPeriodTestID } from '../../src/features/calendar/CalendarScreen';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { ringInputFor } from '../../src/features/cycle/ringInput';
@@ -278,8 +278,8 @@ export function theCycleStartsHerPhoneHolds(): string[] {
 }
 
 /**
- * What each part of the drawing of the period picker is built under. The grid is named on the grid
- * itself, because the drawing lists the days as rows where the screen draws them as squares.
+ * What each part of the drawing of the period picker is built under. The drawing names the list of
+ * days as one part, and the screen draws it as one list of rows.
  */
 export function theIdentifiersOfTheRangePicker(): PartIdentifiers {
   const alsoBuiltUnder = (part: string, ...identifiers: readonly string[]): readonly string[] => [
@@ -289,7 +289,7 @@ export function theIdentifiersOfTheRangePicker(): PartIdentifiers {
 
   return {
     ...theIdentifiersOfAPart,
-    PeriodRangePicker: [periodRangePickerTestID],
+    PeriodRangePicker: [editPeriodListTestID],
     PrimaryButton: alsoBuiltUnder('PrimaryButton', editPeriodSaveTestID),
     Text: alsoBuiltUnder(
       'Text',
@@ -297,13 +297,25 @@ export function theIdentifiersOfTheRangePicker(): PartIdentifiers {
       editPeriodLeadTestID,
       editPeriodChangeTestID,
     ),
-    TextLink: alsoBuiltUnder('TextLink', editPeriodBackTestID, editPeriodCancelTestID),
+    TextLink: alsoBuiltUnder('TextLink', editPeriodCancelTestID),
   };
 }
 
-/** The parts of the drawing this step builds, which is every part it places. */
+/**
+ * The parts of the drawing this step builds. The older drawing places two ways out of the header,
+ * a way back and Cancel. The redesign board `editPeriod` places one, Cancel on the left, so the
+ * second way out is left out of the comparison here rather than edited out of the drawing.
+ */
 export function thePartsOfTheRangePickerDrawing(): Part[] {
-  return thePartsOfTheMockup('editPeriod', theIdentifiersOfTheRangePicker());
+  const parts = thePartsOfTheMockup('editPeriod', theIdentifiersOfTheRangePicker());
+  const lastWayOut = parts.map((part) => part.name).lastIndexOf('TextLink');
+  const firstWayOut = parts.map((part) => part.name).indexOf('TextLink');
+
+  if (firstWayOut < 0 || lastWayOut === firstWayOut) {
+    throw new Error('the drawing of the period picker no longer places two ways out of its header');
+  }
+
+  return parts.filter((_part, index) => index !== lastWayOut);
 }
 
 /** Every identifier the period picker drew, in the order the screen drew them. */
@@ -316,25 +328,33 @@ export function sheIsOnThePeriodPicker(): boolean {
   return screen.queryByTestId(editPeriodScreenTestID) !== null;
 }
 
-/** The days drawn as hers on the picker, which is the set she is holding at that moment. */
+/** The days drawn as hers on the list, which is the set she is holding at that moment. */
 export function theDaysTickedOnThePicker(): string[] {
-  return theDaysOfTheMonthDrawn().filter(theDayIsTicked);
+  return theDaysTheListDrew().filter(theDayIsTicked);
 }
 
-function theDaysOfTheMonthDrawn(): string[] {
+/** Every day the list drew a row for, in its order. */
+export function theDaysTheListDrew(): string[] {
+  const aRow = editPeriodRowTestID('');
+
   return screen
-    .queryAllByTestId(new RegExp(`^${dayTestID('')}\\d{4}-\\d{2}-\\d{2}$`))
-    .map((square) => String(square.props.testID).slice(dayTestID('').length));
+    .queryAllByTestId(new RegExp(`^${aRow}\\d{4}-\\d{2}-\\d{2}$`))
+    .map((row) => String(row.props.testID).slice(aRow.length));
 }
 
-/** Whether one square carries the tick a day she is holding carries. */
+/** Whether one row is ticked, read off what it tells somebody listening. */
 export function theDayIsTicked(day: string): boolean {
-  const square = screen.getByTestId(dayTestID(day));
-
-  return within(square).queryAllByTestId(chosenDayMarkTestID).length > 0;
+  return whatSomebodyListeningHearsOn(day).checked === true;
 }
 
-/** What somebody listening is told about one square, which is how a tick is read without colour. */
+/** The tag at the end of a row, Added or Taken off, or nothing on a row she left alone. */
+export function theTagOn(day: string): string | undefined {
+  const tag = screen.queryByTestId(editPeriodTagTestID(day));
+
+  return tag === null ? undefined : textIn(tag).join('');
+}
+
+/** What somebody listening is told about one row, which is how a tick is read without colour. */
 export interface SquareSpoken {
   readonly role: string;
   readonly checked: boolean | undefined;
@@ -342,8 +362,8 @@ export interface SquareSpoken {
 }
 
 export function whatSomebodyListeningHearsOn(day: string): SquareSpoken {
-  const square = screen.getByTestId(dayTestID(day));
-  const state = (square.props.accessibilityState ?? {}) as {
+  const row = screen.getByTestId(editPeriodRowTestID(day));
+  const state = (row.props.accessibilityState ?? {}) as {
     checked?: boolean;
     disabled?: boolean;
   };
@@ -351,7 +371,7 @@ export function whatSomebodyListeningHearsOn(day: string): SquareSpoken {
   return {
     checked: state.checked,
     disabled: state.disabled,
-    role: String(square.props.accessibilityRole),
+    role: String(row.props.accessibilityRole),
   };
 }
 

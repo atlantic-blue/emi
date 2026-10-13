@@ -360,9 +360,10 @@ Feature: She opens Emi and logs her first period
     When she opens the month
     Then she is reading the month the drawing names, in seven columns
     And above every date is the day of her cycle that date falls on
-    And every one of those is the day the ring says for that date
+    And every one of those before her next forecast period is the day the ring says for that date
+    And the count starts again at 1 on the day the forecast puts her next period on
     And the days she bled are filled
-    And the day her next period is expected on is a dotted outline
+    And the days the forecast puts her next period on are dashed rings
     And today is ringed
     And every square is as high as a thumb needs, and takes its width from the month
 
@@ -382,26 +383,26 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-4, she presses a day in the month and reads what she wrote that day
     Given her phone holds three recorded cycles, and a symptom she marked on one day
     When she opens the month
-    Then nothing at the foot of it names a day, because she has pressed none
+    Then the card at the foot names today, because she has pressed no day
     When she presses the day the drawing names
-    Then a sheet at the foot names that date in words
+    Then a card at the foot names that date in words
     And it names the day of her cycle that date falls on, and the phase she was in
     And it names the symptom she marked that day
-    And that is the month the drawing names, down to the sheet
-    When she presses the sheet
+    And that is the month the drawing names, down to the card
+    When she presses the open button on the card
     Then she is looking at that day, and at no other
     When she says her period came that day
     And she presses the way back
-    Then she is reading the month again, and the sheet names the flow she just picked
+    Then she is reading the month again, and the card names the flow she just picked
     And the day of her cycle over that date is the day the ring now says
     And pressing another day of the month names that day instead
 
-  Scenario: SCREEN-4, a day that has not happened yet is refused in the month and at its address
+  Scenario: SCREEN-4, a day that has not happened yet is a forecast in the month and refused at its address
     Given her phone holds three recorded cycles
     When she opens the month
     And she presses the square two days ahead of today
-    Then she is still reading the month, and nothing at the foot of it names that day
-    And that square is faint, and somebody listening is told it takes no press
+    Then she is still reading the month, and the card names that day with when her next period is likely to start
+    And the card offers no way into that day, and the square is not faint
     And a day she already lived still takes a press and names itself at the foot
     When she opens that same day ahead of her by its address
     Then she is told the day has not happened yet
@@ -409,6 +410,16 @@ Feature: She opens Emi and logs her first period
     And there is nothing on that screen to pick a flow with
     When she presses the way back
     Then her phone holds nothing on that day
+
+  Scenario: SCREEN-4, she reads her forecast periods in the month ahead
+    Given her phone holds three recorded cycles
+    When she opens the month
+    And she presses the way to a later month
+    Then the forecast period in that month is drawn in dashed rings, and its cycle day starts at 1
+    And the fertile window of that forecast cycle is tinted, with its ovulation day filled
+    When she presses the first day of that forecast period
+    Then the card says a later period is likely to start between that day and a later one
+    And the card offers no way into that day
 
   Scenario: SCREEN-4, she swipes back two months and reads a day in that month
     Given her phone holds three recorded cycles
@@ -420,7 +431,7 @@ Feature: She opens Emi and logs her first period
     When she presses the way to an earlier month again
     Then she is reading the month two behind the one she opened
     When she presses a day of that month
-    And she presses the sheet at the foot
+    And she presses the open button on the card
     Then she is looking at that day, two months behind today
     When she presses the way back
     Then she is reading that same month again, and not the month she opened
@@ -435,12 +446,13 @@ Feature: She opens Emi and logs her first period
     Then she is reading the month that day falls in
     When she presses the way to edit her period
     Then she is looking at the period picker, and that is the drawing of it
-    And the four days Emi holds arrive as hers, and no other day of that month does
+    And the four days Emi holds arrive as hers, and no other listed day does
     And somebody listening is told each day is one she can turn on and off
-    And a day she has not lived yet takes no press here either
+    And no day she has not lived yet is listed
     When she presses the two days her period ran on after that
     And she presses the day her period did not start on
-    Then the line under the month names the two days she added and the day she took off
+    Then each of those three rows carries its tag, Added or Taken off
+    And the line under the list names the two days she added and the day she took off
     When she saves, once
     Then she is reading the month again, and the two days she added are filled on it
     And the day she took off is not filled
@@ -593,10 +605,10 @@ Feature: She opens Emi and logs her first period
     And the days she bled are filled with the colour of her period
     And every day of the fertile window the forecast names is tinted
     And the one day the forecast names as the estimated ovulation is filled
-    And a legend above the grid names her period and her fertile days
+    And a legend above the grid names her period, the forecast and her fertile days
     When she presses the day the drawing names
-    Then a panel at the foot names that day, over the way to her whole period
-    And pressing that panel opens the day it names
+    Then a card at the foot names that day, over the way to her whole period
+    And pressing the open button on that card opens the day it names
 
   Scenario: SCREEN-2, the option rows and chips take the redesign look
     Given a question carrying every answer Emi can ask her to choose
@@ -705,8 +717,8 @@ Feature: She opens Emi and logs her first period
     And the log stands her flow in one card and her symptoms in a second one under it
     And the line that says where the day is kept sits under her symptoms, and Done is a word at the top
     And the way off a day Emi refuses is the quieter capsule, not a word among words
-    And the way to her whole period sits under the day she pressed, as the quieter capsule
-    And her whole period names the days she added and the day she took off, in her own language
+    And the way to her whole period sits under the day she pressed, as a link in the accent
+    And her whole period tags the days she added and the day she took off, in her own language
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the Insights screens match the redesign prototype
@@ -749,7 +761,7 @@ Feature: She opens Emi and logs her first period
     And marking it tells her the day is in her record, and that no cycle starts from it
     And her phone holds that day with the mark on it, and counts the cycles it counted before
     And the log and the period editor say all of this in each of the three languages, as you
-    And none of those words gives her advice, raises an alarm, or names Emi
+    And none of those words gives her advice or raises an alarm, and only the lines about what Emi holds name Emi
 
   Scenario: SCREEN-2, delete everything tells her it is gone in plain words
     Given she has six cycles of her own on this phone

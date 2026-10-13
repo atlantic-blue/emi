@@ -1,5 +1,10 @@
 import type { DayRecord, ProfileRecord } from '@emi/crypto';
-import { addDays, daysBetween } from '@emi/cycle';
+import {
+  FERTILE_DAYS_AFTER_OVULATION,
+  FERTILE_DAYS_BEFORE_OVULATION,
+  addDays,
+  daysBetween,
+} from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, type PhaseName, colour, ringGeometry } from '@emi/tokens';
 import { screen, within } from '@testing-library/react-native';
 import { StyleSheet, type ViewStyle } from 'react-native';
@@ -17,6 +22,7 @@ import {
   dateTestID,
   dayTestID,
   emptyCellTestID,
+  type LegendEntry,
   legendDotTestID,
   legendTestID,
   monthLegendTestID,
@@ -28,6 +34,7 @@ import {
   daySheetLineTestID,
   daySheetTestID,
 } from '../../src/features/calendar/DaySheet';
+import { type CycleAhead, theCyclesAhead } from '../../src/features/calendar/forecastAhead';
 import type { DayMark } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { ringInputFor } from '../../src/features/cycle/ringInput';
@@ -359,6 +366,58 @@ export function theRangeHerNextPeriodMayStartOn(): { readonly from: string; read
   return range;
 }
 
+/** The forecast cycles ahead of her on the day she opens the month, read off the app's own rule. */
+export function theCyclesAheadOfHer(): CycleAhead[] {
+  return theCyclesAhead(herReading(theDaySheOpensTheMonth()));
+}
+
+/**
+ * The first day her next period may start on, which is where the cycle day starts again at 1. A
+ * forecast never names one day (contract CYCLE-2), so the count starts at the front of the range.
+ */
+export function theDayHerNextPeriodIsForecastOn(): string {
+  const next = theCyclesAheadOfHer()[0];
+
+  if (next === undefined) {
+    throw new Error('her three cycles produced no forecast period ahead of her');
+  }
+
+  return next.startsOn;
+}
+
+/**
+ * Every day her next period may fall on, which the month draws in a dashed ring: from the first
+ * day it may start to the last day it may still run.
+ */
+export function theDaysOfHerNextForecastPeriod(): string[] {
+  const next = theCyclesAheadOfHer()[0];
+
+  if (next === undefined) {
+    throw new Error('her three cycles produced no forecast period ahead of her');
+  }
+
+  const lastDay = addDays(next.mayStart.to, next.periodDays - 1);
+
+  return Array.from({ length: daysBetween(next.startsOn, lastDay) + 1 }, (_unused, index) =>
+    addDays(next.startsOn, index),
+  );
+}
+
+/**
+ * The cycle day the drawing counts over each date, up to the day before her next forecast period,
+ * and a count that starts again at 1 from that day. The drawing is older than issue 270 and counts
+ * on past the end of the cycle, which is the fault the issue names.
+ */
+export function theCycleDaysAfterIssue270(): number[] {
+  const restart = theDayHerNextPeriodIsForecastOn();
+
+  return theDaysOfTheDrawnMonth().map((day, index) =>
+    day < restart
+      ? (theCycleDaysOfTheDrawing()[index] ?? Number.NaN)
+      : daysBetween(restart, day) + 1,
+  );
+}
+
 /**
  * What each part of the drawing of the month is built under. The shared record carries every part
  * whose identifier is a constant; a square is built under the day it draws, so the two squares the
@@ -518,7 +577,7 @@ export function theDateDrawnFor(day: string): number {
 
 /**
  * Which of the four states the built month drew that date in, read off the drawn style rather than
- * off a name the component wrote for itself. A fill, a ring and a dotted outline are three
+ * off a name the component wrote for itself. A fill, a ring and a dashed outline are three
  * different things to look at, and that is what the reader below distinguishes.
  */
 export function theMarkOnTheSquare(day: string): DayMark {
@@ -527,7 +586,7 @@ export function theMarkOnTheSquare(day: string): DayMark {
   if (style.backgroundColor === colour.period) {
     return 'bled';
   }
-  if (style.borderStyle === 'dotted') {
+  if (style.borderStyle === 'dashed') {
     return 'forecast';
   }
 
@@ -752,13 +811,28 @@ export function theDaysOfTheDrawnMonth(): string[] {
  * narrower, so the month is held to the forecast and a month that tinted the phase is caught.
  */
 export function theFertileDaysTheForecastNames(): string[] {
+  const restart = theDayHerNextPeriodIsForecastOn();
+  const forecast = forecastOf(herReading(theDaySheOpensTheMonth()).cycles, sheSaidHerCycleRuns);
+
   return theDaysOfTheDrawnMonth().filter((day) => {
-    const forecast = forecastOf(herReading(day).cycles, sheSaidHerCycleRuns);
+    if (day >= restart && forecast.kind === 'forecast') {
+      // Issue 270: the fertile window of the forecast cycle, counted the way the forecast counts
+      // the one she is in: the luteal length back from the start after it, five days before that
+      // and one after, never on a day the forecast period may fall on.
+      const cycleDay = daysBetween(restart, day) + 1;
+      const ovulationDay = Math.round(forecast.medianLengthDays) - forecast.lutealLengthDays + 1;
+
+      return (
+        cycleDay > theDaysOfHerNextForecastPeriod().length &&
+        cycleDay >= ovulationDay - FERTILE_DAYS_BEFORE_OVULATION &&
+        cycleDay <= ovulationDay + FERTILE_DAYS_AFTER_OVULATION
+      );
+    }
+
+    const read = forecastOf(herReading(day).cycles, sheSaidHerCycleRuns);
 
     return (
-      forecast.kind === 'forecast' &&
-      day >= forecast.fertileWindow.from &&
-      day <= forecast.fertileWindow.to
+      read.kind === 'forecast' && day >= read.fertileWindow.from && day <= read.fertileWindow.to
     );
   });
 }
@@ -775,9 +849,27 @@ export function theOvulationDayTheForecastNames(): string | undefined {
   });
 }
 
-/** The two words of the legend above the grid, or nothing where the grid draws no legend. */
+/**
+ * The ovulation day of the forecast cycle that starts with her next forecast period: the luteal
+ * length counted back from the start after it, which is how the forecast counts the one she is in.
+ */
+export function theOvulationDayOfTheForecastCycle(): string {
+  const forecast = forecastOf(herReading(theDaySheOpensTheMonth()).cycles, sheSaidHerCycleRuns);
+
+  if (forecast.kind !== 'forecast') {
+    throw new Error('her three cycles produced no forecast');
+  }
+
+  return addDays(
+    theDayHerNextPeriodIsForecastOn(),
+    Math.round(forecast.medianLengthDays) - forecast.lutealLengthDays,
+  );
+}
+
+/** The three words of the legend above the grid, or nothing where the screen draws no legend. */
 export interface LegendSheReads {
   readonly period: string;
+  readonly forecast: string;
   readonly fertile: string;
 }
 
@@ -788,21 +880,35 @@ export function theLegendSheReads(): LegendSheReads | undefined {
 
   return {
     fertile: saidUnder(legendTestID('fertile')),
+    forecast: saidUnder(legendTestID('forecast')),
     period: saidUnder(legendTestID('period')),
   };
 }
 
-/** The colour of each dot of the legend, which is what ties a word to the days it describes. */
-export function theLegendDots(): LegendSheReads {
-  const colourOf = (of: 'period' | 'fertile'): string => {
+/** How each mark of the legend is drawn: its fill, and the line around it. */
+export interface LegendMark {
+  readonly fill: string | undefined;
+  readonly line: string | undefined;
+  readonly lineStyle: string | undefined;
+}
+
+/** The mark of each entry of the legend, which is what ties a word to the days it describes. */
+export function theLegendDots(): Readonly<Record<LegendEntry, LegendMark>> {
+  const markOf = (of: LegendEntry): LegendMark => {
     const style: ViewStyle = StyleSheet.flatten(
       screen.getByTestId(legendDotTestID(of)).props.style,
     );
+    const asText = (value: unknown): string | undefined =>
+      typeof value === 'string' ? value : undefined;
 
-    return typeof style.backgroundColor === 'string' ? style.backgroundColor : '';
+    return {
+      fill: asText(style.backgroundColor),
+      line: asText(style.borderColor),
+      lineStyle: asText(style.borderStyle),
+    };
   };
 
-  return { fertile: colourOf('fertile'), period: colourOf('period') };
+  return { fertile: markOf('fertile'), forecast: markOf('forecast'), period: markOf('period') };
 }
 
 /** Whether the month put the panel at the foot on the glass. */

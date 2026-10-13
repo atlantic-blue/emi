@@ -5,9 +5,11 @@ import { fireEvent, render, screen, within } from '@testing-library/react-native
 import { renderRouter } from 'expo-router/testing-library';
 
 import { type Language, type Words, catalogueOf, languages } from '../../src/language';
-import { dayTestID } from '../../src/features/calendar/CycleMonth';
 import { ordinal } from '../../src/features/forecast/copy';
-import { editPeriodChangeTestID } from '../../src/features/calendar/PeriodRangePicker';
+import {
+  editPeriodChangeTestID,
+  editPeriodRowTestID,
+} from '../../src/features/calendar/EditPeriodScreen';
 import { dayParameter } from '../../src/features/calendar/askedMonth';
 import { dayRefusedLineTestID, dayRefusedTitleTestID } from '../../src/features/log/DayRefused';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
@@ -27,7 +29,6 @@ import {
   theDaysEmiHolds,
   theDaysHerPhoneHoldsIn,
   theLeadSheReads,
-  theMonthSheCorrects,
   whenSheOpensEmi,
 } from '../fixtures/thePeriodSheCorrects';
 
@@ -39,8 +40,8 @@ jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 /**
  * The log and the period editor, in the voice `docs/design/voice.md` sets. They ask her how her
- * day was, they say what a mark does rather than reassuring her about it, and they talk about what
- * she has rather than about what Emi holds.
+ * day was, and they say what a mark does rather than reassuring her about it. The period editor
+ * takes the words of the redesign board `editPeriod`, which says what Emi holds.
  *
  * Every sentence is written out here rather than read off the catalogue it checks, because a
  * sentence read off the thing it is holding moves with it and catches nothing.
@@ -84,19 +85,25 @@ const theRefusalSays = {
 /** What the period editor says above and below the month. */
 const theEditorSays = {
   lead: (days: number, date: string): string =>
-    `Tap the days you bled. You have ${days} days marked, from the ${date}.`,
-  leadWithNoDay: 'Tap the days you bled. Nothing is marked this month yet.',
-  noDayLeft: 'A period needs at least one day. Tap a day you bled.',
-  added: (days: string): string => `Added ${days}.`,
-  removed: (days: string): string => `Removed ${days}.`,
+    `Press the days you bled. Emi holds ${days} days, from the ${date}.`,
+  leadWithNoDay: 'Press the days you bled. Emi holds no day of this period yet.',
+  noDayLeft: 'A period needs at least one day. Press a day you bled.',
+  added: (days: string): string => `You added ${days}.`,
+  removed: (days: string): string => `You took ${days} off.`,
 };
+
+/** The two lines of the editor the board writes about Emi, which the voice check leaves out. */
+const theLinesThatNameEmi: readonly string[] = [
+  'calendar.editPeriod.lead',
+  'calendar.editPeriod.leadWithNoDay',
+];
 
 /** Every key this step rewrites, with the English it holds, so the catalogue is read whole. */
 const theWordsUnderTheirKeys: Readonly<Record<string, string>> = {
-  'calendar.editPeriod.added': 'Added {days}.',
+  'calendar.editPeriod.added': 'You added {days}.',
   'calendar.editPeriod.leadWithNoDay': theEditorSays.leadWithNoDay,
   'calendar.editPeriod.noDayLeft': theEditorSays.noDayLeft,
-  'calendar.editPeriod.removed': 'Removed {days}.',
+  'calendar.editPeriod.removed': 'You took {days} off.',
   'log.day.notADay.line': theRefusalSays.notADay.line,
   'log.day.notADay.title': theRefusalSays.notADay.title,
   'log.day.notYet.line': theRefusalSays.notYet.line,
@@ -115,8 +122,8 @@ const theWordsUnderTheirKeys: Readonly<Record<string, string>> = {
 /** The one line of these screens that counts, and both forms English writes it in. */
 const theLeadUnderItsKey: Readonly<Record<string, readonly string[]>> = {
   'calendar.editPeriod.lead': [
-    'Tap the days you bled. You have {count} day marked, from {date}.',
-    'Tap the days you bled. You have {count} days marked, from {date}.',
+    'Press the days you bled. Emi holds {count} day, from {date}.',
+    'Press the days you bled. Emi holds {count} days, from {date}.',
   ],
 };
 
@@ -190,8 +197,11 @@ async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
-const thePickerAt = (month: string): string =>
-  `/calendar/period?${dayParameter}=${encodeURIComponent(month)}`;
+const thePickerAt = (day: string): string =>
+  `/calendar/period?${dayParameter}=${encodeURIComponent(day)}`;
+
+/** The editor, opened on the first day of the period Emi holds. */
+const thePicker = (): string => thePickerAt(String(theDaysEmiHolds()[0]));
 
 /** A month she recorded nothing in, so the editor opens it holding no day of hers. */
 const theMonthWithNoneOfHerDays = '2026-06-01';
@@ -316,8 +326,8 @@ describe('she logs bleeding that is not her period in plain words', () => {
       await herPhoneHoldsAPeriodOfFourDays(whenSheOpensEmi());
     });
 
-    it('asks her to tap the days she bled, and says how many of them she has', async () => {
-      await sheOpens(thePickerAt(theMonthSheCorrects));
+    it('asks her to press the days she bled, and says how many of them Emi holds', async () => {
+      await sheOpens(thePicker());
 
       const held = theDaysEmiHolds();
 
@@ -326,7 +336,7 @@ describe('she logs bleeding that is not her period in plain words', () => {
       );
     });
 
-    it('tells her nothing is marked in a month she recorded nothing in', async () => {
+    it('tells her Emi holds no day where no cycle of hers holds the day she pressed', async () => {
       expect(theDaysHerPhoneHoldsIn(theMonthWithNoneOfHerDays)).toEqual([]);
 
       await sheOpens(thePickerAt(theMonthWithNoneOfHerDays));
@@ -335,30 +345,32 @@ describe('she logs bleeding that is not her period in plain words', () => {
     });
 
     it('asks her for at least one day when she takes the last of them off', async () => {
-      await sheOpens(thePickerAt(theMonthSheCorrects));
+      await sheOpens(thePicker());
 
       for (const day of theDaysEmiHolds()) {
-        await shePresses(dayTestID(day));
+        await shePresses(editPeriodRowTestID(day));
       }
 
       expect(whatItSays(editPeriodChangeTestID)).toBe(theEditorSays.noDayLeft);
     });
 
-    it('names the day she added, and the day she took off, without telling her she did it', async () => {
-      await sheOpens(thePickerAt(theMonthSheCorrects));
+    it('names the day she added and the day she took off, in the words the board writes', async () => {
+      await sheOpens(thePicker());
       const [first] = theDaysEmiHolds();
 
-      await shePresses(dayTestID(theDaySheStopped()));
+      await shePresses(editPeriodRowTestID(theDaySheStopped()));
 
       expect(whatItSays(editPeriodChangeTestID)).toBe(
         theEditorSays.added(`the ${theDateOfTheMonth(theDaySheStopped())}`),
       );
 
-      await shePresses(dayTestID(String(first)));
+      await shePresses(editPeriodRowTestID(String(first)));
 
       expect(whatItSays(editPeriodChangeTestID)).toContain(
         theEditorSays.removed(`the ${theDateOfTheMonth(String(first))}`),
       );
+      // The older lines said "Added the 19th." and "Removed the 15th." and are gone.
+      expect(whatItSays(editPeriodChangeTestID)).not.toMatch(/^Added|Removed/);
     });
   });
 
@@ -403,10 +415,12 @@ describe('she logs bleeding that is not her period in plain words', () => {
       }
     });
 
-    it('names Emi nowhere, because the log talks to her and not about itself', () => {
+    it('names Emi nowhere but the two lines the board writes about what Emi holds', () => {
       for (const language of languages) {
-        const naming = theKeysOfTheseScreens.filter((key) =>
-          theWordsOfTheseScreensIn(language, [key]).join('\n').includes('Emi'),
+        const naming = theKeysOfTheseScreens.filter(
+          (key) =>
+            !theLinesThatNameEmi.includes(key) &&
+            theWordsOfTheseScreensIn(language, [key]).join('\n').includes('Emi'),
         );
 
         expect({ language, naming }).toEqual({ language, naming: [] });

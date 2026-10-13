@@ -1,9 +1,12 @@
 import { render } from '@testing-library/react-native';
 
 import { listCycles } from '../../src/data/cycleRepository';
-import { EditPeriodScreen } from '../../src/features/calendar/PeriodRangePicker';
-import { herMonth } from '../../src/features/calendar/herMonth';
-import { thePeriodEmiHoldsIn } from '../../src/features/calendar/savePeriod';
+import { EditPeriodScreen } from '../../src/features/calendar/EditPeriodScreen';
+import {
+  theDaysListedFirst,
+  theDaysOf,
+  thePeriodEmiHoldsAround,
+} from '../../src/features/calendar/savePeriod';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { iPhone16Size } from '../../../../brand/screens/asHtml';
@@ -12,17 +15,15 @@ import { daysLogged } from '../fixtures/cycleCache';
 import { herVault } from '../fixtures/herVault';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 import {
-  herCycleRuns,
   herRecordedDays,
   theDaySheOpensEmi,
   theDaySheTakesOff,
   theDaysEmiHolds,
   theDaysSheAdds,
-  theMonthSheCorrects,
 } from '../fixtures/thePeriodSheCorrects';
 
 /**
- * The period picker, drawn from days written into a database of its own, so every cycle day and
+ * The period editor, drawn from days written into a database of its own, so every row and
  * every tick on the page is the one her own records produce.
  *
  * It is not part of the suite: the file is named for a picture rather than for a test, and the
@@ -40,27 +41,14 @@ const theCaveat = [
 
 const recordedAt = new Date(`${theDaySheOpensEmi()}T20:00:00.000Z`);
 
-/** The month she is correcting, worked out from the days her phone holds. */
-function herReading(): {
-  readonly days: ReturnType<typeof herMonth>;
-  readonly held: readonly string[];
-} {
+/** The period she is correcting, worked out from the days her phone holds. */
+function herReading(): { readonly held: readonly string[]; readonly listed: readonly string[] } {
   const database = daysLogged(herRecordedDays(), recordedAt);
   const records = recordedDays(database, (payload) => herVault().open(payload));
+  const asked = { day: String(theDaysEmiHolds()[0]), today: theDaySheOpensEmi() };
+  const held = thePeriodEmiHoldsAround(records, listCycles(database), asked);
 
-  return {
-    days: herMonth(
-      {
-        cycles: listCycles(database),
-        records,
-        today: theDaySheOpensEmi(),
-        statedCycleLengthDays: herCycleRuns,
-        statedPeriodLengthDays: theDaysEmiHolds().length,
-      },
-      theMonthSheCorrects,
-    ),
-    held: thePeriodEmiHoldsIn(records, theMonthSheCorrects),
-  };
+  return { held, listed: theDaysOf(theDaysListedFirst(held, asked)) };
 }
 
 interface State {
@@ -73,12 +61,12 @@ interface State {
 const theStates: readonly State[] = [
   {
     title: 'The period Emi holds, as she opens the screen',
-    note: 'The four days she recorded bleeding on carry a tick. Nothing has changed yet, so the line under the month says there is nothing to save and Save takes no press.',
+    note: 'One row for each day of her period and the two days after it. The four days she recorded bleeding on carry a tick. Nothing has changed yet, so the line under the list says there is nothing to save and Save takes no press.',
     ticked: theDaysEmiHolds(),
   },
   {
     title: 'The period she corrected, ready to save',
-    note: 'She added the two days her period ran on for, and took off the day it did not start on. The line under the month names both changes, and Save is offered. One press writes a record for each of those three days and rebuilds the cycles from her day log.',
+    note: 'She added the two days her period ran on for, and took off the day it did not start on. Each changed row carries its tag, the line under the list names both changes, and Save is offered. One press writes a record for each of those three days and rebuilds the cycles from her day log.',
     ticked: [
       ...theDaysEmiHolds().filter((day) => day !== theDaySheTakesOff()),
       ...theDaysSheAdds(),
@@ -91,14 +79,14 @@ async function drawn(state: State): Promise<DrawnScreen> {
   const view = await render(
     <OnAPhone>
       <EditPeriodScreen
-        days={hers.days}
         held={hers.held}
-        month={theMonthSheCorrects}
+        listed={hers.listed}
+        onAddAfter={() => undefined}
+        onAddBefore={() => undefined}
         onCancel={() => undefined}
         onSave={() => undefined}
         onToggle={() => undefined}
         ticked={state.ticked}
-        today={theDaySheOpensEmi()}
       />
     </OnAPhone>,
   );

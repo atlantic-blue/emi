@@ -1,8 +1,13 @@
-import { FERTILE_DAYS_AFTER_OVULATION, addDays } from '@emi/cycle';
+import { addDays } from '@emi/cycle';
 import { type PhaseName, ringGeometry } from '@emi/tokens';
 
-import { forecastOf } from '../forecast/fromCache';
 import { type RingInputFrom, cycleShapeFor, fertileDaysOf, ringInputFor } from '../cycle/ringInput';
+import {
+  hasItsRangeOpened,
+  theCycleAheadHolding,
+  theCyclesAhead,
+  thePhaseAhead,
+} from './forecastAhead';
 
 /**
  * What the cycle layer already says about one date of her month.
@@ -12,7 +17,7 @@ import { type RingInputFrom, cycleShapeFor, fertileDaysOf, ringInputFor } from '
  * the sheet at its foot cannot say three different things about the same date.
  *
  * A date is asked about as the ring read it on that date, which means the cycles that had already
- * started by then. A month she has not lived yet holds no cycle of hers, so it carries no phase.
+ * started by then. A date in a forecast cycle ahead of her is read off that forecast cycle.
  */
 
 /** The phase a date fell in, whether it is fertile, and whether it is the one day of ovulation. */
@@ -40,20 +45,24 @@ export function thePhaseOn(from: RingInputFrom, day: string): PhaseName | undefi
 }
 
 /**
- * The middle of the fertile window of the cycle holding that date. Nothing at all while Emi is
- * still learning her cycles, because until then it publishes no window.
- *
- * It is counted back from the end of the window rather than read off the forecast, because the
- * interface names neither of the two single days a forecast carries, which is contract CYCLE-2.
- * The window closes one day after the middle, so the two are the same date by construction.
+ * The ovulation day of the cycle holding that date, as the cycle read it then. It is the day the
+ * phase rule counts the ovulation phase around, so the darker square and the phase card name the
+ * same day. Once two cycles are complete it is the day before the fertile window closes, which is
+ * where the forecast puts the ovulation; while Emi is learning it is counted from her stated length.
  */
 export function theOvulationDayOn(from: RingInputFrom, day: string): string | undefined {
-  const read = asSheReadItOn(from, day);
-  const forecast = forecastOf(read.cycles, read.statedCycleLengthDays);
+  const asThen = asSheReadItOn(from, day);
+  const read = cycleShapeFor(asThen);
+  const holding = asThen.cycles[asThen.cycles.length - 1];
+  if (
+    read === undefined ||
+    holding === undefined ||
+    read.shape.ovulationDay <= read.shape.periodDays
+  ) {
+    return undefined;
+  }
 
-  return forecast.kind === 'forecast'
-    ? addDays(forecast.fertileWindow.to, -FERTILE_DAYS_AFTER_OVULATION)
-    : undefined;
+  return addDays(holding.startedOn, read.shape.ovulationDay - 1);
 }
 
 /** The first and the last date of a fertile window. */
@@ -93,8 +102,17 @@ export function isFertileOn(from: RingInputFrom, day: string): boolean {
   return window !== undefined && day >= window.from && day <= window.to;
 }
 
-/** What the month colours one date by, or nothing where no cycle of hers holds it. */
+/**
+ * What the month colours one date by, or nothing where no cycle of hers holds it. A date ahead of
+ * her inside a forecast cycle is coloured by that forecast cycle, so the fertile window and the
+ * ovulation day reach the months ahead too.
+ */
 export function theDayPhaseOn(from: RingInputFrom, day: string): DayPhase | undefined {
+  const ahead = day > from.today ? theCycleAheadHolding(theCyclesAhead(from), day) : undefined;
+  if (ahead !== undefined && !hasItsRangeOpened(ahead, from.today)) {
+    return thePhaseAhead(ahead, day);
+  }
+
   const phase = thePhaseOn(from, day);
 
   return phase === undefined

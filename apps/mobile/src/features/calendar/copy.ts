@@ -3,7 +3,8 @@ import { phaseLabel } from '@emi/tokens';
 import { words } from '../../language';
 import { monthNames, ordinal } from '../forecast/copy';
 import type { WhatSheChanged } from './savePeriod';
-import type { WhatTheSheetSays } from './theDaySheet';
+import { weekdayOf } from '../onboarding/days';
+import type { PeriodItWaitsFor, WhatTheSheetSays } from './theDaySheet';
 
 /**
  * The words of the month she opens. The title itself is the month name from the calendar words
@@ -17,39 +18,34 @@ export const calendarCopy = {
   earlierMonth: words('calendar.screen.earlierMonth'),
   later: words('calendar.screen.later'),
   laterMonth: words('calendar.screen.laterMonth'),
+  openTheDay: words('calendar.daySheet.open'),
   today: words('calendar.today'),
 } as const;
 
-/**
- * The two words of the legend above the grid. The grid is drawn by three screens and only the month
- * carries phases, so the legend is the one place these two words are read.
- */
+/** The three words of the legend above the grid, in the order the board places them. */
 export const monthLegendCopy = {
   fertile: words('calendar.legend.fertile'),
+  forecast: words('calendar.legend.forecast'),
   period: words('calendar.legend.period'),
 } as const;
 
-/** The two things the sheet at the foot says about the day she pressed. */
+/** The two things the card at the foot says about the day she pressed. */
 export interface DaySheetSaid {
   /** The date in words, which is how she knows which day she is reading. */
   readonly lead: string;
-  /** Her cycle day, the phase, and what she marked. Nothing where it knows none of the three. */
-  readonly line?: string;
+  /** One sentence: the forecast for a day ahead, or her cycle day, phase and record. */
+  readonly line: string;
 }
 
-/**
- * The sheet, in her own language. The date is written the way the forecast writes one, so the two
- * sentences she meets a date in are the same sentence.
- */
+/** The card, in her own language. */
 export function daySheetWords(says: WhatTheSheetSays): DaySheetSaid {
-  const line = theLine(theCycleSaid(says), says.logged);
-
   return {
     lead: words('calendar.daySheet.day', undefined, {
-      date: ordinal(Number(says.day.slice(8, 10))),
+      date: Number(says.day.slice(8, 10)),
       month: monthNameOf(says.day),
+      weekday: weekdayOf(says.day),
     }),
-    ...(line === undefined ? {} : { line }),
+    line: says.kind === 'ahead' ? theForecastSaid(says.waitsFor) : theLivedDaySaid(says),
   };
 }
 
@@ -63,8 +59,52 @@ function monthNameOf(day: string): string {
   return name;
 }
 
+/**
+ * When the period a day ahead of her waits for may start. The two ends are the range the forecast
+ * names, so the card says the same days the forecast says.
+ */
+function theForecastSaid(waitsFor: PeriodItWaitsFor | undefined): string {
+  if (waitsFor === undefined) {
+    return words('calendar.daySheet.noForecast');
+  }
+
+  const { from, to } = waitsFor.mayStart;
+  const sameMonth = {
+    from: Number(from.slice(8, 10)),
+    month: monthNameOf(to),
+    to: Number(to.slice(8, 10)),
+  };
+  const spansMonths = {
+    from: sameMonth.from,
+    fromMonth: monthNameOf(from),
+    to: sameMonth.to,
+    toMonth: monthNameOf(to),
+  };
+  const inOneMonth = from.slice(0, 7) === to.slice(0, 7);
+
+  if (waitsFor.order === 0) {
+    return inOneMonth
+      ? words('calendar.daySheet.nextPeriod.sameMonth', undefined, sameMonth)
+      : words('calendar.daySheet.nextPeriod.spansMonths', undefined, spansMonths);
+  }
+
+  return inOneMonth
+    ? words('calendar.daySheet.laterPeriod.sameMonth', undefined, sameMonth)
+    : words('calendar.daySheet.laterPeriod.spansMonths', undefined, spansMonths);
+}
+
+/** Her cycle day and phase, and what she logged or that she logged nothing. */
+function theLivedDaySaid(says: Extract<WhatTheSheetSays, { kind: 'lived' }>): string {
+  const logged = says.logged ?? words('calendar.daySheet.nothingLogged');
+  const cycle = theCycleSaid(says);
+
+  return cycle === undefined
+    ? logged
+    : words('calendar.daySheet.andLogged', undefined, { logged, said: cycle });
+}
+
 /** Her cycle day and the phase, and nothing at all on a date no cycle of hers holds. */
-function theCycleSaid(says: WhatTheSheetSays): string | undefined {
+function theCycleSaid(says: Extract<WhatTheSheetSays, { kind: 'lived' }>): string | undefined {
   if (says.cycleDay === undefined) {
     return undefined;
   }
@@ -79,22 +119,12 @@ function theCycleSaid(says: WhatTheSheetSays): string | undefined {
   });
 }
 
-function theLine(cycle: string | undefined, logged: string | undefined): string | undefined {
-  if (cycle === undefined) {
-    return logged;
-  }
-  if (logged === undefined) {
-    return cycle;
-  }
-
-  return words('calendar.daySheet.andLogged', undefined, { logged, said: cycle });
-}
-
 /** The words of the period picker. */
 export const editPeriodCopy = {
   /** The marker on a day she has added to the period since the screen opened. */
   added: words('calendar.editPeriod.addedDay'),
-  back: words('calendar.editPeriod.back'),
+  addAfter: words('calendar.editPeriod.addAfter'),
+  addBefore: words('calendar.editPeriod.addBefore'),
   /** The marker on a day she has taken off it. */
   takenOff: words('calendar.editPeriod.takenOffDay'),
   cancel: words('calendar.editPeriod.cancel'),
@@ -138,6 +168,14 @@ export function whatSheChangedSaid(changed: WhatSheChanged): string {
   return removed === undefined
     ? added
     : words('calendar.editPeriod.bothChanges', undefined, { added, removed });
+}
+
+/** One row of the period list: "Monday the 15th". */
+export function aPeriodRowSaid(day: string): string {
+  return words('calendar.editPeriod.row', undefined, {
+    date: ordinal(Number(day.slice(8, 10))),
+    weekday: weekdayOf(day),
+  });
 }
 
 /** One day of the month, as she reads a date: the 19th in English, el 19 in Spanish. */

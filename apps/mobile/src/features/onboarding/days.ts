@@ -35,6 +35,27 @@ const weekdayNames = weekdayKeys.map((key) => words(key));
 const monthNames = monthKeys.map((key) => words(key));
 
 /**
+ * The month as a title stands on its own, so it takes the form a language writes a month name in
+ * alone: the nominative in Russian, "Ноябрь", and never the form it takes after a day, "ноября".
+ */
+const monthTitleKeys: readonly WordKey[] = [
+  'calendar.monthTitle.january',
+  'calendar.monthTitle.february',
+  'calendar.monthTitle.march',
+  'calendar.monthTitle.april',
+  'calendar.monthTitle.may',
+  'calendar.monthTitle.june',
+  'calendar.monthTitle.july',
+  'calendar.monthTitle.august',
+  'calendar.monthTitle.september',
+  'calendar.monthTitle.october',
+  'calendar.monthTitle.november',
+  'calendar.monthTitle.december',
+];
+
+const monthTitles = monthTitleKeys.map((key) => words(key));
+
+/**
  * The calendar day she is living in, read from her own clock. Day arithmetic belongs to
  * `@emi/cycle`, which counts days rather than milliseconds, so no summer time change can move an
  * answer by a day. This is the one place a local clock is read at all.
@@ -131,7 +152,7 @@ export function addMonths(month: string, count: number): string {
 export function monthLabel(month: string): string {
   const first = startOfMonth(month);
 
-  return `${monthNames[Number(first.slice(5, 7)) - 1]} ${first.slice(0, 4)}`;
+  return `${monthTitles[Number(first.slice(5, 7)) - 1]} ${first.slice(0, 4)}`;
 }
 
 /** How many days the month holds. */

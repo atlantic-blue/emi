@@ -20,10 +20,11 @@ import { dayParameter } from '../../src/features/calendar/askedMonth';
 import { daySheetTestID } from '../../src/features/calendar/DaySheet';
 import {
   type PeriodChange,
-  editPeriodKeyEntryTestID,
+  editPeriodRowTestID,
   editPeriodScreenTestID,
-  periodChanges,
-} from '../../src/features/calendar/PeriodRangePicker';
+  editPeriodTagTestID,
+} from '../../src/features/calendar/EditPeriodScreen';
+import { editPeriodCopy } from '../../src/features/calendar/copy';
 import { tabs } from '../../src/features/chrome/tabs';
 import { dayRefusedTestID } from '../../src/features/log/DayRefused';
 import { flowPickerTestID } from '../../src/features/log/FlowPicker';
@@ -74,8 +75,8 @@ import {
   theDaySheOpensEmi,
   theDaySheTakesOff,
   theDaysSheAdds,
-  theIdentifiersOfTheRangePicker,
-  theMonthSheCorrects,
+  theDaysEmiHolds,
+  thePartsOfTheRangePickerDrawing,
   whenSheOpensEmi,
 } from './thePeriodSheCorrects';
 
@@ -223,7 +224,7 @@ export function whatTheDrawingAsksFor(drawing: LogOrCalendarDrawing): Part[] {
         theIdentifiersOfTheMonthAndItsFoot(theIdentifiersOfTheEarlierMonth()),
       );
     default:
-      return thePartsOfTheMockup('editPeriod', theIdentifiersOfTheRangePicker());
+      return thePartsOfTheRangePickerDrawing();
   }
 }
 
@@ -282,7 +283,7 @@ export const theDifferencesThisStepKeeps: readonly ADifference[] = [
   },
   {
     because:
-      'the two ways to another month stand either side of the month name, because the row they are in is held to the width of an iPhone 16 and the title is the box that gives way',
+      'the redesign board calendarNovember draws Earlier and Later as plain links on a row of their own under the header, so they do not stand where the older drawing places them',
     drawing: 'calendar',
     howMany: 2,
     part: 'TextLink',
@@ -296,7 +297,7 @@ export const theDifferencesThisStepKeeps: readonly ADifference[] = [
   },
   {
     because:
-      'the two ways to another month stand either side of the month name, because the row they are in is held to the width of an iPhone 16 and the title is the box that gives way',
+      'the redesign board calendarNovember draws Earlier and Later as plain links on a row of their own under the header, so they do not stand where the older drawing places them',
     drawing: 'calendarEarlier',
     howMany: 2,
     part: 'TextLink',
@@ -391,7 +392,7 @@ function theAddressOf(drawing: LogOrCalendarDrawing): string {
     case 'dayRefused':
       return `/day/${theDaySheCannotOpen}`;
     case 'editPeriod':
-      return `/calendar/period?${dayParameter}=${theMonthSheCorrects}`;
+      return `/calendar/period?${dayParameter}=${String(theDaysEmiHolds()[0])}`;
     default:
       return '/calendar';
   }
@@ -447,10 +448,10 @@ export async function sheIsLookingAtTheLogOrCalendar(drawing: LogOrCalendarDrawi
 
   if (drawing === 'editPeriod') {
     for (const day of theDaysSheAdds()) {
-      await shePresses(dayTestID(day));
+      await shePresses(editPeriodRowTestID(day));
     }
 
-    await shePresses(dayTestID(theDaySheTakesOff()));
+    await shePresses(editPeriodRowTestID(theDaySheTakesOff()));
   }
 }
 
@@ -505,18 +506,15 @@ export function whereTheLogOrCalendarDrew(testID: string, from: string = logFlow
   return at;
 }
 
-/** The two kinds of change the key names, where she has made that kind of change. */
-export function theChangeKeyNames(): PeriodChange[] {
-  return periodChanges.filter(
-    (change) => screen.queryByTestId(editPeriodKeyEntryTestID(change)) !== null,
-  ) as PeriodChange[];
-}
+/** The words of each tag the list carries, by the change it names, in the order of the rows. */
+export function theTagsOnTheList(): { readonly change: PeriodChange; readonly said: string }[] {
+  const aTag = editPeriodTagTestID('');
 
-/** The words one entry of that key puts on the glass, which is what she reads beside its cue. */
-export function theWordsOfTheKeyEntry(change: PeriodChange): string {
-  return textIn(screen.getByTestId(editPeriodKeyEntryTestID(change)))
-    .join(' ')
-    .trim();
+  return screen.queryAllByTestId(new RegExp(`^${aTag}`)).map((tag) => {
+    const said = textIn(tag).join('').trim();
+
+    return { change: said === editPeriodCopy.added ? 'added' : 'takenOff', said };
+  });
 }
 
 /** The parts of the month she reads, so a case can read the panel at its foot in order. */

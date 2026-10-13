@@ -4,7 +4,7 @@ import { addDays } from '@emi/cycle';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { dayTestID } from '../../src/features/calendar/CycleMonth';
-import { daySheetTestID } from '../../src/features/calendar/DaySheet';
+import { daySheetOpenTestID } from '../../src/features/calendar/DaySheet';
 import { words } from '../../src/language';
 import {
   dayRefusedBackTestID,
@@ -65,7 +65,7 @@ function theDaysAheadOfHer(): string[] {
   return theSquaresTheMonthDrew().filter((day) => day > theDaySheOpensTheMonth());
 }
 
-describe('a day that has not happened yet is refused in the month and at its address', () => {
+describe('a day that has not happened yet is a forecast in the month and refused at its address', () => {
   beforeEach(async () => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt());
@@ -79,31 +79,34 @@ describe('a day that has not happened yet is refused in the month and at its add
   });
 
   describe('the month, on a day she has not lived', () => {
-    it('opens nothing and names nothing at the foot when she presses it', async () => {
+    it('names the day at the foot with a forecast sentence, and opens nothing', async () => {
       await sheOpens('/calendar');
       await shePresses(dayTestID(theDayAheadSheCannotOpen()));
 
-      expect(screen.queryByTestId(daySheetTestID)).toBeNull();
-      expect(theSheetSheReads()).toBeUndefined();
+      expect(theSheetSheReads()?.lead).toContain(
+        String(Number(theDayAheadSheCannotOpen().slice(8))),
+      );
+      expect(theSheetSheReads()?.line).toMatch(/likely to start between/);
+      // A day she has not lived has nothing to record, so the card offers no way into it.
+      expect(screen.queryByTestId(daySheetOpenTestID)).toBeNull();
       expect(screen.queryByTestId(dayRefusedTestID)).toBeNull();
     });
 
-    it('keeps the square on the grid, drawn faint', async () => {
+    it('keeps the square on the grid at full strength, because every day is a button now', async () => {
       await sheOpens('/calendar');
 
       expect(theDaysAheadOfHer().length).toBeGreaterThan(0);
-      expect(screen.getByTestId(dayTestID(theDayAheadSheCannotOpen()))).toBeTruthy();
-      expect(theSquareSheSees(theDayAheadSheCannotOpen()).dimmed).toBe(true);
+      expect(theSquareSheSees(theDayAheadSheCannotOpen()).dimmed).toBe(false);
     });
 
-    it('tells somebody listening that every day ahead of her takes no press', async () => {
+    it('no longer tells somebody listening that a day ahead of her takes no press', async () => {
       await sheOpens('/calendar');
 
       const spoken = theDaysAheadOfHer().map((day) => theSquareSheSees(day));
 
       expect(spoken.length).toBeGreaterThan(0);
-      expect(spoken.filter((square) => !square.saidToTakeNoPress)).toEqual([]);
-      expect(spoken.filter((square) => !square.spoken.includes(words('cycle.day.notYet')))).toEqual(
+      expect(spoken.filter((square) => square.saidToTakeNoPress)).toEqual([]);
+      expect(spoken.filter((square) => square.spoken.includes(words('cycle.day.notYet')))).toEqual(
         [],
       );
     });

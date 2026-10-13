@@ -6,8 +6,10 @@ import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { dayParameter } from '../../src/features/calendar/askedMonth';
 import { dayTestID } from '../../src/features/calendar/CycleMonth';
-import { daySheetTestID } from '../../src/features/calendar/DaySheet';
-import { ordinal } from '../../src/features/forecast/copy';
+import { daySheetOpenTestID, daySheetTestID } from '../../src/features/calendar/DaySheet';
+import { calendarEditPeriodTestID } from '../../src/features/calendar/CalendarScreen';
+import { weekdayOf } from '../../src/features/onboarding/days';
+import { english } from '../../src/language/english';
 import { flowLabel } from '../../src/features/log/FlowPicker';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -73,8 +75,9 @@ async function shePresses(testID: string): Promise<void> {
   await fireEvent.press(screen.getByTestId(testID));
 }
 
+/** The weekday and the date the card leads with: "Friday, 18". */
 function theDateInTheLead(day: string): string {
-  return ordinal(Number(day.slice(8, 10)));
+  return `${weekdayOf(day)}, ${Number(day.slice(8, 10))}`;
 }
 
 describe('she presses a day in the month and reads what she wrote that day', () => {
@@ -97,11 +100,12 @@ describe('she presses a day in the month and reads what she wrote that day', () 
   });
 
   describe('the sheet at the foot of the month', () => {
-    it('is drawn for no day at all until she presses one', async () => {
+    it('names today until she presses a day, so the way to her period is always there', async () => {
       await sheOpens('/calendar');
 
-      expect(screen.queryByTestId(daySheetTestID)).toBeNull();
-      expect(theSheetSheReads()).toBeUndefined();
+      expect(screen.getByTestId(daySheetTestID)).toBeTruthy();
+      expect(theSheetSheReads()?.lead).toContain(theDateInTheLead(theDayTheDrawingsSheetNames()));
+      expect(screen.getByTestId(calendarEditPeriodTestID)).toBeTruthy();
     });
 
     it('names the day she pressed and not the day she is on', async () => {
@@ -131,20 +135,32 @@ describe('she presses a day in the month and reads what she wrote that day', () 
       expect(said).not.toContain(flowLabel.medium.toLowerCase());
     });
 
-    it('names the date alone on a day no cycle of hers holds', async () => {
+    it('says Nothing logged on a day no cycle of hers holds', async () => {
       await sheOpens(`/calendar?${dayParameter}=${aMonthBeforeHerFirstCycle}`);
       await shePresses(dayTestID(aDayOfThatMonth));
 
       expect(thePhaseTheRingSaysOn(aDayOfThatMonth)).toBeUndefined();
       expect(theSheetSheReads()?.lead).toContain(theDateInTheLead(aDayOfThatMonth));
-      expect(theSheetSheReads()?.line).toBeUndefined();
+      expect(theSheetSheReads()?.line).toBe(english['calendar.daySheet.nothingLogged']);
     });
 
-    it('is at least 44 points on both axes', async () => {
+    it('says Nothing logged after the cycle day and phase of a day she marked nothing on', async () => {
+      await sheOpens('/calendar');
+      await shePresses(dayTestID(aDaySheLoggedNothingOn()));
+
+      expect(theSheetSheReads()?.line).toMatch(/\. Nothing logged$/);
+    });
+
+    it('offers the open button and Edit my period at 44 points or more on both axes', async () => {
       await sheOpens('/calendar');
       await shePresses(dayTestID(theDayTheDrawingsSheetNames()));
 
-      expect(controlsTooSmallToPress([screen.getByTestId(daySheetTestID)])).toEqual([]);
+      expect(
+        controlsTooSmallToPress([
+          screen.getByTestId(daySheetOpenTestID),
+          screen.getByTestId(calendarEditPeriodTestID),
+        ]),
+      ).toEqual([]);
     });
 
     it('opens the day she pressed, and not the day she is on', async () => {
@@ -153,7 +169,7 @@ describe('she presses a day in the month and reads what she wrote that day', () 
       await app;
 
       await shePresses(dayTestID(another));
-      await shePresses(daySheetTestID);
+      await shePresses(daySheetOpenTestID);
 
       expect(app.getPathname()).toBe(`/day/${another}`);
     });

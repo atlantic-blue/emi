@@ -1,19 +1,20 @@
 import { symptomGroups } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius } from '@emi/tokens';
-import { screen } from '@testing-library/react-native';
+import { screen, within } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import {
   calendarEditPeriodTestID,
   calendarHeaderTestID,
 } from '../../src/features/calendar/CalendarScreen';
 import { daySheetTestID } from '../../src/features/calendar/DaySheet';
+import { dayTestID } from '../../src/features/calendar/CycleMonth';
 import {
   editPeriodChangeTestID,
-  editPeriodKeyTestID,
+  editPeriodListTestID,
   editPeriodSaveTestID,
-  periodRangePickerTestID,
-} from '../../src/features/calendar/PeriodRangePicker';
-import { editPeriodCopy } from '../../src/features/calendar/copy';
+} from '../../src/features/calendar/EditPeriodScreen';
+import { calendarCopy, editPeriodCopy } from '../../src/features/calendar/copy';
 import {
   dayRefusedBackTestID,
   dayRefusedCalendarTestID,
@@ -36,19 +37,19 @@ import {
   logFlowWhenTestID,
 } from '../../src/features/log/LogFlow';
 import { resetExpoSqlite } from '../data/expoSqlite';
+import { theDaysSheAdds } from '../fixtures/thePeriodSheCorrects';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import {
   howManyDifferencesAreKeptFor,
   howManyPartsAreHeldTo,
   sheIsLookingAtTheLogOrCalendar,
-  theChangeKeyNames,
   theDaySheAlreadyLived,
   theDifferencesThisStepKeeps,
   theLogAndCalendarDrawings,
   theScreenOf,
   theStyleOf,
   theWashIsAtTheTopOfTheLogOrCalendar,
-  theWordsOfTheKeyEntry,
+  theTagsOnTheList,
   whatTheDrawingAsksFor,
   whatTheLogOrCalendarDoesNotAnswerFor,
   whenSheReads,
@@ -254,12 +255,17 @@ describe('the Log and calendar screens match the redesign prototype', () => {
       );
     });
 
-    it('offers her whole period as the quieter capsule, not as the one that acts', () => {
+    it('offers her whole period as a link in the accent inside the card, as the board draws it', () => {
       const way = theStyleOf(calendarEditPeriodTestID);
 
-      expect(way.backgroundColor).toBe(colour.field);
-      expect(way.borderRadius).toBe(radius.full);
+      expect(way.backgroundColor).toBeUndefined();
       expect(Number(way.minHeight)).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
+      expect(
+        StyleSheet.flatten(
+          within(screen.getByTestId(calendarEditPeriodTestID)).getByText(calendarCopy.editPeriod)
+            .props.style,
+        ).color,
+      ).toBe(colour.accent);
     });
   });
 
@@ -269,21 +275,22 @@ describe('the Log and calendar screens match the redesign prototype', () => {
       await sheIsLookingAtTheLogOrCalendar('editPeriod');
     });
 
-    it('says what she added and what she took off, in the words the catalogue holds', () => {
-      expect(theChangeKeyNames()).toEqual(['added', 'takenOff']);
-      expect(theWordsOfTheKeyEntry('added')).toBe(editPeriodCopy.added);
-      expect(theWordsOfTheKeyEntry('takenOff')).toBe(editPeriodCopy.takenOff);
+    it('tags each row she changed, in the words the catalogue holds', () => {
+      expect(theTagsOnTheList().map((tag) => tag.change)).toEqual([
+        'takenOff',
+        ...theDaysSheAdds().map(() => 'added' as const),
+      ]);
+      expect(theTagsOnTheList()[0]?.said).toBe(editPeriodCopy.takenOff);
+      expect(theTagsOnTheList()[1]?.said).toBe(editPeriodCopy.added);
     });
 
-    it('stands that key under the grid and over the sentence Emi reads back', () => {
+    it('stands the list over the sentence Emi reads back, and no month grid', () => {
       const screenAt = theScreenOf('editPeriod');
 
-      expect(whereTheLogOrCalendarDrew(periodRangePickerTestID, screenAt)).toBeLessThan(
-        whereTheLogOrCalendarDrew(editPeriodKeyTestID, screenAt),
-      );
-      expect(whereTheLogOrCalendarDrew(editPeriodKeyTestID, screenAt)).toBeLessThan(
+      expect(whereTheLogOrCalendarDrew(editPeriodListTestID, screenAt)).toBeLessThan(
         whereTheLogOrCalendarDrew(editPeriodChangeTestID, screenAt),
       );
+      expect(screen.queryAllByTestId(new RegExp(`^${dayTestID('')}\\d`))).toEqual([]);
     });
 
     it('saves with the one wide capsule in the accent', () => {
