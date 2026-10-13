@@ -43,8 +43,10 @@ import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
 import { homeNumbersHeadingTestID, homeNumbersTestID } from '../../src/features/home/MeasuredRow';
 import { homePatternsTestID } from '../../src/features/home/PatternCard';
 import {
+  phaseCardChevronTestID,
   phaseCardDaysTestID,
   phaseCardLineTestID,
+  phaseCardPressTestID,
   phaseCardTestID,
 } from '../../src/features/home/PhaseCard';
 import {
@@ -126,7 +128,15 @@ export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
       'it is written inside the ring, so it goes with the ring and the two lines replace both',
   },
   {
-    draws: { named: [phaseCardTestID, phaseCardDaysTestID, phaseCardLineTestID] },
+    draws: {
+      named: [
+        phaseCardPressTestID,
+        phaseCardTestID,
+        phaseCardDaysTestID,
+        phaseCardLineTestID,
+        phaseCardChevronTestID,
+      ],
+    },
     fills: (hers) => hers.dayOfHerCycle !== undefined,
     name: 'the card that names her phase and its days',
     simplyGoes: 'the two lines in place of the ring say what the top of the screen needs first',

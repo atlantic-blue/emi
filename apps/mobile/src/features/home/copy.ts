@@ -119,6 +119,9 @@ const thePhaseCardKeys: Readonly<
   },
 };
 
+/** The way on from the phase card, after the sentence about the phase. */
+export const phaseCardMore = words('home.phaseCard.more');
+
 /** The two lines of the phase card: the phase and its days, then one sentence about it. */
 export function phaseCardWords(
   phase: PhaseName,

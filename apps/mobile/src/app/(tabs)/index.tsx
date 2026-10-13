@@ -167,6 +167,7 @@ export default function HomeRoute(): ReactNode {
       onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}
       onOpenCycles={() => router.push('/history')}
       onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
+      onOpenPhase={() => router.push('/phase')}
       onOpenPattern={(slug) => router.push(`/history?${patternParameter}=${slug}`)}
       onOpenPatterns={() => router.push('/history')}
       onPeriod={() => router.push('/log')}

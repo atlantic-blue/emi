@@ -142,3 +142,60 @@ function withoutTheSymptoms(record: DayRecord): DayRecord {
 
   return rest;
 }
+
+/**
+ * What one write of the Cycle phase diary changes. Each list is the whole list after the press,
+ * and a field left out is kept as the day holds it.
+ */
+export interface DiaryChange {
+  readonly symptoms?: readonly string[];
+  readonly moods?: readonly string[];
+  readonly food?: readonly string[];
+  readonly note?: string;
+}
+
+export interface DiaryLog {
+  readonly day: string;
+  readonly change: DiaryChange;
+  readonly now: Date;
+}
+
+function isEmpty(value: string | readonly string[]): boolean {
+  return typeof value === 'string' ? value.trim() === '' : value.length === 0;
+}
+
+/** The day with the change put in. An empty list or an empty note is left off, not written. */
+function theDayWith(held: DayRecord | undefined, log: DiaryLog): DayRecord {
+  const changed = Object.keys(log.change);
+  const kept = Object.entries(held ?? {}).filter(([field]) => !changed.includes(field));
+  const given = Object.entries(log.change).filter(
+    (entry): entry is [string, string | readonly string[]] =>
+      entry[1] !== undefined && !isEmpty(entry[1] as string | readonly string[]),
+  );
+
+  return {
+    ...(Object.fromEntries([...kept, ...given]) as Partial<DayRecord>),
+    day: log.day,
+    recordedAt: log.now.toISOString(),
+  };
+}
+
+/**
+ * One write of the diary on the Cycle phase page. It goes through the same save as every other
+ * write of a day, so the day keeps its flow and its mark, and a day with no flow cannot close her
+ * period.
+ */
+export function logDiary(db: Database, vault: DayVault, log: DiaryLog): DayAndCycles {
+  const held = readDayLog(db, log.day);
+  const record = theDayWith(held ? vault.open(held.payload) : undefined, log);
+  const write = { day: log.day, payload: vault.seal(record), now: log.now };
+
+  return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
+}
+
+/** The day as she left it, so the diary opens on the answers she gave it before. */
+export function dayLogged(db: Database, vault: DayVault, day: string): DayRecord | undefined {
+  const held = readDayLog(db, day);
+
+  return held ? vault.open(held.payload) : undefined;
+}

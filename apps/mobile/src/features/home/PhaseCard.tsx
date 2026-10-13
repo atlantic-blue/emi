@@ -10,48 +10,67 @@ import {
 } from '@emi/tokens';
 import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../../components/Card';
-import { phaseCardWords } from './copy';
+import { phaseCardMore, phaseCardWords } from './copy';
 
 /**
  * The card under the ring: the phase she is in, its days in her own cycle, and one sentence about
- * it. It opens the Cycle phase page once that page exists, so for now it is not pressable.
+ * it. Pressing it opens the Cycle phase page.
  */
 
 export const phaseCardTestID = 'home-phase-card';
+export const phaseCardPressTestID = 'home-phase-card-press';
 export const phaseCardDaysTestID = 'home-phase-card-days';
 export const phaseCardLineTestID = 'home-phase-card-line';
+export const phaseCardChevronTestID = 'home-phase-card-chevron';
 
 /** Points. The drawing inside the tile. */
 const theIconInTheTile = 22;
+/** Points. The chevron at the end of the row. */
+const theChevron = 18;
 
 interface Props {
   readonly phase: PhaseName;
   /** The days of that phase in the cycle she is in, from the phase rule in `@emi/cycle`. */
   readonly days: CycleDays;
+  /** Left out where the screen is drawn alone, and then the card is not a button. */
+  readonly onPress?: () => void;
 }
 
-export function PhaseCard({ phase, days }: Props): ReactNode {
+export function PhaseCard({ phase, days, onPress }: Props): ReactNode {
   const said = phaseCardWords(phase, days);
 
   return (
-    <Card testID={phaseCardTestID}>
-      <View style={styles.row}>
-        <View style={styles.tile}>
-          <Icon colour={colour.ovulationInk} name="phase" size={theIconInTheTile} />
+    <Pressable
+      accessibilityRole={onPress === undefined ? undefined : 'button'}
+      disabled={onPress === undefined}
+      onPress={onPress}
+      testID={phaseCardPressTestID}
+    >
+      <Card testID={phaseCardTestID}>
+        <View style={styles.row}>
+          <View style={styles.tile}>
+            <Icon colour={colour.ovulationInk} name="phase" size={theIconInTheTile} />
+          </View>
+          <View style={styles.words}>
+            <Text style={styles.days} testID={phaseCardDaysTestID}>
+              {said.days}
+            </Text>
+            <Text style={styles.line} testID={phaseCardLineTestID}>
+              {`${said.line} ${phaseCardMore}`}
+            </Text>
+          </View>
+          <Icon
+            colour={colour.secondaryText}
+            name="chevron"
+            size={theChevron}
+            testID={phaseCardChevronTestID}
+          />
         </View>
-        <View style={styles.words}>
-          <Text style={styles.days} testID={phaseCardDaysTestID}>
-            {said.days}
-          </Text>
-          <Text style={styles.line} testID={phaseCardLineTestID}>
-            {said.line}
-          </Text>
-        </View>
-      </View>
-    </Card>
+      </Card>
+    </Pressable>
   );
 }
 
@@ -77,5 +96,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: MINIMUM_TAP_TARGET,
   },
-  words: { flexShrink: 1, gap: space.spaceXs },
+  words: { flex: 1, gap: space.spaceXs },
 });

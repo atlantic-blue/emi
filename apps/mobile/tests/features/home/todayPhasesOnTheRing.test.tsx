@@ -34,8 +34,10 @@ import {
   homeHeaderWordTestID,
 } from '../../../src/features/home/HomeHeader';
 import {
+  phaseCardChevronTestID,
   phaseCardDaysTestID,
   phaseCardLineTestID,
+  phaseCardPressTestID,
   phaseCardTestID,
 } from '../../../src/features/home/PhaseCard';
 import { resetExpoSqlite } from '../../data/expoSqlite';
@@ -296,16 +298,20 @@ describe('the phase card under the ring', () => {
   it('should carry the sentence of the board for the ovulation phase', async () => {
     await sheOpensToday(16, 28);
 
-    expect(whatItSays(phaseCardLineTestID)).toBe('Energy is often at its highest.');
+    expect(whatItSays(phaseCardLineTestID)).toBe(
+      'Energy is often at its highest. See what this phase means for you.',
+    );
   });
 
-  it('should not be pressable until the Cycle phase page exists', async () => {
-    await sheOpensToday(16, 28);
+  it('should be a button now that the Cycle phase page exists, and open it', async () => {
+    const app = await sheOpensToday(16, 28);
     const card = screen.getByTestId(phaseCardTestID);
 
-    expect(card.props.onPress).toBeUndefined();
-    expect(card.props.accessibilityRole).toBeUndefined();
-    expect(within(card).queryByRole('button')).toBeNull();
+    expect(screen.getByTestId(phaseCardPressTestID).props.accessibilityRole).toBe('button');
+    expect(within(card).getByTestId(phaseCardChevronTestID)).toBeTruthy();
+    await fireEvent.press(card);
+
+    expect(app.pathname()).toBe('/phase');
   });
 });
 

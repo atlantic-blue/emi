@@ -755,3 +755,17 @@ Feature: She opens Emi and logs her first period
     And her phone holds none of her days and nothing in the keychain
     And these screens say all of this in each of the three languages, as you and as we
     And the only two lines that name Emi are the claim about her days and the lock itself
+
+  Scenario: SCREEN-2, she opens the page of her phase from Today and records her diary there
+    Given her phone holds four recorded period days, the last of them today
+    When she opens Emi
+    And she presses the phase card under the ring
+    Then she is reading the page of the phase she is in, with its days in her cycle
+    When she presses Cramps, Hungry and Calm in the diary of today
+    And she writes a note about today and leaves the box
+    Then her phone holds those three answers and the note on today, sealed, beside the flow she logged
+    And the three chips she pressed are filled
+    When she presses What this phase can mean for you
+    Then a sheet gives her Mood, Food, Body and Training for that phase, and no designer note
+    When she presses Close
+    Then the sheet is gone and she is on the page of her phase
