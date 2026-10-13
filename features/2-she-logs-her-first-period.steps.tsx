@@ -47,6 +47,7 @@ import {
   washStops,
   washes,
 } from '@emi/tokens';
+import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { useState } from 'react';
@@ -256,6 +257,14 @@ import {
   phasePageTestID,
   phasePageTitleTestID,
 } from '../apps/mobile/src/features/phase/PhasePage';
+import {
+  sexChipTestID,
+  sexPageDayTestID,
+  sexPageQuestionTestID,
+  sexPageSaveTestID,
+  sexPageTestID,
+} from '../apps/mobile/src/features/sex/SexPage';
+import { sexAddress } from '../apps/mobile/src/features/sex/sexAddress';
 import {
   cycleLengthSentence,
   cycleSentence,
@@ -3419,6 +3428,90 @@ defineFeature(feature, (test) => {
       expect(screen.queryByTestId(phaseGuideTestID)).toBeNull();
       expect(screen.getByTestId(phasePageTestID)).toBeTruthy();
       expect(app.pathname()).toBe('/phase');
+    });
+  });
+
+  test('SCREEN-2, she records sex on a past day and removes it', ({ given, when, then }) => {
+    const yesterday = addDays(theDaySheOpensIt, -1);
+    const herAnswers = [
+      sexChipTestID('sex', 'protected'),
+      sexChipTestID('sexDrive', 'high'),
+      sexChipTestID('orgasm', 'yes'),
+    ];
+    const thatDayOnHerPhone = (): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), yesterday);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+    let app: OpenApp;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens the Sex page of yesterday', async () => {
+      app = await sheOpens(sexAddress(yesterday));
+      await screen.findByTestId(sexPageTestID);
+    });
+
+    then('the page asks whether she had sex yesterday, under the date of that day', () => {
+      expect(screen.getByTestId(sexPageQuestionTestID).props.children).toBe(
+        'Did you have sex yesterday?',
+      );
+      expect(screen.getByTestId(sexPageDayTestID).props.children).toMatch(
+        new RegExp(`, ${Number(yesterday.slice(8, 10))} [A-Z][a-z]+$`),
+      );
+    });
+
+    when('she presses Protected, High and Yes, and saves', async () => {
+      for (const answer of herAnswers) {
+        await shePresses(answer);
+      }
+      await shePresses(sexPageSaveTestID);
+    });
+
+    then(
+      'her phone holds those three answers on that day, sealed, beside the flow she logged',
+      () => {
+        const held = readDayLog(herDatabase(), yesterday);
+
+        expect(new TextDecoder().decode(held?.payload)).not.toContain('protected');
+        expect(thatDayOnHerPhone()).toMatchObject({
+          flow: expect.any(String),
+          sex: 'protected',
+          sexDrive: 'high',
+          orgasm: 'yes',
+        });
+      },
+    );
+
+    when('she opens the Sex page of that day again', async () => {
+      expect(app.pathname()).toBe('/');
+      await act(() => router.push(sexAddress(yesterday)));
+      await screen.findByTestId(sexPageTestID);
+    });
+
+    then('the three answers she saved are filled', () => {
+      for (const answer of herAnswers) {
+        expect(screen.getByTestId(answer).props.accessibilityState).toEqual({ selected: true });
+      }
+    });
+
+    when('she presses each of them again, and saves', async () => {
+      for (const answer of herAnswers) {
+        await shePresses(answer);
+      }
+      await shePresses(sexPageSaveTestID);
+    });
+
+    then('that day holds no answer about sex, and keeps its flow', () => {
+      const day = thatDayOnHerPhone();
+
+      expect(day?.flow).toEqual(expect.any(String));
+      expect(day).not.toHaveProperty('sex');
+      expect(day).not.toHaveProperty('sexDrive');
+      expect(day).not.toHaveProperty('orgasm');
     });
   });
 

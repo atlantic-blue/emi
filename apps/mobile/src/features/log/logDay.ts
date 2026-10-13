@@ -1,4 +1,4 @@
-import type { DayRecord } from '@emi/crypto';
+import type { DayRecord, Orgasm, Sex, SexDrive } from '@emi/crypto';
 import { type Flow, isBleeding } from '@emi/cycle';
 
 import type { Database } from '../../data/database';
@@ -198,4 +198,57 @@ export function dayLogged(db: Database, vault: DayVault, day: string): DayRecord
   const held = readDayLog(db, day);
 
   return held ? vault.open(held.payload) : undefined;
+}
+
+/** Her three answers on the Sex page. A field left out is a question she did not answer. */
+export interface SexAnswers {
+  readonly sex?: Sex;
+  readonly sexDrive?: SexDrive;
+  readonly orgasm?: Orgasm;
+}
+
+export interface SexLog {
+  readonly day: string;
+  /** The whole of what the page holds when she saves, so an answer she cleared is taken off. */
+  readonly answers: SexAnswers;
+  readonly now: Date;
+}
+
+/**
+ * One save of the Sex page. The three answers replace the three the day held, and the day keeps its
+ * flow, its symptoms and everything else, through the same save as every other write of a day.
+ */
+export function logSex(db: Database, vault: DayVault, log: SexLog): DayAndCycles {
+  const held = readDayLog(db, log.day);
+  const record: DayRecord = {
+    ...(held ? withoutTheSexAnswers(vault.open(held.payload)) : {}),
+    ...answersGiven(log.answers),
+    day: log.day,
+    recordedAt: log.now.toISOString(),
+  };
+  const write = { day: log.day, payload: vault.seal(record), now: log.now };
+
+  return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
+}
+
+/** The answers the day holds, so the page opens on what she saved before. */
+export function sexLogged(db: Database, vault: DayVault, day: string): SexAnswers {
+  const held = readDayLog(db, day);
+
+  return held ? answersGiven(vault.open(held.payload)) : {};
+}
+
+/** Only the answers she gave, so an answer she cleared is left off rather than written empty. */
+function answersGiven(from: SexAnswers): SexAnswers {
+  return {
+    ...(from.sex === undefined ? {} : { sex: from.sex }),
+    ...(from.sexDrive === undefined ? {} : { sexDrive: from.sexDrive }),
+    ...(from.orgasm === undefined ? {} : { orgasm: from.orgasm }),
+  };
+}
+
+function withoutTheSexAnswers(record: DayRecord): DayRecord {
+  const { sex, sexDrive, orgasm, ...rest } = record;
+
+  return rest;
 }

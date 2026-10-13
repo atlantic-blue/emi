@@ -1,6 +1,6 @@
 # The icon set
 
-Thirty four line symbols at one weight, so the interface reads as one hand drew it.
+Thirty six line symbols at one weight, so the interface reads as one hand drew it.
 
 ## The rules every drawing follows
 
@@ -15,7 +15,7 @@ Thirty four line symbols at one weight, so the interface reads as one hand drew 
 
 drop, calendar, ring, mood, energy, pain, sleep, temperature, weight, note, lock, export, delete,
 settings, chevron, close, plus, check, search, spotting, sun, edit, chart, shield, skin, digestion,
-headache, bloating, phone, person, info, key, bell, phase.
+headache, bloating, phone, person, info, key, bell, phase, heart, book.
 
 `spotting` is the mark for unexpected bleeding: a smaller drop with three marks beside it, so it
 reads apart from `drop` at 24 points.
@@ -66,3 +66,6 @@ moves every time the set crosses a row.
 
 `phase` is a circle with one quarter closed off, which marks a phase of her cycle on the card
 under the ring of Today and on the Cycle phase action.
+
+`heart` and `book` are the two highlights of the Sex page: `heart` opens Intercourse and `book`
+opens Learn more about sex. The heart is an outline, the shape of a feeling and not of a body.

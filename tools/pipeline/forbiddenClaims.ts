@@ -136,15 +136,19 @@ export const approvedDenials: readonly string[] = [
   'Emi is not a medical device.',
   'Emi makes no claim to prevent or achieve a pregnancy, and it carries no certification badge that an auditor did not sign.',
   'Emi never says a day is safe, because no day is.',
+  // The note in the fertile window on the Sex page, from the sexPage board.
+  'It is not contraception.',
   'No auditor has looked at Emi, so no standard is named here and no certification badge appears anywhere in the product.',
   // Spanish, word for word as the catalogue writes them.
   'Emi no es un anticonceptivo.',
   'Emi no es un dispositivo médico.',
   'Emi nunca dice que un día es seguro, porque ninguno lo es.',
+  'Esto no es un anticonceptivo.',
   // Russian, word for word as the catalogue writes them.
   'Emi не является средством контрацепции.',
   'Emi не является медицинским изделием.',
   'Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
+  'Это не контрацепция.',
 ];
 
 /** The files the scan reads. An extension nobody can read as text is left out. */

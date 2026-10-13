@@ -10,6 +10,7 @@ import {
   interfaceWording,
 } from '../../../../tools/pipeline/forbiddenClaims';
 import {
+  approvedAnswerLabels,
   interfaceClaimsIn,
   interfaceClaimsUnder,
   scannedInterfaceFiles,
@@ -112,6 +113,26 @@ describe('the words a screen may not use', () => {
 
       expect(interfaceClaimsIn(aScreen, importing)).toEqual([]);
       expect(withoutModuleSpecifiers(importing)).toContain("from ''");
+    });
+  });
+
+  describe('an answer she gives on the Sex page', () => {
+    it.each(approvedAnswerLabels)('is allowed as the catalogue entry %s', (label) => {
+      expect(interfaceClaimsIn(theCatalogue, `export const words = {\n  ${label},\n};\n`)).toEqual(
+        [],
+      );
+    });
+
+    it('is refused as the same word under another key or in a sentence', () => {
+      const [label] = approvedAnswerLabels;
+      if (label === undefined) {
+        throw new Error('no answer label is approved');
+      }
+      const otherKey = label.replace('sex.sex.with', 'today.line');
+      const sentence = `<Text>You are ${label.split("'")[3] ?? ''} today</Text>\n`;
+
+      expect(interfaceClaimsIn(theCatalogue, `${otherKey},\n`)).toHaveLength(1);
+      expect(interfaceClaimsIn(aScreen, sentence)).toHaveLength(1);
     });
   });
 

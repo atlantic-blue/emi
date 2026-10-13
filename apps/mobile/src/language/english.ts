@@ -166,6 +166,25 @@ export const english = {
   'forecast.statedLength': "Until then, we're using the {days} day cycle you told us about.",
   'forecast.stillLearning': 'Still getting to know you',
 
+  'highlight.back': 'Back',
+  'highlight.intercourse.1':
+    'Intercourse is sex in which a penis goes into the vagina. It is one kind of sex among many.',
+  'highlight.intercourse.2':
+    'Sex is right only when both people want it. Each person can say no, or stop, at any time.',
+  'highlight.intercourse.3':
+    'Pregnancy is most likely after intercourse without a condom in the fertile window. Emi only estimates the window. Emi is not a contraceptive.',
+  'highlight.intercourse.4':
+    'A condom lowers the chance of an infection that passes on through sex. The pill, the coil and the implant do not.',
+  'highlight.intercourse.title': 'Intercourse',
+  'highlight.learnAboutSex.1':
+    'Sex drive is how much you want sex. It can change from day to day and across your cycle.',
+  'highlight.learnAboutSex.2':
+    'Sleep, stress, illness, medicine and how you feel about a partner can all change it.',
+  'highlight.learnAboutSex.3':
+    'Sex can feel good with an orgasm or without one. Your answer here is yours, and "Rather not say" is an answer too.',
+  'highlight.learnAboutSex.4':
+    'If sex hurts, or a change worries you, a doctor or a nurse can help.',
+  'highlight.learnAboutSex.title': 'Learn more about sex',
   'history.back': 'Back',
   'history.cycleDayCount': { one: '{count} day', other: '{count} days' },
   'history.cycleFrom': 'From {day}',
@@ -700,6 +719,33 @@ export const english = {
   'settings.settings.lock': 'Lock',
   'settings.settings.lockLine': 'On, with your face or your passcode',
   'settings.settings.title': 'Privacy',
+  'sex.back': 'Back',
+  'sex.day': '{weekday}, {date} {month}',
+  'sex.fertile.now.sameMonth':
+    'You are in your fertile window, {from} to {to} {month}. This is an estimate. It is not contraception.',
+  'sex.fertile.now.spansMonths':
+    'You are in your fertile window, {from} {fromMonth} to {to} {toMonth}. This is an estimate. It is not contraception.',
+  'sex.fertile.then.sameMonth':
+    'You were in your fertile window, {from} to {to} {month}. This is an estimate. It is not contraception.',
+  'sex.fertile.then.spansMonths':
+    'You were in your fertile window, {from} {fromMonth} to {to} {toMonth}. This is an estimate. It is not contraception.',
+  'sex.group.orgasm': 'Orgasm',
+  'sex.group.sex': 'Sex',
+  'sex.group.sexDrive': 'Sex drive',
+  'sex.orgasm.no': 'No',
+  'sex.orgasm.ratherNotSay': 'Rather not say',
+  'sex.orgasm.yes': 'Yes',
+  'sex.question.thatDay': 'Did you have sex that day?',
+  'sex.question.today': 'Did you have sex today?',
+  'sex.question.yesterday': 'Did you have sex yesterday?',
+  'sex.save': 'Save',
+  'sex.sex.none': 'No sex',
+  'sex.sex.with': 'Protected',
+  'sex.sex.without': 'Unprotected',
+  'sex.sexDrive.high': 'High',
+  'sex.sexDrive.low': 'Low',
+  'sex.sexDrive.neutral': 'Neutral',
+  'sex.title': 'Sex',
   'tab.insights': 'Insights',
   'tab.log': 'Log',
   'tab.privacy': 'Privacy',
