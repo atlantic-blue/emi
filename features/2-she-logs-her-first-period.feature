@@ -792,3 +792,14 @@ Feature: She opens Emi and logs her first period
     Then her phone holds that discharge and both products on today, sealed, beside the flow she logged
     When she opens the Period page of today again
     Then the discharge and the two products she saved are filled
+
+  Scenario: SCREEN-2, she answers the signs of ovulation popup on a day inside her fertile window
+    Given her phone holds three periods a cycle apart, and today is inside her forecast fertile window
+    When she opens Today
+    Then a sheet over Today asks whether she noticed any signs of ovulation, under the dates of her fertile window
+    And Save waits until she picks a sign
+    When she presses Egg white discharge and Higher sex drive, and saves
+    Then her phone holds those two signs on today, sealed, with the popup marked answered
+    And the sheet is gone and she is on Today
+    When she opens Today again the same day
+    Then the sheet does not show again

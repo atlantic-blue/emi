@@ -1,10 +1,11 @@
-import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
+import type { DayRecord, Feeling, Goal, OvulationSign, Regularity } from '@emi/crypto';
 import type { CyclePhaseDays } from '@emi/cycle';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
 import { dayParameter } from '../../features/calendar/askedMonth';
+import type { FertileDates } from '../../features/calendar/herMonthPhases';
 import { useDatabase } from '../../data/DatabaseProvider';
 import { listCycles } from '../../data/cycleRepository';
 import { readProfile } from '../../data/profileRepository';
@@ -20,6 +21,10 @@ import {
   theSymptoms,
 } from '../../features/log/askedGroup';
 import { HomeScreen } from '../../features/home/HomeScreen';
+import { logOvulationAnswer } from '../../features/log/logDay';
+import { OvulationPopup } from '../../features/ovulation/OvulationPopup';
+import { fertileWindowLabel } from '../../features/ovulation/copy';
+import { theWindowToAskIn } from '../../features/ovulation/signs';
 import { herCycles } from '../../features/home/herCycles';
 import { type TrendCycle, herTrend } from '../../features/home/herTrend';
 import { type MeasuredNumber, herNumbers } from '../../features/home/herNumbers';
@@ -61,6 +66,11 @@ interface Shown {
   readonly patterns: readonly ReadPattern[] | undefined;
   /** Today as she left it, picked out of the days already read, or nothing where she wrote none. */
   readonly loggedToday: DayRecord | undefined;
+  /**
+   * The fertile window the signs of ovulation popup asks about today, or nothing when it does not
+   * ask: outside the window, before a forecast, or once she answered or closed it today.
+   */
+  readonly ovulationWindow: FertileDates | undefined;
 }
 
 /**
@@ -90,11 +100,14 @@ function whatSheIsLookingAt(
     statedPeriodLengthDays: herAnswers?.periodLengthDays,
   };
 
+  const loggedToday = readBack.records.find((record) => record.day === today);
+
   return {
     ring: ringInputFor(readBack),
     // Picked out of the days the ring was built from, so the row under the actions and the ring
     // above it can never stand on two different readings of today.
-    loggedToday: readBack.records.find((record) => record.day === today),
+    loggedToday,
+    ovulationWindow: theWindowToAskIn(readBack, loggedToday?.ovulationPopup !== undefined),
     phaseDays: phaseDaysFor(readBack),
     forecast,
     numbers: herNumbers(cycles, forecast),
@@ -127,6 +140,19 @@ export default function HomeRoute(): ReactNode {
   const [shown, setShown] = useState(() => whatSheIsLookingAt(database, vault, profiles, today));
   const rescheduleTheReminder = useRescheduleHerReminder();
 
+  // Her answer is written to today and the screen is read again, so the popup goes and stays gone.
+  const answerThePopup = useCallback(
+    (signs: readonly OvulationSign[] | undefined) => {
+      logOvulationAnswer(database, vault, {
+        day: today,
+        answer: signs === undefined ? { kind: 'dismissed' } : { kind: 'answered', signs },
+        now: new Date(),
+      });
+      setShown(whatSheIsLookingAt(database, vault, profiles, today));
+    },
+    [database, profiles, today, vault],
+  );
+
   // She logs a day and comes back to this screen rather than to a new one, so the rows are read
   // again every time it is looked at. Reading them once at the first render would leave the ring
   // drawing the cycle she was in before she wrote to it.
@@ -150,35 +176,44 @@ export default function HomeRoute(): ReactNode {
   }
 
   return (
-    <HomeScreen
-      cycleLengthDays={shown.cycleLengthDays}
-      completeCycles={shown.completeCycles}
-      cycles={shown.cycles}
-      feeling={shown.feeling}
-      forecast={shown.forecast}
-      goals={shown.goals}
-      loggedToday={shown.loggedToday}
-      name={shown.name}
-      numbers={shown.numbers}
-      onExport={() => router.push('/export')}
-      onFigures={() => router.push('/cycles/figures')}
-      onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
-      onLogToday={() => router.push('/log')}
-      onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}
-      onOpenCycles={() => router.push('/history')}
-      onOpenLogged={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
-      onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
-      onOpenPhase={() => router.push('/phase')}
-      onOpenPattern={(slug) => router.push(`/history?${patternParameter}=${slug}`)}
-      onOpenPatterns={() => router.push('/history')}
-      onPeriod={() => router.push('/period')}
-      onSex={() => router.push('/sex')}
-      patterns={shown.patterns}
-      phaseDays={shown.phaseDays}
-      regularity={shown.regularity}
-      ring={shown.ring}
-      today={today}
-      trend={shown.trend}
-    />
+    <>
+      <HomeScreen
+        cycleLengthDays={shown.cycleLengthDays}
+        completeCycles={shown.completeCycles}
+        cycles={shown.cycles}
+        feeling={shown.feeling}
+        forecast={shown.forecast}
+        goals={shown.goals}
+        loggedToday={shown.loggedToday}
+        name={shown.name}
+        numbers={shown.numbers}
+        onExport={() => router.push('/export')}
+        onFigures={() => router.push('/cycles/figures')}
+        onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
+        onLogToday={() => router.push('/log')}
+        onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}
+        onOpenCycles={() => router.push('/history')}
+        onOpenLogged={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
+        onOpenMonth={(day) => router.push(`/calendar?${dayParameter}=${day}`)}
+        onOpenPhase={() => router.push('/phase')}
+        onOpenPattern={(slug) => router.push(`/history?${patternParameter}=${slug}`)}
+        onOpenPatterns={() => router.push('/history')}
+        onPeriod={() => router.push('/period')}
+        onSex={() => router.push('/sex')}
+        patterns={shown.patterns}
+        phaseDays={shown.phaseDays}
+        regularity={shown.regularity}
+        ring={shown.ring}
+        today={today}
+        trend={shown.trend}
+      />
+      {shown.ovulationWindow === undefined ? null : (
+        <OvulationPopup
+          onDismiss={() => answerThePopup(undefined)}
+          onSave={answerThePopup}
+          windowLabel={fertileWindowLabel(shown.ovulationWindow)}
+        />
+      )}
+    </>
   );
 }

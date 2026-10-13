@@ -438,6 +438,14 @@ import {
   theVaultOnHerPhone,
 } from '../apps/mobile/tests/fixtures/herVault';
 import {
+  ovulationPopupSaveTestID,
+  ovulationPopupTestID,
+  ovulationPopupWindowTestID,
+  ovulationSignTestID,
+} from '../apps/mobile/src/features/ovulation/OvulationPopup';
+import { theFertileWindowOn } from '../apps/mobile/src/features/calendar/herMonthPhases';
+import { recordedDays } from '../apps/mobile/src/features/cycle/rebuild';
+import {
   herPhoneHoldsHerDaysAnd,
   theHeaderCarries,
   theHeaderOfTheDrawing,
@@ -3591,6 +3599,96 @@ defineFeature(feature, (test) => {
       for (const answer of herAnswers) {
         expect(screen.getByTestId(answer).props.accessibilityState).toEqual({ selected: true });
       }
+    });
+  });
+
+  test('SCREEN-2, she answers the signs of ovulation popup on a day inside her fertile window', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const theDay = dayOf(whenSheOpensTheStrip);
+    const herCycle = 28;
+    // Today is day 12 of a 28 day cycle, the third period a cycle apart, so Emi has a forecast.
+    const herStarts = [2, 1, 0].map((back) => addDays(theDay, -11 - back * herCycle));
+    const herSigns = [
+      ovulationSignTestID('egg-white-discharge'),
+      ovulationSignTestID('higher-sex-drive'),
+    ];
+
+    given(
+      'her phone holds three periods a cycle apart, and today is inside her forecast fertile window',
+      async () => {
+        jest.setSystemTime(whenSheOpensTheStrip);
+        await herPhoneHolds(whenSheOpensTheStrip, herStarts.map(aBleedingDay), herCycle, 5);
+      },
+    );
+
+    when('she opens Today', async () => {
+      await sheOpens('/');
+      await screen.findByTestId(homeScreenTestID);
+    });
+
+    then(
+      'a sheet over Today asks whether she noticed any signs of ovulation, under the dates of her fertile window',
+      () => {
+        const window = theFertileWindowOn(
+          {
+            cycles: listCycles(herDatabase()),
+            records: recordedDays(herDatabase(), herVault().open),
+            today: theDay,
+            statedCycleLengthDays: herCycle,
+            statedPeriodLengthDays: 5,
+          },
+          theDay,
+        );
+
+        expect(window).toBeDefined();
+        expect(theDay >= String(window?.from) && theDay <= String(window?.to)).toBe(true);
+        expect(screen.getByTestId(ovulationPopupTestID)).toBeTruthy();
+        expect(screen.getByText('Did you notice any signs of ovulation?')).toBeTruthy();
+        expect(screen.getByTestId(ovulationPopupWindowTestID)).toHaveTextContent(
+          new RegExp(`^Fertile window, ${Number(window?.from.slice(8, 10))} `),
+        );
+      },
+    );
+
+    and('Save waits until she picks a sign', () => {
+      expect(screen.getByTestId(ovulationPopupSaveTestID).props.accessibilityState).toMatchObject({
+        disabled: true,
+      });
+    });
+
+    when('she presses Egg white discharge and Higher sex drive, and saves', async () => {
+      for (const sign of herSigns) {
+        await shePresses(sign);
+      }
+      await shePresses(ovulationPopupSaveTestID);
+    });
+
+    then('her phone holds those two signs on today, sealed, with the popup marked answered', () => {
+      const held = readDayLog(herDatabase(), theDay);
+
+      expect(new TextDecoder().decode(held?.payload)).not.toContain('higher-sex-drive');
+      expect(held === undefined ? undefined : herVault().open(held.payload)).toMatchObject({
+        ovulationSigns: ['egg-white-discharge', 'higher-sex-drive'],
+        ovulationPopup: 'answered',
+      });
+    });
+
+    and('the sheet is gone and she is on Today', () => {
+      expect(screen.queryByTestId(ovulationPopupTestID)).toBeNull();
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+    });
+
+    when('she opens Today again the same day', async () => {
+      await sheOpens('/');
+      await screen.findByTestId(homeScreenTestID);
+    });
+
+    then('the sheet does not show again', () => {
+      expect(screen.queryByTestId(ovulationPopupTestID)).toBeNull();
     });
   });
 
