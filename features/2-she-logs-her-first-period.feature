@@ -187,7 +187,7 @@ Feature: She opens Emi and logs her first period
     Then the arcs and the gaps between them come to a whole turn
 
   Scenario: BRAND-3, a phase her cycle had no room for is not drawn
-    Given her phone holds six cycles of twenty one days
+    Given her phone holds six cycles of twenty one days with a week of bleeding
     When she opens Emi
     Then a phase of no days is not drawn at all
     And the arcs and the gaps between them come to a whole turn
@@ -586,7 +586,7 @@ Feature: She opens Emi and logs her first period
     When she opens the month
     Then every date sits in a disc of its own, with the day of her cycle above it
     And the days she bled are filled with the colour of her period
-    And every fertile day the ring counts is tinted
+    And every day of the fertile window the forecast names is tinted
     And the one day the forecast names as the estimated ovulation is filled
     And a legend above the grid names her period and her fertile days
     When she presses the day the drawing names

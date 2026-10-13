@@ -355,6 +355,27 @@ Output: three band edges, each one traceable to its citation.
 Errors: a band edge with no citation. Until this contract holds, the interface marks the bands
 provisional.
 
+### CYCLE-6, the four phases
+
+Verified by a test.
+
+Input: her cycle length, her period length, and the cycle day of the forecast ovulation. Until two
+cycles are complete, the ovulation day is the cycle length plus one, minus the luteal length.
+
+Output: four phases, as cycle days counted from one. The period is days 1 to the period length. The
+follicular phase is days 1 to the day before the ovulation phase, so it includes the period. The
+ovulation phase is five days: the ovulation day, two days before it and two days after it. The
+luteal phase is the day after the ovulation phase to the last day of the cycle. On a period day the
+phase she is in is the period. A day past the last day is luteal until the next period starts.
+
+The ring draws four arcs that do not overlap: the period arc, then the follicular days after the
+period, then the ovulation phase, then the luteal phase. The fertile window of CYCLE-4 is a
+separate thing, and the calendar marks it, not the ovulation phase.
+
+Errors: an ovulation phase on a period day. In a short cycle the ovulation phase starts on the day
+after the period at the earliest, and it can then hold fewer than five days, or none. A cycle of no
+days, or a part of a day.
+
 ## SCREEN, what one screen does
 
 ### SCREEN-1, first run

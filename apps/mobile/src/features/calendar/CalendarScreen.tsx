@@ -99,7 +99,9 @@ export function CalendarScreen({
       mark: hers.mark,
       role: 'button' as const,
       ...(hers.cycleDay === undefined ? {} : { cycleDay: hers.cycleDay }),
-      ...(phase === undefined ? {} : { ovulating: phase.ovulating, phase: phase.phase }),
+      ...(phase === undefined
+        ? {}
+        : { fertile: phase.fertile, ovulating: phase.ovulating, phase: phase.phase }),
     };
 
     // One rule decides whether a day opens, and the address she could type it into reads the same

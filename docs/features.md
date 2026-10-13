@@ -105,6 +105,7 @@ The contracts it builds:
 - `CYCLE-3` the learning state, before two cycles exist, with no confidence shown.
 - `CYCLE-4` the estimated ovulation day and the fertile window, with no claim about pregnancy.
 - `CYCLE-5` confidence bands whose edges come from published distributions, cited in the code.
+- `CYCLE-6` the four phases: the follicular phase from day 1, and a five day ovulation phase.
 - `TABLE-2` the cycle table as a cache, rebuilt from the day log and never written by hand.
 
 ## Feature 4: She logs how she feels

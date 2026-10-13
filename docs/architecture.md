@@ -198,6 +198,27 @@ is the mean per-user variation of the cited cohort rounded to a whole day. Estim
 the predicted start minus the luteal length. The fertile window runs from five days before that day
 to one day after it.
 
+The four phases come from one function, `cyclePhaseDays` in `packages/cycle/src/phases.ts`, which is
+contract CYCLE-6. Its input is three whole numbers:
+
+- `cycleLengthDays`, the length of the cycle, at least 1.
+- `periodLengthDays`, the days she bleeds, 0 where no length is known. It is clipped to the cycle.
+- `ovulationDay`, the cycle day of the forecast ovulation. While Emi is learning it is the cycle
+  length plus one, minus 13.
+
+Its output holds each phase as `from` and `to`, two cycle days, both inside:
+
+- `period`, day 1 to the period length.
+- `follicular`, day 1 to the day before the ovulation phase. It includes the period.
+- `ovulation`, the ovulation day, two days before it and two days after it. It never starts on a
+  period day, so in a short cycle it can hold fewer than five days. A phase with no days has `to`
+  one day before `from`.
+- `luteal`, the day after the ovulation phase to the last day of the cycle.
+
+`phaseOnCycleDay` names the phase she is in on one day. The period wins while she bleeds. The ring
+draws the period arc and then the follicular days after it, so the arcs do not overlap. The fertile
+window is separate from the ovulation phase, and the calendar marks the window.
+
 This is arithmetic. It is not intelligence, and calling it intelligence would be a claim the code
 cannot support. It is also the reason the privacy promise is cheap to keep: there is nothing to send
 anywhere.

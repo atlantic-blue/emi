@@ -453,7 +453,7 @@ import {
   thePhaseTheRingSaysOn,
   theDateInkOn,
   theDiscAroundTheDate,
-  theFertileDaysTheRingCounts,
+  theFertileDaysTheForecastNames,
   theLegendDots,
   theLegendSheReads,
   theOvulationDayTheForecastNames,
@@ -548,6 +548,7 @@ import {
 import { textDrawnOnAPhaseFill } from '../apps/mobile/tests/fixtures/phaseInk';
 import {
   theDaySheReachesHerLutealPhase,
+  theFirstLutealDayTheRuleGives,
   theLargestTheyMayBeDrawn,
   theWordsAStrangerWouldRead,
   theFillOf,
@@ -2400,7 +2401,7 @@ defineFeature(feature, (test) => {
 
       expect(arcs.map((arc) => arc.phase)).toEqual(['period', 'follicular', 'ovulation', 'luteal']);
       expect(arcs.map((arc) => Math.round(arc.sweepDegrees * 100) / 100)).toEqual(
-        [6, 21, 7, 11].map((days) => Math.round(((forArcs * days) / 45) * 100) / 100),
+        [6, 24, 5, 10].map((days) => Math.round(((forArcs * days) / 45) * 100) / 100),
       );
       expect(new Set(arcs.map((arc) => arc.sweepDegrees)).size).toBe(4);
     });
@@ -2435,10 +2436,10 @@ defineFeature(feature, (test) => {
   });
 
   test('BRAND-3, a phase her cycle had no room for is not drawn', ({ given, when, then, and }) => {
-    given('her phone holds six cycles of twenty one days', async () => {
+    given('her phone holds six cycles of twenty one days with a week of bleeding', async () => {
       await herPhoneHolds(
         whenSheOpensIt,
-        herRecordedDays({ cycleLengthDays: 21, periodDays: 4, dayOfCycle: 3 }),
+        herRecordedDays({ cycleLengthDays: 21, periodDays: 7, dayOfCycle: 7 }),
       );
     });
 
@@ -2499,14 +2500,14 @@ defineFeature(feature, (test) => {
       resetExpoSecureStore();
       await herPhoneHolds(
         whenSheOpensIt,
-        herRecordedDays({ cycleLengthDays: 45, periodDays: 6, dayOfCycle: 30 }),
+        herRecordedDays({ cycleLengthDays: 45, periodDays: 6, dayOfCycle: 33 }),
       );
       await sheOpens('/');
 
       const later = theBeadDegrees();
       const ovulation = theArcsOnTheRing().find((arc) => arc.phase === 'ovulation') as DrawnArc;
 
-      expect(theRingSays()).toBe('Day 30 of 45, ovulation');
+      expect(theRingSays()).toBe('Day 33 of 45, ovulation');
       expect(later).toBeGreaterThan(early);
       expect(later).toBeLessThanOrEqual(ovulation.startDegrees + ovulation.sweepDegrees);
     });
@@ -3277,7 +3278,7 @@ defineFeature(feature, (test) => {
       expect(partsMissing(theTopOfTheDrawing('todayLuteal'), whatTheScreenSheOpensDrew())).toEqual(
         [],
       );
-      expect(inHerLutealPhase.day).toBe(thePhaseLineOfTheDrawing('todayLuteal').day);
+      expect(inHerLutealPhase.day).toBe(theFirstLutealDayTheRuleGives);
       expect(inHerLutealPhase.day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
       expect(inHerLutealPhase.phase.toLowerCase()).toContain('luteal');
       expect(inHerLutealPhase.phaseColour).toBe(theInkOf('luteal'));
@@ -5605,9 +5606,11 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('every fertile day the ring counts is tinted', () => {
-      const tinted = theFertileDaysTheRingCounts().filter(
-        (day) => day !== theOvulationDayTheForecastNames(),
+    and('every day of the fertile window the forecast names is tinted', () => {
+      // A day she bled is filled over the top of the tint, because what she recorded wins.
+      const bled = new Set(theDaysTheDrawingFills());
+      const tinted = theFertileDaysTheForecastNames().filter(
+        (day) => day !== theOvulationDayTheForecastNames() && !bled.has(day),
       );
 
       expect(tinted.length).toBeGreaterThan(0);
@@ -5622,7 +5625,7 @@ defineFeature(feature, (test) => {
       const ovulation = String(theOvulationDayTheForecastNames());
 
       expect(theOvulationDayTheForecastNames()).toBeDefined();
-      expect(theFertileDaysTheRingCounts()).toContain(ovulation);
+      expect(theFertileDaysTheForecastNames()).toContain(ovulation);
       expect(thePhaseGroundOn(ovulation)).toBe(colour.ovulation);
       expect(theDateInkOn(ovulation)).toBe(colour.text);
     });

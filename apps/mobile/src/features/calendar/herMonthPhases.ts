@@ -2,7 +2,7 @@ import { FERTILE_DAYS_AFTER_OVULATION, addDays } from '@emi/cycle';
 import { type PhaseName, ringGeometry } from '@emi/tokens';
 
 import { forecastOf } from '../forecast/fromCache';
-import { type RingInputFrom, ringInputFor } from '../cycle/ringInput';
+import { type RingInputFrom, cycleShapeFor, fertileDaysOf, ringInputFor } from '../cycle/ringInput';
 
 /**
  * What the cycle layer already says about one date of her month.
@@ -15,9 +15,14 @@ import { type RingInputFrom, ringInputFor } from '../cycle/ringInput';
  * started by then. A month she has not lived yet holds no cycle of hers, so it carries no phase.
  */
 
-/** The phase a date fell in, and whether it is the one day of ovulation inside that phase. */
+/** The phase a date fell in, whether it is fertile, and whether it is the one day of ovulation. */
 export interface DayPhase {
   readonly phase: PhaseName;
+  /**
+   * True inside the fertile window. The window is not the ovulation phase: it runs five days before
+   * the ovulation day to one day after it, and the phase runs two days either side.
+   */
+  readonly fertile: boolean;
   /** True on the single day the forecast names, which the window around it does not carry. */
   readonly ovulating: boolean;
 }
@@ -51,11 +56,23 @@ export function theOvulationDayOn(from: RingInputFrom, day: string): string | un
     : undefined;
 }
 
+/** Whether a date falls in the fertile window of the cycle holding it, as the cycle read it then. */
+export function isFertileOn(from: RingInputFrom, day: string): boolean {
+  const read = cycleShapeFor(asSheReadItOn(from, day));
+  if (read === undefined) {
+    return false;
+  }
+
+  const fertile = fertileDaysOf(read.shape);
+
+  return read.day >= fertile.from && read.day <= fertile.to;
+}
+
 /** What the month colours one date by, or nothing where no cycle of hers holds it. */
 export function theDayPhaseOn(from: RingInputFrom, day: string): DayPhase | undefined {
   const phase = thePhaseOn(from, day);
 
   return phase === undefined
     ? undefined
-    : { ovulating: theOvulationDayOn(from, day) === day, phase };
+    : { fertile: isFertileOn(from, day), ovulating: theOvulationDayOn(from, day) === day, phase };
 }

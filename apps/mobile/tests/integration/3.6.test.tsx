@@ -3,7 +3,12 @@ import { OnAPhone } from '../fixtures/theSafeArea';
 
 import type { DayRecord } from '@emi/crypto';
 import type { Forecast } from '@emi/cycle';
-import { addDays, daysBetween } from '@emi/cycle';
+import {
+  OVULATION_PHASE_DAYS_AFTER,
+  OVULATION_PHASE_DAYS_BEFORE,
+  addDays,
+  daysBetween,
+} from '@emi/cycle';
 import {
   DAYS_AHEAD_STRENGTH,
   FULL_TURN_DEGREES,
@@ -89,7 +94,7 @@ const theLargestTheyMayBeDrawn = 14;
  */
 const theDaysTheRingNamesOneOfThem: readonly { onDay: number; writes: string }[] = [
   { onDay: 2, writes: phaseLabel.period },
-  { onDay: 13, writes: phaseLabel.ovulation },
+  { onDay: 16, writes: phaseLabel.ovulation },
 ];
 
 interface WhatSheHasRecorded {
@@ -208,10 +213,20 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
   describe('the days ahead take their phase from her own forecast', () => {
     for (const has of theFourSets) {
-      it(`covers the days the forecast window names, from ${has.recorded}`, () => {
+      it(`covers the five days around the ovulation the forecast names, from ${has.recorded}`, () => {
         const her = herPhone(has.set);
+        const ovulationDay = cycleDayOf(her, her.forecast.estimatedOvulation);
 
         expect(theDaysOf('ovulation', her.ring)).toEqual({
+          firstDay: ovulationDay - OVULATION_PHASE_DAYS_BEFORE,
+          lastDay: ovulationDay + OVULATION_PHASE_DAYS_AFTER,
+        });
+      });
+
+      it(`no longer draws the fertile window as the ovulation arc, from ${has.recorded}`, () => {
+        const her = herPhone(has.set);
+
+        expect(theDaysOf('ovulation', her.ring)).not.toEqual({
           firstDay: cycleDayOf(her, her.forecast.fertileWindow.from),
           lastDay: cycleDayOf(her, her.forecast.fertileWindow.to),
         });
@@ -241,8 +256,8 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
       expect(late.ring.cycleLengthDays).toBe(theDaySheIsLateOn);
       expect(theDaysOf('ovulation', late.ring)).toEqual({
-        firstDay: cycleDayOf(late, late.forecast.fertileWindow.from),
-        lastDay: cycleDayOf(late, late.forecast.fertileWindow.to),
+        firstDay: cycleDayOf(late, late.forecast.estimatedOvulation) - OVULATION_PHASE_DAYS_BEFORE,
+        lastDay: cycleDayOf(late, late.forecast.estimatedOvulation) + OVULATION_PHASE_DAYS_AFTER,
       });
       expect(theDaysOf('ovulation', late.ring)).toEqual(theDaysOf('ovulation', onTime.ring));
     });

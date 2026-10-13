@@ -30,6 +30,13 @@ const herShortCycles: RecordedSet = {
   periodDays: 4,
 };
 
+/** Short cycles again, and a week of bleeding, which leaves no day between her period and ovulation. */
+const herShortCyclesWithAWeekOfBleeding: RecordedSet = {
+  firstStart: '2026-01-05',
+  lengths: [21, 21, 22, 21, 20, 21],
+  periodDays: 7,
+};
+
 const herLongCycles: RecordedSet = {
   firstStart: '2026-01-05',
   lengths: [45, 44, 45, 46, 45, 45],
@@ -95,8 +102,17 @@ describe('the ring renders a short cycle and a long cycle correctly', () => {
       expect(sweepOf('period', short)).toBeGreaterThan(sweepOf('period', long));
     });
 
-    it('draws nothing where a phase her cycle has no room for would go', async () => {
+    it('draws the five days around ovulation, so two days are left after her four of bleeding', () => {
       const her = herRingOn(herShortCycles, theDay(herShortCycles, 3));
+
+      expect(ringGeometry(her).arcs.map((arc) => arc.days)).toEqual([4, 2, 5, 10]);
+    });
+
+    it('draws nothing where a phase her cycle has no room for would go', async () => {
+      const her = herRingOn(
+        herShortCyclesWithAWeekOfBleeding,
+        theDay(herShortCyclesWithAWeekOfBleeding, 3),
+      );
 
       await render(<CycleRing {...her} />);
 
@@ -107,7 +123,10 @@ describe('the ring renders a short cycle and a long cycle correctly', () => {
     });
 
     it('leaves the whole turn covered by the arcs it does draw and the ground between them', () => {
-      const her = herRingOn(herShortCycles, theDay(herShortCycles, 3));
+      const her = herRingOn(
+        herShortCyclesWithAWeekOfBleeding,
+        theDay(herShortCyclesWithAWeekOfBleeding, 3),
+      );
       const geometry = ringGeometry(her);
 
       expect(geometry.arcs).toHaveLength(3);
@@ -122,9 +141,9 @@ describe('the ring renders a short cycle and a long cycle correctly', () => {
       const geometry = ringGeometry(her);
       const forArcs = FULL_TURN_DEGREES - 4 * GAP_DEGREES;
 
-      expect(geometry.arcs.map((arc) => arc.days)).toEqual([6, 21, 7, 11]);
+      expect(geometry.arcs.map((arc) => arc.days)).toEqual([6, 24, 5, 10]);
       expect(geometry.arcs.map((arc) => Math.round(arc.sweepDegrees * 100) / 100)).toEqual(
-        [6, 21, 7, 11].map((days) => Math.round(((forArcs * days) / 45) * 100) / 100),
+        [6, 24, 5, 10].map((days) => Math.round(((forArcs * days) / 45) * 100) / 100),
       );
     });
 
@@ -144,14 +163,14 @@ describe('the ring renders a short cycle and a long cycle correctly', () => {
 
   describe('what she is left looking at', () => {
     it('says the day she is on and names the phase in words', async () => {
-      const her = herRingOn(herLongCycles, theDay(herLongCycles, 30));
+      const her = herRingOn(herLongCycles, theDay(herLongCycles, 33));
 
       await render(<CycleRing {...her} />);
 
-      expect(screen.getByText('30')).toBeTruthy();
+      expect(screen.getByText('33')).toBeTruthy();
       expect(screen.getByText(phaseLabel.ovulation)).toBeTruthy();
       expect(screen.getByTestId(cycleRingTestID).props.accessibilityLabel).toBe(
-        'Day 30 of 45, ovulation',
+        'Day 33 of 45, ovulation',
       );
     });
 
@@ -166,12 +185,12 @@ describe('the ring renders a short cycle and a long cycle correctly', () => {
       await view.rerender(<CycleRing {...tomorrow} />);
 
       expect(screen.getByText('5')).toBeTruthy();
-      expect(screen.getByText(phaseLabel.ovulation)).toBeTruthy();
+      expect(screen.getByText(phaseLabel.follicular)).toBeTruthy();
       expect(screen.queryByText(phaseLabel.period)).toBeNull();
     });
 
     it('draws the days she has lived at full strength and the rest of her cycle faintly', async () => {
-      const her = herRingOn(herLongCycles, theDay(herLongCycles, 30));
+      const her = herRingOn(herLongCycles, theDay(herLongCycles, 33));
 
       await render(<CycleRing {...her} />);
 
