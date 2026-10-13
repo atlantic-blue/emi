@@ -23,7 +23,7 @@ function retire(slug: string, on: string): readonly Symptom[] {
 describe('the moods she can pick', () => {
   it('is the mood group of the catalogue, and nothing written a second time', () => {
     expect(moods).toEqual(symptomsInGroup(moodGroup));
-    expect(moods).toHaveLength(10);
+    expect(moods).toHaveLength(12);
   });
 
   it('holds every mood slug the catalogue holds, and no slug from another group', () => {
@@ -73,7 +73,7 @@ describe('a retired mood', () => {
 
   it('is never offered again', () => {
     expect(loggableMoods(afterCalmRetires).map((mood) => mood.slug)).not.toContain('calm');
-    expect(loggableMoods(afterCalmRetires)).toHaveLength(9);
-    expect(moodsIn(afterCalmRetires)).toHaveLength(10);
+    expect(loggableMoods(afterCalmRetires)).toHaveLength(11);
+    expect(moodsIn(afterCalmRetires)).toHaveLength(12);
   });
 });

@@ -42,6 +42,7 @@ const slugsEverShipped: readonly string[] = [
   'gas',
   'greasy-hair',
   'hair-loss',
+  'happy',
   'hard-to-wake',
   'headache',
   'heartburn',
@@ -73,6 +74,7 @@ const slugsEverShipped: readonly string[] = [
   'rash',
   'restless',
   'restless-sleep',
+  'sad',
   'sensitive',
   'sensitive-skin',
   'shaky',
@@ -102,8 +104,9 @@ function retire(slug: string, on: string): readonly Symptom[] {
 }
 
 describe('the symptom catalogue', () => {
-  it('offers seventy symptoms, so the catalogue cannot silently shrink', () => {
-    expect(loggableSymptoms()).toHaveLength(70);
+  it('offers seventy two symptoms, so the catalogue cannot silently shrink', () => {
+    expect(loggableSymptoms()).toHaveLength(72);
+    expect(loggableSymptoms()).not.toHaveLength(70);
   });
 
   it('holds every slug it ever shipped, and holds nothing it never shipped', () => {
@@ -132,7 +135,7 @@ describe('the symptom catalogue', () => {
 
   it('fills all eight groups, so no group renders empty', () => {
     expect(symptomGroups.map((group) => `${group} ${symptomsInGroup(group).length}`)).toEqual([
-      'mood 10',
+      'mood 12',
       'energy 8',
       'pain 11',
       'digestion 11',
@@ -180,7 +183,7 @@ describe('a retired symptom', () => {
   it('is never offered again', () => {
     const offered = loggableSymptoms(afterNappingRetires).map((symptom) => symptom.slug);
 
-    expect(offered).toHaveLength(69);
+    expect(offered).toHaveLength(71);
     expect(offered).not.toContain('napping');
     expect(
       symptomsInGroup('sleep', afterNappingRetires).map((symptom) => symptom.slug),

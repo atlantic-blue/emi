@@ -48,6 +48,8 @@ export const symptoms: readonly Symptom[] = [
   { slug: 'mood-swings', name: 'Mood swings', group: 'mood' },
   { slug: 'overwhelmed', name: 'Overwhelmed', group: 'mood' },
   { slug: 'sensitive', name: 'Sensitive', group: 'mood' },
+  { slug: 'happy', name: 'Happy', group: 'mood' },
+  { slug: 'sad', name: 'Sad', group: 'mood' },
 
   { slug: 'fatigue', name: 'Fatigue', group: 'energy' },
   { slug: 'exhausted', name: 'Exhausted', group: 'energy' },

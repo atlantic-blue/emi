@@ -41,7 +41,7 @@ interface State {
 const theStates: readonly State[] = [
   {
     title: 'A day with nothing logged',
-    note: 'It opens empty. Mood, energy, temperature and weight come before the seventy symptoms.',
+    note: 'It opens empty. Mood, energy, temperature and weight come before the seventy two symptoms.',
   },
   {
     title: 'How she feels today',

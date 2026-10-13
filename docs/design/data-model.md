@@ -449,6 +449,110 @@ from her internet address, and Emi cannot hide that. Somebody who watches one ph
 traffic sees a request to Emi. Nothing in this design defends against that reader, and this
 document does not claim otherwise.
 
+## The day record, inside the envelope
+
+Status: built
+
+The table above holds a day as `payload`, which is ciphertext. This section names what is inside
+it. The phone seals a day with `sealRecord` in `packages/crypto/src/envelope.ts`, and every seal
+goes through `checkedRecord` in `packages/crypto/src/record.ts` first. The phone keeps the same
+envelope in the `payload` column of the SQLite table `day_log`, one row for each day.
+
+The plaintext is canonical json. A field she did not record is absent. An absent field means "not
+recorded", and no field has a default value. So a record written before a field existed opens with
+that field absent, and it reads as "not recorded". No SQLite migration is necessary for a new
+field, because the field is inside the sealed bytes and not in a column.
+
+```mermaid
+flowchart LR
+  Screen["A screen: Sex, Period, Cycle phase, the ovulation popup"]
+  Check["checkedRecord: every key known, every value from its list"]
+  Seal["sealRecord: the envelope"]
+  Row["day_log.payload on the phone"]
+  Server["REC item on the server: ciphertext only"]
+  Cycles["cyclesFrom: reads flow and bleedingIsUnexpected only"]
+  Export["The export: opens every row and carries every field"]
+  Wipe["Delete everything: empties day_log"]
+  Screen --> Check
+  Check -->|"refused"| Screen
+  Check --> Seal
+  Seal --> Row
+  Row --> Server
+  Row --> Cycles
+  Row --> Export
+  Row --> Wipe
+```
+
+### The fields that existed before
+
+- `day`, a date as `YYYY-MM-DD`, required.
+- `recordedAt`, an instant string, required. The moment she saved.
+- `flow`, one of `none`, `spotting`, `light`, `medium`, `heavy`, optional.
+- `bleedingIsUnexpected`, a boolean, optional.
+- `symptoms`, a list of slugs from the catalogue in `packages/cycle/src/symptoms.ts`, optional.
+- `moods`, a list of slugs from the mood group of that catalogue, optional.
+- `energy`, a whole number from 1 to 5, optional.
+- `temperatureCelsius`, a number from 34.0 to 42.0 with one decimal place, optional.
+- `weightKilograms`, a number from 20.0 to 400.0 with one decimal place, optional.
+- `note`, text of at most 2000 characters, optional.
+
+### The fields the Sex, Period and Cycle phase pages add
+
+The values come from the boards `sexPage`, `periodPage`, `phasePage` and `ovulationPopup`, and from
+issues 272 and 275. Each list is a constant in `packages/crypto/src/record.ts`, so a test reads the
+list and a screen draws from it.
+
+- `sex`, one of `none`, `protected`, `unprotected`. Optional. Absent means she did not record it.
+  The board labels are "No sex", "Protected" and "Unprotected". She removes the record by saving
+  the day without the field. `none` is her answer "No sex", and it is not the same as absent.
+- `sexDrive`, one of `low`, `neutral`, `high`. Optional. Absent means not recorded.
+- `orgasm`, one of `yes`, `no`, `rather-not-say`. Optional. Absent means not recorded.
+  `rather-not-say` is an answer she chose, so Emi keeps it.
+- `discharge`, one of `none`, `sticky`, `creamy`, `egg-white`, `watery`, `unusual`. Optional, and
+  one value only. Absent means not recorded. `none` is her answer "None".
+- `products`, a list of `pad`, `tampon`, `cup`, `period-underwear`, `liner`. Optional. She can pick
+  several. The list holds each value at most once and holds at least one value. Absent means not
+  recorded, so an empty list is refused rather than kept as a second way to say nothing.
+- `food`, a list of `cravings`, `hungry`, `little-appetite`, `sweet`, `salty`. Optional. The same
+  list rules as `products`. The values are the "Food" chips of the `phasePage` board.
+- `ovulationSigns`, a list of `egg-white-discharge`, `pain-on-one-side`, `tender-breasts`,
+  `higher-sex-drive`, `positive-ovulation-test`, `higher-temperature`, `nothing-yet`. Optional. The
+  same list rules as `products`. `nothing-yet` is her answer "Nothing yet" and it stands alone, so
+  a list that holds it and a sign is refused. Absent means Emi did not ask, or she did not answer.
+- `ovulationPopup`, one of `answered`, `dismissed`. Optional. It records that the popup was shown
+  on that day and what she did with it, so the popup shows at most once a day (issue 272,
+  criterion 3). `answered` goes with `ovulationSigns`, and `dismissed` goes without it. A record
+  that holds `ovulationSigns` without `answered`, or `answered` without `ovulationSigns`, is
+  refused. Absent means the popup did not show on that day.
+
+### Emotions and symptoms on the Cycle phase page
+
+The diary on the `phasePage` board offers three rows: Symptoms, Food and Emotions. Food is the new
+field above. The other two rows add no field, because the catalogue holds them already:
+
+- Emotions: `calm`, `irritable` and `anxious` were moods already. `happy` and `sad` are new entries
+  in the mood group of the catalogue, so they are written to `moods`. `energetic` is an entry of
+  the energy group, so it is written to `symptoms`, the same as the log sheet writes it.
+- Symptoms: `cramps`, `bloating`, `breast-tenderness` ("Tender breasts" on the board), `headache`,
+  `acne` and `ovulation-pain` ("Pain on one side" on the board). They are written to `symptoms`.
+
+### What each field does to her cycle
+
+Nothing. `cyclesFrom` reads `flow` and `bleedingIsUnexpected` and no other field. A day that
+carries only a new field carries no flow, so it neither starts a period nor closes one. That keeps
+the rule of `docs/reference/cycle.md`: a recorded flow that is not her period closes a period, and
+nothing else does.
+
+A day that carries only `ovulationPopup: dismissed` says that the popup showed, and nothing she
+logged. A screen that counts the days she logged reads it that way.
+
+### Where each field goes after the seal
+
+- The server stores the envelope as `payload` and cannot read any field.
+- The export opens every row and carries every field, because it walks the record rather than a
+  list of names.
+- Delete everything empties `day_log`, so every field goes with its row.
+
 ## The access patterns that run today
 
 Status: built
