@@ -1,5 +1,5 @@
 import type { PublishedMeasurement } from '@emi/cycle';
-import type { PhaseName, RingGeometry } from '@emi/tokens';
+import type { PhaseName } from '@emi/tokens';
 
 import { type WordKey, words } from '../../language';
 import { dayLabel } from '../onboarding/days';
@@ -38,61 +38,29 @@ export function ringCycleLengthWords(cycleLengthDays: number): string {
   return words('cycle.ring.of', undefined, { length: cycleLengthDays });
 }
 
-/** What the strip writes over today, in place of the letter every other weekday carries. */
-export function weekTodayWord(): string {
-  return words('home.week.today');
-}
-
-/** The two things the line under her week says: her cycle day, and the phase she is in. */
-export interface PhaseLineWords {
-  /** The day of her cycle, which is the part drawn large enough to read across a room. */
-  readonly day: string;
-  /** The phase in words, held under 14 points because a stranger walking past reads it too. */
-  readonly phase: string;
-}
-
-/**
- * Which sentence names each phase. A period day names the day of the period, because that is the
- * number she is counting while she is bleeding. Every other day names the phase and the length of
- * the cycle it sits in, which is what the drawings of this screen carry.
- */
-const thePhaseOfHerCycle: Readonly<Record<Exclude<PhaseName, 'period'>, WordKey>> = {
-  follicular: 'cycle.phaseLine.follicular',
-  ovulation: 'cycle.phaseLine.ovulation',
-  luteal: 'cycle.phaseLine.luteal',
+/** The name of a phase in her language, which the ring of Today writes along its arc. */
+const theNameOf: Readonly<Record<PhaseName, WordKey>> = {
+  period: 'cycle.phaseName.period',
+  follicular: 'cycle.phaseName.follicular',
+  ovulation: 'cycle.phaseName.ovulation',
+  luteal: 'cycle.phaseName.luteal',
 };
 
-/**
- * The words of the line, from the geometry the ring is drawn from. One reading of one cycle, so the
- * line and the ring can never name two phases or two days.
- */
-export function phaseLineWords(geometry: RingGeometry): PhaseLineWords {
-  return {
-    day: words('cycle.phaseLine.day', undefined, { day: geometry.day }),
-    phase: thePhaseSaid(geometry),
-  };
+export function phaseName(phase: PhaseName): string {
+  return words(theNameOf[phase]);
+}
+
+/** The large line in the middle of the ring of Today: the day of her cycle. */
+export function ringDayNumberWords(day: number): string {
+  return words('cycle.ring.dayNumber', undefined, { day });
 }
 
 /**
- * How long her period is running, as the line says it. The arc is the length she gave until she
- * bleeds past it, and a period cannot be shorter than the day of it she is standing on, so the
- * sentence names whichever of the two is longer and stays true either way.
+ * The line under that day. The length is a forecast or her own answer, never a count she lived,
+ * so the ring of Today says about.
  */
-function theDaysOfHerPeriod(geometry: RingGeometry): number {
-  const arc = geometry.arcs.find((each) => each.phase === 'period');
-
-  return Math.max(arc?.days ?? 0, geometry.day);
-}
-
-function thePhaseSaid(geometry: RingGeometry): string {
-  if (geometry.phase === 'period') {
-    return words('cycle.phaseLine.period', undefined, {
-      day: geometry.day,
-      days: theDaysOfHerPeriod(geometry),
-    });
-  }
-
-  return words(thePhaseOfHerCycle[geometry.phase], geometry.cycleLengthDays);
+export function ringAboutLengthWords(cycleLengthDays: number): string {
+  return words('cycle.ring.ofAbout', undefined, { length: cycleLengthDays });
 }
 
 /**

@@ -1,28 +1,20 @@
 import type { DayRecord, ProfileRecord } from '@emi/crypto';
-import { addDays } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET } from '@emi/tokens';
+import { type CyclePhaseDays, addDays } from '@emi/cycle';
 import { washFieldTestID, washTestID, washTintTestID } from '@emi/ui';
 import { screen } from '@testing-library/react-native';
-import { StyleSheet, type ViewStyle } from 'react-native';
 
 import { listCycles } from '../../src/data/cycleRepository';
 import type { DayMark } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
-import { ringInputFor } from '../../src/features/cycle/ringInput';
+import { phaseDaysFor, ringInputFor } from '../../src/features/cycle/ringInput';
 import { homeScreenTestID } from '../../src/features/home/HomeScreen';
-import {
-  weekCycleDayTestID,
-  weekDateTestID,
-  weekDayTestID,
-  weekLetterTestID,
-  weekStripTestID,
-} from '../../src/features/home/WeekStrip';
+import { ringCentreDayTestID } from '../../src/components/CycleRing';
+import { homeCalendarTestID } from '../../src/features/home/HomeHeader';
 
 import { herDatabase, herPhoneHoldsTheseAnswers } from './herPhone';
 import { herVault } from './herVault';
 import { textIn } from './renderedText';
 import { type Control, controlsTooSmallToPress } from './tapTargets';
-import { type Box, widthInside } from './theWidthOfARow';
 import {
   type Part,
   theIdentifiersDrawn,
@@ -38,6 +30,10 @@ import {
  * The drawing names the strip as one part and names nothing inside it, so the seven days and what
  * each one carries are read off the markup. Seven days somebody typed would pass against
  * themselves.
+ *
+ * The built screen no longer draws the strip: the approved todayPhases board replaces it with a
+ * calendar button in the top bar, and puts the day of her cycle in the middle of the ring. The
+ * drawing is still read, because the dates of her week and the day she opens Emi come from it.
  */
 
 /** The week the drawing shows: her period started on the Monday and she opens Emi on the Thursday. */
@@ -51,7 +47,7 @@ export const sheSaidHerPeriodRunsFor = 5;
 /** How many days she recorded, all of them bleeding, ending on the day she opens Emi. */
 export const theDaysSheRecorded = 4;
 
-/** The header and the strip, which is what this step builds. The drawing places nine more parts. */
+/** The header and the strip, as the drawing places them. The built screen draws the header only. */
 export function theHeaderAndTheStripOfTheDrawing(): Part[] {
   return thePartsOfTheMockup('todayNext').slice(0, 2);
 }
@@ -153,63 +149,39 @@ const theWashIsDrawnUnder: readonly string[] = [
   washTintTestID(2),
 ];
 
-/** What a day of the strip is drawn under, without the day itself, so a reader can match on it. */
-const aDayOfTheBuiltStrip = weekDayTestID('');
-
-/** Every day the built strip drew, in the order it drew them. */
-export function theDaysTheStripDrew(): string[] {
-  return screen
-    .queryAllByTestId(new RegExp(`^${aDayOfTheBuiltStrip}`))
-    .map((element) => String(element.props.testID).slice(aDayOfTheBuiltStrip.length));
-}
-
-function saidUnder(testID: string): string {
-  return textIn(screen.getByTestId(testID)).join('');
-}
-
-/** The letter of the weekday the built strip drew over that day. */
-export function theLetterOver(day: string): string {
-  return saidUnder(weekLetterTestID(day));
-}
-
-/** The date the built strip drew for that day, as the number she reads. */
-export function theDateDrawnFor(day: string): number {
-  return Number(saidUnder(weekDateTestID(day)));
-}
-
-/** The cycle day the built strip drew over that date, or nothing where it drew none. */
-export function theCycleDayOver(day: string): number | undefined {
-  const drawn = screen.queryByTestId(weekCycleDayTestID(day));
-
-  return drawn === null ? undefined : Number(textIn(drawn).join(''));
-}
-
 /**
- * Which of the four states the built strip drew that date in, read off the drawn style rather
- * than off a name the component wrote for itself. A fill, a ring and a dotted outline are three
- * different things to look at, and that is what the reader below distinguishes.
+ * Every identifier the strip of seven days drew under. The todayPhases board takes the strip off
+ * Today, so a reader asking for any of these on the screen she opens is asking for a part that
+ * must be gone.
  */
-export function theMarkOnTheDate(day: string): DayMark {
-  const style: ViewStyle = StyleSheet.flatten(screen.getByTestId(weekDateTestID(day)).props.style);
+export const theIdentifiersOfTheStripThatIsGone: readonly string[] = [
+  'home-week-strip',
+  'home-week-day-',
+  'home-week-letter-',
+  'home-week-date-',
+  'home-week-cycle-day-',
+];
 
-  if (style.backgroundColor !== undefined && style.backgroundColor !== 'transparent') {
-    return 'bled';
-  }
-  if (style.borderStyle === 'dashed') {
-    return 'forecast';
-  }
-
-  return (style.borderWidth ?? 0) > 0 ? 'today' : 'plain';
+/** Everything still on the glass that the strip used to draw. Empty is the answer once it is gone. */
+export function whatIsLeftOfTheStrip(): string[] {
+  return theIdentifiersDrawn().filter((identifier) =>
+    theIdentifiersOfTheStripThatIsGone.some((gone) => identifier.startsWith(gone)),
+  );
 }
 
-/** What the built strip drew for every day of her week: the date, the cycle day and the state. */
-export function theStripSheReads(): DrawnDay[] {
-  return theDaysTheStripDrew().map((day) => ({
-    cycleDay: theCycleDayOver(day) ?? Number.NaN,
-    date: theDateDrawnFor(day),
-    letter: theLetterOver(day),
-    mark: theMarkOnTheDate(day),
-  }));
+/** The calendar button in the top bar, which is the way to her month that replaced the strip. */
+export function theCalendarButton(): Control {
+  return screen.getByTestId(homeCalendarTestID);
+}
+
+/** The calendar button, named with its size, where it is under the floor SEE-3 sets. */
+export function theCalendarButtonTooSmallToPress(): string[] {
+  return controlsTooSmallToPress([theCalendarButton()]);
+}
+
+/** The day of her cycle the ring of Today writes in its middle, as the number she reads. */
+export function theDayTheRingCentreSays(): number {
+  return Number(textIn(screen.getByTestId(ringCentreDayTestID)).join('').replace(/\D+/g, ''));
 }
 
 /**
@@ -228,6 +200,23 @@ export function theDayTheRingSaysFor(day: string): number | undefined {
     statedCycleLengthDays: sheSaidHerCycleRuns,
     statedPeriodLengthDays: sheSaidHerPeriodRunsFor,
   })?.day;
+}
+
+/**
+ * The days of each phase of her cycle, were she opening Emi on that date, read through the same
+ * function the screen reads them through, so the card is held to the rule rather than to a list.
+ */
+export function thePhaseDaysTheRuleGivesFor(day: string): CyclePhaseDays | undefined {
+  const database = herDatabase();
+  const vault = herVault();
+
+  return phaseDaysFor({
+    cycles: listCycles(database),
+    records: recordedDays(database, vault.open),
+    today: day,
+    statedCycleLengthDays: sheSaidHerCycleRuns,
+    statedPeriodLengthDays: sheSaidHerPeriodRunsFor,
+  });
 }
 
 /** The four days she bled, ending on the day she opens Emi. */
@@ -264,31 +253,4 @@ export async function herPhoneHoldsNoDayAtAll(firstRunFinishedAt: Date): Promise
   };
 
   await herPhoneHoldsTheseAnswers(firstRunFinishedAt, profile, []);
-}
-
-/**
- * Each day of the strip that is under the floor SEE-3 sets, named with the size it was drawn at.
- * The days are read off the strip rather than asked for by name, so a strip that drew six would be
- * measured as six.
- */
-export function theDaysOfHerWeekTooSmallToPress(): string[] {
-  const drawn: Control[] = theDaysTheStripDrew().map((day) =>
-    screen.getByTestId(weekDayTestID(day)),
-  );
-
-  return controlsTooSmallToPress(drawn);
-}
-
-/**
- * The room inside the strip on a glass of that width, and the room its days need to stand at the
- * floor SEE-3 sets. Seven controls of the floor have to fit across the narrowest phone Emi is
- * built for, or the row runs past its own right edge and a day of her week is off the glass.
- */
-export function theStripMeasuredOn(glassWidth: number): { room: number; theDaysNeed: number } {
-  const strip = screen.getByTestId(weekStripTestID) as unknown as Box;
-
-  return {
-    room: widthInside(strip, glassWidth),
-    theDaysNeed: theDaysTheStripDrew().length * MINIMUM_TAP_TARGET,
-  };
 }

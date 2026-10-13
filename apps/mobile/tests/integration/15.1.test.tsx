@@ -6,8 +6,9 @@ import { renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
 import {
+  homeCalendarTestID,
   homeGreetingTestID,
-  homeHeaderMarkTestID,
+  homeHeaderAvatarTestID,
   homeHeaderTestID,
   homeHeaderWordTestID,
 } from '../../src/features/home/HomeHeader';
@@ -22,6 +23,7 @@ import {
   theHeaderCarries,
   theHeaderOfTheDrawing,
   theNameSheGave,
+  theMarkTheHeaderNoLongerDraws,
   theOrderTheDrawingPlacesThemIn,
   whatTheHeaderDrew,
   whatTheScreenSheOpensDrew,
@@ -38,12 +40,21 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = dayOf(whenSheOpensIt);
 
-/** What the header says to a woman who gave no name, which is hi with nothing after it. */
-const theGreetingWithNoName = 'Hi';
+/** What the header says to a woman who gave no name, which is hello with nothing after it. */
+const theGreetingWithNoName = 'Hello';
 
-/** The role the word takes, and the size the design system holds that role at. */
-const theRoleTheWordTakes = 'headline-lg';
-const theWordIsDrawnAt = 28;
+/** The role the word takes on the todayPhases board, and the size the design system holds it at. */
+const theRoleTheWordTakes = 'headline-md';
+const theWordIsDrawnAt = 22;
+
+/** Everything the built header draws, in its order: the disc, the word, hello, the calendar. */
+const theBuiltHeader = [
+  homeHeaderTestID,
+  homeHeaderAvatarTestID,
+  homeHeaderWordTestID,
+  homeGreetingTestID,
+  homeCalendarTestID,
+];
 
 async function sheOpensEmi(name?: string): Promise<void> {
   await herPhoneHoldsHerDaysAnd(whenSheOpensIt, today, name);
@@ -82,7 +93,7 @@ describe('the screen she opens names Emi and greets her by the name she gave', (
       expect(everyPartOfTheDrawing().length).toBeGreaterThan(1);
     });
 
-    it('puts the mark, then the word, then the greeting inside that header', () => {
+    it('puts the mark, then the word, then the greeting inside that header, the disc answering for the mark', () => {
       expect(theOrderTheDrawingPlacesThemIn()).toEqual(theHeaderCarries.map((part) => part.name));
     });
   });
@@ -96,21 +107,24 @@ describe('the screen she opens names Emi and greets her by the name she gave', (
       expect(partsMissing(theHeaderOfTheDrawing(), whatTheScreenSheOpensDrew())).toEqual([]);
     });
 
-    it('draws the mark, then the word, then the greeting, in that order', () => {
+    it('draws the disc, then the word, then the greeting, then the calendar, in that order', () => {
       expect(partsMissing(theHeaderCarries, whatTheScreenSheOpensDrew())).toEqual([]);
-      expect(whatTheHeaderDrew()).toEqual([
-        homeHeaderTestID,
-        homeHeaderMarkTestID,
-        homeHeaderWordTestID,
-        homeGreetingTestID,
-      ]);
+      expect(whatTheHeaderDrew()).toEqual(theBuiltHeader);
+    });
+
+    it('no longer draws the ring mark the older header carried', () => {
+      expect(screen.queryByTestId(theMarkTheHeaderNoLongerDraws)).toBeNull();
+    });
+
+    it('writes her initial in the disc', () => {
+      expect(whatItSays(homeHeaderAvatarTestID)).toBe(theNameSheGave.slice(0, 1));
     });
 
     it('is the first thing the screen draws, with nothing of the screen above it', () => {
       expect(whatTheScreenSheOpensDrew()[0]).toBe(homeHeaderTestID);
     });
 
-    it('says Emi, and greets her by the name she gave', () => {
+    it('says emi, and greets her by the name she gave', () => {
       expect(whatItSays(homeHeaderWordTestID)).toBe(homeCopy.wordmark);
       expect(whatItSays(homeGreetingTestID)).toBe(greeting(theNameSheGave));
       // The greeting is held to carrying her name as well as to being the greeting, because a
@@ -118,7 +132,7 @@ describe('the screen she opens names Emi and greets her by the name she gave', (
       expect(whatItSays(homeGreetingTestID)).toContain(theNameSheGave);
     });
 
-    it('draws the word at the largest headline role, which the design system holds at 28 points', () => {
+    it('draws the word at the middle headline role, which the design system holds at 22 points', () => {
       expect(
         sizedTextIn(screen.getByTestId(homeHeaderWordTestID)).map((run) => run.points),
       ).toEqual([theWordIsDrawnAt]);
@@ -131,13 +145,9 @@ describe('the screen she opens names Emi and greets her by the name she gave', (
       await sheOpensEmi();
     });
 
-    it('draws the mark, the word, and hi on its own, with no gap where a name would be', () => {
-      expect(whatTheHeaderDrew()).toEqual([
-        homeHeaderTestID,
-        homeHeaderMarkTestID,
-        homeHeaderWordTestID,
-        homeGreetingTestID,
-      ]);
+    it('draws the disc, the word, and hello on its own, with no gap where a name would be', () => {
+      expect(whatTheHeaderDrew()).toEqual(theBuiltHeader);
+      expect(whatItSays(homeHeaderAvatarTestID)).toBe('');
       expect(whatItSays(homeGreetingTestID)).toBe(theGreetingWithNoName);
       expect(whatItSays(homeGreetingTestID)).not.toContain(theNameSheGave);
     });
@@ -148,13 +158,13 @@ describe('the screen she opens names Emi and greets her by the name she gave', (
       await sheOpensEmi(theNameSheGave);
     });
 
-    it('names the mark, and says what it is built under', () => {
-      const withoutTheMark = whatTheScreenSheOpensDrew().filter(
-        (identifier) => identifier !== homeHeaderMarkTestID,
+    it('names the mark, and says the disc is what it is built under', () => {
+      const withoutTheDisc = whatTheScreenSheOpensDrew().filter(
+        (identifier) => identifier !== homeHeaderAvatarTestID,
       );
 
-      expect(partsMissing(theHeaderCarries, withoutTheMark)).toEqual([
-        `the drawing names mark, built under ${homeHeaderMarkTestID}, and the screen draws none of them anywhere on the screen`,
+      expect(partsMissing(theHeaderCarries, withoutTheDisc)).toEqual([
+        `the drawing names mark, built under ${homeHeaderAvatarTestID}, and the screen draws none of them anywhere on the screen`,
       ]);
     });
   });

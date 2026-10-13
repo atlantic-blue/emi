@@ -115,10 +115,12 @@ describe('she starts a log from the screen she opens in one press', () => {
       await sheOpensEmi();
     });
 
-    it('answers for every part the drawing places down to the second action', () => {
-      expect(partsMissing(theScreenDownToTheRoundActions(), whatTheScreenSheOpensDrew())).toEqual(
-        [],
-      );
+    it('answers for every part the drawing places down to the second action, but the strip the calendar button replaced', () => {
+      // The todayPhases board takes the strip off Today, so the strip is the one departure, and
+      // theTodayLook.tsx records it with its reason.
+      expect(partsMissing(theScreenDownToTheRoundActions(), whatTheScreenSheOpensDrew())).toEqual([
+        'the drawing names WeekStrip, and nothing says which test identifier it is built under',
+      ]);
     });
 
     it('draws the two the drawing places, in its order and no more of them', () => {

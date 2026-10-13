@@ -63,7 +63,8 @@ function thePeriodArcPainted(): number {
 /**
  * The period arc the ring paints for a period of so many days, on the day she opens Today. It is
  * painted by the same ring, so the arc Today paints matches it only when Today hands the ring the
- * same number of days.
+ * same number of days. Today draws the named ring, so the reference is the named ring too, at the
+ * same radius, and the two readings round the same way.
  */
 async function thePeriodArcPaintedFor(periodDays: number): Promise<number> {
   const day = daysBetween(herLastPeriodStarted, today) + 1;
@@ -72,6 +73,7 @@ async function thePeriodArcPaintedFor(periodDays: number): Promise<number> {
     <CycleRing
       cycleLengthDays={herCycleLengthDays}
       day={day}
+      look="named"
       phases={phasesFromCycle(herCycleLengthDays, periodDays)}
     />,
   );

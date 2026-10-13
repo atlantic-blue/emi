@@ -4,10 +4,15 @@ import { screen } from '@testing-library/react-native';
 import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 
 import {
-  phaseLineDayTestID,
-  phaseLinePhaseTestID,
-  phaseLineTestID,
-} from '../../src/features/home/PhaseLine';
+  ringCentreDayTestID,
+  ringCentreLengthTestID,
+  ringCentrePhaseTestID,
+} from '../../src/components/CycleRing';
+import {
+  phaseCardDaysTestID,
+  phaseCardLineTestID,
+  phaseCardTestID,
+} from '../../src/features/home/PhaseCard';
 
 import { colourOf } from './phaseInk';
 import { sizedTextIn, textIn } from './renderedText';
@@ -19,7 +24,13 @@ import {
 } from './theWeekSheOpensWith';
 
 /**
- * The line under her week: the drawings it is held to, and the two days it is read on.
+ * The line under the ring in the drawings, and what the built screen draws in its place: the two
+ * drawings it is held to, and the two days it is read on.
+ *
+ * The approved todayPhases board replaces the line. The day of her cycle moves into the middle of
+ * the ring as "Day N", with the phase name over it, and the place under the ring takes a phase card
+ * that names the phase and its days. The drawings are still read, because the day and the phase
+ * each drawing is drawn on come from them.
  *
  * Two drawings carry it, because the whole question of this step is a word a stranger could read.
  * `todayNext` is a period day, where contract SCREEN-2 bites, and `todayLuteal` is the same screen
@@ -37,7 +48,7 @@ const theDrawings: Readonly<Record<string, () => Part[]>> = {
   todayNext: () => thePartsOfTheMockup('todayNext'),
 };
 
-/** The header, the strip, the ring and the line, which is what the top of the screen carries. */
+/** The header, the strip, the ring and the line, which is what the top of the drawing carries. */
 export function theTopOfTheDrawing(key: string): Part[] {
   const parts = theDrawings[key];
 
@@ -120,41 +131,55 @@ function pointsOf(testID: string): number | undefined {
   return style.fontSize;
 }
 
-/** What the built line drew: the day, the phase in words, and the size each was drawn at. */
-export interface PhaseLineOnTheGlass {
-  /** The whole line, as she reads it, day and phase together. */
-  readonly said: string;
-  /** The day of her cycle, taken out of the large type. */
+function saidUnder(testID: string): string {
+  return textIn(screen.getByTestId(testID)).join(' ');
+}
+
+/** What the middle of the ring of Today and the card under it say, and the size of each part. */
+export interface PhaseOnTheGlass {
+  /** The day of her cycle, taken out of "Day N" in the middle of the ring. */
   readonly day: number;
-  /** The phase in words, which is the part held under 14 points. */
+  /** The whole of what the middle of the ring writes under the phase, "Day N". */
+  readonly daySaid: string;
+  /** The length under it, "of about N". */
+  readonly lengthSaid: string;
+  /** The phase name in the middle of the ring. */
   readonly phase: string;
   readonly dayPoints: number | undefined;
   readonly phasePoints: number | undefined;
-  /** The colour the phase was drawn in, read back off the rendered style. */
+  /** The colour the phase name was drawn in, read back off the rendered style. */
   readonly phaseColour: string | undefined;
+  /** The first line of the card under the ring: the phase and its days. */
+  readonly cardDays: string;
+  /** The sentence of the card under the ring. */
+  readonly cardLine: string;
+  readonly cardDaysPoints: number | undefined;
 }
 
-export function thePhaseLineSheReads(): PhaseLineOnTheGlass {
-  const day = textIn(screen.getByTestId(phaseLineDayTestID)).join('');
-  const phase = textIn(screen.getByTestId(phaseLinePhaseTestID)).join('');
+export function thePhaseSheReads(): PhaseOnTheGlass {
+  const daySaid = saidUnder(ringCentreDayTestID);
 
   return {
-    said: textIn(screen.getByTestId(phaseLineTestID)).join(' '),
-    day: Number(day.replace(/\D+/g, '')),
-    phase,
-    dayPoints: pointsOf(phaseLineDayTestID),
-    phasePoints: pointsOf(phaseLinePhaseTestID),
-    phaseColour: colourOf(screen.getByTestId(phaseLinePhaseTestID)),
+    day: Number(daySaid.replace(/\D+/g, '')),
+    daySaid,
+    lengthSaid: saidUnder(ringCentreLengthTestID),
+    phase: saidUnder(ringCentrePhaseTestID),
+    dayPoints: pointsOf(ringCentreDayTestID),
+    phasePoints: pointsOf(ringCentrePhaseTestID),
+    phaseColour: colourOf(screen.getByTestId(ringCentrePhaseTestID)),
+    cardDays: saidUnder(phaseCardDaysTestID),
+    cardLine: saidUnder(phaseCardLineTestID),
+    cardDaysPoints: pointsOf(phaseCardDaysTestID),
   };
 }
 
 /**
- * The colour under the line, and the colour under the phase word inside it. SEE-2 keeps a word off
- * a phase fill, and a scoped walk of the line alone would never see a fill an ancestor carried, so
- * the ground is read as well as the words.
+ * The colour under the card, and the colour under the line of days inside it. SEE-2 keeps a word
+ * off a phase fill, and a scoped walk of the card alone would never see a fill an ancestor
+ * carried, so the ground is read as well as the words.
  */
-export function theGroundThePhaseLineIsDrawnOn(): readonly (string | undefined)[] {
-  return [phaseLineTestID, phaseLinePhaseTestID].map((testID) => {
+export function theGroundThePhaseCardIsDrawnOn(): readonly (string | undefined)[] {
+  return [phaseCardTestID, phaseCardDaysTestID].map((testID) => {
     const style: ViewStyle = StyleSheet.flatten(screen.getByTestId(testID).props.style);
     const held = style.backgroundColor;
 
@@ -162,10 +187,17 @@ export function theGroundThePhaseLineIsDrawnOn(): readonly (string | undefined)[
   });
 }
 
-/** The line as a subtree, so the words inside it can be read without reading the whole glass. */
-export function thePhaseLineOnTheGlass(): unknown {
-  return screen.getByTestId(phaseLineTestID);
+/** The card as a subtree, so the words inside it can be read without reading the whole glass. */
+export function thePhaseCardOnTheGlass(): unknown {
+  return screen.getByTestId(phaseCardTestID);
 }
+
+/** Every identifier the line under the ring drew under, which the todayPhases board took away. */
+export const theIdentifiersOfTheLineThatIsGone: readonly string[] = [
+  'home-phase-line',
+  'home-phase-line-day',
+  'home-phase-line-phase',
+];
 
 /** The ink partner of a phase, which is the colour a word about that phase is drawn in. */
 export function theInkOf(phase: PhaseName): string {

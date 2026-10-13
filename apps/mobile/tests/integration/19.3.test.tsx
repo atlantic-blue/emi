@@ -216,8 +216,8 @@ describe('every section of the screen she opens is drawn from her own data or ab
       for (const section of [
         'the ring',
         'her past cycles as strips',
-        'the day of her cycle over each date of her week',
-        'the line that names the day of her cycle',
+        'the day of her cycle in the middle of the ring',
+        'the card that names her phase and its days',
         'what she logged today',
         'the way to the pain log',
       ]) {

@@ -8,7 +8,7 @@ import {
   loggedTodayTestID,
   loggedTodayTileTestID,
 } from '../../src/features/home/LoggedToday';
-import { phaseLineTestID } from '../../src/features/home/PhaseLine';
+import { phaseCardTestID } from '../../src/features/home/PhaseCard';
 import {
   roundActionDiscTestID,
   roundActionDrawingTestID,
@@ -62,7 +62,7 @@ jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
  * forecasts or where a press leads: a case reads what the screen drew and in what order.
  */
 
-/** The three states of the screen the drawings place the ring above the phase line on. */
+/** The three states the drawings place the ring above the phase line on, built as the phase card. */
 const theStatesWithARing: readonly TodayDrawing[] = ['todayNext', 'todayLuteal', 'todayLogged'];
 
 /** Points. The disc of a round action, which the prototype draws wider than the tap floor. */
@@ -138,28 +138,28 @@ describe('the Today screens match the redesign prototype', () => {
     });
   });
 
-  describe('the ring and the line under it', () => {
+  describe('the ring and the phase card under it, where the drawing puts its line', () => {
     for (const drawing of theStatesWithARing) {
-      it(`stands the ring over the line that names her phase on ${drawing}`, async () => {
+      it(`stands the ring over the card that names her phase on ${drawing}`, async () => {
         jest.setSystemTime(whenSheOpens(drawing));
         await sheIsLookingAtTheTodayScreen(drawing);
 
         expect(whereTheScreenDrew(cycleRingTestID)).toBeGreaterThan(-1);
         expect(whereTheScreenDrew(cycleRingTestID)).toBeLessThan(
-          whereTheScreenDrew(phaseLineTestID),
+          whereTheScreenDrew(phaseCardTestID),
         );
       });
     }
   });
 
-  describe('the two round actions under that line', () => {
+  describe('the two round actions under that card', () => {
     beforeEach(async () => {
       jest.setSystemTime(whenSheOpens('todayNext'));
       await sheIsLookingAtTheTodayScreen('todayNext');
     });
 
-    it('stands them under the line and above the forecast, which is the order the drawing places', () => {
-      expect(whereTheScreenDrew(phaseLineTestID)).toBeLessThan(
+    it('stands them under the card and above the forecast, which is the order the drawing places', () => {
+      expect(whereTheScreenDrew(phaseCardTestID)).toBeLessThan(
         whereTheScreenDrew(roundActionTestID('period')),
       );
       expect(whereTheScreenDrew(roundActionTestID('period'))).toBeLessThan(

@@ -1,4 +1,5 @@
 import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
+import type { CyclePhaseDays } from '@emi/cycle';
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
@@ -9,9 +10,8 @@ import { listCycles } from '../../data/cycleRepository';
 import { readProfile } from '../../data/profileRepository';
 import type { Database } from '../../data/database';
 import type { ReadCycle } from '../../features/cycle/cyclesRead';
-import { type HerDay, herWeek } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
-import { type RingInput, ringInputFor } from '../../features/cycle/ringInput';
+import { type RingInput, phaseDaysFor, ringInputFor } from '../../features/cycle/ringInput';
 import { forecastOf } from '../../features/forecast/fromCache';
 import {
   groupParameter,
@@ -37,8 +37,8 @@ import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
 
 interface Shown {
   readonly ring: RingInput | undefined;
-  /** Her week, Monday to Sunday, read out of the same rows the ring is built from. */
-  readonly week: readonly HerDay[];
+  /** The days of each phase of the cycle she is in, read from the same rows as the ring. */
+  readonly phaseDays: CyclePhaseDays | undefined;
   readonly forecast: ReturnType<typeof forecastOf>;
   readonly cycleLengthDays: number;
   /** How many of her cycles are complete, which every section that cannot be filled yet names. */
@@ -81,8 +81,7 @@ function whatSheIsLookingAt(
   // One forecast, read by the sentence under the ring and by the variation row, so the spread the
   // range is drawn from and the spread she reads cannot be two different numbers.
   const forecast = forecastOf(cycles, stated);
-  // One read of her days for the ring and for the strip. Reading them twice would let the two
-  // stand on different rows, which is the one thing the strip may never do.
+  // One read of her days for the ring and for the phase card, so the two stand on the same rows.
   const readBack = {
     cycles,
     records: recordedDays(database, vault.open),
@@ -93,10 +92,10 @@ function whatSheIsLookingAt(
 
   return {
     ring: ringInputFor(readBack),
-    // Picked out of the days the ring and the strip were built from, so the row under the line and
-    // the ring above it can never stand on two different readings of today.
+    // Picked out of the days the ring was built from, so the row under the actions and the ring
+    // above it can never stand on two different readings of today.
     loggedToday: readBack.records.find((record) => record.day === today),
-    week: herWeek(readBack),
+    phaseDays: phaseDaysFor(readBack),
     forecast,
     numbers: herNumbers(cycles, forecast),
     // Read off the rows the ring was drawn from, so a strip and the ring stand on one reading.
@@ -173,11 +172,11 @@ export default function HomeRoute(): ReactNode {
       onPeriod={() => router.push('/log')}
       onSymptoms={() => router.push(`/log?${opensOnParameter}=${theSymptoms}`)}
       patterns={shown.patterns}
+      phaseDays={shown.phaseDays}
       regularity={shown.regularity}
       ring={shown.ring}
       today={today}
       trend={shown.trend}
-      week={shown.week}
     />
   );
 }

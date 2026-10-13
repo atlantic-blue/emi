@@ -65,7 +65,7 @@ const sheSaidHerCycleRuns = 29;
 const theCyclesSheHasBehindHer = 6;
 
 /** What the header says, with the name she gave and without it. */
-const theGreeting = { named: `Hi, ${theNameSheGave}`, plain: 'Hi' };
+const theGreeting = { named: `Hello, ${theNameSheGave}`, plain: 'Hello' };
 
 /** What a woman who has recorded nothing reads where the ring would be. */
 const theRingSheHasNotDrawnYet = {
@@ -224,7 +224,7 @@ function whatTheWaitingSectionSays(section: 'cycles' | 'trend' | 'patterns'): st
   return whatItSays(sectionWaitingTestID(section));
 }
 
-describe('the home screen says hi to her by name', () => {
+describe('the home screen says hello to her by name', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -237,14 +237,14 @@ describe('the home screen says hi to her by name', () => {
   });
 
   describe('the greeting at the top of it', () => {
-    it('says hi to her by the name she gave', async () => {
+    it('says hello to her by the name she gave', async () => {
       await sheOpensEmi({ days: herSixCyclesAndWhatSheLogged(), name: theNameSheGave });
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(whatItSays(homeGreetingTestID)).toBe(theGreeting.named);
     });
 
-    it('says hi on its own to a woman who gave no name, and leaves no gap for one', async () => {
+    it('says hello on its own to a woman who gave no name, and leaves no gap for one', async () => {
       await sheOpensEmi({ days: herSixCyclesAndWhatSheLogged() });
 
       expect(whatItSays(homeGreetingTestID)).toBe(theGreeting.plain);

@@ -8,7 +8,7 @@ import { AccessibilityInfo } from 'react-native';
 import { cycleRingTestID } from '../../src/components/CycleRing';
 import { roundActionTestID } from '../../src/features/home/HomeScreen';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
-import { phaseLineTestID } from '../../src/features/home/PhaseLine';
+import { phaseCardTestID } from '../../src/features/home/PhaseCard';
 import { homeCopy } from '../../src/features/home/copy';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
 import { symptomChipTestID } from '../../src/features/log/SymptomGroup';
@@ -43,6 +43,11 @@ jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureS
 jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 const appDirectory = join(__dirname, '..', '..', 'src', 'app');
+
+/** The one part down to the ring the built screen departs from: the calendar button replaced it. */
+const theStripTheCalendarReplaced = [
+  'the drawing names WeekStrip, and nothing says which test identifier it is built under',
+];
 
 /** Midday on the day both drawings of this screen are drawn on. */
 const whenSheOpensIt = new Date(`${theDaySheOpensIt}T12:00:00.000Z`);
@@ -129,13 +134,13 @@ describe('she records a symptom and the screen she started on shows it', () => {
       await sheOpensEmi();
     });
 
-    it('answers for every part the drawing places down to the ring', () => {
+    it('answers for every part the drawing places down to the ring, but the strip', () => {
       expect(
         partsMissing(
           theScreenDownToTheRing(theDrawingBeforeSheLogged),
           whatTheScreenSheOpensDrew(),
         ),
-      ).toEqual([]);
+      ).toEqual(theStripTheCalendarReplaced);
     });
 
     it('draws no row at all, rather than a row with nothing under its heading', () => {
@@ -151,16 +156,16 @@ describe('she records a symptom and the screen she started on shows it', () => {
       app = await sheOpensEmi();
     });
 
-    it('answers for every part the drawing places down to the ring', () => {
+    it('answers for every part the drawing places down to the ring, but the strip', () => {
       expect(
         partsMissing(theScreenDownToTheRing(theDrawingAfterSheLogged), whatTheScreenSheOpensDrew()),
-      ).toEqual([]);
+      ).toEqual(theStripTheCalendarReplaced);
     });
 
-    it('draws the row under the ring and its line, where the drawing puts it', () => {
+    it('draws the row under the ring and the phase card, where the drawing puts its line', () => {
       const drawn = whatTheScreenSheOpensDrew();
 
-      expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(phaseLineTestID));
+      expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(phaseCardTestID));
       expect(drawn.indexOf(loggedTodayTestID)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
     });
 

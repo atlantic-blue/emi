@@ -17,14 +17,13 @@ import {
   homeScreenTestID,
 } from '../../src/features/home/HomeScreen';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
-import { phaseLineTestID } from '../../src/features/home/PhaseLine';
+import { phaseCardTestID } from '../../src/features/home/PhaseCard';
 import { roundActionTestID } from '../../src/features/home/RoundAction';
 import {
   sectionWaitingHeadingTestID,
   sectionWaitingTestID,
   waitingSections,
 } from '../../src/features/home/SectionWaiting';
-import { weekStripTestID } from '../../src/features/home/WeekStrip';
 import {
   LockScreen,
   lockLineTestID,
@@ -135,27 +134,24 @@ const theIdentifiersOf: Readonly<Record<TodayDrawing, PartIdentifiers>> = {
     CycleRing: [cycleRingTestID],
     HomeHeader: [homeHeaderTestID],
     LoggedToday: [loggedTodayTestID],
-    PhaseLine: [phaseLineTestID],
+    PhaseLine: [phaseCardTestID],
     RoundAction: theRoundActions(),
-    WeekStrip: [weekStripTestID],
   },
   todayLuteal: {
     BottomNavigation: theDock,
     CycleRing: [cycleRingTestID],
     HomeHeader: [homeHeaderTestID],
     NextPeriod: [nextPeriodTestID],
-    PhaseLine: [phaseLineTestID],
+    PhaseLine: [phaseCardTestID],
     RoundAction: theRoundActions(),
-    WeekStrip: [weekStripTestID],
   },
   todayNext: {
     BottomNavigation: theDock,
     CycleRing: [cycleRingTestID],
     HomeHeader: [homeHeaderTestID],
     NextPeriod: [nextPeriodTestID],
-    PhaseLine: [phaseLineTestID],
+    PhaseLine: [phaseCardTestID],
     RoundAction: theRoundActions(),
-    WeekStrip: [weekStripTestID],
   },
 };
 
@@ -164,14 +160,44 @@ function theRoundActions(): string[] {
   return [roundActionTestID('period'), roundActionTestID('symptoms')];
 }
 
+/** One part a drawing of Today names that the built screen does not draw, and why. */
+export interface TodayDeparture {
+  readonly drawing: TodayDrawing;
+  /** The part, as the drawing names it. */
+  readonly part: string;
+  readonly reason: string;
+}
+
 /**
- * Where a screen draws a part somewhere other than where its drawing places it, and why.
- *
- * Every drawing answers its own in order, so the record is empty. A difference would be written
- * out here rather than left out, because a comparison that quietly skipped a part would read
- * exactly like a comparison the screen answered.
+ * The reason the three screens with a ring do not draw the strip of seven days. The approved
+ * todayPhases board takes the strip off Today and puts a calendar button in the top bar in its
+ * place, and the mockups stage still draws the strip because nobody edits a drawing by hand.
  */
-export const theDifferencesTheTodayStepKeeps: Readonly<Partial<Record<TodayDrawing, number>>> = {};
+export const whyTheStripIsGone =
+  'the todayPhases board replaces the strip of seven days with the calendar button in the top bar';
+
+/**
+ * Every part a drawing of Today names that the built screen departs from, with its reason. A
+ * difference is written out here rather than left out, because a comparison that quietly skipped
+ * a part would read exactly like a comparison the screen answered.
+ *
+ * The line under the ring is not here: the phase card answers for it, in the same place, and the
+ * record of identifiers says so. The mark in the header is not here either: the drawing names the
+ * header as one part, and theHeaderSheOpensWith.ts records the avatar disc that took its place.
+ */
+export const theTodayDepartures: readonly TodayDeparture[] = (
+  ['todayNext', 'todayLuteal', 'todayLogged'] as const
+).map((drawing) => ({ drawing, part: 'WeekStrip', reason: whyTheStripIsGone }));
+
+/** How many parts of each drawing the built screen departs from, counted off the record above. */
+export const theDifferencesTheTodayStepKeeps: Readonly<Partial<Record<TodayDrawing, number>>> =
+  theTodayDepartures.reduce<Partial<Record<TodayDrawing, number>>>(
+    (counted, departure) => ({
+      ...counted,
+      [departure.drawing]: (counted[departure.drawing] ?? 0) + 1,
+    }),
+    {},
+  );
 
 /**
  * How many parts of the drawing of the sections she has not earned belong to another feature.

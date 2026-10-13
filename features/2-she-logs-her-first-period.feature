@@ -285,34 +285,34 @@ Feature: She opens Emi and logs her first period
     And the cycle length she reads here is the one the Insights screen gives that same cycle
     And the period length she reads here is the bleeding the Insights screen gives that same cycle
 
-  Scenario: SCREEN-2, the screen she opens names Emi and greets her by the name she gave
+  Scenario: SCREEN-2, the screen she opens names emi and greets her by the name she gave
     Given her phone holds cycles of her own, and she gave the name Ada
     When she opens Emi
     Then the header is the first thing on the screen she opens
-    And it carries the mark, then the word Emi, then the greeting
-    And the greeting reads Hi, Ada
+    And it carries her initial in a disc, then the word emi, then the greeting, then the calendar button
+    And the greeting reads Hello, Ada
+    And the ring mark the older header carried is gone
     And the drawing of this screen puts that header first, and the screen answers for it
-    And a woman who gave no name reads the mark, the word, and hi on its own
+    And a woman who gave no name reads the disc, the word, and hello on its own
 
-  Scenario: SCREEN-2, she reads the cycle day of every day of her week without pressing anything
+  Scenario: SCREEN-2, she reads the day of her cycle without pressing anything, and the week strip is gone
     Given her phone holds four recorded period days, the last of them today
     When she opens Emi
-    Then she reads her whole week, seven days, without pressing anything
-    And above every date is the day of her cycle that date falls on
-    And every one of those is the day the ring says for that date
-    And the three days behind today are filled, because she bled on them
-    And today is ringed
-    And tomorrow is a dotted outline, because her period is expected to run into it
-    And the two days after that are plain
+    Then she reads the day of her cycle in the middle of the ring without pressing anything
+    And that is the day the ring says for today
+    And no part of the strip of seven days is drawn
+    And the calendar button in the top bar stands above the ring, where the strip was
+    And the strip is the one part of the top of the drawing the screen does not build
 
   Scenario: SCREEN-2, she reads her phase and her cycle day as words from across the room
     Given her phone holds four recorded period days, the last of them today
     When she opens Emi
-    Then under her week she reads the day of her cycle, in type large enough to read across a room
-    And the phase she is in is written beside it, in words
-    And the day of her cycle is drawn far larger than the phase beside it
+    Then in the middle of the ring she reads Day and the day of her cycle, in type large enough to read across a room
+    And the phase she is in is written over it, in words
+    And the day of her cycle is drawn far larger than the phase over it
     And the words period, bleeding, fertile and ovulation are still drawn at 14 points or less
     And the phase is written in the ink of that phase, and never on the colour of it
+    And under the ring a card names the phase and its days, and the line under the ring is gone
     And the same screen three weeks later reads her luteal phase the same way
 
   Scenario: SCREEN-2, she starts a log from the screen she opens in one press
@@ -361,18 +361,18 @@ Feature: She opens Emi and logs her first period
     And today is ringed
     And every square is as high as a thumb needs, and takes its width from the month
 
-  Scenario: SCREEN-4, she reaches a month from the screen she opens by pressing her week
+  Scenario: SCREEN-4, she reaches a month from the screen she opens by pressing the calendar button
     Given her phone holds three recorded cycles
     When she opens Emi
-    Then every day of the week she is reading is at least 44 points on both axes
-    And the seven of them fit across the narrowest phone Emi is built for
+    Then the calendar button in the top bar is at least 44 points on both axes
+    And it is named the calendar for somebody listening, as a button
     And the dock still holds the four columns it held, and nothing else
-    When she presses a day of that week
-    Then she is reading the month that day falls in
+    When she presses the calendar button
+    Then she is reading the month today falls in
     And that is the month the drawing names, with the parts the drawing places in its order
     When she presses the way back
-    Then she is on the screen she opened, reading her week again
-    And pressing a different day of the same week reaches the same month
+    Then she is on the screen she opened, and no strip of seven days is drawn on it
+    And pressing the calendar button again reaches the same month
 
   Scenario: SCREEN-4, she presses a day in the month and reads what she wrote that day
     Given her phone holds three recorded cycles, and a symptom she marked on one day
@@ -426,7 +426,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-4, she corrects a whole period in one save and the ring redraws
     Given her phone holds a period of four days, and two complete cycles behind it
     When she opens Emi
-    And she presses a day of the week she is reading
+    And she presses the calendar button in the top bar
     Then she is reading the month that day falls in
     When she presses the way to edit her period
     Then she is looking at the period picker, and that is the drawing of it
@@ -637,14 +637,14 @@ Feature: She opens Emi and logs her first period
     And a screen that knows no phase yet draws the soft wash every other screen draws
     And no colour of a wash is ever drawn as a word, because colour is all it carries
 
-  Scenario: SCREEN-2, the ring and the week strip take the redesign look
+  Scenario: SCREEN-2, the ring and the top bar take the todayPhases look
     Given her phone holds six cycles of her own
-    When she opens Emi and reads the ring and the week above it
-    Then the middle of the ring names her phase, then the day she is on, then the length of her cycle
-    And every arc ends in a round end, and ground still shows at every boundary between two phases
-    And the bead on today is a white disc with a dark line around it
-    And the days she bled are filled discs, and the day her period is expected on is a dashed outline
-    And the column she is on is named TODAY in place of its weekday letter
+    When she opens Emi and reads the ring and the top bar above it
+    Then the middle of the ring names her phase, then Day and the day she is on, then about the length of her cycle
+    And every arc is painted whole with a square end, and ground still shows at every boundary between two phases
+    And each phase name is written along its own arc, in the colour measured on that arc
+    And the bead on today is a dark disc with a white line around it, outside the band
+    And the strip of seven days is gone, and the calendar button closes the top bar on the right
 
   Scenario: SCREEN-1, the welcome and the tour say what the redesign says
     Given she has never opened Emi before
@@ -686,12 +686,12 @@ Feature: She opens Emi and logs her first period
     Given her phone holds the period she is in and the answers of her first run
     When she opens Emi and reads the screen she opens in each of its states
     Then each state carries the wash across the top of the glass
-    And the ring stands above the line that names the phase she is in
-    And the two round actions stand under that line, the period one filled and the symptoms one white
+    And the ring stands above the card that names the phase she is in
+    And the two round actions stand under that card, the period one filled and the symptoms one white
     And what she logged today stands under them, in a card with the mark that says Emi kept it
     And a section her days cannot fill yet is one card with one sentence, and it draws no chart
     And the lock she comes back through carries the wordmark, the disc and the one button
-    And each state draws every part its own drawing names, in the order the drawing places them
+    And each state draws every part its own drawing names in its order, but the parts it records as differences
 
   Scenario: SCREEN-4, the Log and calendar screens match the redesign prototype
     Given her phone holds the period she is in, the month behind it and the answers of her first run
@@ -727,13 +727,13 @@ Feature: She opens Emi and logs her first period
     And delete everything names the five things that go, each one with its own mark
     And each screen draws every part its own drawing names, in the order the drawing places them
 
-  Scenario: SCREEN-2, the home screen says hi to her by name
+  Scenario: SCREEN-2, the home screen says hello to her by name
     Given she gave the name Ada at her first run, and her phone holds the one period she logged
     When she opens Emi
-    Then the top of the screen says hi to her by the name she gave
+    Then the top of the screen says hello to her by the name she gave
     And the forecast that cannot say how sure it is tells her it is still getting to know her
     And it asks for the cycles it still wants as we, and names the length she told them about
-    And a woman who gave no name reads hi on its own, with no gap where a name would be
+    And a woman who gave no name reads hello on its own, with no gap where a name would be
     And every word this screen says is in all three languages, and each one talks to her as you
     And the only two that name Emi are the fertile window denial and the line about sample data
 

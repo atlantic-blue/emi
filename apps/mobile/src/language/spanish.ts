@@ -87,22 +87,14 @@ export const spanish: CatalogueIn<'es'> = {
   'cycle.figures.title': 'De dónde vienen estas cifras',
   'cycle.noRing.line': 'Registra un día en que sangraste y tu ciclo aparece aquí.',
   'cycle.noRing.title': 'Tu anillo está esperando',
-  'cycle.phaseLine.day': 'Día {day}',
-  'cycle.phaseLine.follicular': {
-    one: 'Fase folicular, un ciclo de {count} día',
-    other: 'Fase folicular, un ciclo de {count} días',
-  },
-  'cycle.phaseLine.luteal': {
-    one: 'Fase lútea, un ciclo de {count} día',
-    other: 'Fase lútea, un ciclo de {count} días',
-  },
-  'cycle.phaseLine.ovulation': {
-    one: 'Fase de ovulación, un ciclo de {count} día',
-    other: 'Fase de ovulación, un ciclo de {count} días',
-  },
-  'cycle.phaseLine.period': 'Tu periodo, día {day} de unos {days}',
+  'cycle.phaseName.period': 'Periodo',
+  'cycle.phaseName.follicular': 'Folicular',
+  'cycle.phaseName.ovulation': 'Ovulación',
+  'cycle.phaseName.luteal': 'Lútea',
   'cycle.ring.day': 'Día',
+  'cycle.ring.dayNumber': 'Día {day}',
   'cycle.ring.of': 'de {length}',
+  'cycle.ring.ofAbout': 'de unos {length}',
   'cycle.ring.spoken': 'Día {day} de {length}, {phase}',
 
   'export.again': 'Crearlos de nuevo',
@@ -209,6 +201,7 @@ export const spanish: CatalogueIn<'es'> = {
     'Querías un registro para tu médico. Está listo cuando quieras, en Exportar.',
   'home.cycles.line':
     'Cada franja es uno de tus ciclos, empezando por este. Pulsa una para verla completa.',
+  'home.calendar': 'El calendario',
   'home.greeting': 'Hola, {name}',
   'home.greeting.noName': 'Hola',
   'home.logToday': 'Registrar hoy',
@@ -242,6 +235,18 @@ export const spanish: CatalogueIn<'es'> = {
     'Un síntoma que registraste una o dos veces no es un patrón, y no lo llamaremos así.',
   'home.patterns.onCycleDay': 'hacia el día {day} de tu ciclo',
   'home.patterns.press': 'Lo que vuelve, completo',
+  'home.phaseCard.period.day': 'Fase del periodo, día {from}',
+  'home.phaseCard.period.days': 'Fase del periodo, días {from} a {to}',
+  'home.phaseCard.period.line': 'Los días en que sangras.',
+  'home.phaseCard.follicular.day': 'Fase folicular, día {from}',
+  'home.phaseCard.follicular.days': 'Fase folicular, días {from} a {to}',
+  'home.phaseCard.follicular.line': 'Los días después de tu periodo, antes de la ovulación.',
+  'home.phaseCard.ovulation.day': 'Fase de ovulación, día {from}',
+  'home.phaseCard.ovulation.days': 'Fase de ovulación, días {from} a {to}',
+  'home.phaseCard.ovulation.line': 'La energía suele estar en su punto más alto.',
+  'home.phaseCard.luteal.day': 'Fase lútea, día {from}',
+  'home.phaseCard.luteal.days': 'Fase lútea, días {from} a {to}',
+  'home.phaseCard.luteal.line': 'Los días después de la ovulación, antes de tu próximo periodo.',
   'home.roundAction.period': 'Regla',
   'home.roundAction.symptoms': 'Síntomas',
   // El gráfico de sus últimos ciclos completos sobre el rango publicado. El pie y la frase debajo
@@ -263,8 +268,7 @@ export const spanish: CatalogueIn<'es'> = {
   'home.waiting.trend.read': 'Emi no dibuja nada de nada, y no guarda datos de ejemplo.',
   'home.trend.spoken':
     'Tus últimos {cycles}, de {shortest} a {longest} días, sobre el rango publicado de {low} a {high} días.',
-  'home.week.today': 'HOY',
-  'home.wordmark': 'Emi',
+  'home.wordmark': 'emi',
 
   'lock.cancel': 'Cancelar',
   /**

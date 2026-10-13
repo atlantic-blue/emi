@@ -21,7 +21,13 @@ import { render, screen, within } from '@testing-library/react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 
-import { cycleRingTestID, ringArcTestID, ringBeadTestID } from '../../src/components/CycleRing';
+import {
+  CycleRing,
+  cycleRingTestID,
+  ringArcTestID,
+  ringBeadTestID,
+  ringWholeArcTestID,
+} from '../../src/components/CycleRing';
 import type { CycleRow } from '../../src/data/cycleRepository';
 import { listCycles } from '../../src/data/cycleRepository';
 import type { Database } from '../../src/data/database';
@@ -283,9 +289,25 @@ describe('the ring shows the forecast the arithmetic produced', () => {
     });
   });
 
+  /**
+   * Contract changed by the todayPhases board: the ring of Today paints every arc once, whole and
+   * at full strength, so each phase name is read against its own fill. The fifth strength for the
+   * days ahead is the plain ring's, which the tour and the log flow still draw, so the two cases
+   * below render the plain ring directly.
+   */
   describe('the strength the days ahead are drawn at', () => {
-    it('draws the days she reached at full strength and the days ahead at a fifth', async () => {
+    it('paints every arc of the ring of Today whole, at full strength, with no days ahead faded', async () => {
       await sheOpensHerHomeScreen(herPhone(veryRegular));
+
+      for (const phase of ['period', 'follicular', 'ovulation', 'luteal'] as const) {
+        expect(screen.getByTestId(ringWholeArcTestID(phase)).props.opacity).toBeUndefined();
+        expect(screen.queryByTestId(ringArcTestID(phase, 'elapsed'))).toBeNull();
+        expect(screen.queryByTestId(ringArcTestID(phase, 'ahead'))).toBeNull();
+      }
+    });
+
+    it('draws the days she reached at full strength and the days ahead at a fifth, on the plain ring', async () => {
+      await render(<CycleRing {...herPhone(veryRegular).ring} />);
 
       expect(
         screen.getByTestId(ringArcTestID('follicular', 'elapsed')).props.opacity,
@@ -295,8 +317,8 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       );
     });
 
-    it('draws a phase she has not reached as days ahead and nothing else', async () => {
-      await sheOpensHerHomeScreen(herPhone(veryRegular));
+    it('draws a phase she has not reached as days ahead and nothing else, on the plain ring', async () => {
+      await render(<CycleRing {...herPhone(veryRegular).ring} />);
 
       expect(screen.getByTestId(ringArcTestID('ovulation', 'ahead'))).toBeTruthy();
       expect(screen.queryByTestId(ringArcTestID('ovulation', 'elapsed'))).toBeNull();
@@ -312,7 +334,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
       expect(screen.getByTestId(ringBeadTestID)).toBeTruthy();
-      expect(screen.getByText(String(theDaySheOpensIt))).toBeTruthy();
+      expect(screen.getByText(`Day ${String(theDaySheOpensIt)}`)).toBeTruthy();
       expect(screen.getByText(phaseLabel.follicular)).toBeTruthy();
       expect(
         within(screen.getByTestId(homeForecastTestID)).getByTestId(nextPeriodRangeTestID),

@@ -49,8 +49,8 @@ const herPeriodStarted = '2026-05-09';
 
 const herName = 'Ada';
 
-/** What the header says to a woman who gave no name, which is hi with nothing after it. */
-const theGreetingWithNoName = 'Hi';
+/** What the header says to a woman who gave no name, which is hello with nothing after it. */
+const theGreetingWithNoName = 'Hello';
 const herBirthYear = 1991;
 
 /**
@@ -238,7 +238,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       expect(Object.keys(held ?? {}).sort()).toEqual(['cycleLengthDays', 'kind', 'recordedAt']);
     });
 
-    it('leave her home screen saying hi to her, with no gap where a name would be', async () => {
+    it('leave her home screen saying hello to her, with no gap where a name would be', async () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });

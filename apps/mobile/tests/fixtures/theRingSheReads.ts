@@ -1,8 +1,20 @@
-import { FULL_TURN_DEGREES, type PhaseName, RING_TRACK_WIDTH, phaseNames } from '@emi/tokens';
+import {
+  FULL_TURN_DEGREES,
+  NAMED_RING_DIAMETER,
+  NAMED_RING_RADIUS,
+  type PhaseName,
+  RING_TRACK_WIDTH,
+  phaseNames,
+} from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 
-import { cycleRingTestID, ringArcTestID, ringBeadTestID } from '../../src/components/CycleRing';
+import {
+  cycleRingTestID,
+  ringArcTestID,
+  ringBeadTestID,
+  ringWholeArcTestID,
+} from '../../src/components/CycleRing';
 
 import { textIn } from './renderedText';
 
@@ -48,12 +60,20 @@ function theEndOf(stroke: Painted): string {
   return given === undefined ? 'butt' : String(given);
 }
 
-/** The ring is square, so the canvas it was drawn on gives its centre and its radius. */
+/**
+ * The ring is square, so the canvas it was drawn on gives its centre and its radius. The ring of
+ * Today is drawn at its own diameter, with its band at its own radius rather than at the middle
+ * of the plain track, so the canvas says which of the two rings it is.
+ */
 export function theRingCanvas(): { centre: number; radius: number } {
   const style = StyleSheet.flatten(screen.getByTestId(cycleRingTestID).props.style) ?? {};
   const diameter = Number((style as { height?: unknown }).height);
 
-  return { centre: diameter / 2, radius: (diameter - RING_TRACK_WIDTH) / 2 };
+  return {
+    centre: diameter / 2,
+    radius:
+      diameter === NAMED_RING_DIAMETER ? NAMED_RING_RADIUS : (diameter - RING_TRACK_WIDTH) / 2,
+  };
 }
 
 /** Where a point on the drawing sits on the ring, clockwise from twelve o'clock. */
@@ -100,10 +120,16 @@ function thePaintOf(stroke: Painted): { from: number; to: number } {
   return { from: path.from - reach, to: path.to + reach };
 }
 
-/** Every stroke the ring painted for one phase, which is one, two, or none at all. */
+/**
+ * Every stroke the ring painted for one phase, which is one, two, or none at all. The plain ring
+ * paints a phase in two strengths, and the ring of Today paints it once, whole.
+ */
 function theStrokesOf(phase: PhaseName): Painted[] {
-  return theStrengths
-    .map((strength) => screen.queryByTestId(ringArcTestID(phase, strength)))
+  return [
+    ...theStrengths.map((strength) => ringArcTestID(phase, strength)),
+    ringWholeArcTestID(phase),
+  ]
+    .map((testID) => screen.queryByTestId(testID))
     .filter((stroke) => stroke !== null)
     .map((stroke) => stroke as unknown as Painted);
 }

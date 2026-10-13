@@ -39,9 +39,8 @@ import {
   waitingSections,
 } from '../../src/features/home/SectionWaiting';
 import { loggedTodayTestID } from '../../src/features/home/LoggedToday';
-import { phaseLineTestID } from '../../src/features/home/PhaseLine';
+import { phaseCardTestID } from '../../src/features/home/PhaseCard';
 import { roundActionTestID, roundActions } from '../../src/features/home/RoundAction';
-import { weekStripTestID } from '../../src/features/home/WeekStrip';
 import { flowPickerTestID } from '../../src/features/log/FlowPicker';
 import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import {
@@ -121,7 +120,9 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   // The drawing calls the question of a changed answer by the name of the frame the first run asks
   // it in, because it is the same question in the same words.
   OnboardingScreen: [answerQuestionTestID],
-  PhaseLine: [phaseLineTestID],
+  // The drawing's line under the ring is built as the phase card, which the todayPhases board puts
+  // in its place: it names the phase and its days where the line named the day and the phase.
+  PhaseLine: [phaseCardTestID],
   // One part for each section her days cannot fill, so a drawing naming the part matches whichever
   // of the three is waiting.
   SectionWaiting: waitingSections.map(sectionWaitingTestID),
@@ -159,7 +160,9 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     figuresLeaveTestID,
   ],
   ThePromise: [thePromiseTestID],
-  WeekStrip: [weekStripTestID],
+  // The drawing's WeekStrip is not here on purpose. The todayPhases board takes the strip off Today
+  // and puts a calendar button in the top bar in its place, so a comparison that reaches the strip
+  // names it as unbuilt, and theTodayLook.tsx records that as a difference.
 };
 
 export interface Part {

@@ -5,9 +5,8 @@ import { render } from '@testing-library/react-native';
 import { AccessibilityInfo, View } from 'react-native';
 
 import { listCycles } from '../../src/data/cycleRepository';
-import { herWeek } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
-import { ringInputFor } from '../../src/features/cycle/ringInput';
+import { ringInputFor, phaseDaysFor } from '../../src/features/cycle/ringInput';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { HomeScreen } from '../../src/features/home/HomeScreen';
 import { herCycles } from '../../src/features/home/herCycles';
@@ -81,10 +80,10 @@ async function drawn(): Promise<DrawnScreen> {
           onOpenCycles={() => undefined}
           onPeriod={() => undefined}
           onSymptoms={() => undefined}
+          phaseDays={phaseDaysFor(readBack)}
           ring={ringInputFor(readBack)}
           today={today}
           trend={herTrend(readBack)}
-          week={herWeek(readBack)}
         />
       </View>
     </OnAPhone>,

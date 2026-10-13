@@ -4,6 +4,7 @@ import {
   FERTILE_DAYS_AFTER_OVULATION,
   FERTILE_DAYS_BEFORE_OVULATION,
   type CycleDays,
+  type CyclePhaseDays,
   cyclePhaseDays,
   daysBetween,
   isBleeding,
@@ -139,6 +140,22 @@ export function ringInputFor(from: RingInputFrom): RingInput | undefined {
   return read === undefined
     ? undefined
     : { cycleLengthDays: read.shape.cycleLengthDays, day: read.day, phases: phasesOf(read.shape) };
+}
+
+/**
+ * The days of each of the four phases of the cycle she is in, by the phase rule, read from the
+ * same shape the ring is drawn from. Nothing at all where the ring has nothing to draw.
+ */
+export function phaseDaysFor(from: RingInputFrom): CyclePhaseDays | undefined {
+  const read = cycleShapeFor(from);
+
+  return read === undefined
+    ? undefined
+    : cyclePhaseDays({
+        cycleLengthDays: read.shape.cycleLengthDays,
+        periodLengthDays: read.shape.periodDays,
+        ovulationDay: read.shape.ovulationDay,
+      });
 }
 
 /** The day she is on and the shape of the cycle holding it, which the ring and the month read. */

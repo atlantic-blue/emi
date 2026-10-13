@@ -1,6 +1,7 @@
-import type { PatternAnchor, PublishedFigure, PublishedMeasurement } from '@emi/cycle';
+import type { CycleDays, PatternAnchor, PublishedFigure, PublishedMeasurement } from '@emi/cycle';
+import type { PhaseName } from '@emi/tokens';
 
-import { words } from '../../language';
+import { type WordKey, words } from '../../language';
 import type { MeasuredNumber } from './herNumbers';
 
 /**
@@ -9,6 +10,7 @@ import type { MeasuredNumber } from './herNumbers';
  */
 export const homeCopy = {
   wordmark: words('home.wordmark'),
+  calendar: words('home.calendar'),
   roundAction: {
     period: words('home.roundAction.period'),
     symptoms: words('home.roundAction.symptoms'),
@@ -91,8 +93,55 @@ export function publishedFigureReads(figure: PublishedFigure): string {
   return fractionOfDays(value.mean);
 }
 
+/** The keys of the phase card, written out so the catalogue check can read each one. */
+const thePhaseCardKeys: Readonly<
+  Record<PhaseName, { readonly day: WordKey; readonly days: WordKey; readonly line: WordKey }>
+> = {
+  period: {
+    day: 'home.phaseCard.period.day',
+    days: 'home.phaseCard.period.days',
+    line: 'home.phaseCard.period.line',
+  },
+  follicular: {
+    day: 'home.phaseCard.follicular.day',
+    days: 'home.phaseCard.follicular.days',
+    line: 'home.phaseCard.follicular.line',
+  },
+  ovulation: {
+    day: 'home.phaseCard.ovulation.day',
+    days: 'home.phaseCard.ovulation.days',
+    line: 'home.phaseCard.ovulation.line',
+  },
+  luteal: {
+    day: 'home.phaseCard.luteal.day',
+    days: 'home.phaseCard.luteal.days',
+    line: 'home.phaseCard.luteal.line',
+  },
+};
+
+/** The two lines of the phase card: the phase and its days, then one sentence about it. */
+export function phaseCardWords(
+  phase: PhaseName,
+  days: CycleDays,
+): { readonly days: string; readonly line: string } {
+  const keys = thePhaseCardKeys[phase];
+  const range =
+    days.from === days.to
+      ? words(keys.day, undefined, { from: days.from })
+      : words(keys.days, undefined, { from: days.from, to: days.to });
+
+  return { days: range, line: words(keys.line) };
+}
+
+/** The letter in the disc at the top left: the first letter of her name, as a capital. */
+export function initialOf(name: string | undefined): string | undefined {
+  const first = name === undefined ? undefined : [...name.trim()][0];
+
+  return first === undefined ? undefined : first.toLocaleUpperCase();
+}
+
 /**
- * How Emi says hi to her. A woman who gave a name is greeted by it, and a woman who gave none is
+ * How Emi greets her. A woman who gave a name is greeted by it, and a woman who gave none is
  * greeted anyway, by a line that stands on its own rather than carrying a gap where a name would
  * be. So the greeting is one sentence or the other and never a sentence with nothing filled in.
  */

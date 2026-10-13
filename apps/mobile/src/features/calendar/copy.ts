@@ -70,7 +70,7 @@ function theCycleSaid(says: WhatTheSheetSays): string | undefined {
   }
 
   if (says.phase === undefined) {
-    return words('cycle.phaseLine.day', undefined, { day: says.cycleDay });
+    return words('cycle.ring.dayNumber', undefined, { day: says.cycleDay });
   }
 
   return words('calendar.daySheet.cycleDay', undefined, {

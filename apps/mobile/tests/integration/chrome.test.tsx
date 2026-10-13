@@ -110,7 +110,7 @@ describe('the app draws its chrome from gluestack, and the bottom navigation is 
 
     it('keeps the list of tabs in one place, so the fifth the prototype draws is one entry', () => {
       expect(tabs.map((tab) => tab.name)).toEqual(theFourTabs.map((tab) => tab.name));
-      expect(tabs.map((tab) => tab.icon)).toEqual(['sun', 'edit', 'chart', 'shield']);
+      expect(tabs.map((tab) => tab.icon)).toEqual(['calendar', 'drop', 'chart', 'shield']);
     });
 
     it('sets the label in label small, at the size, leading and tracking the tokens give it', async () => {

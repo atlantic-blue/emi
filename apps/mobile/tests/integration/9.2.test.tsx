@@ -7,6 +7,7 @@ import {
   contrastRatio,
   faceFamily,
   fontFile,
+  fontFileFor,
   hasRole,
   phaseLabel,
   phaseNames,
@@ -14,14 +15,14 @@ import {
   typeRoleNames,
   typeScale,
 } from '@emi/tokens';
-import { screen, within } from '@testing-library/react-native';
+import { render, screen, within } from '@testing-library/react-native';
 import { renderRouter } from 'expo-router/testing-library';
 import { join } from 'node:path';
 
 import type { DayRecord } from '@emi/crypto';
 
 import { addDays } from '@emi/cycle';
-import { cycleRingTestID } from '../../src/components/CycleRing';
+import { CycleRing, cycleRingTestID, ringCentreDayTestID } from '../../src/components/CycleRing';
 import { drawnRuns, registeredFaces, runsDrawnInAnUnloadedFace } from '../fixtures/drawnFaces';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herPhoneHolds } from '../fixtures/herPhone';
@@ -146,8 +147,32 @@ describe('a text colour below the contrast floor fails the build', () => {
       expect(textDrawnOnAPhaseFill(screen.toJSON())).toEqual([]);
     });
 
-    it('draws the cycle day in the monospaced face, so a number holds its place', async () => {
+    it('draws Day and the cycle day in the display face at the display size on the ring of Today', async () => {
       await herHomeScreen();
+
+      // Contract changed by the todayPhases board: the ring of Today says "Day N" as its subject,
+      // so it takes the display role rather than the monospaced data role of the plain ring.
+      const day = drawnRuns(screen.getByTestId(ringCentreDayTestID)).find((run) =>
+        /^Day \d+$/.test(run.text),
+      );
+
+      expect(day?.points).toBe(typeScale['display-lg'].size);
+      expect(day?.family).toBe(fontFileFor('display', typeScale['display-lg'].weight).name);
+    });
+
+    it('draws the cycle day in the monospaced face on the plain ring, so a number holds its place', async () => {
+      await render(
+        <CycleRing
+          cycleLengthDays={28}
+          day={2}
+          phases={[
+            { phase: 'period', days: 5 },
+            { phase: 'follicular', days: 7 },
+            { phase: 'ovulation', days: 7 },
+            { phase: 'luteal', days: 9 },
+          ]}
+        />,
+      );
 
       const day = drawnRuns(screen.toJSON()).find(
         (run) => /^\d+$/.test(run.text) && run.points === typeScale['data-lg'].size,

@@ -29,8 +29,9 @@ export interface PhasePalette {
  * phase colour can no longer be mistaken for a button or a container.
  *
  * Measured against the canvas: the inks read at 11.94, 9.48, 9.95 and 11.21 to 1. On their own
- * fill they read at 4.24, 4.85, 4.13 and 3.47, and three of those are under the floor, which is
- * why contract SEE-2 keeps a word off a fill whatever the fill measures.
+ * fill they read at 4.24, 4.85, 4.13 and 3.47, and three of those are under the floor, so an ink
+ * never carries a word on a fill. The one word a fill carries is its own phase name on the ring
+ * of Today, in the colour `phaseNameInk` gives it, which contract SEE-2 measures.
  */
 export const phasePalette: Readonly<Record<PhaseName, PhasePalette>> = {
   period: { fill: 'period', ink: 'periodInk' },
@@ -398,4 +399,103 @@ export function arcPath(
 /** Enough places for a drawing measured in points, and few enough that two runs read the same. */
 function round(value: number): number {
   return Math.round(value * 1000) / 1000;
+}
+
+/**
+ * The colour each phase name is written in on its own arc, on the ring of Today. Contract SEE-2
+ * holds each pair at or above the contrast floor: the white reads at 5.32 to 1 on the period
+ * arc, and the text colour at 11.66, 7.10 and 4.83 on the other three.
+ */
+export const phaseNameInk: Readonly<Record<PhaseName, ColourName>> = {
+  period: 'onAccent',
+  follicular: 'text',
+  ovulation: 'text',
+  luteal: 'text',
+};
+
+/** The ring of Today, which writes the four names inside a thicker band. */
+export const NAMED_RING_DIAMETER = 290;
+/** The middle of the band, measured from the centre of the ring. */
+export const NAMED_RING_RADIUS = 120;
+/** Points. The width of the band the four names are written inside. */
+export const NAMED_RING_TRACK_WIDTH = 26;
+/** Today sits just outside the band, so the bead never covers a name. */
+export const NAMED_RING_BEAD_ORBIT = 138;
+/** Points. The radius of the bead on the ring of Today. */
+export const NAMED_RING_BEAD_RADIUS = 6;
+
+/** The size, the spacing and the weight of a phase name written along its arc. */
+export const PHASE_NAME_ON_ARC_POINTS = 11;
+/** Points between the letters of a phase name on its arc. */
+export const PHASE_NAME_ON_ARC_SPACING = 1.1;
+/** The weight of the face a phase name on its arc is written in. */
+export const PHASE_NAME_ON_ARC_WEIGHT = 800;
+
+/**
+ * The width of one capital, as a share of the size. The widest capitals of the face at its
+ * heaviest weight are under this share, so a name measured with it is never wider than drawn.
+ */
+export const CAPITAL_WIDTH_SHARE = 0.75;
+
+/** Points left clear at each end of an arc, so a name never runs into the gap beside it. */
+export const PHASE_NAME_END_ROOM = 6;
+
+/** How a phase name is written on its arc: in full, as its first letter, or not at all. */
+export type PhaseNameFit = 'name' | 'initial' | 'none';
+
+/** The width a run of capitals takes along the band, in points. */
+export function capitalsWidth(written: string): number {
+  const letters = [...written].length;
+
+  return (
+    letters * PHASE_NAME_ON_ARC_POINTS * CAPITAL_WIDTH_SHARE +
+    Math.max(0, letters - 1) * PHASE_NAME_ON_ARC_SPACING
+  );
+}
+
+/** The length of the middle of one arc, less the room at its two ends, in points. */
+export function roomAlongArc(arc: RingArc, radius = NAMED_RING_RADIUS): number {
+  const length = (radius * arc.sweepDegrees * Math.PI) / (FULL_TURN_DEGREES / 2);
+
+  return length - 2 * PHASE_NAME_END_ROOM;
+}
+
+/**
+ * What is written on one arc. The whole name where it fits. Where it does not, the first letter,
+ * so a short phase still carries a label. Where even one letter does not fit, nothing: the middle
+ * of the ring and its spoken label still name the phase she is in.
+ */
+export function phaseNameOnArc(
+  arc: RingArc,
+  name: string,
+  radius = NAMED_RING_RADIUS,
+): { readonly fit: PhaseNameFit; readonly written: string } {
+  const capitals = name.toLocaleUpperCase();
+  const room = roomAlongArc(arc, radius);
+
+  if (capitalsWidth(capitals) <= room) {
+    return { fit: 'name', written: capitals };
+  }
+
+  const initial = [...capitals][0] ?? '';
+
+  return capitalsWidth(initial) <= room && initial !== ''
+    ? { fit: 'initial', written: initial }
+    : { fit: 'none', written: '' };
+}
+
+/**
+ * The path a name is written along. An arc in the lower half of the ring is followed backwards,
+ * so the name reads left to right and the right way up wherever it sits.
+ */
+export function namePath(centre: Point, radius: number, arc: RingArc): string {
+  const middle = arc.startDegrees + arc.sweepDegrees / 2;
+  const from = pointOnRing(centre, radius, arc.startDegrees);
+  const to = pointOnRing(centre, radius, arc.startDegrees + arc.sweepDegrees);
+  const overHalf = arc.sweepDegrees > FULL_TURN_DEGREES / 2 ? 1 : 0;
+  const isInTheLowerHalf = middle > 90 && middle < 270;
+  const [start, end] = isInTheLowerHalf ? [to, from] : [from, to];
+  const clockwise = isInTheLowerHalf ? 0 : 1;
+
+  return `M ${round(start.x)} ${round(start.y)} A ${round(radius)} ${round(radius)} 0 ${overHalf} ${clockwise} ${round(end.x)} ${round(end.y)}`;
 }
