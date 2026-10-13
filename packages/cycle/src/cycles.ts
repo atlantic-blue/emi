@@ -152,9 +152,18 @@ interface Building {
 }
 
 /**
+ * Whether a day says anything about bleeding. A day she opened only to pick a symptom or a mood
+ * carries no flow at all, and that says as little about her period as a day she never opened.
+ */
+function saysSomethingAboutBleeding(record: DayRecord): boolean {
+  return record.flow !== undefined;
+}
+
+/**
  * A cycle starts on the first bleeding day that is not marked unexpected, and ends the day before
- * the next such day. Days she never recorded say nothing either way, so a period is closed by a
- * recorded day that carries no bleeding, never by silence.
+ * the next such day. Days she never recorded say nothing either way, and neither does a day that
+ * carries no flow, so a period is closed by a recorded flow that is not her period, never by
+ * silence and never by a day of symptoms alone.
  */
 export function cyclesFrom(days: readonly DayRecord[]): Cycle[] {
   const sorted = inDayOrder(days);
@@ -181,7 +190,12 @@ export function cyclesFrom(days: readonly DayRecord[]): Cycle[] {
       continue;
     }
 
-    if (open && !open.periodEnded && number > open.lastPeriodDay) {
+    if (
+      open &&
+      !open.periodEnded &&
+      number > open.lastPeriodDay &&
+      saysSomethingAboutBleeding(record)
+    ) {
       open.periodEnded = true;
     }
   }
