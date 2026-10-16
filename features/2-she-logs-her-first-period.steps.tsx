@@ -97,6 +97,12 @@ import {
   ringSpokenLabel,
 } from '../apps/mobile/src/features/cycle/copy';
 import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
+import {
+  periodSexProductTestID,
+  periodSexSuggestionEyebrowTestID,
+  periodSexSuggestionNotNowTestID,
+  periodSexSuggestionTestID,
+} from '../apps/mobile/src/features/hygiene/PeriodSexSuggestion';
 import { OnAPhone } from '../apps/mobile/tests/fixtures/theSafeArea';
 import {
   type FirstRunDrawing,
@@ -3491,7 +3497,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-2, she records sex on a past day and removes it', ({ given, when, then }) => {
+  test('SCREEN-2, she records sex on a past day and removes it', ({ given, when, and, then }) => {
     const yesterday = addDays(theDaySheOpensIt, -1);
     const herAnswers = [
       sexChipTestID('sex', 'protected'),
@@ -3546,7 +3552,21 @@ defineFeature(feature, (test) => {
       },
     );
 
-    when('she opens the Sex page of that day again', async () => {
+    and('a sheet suggests a menstrual disc or a sponge for the third day of her period', () => {
+      expect(screen.getByTestId(periodSexSuggestionTestID)).toBeTruthy();
+      expect(screen.getByTestId(periodSexSuggestionEyebrowTestID).props.children).toBe(
+        'Period, day 3',
+      );
+      expect(screen.getByTestId(periodSexProductTestID('menstrual-disc'))).toBeTruthy();
+      expect(screen.getByTestId(periodSexProductTestID('sponge'))).toBeTruthy();
+    });
+
+    when('she closes the sheet with Not now', async () => {
+      await shePresses(periodSexSuggestionNotNowTestID);
+      expect(screen.queryByTestId(periodSexSuggestionTestID)).toBeNull();
+    });
+
+    and('she opens the Sex page of that day again', async () => {
       expect(app.pathname()).toBe('/');
       await act(() => router.push(sexAddress(yesterday)));
       await screen.findByTestId(sexPageTestID);

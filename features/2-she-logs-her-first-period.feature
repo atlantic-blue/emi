@@ -804,7 +804,9 @@ Feature: She opens Emi and logs her first period
     Then the page asks whether she had sex yesterday, under the date of that day
     When she presses Protected, High and Yes, and saves
     Then her phone holds those three answers on that day, sealed, beside the flow she logged
-    When she opens the Sex page of that day again
+    And a sheet suggests a menstrual disc or a sponge for the third day of her period
+    When she closes the sheet with Not now
+    And she opens the Sex page of that day again
     Then the three answers she saved are filled
     When she presses each of them again, and saves
     Then that day holds no answer about sex, and keeps its flow

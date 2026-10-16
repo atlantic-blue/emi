@@ -7,12 +7,14 @@ import { words } from '../../language';
 import { HowToChoose } from './HowToChoose';
 import { HygieneHeader } from './HygieneHeader';
 import { ProductDrawing } from './ProductDrawing';
+import { QuizCard } from './QuizCard';
 import { type ProductSlug, productOf, productOrder } from './products';
 
 /**
  * The Hygiene products page, from the hygieneProducts board (issue 304): the eight products in a
  * grid of four columns, a quarter of the width each, each one the way to its own page, and the
- * board's "How to choose" card under the grid (issue 305).
+ * board's "How to choose" card under the grid (issue 305), and the card that opens "Find a
+ * product to try" under that (issue 306).
  */
 
 export const hygienePageTestID = 'hygiene-page';
@@ -32,9 +34,10 @@ const DRAWING = 32;
 interface Props {
   readonly onBack: () => void;
   readonly onOpen: (slug: ProductSlug) => void;
+  readonly onQuiz: () => void;
 }
 
-export function HygieneProductsPage({ onBack, onOpen }: Props): ReactNode {
+export function HygieneProductsPage({ onBack, onOpen, onQuiz }: Props): ReactNode {
   return (
     <Screen drawsTheWash testID={hygienePageTestID}>
       <ScrollView contentContainerStyle={styles.body}>
@@ -67,6 +70,8 @@ export function HygieneProductsPage({ onBack, onOpen }: Props): ReactNode {
         </View>
 
         <HowToChoose />
+
+        <QuizCard onOpen={onQuiz} />
       </ScrollView>
     </Screen>
   );
