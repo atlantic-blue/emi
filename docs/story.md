@@ -92,7 +92,7 @@ does not have.
 
 The ring carries the meaning, so the words do not have to. Each arc is sized by the days of that
 phase, three degrees of ground sit at every boundary, the days she has had are solid where the days
-ahead are at a fifth, and the ember bead is today. Feature 2 draws it from her own cycle.
+ahead are at a fifth, and the pointer marks today. Feature 2 draws it from her own cycle.
 
 ![The ring at a short cycle of 21 days, a usual one of 28 and a long one of 45](../brand/ring/cycle-ring.png)
 

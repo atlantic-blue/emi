@@ -46,7 +46,7 @@ const whatTheWelcomeSays = {
 const whatTheTourSays = {
   title: 'Your cycle, in one ring.',
   lines: [
-    'The ring is your cycle. A bead marks today, and the number inside it is the day you are on.',
+    'The ring is your cycle. A pointer marks today, and the number inside it is the day you are on.',
     'Four arcs divide the ring: the days you bleed, the days after them, the days around ovulation, and the days before your next period.',
   ],
   legend: ['Period', 'After it', 'Ovulation', 'Before the next'],

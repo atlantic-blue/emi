@@ -203,11 +203,11 @@ Feature: She opens Emi and logs her first period
     Then a phase of no days is not drawn at all
     And the arcs and the gaps between them come to a whole turn
 
-  Scenario: BRAND-3, the bead sits on the day she is on and never outside her cycle
+  Scenario: BRAND-3, the pointer sits on the day she is on and never outside her cycle
     Given her phone holds six cycles of forty five days
     When she opens Emi
-    Then the bead sits on the day the ring says she is on
-    And the bead moves further round the ring on a later day
+    Then the pointer sits on the day the ring says she is on
+    And the pointer moves further round the ring on a later day
 
   Scenario: SEE-1, every boundary between two phases is a gap in the ring
     Given her phone holds six cycles of forty five days
@@ -671,7 +671,7 @@ Feature: She opens Emi and logs her first period
     Then the middle of the ring names her phase, then Day and the day she is on, then about the length of her cycle
     And every arc is painted whole with a square end, and ground still shows at every boundary between two phases
     And each phase name is written along its own arc, in the colour measured on that arc
-    And the bead on today is a dark disc with a white line around it, outside the band
+    And the pointer on today has an accent head over a dark stem with a white core
     And the strip of seven days is gone, and the calendar button closes the top bar on the right
 
   Scenario: SCREEN-1, the welcome and the tour say what the redesign says

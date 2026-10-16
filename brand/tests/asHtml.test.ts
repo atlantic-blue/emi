@@ -87,6 +87,26 @@ describe('a picture of a screen draws what a field holds', () => {
     });
   });
 
+  describe('a line inside a drawing', () => {
+    // The stem of the pointer that marks today is a line. Without a case for it the stem drew as an
+    // empty box, and the picture showed the head of the pointer floating with nothing under it.
+    const aLine = {
+      type: 'RNSVGLine',
+      props: { x1: 10, y1: 20, x2: 30, y2: 40.5 },
+      children: [],
+    };
+
+    it('is drawn as a line with both of its ends', () => {
+      const drawn = markupOf(aLine);
+
+      expect(drawn).toContain('<line');
+      expect(drawn).toContain('x1="10"');
+      expect(drawn).toContain('y1="20"');
+      expect(drawn).toContain('x2="30"');
+      expect(drawn).toContain('y2="40.5"');
+    });
+  });
+
   // Without these three cases the gradients fell through to a plain box, so a wash drew as nothing
   // at all and the picture said the application paints no colour at the top of the screen.
   describe('a gradient inside a drawing', () => {

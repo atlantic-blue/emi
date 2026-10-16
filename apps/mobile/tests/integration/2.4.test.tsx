@@ -14,7 +14,7 @@ import {
   CycleRing,
   cycleRingTestID,
   ringArcTestID,
-  ringBeadTestID,
+  ringPointerCoreTestID,
 } from '../../src/components/CycleRing';
 import { listCycles } from '../../src/data/cycleRepository';
 import { daysLogged } from '../fixtures/cycleCache';
@@ -147,17 +147,17 @@ describe('the ring renders a short cycle and a long cycle correctly', () => {
       );
     });
 
-    it('puts the bead further round the ring on day thirty than on day three', async () => {
+    it('puts the pointer further round the ring on day thirty than on day three', async () => {
       const early = herRingOn(herLongCycles, theDay(herLongCycles, 3));
       const later = herRingOn(herLongCycles, theDay(herLongCycles, 30));
 
       const view = await render(<CycleRing {...early} />);
-      const earlyBead = screen.getByTestId(ringBeadTestID).props.cx as number;
+      const earlyPointer = screen.getByTestId(ringPointerCoreTestID).props.x1 as number;
 
       await view.rerender(<CycleRing {...later} />);
 
       expect(ringGeometry(later).beadDegrees).toBeGreaterThan(ringGeometry(early).beadDegrees);
-      expect(screen.getByTestId(ringBeadTestID).props.cx).not.toBe(earlyBead);
+      expect(screen.getByTestId(ringPointerCoreTestID).props.x1).not.toBe(earlyPointer);
     });
   });
 

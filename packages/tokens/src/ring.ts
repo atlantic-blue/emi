@@ -83,22 +83,86 @@ export const RING_OPEN_MILLISECONDS = 600;
 export const RING_DIAMETER = 240;
 /** How thick the track is, in points. The arcs and the ground between them share it. */
 export const RING_TRACK_WIDTH = 16;
-/** Today sits on the track as a filled bead of this radius, in points. */
-export const BEAD_RADIUS = 9;
-/** Ground drawn around the bead, in points, so it reads against whichever phase is behind it. */
-export const BEAD_HALO_WIDTH = 2;
+/**
+ * The colours of the pointer that marks today, option C of the todayMarker board. A dark casing
+ * with a white core crosses the band, and an accent head with a white edge points in at it from
+ * outside. The casing and the core read against the pale arcs, and the white core and edge read
+ * against the dark ones, so the pointer is seen on every phase colour.
+ *
+ * They are named here because the phone and the brand picture both draw this pointer, and a
+ * colour written at each of the two places is a colour that can disagree with itself.
+ */
+export const todayPointerPalette: Readonly<
+  Record<'casing' | 'core' | 'head' | 'headEdge', ColourName>
+> = {
+  casing: 'text',
+  core: 'card',
+  head: 'accent',
+  headEdge: 'card',
+};
 
 /**
- * The two colours the bead is drawn in. The redesign draws today as a card disc with the text
- * colour around it, so the bead reads against every arc it can sit on and against the ground.
- *
- * They are named here because the phone and the brand picture both draw this bead, and a colour
- * written at each of the two places is a colour that can disagree with itself.
+ * Points, at the band of the ring of Today, which is 26 points wide. A ring with another band
+ * draws the same pointer scaled by its own band width, so it keeps the same shape.
  */
-export const beadPalette: Readonly<Record<'fill' | 'halo', ColourName>> = {
-  fill: 'card',
-  halo: 'text',
-};
+const POINTER_AT_BAND = 26;
+/** The stem runs this far each side of the middle of the band, so it crosses the band whole. */
+const POINTER_STEM_REACH = 14;
+const POINTER_CASING_WIDTH = 7;
+const POINTER_CORE_WIDTH = 3.5;
+/** The tip of the head, out from the middle of the band. */
+const POINTER_TIP_OUT = 17;
+/** The base of the head, out from the middle of the band. */
+const POINTER_BASE_OUT = 31;
+/** Half the width of the base of the head. */
+const POINTER_HALF_BASE = 7;
+const POINTER_EDGE_WIDTH = 1.5;
+
+/** The pointer that marks today, in the coordinates of the ring it is drawn on. */
+export interface TodayPointer {
+  /** The two ends of the stem, the inner first. */
+  readonly stemFrom: Point;
+  readonly stemTo: Point;
+  readonly casingWidth: number;
+  readonly coreWidth: number;
+  /** The head, as the `d` of a closed path, its tip towards the band. */
+  readonly head: string;
+  readonly edgeWidth: number;
+  /** How far the head reaches from the centre of the ring, edge included. */
+  readonly reach: number;
+}
+
+/** Where the pointer sits on a ring whose band has this middle radius and this width. */
+export function todayPointer(
+  centre: Point,
+  band: { readonly radius: number; readonly width: number },
+  degrees: number,
+): TodayPointer {
+  const scale = band.width / POINTER_AT_BAND;
+  const at = (out: number, aside = 0): Point => {
+    const middle = pointOnRing(centre, band.radius + out * scale, degrees);
+    const across = ((degrees - 90) * Math.PI) / 180 + Math.PI / 2;
+    return {
+      x: middle.x + aside * scale * Math.cos(across),
+      y: middle.y + aside * scale * Math.sin(across),
+    };
+  };
+  const tip = at(POINTER_TIP_OUT);
+  const left = at(POINTER_BASE_OUT, -POINTER_HALF_BASE);
+  const right = at(POINTER_BASE_OUT, POINTER_HALF_BASE);
+  const point = (p: Point): string => `${round(p.x)} ${round(p.y)}`;
+
+  return {
+    stemFrom: at(-POINTER_STEM_REACH),
+    stemTo: at(POINTER_STEM_REACH),
+    casingWidth: POINTER_CASING_WIDTH * scale,
+    coreWidth: POINTER_CORE_WIDTH * scale,
+    head: `M ${point(tip)} L ${point(left)} L ${point(right)} Z`,
+    edgeWidth: POINTER_EDGE_WIDTH * scale,
+    reach:
+      band.radius + Math.hypot(POINTER_BASE_OUT, POINTER_HALF_BASE) * scale + POINTER_EDGE_WIDTH,
+  };
+}
 
 /** How long one phase runs in the cycle being drawn, in whole days. */
 export interface PhaseSpan {
@@ -150,7 +214,7 @@ export interface RingGeometry {
   readonly arcs: readonly RingArc[];
   readonly gapDegrees: number;
   readonly gapCount: number;
-  /** Where today's bead sits, in degrees clockwise from the top. */
+  /** Where today's marker sits, in degrees clockwise from the top. */
   readonly beadDegrees: number;
 }
 
@@ -419,11 +483,6 @@ export const NAMED_RING_DIAMETER = 290;
 export const NAMED_RING_RADIUS = 120;
 /** Points. The width of the band the four names are written inside. */
 export const NAMED_RING_TRACK_WIDTH = 26;
-/** Today sits just outside the band, so the bead never covers a name. */
-export const NAMED_RING_BEAD_ORBIT = 138;
-/** Points. The radius of the bead on the ring of Today. */
-export const NAMED_RING_BEAD_RADIUS = 6;
-
 /** The size, the spacing and the weight of a phase name written along its arc. */
 export const PHASE_NAME_ON_ARC_POINTS = 11;
 /** Points between the letters of a phase name on its arc. */

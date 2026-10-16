@@ -9,7 +9,7 @@ import { AccessibilityInfo } from 'react-native';
 
 import {
   cycleRingTestID,
-  ringBeadTestID,
+  ringPointerCoreTestID,
   ringWholeArcTestID,
 } from '../../src/components/CycleRing';
 import { readDayLog } from '../../src/data/dayLogRepository';
@@ -96,10 +96,10 @@ function thePeriodArc(): string {
   return String(screen.getByTestId(ringWholeArcTestID('period')).props.d);
 }
 
-function theBead(): { x: number; y: number } {
-  const bead = screen.getByTestId(ringBeadTestID);
+function thePointer(): { x: number; y: number } {
+  const stem = screen.getByTestId(ringPointerCoreTestID);
 
-  return { x: Number(bead.props.cx), y: Number(bead.props.cy) };
+  return { x: Number(stem.props.x1), y: Number(stem.props.y1) };
 }
 
 function whatWasRecordedToday(): DayRecord {
@@ -191,15 +191,15 @@ describe('logging a flow redraws the ring', () => {
       expect(screen.queryByText(phaseLabel.follicular)).toBeNull();
     });
 
-    it('widens the period arc she is looking at and moves the bead with it', async () => {
+    it('widens the period arc she is looking at and moves the pointer with it', async () => {
       await herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
-      const before = { arc: thePeriodArc(), bead: theBead() };
+      const before = { arc: thePeriodArc(), pointer: thePointer() };
 
       await shePicks('heavy');
 
       expect(thePeriodArc()).not.toBe(before.arc);
-      expect(theBead()).not.toEqual(before.bead);
+      expect(thePointer()).not.toEqual(before.pointer);
     });
 
     it('marks the option she picked, and says the day is saved on this phone', async () => {
