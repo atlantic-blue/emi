@@ -809,6 +809,25 @@ Feature: She opens Emi and logs her first period
     When she presses each of them again, and saves
     Then that day holds no answer about sex, and keeps its flow
 
+  Scenario: SCREEN-2, she chooses yesterday on the Sex page of today and records sex there
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the Sex page of today and presses Choose another day
+    Then a month opens under the date, and a day ahead of her takes no press
+    When she presses yesterday in that month
+    Then the page asks whether she had sex yesterday, under the date of that day
+    When she presses Unprotected and saves
+    Then her phone holds that answer on yesterday, sealed, and today holds no answer about sex
+
+  Scenario: SCREEN-4, she records sex on a day she already lived from the calendar, and removes it
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the calendar and presses the day before yesterday
+    And she presses Record sex on the card of that day
+    Then the page asks whether she had sex that day, under the date of that day
+    When she presses Protected and saves
+    Then her phone holds that answer on that day, sealed, beside the flow she logged
+    When she presses that day again, then Record sex, then Protected again, and saves
+    Then that day holds no answer about sex, and keeps its flow
+
   Scenario: SCREEN-2, she records discharge and a product on a day
     Given her phone holds four recorded period days, the last of them today
     When she opens the Period page of today

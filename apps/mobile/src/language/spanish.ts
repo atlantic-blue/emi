@@ -95,6 +95,7 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.screen.editPeriod': 'Editar mi periodo',
   'calendar.screen.later': 'Siguiente',
   'calendar.screen.laterMonth': 'Mes siguiente',
+  'calendar.screen.recordSex': 'Registrar sexo',
   'calendar.today': 'Hoy',
   'calendar.weekday.friday': 'Viernes',
   'calendar.weekday.monday': 'Lunes',
@@ -807,6 +808,7 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.settings.lockLine': 'Activado, con tu cara o tu código de acceso',
   'settings.settings.title': 'Privacidad',
   'sex.back': 'Atrás',
+  'sex.chooseDay': 'Elegir otro día',
   'sex.day': '{weekday}, {date} de {month}',
   'sex.fertile.now.sameMonth':
     'Estás en tu ventana fértil, del {from} al {to} de {month}. Es una estimación. Esto no es un anticonceptivo.',

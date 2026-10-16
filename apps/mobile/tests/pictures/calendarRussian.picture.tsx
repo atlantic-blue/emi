@@ -85,6 +85,7 @@ async function drawn(): Promise<DrawnScreen> {
         onEditPeriod={() => undefined}
         onLaterMonth={() => undefined}
         onOpenDay={() => undefined}
+        onRecordSex={() => undefined}
         onPressDay={() => undefined}
         onToday={() => undefined}
         phaseOn={(day) => theDayPhaseOn(from, day)}

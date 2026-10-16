@@ -257,6 +257,7 @@ describe('the month ahead, drawn', () => {
           onEditPeriod={() => undefined}
           onLaterMonth={() => undefined}
           onOpenDay={() => undefined}
+          onRecordSex={() => undefined}
           onPressDay={() => undefined}
           onToday={() => undefined}
           phaseOn={(day) => theDayPhaseOn(from, day)}
