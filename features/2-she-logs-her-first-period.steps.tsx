@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { type DayRecord, profileBytes } from '@emi/crypto';
+import { type DayRecord, ovulationSignValues, profileBytes } from '@emi/crypto';
 import {
   CYCLE_LENGTH_HIGH_DAYS,
   CYCLE_LENGTH_LOW_DAYS,
@@ -3771,6 +3771,15 @@ defineFeature(feature, (test) => {
         );
       },
     );
+
+    and('Nothing yet is the first choice on the sheet', () => {
+      const firstChoice = screen
+        .getAllByTestId(/^ovulation-popup-/)
+        .map((element) => String(element.props.testID))
+        .find((testID) => ovulationSignValues.map(ovulationSignTestID).includes(testID));
+
+      expect(firstChoice).toBe(ovulationSignTestID('nothing-yet'));
+    });
 
     and('Save waits until she picks a sign', () => {
       expect(screen.getByTestId(ovulationPopupSaveTestID).props.accessibilityState).toMatchObject({

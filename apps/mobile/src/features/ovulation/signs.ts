@@ -27,15 +27,34 @@ const signLabels: readonly WordKey[] = [
   'ovulation.sign.nothingYet',
 ];
 
-/** The chips in the order the board places them. */
-export const signOptions: readonly SignOption[] = ovulationSignValues.map((value, index) => {
-  const label = signLabels[index];
-  if (label === undefined) {
+export interface SignChoice {
+  readonly value: OvulationSign;
+  /** The key of the words on the chip. */
+  readonly labelKey: WordKey;
+}
+
+const choicesInValueOrder: readonly SignChoice[] = ovulationSignValues.map((value, index) => {
+  const labelKey = signLabels[index];
+  if (labelKey === undefined) {
     throw new Error(`${ovulationSignValues.length} signs carry ${signLabels.length} labels`);
   }
 
-  return { value, label: words(label) };
+  return { value, labelKey };
 });
+
+/**
+ * The chips in the order the popup shows them. "Nothing yet" comes first (issue 302), then the signs
+ * in the order the board places them. The order is the same in every language.
+ */
+export const signChoices: readonly SignChoice[] = [
+  ...choicesInValueOrder.filter((choice) => choice.value === nothingYet),
+  ...choicesInValueOrder.filter((choice) => choice.value !== nothingYet),
+];
+
+export const signOptions: readonly SignOption[] = signChoices.map((choice) => ({
+  value: choice.value,
+  label: words(choice.labelKey),
+}));
 
 /**
  * The signs after one press. A second press takes a sign off. "Nothing yet" stands alone: pressing
