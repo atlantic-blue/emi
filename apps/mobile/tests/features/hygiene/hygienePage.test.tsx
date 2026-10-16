@@ -7,6 +7,12 @@ import { AccessibilityInfo } from 'react-native';
 import { highlightPageTestID } from '../../../src/features/highlight/HighlightPage';
 import { highlightTestID } from '../../../src/features/highlight/HighlightRow';
 import {
+  chooseFactorTestID,
+  chooseFactors,
+  howToChooseHeadingTestID,
+  howToChooseTestID,
+} from '../../../src/features/hygiene/HowToChoose';
+import {
   hygienePageBackTestID,
   hygienePageHeadingTestID,
   hygienePageProductsTestID,
@@ -142,6 +148,53 @@ describe('the Hygiene products page', () => {
     expect(await screen.findByTestId(hygienePageTestID)).toBeTruthy();
     expect(screen.queryByTestId(productPageTestID)).toBeNull();
     expect(app.pathname()).toBe(hygieneAddress);
+  });
+});
+
+describe('the How to choose section', () => {
+  it('should sit below the product icons', async () => {
+    await sheOpens(hygieneAddress);
+
+    await screen.findByTestId(hygienePageTestID);
+    const said = textIn(screen.getByTestId(hygienePageTestID));
+    expect(said.indexOf('How to choose')).toBeGreaterThan(said.indexOf('Sponge'));
+    expect(said.indexOf('Sponge')).toBeGreaterThan(-1);
+  });
+
+  it('should carry the six factors of the board, in its order and its words', async () => {
+    await sheOpens(hygieneAddress);
+
+    await screen.findByTestId(howToChooseTestID);
+    expect(saidUnder(howToChooseHeadingTestID)).toBe('How to choose');
+    expect(
+      chooseFactors.map((factor) => textIn(screen.getByTestId(chooseFactorTestID(factor)))),
+    ).toEqual([
+      [
+        'Flow',
+        'Your flow changes from day to day. You can use a more absorbent product on heavy days and a lighter one on light days.',
+      ],
+      [
+        'Lifestyle',
+        'For sport, swimming or long trips, some people prefer a product that goes inside.',
+      ],
+      [
+        'Comfort',
+        'Some people prefer pads. Others prefer a cup or tampons. Use what feels right for you.',
+      ],
+      ['Waste', 'Reusable products make less waste than disposable ones.'],
+      [
+        'Cost',
+        'You buy disposable products every cycle. A reusable product costs more at the start, and you buy it less often.',
+      ],
+      ['Health', 'If you have a gynaecological condition, ask your doctor before you choose.'],
+    ]);
+  });
+
+  it('should not carry the card that finds a product to try, which belongs to issue 306', async () => {
+    await sheOpens(hygieneAddress);
+
+    await screen.findByTestId(howToChooseTestID);
+    expect(screen.queryByText('Find a product to try')).toBeNull();
   });
 });
 

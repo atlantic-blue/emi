@@ -3,7 +3,7 @@ import { russian } from '../../../src/language/russian';
 import { spanish } from '../../../src/language/spanish';
 
 /**
- * Issue 304: every word of the hygiene pages is in English, Spanish and Russian, and the Spanish
+ * Issues 304 and 305: every word of the hygiene pages is in English, Spanish and Russian, and the Spanish
  * and Russian words are a translation rather than a copy of the English.
  */
 
@@ -12,9 +12,10 @@ const hygieneKeys = (Object.keys(english) as (keyof typeof english)[]).filter((k
 );
 
 describe('the hygiene words', () => {
-  it('should hold every line of eight products and the four section titles', () => {
-    // Eight products of seventeen lines each, the heading and four section titles.
-    expect(hygieneKeys).toHaveLength(8 * 17 + 5);
+  it('should hold every line of eight products, the four section titles and How to choose', () => {
+    // Eight products of seventeen lines each, the heading, four section titles, and the How to
+    // choose heading with a title and a text for each of its six factors.
+    expect(hygieneKeys).toHaveLength(8 * 17 + 5 + 1 + 6 * 2);
   });
 
   it.each([
@@ -35,5 +36,10 @@ describe('the hygiene words', () => {
     expect(russian['hygiene.section.advantages']).toBe('Преимущества');
     expect(russian['hygiene.section.disadvantages']).toBe('Недостатки');
     expect(russian['highlight.hygieneProducts.title']).toBe('Средства гигиены');
+  });
+
+  it('should name How to choose in Spanish and Russian', () => {
+    expect(spanish['hygiene.choose.heading']).toBe('Cómo elegir');
+    expect(russian['hygiene.choose.heading']).toBe('Как выбрать');
   });
 });
