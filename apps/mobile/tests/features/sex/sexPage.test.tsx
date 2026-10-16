@@ -22,7 +22,7 @@ import {
   highlightParagraphTestID,
 } from '../../../src/features/highlight/HighlightPage';
 import { highlightTestID } from '../../../src/features/highlight/HighlightRow';
-import { highlights } from '../../../src/features/highlight/highlights';
+import { readings } from '../../../src/features/highlight/highlights';
 import { answersAfterPress } from '../../../src/features/sex/answers';
 import {
   sexChipTestID,
@@ -374,17 +374,17 @@ describe('the highlights', () => {
 
     await screen.findByTestId(highlightPageTestID);
     expect(whatItSays(highlightPageTitleTestID)).toBe(title);
-    highlights[slug].paragraphs.forEach((paragraph, index) => {
+    readings[slug].paragraphs.forEach((paragraph, index) => {
       expect(whatItSays(highlightParagraphTestID(index))).toBe(paragraph);
     });
-    expect(highlights[slug].paragraphs.length).toBeGreaterThan(0);
+    expect(readings[slug].paragraphs.length).toBeGreaterThan(0);
 
     await press(highlightPageBackTestID);
     expect(await screen.findByTestId(sexPageTestID)).toBeTruthy();
   });
 
   it('should give each highlight its own page', () => {
-    expect(highlights.intercourse.paragraphs).not.toEqual(highlights['learn-about-sex'].paragraphs);
+    expect(readings.intercourse.paragraphs).not.toEqual(readings['learn-about-sex'].paragraphs);
   });
 
   it('should send an address that names no highlight back to Today', async () => {

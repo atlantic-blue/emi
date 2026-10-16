@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RoundIconButton } from '../../components/RoundIconButton';
 import { Screen } from '../../components/Screen';
 import { words } from '../../language';
-import type { Highlight } from './highlights';
+import type { Reading } from './highlights';
 
 /**
  * The page a highlight opens: its drawing, its title and a few short paragraphs. One component
@@ -29,7 +29,7 @@ const DRAWING = 28;
 const TILE = 56;
 
 interface Props {
-  readonly highlight: Highlight;
+  readonly highlight: Reading;
   readonly onBack: () => void;
 }
 
