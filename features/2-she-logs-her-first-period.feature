@@ -834,6 +834,7 @@ Feature: She opens Emi and logs her first period
     Given her phone holds three periods a cycle apart, and today is inside her forecast fertile window
     When she opens Today
     Then a sheet over Today asks whether she noticed any signs of ovulation, under the dates of her fertile window
+    And Nothing yet is the first choice on the sheet
     And Save waits until she picks a sign
     When she presses Egg white discharge and Higher sex drive, and saves
     Then her phone holds those two signs on today, sealed, with the popup marked answered
