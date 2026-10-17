@@ -8,7 +8,6 @@ import {
   FULL_TURN_DEGREES,
   PHASE_NAME_ROLE,
   type PhaseName,
-  beadPalette,
   colour,
   coveredDegrees,
   face,
@@ -28,7 +27,9 @@ import {
   CycleRing,
   cycleRingTestID,
   ringArcTestID,
-  ringBeadTestID,
+  ringPointerCasingTestID,
+  ringPointerCoreTestID,
+  ringPointerHeadTestID,
   ringNameTestID,
   ringTrackTestID,
 } from '../../src/components/CycleRing';
@@ -222,17 +223,20 @@ describe('the phase name is written in its ink and never on its own fill', () =>
     });
   });
 
-  describe('the bead on today', () => {
-    it('draws it in the colour the design system gives the active bead on the ring', async () => {
+  describe('the pointer on today', () => {
+    it('draws it in the colours the design system names, with the accent on its head', async () => {
       await sheLooksAtTheRingOn(aDayIn('ovulation'));
 
-      const bead = screen.getByTestId(ringBeadTestID);
+      const head = screen.getByTestId(ringPointerHeadTestID).props;
+      const casing = screen.getByTestId(ringPointerCasingTestID).props;
+      const core = screen.getByTestId(ringPointerCoreTestID).props;
 
-      expect(drawnColour(bead.props.fill)).toBe(colour[beadPalette.fill]);
-      expect(drawnColour(bead.props.fill).toLowerCase()).toBe(
-        inTheDesignSystem('card').toLowerCase(),
+      expect(drawnColour(head.fill).toLowerCase()).toBe(inTheDesignSystem('accent').toLowerCase());
+      expect(drawnColour(head.stroke).toLowerCase()).toBe(inTheDesignSystem('card').toLowerCase());
+      expect(drawnColour(core.stroke).toLowerCase()).toBe(inTheDesignSystem('card').toLowerCase());
+      expect(drawnColour(casing.stroke).toLowerCase()).toBe(
+        inTheDesignSystem('text').toLowerCase(),
       );
-      expect(drawnColour(bead.props.stroke)).toBe(colour[beadPalette.halo]);
     });
   });
 
@@ -296,14 +300,10 @@ describe('the phase name is written in its ink and never on its own fill', () =>
 
       expect(colourOf(theWrittenName(phase))).toBe(colour[phasePalette[phase].ink]);
       expect(textDrawnOnAPhaseFill(screen.toJSON())).toEqual([]);
-      // Contract changed by the todayPhases board: the bead of Today is a disc of the text colour
-      // with a card colour halo, outside the band. The plain ring keeps the card disc, above.
-      expect(drawnColour(screen.getByTestId(ringBeadTestID).props.fill)).toBe(
-        colour[beadPalette.halo],
-      );
-      expect(drawnColour(screen.getByTestId(ringBeadTestID).props.stroke)).toBe(
-        colour[beadPalette.fill],
-      );
+      // Contract changed by the todayMarker board, option C: Today marks the day with the same
+      // pointer as the plain ring, an accent head over a dark stem with a white core.
+      expect(drawnColour(screen.getByTestId(ringPointerHeadTestID).props.fill)).toBe(colour.accent);
+      expect(screen.queryByTestId('ring-bead')).toBeNull();
     });
 
     it('writes each phase name on its own arc in the measured name colour', async () => {

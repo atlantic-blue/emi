@@ -78,7 +78,9 @@ describe('the picture of the ring', () => {
 
   it('writes one drawing for each ring, with the day and the phase inside it', () => {
     expect(page.match(/<svg /g)).toHaveLength(drawnRings.length);
-    expect(page.match(/<circle /g)).toHaveLength(drawnRings.length);
+    // One pointer on today in each ring, two lines for its stem and no bead.
+    expect(page.match(/<line /g)).toHaveLength(2 * drawnRings.length);
+    expect(page.match(/<circle /g)).toBeNull();
 
     for (const ring of drawnRings) {
       expect(page).toContain(
@@ -92,7 +94,8 @@ describe('the picture of the ring', () => {
     const paths = page.match(/<path /g) ?? [];
     const drawn = drawnRings.reduce((total, ring) => total + arcsOf(ringGeometry(ring)).length, 0);
 
-    expect(paths).toHaveLength(drawn);
+    // Each ring also draws the head of its pointer as one more path.
+    expect(paths).toHaveLength(drawn + drawnRings.length);
     expect(page.match(new RegExp(`stroke-width="${RING_TRACK_WIDTH}"`, 'g'))).toHaveLength(drawn);
   });
 });

@@ -85,7 +85,7 @@ The contracts it builds:
 - `SCREEN-2` the home screen, with the ring, the cycle day and the phase name. Feature 3 adds the
   forecast range.
 - `SCREEN-4` a past day, opened, read and edited, with the ring redrawn.
-- `BRAND-3` the ring geometry: four arcs, a gap of ground between them, and a bead on today.
+- `BRAND-3` the ring geometry: four arcs, a gap of ground between them, and a pointer on today.
 - `SEE-1` the ring read without colour, by the gap and by the written phase name.
 - `SEE-3` a tap target of at least 44 points on both axes.
 - `SEE-4` the ring held still when the operating system asks for reduced motion.

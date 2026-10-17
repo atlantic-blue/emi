@@ -8,13 +8,14 @@ import {
   RING_TRACK_WIDTH,
   RingError,
   arcPath,
-  beadPalette,
   colour,
+  contrastRatio,
   coveredDegrees,
   phaseLabel,
   phasePalette,
   phaseNames,
   ringGeometry,
+  todayPointerPalette,
 } from '@emi/tokens';
 import { render, screen, waitFor } from '@testing-library/react-native';
 import { AccessibilityInfo, Animated } from 'react-native';
@@ -23,7 +24,9 @@ import {
   CycleRing,
   cycleRingTestID,
   ringArcTestID,
-  ringBeadTestID,
+  ringPointerCasingTestID,
+  ringPointerCoreTestID,
+  ringPointerHeadTestID,
   ringTrackTestID,
 } from '../../src/components/CycleRing';
 import { ringCycleLengthWords } from '../../src/features/cycle/copy';
@@ -322,22 +325,93 @@ describe('the ring on the screen', () => {
     expect(style.color).not.toBe(colour.period);
   });
 
-  it('puts the bead where the geometry puts today', async () => {
+  it('puts the pointer where the geometry puts today, across the whole band', async () => {
     reduceMotion(false);
     await render(<CycleRing {...shortCycle} day={5} />);
 
-    const bead = screen.getByTestId(ringBeadTestID);
+    const stem = theStem();
+    const centre = RING_DIAMETER / 2;
+    const middle = { x: (stem.x1 + stem.x2) / 2, y: (stem.y1 + stem.y2) / 2 };
 
-    expect(colourOf(bead.props.fill)).toBe(colour[beadPalette.fill]);
-    // The bead is a disc of the card colour with the text colour around it, so it is never the
-    // accent and never one of the four arcs it can sit on.
-    expect(colourOf(bead.props.fill)).not.toBe(colour.accent);
-    expect(colourOf(bead.props.fill)).not.toBe(colour.period);
-    expect(colourOf(bead.props.stroke)).toBe(colour[beadPalette.halo]);
-    expect(bead.props.cy).toBeLessThan(RING_DIAMETER / 2);
-    expect(bead.props.cx).toBeGreaterThan(RING_DIAMETER / 2);
+    expect(middle.y).toBeLessThan(centre);
+    expect(middle.x).toBeGreaterThan(centre);
+    expect(Math.hypot(middle.x - centre, middle.y - centre)).toBeCloseTo(
+      (RING_DIAMETER - RING_TRACK_WIDTH) / 2,
+      3,
+    );
+    expect(Math.hypot(stem.x2 - stem.x1, stem.y2 - stem.y1)).toBeGreaterThan(RING_TRACK_WIDTH);
+  });
+
+  it('draws no bead on today any more, only the pointer', async () => {
+    reduceMotion(false);
+    await render(<CycleRing {...shortCycle} day={5} look="named" />);
+
+    expect(screen.queryByTestId('ring-bead')).toBeNull();
+    expect(screen.getByTestId(ringPointerHeadTestID)).toBeTruthy();
+  });
+
+  describe.each(phaseNames)('when today is on the %s arc', (phase) => {
+    const day = theFirstDayOf(phase);
+
+    it.each(['named', 'plain', 'small'] as const)(
+      'draws the pointer of the %s ring in its tokens, with an accent head and no black dot',
+      async (look) => {
+        reduceMotion(true);
+        await render(<CycleRing {...usualCycle} day={day} look={look} />);
+
+        expect(thePointerColours()).toEqual({
+          casing: colour[todayPointerPalette.casing],
+          core: colour[todayPointerPalette.core],
+          head: colour.accent,
+          headEdge: colour[todayPointerPalette.headEdge],
+        });
+        expect(thePointerColours().head).not.toBe(colour.text);
+      },
+    );
+
+    it('keeps one stroke of the stem at three to one or more against the arc under it', () => {
+      const arc = colour[phasePalette[phase].fill];
+      const best = Math.max(
+        contrastRatio(colour[todayPointerPalette.casing], arc),
+        contrastRatio(colour[todayPointerPalette.core], arc),
+      );
+
+      expect(best).toBeGreaterThanOrEqual(3);
+    });
   });
 });
+
+/** The first day of the usual cycle that the ring puts on this phase. */
+function theFirstDayOf(phase: (typeof phaseNames)[number]): number {
+  for (let day = 1; day <= usualCycle.cycleLengthDays; day += 1) {
+    if (ringGeometry({ ...usualCycle, day }).phase === phase) {
+      return day;
+    }
+  }
+  throw new Error(`the usual cycle has no day in ${phase}`);
+}
+
+function theStem(): { x1: number; y1: number; x2: number; y2: number } {
+  const core = screen.getByTestId(ringPointerCoreTestID).props as Record<string, unknown>;
+
+  return {
+    x1: Number(core.x1),
+    y1: Number(core.y1),
+    x2: Number(core.x2),
+    y2: Number(core.y2),
+  };
+}
+
+function thePointerColours(): Record<'casing' | 'core' | 'head' | 'headEdge', string> {
+  const head = screen.getByTestId(ringPointerHeadTestID).props;
+
+  return {
+    casing: colourOf(screen.getByTestId(ringPointerCasingTestID).props.stroke),
+    core: colourOf(screen.getByTestId(ringPointerCoreTestID).props.stroke),
+    head: colourOf(head.fill),
+    headEdge: colourOf(head.stroke),
+  };
+}
 
 function StyleSheetFlat(style: unknown): Record<string, unknown> {
   const flat = Array.isArray(style) ? Object.assign({}, ...style) : style;

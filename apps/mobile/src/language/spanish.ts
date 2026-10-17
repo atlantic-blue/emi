@@ -557,7 +557,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.tour.ring.line.arcs':
     'Cuatro arcos dividen el anillo: los días que sangras, los días después, los días alrededor de la ovulación y los días antes de tu próximo periodo.',
   'onboarding.tour.ring.line.bead':
-    'El anillo es tu ciclo. Un punto marca hoy, y el número de dentro es el día en que estás.',
+    'El anillo es tu ciclo. Un indicador marca hoy, y el número de dentro es el día en que estás.',
   'onboarding.tour.ring.title': 'Tu ciclo, en un anillo.',
   'onboarding.tour.skip': 'Omitir',
   'onboarding.welcome.action': 'Continuar',

@@ -1,12 +1,8 @@
 import {
   type ArcStrength,
-  BEAD_HALO_WIDTH,
-  BEAD_RADIUS,
   CYCLE_DAY_ROLE,
   CYCLE_LENGTH_ROLE,
   DAYS_AHEAD_STRENGTH,
-  NAMED_RING_BEAD_ORBIT,
-  NAMED_RING_BEAD_RADIUS,
   NAMED_RING_DIAMETER,
   NAMED_RING_RADIUS,
   NAMED_RING_TRACK_WIDTH,
@@ -16,11 +12,11 @@ import {
   PHASE_NAME_ROLE,
   type PhaseName,
   type PhaseSpan,
+  type Point,
   RING_DIAMETER,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
   arcPath,
-  beadPalette,
   colour,
   fontNameFor,
   namePath,
@@ -29,14 +25,15 @@ import {
   phaseNameOnArc,
   phaseLabel,
   phasePalette,
-  pointOnRing,
   ringGeometry,
   textStyle,
+  todayPointer,
+  todayPointerPalette,
 } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Defs, Path, Text as SvgText, TextPath } from 'react-native-svg';
+import Svg, { Circle, Defs, Line, Path, Text as SvgText, TextPath } from 'react-native-svg';
 
 import {
   phaseName,
@@ -56,7 +53,11 @@ import {
  */
 
 export const cycleRingTestID = 'cycle-ring';
-export const ringBeadTestID = 'ring-bead';
+/** The pointer that marks today: its casing, its white core and its head. */
+export const ringPointerTestID = 'ring-pointer';
+export const ringPointerCasingTestID = 'ring-pointer-casing';
+export const ringPointerCoreTestID = 'ring-pointer-core';
+export const ringPointerHeadTestID = 'ring-pointer-head';
 export const ringTrackTestID = 'ring-track';
 
 export type { ArcStrength };
@@ -135,7 +136,6 @@ function PlainRing({
   const geometry = ringGeometry({ cycleLengthDays, day, phases });
   const centre = { x: diameter / 2, y: diameter / 2 };
   const radius = (diameter - RING_TRACK_WIDTH) / 2;
-  const bead = pointOnRing(centre, radius, geometry.beadDegrees);
   const opening = useOpeningMotion();
 
   const arcs = paintedArcs(geometry, radius).map((painted) => (
@@ -167,16 +167,13 @@ function PlainRing({
       >
         <Svg height={diameter} width={diameter}>
           {arcs}
-          <Circle
-            cx={bead.x}
-            cy={bead.y}
-            fill={colour[beadPalette.fill]}
-            r={BEAD_RADIUS}
-            stroke={colour[beadPalette.halo]}
-            strokeWidth={BEAD_HALO_WIDTH}
-            testID={ringBeadTestID}
-          />
         </Svg>
+        <TodayPointerDrawing
+          band={{ radius, width: RING_TRACK_WIDTH }}
+          centre={centre}
+          degrees={geometry.beadDegrees}
+          diameter={diameter}
+        />
       </Animated.View>
       <View pointerEvents="none" style={styles.middle}>
         {centreWord === 'day' ? (
@@ -202,7 +199,6 @@ function NamedRing({
   const geometry = ringGeometry({ cycleLengthDays, day, phases });
   const diameter = NAMED_RING_DIAMETER;
   const centre = { x: diameter / 2, y: diameter / 2 };
-  const bead = pointOnRing(centre, NAMED_RING_BEAD_ORBIT, geometry.beadDegrees);
   const opening = useOpeningMotion();
   const today = phaseName(geometry.phase);
 
@@ -266,16 +262,13 @@ function NamedRing({
                 </TextPath>
               </SvgText>
             ))}
-          <Circle
-            cx={bead.x}
-            cy={bead.y}
-            fill={colour[beadPalette.halo]}
-            r={NAMED_RING_BEAD_RADIUS}
-            stroke={colour[beadPalette.fill]}
-            strokeWidth={BEAD_HALO_WIDTH}
-            testID={ringBeadTestID}
-          />
         </Svg>
+        <TodayPointerDrawing
+          band={{ radius: NAMED_RING_RADIUS, width: NAMED_RING_TRACK_WIDTH }}
+          centre={centre}
+          degrees={geometry.beadDegrees}
+          diameter={diameter}
+        />
       </Animated.View>
       <View pointerEvents="none" style={styles.middle}>
         <Text
@@ -300,13 +293,11 @@ const SMALL_RING_DIAMETER = 64;
 const SMALL_RING_RADIUS = 23;
 const SMALL_RING_ARC_WIDTH = 6;
 const SMALL_RING_TRACK_WIDTH = 14;
-const SMALL_RING_BEAD_RADIUS = 8;
-const SMALL_RING_BEAD_STROKE = 3;
 
 /** Degrees left open between two arcs, so the round ends of two phases do not run into one. */
 const SMALL_RING_GAP_DEGREES = 3;
 
-/** The small ring of the log: the four arcs whole, on a pale track, with the bead and no words. */
+/** The small ring of the log: the four arcs whole, on a pale track, with the pointer and no words. */
 function SmallRing({
   cycleLengthDays,
   day,
@@ -314,7 +305,6 @@ function SmallRing({
 }: Pick<Props, 'cycleLengthDays' | 'day' | 'phases'>): ReactNode {
   const geometry = ringGeometry({ cycleLengthDays, day, phases });
   const centre = { x: SMALL_RING_DIAMETER / 2, y: SMALL_RING_DIAMETER / 2 };
-  const bead = pointOnRing(centre, SMALL_RING_RADIUS, geometry.beadDegrees);
 
   return (
     <View
@@ -350,14 +340,68 @@ function SmallRing({
             testID={ringWholeArcTestID(arc.phase)}
           />
         ))}
-        <Circle
-          cx={bead.x}
-          cy={bead.y}
-          fill={colour.card}
-          r={SMALL_RING_BEAD_RADIUS}
-          stroke={colour.text}
-          strokeWidth={SMALL_RING_BEAD_STROKE}
-          testID={ringBeadTestID}
+      </Svg>
+      <TodayPointerDrawing
+        band={{ radius: SMALL_RING_RADIUS, width: SMALL_RING_TRACK_WIDTH }}
+        centre={centre}
+        degrees={geometry.beadDegrees}
+        diameter={SMALL_RING_DIAMETER}
+      />
+    </View>
+  );
+}
+
+interface PointerProps {
+  readonly band: { readonly radius: number; readonly width: number };
+  readonly centre: Point;
+  readonly degrees: number;
+  readonly diameter: number;
+}
+
+/**
+ * The pointer that marks today, the same shape on every ring, scaled to the band it crosses. Its
+ * head reaches past the box of the ring, so it is drawn on a larger sheet laid over the ring, in
+ * the coordinates of the ring, and the ring keeps its own size in the layout.
+ */
+function TodayPointerDrawing({ band, centre, degrees, diameter }: PointerProps): ReactNode {
+  const pointer = todayPointer(centre, band, degrees);
+  const margin = Math.max(Math.ceil(pointer.reach - diameter / 2), 0);
+  const sheet = diameter + 2 * margin;
+
+  return (
+    <View
+      pointerEvents="none"
+      style={{ height: sheet, left: -margin, position: 'absolute', top: -margin, width: sheet }}
+      testID={ringPointerTestID}
+    >
+      <Svg height={sheet} viewBox={`${-margin} ${-margin} ${sheet} ${sheet}`} width={sheet}>
+        <Line
+          stroke={colour[todayPointerPalette.casing]}
+          strokeLinecap="round"
+          strokeWidth={pointer.casingWidth}
+          testID={ringPointerCasingTestID}
+          x1={pointer.stemFrom.x}
+          x2={pointer.stemTo.x}
+          y1={pointer.stemFrom.y}
+          y2={pointer.stemTo.y}
+        />
+        <Line
+          stroke={colour[todayPointerPalette.core]}
+          strokeLinecap="round"
+          strokeWidth={pointer.coreWidth}
+          testID={ringPointerCoreTestID}
+          x1={pointer.stemFrom.x}
+          x2={pointer.stemTo.x}
+          y1={pointer.stemFrom.y}
+          y2={pointer.stemTo.y}
+        />
+        <Path
+          d={pointer.head}
+          fill={colour[todayPointerPalette.head]}
+          stroke={colour[todayPointerPalette.headEdge]}
+          strokeLinejoin="round"
+          strokeWidth={pointer.edgeWidth}
+          testID={ringPointerHeadTestID}
         />
       </Svg>
     </View>

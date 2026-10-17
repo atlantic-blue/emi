@@ -1,7 +1,5 @@
 /** @jsxImportSource ../jsx */
 import {
-  BEAD_HALO_WIDTH,
-  BEAD_RADIUS,
   CYCLE_DAY_ROLE,
   DAYS_AHEAD_STRENGTH,
   type FontFile,
@@ -12,7 +10,6 @@ import {
   RingGeometry,
   CYCLE_LENGTH_ROLE,
   arcPath,
-  beadPalette,
   colour,
   faceFamily,
   fontFile,
@@ -21,8 +18,9 @@ import {
   paintedArcs,
   phaseLabel,
   phasePalette,
-  pointOnRing,
   ringGeometry,
+  todayPointer,
+  todayPointerPalette,
   typeScale,
 } from '@emi/tokens';
 
@@ -170,12 +168,16 @@ function styleSheet(fontsBase: string): string {
 
 function Ring({ ring }: { ring: DrawnRing }): Html {
   const geometry = ringGeometry(ring);
-  const bead = pointOnRing(centre, trackRadius, geometry.beadDegrees);
+  const pointer = todayPointer(
+    centre,
+    { radius: trackRadius, width: RING_TRACK_WIDTH },
+    geometry.beadDegrees,
+  );
 
   return (
     <div class="ring">
       <div class="drawing">
-        <svg width={RING_DIAMETER} height={RING_DIAMETER}>
+        <svg width={RING_DIAMETER} height={RING_DIAMETER} style="overflow: visible">
           {arcsOf(geometry).map((arc) => (
             <path
               d={arc.d}
@@ -186,13 +188,30 @@ function Ring({ ring }: { ring: DrawnRing }): Html {
               stroke-width={RING_TRACK_WIDTH}
             />
           ))}
-          <circle
-            cx={bead.x}
-            cy={bead.y}
-            fill={colour[beadPalette.fill]}
-            r={BEAD_RADIUS}
-            stroke={colour[beadPalette.halo]}
-            stroke-width={BEAD_HALO_WIDTH}
+          <line
+            x1={pointer.stemFrom.x}
+            y1={pointer.stemFrom.y}
+            x2={pointer.stemTo.x}
+            y2={pointer.stemTo.y}
+            stroke={colour[todayPointerPalette.casing]}
+            stroke-linecap="round"
+            stroke-width={pointer.casingWidth}
+          />
+          <line
+            x1={pointer.stemFrom.x}
+            y1={pointer.stemFrom.y}
+            x2={pointer.stemTo.x}
+            y2={pointer.stemTo.y}
+            stroke={colour[todayPointerPalette.core]}
+            stroke-linecap="round"
+            stroke-width={pointer.coreWidth}
+          />
+          <path
+            d={pointer.head}
+            fill={colour[todayPointerPalette.head]}
+            stroke={colour[todayPointerPalette.headEdge]}
+            stroke-linejoin="round"
+            stroke-width={pointer.edgeWidth}
           />
         </svg>
         <div class="middle">
@@ -224,8 +243,8 @@ export function RingSheet({ fontsBase }: { fontsBase: string }): Html {
         <div class={`heading ${faceClass(wordsBold)}`}>The ring, at three lengths</div>
         <div class="standfirst">
           Each arc is sized by the days of that phase. Three degrees of ground sit at every
-          boundary, the days she has had are solid and the days ahead are at a fifth, and the ember
-          bead is today.
+          boundary, the days she has had are solid and the days ahead are at a fifth, and the
+          pointer marks today.
         </div>
         <div class="rings">
           {drawnRings.map((ring) => (

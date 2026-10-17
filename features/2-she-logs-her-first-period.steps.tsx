@@ -744,8 +744,8 @@ import { daysNamedIn, sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/
 import {
   type DrawnArc,
   theArcsOnTheRing,
-  theBeadDegrees,
-  theBeadSheSees,
+  thePointerDegrees,
+  thePointerSheSees,
   theEndsOfTheArcs,
   theColourDrawn,
   theGroundBetweenTheArcs,
@@ -2561,7 +2561,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('BRAND-3, the bead sits on the day she is on and never outside her cycle', ({
+  test('BRAND-3, the pointer sits on the day she is on and never outside her cycle', ({
     given,
     when,
     then,
@@ -2578,10 +2578,10 @@ defineFeature(feature, (test) => {
 
     when('she opens Emi', async () => {
       await sheOpens('/');
-      early = theBeadDegrees();
+      early = thePointerDegrees();
     });
 
-    then('the bead sits on the day the ring says she is on', () => {
+    then('the pointer sits on the day the ring says she is on', () => {
       expect(theRingSays()).toBe('Day 3 of 45, period');
 
       const period = theArcsOnTheRing().find((arc) => arc.phase === 'period') as DrawnArc;
@@ -2590,7 +2590,7 @@ defineFeature(feature, (test) => {
       expect(early).toBeLessThanOrEqual(period.startDegrees + period.sweepDegrees);
     });
 
-    and('the bead moves further round the ring on a later day', async () => {
+    and('the pointer moves further round the ring on a later day', async () => {
       resetExpoSqlite();
       resetExpoSecureStore();
       await herPhoneHolds(
@@ -2599,7 +2599,7 @@ defineFeature(feature, (test) => {
       );
       await sheOpens('/');
 
-      const later = theBeadDegrees();
+      const later = thePointerDegrees();
       const ovulation = theArcsOnTheRing().find((arc) => arc.phase === 'ovulation') as DrawnArc;
 
       expect(theRingSays()).toBe('Day 33 of 45, ovulation');
@@ -6566,8 +6566,13 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('the bead on today is a dark disc with a white line around it, outside the band', () => {
-      expect(theBeadSheSees()).toEqual({ fill: colour.text, line: colour.card });
+    and('the pointer on today has an accent head over a dark stem with a white core', () => {
+      expect(thePointerSheSees()).toEqual({
+        casing: colour.text,
+        core: colour.card,
+        head: colour.accent,
+        headEdge: colour.card,
+      });
     });
 
     and(
