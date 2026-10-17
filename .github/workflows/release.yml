@@ -1,0 +1,47 @@
+name: release
+
+# A version tag builds the app on Expo and hands the build to TestFlight. The tag must be the
+# version in apps/mobile/app.json, so a tag on the wrong commit builds nothing. Expo builds and
+# uploads on its own servers, so the job ends once the build is queued. The check runs from this
+# workflow's commit and reads the tag's tree, so a tag older than the check can still be released.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The version tag to release, for example v0.1.0
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    name: build on Expo and hand it to TestFlight
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          path: release
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: the tag is the version in app.json
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkReleaseTag.ts "$TAG" release
+      - run: npm ci
+        working-directory: release
+      - name: build and submit
+        working-directory: release/apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx -y eas-cli@24.9.0 build --platform ios --profile production --non-interactive --no-wait --auto-submit
