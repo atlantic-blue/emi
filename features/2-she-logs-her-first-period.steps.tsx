@@ -133,7 +133,11 @@ import {
   calendarLaterTestID,
   calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
-import { daySheetOpenTestID, daySheetTestID } from '../apps/mobile/src/features/calendar/DaySheet';
+import {
+  daySheetOpenTestID,
+  daySheetRecordSexTestID,
+  daySheetTestID,
+} from '../apps/mobile/src/features/calendar/DaySheet';
 import {
   calendarCopy,
   editPeriodCopy,
@@ -263,7 +267,9 @@ import {
 } from '../apps/mobile/src/features/phase/PhasePage';
 import {
   sexChipTestID,
+  sexPageChooseDayTestID,
   sexPageDayTestID,
+  sexPageDaysTestID,
   sexPageQuestionTestID,
   sexPageSaveTestID,
   sexPageTestID,
@@ -3572,6 +3578,142 @@ defineFeature(feature, (test) => {
       expect(day).not.toHaveProperty('sex');
       expect(day).not.toHaveProperty('sexDrive');
       expect(day).not.toHaveProperty('orgasm');
+    });
+  });
+
+  test('SCREEN-2, she chooses yesterday on the Sex page of today and records sex there', ({
+    given,
+    when,
+    then,
+  }) => {
+    const yesterday = addDays(theDaySheOpensIt, -1);
+    const theDayOnHerPhone = (day: string): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), day);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens the Sex page of today and presses Choose another day', async () => {
+      await sheOpens(sexAddress());
+      await screen.findByTestId(sexPageTestID);
+      expect(screen.getByTestId(sexPageQuestionTestID)).toHaveTextContent(
+        'Did you have sex today?',
+      );
+      await shePresses(sexPageChooseDayTestID);
+    });
+
+    then('a month opens under the date, and a day ahead of her takes no press', async () => {
+      expect(screen.getByTestId(sexPageDaysTestID)).toBeTruthy();
+      expect(screen.getByTestId(dayTestID(addDays(theDaySheOpensIt, 1)))).toBeDisabled();
+      await shePresses(dayTestID(addDays(theDaySheOpensIt, 1)));
+      expect(screen.getByTestId(sexPageDayTestID)).toHaveTextContent(
+        sexDayHeading(theDaySheOpensIt),
+      );
+    });
+
+    when('she presses yesterday in that month', async () => {
+      await shePresses(dayTestID(yesterday));
+      await screen.findByText('Did you have sex yesterday?');
+    });
+
+    then('the page asks whether she had sex yesterday, under the date of that day', () => {
+      expect(screen.getByTestId(sexPageQuestionTestID)).toHaveTextContent(
+        'Did you have sex yesterday?',
+      );
+      expect(screen.getByTestId(sexPageDayTestID)).toHaveTextContent(sexDayHeading(yesterday));
+      expect(screen.queryByTestId(sexPageDaysTestID)).toBeNull();
+    });
+
+    when('she presses Unprotected and saves', async () => {
+      await shePresses(sexChipTestID('sex', 'unprotected'));
+      await shePresses(sexPageSaveTestID);
+    });
+
+    then(
+      'her phone holds that answer on yesterday, sealed, and today holds no answer about sex',
+      () => {
+        const held = readDayLog(herDatabase(), yesterday);
+
+        expect(new TextDecoder().decode(held?.payload)).not.toContain('unprotected');
+        expect(theDayOnHerPhone(yesterday)).toMatchObject({ sex: 'unprotected' });
+        expect(theDayOnHerPhone(theDaySheOpensIt)).not.toHaveProperty('sex');
+      },
+    );
+  });
+
+  test('SCREEN-4, she records sex on a day she already lived from the calendar, and removes it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const thatDay = addDays(theDaySheOpensIt, -2);
+    const theDayOnHerPhone = (): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), thatDay);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+    let flowSheLogged: string | undefined;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+      flowSheLogged = theDayOnHerPhone()?.flow;
+    });
+
+    when('she opens the calendar and presses the day before yesterday', async () => {
+      await sheOpens('/calendar');
+      await screen.findByTestId(dayTestID(thatDay));
+      await shePresses(dayTestID(thatDay));
+    });
+
+    and('she presses Record sex on the card of that day', async () => {
+      expect(screen.getByTestId(daySheetRecordSexTestID)).toHaveTextContent('Record sex');
+      await shePresses(daySheetRecordSexTestID);
+      await screen.findByTestId(sexPageTestID);
+    });
+
+    then('the page asks whether she had sex that day, under the date of that day', () => {
+      expect(screen.getByTestId(sexPageQuestionTestID)).toHaveTextContent(
+        'Did you have sex that day?',
+      );
+      expect(screen.getByTestId(sexPageDayTestID)).toHaveTextContent(sexDayHeading(thatDay));
+    });
+
+    when('she presses Protected and saves', async () => {
+      await shePresses(sexChipTestID('sex', 'protected'));
+      await shePresses(sexPageSaveTestID);
+      await screen.findByTestId(daySheetTestID);
+    });
+
+    then('her phone holds that answer on that day, sealed, beside the flow she logged', () => {
+      const held = readDayLog(herDatabase(), thatDay);
+
+      expect(flowSheLogged).toEqual(expect.any(String));
+      expect(new TextDecoder().decode(held?.payload)).not.toContain('protected');
+      expect(theDayOnHerPhone()).toMatchObject({ flow: flowSheLogged, sex: 'protected' });
+    });
+
+    when(
+      'she presses that day again, then Record sex, then Protected again, and saves',
+      async () => {
+        await shePresses(dayTestID(thatDay));
+        await shePresses(daySheetRecordSexTestID);
+        await screen.findByTestId(sexPageTestID);
+        expect(screen.getByTestId(sexChipTestID('sex', 'protected'))).toBeSelected();
+        await shePresses(sexChipTestID('sex', 'protected'));
+        await shePresses(sexPageSaveTestID);
+      },
+    );
+
+    then('that day holds no answer about sex, and keeps its flow', () => {
+      expect(theDayOnHerPhone()?.flow).toBe(flowSheLogged);
+      expect(theDayOnHerPhone()).not.toHaveProperty('sex');
     });
   });
 

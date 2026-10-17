@@ -97,6 +97,7 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.screen.editPeriod': 'Изменить мои месячные',
   'calendar.screen.later': 'Позже',
   'calendar.screen.laterMonth': 'Следующий месяц',
+  'calendar.screen.recordSex': 'Отметить секс',
   'calendar.today': 'Сегодня',
   'calendar.weekday.friday': 'Пятница',
   'calendar.weekday.monday': 'Понедельник',
@@ -832,6 +833,7 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.settings.lockLine': 'Включена: по лицу или по коду доступа',
   'settings.settings.title': 'Приватность',
   'sex.back': 'Назад',
+  'sex.chooseDay': 'Выбрать другой день',
   'sex.day': '{weekday}, {date} {month}',
   'sex.fertile.now.sameMonth':
     'Сейчас у вас фертильное окно, с {from} по {to} {month}. Это оценка. Это не контрацепция.',

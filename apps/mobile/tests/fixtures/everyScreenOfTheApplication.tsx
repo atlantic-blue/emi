@@ -180,6 +180,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
         onEditPeriod={nothing}
         onLaterMonth={nothing}
         onOpenDay={nothing}
+        onRecordSex={nothing}
         onPressDay={nothing}
         onToday={nothing}
         today="2026-05-14"

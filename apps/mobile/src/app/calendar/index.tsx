@@ -22,6 +22,7 @@ import { recordedDays } from '../../features/cycle/rebuild';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { addMonths, localDay, startOfMonth } from '../../features/onboarding/days';
 import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
+import { sexAddress } from '../../features/sex/sexAddress';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
 import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
@@ -159,6 +160,7 @@ export default function CalendarRoute(): ReactNode {
         onEditPeriod={(day) => router.push(`/calendar/period?${dayParameter}=${day}`)}
         onLaterMonth={() => sheMovesTo(addMonths(month, 1))}
         onOpenDay={(day) => router.push(`/day/${day}`)}
+        onRecordSex={(day) => router.push(sexAddress(day))}
         onPressDay={setShePressed}
         onToday={() => router.replace('/')}
         phaseOn={hers.phaseOn}

@@ -91,6 +91,7 @@ export const english = {
   'calendar.screen.editPeriod': 'Edit my period',
   'calendar.screen.later': 'Later',
   'calendar.screen.laterMonth': 'Later month',
+  'calendar.screen.recordSex': 'Record sex',
   'calendar.today': 'Today',
   'calendar.weekday.friday': 'Friday',
   'calendar.weekday.monday': 'Monday',
@@ -814,6 +815,7 @@ export const english = {
   'settings.settings.lockLine': 'On, with your face or your passcode',
   'settings.settings.title': 'Privacy',
   'sex.back': 'Back',
+  'sex.chooseDay': 'Choose another day',
   'sex.day': '{weekday}, {date} {month}',
   'sex.fertile.now.sameMonth':
     'You are in your fertile window, {from} to {to} {month}. This is an estimate. It is not contraception.',

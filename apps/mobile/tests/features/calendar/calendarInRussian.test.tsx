@@ -29,6 +29,7 @@ async function sheReadsNovember(): Promise<void> {
         onEditPeriod={() => undefined}
         onLaterMonth={() => undefined}
         onOpenDay={() => undefined}
+        onRecordSex={() => undefined}
         onPressDay={() => undefined}
         onToday={() => undefined}
         today={today}

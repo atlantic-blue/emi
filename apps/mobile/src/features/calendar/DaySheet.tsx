@@ -10,6 +10,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
  * A day she has lived also opens, from the round button at the right of the date, because a month
  * she can read and cannot correct a day in is a picture. A day ahead of her has no button: there is
  * nothing to record on a day that has not happened.
+ *
+ * A day she has lived also carries Record sex beside Edit my period, so she can record sex on that
+ * day in one press from the month. The calendar board draws no such link: it is kept because the
+ * way through the day page sat below the fold, and she did not find it.
  */
 
 export const daySheetTestID = 'calendar-day-sheet';
@@ -17,6 +21,7 @@ export const daySheetLeadTestID = 'calendar-day-sheet-lead';
 export const daySheetLineTestID = 'calendar-day-sheet-line';
 /** The round button that carries the mark saying the day opens. */
 export const daySheetOpenTestID = 'calendar-day-sheet-open';
+export const daySheetRecordSexTestID = 'calendar-day-sheet-record-sex';
 
 /** Points. The mark that says the day opens, at the size the other rows of Emi draw it. */
 const OPENS_MARK_SIZE = 18;
@@ -33,6 +38,9 @@ interface Props {
   readonly editPeriodLabel: string;
   readonly editPeriodTestID: string;
   readonly onEditPeriod: () => void;
+  readonly recordSexLabel: string;
+  /** Nothing on a day ahead of her, and then the card carries no Record sex. */
+  readonly onRecordSex?: () => void;
 }
 
 export function DaySheet({
@@ -43,6 +51,8 @@ export function DaySheet({
   editPeriodLabel,
   editPeriodTestID,
   onEditPeriod,
+  recordSexLabel,
+  onRecordSex,
 }: Props): ReactNode {
   return (
     <View style={styles.card} testID={daySheetTestID}>
@@ -65,14 +75,26 @@ export function DaySheet({
       <Text style={styles.line} testID={daySheetLineTestID}>
         {line}
       </Text>
-      <Pressable
-        accessibilityRole="button"
-        onPress={onEditPeriod}
-        style={styles.link}
-        testID={editPeriodTestID}
-      >
-        <Text style={styles.linkLabel}>{editPeriodLabel}</Text>
-      </Pressable>
+      <View style={styles.links}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onEditPeriod}
+          style={styles.link}
+          testID={editPeriodTestID}
+        >
+          <Text style={styles.linkLabel}>{editPeriodLabel}</Text>
+        </Pressable>
+        {onRecordSex === undefined ? null : (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onRecordSex}
+            style={styles.link}
+            testID={daySheetRecordSexTestID}
+          >
+            <Text style={styles.linkLabel}>{recordSexLabel}</Text>
+          </Pressable>
+        )}
+      </View>
     </View>
   );
 }
@@ -103,6 +125,7 @@ const styles = StyleSheet.create({
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
   },
+  links: { columnGap: space.spaceLg, flexDirection: 'row', flexWrap: 'wrap' },
   linkLabel: {
     color: colour.accent,
     ...textStyle('button-md'),

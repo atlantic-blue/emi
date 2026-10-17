@@ -10,7 +10,11 @@ import { AccessibilityInfo, StyleSheet } from 'react-native';
 import { listCycles } from '../../../src/data/cycleRepository';
 import { readDayLog } from '../../../src/data/dayLogRepository';
 import { calendarScreenTestID } from '../../../src/features/calendar/CalendarScreen';
-import { dateDiscTestID } from '../../../src/features/calendar/CycleMonth';
+import { dateDiscTestID, dayTestID } from '../../../src/features/calendar/CycleMonth';
+import {
+  daySheetOpenTestID,
+  daySheetRecordSexTestID,
+} from '../../../src/features/calendar/DaySheet';
 import { theFertileWindowOn } from '../../../src/features/calendar/herMonthPhases';
 import { recordedDays } from '../../../src/features/cycle/rebuild';
 import type { RingInputFrom } from '../../../src/features/cycle/ringInput';
@@ -27,7 +31,9 @@ import { answersAfterPress } from '../../../src/features/sex/answers';
 import {
   sexChipTestID,
   sexPageBackTestID,
+  sexPageChooseDayTestID,
   sexPageDayTestID,
+  sexPageDaysTestID,
   sexPageFertileTestID,
   sexPageLockTestID,
   sexPageQuestionTestID,
@@ -297,6 +303,128 @@ describe('a past day', () => {
 
     expect(await screen.findByTestId(dayRefusedTestID)).toBeTruthy();
     expect(screen.queryByTestId(sexPageTestID)).toBeNull();
+  });
+});
+
+describe('she chooses the day on the Sex page', () => {
+  it('should show no month until she presses Choose another day', async () => {
+    await sheOpensTheSexPage(herPeriodStarts(20, 2));
+
+    expect(whatItSays(sexPageChooseDayTestID)).toBe('Choose another day');
+    expect(screen.queryByTestId(sexPageDaysTestID)).toBeNull();
+
+    await press(sexPageChooseDayTestID);
+
+    expect(screen.getByTestId(sexPageDaysTestID)).toBeTruthy();
+  });
+
+  it('should stand the page on the day she chose, and save to that day', async () => {
+    const yesterday = addDays(today, -1);
+    await sheOpensTheSexPage(herPeriodStarts(20, 2));
+
+    await press(sexPageChooseDayTestID);
+    await press(dayTestID(yesterday));
+    await screen.findByText('Did you have sex yesterday?');
+
+    expect(whatItSays(sexPageDayTestID)).toBe('Sunday, 11 October');
+    expect(screen.queryByTestId(sexPageDaysTestID)).toBeNull();
+
+    await press(sexChipTestID('sex', 'unprotected'));
+    await press(sexPageSaveTestID);
+
+    expect(theDayOnHerPhone(yesterday)?.sex).toBe('unprotected');
+    expect(theDayOnHerPhone()).toBeUndefined();
+  });
+
+  it('should open on what the chosen day holds, so she can take it off', async () => {
+    const yesterday = addDays(today, -1);
+    await sheOpensTheSexPage([
+      ...herPeriodStarts(20, 2),
+      { day: yesterday, sex: 'protected', recordedAt: `${yesterday}T08:00:00.000Z` },
+    ]);
+
+    expect(isChosen(sexChipTestID('sex', 'protected'))).toBe(false);
+
+    await press(sexPageChooseDayTestID);
+    await press(dayTestID(yesterday));
+    await screen.findByText('Did you have sex yesterday?');
+
+    expect(isChosen(sexChipTestID('sex', 'protected'))).toBe(true);
+
+    await press(sexChipTestID('sex', 'protected'));
+    await press(sexPageSaveTestID);
+
+    expect(theDayOnHerPhone(yesterday)).not.toHaveProperty('sex');
+  });
+
+  it('should come back to today from a past day', async () => {
+    await sheOpensTheSexPage(herPeriodStarts(20, 2), `/sex?day=${addDays(today, -3)}`);
+
+    await press(sexPageChooseDayTestID);
+    await press(dayTestID(today));
+    await screen.findByText('Did you have sex today?');
+
+    expect(whatItSays(sexPageDayTestID)).toBe('Monday, 12 October');
+  });
+
+  it('should give a day ahead of her no press', async () => {
+    const tomorrow = addDays(today, 1);
+    await sheOpensTheSexPage(herPeriodStarts(20, 2));
+
+    await press(sexPageChooseDayTestID);
+
+    expect(screen.getByTestId(dayTestID(tomorrow)).props.accessibilityState).toMatchObject({
+      disabled: true,
+    });
+    await press(dayTestID(tomorrow));
+
+    expect(whatItSays(sexPageDayTestID)).toBe('Monday, 12 October');
+    expect(whatItSays(sexPageQuestionTestID)).toBe('Did you have sex today?');
+  });
+});
+
+describe('sex on a past day from the calendar', () => {
+  it('should record sex on the day she pressed, and take it off again', async () => {
+    const thatDay = addDays(today, -4);
+    await herPhoneHolds(herPeriodStarts(20, 2));
+    const app = await sheOpens('/calendar');
+    await screen.findByTestId(calendarScreenTestID);
+
+    await press(dayTestID(thatDay));
+    await press(daySheetRecordSexTestID);
+    await screen.findByTestId(sexPageTestID);
+
+    expect(app.pathname()).toBe('/sex');
+    expect(whatItSays(sexPageDayTestID)).toBe('Thursday, 8 October');
+    expect(whatItSays(sexPageQuestionTestID)).toBe('Did you have sex that day?');
+
+    await press(sexChipTestID('sex', 'protected'));
+    await press(sexPageSaveTestID);
+    await screen.findByTestId(calendarScreenTestID);
+
+    expect(theDayOnHerPhone(thatDay)?.sex).toBe('protected');
+
+    await press(dayTestID(thatDay));
+    await press(daySheetRecordSexTestID);
+    await screen.findByTestId(sexPageTestID);
+
+    expect(isChosen(sexChipTestID('sex', 'protected'))).toBe(true);
+
+    await press(sexChipTestID('sex', 'protected'));
+    await press(sexPageSaveTestID);
+
+    expect(theDayOnHerPhone(thatDay)).not.toHaveProperty('sex');
+  });
+
+  it('should carry no Record sex on a day ahead of her', async () => {
+    await herPhoneHolds(herPeriodStarts(20, 2));
+    await sheOpens('/calendar');
+    await screen.findByTestId(calendarScreenTestID);
+
+    await press(dayTestID(addDays(today, 2)));
+
+    expect(screen.queryByTestId(daySheetRecordSexTestID)).toBeNull();
+    expect(screen.queryByTestId(daySheetOpenTestID)).toBeNull();
   });
 });
 
