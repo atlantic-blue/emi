@@ -285,6 +285,11 @@ export function productOf(slug: ProductSlug): Product {
   };
 }
 
+/** The key of the one line summary of a product, for a screen that shows it under another name. */
+export function productSummaryKey(slug: ProductSlug): WordKey {
+  return productWords[keyOf[slug]].summary;
+}
+
 /** The product an address names, or nothing where it names none, because she can type one. */
 export function productSlugFrom(text: string): ProductSlug | undefined {
   return productOrder.find((slug) => slug === text);
@@ -292,6 +297,9 @@ export function productSlugFrom(text: string): ProductSlug | undefined {
 
 /** The address of the hygiene page, with the eight products. */
 export const hygieneAddress = '/hygiene';
+
+/** The address of "Find a product to try". */
+export const quizAddress = `${hygieneAddress}/quiz`;
 
 /** The address of the page of one product. */
 export function productAddress(slug: ProductSlug): string {

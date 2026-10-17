@@ -190,11 +190,12 @@ describe('the How to choose section', () => {
     ]);
   });
 
-  it('should not carry the card that finds a product to try, which belongs to issue 306', async () => {
+  it('should carry the card that finds a product to try under How to choose (issue 306)', async () => {
     await sheOpens(hygieneAddress);
 
     await screen.findByTestId(howToChooseTestID);
-    expect(screen.queryByText('Find a product to try')).toBeNull();
+    const page = textIn(screen.getByTestId(hygienePageTestID));
+    expect(page.indexOf('Find a product to try')).toBeGreaterThan(page.indexOf('How to choose'));
   });
 });
 

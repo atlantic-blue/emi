@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { useCallback } from 'react';
 
 import { HygieneProductsPage } from '../../features/hygiene/HygieneProductsPage';
-import { productAddress } from '../../features/hygiene/products';
+import { productAddress, quizAddress } from '../../features/hygiene/products';
 
 /** The Hygiene products page, with the eight products. */
 export default function HygieneRoute(): ReactNode {
@@ -18,6 +18,10 @@ export default function HygieneRoute(): ReactNode {
   }, [router]);
 
   return (
-    <HygieneProductsPage onBack={leave} onOpen={(slug) => router.push(productAddress(slug))} />
+    <HygieneProductsPage
+      onBack={leave}
+      onOpen={(slug) => router.push(productAddress(slug))}
+      onQuiz={() => router.push(quizAddress)}
+    />
   );
 }
