@@ -619,7 +619,7 @@ export const russian: CatalogueIn<'ru'> = {
   'ovulation.sign.higherSexDrive': 'Повышенное влечение',
   'ovulation.sign.higherTemperature': 'Повышенная температура',
   'ovulation.sign.nothingYet': 'Пока ничего',
-  'ovulation.sign.painOnOneSide': 'Боль с одной стороны',
+  'ovulation.sign.painOnOneSide': 'Боль внизу живота с одной стороны',
   'ovulation.sign.positiveOvulationTest': 'Положительный тест на овуляцию',
   'ovulation.sign.tenderBreasts': 'Чувствительная грудь',
   'pastPeriods.action': 'Дальше',
@@ -686,7 +686,7 @@ export const russian: CatalogueIn<'ru'> = {
   'phase.chip.hungry': 'Голод',
   'phase.chip.irritable': 'Раздражительность',
   'phase.chip.littleAppetite': 'Мало аппетита',
-  'phase.chip.painOnOneSide': 'Боль с одной стороны',
+  'phase.chip.painOnOneSide': 'Боль внизу живота с одной стороны',
   'phase.chip.sad': 'Грусть',
   'phase.chip.salty': 'Солёное',
   'phase.chip.sweet': 'Сладкое',
@@ -728,7 +728,7 @@ export const russian: CatalogueIn<'ru'> = {
   'phase.guide.mood': 'Настроение',
   'phase.guide.open': 'Что эта фаза может значить для вас',
   'phase.guide.ovulation.body':
-    'Некоторые чувствуют короткую боль с одной стороны или замечают прозрачные тянущиеся выделения.',
+    'Некоторые чувствуют короткую боль внизу живота с одной стороны или замечают прозрачные тянущиеся выделения.',
   'phase.guide.ovulation.food':
     'Свежие овощи, клетчатка и достаточно воды помогают на пике эстрогена. Ешьте регулярно.',
   'phase.guide.ovulation.mood':
