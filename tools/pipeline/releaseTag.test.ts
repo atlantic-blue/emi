@@ -61,6 +61,18 @@ describe('the release workflow', () => {
     expect(build).toBeGreaterThan(check);
   });
 
+  it('reads the version from the tree of the tag, not from its own commit', () => {
+    const check = steps[indexOfStepRunning('tools/pipeline/checkReleaseTag.ts')]?.run ?? '';
+    const build = steps[indexOfStepRunning('eas-cli')] as Step & { 'working-directory'?: string };
+    const tagged = steps.find(
+      (step) => (step as { with?: { ref?: string } }).with?.ref === 'refs/tags/${{ env.TAG }}',
+    ) as { with?: { path?: string } } | undefined;
+
+    expect(tagged?.with?.path).toBe('release');
+    expect(check).toMatch(/checkReleaseTag\.ts "\$TAG" release$/);
+    expect(build['working-directory']).toBe('release/apps/mobile');
+  });
+
   it('builds the production profile for iOS and hands it to TestFlight', () => {
     const build = steps[indexOfStepRunning('eas-cli')]?.run ?? '';
 

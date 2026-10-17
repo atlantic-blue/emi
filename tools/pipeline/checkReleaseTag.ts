@@ -8,7 +8,11 @@ if (tag === undefined || tag === '') {
   process.exit(1);
 }
 
-const version = appVersion(resolve(import.meta.dirname, '..', '..'));
+// The tree being released need not be this one. The workflow checks out the tag beside its own
+// commit, so a tag made before this check existed can still be released.
+const given = process.argv[3];
+const root = given === undefined ? resolve(import.meta.dirname, '..', '..') : resolve(given);
+const version = appVersion(root);
 const problem = releaseTagProblem(tag, version);
 if (problem !== undefined) {
   process.stderr.write(`${problem}. Nothing is built.\n`);
