@@ -26,7 +26,7 @@ import {
   CycleRing,
   cycleRingTestID,
   ringArcTestID,
-  ringBeadTestID,
+  ringPointerTestID,
   ringWholeArcTestID,
 } from '../../src/components/CycleRing';
 import type { CycleRow } from '../../src/data/cycleRepository';
@@ -269,7 +269,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       expect(theDaysOf('ovulation', late.ring)).toEqual(theDaysOf('ovulation', onTime.ring));
     });
 
-    it('gives the days she is late to the phase that runs last, so the bead stays on the track', () => {
+    it('gives the days she is late to the phase that runs last, so the pointer stays on the track', () => {
       const onTime = herPhone(veryRegular);
       const late = herPhone(veryRegular, theDaySheIsLateOn);
 
@@ -334,7 +334,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       await sheOpensHerHomeScreen(her);
 
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
-      expect(screen.getByTestId(ringBeadTestID)).toBeTruthy();
+      expect(screen.getByTestId(ringPointerTestID)).toBeTruthy();
       expect(screen.getByText(`Day ${String(theDaySheOpensIt)}`)).toBeTruthy();
       expect(screen.getByText(phaseLabel.follicular)).toBeTruthy();
       expect(

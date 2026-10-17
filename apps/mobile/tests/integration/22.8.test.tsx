@@ -2,7 +2,6 @@ import { join } from 'node:path';
 
 import {
   GAP_DEGREES,
-  NAMED_RING_BEAD_ORBIT,
   NAMED_RING_DIAMETER,
   NAMED_RING_RADIUS,
   NAMED_RING_TRACK_WIDTH,
@@ -14,7 +13,7 @@ import { AccessibilityInfo, StyleSheet, type ViewStyle } from 'react-native';
 
 import {
   CycleRing,
-  ringBeadTestID,
+  ringPointerHeadTestID,
   ringCentreDayTestID,
   ringCentreLengthTestID,
   ringCentrePhaseTestID,
@@ -25,7 +24,7 @@ import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { textIn } from '../fixtures/renderedText';
 import {
-  theBeadSheSees,
+  thePointerSheSees,
   theEndsOfTheArcs,
   theGroundBetweenTheArcs,
 } from '../fixtures/theRingSheReads';
@@ -128,29 +127,37 @@ describe('the ring and the top bar take the redesign look', () => {
     });
   });
 
-  describe('the bead on today', () => {
-    // Contract changed by the todayPhases board: on the ring of Today the bead is a disc of the
-    // text colour with a card colour halo, on an orbit outside the band. The plain ring keeps the
-    // card disc with the text colour around it.
-    it('is a disc of the text colour with the card colour around it, on the ring of Today', () => {
-      expect(theBeadSheSees()).toEqual({ fill: colour.text, line: colour.card });
+  describe('the pointer on today', () => {
+    // Contract changed by the todayMarker board, option C: the dark disc outside the band is gone.
+    // A dark stem with a white core crosses the band, and an accent head with a white edge points
+    // in at it from outside. Every ring draws the same pointer.
+    const thePointer = {
+      casing: colour.text,
+      core: colour.card,
+      head: colour.accent,
+      headEdge: colour.card,
+    };
+
+    it('is a dark stem with a white core and an accent head, on the ring of Today', () => {
+      expect(thePointerSheSees()).toEqual(thePointer);
+      expect(screen.queryByTestId('ring-bead')).toBeNull();
     });
 
-    it('sits outside the band, so it never covers a name written on an arc', () => {
-      const bead = screen.getByTestId(ringBeadTestID);
+    it('points in at the band from outside, so its head never covers a name on an arc', () => {
       const centre = NAMED_RING_DIAMETER / 2;
-      const orbit = Math.hypot(Number(bead.props.cx) - centre, Number(bead.props.cy) - centre);
+      const head = String(screen.getByTestId(ringPointerHeadTestID).props.d);
+      const numbers = (head.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
+      const corners = [0, 2, 4].map((at) =>
+        Math.hypot((numbers[at] ?? 0) - centre, (numbers[at + 1] ?? 0) - centre),
+      );
 
-      expect(orbit).toBeCloseTo(NAMED_RING_BEAD_ORBIT, 3);
-      expect(orbit).toBeGreaterThan(NAMED_RING_RADIUS + NAMED_RING_TRACK_WIDTH / 2);
+      expect(corners).toHaveLength(3);
+      for (const corner of corners) {
+        expect(corner).toBeGreaterThan(NAMED_RING_RADIUS + NAMED_RING_TRACK_WIDTH / 2);
+      }
     });
 
-    it('is never the accent and never one of the four arcs it can sit on', () => {
-      expect(theBeadSheSees().fill).not.toBe(colour.accent);
-      expect(theBeadSheSees().fill).not.toBe(colour.period);
-    });
-
-    it('is still a disc of the card colour with the text colour around it on the plain ring', async () => {
+    it('draws the same pointer on the plain ring', async () => {
       await render(
         <CycleRing
           cycleLengthDays={28}
@@ -164,7 +171,7 @@ describe('the ring and the top bar take the redesign look', () => {
         />,
       );
 
-      expect(theBeadSheSees()).toEqual({ fill: colour.card, line: colour.text });
+      expect(thePointerSheSees()).toEqual(thePointer);
     });
   });
 

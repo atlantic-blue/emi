@@ -390,6 +390,8 @@ export function markupOf(node: unknown): string {
       return svgNode('circle', drawn, ['cx', 'cy', 'r']);
     case 'RNSVGRect':
       return svgNode('rect', drawn, ['x', 'y', 'width', 'height', 'rx', 'ry']);
+    case 'RNSVGLine':
+      return svgNode('line', drawn, ['x1', 'y1', 'x2', 'y2']);
     default:
       return box(drawn);
   }

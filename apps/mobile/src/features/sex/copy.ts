@@ -9,6 +9,7 @@ import type { SexGroup } from './answers';
 export const sexPageCopy = {
   title: words('sex.title'),
   back: words('sex.back'),
+  chooseDay: words('sex.chooseDay'),
   save: words('sex.save'),
   lock: words('onboarding.encrypts'),
   groups: {

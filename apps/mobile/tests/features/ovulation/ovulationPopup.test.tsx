@@ -25,7 +25,7 @@ import {
   ovulationSignTestID,
 } from '../../../src/features/ovulation/OvulationPopup';
 import { fertileWindowLabel } from '../../../src/features/ovulation/copy';
-import { signsAfterPress } from '../../../src/features/ovulation/signs';
+import { signChoices, signsAfterPress } from '../../../src/features/ovulation/signs';
 import { catalogueOf } from '../../../src/language/words';
 import { resetExpoSqlite } from '../../data/expoSqlite';
 import { resetExpoSecureStore } from '../../fixtures/expoSecureStore';
@@ -195,6 +195,40 @@ describe('what the popup says', () => {
     ]) {
       expect(screen.getByText(label)).toBeTruthy();
     }
+  });
+
+  it('should put "Nothing yet" first, before the six signs', async () => {
+    await herPhoneHolds(herPeriodStarts(insideTheWindow, withAForecast));
+    await sheOpensToday();
+    const signIDs = ovulationSignValues.map(ovulationSignTestID);
+    const shown = screen
+      .getAllByTestId(/^ovulation-popup-/)
+      .map((chip) => String(chip.props.testID))
+      .filter((testID) => signIDs.includes(testID));
+
+    expect(shown).toEqual([
+      ovulationSignTestID('nothing-yet'),
+      ovulationSignTestID('egg-white-discharge'),
+      ovulationSignTestID('pain-on-one-side'),
+      ovulationSignTestID('tender-breasts'),
+      ovulationSignTestID('higher-sex-drive'),
+      ovulationSignTestID('positive-ovulation-test'),
+      ovulationSignTestID('higher-temperature'),
+    ]);
+    expect(shown.at(-1)).not.toBe(ovulationSignTestID('nothing-yet'));
+  });
+
+  it('should keep the same order in English, Spanish and Russian', () => {
+    const firstIn = (language: 'en' | 'es' | 'ru'): string | undefined => {
+      const first = signChoices[0];
+
+      return first === undefined ? undefined : String(catalogueOf(language)[first.labelKey]);
+    };
+
+    expect(signChoices.map((choice) => choice.value)[0]).toBe('nothing-yet');
+    expect(firstIn('en')).toBe('Nothing yet');
+    expect(firstIn('es')).toBe('Nada todavía');
+    expect(firstIn('ru')).toBe('Пока ничего');
   });
 
   it('should name both months when the window runs into the next one', () => {

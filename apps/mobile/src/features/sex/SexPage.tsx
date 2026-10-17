@@ -1,6 +1,6 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
@@ -9,6 +9,8 @@ import { LockLine } from '../../components/LockLine';
 import { RoundIconButton } from '../../components/RoundIconButton';
 import { Screen } from '../../components/Screen';
 import { HighlightRow } from '../highlight/HighlightRow';
+import { Calendar } from '../onboarding/Calendar';
+import { addMonths, startOfMonth } from '../onboarding/days';
 import { type HighlightSlug, sexHighlights } from '../highlight/highlights';
 import type { SexAnswers } from '../log/logDay';
 import { type SexGroup, answersAfterPress, sexGroupOrder, sexOptions } from './answers';
@@ -20,6 +22,10 @@ import { sexPageCopy } from './copy';
  *
  * A press only changes what the page holds. Nothing is written until she presses Save, so she can
  * pick, change and take off an answer before anything reaches the day.
+ *
+ * The board draws no way to another day. Choose another day opens the month grid every question
+ * that asks for a day is answered on, so she can record sex for a day she already lived from here
+ * too. A day ahead of her takes no press.
  */
 
 export const sexPageTestID = 'sex-page';
@@ -30,6 +36,11 @@ export const sexPageQuestionTestID = 'sex-page-question';
 export const sexPageFertileTestID = 'sex-page-fertile';
 export const sexPageLockTestID = 'sex-page-lock';
 export const sexPageSaveTestID = 'sex-page-save';
+export const sexPageChooseDayTestID = 'sex-page-choose-day';
+export const sexPageDaysTestID = 'sex-page-days';
+
+/** Months. How far back the grid reaches from the month of today. */
+const MONTHS_THE_GRID_REACHES_BACK = 12;
 
 export function sexChipTestID(group: SexGroup, value: string): string {
   return `sex-page-${group}-${value}`;
@@ -39,6 +50,9 @@ export function sexChipTestID(group: SexGroup, value: string): string {
 const TURNED_AROUND = [{ rotate: '180deg' }] as const;
 
 interface Props {
+  /** The day the page records, and her own day, which the grid measures every square from. */
+  readonly day: string;
+  readonly today: string;
   /** The date above the question. */
   readonly heading: string;
   readonly question: string;
@@ -48,11 +62,13 @@ interface Props {
   readonly fertileNote?: string;
   readonly onBack: () => void;
   readonly onSave: (answers: SexAnswers) => void;
+  readonly onChooseDay: (day: string) => void;
   readonly onHighlight: (slug: HighlightSlug) => void;
 }
 
 export function SexPage(props: Props): ReactNode {
   const [answers, setAnswers] = useState<SexAnswers>(props.held);
+  const [isChoosingDay, setIsChoosingDay] = useState(false);
 
   return (
     <Screen drawsTheWash testID={sexPageTestID}>
@@ -79,9 +95,36 @@ export function SexPage(props: Props): ReactNode {
         />
 
         <View style={styles.where}>
-          <Text style={styles.day} testID={sexPageDayTestID}>
-            {props.heading}
-          </Text>
+          <View style={styles.dayRow}>
+            <Text style={styles.day} testID={sexPageDayTestID}>
+              {props.heading}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ expanded: isChoosingDay }}
+              onPress={() => setIsChoosingDay((was) => !was)}
+              style={styles.chooseDay}
+              testID={sexPageChooseDayTestID}
+            >
+              <Text style={styles.chooseDayLabel}>{sexPageCopy.chooseDay}</Text>
+            </Pressable>
+          </View>
+          {isChoosingDay ? (
+            <Card testID={sexPageDaysTestID}>
+              <Calendar
+                canChoose={(day) => day <= props.today}
+                chosen={props.day}
+                earliest={addMonths(startOfMonth(props.today), -MONTHS_THE_GRID_REACHES_BACK)}
+                latest={props.today}
+                onChoose={(day) => {
+                  setIsChoosingDay(false);
+                  props.onChooseDay(day);
+                }}
+                opensOn={props.day}
+                today={props.today}
+              />
+            </Card>
+          ) : null}
           <Text style={styles.question} testID={sexPageQuestionTestID}>
             {props.question}
           </Text>
@@ -133,10 +176,19 @@ const styles = StyleSheet.create({
   backMark: { transform: TURNED_AROUND },
   body: { gap: space.spaceLg, paddingHorizontal: space.margin, paddingVertical: space.spaceXl },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
+  chooseDay: { justifyContent: 'center', minHeight: MINIMUM_TAP_TARGET },
+  chooseDayLabel: { color: colour.accent, ...textStyle('body-sm') },
   day: {
     color: colour.secondaryText,
+    flexShrink: 1,
     textTransform: 'uppercase',
     ...textStyle('label-md'),
+  },
+  dayRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: space.spaceMd,
+    justifyContent: 'space-between',
   },
   evenUp: { width: MINIMUM_TAP_TARGET },
   fertile: {

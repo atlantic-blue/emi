@@ -24,6 +24,7 @@ import { answersDiffer } from '../features/sex/answers';
 import { fertileNote, sexDayHeading, sexQuestion } from '../features/sex/copy';
 import { periodDayOn, suggestsPeriodProducts } from '../features/sex/periodSuggestion';
 import { SexPage } from '../features/sex/SexPage';
+import { sexAddress } from '../features/sex/sexAddress';
 import { useProfileVault, useVault } from '../services/vault/VaultProvider';
 
 /**
@@ -91,17 +92,27 @@ export default function SexRoute(): ReactNode {
     statedCycleLengthDays: statedCycleLengthDays(database, profiles) ?? defaultCycleLengthDays,
     ...(periodLengthDays === undefined ? {} : { statedPeriodLengthDays: periodLengthDays }),
   };
+  // The day travels in the address, as the month of the calendar does, so the page is stood up again
+  // on the day she chose and opens on what that day holds. The entry is replaced, so Back still
+  // leaves to the screen she opened the page from.
+  const chooseDay = (chosen: string): void => {
+    router.replace(sexAddress(chosen === today ? undefined : chosen));
+  };
   const window = isFertileOn(from, day) ? theFertileWindowOn(from, day) : undefined;
 
   return (
     <>
       <SexPage
+        day={day}
         heading={sexDayHeading(day)}
         held={sexLogged(database, vault, day)}
+        key={day}
         onBack={leave}
+        onChooseDay={chooseDay}
         onHighlight={(slug) => router.push(highlightAddress(slug))}
         onSave={save}
         question={sexQuestion(day, today)}
+        today={today}
         {...(window === undefined ? {} : { fertileNote: fertileNote(window, day, today) })}
       />
       {suggestingOn === undefined ? null : (

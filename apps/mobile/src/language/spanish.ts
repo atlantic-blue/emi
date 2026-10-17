@@ -95,6 +95,7 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.screen.editPeriod': 'Editar mi periodo',
   'calendar.screen.later': 'Siguiente',
   'calendar.screen.laterMonth': 'Mes siguiente',
+  'calendar.screen.recordSex': 'Registrar sexo',
   'calendar.today': 'Hoy',
   'calendar.weekday.friday': 'Viernes',
   'calendar.weekday.monday': 'Lunes',
@@ -775,7 +776,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.tour.ring.line.arcs':
     'Cuatro arcos dividen el anillo: los días que sangras, los días después, los días alrededor de la ovulación y los días antes de tu próximo periodo.',
   'onboarding.tour.ring.line.bead':
-    'El anillo es tu ciclo. Un punto marca hoy, y el número de dentro es el día en que estás.',
+    'El anillo es tu ciclo. Un indicador marca hoy, y el número de dentro es el día en que estás.',
   'onboarding.tour.ring.title': 'Tu ciclo, en un anillo.',
   'onboarding.tour.skip': 'Omitir',
   'onboarding.welcome.action': 'Continuar',
@@ -1026,6 +1027,7 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.settings.lockLine': 'Activado, con tu cara o tu código de acceso',
   'settings.settings.title': 'Privacidad',
   'sex.back': 'Atrás',
+  'sex.chooseDay': 'Elegir otro día',
   'sex.day': '{weekday}, {date} de {month}',
   'sex.fertile.now.sameMonth':
     'Estás en tu ventana fértil, del {from} al {to} de {month}. Es una estimación. Esto no es un anticonceptivo.',

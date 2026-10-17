@@ -203,11 +203,11 @@ Feature: She opens Emi and logs her first period
     Then a phase of no days is not drawn at all
     And the arcs and the gaps between them come to a whole turn
 
-  Scenario: BRAND-3, the bead sits on the day she is on and never outside her cycle
+  Scenario: BRAND-3, the pointer sits on the day she is on and never outside her cycle
     Given her phone holds six cycles of forty five days
     When she opens Emi
-    Then the bead sits on the day the ring says she is on
-    And the bead moves further round the ring on a later day
+    Then the pointer sits on the day the ring says she is on
+    And the pointer moves further round the ring on a later day
 
   Scenario: SEE-1, every boundary between two phases is a gap in the ring
     Given her phone holds six cycles of forty five days
@@ -671,7 +671,7 @@ Feature: She opens Emi and logs her first period
     Then the middle of the ring names her phase, then Day and the day she is on, then about the length of her cycle
     And every arc is painted whole with a square end, and ground still shows at every boundary between two phases
     And each phase name is written along its own arc, in the colour measured on that arc
-    And the bead on today is a dark disc with a white line around it, outside the band
+    And the pointer on today has an accent head over a dark stem with a white core
     And the strip of seven days is gone, and the calendar button closes the top bar on the right
 
   Scenario: SCREEN-1, the welcome and the tour say what the redesign says
@@ -811,6 +811,27 @@ Feature: She opens Emi and logs her first period
     When she presses each of them again, and saves
     Then that day holds no answer about sex, and keeps its flow
 
+  Scenario: SCREEN-2, she chooses yesterday on the Sex page of today and records sex there
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the Sex page of today and presses Choose another day
+    Then a month opens under the date, and a day ahead of her takes no press
+    When she presses yesterday in that month
+    Then the page asks whether she had sex yesterday, under the date of that day
+    When she presses Unprotected and saves
+    Then her phone holds that answer on yesterday, sealed, and today holds no answer about sex
+
+  Scenario: SCREEN-4, she records sex on a day she already lived from the calendar, and removes it
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the calendar and presses the day before yesterday
+    And she presses Record sex on the card of that day
+    Then the page asks whether she had sex that day, under the date of that day
+    When she presses Protected and saves
+    Then the sheet of products for sex on a period day opens
+    When she presses Not now on the sheet
+    Then her phone holds that answer on that day, sealed, beside the flow she logged
+    When she presses that day again, then Record sex, then Protected again, and saves
+    Then that day holds no answer about sex, and keeps its flow
+
   Scenario: SCREEN-2, she records discharge and a product on a day
     Given her phone holds four recorded period days, the last of them today
     When she opens the Period page of today
@@ -836,6 +857,7 @@ Feature: She opens Emi and logs her first period
     Given her phone holds three periods a cycle apart, and today is inside her forecast fertile window
     When she opens Today
     Then a sheet over Today asks whether she noticed any signs of ovulation, under the dates of her fertile window
+    And Nothing yet is the first choice on the sheet
     And Save waits until she picks a sign
     When she presses Egg white discharge and Higher sex drive, and saves
     Then her phone holds those two signs on today, sealed, with the popup marked answered

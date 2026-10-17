@@ -12,7 +12,9 @@ import { StyleSheet } from 'react-native';
 import {
   cycleRingTestID,
   ringArcTestID,
-  ringBeadTestID,
+  ringPointerCasingTestID,
+  ringPointerCoreTestID,
+  ringPointerHeadTestID,
   ringWholeArcTestID,
 } from '../../src/components/CycleRing';
 
@@ -183,11 +185,14 @@ export function theEndOfTheArc(phase: PhaseName, strength: 'elapsed' | 'ahead'):
   return theEndOf(screen.getByTestId(ringArcTestID(phase, strength)) as unknown as Painted);
 }
 
-/** Where the bead sits on the ring, read off the circle the renderer drew. */
-export function theBeadDegrees(): number {
-  const bead = screen.getByTestId(ringBeadTestID);
+/** Where the pointer sits on the ring, read off the middle of the stem the renderer drew. */
+export function thePointerDegrees(): number {
+  const stem = screen.getByTestId(ringPointerCoreTestID).props;
 
-  return degreesAt(Number(bead.props.cx), Number(bead.props.cy));
+  return degreesAt(
+    (Number(stem.x1) + Number(stem.x2)) / 2,
+    (Number(stem.y1) + Number(stem.y2)) / 2,
+  );
 }
 
 /**
@@ -205,11 +210,21 @@ export function theColourDrawn(given: unknown): string {
   return `#${(packed & 0xffffff).toString(16).toUpperCase().padStart(6, '0')}`;
 }
 
-/** The disc on today: what fills it, and the line drawn around it. */
-export function theBeadSheSees(): { readonly fill: string; readonly line: string } {
-  const bead = screen.getByTestId(ringBeadTestID);
+/** The pointer on today: the casing and the core of its stem, and the head and its edge. */
+export function thePointerSheSees(): {
+  readonly casing: string;
+  readonly core: string;
+  readonly head: string;
+  readonly headEdge: string;
+} {
+  const head = screen.getByTestId(ringPointerHeadTestID).props;
 
-  return { fill: theColourDrawn(bead.props.fill), line: theColourDrawn(bead.props.stroke) };
+  return {
+    casing: theColourDrawn(screen.getByTestId(ringPointerCasingTestID).props.stroke),
+    core: theColourDrawn(screen.getByTestId(ringPointerCoreTestID).props.stroke),
+    head: theColourDrawn(head.fill),
+    headEdge: theColourDrawn(head.stroke),
+  };
 }
 
 /** What the middle of the ring says, in the order she reads it down the middle. */

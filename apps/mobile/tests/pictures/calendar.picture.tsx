@@ -128,7 +128,7 @@ interface State {
 const theStates: readonly State[] = [
   {
     title: 'The month she is in, with today named at the foot',
-    note: 'Day sixteen. The five days she bled are filled, today is ringed, and the next forecast period starts again at day 1 in dashed rings. The card names today, its cycle day, its phase and what she marked on it, over Edit my period.',
+    note: 'Day sixteen. The five days she bled are filled, today is ringed, and the next forecast period starts again at day 1 in dashed rings. The card names today, its cycle day, its phase and what she marked on it, over Edit my period and Record sex.',
     month: theDaySheOpensIt,
     shePressed: theDaySheOpensIt,
   },
@@ -140,7 +140,7 @@ const theStates: readonly State[] = [
   },
   {
     title: 'The month before, with a day she bled on pressed',
-    note: 'Her period ran from the fourteenth. The picked day carries a ring of its own, and the card says its cycle day, its phase and that nothing else is logged. The round button opens that day.',
+    note: 'Her period ran from the fourteenth. The picked day carries a ring of its own, and the card says its cycle day, its phase and that nothing else is logged. The round button opens that day, and Record sex opens the Sex page of that day.',
     month: aDaySheWasBleedingOn,
     shePressed: aDaySheWasBleedingOn,
   },
@@ -158,6 +158,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
         onEditPeriod={() => undefined}
         onLaterMonth={() => undefined}
         onOpenDay={() => undefined}
+        onRecordSex={() => undefined}
         onPressDay={() => undefined}
         onToday={() => undefined}
         phaseOn={(day) => theDayPhaseOn(from, day)}

@@ -97,6 +97,7 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.screen.editPeriod': 'Изменить мои месячные',
   'calendar.screen.later': 'Позже',
   'calendar.screen.laterMonth': 'Следующий месяц',
+  'calendar.screen.recordSex': 'Отметить секс',
   'calendar.today': 'Сегодня',
   'calendar.weekday.friday': 'Пятница',
   'calendar.weekday.monday': 'Понедельник',
@@ -806,7 +807,7 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.tour.ring.line.arcs':
     'Четыре дуги делят кольцо: дни менструации, дни после неё, дни вокруг овуляции и дни перед следующей менструацией.',
   'onboarding.tour.ring.line.bead':
-    'Кольцо и есть ваш цикл. Точка отмечает сегодня, а число внутри показывает, какой у вас день.',
+    'Кольцо и есть ваш цикл. Указатель отмечает сегодня, а число внутри показывает, какой у вас день.',
   'onboarding.tour.ring.title': 'Ваш цикл в одном кольце.',
   'onboarding.tour.skip': 'Пропустить',
   'onboarding.welcome.action': 'Продолжить',
@@ -844,7 +845,7 @@ export const russian: CatalogueIn<'ru'> = {
   'ovulation.sign.higherSexDrive': 'Повышенное влечение',
   'ovulation.sign.higherTemperature': 'Повышенная температура',
   'ovulation.sign.nothingYet': 'Пока ничего',
-  'ovulation.sign.painOnOneSide': 'Боль с одной стороны',
+  'ovulation.sign.painOnOneSide': 'Боль внизу живота с одной стороны',
   'ovulation.sign.positiveOvulationTest': 'Положительный тест на овуляцию',
   'ovulation.sign.tenderBreasts': 'Чувствительная грудь',
   'pastPeriods.action': 'Дальше',
@@ -911,7 +912,7 @@ export const russian: CatalogueIn<'ru'> = {
   'phase.chip.hungry': 'Голод',
   'phase.chip.irritable': 'Раздражительность',
   'phase.chip.littleAppetite': 'Мало аппетита',
-  'phase.chip.painOnOneSide': 'Боль с одной стороны',
+  'phase.chip.painOnOneSide': 'Боль внизу живота с одной стороны',
   'phase.chip.sad': 'Грусть',
   'phase.chip.salty': 'Солёное',
   'phase.chip.sweet': 'Сладкое',
@@ -953,7 +954,7 @@ export const russian: CatalogueIn<'ru'> = {
   'phase.guide.mood': 'Настроение',
   'phase.guide.open': 'Что эта фаза может значить для вас',
   'phase.guide.ovulation.body':
-    'Некоторые чувствуют короткую боль с одной стороны или замечают прозрачные тянущиеся выделения.',
+    'Некоторые чувствуют короткую боль внизу живота с одной стороны или замечают прозрачные тянущиеся выделения.',
   'phase.guide.ovulation.food':
     'Свежие овощи, клетчатка и достаточно воды помогают на пике эстрогена. Ешьте регулярно.',
   'phase.guide.ovulation.mood':
@@ -1058,6 +1059,7 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.settings.lockLine': 'Включена: по лицу или по коду доступа',
   'settings.settings.title': 'Приватность',
   'sex.back': 'Назад',
+  'sex.chooseDay': 'Выбрать другой день',
   'sex.day': '{weekday}, {date} {month}',
   'sex.fertile.now.sameMonth':
     'Сейчас у вас фертильное окно, с {from} по {to} {month}. Это оценка. Это не контрацепция.',

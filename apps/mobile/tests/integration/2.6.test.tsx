@@ -7,7 +7,7 @@ import { AccessibilityInfo } from 'react-native';
 
 import {
   cycleRingTestID,
-  ringBeadTestID,
+  ringPointerCoreTestID,
   ringWholeArcTestID,
 } from '../../src/components/CycleRing';
 import { readDayLog } from '../../src/data/dayLogRepository';
@@ -52,7 +52,7 @@ const herLastPeriodStarted = addDays(sheForgot, -herCycleLengthDays);
 
 /**
  * What the ring says while that Monday holds no bleeding: her last period was four weeks and three
- * days ago, so the cycle she is in has run past the length she expects and the bead is at the end
+ * days ago, so the cycle she is in has run past the length she expects and the pointer is at the end
  * of it. Both readings are the ring's own words, and nothing here computes them.
  */
 const theRingBefore = 'Day 32 of 32, luteal';
@@ -105,12 +105,12 @@ function theRingSays(): string {
   return String(screen.getByTestId(cycleRingTestID).props.accessibilityLabel);
 }
 
-function theRingShape(): { arc: string; bead: { x: number; y: number } } {
-  const bead = screen.getByTestId(ringBeadTestID);
+function theRingShape(): { arc: string; pointer: { x: number; y: number } } {
+  const stem = screen.getByTestId(ringPointerCoreTestID);
 
   return {
     arc: String(screen.getByTestId(ringWholeArcTestID('period')).props.d),
-    bead: { x: Number(bead.props.cx), y: Number(bead.props.cy) },
+    pointer: { x: Number(stem.props.x1), y: Number(stem.props.y1) },
   };
 }
 
@@ -222,7 +222,7 @@ describe('a past day is edited and a future day is refused', () => {
 
       expect(theRingSays()).toBe(theRingAfter);
       expect(theRingShape().arc).not.toBe(before.arc);
-      expect(theRingShape().bead).not.toEqual(before.bead);
+      expect(theRingShape().pointer).not.toEqual(before.pointer);
     });
 
     it('marks what she picked, and says the day is saved on this phone', async () => {
