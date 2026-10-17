@@ -1,8 +1,10 @@
 # Changelog
 
-Each version lists what changed for the person who uses Emi. The version is `expo.version` in `apps/mobile/app.json`. The store build number goes up by itself on each build, so it is not written here.
+Each version lists what changed for the person who uses Emi. The version is `expo.version` in `apps/mobile/app.json`. The store build number goes up by itself on each build, and a released version names the build it shipped as.
 
-## 0.1.0 (not released)
+## 0.1.0 (17 October 2026)
+
+TestFlight build 5, made from the tag `v0.1.0`.
 
 ### Added
 
