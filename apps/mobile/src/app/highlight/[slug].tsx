@@ -3,9 +3,12 @@ import type { ReactNode } from 'react';
 import { useCallback } from 'react';
 
 import { HighlightPage } from '../../features/highlight/HighlightPage';
-import { highlightFor } from '../../features/highlight/highlights';
+import { highlightAddress, highlightFor } from '../../features/highlight/highlights';
 
-/** The page one highlight opens. An address that names no highlight goes back to Today. */
+/**
+ * The page one highlight opens. Hygiene products has a page of its own, so its old address goes
+ * there. An address that names no highlight goes back to Today.
+ */
 export default function HighlightRoute(): ReactNode {
   const router = useRouter();
   const { slug } = useLocalSearchParams<{ slug: string }>();
@@ -18,6 +21,10 @@ export default function HighlightRoute(): ReactNode {
     }
     router.replace('/');
   }, [router]);
+
+  if (slug === 'hygiene-products') {
+    return <Redirect href={highlightAddress('hygiene-products')} />;
+  }
 
   if (highlight === undefined) {
     return <Redirect href="/" />;

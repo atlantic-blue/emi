@@ -1,16 +1,22 @@
 import { type ColourName, type IconName } from '@emi/tokens';
 
 import { words } from '../../language';
+import { hygieneAddress } from '../hygiene/products';
 
 /**
  * The highlights: a round tile at the top of a page that opens a short page of its own. The Sex
  * page carries two and the Period page two more (issue 275). A new one is an entry in this list.
  *
+ * Three of them open a few paragraphs. Hygiene products opens a page of its own, with a page for
+ * each product (issue 304).
+ *
  * The text is draft text, short, plain and factual, and none of it is medical advice.
  */
 
-export type HighlightSlug =
-  'intercourse' | 'learn-about-sex' | 'all-about-discharge' | 'hygiene-products';
+/** The highlights that open a few paragraphs. */
+export type ReadingSlug = 'intercourse' | 'learn-about-sex' | 'all-about-discharge';
+
+export type HighlightSlug = ReadingSlug | 'hygiene-products';
 
 export interface Highlight {
   readonly slug: HighlightSlug;
@@ -20,11 +26,14 @@ export interface Highlight {
   readonly tile: ColourName;
   /** The ink of the drawing and of the ring around the tile. */
   readonly ink: ColourName;
+}
+
+export interface Reading extends Highlight {
   /** The paragraphs of the page it opens, in order. */
   readonly paragraphs: readonly string[];
 }
 
-export const highlights: Readonly<Record<HighlightSlug, Highlight>> = {
+export const readings: Readonly<Record<ReadingSlug, Reading>> = {
   intercourse: {
     slug: 'intercourse',
     title: words('highlight.intercourse.title'),
@@ -64,18 +73,16 @@ export const highlights: Readonly<Record<HighlightSlug, Highlight>> = {
       words('highlight.allAboutDischarge.4'),
     ],
   },
+};
+
+export const highlights: Readonly<Record<HighlightSlug, Highlight>> = {
+  ...readings,
   'hygiene-products': {
     slug: 'hygiene-products',
     title: words('highlight.hygieneProducts.title'),
     icon: 'book',
     tile: 'washWarm',
     ink: 'ovulationInk',
-    paragraphs: [
-      words('highlight.hygieneProducts.1'),
-      words('highlight.hygieneProducts.2'),
-      words('highlight.hygieneProducts.3'),
-      words('highlight.hygieneProducts.4'),
-    ],
   },
 };
 
@@ -88,14 +95,14 @@ export const periodHighlights: readonly HighlightSlug[] = [
   'hygiene-products',
 ];
 
-/** The highlight an address names, or nothing where it names none, because she can type one. */
-export function highlightFor(slug: string): Highlight | undefined {
-  return Object.prototype.hasOwnProperty.call(highlights, slug)
-    ? highlights[slug as HighlightSlug]
+/** The reading an address names, or nothing where it names none, because she can type one. */
+export function highlightFor(slug: string): Reading | undefined {
+  return Object.prototype.hasOwnProperty.call(readings, slug)
+    ? readings[slug as ReadingSlug]
     : undefined;
 }
 
 /** The address of the page a highlight opens. */
 export function highlightAddress(slug: HighlightSlug): string {
-  return `/highlight/${slug}`;
+  return slug === 'hygiene-products' ? hygieneAddress : `/highlight/${slug}`;
 }

@@ -16,7 +16,8 @@ import {
   highlightParagraphTestID,
 } from '../../../src/features/highlight/HighlightPage';
 import { highlightTestID } from '../../../src/features/highlight/HighlightRow';
-import { highlights } from '../../../src/features/highlight/highlights';
+import { readings } from '../../../src/features/highlight/highlights';
+import { hygienePageTestID } from '../../../src/features/hygiene/HygieneProductsPage';
 import { dayRefusedTestID } from '../../../src/features/log/DayRefused';
 import { periodAnswersAfterPress } from '../../../src/features/period/answers';
 import {
@@ -438,19 +439,16 @@ describe('a past day', () => {
 });
 
 describe('the highlights', () => {
-  it.each([
-    { slug: 'all-about-discharge', title: 'All about discharge' },
-    { slug: 'hygiene-products', title: 'Hygiene products' },
-  ] as const)('should open the page of $title, and come back', async ({ slug, title }) => {
+  it('should open the page of All about discharge, and come back', async () => {
     await sheOpensThePeriodPage(aPeriodLongAgo);
 
-    expect(screen.getByText(title)).toBeTruthy();
-    await press(highlightTestID(slug));
+    expect(screen.getByText('All about discharge')).toBeTruthy();
+    await press(highlightTestID('all-about-discharge'));
 
     await screen.findByTestId(highlightPageTestID);
-    expect(whatItSays(highlightPageTitleTestID)).toBe(title);
-    expect(highlights[slug].paragraphs.length).toBeGreaterThan(0);
-    highlights[slug].paragraphs.forEach((paragraph, index) => {
+    expect(whatItSays(highlightPageTitleTestID)).toBe('All about discharge');
+    expect(readings['all-about-discharge'].paragraphs.length).toBeGreaterThan(0);
+    readings['all-about-discharge'].paragraphs.forEach((paragraph, index) => {
       expect(whatItSays(highlightParagraphTestID(index))).toBe(paragraph);
     });
 
@@ -458,10 +456,14 @@ describe('the highlights', () => {
     expect(await screen.findByTestId(periodPageTestID)).toBeTruthy();
   });
 
-  it('should give each highlight its own page', () => {
-    expect(highlights['all-about-discharge'].paragraphs).not.toEqual(
-      highlights['hygiene-products'].paragraphs,
-    );
+  it('should open the Hygiene products page and not a page of paragraphs', async () => {
+    await sheOpensThePeriodPage(aPeriodLongAgo);
+
+    expect(screen.getByText('Hygiene products')).toBeTruthy();
+    await press(highlightTestID('hygiene-products'));
+
+    expect(await screen.findByTestId(hygienePageTestID)).toBeTruthy();
+    expect(screen.queryByTestId(highlightPageTestID)).toBeNull();
   });
 
   it('should carry the row in a sideways scroll, so more highlights fit than the width holds', async () => {
