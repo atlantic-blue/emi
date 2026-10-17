@@ -334,6 +334,25 @@ export const spanish: CatalogueIn<'es'> = {
     'Tus últimos {cycles}, de {shortest} a {longest} días, sobre el rango publicado de {low} a {high} días.',
   'home.wordmark': 'emi',
 
+  'hygiene.choose.comfort.text':
+    'Algunas personas prefieren compresas. Otras prefieren una copa o tampones. Usa lo que te resulte cómodo.',
+  'hygiene.choose.comfort.title': 'Comodidad',
+  'hygiene.choose.cost.text':
+    'Los productos desechables se compran cada ciclo. Un producto reutilizable cuesta más al principio, y se compra con menos frecuencia.',
+  'hygiene.choose.cost.title': 'Coste',
+  'hygiene.choose.flow.text':
+    'Tu flujo cambia de un día a otro. Puedes usar un producto más absorbente los días de flujo abundante y uno más ligero los días de flujo escaso.',
+  'hygiene.choose.flow.title': 'Flujo',
+  'hygiene.choose.health.text':
+    'Si tienes una afección ginecológica, consulta a tu médico antes de elegir.',
+  'hygiene.choose.health.title': 'Salud',
+  'hygiene.choose.heading': 'Cómo elegir',
+  'hygiene.choose.lifestyle.text':
+    'Para hacer deporte, nadar o hacer viajes largos, algunas personas prefieren un producto que va dentro.',
+  'hygiene.choose.lifestyle.title': 'Estilo de vida',
+  'hygiene.choose.waste.text':
+    'Los productos reutilizables generan menos residuos que los desechables.',
+  'hygiene.choose.waste.title': 'Residuos',
   'hygiene.clothPad.advantages.1': 'La vuelves a usar, así que compras menos a menudo',
   'hygiene.clothPad.advantages.2': 'Genera menos residuos que los productos desechables',
   'hygiene.clothPad.advantages.3':

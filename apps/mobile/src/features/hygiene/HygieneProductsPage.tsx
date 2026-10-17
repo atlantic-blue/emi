@@ -4,14 +4,15 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
 import { words } from '../../language';
+import { HowToChoose } from './HowToChoose';
 import { HygieneHeader } from './HygieneHeader';
 import { ProductDrawing } from './ProductDrawing';
 import { type ProductSlug, productOf, productOrder } from './products';
 
 /**
  * The Hygiene products page, from the hygieneProducts board (issue 304): the eight products in a
- * grid of four columns, a quarter of the width each, each one the way to its own page. The board's "How to choose" section goes
- * under the grid, and it belongs to issue 305.
+ * grid of four columns, a quarter of the width each, each one the way to its own page, and the
+ * board's "How to choose" card under the grid (issue 305).
  */
 
 export const hygienePageTestID = 'hygiene-page';
@@ -64,6 +65,8 @@ export function HygieneProductsPage({ onBack, onOpen }: Props): ReactNode {
             );
           })}
         </View>
+
+        <HowToChoose />
       </ScrollView>
     </Screen>
   );

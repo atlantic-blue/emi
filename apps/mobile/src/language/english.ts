@@ -337,6 +337,24 @@ export const english = {
     'Your last {cycles}, from {shortest} to {longest} days, over the published range of {low} to {high} days.',
   'home.wordmark': 'emi',
 
+  'hygiene.choose.comfort.text':
+    'Some people prefer pads. Others prefer a cup or tampons. Use what feels right for you.',
+  'hygiene.choose.comfort.title': 'Comfort',
+  'hygiene.choose.cost.text':
+    'You buy disposable products every cycle. A reusable product costs more at the start, and you buy it less often.',
+  'hygiene.choose.cost.title': 'Cost',
+  'hygiene.choose.flow.text':
+    'Your flow changes from day to day. You can use a more absorbent product on heavy days and a lighter one on light days.',
+  'hygiene.choose.flow.title': 'Flow',
+  'hygiene.choose.health.text':
+    'If you have a gynaecological condition, ask your doctor before you choose.',
+  'hygiene.choose.health.title': 'Health',
+  'hygiene.choose.heading': 'How to choose',
+  'hygiene.choose.lifestyle.text':
+    'For sport, swimming or long trips, some people prefer a product that goes inside.',
+  'hygiene.choose.lifestyle.title': 'Lifestyle',
+  'hygiene.choose.waste.text': 'Reusable products make less waste than disposable ones.',
+  'hygiene.choose.waste.title': 'Waste',
   'hygiene.clothPad.advantages.1': 'You use it again, so you buy it less often',
   'hygiene.clothPad.advantages.2': 'It makes less waste than disposable products',
   'hygiene.clothPad.advantages.3': 'Some people find fabric softer than a disposable pad',

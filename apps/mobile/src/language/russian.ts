@@ -342,6 +342,24 @@ export const russian: CatalogueIn<'ru'> = {
     'Ваши последние {cycles}, от {shortest} до {longest} дней, на опубликованном диапазоне от {low} до {high} дней.',
   'home.wordmark': 'emi',
 
+  'hygiene.choose.comfort.text':
+    'Одни предпочитают прокладки. Другие предпочитают чашу или тампоны. Выбирайте то, что вам удобно.',
+  'hygiene.choose.comfort.title': 'Комфорт',
+  'hygiene.choose.cost.text':
+    'Одноразовые средства покупают каждый цикл. Многоразовое средство стоит дороже в начале, но покупать его нужно реже.',
+  'hygiene.choose.cost.title': 'Стоимость',
+  'hygiene.choose.flow.text':
+    'Объём выделений меняется день ото дня. В обильные дни можно использовать средство, которое впитывает больше, а в лёгкие дни средство полегче.',
+  'hygiene.choose.flow.title': 'Объём выделений',
+  'hygiene.choose.health.text':
+    'Если у вас есть гинекологическое заболевание, посоветуйтесь с врачом, прежде чем выбирать.',
+  'hygiene.choose.health.title': 'Здоровье',
+  'hygiene.choose.heading': 'Как выбрать',
+  'hygiene.choose.lifestyle.text':
+    'Для спорта, плавания или долгих поездок некоторые предпочитают средство, которое вводится внутрь.',
+  'hygiene.choose.lifestyle.title': 'Образ жизни',
+  'hygiene.choose.waste.text': 'Многоразовые средства дают меньше отходов, чем одноразовые.',
+  'hygiene.choose.waste.title': 'Отходы',
   'hygiene.clothPad.advantages.1': 'Её используют снова, поэтому покупать её нужно реже',
   'hygiene.clothPad.advantages.2': 'От неё меньше отходов, чем от одноразовых средств',
   'hygiene.clothPad.advantages.3': 'Некоторым ткань кажется мягче одноразовой прокладки',
