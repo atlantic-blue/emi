@@ -27,6 +27,10 @@ pipeline runs on Linux and cannot build the application, so reading the files is
 can give. `pipeline/nativePatches.ts` holds the list of changes and the readers, so each one runs
 against a fixture tree as well as against this one.
 
+`pipeline/checkReleaseTag.ts` is the first step of `.github/workflows/release.yml`. It fails when
+the tag is not `v` and the version in `apps/mobile/app.json`, so a tag on the wrong commit builds
+nothing. `pipeline/releaseTag.ts` holds the rule.
+
 `tools/brand/writeBrandDocument.ts` writes `docs/brand.md` from `packages/tokens`. The drawings
 themselves live in the top level `brand` directory, which is a different thing. `npm run
 generate:brand` writes the document and `npm run check:brand` fails when the committed copy differs
