@@ -13,6 +13,7 @@ import type { SymptomGroup } from '@emi/cycle';
 import { words } from '../../language';
 import { groupHeadings } from '../log/SymptomGroup';
 import { theGroupsSheSeesFirst } from '../log/herOrder';
+import { symptomName } from '../log/symptomName';
 import { type ReminderLead, reminderLeads } from '../reminder/reminder';
 import {
   type TodaySymptom,
@@ -248,20 +249,19 @@ export const focusLabels: Readonly<Record<Focus, string>> = {
 export const focusChoices: readonly Focus[] = focusValues;
 
 /**
- * The words of the six feelings the last question offers. The prototype's own six words are kept,
- * so four of them are the catalogue's word for the slug and two are shorter than it: she presses
- * Tired for `fatigue` and Low for `low-mood`.
+ * The words of the six feelings the last question offers. They are the words of the log sheet, so
+ * the tile she presses on her first day carries the name she reads on every day after it.
  *
  * A map for the reason the four above are maps: a seventh slug arriving in `todaySymptoms` leaves
  * this file failing to compile rather than leaving her a tile with no word on it.
  */
 export const todayLabels: Readonly<Record<TodaySymptom, string>> = {
-  cramps: words('onboarding.today.choice.cramps'),
-  headache: words('onboarding.today.choice.headache'),
-  bloating: words('onboarding.today.choice.bloating'),
-  fatigue: words('onboarding.today.choice.fatigue'),
-  calm: words('onboarding.today.choice.calm'),
-  'low-mood': words('onboarding.today.choice.low-mood'),
+  cramps: symptomName('cramps'),
+  headache: symptomName('headache'),
+  bloating: symptomName('bloating'),
+  fatigue: symptomName('fatigue'),
+  calm: symptomName('calm'),
+  'low-mood': symptomName('low-mood'),
 };
 
 /** The order the screen offers them in, which the map above cannot carry. */

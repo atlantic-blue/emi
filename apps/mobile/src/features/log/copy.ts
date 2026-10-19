@@ -3,6 +3,7 @@ import { findSymptom } from '@emi/cycle';
 
 import { words } from '../../language';
 import { flowLabel } from './FlowPicker';
+import { symptomName } from './symptomName';
 
 /**
  * The words of the unexpected bleeding control. Two rules matter more here than anywhere else in
@@ -36,10 +37,8 @@ function theMarksOn(record: DayRecord): string[] {
   }
 
   for (const slug of [...(record.symptoms ?? []), ...(record.moods ?? [])]) {
-    const symptom = findSymptom(slug);
-
-    if (symptom !== undefined) {
-      named.push(symptom.name.toLowerCase());
+    if (findSymptom(slug) !== undefined) {
+      named.push(symptomName(slug).toLowerCase());
     }
   }
 

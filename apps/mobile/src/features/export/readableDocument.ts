@@ -11,6 +11,7 @@ import {
 import { colour, radius, space, typeScale } from '@emi/tokens';
 
 import { words } from '../../language';
+import { symptomName } from '../log/symptomName';
 import { dayCount, deletedSentence, exportCopy, fullDate, fullInstant, wordsOf } from './copy';
 import type { Everything, ExportedRow, ExportedValue } from './everything';
 
@@ -220,10 +221,12 @@ function dayValue(field: string, value: unknown, units: ChosenUnits): string {
     return '';
   }
   if (field === 'symptoms') {
-    return named(value, (slug) => findSymptom(slug)?.name);
+    return named(value, (slug) =>
+      findSymptom(slug) === undefined ? undefined : symptomName(slug),
+    );
   }
   if (field === 'moods') {
-    return named(value, (slug) => findMood(slug)?.name);
+    return named(value, (slug) => (findMood(slug) === undefined ? undefined : symptomName(slug)));
   }
   if (field === 'energy' && typeof value === 'number') {
     return `${value} of 5`;
