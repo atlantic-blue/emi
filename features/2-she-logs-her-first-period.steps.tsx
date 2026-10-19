@@ -4919,7 +4919,11 @@ defineFeature(feature, (test) => {
       expect(theMonthSheReads()).toBe(monthLabel(theMonthSheCorrects));
     });
 
-    when('she presses the way to edit her period', async () => {
+    when('she presses the first day of the period Emi holds', async () => {
+      await shePresses(dayTestID(String(theDaysEmiHeld[0])));
+    });
+
+    and('she presses the way to edit her period', async () => {
       await shePresses(theWayToEditHerPeriod);
     });
 

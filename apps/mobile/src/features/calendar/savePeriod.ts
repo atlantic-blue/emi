@@ -182,6 +182,44 @@ export function theDaysListedFirst(
   return { from: first, to: to > today ? today : to };
 }
 
+/** What the editor opens on for one day she pressed: the period it holds and the days it lists. */
+export interface WhereTheEditorOpens {
+  readonly held: string[];
+  readonly listed: DaysListed;
+}
+
+/**
+ * Where the editor opens for a day she pressed. A day inside a period opens that period. A day
+ * outside every period opens on that day, because she is about to say a period started there, and the
+ * period before it is weeks away. A period that starts in the days listed after it is held and
+ * ticked, so a day she already logged is never drawn as a day she did not bleed. A day ahead of her
+ * asks about today.
+ */
+export function whereTheEditorOpens(
+  records: readonly DayRecord[],
+  cycles: readonly CycleRow[],
+  { day, today }: { readonly day: string; readonly today: string },
+): WhereTheEditorOpens {
+  const asked = day > today ? today : day;
+  const around = thePeriodEmiHoldsAround(records, cycles, { day: asked, today });
+  if (around.includes(asked)) {
+    return { held: around, listed: theDaysListedFirst(around, { day: asked, today }) };
+  }
+
+  const fromTheDay = theDaysListedFirst([], { day: asked, today });
+  const next = theDaysOf(fromTheDay)
+    .map((each) => thePeriodEmiHoldsAround(records, cycles, { day: each, today }))
+    .find((period) => period[0] !== undefined && period[0] > asked);
+  if (next === undefined) {
+    return { held: [], listed: fromTheDay };
+  }
+
+  return {
+    held: next,
+    listed: { from: asked, to: theDaysListedFirst(next, { day: asked, today }).to },
+  };
+}
+
 /** Every day from the first to the last of the list, in order. */
 export function theDaysOf(listed: DaysListed): string[] {
   return Array.from({ length: daysBetween(listed.from, listed.to) + 1 }, (_unused, index) =>

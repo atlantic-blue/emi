@@ -464,7 +464,8 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     And she presses the calendar button in the top bar
     Then she is reading the month that day falls in
-    When she presses the way to edit her period
+    When she presses the first day of the period Emi holds
+    And she presses the way to edit her period
     Then she is looking at the period picker, and that is the drawing of it
     And the four days Emi holds arrive as hers, and no other listed day does
     And somebody listening is told each day is one she can turn on and off
