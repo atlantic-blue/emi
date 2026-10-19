@@ -849,6 +849,7 @@ export const english = {
   'period.products.periodUnderwear': 'Period underwear',
   'period.products.tampon': 'Tampon',
   'period.save': 'Save',
+  'period.startedOnAnotherDay': 'Started on another day?',
   'period.title': 'Period',
   'phase.about.follicular':
     'It starts with your period and ends the day before the ovulation phase.',

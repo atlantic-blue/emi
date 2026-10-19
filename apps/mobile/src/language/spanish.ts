@@ -848,6 +848,7 @@ export const spanish: CatalogueIn<'es'> = {
   'period.products.periodUnderwear': 'Ropa interior menstrual',
   'period.products.tampon': 'Tampón',
   'period.save': 'Guardar',
+  'period.startedOnAnotherDay': '¿Empezó otro día?',
   'period.title': 'Regla',
   'phase.about.follicular':
     'Empieza con tu periodo y termina el día antes de la fase de ovulación.',
