@@ -765,7 +765,8 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.periodLength.title': 'Сколько дней обычно идут месячные?',
   'onboarding.promise.action': 'Дальше',
   'onboarding.promise.delete': 'Удалите всё одним нажатием',
-  'onboarding.promise.encrypted': 'Зашифровано на этом телефоне ключом, который есть только у вас',
+  'onboarding.promise.encrypted':
+    'Дни хранятся в зашифрованном виде на этом телефоне, ключ есть только у вас',
   'onboarding.promise.noTracking': 'Без пароля, без инструментов слежения',
   'onboarding.promise.title': 'Только вы можете читать свои дни.',
   'onboarding.regularity.action': 'Продолжить',
@@ -1028,7 +1029,8 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.delete.download': 'Сначала скачать данные',
   'settings.delete.goBack': 'Назад',
   'settings.delete.goes.cycles': 'Циклы, которые Emi посчитала по ним',
-  'settings.delete.goes.days': 'Каждый день, который вы отметили на этом телефоне',
+  'settings.delete.goes.days':
+    'Все отмеченные дни, которые хранятся в зашифрованном виде на этом телефоне',
   'settings.delete.goes.key': 'Ключ, который открывает всё это',
   'settings.delete.goes.settings': 'Ваши настройки',
   'settings.delete.line':

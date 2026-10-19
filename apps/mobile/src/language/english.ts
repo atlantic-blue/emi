@@ -996,7 +996,7 @@ export const english = {
   'settings.delete.download': 'Download data first',
   'settings.delete.goBack': 'Back',
   'settings.delete.goes.cycles': 'The cycles Emi worked out from them',
-  'settings.delete.goes.days': 'Every day you logged on this phone',
+  'settings.delete.goes.days': 'Every day you logged, encrypted on this phone',
   'settings.delete.goes.key': 'The key that opens any of it',
   'settings.delete.goes.settings': 'Your settings',
   'settings.delete.line':

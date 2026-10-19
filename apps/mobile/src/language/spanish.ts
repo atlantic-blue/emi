@@ -996,7 +996,7 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.delete.download': 'Descargar los datos primero',
   'settings.delete.goBack': 'Atrás',
   'settings.delete.goes.cycles': 'Los ciclos que Emi calculó a partir de ellos',
-  'settings.delete.goes.days': 'Todos los días que registraste en este teléfono',
+  'settings.delete.goes.days': 'Cada día que registraste, cifrado en este teléfono',
   'settings.delete.goes.key': 'La clave que abre cualquiera de esas cosas',
   'settings.delete.goes.settings': 'Tus ajustes',
   'settings.delete.line':
