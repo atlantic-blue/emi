@@ -2,6 +2,8 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@e
 import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { WholeWordsText } from './WholeWordsText';
+
 /**
  * The three ways Emi asks her to do something: the affirmative action, the one beside it, and the
  * quiet one that is a sentence rather than a box.
@@ -158,6 +160,11 @@ export function SecondaryButton({
 }
 
 /** The quiet action. Words in the colour that acts, and nothing drawn around or under them. */
+/** The word on a text link, named so a test can read how it keeps its words whole. */
+export function textLinkLabelTestID(testID: string | undefined): string | undefined {
+  return testID === undefined ? undefined : `${testID}-label`;
+}
+
 export function TextLink({ label, isReady = true, onPress, testID }: ActionProps): ReactNode {
   return (
     <Pressable
@@ -168,7 +175,11 @@ export function TextLink({ label, isReady = true, onPress, testID }: ActionProps
       style={styles.link}
       testID={testID}
     >
-      <Text style={isReady ? styles.linkLabel : styles.spentLabel}>{label}</Text>
+      <WholeWordsText
+        label={label}
+        style={isReady ? styles.linkLabel : styles.spentLabel}
+        testID={textLinkLabelTestID(testID)}
+      />
     </Pressable>
   );
 }
