@@ -192,6 +192,7 @@ export const english = {
    */
   'forecast.fertileWindow.sentence':
     'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.itStarted': 'It started',
   'forecast.late': {
     one: 'Your period is {count} day late',
     other: 'Your period is {count} days late',

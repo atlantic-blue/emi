@@ -67,18 +67,35 @@ interface Props {
    * There is no range to explain the width of before two cycles are complete.
    */
   readonly regularity?: Regularity;
+  /** How many days the period is late, which only a settled forecast can be. */
+  readonly daysLate?: number;
+  /** The way to the period editor on today, offered under the late line. */
+  readonly onItStarted?: () => void;
 }
 
 /**
  * The one place the two states are chosen between, so a screen never decides for itself whether it
  * has enough cycles to draw a date. The arithmetic already answered that question in `kind`.
  */
-export function NextPeriodOrLearning({ result, cycleLengthDays, regularity }: Props): ReactNode {
+export function NextPeriodOrLearning({
+  result,
+  cycleLengthDays,
+  regularity,
+  daysLate,
+  onItStarted,
+}: Props): ReactNode {
   if (result.kind === 'learning') {
     return <Learning cycleLengthDays={cycleLengthDays} learning={result} />;
   }
 
-  return <NextPeriod forecast={result} regularity={regularity} />;
+  return (
+    <NextPeriod
+      daysLate={daysLate}
+      forecast={result}
+      onItStarted={onItStarted}
+      regularity={regularity}
+    />
+  );
 }
 
 const styles = StyleSheet.create({

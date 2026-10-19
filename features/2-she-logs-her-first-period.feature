@@ -926,3 +926,13 @@ Feature: She opens Emi and logs her first period
     Then she reads the list of her last three periods, with the one her phone holds given
     When she gives the two periods before it and saves
     Then the month she was reading draws a forecast, and the sheet is gone
+
+  Scenario: SCREEN-2, her period is late, and she logs the day it started
+    Given her phone holds three periods 28 days apart, and the forecast window ended two days ago
+    When she opens Emi
+    Then the forecast says her period is 2 days late, and the range that passed is gone
+    When she presses It started
+    Then she is in the period editor, opened on today
+    When she adds yesterday and saves
+    Then she is back on Today, and the forecast gives the range of her next period again
+    And no line says her period is late

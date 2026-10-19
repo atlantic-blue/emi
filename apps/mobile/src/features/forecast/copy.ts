@@ -21,6 +21,8 @@ export const forecastCopy = {
    * nothing. The spread of her own logged cycles is the only thing the two ends are taken from.
    */
   cycleMoves: words('forecast.cycleMoves'),
+  /** The link under the late line, which opens the period editor on today. */
+  itStarted: words('forecast.itStarted'),
 } as const;
 
 export type ForecastCopyRefusal = 'range-is-one-day' | 'range-ends-before-it-starts';
