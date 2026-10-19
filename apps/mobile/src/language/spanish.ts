@@ -198,6 +198,10 @@ export const spanish: CatalogueIn<'es'> = {
    */
   'forecast.fertileWindow.sentence':
     'Una estimación según tus últimos {cycles} ciclos. Emi nunca dice que un día es seguro, porque ninguno lo es.',
+  'forecast.late': {
+    one: 'Tu regla se retrasa {count} día',
+    other: 'Tu regla se retrasa {count} días',
+  },
   'forecast.nextPeriod': 'Tu próximo periodo',
   'forecast.range.sameMonth': 'Entre el {from} y el {to} de {month}',
   'forecast.range.spansMonths': 'Entre el {from} de {fromMonth} y el {to} de {toMonth}',
