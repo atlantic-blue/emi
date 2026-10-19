@@ -38,6 +38,8 @@ const slugsEverShipped: readonly string[] = [
   'exhausted',
   'fatigue',
   'food-craving',
+  'sweet-craving',
+  'salty-craving',
   'forgetful',
   'gas',
   'greasy-hair',
@@ -104,9 +106,9 @@ function retire(slug: string, on: string): readonly Symptom[] {
 }
 
 describe('the symptom catalogue', () => {
-  it('offers seventy two symptoms, so the catalogue cannot silently shrink', () => {
-    expect(loggableSymptoms()).toHaveLength(72);
-    expect(loggableSymptoms()).not.toHaveLength(70);
+  it('offers seventy four symptoms, so the catalogue cannot silently shrink', () => {
+    expect(loggableSymptoms()).toHaveLength(74);
+    expect(loggableSymptoms()).not.toHaveLength(72);
   });
 
   it('holds every slug it ever shipped, and holds nothing it never shipped', () => {
@@ -139,12 +141,13 @@ describe('the symptom catalogue', () => {
     expect(withMoreThanTheId).toEqual([]);
   });
 
-  it('fills all eight groups, so no group renders empty', () => {
+  it('fills all nine groups, so no group renders empty', () => {
     expect(symptomGroups.map((group) => `${group} ${symptomsInGroup(group).length}`)).toEqual([
       'mood 12',
       'energy 8',
       'pain 11',
-      'digestion 11',
+      'appetite 5',
+      'digestive 8',
       'skin 10',
       'sleep 8',
       'head 8',
@@ -154,6 +157,47 @@ describe('the symptom catalogue', () => {
 
   it('retires nothing yet, so seventy is both what it holds and what it offers', () => {
     expect(symptoms.filter(isRetired)).toEqual([]);
+  });
+});
+
+describe('the split of digestion into appetite and digestive symptoms', () => {
+  it('holds no digestion group any more, so no screen can draw it', () => {
+    expect(symptomGroups as readonly string[]).not.toContain('digestion');
+    expect(symptomGroups.indexOf('appetite')).toBe(symptomGroups.indexOf('pain') + 1);
+    expect(symptomGroups.indexOf('digestive')).toBe(symptomGroups.indexOf('appetite') + 1);
+  });
+
+  it('puts hunger, cravings, sweet and salty under appetite', () => {
+    expect(symptomsInGroup('appetite').map((symptom) => symptom.slug)).toEqual([
+      'appetite-increase',
+      'appetite-loss',
+      'food-craving',
+      'sweet-craving',
+      'salty-craving',
+    ]);
+  });
+
+  it('puts the symptoms of the gut under digestive symptoms', () => {
+    expect(symptomsInGroup('digestive').map((symptom) => symptom.slug)).toEqual([
+      'nausea',
+      'bloating',
+      'constipation',
+      'diarrhoea',
+      'vomiting',
+      'gas',
+      'stomach-ache',
+      'heartburn',
+    ]);
+  });
+
+  it('reads a day saved under digestion under the two new groups, with no change to the day', () => {
+    const anOldDay = { day: '2026-03-14', symptoms: ['nausea', 'food-craving'] } as const;
+
+    expect(unknownSymptomSlugs(anOldDay.symptoms)).toEqual([]);
+    expect(anOldDay.symptoms.map((slug) => findSymptom(slug)?.group)).toEqual([
+      'digestive',
+      'appetite',
+    ]);
   });
 });
 
@@ -189,7 +233,7 @@ describe('a retired symptom', () => {
   it('is never offered again', () => {
     const offered = loggableSymptoms(afterNappingRetires).map((symptom) => symptom.slug);
 
-    expect(offered).toHaveLength(71);
+    expect(offered).toHaveLength(73);
     expect(offered).not.toContain('napping');
     expect(
       symptomsInGroup('sleep', afterNappingRetires).map((symptom) => symptom.slug),

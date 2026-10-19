@@ -6,9 +6,9 @@
  * history point at it and a record that names a slug nothing resolves is a record she cannot read.
  */
 
-/** The eight groups the log sheet divides the catalogue into. `symptomGroups` holds their order. */
+/** The nine groups the log sheet divides the catalogue into. `symptomGroups` holds their order. */
 export type SymptomGroup =
-  'mood' | 'energy' | 'pain' | 'digestion' | 'skin' | 'sleep' | 'head' | 'libido';
+  'mood' | 'energy' | 'pain' | 'appetite' | 'digestive' | 'skin' | 'sleep' | 'head' | 'libido';
 
 /** One entry. The slug is what a record points at and it never changes. */
 export interface Symptom {
@@ -23,7 +23,8 @@ export const symptomGroups: readonly SymptomGroup[] = [
   'mood',
   'energy',
   'pain',
-  'digestion',
+  'appetite',
+  'digestive',
   'skin',
   'sleep',
   'head',
@@ -69,17 +70,20 @@ export const symptoms: readonly Symptom[] = [
   { slug: 'shoulder-tension', group: 'pain' },
   { slug: 'vulval-pain', group: 'pain' },
 
-  { slug: 'bloating', group: 'digestion' },
-  { slug: 'nausea', group: 'digestion' },
-  { slug: 'vomiting', group: 'digestion' },
-  { slug: 'constipation', group: 'digestion' },
-  { slug: 'diarrhoea', group: 'digestion' },
-  { slug: 'gas', group: 'digestion' },
-  { slug: 'stomach-ache', group: 'digestion' },
-  { slug: 'heartburn', group: 'digestion' },
-  { slug: 'appetite-increase', group: 'digestion' },
-  { slug: 'appetite-loss', group: 'digestion' },
-  { slug: 'food-craving', group: 'digestion' },
+  { slug: 'appetite-increase', group: 'appetite' },
+  { slug: 'appetite-loss', group: 'appetite' },
+  { slug: 'food-craving', group: 'appetite' },
+  { slug: 'sweet-craving', group: 'appetite' },
+  { slug: 'salty-craving', group: 'appetite' },
+
+  { slug: 'nausea', group: 'digestive' },
+  { slug: 'bloating', group: 'digestive' },
+  { slug: 'constipation', group: 'digestive' },
+  { slug: 'diarrhoea', group: 'digestive' },
+  { slug: 'vomiting', group: 'digestive' },
+  { slug: 'gas', group: 'digestive' },
+  { slug: 'stomach-ache', group: 'digestive' },
+  { slug: 'heartburn', group: 'digestive' },
 
   { slug: 'acne', group: 'skin' },
   { slug: 'oily-skin', group: 'skin' },

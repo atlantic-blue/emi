@@ -124,14 +124,14 @@ describe('a symptom is found by search and saved in one action', () => {
       }
     });
 
-    it('offers all seventy two, so nothing in the catalogue is unreachable', async () => {
+    it('offers all seventy four, so nothing in the catalogue is unreachable', async () => {
       const database = migrated();
       await sheOpensTheSheet(database);
 
       // The mood group is reached through the picker at the top of the sheet, not through this
-      // list, so the seventy two arrive as sixty chips and twelve mood chips.
-      expect(loggableSymptoms()).toHaveLength(72);
-      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(60);
+      // list, so the seventy four arrive as sixty two chips and twelve mood chips.
+      expect(loggableSymptoms()).toHaveLength(74);
+      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(62);
       expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(12);
     });
   });
@@ -196,7 +196,7 @@ describe('a symptom is found by search and saved in one action', () => {
       await sheSearchesFor('cram');
       await sheSearchesFor('');
 
-      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(60);
+      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(62);
     });
 
     it('never offers a retired symptom, however she spells it', async () => {
@@ -346,7 +346,7 @@ describe('a symptom is found by search and saved in one action', () => {
       await sheOpensTheSheet(database);
       const rows = screen.getAllByTestId(/^symptom-group-.*-chips$/);
 
-      expect(rows).toHaveLength(7);
+      expect(rows).toHaveLength(8);
       for (const row of rows) {
         expect(styleOf(row).flexWrap).toBe('wrap');
       }
