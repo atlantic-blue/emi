@@ -14,7 +14,6 @@ import {
   firstForecastTestID,
 } from '../../src/features/onboarding/FirstForecast';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
-import { HOLD_MILLISECONDS } from '../../src/features/onboarding/HoldToBegin';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
@@ -28,7 +27,7 @@ import { type TodaySymptom, defaultCycleLengthDays } from '../../src/features/on
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { shePassesTheQuestion } from '../fixtures/theFirstRun';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
@@ -51,8 +50,8 @@ const thePeriodBeforeThat = '2026-04-11';
 /** Not the number the screen offers, so a length that reads back is a length she gave. */
 const sheSaysHerCycleRuns = defaultCycleLengthDays + 2;
 
-/** The instant the hold ends, which is the instant everything she answered carries. */
-const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
+/** The instant she taps Save and start, which is the instant everything she answered carries. */
+const whenSheSaves = whenSheOpensIt;
 
 /**
  * The questions between the cycle length and the three screens she reads rather than answers:
@@ -147,15 +146,13 @@ describe('the way past the last period question passes the period before with it
       await sheReachesTheQuestionSheCannotAnswer();
       await shePresses(onboardingWayPastTestID);
       await sheAnswersTheRest();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 
       expect(sealed?.cycleLengthDays).toBe(sheSaysHerCycleRuns);
-      expect(sealed?.recordedAt).toBe(whenSheFinishesTheHold.toISOString());
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
-        whenSheFinishesTheHold.toISOString(),
-      );
+      expect(sealed?.recordedAt).toBe(whenSheSaves.toISOString());
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheSaves.toISOString());
     });
 
     it('writes no day at all, because she named none and Emi guesses none for her', async () => {
@@ -163,7 +160,7 @@ describe('the way past the last period question passes the period before with it
       await sheReachesTheQuestionSheCannotAnswer();
       await shePresses(onboardingWayPastTestID);
       await sheAnswersTheRest();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(profileRow(herDatabase())).toBeDefined();
       expect(listDayLogs(herDatabase())).toEqual([]);
@@ -176,7 +173,7 @@ describe('the way past the last period question passes the period before with it
       await sheReachesTheQuestionSheCannotAnswer();
       await shePresses(onboardingWayPastTestID);
       await sheAnswersTheRest();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
     });
@@ -186,7 +183,7 @@ describe('the way past the last period question passes the period before with it
       await sheReachesTheQuestionSheCannotAnswer();
       await shePresses(onboardingWayPastTestID);
       await sheAnswersTheRest(['cramps']);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const vault = await theVaultOnHerPhone();
       const written = listDayLogs(herDatabase()).map((row) => vault.open(row.payload));
@@ -204,7 +201,7 @@ describe('the way past the last period question passes the period before with it
       await sheGivesAPeriod(0, aDaySheCouldHaveNamed, 5);
       await shePresses(onboardingWayPastTestID);
       await sheAnswersTheRest();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(listDayLogs(herDatabase())).toEqual([]);
     });
@@ -225,7 +222,7 @@ describe('the way past the last period question passes the period before with it
 
       await shePresses(onboardingWayPastTestID);
       await sheAnswersTheRest();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
       expect(listDayLogs(herDatabase())).toEqual([]);

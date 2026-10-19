@@ -58,7 +58,7 @@ import { herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn } from '../fixtures/renderedText';
 import { OnAPhone } from '../fixtures/theSafeArea';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -421,7 +421,7 @@ describe('the promise says only what the product does', () => {
 
       await sheReachesWhatEmiDoes(['mood', 'energy']);
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.focus).toEqual([
         'mood',

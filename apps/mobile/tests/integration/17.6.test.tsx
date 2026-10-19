@@ -42,7 +42,7 @@ import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn } from '../fixtures/renderedText';
 import { sheReadsThePromise } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -149,7 +149,7 @@ async function sheFinishesTheFirstRun(): Promise<void> {
   await shePresses(onboardingSkipTestID);
   await shePresses(firstForecastActionTestID);
   await sheReadsThePromise();
-  await sheHoldsTheRing();
+  await sheTapsSaveAndStart();
 }
 
 /** Her answers, opened with the key the keychain holds and a handle nothing on screen is using. */

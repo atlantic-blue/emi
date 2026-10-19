@@ -40,7 +40,7 @@ import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault } from '../fixtures/herVault';
 import { daysNamedIn, textIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import {
   describeSingleDayUse,
   singleDayUsesUnder,
@@ -382,7 +382,7 @@ describe('her first forecast is a range, before anything is written', () => {
       const readBeforeTheHold = theRangeDrawn(firstForecastRangeTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
@@ -397,7 +397,7 @@ describe('her first forecast is a range, before anything is written', () => {
       const readBeforeTheHold = theRangeDrawn(firstForecastRangeTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsThePromise();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(theRangeDrawn(learningRangeTestID)).toBe(readBeforeTheHold);
     });
@@ -409,7 +409,7 @@ describe('her first forecast is a range, before anything is written', () => {
         periodStartedOn: herPeriodStarted,
         periodBeforeStartedOn: theOneBefore,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
       expect(listCycles(herDatabase())).toMatchObject([
@@ -422,7 +422,7 @@ describe('her first forecast is a range, before anything is written', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(listCycles(herDatabase())).toMatchObject([
         { startedOn: herPeriodStarted, endedOn: null, lengthDays: null },
@@ -434,7 +434,7 @@ describe('her first forecast is a range, before anything is written', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: today });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(listCycles(herDatabase())).toMatchObject([{ startedOn: today, lengthDays: null }]);
     });

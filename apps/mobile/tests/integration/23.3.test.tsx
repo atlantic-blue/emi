@@ -20,13 +20,12 @@ import {
 import { focusTestID } from '../../src/features/onboarding/Focus';
 import { nameFieldTestID } from '../../src/features/onboarding/HerName';
 import {
-  HOLD_MILLISECONDS,
-  HoldToBegin,
-  holdButtonTestID,
-  holdCoreTestID,
-  holdRefusedTestID,
-  holdScreenTestID,
-} from '../../src/features/onboarding/HoldToBegin';
+  SaveAndStart,
+  saveButtonTestID,
+  saveCoreTestID,
+  saveRefusedTestID,
+  saveScreenTestID,
+} from '../../src/features/onboarding/SaveAndStart';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -138,18 +137,14 @@ const whatEmiDoesSays = {
   privacy: { title: 'Your privacy', line: 'Only you can read any of it' },
 };
 
-/**
- * The moment she gives her thumb. The redesign writes "the ring" where this writes "the button",
- * because the button is the one thing on the screen she presses and holds.
- */
-const theHoldSays = {
+/** The last screen, as the redesign board writes it: one tap saves and starts. */
+const theSaveSays = {
   title: 'Your cycle, your data, your key.',
-  instruction: 'Press and hold the button to begin.',
+  allSet: 'All set',
   sealed:
-    "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
-  action: 'Hold to begin',
-  held: 'Keep holding',
-  refused: "That didn't save. Press and hold the button again.",
+    "Saving keeps your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  action: 'Save and start',
+  refused: "That didn't save. Tap Save and start again.",
 };
 
 /** The four screens this step writes, as the catalogue names them. */
@@ -157,7 +152,7 @@ const theScreensSheReads: readonly string[] = [
   'onboarding.firstForecast.',
   'onboarding.promise.',
   'onboarding.whatEmiDoes.',
-  'onboarding.hold.',
+  'onboarding.start.',
 ];
 
 /** How each language writes the first person plural, which none of these four screens uses. */
@@ -274,18 +269,13 @@ function theCardSays(testID: string): string[] {
   return textIn(screen.getByTestId(testID));
 }
 
-/** The ring on its own, so what it says can be read without the write under it. */
-async function theRing(onHeld: () => Promise<void> = () => Promise.resolve()): Promise<void> {
+/** The last screen on its own, so what it says can be read without the write under it. */
+async function theLastScreen(onSave: () => Promise<void> = () => Promise.resolve()): Promise<void> {
   await render(
     <OnAPhone>
-      <HoldToBegin onHeld={onHeld} />
+      <SaveAndStart onSave={onSave} />
     </OnAPhone>,
   );
-  // The answer about motion arrives from the phone as a promise, so it is in hand before her
-  // thumb goes down rather than after it.
-  await act(async () => {
-    await Promise.resolve();
-  });
 }
 
 describe('her first forecast is addressed to her', () => {
@@ -520,46 +510,38 @@ describe('her first forecast is addressed to her', () => {
     });
   });
 
-  describe('the hold she gives at the end of it', () => {
-    it('names the three things the hold is about, and says what the hold does', async () => {
+  describe('the save she taps at the end of it', () => {
+    it('says all set, says what the save does, and offers Save and start', async () => {
       const app = await sheWalksToHerForecast({ day: herPeriodStarted, name: theNameSheGives });
 
       await sheReadsOnToWhatEmiDoes();
       await shePresses(whatEmiDoesActionTestID);
 
       expect(app.pathname()).toBe('/onboarding/hold');
-      const read = textIn(screen.getByTestId(holdScreenTestID));
-      expect(read).toContain(theHoldSays.title);
-      expect(read).toContain(theHoldSays.instruction);
-      expect(read).toContain(theHoldSays.sealed);
-      expect(screen.getByTestId(holdButtonTestID)).toHaveTextContent(theHoldSays.action);
+      const read = textIn(screen.getByTestId(saveScreenTestID));
+      expect(read).toContain(theSaveSays.title);
+      expect(read).toContain(theSaveSays.allSet);
+      expect(read).toContain(theSaveSays.sealed);
+      expect(screen.getByTestId(saveButtonTestID)).toHaveTextContent(theSaveSays.action);
     });
 
-    it('asks her to keep holding while her thumb is down', async () => {
-      await theRing();
+    it('asks her to press nothing in the ring, so the button is the only place to press', async () => {
+      await theLastScreen();
 
-      await act(async () => {
-        fireEvent(screen.getByTestId(holdButtonTestID), 'pressIn');
-      });
-
-      expect(screen.getByTestId(holdButtonTestID)).toHaveTextContent(theHoldSays.held);
-      expect(screen.getByTestId(holdCoreTestID)).toHaveTextContent(theHoldSays.instruction);
+      expect(screen.getByTestId(saveCoreTestID)).not.toHaveTextContent(/./);
     });
 
     it('says the save did not happen when the write refuses, and asks for the button again', async () => {
-      await theRing(() => Promise.reject(new Error('the write refused')));
+      await theLastScreen(() => Promise.reject(new Error('the write refused')));
 
       await act(async () => {
-        fireEvent(screen.getByTestId(holdButtonTestID), 'pressIn');
-      });
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS);
+        fireEvent.press(screen.getByTestId(saveButtonTestID));
       });
       await act(async () => {
         await Promise.resolve();
       });
 
-      expect(screen.getByTestId(holdRefusedTestID)).toHaveTextContent(theHoldSays.refused);
+      expect(screen.getByTestId(saveRefusedTestID)).toHaveTextContent(theSaveSays.refused);
     });
   });
 
@@ -580,7 +562,7 @@ describe('her first forecast is addressed to her', () => {
       const theScreensAfterTheForecast = [
         'onboarding.promise.',
         'onboarding.whatEmiDoes.',
-        'onboarding.hold.',
+        'onboarding.start.',
       ];
 
       for (const language of languages) {
@@ -605,7 +587,7 @@ describe('her first forecast is addressed to her', () => {
 
         expect({ language, naming }).toEqual({
           language,
-          naming: ['onboarding.whatEmiDoes.', 'onboarding.hold.'],
+          naming: ['onboarding.whatEmiDoes.', 'onboarding.start.'],
         });
       }
     });

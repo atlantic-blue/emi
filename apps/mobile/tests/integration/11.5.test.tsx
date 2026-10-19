@@ -43,7 +43,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -260,7 +260,7 @@ describe('her answer changes the words, never the range', () => {
           periodStartedOn: herPeriodStarted,
           regularity: answer,
         });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect(statedRegularity(herDatabase(), await theProfileVaultOnHerPhone())).toBe(answer);
       });
@@ -270,7 +270,7 @@ describe('her answer changes the words, never the range', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 

@@ -49,13 +49,12 @@ flowchart TD
   TD --> FF["First forecast"]
   FF --> P["The promise"]
   P --> WG["What Emi does with it"]
-  WG --> H["Hold to begin: one transaction writes everything"]
-  H --> AS["All set"]
+  WG --> AS["All set: Save and start writes everything in one transaction"]
   AS --> HOME["Home"]
 ```
 
-Every answer is held in memory until the hold. The hold makes her vault key if she has none, then
-writes the days and the profile in one transaction. If she leaves before the hold, nothing is
+Every answer is held in memory until she taps Save and start. The tap makes her vault key if she has none, then
+writes the days and the profile in one transaction. If she leaves before the tap, nothing is
 written and the first run starts again next time. Every question can be passed, and a question she
 passes writes nothing for that field.
 

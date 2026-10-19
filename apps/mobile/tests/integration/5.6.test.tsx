@@ -49,7 +49,7 @@ import { textIn, visibleTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -310,7 +310,7 @@ describe('after deleting, the database and the keychain are both empty', () => {
         periodStartedOn: addDays(today, -2),
         cycleLengthDays: defaultCycleLengthDays + 1,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(screen.getByTestId(tabTestID('history'))).toBeTruthy();
