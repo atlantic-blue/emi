@@ -18,11 +18,12 @@ Every section carries one status line, the same as `architecture.md`. `Status: b
 code is in this repository now. `Status: designed` means `.krewe/design.md` describes it and nobody
 wrote it yet.
 
-On 2026-09-17 the envelope is `built` and the keys around it are `designed`. `packages/crypto`
-seals and opens a day, and fixed vectors hold the format still. Nothing writes through it yet: the
-`payload` column of the day log holds plain bytes, and there is no keychain, no account and no
-server. A document that described an empty package as though it protected somebody would be worse
-than no document.
+On 2026-10-19 the envelope is `built` and the keys that send a day are `designed`. `packages/crypto`
+seals and opens a day, and fixed vectors hold the format still. The application writes every day
+through it: `vault.seal` in `apps/mobile/src/features/log/logDay.ts` seals the day before the write,
+so the `payload` column of the day log holds the envelope. The vault key lives in this phone's
+keychain. No build sets a server address, so there is no account yet. A document that described an
+empty package as though it protected somebody would be worse than no document.
 
 The wording rules below are `built`. A test reads every document, every source file and every
 string in the application, and fails the pipeline on the forbidden wording.
@@ -119,8 +120,10 @@ a malformed envelope, and never to decrypt, because the service has no key. The 
 `packages/crypto/tests/vectors.json` hold the format still, so a change to it is caught rather
 than shipped.
 
-The day log still writes the payload column as plain bytes. Step 5.3 sends every row through the
-envelope, and until it does, this section describes a package rather than a product.
+The day log writes the payload column through the envelope. Every write in
+`apps/mobile/src/features/log/logDay.ts` and in the first run calls `vault.seal` first, and
+`apps/mobile/src/data/dayLogRepository.ts` refuses a payload that is not an envelope, so no day
+reaches the column as plain bytes.
 
 The `day` column beside the payload is a copy of the date, kept in the clear so the application can
 query by date. It stays on the phone. It is not part of the envelope that is sent.
