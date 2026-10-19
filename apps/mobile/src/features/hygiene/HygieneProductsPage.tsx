@@ -1,8 +1,9 @@
 import { colour, space, textStyle } from '@emi/tokens';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
+import { WholeWordsText } from '../../components/WholeWordsText';
 import { words } from '../../language';
 import { HowToChoose } from './HowToChoose';
 import { HygieneHeader } from './HygieneHeader';
@@ -26,6 +27,20 @@ export function productTileTestID(slug: ProductSlug): string {
   return `hygiene-product-${slug}`;
 }
 
+export function productTileNameTestID(slug: ProductSlug): string {
+  return `hygiene-name-${slug}`;
+}
+
+/** The board lays the products four to a row. */
+export const BOARD_COLUMNS = 4;
+
+/**
+ * A product name in Russian holds a word too wide for a quarter of the smallest iPhone even at
+ * the smallest size a label takes. The grid then lays the products three to a row, so the word
+ * stays whole.
+ */
+export const NARROW_COLUMNS = 3;
+
 /** Points, from the board: the tile, its corner and the drawing inside it. */
 const TILE = 68;
 const TILE_CORNER = 20;
@@ -38,6 +53,8 @@ interface Props {
 }
 
 export function HygieneProductsPage({ onBack, onOpen, onQuiz }: Props): ReactNode {
+  const [columns, setColumns] = useState(BOARD_COLUMNS);
+
   return (
     <Screen drawsTheWash testID={hygienePageTestID}>
       <ScrollView contentContainerStyle={styles.body}>
@@ -57,13 +74,18 @@ export function HygieneProductsPage({ onBack, onOpen, onQuiz }: Props): ReactNod
                 accessibilityRole="button"
                 key={slug}
                 onPress={() => onOpen(slug)}
-                style={styles.cell}
+                style={[styles.cell, { width: `${100 / columns}%` }]}
                 testID={productTileTestID(slug)}
               >
                 <View style={styles.tile}>
                   <ProductDrawing colour={colour.ovulationInk} size={DRAWING} slug={slug} />
                 </View>
-                <Text style={styles.label}>{name}</Text>
+                <WholeWordsText
+                  label={name}
+                  onWordCutAtTheFloor={() => setColumns(NARROW_COLUMNS)}
+                  style={styles.label}
+                  testID={productTileNameTestID(slug)}
+                />
               </Pressable>
             );
           })}
@@ -83,7 +105,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.spaceSm,
     paddingHorizontal: space.spaceXs,
-    width: '25%',
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space.spaceLg },
   heading: { color: colour.text, ...textStyle('headline-md') },

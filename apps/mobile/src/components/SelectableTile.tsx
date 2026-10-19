@@ -3,6 +3,8 @@ import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { WholeWordsText } from './WholeWordsText';
+
 /**
  * One category in the grid she logs a day from. A drawing, what it is, and what is recorded there
  * today, in a box the whole of which takes the press.
@@ -56,6 +58,11 @@ export function tileCheckTestID(testID: string): string {
   return `${testID}-check`;
 }
 
+/** The name on the tile, named so a test can read how it keeps its words whole. */
+export function tileTitleTestID(testID: string): string {
+  return `${testID}-title`;
+}
+
 /** The round well the drawing sits in, named so a test can read the tint behind it. */
 export function tileWellTestID(testID: string): string {
   return `${testID}-well`;
@@ -94,7 +101,7 @@ export function SelectableTile({
           size={TILE_ICON}
         />
       </View>
-      <Text style={styles.title}>{title}</Text>
+      <WholeWordsText label={title} style={styles.title} testID={tileTitleTestID(testID)} />
       {note === undefined ? null : (
         <Text style={isChosen ? styles.noteChosen : styles.note}>{note}</Text>
       )}
