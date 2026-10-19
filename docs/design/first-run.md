@@ -47,8 +47,7 @@ flowchart TD
   G --> FO["Focus"]
   FO --> TD["Today"]
   TD --> FF["First forecast"]
-  FF --> P["The promise"]
-  P --> WG["What Emi does with it"]
+  FF --> WG["What Emi does with it"]
   WG --> H["Hold to begin: one transaction writes everything"]
   H --> AS["All set"]
   AS --> HOME["Home"]
@@ -210,7 +209,8 @@ Each step is one screen, its copy from the review, its reader, and its test. Eac
 8. Focus, and the order of the log sheet. Needs 10.7.
 9. Today, into the day log. Needs 10.7.
 10. The first forecast screen.
-11. The promise, and what Emi does with it.
+11. What Emi does with it. The promise step left the run in issue 325: the page "Who can see my
+    records?" replaces it.
 12. All set, and the home screen in the new style with the current tabs.
 
 ## What this design does not do

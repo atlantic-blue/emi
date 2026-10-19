@@ -5,7 +5,6 @@ import { PastPeriodsList } from '../pastPeriods/PastPeriodsList';
 import { pastPeriodsCopy } from '../pastPeriods/copy';
 import type { PastPeriod } from '../pastPeriods/pastPeriods';
 import { OnboardingScreen } from './OnboardingScreen';
-import { firstRunCopy } from './copy';
 import { localDay } from './days';
 import { oldestPeriodStart } from './firstRun';
 
@@ -42,7 +41,7 @@ export function ThreePeriods({
     <OnboardingScreen
       actionIsReady={periods.length > 0}
       actionLabel={pastPeriodsCopy.action}
-      lines={[firstRunCopy.encrypts]}
+      lines={[]}
       onAction={onContinue}
       onBack={onBack}
       onWayPast={onWayPast}

@@ -1,19 +1,16 @@
 import { join } from 'node:path';
 
-import { render } from '@testing-library/react-native';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import type { Database } from '../../src/data/database';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
-import { ThreePeriods } from '../../src/features/onboarding/ThreePeriods';
 import { pastPeriodsListTestID } from '../../src/features/pastPeriods/PastPeriodsList';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
-  onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import type { Language } from '../../src/language';
 import { english } from '../../src/language/english';
@@ -21,16 +18,7 @@ import { russian } from '../../src/language/russian';
 import { spanish } from '../../src/language/spanish';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
-import {
-  type PlacedBox,
-  placedOnTheGlass,
-  theBoxNamed,
-  theBoxSaying,
-  theOnlyBoxOfType,
-  scrollingView,
-} from '../fixtures/theHeightDownTheGlass';
-import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
-import { anIPhone16 } from '../fixtures/theWidthOfARow';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -44,7 +32,7 @@ const herPeriodStarted = '2026-05-09';
 
 const theKeyOfThePrivacyLine = 'onboarding.encrypts';
 
-/** The line the redesign draws at the foot of this question, in each language. */
+/** The line this question drew at its foot, which the pages outside the first run still draw. */
 const thePrivacyLine: Readonly<Record<Language, string>> = {
   en: 'Emi encrypts this on the phone before it goes anywhere.',
   es: 'Emi lo cifra en el teléfono antes de que vaya a ningún sitio.',
@@ -53,12 +41,6 @@ const thePrivacyLine: Readonly<Record<Language, string>> = {
 
 /** The line this question carried above the days before the redesign moved it. */
 const theOldPrivacyLine = 'Only you can read this.';
-
-interface Instance {
-  readonly type: unknown;
-  readonly props: Record<string, unknown>;
-  readonly children: readonly (Instance | string)[];
-}
 
 function herDatabase(): Database {
   return expoDatabase(openDatabaseSync(databaseFileName));
@@ -84,67 +66,7 @@ async function sheReachesHerLastPeriod(): Promise<void> {
   await shePresses(onboardingSkipTestID);
 }
 
-/** Every box of the screen she is on, in the order the tree draws them. */
-function theOrderOfTheScreen(): Instance[] {
-  const walk = (node: Instance): Instance[] => [
-    node,
-    ...node.children
-      .filter((child): child is Instance => typeof child !== 'string')
-      .flatMap((child) => walk(child)),
-  ];
-
-  return walk(screen.getByTestId('onboarding-threePeriods') as unknown as Instance);
-}
-
-function whereTheWordsAre(boxes: readonly Instance[], words: string): number {
-  const at = boxes.findIndex((box) => box.children.length === 1 && box.children[0] === words);
-
-  if (at < 0) {
-    throw new Error(`the screen never said "${words}"`);
-  }
-
-  return at;
-}
-
-function whereTheBoxNamed(boxes: readonly Instance[], testID: string): number {
-  const at = boxes.findIndex((box) => box.props.testID === testID);
-
-  if (at < 0) {
-    throw new Error(`the screen drew no ${testID}`);
-  }
-
-  return at;
-}
-
-/**
- * The screen as an iPhone 16 lays it out, drawn on a phone that keeps part of its glass for itself.
- *
- * The router hands the screens a phone that reserves nothing, so a measurement taken from the walk
- * above would give the question 93 points of room no iPhone with a dynamic island has. This is the
- * harness the committed picture of this screen is drawn from, so the two show the same thing.
- */
-async function theScreenOnAnIPhone16(): Promise<PlacedBox[]> {
-  const view = await render(
-    <OnAPhone>
-      <ThreePeriods
-        now={whenSheOpensIt}
-        onBack={() => undefined}
-        onContinue={() => undefined}
-        onGive={() => undefined}
-        onRemove={() => undefined}
-        onWayPast={() => undefined}
-        periods={[]}
-      />
-    </OnAPhone>,
-  );
-  const drawn = placedOnTheGlass(theScreenIn(view), anIPhone16);
-
-  await view.unmount();
-
-  return drawn;
-}
-
-describe('she reads that Emi encrypts her last periods at the foot of the sheet', () => {
+describe('her last periods screen draws no padlock line', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -157,25 +79,13 @@ describe('she reads that Emi encrypts her last periods at the foot of the sheet'
     jest.useRealTimers();
   });
 
-  describe('the order she reads the screen in', () => {
-    it('draws the periods first and says what Emi does with them under the list', async () => {
+  describe('what she reads on the screen', () => {
+    it('draws no lock and no line about encryption, in the first run', async () => {
       await sheReachesHerLastPeriod();
 
-      const drawn = theOrderOfTheScreen();
-
-      expect(whereTheWordsAre(drawn, thePrivacyLine.en)).toBeGreaterThan(
-        whereTheBoxNamed(drawn, pastPeriodsListTestID),
-      );
-    });
-
-    it('puts the line over the way past and the button, where the redesign draws it', async () => {
-      await sheReachesHerLastPeriod();
-
-      const drawn = theOrderOfTheScreen();
-      const line = whereTheWordsAre(drawn, thePrivacyLine.en);
-
-      expect(line).toBeLessThan(whereTheBoxNamed(drawn, onboardingWayPastTestID));
-      expect(line).toBeLessThan(whereTheBoxNamed(drawn, onboardingActionTestID));
+      expect(screen.getByTestId(pastPeriodsListTestID)).toBeTruthy();
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(screen.queryByText(thePrivacyLine.en)).toBeNull();
     });
 
     it('no longer says the old line above the days', async () => {
@@ -193,26 +103,8 @@ describe('she reads that Emi encrypts her last periods at the foot of the sheet'
     });
   });
 
-  describe('what she is shown on the glass of an iPhone 16', () => {
-    it('keeps the line out of the part that scrolls, so it is always in view', async () => {
-      const drawn = await theScreenOnAnIPhone16();
-      const line = theBoxSaying(drawn, thePrivacyLine.en);
-      const shown = theOnlyBoxOfType(drawn, scrollingView);
-
-      expect(line.top).toBeGreaterThanOrEqual(shown.top + shown.height);
-    });
-
-    it('draws the list of her periods above it', async () => {
-      const drawn = await theScreenOnAnIPhone16();
-      const line = theBoxSaying(drawn, thePrivacyLine.en);
-      const calendar = theBoxNamed(drawn, pastPeriodsListTestID);
-
-      expect(calendar.top).toBeLessThan(line.top);
-    });
-  });
-
-  describe('the words she reads', () => {
-    it('are the ones the first run already carried, in all three languages', () => {
+  describe('the words outside the first run', () => {
+    it('stay in all three languages, for the pages that still draw the padlock line', () => {
       for (const [language, catalogue] of [
         ['en', english],
         ['es', spanish],

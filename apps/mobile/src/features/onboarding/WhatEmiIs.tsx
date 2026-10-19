@@ -4,7 +4,7 @@ import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { PrimaryButton } from '../../components/Button';
+import { PrimaryButton, TextLink } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import {
@@ -14,6 +14,7 @@ import {
   onboardingStepLabelTestID,
   onboardingTitleTestID,
 } from './OnboardingScreen';
+import { settingsCopy } from '../settings/copy';
 import { firstRunCopy, stepLabel } from './copy';
 
 /** Points. The disc the drop stands in, and the drop inside it. */
@@ -27,11 +28,21 @@ const LINE_ICON_SIZE = 20;
 /** The icon beside each line, in the order the lines are read. */
 const lineIcons: readonly IconName[] = ['phone', 'person', 'info'];
 
+export const welcomeWhoCanSeeTestID = 'onboarding-welcome-who-can-see';
+
 /**
  * The first screen she sees. It asks nothing, because the first thing she is owed is what this is:
- * where her cycle is worked out, that there is no account, and what Emi is not.
+ * where her cycle is worked out, that there is no account, and what Emi is not. The link over the
+ * button opens the one page that says who can see her records, in place of a padlock on every
+ * question after this one.
  */
-export function WhatEmiIs({ onContinue }: { readonly onContinue: () => void }): ReactNode {
+export function WhatEmiIs({
+  onContinue,
+  onWhoCanSee,
+}: {
+  readonly onContinue: () => void;
+  readonly onWhoCanSee: () => void;
+}): ReactNode {
   const said = firstRunCopy.welcome;
 
   return (
@@ -65,6 +76,11 @@ export function WhatEmiIs({ onContinue }: { readonly onContinue: () => void }): 
       </ScrollView>
 
       <View style={styles.footer}>
+        <TextLink
+          label={settingsCopy.whoCanSee.title}
+          onPress={onWhoCanSee}
+          testID={welcomeWhoCanSeeTestID}
+        />
         <PrimaryButton label={said.action} onPress={onContinue} testID={onboardingActionTestID} />
       </View>
     </Screen>
@@ -95,7 +111,7 @@ const styles = StyleSheet.create({
     width: EMBLEM_DIAMETER,
   },
   emblemRow: { alignItems: 'center' },
-  footer: { padding: space.spaceLg },
+  footer: { gap: space.spaceSm, padding: space.spaceLg },
   heading: { flexGrow: 1, gap: space.spaceSm },
   line: {
     color: colour.text,

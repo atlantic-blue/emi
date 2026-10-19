@@ -1,6 +1,6 @@
 import { MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
@@ -22,7 +22,8 @@ import { periodPageCopy } from './copy';
 
 /**
  * The Period page, from the periodPage board (issue 275): the two highlights, the day and its
- * title, Flow, Discharge and What you used, the line about privacy, and Save.
+ * title, Flow, Discharge and What you used, the line about privacy, and Save. Under Flow, the
+ * periodStartedEarlier board adds the way to a period that started on another day.
  *
  * A press only changes what the page holds. Nothing is written until she presses Save, so she can
  * pick, change and take off an answer before anything reaches the day.
@@ -35,6 +36,7 @@ export const periodPageDayTestID = 'period-page-day';
 export const periodPageHeadingTestID = 'period-page-heading';
 export const periodPageLockTestID = 'period-page-lock';
 export const periodPageSaveTestID = 'period-page-save';
+export const periodPageAnotherDayTestID = 'period-page-another-day';
 
 export function periodChipTestID(group: PeriodGroup, value: string): string {
   return `period-page-${group}-${value}`;
@@ -50,6 +52,8 @@ interface Props {
   readonly held: PeriodAnswers;
   readonly onBack: () => void;
   readonly onSave: (answers: PeriodAnswers) => void;
+  /** Opens the period editor, so a period can start on a day before this one. */
+  readonly onStartedOnAnotherDay: () => void;
   readonly onHighlight: (slug: HighlightSlug) => void;
 }
 
@@ -109,6 +113,16 @@ export function PeriodPage(props: Props): ReactNode {
                     />
                   ))}
                 </View>
+                {group === 'flow' ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    onPress={props.onStartedOnAnotherDay}
+                    style={styles.anotherDay}
+                    testID={periodPageAnotherDayTestID}
+                  >
+                    <Text style={styles.anotherDayLabel}>{periodPageCopy.startedOnAnotherDay}</Text>
+                  </Pressable>
+                ) : null}
               </View>
             ))}
           </View>
@@ -128,6 +142,8 @@ export function PeriodPage(props: Props): ReactNode {
 }
 
 const styles = StyleSheet.create({
+  anotherDay: { alignSelf: 'flex-start', justifyContent: 'center', minHeight: MINIMUM_TAP_TARGET },
+  anotherDayLabel: { color: colour.accent, ...textStyle('button-md') },
   backMark: { transform: TURNED_AROUND },
   body: { gap: space.spaceLg, paddingHorizontal: space.margin, paddingVertical: space.spaceXl },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
