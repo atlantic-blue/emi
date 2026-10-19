@@ -41,7 +41,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
 import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { locksDrawnIn } from '../fixtures/drawnLocks';
@@ -481,7 +481,7 @@ describe('what she feels today is her first logged day', () => {
       // The reminder stands after the last question, and "Not now" passes it.
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);
@@ -497,7 +497,7 @@ describe('what she feels today is her first logged day', () => {
       // The reminder stands after the last question, and "Not now" passes it.
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);

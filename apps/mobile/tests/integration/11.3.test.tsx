@@ -63,7 +63,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { openTestDatabase } from '../data/nodeDatabase';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herProfileVault, herVault, theVaultOnHerPhone } from '../fixtures/herVault';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
 import { sheTapsSaveAndStart } from '../fixtures/theSave';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -323,7 +323,7 @@ describe('her last three periods, in one step of the first run', () => {
       expect(screen.queryByTestId(firstForecastStillLearningTestID)).toBeNull();
 
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       expect(await theCyclesBehindHer()).toMatchObject([
@@ -521,7 +521,7 @@ describe('her last three periods, in one step of the first run', () => {
         await shePresses(onboardingSkipTestID);
       }
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       expect(await herSealedDays()).toEqual([]);

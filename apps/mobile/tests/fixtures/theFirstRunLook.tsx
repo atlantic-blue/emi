@@ -41,12 +41,6 @@ import {
 import { ThreePeriods } from '../../src/features/onboarding/ThreePeriods';
 import { PeriodLength, periodLengthWheelTestID } from '../../src/features/onboarding/PeriodLength';
 import { Regularity, regularityTestID } from '../../src/features/onboarding/Regularity';
-import {
-  ThePromise,
-  promiseActionTestID,
-  promiseLinesTestID,
-  thePromiseTestID,
-} from '../../src/features/onboarding/ThePromise';
 import { Today, todayTestID } from '../../src/features/onboarding/Today';
 import {
   Reminder,
@@ -154,7 +148,6 @@ export const theFirstRunDrawings = [
   'reminder',
   'firstForecast',
   'firstForecastLearning',
-  'thePromise',
   'whatEmiDoesWithIt',
   'hold',
   'recoverySetup',
@@ -251,11 +244,6 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   recoveryConfirm: { ...theRecoveryFrame, TextField: [recoveryEntryTestID] },
   recoverySetup: theRecoveryFrame,
   regularity: { ...theFrame, SingleChoiceRow: [regularityTestID('regular')] },
-  thePromise: {
-    Card: [promiseLinesTestID],
-    PrimaryButton: [promiseActionTestID],
-    ThePromise: [thePromiseTestID],
-  },
   todayFirstRun: { ...theFrame, SelectableTile: [todayTestID('cramps')] },
   reminder: {
     ...theFrame,
@@ -434,8 +422,6 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
           onContinue={nothing}
         />
       );
-    case 'thePromise':
-      return <ThePromise onContinue={nothing} />;
     case 'whatEmiDoesWithIt':
       return <WhatEmiDoesWithIt focus={[]} onContinue={nothing} />;
     case 'hold':
@@ -483,8 +469,6 @@ export function whatTheDrawingAsksFor(drawing: FirstRunDrawing): Part[] {
         'firstForecastLearning',
         theIdentifiersOf.firstForecastLearning,
       );
-    case 'thePromise':
-      return thePartsOfTheMockupWithoutItsNotes('thePromise', theIdentifiersOf.thePromise);
     case 'whatEmiDoesWithIt':
       return thePartsOfTheMockupWithoutItsNotes(
         'whatEmiDoesWithIt',

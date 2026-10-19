@@ -41,7 +41,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
 import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
@@ -326,7 +326,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       // The reminder stands after the last question, and "Not now" passes it.
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());

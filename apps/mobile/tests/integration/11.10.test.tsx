@@ -39,7 +39,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault } from '../fixtures/herVault';
 import { daysNamedIn, textIn } from '../fixtures/renderedText';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
 import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import {
   describeSingleDayUse,
@@ -355,7 +355,7 @@ describe('her first forecast is a range, before anything is written', () => {
       expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
     });
 
-    it('hands her to the promise when she presses Continue, and the hold is behind it', async () => {
+    it('hands her to what Emi does with it when she presses Continue, and the hold is behind it', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesHerFirstForecast();
@@ -366,9 +366,9 @@ describe('her first forecast is a range, before anything is written', () => {
 
       await shePresses(firstForecastActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/the-promise');
+      expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
 
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
 
       expect(app.pathname()).toBe('/onboarding/hold');
     });
@@ -381,7 +381,7 @@ describe('her first forecast is a range, before anything is written', () => {
       await sheReachesHerFirstForecast();
       const readBeforeTheHold = theRangeDrawn(firstForecastRangeTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
@@ -396,7 +396,7 @@ describe('her first forecast is a range, before anything is written', () => {
       await sheReachesHerFirstForecast({ periodBeforeStartedOn: theOneBefore });
       const readBeforeTheHold = theRangeDrawn(firstForecastRangeTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       expect(theRangeDrawn(learningRangeTestID)).toBe(readBeforeTheHold);

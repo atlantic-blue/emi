@@ -417,7 +417,6 @@ import {
   countsFromTheFirstPeriodSentence,
   cyclesBeforeAForecastSentence,
   firstRunCopy,
-  promiseCopy,
   firstRunScreenCount,
   stepLabel,
   tourCopy,
@@ -451,11 +450,8 @@ import {
   firstForecastTitleTestID,
 } from '../apps/mobile/src/features/onboarding/FirstForecast';
 import {
-  promiseActionTestID,
-  thePromiseTestID,
-} from '../apps/mobile/src/features/onboarding/ThePromise';
-import {
   whatEmiDoesActionTestID,
+  whatEmiDoesTestID,
   whatEmiDoesTitleTestID,
 } from '../apps/mobile/src/features/onboarding/WhatEmiDoesWithIt';
 import {
@@ -1820,7 +1816,6 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
         await shePresses(firstForecastActionTestID);
-        await shePresses(promiseActionTestID);
         await shePresses(whatEmiDoesActionTestID);
       },
     );
@@ -1921,7 +1916,6 @@ defineFeature(feature, (test) => {
 
     when('she reads on and taps Save and start', async () => {
       await shePresses(firstForecastActionTestID);
-      await shePresses(promiseActionTestID);
       await shePresses(whatEmiDoesActionTestID);
       await sheTapsSaveAndStart();
     });
@@ -1948,10 +1942,9 @@ defineFeature(feature, (test) => {
     await shePresses(onboardingSkipTestID);
   }
 
-  /** The forecast, the promise, what Emi does with it, and the hold. */
+  /** The forecast, what Emi does with it, and the hold. */
   async function sheReadsOnAndSaves(): Promise<void> {
     await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
-    await shePresses(promiseActionTestID);
     await shePresses(whatEmiDoesActionTestID);
     await sheTapsSaveAndStart();
   }
@@ -2085,6 +2078,17 @@ defineFeature(feature, (test) => {
     let app: OpenApp;
     const visited: string[] = [];
     const whatEachScreenSaid: string[] = [];
+    const whatEachCounterRead: string[] = [];
+
+    /** Where she stands, and what the step counter on that screen reads, or that it draws none. */
+    function sheIsOn(): void {
+      visited.push(app.pathname());
+
+      const counter = screen.queryByTestId(onboardingProgressTestID);
+      const read = counter?.props.accessibilityValue as { now: number; max: number } | undefined;
+
+      whatEachCounterRead.push(read === undefined ? 'no counter' : `${read.now} of ${read.max}`);
+    }
 
     given('she has never opened Emi before', () => undefined);
 
@@ -2093,40 +2097,38 @@ defineFeature(feature, (test) => {
     });
 
     and('she answers every question of the first run', async () => {
-      visited.push(app.pathname());
+      sheIsOn();
       whatEachScreenSaid.push(screen.getByText(firstRunCopy.welcome.title).props.children);
       await sheReadsTheWelcome();
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingWayPastTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(firstForecastActionTestID);
-      visited.push(app.pathname());
-      await shePresses(promiseActionTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(whatEmiDoesActionTestID);
-      visited.push(app.pathname());
+      sheIsOn();
     });
 
     and('she taps Save and start', async () => {
@@ -2150,7 +2152,6 @@ defineFeature(feature, (test) => {
           '/onboarding/today',
           '/onboarding/reminder',
           '/onboarding/first-forecast',
-          '/onboarding/the-promise',
           '/onboarding/what-emi-does-with-it',
           '/onboarding/hold',
         ]);
@@ -2162,6 +2163,34 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
     });
+
+    and(
+      'the counter read its own step on every question, and no promise step stood before the hold',
+      () => {
+        // The welcome is step 1 and the first run log of today is step 11, and neither draws the
+        // bar, so the counter reads the true number on every other question. The three screens
+        // after the reminder ask her nothing and count nothing.
+        expect(whatEachCounterRead).toEqual([
+          'no counter',
+          '2 of 12',
+          '3 of 12',
+          '4 of 12',
+          '5 of 12',
+          '6 of 12',
+          '7 of 12',
+          '8 of 12',
+          '9 of 12',
+          '10 of 12',
+          'no counter',
+          '12 of 12',
+          'no counter',
+          'no counter',
+          'no counter',
+        ]);
+        expect(whatEachCounterRead).toHaveLength(visited.length);
+        expect(visited).not.toContain('/onboarding/the-promise');
+      },
+    );
   });
 
   test('SCREEN-1, the first run asks for no account, no email address and no password', ({
@@ -2211,8 +2240,6 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(firstForecastActionTestID);
-      everyFieldShePassed.push(...fieldsDrawn());
-      await shePresses(promiseActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(whatEmiDoesActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
@@ -5917,8 +5944,6 @@ defineFeature(feature, (test) => {
 
       await shePresses(firstForecastActionTestID);
       whereSheIsNow();
-      await shePresses(promiseActionTestID);
-      whereSheIsNow();
       await shePresses(whatEmiDoesActionTestID);
       whereSheIsNow();
       await sheTapsSaveAndStart();
@@ -6061,10 +6086,14 @@ defineFeature(feature, (test) => {
       await shePresses(firstForecastActionTestID);
     });
 
-    then('she is reading what Emi promises her', () => {
-      expect(app.pathname()).toBe('/onboarding/the-promise');
-      expect(screen.getByTestId(thePromiseTestID)).toBeTruthy();
-    });
+    then(
+      'she is reading what Emi does with what she told it, with no promise step before it',
+      () => {
+        expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
+        expect(screen.getByTestId(whatEmiDoesTestID)).toBeTruthy();
+        expect(screen.queryByText('Only you can read your days.')).toBeNull();
+      },
+    );
   });
 
   test('SCREEN-1, she completes the first run with no date, logs a period, and reads a ring', ({
@@ -6923,15 +6952,13 @@ defineFeature(feature, (test) => {
       now: 'Here is what Emi does with what you told it',
       theOldGreeting: `${theNameSheGives}, here's what we'll do with your answers`,
     };
-    const thePromiseStillSays = 'Only you can read your days.';
-    const theHoldNowSays = 'Your cycle, your data, your key.';
+    const theSaveNowSays = 'Your cycle, your data, your key.';
 
-    /** The keys of the four screens from the forecast to the hold, in every language. */
+    /** The keys of the three screens from the forecast to Save and start, in every language. */
     const theseScreens: readonly string[] = [
       'onboarding.firstForecast.',
-      'onboarding.promise.',
       'onboarding.whatEmiDoes.',
-      'onboarding.hold.',
+      'onboarding.start.',
     ];
 
     let app: OpenApp;
@@ -7022,11 +7049,6 @@ defineFeature(feature, (test) => {
         await sheAnswersEverythingAndReachesHerForecast(theNameSheGives);
         await shePresses(firstForecastActionTestID);
 
-        expect(app.pathname()).toBe('/onboarding/the-promise');
-        expect(textIn(screen.getByTestId(thePromiseTestID))).toContain(thePromiseStillSays);
-
-        await shePresses(promiseActionTestID);
-
         expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
         expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatEmiDoes.now]);
         expect(screen.queryByText(theTitleOfWhatEmiDoes.theOldGreeting)).toBeNull();
@@ -7035,14 +7057,13 @@ defineFeature(feature, (test) => {
         await anotherWomanOpensEmi();
         await sheAnswersEverythingAndReachesHerForecast();
         await shePresses(firstForecastActionTestID);
-        await shePresses(promiseActionTestID);
 
         expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatEmiDoes.now]);
       },
     );
 
     and(
-      'the promise and the hold never talk as we, in each of the three languages she can read them in',
+      'the screens after the forecast never talk as we, in each of the three languages she can read them in',
       async () => {
         for (const language of languages) {
           const read = theWordsOfTheseScreensIn(language).join('\n');
@@ -7063,7 +7084,7 @@ defineFeature(feature, (test) => {
         await shePresses(whatEmiDoesActionTestID);
 
         expect(app.pathname()).toBe('/onboarding/hold');
-        expect(textIn(screen.getByTestId(saveScreenTestID))).toContain(theHoldNowSays);
+        expect(textIn(screen.getByTestId(saveScreenTestID))).toContain(theSaveNowSays);
       },
     );
   });
@@ -7104,7 +7125,7 @@ defineFeature(feature, (test) => {
 
     then('each one carries the wash across the top of the glass', () => {
       expect(washedAtTheTop).toEqual([...theFirstRunDrawings]);
-      expect(washedAtTheTop).toHaveLength(20);
+      expect(washedAtTheTop).toHaveLength(19);
     });
 
     and(
@@ -7724,7 +7745,7 @@ defineFeature(feature, (test) => {
       const said = textIn(screen.getByTestId(settingsAssuranceTestID)).join(' ');
 
       expect(theStyleOnPrivacy(settingsAssuranceTestID).backgroundColor).toBe(colour.darkCard);
-      expect(said).toContain(promiseCopy.title);
+      expect(said).toContain(settingsCopy.settings.assurance.lead);
       expect(wherePrivacyDrew(settingsTitleTestID, from)).toBeLessThan(
         wherePrivacyDrew(settingsAssuranceTestID, from),
       );
@@ -8685,7 +8706,6 @@ defineFeature(feature, (test) => {
       sheSawStillLearning = screen.queryByTestId(firstForecastStillLearningTestID) !== null;
 
       await shePresses(firstForecastActionTestID);
-      await shePresses(promiseActionTestID);
       await shePresses(whatEmiDoesActionTestID);
       await sheTapsSaveAndStart();
     });

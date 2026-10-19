@@ -366,25 +366,7 @@ export const tourCopy = {
   skip: words('onboarding.tour.skip'),
 } as const;
 
-/**
- * The three lines of the promise, in the order she reads them. A list as well as the record below,
- * because the order is the screen and a record does not carry one.
- */
-export const promiseLines = ['encrypted', 'noTracking', 'delete'] as const;
-
-export type PromiseLine = (typeof promiseLines)[number];
-
-export const promiseCopy = {
-  title: words('onboarding.promise.title'),
-  lines: {
-    encrypted: words('onboarding.promise.encrypted'),
-    noTracking: words('onboarding.promise.noTracking'),
-    delete: words('onboarding.promise.delete'),
-  } satisfies Readonly<Record<PromiseLine, string>>,
-  action: words('onboarding.promise.action'),
-} as const;
-
-/** The three cards of the screen after the promise, in the order she reads them. */
+/** The three cards of the screen after the first forecast, in the order she reads them. */
 export const whatEmiDoesCards = ['forecast', 'log', 'privacy'] as const;
 
 export type WhatEmiDoesCard = (typeof whatEmiDoesCards)[number];

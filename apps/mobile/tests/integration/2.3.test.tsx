@@ -20,7 +20,6 @@ import {
   monthTestID,
 } from '../../src/features/onboarding/Calendar';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
-import { promiseActionTestID } from '../../src/features/onboarding/ThePromise';
 import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import { saveButtonTestID } from '../../src/features/onboarding/SaveAndStart';
 import {
@@ -201,9 +200,8 @@ async function sheReadsHerFirstForecast(): Promise<void> {
   await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
 }
 
-/** The promise and what Emi does with it, the last two screens she reads before the hold. */
-async function sheReadsThePromise(): Promise<void> {
-  await fireEvent.press(screen.getByTestId(promiseActionTestID));
+/** What Emi does with it, the last screen she reads before the hold. */
+async function sheReadsWhatEmiDoesWithIt(): Promise<void> {
   await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
 }
 
@@ -461,8 +459,6 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await sheReadsHerFirstForecast();
       visited.push(app.pathname());
-      await fireEvent.press(screen.getByTestId(promiseActionTestID));
-      visited.push(app.pathname());
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
       visited.push(app.pathname());
       await sheTapsSaveAndStart();
@@ -481,7 +477,6 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/today',
         '/onboarding/reminder',
         '/onboarding/first-forecast',
-        '/onboarding/the-promise',
         '/onboarding/what-emi-does-with-it',
         '/onboarding/hold',
       ]);
@@ -493,13 +488,12 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       // A name opening with an underscore is a layout rather than a route, so she is never sent
       // to it. Every half is named, so a deleted layout fails here as loudly as an unasked
-      // question. The five screens that ask her nothing are named on their own and taken out
+      // question. The four screens that ask her nothing are named on their own and taken out
       // before the questions are counted.
       const asksHerNothing = [
         'tour.tsx',
         'hold.tsx',
         'first-forecast.tsx',
-        'the-promise.tsx',
         'what-emi-does-with-it.tsx',
       ];
 
@@ -676,7 +670,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsToday();
       await sheSaysNotNowToTheReminder();
       await sheReadsHerFirstForecast();
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
@@ -764,9 +758,6 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheReadsHerFirstForecast();
       expect(controlsTooSmallToPress()).toEqual([]);
 
-      await fireEvent.press(screen.getByTestId(promiseActionTestID));
-      expect(controlsTooSmallToPress()).toEqual([]);
-
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
       expect(screen.getByTestId(saveButtonTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
@@ -825,7 +816,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsToday();
       await sheSaysNotNowToTheReminder();
       await sheReadsHerFirstForecast();
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
