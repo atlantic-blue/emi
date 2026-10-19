@@ -5,7 +5,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PrimaryButton, TextLink } from '../../components/Button';
 import { Card } from '../../components/Card';
-import { LockLine } from '../../components/LockLine';
 import { ProgressBar } from '../../components/ProgressBar';
 import { Screen } from '../../components/Screen';
 import {
@@ -59,11 +58,6 @@ interface Props {
   /** The questions about her cycle centre their lines under the answer, as the redesign draws them. */
   readonly linesAlign?: 'start' | 'center';
   /**
-   * Where the promise about her privacy stands. The questions put it at the foot, over the button.
-   * The first run log draws it right under the tiles, because there it is about the day she picks.
-   */
-  readonly promiseSits?: 'atTheFoot' | 'underTheAnswer';
-  /**
    * Where the way past stands against the button. The first run log draws it under the button, as
    * the second of two ways on, and every other screen draws it over the button.
    */
@@ -94,7 +88,6 @@ export const onboardingStepLabelTestID = 'onboarding-step-label';
 export const onboardingEmblemTestID = 'onboarding-emblem';
 export const onboardingSheetTestID = 'onboarding-sheet';
 export const onboardingHeaderWordTestID = 'onboarding-header-word';
-export const onboardingLockTestID = 'onboarding-lock';
 export const onboardingQuestionTestID = 'onboarding-question';
 
 /** Points. The arrow is read at the size the rest of the set is read at. */
@@ -131,7 +124,6 @@ export function OnboardingScreen({
   wayPastLabel,
   linesComeFirst = false,
   linesAlign = 'start',
-  promiseSits = 'atTheFoot',
   wayPastSits = 'overTheAction',
   header = 'bar',
   headerWord,
@@ -140,23 +132,7 @@ export function OnboardingScreen({
   children,
 }: Props): ReactNode {
   const onTheSheet = standsOnTheSheet;
-  const promise = thePromiseIn(lines);
-  const promiseLine =
-    promise === undefined ? null : (
-      <View style={styles.lock}>
-        <LockLine testID={onboardingLockTestID} words={promise} />
-      </View>
-    );
-  // A screen whose lines come first keeps the promise with them, above what she is asked, for the
-  // same reason the lines move: read after she answers is read too late.
-  const promiseIsUnderTheAnswer = promiseSits === 'underTheAnswer';
-  const said = (
-    <>
-      <TheLinesSheReads align={linesAlign} onTheSheet={onTheSheet} lines={lines} />
-      {linesComeFirst ? promiseLine : null}
-    </>
-  );
-  const promiseAtTheFoot = linesComeFirst || promiseIsUnderTheAnswer ? null : promiseLine;
+  const said = <TheLinesSheReads align={linesAlign} onTheSheet={onTheSheet} lines={lines} />;
 
   const asked = (
     <>
@@ -175,8 +151,6 @@ export function OnboardingScreen({
       {linesComeFirst ? said : null}
 
       <View style={styles.asked}>{children}</View>
-
-      {promiseIsUnderTheAnswer && !linesComeFirst ? promiseLine : null}
 
       {linesComeFirst ? null : said}
     </>
@@ -272,7 +246,6 @@ export function OnboardingScreen({
             {asked}
           </ScrollView>
           <View style={styles.sheetFoot}>
-            {promiseAtTheFoot}
             <TheWaysOn action={action} wayPast={wayPast} wayPastSits={wayPastSits} />
           </View>
         </View>
@@ -287,7 +260,6 @@ export function OnboardingScreen({
             {asked}
           </ScrollView>
           <View style={styles.footer}>
-            {promiseAtTheFoot}
             <TheWaysOn action={action} wayPast={wayPast} wayPastSits={wayPastSits} />
           </View>
         </>
@@ -319,23 +291,8 @@ function TheWaysOn({
   );
 }
 
-/** The lines about her privacy. Each one is drawn apart from the others, with the lock beside it. */
-const thePromises: readonly string[] = [
-  firstRunCopy.encrypts,
-  firstRunCopy.encryptedHere,
-  firstRunCopy.encryptsYourAnswers,
-  firstRunCopy.encryptsIt,
-  firstRunCopy.remindsOnThisPhone,
-];
-
-function thePromiseIn(lines: readonly string[]): string | undefined {
-  return lines.find((line) => thePromises.includes(line));
-}
-
 /**
- * The lines under the question. The promise about her privacy is not one of them: the redesign
- * draws it at the foot of the sheet, over the button, because it is about her and not about the
- * question.
+ * The lines under the question.
  *
  * On the ground, where there is no sheet, the rest of the lines are raised onto a card. Inside the
  * sheet they are not: a white card on a white sheet is a card nobody can see.
@@ -349,15 +306,13 @@ function TheLinesSheReads({
   readonly onTheSheet: boolean;
   readonly align: 'start' | 'center';
 }): ReactNode {
-  const said = lines.filter((line) => !thePromises.includes(line));
-
-  if (said.length === 0) {
+  if (lines.length === 0) {
     return null;
   }
 
   return onTheSheet ? (
     <View style={styles.lines} testID={onboardingLinesTestID}>
-      {said.map((line) => (
+      {lines.map((line) => (
         <Text
           key={line}
           style={align === 'center' ? [styles.line, styles.lineCentred] : styles.line}
@@ -368,7 +323,7 @@ function TheLinesSheReads({
     </View>
   ) : (
     <Card testID={onboardingLinesTestID}>
-      {said.map((line, at) => (
+      {lines.map((line, at) => (
         <Text key={line} style={at === 0 ? styles.line : [styles.line, styles.lineAfter]}>
           {line}
         </Text>
@@ -398,7 +353,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.spaceLg,
     paddingTop: space.spaceMd,
   },
-  // The first run log stacks its question, its tiles and its promise from the top, as the
+  // The first run log stacks its question and its tiles from the top, as the
   // redesign draws them, rather than spreading them down the glass.
   bodyStacked: { justifyContent: 'flex-start' },
   emblem: {
@@ -437,9 +392,6 @@ const styles = StyleSheet.create({
     paddingTop: space.spaceMd,
   },
   lines: { gap: space.spaceSm },
-  // The promise sits over the button, centred while it fits on one line and read from the left
-  // when it wraps.
-  lock: { alignItems: 'center', paddingBottom: space.spaceMd },
   question: {
     color: colour.secondaryText,
     marginBottom: space.spaceSm,
@@ -490,7 +442,7 @@ const styles = StyleSheet.create({
     ...textStyle('headline-lg'),
     marginBottom: space.spaceMd,
   },
-  // The way past stands outside the scrolling middle, under the promise and over the one thing she
+  // The way past stands outside the scrolling middle, over the one thing she
   // can press, as the redesign draws it. A question as tall as a month would otherwise put it below
   // the fold, which is where a woman who has just found she cannot answer is least likely to look.
   wayPast: { alignItems: 'center', paddingBottom: space.spaceSm },
