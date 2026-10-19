@@ -15,12 +15,17 @@ import { RoundIconButton } from '../../components/RoundIconButton';
 
 export const logHeaderTestID = 'log-header';
 export const logHeaderLeaveTestID = 'log-header-leave';
+export const logHeaderEndTestID = 'log-header-end';
 
 /** The set holds one chevron, pointing the way on, so the way back is the same drawing turned. */
 const TURNED_AROUND = [{ rotate: '180deg' }] as const;
 
-/** Points. The board gives each end of the header this width, so the title stays in the middle. */
-const HEADER_END = 64;
+/**
+ * Points. The board gives each end of the header this width. Both ends grow alike past it when the
+ * title leaves room, so Done in a longer language keeps its word whole and the title stays in the
+ * middle.
+ */
+export const HEADER_END = 64;
 
 interface Props {
   readonly title: string;
@@ -54,7 +59,7 @@ export function LogHeader(props: Props): ReactNode {
       >
         {props.title}
       </Text>
-      <View style={styles.end}>
+      <View style={styles.end} testID={logHeaderEndTestID}>
         <TextLink label={props.doneLabel} onPress={props.onDone} testID={props.doneTestID} />
       </View>
     </View>
@@ -62,14 +67,14 @@ export function LogHeader(props: Props): ReactNode {
 }
 
 const styles = StyleSheet.create({
-  end: { alignItems: 'flex-end', width: HEADER_END },
+  end: { alignItems: 'flex-end', flexBasis: 0, flexGrow: 1, minWidth: HEADER_END },
   header: {
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
     minHeight: MINIMUM_TAP_TARGET,
   },
-  start: { alignItems: 'flex-start', width: HEADER_END },
+  start: { alignItems: 'flex-start', flexBasis: 0, flexGrow: 1, minWidth: HEADER_END },
   title: { color: colour.text, flexShrink: 1, textAlign: 'center', ...textStyle('headline-sm') },
   turned: { transform: TURNED_AROUND },
 });
