@@ -311,9 +311,11 @@ import {
 import {
   logFlowDoneTestID,
   logFlowFlowCardTestID,
+  logFlowOtherDischargeTestID,
   logFlowPeriodRowTestID,
   logFlowSavedTestID,
   logFlowSexRowTestID,
+  logFlowSpottingHintTestID,
   logFlowSymptomsCardTestID,
   logFlowTestID,
   logFlowTitleTestID,
@@ -1047,7 +1049,7 @@ const theLogAndTheEditorSayInEnglish: Readonly<Record<string, string>> = {
   'log.energy.heading': "How's your energy?",
   'log.energy.name.3': 'Okay',
   'log.flow.saved': 'Saved on this phone.',
-  'log.flow.title': 'Your flow',
+  'log.flow.title': 'Period',
   'log.sheet.noMatch': 'No symptoms match {query}',
   'log.temperature.hint': 'Take it before you get up.',
   'log.unexpected.invitation': "Not your period? Log it. It won't count as the start of a cycle.",
@@ -3817,7 +3819,7 @@ defineFeature(feature, (test) => {
 
     then('the screen names that date, and asks about her flow with no word for today', () => {
       expect(screen.getByTestId(logFlowWhenTestID)).toHaveTextContent(dateWords(thatDay));
-      expect(screen.getByTestId(logFlowTitleTestID)).toHaveTextContent('Your flow');
+      expect(screen.getByTestId(logFlowTitleTestID)).toHaveTextContent('Period');
       expect(screen.queryByText(/today/i)).toBeNull();
     });
 
@@ -3864,6 +3866,42 @@ defineFeature(feature, (test) => {
     then('she is on the Period page of that day', () => {
       expect(screen.getByTestId(periodPageTestID)).toBeTruthy();
       expect(screen.getByTestId(periodPageDayTestID)).toHaveTextContent(periodDayLabel(thatDay));
+    });
+  });
+
+  test('SCREEN-2, she reads what spotting means on the log and opens other discharge from it', ({
+    given,
+    when,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens the log of today', async () => {
+      app = await sheOpens('/log');
+      await screen.findByTestId(logFlowTestID);
+    });
+
+    then('the flow section is called Period, and it says what spotting means', () => {
+      expect(screen.getByTestId(logFlowTitleTestID)).toHaveTextContent('Period');
+      expect(screen.getByTestId(logFlowSpottingHintTestID)).toHaveTextContent(
+        'Spotting: Small traces of blood or brownish discharge',
+      );
+    });
+
+    when('she presses Other discharge', async () => {
+      await shePresses(logFlowOtherDischargeTestID);
+      await screen.findByTestId(periodPageTestID);
+    });
+
+    then('she is on the Period page of today, where she can pick a discharge', () => {
+      expect(app.pathname()).toBe('/period');
+      expect(app.searchParams()).toEqual({});
+      expect(screen.getByTestId(periodChipTestID('discharge', 'egg-white'))).toBeTruthy();
     });
   });
 

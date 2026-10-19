@@ -881,6 +881,13 @@ Feature: She opens Emi and logs her first period
     When she opens the Period page of today again
     Then the discharge and the two products she saved are filled
 
+  Scenario: SCREEN-2, she reads what spotting means on the log and opens other discharge from it
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the log of today
+    Then the flow section is called Period, and it says what spotting means
+    When she presses Other discharge
+    Then she is on the Period page of today, where she can pick a discharge
+
   Scenario: SCREEN-4, she adds a symptom to a day she already lived and opens its Sex and Period pages
     Given her phone holds four recorded period days, the last of them today
     When she opens the day before yesterday
