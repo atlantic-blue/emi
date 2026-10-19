@@ -108,7 +108,7 @@ export const todaySymptoms = [
   'headache',
   'bloating',
   'fatigue',
-  'calm',
+  'breast-tenderness',
   'low-mood',
 ] as const;
 
@@ -124,9 +124,9 @@ export function todaySymptomIsOffered(slug: string): slug is TodaySymptom {
  * a second time. The order is the order she tapped, which is what the record keeps.
  */
 export function symptomsAfterPressing(
-  chosen: readonly TodaySymptom[],
-  pressed: TodaySymptom,
-): readonly TodaySymptom[] {
+  chosen: readonly string[],
+  pressed: string,
+): readonly string[] {
   return chosen.includes(pressed)
     ? chosen.filter((slug) => slug !== pressed)
     : [...chosen, pressed];
@@ -174,11 +174,12 @@ export interface FirstRunAnswers {
    */
   readonly focus?: readonly Focus[];
   /**
-   * What she said she feels today, in the order she pressed it. Left out where she said there is
-   * nothing to add, and then today gets no row of its own at all. An empty list is never written,
-   * for the reason the goals above are never written empty.
+   * What she said she feels today, in the order she pressed it: the six tiles and anything she
+   * picked from all symptoms. Left out where she said there is nothing to add, and then today gets
+   * no row of its own at all. An empty list is never written, for the reason the goals above are
+   * never written empty.
    */
-  readonly symptoms?: readonly TodaySymptom[];
+  readonly symptoms?: readonly string[];
   /**
    * When she asked to be reminded before her next period. Left out where she said "Not now", and
    * where the phone refused to raise notifications, because a reminder the phone will not raise is

@@ -343,7 +343,7 @@ import {
   publishedNumberTestID,
 } from '../apps/mobile/src/features/home/MeasuredRow';
 import { cycleLengthDaysTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
-import { todayTestID } from '../apps/mobile/src/features/onboarding/Today';
+import { todayAllSymptomsTestID, todayTestID } from '../apps/mobile/src/features/onboarding/Today';
 import {
   reminderPreviewWordsTestID,
   reminderTestID,
@@ -441,6 +441,7 @@ import {
   defaultCycleLengthDays,
   defaultPeriodLengthDays,
   forecastFromHerAnswers,
+  todaySymptoms,
 } from '../apps/mobile/src/features/onboarding/firstRun';
 import { resetExpoSqlite } from '../apps/mobile/tests/data/expoSqlite';
 import { openTestDatabase } from '../apps/mobile/tests/data/nodeDatabase';
@@ -1938,6 +1939,93 @@ defineFeature(feature, (test) => {
 
     then('her phone holds one day, the day she said her period started', () => {
       expect(listDayLogs(herDatabase()).map((row) => row.day)).toEqual([herPeriodStarted]);
+    });
+  });
+
+  test('SCREEN-1, she picks breast tenderness and a symptom from All symptoms on her first day', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she reaches the question about how she is today', async () => {
+      await sheReachesTheReminder();
+      await shePresses(onboardingBackTestID);
+
+      expect(app.pathname()).toBe('/onboarding/today');
+    });
+
+    then(
+      'the six tiles are cramps, headache, bloating, fatigue, breast tenderness and low mood',
+      () => {
+        expect(todaySymptoms).toEqual([
+          'cramps',
+          'headache',
+          'bloating',
+          'fatigue',
+          'breast-tenderness',
+          'low-mood',
+        ]);
+        expect(screen.getByTestId(todayTestID('breast-tenderness'))).toHaveTextContent(
+          'Breast tenderness',
+        );
+        expect(screen.queryByTestId('today-calm')).toBeNull();
+      },
+    );
+
+    when('she picks breast tenderness', async () => {
+      await shePresses(todayTestID('breast-tenderness'));
+
+      expect(screen.getByTestId(todayTestID('breast-tenderness'))).toBeSelected();
+    });
+
+    and('she presses All symptoms, marks irritable and saves', async () => {
+      expect(screen.getByTestId(todayAllSymptomsTestID)).toHaveTextContent('All symptoms');
+
+      await shePresses(todayAllSymptomsTestID);
+
+      expect(app.pathname()).toBe('/onboarding/all-symptoms');
+      expect(screen.getByTestId(symptomChipTestID('breast-tenderness'))).toBeChecked();
+
+      await shePresses(symptomChipTestID('irritable'));
+      await shePresses(logSymptomsSaveTestID);
+    });
+
+    then('she is back on the question about how she is today, and Save today is ready', () => {
+      expect(app.pathname()).toBe('/onboarding/today');
+      expect(screen.getByTestId(todayTestID('breast-tenderness'))).toBeSelected();
+      expect(screen.getByTestId(onboardingActionTestID)).not.toBeDisabled();
+    });
+
+    and('her phone holds no day yet', () => {
+      expect(listDayLogs(herDatabase())).toEqual([]);
+    });
+
+    when('she presses Save today and says Not now', async () => {
+      await shePresses(onboardingActionTestID);
+
+      expect(app.pathname()).toBe('/onboarding/reminder');
+
+      await shePresses(onboardingWayPastTestID);
+    });
+
+    and('she reads on and presses and holds Hold to begin', async () => {
+      await sheReadsOnAndHolds();
+    });
+
+    then('today holds breast tenderness and irritable, in the order she picked them', async () => {
+      const vault = await theVaultOnHerPhone();
+      const row = listDayLogs(herDatabase()).find((each) => each.day === today);
+
+      expect(row && vault.open(row.payload).symptoms).toEqual(['breast-tenderness', 'irritable']);
     });
   });
 

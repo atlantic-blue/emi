@@ -355,6 +355,7 @@ describe('the first run questions use her name and reply to her answers', () => 
         <OnAPhone>
           <Today
             chosen={[]}
+            onAllSymptoms={() => undefined}
             onBack={() => undefined}
             onPress={() => undefined}
             onSave={() => undefined}

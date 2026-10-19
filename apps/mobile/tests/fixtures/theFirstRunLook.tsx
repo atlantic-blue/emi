@@ -392,7 +392,14 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
       );
     case 'todayFirstRun':
       return (
-        <Today chosen={[]} onBack={nothing} onPress={nothing} onSave={nothing} onSkip={nothing} />
+        <Today
+          chosen={[]}
+          onAllSymptoms={nothing}
+          onBack={nothing}
+          onPress={nothing}
+          onSave={nothing}
+          onSkip={nothing}
+        />
       );
     // The drawing has the first of the three moments pressed, so the screen is drawn with it.
     case 'reminder':

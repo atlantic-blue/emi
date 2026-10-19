@@ -21,6 +21,7 @@ import {
 } from '../../src/features/onboarding/OnboardingScreen';
 import {
   Today,
+  todayAllSymptomsTestID,
   todayCellTestID,
   todayIcons,
   todayTestID,
@@ -41,7 +42,18 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
-import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
+import {
+  sheAnswersEveryQuestion,
+  sheAnswersTheReminder,
+  sheReadsWhatEmiDoesWithIt,
+} from '../fixtures/theFirstRun';
+import {
+  logSymptomsDoneTestID,
+  logSymptomsSaveTestID,
+  logSymptomsTestID,
+  logSymptomsTitleTestID,
+} from '../../src/features/log/LogSymptoms';
+import { symptomChipTestID } from '../../src/features/log/SymptomGroup';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { locksDrawnIn } from '../fixtures/drawnLocks';
@@ -212,7 +224,7 @@ describe('what she feels today is her first logged day', () => {
       }
     });
 
-    it('draws cramps, tired, calm and low with the drawings the set already has', async () => {
+    it('draws cramps, tired, breast tenderness and low with the drawings the set already has', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
@@ -221,7 +233,7 @@ describe('what she feels today is her first logged day', () => {
       expect(todayIcons.headache).toBe('headache');
       expect(todayIcons.bloating).toBe('bloating');
       expect(todayIcons.fatigue).toBe('sleep');
-      expect(todayIcons.calm).toBe('mood');
+      expect(todayIcons['breast-tenderness']).toBe('pain');
       expect(todayIcons['low-mood']).toBe('mood');
     });
 
@@ -331,7 +343,7 @@ describe('what she feels today is her first logged day', () => {
 
       expect(screen.getByTestId(todayTestID('cramps'))).toBeSelected();
       expect(screen.getByTestId(todayTestID('fatigue'))).toBeSelected();
-      expect(screen.getByTestId(todayTestID('calm'))).not.toBeSelected();
+      expect(screen.getByTestId(todayTestID('breast-tenderness'))).not.toBeSelected();
     });
 
     it('takes a tile off again when she presses it a second time', async () => {
@@ -383,6 +395,115 @@ describe('what she feels today is her first logged day', () => {
     });
   });
 
+  describe('breast tenderness in the quick six, and the link to all symptoms', () => {
+    it('offers breast tenderness in place of calm, in the order the board draws them', async () => {
+      await sheOpensEmi();
+
+      await sheReachesToday();
+
+      expect(todaySymptoms).toEqual([
+        'cramps',
+        'headache',
+        'bloating',
+        'fatigue',
+        'breast-tenderness',
+        'low-mood',
+      ]);
+      expect(screen.getByTestId(todayTestID('breast-tenderness'))).toHaveTextContent(
+        'Breast tenderness',
+      );
+      expect(screen.queryByTestId('today-calm')).toBeNull();
+      expect(screen.queryByText('Calm')).toBeNull();
+    });
+
+    it('names each tile with the word of the symptom list, in all three languages', () => {
+      for (const language of languages) {
+        const held = catalogueOf(language);
+
+        for (const slug of todaySymptoms) {
+          expect(held[`symptom.${slug}`]).toBeTruthy();
+        }
+        expect(held['onboarding.today.allSymptoms']).toBe(held['phase.diary.allSymptoms']);
+      }
+      expect(todayLabels['breast-tenderness']).toBe('Breast tenderness');
+    });
+
+    it('draws All symptoms under the six and over Save today', async () => {
+      await sheOpensEmi();
+
+      await sheReachesToday();
+
+      const order = theOrderOnTheScreen();
+
+      expect(screen.getByTestId(todayAllSymptomsTestID)).toHaveTextContent('All symptoms');
+      expect(order.indexOf(todayAllSymptomsTestID)).toBeGreaterThan(
+        order.indexOf(todayTestID('low-mood')),
+      );
+      expect(order.indexOf(onboardingActionTestID)).toBeGreaterThan(
+        order.indexOf(todayAllSymptomsTestID),
+      );
+    });
+
+    it('opens every symptom on the link, holding the tiles she already pressed', async () => {
+      const app = await sheOpensEmi();
+
+      await sheReachesToday();
+      await shePresses(todayTestID('cramps'));
+      await shePresses(todayAllSymptomsTestID);
+
+      expect(app.pathname()).toBe('/onboarding/all-symptoms');
+      expect(screen.getByTestId(logSymptomsTestID)).toBeTruthy();
+      expect(screen.getByTestId(logSymptomsTitleTestID)).toHaveTextContent('Today');
+      expect(screen.getByTestId(symptomChipTestID('cramps'))).toBeChecked();
+    });
+
+    it('brings her back to the six with what she picked, and Save today ready', async () => {
+      const app = await sheOpensEmi();
+
+      await sheReachesToday();
+      await shePresses(todayAllSymptomsTestID);
+      await shePresses(symptomChipTestID('irritable'));
+      await shePresses(logSymptomsSaveTestID);
+
+      expect(app.pathname()).toBe('/onboarding/today');
+      expect(screen.getByTestId(onboardingActionTestID)).not.toBeDisabled();
+      expect(listDayLogs(herDatabase())).toEqual([]);
+    });
+
+    it('seals the tiles and what she picked from all symptoms at the hold, and nothing before', async () => {
+      await sheOpensEmi();
+
+      await sheReachesToday();
+      await shePresses(todayTestID('breast-tenderness'));
+      await shePresses(todayAllSymptomsTestID);
+      await shePresses(symptomChipTestID('irritable'));
+      await shePresses(logSymptomsDoneTestID);
+      await shePresses(onboardingActionTestID);
+      await sheAnswersTheReminder(undefined);
+      await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
+      await sheReadsWhatEmiDoesWithIt();
+
+      expect(listDayLogs(herDatabase())).toEqual([]);
+
+      await sheHoldsTheRing();
+
+      expect((await herSealedDay(today))?.symptoms).toEqual(['breast-tenderness', 'irritable']);
+    });
+
+    it('takes a tile off on all symptoms, and the tile on the six reads it', async () => {
+      await sheOpensEmi();
+
+      await sheReachesToday();
+      await shePresses(todayTestID('cramps'));
+      await shePresses(todayAllSymptomsTestID);
+      await shePresses(symptomChipTestID('cramps'));
+      await shePresses(logSymptomsSaveTestID);
+
+      expect(screen.getByTestId(todayTestID('cramps'))).not.toBeSelected();
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
+    });
+  });
+
   describe('her answer, at the hold', () => {
     it('seals today as a day of its own, carrying both the tiles she pressed', async () => {
       await sheOpensEmi();
@@ -422,11 +543,11 @@ describe('what she feels today is her first logged day', () => {
 
       await sheAnswersEveryQuestion({
         periodStartedOn: herPeriodStarted,
-        symptoms: ['calm', 'cramps'],
+        symptoms: ['breast-tenderness', 'cramps'],
       });
       await sheHoldsTheRing();
 
-      expect((await herSealedDay(today))?.symptoms).toEqual(['calm', 'cramps']);
+      expect((await herSealedDay(today))?.symptoms).toEqual(['breast-tenderness', 'cramps']);
     });
 
     it('writes one row holding the flow and the tiles where today is the day she bled', async () => {
@@ -591,6 +712,7 @@ describe('what she feels today is her first logged day', () => {
         <OnAPhone>
           <Today
             chosen={[]}
+            onAllSymptoms={() => undefined}
             onBack={() => undefined}
             onPress={(slug) => pressed.push(slug)}
             onSave={() => undefined}
@@ -607,7 +729,8 @@ describe('what she feels today is her first logged day', () => {
       await render(
         <OnAPhone>
           <Today
-            chosen={['calm']}
+            chosen={['breast-tenderness']}
+            onAllSymptoms={() => undefined}
             onBack={() => undefined}
             onPress={() => undefined}
             onSave={() => undefined}

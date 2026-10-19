@@ -54,6 +54,19 @@ Feature: She opens Emi and logs her first period
     When she reads on and presses and holds Hold to begin
     Then her phone holds one day, the day she said her period started
 
+  Scenario: SCREEN-1, she picks breast tenderness and a symptom from All symptoms on her first day
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the question about how she is today
+    Then the six tiles are cramps, headache, bloating, fatigue, breast tenderness and low mood
+    When she picks breast tenderness
+    And she presses All symptoms, marks irritable and saves
+    Then she is back on the question about how she is today, and Save today is ready
+    And her phone holds no day yet
+    When she presses Save today and says Not now
+    And she reads on and presses and holds Hold to begin
+    Then today holds breast tenderness and irritable, in the order she picked them
+
   Scenario: SCREEN-1, she asks Emi to remind her two days before the range starts
     Given she has never opened Emi before
     When she opens Emi

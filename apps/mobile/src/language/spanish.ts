@@ -744,6 +744,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.skip': 'Omitir',
   'onboarding.step': 'Paso {step} de {of}',
   'onboarding.today.action': 'Guardar hoy',
+  'onboarding.today.allSymptoms': 'Todos los síntomas',
   'onboarding.today.nothingToAdd': 'Nada que añadir',
   'onboarding.today.question': 'Puedes saltarte esto.',
   'onboarding.today.title': '¿Cómo estás hoy?',

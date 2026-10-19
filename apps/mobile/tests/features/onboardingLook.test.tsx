@@ -185,6 +185,7 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
       <OnAPhone>
         <Today
           chosen={[]}
+          onAllSymptoms={() => undefined}
           onBack={() => undefined}
           onPress={() => undefined}
           onSave={() => undefined}
