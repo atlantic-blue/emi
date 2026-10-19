@@ -32,7 +32,7 @@ interface State {
 const theStates: readonly State[] = [
   {
     title: 'Before she presses',
-    note: 'What goes is listed first, each line with its own mark, and the way back out is the quiet link under the one that deletes.',
+    note: 'What goes is listed first, each line with its own mark, a link offers her a copy first, and Keep data is the second button, under the one that deletes.',
     stage: 'ready',
   },
   {
@@ -48,6 +48,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
       <DeleteEverything
         onBack={() => undefined}
         onDelete={() => undefined}
+        onDownload={() => undefined}
         onStartAgain={() => undefined}
         stage={state.stage}
       />

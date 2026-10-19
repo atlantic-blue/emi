@@ -81,8 +81,7 @@ const thePrivacyRowsSay = {
 
 /** What the delete screen says before she presses, and what she is left reading after. */
 const theDeleteScreenSays = {
-  before:
-    "One press and it's gone. No undo, no waiting period. Nobody at Emi can bring it back, because nobody at Emi can read it.",
+  before: 'This removes every day, answer and setting from this phone. It cannot be undone.',
   title: "It's gone.",
   line: 'This phone holds nothing about you now. You can start fresh whenever you like.',
   refused:
@@ -164,10 +163,10 @@ const theWordsUnderTheirKeys: Readonly<Record<string, string>> = {
 const theKeysOfTheseScreens: readonly string[] = Object.keys(theWordsUnderTheirKeys);
 
 /**
- * The two lines of these screens that name Emi on purpose. The delete screen says who cannot bring
- * her days back, which is the claim itself, and the lock names the application it is holding shut.
+ * The one line of these screens that names Emi on purpose: the lock names the application it is
+ * holding shut. The delete screen says what goes from this phone, and that names nobody.
  */
-const theTwoLinesThatNameEmi: readonly string[] = ['settings.delete.line', 'lock.locked.title'];
+const theLinesThatNameEmi: readonly string[] = ['lock.locked.title'];
 
 /** How each language writes the second person, which is who these screens are talking to. */
 const howEachLanguageSaysYou: Readonly<Record<Language, RegExp>> = {
@@ -323,6 +322,7 @@ describe('delete everything tells her it is gone in plain words', () => {
           <DeleteEverything
             onBack={() => undefined}
             onDelete={() => undefined}
+            onDownload={() => undefined}
             onStartAgain={() => undefined}
             stage="refused"
           />
@@ -338,6 +338,7 @@ describe('delete everything tells her it is gone in plain words', () => {
           <DeleteEverything
             onBack={() => undefined}
             onDelete={() => undefined}
+            onDownload={() => undefined}
             onStartAgain={() => undefined}
             stage="deleted-without-the-server"
           />
@@ -534,7 +535,7 @@ describe('delete everything tells her it is gone in plain words', () => {
       }
     });
 
-    it('name Emi on two lines only, the claim about her days and the lock itself', () => {
+    it('name Emi on one line only, the lock itself', () => {
       for (const language of languages) {
         const naming = theKeysOfTheseScreens.filter((key) =>
           searchableText(theWordsOfTheseScreensIn(language, [key]).join('\n')).includes('Emi'),
@@ -542,7 +543,7 @@ describe('delete everything tells her it is gone in plain words', () => {
 
         expect({ language, naming: naming.sort() }).toEqual({
           language,
-          naming: [...theTwoLinesThatNameEmi].sort(),
+          naming: [...theLinesThatNameEmi].sort(),
         });
       }
     });

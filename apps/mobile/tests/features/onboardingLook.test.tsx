@@ -74,7 +74,7 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
   if (at === 'welcome') {
     await render(
       <OnAPhone>
-        <WhatEmiIs onContinue={() => undefined} />
+        <WhatEmiIs onContinue={() => undefined} onWhoCanSee={() => undefined} />
       </OnAPhone>,
     );
     return;

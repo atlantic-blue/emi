@@ -10,7 +10,6 @@ import {
   firstForecastLearningTestID,
   firstForecastLinesTestID,
   firstForecastNoGuessTestID,
-  firstForecastOnThisPhoneTestID,
   firstForecastStillLearningTestID,
   firstForecastRangeTestID,
   firstForecastTitleTestID,
@@ -42,12 +41,6 @@ import {
 import { ThreePeriods } from '../../src/features/onboarding/ThreePeriods';
 import { PeriodLength, periodLengthWheelTestID } from '../../src/features/onboarding/PeriodLength';
 import { Regularity, regularityTestID } from '../../src/features/onboarding/Regularity';
-import {
-  ThePromise,
-  promiseActionTestID,
-  promiseLinesTestID,
-  thePromiseTestID,
-} from '../../src/features/onboarding/ThePromise';
 import { Today, todayTestID } from '../../src/features/onboarding/Today';
 import {
   Reminder,
@@ -155,7 +148,6 @@ export const theFirstRunDrawings = [
   'reminder',
   'firstForecast',
   'firstForecastLearning',
-  'thePromise',
   'whatEmiDoesWithIt',
   'hold',
   'recoverySetup',
@@ -221,7 +213,7 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   cycleLength: { ...theFrame, Stepper: [cycleLengthWheelTestID] },
   feeling: { ...theFrame, SingleChoiceRow: [feelingTestID('fine')] },
   firstForecast: {
-    Card: [firstForecastWhyTestID, firstForecastOnThisPhoneTestID],
+    Card: [firstForecastWhyTestID],
     FirstForecast: [
       firstForecastTitleTestID,
       firstForecastRangeTestID,
@@ -251,11 +243,6 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   recoveryConfirm: { ...theRecoveryFrame, TextField: [recoveryEntryTestID] },
   recoverySetup: theRecoveryFrame,
   regularity: { ...theFrame, SingleChoiceRow: [regularityTestID('regular')] },
-  thePromise: {
-    Card: [promiseLinesTestID],
-    PrimaryButton: [promiseActionTestID],
-    ThePromise: [thePromiseTestID],
-  },
   todayFirstRun: { ...theFrame, SelectableTile: [todayTestID('cramps')] },
   reminder: {
     ...theFrame,
@@ -306,6 +293,9 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put the sample under the question and "Not now" over the button. The redesign
   // canvas puts the sample at the top and "Not now" under "Remind me", so the reminder follows it.
   reminder: 2,
+  // The mockups put a card about this phone under the why card. The first run no longer draws it,
+  // because the welcome links to the page that says who can see her records.
+  firstForecast: 1,
 };
 
 /** The screen she is looking at, rendered on a phone that keeps part of its glass. */
@@ -318,7 +308,7 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
     case 'tour':
       return <TourScreen onNext={nothing} onSkip={nothing} />;
     case 'welcome':
-      return <WhatEmiIs onContinue={nothing} />;
+      return <WhatEmiIs onContinue={nothing} onWhoCanSee={nothing} />;
     case 'name':
       return (
         <HerName onBack={nothing} onContinue={nothing} onSkip={nothing} onType={nothing} typed="" />
@@ -431,8 +421,6 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
           onContinue={nothing}
         />
       );
-    case 'thePromise':
-      return <ThePromise onContinue={nothing} />;
     case 'whatEmiDoesWithIt':
       return <WhatEmiDoesWithIt focus={[]} onContinue={nothing} />;
     case 'hold':
@@ -480,8 +468,6 @@ export function whatTheDrawingAsksFor(drawing: FirstRunDrawing): Part[] {
         'firstForecastLearning',
         theIdentifiersOf.firstForecastLearning,
       );
-    case 'thePromise':
-      return thePartsOfTheMockupWithoutItsNotes('thePromise', theIdentifiersOf.thePromise);
     case 'whatEmiDoesWithIt':
       return thePartsOfTheMockupWithoutItsNotes(
         'whatEmiDoesWithIt',

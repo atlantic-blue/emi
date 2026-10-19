@@ -49,7 +49,7 @@ const theScreens: readonly Screen[] = [
   {
     title: 'One of twelve',
     note: 'What Emi is, and what it will not do. She is asked for nothing here.',
-    element: <WhatEmiIs onContinue={() => undefined} />,
+    element: <WhatEmiIs onContinue={() => undefined} onWhoCanSee={() => undefined} />,
   },
   {
     title: 'Two of twelve',

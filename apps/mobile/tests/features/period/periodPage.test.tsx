@@ -18,10 +18,16 @@ import {
 import { highlightTestID } from '../../../src/features/highlight/HighlightRow';
 import { readings } from '../../../src/features/highlight/highlights';
 import { hygienePageTestID } from '../../../src/features/hygiene/HygieneProductsPage';
+import {
+  editPeriodCancelTestID,
+  editPeriodRowTestID,
+  editPeriodScreenTestID,
+} from '../../../src/features/calendar/EditPeriodScreen';
 import { dayRefusedTestID } from '../../../src/features/log/DayRefused';
 import { periodAnswersAfterPress } from '../../../src/features/period/answers';
 import {
   periodChipTestID,
+  periodPageAnotherDayTestID,
   periodPageBackTestID,
   periodPageDayTestID,
   periodPageHeadingTestID,
@@ -435,6 +441,86 @@ describe('a past day', () => {
 
     expect(await screen.findByTestId(dayRefusedTestID)).toBeTruthy();
     expect(screen.queryByTestId(periodPageTestID)).toBeNull();
+  });
+});
+
+describe('started on another day', () => {
+  it('should carry the link under the flows and above Discharge, as the periodStartedEarlier board does', async () => {
+    await sheOpensThePeriodPage(aPeriodLongAgo);
+
+    expect(whatItSays(periodPageAnotherDayTestID)).toBe('Started on another day?');
+    expect(screen.getByTestId(periodPageAnotherDayTestID).props.accessibilityRole).toBe('link');
+
+    const wanted = [
+      periodChipTestID('flow', 'heavy'),
+      periodPageAnotherDayTestID,
+      periodChipTestID('discharge', 'none'),
+    ];
+    const order: string[] = [];
+    const walk = (node: unknown): void => {
+      if (Array.isArray(node)) {
+        node.forEach(walk);
+        return;
+      }
+      if (node === null || typeof node !== 'object' || !('props' in node)) {
+        return;
+      }
+      const { props, children } = node as { props: { testID?: unknown }; children?: unknown };
+      if (typeof props.testID === 'string' && wanted.includes(props.testID)) {
+        order.push(props.testID);
+      }
+      walk(children ?? null);
+    };
+    walk(screen.toJSON());
+    expect([...new Set(order)]).toEqual([
+      periodChipTestID('flow', 'heavy'),
+      periodPageAnotherDayTestID,
+      periodChipTestID('discharge', 'none'),
+    ]);
+  });
+
+  it('should open the period editor on today, from the Period page of today', async () => {
+    await sheOpensThePeriodPage(aPeriodLongAgo);
+
+    await press(periodPageAnotherDayTestID);
+
+    expect(await screen.findByTestId(editPeriodScreenTestID)).toBeTruthy();
+    expect(screen.getByTestId(editPeriodRowTestID(today))).toBeTruthy();
+    expect(screen.queryByTestId(editPeriodRowTestID(addDays(today, -19)))).toBeNull();
+  });
+
+  it('should open the period editor on the day the page names, from a past day', async () => {
+    const yesterday = addDays(today, -1);
+    await sheOpensThePeriodPage(aPeriodLongAgo, periodAddress(yesterday));
+
+    await press(periodPageAnotherDayTestID);
+
+    expect(await screen.findByTestId(editPeriodScreenTestID)).toBeTruthy();
+    expect(screen.getByTestId(editPeriodRowTestID(yesterday))).toBeTruthy();
+  });
+
+  it('should open the editor on the period that holds today, so the day before is one press away', async () => {
+    await sheOpensThePeriodPage([...herPeriodSoFar, aBleedingDay(today)]);
+
+    await press(periodPageAnotherDayTestID);
+
+    await screen.findByTestId(editPeriodScreenTestID);
+    expect(
+      screen.getByTestId(editPeriodRowTestID(herPeriodStarted)).props.accessibilityState,
+    ).toMatchObject({
+      checked: true,
+    });
+  });
+
+  it('should leave no Period page under the editor, so its Save cannot write over the days the editor saved', async () => {
+    await sheOpensThePeriodPage(aPeriodLongAgo);
+
+    await press(periodPageAnotherDayTestID);
+    await screen.findByTestId(editPeriodScreenTestID);
+    await press(editPeriodCancelTestID);
+
+    expect(screen.queryByTestId(periodPageTestID)).toBeNull();
+    expect(screen.queryByTestId(editPeriodScreenTestID)).toBeNull();
   });
 });
 
