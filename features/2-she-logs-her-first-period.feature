@@ -123,6 +123,17 @@ Feature: She opens Emi and logs her first period
     And her forecast is ready, and not still learning
     And Insights reads the period length she gave
 
+  Scenario: SCREEN-1, her newest period is still going, and Emi writes the days up to today
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives her newest period, which started three days ago, as still going
+    Then the row of her newest period says it is still going
+    When she gives the two periods before it, each with the day it started and the days it lasted
+    And she answers the rest of the questions and presses and holds Hold to begin
+    Then her phone holds every day from the start of her newest period to today, and the days of the two before it
+    And the ring says she is on day 4 of her cycle
+
   Scenario: SCREEN-1, the first run with no date ends on a forecast that says it is still learning
     Given she has never opened Emi before
     When she opens Emi

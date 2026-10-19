@@ -450,6 +450,10 @@ function theReasonFor(
       return `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days between two starts`;
     case 'past-period-length-is-out-of-range':
       return 'a period given from memory runs from one day to the longest the cycle arithmetic reads as one period';
+    case 'only-the-newest-period-can-be-still-going':
+      return 'only the newest period can be still going, and every period before it has a length';
+    case 'still-going-period-started-too-long-ago':
+      return `a period still going on ${today} cannot start on ${newest}, longer ago than one period runs`;
   }
 }
 

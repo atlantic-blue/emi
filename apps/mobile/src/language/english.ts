@@ -824,10 +824,13 @@ export const english = {
     'Cycles run from {minimum} to {maximum} days. Try a day in that range.',
   'pastPeriods.picker.remove': 'Remove this period',
   'pastPeriods.picker.start': 'When did it start?',
+  'pastPeriods.picker.stillGoingTooLongAgo':
+    'A period that is still going started {maximum} days ago or less. Try a later day.',
   'pastPeriods.picker.title': 'Period {number}',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Save',
   'pastPeriods.skipThisOne': 'Skip this one if you do not remember',
+  'pastPeriods.stillGoing': 'Still going',
   'pastPeriods.title': 'Your last three periods',
   'pastPeriods.wayPast': 'Skip, I will log as I go',
   'period.back': 'Back',

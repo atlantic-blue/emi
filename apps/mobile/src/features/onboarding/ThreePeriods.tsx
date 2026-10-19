@@ -23,7 +23,7 @@ interface Props {
 
 /**
  * Her last three periods, in one step: each one a start day and a length, picked on a sheet over
- * the list. Continue waits until she gives one. She can skip the second and third, and a woman who
+ * the list. The newest one can be still going, for a period that began and has not ended. Continue waits until she gives one. She can skip the second and third, and a woman who
  * remembers none takes the way past under the button, which is always drawn.
  */
 export function ThreePeriods({
@@ -57,6 +57,7 @@ export function ThreePeriods({
       {open === undefined ? null : (
         <PastPeriodPicker
           key={open}
+          newestCanBeStillGoing
           oldest={oldestPeriodStart(today)}
           onCancel={() => setOpen(undefined)}
           onDone={(period) => {

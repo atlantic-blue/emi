@@ -11,6 +11,7 @@ import {
   periodsAfterGiving,
   periodsAfterRemoving,
   startIsInRangeAt,
+  stillGoingCanStartOn,
   theDaysItBled,
 } from '../../../src/features/pastPeriods/pastPeriods';
 
@@ -135,6 +136,61 @@ describe('the list of her last three periods', () => {
         ),
       ).toBe('more-periods-than-asked');
       expect(PAST_PERIODS_ASKED).toBe(3);
+    });
+  });
+
+  describe('a newest period that is still going', () => {
+    const offered = { today, oldest };
+    const stillGoing: PastPeriod = { startedOn: '2026-05-12' };
+
+    it('is accepted with no length', () => {
+      expect(pastPeriodsRefusal([stillGoing], offered)).toBeUndefined();
+      expect(pastPeriodsRefusal([stillGoing, before, beforeThat], offered)).toBeUndefined();
+    });
+
+    it('is refused on any row but the newest, where a period has ended and has a length', () => {
+      expect(pastPeriodsRefusal([newest, { startedOn: before.startedOn }], offered)).toBe(
+        'only-the-newest-period-can-be-still-going',
+      );
+      expect(
+        pastPeriodsRefusal([newest, before, { startedOn: beforeThat.startedOn }], offered),
+      ).toBe('only-the-newest-period-can-be-still-going');
+    });
+
+    it('is refused where it started longer ago than one period runs', () => {
+      const lastDayItCanStart = '2026-05-07';
+      const theDayBefore = '2026-05-06';
+
+      expect(stillGoingCanStartOn(lastDayItCanStart, today)).toBe(true);
+      expect(stillGoingCanStartOn(theDayBefore, today)).toBe(false);
+      expect(stillGoingCanStartOn(today, today)).toBe(true);
+      expect(stillGoingCanStartOn('2026-05-15', today)).toBe(false);
+      expect(pastPeriodsRefusal([{ startedOn: lastDayItCanStart }], offered)).toBeUndefined();
+      expect(pastPeriodsRefusal([{ startedOn: theDayBefore }], offered)).toBe(
+        'still-going-period-started-too-long-ago',
+      );
+    });
+
+    it('writes every day from its start to today, and none after', () => {
+      expect(theDaysItBled(stillGoing, today)).toEqual(['2026-05-12', '2026-05-13', '2026-05-14']);
+      expect(theDaysItBled({ startedOn: today }, today)).toEqual([today]);
+    });
+
+    it('is read back as one period by the cycle arithmetic, however long it has run', () => {
+      const days = theDaysItBled({ startedOn: '2026-05-07' }, today).map((day) => ({
+        day,
+        flow: 'medium' as const,
+      }));
+
+      expect(days).toHaveLength(PERIOD_MAY_RUN_FOR_DAYS);
+      expect(cyclesFrom(days)).toHaveLength(1);
+    });
+
+    it('counts as a start for the forecast, the way a period with a length does', () => {
+      expect(forecastFromPastPeriods([stillGoing, before, beforeThat], 28)).toEqual(
+        forecastFromPastPeriods([{ ...stillGoing, lengthDays: 3 }, before, beforeThat], 28),
+      );
+      expect(forecastFromPastPeriods([stillGoing, before, beforeThat], 28).kind).toBe('forecast');
     });
   });
 
