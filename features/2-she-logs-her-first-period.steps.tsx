@@ -387,6 +387,7 @@ import {
 } from '../apps/mobile/src/features/settings/SettingsScreen';
 import {
   deleteActionTestID,
+  deleteDownloadTestID,
   deleteGoesTestID,
   deleteScreenTestID,
   deletedScreenTestID,
@@ -400,6 +401,7 @@ import { theAnswerSheGave, yourAnswerRows } from '../apps/mobile/src/features/se
 import { settingsCopy } from '../apps/mobile/src/features/settings/copy';
 import {
   exportLockLineTestID,
+  exportScreenTestID,
   exportTileTestID,
   theExportTiles,
 } from '../apps/mobile/src/features/export/ExportScreen';
@@ -1137,7 +1139,7 @@ const thePrivacyScreensSayInEnglish: Readonly<Record<string, string>> = {
   'recovery.confirm.wrong': "That doesn't match. Check your paper and try again.",
   'settings.answer.gaveAtFirstRun': 'You told us {answer} when you started.',
   'settings.delete.line':
-    "One press and it's gone. No undo, no waiting period. Nobody at Emi can bring it back, because nobody at Emi can read it.",
+    'This removes every day, answer and setting from this phone. It cannot be undone.',
   'settings.delete.refused':
     'Your days are gone, but your phone held on to one thing in the keychain. Press again to finish.',
   'settings.deleted.line':
@@ -1152,13 +1154,10 @@ const thePrivacyScreensSayInEnglish: Readonly<Record<string, string>> = {
 const theKeysOfThePrivacyScreens: readonly string[] = Object.keys(thePrivacyScreensSayInEnglish);
 
 /**
- * The two lines of these screens that name Emi on purpose: the claim about who cannot bring her
- * days back, and the lock, which names the application it is holding shut.
+ * The one line of these screens that names Emi on purpose: the lock, which names the application
+ * it is holding shut. The delete screen says what goes from this phone, and that names nobody.
  */
-const theTwoPrivacyLinesThatNameEmi: readonly string[] = [
-  'lock.locked.title',
-  'settings.delete.line',
-];
+const thePrivacyLinesThatNameEmi: readonly string[] = ['lock.locked.title'];
 
 /** Every word these screens say in one language, out of that language's own catalogue. */
 function theWordsOfThePrivacyScreensIn(
@@ -7742,11 +7741,11 @@ defineFeature(feature, (test) => {
       expect(textIn(screen.getByTestId(exportLockLineTestID)).join(' ')).toBe(exportCopy.where);
     });
 
-    and('delete everything names the five things that go, each one with its own mark', async () => {
+    and('delete everything names the four things that go, each one with its own mark', async () => {
       await sheIsLookingAtPrivacy('delete');
 
       expect(theStyleOnPrivacy(deleteGoesTestID).backgroundColor).toBe(colour.card);
-      expect(settingsCopy.delete.goes).toHaveLength(5);
+      expect(settingsCopy.delete.goes).toHaveLength(4);
 
       for (let at = 0; at < settingsCopy.delete.goes.length; at += 1) {
         expect(privacyDrew(goesMarkTestID(at))).toBe(true);
@@ -8430,7 +8429,7 @@ defineFeature(feature, (test) => {
       expect(languages.length).toBe(3);
     });
 
-    and('the only two lines that name Emi are the claim about her days and the lock itself', () => {
+    and('the only line that names Emi is the lock itself', () => {
       for (const language of languages) {
         const naming = theKeysOfThePrivacyScreens
           .filter((key) =>
@@ -8440,9 +8439,66 @@ defineFeature(feature, (test) => {
 
         expect({ language, naming }).toEqual({
           language,
-          naming: [...theTwoPrivacyLinesThatNameEmi].sort(),
+          naming: [...thePrivacyLinesThatNameEmi].sort(),
         });
       }
+    });
+  });
+
+  test('SCREEN-2, she downloads her data from the delete screen before she deletes it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let daysBefore = 0;
+
+    given('she has six cycles of her own on this phone', async () => {
+      await herPhoneHolds(whenSheOpensIt, herSixPeriodsAndAWrongMonday());
+      daysBefore = listDayLogs(herDatabase()).length;
+
+      expect(daysBefore).toBeGreaterThan(0);
+    });
+
+    when('she opens Privacy and walks to the screen that would delete her data', async () => {
+      await sheOpens('/settings');
+      await shePresses(settingsDeleteTestID);
+
+      expect(screen.getByTestId(deleteScreenTestID)).toBeTruthy();
+    });
+
+    then('the screen names no account and no server, in each of the three languages', () => {
+      const anAccountOrAServerIn: Readonly<Record<Language, RegExp>> = {
+        en: /account|server/i,
+        es: /cuenta|servidor/i,
+        ru: /учётн|учетн|аккаунт|сервер/i,
+      };
+
+      expect(whatItSays(deleteScreenTestID)).not.toMatch(anAccountOrAServerIn.en);
+
+      for (const language of languages) {
+        const catalogue = theCatalogueOf(language);
+        const said = Object.keys(catalogue)
+          .filter((key) => key.startsWith('settings.delete.'))
+          .flatMap((key) => formsOf(catalogue[key] ?? ''))
+          .join('\n');
+
+        expect({ language, names: said.match(anAccountOrAServerIn[language]) }).toEqual({
+          language,
+          names: null,
+        });
+      }
+    });
+
+    and('she presses Download data first', async () => {
+      expect(whatItSays(deleteDownloadTestID)).toBe(settingsCopy.delete.download);
+
+      await shePresses(deleteDownloadTestID);
+    });
+
+    then('Export opens, and every day she logged is still on her phone', () => {
+      expect(screen.getByTestId(exportScreenTestID)).toBeTruthy();
+      expect(listDayLogs(herDatabase())).toHaveLength(daysBefore);
     });
   });
 

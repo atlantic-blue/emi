@@ -287,10 +287,10 @@ describe('after deleting, the table holds no item for that account', () => {
       expect(accountIdFor(account.key.publicKey)).toBe(account.key.accountId);
     });
 
-    it('is named on the screen that lists what goes, so she reads it before she presses', async () => {
+    it('is not named on the screen that lists what goes, because the app she installs holds no account', async () => {
       await sheWalksToTheDeleteScreen();
 
-      expect(settingsCopy.delete.goes.join(' ')).toContain('server');
+      expect(settingsCopy.delete.goes.join(' ')).not.toMatch(/server|account/i);
     });
   });
 

@@ -761,7 +761,7 @@ Feature: She opens Emi and logs her first period
     And her eight answers stand on one card, each one reading back the answer she gave
     And each of the two files she can take away is drawn as a tile of its own
     And the lock sits beside the line that says nothing is sent anywhere
-    And delete everything names the five things that go, each one with its own mark
+    And delete everything names the four things that go, each one with its own mark
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the home screen says hello to her by name
@@ -791,7 +791,14 @@ Feature: She opens Emi and logs her first period
     Then she reads that it is gone, and that she can start fresh whenever she likes
     And her phone holds none of her days and nothing in the keychain
     And these screens say all of this in each of the three languages, as you and as we
-    And the only two lines that name Emi are the claim about her days and the lock itself
+    And the only line that names Emi is the lock itself
+
+  Scenario: SCREEN-2, she downloads her data from the delete screen before she deletes it
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and walks to the screen that would delete her data
+    Then the screen names no account and no server, in each of the three languages
+    And she presses Download data first
+    Then Export opens, and every day she logged is still on her phone
 
   Scenario: SCREEN-2, she opens the page of her phase from Today and records her diary there
     Given her phone holds four recorded period days, the last of them today

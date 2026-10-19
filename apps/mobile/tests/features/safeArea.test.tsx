@@ -173,7 +173,13 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
   [
     deleteScreenTestID,
     (): ReactElement => (
-      <DeleteEverything onBack={nothing} onDelete={nothing} onStartAgain={nothing} stage="ready" />
+      <DeleteEverything
+        onBack={nothing}
+        onDelete={nothing}
+        onDownload={nothing}
+        onStartAgain={nothing}
+        stage="ready"
+      />
     ),
   ],
   [
@@ -182,6 +188,7 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
       <DeleteEverything
         onBack={nothing}
         onDelete={nothing}
+        onDownload={nothing}
         onStartAgain={nothing}
         stage="deleted"
       />

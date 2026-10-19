@@ -3,13 +3,20 @@ import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { PrimaryButton, TextLink } from '../../components/Button';
+import { PrimaryButton, SecondaryButton, TextLink } from '../../components/Button';
+import { RoundIconButton } from '../../components/RoundIconButton';
 import { Screen } from '../../components/Screen';
 import { settingsCopy } from './copy';
 
 export const deleteScreenTestID = 'delete-screen';
 export const deleteActionTestID = 'delete-everything';
 export const deleteBackTestID = 'delete-back';
+
+/** The round chevron at the top, which leaves the screen the way Keep data does. */
+export const deleteChevronTestID = 'delete-chevron';
+
+/** The link under the card that opens Export, so she can keep a copy before she deletes. */
+export const deleteDownloadTestID = 'delete-download';
 export const deletedScreenTestID = 'delete-done';
 export const startAgainTestID = 'delete-start-again';
 export const goesTestID = (at: number): string => `delete-goes-${at}`;
@@ -25,10 +32,10 @@ export const deleteLineTestID = 'delete-line';
 /** The white square the drawing stands in, over the heading. */
 export const deleteEmblemTestID = 'delete-emblem';
 
-/** The one card the five things that go stand on. */
+/** The one card the four things that go stand on. */
 export const deleteGoesTestID = 'delete-goes-card';
 
-/** The mark beside one of those five lines, named so a test can read that it is drawn. */
+/** The mark beside one of those four lines, named so a test can read that it is drawn. */
 export const goesMarkTestID = (at: number): string => `delete-goes-${at}-mark`;
 
 /** Points. The square the drawing stands in over the heading, which holds one drawing and no word. */
@@ -36,6 +43,9 @@ const EMBLEM_SIZE = 80;
 
 /** Points. The bin inside that square. */
 const EMBLEM_ICON = 38;
+
+/** The set holds one chevron, pointing the way on, so the way back is the same drawing turned. */
+const TURNED_AROUND = [{ rotate: '180deg' }] as const;
 
 /** Points. The mark beside one line of the card, read at the size of the words beside it. */
 const GOES_MARK = 18;
@@ -52,6 +62,8 @@ interface Props {
   readonly stage: DeleteStage;
   readonly onDelete: () => void;
   readonly onBack: () => void;
+  /** Opens Export, which makes her copy on this phone. */
+  readonly onDownload: () => void;
   /** Taken once it is gone, and what puts her back at an Emi she can use. */
   readonly onStartAgain: () => void;
 }
@@ -64,7 +76,13 @@ interface Props {
  * ordinary button beside it rather than the larger of the two. A screen that made leaving easier
  * than staying would be arguing with her, and this screen does not argue.
  */
-export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Props): ReactNode {
+export function DeleteEverything({
+  stage,
+  onDelete,
+  onBack,
+  onDownload,
+  onStartAgain,
+}: Props): ReactNode {
   if (stage === 'deleted' || stage === 'deleted-without-the-server') {
     return (
       <Screen drawsTheWash testID={deletedScreenTestID}>
@@ -95,6 +113,15 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
   return (
     <Screen drawsTheWash testID={deleteScreenTestID}>
       <ScrollView contentContainerStyle={styles.body}>
+        <View style={styles.backMark}>
+          <RoundIconButton
+            accessibilityLabel={settingsCopy.delete.goBack}
+            icon="chevron"
+            onPress={onBack}
+            testID={deleteChevronTestID}
+          />
+        </View>
+
         <View style={styles.emblem} testID={deleteEmblemTestID}>
           <Icon colour={colour.accent} name="delete" size={EMBLEM_ICON} />
         </View>
@@ -128,6 +155,15 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
           ))}
         </View>
 
+        <View style={styles.download}>
+          <TextLink
+            isReady={!working}
+            label={settingsCopy.delete.download}
+            onPress={onDownload}
+            testID={deleteDownloadTestID}
+          />
+        </View>
+
         <View style={styles.foot}>
           <PrimaryButton
             isReady={!working}
@@ -135,7 +171,7 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
             onPress={onDelete}
             testID={deleteActionTestID}
           />
-          <TextLink
+          <SecondaryButton
             isReady={!working}
             label={settingsCopy.delete.back}
             onPress={onBack}
@@ -148,6 +184,7 @@ export function DeleteEverything({ stage, onDelete, onBack, onStartAgain }: Prop
 }
 
 const styles = StyleSheet.create({
+  backMark: { alignSelf: 'flex-start', transform: TURNED_AROUND },
   body: {
     flexGrow: 1,
     paddingHorizontal: space.margin,
@@ -163,6 +200,7 @@ const styles = StyleSheet.create({
     marginBottom: space.spaceMd,
     width: EMBLEM_SIZE,
   },
+  download: { alignItems: 'center', marginTop: space.spaceMd },
   // The one thing at the foot of the screen, held down by the room the card above it leaves.
   foot: { marginTop: 'auto', rowGap: space.spaceMd },
   goes: {
