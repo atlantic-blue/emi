@@ -724,11 +724,20 @@ Feature: She opens Emi and logs her first period
     When she opens Emi and reads the screen she opens in each of its states
     Then each state carries the wash across the top of the glass
     And the ring stands above the card that names the phase she is in
-    And the three round actions stand under that card, the period one filled and the Sex and Cycle phase ones white
+    And the three round actions stand under that card, all three white on a day outside her period
     And what she logged today stands under them, in a card with the mark that says Emi kept it
     And a section her days cannot fill yet is one card with one sentence, and it draws no chart
     And the lock she comes back through carries the wordmark, the disc and the one button
     And each state draws every part its own drawing names in its order, but the parts it records as differences
+
+  Scenario: SCREEN-2, the Period button is on only on a day of her period
+    Given her phone holds the period she is in and the answers of her first run
+    When she opens Emi on a day of her period
+    Then the Period button is filled with the accent, and a reader hears that it is on
+    When she opens Emi again on a day of her luteal phase
+    Then the Period button is white with the drop in the accent, as the Sex button is
+    And a reader does not hear that the Period button is on
+    And the drop is readable on the ground of each day
 
   Scenario: SCREEN-4, the Log and calendar screens match the redesign prototype
     Given her phone holds the period she is in, the month behind it and the answers of her first run
