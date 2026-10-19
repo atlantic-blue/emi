@@ -151,10 +151,13 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
       </OnAPhone>,
     );
 
-    expect(todayLabels['low-mood']).toBe('Подавленность');
+    expect(todayChoices.filter((slug) => isOneWord(todayLabels[slug])).length).toBeGreaterThan(0);
     for (const slug of todayChoices) {
       if (isOneWord(todayLabels[slug])) {
         expectTheShrinkRule(tileTitleTestID(todayTestID(slug)));
+      } else {
+        const title = screen.getByTestId(tileTitleTestID(todayTestID(slug)));
+        expect(title.props.onTextLayout).toBeDefined();
       }
     }
   });
