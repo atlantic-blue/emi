@@ -14,7 +14,6 @@ import { LogSymptoms, logSymptomsTestID } from '../../src/features/log/LogSympto
 import { FirstForecast, firstForecastTestID } from '../../src/features/onboarding/FirstForecast';
 import { HoldToBegin, holdScreenTestID } from '../../src/features/onboarding/HoldToBegin';
 import { OnboardingScreen } from '../../src/features/onboarding/OnboardingScreen';
-import { ThePromise, thePromiseTestID } from '../../src/features/onboarding/ThePromise';
 import { TourScreen, tourScreenTestID } from '../../src/features/onboarding/TourScreen';
 import {
   WhatEmiDoesWithIt,
@@ -82,7 +81,6 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
     ),
   ],
   [tourScreenTestID, (): ReactElement => <TourScreen onNext={nothing} onSkip={nothing} />],
-  [thePromiseTestID, (): ReactElement => <ThePromise onContinue={nothing} />],
   [
     whatEmiDoesTestID,
     (): ReactElement => <WhatEmiDoesWithIt focus={['mood']} onContinue={nothing} />,

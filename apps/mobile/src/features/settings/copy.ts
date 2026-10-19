@@ -10,6 +10,10 @@ export const settingsCopy = {
   settings: {
     title: words('settings.settings.title'),
     back: words('settings.settings.back'),
+    assurance: {
+      lead: words('settings.settings.assurance'),
+      line: words('settings.settings.assuranceLine'),
+    },
     rows: {
       answers: {
         lead: words('settings.settings.answers'),

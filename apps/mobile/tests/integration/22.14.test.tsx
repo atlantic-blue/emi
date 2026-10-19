@@ -46,7 +46,6 @@ import {
   yourAnswerRowTestID,
 } from '../../src/features/settings/YourAnswers';
 import { theAnswerSheGave, yourAnswerRows } from '../../src/features/settings/herAnswers';
-import { promiseCopy } from '../../src/features/onboarding/copy';
 import { textIn } from '../fixtures/renderedText';
 import {
   herAnswers,
@@ -216,8 +215,8 @@ describe('the Privacy screens match the redesign prototype', () => {
 
       expect(card.backgroundColor).toBe(colour.darkCard);
       expect(card.borderRadius).toBe(radius.xl);
-      expect(whatItSays(settingsAssuranceTestID)).toContain(promiseCopy.title);
-      expect(whatItSays(settingsAssuranceTestID)).toContain(promiseCopy.lines.encrypted);
+      expect(whatItSays(settingsAssuranceTestID)).toContain(settingsCopy.settings.assurance.lead);
+      expect(whatItSays(settingsAssuranceTestID)).toContain(settingsCopy.settings.assurance.line);
     });
 
     it('keeps the heading above that card, and the card above the rows', () => {

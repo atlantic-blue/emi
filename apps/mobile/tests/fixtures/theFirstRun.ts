@@ -12,7 +12,6 @@ import {
 import { feelingTestID } from '../../src/features/onboarding/Feeling';
 import { focusTestID } from '../../src/features/onboarding/Focus';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
-import { promiseActionTestID } from '../../src/features/onboarding/ThePromise';
 import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import { todayTestID } from '../../src/features/onboarding/Today';
 import { goalTestID } from '../../src/features/onboarding/Goals';
@@ -187,10 +186,10 @@ async function sheAnswersWhatComesAfterHerLastPeriod(answers: HerAnswersWithNoDa
 
   await sheAnswersTheReminder(answers.reminder);
 
-  // The last question is behind her, and three screens she reads rather than answers stand between
-  // it and the hold: the forecast, the promise, and what Emi does with what she said.
+  // The last question is behind her, and two screens she reads rather than answers stand between
+  // it and the hold: the forecast, and what Emi does with what she said.
   await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
-  await sheReadsThePromise();
+  await sheReadsWhatEmiDoesWithIt();
 }
 
 /**
@@ -258,10 +257,9 @@ export async function shePassesTheQuestion(): Promise<void> {
 }
 
 /**
- * The two screens after the forecast and before the hold, read and pressed past. Neither asks her
- * anything, so every walk that wants the hold comes through here rather than naming both buttons.
+ * The screen after the forecast and before the hold, read and pressed past. It asks her nothing, so
+ * every walk that wants the hold comes through here rather than naming its button.
  */
-export async function sheReadsThePromise(): Promise<void> {
-  await fireEvent.press(screen.getByTestId(promiseActionTestID));
+export async function sheReadsWhatEmiDoesWithIt(): Promise<void> {
   await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
 }
