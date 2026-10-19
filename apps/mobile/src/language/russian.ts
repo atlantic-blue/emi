@@ -670,11 +670,7 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.cycleLength.longer': 'На день больше',
   'onboarding.cycleLength.shorter': 'На день меньше',
   'onboarding.cycleLength.title': 'Какой у вас цикл, примерно?',
-  'onboarding.encryptedHere': 'Зашифровано на этом телефоне.',
   'onboarding.encrypts': 'Emi шифрует это на телефоне, прежде чем оно куда-либо отправится.',
-  'onboarding.encryptsIt': 'Emi шифрует его на этом телефоне.',
-  'onboarding.encryptsYourAnswers':
-    'Emi шифрует ваши ответы на этом телефоне. Никто другой не может их прочитать.',
   'onboarding.feeling.action': 'Продолжить',
   'onboarding.feeling.choice.fine': 'Меня это устраивает',
   'onboarding.feeling.choice.hard': 'Тяжело, почти каждый месяц',
@@ -701,9 +697,6 @@ export const russian: CatalogueIn<'ru'> = {
     many: 'С этого дня Emi считает цикл в {count} дней, длину, которую вы указали.',
   },
   'onboarding.firstForecast.noDate.title': 'У Emi нет даты для отсчёта',
-  'onboarding.firstForecast.onThisPhone.line':
-    'Расчёт идёт здесь. Ни один ваш цикл никуда не отправляется для расчёта.',
-  'onboarding.firstForecast.onThisPhone.title': 'Посчитано на этом телефоне',
   'onboarding.firstForecast.stillLearning': 'Ещё учится',
   'onboarding.firstForecast.title': 'Ваши следующие месячные',
   'onboarding.firstForecast.why.counts': {
@@ -783,8 +776,6 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.reminder.line.oneDayBefore': 'За один день до начала диапазона.',
   'onboarding.reminder.line.twoDaysBefore': 'За два дня до начала диапазона.',
   'onboarding.reminder.notNow': 'Не сейчас',
-  'onboarding.reminder.promise':
-    'Этот телефон всё рассчитывает, и этот телефон показывает напоминание. Ничего о напоминании никуда не отправляется.',
   'onboarding.reminder.title': 'Пусть Emi напомнит, когда срок будет близко?',
   'onboarding.skip': 'Пропустить',
   'onboarding.step': 'Шаг {step} из {of}',

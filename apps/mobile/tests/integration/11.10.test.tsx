@@ -17,7 +17,6 @@ import {
   firstForecastDaysTestID,
   firstForecastLearningTestID,
   firstForecastNeedsTestID,
-  firstForecastOnThisPhoneTestID,
   firstForecastRangeTestID,
   firstForecastTestID,
   firstForecastWhyTestID,
@@ -47,6 +46,7 @@ import {
   singleDayUsesUnder,
 } from '../../../../tools/pipeline/singleDayForecast';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -309,15 +309,14 @@ describe('her first forecast is a range, before anything is written', () => {
       );
     });
 
-    it('says where it was worked out in the redesign words', async () => {
+    it('draws no card about where it was worked out, because the welcome links to that page', async () => {
       await sheOpensEmi();
 
       await sheReachesHerFirstForecast();
 
-      expect(textIn(screen.getByTestId(firstForecastOnThisPhoneTestID))).toEqual([
-        'Worked out on this phone',
-        'The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.',
-      ]);
+      expect(screen.getByTestId(firstForecastWhyTestID)).toBeTruthy();
+      expect(screen.queryByText('Worked out on this phone')).toBeNull();
+      expect(locksDrawnIn(screen.root)).toBe(0);
     });
 
     it('carries no tolerance, no model version and no word about calibration', async () => {

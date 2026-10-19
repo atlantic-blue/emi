@@ -63,7 +63,7 @@ describe('the feeling question', () => {
     },
   );
 
-  it('should draw the new line under the question, before the privacy note', () => {
+  it('should draw the new line under the question', () => {
     expect(firstRunCopy.feeling.title).toBe(english[theQuestion]);
     expect(firstRunCopy.feeling.lines[0]).toBe(english[theLine]);
   });

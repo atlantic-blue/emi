@@ -15,7 +15,6 @@ import { catalogueOf, languages } from '../../src/language';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
-  onboardingLockTestID,
   onboardingQuestionTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
@@ -45,6 +44,7 @@ import { sizedTextIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -268,23 +268,13 @@ describe('what she feels today is her first logged day', () => {
       expect(languages).toHaveLength(3);
     });
 
-    it('says under the tiles that Emi encrypts the day on this phone', async () => {
+    it('draws no padlock line under the tiles', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
 
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-        'Emi encrypts it on this phone.',
-      );
-
-      const order = theOrderOnTheScreen();
-
-      expect(order.indexOf(todayTestID('low-mood'))).toBeLessThan(
-        order.indexOf(onboardingLockTestID),
-      );
-      expect(order.indexOf(onboardingLockTestID)).toBeLessThan(
-        order.indexOf(onboardingActionTestID),
-      );
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(screen.queryByText('Emi encrypts it on this phone.')).toBeNull();
     });
 
     it('draws Nothing to add under Save today, as the redesign draws it', async () => {

@@ -646,11 +646,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.cycleLength.longer': 'Un día más',
   'onboarding.cycleLength.shorter': 'Un día menos',
   'onboarding.cycleLength.title': '¿Cuánto dura tu ciclo, más o menos?',
-  'onboarding.encryptedHere': 'Cifrado en este teléfono.',
   'onboarding.encrypts': 'Emi lo cifra en el teléfono antes de que vaya a ningún sitio.',
-  'onboarding.encryptsIt': 'Emi lo cifra en este teléfono.',
-  'onboarding.encryptsYourAnswers':
-    'Emi cifra tus respuestas en este teléfono. Nadie más puede leerlas.',
   'onboarding.feeling.action': 'Continuar',
   'onboarding.feeling.choice.fine': 'Estoy bien con ello',
   'onboarding.feeling.choice.hard': 'Es difícil, casi todos los meses',
@@ -676,9 +672,6 @@ export const spanish: CatalogueIn<'es'> = {
     other: 'Desde ese día Emi cuenta un ciclo de {count} días, la duración que indicaste.',
   },
   'onboarding.firstForecast.noDate.title': 'Emi no tiene una fecha desde la que contar',
-  'onboarding.firstForecast.onThisPhone.line':
-    'El cálculo se hace aquí. Ningún ciclo tuyo se envía a ningún sitio para calcularlo.',
-  'onboarding.firstForecast.onThisPhone.title': 'Calculado en este teléfono',
   'onboarding.firstForecast.stillLearning': 'Todavía aprendiendo',
   'onboarding.firstForecast.title': 'Tu próxima regla',
   'onboarding.firstForecast.why.counts': {
@@ -752,8 +745,6 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.reminder.line.oneDayBefore': 'Un día antes de que empiece el rango.',
   'onboarding.reminder.line.twoDaysBefore': 'Dos días antes de que empiece el rango.',
   'onboarding.reminder.notNow': 'Ahora no',
-  'onboarding.reminder.promise':
-    'Este teléfono lo calcula y este teléfono lo muestra. Nada del recordatorio se envía a ningún sitio.',
   'onboarding.reminder.title': '¿Quieres que Emi te avise cuando esté cerca?',
   'onboarding.skip': 'Omitir',
   'onboarding.step': 'Paso {step} de {of}',

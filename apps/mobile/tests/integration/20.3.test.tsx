@@ -12,7 +12,6 @@ import {
   firstForecastLearningTestID,
   firstForecastLinesTestID,
   firstForecastNoGuessTestID,
-  firstForecastOnThisPhoneTestID,
   firstForecastRangeTestID,
   firstForecastRingTestID,
   firstForecastStillLearningTestID,
@@ -216,9 +215,8 @@ describe('the first run with no date ends on a forecast that says it is still le
       expect(everythingItSays()).not.toMatch(/between/i);
     });
 
-    it('drops the two cards the range state draws, because there is no range to explain', () => {
+    it('drops the card the range state draws, because there is no range to explain', () => {
       expect(screen.queryByTestId(firstForecastWhyTestID)).toBeNull();
-      expect(screen.queryByTestId(firstForecastOnThisPhoneTestID)).toBeNull();
       expect(screen.queryByTestId(firstForecastLearningTestID)).toBeNull();
     });
 

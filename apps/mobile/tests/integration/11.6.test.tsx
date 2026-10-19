@@ -25,7 +25,6 @@ import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import {
   onboardingActionTestID,
   onboardingLinesTestID,
-  onboardingLockTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
@@ -44,6 +43,7 @@ import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixture
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -237,11 +237,10 @@ describe('a hard period day offers the pain log first', () => {
       );
       expect(screen.queryByText('How you feel about it')).toBeNull();
       expect(screen.queryByText('This changes how Emi talks to you, and nothing else.')).toBeNull();
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-        'Encrypted on this phone.',
-      );
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(screen.queryByText('Encrypted on this phone.')).toBeNull();
       expect(screen.queryByText('Only you can read this.')).toBeNull();
-      expect(firstRunCopy.feeling.lines).toHaveLength(2);
+      expect(firstRunCopy.feeling.lines).toHaveLength(1);
     });
 
     it('offers the three answers in the redesign words', async () => {

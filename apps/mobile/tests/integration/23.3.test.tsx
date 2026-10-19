@@ -12,7 +12,6 @@ import {
   firstForecastActionTestID,
   firstForecastLinesTestID,
   firstForecastNoGuessTestID,
-  firstForecastOnThisPhoneTestID,
   firstForecastStillLearningTestID,
   firstForecastTestID,
   firstForecastTitleTestID,
@@ -99,17 +98,13 @@ const theTitleOfWhatEmiDoes = {
   theOldPlain: "Here's what we'll do with your answers",
 };
 
-/** What the forecast says under the range, and on the two cards beside it. */
+/** What the forecast says under the range, and on the card beside it. */
 const theForecastSays = {
   learning: 'Still learning',
   needs: `Emi needs ${String(CYCLES_BEFORE_A_FORECAST)} complete cycles before it forecasts from your own cycles, so this is still learning.`,
   why: {
     title: 'Why a range?',
     line: 'Emi has read 0 complete cycles. Until it reads 2, it counts the 28 days you gave from your last period. The range runs 3 days either side of that day.',
-  },
-  onThisPhone: {
-    title: 'Worked out on this phone',
-    line: 'The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.',
   },
 };
 
@@ -342,7 +337,7 @@ describe('her first forecast is addressed to her', () => {
       expect(screen.getByText(theForecastSays.needs)).toBeTruthy();
     });
 
-    it('says why the answer is a range, and that her phone worked it out', async () => {
+    it('says why the answer is a range, and draws no card about this phone', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted });
 
       // The circles of the days come first in the card, and the words follow them.
@@ -350,10 +345,7 @@ describe('her first forecast is addressed to her', () => {
         theForecastSays.why.title,
         theForecastSays.why.line,
       ]);
-      expect(theCardSays(firstForecastOnThisPhoneTestID)).toEqual([
-        theForecastSays.onThisPhone.title,
-        theForecastSays.onThisPhone.line,
-      ]);
+      expect(screen.queryByText('Worked out on this phone')).toBeNull();
     });
 
     it('carries no name in either title, and no greeting key, in all three languages', () => {

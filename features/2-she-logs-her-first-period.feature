@@ -697,7 +697,7 @@ Feature: She opens Emi and logs her first period
     Then the question after it asks the year plainly, as the redesign draws it
     And a woman who gives no name reads the same question, with no gap where a name would be
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
-    And every question that keeps an answer carries a line about her privacy, in all three languages
+    And no question of the first run draws a lock, and the sentences it drew are gone from all three languages
 
   Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it speak in the name of Emi
     Given she has never opened Emi before
@@ -716,7 +716,7 @@ Feature: She opens Emi and logs her first period
     And the step she is on is written out, so she knows how much is left without counting
     And the welcome writes that step and draws no bar
     And the first run log names the day in the middle of its header and draws no bar
-    And the question that keeps an answer carries the promise about her privacy
+    And no screen of the first run draws a lock or the card about this phone
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the Today screens match the redesign prototype
@@ -815,6 +815,12 @@ Feature: She opens Emi and logs her first period
     Then she reads where her records are kept, who can read them and what happens when she sends a file
     And she reads one example of why it matters
     And she presses the way back and is on Privacy again
+
+  Scenario: SCREEN-2, she reads who can see her records from the welcome and comes back
+    Given she has never opened Emi before
+    When she opens Emi and presses Who can see my records? on the welcome
+    Then she reads where her records are kept, who can read them and what happens when she sends a file
+    And she presses the way back and is on the welcome again
 
   Scenario: SCREEN-2, she opens the page of her phase from Today and records her diary there
     Given her phone holds four recorded period days, the last of them today

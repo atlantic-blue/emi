@@ -34,7 +34,6 @@ import { firstForecastActionTestID } from '../../src/features/onboarding/FirstFo
 import {
   onboardingActionTestID,
   onboardingLinesTestID,
-  onboardingLockTestID,
   onboardingQuestionTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
@@ -55,6 +54,7 @@ import { sizedTextIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -279,14 +279,15 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
         'Choose all that apply.',
       );
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-        'Emi encrypts your answers on this phone. Nobody else can read them.',
-      );
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(
+        screen.queryByText('Emi encrypts your answers on this phone. Nobody else can read them.'),
+      ).toBeNull();
       // The hint stands under the title now, so nothing is left to say under the list.
       expect(screen.queryByTestId(onboardingLinesTestID)).toBeNull();
       expect(screen.queryByText('Pick as many as you like.')).toBeNull();
       expect(screen.queryByText('Only you can read this.')).toBeNull();
-      expect(firstRunCopy.goals.lines).toHaveLength(1);
+      expect(firstRunCopy.goals.lines).toHaveLength(0);
     });
 
     it('offers the four goals in the redesign words, each with an empty ring until she picks it', async () => {
