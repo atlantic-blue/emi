@@ -423,26 +423,27 @@ describe('the Privacy screens match the redesign prototype', () => {
       );
     });
 
-    it('stands the five things that go on one white card, each with its own mark', () => {
+    it('stands the four things that go on one white card, each with its own mark', () => {
       const card = theStyleOf(deleteGoesTestID);
 
       expect(card.backgroundColor).toBe(colour.card);
       expect(card.borderRadius).toBe(radius.xl);
-      expect(settingsCopy.delete.goes).toHaveLength(5);
+      expect(settingsCopy.delete.goes).toHaveLength(4);
 
       for (let at = 0; at < settingsCopy.delete.goes.length; at += 1) {
         expect(privacyDrew(goesMarkTestID(at))).toBe(true);
       }
     });
 
-    it('holds the one action at the foot, with the way back quiet under it', () => {
+    it('holds the one action at the foot, with Keep data as a second button under it', () => {
       const action = theStyleOf(deleteActionTestID);
       const back = theStyleOf(deleteBackTestID);
       const from = theScreenOf('delete');
 
       expect(action.backgroundColor).toBe(colour.accent);
       expect(action.borderRadius).toBe(radius.full);
-      expect(back.backgroundColor).toBeUndefined();
+      expect(back.backgroundColor).not.toBe(colour.accent);
+      expect(back.borderRadius).toBe(radius.full);
       expect(wherePrivacyDrew(deleteActionTestID, from)).toBeLessThan(
         wherePrivacyDrew(deleteBackTestID, from),
       );

@@ -67,6 +67,7 @@ export default function DeleteRoute(): ReactNode {
     <DeleteEverything
       onBack={() => router.back()}
       onDelete={onDelete}
+      onDownload={() => router.push('/export')}
       onStartAgain={onStartAgain}
       stage={stage}
     />
