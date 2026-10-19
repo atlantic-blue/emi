@@ -150,6 +150,7 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
       <HistoryScreen
         history={{ completeCycles: 0, cycles: [], patterns: [] }}
         onBack={nothing}
+        onEditPeriod={nothing}
         onOpenDay={nothing}
       />
     ),

@@ -193,6 +193,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       <HistoryScreen
         history={{ completeCycles: 0, cycles: [], patterns: [] }}
         onBack={nothing}
+        onEditPeriod={nothing}
         onOpenDay={nothing}
       />
     ),

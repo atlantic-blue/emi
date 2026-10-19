@@ -236,6 +236,8 @@ export const english = {
   'history.cycleRange': '{from} to {to}',
   'history.cycles': 'Your cycles',
   'history.dayReads': 'the {ordinal} of {month}',
+  'history.edit': 'Edit',
+  'history.editLabel': 'Edit the period that started on {day}',
   'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
   'history.nothingRepeats':
     "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",

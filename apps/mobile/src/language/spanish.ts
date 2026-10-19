@@ -242,6 +242,8 @@ export const spanish: CatalogueIn<'es'> = {
   'history.cycleRange': 'del {from} al {to}',
   'history.cycles': 'Tus ciclos',
   'history.dayReads': 'el {ordinal} de {month}',
+  'history.edit': 'Editar',
+  'history.editLabel': 'Editar el periodo que empezó {day}',
   'history.noCycles': 'Todavía no hay ciclos. Registra un día en que sangraste y esto se rellena.',
   'history.nothingRepeats':
     'Nada ha vuelto en 3 ciclos todavía. Sigue registrando y te lo mostraremos.',

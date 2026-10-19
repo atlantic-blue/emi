@@ -244,6 +244,8 @@ export const russian: CatalogueIn<'ru'> = {
   'history.cycleRange': 'с {from} по {to}',
   'history.cycles': 'Ваши циклы',
   'history.dayReads': '{ordinal} {month}',
+  'history.edit': 'Изменить',
+  'history.editLabel': 'Изменить месячные, начавшиеся {day}',
   'history.noCycles': 'Циклов пока нет. Отметьте день, когда шла кровь, и здесь появится запись.',
   'history.nothingRepeats':
     'Пока ничто не повторилось за 3 цикла. Продолжайте отмечать, и мы вам покажем.',
