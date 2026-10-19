@@ -7,9 +7,9 @@ import { drawOrCheck } from '../../../../brand/screens/picture';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
 
 /**
- * Her first run, read back to her, drawn for somebody to look at. Two shapes of row are the
- * subject of the picture: a short answer sits on the question's own line and a sentence sits under
- * it, and whether that reads as one list is a thing a reader checks with their eyes.
+ * Her first run, read back to her, drawn for somebody to look at. Every answer sits under its
+ * question, short or long, and whether that reads as one list is a thing a reader checks with their
+ * eyes.
  *
  * The second screen is the same woman with three questions skipped, because a row with nothing
  * under it is the part of this screen that is easiest to get wrong.
@@ -67,7 +67,7 @@ describe('her first run read back to her, drawn for somebody to look at', () => 
   it('renders it for a woman who answered every question', async () => {
     await draw(
       'Your answers',
-      'Eight rows on one card, which is exactly the eight the hold sealed. Each one reads her own answer at the end of its row.',
+      'Eight rows on one card, which is exactly the eight the hold sealed. Each one reads her own answer under its question.',
     );
   });
 
