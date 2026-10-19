@@ -17,7 +17,6 @@ import {
   firstForecastDaysTestID,
   firstForecastLearningTestID,
   firstForecastNeedsTestID,
-  firstForecastOnThisPhoneTestID,
   firstForecastRangeTestID,
   firstForecastTestID,
   firstForecastWhyTestID,
@@ -40,13 +39,14 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault } from '../fixtures/herVault';
 import { daysNamedIn, textIn } from '../fixtures/renderedText';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../fixtures/theHold';
 import {
   describeSingleDayUse,
   singleDayUsesUnder,
 } from '../../../../tools/pipeline/singleDayForecast';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -309,15 +309,14 @@ describe('her first forecast is a range, before anything is written', () => {
       );
     });
 
-    it('says where it was worked out in the redesign words', async () => {
+    it('draws no card about where it was worked out, because the welcome links to that page', async () => {
       await sheOpensEmi();
 
       await sheReachesHerFirstForecast();
 
-      expect(textIn(screen.getByTestId(firstForecastOnThisPhoneTestID))).toEqual([
-        'Worked out on this phone',
-        'The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.',
-      ]);
+      expect(screen.getByTestId(firstForecastWhyTestID)).toBeTruthy();
+      expect(screen.queryByText('Worked out on this phone')).toBeNull();
+      expect(locksDrawnIn(screen.root)).toBe(0);
     });
 
     it('carries no tolerance, no model version and no word about calibration', async () => {
@@ -356,7 +355,7 @@ describe('her first forecast is a range, before anything is written', () => {
       expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
     });
 
-    it('hands her to the promise when she presses Continue, and the hold is behind it', async () => {
+    it('hands her to what Emi does with it when she presses Continue, and the hold is behind it', async () => {
       const app = await sheOpensEmi();
 
       await sheReachesHerFirstForecast();
@@ -367,9 +366,9 @@ describe('her first forecast is a range, before anything is written', () => {
 
       await shePresses(firstForecastActionTestID);
 
-      expect(app.pathname()).toBe('/onboarding/the-promise');
+      expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
 
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
 
       expect(app.pathname()).toBe('/onboarding/hold');
     });
@@ -382,7 +381,7 @@ describe('her first forecast is a range, before anything is written', () => {
       await sheReachesHerFirstForecast();
       const readBeforeTheHold = theRangeDrawn(firstForecastRangeTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheHoldsTheRing();
 
       expect(app.pathname()).toBe('/');
@@ -397,7 +396,7 @@ describe('her first forecast is a range, before anything is written', () => {
       await sheReachesHerFirstForecast({ periodBeforeStartedOn: theOneBefore });
       const readBeforeTheHold = theRangeDrawn(firstForecastRangeTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
+      await sheReadsWhatEmiDoesWithIt();
       await sheHoldsTheRing();
 
       expect(theRangeDrawn(learningRangeTestID)).toBe(readBeforeTheHold);

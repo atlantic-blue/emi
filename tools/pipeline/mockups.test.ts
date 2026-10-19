@@ -165,8 +165,8 @@ describe('the approved mockups stage, as the repository reads it', () => {
   describe('the screen keys the suite names', () => {
     const named = screenKeysNamedUnder(repositoryRoot, testFilesOf(repositoryRoot));
 
-    it('reads them out of the tests, and the promise is one of them', () => {
-      expect(named.keys).toContain('thePromise');
+    it('reads them out of the tests, and the recovery code check is one of them', () => {
+      expect(named.keys).toContain('recoveryConfirm');
       expect(named.unreadable).toEqual([]);
     });
 
@@ -235,7 +235,7 @@ describe('the approved mockups stage, as the repository reads it', () => {
 
       expect(checked.problems).toEqual([]);
       expect(checked.said).toContain(`${screensDelivered} drawing(s)`);
-      expect(checked.named).toContain('thePromise');
+      expect(checked.named).toContain('recoveryConfirm');
     });
 
     it('fails on a stage of no screens, which no test can then be held to', () => {

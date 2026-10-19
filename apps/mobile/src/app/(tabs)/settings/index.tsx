@@ -12,6 +12,7 @@ export default function SettingsRoute(): ReactNode {
       onBack={() => router.back()}
       onDelete={() => router.push('/settings/delete')}
       onExport={() => router.push('/export')}
+      onWhoCanSee={() => router.push('/settings/who-can-see')}
     />
   );
 }

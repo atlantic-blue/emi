@@ -2,8 +2,9 @@ import type { SymptomGroup } from '@emi/cycle';
 import { type IconName, MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
+import { WholeWordsText } from '../../components/WholeWordsText';
 import { groupHeadings } from './SymptomGroup';
 
 /**
@@ -16,6 +17,10 @@ export const groupTilesTestID = 'group-tiles';
 
 export function groupTileTestID(group: SymptomGroup): string {
   return `group-tile-${group}`;
+}
+
+export function groupTileNameTestID(group: SymptomGroup): string {
+  return `group-name-${group}`;
 }
 
 interface TilePaint {
@@ -66,9 +71,11 @@ export function GroupTiles({ groups, onOpen }: Props): ReactNode {
             <View style={[styles.well, { backgroundColor: colour[paint.ground] }]}>
               <Icon colour={colour[paint.ink]} name={paint.icon} size={TILE_ICON} />
             </View>
-            <Text numberOfLines={2} style={styles.name}>
-              {groupHeadings[group]}
-            </Text>
+            <WholeWordsText
+              label={groupHeadings[group]}
+              style={styles.name}
+              testID={groupTileNameTestID(group)}
+            />
           </Pressable>
         );
       })}

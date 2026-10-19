@@ -97,7 +97,10 @@ import {
   ringDayNumberWords,
   ringSpokenLabel,
 } from '../apps/mobile/src/features/cycle/copy';
-import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
+import {
+  WhatEmiIs,
+  welcomeWhoCanSeeTestID,
+} from '../apps/mobile/src/features/onboarding/WhatEmiIs';
 import {
   periodSexProductTestID,
   periodSexSuggestionEyebrowTestID,
@@ -365,7 +368,6 @@ import {
   onboardingBackTestID,
   onboardingEmblemTestID,
   onboardingHeaderWordTestID,
-  onboardingLockTestID,
   onboardingProgressTestID,
   onboardingSheetTestID,
   onboardingSkipTestID,
@@ -384,9 +386,17 @@ import {
   settingsRowsTestID,
   settingsScreenTestID,
   settingsTitleTestID,
+  settingsWhoCanSeeTestID,
 } from '../apps/mobile/src/features/settings/SettingsScreen';
 import {
+  whoCanSeeBackTestID,
+  whoCanSeeExampleTestID,
+  whoCanSeePartTestID,
+  whoCanSeeScreenTestID,
+} from '../apps/mobile/src/features/settings/WhoCanSee';
+import {
   deleteActionTestID,
+  deleteDownloadTestID,
   deleteGoesTestID,
   deleteScreenTestID,
   deletedScreenTestID,
@@ -400,6 +410,7 @@ import { theAnswerSheGave, yourAnswerRows } from '../apps/mobile/src/features/se
 import { settingsCopy } from '../apps/mobile/src/features/settings/copy';
 import {
   exportLockLineTestID,
+  exportScreenTestID,
   exportTileTestID,
   theExportTiles,
 } from '../apps/mobile/src/features/export/ExportScreen';
@@ -409,7 +420,6 @@ import {
   countsFromTheFirstPeriodSentence,
   cyclesBeforeAForecastSentence,
   firstRunCopy,
-  promiseCopy,
   firstRunScreenCount,
   stepLabel,
   tourCopy,
@@ -443,11 +453,8 @@ import {
   firstForecastTitleTestID,
 } from '../apps/mobile/src/features/onboarding/FirstForecast';
 import {
-  promiseActionTestID,
-  thePromiseTestID,
-} from '../apps/mobile/src/features/onboarding/ThePromise';
-import {
   whatEmiDoesActionTestID,
+  whatEmiDoesTestID,
   whatEmiDoesTitleTestID,
 } from '../apps/mobile/src/features/onboarding/WhatEmiDoesWithIt';
 import {
@@ -750,6 +757,7 @@ import {
   theSymptomsTheDrawingNames,
   theSymptomsTheRowNames,
 } from '../apps/mobile/tests/fixtures/whatSheLoggedToday';
+import { locksDrawnIn } from '../apps/mobile/tests/fixtures/drawnLocks';
 import { daysNamedIn, sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
 import {
   type DrawnArc,
@@ -1137,7 +1145,7 @@ const thePrivacyScreensSayInEnglish: Readonly<Record<string, string>> = {
   'recovery.confirm.wrong': "That doesn't match. Check your paper and try again.",
   'settings.answer.gaveAtFirstRun': 'You told us {answer} when you started.',
   'settings.delete.line':
-    "One press and it's gone. No undo, no waiting period. Nobody at Emi can bring it back, because nobody at Emi can read it.",
+    'This removes every day, answer and setting from this phone. It cannot be undone.',
   'settings.delete.refused':
     'Your days are gone, but your phone held on to one thing in the keychain. Press again to finish.',
   'settings.deleted.line':
@@ -1152,13 +1160,10 @@ const thePrivacyScreensSayInEnglish: Readonly<Record<string, string>> = {
 const theKeysOfThePrivacyScreens: readonly string[] = Object.keys(thePrivacyScreensSayInEnglish);
 
 /**
- * The two lines of these screens that name Emi on purpose: the claim about who cannot bring her
- * days back, and the lock, which names the application it is holding shut.
+ * The one line of these screens that names Emi on purpose: the lock, which names the application
+ * it is holding shut. The delete screen says what goes from this phone, and that names nobody.
  */
-const theTwoPrivacyLinesThatNameEmi: readonly string[] = [
-  'lock.locked.title',
-  'settings.delete.line',
-];
+const thePrivacyLinesThatNameEmi: readonly string[] = ['lock.locked.title'];
 
 /** Every word these screens say in one language, out of that language's own catalogue. */
 function theWordsOfThePrivacyScreensIn(
@@ -1814,7 +1819,6 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
         await shePresses(onboardingSkipTestID);
         await shePresses(firstForecastActionTestID);
-        await shePresses(promiseActionTestID);
         await shePresses(whatEmiDoesActionTestID);
       },
     );
@@ -1919,7 +1923,6 @@ defineFeature(feature, (test) => {
 
     when('she reads on and presses and holds Hold to begin', async () => {
       await shePresses(firstForecastActionTestID);
-      await shePresses(promiseActionTestID);
       await shePresses(whatEmiDoesActionTestID);
       await sheHoldsTheRing();
     });
@@ -1946,10 +1949,9 @@ defineFeature(feature, (test) => {
     await shePresses(onboardingSkipTestID);
   }
 
-  /** The forecast, the promise, what Emi does with it, and the hold. */
+  /** The forecast, what Emi does with it, and the hold. */
   async function sheReadsOnAndHolds(): Promise<void> {
     await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
-    await shePresses(promiseActionTestID);
     await shePresses(whatEmiDoesActionTestID);
     await sheHoldsTheRing();
   }
@@ -2083,6 +2085,17 @@ defineFeature(feature, (test) => {
     let app: OpenApp;
     const visited: string[] = [];
     const whatEachScreenSaid: string[] = [];
+    const whatEachCounterRead: string[] = [];
+
+    /** Where she stands, and what the step counter on that screen reads, or that it draws none. */
+    function sheIsOn(): void {
+      visited.push(app.pathname());
+
+      const counter = screen.queryByTestId(onboardingProgressTestID);
+      const read = counter?.props.accessibilityValue as { now: number; max: number } | undefined;
+
+      whatEachCounterRead.push(read === undefined ? 'no counter' : `${read.now} of ${read.max}`);
+    }
 
     given('she has never opened Emi before', () => undefined);
 
@@ -2091,40 +2104,38 @@ defineFeature(feature, (test) => {
     });
 
     and('she answers every question of the first run', async () => {
-      visited.push(app.pathname());
+      sheIsOn();
       whatEachScreenSaid.push(screen.getByText(firstRunCopy.welcome.title).props.children);
       await sheReadsTheWelcome();
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await sheGivesAPeriod(0, herPeriodStarted);
       await shePresses(onboardingActionTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
       await shePresses(onboardingActionTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingWayPastTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(onboardingSkipTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(firstForecastActionTestID);
-      visited.push(app.pathname());
-      await shePresses(promiseActionTestID);
-      visited.push(app.pathname());
+      sheIsOn();
       await shePresses(whatEmiDoesActionTestID);
-      visited.push(app.pathname());
+      sheIsOn();
     });
 
     and('she presses and holds Hold to begin', async () => {
@@ -2148,7 +2159,6 @@ defineFeature(feature, (test) => {
           '/onboarding/today',
           '/onboarding/reminder',
           '/onboarding/first-forecast',
-          '/onboarding/the-promise',
           '/onboarding/what-emi-does-with-it',
           '/onboarding/hold',
         ]);
@@ -2160,6 +2170,34 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
     });
+
+    and(
+      'the counter read its own step on every question, and no promise step stood before the hold',
+      () => {
+        // The welcome is step 1 and the first run log of today is step 11, and neither draws the
+        // bar, so the counter reads the true number on every other question. The three screens
+        // after the reminder ask her nothing and count nothing.
+        expect(whatEachCounterRead).toEqual([
+          'no counter',
+          '2 of 12',
+          '3 of 12',
+          '4 of 12',
+          '5 of 12',
+          '6 of 12',
+          '7 of 12',
+          '8 of 12',
+          '9 of 12',
+          '10 of 12',
+          'no counter',
+          '12 of 12',
+          'no counter',
+          'no counter',
+          'no counter',
+        ]);
+        expect(whatEachCounterRead).toHaveLength(visited.length);
+        expect(visited).not.toContain('/onboarding/the-promise');
+      },
+    );
   });
 
   test('SCREEN-1, the first run asks for no account, no email address and no password', ({
@@ -2209,8 +2247,6 @@ defineFeature(feature, (test) => {
       await shePresses(onboardingSkipTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(firstForecastActionTestID);
-      everyFieldShePassed.push(...fieldsDrawn());
-      await shePresses(promiseActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
       await shePresses(whatEmiDoesActionTestID);
       everyFieldShePassed.push(...fieldsDrawn());
@@ -5919,8 +5955,6 @@ defineFeature(feature, (test) => {
 
       await shePresses(firstForecastActionTestID);
       whereSheIsNow();
-      await shePresses(promiseActionTestID);
-      whereSheIsNow();
       await shePresses(whatEmiDoesActionTestID);
       whereSheIsNow();
       await sheHoldsTheRing();
@@ -6065,10 +6099,14 @@ defineFeature(feature, (test) => {
       await shePresses(firstForecastActionTestID);
     });
 
-    then('she is reading what Emi promises her', () => {
-      expect(app.pathname()).toBe('/onboarding/the-promise');
-      expect(screen.getByTestId(thePromiseTestID)).toBeTruthy();
-    });
+    then(
+      'she is reading what Emi does with what she told it, with no promise step before it',
+      () => {
+        expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
+        expect(screen.getByTestId(whatEmiDoesTestID)).toBeTruthy();
+        expect(screen.queryByText('Only you can read your days.')).toBeNull();
+      },
+    );
   });
 
   test('SCREEN-1, she completes the first run with no date, logs a period, and reads a ring', ({
@@ -6788,27 +6826,13 @@ defineFeature(feature, (test) => {
     const theOldReplyToACycleThatMoves =
       "That's common. We'll start with a wider range and narrow it as we learn yours.";
 
-    /**
-     * The lines about who can read her answers, written out in each language she reads, by the key
-     * each is drawn from. The redesign draws a different line at the foot of different questions.
-     */
-    const theLinesAboutHerPrivacy: Readonly<Record<string, Readonly<Record<Language, string>>>> = {
-      'onboarding.encrypts': {
-        en: 'Emi encrypts this on the phone before it goes anywhere.',
-        es: 'Emi lo cifra en el teléfono antes de que vaya a ningún sitio.',
-        ru: 'Emi шифрует это на телефоне, прежде чем оно куда-либо отправится.',
-      },
-      'onboarding.encryptedHere': {
-        en: 'Encrypted on this phone.',
-        es: 'Cifrado en este teléfono.',
-        ru: 'Зашифровано на этом телефоне.',
-      },
-      'onboarding.encryptsYourAnswers': {
-        en: 'Emi encrypts your answers on this phone. Nobody else can read them.',
-        es: 'Emi cifra tus respuestas en este teléfono. Nadie más puede leerlas.',
-        ru: 'Emi шифрует ваши ответы на этом телефоне. Никто другой не может их прочитать.',
-      },
-    };
+    /** The keys of the padlock lines the first run drew, which no language holds any more. */
+    const theKeysOfTheOldPadlockLines: readonly string[] = [
+      'onboarding.encryptedHere',
+      'onboarding.encryptsIt',
+      'onboarding.encryptsYourAnswers',
+      'onboarding.reminder.promise',
+    ];
 
     let app: OpenApp;
 
@@ -6878,38 +6902,32 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'every question that keeps an answer carries a line about her privacy, in all three languages',
+      'no question of the first run draws a lock, and the sentences it drew are gone from all three languages',
       async () => {
         for (const language of languages) {
-          const held: Readonly<Record<string, Words>> = Object.fromEntries(
-            Object.entries(catalogueOf(language)),
-          );
+          const held = Object.keys(catalogueOf(language));
 
-          for (const [key, said] of Object.entries(theLinesAboutHerPrivacy)) {
-            expect({ language, key, said: held[key] }).toEqual({
-              language,
-              key,
-              said: said[language],
-            });
-          }
+          expect({
+            language,
+            held: theKeysOfTheOldPadlockLines.filter((key) => held.includes(key)),
+          }).toEqual({ language, held: [] });
         }
 
         expect(languages.length).toBe(3);
 
-        // And she reads a line about her privacy on each of the five questions that keep an
-        // answer, which is the round trip the catalogue above cannot prove on its own. Each
-        // question says what the canvas draws at its foot.
+        // The round trip the catalogue cannot prove on its own: she walks the same five questions
+        // that drew a padlock line, and none of them draws a lock now.
         await anotherWomanOpensEmi();
 
-        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
 
         await shePresses(onboardingSkipTestID);
 
-        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
 
         await shePresses(onboardingSkipTestID);
 
-        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
 
         await sheGivesAPeriod(0, herPeriodStarted);
         await shePresses(onboardingActionTestID);
@@ -6919,12 +6937,12 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
 
         expect(app.pathname()).toBe('/onboarding/feeling');
-        expect(screen.getByText(firstRunCopy.encryptedHere)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
 
         await shePresses(onboardingSkipTestID);
 
         expect(app.pathname()).toBe('/onboarding/goals');
-        expect(screen.getByText(firstRunCopy.encryptsYourAnswers)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
       },
     );
   });
@@ -6947,13 +6965,11 @@ defineFeature(feature, (test) => {
       now: 'Here is what Emi does with what you told it',
       theOldGreeting: `${theNameSheGives}, here's what we'll do with your answers`,
     };
-    const thePromiseStillSays = 'Only you can read your days.';
     const theHoldNowSays = 'Your cycle, your data, your key.';
 
-    /** The keys of the four screens from the forecast to the hold, in every language. */
+    /** The keys of the three screens from the forecast to the hold, in every language. */
     const theseScreens: readonly string[] = [
       'onboarding.firstForecast.',
-      'onboarding.promise.',
       'onboarding.whatEmiDoes.',
       'onboarding.hold.',
     ];
@@ -7046,11 +7062,6 @@ defineFeature(feature, (test) => {
         await sheAnswersEverythingAndReachesHerForecast(theNameSheGives);
         await shePresses(firstForecastActionTestID);
 
-        expect(app.pathname()).toBe('/onboarding/the-promise');
-        expect(textIn(screen.getByTestId(thePromiseTestID))).toContain(thePromiseStillSays);
-
-        await shePresses(promiseActionTestID);
-
         expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
         expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatEmiDoes.now]);
         expect(screen.queryByText(theTitleOfWhatEmiDoes.theOldGreeting)).toBeNull();
@@ -7059,14 +7070,13 @@ defineFeature(feature, (test) => {
         await anotherWomanOpensEmi();
         await sheAnswersEverythingAndReachesHerForecast();
         await shePresses(firstForecastActionTestID);
-        await shePresses(promiseActionTestID);
 
         expect(theTitleSheIsReading(whatEmiDoesTitleTestID)).toEqual([theTitleOfWhatEmiDoes.now]);
       },
     );
 
     and(
-      'the promise and the hold never talk as we, in each of the three languages she can read them in',
+      'the screens after the forecast never talk as we, in each of the three languages she can read them in',
       async () => {
         for (const language of languages) {
           const read = theWordsOfTheseScreensIn(language).join('\n');
@@ -7128,7 +7138,7 @@ defineFeature(feature, (test) => {
 
     then('each one carries the wash across the top of the glass', () => {
       expect(washedAtTheTop).toEqual([...theFirstRunDrawings]);
-      expect(washedAtTheTop).toHaveLength(20);
+      expect(washedAtTheTop).toHaveLength(19);
     });
 
     and(
@@ -7205,11 +7215,12 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('the question that keeps an answer carries the promise about her privacy', async () => {
-      await sheIsLookingAt('name');
+    and('no screen of the first run draws a lock or the card about this phone', async () => {
+      for (const drawing of theFirstRunDrawings) {
+        await sheIsLookingAt(drawing);
 
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(firstRunCopy.encrypts);
-      expect(screen.getByTestId(lockLineIconTestID(onboardingLockTestID))).toBeTruthy();
+        expect({ drawing, locks: locksDrawnIn(screen.root) }).toEqual({ drawing, locks: 0 });
+      }
     });
 
     and(
@@ -7278,16 +7289,15 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the three round actions stand under that card, the period one filled and the Sex and Cycle phase ones white',
+      'the three round actions stand under that card, all three white on a day outside her period',
       () => {
         expect(whereTheScreenDrew(phaseCardTestID)).toBeLessThan(
           whereTheScreenDrew(roundActionTestID('sex')),
         );
-        expect(styleOfPart(roundActionDiscTestID('period'))['backgroundColor']).toBe(colour.accent);
-        expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.onAccent);
-        for (const white of ['sex', 'phase'] as const) {
+        for (const white of ['sex', 'period', 'phase'] as const) {
           expect(styleOfPart(roundActionDiscTestID(white))['backgroundColor']).toBe(colour.card);
         }
+        expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.accent);
         expect(drawingIn(roundActionDrawingTestID('sex'))).toContain(colour.accent);
         expect(drawingIn(roundActionDrawingTestID('phase'))).toContain(colour.ovulationInk);
       },
@@ -7352,6 +7362,71 @@ defineFeature(feature, (test) => {
         expect(howManyPartsTheTodayScreensAreHeldTo()).toBeGreaterThan(50);
       },
     );
+  });
+
+  test('SCREEN-2, the Period button is on only on a day of her period', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    /** Success criterion 1.4.11 of the Web Content Accessibility Guidelines, for a drawing. */
+    const theContrastADrawingNeeds = 3;
+    const groundsTheDropWasDrawnOn: { ground: string; ink: string }[] = [];
+
+    const periodDisc = (): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(roundActionDiscTestID('period')).props.style) ??
+        {}) as Record<string, unknown>;
+    const sexDisc = (): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(roundActionDiscTestID('sex')).props.style) ??
+        {}) as Record<string, unknown>;
+    const theDrop = (): string =>
+      String(screen.getByTestId(roundActionDrawingTestID('period')).props['xml']);
+    const isHeardAsOn = (): unknown =>
+      screen.getByTestId(roundActionTestID('period')).props.accessibilityState?.selected;
+
+    given('her phone holds the period she is in and the answers of her first run', () => {
+      jest.useFakeTimers();
+      jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    });
+
+    when('she opens Emi on a day of her period', async () => {
+      resetExpoSqlite();
+      jest.setSystemTime(whenSheOpens('todayNext'));
+      await sheIsLookingAtTheTodayScreen('todayNext');
+    });
+
+    then('the Period button is filled with the accent, and a reader hears that it is on', () => {
+      expect(periodDisc()['backgroundColor']).toBe(colour.accent);
+      expect(theDrop()).toContain(colour.onAccent);
+      expect(isHeardAsOn()).toBe(true);
+      groundsTheDropWasDrawnOn.push({ ground: colour.accent, ink: colour.onAccent });
+    });
+
+    when('she opens Emi again on a day of her luteal phase', async () => {
+      resetExpoSqlite();
+      jest.setSystemTime(whenSheOpens('todayLuteal'));
+      await sheIsLookingAtTheTodayScreen('todayLuteal');
+    });
+
+    then('the Period button is white with the drop in the accent, as the Sex button is', () => {
+      expect(periodDisc()['backgroundColor']).toBe(colour.card);
+      expect(periodDisc()).toEqual(sexDisc());
+      expect(theDrop()).toContain(colour.accent);
+      expect(theDrop()).not.toContain(colour.onAccent);
+      groundsTheDropWasDrawnOn.push({ ground: colour.card, ink: colour.accent });
+    });
+
+    and('a reader does not hear that the Period button is on', () => {
+      expect(isHeardAsOn()).toBe(false);
+    });
+
+    and('the drop is readable on the ground of each day', () => {
+      expect(groundsTheDropWasDrawnOn).toHaveLength(2);
+      for (const { ground, ink } of groundsTheDropWasDrawnOn) {
+        expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(theContrastADrawingNeeds);
+      }
+    });
   });
 
   /**
@@ -7683,7 +7758,7 @@ defineFeature(feature, (test) => {
       const said = textIn(screen.getByTestId(settingsAssuranceTestID)).join(' ');
 
       expect(theStyleOnPrivacy(settingsAssuranceTestID).backgroundColor).toBe(colour.darkCard);
-      expect(said).toContain(promiseCopy.title);
+      expect(said).toContain(settingsCopy.settings.assurance.lead);
       expect(wherePrivacyDrew(settingsTitleTestID, from)).toBeLessThan(
         wherePrivacyDrew(settingsAssuranceTestID, from),
       );
@@ -7746,11 +7821,11 @@ defineFeature(feature, (test) => {
       expect(textIn(screen.getByTestId(exportLockLineTestID)).join(' ')).toBe(exportCopy.where);
     });
 
-    and('delete everything names the five things that go, each one with its own mark', async () => {
+    and('delete everything names the four things that go, each one with its own mark', async () => {
       await sheIsLookingAtPrivacy('delete');
 
       expect(theStyleOnPrivacy(deleteGoesTestID).backgroundColor).toBe(colour.card);
-      expect(settingsCopy.delete.goes).toHaveLength(5);
+      expect(settingsCopy.delete.goes).toHaveLength(4);
 
       for (let at = 0; at < settingsCopy.delete.goes.length; at += 1) {
         expect(privacyDrew(goesMarkTestID(at))).toBe(true);
@@ -8434,7 +8509,7 @@ defineFeature(feature, (test) => {
       expect(languages.length).toBe(3);
     });
 
-    and('the only two lines that name Emi are the claim about her days and the lock itself', () => {
+    and('the only line that names Emi is the lock itself', () => {
       for (const language of languages) {
         const naming = theKeysOfThePrivacyScreens
           .filter((key) =>
@@ -8444,9 +8519,147 @@ defineFeature(feature, (test) => {
 
         expect({ language, naming }).toEqual({
           language,
-          naming: [...theTwoPrivacyLinesThatNameEmi].sort(),
+          naming: [...thePrivacyLinesThatNameEmi].sort(),
         });
       }
+    });
+  });
+
+  test('SCREEN-2, she downloads her data from the delete screen before she deletes it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let daysBefore = 0;
+
+    given('she has six cycles of her own on this phone', async () => {
+      await herPhoneHolds(whenSheOpensIt, herSixPeriodsAndAWrongMonday());
+      daysBefore = listDayLogs(herDatabase()).length;
+
+      expect(daysBefore).toBeGreaterThan(0);
+    });
+
+    when('she opens Privacy and walks to the screen that would delete her data', async () => {
+      await sheOpens('/settings');
+      await shePresses(settingsDeleteTestID);
+
+      expect(screen.getByTestId(deleteScreenTestID)).toBeTruthy();
+    });
+
+    then('the screen names no account and no server, in each of the three languages', () => {
+      const anAccountOrAServerIn: Readonly<Record<Language, RegExp>> = {
+        en: /account|server/i,
+        es: /cuenta|servidor/i,
+        ru: /учётн|учетн|аккаунт|сервер/i,
+      };
+
+      expect(whatItSays(deleteScreenTestID)).not.toMatch(anAccountOrAServerIn.en);
+
+      for (const language of languages) {
+        const catalogue = theCatalogueOf(language);
+        const said = Object.keys(catalogue)
+          .filter((key) => key.startsWith('settings.delete.'))
+          .flatMap((key) => formsOf(catalogue[key] ?? ''))
+          .join('\n');
+
+        expect({ language, names: said.match(anAccountOrAServerIn[language]) }).toEqual({
+          language,
+          names: null,
+        });
+      }
+    });
+
+    and('she presses Download data first', async () => {
+      expect(whatItSays(deleteDownloadTestID)).toBe(settingsCopy.delete.download);
+
+      await shePresses(deleteDownloadTestID);
+    });
+
+    then('Export opens, and every day she logged is still on her phone', () => {
+      expect(screen.getByTestId(exportScreenTestID)).toBeTruthy();
+      expect(listDayLogs(herDatabase())).toHaveLength(daysBefore);
+    });
+  });
+
+  test('SCREEN-2, she reads who can see her records from Privacy and comes back', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    given('she has six cycles of her own on this phone', async () => {
+      await herPhoneHolds(whenSheOpensIt, herSixPeriodsAndAWrongMonday());
+    });
+
+    when('she opens Privacy and presses Who can see my records?', async () => {
+      await sheOpens('/settings');
+
+      expect(whatItSays(settingsWhoCanSeeTestID)).toBe(settingsCopy.whoCanSee.title);
+
+      await shePresses(settingsWhoCanSeeTestID);
+
+      expect(screen.getByTestId(whoCanSeeScreenTestID)).toBeTruthy();
+    });
+
+    then(
+      'she reads where her records are kept, who can read them and what happens when she sends a file',
+      () => {
+        for (const [at, part] of settingsCopy.whoCanSee.parts.entries()) {
+          expect(whatItSays(whoCanSeePartTestID(at))).toContain(part.lead);
+          expect(whatItSays(whoCanSeePartTestID(at))).toContain(part.line);
+        }
+      },
+    );
+
+    and('she reads one example of why it matters', () => {
+      expect(whatItSays(whoCanSeeExampleTestID)).toBe(settingsCopy.whoCanSee.example);
+    });
+
+    and('she presses the way back and is on Privacy again', async () => {
+      await shePresses(whoCanSeeBackTestID);
+
+      expect(screen.queryByTestId(whoCanSeeScreenTestID)).toBeNull();
+      expect(screen.getByTestId(settingsScreenTestID)).toBeTruthy();
+    });
+  });
+
+  test('SCREEN-2, she reads who can see her records from the welcome and comes back', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi and presses Who can see my records? on the welcome', async () => {
+      app = await sheOpens('/');
+
+      expect(app.pathname()).toBe('/onboarding/welcome');
+      expect(whatItSays(welcomeWhoCanSeeTestID)).toBe(settingsCopy.whoCanSee.title);
+
+      await shePresses(welcomeWhoCanSeeTestID);
+
+      expect(app.pathname()).toBe('/settings/who-can-see');
+    });
+
+    then(
+      'she reads where her records are kept, who can read them and what happens when she sends a file',
+      () => {
+        for (const [at, part] of settingsCopy.whoCanSee.parts.entries()) {
+          expect(whatItSays(whoCanSeePartTestID(at))).toContain(part.lead);
+          expect(whatItSays(whoCanSeePartTestID(at))).toContain(part.line);
+        }
+      },
+    );
+
+    and('she presses the way back and is on the welcome again', async () => {
+      await shePresses(whoCanSeeBackTestID);
+
+      expect(screen.queryByTestId(whoCanSeeScreenTestID)).toBeNull();
+      expect(app.pathname()).toBe('/onboarding/welcome');
     });
   });
 
@@ -8506,7 +8719,6 @@ defineFeature(feature, (test) => {
       sheSawStillLearning = screen.queryByTestId(firstForecastStillLearningTestID) !== null;
 
       await shePresses(firstForecastActionTestID);
-      await shePresses(promiseActionTestID);
       await shePresses(whatEmiDoesActionTestID);
       await sheHoldsTheRing();
     });
@@ -8711,7 +8923,7 @@ defineFeature(feature, (test) => {
         screen.unmount();
         await render(
           <OnAPhone>
-            <WhatEmiIs onContinue={() => undefined} />
+            <WhatEmiIs onContinue={() => undefined} onWhoCanSee={() => undefined} />
           </OnAPhone>,
         );
 

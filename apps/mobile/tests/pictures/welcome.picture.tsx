@@ -28,7 +28,7 @@ describe('the welcome screen, drawn for somebody to look at', () => {
   it('renders the first screen of the first run', async () => {
     const view = await render(
       <OnAPhone>
-        <WhatEmiIs onContinue={() => undefined} />
+        <WhatEmiIs onContinue={() => undefined} onWhoCanSee={() => undefined} />
       </OnAPhone>,
     );
     const tree: unknown = theScreenIn(view);

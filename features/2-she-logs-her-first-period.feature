@@ -84,6 +84,7 @@ Feature: She opens Emi and logs her first period
     And she presses and holds Hold to begin
     Then she was asked what Emi is, her name, the year she was born, her last three periods, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her
     And there was no further question to answer
+    And the counter read its own step on every question, and no promise step stood before the hold
 
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
     Given she has never opened Emi before
@@ -138,7 +139,7 @@ Feature: She opens Emi and logs her first period
     And that is the drawing of the first forecast with no date, part for part, in its order
     And the screen offers the way on, and no way back to the question she could not answer
     When she presses the way on
-    Then she is reading what Emi promises her
+    Then she is reading what Emi does with what she told it, with no promise step before it
 
   Scenario: SCREEN-2, the home screen shows the ring, the day of her cycle and the phase she is in
     Given her phone holds six cycles of her own
@@ -698,7 +699,7 @@ Feature: She opens Emi and logs her first period
     Then the question after it asks the year plainly, as the redesign draws it
     And a woman who gives no name reads the same question, with no gap where a name would be
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
-    And every question that keeps an answer carries a line about her privacy, in all three languages
+    And no question of the first run draws a lock, and the sentences it drew are gone from all three languages
 
   Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it speak in the name of Emi
     Given she has never opened Emi before
@@ -706,7 +707,7 @@ Feature: She opens Emi and logs her first period
     Then the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name
     And a woman who gave no name reads the same forecast, with no gap where a name would be
     And the screen that reads her answers back is titled in the name of Emi, for a woman who gave her name and for one who did not
-    And the promise and the hold never talk as we, in each of the three languages she can read them in
+    And the screens after the forecast never talk as we, in each of the three languages she can read them in
 
   Scenario: SCREEN-1, the first run screens match the redesign prototype
     Given she has never opened Emi before
@@ -717,7 +718,7 @@ Feature: She opens Emi and logs her first period
     And the step she is on is written out, so she knows how much is left without counting
     And the welcome writes that step and draws no bar
     And the first run log names the day in the middle of its header and draws no bar
-    And the question that keeps an answer carries the promise about her privacy
+    And no screen of the first run draws a lock or the card about this phone
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the Today screens match the redesign prototype
@@ -725,11 +726,20 @@ Feature: She opens Emi and logs her first period
     When she opens Emi and reads the screen she opens in each of its states
     Then each state carries the wash across the top of the glass
     And the ring stands above the card that names the phase she is in
-    And the three round actions stand under that card, the period one filled and the Sex and Cycle phase ones white
+    And the three round actions stand under that card, all three white on a day outside her period
     And what she logged today stands under them, in a card with the mark that says Emi kept it
     And a section her days cannot fill yet is one card with one sentence, and it draws no chart
     And the lock she comes back through carries the wordmark, the disc and the one button
     And each state draws every part its own drawing names in its order, but the parts it records as differences
+
+  Scenario: SCREEN-2, the Period button is on only on a day of her period
+    Given her phone holds the period she is in and the answers of her first run
+    When she opens Emi on a day of her period
+    Then the Period button is filled with the accent, and a reader hears that it is on
+    When she opens Emi again on a day of her luteal phase
+    Then the Period button is white with the drop in the accent, as the Sex button is
+    And a reader does not hear that the Period button is on
+    And the drop is readable on the ground of each day
 
   Scenario: SCREEN-4, the Log and calendar screens match the redesign prototype
     Given her phone holds the period she is in, the month behind it and the answers of her first run
@@ -762,7 +772,7 @@ Feature: She opens Emi and logs her first period
     And her eight answers stand on one card, each one reading back the answer she gave
     And each of the two files she can take away is drawn as a tile of its own
     And the lock sits beside the line that says nothing is sent anywhere
-    And delete everything names the five things that go, each one with its own mark
+    And delete everything names the four things that go, each one with its own mark
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the home screen says hello to her by name
@@ -792,7 +802,27 @@ Feature: She opens Emi and logs her first period
     Then she reads that it is gone, and that she can start fresh whenever she likes
     And her phone holds none of her days and nothing in the keychain
     And these screens say all of this in each of the three languages, as you and as we
-    And the only two lines that name Emi are the claim about her days and the lock itself
+    And the only line that names Emi is the lock itself
+
+  Scenario: SCREEN-2, she downloads her data from the delete screen before she deletes it
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and walks to the screen that would delete her data
+    Then the screen names no account and no server, in each of the three languages
+    And she presses Download data first
+    Then Export opens, and every day she logged is still on her phone
+
+  Scenario: SCREEN-2, she reads who can see her records from Privacy and comes back
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and presses Who can see my records?
+    Then she reads where her records are kept, who can read them and what happens when she sends a file
+    And she reads one example of why it matters
+    And she presses the way back and is on Privacy again
+
+  Scenario: SCREEN-2, she reads who can see her records from the welcome and comes back
+    Given she has never opened Emi before
+    When she opens Emi and presses Who can see my records? on the welcome
+    Then she reads where her records are kept, who can read them and what happens when she sends a file
+    And she presses the way back and is on the welcome again
 
   Scenario: SCREEN-2, she opens the page of her phase from Today and records her diary there
     Given her phone holds four recorded period days, the last of them today
