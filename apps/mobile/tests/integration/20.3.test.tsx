@@ -25,7 +25,7 @@ import {
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { promiseActionTestID } from '../../src/features/onboarding/ThePromise';
+import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import { learningCopy, statedLengthSentence } from '../../src/features/forecast/copy';
 import { cyclesBeforeAForecastSentence, firstRunCopy } from '../../src/features/onboarding/copy';
 import {
@@ -227,10 +227,10 @@ describe('the first run with no date ends on a forecast that says it is still le
       expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
     });
 
-    it('takes her on to the promise when she presses the way on', async () => {
+    it('takes her on to what Emi does with it when she presses the way on', async () => {
       await shePresses(firstForecastActionTestID);
 
-      expect(screen.getByTestId(promiseActionTestID)).toBeTruthy();
+      expect(screen.getByTestId(whatEmiDoesActionTestID)).toBeTruthy();
     });
   });
 

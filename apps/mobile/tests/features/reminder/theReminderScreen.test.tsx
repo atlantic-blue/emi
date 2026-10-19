@@ -30,7 +30,7 @@ import {
 } from '../../fixtures/expoNotifications';
 import { resetExpoSecureStore } from '../../fixtures/expoSecureStore';
 import { herDatabase } from '../../fixtures/herPhone';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../../fixtures/theFirstRun';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../../fixtures/theHold';
 import { sheReachesTheReminder } from './theWalkToTheReminder';
 import { locksDrawnIn } from '../../fixtures/drawnLocks';
@@ -70,10 +70,10 @@ function theMomentSheWasPromised(daysBefore: number): Date {
   return new Date(year ?? 0, (month ?? 1) - 1, (day ?? 1) - daysBefore, 9, 0, 0, 0);
 }
 
-/** The forecast, the promise, what Emi does with it and the hold, all the way to her home. */
+/** The forecast, what Emi does with it and the hold, all the way to her home. */
 async function sheFinishesTheFirstRun(): Promise<void> {
   await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
-  await sheReadsThePromise();
+  await sheReadsWhatEmiDoesWithIt();
   await sheHoldsTheRing();
 }
 

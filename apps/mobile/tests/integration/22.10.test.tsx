@@ -82,7 +82,7 @@ describe('the first run screens match the redesign prototype', () => {
     }
 
     it('is held to every part of every drawing, and the count is the check', () => {
-      expect(theFirstRunDrawings).toHaveLength(20);
+      expect(theFirstRunDrawings).toHaveLength(19);
       expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(130);
     });
 
