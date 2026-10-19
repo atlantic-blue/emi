@@ -62,7 +62,6 @@ export function Today({ chosen, onPress, onSave, onBack, onSkip }: Props): React
       onBack={onBack}
       onSkip={onSkip}
       onWayPast={onSkip}
-      promiseSits="underTheAnswer"
       question={firstRunCopy.today.question}
       screen="today"
       title={firstRunCopy.today.title}

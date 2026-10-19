@@ -10,7 +10,6 @@ import { firstForecastActionTestID } from '../../../src/features/onboarding/Firs
 import {
   onboardingActionTestID,
   onboardingBackTestID,
-  onboardingLockTestID,
   onboardingSkipTestID,
   onboardingStepLabelTestID,
   onboardingWayPastTestID,
@@ -34,6 +33,7 @@ import { herDatabase } from '../../fixtures/herPhone';
 import { sheAnswersEveryQuestion, sheReadsThePromise } from '../../fixtures/theFirstRun';
 import { sheHoldsTheRing } from '../../fixtures/theHold';
 import { sheReachesTheReminder } from './theWalkToTheReminder';
+import { locksDrawnIn } from '../../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../../fixtures/expoSecureStore'));
@@ -152,13 +152,16 @@ describe('the reminder, after the first day she logs', () => {
       expect(screen.queryByText('Your period is forecast in two days.')).toBeNull();
     });
 
-    it('says the phone works it out and raises it, and that nothing about it is sent', async () => {
+    it('draws no padlock line, because the welcome links to who can see her records', async () => {
       await sheOpensEmi();
       await sheReachesTheReminder(herPeriodStarted);
 
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-        'This phone works it out and this phone raises it. Nothing about the reminder is sent anywhere.',
-      );
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(
+        screen.queryByText(
+          'This phone works it out and this phone raises it. Nothing about the reminder is sent anywhere.',
+        ),
+      ).toBeNull();
     });
 
     it('offers "Not now" under the button and Skip at the top, and a way back', async () => {

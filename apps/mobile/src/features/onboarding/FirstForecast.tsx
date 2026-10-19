@@ -43,7 +43,6 @@ export const firstForecastRangeTestID = 'first-forecast-range';
 export const firstForecastLearningTestID = 'first-forecast-learning';
 export const firstForecastDaysTestID = 'first-forecast-days';
 export const firstForecastWhyTestID = 'first-forecast-why';
-export const firstForecastOnThisPhoneTestID = 'first-forecast-on-this-phone';
 export const firstForecastNeedsTestID = 'first-forecast-needs';
 export const firstForecastRingTestID = 'first-forecast-ring';
 export const firstForecastActionTestID = 'first-forecast-action';
@@ -155,18 +154,6 @@ function WithARange({
           </View>
           <Text style={styles.cardTitle}>{firstRunCopy.firstForecast.why.title}</Text>
           <Text style={styles.cardLine}>{whyLines(forecast, cycleLengthDays).join(' ')}</Text>
-        </Card>
-
-        <Card testID={firstForecastOnThisPhoneTestID}>
-          <View style={styles.phoneRow}>
-            <View style={styles.phoneTile}>
-              <Icon colour={colour.warmIcon} name="phone" size={ICON_SIZE} />
-            </View>
-            <View style={styles.phoneWords}>
-              <Text style={styles.cardTitle}>{firstRunCopy.firstForecast.onThisPhone.title}</Text>
-              <Text style={styles.cardLine}>{firstRunCopy.firstForecast.onThisPhone.line}</Text>
-            </View>
-          </View>
         </Card>
       </View>
 
@@ -326,16 +313,6 @@ const styles = StyleSheet.create({
     marginTop: space.spaceXl,
     textAlign: 'center',
   },
-  phoneRow: { alignItems: 'flex-start', flexDirection: 'row', gap: space.spaceMd },
-  phoneTile: {
-    alignItems: 'center',
-    backgroundColor: colour.washWarm,
-    borderRadius: radius.md,
-    height: ICON_SIZE * 2,
-    justifyContent: 'center',
-    width: ICON_SIZE * 2,
-  },
-  phoneWords: { flex: 1 },
   // The largest thing on the screen, because the range is what she came through the questions to
   // read.
   range: {

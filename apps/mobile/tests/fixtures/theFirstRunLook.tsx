@@ -10,7 +10,6 @@ import {
   firstForecastLearningTestID,
   firstForecastLinesTestID,
   firstForecastNoGuessTestID,
-  firstForecastOnThisPhoneTestID,
   firstForecastStillLearningTestID,
   firstForecastRangeTestID,
   firstForecastTitleTestID,
@@ -221,7 +220,7 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   cycleLength: { ...theFrame, Stepper: [cycleLengthWheelTestID] },
   feeling: { ...theFrame, SingleChoiceRow: [feelingTestID('fine')] },
   firstForecast: {
-    Card: [firstForecastWhyTestID, firstForecastOnThisPhoneTestID],
+    Card: [firstForecastWhyTestID],
     FirstForecast: [
       firstForecastTitleTestID,
       firstForecastRangeTestID,
@@ -306,6 +305,9 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put the sample under the question and "Not now" over the button. The redesign
   // canvas puts the sample at the top and "Not now" under "Remind me", so the reminder follows it.
   reminder: 2,
+  // The mockups put a card about this phone under the why card. The first run no longer draws it,
+  // because the welcome links to the page that says who can see her records.
+  firstForecast: 1,
 };
 
 /** The screen she is looking at, rendered on a phone that keeps part of its glass. */
@@ -318,7 +320,7 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
     case 'tour':
       return <TourScreen onNext={nothing} onSkip={nothing} />;
     case 'welcome':
-      return <WhatEmiIs onContinue={nothing} />;
+      return <WhatEmiIs onContinue={nothing} onWhoCanSee={nothing} />;
     case 'name':
       return (
         <HerName onBack={nothing} onContinue={nothing} onSkip={nothing} onType={nothing} typed="" />

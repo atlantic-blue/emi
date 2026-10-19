@@ -641,11 +641,7 @@ export const english = {
   'onboarding.cycleLength.longer': 'One day longer',
   'onboarding.cycleLength.shorter': 'One day shorter',
   'onboarding.cycleLength.title': 'How long is your cycle, roughly?',
-  'onboarding.encryptedHere': 'Encrypted on this phone.',
   'onboarding.encrypts': 'Emi encrypts this on the phone before it goes anywhere.',
-  'onboarding.encryptsIt': 'Emi encrypts it on this phone.',
-  'onboarding.encryptsYourAnswers':
-    'Emi encrypts your answers on this phone. Nobody else can read them.',
   'onboarding.feeling.action': 'Continue',
   'onboarding.feeling.choice.fine': 'I am fine with it',
   'onboarding.feeling.choice.hard': 'It is hard, most months',
@@ -670,9 +666,6 @@ export const english = {
     other: 'From that day Emi counts a cycle of {count} days, the length you gave.',
   },
   'onboarding.firstForecast.noDate.title': 'Emi has no date to count from',
-  'onboarding.firstForecast.onThisPhone.line':
-    'The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.',
-  'onboarding.firstForecast.onThisPhone.title': 'Worked out on this phone',
   'onboarding.firstForecast.stillLearning': 'Still learning',
   'onboarding.firstForecast.title': 'Your next period',
   'onboarding.firstForecast.why.counts': {
@@ -754,8 +747,6 @@ export const english = {
   'onboarding.reminder.line.oneDayBefore': 'One day before the range starts.',
   'onboarding.reminder.line.twoDaysBefore': 'Two days before the range starts.',
   'onboarding.reminder.notNow': 'Not now',
-  'onboarding.reminder.promise':
-    'This phone works it out and this phone raises it. Nothing about the reminder is sent anywhere.',
   'onboarding.reminder.title': 'Shall Emi tell you when it is near?',
   'onboarding.skip': 'Skip',
   'onboarding.step': 'Step {step} of {of}',

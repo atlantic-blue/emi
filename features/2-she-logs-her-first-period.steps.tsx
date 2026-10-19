@@ -97,7 +97,10 @@ import {
   ringDayNumberWords,
   ringSpokenLabel,
 } from '../apps/mobile/src/features/cycle/copy';
-import { WhatEmiIs } from '../apps/mobile/src/features/onboarding/WhatEmiIs';
+import {
+  WhatEmiIs,
+  welcomeWhoCanSeeTestID,
+} from '../apps/mobile/src/features/onboarding/WhatEmiIs';
 import {
   periodSexProductTestID,
   periodSexSuggestionEyebrowTestID,
@@ -365,7 +368,6 @@ import {
   onboardingBackTestID,
   onboardingEmblemTestID,
   onboardingHeaderWordTestID,
-  onboardingLockTestID,
   onboardingProgressTestID,
   onboardingSheetTestID,
   onboardingSkipTestID,
@@ -759,6 +761,7 @@ import {
   theSymptomsTheDrawingNames,
   theSymptomsTheRowNames,
 } from '../apps/mobile/tests/fixtures/whatSheLoggedToday';
+import { locksDrawnIn } from '../apps/mobile/tests/fixtures/drawnLocks';
 import { daysNamedIn, sizedTextIn, textIn } from '../apps/mobile/tests/fixtures/renderedText';
 import {
   type DrawnArc,
@@ -6790,27 +6793,13 @@ defineFeature(feature, (test) => {
     const theOldReplyToACycleThatMoves =
       "That's common. We'll start with a wider range and narrow it as we learn yours.";
 
-    /**
-     * The lines about who can read her answers, written out in each language she reads, by the key
-     * each is drawn from. The redesign draws a different line at the foot of different questions.
-     */
-    const theLinesAboutHerPrivacy: Readonly<Record<string, Readonly<Record<Language, string>>>> = {
-      'onboarding.encrypts': {
-        en: 'Emi encrypts this on the phone before it goes anywhere.',
-        es: 'Emi lo cifra en el teléfono antes de que vaya a ningún sitio.',
-        ru: 'Emi шифрует это на телефоне, прежде чем оно куда-либо отправится.',
-      },
-      'onboarding.encryptedHere': {
-        en: 'Encrypted on this phone.',
-        es: 'Cifrado en este teléfono.',
-        ru: 'Зашифровано на этом телефоне.',
-      },
-      'onboarding.encryptsYourAnswers': {
-        en: 'Emi encrypts your answers on this phone. Nobody else can read them.',
-        es: 'Emi cifra tus respuestas en este teléfono. Nadie más puede leerlas.',
-        ru: 'Emi шифрует ваши ответы на этом телефоне. Никто другой не может их прочитать.',
-      },
-    };
+    /** The keys of the padlock lines the first run drew, which no language holds any more. */
+    const theKeysOfTheOldPadlockLines: readonly string[] = [
+      'onboarding.encryptedHere',
+      'onboarding.encryptsIt',
+      'onboarding.encryptsYourAnswers',
+      'onboarding.reminder.promise',
+    ];
 
     let app: OpenApp;
 
@@ -6880,38 +6869,32 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'every question that keeps an answer carries a line about her privacy, in all three languages',
+      'no question of the first run draws a lock, and the sentences it drew are gone from all three languages',
       async () => {
         for (const language of languages) {
-          const held: Readonly<Record<string, Words>> = Object.fromEntries(
-            Object.entries(catalogueOf(language)),
-          );
+          const held = Object.keys(catalogueOf(language));
 
-          for (const [key, said] of Object.entries(theLinesAboutHerPrivacy)) {
-            expect({ language, key, said: held[key] }).toEqual({
-              language,
-              key,
-              said: said[language],
-            });
-          }
+          expect({
+            language,
+            held: theKeysOfTheOldPadlockLines.filter((key) => held.includes(key)),
+          }).toEqual({ language, held: [] });
         }
 
         expect(languages.length).toBe(3);
 
-        // And she reads a line about her privacy on each of the five questions that keep an
-        // answer, which is the round trip the catalogue above cannot prove on its own. Each
-        // question says what the canvas draws at its foot.
+        // The round trip the catalogue cannot prove on its own: she walks the same five questions
+        // that drew a padlock line, and none of them draws a lock now.
         await anotherWomanOpensEmi();
 
-        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
 
         await shePresses(onboardingSkipTestID);
 
-        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
 
         await shePresses(onboardingSkipTestID);
 
-        expect(screen.getByText(firstRunCopy.encrypts)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
 
         await sheGivesAPeriod(0, herPeriodStarted);
         await shePresses(onboardingActionTestID);
@@ -6921,12 +6904,12 @@ defineFeature(feature, (test) => {
         await shePresses(onboardingSkipTestID);
 
         expect(app.pathname()).toBe('/onboarding/feeling');
-        expect(screen.getByText(firstRunCopy.encryptedHere)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
 
         await shePresses(onboardingSkipTestID);
 
         expect(app.pathname()).toBe('/onboarding/goals');
-        expect(screen.getByText(firstRunCopy.encryptsYourAnswers)).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
       },
     );
   });
@@ -7207,11 +7190,12 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('the question that keeps an answer carries the promise about her privacy', async () => {
-      await sheIsLookingAt('name');
+    and('no screen of the first run draws a lock or the card about this phone', async () => {
+      for (const drawing of theFirstRunDrawings) {
+        await sheIsLookingAt(drawing);
 
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(firstRunCopy.encrypts);
-      expect(screen.getByTestId(lockLineIconTestID(onboardingLockTestID))).toBeTruthy();
+        expect({ drawing, locks: locksDrawnIn(screen.root) }).toEqual({ drawing, locks: 0 });
+      }
     });
 
     and(
@@ -8551,6 +8535,45 @@ defineFeature(feature, (test) => {
     });
   });
 
+  test('SCREEN-2, she reads who can see her records from the welcome and comes back', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi and presses Who can see my records? on the welcome', async () => {
+      app = await sheOpens('/');
+
+      expect(app.pathname()).toBe('/onboarding/welcome');
+      expect(whatItSays(welcomeWhoCanSeeTestID)).toBe(settingsCopy.whoCanSee.title);
+
+      await shePresses(welcomeWhoCanSeeTestID);
+
+      expect(app.pathname()).toBe('/settings/who-can-see');
+    });
+
+    then(
+      'she reads where her records are kept, who can read them and what happens when she sends a file',
+      () => {
+        for (const [at, part] of settingsCopy.whoCanSee.parts.entries()) {
+          expect(whatItSays(whoCanSeePartTestID(at))).toContain(part.lead);
+          expect(whatItSays(whoCanSeePartTestID(at))).toContain(part.line);
+        }
+      },
+    );
+
+    and('she presses the way back and is on the welcome again', async () => {
+      await shePresses(whoCanSeeBackTestID);
+
+      expect(screen.queryByTestId(whoCanSeeScreenTestID)).toBeNull();
+      expect(app.pathname()).toBe('/onboarding/welcome');
+    });
+  });
+
   test('SCREEN-1, she gives her last three periods and her first forecast is ready', ({
     given,
     when,
@@ -8812,7 +8835,7 @@ defineFeature(feature, (test) => {
         screen.unmount();
         await render(
           <OnAPhone>
-            <WhatEmiIs onContinue={() => undefined} />
+            <WhatEmiIs onContinue={() => undefined} onWhoCanSee={() => undefined} />
           </OnAPhone>,
         );
 
