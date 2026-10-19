@@ -31,6 +31,7 @@ import { resetExpoSharing, whatWasShared } from '../fixtures/expoSharing';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 import { herVault } from '../fixtures/herVault';
+import { symptomName } from '../../src/features/log/symptomName';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -329,8 +330,10 @@ describe('every stored field appears in the export', () => {
         expect(document).toContain(fullDate(start));
       }
 
-      expect(document).toContain(findSymptom(theSymptom)?.name);
-      expect(document).toContain(findMood(theMood)?.name);
+      expect(findSymptom(theSymptom)).toBeDefined();
+      expect(document).toContain(symptomName(theSymptom));
+      expect(findMood(theMood)).toBeDefined();
+      expect(document).toContain(symptomName(theMood));
       expect(document).toContain(everythingSheCanLog.note);
     });
 

@@ -50,6 +50,7 @@ import {
   theIdentifiersDrawn,
   thePartsOfTheMockup,
 } from '../fixtures/theMockupScreen';
+import { symptomName } from '../../src/features/log/symptomName';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -75,7 +76,7 @@ function theSymptomNamed(slug: string): string {
     throw new Error(`${slug} is not a symptom Emi offers`);
   }
 
-  return found.name;
+  return symptomName(found.slug);
 }
 
 /** Every key the section draws its words from, so a key added later is read by this file too. */
