@@ -5,6 +5,7 @@ import {
   type PastPeriod,
   everyDayTheyBled,
   forecastFromPastPeriods,
+  lengthsFromHerDates,
   longestPastPeriodDays,
   pastPeriodLengthsOffered,
   pastPeriodsRefusal,
@@ -156,6 +157,53 @@ describe('the list of her last three periods', () => {
       const forecast = forecastFromPastPeriods([], 28);
 
       expect(forecast).toEqual({ kind: 'learning', completeCycles: 0, needsCycles: 2 });
+    });
+  });
+
+  describe('the lengths Emi works out from her dates', () => {
+    it('offers nothing from one period, because one period makes no cycle', () => {
+      expect(lengthsFromHerDates([newest])).toBeUndefined();
+    });
+
+    it('offers nothing where she gave no period', () => {
+      expect(lengthsFromHerDates([])).toBeUndefined();
+    });
+
+    it('offers the one cycle that two periods make, and the rounded median of the two lengths', () => {
+      expect(lengthsFromHerDates([newest, before])).toEqual({
+        cycleLengthDays: 28,
+        periodLengthDays: 6,
+      });
+    });
+
+    it('offers the rounded median of the two cycles and of the three lengths from three periods', () => {
+      const unevenBefore: PastPeriod = { startedOn: '2026-04-12', lengthDays: 6 };
+      const unevenBeforeThat: PastPeriod = { startedOn: '2026-03-13', lengthDays: 4 };
+
+      expect(lengthsFromHerDates([newest, unevenBefore, unevenBeforeThat])).toEqual({
+        cycleLengthDays: 29,
+        periodLengthDays: 5,
+      });
+    });
+
+    it('offers the cycle length the forecast counts with, from the same three periods', () => {
+      const unevenBefore: PastPeriod = { startedOn: '2026-04-12', lengthDays: 6 };
+      const unevenBeforeThat: PastPeriod = { startedOn: '2026-03-13', lengthDays: 4 };
+      const periods = [newest, unevenBefore, unevenBeforeThat];
+      const forecast = forecastFromPastPeriods(periods);
+
+      if (forecast.kind !== 'forecast') {
+        throw new Error('three periods make two cycles, which is a forecast');
+      }
+      expect(lengthsFromHerDates(periods)?.cycleLengthDays).toBe(
+        Math.round(forecast.medianLengthDays),
+      );
+    });
+
+    it('is not read by the forecast once she gave three periods, which counts her own cycles', () => {
+      const periods = [newest, before, beforeThat];
+
+      expect(forecastFromPastPeriods(periods, 35)).toEqual(forecastFromPastPeriods(periods));
     });
   });
 });

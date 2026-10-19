@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { NumberWheel } from '../../components/NumberWheel';
 import { OnboardingScreen } from './OnboardingScreen';
-import { firstRunCopy, periodLengthDaysLabel } from './copy';
+import { firstRunCopy, periodLengthFromHerDates, periodLengthDaysLabel } from './copy';
 import { defaultPeriodLengthDays, periodLengthsOffered } from './firstRun';
 
 export const periodLengthWheelTestID = 'period-length-wheel';
@@ -16,6 +16,11 @@ export function periodLengthDaysTestID(days: number): string {
 interface Props {
   /** Nothing at all until she turns the wheel or taps a length. */
   readonly chosen: number | undefined;
+  /**
+   * Her usual length worked out from the periods she gave, or nothing where she gave fewer than
+   * two. The wheel opens on it and Done is ready, because the number comes from her own dates.
+   */
+  readonly fromHerDates: number | undefined;
   readonly onChoose: (days: number) => void;
   readonly onDone: () => void;
   readonly onBack: () => void;
@@ -28,24 +33,41 @@ interface Props {
  * logged a period end of her own.
  *
  * The wheel opens on 5 days as a place to start. Done waits until she picks a length, and "I am not
- * sure" over it is the way past, which leaves the answer off her profile.
+ * sure" over it is the way past, which leaves the answer off her profile. Where her own dates give
+ * a length, the wheel opens on it and Done keeps it.
  */
-export function PeriodLength({ chosen, onChoose, onDone, onBack, onNotSure }: Props): ReactNode {
+export function PeriodLength({
+  chosen,
+  fromHerDates,
+  onChoose,
+  onDone,
+  onBack,
+  onNotSure,
+}: Props): ReactNode {
+  const shown = chosen ?? fromHerDates;
+  const done = (): void => {
+    if (chosen === undefined && fromHerDates !== undefined) {
+      onChoose(fromHerDates);
+    }
+    onDone();
+  };
+
   return (
     <OnboardingScreen
-      actionIsReady={chosen !== undefined}
+      actionIsReady={shown !== undefined}
       actionLabel={firstRunCopy.periodLength.action}
       lines={firstRunCopy.periodLength.lines}
       linesAlign="center"
-      onAction={onDone}
+      onAction={done}
       onBack={onBack}
       onWayPast={onNotSure}
+      question={fromHerDates === undefined ? undefined : periodLengthFromHerDates(fromHerDates)}
       screen="periodLength"
       title={firstRunCopy.periodLength.title}
       wayPastLabel={firstRunCopy.periodLength.skip}
     >
       <NumberWheel
-        chosen={chosen}
+        chosen={shown}
         labelOf={periodLengthDaysLabel}
         onChoose={onChoose}
         opensOn={defaultPeriodLengthDays}

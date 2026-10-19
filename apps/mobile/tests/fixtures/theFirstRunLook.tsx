@@ -348,12 +348,19 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
       );
     case 'cycleLength':
       return (
-        <CycleLength chosen={undefined} onBack={nothing} onChoose={nothing} onDone={nothing} />
+        <CycleLength
+          chosen={undefined}
+          fromHerDates={undefined}
+          onBack={nothing}
+          onChoose={nothing}
+          onDone={nothing}
+        />
       );
     case 'periodLength':
       return (
         <PeriodLength
           chosen={undefined}
+          fromHerDates={undefined}
           onBack={nothing}
           onChoose={nothing}
           onDone={nothing}

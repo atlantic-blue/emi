@@ -367,6 +367,7 @@ import {
   onboardingHeaderWordTestID,
   onboardingLockTestID,
   onboardingProgressTestID,
+  onboardingQuestionTestID,
   onboardingSheetTestID,
   onboardingSkipTestID,
   onboardingStepLabelTestID,
@@ -8530,6 +8531,81 @@ defineFeature(feature, (test) => {
       expect(textIn(screen.getByTestId(historyCycleTestID(theOneBefore))).join(' ')).toContain(
         cycleLengthSentence(28, eachLastedDays),
       );
+    });
+  });
+
+  test('SCREEN-1, she gives three periods and confirms the lengths Emi worked out from them', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const theOneBefore = addDays(herPeriodStarted, -27);
+    const theOneBeforeThat = addDays(herPeriodStarted, -54);
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    and('she reaches the step that asks for her last three periods', async () => {
+      await sheReachesTheThreePeriodsStep();
+    });
+
+    and('she gives three periods, 27 days apart, that lasted 6, 6 and 4 days', async () => {
+      await sheGivesAPeriod(0, herPeriodStarted, 6);
+      await sheGivesAPeriod(1, theOneBefore, 6);
+      await sheGivesAPeriod(2, theOneBeforeThat, 4);
+      await shePresses(onboardingActionTestID);
+    });
+
+    then(
+      'the cycle question says her records average 27 days, and the wheel stands on 27 with Done ready',
+      () => {
+        expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
+          'Based on your records, your cycle averages 27 days. Does that look right?',
+        );
+        expect(screen.getByTestId(cycleLengthDaysTestID(27))).toBeSelected();
+        expect(screen.getByTestId(onboardingActionTestID)).toBeEnabled();
+      },
+    );
+
+    when('she presses Done without turning the wheel', async () => {
+      await shePresses(onboardingActionTestID);
+    });
+
+    then(
+      'the period question says her records average 6 days, and the wheel stands on 6 with Done ready',
+      () => {
+        expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
+          'Based on your records, your period averages 6 days. Does that look right?',
+        );
+        expect(screen.getByTestId(periodLengthDaysTestID(6))).toBeSelected();
+        expect(screen.getByTestId(onboardingActionTestID)).toBeEnabled();
+      },
+    );
+
+    when('she presses Done without turning the wheel', async () => {
+      await shePresses(onboardingActionTestID);
+    });
+
+    and('she answers the rest of the questions and presses and holds Hold to begin', async () => {
+      for (let question = 1; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePassesTheQuestion();
+      }
+
+      await shePresses(firstForecastActionTestID);
+      await shePresses(promiseActionTestID);
+      await shePresses(whatEmiDoesActionTestID);
+      await sheHoldsTheRing();
+    });
+
+    then('her phone holds a cycle length of 27 days and a period length of 6 days', async () => {
+      const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
+
+      expect(held?.cycleLengthDays).toBe(27);
+      expect(held?.periodLengthDays).toBe(6);
     });
   });
 

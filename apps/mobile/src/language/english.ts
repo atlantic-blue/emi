@@ -635,6 +635,10 @@ export const english = {
     one: '{count} day',
     other: '{count} days',
   },
+  'onboarding.cycleLength.fromHerDates': {
+    one: 'Based on your records, your cycle averages {count} day. Does that look right?',
+    other: 'Based on your records, your cycle averages {count} days. Does that look right?',
+  },
   'onboarding.cycleLength.line.count':
     'Count the first day of one period to the day before the next.',
   'onboarding.cycleLength.line.held': 'Held between {minimum} and {maximum} days.',
@@ -728,6 +732,10 @@ export const english = {
   'onboarding.periodLength.days': {
     one: '{count} day',
     other: '{count} days',
+  },
+  'onboarding.periodLength.fromHerDates': {
+    one: 'Based on your records, your period averages {count} day. Does that look right?',
+    other: 'Based on your records, your period averages {count} days. Does that look right?',
   },
   'onboarding.periodLength.line.count': 'From the first day of bleeding until it stops.',
   'onboarding.periodLength.line.logged': 'Emi uses the days you log instead, once you log them.',
