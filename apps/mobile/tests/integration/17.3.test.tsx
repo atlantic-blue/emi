@@ -131,8 +131,12 @@ async function sheWalksFromTheDockToHerAnswers(): Promise<void> {
   await fireEvent.press(routedScreen.getByTestId(settingsAnswersTestID));
 }
 
+/** A row is named by the prefix and one word. A part inside a row adds a dash and its own name. */
 function theRowsSheReads(): string[] {
-  return theIdentifiersDrawn().filter((identifier) => identifier.startsWith(theRowPrefix));
+  return theIdentifiersDrawn().filter(
+    (identifier) =>
+      identifier.startsWith(theRowPrefix) && !identifier.slice(theRowPrefix.length).includes('-'),
+  );
 }
 
 function theWordsIn(testID: string): string[] {

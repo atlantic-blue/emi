@@ -1,9 +1,14 @@
 import { MINIMUM_TAP_TARGET, colour, radius, stroke } from '@emi/tokens';
-import { screen } from '@testing-library/react-native';
+import { screen, within } from '@testing-library/react-native';
 
 import { type Language, type Words, catalogueOf, languages } from '../../src/language';
 import { rowGroupRuleTestID } from '../../src/components/RowGroup';
-import { rowChevronTestID, rowTileTestID } from '../../src/components/SettingsRow';
+import {
+  rowChevronTestID,
+  rowTileTestID,
+  rowValueTestID,
+  rowWordsTestID,
+} from '../../src/components/SettingsRow';
 import {
   exportActionTestID,
   exportBackTestID,
@@ -29,7 +34,7 @@ import {
   deleteTitleTestID,
   goesMarkTestID,
 } from '../../src/features/settings/DeleteEverything';
-import { settingsCopy } from '../../src/features/settings/copy';
+import { settingsCopy, yourAnswersCopy } from '../../src/features/settings/copy';
 import {
   settingsAssuranceTestID,
   settingsRowsTestID,
@@ -253,13 +258,41 @@ describe('the Privacy screens match the redesign prototype', () => {
       }
     });
 
-    it('reads her own answer at the end of every row, and points the way on', () => {
+    it('reads her own answer under the name of every row, and points the way on', () => {
       for (const row of yourAnswerRows) {
         const answer = theAnswerSheGave(row, herAnswers);
+        const words = screen.getByTestId(rowWordsTestID(yourAnswerRowTestID(row)));
 
         expect(answer).toEqual(expect.any(String));
-        expect(whatItSays(yourAnswerRowTestID(row))).toContain(answer);
+        expect(textIn(words)).toEqual([yourAnswersCopy.rows[row], answer]);
         expect(privacyDrew(rowChevronTestID(yourAnswerRowTestID(row)))).toBe(true);
+      }
+    });
+
+    it('stacks the answer in the column of the name, so a long answer cannot squeeze the name', () => {
+      for (const row of yourAnswerRows) {
+        const testID = yourAnswerRowTestID(row);
+        const words = screen.getByTestId(rowWordsTestID(testID));
+        const column = theStyleOf(rowWordsTestID(testID));
+
+        expect(within(words).getByTestId(rowValueTestID(testID))).toBeTruthy();
+        expect(column.flexDirection ?? 'column').toBe('column');
+        expect(column.flexGrow).toBe(1);
+        expect(column.flexShrink).toBe(1);
+      }
+    });
+
+    it('no longer reads the answer beside the name, at the end of the row', () => {
+      for (const row of yourAnswerRows) {
+        const testID = yourAnswerRowTestID(row);
+        const besideTheName = screen
+          .getByTestId(testID)
+          .children.filter(
+            (child): child is ReturnType<typeof screen.getByTestId> =>
+              typeof child !== 'string' && child.props.testID === rowValueTestID(testID),
+          );
+
+        expect(besideTheName).toEqual([]);
       }
     });
 
