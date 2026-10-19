@@ -775,7 +775,8 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.periodLength.title': 'Сколько дней обычно идут месячные?',
   'onboarding.promise.action': 'Дальше',
   'onboarding.promise.delete': 'Удалите всё одним нажатием',
-  'onboarding.promise.encrypted': 'Зашифровано на этом телефоне ключом, который есть только у вас',
+  'onboarding.promise.encrypted':
+    'Дни хранятся в зашифрованном виде на этом телефоне, ключ есть только у вас',
   'onboarding.promise.noTracking': 'Без пароля, без инструментов слежения',
   'onboarding.promise.title': 'Только вы можете читать свои дни.',
   'onboarding.regularity.action': 'Продолжить',
@@ -1033,18 +1034,20 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.answers.periodLength': 'Длина месячных',
   'settings.answers.regularity': 'Регулярный',
   'settings.answers.title': 'Ваши ответы',
-  'settings.delete.action': 'Удалить всё',
-  'settings.delete.back': 'Назад',
-  'settings.delete.goes.account': 'Вашу учётную запись на сервере и все дни, которые она держит',
+  'settings.delete.action': 'Удалить данные',
+  'settings.delete.back': 'Оставить данные',
+  'settings.delete.download': 'Сначала скачать данные',
+  'settings.delete.goBack': 'Назад',
   'settings.delete.goes.cycles': 'Циклы, которые Emi посчитала по ним',
-  'settings.delete.goes.days': 'Каждый день, который вы отметили на этом телефоне',
+  'settings.delete.goes.days':
+    'Все отмеченные дни, которые хранятся в зашифрованном виде на этом телефоне',
   'settings.delete.goes.key': 'Ключ, который открывает всё это',
   'settings.delete.goes.settings': 'Ваши настройки',
   'settings.delete.line':
-    'Одно нажатие, и всё исчезнет. Отменить нельзя, ждать не нужно. Никто в Emi не вернёт это обратно, потому что никто в Emi не может это прочитать.',
+    'Это удалит с телефона все дни, ответы и настройки. Отменить удаление не получится.',
   'settings.delete.refused':
     'Ваши дни удалены, но ваш телефон оставил у себя одну вещь в связке ключей. Нажмите ещё раз, чтобы закончить.',
-  'settings.delete.title': 'Удалить всё',
+  'settings.delete.title': 'Удалить ваши данные?',
   'settings.delete.working': 'Удаляем',
   'settings.deleted.action': 'Начать заново',
   'settings.deleted.line':
@@ -1062,6 +1065,17 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.settings.lock': 'Блокировка',
   'settings.settings.lockLine': 'Включена: по лицу или по коду доступа',
   'settings.settings.title': 'Приватность',
+  'settings.whoCanSee.example':
+    'Если кто-то попросит у Emi ваши записи, например рекламодатель или суд, Emi нечего отдать: ваши записи хранятся на вашем телефоне, а не у нас.',
+  'settings.whoCanSee.kept.lead': 'Где они хранятся',
+  'settings.whoCanSee.kept.line':
+    'Хранятся в зашифрованном виде на этом телефоне. У Emi нет вашей учётной записи, и Emi никуда не отправляет ваши записи.',
+  'settings.whoCanSee.read.lead': 'Кто может их прочитать',
+  'settings.whoCanSee.read.line': 'Только вы. Никто в Emi не может их прочитать.',
+  'settings.whoCanSee.send.lead': 'Когда вы отправляете файл',
+  'settings.whoCanSee.send.line':
+    'Файл, который вы экспортируете, покидает этот телефон, только когда вы его отправляете. Его может прочитать тот, кому вы его отправили, например ваш врач.',
+  'settings.whoCanSee.title': 'Кто может видеть мои записи?',
   'sex.back': 'Назад',
   'sex.chooseDay': 'Выбрать другой день',
   'sex.day': '{weekday}, {date} {month}',

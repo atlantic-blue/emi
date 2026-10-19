@@ -29,6 +29,15 @@ export const settingsCopy = {
       },
     },
   },
+  whoCanSee: {
+    title: words('settings.whoCanSee.title'),
+    parts: [
+      { lead: words('settings.whoCanSee.kept.lead'), line: words('settings.whoCanSee.kept.line') },
+      { lead: words('settings.whoCanSee.read.lead'), line: words('settings.whoCanSee.read.line') },
+      { lead: words('settings.whoCanSee.send.lead'), line: words('settings.whoCanSee.send.line') },
+    ],
+    example: words('settings.whoCanSee.example'),
+  },
   delete: {
     title: words('settings.delete.title'),
     line: words('settings.delete.line'),
@@ -37,10 +46,11 @@ export const settingsCopy = {
       words('settings.delete.goes.cycles'),
       words('settings.delete.goes.settings'),
       words('settings.delete.goes.key'),
-      words('settings.delete.goes.account'),
     ],
+    download: words('settings.delete.download'),
     action: words('settings.delete.action'),
     back: words('settings.delete.back'),
+    goBack: words('settings.delete.goBack'),
     working: words('settings.delete.working'),
     refused: words('settings.delete.refused'),
   },

@@ -999,18 +999,19 @@ export const english = {
   'settings.answers.periodLength': 'Period length',
   'settings.answers.regularity': 'Regular',
   'settings.answers.title': 'Your answers',
-  'settings.delete.action': 'Delete everything',
-  'settings.delete.back': 'Back',
-  'settings.delete.goes.account': 'Your account on the server, and every day it holds',
+  'settings.delete.action': 'Delete data',
+  'settings.delete.back': 'Keep data',
+  'settings.delete.download': 'Download data first',
+  'settings.delete.goBack': 'Back',
   'settings.delete.goes.cycles': 'The cycles Emi worked out from them',
-  'settings.delete.goes.days': 'Every day you logged on this phone',
+  'settings.delete.goes.days': 'Every day you logged, encrypted on this phone',
   'settings.delete.goes.key': 'The key that opens any of it',
   'settings.delete.goes.settings': 'Your settings',
   'settings.delete.line':
-    "One press and it's gone. No undo, no waiting period. Nobody at Emi can bring it back, because nobody at Emi can read it.",
+    'This removes every day, answer and setting from this phone. It cannot be undone.',
   'settings.delete.refused':
     'Your days are gone, but your phone held on to one thing in the keychain. Press again to finish.',
-  'settings.delete.title': 'Delete everything',
+  'settings.delete.title': 'Delete your data?',
   'settings.delete.working': 'Deleting',
   'settings.deleted.action': 'Start again',
   'settings.deleted.line':
@@ -1028,6 +1029,17 @@ export const english = {
   'settings.settings.lock': 'Lock',
   'settings.settings.lockLine': 'On, with your face or your passcode',
   'settings.settings.title': 'Privacy',
+  'settings.whoCanSee.example':
+    'If somebody asks Emi for your records, an advertiser or a court, Emi has nothing to give: your records are on your phone, not with us.',
+  'settings.whoCanSee.kept.lead': 'Where they are kept',
+  'settings.whoCanSee.kept.line':
+    'Kept encrypted on this phone. Emi has no account for you, and sends your records nowhere.',
+  'settings.whoCanSee.read.lead': 'Who can read them',
+  'settings.whoCanSee.read.line': 'Only you. Nobody at Emi can read them.',
+  'settings.whoCanSee.send.lead': 'When you send a file',
+  'settings.whoCanSee.send.line':
+    'A file you export leaves this phone only when you send it. Whoever you send it to, such as your doctor, can read it.',
+  'settings.whoCanSee.title': 'Who can see my records?',
   'sex.back': 'Back',
   'sex.chooseDay': 'Choose another day',
   'sex.day': '{weekday}, {date} {month}',

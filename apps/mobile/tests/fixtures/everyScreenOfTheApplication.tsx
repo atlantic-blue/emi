@@ -28,6 +28,7 @@ import {
   deletedScreenTestID,
 } from '../../src/features/settings/DeleteEverything';
 import { SettingsScreen, settingsScreenTestID } from '../../src/features/settings/SettingsScreen';
+import { WhoCanSee, whoCanSeeScreenTestID } from '../../src/features/settings/WhoCanSee';
 import { YourAnswers, yourAnswersScreenTestID } from '../../src/features/settings/YourAnswers';
 import type { HerDay } from '../../src/features/cycle/herWeek';
 import { monthWeeks, weekdayLetter } from '../../src/features/onboarding/days';
@@ -206,9 +207,16 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [
     settingsScreenTestID,
     (): ReactElement => (
-      <SettingsScreen onAnswers={nothing} onBack={nothing} onDelete={nothing} onExport={nothing} />
+      <SettingsScreen
+        onAnswers={nothing}
+        onBack={nothing}
+        onDelete={nothing}
+        onExport={nothing}
+        onWhoCanSee={nothing}
+      />
     ),
   ],
+  [whoCanSeeScreenTestID, (): ReactElement => <WhoCanSee onBack={nothing} />],
   [
     yourAnswersScreenTestID,
     (): ReactElement => <YourAnswers answers={aProfileRecord()} onBack={nothing} />,
@@ -231,7 +239,13 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [
     deleteScreenTestID,
     (): ReactElement => (
-      <DeleteEverything onBack={nothing} onDelete={nothing} onStartAgain={nothing} stage="ready" />
+      <DeleteEverything
+        onBack={nothing}
+        onDelete={nothing}
+        onDownload={nothing}
+        onStartAgain={nothing}
+        stage="ready"
+      />
     ),
   ],
   [
@@ -240,6 +254,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       <DeleteEverything
         onBack={nothing}
         onDelete={nothing}
+        onDownload={nothing}
         onStartAgain={nothing}
         stage="deleted"
       />

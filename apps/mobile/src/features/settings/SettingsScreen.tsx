@@ -14,6 +14,9 @@ export const settingsScreenTestID = 'settings-screen';
 export const settingsTitleTestID = 'settings-title';
 export const settingsBackTestID = 'settings-back';
 
+/** The link under the dark card that opens the page saying who can see her records. */
+export const settingsWhoCanSeeTestID = 'settings-who-can-see';
+
 /** The dark card over the rows, which says who can read her days. */
 export const settingsAssuranceTestID = 'settings-assurance';
 
@@ -70,11 +73,14 @@ export function SettingsScreen({
   onAnswers,
   onExport,
   onDelete,
+  onWhoCanSee,
   onBack,
 }: {
   readonly onAnswers: () => void;
   readonly onExport: () => void;
   readonly onDelete: () => void;
+  /** Opens the one page that says where her records are kept and who can read them. */
+  readonly onWhoCanSee: () => void;
   readonly onBack: () => void;
 }): ReactNode {
   return (
@@ -92,6 +98,14 @@ export function SettingsScreen({
             <Text style={styles.assuranceLead}>{promiseCopy.title}</Text>
             <Text style={styles.assuranceLine}>{promiseCopy.lines.encrypted}</Text>
           </View>
+        </View>
+
+        <View style={styles.whoCanSee}>
+          <TextLink
+            label={settingsCopy.whoCanSee.title}
+            onPress={onWhoCanSee}
+            testID={settingsWhoCanSeeTestID}
+          />
         </View>
 
         <RowGroup testID={settingsRowsTestID}>
@@ -144,7 +158,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     flexDirection: 'row',
     gap: space.spaceLg,
-    marginBottom: space.spaceLg,
+    marginBottom: space.spaceMd,
     padding: space.spaceLg,
   },
   assuranceLead: {
@@ -171,4 +185,5 @@ const styles = StyleSheet.create({
     marginBottom: space.spaceLg,
     ...textStyle('headline-lg'),
   },
+  whoCanSee: { alignItems: 'center', marginBottom: space.spaceLg },
 });

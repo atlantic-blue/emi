@@ -736,11 +736,20 @@ Feature: She opens Emi and logs her first period
     When she opens Emi and reads the screen she opens in each of its states
     Then each state carries the wash across the top of the glass
     And the ring stands above the card that names the phase she is in
-    And the three round actions stand under that card, the period one filled and the Sex and Cycle phase ones white
+    And the three round actions stand under that card, all three white on a day outside her period
     And what she logged today stands under them, in a card with the mark that says Emi kept it
     And a section her days cannot fill yet is one card with one sentence, and it draws no chart
     And the lock she comes back through carries the wordmark, the disc and the one button
     And each state draws every part its own drawing names in its order, but the parts it records as differences
+
+  Scenario: SCREEN-2, the Period button is on only on a day of her period
+    Given her phone holds the period she is in and the answers of her first run
+    When she opens Emi on a day of her period
+    Then the Period button is filled with the accent, and a reader hears that it is on
+    When she opens Emi again on a day of her luteal phase
+    Then the Period button is white with the drop in the accent, as the Sex button is
+    And a reader does not hear that the Period button is on
+    And the drop is readable on the ground of each day
 
   Scenario: SCREEN-4, the Log and calendar screens match the redesign prototype
     Given her phone holds the period she is in, the month behind it and the answers of her first run
@@ -773,7 +782,7 @@ Feature: She opens Emi and logs her first period
     And her eight answers stand on one card, each one reading back the answer she gave
     And each of the two files she can take away is drawn as a tile of its own
     And the lock sits beside the line that says nothing is sent anywhere
-    And delete everything names the five things that go, each one with its own mark
+    And delete everything names the four things that go, each one with its own mark
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the home screen says hello to her by name
@@ -803,7 +812,21 @@ Feature: She opens Emi and logs her first period
     Then she reads that it is gone, and that she can start fresh whenever she likes
     And her phone holds none of her days and nothing in the keychain
     And these screens say all of this in each of the three languages, as you and as we
-    And the only two lines that name Emi are the claim about her days and the lock itself
+    And the only line that names Emi is the lock itself
+
+  Scenario: SCREEN-2, she downloads her data from the delete screen before she deletes it
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and walks to the screen that would delete her data
+    Then the screen names no account and no server, in each of the three languages
+    And she presses Download data first
+    Then Export opens, and every day she logged is still on her phone
+
+  Scenario: SCREEN-2, she reads who can see her records from Privacy and comes back
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and presses Who can see my records?
+    Then she reads where her records are kept, who can read them and what happens when she sends a file
+    And she reads one example of why it matters
+    And she presses the way back and is on Privacy again
 
   Scenario: SCREEN-2, she opens the page of her phase from Today and records her diary there
     Given her phone holds four recorded period days, the last of them today

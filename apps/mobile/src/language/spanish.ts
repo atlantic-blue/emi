@@ -999,18 +999,19 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.answers.periodLength': 'Duración del periodo',
   'settings.answers.regularity': 'Regular',
   'settings.answers.title': 'Tus respuestas',
-  'settings.delete.action': 'Borrarlo todo',
-  'settings.delete.back': 'Atrás',
-  'settings.delete.goes.account': 'Tu cuenta en el servidor, y todos los días que guarda',
+  'settings.delete.action': 'Borrar datos',
+  'settings.delete.back': 'Conservar datos',
+  'settings.delete.download': 'Descargar los datos primero',
+  'settings.delete.goBack': 'Atrás',
   'settings.delete.goes.cycles': 'Los ciclos que Emi calculó a partir de ellos',
-  'settings.delete.goes.days': 'Todos los días que registraste en este teléfono',
+  'settings.delete.goes.days': 'Cada día que registraste, cifrado en este teléfono',
   'settings.delete.goes.key': 'La clave que abre cualquiera de esas cosas',
   'settings.delete.goes.settings': 'Tus ajustes',
   'settings.delete.line':
-    'Una pulsación y desaparece. No hay vuelta atrás ni periodo de espera. Nadie en Emi puede recuperarlo, porque nadie en Emi puede leerlo.',
+    'Esto borra de este teléfono cada día, respuesta y ajuste. No se puede deshacer.',
   'settings.delete.refused':
     'Tus días ya no están, pero tu teléfono se ha quedado con una cosa en el llavero. Pulsa otra vez para terminar.',
-  'settings.delete.title': 'Borrarlo todo',
+  'settings.delete.title': '¿Borrar tus datos?',
   'settings.delete.working': 'Borrando',
   'settings.deleted.action': 'Empezar de nuevo',
   'settings.deleted.line':
@@ -1028,6 +1029,17 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.settings.lock': 'Bloqueo',
   'settings.settings.lockLine': 'Activado, con tu cara o tu código de acceso',
   'settings.settings.title': 'Privacidad',
+  'settings.whoCanSee.example':
+    'Si alguien pide tus registros a Emi, un anunciante o un tribunal, Emi no tiene nada que dar: tus registros están en tu teléfono, no con nosotros.',
+  'settings.whoCanSee.kept.lead': 'Dónde se guardan',
+  'settings.whoCanSee.kept.line':
+    'Se guardan en formato cifrado en este teléfono. Emi no tiene ninguna cuenta tuya y no envía tus registros a ningún sitio.',
+  'settings.whoCanSee.read.lead': 'Quién puede leerlos',
+  'settings.whoCanSee.read.line': 'Solo tú. Nadie en Emi puede leerlos.',
+  'settings.whoCanSee.send.lead': 'Cuando envías un archivo',
+  'settings.whoCanSee.send.line':
+    'Un archivo que exportas sale de este teléfono solo cuando lo envías. Quien lo reciba, como tu médico, puede leerlo.',
+  'settings.whoCanSee.title': '¿Quién puede ver mis registros?',
   'sex.back': 'Atrás',
   'sex.chooseDay': 'Elegir otro día',
   'sex.day': '{weekday}, {date} de {month}',
