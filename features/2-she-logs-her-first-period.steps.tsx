@@ -586,11 +586,22 @@ import {
   whenSheOpensEmi,
 } from '../apps/mobile/tests/fixtures/thePeriodSheCorrects';
 import {
+  editPeriodAddBeforeTestID,
   editPeriodChangeTestID,
   editPeriodListTestID,
   editPeriodRowTestID,
   editPeriodSaveTestID,
 } from '../apps/mobile/src/features/calendar/EditPeriodScreen';
+import {
+  nextPeriodItStartedTestID,
+  nextPeriodLateTestID,
+  nextPeriodRangeTestID,
+} from '../apps/mobile/src/features/forecast/NextPeriod';
+import {
+  herPhoneHoldsThreePeriodsAndNoLateOne,
+  theDaySheIsLate,
+  whenSheIsLate,
+} from '../apps/mobile/tests/fixtures/theLateHome';
 import {
   type LogOrCalendarDrawing,
   howManyDifferencesAreKeptFor,
@@ -8619,6 +8630,74 @@ defineFeature(feature, (test) => {
       expect(listDayLogs(herDatabase())).toHaveLength(15);
       expect(aForecastIsDrawn()).toBe(true);
       expect(screen.queryByTestId(forecastPopupTestID)).toBeNull();
+    });
+  });
+
+  test('SCREEN-2, her period is late, and she logs the day it started', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    const yesterday = addDays(theDaySheIsLate, -1);
+
+    given(
+      'her phone holds three periods 28 days apart, and the forecast window ended two days ago',
+      async () => {
+        jest.setSystemTime(whenSheIsLate);
+        await herPhoneHoldsThreePeriodsAndNoLateOne();
+
+        expect(listCycles(herDatabase()).map((cycle) => cycle.startedOn)).toEqual([
+          '2026-07-24',
+          '2026-08-21',
+          '2026-09-18',
+        ]);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('the forecast says her period is 2 days late, and the range that passed is gone', () => {
+      expect(app.pathname()).toBe('/');
+      expect(whatItSays(nextPeriodLateTestID)).toBe('Your period is 2 days late');
+      expect(screen.queryByTestId(nextPeriodRangeTestID)).toBeNull();
+      expect(screen.queryByText('Between the 15th and the 17th of October')).toBeNull();
+    });
+
+    when('she presses It started', async () => {
+      expect(whatItSays(nextPeriodItStartedTestID)).toBe('It started');
+      await shePresses(nextPeriodItStartedTestID);
+    });
+
+    then('she is in the period editor, opened on today', () => {
+      expect(app.pathname()).toBe('/calendar/period');
+      expect(app.searchParams()).toEqual(
+        expect.objectContaining({ [dayParameter]: theDaySheIsLate }),
+      );
+      expect(theDaysTheListDrew()).toEqual([theDaySheIsLate]);
+      expect(theDaysTickedOnThePicker()).toEqual([]);
+    });
+
+    when('she adds yesterday and saves', async () => {
+      await shePresses(editPeriodAddBeforeTestID);
+
+      expect(theDaysTickedOnThePicker()).toEqual([yesterday]);
+
+      await shePresses(editPeriodSaveTestID);
+    });
+
+    then('she is back on Today, and the forecast gives the range of her next period again', () => {
+      expect(app.pathname()).toBe('/');
+      expect(listCycles(herDatabase()).map((cycle) => cycle.startedOn)).toContain(yesterday);
+      expect(whatItSays(nextPeriodRangeTestID)).toBe('Between the 14th and the 16th of November');
+    });
+
+    and('no line says her period is late', () => {
+      expect(screen.queryByTestId(nextPeriodLateTestID)).toBeNull();
+      expect(screen.queryByTestId(nextPeriodItStartedTestID)).toBeNull();
     });
   });
 
