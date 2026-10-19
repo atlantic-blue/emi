@@ -2,7 +2,6 @@ import { MINIMUM_TAP_TARGET, colour, radius, space } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 import { StyleSheet, type ViewStyle } from 'react-native';
 
-import { lockLineIconTestID } from '../../src/components/LockLine';
 import { progressFillTestID } from '../../src/components/ProgressBar';
 import {
   onboardingActionTestID,
@@ -10,7 +9,6 @@ import {
   onboardingEmblemTestID,
   onboardingHeaderWordTestID,
   onboardingLinesTestID,
-  onboardingLockTestID,
   onboardingProgressTestID,
   onboardingQuestionTestID,
   onboardingSheetTestID,
@@ -33,6 +31,7 @@ import {
 } from '../fixtures/theFirstRunLook';
 import { anIPhone16 } from '../fixtures/theWidthOfARow';
 import { pastPeriodsListTestID } from '../../src/features/pastPeriods/PastPeriodsList';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 /**
  * The first run, in the shapes the approved redesign draws it in.
@@ -48,8 +47,8 @@ const theScreensCarryingTheEmblem: readonly FirstRunLook[] = [
   ...theQuestionsTheBarCounts,
 ];
 
-/** The questions whose last line is the promise that only she can read the answer. */
-const theQuestionsThatPromiseHerPrivacy: readonly FirstRunLook[] = [
+/** The questions that drew a padlock line at their foot before the welcome linked to the page. */
+const theQuestionsThatDrewAPadlock: readonly FirstRunLook[] = [
   'name',
   'yearOfBirth',
   'threePeriods',
@@ -83,7 +82,7 @@ describe('the first run screens match the redesign prototype', () => {
     }
 
     it('is held to every part of every drawing, and the count is the check', () => {
-      expect(theFirstRunDrawings).toHaveLength(20);
+      expect(theFirstRunDrawings).toHaveLength(19);
       expect(howManyPartsTheFirstRunIsHeldTo()).toBeGreaterThan(130);
     });
 
@@ -102,9 +101,6 @@ describe('the first run screens match the redesign prototype', () => {
 
       expect(drawn.indexOf(onboardingQuestionTestID)).toBeLessThan(
         drawn.indexOf(pastPeriodsListTestID),
-      );
-      expect(drawn.indexOf(pastPeriodsListTestID)).toBeLessThan(
-        drawn.indexOf(onboardingLockTestID),
       );
     });
   });
@@ -222,31 +218,19 @@ describe('the first run screens match the redesign prototype', () => {
     });
   });
 
-  describe('the promise about what Emi does with her answer', () => {
-    // Each question says what the canvas draws at its foot.
-    const thePromiseOn: Readonly<Record<string, string>> = {
-      name: firstRunCopy.encrypts,
-      yearOfBirth: firstRunCopy.encrypts,
-      threePeriods: firstRunCopy.encrypts,
-      feeling: firstRunCopy.encryptedHere,
-      goals: firstRunCopy.encryptsYourAnswers,
-    };
-
-    for (const drawing of theQuestionsThatPromiseHerPrivacy) {
-      it(`carries a lock beside it on ${drawing}`, async () => {
+  describe('the padlock line, which the first run no longer draws', () => {
+    for (const drawing of theQuestionsThatDrewAPadlock) {
+      it(`draws no lock on ${drawing}`, async () => {
         await sheIsLookingAt(drawing);
 
-        expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-          thePromiseOn[drawing] ?? 'a question with no promise on the canvas',
-        );
-        expect(screen.getByTestId(lockLineIconTestID(onboardingLockTestID))).toBeTruthy();
+        expect(locksDrawnIn(screen.root)).toBe(0);
       });
     }
 
-    it('leaves a question whose line is not that promise with no lock at all', async () => {
+    it('still draws the lines under a question that has them', async () => {
       await sheIsLookingAt('cycleLength');
 
-      expect(screen.queryByTestId(onboardingLockTestID)).toBeNull();
+      expect(locksDrawnIn(screen.root)).toBe(0);
       expect(screen.getByTestId(onboardingLinesTestID)).toBeTruthy();
     });
   });

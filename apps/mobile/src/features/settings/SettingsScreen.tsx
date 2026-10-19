@@ -7,12 +7,14 @@ import { TextLink } from '../../components/Button';
 import { RowGroup } from '../../components/RowGroup';
 import { Screen } from '../../components/Screen';
 import { SettingsRow } from '../../components/SettingsRow';
-import { promiseCopy } from '../onboarding/copy';
 import { settingsCopy } from './copy';
 
 export const settingsScreenTestID = 'settings-screen';
 export const settingsTitleTestID = 'settings-title';
 export const settingsBackTestID = 'settings-back';
+
+/** The link under the dark card that opens the page saying who can see her records. */
+export const settingsWhoCanSeeTestID = 'settings-who-can-see';
 
 /** The dark card over the rows, which says who can read her days. */
 export const settingsAssuranceTestID = 'settings-assurance';
@@ -60,8 +62,7 @@ const ASSURANCE_ICON = 26;
  * Privacy: what she already told Emi, the lock she relies on, and the two ways her data leaves.
  *
  * The promise stands at the top in the one colour that reverses, because the rows underneath only
- * make sense to somebody who already knows that nobody else can read any of it. The words are the
- * promise's own, said at the first run and repeated here rather than written again.
+ * make sense to somebody who already knows that nobody else can read any of it.
  *
  * Delete everything is one row among four rather than the only thing here, because the one action
  * that cannot be undone should not be the only thing she can reach from this screen.
@@ -70,11 +71,14 @@ export function SettingsScreen({
   onAnswers,
   onExport,
   onDelete,
+  onWhoCanSee,
   onBack,
 }: {
   readonly onAnswers: () => void;
   readonly onExport: () => void;
   readonly onDelete: () => void;
+  /** Opens the one page that says where her records are kept and who can read them. */
+  readonly onWhoCanSee: () => void;
   readonly onBack: () => void;
 }): ReactNode {
   return (
@@ -89,9 +93,17 @@ export function SettingsScreen({
             <Icon colour={colour.washAmber} name="shield" size={ASSURANCE_ICON} />
           </View>
           <View style={styles.assuranceWords}>
-            <Text style={styles.assuranceLead}>{promiseCopy.title}</Text>
-            <Text style={styles.assuranceLine}>{promiseCopy.lines.encrypted}</Text>
+            <Text style={styles.assuranceLead}>{settingsCopy.settings.assurance.lead}</Text>
+            <Text style={styles.assuranceLine}>{settingsCopy.settings.assurance.line}</Text>
           </View>
+        </View>
+
+        <View style={styles.whoCanSee}>
+          <TextLink
+            label={settingsCopy.whoCanSee.title}
+            onPress={onWhoCanSee}
+            testID={settingsWhoCanSeeTestID}
+          />
         </View>
 
         <RowGroup testID={settingsRowsTestID}>
@@ -144,7 +156,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     flexDirection: 'row',
     gap: space.spaceLg,
-    marginBottom: space.spaceLg,
+    marginBottom: space.spaceMd,
     padding: space.spaceLg,
   },
   assuranceLead: {
@@ -171,4 +183,5 @@ const styles = StyleSheet.create({
     marginBottom: space.spaceLg,
     ...textStyle('headline-lg'),
   },
+  whoCanSee: { alignItems: 'center', marginBottom: space.spaceLg },
 });
