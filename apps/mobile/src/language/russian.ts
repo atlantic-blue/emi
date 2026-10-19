@@ -201,6 +201,11 @@ export const russian: CatalogueIn<'ru'> = {
    */
   'forecast.fertileWindow.sentence':
     'Оценка по вашим последним {cycles} циклам. Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
+  'forecast.late': {
+    one: 'Месячные задерживаются на {count} день',
+    few: 'Месячные задерживаются на {count} дня',
+    many: 'Месячные задерживаются на {count} дней',
+  },
   'forecast.nextPeriod': 'Ваши следующие месячные',
   'forecast.range.sameMonth': 'С {from} по {to} {month}',
   'forecast.range.spansMonths': 'С {from} {fromMonth} по {to} {toMonth}',

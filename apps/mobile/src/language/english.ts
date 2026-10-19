@@ -192,6 +192,10 @@ export const english = {
    */
   'forecast.fertileWindow.sentence':
     'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.late': {
+    one: 'Your period is {count} day late',
+    other: 'Your period is {count} days late',
+  },
   'forecast.nextPeriod': 'Your next period',
   'forecast.range.sameMonth': 'Between the {from} and the {to} of {month}',
   'forecast.range.spansMonths': 'Between the {from} of {fromMonth} and the {to} of {toMonth}',

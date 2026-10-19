@@ -200,3 +200,8 @@ export function cyclesWantedSentence(learning: Learning): string {
 export function statedLengthSentence(cycleLengthDays: number): string {
   return words('forecast.statedLength', undefined, { days: cycleLengthDays });
 }
+
+/** The line Home shows once the window has passed, with the count `daysLate` gives. */
+export function lateSentence(daysLate: number): string {
+  return words('forecast.late', daysLate);
+}
