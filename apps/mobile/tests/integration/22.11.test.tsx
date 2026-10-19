@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, radius } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, contrastRatio, radius } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 import { AccessibilityInfo, StyleSheet, type ViewStyle } from 'react-native';
 
@@ -64,6 +64,12 @@ jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 /** The three states the drawings place the ring above the phase line on, built as the phase card. */
 const theStatesWithARing: readonly TodayDrawing[] = ['todayNext', 'todayLuteal', 'todayLogged'];
+
+/**
+ * The ratio the Web Content Accessibility Guidelines ask of a drawing that carries meaning, against
+ * the ground it sits on (success criterion 1.4.11).
+ */
+const theContrastADrawingNeeds = 3;
 
 /** Points. The disc of a round action, which the prototype draws wider than the tap floor. */
 const theDiscIsThisWide = 60;
@@ -152,7 +158,7 @@ describe('the Today screens match the redesign prototype', () => {
     }
   });
 
-  describe('the three round actions under that card', () => {
+  describe('the three round actions under that card, on a day of her period', () => {
     beforeEach(async () => {
       jest.setSystemTime(whenSheOpens('todayNext'));
       await sheIsLookingAtTheTodayScreen('todayNext');
@@ -170,9 +176,18 @@ describe('the Today screens match the redesign prototype', () => {
       );
     });
 
-    it('fills the period disc with the accent and draws it in the ink measured on the accent', () => {
+    it('fills the period disc with the accent on a period day and draws it in the ink measured on the accent', () => {
       expect(styleOf(roundActionDiscTestID('period')).backgroundColor).toBe(colour.accent);
       expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.onAccent);
+      expect(screen.getByTestId(roundActionTestID('period')).props.accessibilityState).toEqual(
+        expect.objectContaining({ selected: true }),
+      );
+    });
+
+    it('draws the drop on the filled disc at a contrast a drawing needs', () => {
+      expect(contrastRatio(colour.onAccent, colour.accent)).toBeGreaterThanOrEqual(
+        theContrastADrawingNeeds,
+      );
     });
 
     it('leaves the Sex disc white and draws the heart in the accent, as the board does', () => {
@@ -197,6 +212,34 @@ describe('the Today screens match the redesign prototype', () => {
         expect(Number(disc.borderRadius)).toBeGreaterThanOrEqual(theDiscIsThisWide / 2);
         expect(theDiscIsThisWide).toBeGreaterThan(MINIMUM_TAP_TARGET);
       }
+    });
+  });
+
+  describe('the Period action on a day outside the period', () => {
+    beforeEach(async () => {
+      jest.setSystemTime(whenSheOpens('todayLuteal'));
+      await sheIsLookingAtTheTodayScreen('todayLuteal');
+    });
+
+    it('leaves the period disc white and draws the drop in the accent, as the Sex disc is drawn', () => {
+      expect(styleOf(roundActionDiscTestID('period')).backgroundColor).toBe(colour.card);
+      expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.accent);
+      expect(drawingIn(roundActionDrawingTestID('period'))).not.toContain(colour.onAccent);
+      expect(styleOf(roundActionDiscTestID('period'))).toEqual(
+        styleOf(roundActionDiscTestID('sex')),
+      );
+    });
+
+    it('does not tell a reader the period is on', () => {
+      expect(screen.getByTestId(roundActionTestID('period')).props.accessibilityState).toEqual(
+        expect.objectContaining({ selected: false }),
+      );
+    });
+
+    it('draws the drop on the white disc at a contrast a drawing needs', () => {
+      expect(contrastRatio(colour.accent, colour.card)).toBeGreaterThanOrEqual(
+        theContrastADrawingNeeds,
+      );
     });
   });
 
