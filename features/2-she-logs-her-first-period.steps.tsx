@@ -7264,16 +7264,15 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the three round actions stand under that card, the period one filled and the Sex and Cycle phase ones white',
+      'the three round actions stand under that card, all three white on a day outside her period',
       () => {
         expect(whereTheScreenDrew(phaseCardTestID)).toBeLessThan(
           whereTheScreenDrew(roundActionTestID('sex')),
         );
-        expect(styleOfPart(roundActionDiscTestID('period'))['backgroundColor']).toBe(colour.accent);
-        expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.onAccent);
-        for (const white of ['sex', 'phase'] as const) {
+        for (const white of ['sex', 'period', 'phase'] as const) {
           expect(styleOfPart(roundActionDiscTestID(white))['backgroundColor']).toBe(colour.card);
         }
+        expect(drawingIn(roundActionDrawingTestID('period'))).toContain(colour.accent);
         expect(drawingIn(roundActionDrawingTestID('sex'))).toContain(colour.accent);
         expect(drawingIn(roundActionDrawingTestID('phase'))).toContain(colour.ovulationInk);
       },
@@ -7338,6 +7337,71 @@ defineFeature(feature, (test) => {
         expect(howManyPartsTheTodayScreensAreHeldTo()).toBeGreaterThan(50);
       },
     );
+  });
+
+  test('SCREEN-2, the Period button is on only on a day of her period', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    /** Success criterion 1.4.11 of the Web Content Accessibility Guidelines, for a drawing. */
+    const theContrastADrawingNeeds = 3;
+    const groundsTheDropWasDrawnOn: { ground: string; ink: string }[] = [];
+
+    const periodDisc = (): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(roundActionDiscTestID('period')).props.style) ??
+        {}) as Record<string, unknown>;
+    const sexDisc = (): Record<string, unknown> =>
+      (StyleSheet.flatten(screen.getByTestId(roundActionDiscTestID('sex')).props.style) ??
+        {}) as Record<string, unknown>;
+    const theDrop = (): string =>
+      String(screen.getByTestId(roundActionDrawingTestID('period')).props['xml']);
+    const isHeardAsOn = (): unknown =>
+      screen.getByTestId(roundActionTestID('period')).props.accessibilityState?.selected;
+
+    given('her phone holds the period she is in and the answers of her first run', () => {
+      jest.useFakeTimers();
+      jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    });
+
+    when('she opens Emi on a day of her period', async () => {
+      resetExpoSqlite();
+      jest.setSystemTime(whenSheOpens('todayNext'));
+      await sheIsLookingAtTheTodayScreen('todayNext');
+    });
+
+    then('the Period button is filled with the accent, and a reader hears that it is on', () => {
+      expect(periodDisc()['backgroundColor']).toBe(colour.accent);
+      expect(theDrop()).toContain(colour.onAccent);
+      expect(isHeardAsOn()).toBe(true);
+      groundsTheDropWasDrawnOn.push({ ground: colour.accent, ink: colour.onAccent });
+    });
+
+    when('she opens Emi again on a day of her luteal phase', async () => {
+      resetExpoSqlite();
+      jest.setSystemTime(whenSheOpens('todayLuteal'));
+      await sheIsLookingAtTheTodayScreen('todayLuteal');
+    });
+
+    then('the Period button is white with the drop in the accent, as the Sex button is', () => {
+      expect(periodDisc()['backgroundColor']).toBe(colour.card);
+      expect(periodDisc()).toEqual(sexDisc());
+      expect(theDrop()).toContain(colour.accent);
+      expect(theDrop()).not.toContain(colour.onAccent);
+      groundsTheDropWasDrawnOn.push({ ground: colour.card, ink: colour.accent });
+    });
+
+    and('a reader does not hear that the Period button is on', () => {
+      expect(isHeardAsOn()).toBe(false);
+    });
+
+    and('the drop is readable on the ground of each day', () => {
+      expect(groundsTheDropWasDrawnOn).toHaveLength(2);
+      for (const { ground, ink } of groundsTheDropWasDrawnOn) {
+        expect(contrastRatio(ink, ground)).toBeGreaterThanOrEqual(theContrastADrawingNeeds);
+      }
+    });
   });
 
   /**
