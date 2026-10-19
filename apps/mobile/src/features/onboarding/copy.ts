@@ -75,7 +75,7 @@ export const firstRunCopy = {
   },
   feeling: {
     title: words('onboarding.feeling.title'),
-    lines: [words('onboarding.feeling.line.talks'), words('onboarding.encryptedHere')],
+    lines: [words('onboarding.feeling.line.hard'), words('onboarding.encryptedHere')],
     action: words('onboarding.feeling.action'),
   },
   goals: {

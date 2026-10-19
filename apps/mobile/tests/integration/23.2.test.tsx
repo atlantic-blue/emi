@@ -166,7 +166,7 @@ const theGreeting = 'onboarding.welcome.title';
 const theWelcomeNamingEmi = [
   theKeyOfTheLineAboutEncryption,
   theKeyOfEmiEncryptsYourAnswers,
-  'onboarding.feeling.line.talks',
+  'onboarding.feeling.line.hard',
   'onboarding.focus.line.first',
   'onboarding.goals.title',
   'onboarding.name.line.greets',

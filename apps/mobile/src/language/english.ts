@@ -650,8 +650,8 @@ export const english = {
   'onboarding.feeling.choice.fine': 'I am fine with it',
   'onboarding.feeling.choice.hard': 'It is hard, most months',
   'onboarding.feeling.choice.understand': 'I want to understand it',
-  'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
-  'onboarding.feeling.title': 'How you feel about it',
+  'onboarding.feeling.line.hard': 'If it is hard, Emi puts pain first on your period days.',
+  'onboarding.feeling.title': 'How do you usually feel during your period?',
   'onboarding.firstForecast.action': 'Continue',
   'onboarding.firstForecast.needs': {
     one: 'Emi needs {count} complete cycle before it forecasts from your own cycles, so this is still learning.',

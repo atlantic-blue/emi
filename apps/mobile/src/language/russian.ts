@@ -679,8 +679,8 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.feeling.choice.fine': 'Меня это устраивает',
   'onboarding.feeling.choice.hard': 'Тяжело, почти каждый месяц',
   'onboarding.feeling.choice.understand': 'Я хочу в этом разобраться',
-  'onboarding.feeling.line.talks': 'Это меняет только то, как Emi с вами говорит.',
-  'onboarding.feeling.title': 'Как вы к этому относитесь',
+  'onboarding.feeling.line.hard': 'Если тяжело, в дни месячных Emi начнёт с боли.',
+  'onboarding.feeling.title': 'Как вы обычно себя чувствуете во время месячных?',
   'onboarding.firstForecast.action': 'Продолжить',
   'onboarding.firstForecast.needs': {
     one: 'Emi нужен {count} полный цикл, чтобы прогнозировать по вашим собственным циклам, поэтому Emi ещё учится.',
