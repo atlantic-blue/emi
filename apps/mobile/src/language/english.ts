@@ -1021,6 +1021,17 @@ export const english = {
   'settings.settings.lock': 'Lock',
   'settings.settings.lockLine': 'On, with your face or your passcode',
   'settings.settings.title': 'Privacy',
+  'settings.whoCanSee.example':
+    'If somebody asks Emi for your records, an advertiser or a court, Emi has nothing to give: your records are on your phone, not with us.',
+  'settings.whoCanSee.kept.lead': 'Where they are kept',
+  'settings.whoCanSee.kept.line':
+    'Kept encrypted on this phone. Emi has no account for you, and sends your records nowhere.',
+  'settings.whoCanSee.read.lead': 'Who can read them',
+  'settings.whoCanSee.read.line': 'Only you. Nobody at Emi can read them.',
+  'settings.whoCanSee.send.lead': 'When you send a file',
+  'settings.whoCanSee.send.line':
+    'A file you export leaves this phone only when you send it. Whoever you send it to, such as your doctor, can read it.',
+  'settings.whoCanSee.title': 'Who can see my records?',
   'sex.back': 'Back',
   'sex.chooseDay': 'Choose another day',
   'sex.day': '{weekday}, {date} {month}',

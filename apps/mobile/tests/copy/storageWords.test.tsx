@@ -13,7 +13,7 @@ jest.mock('expo-localization', () => ({
 }));
 
 /**
- * Onboarding, My data and the delete screen each say where her days are kept. They say it in one
+ * Onboarding, My data, the delete screen and the page of who can see her records each say where her days are kept. They say it in one
  * set of words, so she never reads two accounts of the same storage and wonders which is true.
  * The words are true in the code: every day goes through `vault.seal` before it is written, and
  * the key lives in this phone's keychain.
@@ -30,9 +30,9 @@ const thePhoneOf: Readonly<Record<Language, string>> = {
   ru: 'ru-RU',
 };
 
-type Screen = 'onboarding' | 'myData' | 'delete';
+type Screen = 'onboarding' | 'myData' | 'delete' | 'whoCanSee';
 
-const theScreens: readonly Screen[] = ['onboarding', 'myData', 'delete'];
+const theScreens: readonly Screen[] = ['onboarding', 'myData', 'delete', 'whoCanSee'];
 
 const doNothing = (): undefined => undefined;
 
@@ -58,10 +58,14 @@ function theScreenIn(language: Language, which: Screen): TheReactTheApplicationS
         create(SettingsScreen, {
           onAnswers: doNothing,
           onExport: doNothing,
+          onWhoCanSee: doNothing,
           onDelete: doNothing,
           onBack: doNothing,
         }),
       );
+    } else if (which === 'whoCanSee') {
+      const { WhoCanSee } = jest.requireActual('../../src/features/settings/WhoCanSee');
+      drawn = create(phone.OnAPhone, null, create(WhoCanSee, { onBack: doNothing }));
     } else {
       const { DeleteEverything } = jest.requireActual(
         '../../src/features/settings/DeleteEverything',

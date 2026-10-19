@@ -114,6 +114,7 @@ async function sheOpensPrivacyOnItsOwn(): Promise<void> {
         onBack={() => undefined}
         onDelete={() => undefined}
         onExport={() => undefined}
+        onWhoCanSee={() => undefined}
       />
     </OnAPhone>,
   );

@@ -1021,6 +1021,17 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.settings.lock': 'Bloqueo',
   'settings.settings.lockLine': 'Activado, con tu cara o tu código de acceso',
   'settings.settings.title': 'Privacidad',
+  'settings.whoCanSee.example':
+    'Si alguien pide tus registros a Emi, un anunciante o un tribunal, Emi no tiene nada que dar: tus registros están en tu teléfono, no con nosotros.',
+  'settings.whoCanSee.kept.lead': 'Dónde se guardan',
+  'settings.whoCanSee.kept.line':
+    'Se guardan en formato cifrado en este teléfono. Emi no tiene ninguna cuenta tuya y no envía tus registros a ningún sitio.',
+  'settings.whoCanSee.read.lead': 'Quién puede leerlos',
+  'settings.whoCanSee.read.line': 'Solo tú. Nadie en Emi puede leerlos.',
+  'settings.whoCanSee.send.lead': 'Cuando envías un archivo',
+  'settings.whoCanSee.send.line':
+    'Un archivo que exportas sale de este teléfono solo cuando lo envías. Quien lo reciba, como tu médico, puede leerlo.',
+  'settings.whoCanSee.title': '¿Quién puede ver mis registros?',
   'sex.back': 'Atrás',
   'sex.chooseDay': 'Elegir otro día',
   'sex.day': '{weekday}, {date} de {month}',

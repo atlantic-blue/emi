@@ -809,6 +809,13 @@ Feature: She opens Emi and logs her first period
     And she presses Download data first
     Then Export opens, and every day she logged is still on her phone
 
+  Scenario: SCREEN-2, she reads who can see her records from Privacy and comes back
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and presses Who can see my records?
+    Then she reads where her records are kept, who can read them and what happens when she sends a file
+    And she reads one example of why it matters
+    And she presses the way back and is on Privacy again
+
   Scenario: SCREEN-2, she opens the page of her phase from Today and records her diary there
     Given her phone holds four recorded period days, the last of them today
     When she opens Emi
