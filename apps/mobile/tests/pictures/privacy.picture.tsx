@@ -41,6 +41,7 @@ describe('the screen the dock opens, drawn for somebody to look at', () => {
           onBack={() => undefined}
           onDelete={() => undefined}
           onExport={() => undefined}
+          onWhoCanSee={() => undefined}
         />
       </OnAPhone>,
     );

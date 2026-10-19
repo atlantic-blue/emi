@@ -6,11 +6,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 /**
  * One round action under the ring: a disc carrying a drawing, and the name of the action under it.
  *
- * The three are told apart by their fill rather than by their words. Logging a period is the press
- * she makes most, so it takes the accent and the drawing takes the one ink the palette measured on
- * the accent. Sex and Cycle phase are paper, so they take the card, with the heart in the accent
- * and the phase drawing in the ink of the phase card, as the todayPhases board draws them. Reading
- * the row needs no colour vision: the middle one is filled and the others are not.
+ * A filled disc reads as switched on, so only the Period action is ever filled, and only on a day
+ * of the period phase, as the todayPeriodButton board draws it. On every other day all three are
+ * paper: they take the card, with the drop and the heart in the accent and the phase drawing in
+ * the ink of the phase card. Reading the state needs no colour vision: the disc is filled or not,
+ * and a reader hears it as selected.
  *
  * The name is a word contract SCREEN-2 holds to 14 points, so it takes the label role and never a
  * body role. A stranger beside her reads nothing at that size.
@@ -33,7 +33,7 @@ export function roundActionTestID(name: RoundActionName): string {
 }
 
 /**
- * The disc itself, which is filled on the period action and white on the other two.
+ * The disc itself, which is filled on the period action on a period day and white otherwise.
  *
  * It is named away from the stem above on purpose. A reader counting the actions matches on that
  * stem, so a part inside an action that carried it would be counted as an action of its own.
@@ -56,26 +56,37 @@ const theDrawingInTheDisc = 26;
 /** Points. The board gives each action this width, so a two word label stays on one line. */
 const theActionIsThisWide = 88;
 
+interface Paint {
+  readonly ground: string;
+  readonly ink: string;
+}
+
 /** The ground each disc is drawn on, and the one ink the palette measured on that ground. */
-const thePaintOf: Readonly<Record<RoundActionName, { ground: string; ink: string }>> = {
+const thePaintOf: Readonly<Record<RoundActionName, Paint>> = {
   sex: { ground: colour.card, ink: colour.accent },
-  period: { ground: colour.accent, ink: colour.onAccent },
+  period: { ground: colour.card, ink: colour.accent },
   phase: { ground: colour.card, ink: colour.ovulationInk },
 };
+
+/** An action that is on fills its disc with the accent, and the drawing takes the ink for it. */
+const thePaintWhenOn: Paint = { ground: colour.accent, ink: colour.onAccent };
 
 interface Props {
   readonly action: RoundActionName;
   readonly icon: IconName;
   readonly label: string;
   readonly onPress: () => void;
+  /** True while the thing the action names is happening today: the Period action on a period day. */
+  readonly isOn?: boolean;
 }
 
-export function RoundAction({ action, icon, label, onPress }: Props): ReactNode {
-  const paint = thePaintOf[action];
+export function RoundAction({ action, icon, label, onPress, isOn = false }: Props): ReactNode {
+  const paint = isOn ? thePaintWhenOn : thePaintOf[action];
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ selected: isOn }}
       onPress={onPress}
       style={styles.action}
       testID={roundActionTestID(action)}

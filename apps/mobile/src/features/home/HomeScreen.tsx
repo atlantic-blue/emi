@@ -243,6 +243,7 @@ export function HomeScreen({
   onOpenPatterns,
 }: Props): ReactNode {
   const marked = whatSheMarkedOn(loggedToday);
+  const isAPeriodDay = ring !== undefined && ringGeometry(ring).phase === 'period';
   const pressOf: Readonly<Record<RoundActionName, (() => void) | undefined>> = {
     sex: onSex,
     period: onPeriod,
@@ -301,6 +302,7 @@ export function HomeScreen({
               <RoundAction
                 action={round.action}
                 icon={round.icon}
+                isOn={round.action === 'period' && isAPeriodDay}
                 key={round.action}
                 label={homeCopy.roundAction[round.action]}
                 onPress={press}

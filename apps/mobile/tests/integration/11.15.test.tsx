@@ -30,6 +30,7 @@ import { wordKeys } from '../../src/language/words';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { OnAPhone } from '../fixtures/theSafeArea';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -130,14 +131,15 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
   });
 
   describe('the line that claimed nothing reads the year', () => {
-    it('is gone from the screen, which still says what Emi does with the answer', async () => {
+    it('is gone from the screen, and so is the padlock line, because the welcome links to the page', async () => {
       await sheReachesTheYearSheWasBorn();
 
       expect(screen.getByTestId('onboarding-birthYear')).toBeTruthy();
       expect(screen.queryByText(theLineThatWent)).toBeNull();
       expect(screen.queryByText(theReasonThatWent)).toBeNull();
-      expect(screen.getByText(theLineAboutEncryption)).toBeTruthy();
-      expect(firstRunCopy.birthYear.lines).toEqual([theLineAboutEncryption]);
+      expect(screen.queryByText(theLineAboutEncryption)).toBeNull();
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(firstRunCopy.birthYear.lines).toEqual([]);
     });
 
     it('is gone from all three languages, so no screen can draw it again', () => {
