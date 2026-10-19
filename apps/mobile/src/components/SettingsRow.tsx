@@ -16,7 +16,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
  * the last row too.
  *
  * A screen reader is given the three parts separately: what the row opens as its label, the
- * reading at its end as its value, and the quiet line as its hint. Reading the words in place
+ * reading under its name as its value, and the quiet line as its hint. Reading the words in place
  * would lose them, because the whole row is one element once it takes a press.
  */
 
@@ -29,7 +29,12 @@ interface Props {
   readonly label: string;
   /** What the row opens, under its name. Left out where there is nothing true to say yet. */
   readonly line?: string;
-  /** What it is set to now, read at the end of the row. Left out where the row holds no reading. */
+  /**
+   * What it is set to now, read under the name. Left out where the row holds no reading.
+   *
+   * It sits under the name and never beside it: a long answer beside a long name leaves the name a
+   * column a few points wide, and the name then breaks one letter on each line.
+   */
   readonly value?: string;
   /** Left out by a row that opens nothing, and then no mark pointing on is drawn. */
   readonly onPress?: () => void;
@@ -56,6 +61,16 @@ export function rowTileTestID(testID: string): string {
 /** The drawing in that tile, named so a test can read the colour it is stroked in. */
 export function rowDrawingTestID(testID: string): string {
   return `${testID}-drawing`;
+}
+
+/** The column that holds the name and what sits under it, named so a test can read its layout. */
+export function rowWordsTestID(testID: string): string {
+  return `${testID}-words`;
+}
+
+/** The reading of the row, named so a test can find which column it sits in. */
+export function rowValueTestID(testID: string): string {
+  return `${testID}-value`;
 }
 
 /** The mark that points the way on, named so a test can read the colour it is stroked in. */
@@ -90,11 +105,18 @@ function RowBody({
           />
         </View>
       )}
-      <View style={styles.words}>
+      <View style={styles.words} testID={testID === undefined ? undefined : rowWordsTestID(testID)}>
         <Text style={styles.label}>{label}</Text>
+        {value === undefined ? null : (
+          <Text
+            style={styles.value}
+            testID={testID === undefined ? undefined : rowValueTestID(testID)}
+          >
+            {value}
+          </Text>
+        )}
         {line === undefined ? null : <Text style={styles.line}>{line}</Text>}
       </View>
-      {value === undefined ? null : <Text style={styles.value}>{value}</Text>}
       {opens ? (
         <Icon
           colour={colour.quietIcon}
@@ -171,8 +193,8 @@ const styles = StyleSheet.create({
     color: colour.secondaryText,
     ...textStyle('body-sm'),
   },
-  // The words take what is left after the tile, the reading and the mark, so a long name wraps
-  // rather than pushing the mark off the end of the row.
+  // The words take what is left after the tile and the mark, so a long name wraps rather than
+  // pushing the mark off the end of the row.
   words: {
     flexShrink: 1,
     flexGrow: 1,

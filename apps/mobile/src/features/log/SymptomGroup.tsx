@@ -3,6 +3,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/token
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { words } from '../../language';
+import { symptomName } from './symptomName';
 
 /**
  * The heading a woman reads. The catalogue holds the slug, which never changes, and this is the
@@ -56,7 +57,7 @@ export function SymptomChip({ symptom, isPicked, onToggle }: SymptomChipProps) {
       testID={symptomChipTestID(symptom.slug)}
     >
       <Text numberOfLines={2} style={[styles.chipLabel, isPicked && styles.chipLabelPicked]}>
-        {symptom.name}
+        {symptomName(symptom.slug)}
       </Text>
     </Pressable>
   );

@@ -879,15 +879,13 @@ The eight groups the log sheet divides the catalogue into. `symptomGroups` holds
 ```
 interface Symptom {
   readonly slug: string;
-  readonly name: string;
   readonly group: SymptomGroup;
   /** The day it stopped being offered, as `YYYY-MM-DD`. Absent while it is still offered. */
   readonly retiredOn?: string;
 }
 ```
 
-One entry. The slug is what a record points at and it never changes. The name is display text
-and may be rewritten whenever the wording is wrong.
+One entry. The slug is what a record points at and it never changes.
 
 ### `symptomGroups`
 

@@ -23,6 +23,7 @@ import {
   thePhaseTheRingSaysOn,
   theSheetSheReads,
 } from '../fixtures/theMonthSheOpens';
+import { symptomName } from '../../src/features/log/symptomName';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -46,7 +47,7 @@ function theSymptomSheMarked(): { readonly slug: string; readonly name: string }
     throw new Error('cramps is not a symptom Emi offers');
   }
 
-  return found;
+  return { slug: found.slug, name: symptomName(found.slug) };
 }
 
 /** A month she recorded nothing in at all, which is well before her first period. */

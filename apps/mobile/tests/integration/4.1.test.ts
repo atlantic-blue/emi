@@ -13,6 +13,7 @@ import { migrate } from '../../src/data/schema';
 import { aDayRecord } from '../fixtures/dayRecord';
 import { herVault } from '../fixtures/herVault';
 import { openTestDatabase } from '../data/nodeDatabase';
+import { symptomName } from '../../src/features/log/symptomName';
 
 const marchDay = '2026-03-14';
 const wroteAt = new Date('2026-03-14T21:05:00.000Z');
@@ -48,8 +49,8 @@ function namesShownFor(
   if (!row) {
     throw new Error(`${day} was written and could not be read back`);
   }
-  return (herVault().open(row.payload).symptoms ?? []).map(
-    (slug) => findSymptom(slug, catalogue)?.name ?? `unknown symptom ${slug}`,
+  return (herVault().open(row.payload).symptoms ?? []).map((slug) =>
+    findSymptom(slug, catalogue) === undefined ? `unknown symptom ${slug}` : symptomName(slug),
   );
 }
 

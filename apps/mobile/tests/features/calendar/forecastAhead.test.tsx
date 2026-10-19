@@ -1,5 +1,5 @@
 import type { DayRecord } from '@emi/crypto';
-import { FORECAST_WINDOW_CYCLES, addDays, findSymptom } from '@emi/cycle';
+import { FORECAST_WINDOW_CYCLES, addDays } from '@emi/cycle';
 import { colour } from '@emi/tokens';
 import { render, screen } from '@testing-library/react-native';
 import { StyleSheet, type ViewStyle } from 'react-native';
@@ -27,6 +27,7 @@ import { english } from '../../../src/language/english';
 import { daysLogged } from '../../fixtures/cycleCache';
 import { herVault } from '../../fixtures/herVault';
 import { OnAPhone } from '../../fixtures/theSafeArea';
+import { symptomName } from '../../../src/features/log/symptomName';
 
 /**
  * Issue 270: the calendar draws the forecast periods in the months ahead, starts the cycle day
@@ -188,7 +189,6 @@ describe('the fertile window in a month ahead', () => {
 });
 
 describe('the card at the foot, for the three kinds of day', () => {
-  const cramps = findSymptom('cramps');
   const from = herReading(herThreePeriods, [
     { day: '2026-10-01', symptoms: ['cramps'], recordedAt: '2026-10-01T09:00:00.000Z' },
   ]);
@@ -227,7 +227,7 @@ describe('the card at the foot, for the three kinds of day', () => {
   it('says her cycle day, the phase and what she logged, on a day she lived', () => {
     expect(said('2026-10-01')).toEqual({
       lead: 'Thursday, 1 October',
-      line: `Day 13, follicular. ${String(cramps?.name)}`,
+      line: `Day 13, follicular. ${symptomName('cramps')}`,
     });
   });
 

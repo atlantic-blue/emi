@@ -37,6 +37,7 @@ import {
   sheLeavesEmiWithNoInactiveState,
   sheOpensTheSwitcher,
 } from '../fixtures/thePhoneMoves';
+import { symptomName } from '../../src/features/log/symptomName';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -177,7 +178,7 @@ describe('the lock shows when she comes back to the application', () => {
 
     it('carries no day, no date and no symptom on the cover', async () => {
       expect(whatSheCanRead()).toContain(aCycleSheReads());
-      expect(whatSheCanRead()).toContain(theSymptom.name);
+      expect(whatSheCanRead()).toContain(symptomName(theSymptom.slug));
 
       await sheOpensTheSwitcher();
 
@@ -208,7 +209,7 @@ describe('the lock shows when she comes back to the application', () => {
       expect(screen.getByTestId(historyScreenTestID)).toBeVisible();
       expect(screen.queryByTestId(lockScreenTestID)).toBeNull();
       expect(screen.queryByTestId(coverTestID)).toBeNull();
-      expect(whatSheCanRead()).toContain(theSymptom.name);
+      expect(whatSheCanRead()).toContain(symptomName(theSymptom.slug));
     });
 
     it('asks the phone with a prompt Emi wrote, and leaves the passcode fallback on', async () => {
@@ -234,7 +235,7 @@ describe('the lock shows when she comes back to the application', () => {
 
       expect(screen.getByTestId(lockScreenTestID)).toBeVisible();
       expect(theScreenEvenWhenHidden(historyScreenTestID)).not.toBeVisible();
-      expect(whatSheCanRead()).not.toContain(theSymptom.name);
+      expect(whatSheCanRead()).not.toContain(symptomName(theSymptom.slug));
     });
 
     it('says it is still locked, and asks the phone again when she presses Unlock', async () => {

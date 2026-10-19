@@ -49,8 +49,8 @@ describe('reading a record', () => {
     expect(unknownMoodSlugs(anOldDay.moods)).toEqual([]);
   });
 
-  it('names the mood a slug points at', () => {
-    expect(findMood('mood-swings')?.name).toBe('Mood swings');
+  it('resolves the mood a slug points at', () => {
+    expect(findMood('mood-swings')).toEqual({ slug: 'mood-swings', group: 'mood' });
   });
 
   it('refuses a slug the catalogue never held, and names it', () => {
@@ -68,7 +68,7 @@ describe('a retired mood', () => {
 
   it('still reads on an old record', () => {
     expect(unknownMoodSlugs(anOldDay.moods, afterCalmRetires)).toEqual([]);
-    expect(findMood('calm', afterCalmRetires)?.name).toBe('Calm');
+    expect(findMood('calm', afterCalmRetires)?.slug).toBe('calm');
   });
 
   it('is never offered again', () => {

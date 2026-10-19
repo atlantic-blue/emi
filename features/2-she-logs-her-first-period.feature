@@ -366,6 +366,15 @@ Feature: She opens Emi and logs her first period
     And that is the drawing of the screen she comes back to, down to the ring
     And pressing what she logged opens the log on the symptom groups again
 
+  Scenario: SCREEN-2, she reads Emi in Russian, records fatigue, and the screen she started on names it in Russian
+    Given her phone reads Russian, and holds the period days behind today and nothing at all for today
+    When she opens Emi
+    And she presses Cycle phase, and then All symptoms in its diary
+    And she marks fatigue
+    And she presses Save, under the count of what she picked
+    Then she is back on the screen she started on
+    And the line under the day of her cycle names усталость, and no English name
+
   Scenario: SCREEN-4, she opens a month and reads the cycle day of every day in it
     Given her phone holds three recorded cycles
     When she opens the month
