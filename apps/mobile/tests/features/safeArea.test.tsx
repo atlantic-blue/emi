@@ -163,7 +163,13 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
   [
     settingsScreenTestID,
     (): ReactElement => (
-      <SettingsScreen onAnswers={nothing} onBack={nothing} onDelete={nothing} onExport={nothing} />
+      <SettingsScreen
+        onAnswers={nothing}
+        onBack={nothing}
+        onDelete={nothing}
+        onExport={nothing}
+        onWhoCanSee={nothing}
+      />
     ),
   ],
   [
@@ -335,6 +341,7 @@ describe('every screen respects the safe area', () => {
             onBack={nothing}
             onDelete={nothing}
             onExport={nothing}
+            onWhoCanSee={nothing}
           />,
         ),
       ).rejects.toThrow(/SafeAreaProvider/);

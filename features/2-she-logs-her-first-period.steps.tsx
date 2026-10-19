@@ -384,7 +384,14 @@ import {
   settingsRowsTestID,
   settingsScreenTestID,
   settingsTitleTestID,
+  settingsWhoCanSeeTestID,
 } from '../apps/mobile/src/features/settings/SettingsScreen';
+import {
+  whoCanSeeBackTestID,
+  whoCanSeeExampleTestID,
+  whoCanSeePartTestID,
+  whoCanSeeScreenTestID,
+} from '../apps/mobile/src/features/settings/WhoCanSee';
 import {
   deleteActionTestID,
   deleteDownloadTestID,
@@ -8499,6 +8506,48 @@ defineFeature(feature, (test) => {
     then('Export opens, and every day she logged is still on her phone', () => {
       expect(screen.getByTestId(exportScreenTestID)).toBeTruthy();
       expect(listDayLogs(herDatabase())).toHaveLength(daysBefore);
+    });
+  });
+
+  test('SCREEN-2, she reads who can see her records from Privacy and comes back', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    given('she has six cycles of her own on this phone', async () => {
+      await herPhoneHolds(whenSheOpensIt, herSixPeriodsAndAWrongMonday());
+    });
+
+    when('she opens Privacy and presses Who can see my records?', async () => {
+      await sheOpens('/settings');
+
+      expect(whatItSays(settingsWhoCanSeeTestID)).toBe(settingsCopy.whoCanSee.title);
+
+      await shePresses(settingsWhoCanSeeTestID);
+
+      expect(screen.getByTestId(whoCanSeeScreenTestID)).toBeTruthy();
+    });
+
+    then(
+      'she reads where her records are kept, who can read them and what happens when she sends a file',
+      () => {
+        for (const [at, part] of settingsCopy.whoCanSee.parts.entries()) {
+          expect(whatItSays(whoCanSeePartTestID(at))).toContain(part.lead);
+          expect(whatItSays(whoCanSeePartTestID(at))).toContain(part.line);
+        }
+      },
+    );
+
+    and('she reads one example of why it matters', () => {
+      expect(whatItSays(whoCanSeeExampleTestID)).toBe(settingsCopy.whoCanSee.example);
+    });
+
+    and('she presses the way back and is on Privacy again', async () => {
+      await shePresses(whoCanSeeBackTestID);
+
+      expect(screen.queryByTestId(whoCanSeeScreenTestID)).toBeNull();
+      expect(screen.getByTestId(settingsScreenTestID)).toBeTruthy();
     });
   });
 
