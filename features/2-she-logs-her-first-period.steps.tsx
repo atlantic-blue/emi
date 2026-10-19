@@ -738,6 +738,7 @@ import {
   wordKeys,
   words,
 } from '../apps/mobile/src/language';
+import { symptomName } from '../apps/mobile/src/features/log/symptomName';
 import {
   herPhoneHoldsNothingForToday,
   theDrawingAfterSheLogged,
@@ -882,7 +883,7 @@ function theSymptomCalled(slug: string): { readonly slug: string; readonly name:
     throw new Error(`${slug} is not a symptom Emi offers`);
   }
 
-  return found;
+  return { slug: found.slug, name: symptomName(found.slug) };
 }
 
 const septemberTheFourteenth = '2026-09-14';

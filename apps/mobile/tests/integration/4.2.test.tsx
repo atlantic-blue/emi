@@ -12,6 +12,7 @@ import { openTestDatabase } from '../data/nodeDatabase';
 import { herVault } from '../fixtures/herVault';
 
 import { savesInto as savesEntryInto } from '../fixtures/sheetSave';
+import { symptomName } from '../../src/features/log/symptomName';
 
 const day = '2026-03-14';
 const pressedSaveAt = new Date('2026-03-14T21:05:00.000Z');
@@ -354,7 +355,7 @@ describe('a symptom is found by search and saved in one action', () => {
     it('lets the longest name in the catalogue shrink inside its row', async () => {
       const database = migrated();
       const longest = [...loggableSymptoms()].sort(
-        (one, other) => other.name.length - one.name.length,
+        (one, other) => symptomName(other.slug).length - symptomName(one.slug).length,
       )[0];
       if (!longest) {
         throw new Error('the catalogue is empty');
@@ -363,7 +364,7 @@ describe('a symptom is found by search and saved in one action', () => {
       const chip = screen.getByTestId(`symptom-chip-${longest.slug}`);
 
       expect(styleOf(chip).maxWidth).toBe('100%');
-      expect(within(chip).getByText(longest.name).props.numberOfLines).toBe(2);
+      expect(within(chip).getByText(symptomName(longest.slug)).props.numberOfLines).toBe(2);
     });
 
     it('scrolls, so the eighth group is reachable on a screen that shows three', async () => {

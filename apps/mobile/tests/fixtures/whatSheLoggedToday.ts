@@ -7,6 +7,8 @@ import {
   loggedTodayLineTestID,
   loggedTodayTestID,
 } from '../../src/features/home/LoggedToday';
+import { symptomName, symptomNameKeys } from '../../src/features/log/symptomName';
+import { english } from '../../src/language';
 
 import { herPhoneHoldsTheseAnswers } from './herPhone';
 import { textIn } from './renderedText';
@@ -114,9 +116,21 @@ export function theLineTheDrawingDrafts(): string {
   return String(line[1]);
 }
 
+/** The English name of a symptom, because the drawing is drafted in English only. */
+function theEnglishNameOf(symptom: Symptom): string {
+  const key = symptomNameKeys.get(symptom.slug);
+
+  if (key === undefined) {
+    throw new Error(`the language files hold no name for "${symptom.slug}"`);
+  }
+
+  return String(english[key]);
+}
+
 interface Found {
   readonly symptom: Symptom;
   readonly at: number;
+  readonly length: number;
 }
 
 /**
@@ -130,10 +144,11 @@ export function theSymptomsNamedIn(line: string): string[] {
   const found: Found[] = [];
 
   for (const symptom of symptoms) {
-    const at = said.indexOf(symptom.name.toLowerCase());
+    const name = theEnglishNameOf(symptom).toLowerCase();
+    const at = said.indexOf(name);
 
     if (at >= 0) {
-      found.push({ at, symptom });
+      found.push({ at, length: name.length, symptom });
     }
   }
 
@@ -142,9 +157,7 @@ export function theSymptomsNamedIn(line: string): string[] {
       (one) =>
         !found.some(
           (other) =>
-            other !== one &&
-            other.at <= one.at &&
-            other.at + other.symptom.name.length >= one.at + one.symptom.name.length,
+            other !== one && other.at <= one.at && other.at + other.length >= one.at + one.length,
         ),
     )
     .sort((one, other) => one.at - other.at)
@@ -176,7 +189,7 @@ export function theNameOf(slug: string): string {
     throw new Error(`the catalogue holds no symptom called "${slug}"`);
   }
 
-  return symptom.name;
+  return symptomName(symptom.slug);
 }
 
 /** The days the drawing's strip fills, which are the days she bled before today. */

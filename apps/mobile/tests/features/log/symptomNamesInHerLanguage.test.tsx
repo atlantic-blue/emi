@@ -1,14 +1,17 @@
 import { symptoms } from '@emi/cycle';
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { readableHtml } from '../../../src/features/export/readableDocument';
+import { LogSymptoms } from '../../../src/features/log/LogSymptoms';
 import { MoodPicker } from '../../../src/features/log/MoodPicker';
 import { SymptomChip } from '../../../src/features/log/SymptomGroup';
+import { symptomSearchTestID } from '../../../src/features/log/SymptomSearchField';
 import { whatSheMarkedOn } from '../../../src/features/log/copy';
 import { searchSymptoms } from '../../../src/features/log/search';
 import { symptomName, symptomNameKeys } from '../../../src/features/log/symptomName';
 import { todayChoices, todayLabels } from '../../../src/features/onboarding/copy';
 import { type WordKey, catalogueOf, english, languages } from '../../../src/language';
+import { OnAPhone } from '../../fixtures/theSafeArea';
 
 jest.mock('expo-localization', () => ({ getLocales: jest.fn(() => [{ languageTag: 'ru-RU' }]) }));
 
@@ -118,5 +121,32 @@ describe('the name of a symptom', () => {
 
   it('should show the slug for a symptom the language files do not name', () => {
     expect(symptomName('a-symptom-from-a-later-version')).toBe('a-symptom-from-a-later-version');
+  });
+});
+
+describe('a search in Cyrillic on the log sheet', () => {
+  it('should find each symptom whose Russian name holds her letters, and show no English name', async () => {
+    await render(
+      <OnAPhone>
+        <LogSymptoms
+          asked={{ groups: [], opensOn: 'search' }}
+          focus={[]}
+          held={[]}
+          leave="close"
+          onLeave={() => undefined}
+          onSave={() => undefined}
+          title="Сегодня"
+        />
+      </OnAPhone>,
+    );
+
+    await fireEvent.changeText(screen.getByTestId(symptomSearchTestID), 'голов');
+
+    expect(screen.getByText('Головная боль')).toBeTruthy();
+    expect(screen.getByText('Головокружение')).toBeTruthy();
+    expect(screen.getByText('Туман в голове')).toBeTruthy();
+    expect(screen.queryByText('Headache')).toBeNull();
+    expect(screen.queryByText('Dizzy')).toBeNull();
+    expect(screen.queryByText('Brain fog')).toBeNull();
   });
 });

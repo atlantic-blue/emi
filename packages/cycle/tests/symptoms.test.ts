@@ -125,12 +125,18 @@ describe('the symptom catalogue', () => {
     expect(misspelled).toEqual([]);
   });
 
-  it('gives every symptom a name to show and a group to show it under', () => {
-    const incomplete = symptoms.filter(
-      (symptom) => symptom.name.trim() === '' || !symptomGroups.includes(symptom.group),
-    );
+  it('gives every symptom a group to show it under', () => {
+    const incomplete = symptoms.filter((symptom) => !symptomGroups.includes(symptom.group));
 
     expect(incomplete).toEqual([]);
+  });
+
+  it('holds no name, so a screen reads the name in her language and never an English one', () => {
+    const withMoreThanTheId = symptoms.filter((symptom) =>
+      Object.keys(symptom).some((field) => !['slug', 'group', 'retiredOn'].includes(field)),
+    );
+
+    expect(withMoreThanTheId).toEqual([]);
   });
 
   it('fills all eight groups, so no group renders empty', () => {
@@ -156,8 +162,8 @@ describe('reading a record', () => {
     expect(unknownSymptomSlugs(anOldRecord.symptoms)).toEqual([]);
   });
 
-  it('names the symptom a slug points at', () => {
-    expect(findSymptom('lower-back-pain')?.name).toBe('Lower back pain');
+  it('resolves the symptom a slug points at', () => {
+    expect(findSymptom('lower-back-pain')).toEqual({ slug: 'lower-back-pain', group: 'pain' });
   });
 
   it('refuses a slug the catalogue never held, and names it', () => {
@@ -177,7 +183,7 @@ describe('a retired symptom', () => {
 
   it('still reads on an old record', () => {
     expect(unknownSymptomSlugs(anOldRecord.symptoms, afterNappingRetires)).toEqual([]);
-    expect(findSymptom('napping', afterNappingRetires)?.name).toBe('Napping');
+    expect(findSymptom('napping', afterNappingRetires)?.slug).toBe('napping');
   });
 
   it('is never offered again', () => {

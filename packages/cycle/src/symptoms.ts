@@ -1,6 +1,7 @@
 /**
  * The slug is the only part of a symptom that is written into a record, so it is the only part
- * that can never change. A name is display text and may be rewritten at any time. A symptom that
+ * that can never change. The catalogue holds no name: the application reads the name from its
+ * language files, so no screen can show one language to a woman who reads another. A symptom that
  * is no longer offered carries `retiredOn` and stays in the catalogue, because six cycles of her
  * history point at it and a record that names a slug nothing resolves is a record she cannot read.
  */
@@ -9,13 +10,9 @@
 export type SymptomGroup =
   'mood' | 'energy' | 'pain' | 'digestion' | 'skin' | 'sleep' | 'head' | 'libido';
 
-/**
- * One entry. The slug is what a record points at and it never changes. The name is display text
- * and may be rewritten whenever the wording is wrong.
- */
+/** One entry. The slug is what a record points at and it never changes. */
 export interface Symptom {
   readonly slug: string;
-  readonly name: string;
   readonly group: SymptomGroup;
   /** The day it stopped being offered, as `YYYY-MM-DD`. Absent while it is still offered. */
   readonly retiredOn?: string;
@@ -38,85 +35,85 @@ export const symptomGroups: readonly SymptomGroup[] = [
  * that goes out of date on its own.
  */
 export const symptoms: readonly Symptom[] = [
-  { slug: 'irritable', name: 'Irritable', group: 'mood' },
-  { slug: 'anxious', name: 'Anxious', group: 'mood' },
-  { slug: 'low-mood', name: 'Low mood', group: 'mood' },
-  { slug: 'tearful', name: 'Tearful', group: 'mood' },
-  { slug: 'angry', name: 'Angry', group: 'mood' },
-  { slug: 'calm', name: 'Calm', group: 'mood' },
-  { slug: 'content', name: 'Content', group: 'mood' },
-  { slug: 'mood-swings', name: 'Mood swings', group: 'mood' },
-  { slug: 'overwhelmed', name: 'Overwhelmed', group: 'mood' },
-  { slug: 'sensitive', name: 'Sensitive', group: 'mood' },
-  { slug: 'happy', name: 'Happy', group: 'mood' },
-  { slug: 'sad', name: 'Sad', group: 'mood' },
+  { slug: 'irritable', group: 'mood' },
+  { slug: 'anxious', group: 'mood' },
+  { slug: 'low-mood', group: 'mood' },
+  { slug: 'tearful', group: 'mood' },
+  { slug: 'angry', group: 'mood' },
+  { slug: 'calm', group: 'mood' },
+  { slug: 'content', group: 'mood' },
+  { slug: 'mood-swings', group: 'mood' },
+  { slug: 'overwhelmed', group: 'mood' },
+  { slug: 'sensitive', group: 'mood' },
+  { slug: 'happy', group: 'mood' },
+  { slug: 'sad', group: 'mood' },
 
-  { slug: 'fatigue', name: 'Fatigue', group: 'energy' },
-  { slug: 'exhausted', name: 'Exhausted', group: 'energy' },
-  { slug: 'sluggish', name: 'Sluggish', group: 'energy' },
-  { slug: 'restless', name: 'Restless', group: 'energy' },
-  { slug: 'energetic', name: 'Energetic', group: 'energy' },
-  { slug: 'dizzy', name: 'Dizzy', group: 'energy' },
-  { slug: 'weak', name: 'Weak', group: 'energy' },
-  { slug: 'shaky', name: 'Shaky', group: 'energy' },
+  { slug: 'fatigue', group: 'energy' },
+  { slug: 'exhausted', group: 'energy' },
+  { slug: 'sluggish', group: 'energy' },
+  { slug: 'restless', group: 'energy' },
+  { slug: 'energetic', group: 'energy' },
+  { slug: 'dizzy', group: 'energy' },
+  { slug: 'weak', group: 'energy' },
+  { slug: 'shaky', group: 'energy' },
 
-  { slug: 'cramps', name: 'Cramps', group: 'pain' },
-  { slug: 'lower-back-pain', name: 'Lower back pain', group: 'pain' },
-  { slug: 'breast-tenderness', name: 'Breast tenderness', group: 'pain' },
-  { slug: 'breast-swelling', name: 'Breast swelling', group: 'pain' },
-  { slug: 'pelvic-pain', name: 'Pelvic pain', group: 'pain' },
-  { slug: 'ovulation-pain', name: 'Ovulation pain', group: 'pain' },
-  { slug: 'joint-pain', name: 'Joint pain', group: 'pain' },
-  { slug: 'muscle-ache', name: 'Muscle ache', group: 'pain' },
-  { slug: 'leg-ache', name: 'Leg ache', group: 'pain' },
-  { slug: 'shoulder-tension', name: 'Shoulder tension', group: 'pain' },
-  { slug: 'vulval-pain', name: 'Vulval pain', group: 'pain' },
+  { slug: 'cramps', group: 'pain' },
+  { slug: 'lower-back-pain', group: 'pain' },
+  { slug: 'breast-tenderness', group: 'pain' },
+  { slug: 'breast-swelling', group: 'pain' },
+  { slug: 'pelvic-pain', group: 'pain' },
+  { slug: 'ovulation-pain', group: 'pain' },
+  { slug: 'joint-pain', group: 'pain' },
+  { slug: 'muscle-ache', group: 'pain' },
+  { slug: 'leg-ache', group: 'pain' },
+  { slug: 'shoulder-tension', group: 'pain' },
+  { slug: 'vulval-pain', group: 'pain' },
 
-  { slug: 'bloating', name: 'Bloating', group: 'digestion' },
-  { slug: 'nausea', name: 'Nausea', group: 'digestion' },
-  { slug: 'vomiting', name: 'Vomiting', group: 'digestion' },
-  { slug: 'constipation', name: 'Constipation', group: 'digestion' },
-  { slug: 'diarrhoea', name: 'Diarrhoea', group: 'digestion' },
-  { slug: 'gas', name: 'Gas', group: 'digestion' },
-  { slug: 'stomach-ache', name: 'Stomach ache', group: 'digestion' },
-  { slug: 'heartburn', name: 'Heartburn', group: 'digestion' },
-  { slug: 'appetite-increase', name: 'Increased appetite', group: 'digestion' },
-  { slug: 'appetite-loss', name: 'Loss of appetite', group: 'digestion' },
-  { slug: 'food-craving', name: 'Food craving', group: 'digestion' },
+  { slug: 'bloating', group: 'digestion' },
+  { slug: 'nausea', group: 'digestion' },
+  { slug: 'vomiting', group: 'digestion' },
+  { slug: 'constipation', group: 'digestion' },
+  { slug: 'diarrhoea', group: 'digestion' },
+  { slug: 'gas', group: 'digestion' },
+  { slug: 'stomach-ache', group: 'digestion' },
+  { slug: 'heartburn', group: 'digestion' },
+  { slug: 'appetite-increase', group: 'digestion' },
+  { slug: 'appetite-loss', group: 'digestion' },
+  { slug: 'food-craving', group: 'digestion' },
 
-  { slug: 'acne', name: 'Acne', group: 'skin' },
-  { slug: 'oily-skin', name: 'Oily skin', group: 'skin' },
-  { slug: 'dry-skin', name: 'Dry skin', group: 'skin' },
-  { slug: 'itchy-skin', name: 'Itchy skin', group: 'skin' },
-  { slug: 'sensitive-skin', name: 'Sensitive skin', group: 'skin' },
-  { slug: 'rash', name: 'Rash', group: 'skin' },
-  { slug: 'hot-flush', name: 'Hot flush', group: 'skin' },
-  { slug: 'hair-loss', name: 'Hair loss', group: 'skin' },
-  { slug: 'greasy-hair', name: 'Greasy hair', group: 'skin' },
-  { slug: 'puffy-face', name: 'Puffy face', group: 'skin' },
+  { slug: 'acne', group: 'skin' },
+  { slug: 'oily-skin', group: 'skin' },
+  { slug: 'dry-skin', group: 'skin' },
+  { slug: 'itchy-skin', group: 'skin' },
+  { slug: 'sensitive-skin', group: 'skin' },
+  { slug: 'rash', group: 'skin' },
+  { slug: 'hot-flush', group: 'skin' },
+  { slug: 'hair-loss', group: 'skin' },
+  { slug: 'greasy-hair', group: 'skin' },
+  { slug: 'puffy-face', group: 'skin' },
 
-  { slug: 'insomnia', name: 'Insomnia', group: 'sleep' },
-  { slug: 'restless-sleep', name: 'Restless sleep', group: 'sleep' },
-  { slug: 'vivid-dreams', name: 'Vivid dreams', group: 'sleep' },
-  { slug: 'night-sweats', name: 'Night sweats', group: 'sleep' },
-  { slug: 'early-waking', name: 'Early waking', group: 'sleep' },
-  { slug: 'oversleeping', name: 'Oversleeping', group: 'sleep' },
-  { slug: 'napping', name: 'Napping', group: 'sleep' },
-  { slug: 'hard-to-wake', name: 'Hard to wake', group: 'sleep' },
+  { slug: 'insomnia', group: 'sleep' },
+  { slug: 'restless-sleep', group: 'sleep' },
+  { slug: 'vivid-dreams', group: 'sleep' },
+  { slug: 'night-sweats', group: 'sleep' },
+  { slug: 'early-waking', group: 'sleep' },
+  { slug: 'oversleeping', group: 'sleep' },
+  { slug: 'napping', group: 'sleep' },
+  { slug: 'hard-to-wake', group: 'sleep' },
 
-  { slug: 'headache', name: 'Headache', group: 'head' },
-  { slug: 'migraine', name: 'Migraine', group: 'head' },
-  { slug: 'brain-fog', name: 'Brain fog', group: 'head' },
-  { slug: 'forgetful', name: 'Forgetful', group: 'head' },
-  { slug: 'poor-concentration', name: 'Poor concentration', group: 'head' },
-  { slug: 'light-sensitivity', name: 'Light sensitivity', group: 'head' },
-  { slug: 'sound-sensitivity', name: 'Sound sensitivity', group: 'head' },
-  { slug: 'sinus-pressure', name: 'Sinus pressure', group: 'head' },
+  { slug: 'headache', group: 'head' },
+  { slug: 'migraine', group: 'head' },
+  { slug: 'brain-fog', group: 'head' },
+  { slug: 'forgetful', group: 'head' },
+  { slug: 'poor-concentration', group: 'head' },
+  { slug: 'light-sensitivity', group: 'head' },
+  { slug: 'sound-sensitivity', group: 'head' },
+  { slug: 'sinus-pressure', group: 'head' },
 
-  { slug: 'high-libido', name: 'High libido', group: 'libido' },
-  { slug: 'low-libido', name: 'Low libido', group: 'libido' },
-  { slug: 'painful-sex', name: 'Painful sex', group: 'libido' },
-  { slug: 'vaginal-dryness', name: 'Vaginal dryness', group: 'libido' },
+  { slug: 'high-libido', group: 'libido' },
+  { slug: 'low-libido', group: 'libido' },
+  { slug: 'painful-sex', group: 'libido' },
+  { slug: 'vaginal-dryness', group: 'libido' },
 ];
 
 /** A slug is lowercase letters and digits, and single hyphens between them. */
