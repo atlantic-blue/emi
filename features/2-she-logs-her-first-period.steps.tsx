@@ -290,6 +290,7 @@ import { periodDayLabel } from '../apps/mobile/src/features/period/copy';
 import { sheOpensTheSymptomGroupsFromToday } from '../apps/mobile/tests/fixtures/theSymptomGroupsFromToday';
 import {
   periodChipTestID,
+  periodPageAnotherDayTestID,
   periodPageDayTestID,
   periodPageSaveTestID,
   periodPageTestID,
@@ -593,10 +594,12 @@ import {
   whenSheOpensEmi,
 } from '../apps/mobile/tests/fixtures/thePeriodSheCorrects';
 import {
+  editPeriodAddBeforeTestID,
   editPeriodChangeTestID,
   editPeriodListTestID,
   editPeriodRowTestID,
   editPeriodSaveTestID,
+  editPeriodScreenTestID,
 } from '../apps/mobile/src/features/calendar/EditPeriodScreen';
 import {
   type LogOrCalendarDrawing,
@@ -8746,6 +8749,60 @@ defineFeature(feature, (test) => {
       expect(textIn(screen.getByTestId(historyCycleTestID(theOneBefore))).join(' ')).toContain(
         cycleLengthSentence(28, eachLastedDays),
       );
+    });
+  });
+
+  test('SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    const yesterday = addDays(today, -1);
+
+    given('her phone holds her first run answers and not one recorded day', async () => {
+      await herPhoneHolds(whenSheOpensIt, [], sheSaysHerCycleRuns);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she presses Period under the ring', async () => {
+      await shePresses(roundActionTestID('period'));
+
+      expect(app.pathname()).toBe('/period');
+      expect(screen.getByTestId(periodPageTestID)).toBeTruthy();
+    });
+
+    and('she presses Started on another day?', async () => {
+      await shePresses(periodPageAnotherDayTestID);
+    });
+
+    then('she is looking at the period picker, and it lists today', () => {
+      expect(app.pathname()).toBe('/calendar/period');
+      expect(screen.getByTestId(editPeriodScreenTestID)).toBeTruthy();
+      expect(screen.getByTestId(editPeriodRowTestID(today))).toBeTruthy();
+    });
+
+    when('she presses today, then Add the day before, and saves', async () => {
+      await shePresses(editPeriodRowTestID(today));
+      await shePresses(editPeriodAddBeforeTestID);
+      await shePresses(editPeriodSaveTestID);
+    });
+
+    then('she is on the screen she opened, and no Period page is left under it', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.queryByTestId(periodPageTestID)).toBeNull();
+    });
+
+    and('her period started yesterday', () => {
+      expect(theCycleStartsHerPhoneHolds()).toEqual([yesterday]);
+    });
+
+    and('the ring says she is on day 2 of a cycle of the length she gave', () => {
+      expect(theRingSays()).toBe(ringSpokenLabel(2, sheSaysHerCycleRuns, phaseLabel.period));
     });
   });
 

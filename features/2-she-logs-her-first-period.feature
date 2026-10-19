@@ -905,6 +905,17 @@ Feature: She opens Emi and logs her first period
     When she opens Today again the same day
     Then the sheet does not show again
 
+  Scenario: SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2
+    Given her phone holds her first run answers and not one recorded day
+    When she opens Emi
+    And she presses Period under the ring
+    And she presses Started on another day?
+    Then she is looking at the period picker, and it lists today
+    When she presses today, then Add the day before, and saves
+    Then she is on the screen she opened, and no Period page is left under it
+    And her period started yesterday
+    And the ring says she is on day 2 of a cycle of the length she gave
+
   Scenario: SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast
     Given her phone holds one period and the cycle length she gave
     When she opens the month after next

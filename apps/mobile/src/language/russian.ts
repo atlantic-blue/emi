@@ -865,6 +865,7 @@ export const russian: CatalogueIn<'ru'> = {
   'period.products.periodUnderwear': 'Менструальные трусы',
   'period.products.tampon': 'Тампон',
   'period.save': 'Сохранить',
+  'period.startedOnAnotherDay': 'Начались в другой день?',
   'period.title': 'Месячные',
   'phase.about.follicular': 'Она начинается с месячных и заканчивается за день до фазы овуляции.',
   'phase.about.luteal':
