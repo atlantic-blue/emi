@@ -3,6 +3,7 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/token
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { groupHeadings } from './SymptomGroup';
+import { symptomName } from './symptomName';
 
 /**
  * The mood group of the catalogue, lifted out of the symptom list and given the top of the sheet.
@@ -54,7 +55,7 @@ function MoodChip({ mood, isPicked, onToggle }: MoodChipProps) {
       testID={`mood-chip-${mood.slug}`}
     >
       <Text numberOfLines={2} style={[styles.chipLabel, isPicked && styles.chipLabelPicked]}>
-        {mood.name}
+        {symptomName(mood.slug)}
       </Text>
     </Pressable>
   );

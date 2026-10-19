@@ -47,6 +47,7 @@ import {
   washStops,
   washes,
 } from '@emi/tokens';
+import * as Localization from 'expo-localization';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
@@ -731,7 +732,9 @@ import {
   type Language,
   type Words,
   catalogueOf,
+  forgetLanguage,
   languages,
+  readingLanguage,
   wordKeys,
   words,
 } from '../apps/mobile/src/language';
@@ -1638,6 +1641,8 @@ afterEach(() => {
   theArithmeticHolds(theFiguresTheArithmeticShips);
   jest.useRealTimers();
   jest.restoreAllMocks();
+  // A scenario that read the phone in another language must not leave the next one reading it.
+  forgetLanguage();
 });
 
 defineFeature(feature, (test) => {
@@ -4275,6 +4280,67 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/log');
       expect(app.searchParams()[opensOnParameter]).toBe(theSymptoms);
       expect(theLogProblems(theDrawingOfTheSymptoms)).toEqual([]);
+    });
+  });
+
+  test('SCREEN-2, she reads Emi in Russian, records fatigue, and the screen she started on names it in Russian', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given(
+      'her phone reads Russian, and holds the period days behind today and nothing at all for today',
+      async () => {
+        const [phone] = Localization.getLocales();
+
+        if (phone === undefined) {
+          throw new Error('the phone names no language');
+        }
+
+        // The phone is asked once and the answer is kept, so one reading carries the scenario and
+        // the hook after it forgets the answer.
+        jest
+          .spyOn(Localization, 'getLocales')
+          .mockReturnValueOnce([{ ...phone, languageTag: 'ru-RU', languageCode: 'ru' }]);
+        forgetLanguage();
+        expect(readingLanguage()).toBe('ru');
+        jest.setSystemTime(whenSheOpensTheStrip);
+        await herPhoneHoldsNothingForToday(whenSheOpensTheStrip);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she presses Cycle phase, and then All symptoms in its diary', async () => {
+      await sheOpensTheSymptomGroupsFromToday();
+
+      expect(app.pathname()).toBe('/log');
+    });
+
+    and('she marks fatigue', async () => {
+      await shePresses(symptomChipTestID('fatigue'));
+    });
+
+    and('she presses Save, under the count of what she picked', async () => {
+      expect(screen.getByTestId(logSymptomsCountTestID)).toBeTruthy();
+      await shePresses(logSymptomsSaveTestID);
+    });
+
+    then('she is back on the screen she started on', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
+    });
+
+    and('the line under the day of her cycle names усталость, and no English name', () => {
+      const line = theRowSheReads().line;
+
+      expect(line).toBe('Усталость');
+      expect(line).not.toMatch(/fatigue/i);
     });
   });
 

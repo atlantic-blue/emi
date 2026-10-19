@@ -1,9 +1,10 @@
 import { type Symptom, type SymptomGroup, loggableSymptoms, symptoms } from '@emi/cycle';
 
 import { groupsInHerOrder } from './herOrder';
+import { symptomName } from './symptomName';
 
 /**
- * Search reads the display name and the slug, because an export shows her a slug and she then
+ * Search reads the name in her language and the slug, because an export shows her a slug and she then
  * looks for the same letters. Diacritics are folded, so diarrhoea is found by a woman who types
  * without them.
  */
@@ -19,7 +20,10 @@ export function matchesQuery(symptom: Symptom, query: string): boolean {
   if (wanted === '') {
     return true;
   }
-  return normalise(symptom.name).includes(wanted) || normalise(symptom.slug).includes(wanted);
+  return (
+    normalise(symptomName(symptom.slug)).includes(wanted) ||
+    normalise(symptom.slug).includes(wanted)
+  );
 }
 
 /** A name that starts with her letters comes above one that only contains them. */
@@ -33,7 +37,7 @@ export function searchSymptoms(
     .slice()
     .sort((one, other) => {
       const rank = rankOf(one, wanted) - rankOf(other, wanted);
-      return rank !== 0 ? rank : one.name.localeCompare(other.name);
+      return rank !== 0 ? rank : symptomName(one.slug).localeCompare(symptomName(other.slug));
     });
 }
 
@@ -72,7 +76,7 @@ function normalise(text: string): string {
 }
 
 function rankOf(symptom: Symptom, wanted: string): number {
-  const name = normalise(symptom.name);
+  const name = normalise(symptomName(symptom.slug));
   if (name === wanted) {
     return 0;
   }

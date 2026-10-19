@@ -1,14 +1,9 @@
 import type { DayRecord, PatternAnchor, SymptomPattern } from '@emi/cycle';
-import {
-  PATTERN_NEEDS_CYCLES,
-  PATTERN_WINDOW_CYCLES,
-  findSymptom,
-  median,
-  patternsIn,
-} from '@emi/cycle';
+import { PATTERN_NEEDS_CYCLES, PATTERN_WINDOW_CYCLES, median, patternsIn } from '@emi/cycle';
 import type { PhaseName, PhaseSpan } from '@emi/tokens';
 
 import type { CycleRow } from '../../data/cycleRepository';
+import { symptomName } from '../log/symptomName';
 import { medianCycleLengthDays } from './cyclesRead';
 import { phasesOf, shapeFromLength } from './ringInput';
 
@@ -109,7 +104,7 @@ function named(
   return {
     slug: pattern.slug,
     // A retired symptom still resolves, because the record she wrote years ago points at its slug.
-    name: findSymptom(pattern.slug)?.name ?? pattern.slug,
+    name: symptomName(pattern.slug),
     anchor: pattern.anchor,
     day: pattern.day,
     cyclesWithIt: pattern.cyclesWithIt,
