@@ -129,6 +129,7 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
       <OnAPhone>
         <PeriodLength
           chosen={undefined}
+          fromHerDates={undefined}
           onBack={() => undefined}
           onChoose={() => undefined}
           onDone={() => undefined}
@@ -226,6 +227,7 @@ async function sheIsLookingAt(at: FirstRunScreen): Promise<void> {
     <OnAPhone>
       <CycleLength
         chosen={undefined}
+        fromHerDates={undefined}
         onBack={() => undefined}
         onChoose={() => undefined}
         onDone={() => undefined}

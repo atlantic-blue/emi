@@ -102,6 +102,7 @@ const theScreens: readonly Screen[] = [
     element: (
       <CycleLength
         chosen={undefined}
+        fromHerDates={undefined}
         onBack={() => undefined}
         onChoose={() => undefined}
         onDone={() => undefined}
@@ -114,6 +115,7 @@ const theScreens: readonly Screen[] = [
     element: (
       <PeriodLength
         chosen={undefined}
+        fromHerDates={undefined}
         onBack={() => undefined}
         onChoose={() => undefined}
         onDone={() => undefined}

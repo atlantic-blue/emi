@@ -647,6 +647,10 @@ export const spanish: CatalogueIn<'es'> = {
     one: '{count} día',
     other: '{count} días',
   },
+  'onboarding.cycleLength.fromHerDates': {
+    one: 'Según tus registros, tu ciclo dura de media {count} día. ¿Te parece bien?',
+    other: 'Según tus registros, tu ciclo dura de media {count} días. ¿Te parece bien?',
+  },
   'onboarding.cycleLength.line.count':
     'Cuenta desde el primer día de un periodo hasta el día anterior al siguiente.',
   'onboarding.cycleLength.line.held': 'Se mantiene entre {minimum} y {maximum} días.',
@@ -719,6 +723,10 @@ export const spanish: CatalogueIn<'es'> = {
   },
   'onboarding.periodLength.action': 'Hecho',
   'onboarding.periodLength.days': { one: '{count} día', other: '{count} días' },
+  'onboarding.periodLength.fromHerDates': {
+    one: 'Según tus registros, tu periodo dura de media {count} día. ¿Te parece bien?',
+    other: 'Según tus registros, tu periodo dura de media {count} días. ¿Te parece bien?',
+  },
   'onboarding.periodLength.line.count': 'Desde el primer día de sangrado hasta que para.',
   'onboarding.periodLength.line.logged':
     'Emi usa en su lugar los días que anotes, en cuanto los anotes.',

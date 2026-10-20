@@ -124,6 +124,18 @@ Feature: She opens Emi and logs her first period
     And her forecast is ready, and not still learning
     And Insights reads the period length she gave
 
+  Scenario: SCREEN-1, she gives three periods and confirms the lengths Emi worked out from them
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives three periods, 27 days apart, that lasted 6, 6 and 4 days
+    Then the cycle question says her records average 27 days, and the wheel stands on 27 with Done ready
+    When she presses Done without turning the wheel
+    Then the period question says her records average 6 days, and the wheel stands on 6 with Done ready
+    When she presses Done without turning the wheel
+    And she answers the rest of the questions and taps Save and start
+    Then her phone holds a cycle length of 27 days and a period length of 6 days
+
   Scenario: SCREEN-1, her newest period is still going, and Emi writes the days up to today
     Given she has never opened Emi before
     When she opens Emi

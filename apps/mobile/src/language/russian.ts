@@ -672,6 +672,11 @@ export const russian: CatalogueIn<'ru'> = {
     few: '{count} дня',
     many: '{count} дней',
   },
+  'onboarding.cycleLength.fromHerDates': {
+    one: 'По вашим записям цикл длится в среднем {count} день. Всё верно?',
+    few: 'По вашим записям цикл длится в среднем {count} дня. Всё верно?',
+    many: 'По вашим записям цикл длится в среднем {count} дней. Всё верно?',
+  },
   'onboarding.cycleLength.line.count':
     'Считайте с первого дня одних месячных до дня перед следующими.',
   'onboarding.cycleLength.line.held': 'В пределах от {minimum} до {maximum} дней.',
@@ -750,6 +755,11 @@ export const russian: CatalogueIn<'ru'> = {
   },
   'onboarding.periodLength.action': 'Готово',
   'onboarding.periodLength.days': { one: '{count} день', few: '{count} дня', many: '{count} дней' },
+  'onboarding.periodLength.fromHerDates': {
+    one: 'По вашим записям месячные длятся в среднем {count} день. Всё верно?',
+    few: 'По вашим записям месячные длятся в среднем {count} дня. Всё верно?',
+    many: 'По вашим записям месячные длятся в среднем {count} дней. Всё верно?',
+  },
   'onboarding.periodLength.line.count': 'С первого дня кровотечения до его окончания.',
   'onboarding.periodLength.line.logged':
     'Emi использует вместо этого дни, которые вы отметите, как только вы их отметите.',

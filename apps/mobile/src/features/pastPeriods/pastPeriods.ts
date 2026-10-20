@@ -8,6 +8,8 @@ import {
   cyclesFrom,
   daysBetween,
   forecastFrom,
+  lastLengths,
+  median,
 } from '@emi/cycle';
 
 /**
@@ -196,6 +198,39 @@ export function pastPeriodsRefusal(
 /** Every day the list says she bled, oldest first. */
 export function everyDayTheyBled(periods: readonly PastPeriod[], today: string): string[] {
   return periods.flatMap((period) => theDaysItBled(period, today)).sort();
+}
+
+/** Her usual lengths in days, worked out from the periods she gave. */
+export interface LengthsFromHerDates {
+  readonly cycleLengthDays: number;
+  readonly periodLengthDays: number;
+}
+
+/**
+ * Her usual cycle and period length, from the list alone, with the arithmetic the forecast uses:
+ * the median, rounded. Two periods make one cycle, which is enough to offer. One period or none
+ * makes no cycle, and then nothing is offered.
+ */
+export function lengthsFromHerDates(
+  periods: readonly PastPeriod[],
+): LengthsFromHerDates | undefined {
+  const days: DayRecord[] = everyDayTheyBled(periods, '9999-12-31').map((day) => ({
+    day,
+    flow: pastPeriodFlow,
+  }));
+  const cycleLengths = lastLengths(cyclesFrom(days));
+  const endedLengths = periods.flatMap((period) =>
+    period.lengthDays === undefined ? [] : [period.lengthDays],
+  );
+
+  if (cycleLengths.length === 0 || endedLengths.length === 0) {
+    return undefined;
+  }
+
+  return {
+    cycleLengthDays: Math.round(median(cycleLengths)),
+    periodLengthDays: Math.round(median(endedLengths)),
+  };
 }
 
 /**

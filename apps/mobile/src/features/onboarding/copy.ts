@@ -327,6 +327,16 @@ export function cycleLengthDaysLabel(days: number): string {
   return words('onboarding.cycleLength.days', days);
 }
 
+/** The line that offers her the cycle length Emi worked out from the periods she gave. */
+export function cycleLengthFromHerDates(days: number): string {
+  return words('onboarding.cycleLength.fromHerDates', days);
+}
+
+/** The line that offers her the period length Emi worked out from the periods she gave. */
+export function periodLengthFromHerDates(days: number): string {
+  return words('onboarding.periodLength.fromHerDates', days);
+}
+
 /** How she reads the period length she is setting, which reaches one day and so takes both forms. */
 export function periodLengthDaysLabel(days: number): string {
   return words('onboarding.periodLength.days', days);
