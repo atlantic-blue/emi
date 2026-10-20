@@ -100,6 +100,7 @@ export const firstRunCopy = {
     question: words('onboarding.today.question'),
     lines: [],
     action: words('onboarding.today.action'),
+    allSymptoms: words('onboarding.today.allSymptoms'),
     nothingToAdd: words('onboarding.today.nothingToAdd'),
   },
   reminder: {
@@ -127,13 +128,12 @@ export const firstRunCopy = {
     },
     action: words('onboarding.firstForecast.action'),
   },
-  hold: {
-    title: words('onboarding.hold.title'),
-    instruction: words('onboarding.hold.instruction'),
-    sealed: words('onboarding.hold.sealed'),
-    action: words('onboarding.hold.action'),
-    held: words('onboarding.hold.held'),
-    refused: words('onboarding.hold.refused'),
+  start: {
+    title: words('onboarding.start.title'),
+    allSet: words('onboarding.start.allSet'),
+    sealed: words('onboarding.start.sealed'),
+    action: words('onboarding.start.action'),
+    refused: words('onboarding.start.refused'),
   },
   back: words('onboarding.back'),
   skip: words('onboarding.skip'),
@@ -215,11 +215,11 @@ export const goalLabels: Readonly<Record<Goal, string>> = {
 export const goalChoices: readonly Goal[] = goalValues;
 
 /**
- * The words of the six things she can say change with her cycle. Each tile is a group of the log
+ * The words of the seven things she can say change with her cycle. Each tile is a group of the log
  * sheet, so it carries the word that group is headed with there. She presses Sleep here and reads
  * Sleep at the top of her log, and one thing is called one name.
  *
- * A map for the reason the three above are maps: a seventh value arriving in `Focus` leaves this
+ * A map for the reason the three above are maps: an eighth value arriving in `Focus` leaves this
  * file failing to compile rather than leaving her a tile she cannot press.
  */
 export const focusLabels: Readonly<Record<Focus, string>> = {
@@ -227,7 +227,8 @@ export const focusLabels: Readonly<Record<Focus, string>> = {
   mood: words('log.group.mood'),
   energy: words('log.group.energy'),
   skin: words('log.group.skin'),
-  digestion: words('log.group.digestion'),
+  appetite: words('log.group.appetite'),
+  digestive: words('log.group.digestive'),
   pain: words('log.group.pain'),
 };
 
@@ -246,7 +247,7 @@ export const todayLabels: Readonly<Record<TodaySymptom, string>> = {
   headache: symptomName('headache'),
   bloating: symptomName('bloating'),
   fatigue: symptomName('fatigue'),
-  calm: symptomName('calm'),
+  'breast-tenderness': symptomName('breast-tenderness'),
   'low-mood': symptomName('low-mood'),
 };
 
@@ -326,6 +327,16 @@ export function whyARangeSentences(counted: {
 /** How she reads the cycle length she is setting, which is a count and takes the form to match. */
 export function cycleLengthDaysLabel(days: number): string {
   return words('onboarding.cycleLength.days', days);
+}
+
+/** The line that offers her the cycle length Emi worked out from the periods she gave. */
+export function cycleLengthFromHerDates(days: number): string {
+  return words('onboarding.cycleLength.fromHerDates', days);
+}
+
+/** The line that offers her the period length Emi worked out from the periods she gave. */
+export function periodLengthFromHerDates(days: number): string {
+  return words('onboarding.periodLength.fromHerDates', days);
 }
 
 /** How she reads the period length she is setting, which reaches one day and so takes both forms. */

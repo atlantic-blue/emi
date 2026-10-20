@@ -37,6 +37,11 @@ import { UnexpectedBleeding } from './UnexpectedBleeding';
  */
 export const logFlowCopy = {
   title: words('log.flow.title'),
+  spottingLabel: words('log.flow.spottingLabel', undefined, {
+    spotting: words('log.flow.spotting'),
+  }),
+  spottingHint: words('log.flow.spottingHint'),
+  otherDischarge: words('log.flow.otherDischarge'),
   saved: words('log.flow.saved'),
   noRing: cycleCopy.noRing,
   done: words('log.flow.done'),
@@ -63,6 +68,12 @@ export const logFlowPhaseTestID = 'log-flow-phase';
 
 /** The heading over the flow picker. */
 export const logFlowTitleTestID = 'log-flow-title';
+
+/** The line under the flow that says what spotting means. */
+export const logFlowSpottingHintTestID = 'log-flow-spotting-hint';
+
+/** The link beside the Period heading that opens the discharge on the Period page. */
+export const logFlowOtherDischargeTestID = 'log-flow-other-discharge';
 
 /** The card the flow she picks stands in. */
 export const logFlowFlowCardTestID = 'log-flow-flow-card';
@@ -109,6 +120,8 @@ interface Props {
   readonly onMark: (marked: boolean) => void;
   readonly onOpenGroup: (group: SymptomGroup) => void;
   readonly onSearch: () => void;
+  /** Opens the Period page of the day, where she logs discharge that is not her period. */
+  readonly onOtherDischarge: () => void;
   /** A press on a chip of the day takes that symptom off the day. */
   readonly onToggleSymptom: (slug: string) => void;
   readonly onLeave: () => void;
@@ -142,10 +155,25 @@ export function LogFlow(props: Props): ReactNode {
 
         <Card testID={logFlowFlowCardTestID}>
           <View style={styles.inside}>
-            <Text accessibilityRole="header" style={styles.title} testID={logFlowTitleTestID}>
-              {logFlowCopy.title}
-            </Text>
+            <View style={styles.cardTop}>
+              <Text accessibilityRole="header" style={styles.title} testID={logFlowTitleTestID}>
+                {logFlowCopy.title}
+              </Text>
+              <Pressable
+                accessibilityRole="link"
+                onPress={props.onOtherDischarge}
+                style={styles.search}
+                testID={logFlowOtherDischargeTestID}
+              >
+                <Text style={styles.searchLabel}>{logFlowCopy.otherDischarge}</Text>
+                <Icon colour={colour.secondaryText} name="chevron" size={SEARCH_CHEVRON} />
+              </Pressable>
+            </View>
             <FlowPicker chosen={props.chosen} onPick={props.onPick} />
+            <Text style={styles.hint} testID={logFlowSpottingHintTestID}>
+              <Text style={styles.hintLabel}>{logFlowCopy.spottingLabel}</Text>{' '}
+              {logFlowCopy.spottingHint}
+            </Text>
             {sheBled && <UnexpectedBleeding marked={props.marked} onMark={props.onMark} />}
           </View>
         </Card>
@@ -282,6 +310,8 @@ const styles = StyleSheet.create({
   cardTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   day: { color: colour.text, ...textStyle('headline-sm') },
   foot: { padding: space.margin },
+  hint: { color: colour.secondaryText, ...textStyle('body-sm') },
+  hintLabel: { color: colour.text, ...textStyle('choice-sm') },
   held: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
   inside: { gap: space.spaceMd },
   line: { color: colour.secondaryText, ...textStyle('body-lg') },

@@ -108,7 +108,7 @@ export const todaySymptoms = [
   'headache',
   'bloating',
   'fatigue',
-  'calm',
+  'breast-tenderness',
   'low-mood',
 ] as const;
 
@@ -124,9 +124,9 @@ export function todaySymptomIsOffered(slug: string): slug is TodaySymptom {
  * a second time. The order is the order she tapped, which is what the record keeps.
  */
 export function symptomsAfterPressing(
-  chosen: readonly TodaySymptom[],
-  pressed: TodaySymptom,
-): readonly TodaySymptom[] {
+  chosen: readonly string[],
+  pressed: string,
+): readonly string[] {
   return chosen.includes(pressed)
     ? chosen.filter((slug) => slug !== pressed)
     : [...chosen, pressed];
@@ -174,11 +174,12 @@ export interface FirstRunAnswers {
    */
   readonly focus?: readonly Focus[];
   /**
-   * What she said she feels today, in the order she pressed it. Left out where she said there is
-   * nothing to add, and then today gets no row of its own at all. An empty list is never written,
-   * for the reason the goals above are never written empty.
+   * What she said she feels today, in the order she pressed it: the six tiles and anything she
+   * picked from all symptoms. Left out where she said there is nothing to add, and then today gets
+   * no row of its own at all. An empty list is never written, for the reason the goals above are
+   * never written empty.
    */
-  readonly symptoms?: readonly TodaySymptom[];
+  readonly symptoms?: readonly string[];
   /**
    * When she asked to be reminded before her next period. Left out where she said "Not now", and
    * where the phone refused to raise notifications, because a reminder the phone will not raise is
@@ -197,7 +198,7 @@ export type FirstRunRefusal =
   | 'feeling-is-not-one-of-the-three'
   | 'goal-is-not-one-of-the-four'
   | 'goal-is-chosen-twice'
-  | 'focus-is-not-one-of-the-six'
+  | 'focus-is-not-one-of-the-seven'
   | 'focus-is-chosen-twice'
   | 'symptom-is-not-in-the-catalogue'
   | 'symptom-is-chosen-twice'
@@ -285,7 +286,7 @@ export function statedFocus(db: Database, vault: ProfileVault): readonly Focus[]
   return readProfile(db, vault)?.focus;
 }
 
-/** Whether the answer is one of the six that screen offers, asked of a value from anywhere. */
+/** Whether the answer is one of the seven that screen offers, asked of a value from anywhere. */
 export function focusIsOffered(answer: string): answer is Focus {
   return (focusValues as readonly string[]).includes(answer);
 }
@@ -388,11 +389,11 @@ export interface FirstRunVaults {
   readonly profile: ProfileVault;
 }
 
-/** What the hold asks for before it writes: her key, made if this phone holds none. */
+/** What the save asks for before it writes: her key, made if this phone holds none. */
 export type MakeFirstRunVaults = () => Promise<FirstRunVaults>;
 
 /**
- * Everything she answered, written at the moment she presses and holds the ring.
+ * Everything she answered, written at the moment she taps Save and start.
  *
  * Her key comes first and the vaults are built from whatever the keychain holds then, because a
  * row sealed under a key the keychain does not hold is a row nothing opens again. The write is the
@@ -450,6 +451,10 @@ function theReasonFor(
       return `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days between two starts`;
     case 'past-period-length-is-out-of-range':
       return 'a period given from memory runs from one day to the longest the cycle arithmetic reads as one period';
+    case 'only-the-newest-period-can-be-still-going':
+      return 'only the newest period can be still going, and every period before it has a length';
+    case 'still-going-period-started-too-long-ago':
+      return `a period still going on ${today} cannot start on ${newest}, longer ago than one period runs`;
   }
 }
 
@@ -527,11 +532,11 @@ export function completeFirstRun(
     );
   }
   const chosenFocus = answers.focus ?? [];
-  const outsideTheSix = chosenFocus.filter((group) => !focusIsOffered(group));
-  if (outsideTheSix.length > 0) {
+  const outsideTheSeven = chosenFocus.filter((group) => !focusIsOffered(group));
+  if (outsideTheSeven.length > 0) {
     throw new FirstRunError(
-      'focus-is-not-one-of-the-six',
-      `a focus is one of ${focusValues.join(', ')}, these are not: ${outsideTheSix.join(', ')}`,
+      'focus-is-not-one-of-the-seven',
+      `a focus is one of ${focusValues.join(', ')}, these are not: ${outsideTheSeven.join(', ')}`,
     );
   }
   const focusedTwice = chosenFocus.filter((group, at) => chosenFocus.indexOf(group) !== at);
