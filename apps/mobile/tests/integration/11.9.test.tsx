@@ -42,7 +42,7 @@ import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { locksDrawnIn } from '../fixtures/drawnLocks';
 
@@ -391,7 +391,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['cramps', 'fatigue'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDay(today);
 
@@ -411,7 +411,7 @@ describe('what she feels today is her first logged day', () => {
           periodStartedOn: herPeriodStarted,
           symptoms: [slug],
         });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect((await herSealedDay(today))?.symptoms).toEqual([slug]);
       });
@@ -424,7 +424,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['calm', 'cramps'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDay(today))?.symptoms).toEqual(['calm', 'cramps']);
     });
@@ -436,7 +436,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: today,
         symptoms: ['cramps', 'bloating'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -450,7 +450,7 @@ describe('what she feels today is her first logged day', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -462,7 +462,7 @@ describe('what she feels today is her first logged day', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: today });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -482,7 +482,7 @@ describe('what she feels today is her first logged day', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);
     });
@@ -498,7 +498,7 @@ describe('what she feels today is her first logged day', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);
     });
@@ -574,7 +574,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['bloating', 'low-mood'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDay(today);
 

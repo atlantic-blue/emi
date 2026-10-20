@@ -698,17 +698,6 @@ export const english = {
   'onboarding.goals.choice.symptoms': 'Understand my symptoms',
   'onboarding.goals.line.chooseAll': 'Choose all that apply.',
   'onboarding.goals.title': 'What do you want Emi to help with?',
-  'onboarding.hold.action': 'Hold to begin',
-  'onboarding.hold.held': 'Keep holding',
-  'onboarding.hold.instruction': 'Press and hold the button to begin.',
-  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
-  // day, the answers and the marker go in one transaction or none of them do.
-  'onboarding.hold.refused': "That didn't save. Press and hold the button again.",
-  // The key is made at launch or at the hold, whichever finds the keychain empty first, and it is
-  // kept in the keychain rather than anywhere a screen may name.
-  'onboarding.hold.sealed':
-    "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
-  'onboarding.hold.title': 'Your cycle, your data, your key.',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
   'onboarding.lastPeriod.later': 'Later',
@@ -751,6 +740,16 @@ export const english = {
   'onboarding.reminder.notNow': 'Not now',
   'onboarding.reminder.title': 'Shall Emi tell you when it is near?',
   'onboarding.skip': 'Skip',
+  'onboarding.start.action': 'Save and start',
+  'onboarding.start.allSet': 'All set',
+  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
+  // day, the answers and the marker go in one transaction or none of them do.
+  'onboarding.start.refused': "That didn't save. Tap Save and start again.",
+  // The key is made at launch or at the save, whichever finds the keychain empty first, and it is
+  // kept in the keychain rather than anywhere a screen may name.
+  'onboarding.start.sealed':
+    "Saving keeps your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  'onboarding.start.title': 'Your cycle, your data, your key.',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.today.action': 'Save today',
   'onboarding.today.nothingToAdd': 'Nothing to add',
