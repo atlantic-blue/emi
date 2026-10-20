@@ -291,7 +291,7 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // title and only the promise under the tiles, so today follows the canvas.
   todayFirstRun: 1,
   // The mockups put the sample under the question and "Not now" over the button. The redesign
-  // canvas puts the sample at the top and "Not now" under "Remind me", so the reminder follows it.
+  // canvas puts the sample at the top and "Not now" under "Turn on reminders", so the reminder follows it.
   reminder: 2,
   // The mockups put a card about this phone under the why card. The first run no longer draws it,
   // because the welcome links to the page that says who can see her records.

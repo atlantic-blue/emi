@@ -188,7 +188,7 @@ const theScreens: readonly Screen[] = [
   },
   {
     title: 'Twelve of twelve',
-    note: 'The reminder, with the words the lock screen will carry. Remind me waits for a moment and\n      only then asks the phone. Not now and Skip go on and ask nothing.',
+    note: 'The reminder, with the words the lock screen will carry. Turn on reminders waits for a moment and\n      only then asks the phone. Not now and Skip go on and ask nothing.',
     element: (
       <Reminder
         chosen="twoDaysBefore"

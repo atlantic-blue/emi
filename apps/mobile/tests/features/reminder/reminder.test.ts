@@ -17,7 +17,7 @@ import {
   readReminderLead,
   reminderHour,
   reminderLeads,
-  reminderWords,
+  reminderNotificationWords,
   whenToRemindHer,
 } from '../../../src/features/reminder/reminder';
 import { rescheduleHerReminder } from '../../../src/features/reminder/rescheduleHerReminder';
@@ -168,10 +168,10 @@ describe('the reminder is worked out on this phone from the forecast it already 
 
     for (const [language, catalogue] of Object.entries(catalogues)) {
       it(`never names her body or a symptom, in ${language}`, () => {
-        const said = reminderLeads
-          .map((lead) => catalogue[`reminder.notification.${lead}`])
-          .join(' ')
-          .toLowerCase();
+        const held = catalogue['reminder.notification'];
+
+        expect(typeof held).toBe('string');
+        const said = String(held).toLowerCase();
 
         expect(said.length).toBeGreaterThan(0);
         for (const word of aboutHerBody[language] ?? []) {
@@ -180,12 +180,38 @@ describe('the reminder is worked out on this phone from the forecast it already 
       });
     }
 
-    it('says when, in words that change with the moment she chose', () => {
-      expect(reminderWords).toEqual({
-        twoDaysBefore: 'Your forecast starts in two days.',
-        oneDayBefore: 'Your forecast starts tomorrow.',
-        onTheDay: 'Your forecast starts today.',
+    it('says only that it is a reminder from Emi, the same words for every moment', () => {
+      expect(reminderNotificationWords).toBe('A reminder from Emi');
+      expect(spanish['reminder.notification']).toBe('Un recordatorio de Emi');
+      expect(russian['reminder.notification']).toBe('Напоминание от Emi');
+    });
+
+    it('no longer names a forecast or a day on the lock screen', () => {
+      for (const catalogue of Object.values(catalogues)) {
+        expect(
+          Object.keys(catalogue).filter((key) => key.startsWith('reminder.notification.')),
+        ).toEqual([]);
+      }
+      expect(reminderNotificationWords).not.toMatch(/forecast|today|tomorrow|days?\b/i);
+    });
+  });
+
+  describe('the words on the screen that asks', () => {
+    const catalogues = { english, spanish, russian };
+
+    for (const [language, catalogue] of Object.entries(catalogues)) {
+      it(`fills in the hour the reminder is raised at, in ${language}`, () => {
+        for (const lead of reminderLeads) {
+          expect(catalogue[`onboarding.reminder.line.${lead}`]).toContain('{hour}');
+        }
       });
+    }
+
+    it('says in Russian that the period may start about two days after the reminder', () => {
+      expect(russian['onboarding.reminder.line.twoDaysBefore']).toContain(
+        'Месячные могут начаться примерно через 2 дня.',
+      );
+      expect(russian['onboarding.reminder.question']).toBe('Когда вам напомнить о месячных?');
     });
   });
 
@@ -221,7 +247,7 @@ describe('the reminder is worked out on this phone from the forecast it already 
       expect(theRemindersOnThePhone()).toEqual([
         {
           identifier: reminderIdentifier,
-          body: 'Your forecast starts in two days.',
+          body: 'A reminder from Emi',
           at: nineOClockBefore(theFirstDayOfHerRange(), 2),
         },
       ]);

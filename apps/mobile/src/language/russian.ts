@@ -773,10 +773,14 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.reminder.choice.onTheDay': 'В день предполагаемого начала',
   'onboarding.reminder.choice.oneDayBefore': 'За 1 день',
   'onboarding.reminder.choice.twoDaysBefore': 'За 2 дня',
-  'onboarding.reminder.line.onTheDay': 'В день, когда начинается диапазон.',
-  'onboarding.reminder.line.oneDayBefore': 'За один день до начала диапазона.',
-  'onboarding.reminder.line.twoDaysBefore': 'За два дня до начала диапазона.',
+  'onboarding.reminder.line.onTheDay':
+    'Напоминание придёт в {hour} утра. Месячные могут начаться в этот же день.',
+  'onboarding.reminder.line.oneDayBefore':
+    'Напоминание придёт в {hour} утра. Месячные могут начаться на следующий день.',
+  'onboarding.reminder.line.twoDaysBefore':
+    'Напоминание придёт в {hour} утра. Месячные могут начаться примерно через 2 дня.',
   'onboarding.reminder.notNow': 'Не сейчас',
+  'onboarding.reminder.question': 'Когда вам напомнить о месячных?',
   'onboarding.reminder.title': 'Напомнить о приближении месячных?',
   'onboarding.skip': 'Пропустить',
   'onboarding.step': 'Шаг {step} из {of}',
@@ -998,9 +1002,7 @@ export const russian: CatalogueIn<'ru'> = {
   'recovery.confirm.wrong': 'Не совпадает. Посмотрите на бумагу и попробуйте снова.',
   'recovery.step': 'Шаг {step} из {of}',
 
-  'reminder.notification.onTheDay': 'Ваш прогноз начинается сегодня.',
-  'reminder.notification.oneDayBefore': 'Ваш прогноз начинается завтра.',
-  'reminder.notification.twoDaysBefore': 'Ваш прогноз начинается через два дня.',
+  'reminder.notification': 'Напоминание от Emi',
   'settings.answer.back': 'Назад',
   'settings.answer.cancel': 'Отмена',
   'settings.answer.gaveAtFirstRun': 'В начале вы сказали нам {answer}.',
