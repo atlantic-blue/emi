@@ -164,28 +164,27 @@ why it is a range and where it was worked out.
 Rendered under the test runner at 393 by 852 points, and not captured from a phone. Draw it again
 with `npm run generate:first-forecast-picture`.
 
-Then it says what it promises, in three lines: each day is encrypted on the phone with a key that
-stays there, Emi asks for no password and carries no tracking tools, and delete everything removes
-every day from this phone. It claims no hardware and no standard, because no auditor has read Emi.
-The screen after it reads her own answers back, and the middle card names the groups she pressed on
-the focus screen, in the order she pressed them, because that is the order her log will open in. A
+Then it reads her own answers back. The first run no longer stops on a screen of promises: the
+page "Who can see my records?", linked from the welcome and from Privacy, says where her records
+are kept and who can read them. On the screen that reads her answers back, the middle card names
+the groups she pressed on the focus screen, in the order she pressed them, because that is the order her log will open in. A
 woman who pressed none is told what she will open instead.
 
-![The promise, and what Emi does with it for two women](../brand/screens/the-promise.png)
+![What Emi does with it, for two women](../brand/screens/what-emi-does-with-it.png)
 
 Rendered under the test runner at 393 by 852 points, and not captured from a phone. Draw it again
-with `npm run generate:promise-picture`.
+with `npm run generate:what-emi-does-picture`.
 
-Then it asks her to press and hold the ring. That hold is the only moment the first run writes: her
-key is made if this phone has none, and the day she gave, her answers and the marker go in one
-transaction. A woman who walks away at any question leaves nothing behind, and a write that fails
-half way leaves nothing behind either. A phone asking for less motion draws no filling arc, and the
-words in the ring ask her to keep holding instead.
+Then it says all set and offers one button, Save and start. That tap is the only moment the first
+run writes: her key is made if this phone has none, and the day she gave, her answers and the
+marker go in one transaction. A woman who walks away at any question leaves nothing behind, and a
+write that fails half way leaves nothing behind either. A second quick tap does nothing, and a save
+that refused can be tried again.
 
-![The hold, before her thumb goes down and half way through](../brand/screens/hold-to-begin.png)
+![Save and start, before she taps and after a save that refused](../brand/screens/save-and-start.png)
 
 Rendered under the test runner at 390 by 844 points, and not captured from a phone. Draw it again
-with `npm run generate:hold-picture`.
+with `npm run generate:save-picture`.
 
 Her answers make the ring, and the ring is the product. It carries the day of her cycle and the
 phase she is in, so she can read it across a room and nobody beside her can. It draws what her own

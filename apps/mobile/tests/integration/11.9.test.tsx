@@ -15,7 +15,6 @@ import { catalogueOf, languages } from '../../src/language';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import {
   onboardingActionTestID,
-  onboardingLockTestID,
   onboardingQuestionTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
@@ -42,9 +41,10 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -268,23 +268,13 @@ describe('what she feels today is her first logged day', () => {
       expect(languages).toHaveLength(3);
     });
 
-    it('says under the tiles that Emi encrypts the day on this phone', async () => {
+    it('draws no padlock line under the tiles', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
 
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-        'Emi encrypts it on this phone.',
-      );
-
-      const order = theOrderOnTheScreen();
-
-      expect(order.indexOf(todayTestID('low-mood'))).toBeLessThan(
-        order.indexOf(onboardingLockTestID),
-      );
-      expect(order.indexOf(onboardingLockTestID)).toBeLessThan(
-        order.indexOf(onboardingActionTestID),
-      );
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(screen.queryByText('Emi encrypts it on this phone.')).toBeNull();
     });
 
     it('draws Nothing to add under Save today, as the redesign draws it', async () => {
@@ -401,7 +391,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['cramps', 'fatigue'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDay(today);
 
@@ -421,7 +411,7 @@ describe('what she feels today is her first logged day', () => {
           periodStartedOn: herPeriodStarted,
           symptoms: [slug],
         });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect((await herSealedDay(today))?.symptoms).toEqual([slug]);
       });
@@ -434,7 +424,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['calm', 'cramps'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDay(today))?.symptoms).toEqual(['calm', 'cramps']);
     });
@@ -446,7 +436,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: today,
         symptoms: ['cramps', 'bloating'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -460,7 +450,7 @@ describe('what she feels today is her first logged day', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -472,7 +462,7 @@ describe('what she feels today is her first logged day', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: today });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -491,8 +481,8 @@ describe('what she feels today is her first logged day', () => {
       // The reminder stands after the last question, and "Not now" passes it.
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
-      await sheHoldsTheRing();
+      await sheReadsWhatEmiDoesWithIt();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);
     });
@@ -507,8 +497,8 @@ describe('what she feels today is her first logged day', () => {
       // The reminder stands after the last question, and "Not now" passes it.
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
-      await sheHoldsTheRing();
+      await sheReadsWhatEmiDoesWithIt();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);
     });
@@ -584,7 +574,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['bloating', 'low-mood'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDay(today);
 

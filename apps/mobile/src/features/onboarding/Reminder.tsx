@@ -53,12 +53,11 @@ export function Reminder({ chosen, onChoose, onRemind, onNotNow, onBack }: Props
       above={<ThePreview lead={chosen ?? theSampleBeforeAChoice} />}
       actionIsReady={chosen !== undefined}
       actionLabel={firstRunCopy.reminder.action}
-      lines={[firstRunCopy.remindsOnThisPhone]}
+      lines={[]}
       onAction={onRemind}
       onBack={onBack}
       onSkip={onNotNow}
       onWayPast={onNotNow}
-      promiseSits="underTheAnswer"
       screen="reminder"
       standsOnTheSheet={false}
       title={firstRunCopy.reminder.title}

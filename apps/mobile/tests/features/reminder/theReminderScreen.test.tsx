@@ -10,7 +10,6 @@ import { firstForecastActionTestID } from '../../../src/features/onboarding/Firs
 import {
   onboardingActionTestID,
   onboardingBackTestID,
-  onboardingLockTestID,
   onboardingSkipTestID,
   onboardingStepLabelTestID,
   onboardingWayPastTestID,
@@ -31,9 +30,10 @@ import {
 } from '../../fixtures/expoNotifications';
 import { resetExpoSecureStore } from '../../fixtures/expoSecureStore';
 import { herDatabase } from '../../fixtures/herPhone';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../../fixtures/theHold';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../../fixtures/theFirstRun';
+import { sheTapsSaveAndStart } from '../../fixtures/theSave';
 import { sheReachesTheReminder } from './theWalkToTheReminder';
+import { locksDrawnIn } from '../../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../../fixtures/expoSecureStore'));
@@ -70,11 +70,11 @@ function theMomentSheWasPromised(daysBefore: number): Date {
   return new Date(year ?? 0, (month ?? 1) - 1, (day ?? 1) - daysBefore, 9, 0, 0, 0);
 }
 
-/** The forecast, the promise, what Emi does with it and the hold, all the way to her home. */
+/** The forecast, what Emi does with it and the hold, all the way to her home. */
 async function sheFinishesTheFirstRun(): Promise<void> {
   await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
-  await sheReadsThePromise();
-  await sheHoldsTheRing();
+  await sheReadsWhatEmiDoesWithIt();
+  await sheTapsSaveAndStart();
 }
 
 describe('the reminder, after the first day she logs', () => {
@@ -152,13 +152,16 @@ describe('the reminder, after the first day she logs', () => {
       expect(screen.queryByText('Your period is forecast in two days.')).toBeNull();
     });
 
-    it('says the phone works it out and raises it, and that nothing about it is sent', async () => {
+    it('draws no padlock line, because the welcome links to who can see her records', async () => {
       await sheOpensEmi();
       await sheReachesTheReminder(herPeriodStarted);
 
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-        'This phone works it out and this phone raises it. Nothing about the reminder is sent anywhere.',
-      );
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(
+        screen.queryByText(
+          'This phone works it out and this phone raises it. Nothing about the reminder is sent anywhere.',
+        ),
+      ).toBeNull();
     });
 
     it('offers "Not now" under the button and Skip at the top, and a way back', async () => {
@@ -210,7 +213,7 @@ describe('the reminder, after the first day she logs', () => {
         cycleLengthDays: herCycleLengthDays,
         reminder: 'twoDaysBefore',
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readSetting(herDatabase(), 'reminderLead')).toBe('twoDaysBefore');
       await waitFor(() => {
@@ -247,7 +250,7 @@ describe('the reminder, after the first day she logs', () => {
         cycleLengthDays: herCycleLengthDays,
         reminder: 'oneDayBefore',
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await act(async () => {
         await Promise.resolve();
       });

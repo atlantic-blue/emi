@@ -63,8 +63,8 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { openTestDatabase } from '../data/nodeDatabase';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herProfileVault, herVault, theVaultOnHerPhone } from '../fixtures/herVault';
-import { sheAnswersEveryQuestion, sheReadsThePromise } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -291,7 +291,7 @@ describe('her last three periods, in one step of the first run', () => {
         periodBeforeThatStartedOn: theOneBeforeThat,
         periodLengthDaysEach: 5,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
       expect(sealed.map((day) => day.day)).toEqual([
@@ -323,8 +323,8 @@ describe('her last three periods, in one step of the first run', () => {
       expect(screen.queryByTestId(firstForecastStillLearningTestID)).toBeNull();
 
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
-      await sheHoldsTheRing();
+      await sheReadsWhatEmiDoesWithIt();
+      await sheTapsSaveAndStart();
 
       expect(await theCyclesBehindHer()).toMatchObject([
         { startedOn: theOneBeforeThat, lengthDays: theCycleSheLived, periodDays: herLengths[2] },
@@ -344,7 +344,7 @@ describe('her last three periods, in one step of the first run', () => {
         periodBeforeThatStartedOn: theOneBeforeThat,
         periodLengthDaysEach: 6,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await shePresses(tabTestID('history'));
 
       expect(textIn(screen.getByTestId(historyCycleTestID(theOneBefore))).join(' ')).toContain(
@@ -484,7 +484,7 @@ describe('her last three periods, in one step of the first run', () => {
         periodStartedOn: herPeriodStarted,
         periodBeforeStartedOn: theOneBefore,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(await theCyclesBehindHer()).toMatchObject([
         { startedOn: theOneBefore, lengthDays: theCycleSheLived },
@@ -521,8 +521,8 @@ describe('her last three periods, in one step of the first run', () => {
         await shePresses(onboardingSkipTestID);
       }
       await shePresses(firstForecastActionTestID);
-      await sheReadsThePromise();
-      await sheHoldsTheRing();
+      await sheReadsWhatEmiDoesWithIt();
+      await sheTapsSaveAndStart();
 
       expect(await herSealedDays()).toEqual([]);
     });

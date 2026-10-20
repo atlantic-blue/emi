@@ -12,6 +12,7 @@ export default function WelcomeRoute(): ReactNode {
   return (
     <WhatEmiIs
       onContinue={() => router.push(tourIsDone ? '/onboarding/name' : '/onboarding/tour')}
+      onWhoCanSee={() => router.push('/settings/who-can-see')}
     />
   );
 }

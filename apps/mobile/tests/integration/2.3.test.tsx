@@ -20,9 +20,8 @@ import {
   monthTestID,
 } from '../../src/features/onboarding/Calendar';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
-import { promiseActionTestID } from '../../src/features/onboarding/ThePromise';
 import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
-import { HOLD_MILLISECONDS, holdButtonTestID } from '../../src/features/onboarding/HoldToBegin';
+import { saveButtonTestID } from '../../src/features/onboarding/SaveAndStart';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -52,7 +51,7 @@ import {
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 import {
   pastPeriodLengthTestID,
@@ -89,8 +88,8 @@ const oneDayTooFarBack = dayOf(
 );
 const herCycleLengthDays = defaultCycleLengthDays + 2;
 
-/** The instant the hold ends, which is the instant everything she answered is written at. */
-const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
+/** The instant she taps Save and start, which is the instant everything she answered is written at. */
+const whenSheSaves = whenSheOpensIt;
 
 interface OpenApp {
   /** The route she is looking at. It is read from the router rather than from the screen. */
@@ -201,9 +200,8 @@ async function sheReadsHerFirstForecast(): Promise<void> {
   await fireEvent.press(screen.getByTestId(firstForecastActionTestID));
 }
 
-/** The promise and what Emi does with it, the last two screens she reads before the hold. */
-async function sheReadsThePromise(): Promise<void> {
-  await fireEvent.press(screen.getByTestId(promiseActionTestID));
+/** What Emi does with it, the last screen she reads before the hold. */
+async function sheReadsWhatEmiDoesWithIt(): Promise<void> {
   await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
 }
 
@@ -213,7 +211,7 @@ async function sheAnswersEveryScreen(): Promise<void> {
     periodStartedOn: herPeriodStarted,
     cycleLengthDays: herCycleLengthDays,
   });
-  await sheHoldsTheRing();
+  await sheTapsSaveAndStart();
 }
 
 /**
@@ -416,7 +414,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
     });
 
@@ -428,9 +426,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         herCycleLengthDays,
       );
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
-        whenSheFinishesTheHold.toISOString(),
-      );
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheSaves.toISOString());
     });
 
     it('asks her twelve questions, holds once, and asks nothing else', async () => {
@@ -463,11 +459,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await sheReadsHerFirstForecast();
       visited.push(app.pathname());
-      await fireEvent.press(screen.getByTestId(promiseActionTestID));
-      visited.push(app.pathname());
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
       visited.push(app.pathname());
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(visited).toEqual([
         '/onboarding/welcome',
@@ -483,7 +477,6 @@ describe('the first run ends on the home screen with her period recorded', () =>
         '/onboarding/today',
         '/onboarding/reminder',
         '/onboarding/first-forecast',
-        '/onboarding/the-promise',
         '/onboarding/what-emi-does-with-it',
         '/onboarding/hold',
       ]);
@@ -495,13 +488,12 @@ describe('the first run ends on the home screen with her period recorded', () =>
 
       // A name opening with an underscore is a layout rather than a route, so she is never sent
       // to it. Every half is named, so a deleted layout fails here as loudly as an unasked
-      // question. The five screens that ask her nothing are named on their own and taken out
+      // question. The four screens that ask her nothing are named on their own and taken out
       // before the questions are counted.
       const asksHerNothing = [
         'tour.tsx',
         'hold.tsx',
         'first-forecast.tsx',
-        'the-promise.tsx',
         'what-emi-does-with-it.tsx',
       ];
 
@@ -565,7 +557,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
     });
   });
@@ -678,8 +670,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsToday();
       await sheSaysNotNowToTheReminder();
       await sheReadsHerFirstForecast();
-      await sheReadsThePromise();
-      await sheHoldsTheRing();
+      await sheReadsWhatEmiDoesWithIt();
+      await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
       expect(readDayLog(herDatabase(), theOldestDaySheMayPick)?.day).toBe(theOldestDaySheMayPick);
@@ -766,11 +758,8 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheReadsHerFirstForecast();
       expect(controlsTooSmallToPress()).toEqual([]);
 
-      await fireEvent.press(screen.getByTestId(promiseActionTestID));
-      expect(controlsTooSmallToPress()).toEqual([]);
-
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
-      expect(screen.getByTestId(holdButtonTestID)).toBeTruthy();
+      expect(screen.getByTestId(saveButtonTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
 
@@ -827,17 +816,15 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSkipsToday();
       await sheSaysNotNowToTheReminder();
       await sheReadsHerFirstForecast();
-      await sheReadsThePromise();
-      await sheHoldsTheRing();
+      await sheReadsWhatEmiDoesWithIt();
+      await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId('home-screen')).toBeTruthy();
       expect(listDayLogs(herDatabase()).map((row) => [row.day, row.revision])).toEqual([
         [herPeriodStarted, 1],
       ]);
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
-        whenSheFinishesTheHold.toISOString(),
-      );
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheSaves.toISOString());
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         herCycleLengthDays,
       );
@@ -846,7 +833,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
     });
 

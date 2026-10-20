@@ -10,9 +10,8 @@ import { dayParameter } from '../../features/calendar/askedMonth';
 import {
   type DaysListed,
   savePeriodRange,
-  theDaysListedFirst,
   theDaysOf,
-  thePeriodEmiHoldsAround,
+  whereTheEditorOpens,
 } from '../../features/calendar/savePeriod';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
@@ -52,13 +51,11 @@ export default function EditPeriodRoute(): ReactNode {
   const asked = useLocalSearchParams<Record<string, string>>()[dayParameter];
   const [today] = useState(() => localDay(new Date()));
   const day = theDayAskedFor(asked) ?? today;
-  const [held] = useState(() =>
-    thePeriodEmiHoldsAround(recordedDays(database, vault.open), listCycles(database), {
-      day,
-      today,
-    }),
+  const [opened] = useState(() =>
+    whereTheEditorOpens(recordedDays(database, vault.open), listCycles(database), { day, today }),
   );
-  const [listed, setListed] = useState<DaysListed>(() => theDaysListedFirst(held, { day, today }));
+  const { held } = opened;
+  const [listed, setListed] = useState<DaysListed>(opened.listed);
   const [ticked, setTicked] = useState<readonly string[]>(() => held);
   const rescheduleTheReminder = useRescheduleHerReminder();
 
