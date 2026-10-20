@@ -160,7 +160,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       expect(app.pathname()).toBe('/onboarding/focus');
     });
 
-    it('offers the six groups, with none of them pressed for her', async () => {
+    it('offers the seven groups, with none of them pressed for her', async () => {
       await sheOpensEmi();
 
       await sheReachesTheFocus();
@@ -169,7 +169,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         expect(screen.getByTestId(focusTestID(group))).toHaveTextContent(focusLabels[group]);
         expect(screen.getByTestId(focusTestID(group))).not.toBeSelected();
       }
-      expect(focusValues).toHaveLength(6);
+      expect(focusValues).toHaveLength(7);
     });
 
     it('names each tile with the heading that group carries in her log', async () => {
@@ -187,8 +187,9 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheReachesTheFocus();
 
       expect(new Set(Object.values(focusIcons)).size).toBe(focusValues.length);
+      // Digestive symptoms keep the folded tube the Digestion tile carried before the split.
       for (const group of focusValues) {
-        expect(focusIcons[group]).toBe(group);
+        expect(focusIcons[group]).toBe(group === 'digestive' ? 'digestion' : group);
       }
     });
 
@@ -240,7 +241,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       expect(firstRunCopy.focus.lines).toHaveLength(1);
     });
 
-    it('stands the six groups three to a row, as the redesign draws them', async () => {
+    it('stands the seven groups three to a row, as the redesign draws them', async () => {
       await sheOpensEmi();
 
       await sheReachesTheFocus();
@@ -367,7 +368,7 @@ describe('the log opens on what she said changes with her cycle', () => {
             whenSheOpensIt,
           ),
         ),
-      ).toBe('focus-is-not-one-of-the-six');
+      ).toBe('focus-is-not-one-of-the-seven');
       expect(readProfile(database, herProfileVault())).toBeUndefined();
     });
 
@@ -514,9 +515,9 @@ describe('the log opens on what she said changes with her cycle', () => {
           />
         </OnAPhone>,
       );
-      await fireEvent.press(screen.getByTestId(focusTestID('digestion')));
+      await fireEvent.press(screen.getByTestId(focusTestID('digestive')));
 
-      expect(pressed).toEqual(['digestion']);
+      expect(pressed).toEqual(['digestive']);
     });
 
     it('writes no second line under a tile, because a tile names a group and nothing more', async () => {

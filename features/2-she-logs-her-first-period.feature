@@ -908,13 +908,23 @@ Feature: She opens Emi and logs her first period
     Given her phone holds four recorded period days, the last of them today
     When she opens the day before yesterday
     Then the screen names that date, and asks about her flow with no word for today
-    When she presses the Digestion tile, marks Bloating and presses Save
+    When she presses the Digestive symptoms tile, marks Bloating and presses Save
     Then that day holds Bloating, sealed, beside the flow she logged, and today holds no symptom
     And the day shows Bloating as a symptom she can take off
     When she presses Sex on that day
     Then she is on the Sex page of that day
     When she goes back to that day and presses Period
     Then she is on the Period page of that day
+
+  Scenario: SCREEN-4, a profile and a day saved while Digestion was one group read under Appetite and Digestive symptoms
+    Given her profile was saved with Digestion as the group she watches, and the day before yesterday holds nausea and a food craving
+    When she opens the day before yesterday
+    Then Appetite and Digestive symptoms are the first two tiles, and no tile reads Digestion
+    When she presses the Appetite tile
+    Then Food craving is marked under Appetite, beside Sweet and Salty
+    When she marks Sweet and presses Save
+    Then that day holds nausea, the food craving and sweet, sealed
+    And her profile still opens with Appetite and Digestive symptoms when she changes another answer
 
   Scenario: SCREEN-2, she answers the signs of ovulation popup on a day inside her fertile window
     Given her phone holds three periods a cycle apart, and today is inside her forecast fertile window

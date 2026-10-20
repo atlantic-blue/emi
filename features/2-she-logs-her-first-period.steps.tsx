@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 import { type DayRecord, ovulationSignValues, profileBytes } from '@emi/crypto';
 import {
   CYCLE_LENGTH_HIGH_DAYS,
@@ -134,7 +135,12 @@ import {
   updateDayLog,
 } from '../apps/mobile/src/data/dayLogRepository';
 import { migrate } from '../apps/mobile/src/data/schema';
-import { profileRow, readProfile } from '../apps/mobile/src/data/profileRepository';
+import {
+  changeProfileAnswer,
+  profileRow,
+  readProfile,
+  writeProfile,
+} from '../apps/mobile/src/data/profileRepository';
 import { readSetting, settingKeys } from '../apps/mobile/src/data/settingRepository';
 import {
   calendarBackTestID,
@@ -319,7 +325,7 @@ import {
   logFlowTitleTestID,
   logFlowWhenTestID,
 } from '../apps/mobile/src/features/log/LogFlow';
-import { groupTileTestID } from '../apps/mobile/src/features/log/GroupTiles';
+import { groupTileTestID, groupTilesTestID } from '../apps/mobile/src/features/log/GroupTiles';
 import { logHeaderLeaveTestID } from '../apps/mobile/src/features/log/LogHeader';
 import {
   logSymptomsCountTestID,
@@ -490,6 +496,8 @@ import {
   herPhoneHoldsTheseAnswers,
 } from '../apps/mobile/tests/fixtures/herPhone';
 import {
+  herKey,
+  herProfileVault,
   herVault,
   theProfileVaultOnHerPhone,
   theVaultOnHerPhone,
@@ -691,6 +699,7 @@ import {
   whatTheDrawingOpensOn,
 } from '../apps/mobile/tests/fixtures/theLogSheLandsOn';
 import {
+  herFourRecordedPeriodDays,
   herPhoneHoldsFourRecordedPeriodDays,
   theCalendarButton,
   theCalendarButtonTooSmallToPress,
@@ -3796,6 +3805,120 @@ defineFeature(feature, (test) => {
     });
   });
 
+  test('SCREEN-4, a profile and a day saved while Digestion was one group read under Appetite and Digestive symptoms', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const thatDay = addDays(theDaySheOpensIt, -2);
+    const theDayOnHerPhone = (day: string): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), day);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+
+    given(
+      'her profile was saved with Digestion as the group she watches, and the day before yesterday holds nausea and a food craving',
+      async () => {
+        jest.setSystemTime(whenSheOpensTheStrip);
+        const days = herFourRecordedPeriodDays().map((record) =>
+          record.day === thatDay ? { ...record, symptoms: ['nausea', 'food-craving'] } : record,
+        );
+        await herPhoneHoldsTheseAnswers(
+          whenSheOpensTheStrip,
+          { kind: 'profile', recordedAt: whenSheOpensTheStrip.toISOString() },
+          days,
+        );
+        // An older Emi sealed `digestion`, which today's seal refuses, so the bytes are sealed here
+        // the way that Emi sealed them.
+        const plaintext = new TextEncoder().encode(
+          `{"focus":["digestion"],"kind":"profile","recordedAt":"${whenSheOpensTheStrip.toISOString()}"}`,
+        );
+        const nonce = new Uint8Array(24).map((_, at) => at + 1);
+        const sealed = xchacha20poly1305(herKey(), nonce).encrypt(plaintext);
+        writeProfile(
+          herDatabase(),
+          { seal: () => new Uint8Array([1, ...nonce, ...sealed]), open: herProfileVault().open },
+          {
+            profile: { kind: 'profile', recordedAt: whenSheOpensTheStrip.toISOString() },
+            now: whenSheOpensTheStrip,
+          },
+        );
+      },
+    );
+
+    when('she opens the day before yesterday', async () => {
+      await sheOpens(`/day/${thatDay}`);
+    });
+
+    then(
+      'Appetite and Digestive symptoms are the first two tiles, and no tile reads Digestion',
+      () => {
+        const tiles = within(screen.getByTestId(groupTilesTestID))
+          .getAllByRole('button')
+          .map((tile) => String(tile.props.testID));
+
+        expect(tiles.slice(0, 2)).toEqual([
+          groupTileTestID('appetite'),
+          groupTileTestID('digestive'),
+        ]);
+        expect(screen.getByTestId(groupTileTestID('appetite'))).toHaveTextContent('Appetite');
+        expect(screen.getByTestId(groupTileTestID('digestive'))).toHaveTextContent(
+          'Digestive symptoms',
+        );
+        expect(screen.queryByText('Digestion')).toBeNull();
+      },
+    );
+
+    when('she presses the Appetite tile', async () => {
+      await shePresses(groupTileTestID('appetite'));
+    });
+
+    then('Food craving is marked under Appetite, beside Sweet and Salty', () => {
+      const appetite = screen.getByTestId(symptomGroupTestID('appetite'));
+
+      expect(within(appetite).getByTestId(symptomChipTestID('food-craving'))).toBeChecked();
+      expect(within(appetite).getByTestId(symptomChipTestID('sweet-craving'))).toHaveTextContent(
+        'Sweet',
+      );
+      expect(within(appetite).getByTestId(symptomChipTestID('salty-craving'))).toHaveTextContent(
+        'Salty',
+      );
+    });
+
+    when('she marks Sweet and presses Save', async () => {
+      await shePresses(symptomChipTestID('sweet-craving'));
+      await shePresses(logSymptomsSaveTestID);
+    });
+
+    then('that day holds nausea, the food craving and sweet, sealed', () => {
+      const held = readDayLog(herDatabase(), thatDay);
+
+      expect(new TextDecoder().decode(held?.payload)).not.toContain('sweet-craving');
+      expect([...(theDayOnHerPhone(thatDay)?.symptoms ?? [])].sort()).toEqual([
+        'food-craving',
+        'nausea',
+        'sweet-craving',
+      ]);
+    });
+
+    and(
+      'her profile still opens with Appetite and Digestive symptoms when she changes another answer',
+      () => {
+        changeProfileAnswer(herDatabase(), herProfileVault(), {
+          answer: { cycleLengthDays: 30 },
+          now: whenSheOpensTheStrip,
+        });
+
+        expect(readProfile(herDatabase(), herProfileVault())).toMatchObject({
+          cycleLengthDays: 30,
+          focus: ['appetite', 'digestive'],
+        });
+      },
+    );
+  });
+
   test('SCREEN-4, she adds a symptom to a day she already lived and opens its Sex and Period pages', ({
     given,
     when,
@@ -3826,8 +3949,8 @@ defineFeature(feature, (test) => {
       expect(screen.queryByText(/today/i)).toBeNull();
     });
 
-    when('she presses the Digestion tile, marks Bloating and presses Save', async () => {
-      await shePresses(groupTileTestID('digestion'));
+    when('she presses the Digestive symptoms tile, marks Bloating and presses Save', async () => {
+      await shePresses(groupTileTestID('digestive'));
       await shePresses(symptomChipTestID('bloating'));
       await shePresses(logSymptomsSaveTestID);
     });

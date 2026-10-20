@@ -197,7 +197,7 @@ export type FirstRunRefusal =
   | 'feeling-is-not-one-of-the-three'
   | 'goal-is-not-one-of-the-four'
   | 'goal-is-chosen-twice'
-  | 'focus-is-not-one-of-the-six'
+  | 'focus-is-not-one-of-the-seven'
   | 'focus-is-chosen-twice'
   | 'symptom-is-not-in-the-catalogue'
   | 'symptom-is-chosen-twice'
@@ -285,7 +285,7 @@ export function statedFocus(db: Database, vault: ProfileVault): readonly Focus[]
   return readProfile(db, vault)?.focus;
 }
 
-/** Whether the answer is one of the six that screen offers, asked of a value from anywhere. */
+/** Whether the answer is one of the seven that screen offers, asked of a value from anywhere. */
 export function focusIsOffered(answer: string): answer is Focus {
   return (focusValues as readonly string[]).includes(answer);
 }
@@ -531,11 +531,11 @@ export function completeFirstRun(
     );
   }
   const chosenFocus = answers.focus ?? [];
-  const outsideTheSix = chosenFocus.filter((group) => !focusIsOffered(group));
-  if (outsideTheSix.length > 0) {
+  const outsideTheSeven = chosenFocus.filter((group) => !focusIsOffered(group));
+  if (outsideTheSeven.length > 0) {
     throw new FirstRunError(
-      'focus-is-not-one-of-the-six',
-      `a focus is one of ${focusValues.join(', ')}, these are not: ${outsideTheSix.join(', ')}`,
+      'focus-is-not-one-of-the-seven',
+      `a focus is one of ${focusValues.join(', ')}, these are not: ${outsideTheSeven.join(', ')}`,
     );
   }
   const focusedTwice = chosenFocus.filter((group, at) => chosenFocus.indexOf(group) !== at);

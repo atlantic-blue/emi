@@ -214,11 +214,11 @@ export const goalLabels: Readonly<Record<Goal, string>> = {
 export const goalChoices: readonly Goal[] = goalValues;
 
 /**
- * The words of the six things she can say change with her cycle. Each tile is a group of the log
+ * The words of the seven things she can say change with her cycle. Each tile is a group of the log
  * sheet, so it carries the word that group is headed with there. She presses Sleep here and reads
  * Sleep at the top of her log, and one thing is called one name.
  *
- * A map for the reason the three above are maps: a seventh value arriving in `Focus` leaves this
+ * A map for the reason the three above are maps: an eighth value arriving in `Focus` leaves this
  * file failing to compile rather than leaving her a tile she cannot press.
  */
 export const focusLabels: Readonly<Record<Focus, string>> = {
@@ -226,7 +226,8 @@ export const focusLabels: Readonly<Record<Focus, string>> = {
   mood: words('log.group.mood'),
   energy: words('log.group.energy'),
   skin: words('log.group.skin'),
-  digestion: words('log.group.digestion'),
+  appetite: words('log.group.appetite'),
+  digestive: words('log.group.digestive'),
   pain: words('log.group.pain'),
 };
 

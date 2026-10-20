@@ -38,7 +38,17 @@ const labelStyle = textStyle('label-md');
 const LABEL_SIZE = labelStyle.fontSize ?? 0;
 const LABEL_LINE = labelStyle.lineHeight ?? 0;
 
-const groups = ['sleep', 'digestion', 'skin', 'mood', 'energy', 'pain', 'head', 'libido'] as const;
+const groups = [
+  'sleep',
+  'appetite',
+  'digestive',
+  'skin',
+  'mood',
+  'energy',
+  'pain',
+  'head',
+  'libido',
+] as const;
 
 function styleOf(testID: string): TextStyle {
   return StyleSheet.flatten(screen.getByTestId(testID).props.style) as TextStyle;
@@ -128,7 +138,8 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
   it('should give each one word name under a log tile the shrink rule', async () => {
     await render(<GroupTiles groups={groups} onOpen={() => undefined} />);
 
-    expect(groupHeadings.digestion).toBe('Пищеварение');
+    expect(groupHeadings.appetite).toBe('Аппетит');
+    expect(groupHeadings.digestive).toBe('Работа ЖКТ');
     for (const group of groups) {
       if (isOneWord(groupHeadings[group])) {
         expectTheShrinkRule(groupTileNameTestID(group));
