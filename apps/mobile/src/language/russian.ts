@@ -201,6 +201,12 @@ export const russian: CatalogueIn<'ru'> = {
    */
   'forecast.fertileWindow.sentence':
     'Оценка по вашим последним {cycles} циклам. Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
+  'forecast.itStarted': 'Уже начались',
+  'forecast.late': {
+    one: 'Месячные задерживаются на {count} день',
+    few: 'Месячные задерживаются на {count} дня',
+    many: 'Месячные задерживаются на {count} дней',
+  },
   'forecast.nextPeriod': 'Ваши следующие месячные',
   'forecast.range.sameMonth': 'С {from} по {to} {month}',
   'forecast.range.spansMonths': 'С {from} {fromMonth} по {to} {toMonth}',
@@ -244,6 +250,8 @@ export const russian: CatalogueIn<'ru'> = {
   'history.cycleRange': 'с {from} по {to}',
   'history.cycles': 'Ваши циклы',
   'history.dayReads': '{ordinal} {month}',
+  'history.edit': 'Изменить',
+  'history.editLabel': 'Изменить месячные, начавшиеся {day}',
   'history.noCycles': 'Циклов пока нет. Отметьте день, когда шла кровь, и здесь появится запись.',
   'history.nothingRepeats':
     'Пока ничто не повторилось за 3 цикла. Продолжайте отмечать, и мы вам покажем.',
@@ -675,8 +683,8 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.feeling.choice.fine': 'Меня это устраивает',
   'onboarding.feeling.choice.hard': 'Тяжело, почти каждый месяц',
   'onboarding.feeling.choice.understand': 'Я хочу в этом разобраться',
-  'onboarding.feeling.line.talks': 'Это меняет только то, как Emi с вами говорит.',
-  'onboarding.feeling.title': 'Как вы к этому относитесь',
+  'onboarding.feeling.line.hard': 'Если тяжело, в дни месячных Emi начнёт с боли.',
+  'onboarding.feeling.title': 'Как вы обычно себя чувствуете во время месячных?',
   'onboarding.firstForecast.action': 'Продолжить',
   'onboarding.firstForecast.needs': {
     one: 'Emi нужен {count} полный цикл, чтобы прогнозировать по вашим собственным циклам, поэтому Emi ещё учится.',
@@ -864,6 +872,7 @@ export const russian: CatalogueIn<'ru'> = {
   'period.products.periodUnderwear': 'Менструальные трусы',
   'period.products.tampon': 'Тампон',
   'period.save': 'Сохранить',
+  'period.startedOnAnotherDay': 'Начались в другой день?',
   'period.title': 'Месячные',
   'phase.about.follicular': 'Она начинается с месячных и заканчивается за день до фазы овуляции.',
   'phase.about.luteal':

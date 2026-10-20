@@ -198,6 +198,11 @@ export const spanish: CatalogueIn<'es'> = {
    */
   'forecast.fertileWindow.sentence':
     'Una estimación según tus últimos {cycles} ciclos. Emi nunca dice que un día es seguro, porque ninguno lo es.',
+  'forecast.itStarted': 'Ya empezó',
+  'forecast.late': {
+    one: 'Tu regla se retrasa {count} día',
+    other: 'Tu regla se retrasa {count} días',
+  },
   'forecast.nextPeriod': 'Tu próximo periodo',
   'forecast.range.sameMonth': 'Entre el {from} y el {to} de {month}',
   'forecast.range.spansMonths': 'Entre el {from} de {fromMonth} y el {to} de {toMonth}',
@@ -242,6 +247,8 @@ export const spanish: CatalogueIn<'es'> = {
   'history.cycleRange': 'del {from} al {to}',
   'history.cycles': 'Tus ciclos',
   'history.dayReads': 'el {ordinal} de {month}',
+  'history.edit': 'Editar',
+  'history.editLabel': 'Editar el periodo que empezó {day}',
   'history.noCycles': 'Todavía no hay ciclos. Registra un día en que sangraste y esto se rellena.',
   'history.nothingRepeats':
     'Nada ha vuelto en 3 ciclos todavía. Sigue registrando y te lo mostraremos.',
@@ -651,8 +658,9 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.feeling.choice.fine': 'Estoy bien con ello',
   'onboarding.feeling.choice.hard': 'Es difícil, casi todos los meses',
   'onboarding.feeling.choice.understand': 'Quiero entenderlo',
-  'onboarding.feeling.line.talks': 'Esto cambia cómo te habla Emi, y nada más.',
-  'onboarding.feeling.title': 'Cómo te sientes con ello',
+  'onboarding.feeling.line.hard':
+    'Si es difícil, Emi pone el dolor primero en los días de tu periodo.',
+  'onboarding.feeling.title': '¿Cómo te sientes normalmente durante tu periodo?',
   'onboarding.firstForecast.action': 'Continuar',
   'onboarding.firstForecast.needs': {
     one: 'Emi necesita {count} ciclo completo antes de prever a partir de tus propios ciclos, así que todavía está aprendiendo.',
@@ -833,6 +841,7 @@ export const spanish: CatalogueIn<'es'> = {
   'period.products.periodUnderwear': 'Ropa interior menstrual',
   'period.products.tampon': 'Tampón',
   'period.save': 'Guardar',
+  'period.startedOnAnotherDay': '¿Empezó otro día?',
   'period.title': 'Regla',
   'phase.about.follicular':
     'Empieza con tu periodo y termina el día antes de la fase de ovulación.',

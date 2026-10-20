@@ -2,11 +2,7 @@ import { render } from '@testing-library/react-native';
 
 import { listCycles } from '../../src/data/cycleRepository';
 import { EditPeriodScreen } from '../../src/features/calendar/EditPeriodScreen';
-import {
-  theDaysListedFirst,
-  theDaysOf,
-  thePeriodEmiHoldsAround,
-} from '../../src/features/calendar/savePeriod';
+import { theDaysOf, whereTheEditorOpens } from '../../src/features/calendar/savePeriod';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { iPhone16Size } from '../../../../brand/screens/asHtml';
@@ -46,9 +42,9 @@ function herReading(): { readonly held: readonly string[]; readonly listed: read
   const database = daysLogged(herRecordedDays(), recordedAt);
   const records = recordedDays(database, (payload) => herVault().open(payload));
   const asked = { day: String(theDaysEmiHolds()[0]), today: theDaySheOpensEmi() };
-  const held = thePeriodEmiHoldsAround(records, listCycles(database), asked);
+  const { held, listed } = whereTheEditorOpens(records, listCycles(database), asked);
 
-  return { held, listed: theDaysOf(theDaysListedFirst(held, asked)) };
+  return { held, listed: theDaysOf(listed) };
 }
 
 interface State {

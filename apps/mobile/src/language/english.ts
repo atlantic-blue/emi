@@ -192,6 +192,11 @@ export const english = {
    */
   'forecast.fertileWindow.sentence':
     'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.itStarted': 'It started',
+  'forecast.late': {
+    one: 'Your period is {count} day late',
+    other: 'Your period is {count} days late',
+  },
   'forecast.nextPeriod': 'Your next period',
   'forecast.range.sameMonth': 'Between the {from} and the {to} of {month}',
   'forecast.range.spansMonths': 'Between the {from} of {fromMonth} and the {to} of {toMonth}',
@@ -236,6 +241,8 @@ export const english = {
   'history.cycleRange': '{from} to {to}',
   'history.cycles': 'Your cycles',
   'history.dayReads': 'the {ordinal} of {month}',
+  'history.edit': 'Edit',
+  'history.editLabel': 'Edit the period that started on {day}',
   'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
   'history.nothingRepeats':
     "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
@@ -646,8 +653,8 @@ export const english = {
   'onboarding.feeling.choice.fine': 'I am fine with it',
   'onboarding.feeling.choice.hard': 'It is hard, most months',
   'onboarding.feeling.choice.understand': 'I want to understand it',
-  'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
-  'onboarding.feeling.title': 'How you feel about it',
+  'onboarding.feeling.line.hard': 'If it is hard, Emi puts pain first on your period days.',
+  'onboarding.feeling.title': 'How do you usually feel during your period?',
   'onboarding.firstForecast.action': 'Continue',
   'onboarding.firstForecast.needs': {
     one: 'Emi needs {count} complete cycle before it forecasts from your own cycles, so this is still learning.',
@@ -834,6 +841,7 @@ export const english = {
   'period.products.periodUnderwear': 'Period underwear',
   'period.products.tampon': 'Tampon',
   'period.save': 'Save',
+  'period.startedOnAnotherDay': 'Started on another day?',
   'period.title': 'Period',
   'phase.about.follicular':
     'It starts with your period and ends the day before the ovulation phase.',

@@ -465,7 +465,8 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     And she presses the calendar button in the top bar
     Then she is reading the month that day falls in
-    When she presses the way to edit her period
+    When she presses the first day of the period Emi holds
+    And she presses the way to edit her period
     Then she is looking at the period picker, and that is the drawing of it
     And the four days Emi holds arrive as hers, and no other listed day does
     And somebody listening is told each day is one she can turn on and off
@@ -904,6 +905,17 @@ Feature: She opens Emi and logs her first period
     When she opens Today again the same day
     Then the sheet does not show again
 
+  Scenario: SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2
+    Given her phone holds her first run answers and not one recorded day
+    When she opens Emi
+    And she presses Period under the ring
+    And she presses Started on another day?
+    Then she is looking at the period picker, and it lists today
+    When she presses today, then Add the day before, and saves
+    Then she is on the screen she opened, and no Period page is left under it
+    And her period started yesterday
+    And the ring says she is on day 2 of a cycle of the length she gave
+
   Scenario: SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast
     Given her phone holds one period and the cycle length she gave
     When she opens the month after next
@@ -914,3 +926,13 @@ Feature: She opens Emi and logs her first period
     Then she reads the list of her last three periods, with the one her phone holds given
     When she gives the two periods before it and saves
     Then the month she was reading draws a forecast, and the sheet is gone
+
+  Scenario: SCREEN-2, her period is late, and she logs the day it started
+    Given her phone holds three periods 28 days apart, and the forecast window ended two days ago
+    When she opens Emi
+    Then the forecast says her period is 2 days late, and the range that passed is gone
+    When she presses It started
+    Then she is in the period editor, opened on today
+    When she adds yesterday and saves
+    Then she is back on Today, and the forecast gives the range of her next period again
+    And no line says her period is late

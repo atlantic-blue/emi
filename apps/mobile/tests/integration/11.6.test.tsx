@@ -224,17 +224,19 @@ describe('a hard period day offers the pain log first', () => {
       expect(screen.getByTestId(feelingTestID('hard'))).not.toBeChecked();
     });
 
-    it('says the answer changes how Emi talks to her, and promises nothing more', async () => {
+    it('asks about her period and says what It is hard changes, and promises nothing more', async () => {
       await sheOpensEmi();
 
       await sheReachesTheFeeling();
 
       // Each line is written out rather than read off the copy, so a line reworded or taken out of
       // the screen fails here instead of leaving a shorter list that still agrees with itself.
-      expect(screen.getByText('How you feel about it')).toBeTruthy();
+      expect(screen.getByText('How do you usually feel during your period?')).toBeTruthy();
       expect(screen.getByTestId(onboardingLinesTestID)).toHaveTextContent(
-        'This changes how Emi talks to you, and nothing else.',
+        'If it is hard, Emi puts pain first on your period days.',
       );
+      expect(screen.queryByText('How you feel about it')).toBeNull();
+      expect(screen.queryByText('This changes how Emi talks to you, and nothing else.')).toBeNull();
       expect(locksDrawnIn(screen.root)).toBe(0);
       expect(screen.queryByText('Encrypted on this phone.')).toBeNull();
       expect(screen.queryByText('Only you can read this.')).toBeNull();

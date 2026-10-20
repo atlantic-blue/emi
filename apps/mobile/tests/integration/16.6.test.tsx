@@ -25,6 +25,7 @@ import {
   theCycleStartsHerDayLogGives,
   theCycleStartsHerPhoneHolds,
   theDayHerNextPeriodMayStartOn,
+  theDaySheOpensEmi,
   theDaySheStopped,
   theDaySheTakesOff,
   theDaysEmiHolds,
@@ -105,10 +106,26 @@ describe('she corrects a whole period in one save and the ring redraws', () => {
       ]);
     });
 
-    it('lists the same period from any day of that cycle, and from a day ahead of her', async () => {
-      await sheOpens(thePickerAt(addADay(String(theDaysEmiHolds()[0]), 8)));
+    it('lists the same period from any day inside it', async () => {
+      await sheOpens(thePickerAt(String(theDaysEmiHolds().at(-1))));
 
       expect(theDaysTickedOnThePicker()).toEqual(theDaysEmiHolds());
+    });
+
+    it('opens on a day outside the period, with nothing ticked, and not on the period before it', async () => {
+      const outside = addADay(String(theDaysEmiHolds()[0]), 8);
+      await sheOpens(thePickerAt(outside));
+
+      expect(theDaysTheListDrew()[0]).toBe(outside);
+      expect(theDaysTickedOnThePicker()).toEqual([]);
+      expect(theDaysTheListDrew()).not.toContain(theDaysEmiHolds()[0]);
+    });
+
+    it('opens on today for a day ahead of her, when no period holds today', async () => {
+      await sheOpens(thePickerAt(addADay(theDaySheOpensEmi(), 3)));
+
+      expect(theDaysTheListDrew()).toEqual([theDaySheOpensEmi()]);
+      expect(theDaysTickedOnThePicker()).toEqual([]);
     });
 
     it('tags a day she adds Added and a day she takes off Taken off', async () => {
