@@ -75,7 +75,7 @@ export const firstRunCopy = {
   },
   feeling: {
     title: words('onboarding.feeling.title'),
-    lines: [words('onboarding.feeling.line.talks')],
+    lines: [words('onboarding.feeling.line.hard')],
     action: words('onboarding.feeling.action'),
   },
   goals: {
@@ -128,13 +128,12 @@ export const firstRunCopy = {
     },
     action: words('onboarding.firstForecast.action'),
   },
-  hold: {
-    title: words('onboarding.hold.title'),
-    instruction: words('onboarding.hold.instruction'),
-    sealed: words('onboarding.hold.sealed'),
-    action: words('onboarding.hold.action'),
-    held: words('onboarding.hold.held'),
-    refused: words('onboarding.hold.refused'),
+  start: {
+    title: words('onboarding.start.title'),
+    allSet: words('onboarding.start.allSet'),
+    sealed: words('onboarding.start.sealed'),
+    action: words('onboarding.start.action'),
+    refused: words('onboarding.start.refused'),
   },
   back: words('onboarding.back'),
   skip: words('onboarding.skip'),
@@ -328,6 +327,16 @@ export function whyARangeSentences(counted: {
 /** How she reads the cycle length she is setting, which is a count and takes the form to match. */
 export function cycleLengthDaysLabel(days: number): string {
   return words('onboarding.cycleLength.days', days);
+}
+
+/** The line that offers her the cycle length Emi worked out from the periods she gave. */
+export function cycleLengthFromHerDates(days: number): string {
+  return words('onboarding.cycleLength.fromHerDates', days);
+}
+
+/** The line that offers her the period length Emi worked out from the periods she gave. */
+export function periodLengthFromHerDates(days: number): string {
+  return words('onboarding.periodLength.fromHerDates', days);
 }
 
 /** How she reads the period length she is setting, which reaches one day and so takes both forms. */

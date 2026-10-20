@@ -18,6 +18,7 @@ export const historyCopy = {
   patterns: words('history.patterns'),
   running: words('history.running'),
   noCycles: words('history.noCycles'),
+  edit: words('history.edit'),
 } as const;
 
 /** The day as she reads it: the 14th of May. */
@@ -32,6 +33,11 @@ export function dayReads(day: string): string {
     month,
     ordinal: ordinal(Number(day.slice(8, 10))),
   });
+}
+
+/** What a screen reader says for the Edit of one cycle row, so each row names its own period. */
+export function editPeriodLabel(startedOn: string): string {
+  return words('history.editLabel', undefined, { day: dayReads(startedOn) });
 }
 
 /** A sentence opens with a capital, and a day is written the same way wherever it sits in one. */

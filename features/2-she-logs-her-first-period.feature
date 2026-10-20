@@ -1,7 +1,7 @@
 Feature: She opens Emi and logs her first period
 
   She arrives knowing nothing about Emi and Emi knows nothing about her. A few questions and one
-  hold later her last periods are recorded and the ring is drawn from her own days.
+  tap later her last periods are recorded and the ring is drawn from her own days.
 
   Every scenario below is named for the contract it proves. The contracts are in
   docs/contracts.md and the map from feature to contract is in docs/features.md.
@@ -10,7 +10,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then she is looking at the home screen
     And her phone holds the day she said her period started
     And her phone holds the cycle length she gave
@@ -19,16 +19,16 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then her phone holds the cycle length she gave
     And the row her answers sit in does not hold that number in plain words
     And the row is not her answers in plain words, which do hold the number
 
-  Scenario: SCREEN-1, she answers everything, leaves before the hold, and nothing is written
+  Scenario: SCREEN-1, she answers everything, leaves before she taps Save and start, and nothing is written
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she closes Emi at the hold, without holding Hold to begin
+    And she closes Emi at the last screen, without tapping Save and start
     Then her phone holds no day, no answers and no marker
     And opening Emi again asks her the same questions
 
@@ -36,10 +36,10 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question, and presses Done a second time before the screen goes
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then she is looking at the home screen
     And her phone holds one day, the day she said her period started
-    And her phone holds the time of the hold, and one instant on all three of her answers
+    And her phone holds the time she tapped Save and start, and one instant on all three of her answers
 
   Scenario: SCREEN-1, she picks a tile on her first day and then says she has nothing to add
     Given she has never opened Emi before
@@ -51,7 +51,7 @@ Feature: She opens Emi and logs her first period
     Then she is asked whether Emi should remind her
     When she says Not now
     Then she is looking at her first forecast
-    When she reads on and presses and holds Hold to begin
+    When she reads on and taps Save and start
     Then her phone holds one day, the day she said her period started
 
   Scenario: SCREEN-1, she picks breast tenderness and a symptom from All symptoms on her first day
@@ -64,7 +64,7 @@ Feature: She opens Emi and logs her first period
     Then she is back on the question about how she is today, and Save today is ready
     And her phone holds no day yet
     When she presses Save today and says Not now
-    And she reads on and presses and holds Hold to begin
+    And she reads on and taps Save and start
     Then today holds breast tenderness and irritable, in the order she picked them
 
   Scenario: SCREEN-1, she asks Emi to remind her two days before the range starts
@@ -77,7 +77,7 @@ Feature: She opens Emi and logs her first period
     And she presses Remind me and her phone allows it
     Then her phone asked her once, after she pressed
     And she is looking at her first forecast
-    When she reads on and presses and holds Hold to begin
+    When she reads on and taps Save and start
     Then her phone holds one reminder, at nine in the morning two days before the range she was shown
 
   Scenario: SCREEN-1, her phone refuses the reminder and the first run goes on
@@ -87,14 +87,14 @@ Feature: She opens Emi and logs her first period
     And she reaches the reminder after the first day she logs
     And she picks one day before and presses Remind me
     Then she is looking at her first forecast
-    When she reads on and presses and holds Hold to begin
+    When she reads on and taps Save and start
     Then her phone holds no reminder and no choice of one
 
-  Scenario: SCREEN-1, the first run asks its questions and the hold after them
+  Scenario: SCREEN-1, the first run asks its questions and the save after them
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then she was asked what Emi is, her name, the year she was born, her last three periods, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her
     And there was no further question to answer
     And the counter read its own step on every question, and no promise step stood before the hold
@@ -103,7 +103,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then the only thing she could type into was her name
 
   Scenario: SCREEN-1, she says she will log as she goes and the first run moves on
@@ -121,7 +121,7 @@ Feature: She opens Emi and logs her first period
     And she says she will log as she goes
     Then she is being asked how long her cycle runs
     And the counter reads step 5 of 12, one step for her last three periods
-    When she answers the rest of the questions and presses and holds Hold to begin
+    When she answers the rest of the questions and taps Save and start
     Then she was never asked for a period again, on a step of its own
     And she is looking at the screen that says the ring needs a period
     And her phone holds the name, the year and the length she gave, and no day at all
@@ -132,10 +132,33 @@ Feature: She opens Emi and logs her first period
     And she reaches the step that asks for her last three periods
     Then the step asks for three periods, and says the third can be skipped
     When she gives three periods, each with the day it started and the days it lasted
-    And she answers the rest of the questions and presses and holds Hold to begin
+    And she answers the rest of the questions and taps Save and start
     Then her phone holds every bleeding day of the three periods, and no other day
     And her forecast is ready, and not still learning
     And Insights reads the period length she gave
+
+  Scenario: SCREEN-1, she gives three periods and confirms the lengths Emi worked out from them
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives three periods, 27 days apart, that lasted 6, 6 and 4 days
+    Then the cycle question says her records average 27 days, and the wheel stands on 27 with Done ready
+    When she presses Done without turning the wheel
+    Then the period question says her records average 6 days, and the wheel stands on 6 with Done ready
+    When she presses Done without turning the wheel
+    And she answers the rest of the questions and taps Save and start
+    Then her phone holds a cycle length of 27 days and a period length of 6 days
+
+  Scenario: SCREEN-1, her newest period is still going, and Emi writes the days up to today
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives her newest period, which started three days ago, as still going
+    Then the row of her newest period says it is still going
+    When she gives the two periods before it, each with the day it started and the days it lasted
+    And she answers the rest of the questions and taps Save and start
+    Then her phone holds every day from the start of her newest period to today, and the days of the two before it
+    And the ring says she is on day 4 of her cycle
 
   Scenario: SCREEN-1, the first run with no date ends on a forecast that says it is still learning
     Given she has never opened Emi before
@@ -603,7 +626,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run, and says she will log her periods as she goes
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then she is looking at the screen that says what the ring needs
     And there is no ring, and nothing at all is drawn in place of one
     And the card counts the cycle length she gave, and no length Emi picked
@@ -928,6 +951,17 @@ Feature: She opens Emi and logs her first period
     When she opens Today again the same day
     Then the sheet does not show again
 
+  Scenario: SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2
+    Given her phone holds her first run answers and not one recorded day
+    When she opens Emi
+    And she presses Period under the ring
+    And she presses Started on another day?
+    Then she is looking at the period picker, and it lists today
+    When she presses today, then Add the day before, and saves
+    Then she is on the screen she opened, and no Period page is left under it
+    And her period started yesterday
+    And the ring says she is on day 2 of a cycle of the length she gave
+
   Scenario: SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast
     Given her phone holds one period and the cycle length she gave
     When she opens the month after next
@@ -938,3 +972,13 @@ Feature: She opens Emi and logs her first period
     Then she reads the list of her last three periods, with the one her phone holds given
     When she gives the two periods before it and saves
     Then the month she was reading draws a forecast, and the sheet is gone
+
+  Scenario: SCREEN-2, her period is late, and she logs the day it started
+    Given her phone holds three periods 28 days apart, and the forecast window ended two days ago
+    When she opens Emi
+    Then the forecast says her period is 2 days late, and the range that passed is gone
+    When she presses It started
+    Then she is in the period editor, opened on today
+    When she adds yesterday and saves
+    Then she is back on Today, and the forecast gives the range of her next period again
+    And no line says her period is late

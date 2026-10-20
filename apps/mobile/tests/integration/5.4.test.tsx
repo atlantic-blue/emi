@@ -26,7 +26,7 @@ import {
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { visibleTextIn } from '../fixtures/renderedText';
 import {
@@ -138,7 +138,7 @@ describe('the lock shows when she comes back to the application', () => {
         periodStartedOn: addDays(today, -2),
         cycleLengthDays: defaultCycleLengthDays + 1,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(readSettings(herDatabase()).lockOnReturn).toBe(lockOn);

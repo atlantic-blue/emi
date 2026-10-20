@@ -101,6 +101,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
       <HistoryScreen
         history={historyNow(herPhone(state.cycles), herVault())}
         onBack={() => undefined}
+        onEditPeriod={() => undefined}
         onOpenDay={() => undefined}
       />
     </OnAPhone>,

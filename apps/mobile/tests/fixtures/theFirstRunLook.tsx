@@ -19,12 +19,12 @@ import { Focus, focusTestID } from '../../src/features/onboarding/Focus';
 import { Goals, goalTestID } from '../../src/features/onboarding/Goals';
 import { HerName, nameFieldTestID } from '../../src/features/onboarding/HerName';
 import {
-  HoldToBegin,
-  holdButtonTestID,
-  holdRingTestID,
-  holdSaidTestID,
-  holdTitleTestID,
-} from '../../src/features/onboarding/HoldToBegin';
+  SaveAndStart,
+  saveButtonTestID,
+  saveRingTestID,
+  saveSaidTestID,
+  saveTitleTestID,
+} from '../../src/features/onboarding/SaveAndStart';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
@@ -230,9 +230,10 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   focus: { ...theFrame, MultiChoiceRow: [focusTestID('sleep')] },
   goals: { ...theFrame, MultiChoiceRow: [goalTestID('forecast')] },
   hold: {
-    CycleRing: [holdRingTestID],
-    HoldToBegin: [holdTitleTestID, holdSaidTestID],
-    PrimaryButton: [holdButtonTestID],
+    CycleRing: [saveRingTestID],
+    // The drawing names the screen for the hold it used to ask for. The parts are the same.
+    HoldToBegin: [saveTitleTestID, saveSaidTestID],
+    PrimaryButton: [saveButtonTestID],
   },
   name: { ...theFrame, TextField: [nameFieldTestID] },
   periodLength: { ...theFrame, Stepper: [periodLengthWheelTestID] },
@@ -338,12 +339,19 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
       );
     case 'cycleLength':
       return (
-        <CycleLength chosen={undefined} onBack={nothing} onChoose={nothing} onDone={nothing} />
+        <CycleLength
+          chosen={undefined}
+          fromHerDates={undefined}
+          onBack={nothing}
+          onChoose={nothing}
+          onDone={nothing}
+        />
       );
     case 'periodLength':
       return (
         <PeriodLength
           chosen={undefined}
+          fromHerDates={undefined}
           onBack={nothing}
           onChoose={nothing}
           onDone={nothing}
@@ -431,7 +439,7 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
     case 'whatEmiDoesWithIt':
       return <WhatEmiDoesWithIt focus={[]} onContinue={nothing} />;
     case 'hold':
-      return <HoldToBegin onHeld={() => Promise.resolve()} />;
+      return <SaveAndStart onSave={() => Promise.resolve()} />;
     case 'recoverySetup':
       return <RecoveryFlow code={aRecoveryCode} onConfirmed={nothing} opensTheVault={() => true} />;
     case 'recoveryCode':

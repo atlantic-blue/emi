@@ -54,7 +54,7 @@ import {
   logSymptomsTitleTestID,
 } from '../../src/features/log/LogSymptoms';
 import { symptomChipTestID } from '../../src/features/log/SymptomGroup';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { locksDrawnIn } from '../fixtures/drawnLocks';
 
@@ -470,7 +470,7 @@ describe('what she feels today is her first logged day', () => {
       expect(listDayLogs(herDatabase())).toEqual([]);
     });
 
-    it('seals the tiles and what she picked from all symptoms at the hold, and nothing before', async () => {
+    it('seals the tiles and what she picked from all symptoms at Save and start, and nothing before', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
@@ -485,7 +485,7 @@ describe('what she feels today is her first logged day', () => {
 
       expect(listDayLogs(herDatabase())).toEqual([]);
 
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDay(today))?.symptoms).toEqual(['breast-tenderness', 'irritable']);
     });
@@ -512,7 +512,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['cramps', 'fatigue'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDay(today);
 
@@ -532,7 +532,7 @@ describe('what she feels today is her first logged day', () => {
           periodStartedOn: herPeriodStarted,
           symptoms: [slug],
         });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect((await herSealedDay(today))?.symptoms).toEqual([slug]);
       });
@@ -545,7 +545,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['breast-tenderness', 'cramps'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDay(today))?.symptoms).toEqual(['breast-tenderness', 'cramps']);
     });
@@ -557,7 +557,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: today,
         symptoms: ['cramps', 'bloating'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -571,7 +571,7 @@ describe('what she feels today is her first logged day', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -583,7 +583,7 @@ describe('what she feels today is her first logged day', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: today });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDays();
 
@@ -603,7 +603,7 @@ describe('what she feels today is her first logged day', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);
     });
@@ -619,7 +619,7 @@ describe('what she feels today is her first logged day', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herSealedDays()).map((record) => record.day)).toEqual([herPeriodStarted]);
     });
@@ -695,7 +695,7 @@ describe('what she feels today is her first logged day', () => {
         periodStartedOn: herPeriodStarted,
         symptoms: ['bloating', 'low-mood'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = await herSealedDay(today);
 
