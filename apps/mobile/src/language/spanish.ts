@@ -198,6 +198,11 @@ export const spanish: CatalogueIn<'es'> = {
    */
   'forecast.fertileWindow.sentence':
     'Una estimación según tus últimos {cycles} ciclos. Emi nunca dice que un día es seguro, porque ninguno lo es.',
+  'forecast.itStarted': 'Ya empezó',
+  'forecast.late': {
+    one: 'Tu regla se retrasa {count} día',
+    other: 'Tu regla se retrasa {count} días',
+  },
   'forecast.nextPeriod': 'Tu próximo periodo',
   'forecast.range.sameMonth': 'Entre el {from} y el {to} de {month}',
   'forecast.range.spansMonths': 'Entre el {from} de {fromMonth} y el {to} de {toMonth}',
@@ -242,6 +247,8 @@ export const spanish: CatalogueIn<'es'> = {
   'history.cycleRange': 'del {from} al {to}',
   'history.cycles': 'Tus ciclos',
   'history.dayReads': 'el {ordinal} de {month}',
+  'history.edit': 'Editar',
+  'history.editLabel': 'Editar el periodo que empezó {day}',
   'history.noCycles': 'Todavía no hay ciclos. Registra un día en que sangraste y esto se rellena.',
   'history.nothingRepeats':
     'Nada ha vuelto en 3 ciclos todavía. Sigue registrando y te lo mostraremos.',
@@ -726,11 +733,6 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.periodLength.shorter': 'Un día menos',
   'onboarding.periodLength.skip': 'No lo tengo claro',
   'onboarding.periodLength.title': '¿Cuántos días suele durar tu periodo?',
-  'onboarding.promise.action': 'Continuar',
-  'onboarding.promise.delete': 'Borra todo, con una sola pulsación',
-  'onboarding.promise.encrypted': 'Cifrado en este teléfono, con una clave que solo tienes tú',
-  'onboarding.promise.noTracking': 'Sin contraseña, sin herramientas de seguimiento',
-  'onboarding.promise.title': 'Solo tú puedes leer tus días.',
   'onboarding.regularity.action': 'Continuar',
   'onboarding.regularity.choice.moves': 'No, se mueve',
   'onboarding.regularity.choice.regular': 'Sí, casi todos los meses',
@@ -840,6 +842,7 @@ export const spanish: CatalogueIn<'es'> = {
   'period.products.periodUnderwear': 'Ropa interior menstrual',
   'period.products.tampon': 'Tampón',
   'period.save': 'Guardar',
+  'period.startedOnAnotherDay': '¿Empezó otro día?',
   'period.title': 'Regla',
   'phase.about.follicular':
     'Empieza con tu periodo y termina el día antes de la fase de ovulación.',
@@ -1005,6 +1008,8 @@ export const spanish: CatalogueIn<'es'> = {
     'No pudimos llegar a nuestro servidor para quitar tu cuenta. Nada puede abrir lo que queda allí: la única clave estaba en este teléfono, y se fue con tus días.',
   'settings.settings.answers': 'Tus respuestas',
   'settings.settings.answersLine': 'Lo que nos contaste al empezar',
+  'settings.settings.assurance': 'Solo tú puedes leer tus días.',
+  'settings.settings.assuranceLine': 'Cifrado en este teléfono, con una clave que solo tienes tú',
   'settings.settings.back': 'Atrás',
   'settings.settings.delete': 'Borrarlo todo',
   'settings.settings.deleteLine': 'Una pulsación, y desaparece para siempre',

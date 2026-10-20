@@ -21,6 +21,8 @@ export const forecastCopy = {
    * nothing. The spread of her own logged cycles is the only thing the two ends are taken from.
    */
   cycleMoves: words('forecast.cycleMoves'),
+  /** The link under the late line, which opens the period editor on today. */
+  itStarted: words('forecast.itStarted'),
 } as const;
 
 export type ForecastCopyRefusal = 'range-is-one-day' | 'range-ends-before-it-starts';
@@ -199,4 +201,9 @@ export function cyclesWantedSentence(learning: Learning): string {
 /** The length she gave at the first run, which is all Emi counts by until her own cycles arrive. */
 export function statedLengthSentence(cycleLengthDays: number): string {
   return words('forecast.statedLength', undefined, { days: cycleLengthDays });
+}
+
+/** The line Home shows once the window has passed, with the count `daysLate` gives. */
+export function lateSentence(daysLate: number): string {
+  return words('forecast.late', daysLate);
 }

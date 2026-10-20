@@ -201,6 +201,12 @@ export const russian: CatalogueIn<'ru'> = {
    */
   'forecast.fertileWindow.sentence':
     'Оценка по вашим последним {cycles} циклам. Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
+  'forecast.itStarted': 'Уже начались',
+  'forecast.late': {
+    one: 'Месячные задерживаются на {count} день',
+    few: 'Месячные задерживаются на {count} дня',
+    many: 'Месячные задерживаются на {count} дней',
+  },
   'forecast.nextPeriod': 'Ваши следующие месячные',
   'forecast.range.sameMonth': 'С {from} по {to} {month}',
   'forecast.range.spansMonths': 'С {from} {fromMonth} по {to} {toMonth}',
@@ -244,6 +250,8 @@ export const russian: CatalogueIn<'ru'> = {
   'history.cycleRange': 'с {from} по {to}',
   'history.cycles': 'Ваши циклы',
   'history.dayReads': '{ordinal} {month}',
+  'history.edit': 'Изменить',
+  'history.editLabel': 'Изменить месячные, начавшиеся {day}',
   'history.noCycles': 'Циклов пока нет. Отметьте день, когда шла кровь, и здесь появится запись.',
   'history.nothingRepeats':
     'Пока ничто не повторилось за 3 цикла. Продолжайте отмечать, и мы вам покажем.',
@@ -756,12 +764,6 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.periodLength.shorter': 'На день меньше',
   'onboarding.periodLength.skip': 'Я не уверена',
   'onboarding.periodLength.title': 'Сколько дней обычно идут месячные?',
-  'onboarding.promise.action': 'Дальше',
-  'onboarding.promise.delete': 'Удалите всё одним нажатием',
-  'onboarding.promise.encrypted':
-    'Дни хранятся в зашифрованном виде на этом телефоне, ключ есть только у вас',
-  'onboarding.promise.noTracking': 'Без пароля, без инструментов слежения',
-  'onboarding.promise.title': 'Только вы можете читать свои дни.',
   'onboarding.regularity.action': 'Продолжить',
   'onboarding.regularity.choice.moves': 'Нет, он смещается',
   'onboarding.regularity.choice.regular': 'Да, почти каждый месяц',
@@ -871,6 +873,7 @@ export const russian: CatalogueIn<'ru'> = {
   'period.products.periodUnderwear': 'Менструальные трусы',
   'period.products.tampon': 'Тампон',
   'period.save': 'Сохранить',
+  'period.startedOnAnotherDay': 'Начались в другой день?',
   'period.title': 'Месячные',
   'phase.about.follicular': 'Она начинается с месячных и заканчивается за день до фазы овуляции.',
   'phase.about.luteal':
@@ -1038,6 +1041,9 @@ export const russian: CatalogueIn<'ru'> = {
     'Мы не смогли связаться с нашим сервером, чтобы удалить вашу учётную запись. То, что там осталось, не открыть ничем: единственный ключ был на этом телефоне и ушёл вместе с вашими днями.',
   'settings.settings.answers': 'Ваши ответы',
   'settings.settings.answersLine': 'То, что вы рассказали нам в начале',
+  'settings.settings.assurance': 'Только вы можете читать свои дни.',
+  'settings.settings.assuranceLine':
+    'Дни хранятся в зашифрованном виде на этом телефоне, ключ есть только у вас',
   'settings.settings.back': 'Назад',
   'settings.settings.delete': 'Удалить всё',
   'settings.settings.deleteLine': 'Одно нажатие, и всё исчезнет навсегда',

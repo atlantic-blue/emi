@@ -7,7 +7,6 @@ import { TextLink } from '../../components/Button';
 import { RowGroup } from '../../components/RowGroup';
 import { Screen } from '../../components/Screen';
 import { SettingsRow } from '../../components/SettingsRow';
-import { promiseCopy } from '../onboarding/copy';
 import { settingsCopy } from './copy';
 
 export const settingsScreenTestID = 'settings-screen';
@@ -63,8 +62,7 @@ const ASSURANCE_ICON = 26;
  * Privacy: what she already told Emi, the lock she relies on, and the two ways her data leaves.
  *
  * The promise stands at the top in the one colour that reverses, because the rows underneath only
- * make sense to somebody who already knows that nobody else can read any of it. The words are the
- * promise's own, said at the first run and repeated here rather than written again.
+ * make sense to somebody who already knows that nobody else can read any of it.
  *
  * Delete everything is one row among four rather than the only thing here, because the one action
  * that cannot be undone should not be the only thing she can reach from this screen.
@@ -95,8 +93,8 @@ export function SettingsScreen({
             <Icon colour={colour.washAmber} name="shield" size={ASSURANCE_ICON} />
           </View>
           <View style={styles.assuranceWords}>
-            <Text style={styles.assuranceLead}>{promiseCopy.title}</Text>
-            <Text style={styles.assuranceLine}>{promiseCopy.lines.encrypted}</Text>
+            <Text style={styles.assuranceLead}>{settingsCopy.settings.assurance.lead}</Text>
+            <Text style={styles.assuranceLine}>{settingsCopy.settings.assurance.line}</Text>
           </View>
         </View>
 

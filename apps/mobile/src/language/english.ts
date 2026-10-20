@@ -192,6 +192,11 @@ export const english = {
    */
   'forecast.fertileWindow.sentence':
     'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.itStarted': 'It started',
+  'forecast.late': {
+    one: 'Your period is {count} day late',
+    other: 'Your period is {count} days late',
+  },
   'forecast.nextPeriod': 'Your next period',
   'forecast.range.sameMonth': 'Between the {from} and the {to} of {month}',
   'forecast.range.spansMonths': 'Between the {from} of {fromMonth} and the {to} of {toMonth}',
@@ -236,6 +241,8 @@ export const english = {
   'history.cycleRange': '{from} to {to}',
   'history.cycles': 'Your cycles',
   'history.dayReads': 'the {ordinal} of {month}',
+  'history.edit': 'Edit',
+  'history.editLabel': 'Edit the period that started on {day}',
   'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
   'history.nothingRepeats':
     "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
@@ -728,11 +735,6 @@ export const english = {
   'onboarding.periodLength.shorter': 'One day shorter',
   'onboarding.periodLength.skip': 'I am not sure',
   'onboarding.periodLength.title': 'How many days does your period usually last?',
-  'onboarding.promise.action': 'Continue',
-  'onboarding.promise.delete': 'Delete everything, in one press',
-  'onboarding.promise.encrypted': 'Encrypted on this phone, with a key only you hold',
-  'onboarding.promise.noTracking': 'No password, no tracking tools',
-  'onboarding.promise.title': 'Only you can read your days.',
   'onboarding.regularity.action': 'Continue',
   'onboarding.regularity.choice.moves': 'No, it moves',
   'onboarding.regularity.choice.regular': 'Yes, most months',
@@ -840,6 +842,7 @@ export const english = {
   'period.products.periodUnderwear': 'Period underwear',
   'period.products.tampon': 'Tampon',
   'period.save': 'Save',
+  'period.startedOnAnotherDay': 'Started on another day?',
   'period.title': 'Period',
   'phase.about.follicular':
     'It starts with your period and ends the day before the ovulation phase.',
@@ -1004,6 +1007,8 @@ export const english = {
     "We couldn't reach our server to remove your account. Nothing can open what's left there: the only key was on this phone, and it went with your days.",
   'settings.settings.answers': 'Your answers',
   'settings.settings.answersLine': 'What you told us when you started',
+  'settings.settings.assurance': 'Only you can read your days.',
+  'settings.settings.assuranceLine': 'Encrypted on this phone, with a key only you hold',
   'settings.settings.back': 'Back',
   'settings.settings.delete': 'Delete everything',
   'settings.settings.deleteLine': "One press, and it's gone for good",

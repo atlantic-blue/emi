@@ -21,7 +21,6 @@ import {
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { promiseActionTestID } from '../../src/features/onboarding/ThePromise';
 import { todayTestID } from '../../src/features/onboarding/Today';
 import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import { type TodaySymptom, defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
@@ -123,7 +122,6 @@ async function sheAnswersTheRest(feelsToday: readonly TodaySymptom[] = []): Prom
   // The reminder stands after the last question, and "Not now" passes it.
   await shePresses(onboardingSkipTestID);
   await shePresses(firstForecastActionTestID);
-  await shePresses(promiseActionTestID);
   await shePresses(whatEmiDoesActionTestID);
 }
 

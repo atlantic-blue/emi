@@ -22,7 +22,7 @@ export default function FirstForecastRoute(): ReactNode {
     <FirstForecast
       cycleLengthDays={cycleLengthDays}
       forecast={forecast}
-      onContinue={() => router.push('/onboarding/the-promise')}
+      onContinue={() => router.push('/onboarding/what-emi-does-with-it')}
     />
   );
 }

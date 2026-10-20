@@ -33,11 +33,6 @@ import {
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
 import {
-  promiseActionTestID,
-  promiseLineTestID,
-  thePromiseTestID,
-} from '../../src/features/onboarding/ThePromise';
-import {
   whatEmiDoesActionTestID,
   whatEmiDoesCardTestID,
   whatEmiDoesTitleTestID,
@@ -58,7 +53,7 @@ jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureS
 jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 /**
- * The four screens between her last answer and the hold, in the voice `docs/design/voice.md` sets.
+ * The three screens between her last answer and the hold, in the voice `docs/design/voice.md` sets.
  * The forecast is the first thing Emi says back to her, so it says it to her by name, and the
  * three screens after it talk to her as you.
  *
@@ -117,14 +112,6 @@ const theForecastWithNoDateSays = {
   cycles: `Emi needs ${String(CYCLES_BEFORE_A_FORECAST)} complete cycles before it forecasts from your own cycles.`,
 };
 
-/** The three lines of the promise, one sentence each, as the redesign writes them. */
-const thePromiseSays = {
-  title: 'Only you can read your days.',
-  encrypted: 'Encrypted on this phone, with a key only you hold',
-  noTracking: 'No password, no tracking tools',
-  delete: 'Delete everything, in one press',
-};
-
 /** The three sections that read her own answers back to her, each as a label and a heading. */
 const whatEmiDoesSays = {
   forecast: { title: 'Your forecast', line: 'A range, and how sure Emi is' },
@@ -152,15 +139,14 @@ const theHoldSays = {
   refused: "That didn't save. Press and hold the button again.",
 };
 
-/** The four screens this step writes, as the catalogue names them. */
+/** The three screens this step writes, as the catalogue names them. */
 const theScreensSheReads: readonly string[] = [
   'onboarding.firstForecast.',
-  'onboarding.promise.',
   'onboarding.whatEmiDoes.',
   'onboarding.hold.',
 ];
 
-/** How each language writes the first person plural, which none of these four screens uses. */
+/** How each language writes the first person plural, which none of these three screens uses. */
 const howEachLanguageSaysWe: Readonly<Record<Language, RegExp>> = {
   en: /(?<!\p{Letter})(we|our)(?!\p{Letter})/iu,
   es: /(?<!\p{Letter})(nos|nuestro|nuestra)(?!\p{Letter})|mos(?!\p{Letter})/iu,
@@ -179,7 +165,7 @@ function theKeysOfTheseScreens(): string[] {
   return wordKeys.filter((key) => theScreensSheReads.some((screen) => key.startsWith(screen)));
 }
 
-/** Every word of the four screens in one language, out of that language's own catalogue. */
+/** Every word of the three screens in one language, out of that language's own catalogue. */
 function theWordsOfTheseScreensIn(language: Language, keys = theKeysOfTheseScreens()): string[] {
   const catalogue = theCatalogueOf(language);
 
@@ -263,10 +249,9 @@ async function sheWalksToHerForecast(walk: HerWalk = {}): Promise<{
   return { pathname: () => app.getPathname(), close: () => view.unmount() };
 }
 
-/** The screen that reads her answers back, which is two presses past the forecast. */
+/** The screen that reads her answers back, which is one press past the forecast. */
 async function sheReadsOnToWhatEmiDoes(): Promise<void> {
   await shePresses(firstForecastActionTestID);
-  await shePresses(promiseActionTestID);
 }
 
 /** The words of one card, which carries its title and then the line under it. */
@@ -394,30 +379,6 @@ describe('her first forecast is addressed to her', () => {
 
       expect(read).not.toMatch(/between/i);
       expect(read.match(/\b\d{1,2}(?:st|nd|rd|th)\b/g)).toBeNull();
-    });
-  });
-
-  describe('the promise she reads after the forecast', () => {
-    beforeEach(async () => {
-      await sheWalksToHerForecast({ day: herPeriodStarted, name: theNameSheGives });
-      await shePresses(firstForecastActionTestID);
-    });
-
-    it('keeps its one sentence word for word, because it is the whole product', () => {
-      expect(screen.getByText(thePromiseSays.title)).toBeTruthy();
-    });
-
-    it('says her days are encrypted on this phone, and says nothing is sent', () => {
-      expect(theCardSays(promiseLineTestID('encrypted'))).toEqual([thePromiseSays.encrypted]);
-      expect(textIn(screen.getByTestId(thePromiseTestID)).join(' ')).not.toMatch(/sent|copy/i);
-    });
-
-    it('says there is no password and no tracking tool', () => {
-      expect(theCardSays(promiseLineTestID('noTracking'))).toEqual([thePromiseSays.noTracking]);
-    });
-
-    it('says one press deletes everything', () => {
-      expect(theCardSays(promiseLineTestID('delete'))).toEqual([thePromiseSays.delete]);
     });
   });
 
@@ -563,7 +524,7 @@ describe('her first forecast is addressed to her', () => {
     });
   });
 
-  describe('the voice these four screens are written in', () => {
+  describe('the voice these three screens are written in', () => {
     it('carries no exclamation mark, in any of the three languages', () => {
       for (const language of languages) {
         const loud = theKeysOfTheseScreens().filter((key) =>
@@ -577,11 +538,7 @@ describe('her first forecast is addressed to her', () => {
     });
 
     it('never talks as we after the forecast either, and names Emi on each of those screens', () => {
-      const theScreensAfterTheForecast = [
-        'onboarding.promise.',
-        'onboarding.whatEmiDoes.',
-        'onboarding.hold.',
-      ];
+      const theScreensAfterTheForecast = ['onboarding.whatEmiDoes.', 'onboarding.hold.'];
 
       for (const language of languages) {
         const read = theWordsOfTheseScreensIn(
@@ -629,7 +586,7 @@ describe('her first forecast is addressed to her', () => {
     it('says no word a screen refuses, in any of the three languages', () => {
       for (const language of languages) {
         const claims = interfaceClaimsIn(
-          `the four screens in ${language}`,
+          `the three screens in ${language}`,
           theWordsOfTheseScreensIn(language).join('\n'),
         );
 
