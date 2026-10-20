@@ -142,6 +142,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
         onMark={nothing}
         onOpenGroup={nothing}
         onPick={nothing}
+        onOtherDischarge={nothing}
         onSearch={nothing}
         onToggleSymptom={nothing}
         ring={undefined}

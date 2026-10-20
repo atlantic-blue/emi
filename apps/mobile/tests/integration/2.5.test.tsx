@@ -18,6 +18,7 @@ import {
   logFlowCopy,
   logFlowDoneTestID,
   logFlowNoRingTestID,
+  logFlowPhaseTestID,
   logFlowSavedTestID,
 } from '../../src/features/log/LogFlow';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
@@ -182,12 +183,12 @@ describe('logging a flow redraws the ring', () => {
       await sheOpensEmi('/log');
 
       expect(theRingSays()).toBe(`Day 2 of ${herCycleLengthDays}, follicular`);
-      expect(screen.getByText(phaseLabel.follicular)).toBeTruthy();
+      expect(screen.getByTestId(logFlowPhaseTestID)).toHaveTextContent(phaseLabel.follicular);
 
       await shePicks('heavy');
 
       expect(theRingSays()).toBe(`Day 2 of ${herCycleLengthDays}, period`);
-      expect(screen.getByText(phaseLabel.period)).toBeTruthy();
+      expect(screen.getByTestId(logFlowPhaseTestID)).toHaveTextContent(phaseLabel.period);
       expect(screen.queryByText(phaseLabel.follicular)).toBeNull();
     });
 

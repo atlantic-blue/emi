@@ -4,6 +4,7 @@ import { dayTestID } from '../../src/features/onboarding/Calendar';
 import {
   pastPeriodLengthTestID,
   pastPeriodPickerDoneTestID,
+  pastPeriodStillGoingTestID,
 } from '../../src/features/pastPeriods/PastPeriodPicker';
 import { pastPeriodRowTestID } from '../../src/features/pastPeriods/PastPeriodsList';
 
@@ -26,5 +27,16 @@ export async function sheGivesAPeriod(
   await fireEvent.press(screen.getByTestId(pastPeriodRowTestID(row)));
   await fireEvent.press(screen.getByTestId(dayTestID(startedOn)));
   await fireEvent.press(screen.getByTestId(pastPeriodLengthTestID(lengthDays)));
+  await fireEvent.press(screen.getByTestId(pastPeriodPickerDoneTestID));
+}
+
+/**
+ * The newest row given as a period that is still going: she presses the day it started, presses
+ * Still going in place of a length, and presses Done.
+ */
+export async function sheGivesAPeriodStillGoing(startedOn: string): Promise<void> {
+  await fireEvent.press(screen.getByTestId(pastPeriodRowTestID(0)));
+  await fireEvent.press(screen.getByTestId(dayTestID(startedOn)));
+  await fireEvent.press(screen.getByTestId(pastPeriodStillGoingTestID));
   await fireEvent.press(screen.getByTestId(pastPeriodPickerDoneTestID));
 }
