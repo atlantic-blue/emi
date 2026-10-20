@@ -201,6 +201,12 @@ export const russian: CatalogueIn<'ru'> = {
    */
   'forecast.fertileWindow.sentence':
     'Оценка по вашим последним {cycles} циклам. Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
+  'forecast.itStarted': 'Уже начались',
+  'forecast.late': {
+    one: 'Месячные задерживаются на {count} день',
+    few: 'Месячные задерживаются на {count} дня',
+    many: 'Месячные задерживаются на {count} дней',
+  },
   'forecast.nextPeriod': 'Ваши следующие месячные',
   'forecast.range.sameMonth': 'С {from} по {to} {month}',
   'forecast.range.spansMonths': 'С {from} {fromMonth} по {to} {toMonth}',
@@ -244,6 +250,8 @@ export const russian: CatalogueIn<'ru'> = {
   'history.cycleRange': 'с {from} по {to}',
   'history.cycles': 'Ваши циклы',
   'history.dayReads': '{ordinal} {month}',
+  'history.edit': 'Изменить',
+  'history.editLabel': 'Изменить месячные, начавшиеся {day}',
   'history.noCycles': 'Циклов пока нет. Отметьте день, когда шла кровь, и здесь появится запись.',
   'history.nothingRepeats':
     'Пока ничто не повторилось за 3 цикла. Продолжайте отмечать, и мы вам покажем.',
@@ -665,6 +673,11 @@ export const russian: CatalogueIn<'ru'> = {
     few: '{count} дня',
     many: '{count} дней',
   },
+  'onboarding.cycleLength.fromHerDates': {
+    one: 'По вашим записям цикл длится в среднем {count} день. Всё верно?',
+    few: 'По вашим записям цикл длится в среднем {count} дня. Всё верно?',
+    many: 'По вашим записям цикл длится в среднем {count} дней. Всё верно?',
+  },
   'onboarding.cycleLength.line.count':
     'Считайте с первого дня одних месячных до дня перед следующими.',
   'onboarding.cycleLength.line.held': 'В пределах от {minimum} до {maximum} дней.',
@@ -676,8 +689,8 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.feeling.choice.fine': 'Меня это устраивает',
   'onboarding.feeling.choice.hard': 'Тяжело, почти каждый месяц',
   'onboarding.feeling.choice.understand': 'Я хочу в этом разобраться',
-  'onboarding.feeling.line.talks': 'Это меняет только то, как Emi с вами говорит.',
-  'onboarding.feeling.title': 'Как вы к этому относитесь',
+  'onboarding.feeling.line.hard': 'Если тяжело, в дни месячных Emi начнёт с боли.',
+  'onboarding.feeling.title': 'Как вы обычно себя чувствуете во время месячных?',
   'onboarding.firstForecast.action': 'Продолжить',
   'onboarding.firstForecast.needs': {
     one: 'Emi нужен {count} полный цикл, чтобы прогнозировать по вашим собственным циклам, поэтому Emi ещё учится.',
@@ -726,13 +739,6 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.goals.choice.symptoms': 'Понимать свои симптомы',
   'onboarding.goals.line.chooseAll': 'Выберите всё, что подходит.',
   'onboarding.goals.title': 'В чём вы хотите помощи от Emi?',
-  'onboarding.hold.action': 'Удерживайте, чтобы начать',
-  'onboarding.hold.held': 'Удерживайте дальше',
-  'onboarding.hold.instruction': 'Нажмите и удерживайте кнопку, чтобы начать.',
-  'onboarding.hold.refused': 'Это не сохранилось. Нажмите и удерживайте кнопку ещё раз.',
-  'onboarding.hold.sealed':
-    'Удержание кнопки сохраняет ваши ответы, запечатанные вашим ключом. Emi создаёт ключ и хранит его в связке ключей этого телефона.',
-  'onboarding.hold.title': 'Ваш цикл, ваши данные, ваш ключ.',
   'onboarding.lastPeriod.earlier': 'Раньше',
   'onboarding.lastPeriod.earlierMonth': 'Предыдущий месяц',
   'onboarding.lastPeriod.later': 'Позже',
@@ -750,6 +756,11 @@ export const russian: CatalogueIn<'ru'> = {
   },
   'onboarding.periodLength.action': 'Готово',
   'onboarding.periodLength.days': { one: '{count} день', few: '{count} дня', many: '{count} дней' },
+  'onboarding.periodLength.fromHerDates': {
+    one: 'По вашим записям месячные длятся в среднем {count} день. Всё верно?',
+    few: 'По вашим записям месячные длятся в среднем {count} дня. Всё верно?',
+    many: 'По вашим записям месячные длятся в среднем {count} дней. Всё верно?',
+  },
   'onboarding.periodLength.line.count': 'С первого дня кровотечения до его окончания.',
   'onboarding.periodLength.line.logged':
     'Emi использует вместо этого дни, которые вы отметите, как только вы их отметите.',
@@ -773,6 +784,12 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.reminder.notNow': 'Не сейчас',
   'onboarding.reminder.title': 'Пусть Emi напомнит, когда срок будет близко?',
   'onboarding.skip': 'Пропустить',
+  'onboarding.start.action': 'Сохранить и начать',
+  'onboarding.start.allSet': 'Всё готово',
+  'onboarding.start.refused': 'Это не сохранилось. Нажмите «Сохранить и начать» ещё раз.',
+  'onboarding.start.sealed':
+    'Сохранение запечатывает ваши ответы вашим ключом. Emi создаёт ключ и хранит его в связке ключей этого телефона.',
+  'onboarding.start.title': 'Ваш цикл, ваши данные, ваш ключ.',
   'onboarding.step': 'Шаг {step} из {of}',
   'onboarding.today.action': 'Сохранить сегодняшний день',
   'onboarding.today.nothingToAdd': 'Нечего добавить',
@@ -841,10 +858,13 @@ export const russian: CatalogueIn<'ru'> = {
     'Цикл длится от {minimum} до {maximum} дней. Попробуйте день в этом диапазоне.',
   'pastPeriods.picker.remove': 'Убрать эти месячные',
   'pastPeriods.picker.start': 'Когда они начались?',
+  'pastPeriods.picker.stillGoingTooLongAgo':
+    'Если месячные ещё идут, они начались не больше {maximum} дней назад. Выберите день позже.',
   'pastPeriods.picker.title': 'Месячные {number}',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Сохранить',
   'pastPeriods.skipThisOne': 'Пропустите, если не помните',
+  'pastPeriods.stillGoing': 'Ещё идут',
   'pastPeriods.title': 'Ваши последние три менструации',
   'pastPeriods.wayPast': 'Пропустить, буду отмечать по ходу',
   'period.back': 'Назад',
@@ -866,6 +886,7 @@ export const russian: CatalogueIn<'ru'> = {
   'period.products.periodUnderwear': 'Менструальные трусы',
   'period.products.tampon': 'Тампон',
   'period.save': 'Сохранить',
+  'period.startedOnAnotherDay': 'Начались в другой день?',
   'period.title': 'Месячные',
   'phase.about.follicular': 'Она начинается с месячных и заканчивается за день до фазы овуляции.',
   'phase.about.luteal':

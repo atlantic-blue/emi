@@ -15,7 +15,13 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../components/Screen';
 import { patternsWaitingSentence } from '../cycle/patternsWaiting';
 import type { History, HistoryCycle, HistoryPattern } from './historyNow';
-import { cycleLengthSentence, cycleSentence, historyCopy, patternSentence } from './copy';
+import {
+  cycleLengthSentence,
+  cycleSentence,
+  editPeriodLabel,
+  historyCopy,
+  patternSentence,
+} from './copy';
 
 /**
  * Six cycles read back, and what came back with them. The value of logging arrives here: a woman
@@ -42,6 +48,11 @@ export const historyWaitingTestID = 'history-waiting';
 /** One cycle row, addressed by the day it began, so a test presses the cycle it seeded. */
 export function historyCycleTestID(startedOn: string): string {
   return `history-cycle-${startedOn}`;
+}
+
+/** The Edit of one cycle row, which opens the period editor on the day that cycle began. */
+export function historyEditTestID(startedOn: string): string {
+  return `history-edit-${startedOn}`;
 }
 
 /** One symptom row, addressed by the slug, which is the part of a symptom that never changes. */
@@ -74,6 +85,8 @@ interface Props {
   readonly openedPattern?: string;
   /** A press opens the day itself, because a pattern she disagrees with is a day she can correct. */
   readonly onOpenDay: (day: string) => void;
+  /** Edit on a cycle row opens the period editor on the day that cycle began. */
+  readonly onEditPeriod: (startedOn: string) => void;
   readonly onBack: () => void;
 }
 
@@ -100,11 +113,13 @@ function CycleRow({
   cycle,
   opened,
   onOpenDay,
+  onEditPeriod,
 }: {
   readonly cycle: HistoryCycle;
   /** True for the one cycle she arrived at, which is drawn with a border she can see. */
   readonly opened: boolean;
   readonly onOpenDay: (day: string) => void;
+  readonly onEditPeriod: (startedOn: string) => void;
 }): ReactNode {
   return (
     <Pressable
@@ -121,7 +136,15 @@ function CycleRow({
         </Text>
         <PhaseBar cycle={cycle} />
       </View>
-      <Icon colour={colour.quietIcon} name="chevron" size={theMarkOnward} />
+      <Pressable
+        accessibilityLabel={editPeriodLabel(cycle.startedOn)}
+        accessibilityRole="button"
+        onPress={() => onEditPeriod(cycle.startedOn)}
+        style={styles.edit}
+        testID={historyEditTestID(cycle.startedOn)}
+      >
+        <Text style={styles.editLabel}>{historyCopy.edit}</Text>
+      </Pressable>
     </Pressable>
   );
 }
@@ -166,6 +189,7 @@ export function HistoryScreen({
   openedAt,
   openedPattern,
   onOpenDay,
+  onEditPeriod,
   onBack,
 }: Props): ReactNode {
   return (
@@ -212,6 +236,7 @@ export function HistoryScreen({
               <CycleRow
                 cycle={cycle}
                 key={cycle.startedOn}
+                onEditPeriod={onEditPeriod}
                 onOpenDay={onOpenDay}
                 opened={cycle.startedOn === openedAt}
               />
@@ -260,6 +285,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   body: { padding: space.spaceLg },
+  // The board writes Edit in the accent at 14 points, bold, on a thumb sized target at the row end.
+  edit: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    minHeight: MINIMUM_TAP_TARGET,
+    minWidth: MINIMUM_TAP_TARGET,
+  },
+  editLabel: {
+    color: colour.accent,
+    ...textStyle('choice-sm'),
+  },
   heading: {
     color: colour.text,
     ...textStyle('headline-md'),

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useDatabase } from '../data/DatabaseProvider';
+import { dayParameter } from '../features/calendar/askedMonth';
 import { highlightAddress } from '../features/highlight/highlights';
 import { DayRefused } from '../features/log/DayRefused';
 import { refusalFor } from '../features/log/editDay';
@@ -18,6 +19,10 @@ import { useVault } from '../services/vault/VaultProvider';
 /**
  * The Period page of one day: today where the address names no day, and a past day where it names
  * one. A day ahead of her is refused, as every other day she opens is.
+ *
+ * Started on another day? replaces this page with the period editor on the same day. A page left
+ * under the editor would still hold the answers from before the editor saved, and its Save would
+ * write them back over the days the editor just wrote.
  */
 export default function PeriodRoute(): ReactNode {
   const database = useDatabase();
@@ -70,6 +75,7 @@ export default function PeriodRoute(): ReactNode {
       onBack={leave}
       onHighlight={(slug) => router.push(highlightAddress(slug))}
       onSave={save}
+      onStartedOnAnotherDay={() => router.replace(`/calendar/period?${dayParameter}=${day}`)}
     />
   );
 }

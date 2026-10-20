@@ -296,6 +296,7 @@ import { periodDayLabel } from '../apps/mobile/src/features/period/copy';
 import { sheOpensTheSymptomGroupsFromToday } from '../apps/mobile/tests/fixtures/theSymptomGroupsFromToday';
 import {
   periodChipTestID,
+  periodPageAnotherDayTestID,
   periodPageDayTestID,
   periodPageSaveTestID,
   periodPageTestID,
@@ -365,16 +366,14 @@ import {
   weekCellTestIDs,
   weekTestID,
 } from '../apps/mobile/src/features/onboarding/Calendar';
-import {
-  HOLD_MILLISECONDS,
-  holdScreenTestID,
-} from '../apps/mobile/src/features/onboarding/HoldToBegin';
+import { saveScreenTestID } from '../apps/mobile/src/features/onboarding/SaveAndStart';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
   onboardingEmblemTestID,
   onboardingHeaderWordTestID,
   onboardingProgressTestID,
+  onboardingQuestionTestID,
   onboardingSheetTestID,
   onboardingSkipTestID,
   onboardingStepLabelTestID,
@@ -474,10 +473,11 @@ import {
   thePartsOfTheDayOneDrawing,
   thePartsTheDayOneDrawingNames,
 } from '../apps/mobile/tests/fixtures/theDrawingOfDayOne';
-import { sheHoldsTheRing } from '../apps/mobile/tests/fixtures/theHold';
+import { sheTapsSaveAndStart } from '../apps/mobile/tests/fixtures/theSave';
 import {
   aWalkPeriodLengthDays,
   sheGivesAPeriod,
+  sheGivesAPeriodStillGoing,
 } from '../apps/mobile/tests/fixtures/thePastPeriods';
 import { pastPeriodRowTestID } from '../apps/mobile/src/features/pastPeriods/PastPeriodsList';
 import { pastPeriodsSaveTestID } from '../apps/mobile/src/features/pastPeriods/PastPeriodsScreen';
@@ -601,11 +601,23 @@ import {
   whenSheOpensEmi,
 } from '../apps/mobile/tests/fixtures/thePeriodSheCorrects';
 import {
+  editPeriodAddBeforeTestID,
   editPeriodChangeTestID,
   editPeriodListTestID,
   editPeriodRowTestID,
   editPeriodSaveTestID,
+  editPeriodScreenTestID,
 } from '../apps/mobile/src/features/calendar/EditPeriodScreen';
+import {
+  nextPeriodItStartedTestID,
+  nextPeriodLateTestID,
+  nextPeriodRangeTestID,
+} from '../apps/mobile/src/features/forecast/NextPeriod';
+import {
+  herPhoneHoldsThreePeriodsAndNoLateOne,
+  theDaySheIsLate,
+  whenSheIsLate,
+} from '../apps/mobile/tests/fixtures/theLateHome';
 import {
   type LogOrCalendarDrawing,
   howManyDifferencesAreKeptFor,
@@ -882,8 +894,8 @@ const theCycleLengthIsStepFive = 5;
  */
 const theQuestionsLeftAfterTheCycleLength = 7;
 
-/** When the hold ends, which is the instant everything she answered is written at. */
-const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
+/** When she taps Save and start, which is the instant everything she answered is written at. */
+const whenSheSaves = whenSheOpensIt;
 
 /** Thursday. The day she did not log is the Monday three days behind her. */
 const sheForgot = addDays(today, -3);
@@ -1256,7 +1268,7 @@ async function herAnswersInPlainWords(): Promise<Uint8Array> {
     throw new Error('this phone holds no profile, so there are no answers to write out plainly');
   }
 
-  return profileBytes(held, { now: whenSheFinishesTheHold });
+  return profileBytes(held, { now: whenSheSaves });
 }
 
 async function sheOpens(at: string): Promise<OpenApp> {
@@ -1679,8 +1691,8 @@ defineFeature(feature, (test) => {
       await sheAnswersEveryQuestionOfTheFirstRun();
     });
 
-    and('she presses and holds Hold to begin', async () => {
-      await sheHoldsTheRing();
+    and('she taps Save and start', async () => {
+      await sheTapsSaveAndStart();
     });
 
     then('she is looking at the home screen', () => {
@@ -1697,7 +1709,7 @@ defineFeature(feature, (test) => {
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
     });
 
@@ -1724,8 +1736,8 @@ defineFeature(feature, (test) => {
       await sheAnswersEveryQuestionOfTheFirstRun();
     });
 
-    and('she presses and holds Hold to begin', async () => {
-      await sheHoldsTheRing();
+    and('she taps Save and start', async () => {
+      await sheTapsSaveAndStart();
     });
 
     then('her phone holds the cycle length she gave', async () => {
@@ -1750,7 +1762,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-1, she answers everything, leaves before the hold, and nothing is written', ({
+  test('SCREEN-1, she answers everything, leaves before she taps Save and start, and nothing is written', ({
     given,
     when,
     and,
@@ -1769,7 +1781,7 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/onboarding/hold');
     });
 
-    and('she closes Emi at the hold, without holding Hold to begin', async () => {
+    and('she closes Emi at the last screen, without tapping Save and start', async () => {
       await app.close();
     });
 
@@ -1832,8 +1844,8 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('she presses and holds Hold to begin', async () => {
-      await sheHoldsTheRing();
+    and('she taps Save and start', async () => {
+      await sheTapsSaveAndStart();
     });
 
     then('she is looking at the home screen', () => {
@@ -1846,21 +1858,17 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'her phone holds the time of the hold, and one instant on all three of her answers',
+      'her phone holds the time she tapped Save and start, and one instant on all three of her answers',
       async () => {
         const row = readDayLog(herDatabase(), herPeriodStarted);
         const vault = await theVaultOnHerPhone();
 
-        expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
-          whenSheFinishesTheHold.toISOString(),
-        );
-        expect(row && vault.open(row.payload).recordedAt).toBe(
-          whenSheFinishesTheHold.toISOString(),
-        );
+        expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheSaves.toISOString());
+        expect(row && vault.open(row.payload).recordedAt).toBe(whenSheSaves.toISOString());
         expect(
           (await theProfileVaultOnHerPhone()) &&
             readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.recordedAt,
-        ).toBe(whenSheFinishesTheHold.toISOString());
+        ).toBe(whenSheSaves.toISOString());
       },
     );
   });
@@ -1930,10 +1938,10 @@ defineFeature(feature, (test) => {
       expect(listDayLogs(herDatabase())).toEqual([]);
     });
 
-    when('she reads on and presses and holds Hold to begin', async () => {
+    when('she reads on and taps Save and start', async () => {
       await shePresses(firstForecastActionTestID);
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
     });
 
     then('her phone holds one day, the day she said her period started', () => {
@@ -1959,10 +1967,10 @@ defineFeature(feature, (test) => {
   }
 
   /** The forecast, what Emi does with it, and the hold. */
-  async function sheReadsOnAndHolds(): Promise<void> {
+  async function sheReadsOnAndSaves(): Promise<void> {
     await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
     await shePresses(whatEmiDoesActionTestID);
-    await sheHoldsTheRing();
+    await sheTapsSaveAndStart();
   }
 
   test('SCREEN-1, she asks Emi to remind her two days before the range starts', ({
@@ -2019,8 +2027,8 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/onboarding/first-forecast');
     });
 
-    when('she reads on and presses and holds Hold to begin', async () => {
-      await sheReadsOnAndHolds();
+    when('she reads on and taps Save and start', async () => {
+      await sheReadsOnAndSaves();
     });
 
     then(
@@ -2075,8 +2083,8 @@ defineFeature(feature, (test) => {
       expect(timesThePhoneAsked()).toBe(1);
     });
 
-    when('she reads on and presses and holds Hold to begin', async () => {
-      await sheReadsOnAndHolds();
+    when('she reads on and taps Save and start', async () => {
+      await sheReadsOnAndSaves();
     });
 
     then('her phone holds no reminder and no choice of one', () => {
@@ -2085,7 +2093,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-1, the first run asks its questions and the hold after them', ({
+  test('SCREEN-1, the first run asks its questions and the save after them', ({
     given,
     when,
     and,
@@ -2147,8 +2155,8 @@ defineFeature(feature, (test) => {
       sheIsOn();
     });
 
-    and('she presses and holds Hold to begin', async () => {
-      await sheHoldsTheRing();
+    and('she taps Save and start', async () => {
+      await sheTapsSaveAndStart();
     });
 
     then(
@@ -2261,8 +2269,8 @@ defineFeature(feature, (test) => {
       everyFieldShePassed.push(...fieldsDrawn());
     });
 
-    and('she presses and holds Hold to begin', async () => {
-      await sheHoldsTheRing();
+    and('she taps Save and start', async () => {
+      await sheTapsSaveAndStart();
     });
 
     then('the only thing she could type into was her name', () => {
@@ -6065,7 +6073,7 @@ defineFeature(feature, (test) => {
       expect(firstRunScreenCount).toBe(theStepsOfTheFirstRun);
     });
 
-    when('she answers the rest of the questions and presses and holds Hold to begin', async () => {
+    when('she answers the rest of the questions and taps Save and start', async () => {
       await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
 
       await shePresses(onboardingActionTestID);
@@ -6080,7 +6088,7 @@ defineFeature(feature, (test) => {
       whereSheIsNow();
       await shePresses(whatEmiDoesActionTestID);
       whereSheIsNow();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       whereSheIsNow();
     });
 
@@ -6111,13 +6119,83 @@ defineFeature(feature, (test) => {
         expect(sealed?.name).toBe(theNameSheGives);
         expect(sealed?.birthYear).toBe(theYearSheWasBornIn);
         expect(sealed?.cycleLengthDays).toBe(sheSaysHerCycleRuns);
-        expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
-          whenSheFinishesTheHold.toISOString(),
-        );
+        expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheSaves.toISOString());
         expect(listDayLogs(herDatabase())).toEqual([]);
         expect(listCycles(herDatabase())).toEqual([]);
       },
     );
+  });
+
+  test('SCREEN-1, her newest period is still going, and Emi writes the days up to today', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const herNewestStarted = addDays(today, -3);
+    const theOneBefore = addDays(herNewestStarted, -28);
+    const theOneBeforeThat = addDays(herNewestStarted, -56);
+    const eachLastedDays = 5;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    and('she reaches the step that asks for her last three periods', async () => {
+      await sheReachesTheThreePeriodsStep();
+    });
+
+    and('she gives her newest period, which started three days ago, as still going', async () => {
+      await sheGivesAPeriodStillGoing(herNewestStarted);
+    });
+
+    then('the row of her newest period says it is still going', () => {
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(0))).join(' ')).toContain('Still going');
+    });
+
+    when(
+      'she gives the two periods before it, each with the day it started and the days it lasted',
+      async () => {
+        await sheGivesAPeriod(1, theOneBefore, eachLastedDays);
+        await sheGivesAPeriod(2, theOneBeforeThat, eachLastedDays);
+        await shePresses(onboardingActionTestID);
+      },
+    );
+
+    and('she answers the rest of the questions and taps Save and start', async () => {
+      await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
+      await shePresses(onboardingActionTestID);
+
+      for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePassesTheQuestion();
+      }
+
+      await shePresses(firstForecastActionTestID);
+      await shePresses(whatEmiDoesActionTestID);
+      await sheTapsSaveAndStart();
+    });
+
+    then(
+      'her phone holds every day from the start of her newest period to today, and the days of the two before it',
+      () => {
+        const theDaysBefore = [theOneBeforeThat, theOneBefore].flatMap((start) =>
+          Array.from({ length: eachLastedDays }, (_unused, at) => addDays(start, at)),
+        );
+        const theDaysSoFar = [0, 1, 2, 3].map((at) => addDays(herNewestStarted, at));
+
+        expect(
+          listDayLogs(herDatabase())
+            .map((log) => log.day)
+            .sort(),
+        ).toEqual([...theDaysBefore, ...theDaysSoFar].sort());
+      },
+    );
+
+    and('the ring says she is on day 4 of her cycle', () => {
+      expect(within(screen.getByTestId(cycleRingTestID)).getByText('Day 4')).toBeTruthy();
+    });
   });
 
   test('SCREEN-1, the first run with no date ends on a forecast that says it is still learning', ({
@@ -6255,8 +6333,8 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('she presses and holds Hold to begin', async () => {
-      await sheHoldsTheRing();
+    and('she taps Save and start', async () => {
+      await sheTapsSaveAndStart();
     });
 
     then('she is looking at the screen that says what the ring needs', () => {
@@ -7088,13 +7166,13 @@ defineFeature(feature, (test) => {
       now: 'Here is what Emi does with what you told it',
       theOldGreeting: `${theNameSheGives}, here's what we'll do with your answers`,
     };
-    const theHoldNowSays = 'Your cycle, your data, your key.';
+    const theSaveNowSays = 'Your cycle, your data, your key.';
 
-    /** The keys of the three screens from the forecast to the hold, in every language. */
+    /** The keys of the three screens from the forecast to Save and start, in every language. */
     const theseScreens: readonly string[] = [
       'onboarding.firstForecast.',
       'onboarding.whatEmiDoes.',
-      'onboarding.hold.',
+      'onboarding.start.',
     ];
 
     let app: OpenApp;
@@ -7220,7 +7298,7 @@ defineFeature(feature, (test) => {
         await shePresses(whatEmiDoesActionTestID);
 
         expect(app.pathname()).toBe('/onboarding/hold');
-        expect(textIn(screen.getByTestId(holdScreenTestID))).toContain(theHoldNowSays);
+        expect(textIn(screen.getByTestId(saveScreenTestID))).toContain(theSaveNowSays);
       },
     );
   });
@@ -8830,7 +8908,7 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('she answers the rest of the questions and presses and holds Hold to begin', async () => {
+    and('she answers the rest of the questions and taps Save and start', async () => {
       await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
       await shePresses(onboardingActionTestID);
 
@@ -8843,7 +8921,7 @@ defineFeature(feature, (test) => {
 
       await shePresses(firstForecastActionTestID);
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
     });
 
     then('her phone holds every bleeding day of the three periods, and no other day', () => {
@@ -8869,6 +8947,134 @@ defineFeature(feature, (test) => {
       expect(textIn(screen.getByTestId(historyCycleTestID(theOneBefore))).join(' ')).toContain(
         cycleLengthSentence(28, eachLastedDays),
       );
+    });
+  });
+
+  test('SCREEN-1, she gives three periods and confirms the lengths Emi worked out from them', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const theOneBefore = addDays(herPeriodStarted, -27);
+    const theOneBeforeThat = addDays(herPeriodStarted, -54);
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    and('she reaches the step that asks for her last three periods', async () => {
+      await sheReachesTheThreePeriodsStep();
+    });
+
+    and('she gives three periods, 27 days apart, that lasted 6, 6 and 4 days', async () => {
+      await sheGivesAPeriod(0, herPeriodStarted, 6);
+      await sheGivesAPeriod(1, theOneBefore, 6);
+      await sheGivesAPeriod(2, theOneBeforeThat, 4);
+      await shePresses(onboardingActionTestID);
+    });
+
+    then(
+      'the cycle question says her records average 27 days, and the wheel stands on 27 with Done ready',
+      () => {
+        expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
+          'Based on your records, your cycle averages 27 days. Does that look right?',
+        );
+        expect(screen.getByTestId(cycleLengthDaysTestID(27))).toBeSelected();
+        expect(screen.getByTestId(onboardingActionTestID)).toBeEnabled();
+      },
+    );
+
+    when('she presses Done without turning the wheel', async () => {
+      await shePresses(onboardingActionTestID);
+    });
+
+    then(
+      'the period question says her records average 6 days, and the wheel stands on 6 with Done ready',
+      () => {
+        expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
+          'Based on your records, your period averages 6 days. Does that look right?',
+        );
+        expect(screen.getByTestId(periodLengthDaysTestID(6))).toBeSelected();
+        expect(screen.getByTestId(onboardingActionTestID)).toBeEnabled();
+      },
+    );
+
+    when('she presses Done without turning the wheel', async () => {
+      await shePresses(onboardingActionTestID);
+    });
+
+    and('she answers the rest of the questions and taps Save and start', async () => {
+      for (let question = 1; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePassesTheQuestion();
+      }
+
+      await shePresses(firstForecastActionTestID);
+      await shePresses(whatEmiDoesActionTestID);
+      await sheTapsSaveAndStart();
+    });
+
+    then('her phone holds a cycle length of 27 days and a period length of 6 days', async () => {
+      const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
+
+      expect(held?.cycleLengthDays).toBe(27);
+      expect(held?.periodLengthDays).toBe(6);
+    });
+  });
+
+  test('SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    const yesterday = addDays(today, -1);
+
+    given('her phone holds her first run answers and not one recorded day', async () => {
+      await herPhoneHolds(whenSheOpensIt, [], sheSaysHerCycleRuns);
+    });
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    and('she presses Period under the ring', async () => {
+      await shePresses(roundActionTestID('period'));
+
+      expect(app.pathname()).toBe('/period');
+      expect(screen.getByTestId(periodPageTestID)).toBeTruthy();
+    });
+
+    and('she presses Started on another day?', async () => {
+      await shePresses(periodPageAnotherDayTestID);
+    });
+
+    then('she is looking at the period picker, and it lists today', () => {
+      expect(app.pathname()).toBe('/calendar/period');
+      expect(screen.getByTestId(editPeriodScreenTestID)).toBeTruthy();
+      expect(screen.getByTestId(editPeriodRowTestID(today))).toBeTruthy();
+    });
+
+    when('she presses today, then Add the day before, and saves', async () => {
+      await shePresses(editPeriodRowTestID(today));
+      await shePresses(editPeriodAddBeforeTestID);
+      await shePresses(editPeriodSaveTestID);
+    });
+
+    then('she is on the screen she opened, and no Period page is left under it', () => {
+      expect(app.pathname()).toBe('/');
+      expect(screen.queryByTestId(periodPageTestID)).toBeNull();
+    });
+
+    and('her period started yesterday', () => {
+      expect(theCycleStartsHerPhoneHolds()).toEqual([yesterday]);
+    });
+
+    and('the ring says she is on day 2 of a cycle of the length she gave', () => {
+      expect(theRingSays()).toBe(ringSpokenLabel(2, sheSaysHerCycleRuns, phaseLabel.period));
     });
   });
 
@@ -8954,6 +9160,74 @@ defineFeature(feature, (test) => {
       expect(listDayLogs(herDatabase())).toHaveLength(15);
       expect(aForecastIsDrawn()).toBe(true);
       expect(screen.queryByTestId(forecastPopupTestID)).toBeNull();
+    });
+  });
+
+  test('SCREEN-2, her period is late, and she logs the day it started', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let app: OpenApp;
+    const yesterday = addDays(theDaySheIsLate, -1);
+
+    given(
+      'her phone holds three periods 28 days apart, and the forecast window ended two days ago',
+      async () => {
+        jest.setSystemTime(whenSheIsLate);
+        await herPhoneHoldsThreePeriodsAndNoLateOne();
+
+        expect(listCycles(herDatabase()).map((cycle) => cycle.startedOn)).toEqual([
+          '2026-07-24',
+          '2026-08-21',
+          '2026-09-18',
+        ]);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('the forecast says her period is 2 days late, and the range that passed is gone', () => {
+      expect(app.pathname()).toBe('/');
+      expect(whatItSays(nextPeriodLateTestID)).toBe('Your period is 2 days late');
+      expect(screen.queryByTestId(nextPeriodRangeTestID)).toBeNull();
+      expect(screen.queryByText('Between the 15th and the 17th of October')).toBeNull();
+    });
+
+    when('she presses It started', async () => {
+      expect(whatItSays(nextPeriodItStartedTestID)).toBe('It started');
+      await shePresses(nextPeriodItStartedTestID);
+    });
+
+    then('she is in the period editor, opened on today', () => {
+      expect(app.pathname()).toBe('/calendar/period');
+      expect(app.searchParams()).toEqual(
+        expect.objectContaining({ [dayParameter]: theDaySheIsLate }),
+      );
+      expect(theDaysTheListDrew()).toEqual([theDaySheIsLate]);
+      expect(theDaysTickedOnThePicker()).toEqual([]);
+    });
+
+    when('she adds yesterday and saves', async () => {
+      await shePresses(editPeriodAddBeforeTestID);
+
+      expect(theDaysTickedOnThePicker()).toEqual([yesterday]);
+
+      await shePresses(editPeriodSaveTestID);
+    });
+
+    then('she is back on Today, and the forecast gives the range of her next period again', () => {
+      expect(app.pathname()).toBe('/');
+      expect(listCycles(herDatabase()).map((cycle) => cycle.startedOn)).toContain(yesterday);
+      expect(whatItSays(nextPeriodRangeTestID)).toBe('Between the 14th and the 16th of November');
+    });
+
+    and('no line says her period is late', () => {
+      expect(screen.queryByTestId(nextPeriodLateTestID)).toBeNull();
+      expect(screen.queryByTestId(nextPeriodItStartedTestID)).toBeNull();
     });
   });
 

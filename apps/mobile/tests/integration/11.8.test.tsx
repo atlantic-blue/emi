@@ -42,7 +42,7 @@ import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -277,7 +277,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         await sheOpensEmi();
 
         await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, focus: [group] });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect(statedFocus(herDatabase(), await theProfileVaultOnHerPhone())).toEqual([group]);
       });
@@ -293,7 +293,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['sleep', 'pain'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(statedFocus(herDatabase(), await theProfileVaultOnHerPhone())).toEqual([
         'sleep',
@@ -308,7 +308,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['pain', 'mood', 'sleep'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = statedFocus(herDatabase(), await theProfileVaultOnHerPhone());
 
@@ -328,7 +328,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 
@@ -343,7 +343,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 
@@ -402,7 +402,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['pain', 'sleep'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(theOrderOfHerLog().slice(0, 2)).toEqual(['pain', 'sleep']);
@@ -415,7 +415,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['sleep', 'pain'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(theOrderOfHerLog().slice(0, 2)).toEqual(['sleep', 'pain']);
@@ -425,7 +425,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(theOrderOfHerLog()).toEqual([...theGroupsTheSheetHeads]);
@@ -438,7 +438,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['pain', 'sleep'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect([...theOrderOfHerLog()].sort()).toEqual([...theGroupsTheSheetHeads].sort());
@@ -448,7 +448,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, focus: ['sleep'] });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(theOrderOfHerLog()).toEqual([
@@ -461,7 +461,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, focus: ['mood'] });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(screen.getByTestId('mood-picker')).toBeTruthy();

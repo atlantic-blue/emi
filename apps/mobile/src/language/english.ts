@@ -192,6 +192,11 @@ export const english = {
    */
   'forecast.fertileWindow.sentence':
     'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.itStarted': 'It started',
+  'forecast.late': {
+    one: 'Your period is {count} day late',
+    other: 'Your period is {count} days late',
+  },
   'forecast.nextPeriod': 'Your next period',
   'forecast.range.sameMonth': 'Between the {from} and the {to} of {month}',
   'forecast.range.spansMonths': 'Between the {from} of {fromMonth} and the {to} of {toMonth}',
@@ -236,6 +241,8 @@ export const english = {
   'history.cycleRange': '{from} to {to}',
   'history.cycles': 'Your cycles',
   'history.dayReads': 'the {ordinal} of {month}',
+  'history.edit': 'Edit',
+  'history.editLabel': 'Edit the period that started on {day}',
   'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
   'history.nothingRepeats':
     "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
@@ -636,6 +643,10 @@ export const english = {
     one: '{count} day',
     other: '{count} days',
   },
+  'onboarding.cycleLength.fromHerDates': {
+    one: 'Based on your records, your cycle averages {count} day. Does that look right?',
+    other: 'Based on your records, your cycle averages {count} days. Does that look right?',
+  },
   'onboarding.cycleLength.line.count':
     'Count the first day of one period to the day before the next.',
   'onboarding.cycleLength.line.held': 'Held between {minimum} and {maximum} days.',
@@ -647,8 +658,8 @@ export const english = {
   'onboarding.feeling.choice.fine': 'I am fine with it',
   'onboarding.feeling.choice.hard': 'It is hard, most months',
   'onboarding.feeling.choice.understand': 'I want to understand it',
-  'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
-  'onboarding.feeling.title': 'How you feel about it',
+  'onboarding.feeling.line.hard': 'If it is hard, Emi puts pain first on your period days.',
+  'onboarding.feeling.title': 'How do you usually feel during your period?',
   'onboarding.firstForecast.action': 'Continue',
   'onboarding.firstForecast.needs': {
     one: 'Emi needs {count} complete cycle before it forecasts from your own cycles, so this is still learning.',
@@ -692,17 +703,6 @@ export const english = {
   'onboarding.goals.choice.symptoms': 'Understand my symptoms',
   'onboarding.goals.line.chooseAll': 'Choose all that apply.',
   'onboarding.goals.title': 'What do you want Emi to help with?',
-  'onboarding.hold.action': 'Hold to begin',
-  'onboarding.hold.held': 'Keep holding',
-  'onboarding.hold.instruction': 'Press and hold the button to begin.',
-  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
-  // day, the answers and the marker go in one transaction or none of them do.
-  'onboarding.hold.refused': "That didn't save. Press and hold the button again.",
-  // The key is made at launch or at the hold, whichever finds the keychain empty first, and it is
-  // kept in the keychain rather than anywhere a screen may name.
-  'onboarding.hold.sealed':
-    "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
-  'onboarding.hold.title': 'Your cycle, your data, your key.',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
   'onboarding.lastPeriod.later': 'Later',
@@ -722,6 +722,10 @@ export const english = {
   'onboarding.periodLength.days': {
     one: '{count} day',
     other: '{count} days',
+  },
+  'onboarding.periodLength.fromHerDates': {
+    one: 'Based on your records, your period averages {count} day. Does that look right?',
+    other: 'Based on your records, your period averages {count} days. Does that look right?',
   },
   'onboarding.periodLength.line.count': 'From the first day of bleeding until it stops.',
   'onboarding.periodLength.line.logged': 'Emi uses the days you log instead, once you log them.',
@@ -745,6 +749,16 @@ export const english = {
   'onboarding.reminder.notNow': 'Not now',
   'onboarding.reminder.title': 'Shall Emi tell you when it is near?',
   'onboarding.skip': 'Skip',
+  'onboarding.start.action': 'Save and start',
+  'onboarding.start.allSet': 'All set',
+  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
+  // day, the answers and the marker go in one transaction or none of them do.
+  'onboarding.start.refused': "That didn't save. Tap Save and start again.",
+  // The key is made at launch or at the save, whichever finds the keychain empty first, and it is
+  // kept in the keychain rather than anywhere a screen may name.
+  'onboarding.start.sealed':
+    "Saving keeps your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  'onboarding.start.title': 'Your cycle, your data, your key.',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.today.action': 'Save today',
   'onboarding.today.nothingToAdd': 'Nothing to add',
@@ -811,10 +825,13 @@ export const english = {
     'Cycles run from {minimum} to {maximum} days. Try a day in that range.',
   'pastPeriods.picker.remove': 'Remove this period',
   'pastPeriods.picker.start': 'When did it start?',
+  'pastPeriods.picker.stillGoingTooLongAgo':
+    'A period that is still going started {maximum} days ago or less. Try a later day.',
   'pastPeriods.picker.title': 'Period {number}',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Save',
   'pastPeriods.skipThisOne': 'Skip this one if you do not remember',
+  'pastPeriods.stillGoing': 'Still going',
   'pastPeriods.title': 'Your last three periods',
   'pastPeriods.wayPast': 'Skip, I will log as I go',
   'period.back': 'Back',
@@ -836,6 +853,7 @@ export const english = {
   'period.products.periodUnderwear': 'Period underwear',
   'period.products.tampon': 'Tampon',
   'period.save': 'Save',
+  'period.startedOnAnotherDay': 'Started on another day?',
   'period.title': 'Period',
   'phase.about.follicular':
     'It starts with your period and ends the day before the ovulation phase.',

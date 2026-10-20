@@ -388,11 +388,11 @@ export interface FirstRunVaults {
   readonly profile: ProfileVault;
 }
 
-/** What the hold asks for before it writes: her key, made if this phone holds none. */
+/** What the save asks for before it writes: her key, made if this phone holds none. */
 export type MakeFirstRunVaults = () => Promise<FirstRunVaults>;
 
 /**
- * Everything she answered, written at the moment she presses and holds the ring.
+ * Everything she answered, written at the moment she taps Save and start.
  *
  * Her key comes first and the vaults are built from whatever the keychain holds then, because a
  * row sealed under a key the keychain does not hold is a row nothing opens again. The write is the
@@ -450,6 +450,10 @@ function theReasonFor(
       return `a cycle runs from ${minimumCycleLengthDays} to ${maximumCycleLengthDays} days between two starts`;
     case 'past-period-length-is-out-of-range':
       return 'a period given from memory runs from one day to the longest the cycle arithmetic reads as one period';
+    case 'only-the-newest-period-can-be-still-going':
+      return 'only the newest period can be still going, and every period before it has a length';
+    case 'still-going-period-started-too-long-ago':
+      return `a period still going on ${today} cannot start on ${newest}, longer ago than one period runs`;
   }
 }
 
