@@ -54,6 +54,19 @@ Feature: She opens Emi and logs her first period
     When she reads on and taps Save and start
     Then her phone holds one day, the day she said her period started
 
+  Scenario: SCREEN-1, she picks breast tenderness and a symptom from All symptoms on her first day
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the question about how she is today
+    Then the six tiles are cramps, headache, bloating, fatigue, breast tenderness and low mood
+    When she picks breast tenderness
+    And she presses All symptoms, marks irritable and saves
+    Then she is back on the question about how she is today, and Save today is ready
+    And her phone holds no day yet
+    When she presses Save today and says Not now
+    And she reads on and taps Save and start
+    Then today holds breast tenderness and irritable, in the order she picked them
+
   Scenario: SCREEN-1, she asks Emi to remind her two days before the range starts
     Given she has never opened Emi before
     When she opens Emi
@@ -123,6 +136,29 @@ Feature: She opens Emi and logs her first period
     Then her phone holds every bleeding day of the three periods, and no other day
     And her forecast is ready, and not still learning
     And Insights reads the period length she gave
+
+  Scenario: SCREEN-1, she gives three periods and confirms the lengths Emi worked out from them
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives three periods, 27 days apart, that lasted 6, 6 and 4 days
+    Then the cycle question says her records average 27 days, and the wheel stands on 27 with Done ready
+    When she presses Done without turning the wheel
+    Then the period question says her records average 6 days, and the wheel stands on 6 with Done ready
+    When she presses Done without turning the wheel
+    And she answers the rest of the questions and taps Save and start
+    Then her phone holds a cycle length of 27 days and a period length of 6 days
+
+  Scenario: SCREEN-1, her newest period is still going, and Emi writes the days up to today
+    Given she has never opened Emi before
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives her newest period, which started three days ago, as still going
+    Then the row of her newest period says it is still going
+    When she gives the two periods before it, each with the day it started and the days it lasted
+    And she answers the rest of the questions and taps Save and start
+    Then her phone holds every day from the start of her newest period to today, and the days of the two before it
+    And the ring says she is on day 4 of her cycle
 
   Scenario: SCREEN-1, the first run with no date ends on a forecast that says it is still learning
     Given she has never opened Emi before
@@ -882,17 +918,34 @@ Feature: She opens Emi and logs her first period
     When she opens the Period page of today again
     Then the discharge and the two products she saved are filled
 
+  Scenario: SCREEN-2, she reads what spotting means on the log and opens other discharge from it
+    Given her phone holds four recorded period days, the last of them today
+    When she opens the log of today
+    Then the flow section is called Period, and it says what spotting means
+    When she presses Other discharge
+    Then she is on the Period page of today, where she can pick a discharge
+
   Scenario: SCREEN-4, she adds a symptom to a day she already lived and opens its Sex and Period pages
     Given her phone holds four recorded period days, the last of them today
     When she opens the day before yesterday
     Then the screen names that date, and asks about her flow with no word for today
-    When she presses the Digestion tile, marks Bloating and presses Save
+    When she presses the Digestive symptoms tile, marks Bloating and presses Save
     Then that day holds Bloating, sealed, beside the flow she logged, and today holds no symptom
     And the day shows Bloating as a symptom she can take off
     When she presses Sex on that day
     Then she is on the Sex page of that day
     When she goes back to that day and presses Period
     Then she is on the Period page of that day
+
+  Scenario: SCREEN-4, a profile and a day saved while Digestion was one group read under Appetite and Digestive symptoms
+    Given her profile was saved with Digestion as the group she watches, and the day before yesterday holds nausea and a food craving
+    When she opens the day before yesterday
+    Then Appetite and Digestive symptoms are the first two tiles, and no tile reads Digestion
+    When she presses the Appetite tile
+    Then Food craving is marked under Appetite, beside Sweet and Salty
+    When she marks Sweet and presses Save
+    Then that day holds nausea, the food craving and sweet, sealed
+    And her profile still opens with Appetite and Digestive symptoms when she changes another answer
 
   Scenario: SCREEN-2, she answers the signs of ovulation popup on a day inside her fertile window
     Given her phone holds three periods a cycle apart, and today is inside her forecast fertile window

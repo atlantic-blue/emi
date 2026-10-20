@@ -869,10 +869,10 @@ the type demands one.
 
 ```
 type SymptomGroup =
-  'mood' | 'energy' | 'pain' | 'digestion' | 'skin' | 'sleep' | 'head' | 'libido';
+  'mood' | 'energy' | 'pain' | 'appetite' | 'digestive' | 'skin' | 'sleep' | 'head' | 'libido';
 ```
 
-The eight groups the log sheet divides the catalogue into. `symptomGroups` holds their order.
+The nine groups the log sheet divides the catalogue into. `symptomGroups` holds their order.
 
 ### `Symptom`
 

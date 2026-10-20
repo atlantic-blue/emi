@@ -11,6 +11,7 @@ export default function TodayRoute(): ReactNode {
   return (
     <Today
       chosen={symptoms}
+      onAllSymptoms={() => router.push('/onboarding/all-symptoms')}
       onBack={() => router.back()}
       onPress={pressSymptom}
       onSave={() => router.push('/onboarding/reminder')}

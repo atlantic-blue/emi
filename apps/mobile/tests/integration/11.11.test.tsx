@@ -280,7 +280,7 @@ describe('what Emi does with what she said, after the forecast', () => {
       expect(theLogLine()).toBe('Your log shows the group you chose first: sleep.');
     });
 
-    it('names all six where she pressed all six', async () => {
+    it('names all seven where she pressed all seven', async () => {
       await sheOpensEmi();
 
       await sheReachesWhatEmiDoes(focusValues);
@@ -289,7 +289,7 @@ describe('what Emi does with what she said, after the forecast', () => {
         expect(screen.getByTestId(whatEmiDoesChipTestID(group))).toBeTruthy();
       }
       expect(theLogLine()).toBe(
-        'Your log shows the groups you chose first: sleep, mood, energy, skin and hair, digestion and pain.',
+        'Your log shows the groups you chose first: sleep, mood, energy, skin and hair, appetite, digestive symptoms and pain.',
       );
     });
 

@@ -339,12 +339,19 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
       );
     case 'cycleLength':
       return (
-        <CycleLength chosen={undefined} onBack={nothing} onChoose={nothing} onDone={nothing} />
+        <CycleLength
+          chosen={undefined}
+          fromHerDates={undefined}
+          onBack={nothing}
+          onChoose={nothing}
+          onDone={nothing}
+        />
       );
     case 'periodLength':
       return (
         <PeriodLength
           chosen={undefined}
+          fromHerDates={undefined}
           onBack={nothing}
           onChoose={nothing}
           onDone={nothing}
@@ -393,7 +400,14 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
       );
     case 'todayFirstRun':
       return (
-        <Today chosen={[]} onBack={nothing} onPress={nothing} onSave={nothing} onSkip={nothing} />
+        <Today
+          chosen={[]}
+          onAllSymptoms={nothing}
+          onBack={nothing}
+          onPress={nothing}
+          onSave={nothing}
+          onSkip={nothing}
+        />
       );
     // The drawing has the first of the three moments pressed, so the screen is drawn with it.
     case 'reminder':
