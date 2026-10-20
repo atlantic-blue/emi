@@ -55,6 +55,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
     <OnAPhone>
       <CycleLength
         chosen={state.chosen}
+        fromHerDates={undefined}
         onBack={() => undefined}
         onChoose={() => undefined}
         onDone={() => undefined}

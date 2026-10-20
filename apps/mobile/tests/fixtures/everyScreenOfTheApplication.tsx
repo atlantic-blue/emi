@@ -12,7 +12,7 @@ import { DayRefused, dayRefusedTestID } from '../../src/features/log/DayRefused'
 import { LogFlow, logFlowTestID } from '../../src/features/log/LogFlow';
 import { LogSymptoms, logSymptomsTestID } from '../../src/features/log/LogSymptoms';
 import { FirstForecast, firstForecastTestID } from '../../src/features/onboarding/FirstForecast';
-import { HoldToBegin, holdScreenTestID } from '../../src/features/onboarding/HoldToBegin';
+import { SaveAndStart, saveScreenTestID } from '../../src/features/onboarding/SaveAndStart';
 import { OnboardingScreen } from '../../src/features/onboarding/OnboardingScreen';
 import { TourScreen, tourScreenTestID } from '../../src/features/onboarding/TourScreen';
 import {
@@ -95,7 +95,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       />
     ),
   ],
-  [holdScreenTestID, (): ReactElement => <HoldToBegin onHeld={neverRun} />],
+  [saveScreenTestID, (): ReactElement => <SaveAndStart onSave={neverRun} />],
   [
     'recovery-before',
     (): ReactElement => (

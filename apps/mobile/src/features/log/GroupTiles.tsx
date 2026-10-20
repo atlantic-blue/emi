@@ -8,7 +8,7 @@ import { WholeWordsText } from '../../components/WholeWordsText';
 import { groupHeadings } from './SymptomGroup';
 
 /**
- * The eight symptom groups as the log board draws them: a tinted tile with a drawing, and the name
+ * The nine symptom groups as the log board draws them: a tinted tile with a drawing, and the name
  * under it, four to a row. A press opens the symptoms of that group, so the log never lists all of
  * them at once.
  */
@@ -34,7 +34,8 @@ export const tilePaint: Readonly<Record<SymptomGroup, TilePaint>> = {
   mood: { icon: 'mood', ground: 'accentSoft', ink: 'accent' },
   energy: { icon: 'energy', ground: 'field', ink: 'warmIcon' },
   pain: { icon: 'pain', ground: 'accentSoft', ink: 'accent' },
-  digestion: { icon: 'digestion', ground: 'washWarm', ink: 'ovulationInk' },
+  appetite: { icon: 'appetite', ground: 'field', ink: 'warmIcon' },
+  digestive: { icon: 'digestion', ground: 'washWarm', ink: 'ovulationInk' },
   skin: { icon: 'skin', ground: 'washWarm', ink: 'ovulationInk' },
   sleep: { icon: 'sleep', ground: 'accentTile', ink: 'lutealInk' },
   head: { icon: 'headache', ground: 'field', ink: 'warmIcon' },

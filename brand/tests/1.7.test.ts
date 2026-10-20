@@ -267,11 +267,12 @@ describe('the brand sheet is generated from the tokens and cannot drift', () => 
       expect(page).toContain(`stroke-width="${icon.strokeWidth}"`);
     });
 
-    it('shows thirty six and no thirty seventh, the phase and the heart among them', () => {
-      expect(iconNames).toHaveLength(36);
+    it('shows thirty seven and no thirty eighth, the phase, the heart and the appetite among them', () => {
+      expect(iconNames).toHaveLength(37);
       expect(iconNames).toContain('phase');
       expect(iconNames).toContain('heart');
-      expect(page.match(/class="icon-cell"/g)).toHaveLength(36);
+      expect(iconNames).toContain('appetite');
+      expect(page.match(/class="icon-cell"/g)).toHaveLength(37);
     });
   });
 
