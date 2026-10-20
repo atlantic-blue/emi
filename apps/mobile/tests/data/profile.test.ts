@@ -1,6 +1,9 @@
+import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
+
 import type { Database } from '../../src/data/database';
 import {
   ProfileTableError,
+  changeProfileAnswer,
   markProfileSynced,
   profileIsUnsent,
   profileRow,
@@ -14,7 +17,7 @@ import { cycleMigration } from '../../src/data/migrations/002-cycle';
 import { settingMigration } from '../../src/data/migrations/003-setting';
 
 import { openTestDatabase } from './nodeDatabase';
-import { herProfileVault } from '../fixtures/herVault';
+import { herKey, herProfileVault } from '../fixtures/herVault';
 import { aProfileRecord } from '../fixtures/profileRecord';
 
 const sheAnsweredAt = new Date('2026-09-23T09:14:00.000Z');
@@ -381,5 +384,50 @@ describe('the marker the sync writes', () => {
     expect(refusalOf(() => markProfileSynced(migrated(), { revision: 1 }))).toBe(
       'profile-is-not-written',
     );
+  });
+});
+
+describe('a profile sealed while digestion was one group', () => {
+  /** The bytes an older Emi sealed, before the screen offered appetite and digestive symptoms. */
+  function sealedBeforeTheSplit(): Uint8Array {
+    const plaintext = new TextEncoder().encode(
+      '{"focus":["digestion","sleep"],"kind":"profile","name":"Maria","recordedAt":"2026-09-23T09:14:00.000Z"}',
+    );
+    const nonce = new Uint8Array(24).map((_, at) => at + 1);
+    const sealed = xchacha20poly1305(herKey(), nonce).encrypt(plaintext);
+
+    return new Uint8Array([1, ...nonce, ...sealed]);
+  }
+
+  function heldBeforeTheSplit(): Database {
+    const db = migrated();
+    writeProfile(
+      db,
+      { seal: sealedBeforeTheSplit, open: herProfileVault().open },
+      { profile: aProfileRecord(), now: sheAnsweredAt },
+    );
+    return db;
+  }
+
+  it('should open with appetite and digestive symptoms where digestion stood', () => {
+    const db = heldBeforeTheSplit();
+
+    expect(readProfile(db, herProfileVault())?.focus).toEqual(['appetite', 'digestive', 'sleep']);
+  });
+
+  it('should save again when she changes another answer, with both groups and nothing lost', () => {
+    const db = heldBeforeTheSplit();
+
+    changeProfileAnswer(db, herProfileVault(), {
+      answer: { birthYear: 1994 },
+      now: sheChangedItAt,
+    });
+
+    expect(readProfile(db, herProfileVault())).toMatchObject({
+      name: 'Maria',
+      birthYear: 1994,
+      focus: ['appetite', 'digestive', 'sleep'],
+    });
+    expect(profileRow(db)?.revision).toBe(2);
   });
 });

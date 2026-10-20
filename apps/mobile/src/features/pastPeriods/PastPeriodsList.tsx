@@ -5,8 +5,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import {
   pastPeriodDateSaid,
-  pastPeriodLengthSaid,
   pastPeriodNumberSaid,
+  pastPeriodRunSaid,
   pastPeriodsCopy,
 } from './copy';
 import { PAST_PERIODS_ASKED, type PastPeriod } from './pastPeriods';
@@ -76,7 +76,7 @@ function PastPeriodRow({ row, period, canOpen, onOpen }: RowProps): ReactNode {
       ? row === 0
         ? undefined
         : pastPeriodsCopy.skipThisOne
-      : pastPeriodLengthSaid(period.lengthDays);
+      : pastPeriodRunSaid(period);
 
   return (
     <Pressable

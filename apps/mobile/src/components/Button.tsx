@@ -91,45 +91,6 @@ export function PrimaryButton({ label, isReady = true, onPress, testID }: Action
   );
 }
 
-interface HoldProps {
-  readonly label: string;
-  readonly onHoldStart: () => void;
-  readonly onHoldEnd: () => void;
-  readonly testID?: string;
-}
-
-/**
- * The affirmative action for the one moment that asks for a hold rather than a press. It has no
- * press handler at all, so a tap that comes and goes does nothing: what begins is her thumb going
- * down, and what stops it is her thumb coming up.
- */
-export function HoldButton({ label, onHoldStart, onHoldEnd, testID }: HoldProps): ReactNode {
-  const { heldDown, onPressIn, onPressOut } = useHeldDown();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPressIn={() => {
-        onPressIn();
-        onHoldStart();
-      }}
-      onPressOut={() => {
-        onPressOut();
-        onHoldEnd();
-      }}
-      style={[
-        styles.capsule,
-        styles.affirmativeSize,
-        styles.affirmative,
-        heldDown ? styles.affirmativeHeldDown : null,
-      ]}
-      testID={testID}
-    >
-      <Text style={styles.affirmativeLabel}>{label}</Text>
-    </Pressable>
-  );
-}
-
 /** The action beside the affirmative one. It sits in the recessed ground and carries no fill. */
 export function SecondaryButton({
   label,

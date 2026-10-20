@@ -2,7 +2,6 @@ import { join } from 'node:path';
 
 import { render } from '@testing-library/react-native';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
-import { AccessibilityInfo } from 'react-native';
 
 import { bytesFromBase64 } from '@emi/crypto';
 
@@ -12,15 +11,14 @@ import { profileRow, readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
 import {
-  HOLD_MILLISECONDS,
-  HOLD_TICK_MILLISECONDS,
-  HoldToBegin,
-  holdButtonTestID,
-  holdCoreTestID,
-  holdProgressTestID,
-  holdRefusedTestID,
-} from '../../src/features/onboarding/HoldToBegin';
+  SaveAndStart,
+  saveButtonTestID,
+  saveCoreTestID,
+  saveRefusedTestID,
+  saveScreenTestID,
+} from '../../src/features/onboarding/SaveAndStart';
 import { firstRunCopy } from '../../src/features/onboarding/copy';
+import { catalogueOf, languages } from '../../src/language';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { expoKeychain } from '../../src/services/vault/keychain';
 import { vaultKeyItem } from '../../src/services/vault/vaultKey';
@@ -28,7 +26,7 @@ import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion as sheWalksTheFirstRun } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { theVaultOnHerPhone, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { OnAPhone } from '../fixtures/theSafeArea';
 
@@ -42,8 +40,8 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const herPeriodStarted = '2026-05-09';
 
-/** The instant the hold ends, which is the instant everything she answered carries. */
-const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
+/** The instant she taps Save and start, which is the instant everything she answered carries. */
+const whenSheSaves = whenSheOpensIt;
 
 /** Not the number the screen offers, so a length that reads back as 30 is a length she gave. */
 const herCycleLengthDays = defaultCycleLengthDays + 2;
@@ -60,10 +58,6 @@ function theTourIsBehindHer(): void {
   writeSetting(database, 'tourSeenAt', whenSheOpensIt.toISOString());
 }
 
-function reduceMotion(asked: boolean): void {
-  jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(asked);
-}
-
 interface OpenApp {
   readonly pathname: () => string;
   readonly close: () => Promise<void>;
@@ -76,7 +70,7 @@ async function sheOpensEmi(): Promise<OpenApp> {
   return { pathname: () => app.getPathname(), close: () => view.unmount() };
 }
 
-/** Every question of the first run, answered, which leaves her looking at the hold. */
+/** Every question of the first run, answered, which leaves her looking at Save and start. */
 async function sheAnswersEveryQuestion(): Promise<void> {
   await sheWalksTheFirstRun({
     periodStartedOn: herPeriodStarted,
@@ -84,14 +78,13 @@ async function sheAnswersEveryQuestion(): Promise<void> {
   });
 }
 
-describe('she answers everything, leaves before the hold, and nothing is written', () => {
+describe('she answers everything, leaves before she taps Save and start, and nothing is written', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
     resetExpoSqlite();
     resetExpoSecureStore();
     theTourIsBehindHer();
-    reduceMotion(false);
   });
 
   afterEach(() => {
@@ -100,7 +93,7 @@ describe('she answers everything, leaves before the hold, and nothing is written
   });
 
   describe('she answers every question and then leaves', () => {
-    it('writes no day, no answers and no marker, because the hold is the only write', async () => {
+    it('writes no day, no answers and no marker, because the tap is the only write', async () => {
       const app = await sheOpensEmi();
 
       await sheAnswersEveryQuestion();
@@ -129,35 +122,33 @@ describe('she answers everything, leaves before the hold, and nothing is written
 
       await sheOpensEmi();
       await sheAnswersEveryQuestion();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readDayLog(herDatabase(), herPeriodStarted)?.revision).toBe(1);
     });
   });
 
-  describe('she presses and holds the button', () => {
+  describe('she taps Save and start', () => {
     it('writes her day, her answers and the marker together, and leaves her on her home screen', async () => {
       const app = await sheOpensEmi();
       await sheAnswersEveryQuestion();
 
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const row = readDayLog(herDatabase(), herPeriodStarted);
       const vault = await theVaultOnHerPhone();
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())).toEqual({
         kind: 'profile',
         cycleLengthDays: herCycleLengthDays,
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
       // One instant on all three, because one transaction wrote them.
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
-        whenSheFinishesTheHold.toISOString(),
-      );
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheSaves.toISOString());
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId('home-screen')).toBeTruthy();
     });
@@ -165,12 +156,12 @@ describe('she answers everything, leaves before the hold, and nothing is written
     it('seals what it writes under the key the keychain holds at that moment', async () => {
       await sheOpensEmi();
       await sheAnswersEveryQuestion();
-      // The launch made her a key, and this takes it away again, which is the phone the hold is
-      // written for: no key yet, and one made at the hold. A write sealed under the key this
+      // The launch made her a key, and this takes it away again, which is the phone the save is
+      // written for: no key yet, and one made at the tap. A write sealed under the key this
       // component started with would be a row the keychain can no longer open.
       await expoKeychain().remove(vaultKeyItem);
 
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = await expoKeychain().read(vaultKeyItem);
       expect(held).not.toBeNull();
@@ -185,199 +176,165 @@ describe('she answers everything, leaves before the hold, and nothing is written
   });
 
   describe('a write that fails half way', () => {
-    it('leaves nothing behind and says so, so the hold she gives again is her first', async () => {
+    it('leaves nothing behind and says so, so the tap she gives again is her first', async () => {
       const app = await sheOpensEmi();
       await sheAnswersEveryQuestion();
       // The day is written before the answers are, so a profile table that is not there stops the
       // transaction after the day has gone in. Nothing may survive that.
       herDatabase().execute('DROP TABLE profile');
 
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(listDayLogs(herDatabase())).toEqual([]);
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
       expect(app.pathname()).toBe('/onboarding/hold');
-      expect(screen.getByTestId(holdRefusedTestID)).toHaveTextContent(firstRunCopy.hold.refused);
+      expect(screen.getByTestId(saveRefusedTestID)).toHaveTextContent(firstRunCopy.start.refused);
     });
   });
 
-  describe('the ring she holds', () => {
-    /** The screen on its own, so the hold is measured without the write under it. */
-    async function theRing(onHeld: () => Promise<void> = () => Promise.resolve()) {
-      const view = await render(
+  describe('the button she taps', () => {
+    /** The screen on its own, so the tap is measured without the write under it. */
+    async function theLastScreen(onSave: () => Promise<void>) {
+      return render(
         <OnAPhone>
-          <HoldToBegin onHeld={onHeld} />
+          <SaveAndStart onSave={onSave} />
         </OnAPhone>,
       );
-      // The reduced motion answer arrives from the phone as a promise, so it is in hand before
-      // her thumb goes down rather than after it.
+    }
+
+    async function sheTaps(): Promise<void> {
+      await act(async () => {
+        fireEvent.press(screen.getByTestId(saveButtonTestID));
+      });
+    }
+
+    async function theWriteAnswers(): Promise<void> {
       await act(async () => {
         await Promise.resolve();
       });
-
-      return view;
     }
 
-    async function herThumbGoesDown(): Promise<void> {
-      await act(async () => {
-        fireEvent(screen.getByTestId(holdButtonTestID), 'pressIn');
-      });
-    }
-
-    async function herThumbComesUp(): Promise<void> {
-      await act(async () => {
-        fireEvent(screen.getByTestId(holdButtonTestID), 'pressOut');
-      });
-    }
-
-    it('fills as she holds, and asks her to keep holding', async () => {
-      await theRing();
-      await herThumbGoesDown();
-
-      expect(screen.getByTestId(holdButtonTestID)).toHaveTextContent(firstRunCopy.hold.held);
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS / 2);
-      });
-      const half = String(screen.getByTestId(holdProgressTestID).props.d);
-
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_TICK_MILLISECONDS * 4);
-      });
-
-      expect(half).not.toBe('');
-      expect(String(screen.getByTestId(holdProgressTestID).props.d)).not.toBe(half);
-    });
-
-    it('does not move at all when her phone asks for less motion, and still writes', async () => {
-      reduceMotion(true);
-      let held = 0;
-      await theRing(() => {
-        held += 1;
+    it('saves once on one tap, with no time held', async () => {
+      let saved = 0;
+      await theLastScreen(() => {
+        saved += 1;
 
         return Promise.resolve();
       });
 
-      await herThumbGoesDown();
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS / 2);
-      });
+      await sheTaps();
+      await theWriteAnswers();
 
-      expect(screen.queryByTestId(holdProgressTestID)).toBeNull();
-
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS / 2);
-      });
-      await act(async () => {
-        await Promise.resolve();
-      });
-
-      expect(screen.queryByTestId(holdProgressTestID)).toBeNull();
-      expect(held).toBe(1);
+      expect(saved).toBe(1);
     });
 
-    it('writes nothing when she lets go early, and gives the ring back', async () => {
-      let held = 0;
-      await theRing(() => {
-        held += 1;
+    it('saves once when she taps twice before the first save is done', async () => {
+      let saved = 0;
+      let finish: () => void = () => undefined;
+      await theLastScreen(() => {
+        saved += 1;
 
-        return Promise.resolve();
+        return new Promise<void>((resolve) => {
+          finish = resolve;
+        });
       });
 
-      await herThumbGoesDown();
+      // Both taps land before the screen draws again, the way two quick taps do on a phone.
       await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS - HOLD_TICK_MILLISECONDS);
+        fireEvent.press(screen.getByTestId(saveButtonTestID));
+        fireEvent.press(screen.getByTestId(saveButtonTestID));
       });
-      await herThumbComesUp();
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS * 2);
-      });
+      await sheTaps();
+      finish();
+      await theWriteAnswers();
 
-      expect(held).toBe(0);
-      expect(screen.queryByTestId(holdProgressTestID)).toBeNull();
-      expect(screen.getByTestId(holdButtonTestID)).toHaveTextContent(firstRunCopy.hold.action);
+      expect(saved).toBe(1);
     });
 
-    it('writes nothing on a tap, because only a whole hold begins', async () => {
-      let held = 0;
-      await theRing(() => {
-        held += 1;
+    it('can be tapped again after a save that refused, and the second tap saves', async () => {
+      const answers = [Promise.reject(new Error('the write refused')), Promise.resolve()];
+      answers[0]?.catch(() => undefined);
+      let saved = 0;
+      await theLastScreen(() => {
+        const answer = answers[saved] ?? Promise.resolve();
+        saved += 1;
 
-        return Promise.resolve();
+        return answer;
       });
 
-      await act(async () => {
-        fireEvent.press(screen.getByTestId(holdButtonTestID));
-      });
-      await herThumbGoesDown();
-      await herThumbComesUp();
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS * 2);
-      });
+      await sheTaps();
+      await theWriteAnswers();
 
-      expect(held).toBe(0);
-      expect(screen.queryByTestId(holdProgressTestID)).toBeNull();
+      expect(screen.getByTestId(saveRefusedTestID)).toHaveTextContent(firstRunCopy.start.refused);
+      expect(screen.getByTestId(saveButtonTestID)).toBeEnabled();
+
+      await sheTaps();
+      await theWriteAnswers();
+
+      expect(saved).toBe(2);
+      expect(screen.queryByTestId(saveRefusedTestID)).toBeNull();
     });
 
     it('offers one control, the button, and the ring above it takes no press', async () => {
-      let held = 0;
-      await theRing(() => {
-        held += 1;
+      let saved = 0;
+      await theLastScreen(() => {
+        saved += 1;
 
         return Promise.resolve();
       });
 
       expect(screen.getAllByRole('button')).toHaveLength(1);
-      expect(screen.getByRole('button')).toHaveTextContent(firstRunCopy.hold.action);
-      expect(screen.getByTestId(holdCoreTestID).props.onResponderGrant).toBeUndefined();
-      expect(screen.getByTestId(holdCoreTestID).props.accessibilityRole).toBeUndefined();
+      expect(screen.getByRole('button')).toHaveTextContent(firstRunCopy.start.action);
+      expect(screen.getByTestId(saveCoreTestID).props.onResponderGrant).toBeUndefined();
+      expect(screen.getByTestId(saveCoreTestID).props.accessibilityRole).toBeUndefined();
 
       await act(async () => {
-        fireEvent(screen.getByTestId(holdCoreTestID), 'pressIn');
-      });
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS * 2);
+        fireEvent.press(screen.getByTestId(saveCoreTestID));
       });
 
-      expect(held).toBe(0);
+      expect(saved).toBe(0);
+    });
+  });
+
+  describe('the hold that is gone', () => {
+    it('needs no hold: a press that comes and goes at once is enough to save', async () => {
+      let saved = 0;
+      await render(
+        <OnAPhone>
+          <SaveAndStart
+            onSave={() => {
+              saved += 1;
+
+              return Promise.resolve();
+            }}
+          />
+        </OnAPhone>,
+      );
+
+      await act(async () => {
+        fireEvent(screen.getByTestId(saveButtonTestID), 'pressIn');
+        fireEvent(screen.getByTestId(saveButtonTestID), 'pressOut');
+        fireEvent.press(screen.getByTestId(saveButtonTestID));
+      });
+
+      expect(saved).toBe(1);
     });
 
-    it('fills the ring as her thumb stays on the button, from nothing to the whole turn', async () => {
-      await theRing();
+    it('never asks her to press and hold, in any of the three languages', async () => {
+      await render(
+        <OnAPhone>
+          <SaveAndStart onSave={() => Promise.resolve()} />
+        </OnAPhone>,
+      );
 
-      expect(screen.queryByTestId(holdProgressTestID)).toBeNull();
-
-      await herThumbGoesDown();
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS / 4);
-      });
-      const early = String(screen.getByTestId(holdProgressTestID).props.d);
-
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS / 2);
-      });
-
-      expect(String(screen.getByTestId(holdProgressTestID).props.d)).not.toBe(early);
-    });
-
-    it('writes once when her thumb comes back down on a hold it already gave', async () => {
-      let held = 0;
-      await theRing(() => {
-        held += 1;
-
-        return Promise.resolve();
-      });
-
-      await herThumbGoesDown();
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS);
-      });
-      await herThumbComesUp();
-      await herThumbGoesDown();
-      await act(async () => {
-        jest.advanceTimersByTime(HOLD_MILLISECONDS);
-      });
-
-      expect(held).toBe(1);
+      expect(screen.getByTestId(saveScreenTestID)).not.toHaveTextContent(/hold/i);
+      for (const language of languages) {
+        const keys = Object.keys(catalogueOf(language));
+        expect({
+          language,
+          hold: keys.filter((key) => key.startsWith('onboarding.hold.')),
+        }).toEqual({ language, hold: [] });
+      }
     });
   });
 });

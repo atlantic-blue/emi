@@ -122,6 +122,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
           onMark={() => undefined}
           onOpenGroup={() => undefined}
           onPick={() => undefined}
+          onOtherDischarge={() => undefined}
           onSearch={() => undefined}
           onToggleSymptom={() => undefined}
           ring={ringFrom(state.days)}
