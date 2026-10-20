@@ -59,12 +59,21 @@ export function exportShareTestID(name: string): string {
   return `export-share-${name}`;
 }
 
-/** What each tile says and what it is drawn with: a page to read, and a file to hand over. */
-const theTiles: Readonly<Record<ExportTile, { readonly icon: IconName; readonly label: string }>> =
-  {
-    doctor: { icon: 'note', label: exportCopy.forADoctor },
-    application: { icon: 'export', label: exportCopy.forAnApplication },
-  };
+/**
+ * What each tile says and what it is drawn with: a page to read, and a file to hand over. The line
+ * under the name says what the file holds and its format, so she knows what she gets before she
+ * makes it.
+ */
+const theTiles: Readonly<
+  Record<ExportTile, { readonly icon: IconName; readonly label: string; readonly line: string }>
+> = {
+  doctor: { icon: 'note', label: exportCopy.forADoctor, line: exportCopy.forADoctorLine },
+  application: {
+    icon: 'export',
+    label: exportCopy.forAnApplication,
+    line: exportCopy.forAnApplicationLine,
+  },
+};
 
 /** Points. The drawing on a tile, read larger than a row's, because a tile has room for it. */
 const TILE_ICON = 30;
@@ -90,12 +99,15 @@ type State =
   | { readonly at: 'failed' };
 
 function FileTile({ tile }: { readonly tile: ExportTile }): ReactNode {
-  const { icon, label } = theTiles[tile];
+  const { icon, label, line } = theTiles[tile];
 
   return (
     <View style={styles.tile} testID={exportTileTestID(tile)}>
       <Icon colour={colour.accent} name={icon} size={TILE_ICON} />
-      <Text style={styles.tileLabel}>{label}</Text>
+      <View style={styles.tileWords}>
+        <Text style={styles.tileLabel}>{label}</Text>
+        <Text style={styles.tileLine}>{line}</Text>
+      </View>
     </View>
   );
 }
@@ -240,6 +252,11 @@ const styles = StyleSheet.create({
     color: colour.text,
     ...textStyle('choice-lg'),
   },
+  tileLine: {
+    color: colour.secondaryText,
+    ...textStyle('body-sm'),
+  },
+  tileWords: { rowGap: space.spaceXs },
   tiles: { columnGap: space.spaceMd, flexDirection: 'row' },
   title: {
     color: colour.text,

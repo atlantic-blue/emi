@@ -172,14 +172,17 @@ export const russian: CatalogueIn<'ru'> = {
   'export.document.yes': 'Да',
   'export.failed': 'Мы не смогли сохранить файлы. Возможно, на вашем телефоне не осталось места.',
   'export.forADoctor': 'Отчёт для врача',
+  'export.forADoctorLine': 'Даты месячных и записи о самочувствии, страница для браузера (.html)',
   'export.forAnApplication': 'Файл с данными',
+  'export.forAnApplicationLine':
+    'Все ваши записи в файле .json, который открывают другие приложения',
   'export.held': '{days} и {cycles}.',
   'export.make': 'Создать файлы',
   'export.making': 'Создаём',
   'export.share': 'Поделиться',
   'export.title': 'Скачать данные',
   'export.what':
-    'Можно сохранить отчёт для себя или врача и файл для переноса записей в другое приложение.',
+    'Можно сохранить отчёт для себя или врача и файл со всеми записями. Оба файла создаются вместе, и каждым можно поделиться отдельно.',
   'export.where':
     'Файлы создаются на вашем телефоне. Вы сами выбираете, где их сохранить и кому отправить.',
 
@@ -1066,7 +1069,7 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.settings.export': 'Скачать данные',
   'settings.settings.exportLine': 'Сохранить записи или подготовить отчёт для врача',
   'settings.settings.lock': 'Блокировка входа',
-  'settings.settings.lockLine': 'Включена: по лицу или по коду доступа',
+  'settings.settings.lockLine': 'Face ID, Touch ID или код телефона',
   'settings.settings.title': 'Приватность',
   'settings.whoCanSee.example':
     'Если кто-то попросит у Emi ваши записи, например рекламодатель или суд, Emi нечего отдать: ваши записи хранятся на вашем телефоне, а не у нас.',

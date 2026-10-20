@@ -16,6 +16,7 @@ import {
   ExportScreen,
   exportActionTestID,
   exportFailedTestID,
+  exportTileTestID,
 } from '../../src/features/export/ExportScreen';
 import { LockScreen } from '../../src/features/lock/LockScreen';
 import { RecoverySetup } from '../../src/features/recovery/RecoverySetup';
@@ -75,8 +76,8 @@ const sheSaidHerCycleRuns = 28;
 
 /** What the two privacy rows say under their names. */
 const thePrivacyRowsSay = {
-  answers: 'What you told us when you started',
-  delete: "One press, and it's gone for good",
+  answers: 'Your name and your answers from setup',
+  delete: 'Delete your records and settings',
 };
 
 /** What the delete screen says before she presses, and what she is left reading after. */
@@ -100,9 +101,10 @@ const theInsightsScreenSays = {
 
 /** What the export screen says about the two files, before and after it fails to write them. */
 const theExportScreenSays = {
-  what: 'Two files: one you can read or give to your doctor, and one another app can open.',
-  where:
-    'Nothing is sent anywhere. The files are made on this phone, and you decide who gets them.',
+  what: 'Save a report for yourself or your doctor, and a file with all your records. Both files are made together, and you can share each one on its own.',
+  where: 'The files are made on your phone. You choose where to save them and who to send them to.',
+  forADoctorLine: 'Your period dates and day entries, as a web page (.html)',
+  forAnApplicationLine: 'Everything you logged, in a .json file other apps can open',
   failed: "We couldn't save the files. Your phone may be out of space.",
 };
 
@@ -133,6 +135,8 @@ const theWordsUnderTheirKeys: Readonly<Record<string, string>> = {
   'export.failed': theExportScreenSays.failed,
   'export.what': theExportScreenSays.what,
   'export.where': theExportScreenSays.where,
+  'export.forADoctorLine': theExportScreenSays.forADoctorLine,
+  'export.forAnApplicationLine': theExportScreenSays.forAnApplicationLine,
   'history.noCycles': theInsightsScreenSays.noCycles,
   'history.nothingRepeats': theInsightsScreenSays.nothingRepeats,
   'history.patternsNeed': "We'll point out a symptom once it's come back in {needs} cycles.",
@@ -263,13 +267,13 @@ describe('delete everything tells her it is gone in plain words', () => {
       await herPhoneHolds(whenSheOpensIt, herSixCyclesAndThisOne(), sheSaidHerCycleRuns);
     });
 
-    it('says the answers are what she told us, rather than counting them for her', async () => {
+    it('says the answers row holds her name and her answers from setup', async () => {
       await sheOpens('/settings');
 
       expect(whatItSays(settingsAnswersTestID)).toContain(thePrivacyRowsSay.answers);
     });
 
-    it('says one press and it is gone for good, under the row that deletes everything', async () => {
+    it('says what the delete row removes, her records and her settings', async () => {
       await sheOpens('/settings');
 
       expect(whatItSays(settingsDeleteTestID)).toContain(thePrivacyRowsSay.delete);
@@ -397,6 +401,26 @@ describe('delete everything tells her it is gone in plain words', () => {
 
       expect(screen.getByText(theExportScreenSays.what)).toBeTruthy();
       expect(screen.getByText(theExportScreenSays.where)).toBeTruthy();
+    });
+
+    it('says under each file what it holds and its format, before she makes them', async () => {
+      await render(
+        <OnAPhone>
+          <ExportScreen
+            canShare
+            onBack={() => undefined}
+            onExport={() => Promise.reject(new Error('no room'))}
+            onShare={() => Promise.resolve()}
+          />
+        </OnAPhone>,
+      );
+
+      expect(whatItSays(exportTileTestID('doctor'))).toBe(
+        `Report for your doctor ${theExportScreenSays.forADoctorLine}`,
+      );
+      expect(whatItSays(exportTileTestID('application'))).toBe(
+        `Data file ${theExportScreenSays.forAnApplicationLine}`,
+      );
     });
 
     it('says we could not save them, and names the phone as the likely reason', async () => {
