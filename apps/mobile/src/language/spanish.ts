@@ -765,13 +765,14 @@ export const spanish: CatalogueIn<'es'> = {
     'El anillo es tu ciclo. Un indicador marca hoy, y el número de dentro es el día en que estás.',
   'onboarding.tour.ring.title': 'Tu ciclo, en un anillo.',
   'onboarding.tour.skip': 'Omitir',
-  'onboarding.welcome.action': 'Continuar',
+  'onboarding.welcome.action': 'Empezar',
   'onboarding.welcome.line.noAccount':
     'No hay cuenta. Emi nunca te pide tu correo ni una contraseña.',
-  'onboarding.welcome.line.onThisPhone': 'Tu ciclo se calcula en este teléfono.',
   'onboarding.welcome.line.whatEmiIs':
-    'Emi te muestra lo que dicen tus propios registros, y nada más. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
-  'onboarding.welcome.title': 'Emi aprende tu ciclo. Tus datos son tuyos.',
+    'Emi no sustituye el consejo de un médico. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
+  'onboarding.welcome.line.whatYouLog':
+    'Anota tus periodos y cómo te sientes, para entender mejor tu ciclo.',
+  'onboarding.welcome.title': 'Tu ciclo y cómo te sientes, en un solo lugar.',
   'onboarding.whatEmiDoes.action': 'Continuar',
   'onboarding.whatEmiDoes.forecast.line': 'Un rango, y cuánta confianza tiene Emi',
   'onboarding.whatEmiDoes.forecast.title': 'Tu previsión',

@@ -688,8 +688,8 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the welcome and the tour say what the redesign says
     Given she has never opened Emi before
     When she opens Emi
-    Then the first thing she reads is the welcome, saying Emi learns her cycle and she keeps her data
-    And the welcome says where her cycle is worked out, that there is no account, and what Emi is not
+    Then the first thing she reads is the welcome, saying her cycle and how she feels are in one place
+    And the welcome says what she can log, that there is no account, and what Emi is not
     And the tour after it draws the ring with its legend, says what the ring is, and names the price
     And the welcome and the tour are in her own language, and say no word a screen refuses
 

@@ -26,13 +26,13 @@ const LINE_TILE = 36;
 const LINE_ICON_SIZE = 20;
 
 /** The icon beside each line, in the order the lines are read. */
-const lineIcons: readonly IconName[] = ['phone', 'person', 'info'];
+const lineIcons: readonly IconName[] = ['calendar', 'person', 'info'];
 
 export const welcomeWhoCanSeeTestID = 'onboarding-welcome-who-can-see';
 
 /**
  * The first screen she sees. It asks nothing, because the first thing she is owed is what this is:
- * where her cycle is worked out, that there is no account, and what Emi is not. The link over the
+ * what she can log here, that there is no account, and what Emi is not. The link over the
  * button opens the one page that says who can see her records, in place of a padlock on every
  * question after this one.
  */

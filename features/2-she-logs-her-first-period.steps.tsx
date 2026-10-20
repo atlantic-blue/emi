@@ -6738,33 +6738,33 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'the first thing she reads is the welcome, saying Emi learns her cycle and she keeps her data',
+      'the first thing she reads is the welcome, saying her cycle and how she feels are in one place',
       () => {
         const welcome = within(screen.getByTestId('onboarding-welcome'));
 
-        expect(welcome.getByText('Emi learns your cycle. You keep your data.')).toBeTruthy();
+        expect(welcome.getByText('Your cycle and how you feel, in one place.')).toBeTruthy();
         expect(screen.queryByTestId(tourScreenTestID)).toBeNull();
       },
     );
 
-    and(
-      'the welcome says where her cycle is worked out, that there is no account, and what Emi is not',
-      () => {
-        const welcome = within(screen.getByTestId('onboarding-welcome'));
+    and('the welcome says what she can log, that there is no account, and what Emi is not', () => {
+      const welcome = within(screen.getByTestId('onboarding-welcome'));
 
-        expect(welcome.getByText('Your cycle is worked out on this phone.')).toBeTruthy();
-        expect(
-          welcome.getByText(
-            'There is no account. Emi never asks for your email address or a password.',
-          ),
-        ).toBeTruthy();
-        expect(
-          welcome.getByText(
-            'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
-          ),
-        ).toBeTruthy();
-      },
-    );
+      expect(
+        welcome.getByText('Log your periods and how you feel, to understand your cycle better.'),
+      ).toBeTruthy();
+      expect(welcome.queryByText('Your cycle is worked out on this phone.')).toBeNull();
+      expect(
+        welcome.getByText(
+          'There is no account. Emi never asks for your email address or a password.',
+        ),
+      ).toBeTruthy();
+      expect(
+        welcome.getByText(
+          "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
+        ),
+      ).toBeTruthy();
+    });
 
     and(
       'the tour after it draws the ring with its legend, says what the ring is, and names the price',
