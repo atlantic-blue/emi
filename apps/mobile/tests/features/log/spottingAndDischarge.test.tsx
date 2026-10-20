@@ -46,7 +46,7 @@ const theSectionSays: Readonly<Record<Language, WhatTheSectionSays>> = {
   },
   ru: {
     title: 'Месячные',
-    hint: 'Мазня: Небольшие следы крови или коричневатые выделения',
+    hint: 'Следы: Небольшие следы крови или коричневатые выделения',
     link: 'Другие выделения',
     before: 'Ваши выделения',
   },
