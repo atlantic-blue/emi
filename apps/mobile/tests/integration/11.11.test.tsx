@@ -49,7 +49,7 @@ import { herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn } from '../fixtures/renderedText';
 import { OnAPhone } from '../fixtures/theSafeArea';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -207,7 +207,7 @@ describe('what Emi does with what she said, after the forecast', () => {
       await sheOpensEmi();
       await sheReachesWhatEmiDoes();
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await screen.unmount();
 
       const app = renderRouter(appDirectory, { initialUrl: '/onboarding/the-promise' });
@@ -361,7 +361,7 @@ describe('what Emi does with what she said, after the forecast', () => {
 
       await sheReachesWhatEmiDoes(['mood', 'energy']);
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.focus).toEqual([
         'mood',
