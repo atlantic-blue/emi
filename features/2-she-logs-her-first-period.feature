@@ -833,8 +833,9 @@ Feature: She opens Emi and logs her first period
     And she writes a note about today and leaves the box
     Then her phone holds those three answers and the note on today, sealed, beside the flow she logged
     And the three chips she pressed are filled
-    When she presses What this phase can mean for you
-    Then a sheet gives her Mood, Food, Body and Training for that phase, and no designer note
+    When she presses How you may feel and what may help
+    Then a sheet gives her a short tip for Mood, Appetite, Body and Movement in that phase, and no designer note
+    And the sheet says that everyone is different
     When she presses Close
     Then the sheet is gone and she is on the page of her phase
 

@@ -1,21 +1,23 @@
-import type { CyclePhaseDays, CyclePhaseName } from '@emi/cycle';
+import type { CyclePhaseName } from '@emi/cycle';
 import { colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../components/Button';
-import { phaseCardWords } from '../home/copy';
-import { guideAreas, guidanceFor, phasePageCopy } from './copy';
+import { guideAreas, guidanceFor, guideTitle, phasePageCopy, phaseTitle } from './copy';
 
 /**
- * What this phase can mean for you (issue 274): a sheet over the page with Mood, Food, Body and
- * Training for the phase she is in. The words are the draft the operator chose to ship.
+ * What may help in this phase (issues 274 and 323): a sheet over the page with Mood, Appetite,
+ * Body and Movement for the phase she is in, each a short tip, and one line that says everyone is
+ * different.
  */
 
 export const phaseGuideTestID = 'phase-guide';
 export const phaseGuidePhaseTestID = 'phase-guide-phase';
 export const phaseGuideCloseTestID = 'phase-guide-close';
+export const phaseGuideTitleTestID = 'phase-guide-title';
+export const phaseGuideEveryoneTestID = 'phase-guide-everyone';
 
 export function phaseGuideAreaTestID(area: string): string {
   return `phase-guide-${area}`;
@@ -31,11 +33,10 @@ const SHADE = 0.4;
 interface Props {
   readonly isOpen: boolean;
   readonly phase: CyclePhaseName;
-  readonly phaseDays: CyclePhaseDays;
   readonly onClose: () => void;
 }
 
-export function PhaseGuide({ isOpen, phase, phaseDays, onClose }: Props): ReactNode {
+export function PhaseGuide({ isOpen, phase, onClose }: Props): ReactNode {
   const insets = useSafeAreaInsets();
 
   return (
@@ -54,10 +55,10 @@ export function PhaseGuide({ isOpen, phase, phaseDays, onClose }: Props): ReactN
           <View style={styles.handle} />
           <ScrollView contentContainerStyle={styles.body}>
             <Text style={styles.phase} testID={phaseGuidePhaseTestID}>
-              {phaseCardWords(phase, phaseDays[phase]).days}
+              {phaseTitle(phase)}
             </Text>
-            <Text accessibilityRole="header" style={styles.title}>
-              {phasePageCopy.guide.open}
+            <Text accessibilityRole="header" style={styles.title} testID={phaseGuideTitleTestID}>
+              {guideTitle(phase)}
             </Text>
             {guideAreas.map((area) => (
               <View key={area} style={styles.area} testID={phaseGuideAreaTestID(area)}>
@@ -65,6 +66,9 @@ export function PhaseGuide({ isOpen, phase, phaseDays, onClose }: Props): ReactN
                 <Text style={styles.areaWords}>{guidanceFor(phase, area)}</Text>
               </View>
             ))}
+            <Text style={styles.everyone} testID={phaseGuideEveryoneTestID}>
+              {phasePageCopy.guide.everyone}
+            </Text>
           </ScrollView>
           <PrimaryButton
             label={phasePageCopy.guide.close}
@@ -88,6 +92,13 @@ const styles = StyleSheet.create({
   areaName: { color: colour.text, ...textStyle('button-md') },
   areaWords: { color: colour.text, ...textStyle('body-sm') },
   body: { gap: space.spaceMd, paddingBottom: space.spaceLg },
+  everyone: {
+    borderTopColor: colour.line,
+    borderTopWidth: stroke.hairline,
+    color: colour.secondaryText,
+    paddingTop: space.spaceMd,
+    ...textStyle('body-sm'),
+  },
   handle: {
     alignSelf: 'center',
     backgroundColor: colour.line,

@@ -5,6 +5,7 @@ import { useCallback, useReducer, useState } from 'react';
 
 import { useDatabase } from '../../../data/DatabaseProvider';
 import { ringNow } from '../../../features/cycle/ringNow';
+import { logTitleToday } from '../../../features/log/copy';
 import { LogFlow } from '../../../features/log/LogFlow';
 import { LogSymptoms, type SymptomsAsked } from '../../../features/log/LogSymptoms';
 import {
@@ -25,7 +26,7 @@ import { groupsInHerOrder } from '../../../features/log/herOrder';
 import { useFirstRun } from '../../../features/onboarding/FirstRunProvider';
 import { useRescheduleHerReminder } from '../../../features/reminder/rescheduleHerReminder';
 import { statedFocus } from '../../../features/onboarding/firstRun';
-import { dayLabel, localDay } from '../../../features/onboarding/days';
+import { localDay } from '../../../features/onboarding/days';
 import { useProfileVault, useVault } from '../../../services/vault/VaultProvider';
 
 /** Two lists hold the same symptoms, whatever order she pressed them in. */
@@ -155,7 +156,7 @@ export default function LogFlowRoute(): ReactNode {
           writeTheSymptoms(picked);
           leaveTheSymptoms();
         }}
-        title={dayLabel(today, today)}
+        title={logTitleToday}
       />
     );
   }
@@ -177,7 +178,7 @@ export default function LogFlowRoute(): ReactNode {
       onToggleSymptom={takeOff}
       ring={ringNow(database, vault, profiles, today)}
       symptoms={symptomsLogged(database, vault, today)}
-      title={dayLabel(today, today)}
+      title={logTitleToday}
     />
   );
 }

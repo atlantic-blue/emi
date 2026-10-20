@@ -239,3 +239,12 @@ describe('the symptoms, opened by search', () => {
     expect(screen.queryByTestId(logSymptomsTestID)).toBeNull();
   });
 });
+
+describe('the entry for today', () => {
+  it('names itself as the entry for today, not as the bare word Today', async () => {
+    await sheOpens('/log');
+
+    expect(screen.getByTestId(logFlowWhenTestID)).toHaveTextContent('Entry for today');
+    expect(screen.getByTestId(logFlowWhenTestID)).not.toHaveTextContent(/^Today$/);
+  });
+});

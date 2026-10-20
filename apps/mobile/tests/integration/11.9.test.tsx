@@ -237,13 +237,16 @@ describe('what she feels today is her first logged day', () => {
       expect(screen.queryByText('Save')).toBeNull();
     });
 
-    it('asks how she is today, and says under the title that she can skip it', async () => {
+    it('asks how she is today, and says under the title to choose all that apply', async () => {
       await sheOpensEmi();
 
       await sheReachesToday();
 
       expect(screen.getByText('How are you today?')).toBeTruthy();
-      expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent('You can skip this.');
+      expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
+        'Choose all that apply.',
+      );
+      expect(screen.queryByText('You can skip this.')).toBeNull();
       expect(screen.queryByText('How are you feeling today?')).toBeNull();
       expect(screen.queryByText('Pick anything that fits, or skip it.')).toBeNull();
     });
