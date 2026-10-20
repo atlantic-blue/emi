@@ -857,10 +857,13 @@ export const russian: CatalogueIn<'ru'> = {
     'Цикл длится от {minimum} до {maximum} дней. Попробуйте день в этом диапазоне.',
   'pastPeriods.picker.remove': 'Убрать эти месячные',
   'pastPeriods.picker.start': 'Когда они начались?',
+  'pastPeriods.picker.stillGoingTooLongAgo':
+    'Если месячные ещё идут, они начались не больше {maximum} дней назад. Выберите день позже.',
   'pastPeriods.picker.title': 'Месячные {number}',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Сохранить',
   'pastPeriods.skipThisOne': 'Пропустите, если не помните',
+  'pastPeriods.stillGoing': 'Ещё идут',
   'pastPeriods.title': 'Ваши последние три менструации',
   'pastPeriods.wayPast': 'Пропустить, буду отмечать по ходу',
   'period.back': 'Назад',

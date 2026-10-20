@@ -471,6 +471,7 @@ import { sheTapsSaveAndStart } from '../apps/mobile/tests/fixtures/theSave';
 import {
   aWalkPeriodLengthDays,
   sheGivesAPeriod,
+  sheGivesAPeriodStillGoing,
 } from '../apps/mobile/tests/fixtures/thePastPeriods';
 import { pastPeriodRowTestID } from '../apps/mobile/src/features/pastPeriods/PastPeriodsList';
 import { pastPeriodsSaveTestID } from '../apps/mobile/src/features/pastPeriods/PastPeriodsScreen';
@@ -6000,6 +6001,78 @@ defineFeature(feature, (test) => {
         expect(listCycles(herDatabase())).toEqual([]);
       },
     );
+  });
+
+  test('SCREEN-1, her newest period is still going, and Emi writes the days up to today', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const herNewestStarted = addDays(today, -3);
+    const theOneBefore = addDays(herNewestStarted, -28);
+    const theOneBeforeThat = addDays(herNewestStarted, -56);
+    const eachLastedDays = 5;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    and('she reaches the step that asks for her last three periods', async () => {
+      await sheReachesTheThreePeriodsStep();
+    });
+
+    and('she gives her newest period, which started three days ago, as still going', async () => {
+      await sheGivesAPeriodStillGoing(herNewestStarted);
+    });
+
+    then('the row of her newest period says it is still going', () => {
+      expect(textIn(screen.getByTestId(pastPeriodRowTestID(0))).join(' ')).toContain('Still going');
+    });
+
+    when(
+      'she gives the two periods before it, each with the day it started and the days it lasted',
+      async () => {
+        await sheGivesAPeriod(1, theOneBefore, eachLastedDays);
+        await sheGivesAPeriod(2, theOneBeforeThat, eachLastedDays);
+        await shePresses(onboardingActionTestID);
+      },
+    );
+
+    and('she answers the rest of the questions and taps Save and start', async () => {
+      await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
+      await shePresses(onboardingActionTestID);
+
+      for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePassesTheQuestion();
+      }
+
+      await shePresses(firstForecastActionTestID);
+      await shePresses(whatEmiDoesActionTestID);
+      await sheTapsSaveAndStart();
+    });
+
+    then(
+      'her phone holds every day from the start of her newest period to today, and the days of the two before it',
+      () => {
+        const theDaysBefore = [theOneBeforeThat, theOneBefore].flatMap((start) =>
+          Array.from({ length: eachLastedDays }, (_unused, at) => addDays(start, at)),
+        );
+        const theDaysSoFar = [0, 1, 2, 3].map((at) => addDays(herNewestStarted, at));
+
+        expect(
+          listDayLogs(herDatabase())
+            .map((log) => log.day)
+            .sort(),
+        ).toEqual([...theDaysBefore, ...theDaysSoFar].sort());
+      },
+    );
+
+    and('the ring says she is on day 4 of her cycle', () => {
+      expect(within(screen.getByTestId(cycleRingTestID)).getByText('Day 4')).toBeTruthy();
+    });
   });
 
   test('SCREEN-1, the first run with no date ends on a forecast that says it is still learning', ({

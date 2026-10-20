@@ -824,10 +824,13 @@ export const spanish: CatalogueIn<'es'> = {
     'Los ciclos duran de {minimum} a {maximum} días. Prueba un día en ese rango.',
   'pastPeriods.picker.remove': 'Quitar este periodo',
   'pastPeriods.picker.start': '¿Cuándo empezó?',
+  'pastPeriods.picker.stillGoingTooLongAgo':
+    'Un periodo que sigue en curso empezó hace {maximum} días o menos. Prueba un día más reciente.',
   'pastPeriods.picker.title': 'Periodo {number}',
   'pastPeriods.row.date': '{date} de {month}',
   'pastPeriods.save': 'Guardar',
   'pastPeriods.skipThisOne': 'Omite este si no lo recuerdas',
+  'pastPeriods.stillGoing': 'Sigue en curso',
   'pastPeriods.title': 'Tus tres periodos más recientes',
   'pastPeriods.wayPast': 'Omitir, lo anotaré sobre la marcha',
   'period.back': 'Atrás',
