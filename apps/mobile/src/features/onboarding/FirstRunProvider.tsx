@@ -48,7 +48,7 @@ interface FirstRun {
   /** What she has pressed so far, in the order she pressed it, and empty until she presses one. */
   readonly focus: readonly Focus[];
   /** What she says she feels today, in the order she pressed it, and empty until she presses one. */
-  readonly symptoms: readonly TodaySymptom[];
+  readonly symptoms: readonly string[];
   /** What is in the field, letter by letter. The name she gave is read off it at the hold. */
   readonly nameTyped: string;
   readonly birthYear: number | undefined;
@@ -86,6 +86,8 @@ interface FirstRun {
   readonly forgetTheFocus: () => void;
   /** One tile pressed: the feeling joins the list, or leaves it where she pressed it again. */
   readonly pressSymptom: (slug: TodaySymptom) => void;
+  /** What she picked on all symptoms, which replaces her list, the tiles she pressed included. */
+  readonly chooseSymptoms: (picked: readonly string[]) => void;
   /** The way past the question, which empties whatever she pressed before she pressed it. */
   readonly forgetToday: () => void;
   readonly setNameTyped: (typed: string) => void;
@@ -141,7 +143,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
   const [feeling, setFeeling] = useState<Feeling | undefined>(undefined);
   const [goals, setGoals] = useState<readonly Goal[]>([]);
   const [focus, setFocus] = useState<readonly Focus[]>([]);
-  const [symptoms, setSymptoms] = useState<readonly TodaySymptom[]>([]);
+  const [symptoms, setSymptoms] = useState<readonly string[]>([]);
   const [nameTyped, setNameTyped] = useState('');
   const [birthYear, setBirthYear] = useState<number | undefined>(undefined);
   const [reminderLead, setReminderLead] = useState<ReminderLead | undefined>(undefined);
@@ -247,6 +249,10 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     setSymptoms((chosen) => symptomsAfterPressing(chosen, slug));
   }, []);
 
+  const chooseSymptoms = useCallback((picked: readonly string[]) => {
+    setSymptoms(picked);
+  }, []);
+
   const forgetToday = useCallback(() => {
     setSymptoms([]);
   }, []);
@@ -301,6 +307,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
       pressFocus,
       forgetTheFocus,
       pressSymptom,
+      chooseSymptoms,
       forgetToday,
       setNameTyped,
       setBirthYear,
@@ -314,6 +321,7 @@ export function FirstRunProvider({ children }: { readonly children: ReactNode })
     [
       askForTheReminder,
       chooseReminder,
+      chooseSymptoms,
       forgetTheReminder,
       birthYear,
       cycleLengthDays,

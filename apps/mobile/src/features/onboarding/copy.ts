@@ -100,6 +100,7 @@ export const firstRunCopy = {
     question: words('onboarding.today.question'),
     lines: [],
     action: words('onboarding.today.action'),
+    allSymptoms: words('onboarding.today.allSymptoms'),
     nothingToAdd: words('onboarding.today.nothingToAdd'),
   },
   reminder: {
@@ -246,7 +247,7 @@ export const todayLabels: Readonly<Record<TodaySymptom, string>> = {
   headache: symptomName('headache'),
   bloating: symptomName('bloating'),
   fatigue: symptomName('fatigue'),
-  calm: symptomName('calm'),
+  'breast-tenderness': symptomName('breast-tenderness'),
   'low-mood': symptomName('low-mood'),
 };
 

@@ -761,6 +761,7 @@ export const english = {
   'onboarding.start.title': 'Your cycle, your data, your key.',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.today.action': 'Save today',
+  'onboarding.today.allSymptoms': 'All symptoms',
   'onboarding.today.nothingToAdd': 'Nothing to add',
   'onboarding.today.question': 'You can skip this.',
   'onboarding.today.title': 'How are you today?',

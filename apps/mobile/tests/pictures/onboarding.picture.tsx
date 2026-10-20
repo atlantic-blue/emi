@@ -181,6 +181,7 @@ const theScreens: readonly Screen[] = [
     element: (
       <Today
         chosen={['cramps', 'fatigue']}
+        onAllSymptoms={() => undefined}
         onBack={() => undefined}
         onPress={() => undefined}
         onSave={() => undefined}

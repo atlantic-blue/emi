@@ -792,6 +792,7 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.start.title': 'Ваш цикл, ваши данные, ваш ключ.',
   'onboarding.step': 'Шаг {step} из {of}',
   'onboarding.today.action': 'Сохранить сегодняшний день',
+  'onboarding.today.allSymptoms': 'Все симптомы',
   'onboarding.today.nothingToAdd': 'Нечего добавить',
   'onboarding.today.question': 'Это можно пропустить.',
   'onboarding.today.title': 'Как вы сегодня?',

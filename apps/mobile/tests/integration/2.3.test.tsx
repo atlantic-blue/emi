@@ -497,12 +497,21 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'what-emi-does-with-it.tsx',
       ];
 
-      for (const name of asksHerNothing) {
+      // Every symptom, opened from the link under the six tiles of today. It belongs to that
+      // question rather than asking one of its own, so it is named here and counted apart.
+      const opensFromAQuestion = ['all-symptoms.tsx'];
+
+      for (const name of [...asksHerNothing, ...opensFromAQuestion]) {
         expect(held).toContain(name);
       }
 
       expect(
-        held.filter((name) => !name.startsWith('_') && !asksHerNothing.includes(name)),
+        held.filter(
+          (name) =>
+            !name.startsWith('_') &&
+            !asksHerNothing.includes(name) &&
+            !opensFromAQuestion.includes(name),
+        ),
       ).toEqual([
         'cycle-length.tsx',
         'feeling.tsx',
@@ -517,7 +526,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'welcome.tsx',
         'year-of-birth.tsx',
       ]);
-      expect(held).toHaveLength(firstRunScreens.length + asksHerNothing.length + 1);
+      expect(held).toHaveLength(
+        firstRunScreens.length + asksHerNothing.length + opensFromAQuestion.length + 1,
+      );
       expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
     });
   });
