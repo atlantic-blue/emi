@@ -3,7 +3,6 @@ import { CycleError, confidenceBands } from '@emi/cycle';
 import {
   ForecastCopyError,
   confidenceSentence,
-  confidenceWords,
   monthNames,
   ordinal,
   rangeSentence,
@@ -105,27 +104,24 @@ describe('the words the forecast is written in', () => {
     });
   });
 
-  describe('how sure Emi is', () => {
-    it('has one word for each band the arithmetic measures, and no fourth', () => {
-      expect(Object.keys(confidenceWords).sort()).toEqual(
-        confidenceBands.map((band) => band.level).sort(),
-      );
+  describe('what the range is based on', () => {
+    it('reads as the number of cycles behind it, with no confidence word', () => {
+      for (const recorded of [veryRegular, oneLongCycle, genuinelyIrregular]) {
+        expect(confidenceSentence(forecastFromRecorded(recorded))).toBe(
+          'Based on your last 6 cycles',
+        );
+      }
     });
 
-    it('reads as the word and the number of cycles behind it', () => {
-      expect(confidenceSentence(forecastFromRecorded(veryRegular))).toBe(
-        'High confidence, based on your last 6 cycles',
+    it('is the same sentence whichever band the arithmetic measured', () => {
+      const bands = [veryRegular, oneLongCycle, genuinelyIrregular].map(
+        (recorded) => forecastFromRecorded(recorded).confidence.level,
       );
-      expect(confidenceSentence(forecastFromRecorded(oneLongCycle))).toBe(
-        'Medium confidence, based on your last 6 cycles',
-      );
-      expect(confidenceSentence(forecastFromRecorded(genuinelyIrregular))).toBe(
-        'Low confidence, based on your last 6 cycles',
-      );
-    });
 
-    it('carries no percentage in any of its words', () => {
-      expect(Object.values(confidenceWords).join(' ')).not.toMatch(/%|percent/i);
+      expect(new Set(bands).size).toBe(confidenceBands.length);
+      expect(confidenceSentence(forecastFromRecorded(veryRegular))).not.toMatch(
+        /confidence|high|medium|low|%|percent/i,
+      );
     });
   });
 });

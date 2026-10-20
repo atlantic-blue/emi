@@ -183,11 +183,7 @@ export const russian: CatalogueIn<'ru'> = {
   'export.where':
     'Файлы создаются на вашем телефоне. Вы сами выбираете, где их сохранить и кому отправить.',
 
-  // The word sits inside the sentence rather than opening it, so it is written in lower case.
-  'forecast.confidence.high': 'высокая',
-  'forecast.confidence.low': 'низкая',
-  'forecast.confidence.medium': 'средняя',
-  'forecast.confidence.sentence': 'Уверенность {word}, по вашим последним {cycles} циклам',
+  'forecast.confidence.sentence': 'По вашим последним {cycles} циклам',
   'forecast.cycleMoves': 'Ваш цикл заметно смещается, поэтому диапазон шире.',
   'forecast.cyclesWanted': {
     one: 'Нам нужен ещё {count} полный цикл, чтобы сказать, насколько мы уверены.',
@@ -254,17 +250,18 @@ export const russian: CatalogueIn<'ru'> = {
   'history.editLabel': 'Изменить месячные, начавшиеся {day}',
   'history.noCycles': 'Циклов пока нет. Отметьте день, когда шла кровь, и здесь появится запись.',
   'history.nothingRepeats':
-    'Пока ничто не повторилось за 3 цикла. Продолжайте отмечать, и мы вам покажем.',
+    'Пока ни один симптом не повторился примерно в одни и те же дни 3 циклов. Когда это случится, он появится здесь.',
   'history.pattern.cycleDay': 'Около дня {day} вашего цикла',
   'history.pattern.evidence': 'в {withIt} из ваших последних {read} циклов',
   'history.pattern.line': '{when}, {evidence}',
   'history.pattern.beforePeriod': 'Примерно за {days} до месячных',
   'history.patternsComplete': {
-    one: 'У вас завершён {count}.',
-    few: 'У вас завершено {count}.',
-    many: 'У вас завершено {count}.',
+    one: 'Пока завершён {count} цикл.',
+    few: 'Пока завершено {count} цикла.',
+    many: 'Пока завершено {count} циклов.',
   },
-  'history.patternsNeed': 'Здесь появятся симптомы, которые вы отметите в {needs} разных циклах.',
+  'history.patternsNeed':
+    'Здесь появятся симптомы, которые вы отметите примерно в одни и те же дни {needs} разных циклов.',
   'history.patterns': 'Повторяющиеся симптомы',
   'history.running': 'Текущий цикл',
   'history.runningWithPeriod': '{running} · месячные пока {periodDays}',
@@ -285,15 +282,22 @@ export const russian: CatalogueIn<'ru'> = {
   'home.loggedToday.temperature': 'температура',
   'home.loggedToday.weight': 'вес',
   'home.numbers.cycleLength': 'Последний цикл',
+  'home.numbers.cycleLength.means':
+    'От первого дня месячных до дня перед началом следующих. По этой длине рассчитывается ваш прогноз.',
   'home.numbers.cycleLengthVariation': 'Разброс',
+  'home.numbers.cycleLengthVariation.means':
+    'Насколько длина ваших циклов отличается от цикла к циклу. Чем больше разница, тем шире диапазон прогноза.',
   'home.numbers.days': { one: '{count} день', few: '{count} дня', many: '{count} дней' },
   'home.numbers.fractionDays': '{days} дня',
-  'home.numbers.hers': 'Ваше',
-  'home.numbers.line': 'Опубликованную цифру приводит исследование, и оно в одном нажатии.',
+  'home.numbers.hers': 'Ваши показатели',
+  'home.numbers.line':
+    'Цифра рядом с каждым вашим показателем взята из опубликованного исследования, а не из ваших записей.',
   'home.numbers.noFigure': 'Нет цифры',
   'home.numbers.periodDuration': 'Последние месячные',
+  'home.numbers.periodDuration.means':
+    'Дни, которые вы отметили как месячные в прошлый раз. Неотмеченные дни не считаются.',
   'home.numbers.press': 'Откуда взяты эти цифры',
-  'home.numbers.published': 'Опубликовано',
+  'home.numbers.published': 'Исследование',
   'home.numbers.range': 'от {low} до {high}',
   'home.numbers.upTo': 'до {days}',
   'home.numbers.wider': 'Шире',
@@ -324,15 +328,15 @@ export const russian: CatalogueIn<'ru'> = {
   'home.roundAction.phase': 'Фаза цикла',
   // График её последних полных циклов на опубликованном диапазоне. Подпись и фраза под ним
   // считают циклы, которые нарисовал график, поэтому женщина с тремя никогда не прочитает шесть.
-  'home.trend.allInside': 'Все ваши последние {cycles} попали внутрь полосы.',
+  'home.trend.allInside': 'Все ваши последние {cycles} были в этом диапазоне.',
   'home.trend.caption':
-    'Ваши последние {cycles}. Затенённая полоса показывает опубликованный диапазон.',
+    'Продолжительность ваших последних циклов: {cycles}. Затенённая полоса показывает диапазон из опубликованного исследования.',
   'home.trend.cycleCount': {
     one: '{count} полный цикл',
     few: '{count} полных цикла',
     many: '{count} полных циклов',
   },
-  'home.trend.outside': '{outside} из ваших последних {cycles} попали за пределы полосы.',
+  'home.trend.outside': '{outside} из ваших последних {cycles} были вне этого диапазона.',
   'home.trend.press': 'Все циклы',
   'home.waiting.cycles.heading': 'Ваши циклы',
   'home.waiting.cycles.needs': 'Ваши числа появятся со вторыми месячными.',

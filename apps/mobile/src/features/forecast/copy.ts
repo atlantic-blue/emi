@@ -1,4 +1,4 @@
-import type { ConfidenceLevel, DayRange, Forecast, Learning } from '@emi/cycle';
+import type { DayRange, Forecast, Learning } from '@emi/cycle';
 import { toDayNumber } from '@emi/cycle';
 
 import { type WordKey, words } from '../../language';
@@ -163,21 +163,11 @@ export function fertileWindowSentence(forecast: Forecast): string {
 }
 
 /**
- * A word, never a number out of a hundred. The bands are measured, and a percentage taken from six
- * cycles of one woman would read as a precision none of it has.
+ * The count the median was taken over. No word for how sure Emi is goes with it, because a word
+ * such as high read as a promise about her body rather than as arithmetic on her own cycles.
  */
-export const confidenceWords: Readonly<Record<ConfidenceLevel, string>> = {
-  high: words('forecast.confidence.high'),
-  medium: words('forecast.confidence.medium'),
-  low: words('forecast.confidence.low'),
-};
-
-/** The word, and the count the median was taken over, because the count is what the word rests on. */
 export function confidenceSentence(forecast: Forecast): string {
-  return words('forecast.confidence.sentence', undefined, {
-    cycles: forecast.fromCycles,
-    word: confidenceWords[forecast.confidence.level],
-  });
+  return words('forecast.confidence.sentence', undefined, { cycles: forecast.fromCycles });
 }
 
 /**

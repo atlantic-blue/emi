@@ -292,7 +292,8 @@ Feature: She opens Emi and logs her first period
     Then she reads how long her last cycle ran, how long her last period ran, and how much her cycles vary
     And beside each of the three she reads the figure a published paper reports
     And the published figure beside her cycle length is 24 to 38 days
-    And she is told the published figure is the one the paper reports and the paper is one press away
+    And under each of the three she reads one line that says what the number means for her
+    And she is told the figure beside each of hers comes from a published study, not from her records
     And none of the three numbers is called normal, abnormal or irregular
     And the cycle length she reads here is the one the Insights screen gives that same cycle
     And the period length she reads here is the bleeding the Insights screen gives that same cycle

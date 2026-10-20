@@ -181,11 +181,7 @@ export const spanish: CatalogueIn<'es'> = {
   'export.where':
     'No se envía nada a ninguna parte. Los archivos se crean en este teléfono, y tú decides quién los recibe.',
 
-  // The word sits inside the sentence rather than opening it, so it is written in lower case.
-  'forecast.confidence.high': 'alta',
-  'forecast.confidence.low': 'baja',
-  'forecast.confidence.medium': 'media',
-  'forecast.confidence.sentence': 'Confianza {word}, según tus últimos {cycles} ciclos',
+  'forecast.confidence.sentence': 'Según tus últimos {cycles} ciclos',
   'forecast.cycleMoves': 'Tu ciclo se mueve bastante, así que el rango es más amplio.',
   'forecast.cyclesWanted': {
     one: 'Necesitamos {count} ciclo completo más para decirte cuánta confianza tenemos.',
@@ -251,16 +247,17 @@ export const spanish: CatalogueIn<'es'> = {
   'history.editLabel': 'Editar el periodo que empezó {day}',
   'history.noCycles': 'Todavía no hay ciclos. Registra un día en que sangraste y esto se rellena.',
   'history.nothingRepeats':
-    'Nada ha vuelto en 3 ciclos todavía. Sigue registrando y te lo mostraremos.',
+    'Ningún síntoma ha vuelto todavía hacia el mismo momento en 3 ciclos. Si alguno vuelve, aparecerá aquí.',
   'history.pattern.cycleDay': 'Hacia el día {day} de tu ciclo',
   'history.pattern.evidence': 'en {withIt} de tus últimos {read} ciclos',
   'history.pattern.line': '{when}, {evidence}',
   'history.pattern.beforePeriod': 'Unos {days} antes de tu periodo',
   'history.patternsComplete': {
-    one: '{count} de los tuyos está completo.',
-    other: '{count} de los tuyos están completos.',
+    one: 'Llevas {count} ciclo completo.',
+    other: 'Llevas {count} ciclos completos.',
   },
-  'history.patternsNeed': 'Te señalaremos un síntoma cuando haya vuelto en {needs} ciclos.',
+  'history.patternsNeed':
+    'Aquí aparecerán los síntomas que registres hacia el mismo momento en {needs} ciclos distintos.',
   'history.patterns': 'Lo que vuelve',
   'history.running': 'Todavía en curso',
   'history.runningWithPeriod': '{running}, {periodDays} de sangrado hasta ahora',
@@ -283,16 +280,22 @@ export const spanish: CatalogueIn<'es'> = {
   'home.loggedToday.temperature': 'una temperatura',
   'home.loggedToday.weight': 'un peso',
   'home.numbers.cycleLength': 'Último ciclo',
+  'home.numbers.cycleLength.means':
+    'Desde el primer día de un periodo hasta el día antes del siguiente. Tu previsión se calcula con estas duraciones.',
   'home.numbers.cycleLengthVariation': 'Variación',
+  'home.numbers.cycleLengthVariation.means':
+    'Cuánto cambia la duración de tus ciclos de uno a otro. Cuanto más cambia, más amplio es el rango de tu previsión.',
   'home.numbers.days': { one: '{count} día', other: '{count} días' },
   'home.numbers.fractionDays': '{days} días',
-  'home.numbers.hers': 'Tuyo',
+  'home.numbers.hers': 'Tus cifras',
   'home.numbers.line':
-    'La cifra publicada es la que informa el estudio, y el estudio está a un toque.',
+    'La cifra junto a cada una de las tuyas viene de un estudio publicado, no de tus registros.',
   'home.numbers.noFigure': 'Sin cifra',
   'home.numbers.periodDuration': 'Último periodo',
+  'home.numbers.periodDuration.means':
+    'Los días que registraste como tu periodo la última vez. Un día que no registraste no cuenta.',
   'home.numbers.press': 'De dónde vienen estas cifras',
-  'home.numbers.published': 'Publicado',
+  'home.numbers.published': 'Estudio',
   'home.numbers.range': 'de {low} a {high}',
   'home.numbers.upTo': 'hasta {days}',
   'home.numbers.wider': 'Más amplio',
@@ -322,10 +325,11 @@ export const spanish: CatalogueIn<'es'> = {
   'home.roundAction.phase': 'Fase del ciclo',
   // El gráfico de sus últimos ciclos completos sobre el rango publicado. El pie y la frase debajo
   // cuentan los ciclos que dibujó el gráfico, así que una mujer con tres nunca lee seis.
-  'home.trend.allInside': 'Todos tus últimos {cycles} cayeron dentro de la banda.',
-  'home.trend.caption': 'Tus últimos {cycles}. La banda sombreada es el rango publicado.',
+  'home.trend.allInside': 'Todos tus últimos {cycles} estuvieron dentro de ese rango.',
+  'home.trend.caption':
+    'Cuánto duraron tus últimos {cycles}. La banda sombreada es el rango que publica un estudio.',
   'home.trend.cycleCount': { one: '{count} ciclo completo', other: '{count} ciclos completos' },
-  'home.trend.outside': '{outside} de tus últimos {cycles} cayeron fuera de la banda.',
+  'home.trend.outside': '{outside} de tus últimos {cycles} estuvieron fuera de ese rango.',
   'home.trend.press': 'Los mismos ciclos, completos',
   'home.waiting.cycles.heading': 'Tus ciclos',
   'home.waiting.cycles.needs': 'Tus cifras llegan con tu segundo periodo.',
