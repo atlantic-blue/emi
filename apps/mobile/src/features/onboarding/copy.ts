@@ -305,20 +305,27 @@ export function countsFromTheFirstPeriodSentence(cycleLengthDays: number): strin
 }
 
 /**
- * Why the answer is a range, in three sentences, each read off a number the arithmetic used: the
- * complete cycles it has, the cycles it waits for, the length she gave and the days either side.
+ * Why the forecast names more than one date, where her own cycles made it: the start moves from
+ * cycle to cycle, and the count is the number of cycles the median was taken over.
  */
-export function whyARangeSentences(counted: {
-  readonly completeCycles: number;
-  readonly needsCycles: number;
+export function whyFromHerCyclesSentences(fromCycles: number): string[] {
+  return [
+    words('onboarding.firstForecast.why.varies'),
+    words('onboarding.firstForecast.why.fromCycles', fromCycles),
+  ];
+}
+
+/**
+ * The same answer where the length she gave made the range: the start moves, the length she gave
+ * is counted from her last start, and the width either side is the one the arithmetic used.
+ */
+export function whyFromTheLengthSheGaveSentences(counted: {
   readonly cycleLengthDays: number;
   readonly daysEitherSide: number;
 }): string[] {
   return [
-    words('onboarding.firstForecast.why.read', counted.completeCycles),
-    words('onboarding.firstForecast.why.counts', counted.cycleLengthDays, {
-      needs: counted.needsCycles,
-    }),
+    words('onboarding.firstForecast.why.varies'),
+    words('onboarding.firstForecast.why.counts', counted.cycleLengthDays),
     words('onboarding.firstForecast.why.width', counted.daysEitherSide),
   ];
 }

@@ -226,12 +226,10 @@ describe('what Emi does with what she said, after the forecast', () => {
       await sheReachesWhatEmiDoes();
 
       expect(whatEmiDoesCards).toEqual(['forecast', 'log', 'privacy']);
-      expect(textIn(screen.getByTestId(whatEmiDoesTitleTestID))).toEqual([
-        'Here is what Emi does with what you told it',
-      ]);
+      expect(textIn(screen.getByTestId(whatEmiDoesTitleTestID))).toEqual(['Your settings in Emi']);
       expect(textIn(screen.getByTestId(whatEmiDoesCardTestID('forecast')))).toEqual([
         'Your forecast',
-        'A range, and how sure Emi is',
+        'Estimated start dates of your period, from your records',
       ]);
       expect(textIn(screen.getByTestId(whatEmiDoesCardTestID('privacy')))).toEqual([
         'Your privacy',

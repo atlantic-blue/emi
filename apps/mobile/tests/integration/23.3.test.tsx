@@ -82,13 +82,13 @@ const theQuestionsLeftAfterTheCycleLength = 7;
  * name she gave is read back on the screen after it and not here.
  */
 const theTitleOfHerForecast = {
-  plain: 'Your next period',
+  plain: 'Your period may start',
   theOldGreeting: `${theNameSheGives}, here's your next period`,
 };
 
 /** The redesign titles this screen in Emi's name, and greets nobody, so the old two forms are gone. */
 const theTitleOfWhatEmiDoes = {
-  now: 'Here is what Emi does with what you told it',
+  now: 'Your settings in Emi',
   theOldGreeting: `${theNameSheGives}, here's what we'll do with your answers`,
   theOldPlain: "Here's what we'll do with your answers",
 };
@@ -98,8 +98,8 @@ const theForecastSays = {
   learning: 'Still learning',
   needs: `Emi needs ${String(CYCLES_BEFORE_A_FORECAST)} complete cycles before it forecasts from your own cycles, so this is still learning.`,
   why: {
-    title: 'Why a range?',
-    line: 'Emi has read 0 complete cycles. Until it reads 2, it counts the 28 days you gave from your last period. The range runs 3 days either side of that day.',
+    title: 'Why more than one date?',
+    line: 'The start date can change from one cycle to the next. Emi counted the 28 days you gave from the start of your last period. The range runs 3 days either side of that day.',
   },
 };
 
@@ -114,7 +114,10 @@ const theForecastWithNoDateSays = {
 
 /** The three sections that read her own answers back to her, each as a label and a heading. */
 const whatEmiDoesSays = {
-  forecast: { title: 'Your forecast', line: 'A range, and how sure Emi is' },
+  forecast: {
+    title: 'Your forecast',
+    line: 'Estimated start dates of your period, from your records',
+  },
   log: {
     title: 'Your log',
     line: 'What you see first',
@@ -406,7 +409,7 @@ describe('her first forecast is addressed to her', () => {
       expect(screen.queryByText(theTitleOfWhatEmiDoes.theOldPlain)).toBeNull();
     });
 
-    it('says the forecast is a range, and says how sure Emi is', async () => {
+    it('says the forecast gives estimated start dates from her records, and no word about how sure', async () => {
       await sheWalksToHerForecast({ day: herPeriodStarted });
 
       await sheReadsOnToWhatEmiDoes();

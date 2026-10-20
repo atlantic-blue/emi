@@ -678,16 +678,17 @@ export const spanish: CatalogueIn<'es'> = {
   },
   'onboarding.firstForecast.noDate.title': 'Emi no tiene una fecha desde la que contar',
   'onboarding.firstForecast.stillLearning': 'Todavía aprendiendo',
-  'onboarding.firstForecast.title': 'Tu próxima regla',
+  'onboarding.firstForecast.title': 'Tu regla puede empezar',
   'onboarding.firstForecast.why.counts': {
-    one: 'Hasta que lea {needs}, cuenta el {count} día que indicaste desde tu última regla.',
-    other: 'Hasta que lea {needs}, cuenta los {count} días que indicaste desde tu última regla.',
+    one: 'Emi contó el {count} día que indicaste desde el inicio de tu última regla.',
+    other: 'Emi contó los {count} días que indicaste desde el inicio de tu última regla.',
   },
-  'onboarding.firstForecast.why.read': {
-    one: 'Emi ha leído {count} ciclo completo.',
-    other: 'Emi ha leído {count} ciclos completos.',
+  'onboarding.firstForecast.why.fromCycles': {
+    one: 'Emi estimó estas fechas a partir de tu {count} ciclo más reciente.',
+    other: 'Emi estimó estas fechas a partir de tus {count} ciclos más recientes.',
   },
-  'onboarding.firstForecast.why.title': '¿Por qué un rango?',
+  'onboarding.firstForecast.why.title': '¿Por qué más de una fecha?',
+  'onboarding.firstForecast.why.varies': 'La fecha de inicio puede cambiar de un ciclo a otro.',
   'onboarding.firstForecast.why.width': {
     one: 'El rango abarca {count} día a cada lado de ese día.',
     other: 'El rango abarca {count} días a cada lado de ese día.',
@@ -773,7 +774,8 @@ export const spanish: CatalogueIn<'es'> = {
     'Emi te muestra lo que dicen tus propios registros, y nada más. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
   'onboarding.welcome.title': 'Emi aprende tu ciclo. Tus datos son tuyos.',
   'onboarding.whatEmiDoes.action': 'Continuar',
-  'onboarding.whatEmiDoes.forecast.line': 'Un rango, y cuánta confianza tiene Emi',
+  'onboarding.whatEmiDoes.forecast.line':
+    'Fechas aproximadas de inicio de tu regla, según tus registros',
   'onboarding.whatEmiDoes.forecast.title': 'Tu previsión',
   'onboarding.whatEmiDoes.log.and': 'y',
   'onboarding.whatEmiDoes.log.chosen': {
@@ -786,7 +788,7 @@ export const spanish: CatalogueIn<'es'> = {
     'Tu registro se abre en el orden habitual, empezando por {groups}.',
   'onboarding.whatEmiDoes.privacy.line': 'Solo tú puedes leer todo esto',
   'onboarding.whatEmiDoes.privacy.title': 'Tu privacidad',
-  'onboarding.whatEmiDoes.title': 'Esto es lo que Emi hace con lo que le contaste',
+  'onboarding.whatEmiDoes.title': 'Tus ajustes en Emi',
 
   'ovulation.popup.line':
     'Emi guarda lo que notas con el día de hoy, y aparece en tu exportación. Elige todo lo que corresponda.',
