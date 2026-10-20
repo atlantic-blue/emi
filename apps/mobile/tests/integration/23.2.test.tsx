@@ -159,7 +159,7 @@ const theGreeting = 'onboarding.welcome.title';
  * the lines under her period length and her regularity.
  */
 const theWelcomeNamingEmi = [
-  'onboarding.feeling.line.talks',
+  'onboarding.feeling.line.hard',
   'onboarding.focus.line.first',
   'onboarding.goals.title',
   'onboarding.name.line.greets',

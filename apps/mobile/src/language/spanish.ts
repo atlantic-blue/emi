@@ -658,8 +658,9 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.feeling.choice.fine': 'Estoy bien con ello',
   'onboarding.feeling.choice.hard': 'Es difícil, casi todos los meses',
   'onboarding.feeling.choice.understand': 'Quiero entenderlo',
-  'onboarding.feeling.line.talks': 'Esto cambia cómo te habla Emi, y nada más.',
-  'onboarding.feeling.title': 'Cómo te sientes con ello',
+  'onboarding.feeling.line.hard':
+    'Si es difícil, Emi pone el dolor primero en los días de tu periodo.',
+  'onboarding.feeling.title': '¿Cómo te sientes normalmente durante tu periodo?',
   'onboarding.firstForecast.action': 'Continuar',
   'onboarding.firstForecast.needs': {
     one: 'Emi necesita {count} ciclo completo antes de prever a partir de tus propios ciclos, así que todavía está aprendiendo.',
