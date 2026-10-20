@@ -283,7 +283,7 @@ export const russian: CatalogueIn<'ru'> = {
   'home.loggedToday.weight': 'вес',
   'home.numbers.cycleLength': 'Последний цикл',
   'home.numbers.cycleLength.means':
-    'От первого дня месячных до дня перед началом следующих. По этой длине рассчитывается ваш прогноз.',
+    'От первого дня месячных до дня перед началом следующих. Ваш прогноз рассчитывается по длине ваших последних циклов.',
   'home.numbers.cycleLengthVariation': 'Разброс',
   'home.numbers.cycleLengthVariation.means':
     'Насколько длина ваших циклов отличается от цикла к циклу. Чем больше разница, тем шире диапазон прогноза.',
