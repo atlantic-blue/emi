@@ -6040,7 +6040,7 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('she answers the rest of the questions and presses and holds Hold to begin', async () => {
+    and('she answers the rest of the questions and taps Save and start', async () => {
       await shePresses(cycleLengthDaysTestID(sheSaysHerCycleRuns));
       await shePresses(onboardingActionTestID);
 
@@ -6049,9 +6049,8 @@ defineFeature(feature, (test) => {
       }
 
       await shePresses(firstForecastActionTestID);
-      await shePresses(promiseActionTestID);
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
     });
 
     then(

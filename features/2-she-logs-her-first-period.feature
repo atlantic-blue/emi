@@ -131,7 +131,7 @@ Feature: She opens Emi and logs her first period
     And she gives her newest period, which started three days ago, as still going
     Then the row of her newest period says it is still going
     When she gives the two periods before it, each with the day it started and the days it lasted
-    And she answers the rest of the questions and presses and holds Hold to begin
+    And she answers the rest of the questions and taps Save and start
     Then her phone holds every day from the start of her newest period to today, and the days of the two before it
     And the ring says she is on day 4 of her cycle
 
