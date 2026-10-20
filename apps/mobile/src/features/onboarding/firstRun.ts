@@ -388,11 +388,11 @@ export interface FirstRunVaults {
   readonly profile: ProfileVault;
 }
 
-/** What the hold asks for before it writes: her key, made if this phone holds none. */
+/** What the save asks for before it writes: her key, made if this phone holds none. */
 export type MakeFirstRunVaults = () => Promise<FirstRunVaults>;
 
 /**
- * Everything she answered, written at the moment she presses and holds the ring.
+ * Everything she answered, written at the moment she taps Save and start.
  *
  * Her key comes first and the vaults are built from whatever the keychain holds then, because a
  * row sealed under a key the keychain does not hold is a row nothing opens again. The write is the

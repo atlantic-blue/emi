@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
+import { dayParameter } from '../../features/calendar/askedMonth';
 import { theCycleAskedFor } from '../../features/history/askedCycle';
 import { thePatternAskedFor } from '../../features/history/askedPattern';
 import { HistoryScreen } from '../../features/history/HistoryScreen';
@@ -44,6 +45,7 @@ export default function HistoryRoute(): ReactNode {
     <HistoryScreen
       history={history}
       onBack={leave}
+      onEditPeriod={(startedOn) => router.push(`/calendar/period?${dayParameter}=${startedOn}`)}
       onOpenDay={(day) => router.push(`/day/${day}`)}
       openedAt={theCycleAskedFor(asked.cycle)}
       openedPattern={thePatternAskedFor(asked.pattern)}

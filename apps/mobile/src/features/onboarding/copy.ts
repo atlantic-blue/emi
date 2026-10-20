@@ -38,14 +38,14 @@ export const firstRunCopy = {
   },
   name: {
     title: words('onboarding.name.title'),
-    lines: [words('onboarding.name.line.greets'), words('onboarding.encrypts')],
+    lines: [words('onboarding.name.line.greets')],
     label: words('onboarding.name.label'),
     hint: words('onboarding.name.hint'),
     action: words('onboarding.name.action'),
   },
   birthYear: {
     title: words('onboarding.birthYear.title'),
-    lines: [words('onboarding.encrypts')],
+    lines: [],
     action: words('onboarding.birthYear.action'),
   },
   cycleLength: {
@@ -75,13 +75,13 @@ export const firstRunCopy = {
   },
   feeling: {
     title: words('onboarding.feeling.title'),
-    lines: [words('onboarding.feeling.line.talks'), words('onboarding.encryptedHere')],
+    lines: [words('onboarding.feeling.line.hard')],
     action: words('onboarding.feeling.action'),
   },
   goals: {
     title: words('onboarding.goals.title'),
     question: words('onboarding.goals.line.chooseAll'),
-    lines: [words('onboarding.encryptsYourAnswers')],
+    lines: [],
     action: words('onboarding.goals.action'),
   },
   focus: {
@@ -98,7 +98,7 @@ export const firstRunCopy = {
      */
     header: words('calendar.today'),
     question: words('onboarding.today.question'),
-    lines: [words('onboarding.encryptsIt')],
+    lines: [],
     action: words('onboarding.today.action'),
     nothingToAdd: words('onboarding.today.nothingToAdd'),
   },
@@ -120,10 +120,6 @@ export const firstRunCopy = {
     why: {
       title: words('onboarding.firstForecast.why.title'),
     },
-    onThisPhone: {
-      title: words('onboarding.firstForecast.onThisPhone.title'),
-      line: words('onboarding.firstForecast.onThisPhone.line'),
-    },
     noDate: {
       title: words('onboarding.firstForecast.noDate.title'),
       first: words('onboarding.firstForecast.noDate.first'),
@@ -131,26 +127,15 @@ export const firstRunCopy = {
     },
     action: words('onboarding.firstForecast.action'),
   },
-  hold: {
-    title: words('onboarding.hold.title'),
-    instruction: words('onboarding.hold.instruction'),
-    sealed: words('onboarding.hold.sealed'),
-    action: words('onboarding.hold.action'),
-    held: words('onboarding.hold.held'),
-    refused: words('onboarding.hold.refused'),
+  start: {
+    title: words('onboarding.start.title'),
+    allSet: words('onboarding.start.allSet'),
+    sealed: words('onboarding.start.sealed'),
+    action: words('onboarding.start.action'),
+    refused: words('onboarding.start.refused'),
   },
   back: words('onboarding.back'),
   skip: words('onboarding.skip'),
-  encrypts: words('onboarding.encrypts'),
-  encryptedHere: words('onboarding.encryptedHere'),
-  encryptsYourAnswers: words('onboarding.encryptsYourAnswers'),
-  encryptsIt: words('onboarding.encryptsIt'),
-  /**
-   * The promise the reminder makes, which is about the reminder and nothing else. The redesign's
-   * own sentence says nothing is sent anywhere, and the delete sends one request, so the sentence
-   * names the reminder.
-   */
-  remindsOnThisPhone: words('onboarding.reminder.promise'),
   shorter: words('onboarding.cycleLength.shorter'),
   longer: words('onboarding.cycleLength.longer'),
   fewerDays: words('onboarding.periodLength.shorter'),
@@ -381,25 +366,7 @@ export const tourCopy = {
   skip: words('onboarding.tour.skip'),
 } as const;
 
-/**
- * The three lines of the promise, in the order she reads them. A list as well as the record below,
- * because the order is the screen and a record does not carry one.
- */
-export const promiseLines = ['encrypted', 'noTracking', 'delete'] as const;
-
-export type PromiseLine = (typeof promiseLines)[number];
-
-export const promiseCopy = {
-  title: words('onboarding.promise.title'),
-  lines: {
-    encrypted: words('onboarding.promise.encrypted'),
-    noTracking: words('onboarding.promise.noTracking'),
-    delete: words('onboarding.promise.delete'),
-  } satisfies Readonly<Record<PromiseLine, string>>,
-  action: words('onboarding.promise.action'),
-} as const;
-
-/** The three cards of the screen after the promise, in the order she reads them. */
+/** The three cards of the screen after the first forecast, in the order she reads them. */
 export const whatEmiDoesCards = ['forecast', 'log', 'privacy'] as const;
 
 export type WhatEmiDoesCard = (typeof whatEmiDoesCards)[number];

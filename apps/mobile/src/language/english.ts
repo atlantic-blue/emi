@@ -192,6 +192,11 @@ export const english = {
    */
   'forecast.fertileWindow.sentence':
     'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.itStarted': 'It started',
+  'forecast.late': {
+    one: 'Your period is {count} day late',
+    other: 'Your period is {count} days late',
+  },
   'forecast.nextPeriod': 'Your next period',
   'forecast.range.sameMonth': 'Between the {from} and the {to} of {month}',
   'forecast.range.spansMonths': 'Between the {from} of {fromMonth} and the {to} of {toMonth}',
@@ -236,6 +241,8 @@ export const english = {
   'history.cycleRange': '{from} to {to}',
   'history.cycles': 'Your cycles',
   'history.dayReads': 'the {ordinal} of {month}',
+  'history.edit': 'Edit',
+  'history.editLabel': 'Edit the period that started on {day}',
   'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
   'history.nothingRepeats':
     "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
@@ -641,17 +648,13 @@ export const english = {
   'onboarding.cycleLength.longer': 'One day longer',
   'onboarding.cycleLength.shorter': 'One day shorter',
   'onboarding.cycleLength.title': 'How long is your cycle, roughly?',
-  'onboarding.encryptedHere': 'Encrypted on this phone.',
   'onboarding.encrypts': 'Emi encrypts this on the phone before it goes anywhere.',
-  'onboarding.encryptsIt': 'Emi encrypts it on this phone.',
-  'onboarding.encryptsYourAnswers':
-    'Emi encrypts your answers on this phone. Nobody else can read them.',
   'onboarding.feeling.action': 'Continue',
   'onboarding.feeling.choice.fine': 'I am fine with it',
   'onboarding.feeling.choice.hard': 'It is hard, most months',
   'onboarding.feeling.choice.understand': 'I want to understand it',
-  'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
-  'onboarding.feeling.title': 'How you feel about it',
+  'onboarding.feeling.line.hard': 'If it is hard, Emi puts pain first on your period days.',
+  'onboarding.feeling.title': 'How do you usually feel during your period?',
   'onboarding.firstForecast.action': 'Continue',
   'onboarding.firstForecast.needs': {
     one: 'Emi needs {count} complete cycle before it forecasts from your own cycles, so this is still learning.',
@@ -670,9 +673,6 @@ export const english = {
     other: 'From that day Emi counts a cycle of {count} days, the length you gave.',
   },
   'onboarding.firstForecast.noDate.title': 'Emi has no date to count from',
-  'onboarding.firstForecast.onThisPhone.line':
-    'The arithmetic runs here. No cycle of yours is sent anywhere to be worked out.',
-  'onboarding.firstForecast.onThisPhone.title': 'Worked out on this phone',
   'onboarding.firstForecast.stillLearning': 'Still learning',
   'onboarding.firstForecast.title': 'Your next period',
   'onboarding.firstForecast.why.counts': {
@@ -698,17 +698,6 @@ export const english = {
   'onboarding.goals.choice.symptoms': 'Understand my symptoms',
   'onboarding.goals.line.chooseAll': 'Choose all that apply.',
   'onboarding.goals.title': 'What do you want Emi to help with?',
-  'onboarding.hold.action': 'Hold to begin',
-  'onboarding.hold.held': 'Keep holding',
-  'onboarding.hold.instruction': 'Press and hold the button to begin.',
-  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
-  // day, the answers and the marker go in one transaction or none of them do.
-  'onboarding.hold.refused': "That didn't save. Press and hold the button again.",
-  // The key is made at launch or at the hold, whichever finds the keychain empty first, and it is
-  // kept in the keychain rather than anywhere a screen may name.
-  'onboarding.hold.sealed':
-    "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
-  'onboarding.hold.title': 'Your cycle, your data, your key.',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
   'onboarding.lastPeriod.later': 'Later',
@@ -735,11 +724,6 @@ export const english = {
   'onboarding.periodLength.shorter': 'One day shorter',
   'onboarding.periodLength.skip': 'I am not sure',
   'onboarding.periodLength.title': 'How many days does your period usually last?',
-  'onboarding.promise.action': 'Continue',
-  'onboarding.promise.delete': 'Delete everything, in one press',
-  'onboarding.promise.encrypted': 'Encrypted on this phone, with a key only you hold',
-  'onboarding.promise.noTracking': 'No password, no tracking tools',
-  'onboarding.promise.title': 'Only you can read your days.',
   'onboarding.regularity.action': 'Continue',
   'onboarding.regularity.choice.moves': 'No, it moves',
   'onboarding.regularity.choice.regular': 'Yes, most months',
@@ -754,10 +738,18 @@ export const english = {
   'onboarding.reminder.line.oneDayBefore': 'One day before the range starts.',
   'onboarding.reminder.line.twoDaysBefore': 'Two days before the range starts.',
   'onboarding.reminder.notNow': 'Not now',
-  'onboarding.reminder.promise':
-    'This phone works it out and this phone raises it. Nothing about the reminder is sent anywhere.',
   'onboarding.reminder.title': 'Shall Emi tell you when it is near?',
   'onboarding.skip': 'Skip',
+  'onboarding.start.action': 'Save and start',
+  'onboarding.start.allSet': 'All set',
+  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
+  // day, the answers and the marker go in one transaction or none of them do.
+  'onboarding.start.refused': "That didn't save. Tap Save and start again.",
+  // The key is made at launch or at the save, whichever finds the keychain empty first, and it is
+  // kept in the keychain rather than anywhere a screen may name.
+  'onboarding.start.sealed':
+    "Saving keeps your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  'onboarding.start.title': 'Your cycle, your data, your key.',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.today.action': 'Save today',
   'onboarding.today.nothingToAdd': 'Nothing to add',
@@ -852,6 +844,7 @@ export const english = {
   'period.products.periodUnderwear': 'Period underwear',
   'period.products.tampon': 'Tampon',
   'period.save': 'Save',
+  'period.startedOnAnotherDay': 'Started on another day?',
   'period.title': 'Period',
   'phase.about.follicular':
     'It starts with your period and ends the day before the ovulation phase.',
@@ -994,18 +987,19 @@ export const english = {
   'settings.answers.periodLength': 'Period length',
   'settings.answers.regularity': 'Regular',
   'settings.answers.title': 'Your answers',
-  'settings.delete.action': 'Delete everything',
-  'settings.delete.back': 'Back',
-  'settings.delete.goes.account': 'Your account on the server, and every day it holds',
+  'settings.delete.action': 'Delete data',
+  'settings.delete.back': 'Keep data',
+  'settings.delete.download': 'Download data first',
+  'settings.delete.goBack': 'Back',
   'settings.delete.goes.cycles': 'The cycles Emi worked out from them',
-  'settings.delete.goes.days': 'Every day you logged on this phone',
+  'settings.delete.goes.days': 'Every day you logged, encrypted on this phone',
   'settings.delete.goes.key': 'The key that opens any of it',
   'settings.delete.goes.settings': 'Your settings',
   'settings.delete.line':
-    "One press and it's gone. No undo, no waiting period. Nobody at Emi can bring it back, because nobody at Emi can read it.",
+    'This removes every day, answer and setting from this phone. It cannot be undone.',
   'settings.delete.refused':
     'Your days are gone, but your phone held on to one thing in the keychain. Press again to finish.',
-  'settings.delete.title': 'Delete everything',
+  'settings.delete.title': 'Delete your data?',
   'settings.delete.working': 'Deleting',
   'settings.deleted.action': 'Start again',
   'settings.deleted.line':
@@ -1015,6 +1009,8 @@ export const english = {
     "We couldn't reach our server to remove your account. Nothing can open what's left there: the only key was on this phone, and it went with your days.",
   'settings.settings.answers': 'Your answers',
   'settings.settings.answersLine': 'What you told us when you started',
+  'settings.settings.assurance': 'Only you can read your days.',
+  'settings.settings.assuranceLine': 'Encrypted on this phone, with a key only you hold',
   'settings.settings.back': 'Back',
   'settings.settings.delete': 'Delete everything',
   'settings.settings.deleteLine': "One press, and it's gone for good",
@@ -1023,6 +1019,17 @@ export const english = {
   'settings.settings.lock': 'Lock',
   'settings.settings.lockLine': 'On, with your face or your passcode',
   'settings.settings.title': 'Privacy',
+  'settings.whoCanSee.example':
+    'If somebody asks Emi for your records, an advertiser or a court, Emi has nothing to give: your records are on your phone, not with us.',
+  'settings.whoCanSee.kept.lead': 'Where they are kept',
+  'settings.whoCanSee.kept.line':
+    'Kept encrypted on this phone. Emi has no account for you, and sends your records nowhere.',
+  'settings.whoCanSee.read.lead': 'Who can read them',
+  'settings.whoCanSee.read.line': 'Only you. Nobody at Emi can read them.',
+  'settings.whoCanSee.send.lead': 'When you send a file',
+  'settings.whoCanSee.send.line':
+    'A file you export leaves this phone only when you send it. Whoever you send it to, such as your doctor, can read it.',
+  'settings.whoCanSee.title': 'Who can see my records?',
   'sex.back': 'Back',
   'sex.chooseDay': 'Choose another day',
   'sex.day': '{weekday}, {date} {month}',

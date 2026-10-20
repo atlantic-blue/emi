@@ -2,6 +2,8 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@e
 import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { WholeWordsText } from './WholeWordsText';
+
 /**
  * The three ways Emi asks her to do something: the affirmative action, the one beside it, and the
  * quiet one that is a sentence rather than a box.
@@ -89,45 +91,6 @@ export function PrimaryButton({ label, isReady = true, onPress, testID }: Action
   );
 }
 
-interface HoldProps {
-  readonly label: string;
-  readonly onHoldStart: () => void;
-  readonly onHoldEnd: () => void;
-  readonly testID?: string;
-}
-
-/**
- * The affirmative action for the one moment that asks for a hold rather than a press. It has no
- * press handler at all, so a tap that comes and goes does nothing: what begins is her thumb going
- * down, and what stops it is her thumb coming up.
- */
-export function HoldButton({ label, onHoldStart, onHoldEnd, testID }: HoldProps): ReactNode {
-  const { heldDown, onPressIn, onPressOut } = useHeldDown();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPressIn={() => {
-        onPressIn();
-        onHoldStart();
-      }}
-      onPressOut={() => {
-        onPressOut();
-        onHoldEnd();
-      }}
-      style={[
-        styles.capsule,
-        styles.affirmativeSize,
-        styles.affirmative,
-        heldDown ? styles.affirmativeHeldDown : null,
-      ]}
-      testID={testID}
-    >
-      <Text style={styles.affirmativeLabel}>{label}</Text>
-    </Pressable>
-  );
-}
-
 /** The action beside the affirmative one. It sits in the recessed ground and carries no fill. */
 export function SecondaryButton({
   label,
@@ -158,6 +121,11 @@ export function SecondaryButton({
 }
 
 /** The quiet action. Words in the colour that acts, and nothing drawn around or under them. */
+/** The word on a text link, named so a test can read how it keeps its words whole. */
+export function textLinkLabelTestID(testID: string | undefined): string | undefined {
+  return testID === undefined ? undefined : `${testID}-label`;
+}
+
 export function TextLink({ label, isReady = true, onPress, testID }: ActionProps): ReactNode {
   return (
     <Pressable
@@ -168,7 +136,11 @@ export function TextLink({ label, isReady = true, onPress, testID }: ActionProps
       style={styles.link}
       testID={testID}
     >
-      <Text style={isReady ? styles.linkLabel : styles.spentLabel}>{label}</Text>
+      <WholeWordsText
+        label={label}
+        style={isReady ? styles.linkLabel : styles.spentLabel}
+        testID={textLinkLabelTestID(testID)}
+      />
     </Pressable>
   );
 }

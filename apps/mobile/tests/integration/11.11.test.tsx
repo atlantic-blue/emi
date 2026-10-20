@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
@@ -12,7 +12,7 @@ import { listDayLogs } from '../../src/data/dayLogRepository';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { readSetting, writeSetting } from '../../src/data/settingRepository';
-import { words } from '../../src/language';
+import { wordKeys, words } from '../../src/language';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import { focusTestID } from '../../src/features/onboarding/Focus';
 import {
@@ -21,14 +21,6 @@ import {
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import {
-  ThePromise,
-  promiseActionTestID,
-  promiseDrawings,
-  promiseLineTestID,
-  promiseShieldTestID,
-  thePromiseTestID,
-} from '../../src/features/onboarding/ThePromise';
 import {
   WhatEmiDoesWithIt,
   whatEmiDoesActionTestID,
@@ -41,7 +33,6 @@ import {
   whatEmiDoesTitleTestID,
 } from '../../src/features/onboarding/WhatEmiDoesWithIt';
 import {
-  promiseLines,
   whatComesFirstWhenSheLogs,
   whatEmiDoesCards,
   whatEmiDoesCopy,
@@ -58,7 +49,7 @@ import { herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn } from '../fixtures/renderedText';
 import { OnAPhone } from '../fixtures/theSafeArea';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -74,9 +65,8 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 /** A day inside the ninety the first run reaches back over, and not today. */
 const herPeriodStarted = '2026-05-09';
 
-/** The two screens this step adds, which the wording gate reads with the rest of the interface. */
-const theTwoScreens = [
-  join('apps', 'mobile', 'src', 'features', 'onboarding', 'ThePromise.tsx'),
+/** The screen this step adds, which the wording gate reads with the rest of the interface. */
+const theScreens = [
   join('apps', 'mobile', 'src', 'features', 'onboarding', 'WhatEmiDoesWithIt.tsx'),
 ];
 
@@ -114,11 +104,11 @@ function theTourIsBehindHer(): void {
 }
 
 /**
- * Standing on the promise: every question answered or passed by, and the forecast read. The groups
- * are pressed on the focus screen where she is given any, because the screen after the promise
- * reads them back to her.
+ * Standing on what Emi does with it: every question answered or passed by, and the forecast read.
+ * The groups are pressed on the focus screen where she is given any, because the screen reads them
+ * back to her.
  */
-async function sheReachesThePromise(focus: readonly Focus[] = []): Promise<void> {
+async function sheReachesWhatEmiDoes(focus: readonly Focus[] = []): Promise<void> {
   await shePresses(onboardingActionTestID);
   await shePresses(onboardingSkipTestID);
   await shePresses(onboardingSkipTestID);
@@ -147,13 +137,7 @@ async function sheReachesThePromise(focus: readonly Focus[] = []): Promise<void>
   await shePresses(firstForecastActionTestID);
 }
 
-/** The screen after the promise, which is the last one before the hold. */
-async function sheReachesWhatEmiDoes(focus: readonly Focus[] = []): Promise<void> {
-  await sheReachesThePromise(focus);
-  await shePresses(promiseActionTestID);
-}
-
-/** Every word one of the two screens puts on the glass, and only that screen's words. */
+/** Every word the screen puts on the glass, and only that screen's words. */
 function theWordsOf(testID: string): string {
   return textIn(screen.getByTestId(testID)).join(' ');
 }
@@ -173,7 +157,7 @@ function withTheCipherIn(file: string): string {
   return `const said = 'AES';\n${readFileSync(join(repositoryRoot, file), 'utf8')}`;
 }
 
-describe('the promise says only what the product does', () => {
+describe('what Emi does with what she said, after the forecast', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(whenSheOpensIt);
@@ -187,95 +171,51 @@ describe('the promise says only what the product does', () => {
     jest.restoreAllMocks();
   });
 
-  describe('the promise, after the forecast', () => {
-    it('is where the forecast hands her, and it is the screen she is shown', async () => {
+  describe('the promise step, which the page about who can see her records replaced', () => {
+    it('is not where the forecast hands her: she goes straight to what Emi does with it', async () => {
       const app = await sheOpensEmi();
 
-      await sheReachesThePromise();
-
-      expect(app.pathname()).toBe('/onboarding/the-promise');
-      expect(screen.getByTestId(thePromiseTestID)).toBeTruthy();
-    });
-
-    it('says only she can read her days', async () => {
-      await sheOpensEmi();
-
-      await sheReachesThePromise();
-
-      expect(screen.getByText(words('onboarding.promise.title'))).toBeTruthy();
-      expect(theWordsOf(thePromiseTestID)).toContain('Only you can read your days.');
-    });
-
-    it('carries three lines of one sentence each, in the words the redesign writes', async () => {
-      await sheOpensEmi();
-
-      await sheReachesThePromise();
-
-      expect(promiseLines).toEqual(['encrypted', 'noTracking', 'delete']);
-      expect(textIn(screen.getByTestId(promiseLineTestID('encrypted')))).toEqual([
-        'Encrypted on this phone, with a key only you hold',
-      ]);
-      expect(textIn(screen.getByTestId(promiseLineTestID('noTracking')))).toEqual([
-        'No password, no tracking tools',
-      ]);
-      expect(textIn(screen.getByTestId(promiseLineTestID('delete')))).toEqual([
-        'Delete everything, in one press',
-      ]);
-    });
-
-    it('no longer says a locked copy is sent, because no build sends one', async () => {
-      await sheOpensEmi();
-
-      await sheReachesThePromise();
-
-      expect(theWordsOf(thePromiseTestID)).not.toMatch(/sent|copy/i);
-    });
-
-    it('stands under a shield, with the title centred', async () => {
-      await sheOpensEmi();
-
-      await sheReachesThePromise();
-
-      expect(screen.getByTestId(promiseShieldTestID)).toBeTruthy();
-    });
-
-    it('names no hardware, no audit, no cloud and nobody who could read a day', async () => {
-      await sheOpensEmi();
-
-      await sheReachesThePromise();
-      const said = theWordsOf(thePromiseTestID);
-
-      expect(said).not.toMatch(/enclave/i);
-      expect(said).not.toMatch(/audit/i);
-      expect(said).not.toMatch(/zero/i);
-      expect(said).not.toMatch(/engineer/i);
-      expect(said).not.toMatch(/\bAES\b/i);
-    });
-
-    it('draws one thing beside each line, and every line carries one', async () => {
-      await sheOpensEmi();
-
-      await sheReachesThePromise();
-
-      expect(Object.keys(promiseDrawings).sort()).toEqual([...promiseLines].sort());
-      expect(promiseDrawings.encrypted.icon).toBe('key');
-      expect(promiseDrawings.noTracking.icon).toBe('search');
-      expect(promiseDrawings.delete.icon).toBe('delete');
-    });
-
-    it('hands her to what Emi does with it when she presses Continue', async () => {
-      const app = await sheOpensEmi();
-
-      await sheReachesThePromise();
-
-      expect(screen.getByTestId(promiseActionTestID)).toHaveTextContent(
-        words('onboarding.promise.action'),
-      );
-
-      await shePresses(promiseActionTestID);
+      await sheReachesWhatEmiDoes();
 
       expect(app.pathname()).toBe('/onboarding/what-emi-does-with-it');
       expect(screen.getByTestId(whatEmiDoesTestID)).toBeTruthy();
+      expect(screen.queryByText('Only you can read your days.')).toBeNull();
+    });
+
+    it('has no route any more, and no file under the first run draws it', () => {
+      const routes = readdirSync(join(appDirectory, 'onboarding'));
+      const screens = readdirSync(join(__dirname, '..', '..', 'src', 'features', 'onboarding'));
+
+      expect(routes).not.toContain('the-promise.tsx');
+      expect(screens).not.toContain('ThePromise.tsx');
+    });
+
+    it('has no words left in any of the three languages', () => {
+      expect(wordKeys.filter((key) => key.startsWith('onboarding.promise.'))).toEqual([]);
+    });
+
+    it('sends an old link to it to the first run, where she has not finished the first run', async () => {
+      const app = renderRouter(appDirectory, { initialUrl: '/onboarding/the-promise' });
+
+      await app;
+
+      expect(app.getPathname()).toBe('/onboarding/welcome');
+      expect(screen.queryByText('Only you can read your days.')).toBeNull();
+    });
+
+    it('sends an old link to it home, where she finished the first run', async () => {
+      await sheOpensEmi();
+      await sheReachesWhatEmiDoes();
+      await shePresses(whatEmiDoesActionTestID);
+      await sheTapsSaveAndStart();
+      await screen.unmount();
+
+      const app = renderRouter(appDirectory, { initialUrl: '/onboarding/the-promise' });
+
+      await app;
+
+      expect(app.getPathname()).toBe('/');
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeDefined();
     });
   });
 
@@ -421,7 +361,7 @@ describe('the promise says only what the product does', () => {
 
       await sheReachesWhatEmiDoes(['mood', 'energy']);
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.focus).toEqual([
         'mood',
@@ -431,8 +371,8 @@ describe('the promise says only what the product does', () => {
     });
   });
 
-  describe('the two screens, standing between the last question and the hold', () => {
-    it('write nothing at all while she reads them', async () => {
+  describe('the one screen, standing between the forecast and the hold', () => {
+    it('writes nothing at all while she reads it', async () => {
       await sheOpensEmi();
 
       await sheReachesWhatEmiDoes(['mood']);
@@ -443,66 +383,51 @@ describe('the promise says only what the product does', () => {
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
     });
 
-    it('ask her nothing, so neither one draws the bar the questions draw', async () => {
+    it('asks her nothing, so it draws no bar the questions draw', async () => {
       await sheOpensEmi();
 
-      await sheReachesThePromise();
-
-      expect(screen.queryByTestId(onboardingProgressTestID)).toBeNull();
-      expect(theWordsOf(thePromiseTestID)).not.toMatch(/\d+ of \d+/);
-
-      await shePresses(promiseActionTestID);
+      await sheReachesWhatEmiDoes();
 
       expect(screen.queryByTestId(onboardingProgressTestID)).toBeNull();
       expect(theWordsOf(whatEmiDoesTestID)).not.toMatch(/\d+ of \d+/);
     });
 
-    it('offer her one way on each, and nothing to skip', async () => {
+    it('offers her one way on, and nothing to skip', async () => {
       await sheOpensEmi();
 
-      await sheReachesThePromise();
-
-      expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
-
-      await shePresses(promiseActionTestID);
+      await sheReachesWhatEmiDoes();
 
       expect(screen.queryByTestId(onboardingSkipTestID)).toBeNull();
     });
 
-    it('stand in the order the first run walks: forecast, promise, what Emi does, hold', async () => {
+    it('stands in the order the first run walks: forecast, what Emi does, hold', async () => {
       const app = await sheOpensEmi();
       const visited: string[] = [];
 
-      await sheReachesThePromise();
-      visited.push(app.pathname());
-      await shePresses(promiseActionTestID);
+      await sheReachesWhatEmiDoes();
       visited.push(app.pathname());
       await shePresses(whatEmiDoesActionTestID);
       visited.push(app.pathname());
 
-      expect(visited).toEqual([
-        '/onboarding/the-promise',
-        '/onboarding/what-emi-does-with-it',
-        '/onboarding/hold',
-      ]);
+      expect(visited).toEqual(['/onboarding/what-emi-does-with-it', '/onboarding/hold']);
     });
   });
 
   describe('the words the copy review refuses', () => {
     const scanned = scannedInterfaceFiles(repositoryRoot);
 
-    it('are read on both new screens, because the scan holds every file the application draws', () => {
-      for (const file of theTwoScreens) {
+    it('are read on the screen, because the scan holds every file the application draws', () => {
+      for (const file of theScreens) {
         expect(scanned).toContain(file);
         expect(interfaceClaimsIn(file, readFileSync(join(repositoryRoot, file), 'utf8'))).toEqual(
           [],
         );
       }
-      expect(theTwoScreens).toHaveLength(2);
+      expect(theScreens).toHaveLength(1);
     });
 
-    it('name the file and the words where the cipher is written into either screen', () => {
-      for (const file of theTwoScreens) {
+    it('name the file and the words where the cipher is written into the screen', () => {
+      for (const file of theScreens) {
         const [described] = interfaceClaimsIn(file, withTheCipherIn(file)).map(describeClaim);
 
         expect(described).toContain(file);
@@ -519,26 +444,13 @@ describe('the promise says only what the product does', () => {
         expect(theRule).toContain(word);
         expect(interfaceOnlyWording).toContain(word.toLowerCase());
         expect(
-          interfaceClaimsIn(theTwoScreens[0] as string, `const said = '${word}';\n`),
+          interfaceClaimsIn(theScreens[0] as string, `const said = '${word}';\n`),
         ).toHaveLength(1);
       }
     });
   });
 
   describe('each screen on its own', () => {
-    it('presses Continue under her thumb and nothing else, on the promise', async () => {
-      const pressed: string[] = [];
-
-      await render(
-        <OnAPhone>
-          <ThePromise onContinue={() => pressed.push('continue')} />
-        </OnAPhone>,
-      );
-      await fireEvent.press(screen.getByTestId(promiseActionTestID));
-
-      expect(pressed).toEqual(['continue']);
-    });
-
     it('presses Continue under her thumb and nothing else, on what Emi does with it', async () => {
       const pressed: string[] = [];
 

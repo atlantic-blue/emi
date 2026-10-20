@@ -25,7 +25,6 @@ import { regularityTestID } from '../../src/features/onboarding/Regularity';
 import {
   onboardingActionTestID,
   onboardingLinesTestID,
-  onboardingLockTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
@@ -42,8 +41,9 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
+import { locksDrawnIn } from '../fixtures/drawnLocks';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -224,22 +224,23 @@ describe('a hard period day offers the pain log first', () => {
       expect(screen.getByTestId(feelingTestID('hard'))).not.toBeChecked();
     });
 
-    it('says the answer changes how Emi talks to her, and promises nothing more', async () => {
+    it('asks about her period and says what It is hard changes, and promises nothing more', async () => {
       await sheOpensEmi();
 
       await sheReachesTheFeeling();
 
       // Each line is written out rather than read off the copy, so a line reworded or taken out of
       // the screen fails here instead of leaving a shorter list that still agrees with itself.
-      expect(screen.getByText('How you feel about it')).toBeTruthy();
+      expect(screen.getByText('How do you usually feel during your period?')).toBeTruthy();
       expect(screen.getByTestId(onboardingLinesTestID)).toHaveTextContent(
-        'This changes how Emi talks to you, and nothing else.',
+        'If it is hard, Emi puts pain first on your period days.',
       );
-      expect(screen.getByTestId(onboardingLockTestID)).toHaveTextContent(
-        'Encrypted on this phone.',
-      );
+      expect(screen.queryByText('How you feel about it')).toBeNull();
+      expect(screen.queryByText('This changes how Emi talks to you, and nothing else.')).toBeNull();
+      expect(locksDrawnIn(screen.root)).toBe(0);
+      expect(screen.queryByText('Encrypted on this phone.')).toBeNull();
       expect(screen.queryByText('Only you can read this.')).toBeNull();
-      expect(firstRunCopy.feeling.lines).toHaveLength(2);
+      expect(firstRunCopy.feeling.lines).toHaveLength(1);
     });
 
     it('offers the three answers in the redesign words', async () => {
@@ -276,7 +277,7 @@ describe('a hard period day offers the pain log first', () => {
         await sheOpensEmi();
 
         await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, feeling: answer });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect(statedFeeling(herDatabase(), await theProfileVaultOnHerPhone())).toBe(answer);
       });
@@ -286,7 +287,7 @@ describe('a hard period day offers the pain log first', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 

@@ -44,11 +44,6 @@ import { roundActionTestID, roundActions } from '../../src/features/home/RoundAc
 import { flowPickerTestID } from '../../src/features/log/FlowPicker';
 import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import {
-  promiseActionTestID,
-  promiseLineTestID,
-  thePromiseTestID,
-} from '../../src/features/onboarding/ThePromise';
-import {
   answerBackTestID,
   answerCancelTestID,
   answerHeaderTestID,
@@ -105,11 +100,6 @@ export type PartIdentifiers = Readonly<Record<string, readonly string[]>>;
  * not find.
  */
 export const theIdentifiersOfAPart: PartIdentifiers = {
-  Card: [
-    promiseLineTestID('encrypted'),
-    promiseLineTestID('noTracking'),
-    promiseLineTestID('delete'),
-  ],
   // One part for the whole list, because the drawing names the list once and never a row of it.
   CitationRow: [citationRowsTestID],
   CycleRing: [cycleRingTestID],
@@ -126,7 +116,7 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
   // One part for each section her days cannot fill, so a drawing naming the part matches whichever
   // of the three is waiting.
   SectionWaiting: waitingSections.map(sectionWaitingTestID),
-  PrimaryButton: [promiseActionTestID, answerSaveTestID],
+  PrimaryButton: [answerSaveTestID],
   // The drawing names both round actions by one name, so the record carries both identifiers and
   // the walk matches each of them in turn.
   RoundAction: roundActions.map(roundActionTestID),
@@ -159,7 +149,6 @@ export const theIdentifiersOfAPart: PartIdentifiers = {
     figuresBackTestID,
     figuresLeaveTestID,
   ],
-  ThePromise: [thePromiseTestID],
   // The drawing's WeekStrip is not here on purpose. The todayPhases board takes the strip off Today
   // and puts a calendar button in the top bar in its place, so a comparison that reaches the strip
   // names it as unbuilt, and theTodayLook.tsx records that as a difference.

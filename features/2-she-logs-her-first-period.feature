@@ -1,7 +1,7 @@
 Feature: She opens Emi and logs her first period
 
   She arrives knowing nothing about Emi and Emi knows nothing about her. A few questions and one
-  hold later her last periods are recorded and the ring is drawn from her own days.
+  tap later her last periods are recorded and the ring is drawn from her own days.
 
   Every scenario below is named for the contract it proves. The contracts are in
   docs/contracts.md and the map from feature to contract is in docs/features.md.
@@ -10,7 +10,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then she is looking at the home screen
     And her phone holds the day she said her period started
     And her phone holds the cycle length she gave
@@ -19,16 +19,16 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then her phone holds the cycle length she gave
     And the row her answers sit in does not hold that number in plain words
     And the row is not her answers in plain words, which do hold the number
 
-  Scenario: SCREEN-1, she answers everything, leaves before the hold, and nothing is written
+  Scenario: SCREEN-1, she answers everything, leaves before she taps Save and start, and nothing is written
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she closes Emi at the hold, without holding Hold to begin
+    And she closes Emi at the last screen, without tapping Save and start
     Then her phone holds no day, no answers and no marker
     And opening Emi again asks her the same questions
 
@@ -36,10 +36,10 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question, and presses Done a second time before the screen goes
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then she is looking at the home screen
     And her phone holds one day, the day she said her period started
-    And her phone holds the time of the hold, and one instant on all three of her answers
+    And her phone holds the time she tapped Save and start, and one instant on all three of her answers
 
   Scenario: SCREEN-1, she picks a tile on her first day and then says she has nothing to add
     Given she has never opened Emi before
@@ -51,7 +51,7 @@ Feature: She opens Emi and logs her first period
     Then she is asked whether Emi should remind her
     When she says Not now
     Then she is looking at her first forecast
-    When she reads on and presses and holds Hold to begin
+    When she reads on and taps Save and start
     Then her phone holds one day, the day she said her period started
 
   Scenario: SCREEN-1, she asks Emi to remind her two days before the range starts
@@ -64,7 +64,7 @@ Feature: She opens Emi and logs her first period
     And she presses Remind me and her phone allows it
     Then her phone asked her once, after she pressed
     And she is looking at her first forecast
-    When she reads on and presses and holds Hold to begin
+    When she reads on and taps Save and start
     Then her phone holds one reminder, at nine in the morning two days before the range she was shown
 
   Scenario: SCREEN-1, her phone refuses the reminder and the first run goes on
@@ -74,22 +74,23 @@ Feature: She opens Emi and logs her first period
     And she reaches the reminder after the first day she logs
     And she picks one day before and presses Remind me
     Then she is looking at her first forecast
-    When she reads on and presses and holds Hold to begin
+    When she reads on and taps Save and start
     Then her phone holds no reminder and no choice of one
 
-  Scenario: SCREEN-1, the first run asks its questions and the hold after them
+  Scenario: SCREEN-1, the first run asks its questions and the save after them
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then she was asked what Emi is, her name, the year she was born, her last three periods, how long her cycle runs, how long her period lasts, how steady her cycle is, how she feels about it, and what she wants Emi to help with, and what changes with her cycle, and what she feels today, and whether Emi should remind her
     And there was no further question to answer
+    And the counter read its own step on every question, and no promise step stood before the hold
 
   Scenario: SCREEN-1, the first run asks for no account, no email address and no password
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then the only thing she could type into was her name
 
   Scenario: SCREEN-1, she says she will log as she goes and the first run moves on
@@ -107,7 +108,7 @@ Feature: She opens Emi and logs her first period
     And she says she will log as she goes
     Then she is being asked how long her cycle runs
     And the counter reads step 5 of 12, one step for her last three periods
-    When she answers the rest of the questions and presses and holds Hold to begin
+    When she answers the rest of the questions and taps Save and start
     Then she was never asked for a period again, on a step of its own
     And she is looking at the screen that says the ring needs a period
     And her phone holds the name, the year and the length she gave, and no day at all
@@ -118,7 +119,7 @@ Feature: She opens Emi and logs her first period
     And she reaches the step that asks for her last three periods
     Then the step asks for three periods, and says the third can be skipped
     When she gives three periods, each with the day it started and the days it lasted
-    And she answers the rest of the questions and presses and holds Hold to begin
+    And she answers the rest of the questions and taps Save and start
     Then her phone holds every bleeding day of the three periods, and no other day
     And her forecast is ready, and not still learning
     And Insights reads the period length she gave
@@ -149,7 +150,7 @@ Feature: She opens Emi and logs her first period
     And that is the drawing of the first forecast with no date, part for part, in its order
     And the screen offers the way on, and no way back to the question she could not answer
     When she presses the way on
-    Then she is reading what Emi promises her
+    Then she is reading what Emi does with what she told it, with no promise step before it
 
   Scenario: SCREEN-2, the home screen shows the ring, the day of her cycle and the phase she is in
     Given her phone holds six cycles of her own
@@ -475,7 +476,8 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     And she presses the calendar button in the top bar
     Then she is reading the month that day falls in
-    When she presses the way to edit her period
+    When she presses the first day of the period Emi holds
+    And she presses the way to edit her period
     Then she is looking at the period picker, and that is the drawing of it
     And the four days Emi holds arrive as hers, and no other listed day does
     And somebody listening is told each day is one she can turn on and off
@@ -599,7 +601,7 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she answers every question of the first run, and says she will log her periods as she goes
-    And she presses and holds Hold to begin
+    And she taps Save and start
     Then she is looking at the screen that says what the ring needs
     And there is no ring, and nothing at all is drawn in place of one
     And the card counts the cycle length she gave, and no length Emi picked
@@ -708,7 +710,7 @@ Feature: She opens Emi and logs her first period
     Then the question after it asks the year plainly, as the redesign draws it
     And a woman who gives no name reads the same question, with no gap where a name would be
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
-    And every question that keeps an answer carries a line about her privacy, in all three languages
+    And no question of the first run draws a lock, and the sentences it drew are gone from all three languages
 
   Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it speak in the name of Emi
     Given she has never opened Emi before
@@ -716,7 +718,7 @@ Feature: She opens Emi and logs her first period
     Then the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name
     And a woman who gave no name reads the same forecast, with no gap where a name would be
     And the screen that reads her answers back is titled in the name of Emi, for a woman who gave her name and for one who did not
-    And the promise and the hold never talk as we, in each of the three languages she can read them in
+    And the screens after the forecast never talk as we, in each of the three languages she can read them in
 
   Scenario: SCREEN-1, the first run screens match the redesign prototype
     Given she has never opened Emi before
@@ -727,7 +729,7 @@ Feature: She opens Emi and logs her first period
     And the step she is on is written out, so she knows how much is left without counting
     And the welcome writes that step and draws no bar
     And the first run log names the day in the middle of its header and draws no bar
-    And the question that keeps an answer carries the promise about her privacy
+    And no screen of the first run draws a lock or the card about this phone
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the Today screens match the redesign prototype
@@ -735,11 +737,20 @@ Feature: She opens Emi and logs her first period
     When she opens Emi and reads the screen she opens in each of its states
     Then each state carries the wash across the top of the glass
     And the ring stands above the card that names the phase she is in
-    And the three round actions stand under that card, the period one filled and the Sex and Cycle phase ones white
+    And the three round actions stand under that card, all three white on a day outside her period
     And what she logged today stands under them, in a card with the mark that says Emi kept it
     And a section her days cannot fill yet is one card with one sentence, and it draws no chart
     And the lock she comes back through carries the wordmark, the disc and the one button
     And each state draws every part its own drawing names in its order, but the parts it records as differences
+
+  Scenario: SCREEN-2, the Period button is on only on a day of her period
+    Given her phone holds the period she is in and the answers of her first run
+    When she opens Emi on a day of her period
+    Then the Period button is filled with the accent, and a reader hears that it is on
+    When she opens Emi again on a day of her luteal phase
+    Then the Period button is white with the drop in the accent, as the Sex button is
+    And a reader does not hear that the Period button is on
+    And the drop is readable on the ground of each day
 
   Scenario: SCREEN-4, the Log and calendar screens match the redesign prototype
     Given her phone holds the period she is in, the month behind it and the answers of her first run
@@ -772,7 +783,7 @@ Feature: She opens Emi and logs her first period
     And her eight answers stand on one card, each one reading back the answer she gave
     And each of the two files she can take away is drawn as a tile of its own
     And the lock sits beside the line that says nothing is sent anywhere
-    And delete everything names the five things that go, each one with its own mark
+    And delete everything names the four things that go, each one with its own mark
     And each screen draws every part its own drawing names, in the order the drawing places them
 
   Scenario: SCREEN-2, the home screen says hello to her by name
@@ -802,7 +813,27 @@ Feature: She opens Emi and logs her first period
     Then she reads that it is gone, and that she can start fresh whenever she likes
     And her phone holds none of her days and nothing in the keychain
     And these screens say all of this in each of the three languages, as you and as we
-    And the only two lines that name Emi are the claim about her days and the lock itself
+    And the only line that names Emi is the lock itself
+
+  Scenario: SCREEN-2, she downloads her data from the delete screen before she deletes it
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and walks to the screen that would delete her data
+    Then the screen names no account and no server, in each of the three languages
+    And she presses Download data first
+    Then Export opens, and every day she logged is still on her phone
+
+  Scenario: SCREEN-2, she reads who can see her records from Privacy and comes back
+    Given she has six cycles of her own on this phone
+    When she opens Privacy and presses Who can see my records?
+    Then she reads where her records are kept, who can read them and what happens when she sends a file
+    And she reads one example of why it matters
+    And she presses the way back and is on Privacy again
+
+  Scenario: SCREEN-2, she reads who can see her records from the welcome and comes back
+    Given she has never opened Emi before
+    When she opens Emi and presses Who can see my records? on the welcome
+    Then she reads where her records are kept, who can read them and what happens when she sends a file
+    And she presses the way back and is on the welcome again
 
   Scenario: SCREEN-2, she opens the page of her phase from Today and records her diary there
     Given her phone holds four recorded period days, the last of them today
@@ -885,6 +916,17 @@ Feature: She opens Emi and logs her first period
     When she opens Today again the same day
     Then the sheet does not show again
 
+  Scenario: SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2
+    Given her phone holds her first run answers and not one recorded day
+    When she opens Emi
+    And she presses Period under the ring
+    And she presses Started on another day?
+    Then she is looking at the period picker, and it lists today
+    When she presses today, then Add the day before, and saves
+    Then she is on the screen she opened, and no Period page is left under it
+    And her period started yesterday
+    And the ring says she is on day 2 of a cycle of the length she gave
+
   Scenario: SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast
     Given her phone holds one period and the cycle length she gave
     When she opens the month after next
@@ -895,3 +937,13 @@ Feature: She opens Emi and logs her first period
     Then she reads the list of her last three periods, with the one her phone holds given
     When she gives the two periods before it and saves
     Then the month she was reading draws a forecast, and the sheet is gone
+
+  Scenario: SCREEN-2, her period is late, and she logs the day it started
+    Given her phone holds three periods 28 days apart, and the forecast window ended two days ago
+    When she opens Emi
+    Then the forecast says her period is 2 days late, and the range that passed is gone
+    When she presses It started
+    Then she is in the period editor, opened on today
+    When she adds yesterday and saves
+    Then she is back on Today, and the forecast gives the range of her next period again
+    And no line says her period is late

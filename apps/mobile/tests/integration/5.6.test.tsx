@@ -13,6 +13,8 @@ import { homeScreenTestID } from '../../src/features/home/HomeScreen';
 import {
   deleteActionTestID,
   deleteBackTestID,
+  deleteChevronTestID,
+  deleteDownloadTestID,
   deleteRefusedTestID,
   deleteScreenTestID,
   deletedScreenTestID,
@@ -24,6 +26,8 @@ import {
   settingsScreenTestID,
 } from '../../src/features/settings/SettingsScreen';
 import { settingsCopy } from '../../src/features/settings/copy';
+import { exportScreenTestID } from '../../src/features/export/ExportScreen';
+import { type Language, type Words, catalogueOf, languages, wordKeys } from '../../src/language';
 import { onboardingActionTestID } from '../../src/features/onboarding/OnboardingScreen';
 import { tourScreenTestID, tourSkipTestID } from '../../src/features/onboarding/TourScreen';
 import {
@@ -45,7 +49,7 @@ import { textIn, visibleTextIn } from '../fixtures/renderedText';
 import { controlsTooSmallToPress } from '../fixtures/tapTargets';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -89,6 +93,17 @@ async function herKeychainHoldsEverything(): Promise<void> {
       await setItemAsync(held.item, 'something this phone kept');
     }
   }
+}
+
+/** Every root of the words for an account or a server, in each language the app speaks. */
+const anAccountOrAServerIn: Readonly<Record<Language, RegExp>> = {
+  en: /account|server/i,
+  es: /cuenta|servidor/i,
+  ru: /учётн|учетн|аккаунт|сервер/i,
+};
+
+function formsOf(held: Words): string[] {
+  return typeof held === 'string' ? [held] : Object.values(held);
 }
 
 async function sheOpensEmi(): Promise<void> {
@@ -166,6 +181,18 @@ describe('after deleting, the database and the keychain are both empty', () => {
       await sheOpensEmi();
       await sheWalksToTheDeleteScreen();
       await shePresses(deleteBackTestID);
+
+      expect(screen.getByTestId(settingsScreenTestID)).toBeTruthy();
+      expect(rowsOnHerPhone()).toBe(before);
+    });
+  });
+
+  describe('the chevron at the top', () => {
+    it('leaves her data alone and takes her back to Privacy, as Keep data does', async () => {
+      const before = rowsOnHerPhone();
+      await sheOpensEmi();
+      await sheWalksToTheDeleteScreen();
+      await shePresses(deleteChevronTestID);
 
       expect(screen.getByTestId(settingsScreenTestID)).toBeTruthy();
       expect(rowsOnHerPhone()).toBe(before);
@@ -283,7 +310,7 @@ describe('after deleting, the database and the keychain are both empty', () => {
         periodStartedOn: addDays(today, -2),
         cycleLengthDays: defaultCycleLengthDays + 1,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(screen.getByTestId(tabTestID('history'))).toBeTruthy();
@@ -350,6 +377,43 @@ describe('after deleting, the database and the keychain are both empty', () => {
           ...screen.queryAllByRole('link'),
         ]),
       ).toEqual([]);
+    });
+  });
+
+  describe('the delete screen says only what is true', () => {
+    it('names no account and no server, in each of the three languages', () => {
+      const theKeysOfTheScreen = wordKeys.filter((key) => key.startsWith('settings.delete.'));
+
+      expect(theKeysOfTheScreen.length).toBeGreaterThan(5);
+
+      for (const language of languages) {
+        const said = theKeysOfTheScreen
+          .flatMap((key) => formsOf(catalogueOf(language)[key]))
+          .join('\n');
+
+        expect({ language, names: said.match(anAccountOrAServerIn[language]) }).toEqual({
+          language,
+          names: null,
+        });
+      }
+    });
+
+    it('says neither word on the screen she reads before she presses', async () => {
+      await sheOpensEmi();
+      await sheWalksToTheDeleteScreen();
+
+      expect(whatThatScreenSays(deleteScreenTestID)).not.toMatch(anAccountOrAServerIn.en);
+      expect(whatThatScreenSays(deleteScreenTestID)).toContain(settingsCopy.delete.download);
+    });
+
+    it('opens Export when she presses Download data first, and keeps every day she logged', async () => {
+      const before = rowsOnHerPhone();
+      await sheOpensEmi();
+      await sheWalksToTheDeleteScreen();
+      await shePresses(deleteDownloadTestID);
+
+      expect(screen.getByTestId(exportScreenTestID)).toBeTruthy();
+      expect(rowsOnHerPhone()).toBe(before);
     });
   });
 

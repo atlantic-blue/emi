@@ -12,9 +12,8 @@ import { DayRefused, dayRefusedTestID } from '../../src/features/log/DayRefused'
 import { LogFlow, logFlowTestID } from '../../src/features/log/LogFlow';
 import { LogSymptoms, logSymptomsTestID } from '../../src/features/log/LogSymptoms';
 import { FirstForecast, firstForecastTestID } from '../../src/features/onboarding/FirstForecast';
-import { HoldToBegin, holdScreenTestID } from '../../src/features/onboarding/HoldToBegin';
+import { SaveAndStart, saveScreenTestID } from '../../src/features/onboarding/SaveAndStart';
 import { OnboardingScreen } from '../../src/features/onboarding/OnboardingScreen';
-import { ThePromise, thePromiseTestID } from '../../src/features/onboarding/ThePromise';
 import { TourScreen, tourScreenTestID } from '../../src/features/onboarding/TourScreen';
 import {
   WhatEmiDoesWithIt,
@@ -28,6 +27,7 @@ import {
   deletedScreenTestID,
 } from '../../src/features/settings/DeleteEverything';
 import { SettingsScreen, settingsScreenTestID } from '../../src/features/settings/SettingsScreen';
+import { WhoCanSee, whoCanSeeScreenTestID } from '../../src/features/settings/WhoCanSee';
 import { YourAnswers, yourAnswersScreenTestID } from '../../src/features/settings/YourAnswers';
 import type { HerDay } from '../../src/features/cycle/herWeek';
 import { monthWeeks, weekdayLetter } from '../../src/features/onboarding/days';
@@ -81,7 +81,6 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
     ),
   ],
   [tourScreenTestID, (): ReactElement => <TourScreen onNext={nothing} onSkip={nothing} />],
-  [thePromiseTestID, (): ReactElement => <ThePromise onContinue={nothing} />],
   [
     whatEmiDoesTestID,
     (): ReactElement => <WhatEmiDoesWithIt focus={['mood']} onContinue={nothing} />,
@@ -96,7 +95,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       />
     ),
   ],
-  [holdScreenTestID, (): ReactElement => <HoldToBegin onHeld={neverRun} />],
+  [saveScreenTestID, (): ReactElement => <SaveAndStart onSave={neverRun} />],
   [
     'recovery-before',
     (): ReactElement => (
@@ -193,6 +192,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       <HistoryScreen
         history={{ completeCycles: 0, cycles: [], patterns: [] }}
         onBack={nothing}
+        onEditPeriod={nothing}
         onOpenDay={nothing}
       />
     ),
@@ -206,9 +206,16 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [
     settingsScreenTestID,
     (): ReactElement => (
-      <SettingsScreen onAnswers={nothing} onBack={nothing} onDelete={nothing} onExport={nothing} />
+      <SettingsScreen
+        onAnswers={nothing}
+        onBack={nothing}
+        onDelete={nothing}
+        onExport={nothing}
+        onWhoCanSee={nothing}
+      />
     ),
   ],
+  [whoCanSeeScreenTestID, (): ReactElement => <WhoCanSee onBack={nothing} />],
   [
     yourAnswersScreenTestID,
     (): ReactElement => <YourAnswers answers={aProfileRecord()} onBack={nothing} />,
@@ -231,7 +238,13 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [
     deleteScreenTestID,
     (): ReactElement => (
-      <DeleteEverything onBack={nothing} onDelete={nothing} onStartAgain={nothing} stage="ready" />
+      <DeleteEverything
+        onBack={nothing}
+        onDelete={nothing}
+        onDownload={nothing}
+        onStartAgain={nothing}
+        stage="ready"
+      />
     ),
   ],
   [
@@ -240,6 +253,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       <DeleteEverything
         onBack={nothing}
         onDelete={nothing}
+        onDownload={nothing}
         onStartAgain={nothing}
         stage="deleted"
       />

@@ -20,7 +20,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { herVault } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -76,7 +76,7 @@ async function sheFinishesTheFirstRun(focus?: readonly Focus[]): Promise<void> {
     periodStartedOn: herPeriodStarted,
     ...(focus === undefined ? {} : { focus }),
   });
-  await sheHoldsTheRing();
+  await sheTapsSaveAndStart();
 }
 
 /** The log tab, pressed in the dock, which is the way she reaches the log on an ordinary day. */
