@@ -39,6 +39,7 @@ export function Regularity({ chosen, onChoose, onContinue, onBack, onSkip }: Pro
       onAction={onContinue}
       onBack={onBack}
       onSkip={onSkip}
+      question={firstRunCopy.regularity.question}
       screen="regularity"
       title={firstRunCopy.regularity.title}
     >

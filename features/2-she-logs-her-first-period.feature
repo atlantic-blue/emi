@@ -701,6 +701,14 @@ Feature: She opens Emi and logs her first period
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
     And no question of the first run draws a lock, and the sentences it drew are gone from all three languages
 
+  Scenario: SCREEN-1, the first run says why it asks her year, what a regular cycle is, and that ovulation dates are approximate
+    Given she has never opened Emi before
+    When she opens Emi, reads the welcome, skips the tour, and skips her name
+    Then the year question says Emi does not use her year of birth today, and that she can skip it
+    And the question about a regular cycle says what regular means, and the first answer says it in the same words
+    And the question about her goals offers to track how she feels and to track ovulation, and carries the note that the dates are approximate
+    And the three lines are written in all three languages, and each ovulation note keeps the approved denial
+
   Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it speak in the name of Emi
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, gives her name, and answers every question
