@@ -23,7 +23,7 @@ import { homeCopy } from '../../src/features/home/copy';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
-import { holdButtonTestID } from '../../src/features/onboarding/HoldToBegin';
+import { saveButtonTestID } from '../../src/features/onboarding/SaveAndStart';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { dayOf, herDatabase } from '../fixtures/herPhone';
@@ -34,7 +34,7 @@ import {
   thePartsOfTheDayOneDrawing,
   thePartsTheDayOneDrawingNames,
 } from '../fixtures/theDrawingOfDayOne';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { partsMissing, theIdentifiersDrawn } from '../fixtures/theMockupScreen';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -59,7 +59,7 @@ const sheSaysHerCycleRuns = defaultCycleLengthDays + 2;
 async function sheWalksTheFirstRunWithNoDate(): Promise<void> {
   await renderRouter(appDirectory, { initialUrl: '/' });
   await sheAnswersEveryQuestionWithNoDate({ cycleLengthDays: sheSaysHerCycleRuns });
-  await sheHoldsTheRing();
+  await sheTapsSaveAndStart();
 }
 
 /** What the ring says about the day she is on, read off the ring and not off the arithmetic. */
@@ -163,10 +163,10 @@ describe('she completes the first run with no date, logs a period, and reads a r
       await renderRouter(appDirectory, { initialUrl: '/' });
       await sheAnswersEveryQuestionWithNoDate({ cycleLengthDays: sheSaysHerCycleRuns });
 
-      expect(screen.getByTestId(holdButtonTestID)).toBeTruthy();
+      expect(screen.getByTestId(saveButtonTestID)).toBeTruthy();
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeUndefined();
 
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBeDefined();
     });

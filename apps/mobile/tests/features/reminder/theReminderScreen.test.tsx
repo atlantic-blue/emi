@@ -31,7 +31,7 @@ import {
 import { resetExpoSecureStore } from '../../fixtures/expoSecureStore';
 import { herDatabase } from '../../fixtures/herPhone';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../../fixtures/theSave';
 import { sheReachesTheReminder } from './theWalkToTheReminder';
 import { locksDrawnIn } from '../../fixtures/drawnLocks';
 
@@ -74,7 +74,7 @@ function theMomentSheWasPromised(daysBefore: number): Date {
 async function sheFinishesTheFirstRun(): Promise<void> {
   await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
   await sheReadsWhatEmiDoesWithIt();
-  await sheHoldsTheRing();
+  await sheTapsSaveAndStart();
 }
 
 describe('the reminder, after the first day she logs', () => {
@@ -235,7 +235,7 @@ describe('the reminder, after the first day she logs', () => {
         cycleLengthDays: herCycleLengthDays,
         reminder: 'twoDaysBefore',
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readSetting(herDatabase(), 'reminderLead')).toBe('twoDaysBefore');
       await waitFor(() => {
@@ -272,7 +272,7 @@ describe('the reminder, after the first day she logs', () => {
         cycleLengthDays: herCycleLengthDays,
         reminder: 'oneDayBefore',
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await act(async () => {
         await Promise.resolve();
       });

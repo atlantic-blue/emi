@@ -26,6 +26,8 @@ interface Props {
   readonly isChosen: boolean;
   readonly onPress: () => void;
   readonly testID?: string;
+  /** Told once when a word of the title is still cut at the smallest size a label takes. */
+  readonly onWordCutAtTheFloor?: () => void;
 }
 
 /** Points. The height the document draws the tile at, which holds a well and two lines. */
@@ -75,6 +77,7 @@ export function SelectableTile({
   isChosen,
   onPress,
   testID = 'tile',
+  onWordCutAtTheFloor,
 }: Props): ReactNode {
   return (
     <Pressable
@@ -101,7 +104,12 @@ export function SelectableTile({
           size={TILE_ICON}
         />
       </View>
-      <WholeWordsText label={title} style={styles.title} testID={tileTitleTestID(testID)} />
+      <WholeWordsText
+        label={title}
+        onWordCutAtTheFloor={onWordCutAtTheFloor}
+        style={styles.title}
+        testID={tileTitleTestID(testID)}
+      />
       {note === undefined ? null : (
         <Text style={isChosen ? styles.noteChosen : styles.note}>{note}</Text>
       )}

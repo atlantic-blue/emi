@@ -25,6 +25,7 @@ import { groupsInHerOrder } from '../../../features/log/herOrder';
 import { useFirstRun } from '../../../features/onboarding/FirstRunProvider';
 import { useRescheduleHerReminder } from '../../../features/reminder/rescheduleHerReminder';
 import { statedFocus } from '../../../features/onboarding/firstRun';
+import { periodAddress } from '../../../features/period/periodAddress';
 import { dayLabel, localDay } from '../../../features/onboarding/days';
 import { useProfileVault, useVault } from '../../../services/vault/VaultProvider';
 
@@ -173,6 +174,7 @@ export default function LogFlowRoute(): ReactNode {
       onMark={mark}
       onOpenGroup={(group: SymptomGroup) => openTheSymptoms(symptomsOfAGroup(group))}
       onPick={pick}
+      onOtherDischarge={() => router.push(periodAddress())}
       onSearch={() => openTheSymptoms(symptomsBySearch(hers))}
       onToggleSymptom={takeOff}
       ring={ringNow(database, vault, profiles, today)}

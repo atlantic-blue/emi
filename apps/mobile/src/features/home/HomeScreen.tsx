@@ -103,6 +103,13 @@ interface Props {
    */
   readonly loggedToday?: DayRecord;
   readonly forecast: ForecastResult;
+  /**
+   * How many days her period is late, counted by the caller with `daysLate`, and nothing inside the
+   * window. Where it is given, the forecast card says she is late in place of the passed range.
+   */
+  readonly daysLate?: number;
+  /** The way to the period editor on today, which the link under the late line takes her by. */
+  readonly onItStarted?: () => void;
   /** The length she gave at the first run, which the learning state counts by. */
   readonly cycleLengthDays: number;
   /**
@@ -209,6 +216,8 @@ export function HomeScreen({
   today,
   loggedToday,
   forecast,
+  daysLate,
+  onItStarted,
   cycleLengthDays,
   completeCycles,
   name,
@@ -319,6 +328,8 @@ export function HomeScreen({
               <View style={styles.forecastSaid}>
                 <NextPeriodOrLearning
                   cycleLengthDays={cycleLengthDays}
+                  daysLate={daysLate}
+                  onItStarted={onItStarted}
                   regularity={regularity}
                   result={forecast}
                 />

@@ -34,13 +34,39 @@ const appDirectory = resolve(__dirname, '..', '..', 'src', 'app');
 const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 
 const whatTheWelcomeSays = {
-  title: 'Emi learns your cycle. You keep your data.',
+  title: 'Your cycle and how you feel, in one place.',
   lines: [
-    'Your cycle is worked out on this phone.',
+    'Log your periods and how you feel, to understand your cycle better.',
     'There is no account. Emi never asks for your email address or a password.',
-    'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
+    "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
   ],
-  action: 'Continue',
+  action: 'Start',
+};
+
+/** What the welcome said before it led with what she can log, in each language. */
+const whatTheWelcomeSaidBefore: Readonly<Record<Language, readonly string[]>> = {
+  en: [
+    'Emi learns your cycle. You keep your data.',
+    'Your cycle is worked out on this phone.',
+    'Emi shows you what your own records say, and nothing more.',
+  ],
+  es: [
+    'Emi aprende tu ciclo. Tus datos son tuyos.',
+    'Tu ciclo se calcula en este teléfono.',
+    'Emi te muestra lo que dicen tus propios registros, y nada más.',
+  ],
+  ru: [
+    'Emi изучает ваш цикл. Ваши данные остаются у вас.',
+    'Ваш цикл считается на этом телефоне.',
+    'Emi показывает то, что говорят ваши собственные записи, и ничего больше.',
+  ],
+};
+
+/** The line that says what Emi is not, in each language, which every language must carry. */
+const whatEmiIsNot: Readonly<Record<Language, string>> = {
+  en: "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
+  es: 'Emi no sustituye el consejo de un médico. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
+  ru: 'Emi не заменяет консультацию врача. Emi не является средством контрацепции. Emi не является медицинским изделием.',
 };
 
 const whatTheTourSays = {
@@ -102,6 +128,27 @@ describe('the welcome and the tour say what the redesign says', () => {
         whatTheWelcomeSays.action,
       );
       expect(firstRunCopy.welcome.lines).toEqual(whatTheWelcomeSays.lines);
+    });
+
+    it('no longer says where her cycle is worked out or that Emi learns it, in any language', () => {
+      for (const language of languages) {
+        const said = theWordsOfTheFirstOpenIn(language);
+        const left = whatTheWelcomeSaidBefore[language].filter((old) =>
+          said.some((line) => line.includes(old)),
+        );
+
+        expect({ language, left }).toEqual({ language, left: [] });
+      }
+      expect(wordKeys).not.toContain('onboarding.welcome.line.onThisPhone');
+    });
+
+    it('says in every language that Emi does not replace a doctor, with the two denials after it', () => {
+      for (const language of languages) {
+        expect({
+          language,
+          said: catalogueOf(language)['onboarding.welcome.line.whatEmiIs'],
+        }).toEqual({ language, said: whatEmiIsNot[language] });
+      }
     });
 
     it('never says nothing is sent, because the delete sends a request', () => {
