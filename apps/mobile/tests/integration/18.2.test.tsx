@@ -17,6 +17,7 @@ import { historyCycleTestID } from '../../src/features/history/HistoryScreen';
 import {
   herNumberTestID,
   homeNumbersTestID,
+  measuredMeaningTestID,
   measuredRowTestID,
   publishedNumberTestID,
 } from '../../src/features/home/MeasuredRow';
@@ -74,7 +75,7 @@ const theVariationPublished = '2.6 days';
 const theWordsTheDrawingCarries = 'not cited yet';
 
 const theLineUnderTheRows =
-  'The published figure is the one the paper reports, and the paper is one press away.';
+  'The figure beside each of yours comes from a published study, not from your records.';
 
 /** The three measurements, in the order the published figures are held in. */
 const theThreeMeasurements: readonly PublishedMeasurement[] = [
@@ -221,9 +222,23 @@ describe('she reads her three cycle numbers beside the published figures', () =>
       expect(whatItSays(measuredRowTestID('cycle-length-variation'))).toContain('Variation');
     });
 
+    it('says under each number what it is counted from and what it changes for her', () => {
+      expect(whatItSays(measuredMeaningTestID('cycle-length'))).toBe(
+        'From the first day of one period to the day before the next. Your forecast is counted from these lengths.',
+      );
+      expect(whatItSays(measuredMeaningTestID('period-duration'))).toBe(
+        'The days you logged as your period last time. A day you did not log is not counted.',
+      );
+      expect(whatItSays(measuredMeaningTestID('cycle-length-variation'))).toBe(
+        'How much your cycle lengths differ from each other. The more they differ, the wider your forecast range.',
+      );
+    });
+
     it('reads hers and published over the two columns, so she knows which number is whose', () => {
-      expect(whatItSays(homeNumbersTestID)).toContain('Yours');
-      expect(whatItSays(homeNumbersTestID)).toContain('Published');
+      expect(whatItSays(homeNumbersTestID)).toContain('Your numbers');
+      expect(whatItSays(homeNumbersTestID)).toContain('Study');
+      expect(whatItSays(homeNumbersTestID)).not.toContain('Yours');
+      expect(whatItSays(homeNumbersTestID)).not.toContain('Published');
     });
 
     it('puts her own last cycle length in the cycle row, read from the cycle cache', () => {
@@ -260,7 +275,7 @@ describe('she reads her three cycle numbers beside the published figures', () =>
       expect(POPULATION_SPREAD_DAYS).toBe(2.6);
     });
 
-    it('carries the line that says the paper is one press away', () => {
+    it('carries the line that says the figure beside hers comes from a study', () => {
       expect(whatItSays(homeFiguresLineTestID)).toBe(theLineUnderTheRows);
     });
 

@@ -76,8 +76,8 @@ const theWordsOfEachWaitingSection = [
   },
   {
     heading: 'What comes back',
-    needs: "We'll point out a symptom once it's come back in 3 cycles.",
-    read: '0 of yours are complete.',
+    needs: 'Symptoms you log at about the same point in 3 different cycles will show here.',
+    read: '0 complete cycles so far.',
     section: 'patterns',
   },
 ];
@@ -201,7 +201,9 @@ describe('a section her data cannot fill carries one sentence and no chart', () 
 
       expect(complete).toBe(0);
       expect(whatOneSectionSays('cycles')).toContain(`${String(complete)} complete cycles`);
-      expect(whatOneSectionSays('patterns')).toContain(`${String(complete)} of yours`);
+      expect(whatOneSectionSays('patterns')).toContain(
+        `${String(complete)} complete cycles so far`,
+      );
       expect(whatOneSectionSays('trend')).toContain(String(cyclesBeforeATrend));
       expect(whatOneSectionSays('patterns')).toContain(String(cyclesBeforeAPattern));
     });

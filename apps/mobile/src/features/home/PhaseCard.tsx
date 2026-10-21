@@ -13,7 +13,7 @@ import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../../components/Card';
-import { phaseCardMore, phaseCardWords } from './copy';
+import { phaseCardEstimate, phaseCardMore, phaseCardWords } from './copy';
 
 /**
  * The card under the ring: the phase she is in, its days in her own cycle, and one sentence about
@@ -59,7 +59,7 @@ export function PhaseCard({ phase, days, onPress }: Props): ReactNode {
               {said.days}
             </Text>
             <Text style={styles.line} testID={phaseCardLineTestID}>
-              {`${said.line} ${phaseCardMore}`}
+              {`${said.line} ${phaseCardEstimate} ${phaseCardMore}`}
             </Text>
           </View>
           <Icon

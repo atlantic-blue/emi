@@ -16,7 +16,7 @@ import {
   nextPeriodRangeTestID,
   nextPeriodTestID,
 } from '../../src/features/forecast/NextPeriod';
-import { confidenceWords, learningCopy, rangeSentence } from '../../src/features/forecast/copy';
+import { learningCopy, rangeSentence } from '../../src/features/forecast/copy';
 import { forecastOf } from '../../src/features/forecast/fromCache';
 import { statedCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import {
@@ -187,7 +187,7 @@ describe('Emi says it is still learning until the second cycle completes', () =>
         expect(screen.queryByTestId(nextPeriodConfidenceTestID)).toBeNull();
         expect(words).not.toMatch(/confidence/i);
         expect(words).not.toContain('%');
-        expect(Object.values(confidenceWords).filter((word) => words.includes(word))).toEqual([]);
+        expect(words).not.toMatch(/based on your last/i);
       });
     }
 
@@ -195,7 +195,7 @@ describe('Emi says it is still learning until the second cycle completes', () =>
       await sheOpensEmi(twoPeriodsAfterThat);
 
       expect(screen.getByTestId(nextPeriodConfidenceTestID)).toHaveTextContent(
-        'High confidence, based on your last 2 cycles',
+        'Based on your last 2 cycles',
       );
     });
   });

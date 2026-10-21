@@ -131,7 +131,7 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
   });
 
   describe('the line that claimed nothing reads the year', () => {
-    it('is gone from the screen, and so is the padlock line, because the welcome links to the page', async () => {
+    it('is gone from the screen, and so is the padlock line, and one true line says Emi does not use the year', async () => {
       await sheReachesTheYearSheWasBorn();
 
       expect(screen.getByTestId('onboarding-birthYear')).toBeTruthy();
@@ -139,7 +139,14 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
       expect(screen.queryByText(theReasonThatWent)).toBeNull();
       expect(screen.queryByText(theLineAboutEncryption)).toBeNull();
       expect(locksDrawnIn(screen.root)).toBe(0);
-      expect(firstRunCopy.birthYear.lines).toEqual([]);
+      expect(firstRunCopy.birthYear.lines).toEqual([
+        'Emi does not use your year of birth for anything today. You can skip this question.',
+      ]);
+      expect(
+        screen.getByText(
+          'Emi does not use your year of birth for anything today. You can skip this question.',
+        ),
+      ).toBeTruthy();
     });
 
     it('is gone from all three languages, so no screen can draw it again', () => {
