@@ -27,6 +27,7 @@ export const phasePageCopy = {
   guide: {
     open: words('phase.guide.open'),
     close: words('phase.guide.close'),
+    everyone: words('phase.guide.everyone'),
     areas: {
       mood: words('phase.guide.mood'),
       food: words('phase.guide.food'),
@@ -56,6 +57,13 @@ const thePastHeadings: Readonly<Record<CyclePhaseName, WordKey>> = {
   follicular: 'phase.past.heading.follicular',
   ovulation: 'phase.past.heading.ovulation',
   luteal: 'phase.past.heading.luteal',
+};
+
+const theGuideTitles: Readonly<Record<CyclePhaseName, WordKey>> = {
+  period: 'phase.guide.title.period',
+  follicular: 'phase.guide.title.follicular',
+  ovulation: 'phase.guide.title.ovulation',
+  luteal: 'phase.guide.title.luteal',
 };
 
 const theGuidance: Readonly<Record<CyclePhaseName, Readonly<Record<GuideArea, WordKey>>>> = {
@@ -152,8 +160,16 @@ export function guidanceFor(phase: CyclePhaseName, area: GuideArea): string {
   return words(theGuidance[phase][area]);
 }
 
-export function pastHeading(phase: CyclePhaseName): string {
-  return words(thePastHeadings[phase]);
+/** The title of the guide: the phase in plain words, then what may help in it. */
+export function guideTitle(phase: CyclePhaseName): string {
+  return words(theGuideTitles[phase]);
+}
+
+/** Before a complete cycle there is nothing to compare, so the heading says what will come. */
+export function pastHeading(phase: CyclePhaseName, past: PastPhase): string {
+  return past.kind === 'waiting'
+    ? words('phase.past.heading.waiting')
+    : words(thePastHeadings[phase]);
 }
 
 /** What her past phases say, and only what the counts behind it prove. */

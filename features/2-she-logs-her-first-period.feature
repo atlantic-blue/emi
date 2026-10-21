@@ -71,21 +71,21 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she reaches the reminder after the first day she logs
-    Then Remind me waits until she picks when
-    And the sample on the screen names a forecast and a day, and nothing about her body
+    Then Turn on reminders waits until she picks when
+    And the sample lock screen says only that it is a reminder from Emi
     When she picks two days before
-    And she presses Remind me and her phone allows it
+    And she presses Turn on reminders and her phone allows it
     Then her phone asked her once, after she pressed
     And she is looking at her first forecast
     When she reads on and taps Save and start
-    Then her phone holds one reminder, at nine in the morning two days before the range she was shown
+    Then her phone holds one reminder from Emi, at nine in the morning two days before the range she was shown
 
   Scenario: SCREEN-1, her phone refuses the reminder and the first run goes on
     Given she has never opened Emi before
     And her phone will refuse notifications
     When she opens Emi
     And she reaches the reminder after the first day she logs
-    And she picks one day before and presses Remind me
+    And she picks one day before and presses Turn on reminders
     Then she is looking at her first forecast
     When she reads on and taps Save and start
     Then her phone holds no reminder and no choice of one
@@ -725,8 +725,8 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, the welcome and the tour say what the redesign says
     Given she has never opened Emi before
     When she opens Emi
-    Then the first thing she reads is the welcome, saying Emi learns her cycle and she keeps her data
-    And the welcome says where her cycle is worked out, that there is no account, and what Emi is not
+    Then the first thing she reads is the welcome, saying her cycle and how she feels are in one place
+    And the welcome says what she can log, that there is no account, and what Emi is not
     And the tour after it draws the ring with its legend, says what the ring is, and names the price
     And the welcome and the tour are in her own language, and say no word a screen refuses
 
@@ -738,10 +738,18 @@ Feature: She opens Emi and logs her first period
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
     And no question of the first run draws a lock, and the sentences it drew are gone from all three languages
 
+  Scenario: SCREEN-1, the first run says why it asks her year, what a regular cycle is, and that ovulation dates are approximate
+    Given she has never opened Emi before
+    When she opens Emi, reads the welcome, skips the tour, and skips her name
+    Then the year question says Emi does not use her year of birth today, and that she can skip it
+    And the question about a regular cycle says what regular means, and the first answer says it in the same words
+    And the question about her goals offers to track how she feels and to track ovulation, and carries the note that the dates are approximate
+    And the three lines are written in all three languages, and each ovulation note keeps the approved denial
+
   Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it speak in the name of Emi
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, gives her name, and answers every question
-    Then the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name
+    Then the forecast she reads is labelled Your period may start, so the dates read as when it may start, and no longer greets her by name
     And a woman who gave no name reads the same forecast, with no gap where a name would be
     And the screen that reads her answers back is titled in the name of Emi, for a woman who gave her name and for one who did not
     And the screens after the forecast never talk as we, in each of the three languages she can read them in
@@ -870,8 +878,9 @@ Feature: She opens Emi and logs her first period
     And she writes a note about today and leaves the box
     Then her phone holds those three answers and the note on today, sealed, beside the flow she logged
     And the three chips she pressed are filled
-    When she presses What this phase can mean for you
-    Then a sheet gives her Mood, Food, Body and Training for that phase, and no designer note
+    When she presses How you may feel and what may help
+    Then a sheet gives her a short tip for Mood, Appetite, Body and Movement in that phase, and no designer note
+    And the sheet says that everyone is different
     When she presses Close
     Then the sheet is gone and she is on the page of her phase
 

@@ -50,6 +50,18 @@ export function phaseName(phase: PhaseName): string {
   return words(theNameOf[phase]);
 }
 
+/** The full name of a phase, which the middle of the ring of Today writes over the day. */
+const theFullNameOf: Readonly<Record<PhaseName, WordKey>> = {
+  period: 'phase.name.period',
+  follicular: 'phase.name.follicular',
+  ovulation: 'phase.name.ovulation',
+  luteal: 'phase.name.luteal',
+};
+
+export function phaseFullName(phase: PhaseName): string {
+  return words(theFullNameOf[phase]);
+}
+
 /** The large line in the middle of the ring of Today: the day of her cycle. */
 export function ringDayNumberWords(day: number): string {
   return words('cycle.ring.dayNumber', undefined, { day });

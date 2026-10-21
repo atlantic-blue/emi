@@ -56,7 +56,7 @@ export interface HerAnswers {
   readonly birthYear?: number;
   /**
    * Left out where she presses "Not now", which is what a walk that is about something else does.
-   * Given, she presses the moment and "Remind me", and the phone answers whatever the test's
+   * Given, she presses the moment and "Turn on reminders", and the phone answers whatever the test's
    * scheduler is set to answer.
    */
   readonly reminder?: ReminderLead;
@@ -194,7 +194,7 @@ async function sheAnswersWhatComesAfterHerLastPeriod(answers: HerAnswersWithNoDa
 
 /**
  * The reminder after the first day she logs. "Not now" where she gives no moment, and otherwise the
- * moment and "Remind me", which asks the phone before it goes on.
+ * moment and "Turn on reminders", which asks the phone before it goes on.
  */
 export async function sheAnswersTheReminder(lead: ReminderLead | undefined): Promise<void> {
   if (lead === undefined) {

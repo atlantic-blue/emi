@@ -14,7 +14,7 @@ import type { ProfileVault } from '../../services/vault/profileVault';
 import { useProfileVault } from '../../services/vault/VaultProvider';
 import { forecastOf } from '../forecast/fromCache';
 import { defaultCycleLengthDays } from '../onboarding/firstRun';
-import { readReminderLead, reminderWords, whenToRemindHer } from './reminder';
+import { readReminderLead, reminderNotificationWords, whenToRemindHer } from './reminder';
 
 /** What one reschedule came to. A screen does not read it; a test does. */
 export type ReminderOutcome =
@@ -58,7 +58,7 @@ export async function rescheduleHerReminder(
       return 'no-date-yet';
     }
 
-    await scheduleHerReminder(moment, reminderWords[lead]);
+    await scheduleHerReminder(moment, reminderNotificationWords);
     return 'scheduled';
   } catch {
     // The reminder is the one part of Emi that lives with the operating system, and a scheduler

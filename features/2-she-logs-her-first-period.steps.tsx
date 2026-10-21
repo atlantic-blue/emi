@@ -94,6 +94,7 @@ import {
 } from '../apps/mobile/src/components/CycleRing';
 import {
   cycleCopy,
+  phaseFullName,
   ringAboutLengthWords,
   ringDayNumberWords,
   ringSpokenLabel,
@@ -268,11 +269,12 @@ import {
   whyTheStripIsGone,
 } from '../apps/mobile/tests/fixtures/theTodayLook';
 import { phaseCardPressTestID, phaseCardTestID } from '../apps/mobile/src/features/home/PhaseCard';
-import { guideAreas } from '../apps/mobile/src/features/phase/copy';
+import { guideAreas, phasePageCopy } from '../apps/mobile/src/features/phase/copy';
 import { phaseDiaryNoteTestID } from '../apps/mobile/src/features/phase/PhaseDiary';
 import {
   phaseGuideAreaTestID,
   phaseGuideCloseTestID,
+  phaseGuideEveryoneTestID,
   phaseGuideTestID,
 } from '../apps/mobile/src/features/phase/PhaseGuide';
 import {
@@ -369,12 +371,14 @@ import {
   weekCellTestIDs,
   weekTestID,
 } from '../apps/mobile/src/features/onboarding/Calendar';
+import { goalTestID } from '../apps/mobile/src/features/onboarding/Goals';
 import { saveScreenTestID } from '../apps/mobile/src/features/onboarding/SaveAndStart';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
   onboardingEmblemTestID,
   onboardingHeaderWordTestID,
+  onboardingLinesTestID,
   onboardingProgressTestID,
   onboardingQuestionTestID,
   onboardingSheetTestID,
@@ -2088,16 +2092,16 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/onboarding/reminder');
     });
 
-    then('Remind me waits until she picks when', () => {
-      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Remind me');
+    then('Turn on reminders waits until she picks when', () => {
+      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Turn on reminders');
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    and('the sample on the screen names a forecast and a day, and nothing about her body', () => {
+    and('the sample lock screen says only that it is a reminder from Emi', () => {
       expect(screen.getByTestId(reminderPreviewWordsTestID)).toHaveTextContent(
-        'Your forecast starts in two days.',
+        'A reminder from Emi',
       );
-      expect(screen.queryByText(/period/i)).toBeNull();
+      expect(screen.getByTestId(reminderPreviewWordsTestID)).not.toHaveTextContent(/period/i);
     });
 
     when('she picks two days before', async () => {
@@ -2107,7 +2111,7 @@ defineFeature(feature, (test) => {
       expect(timesThePhoneAsked()).toBe(0);
     });
 
-    and('she presses Remind me and her phone allows it', async () => {
+    and('she presses Turn on reminders and her phone allows it', async () => {
       await shePresses(onboardingActionTestID);
       await screen.findByTestId(firstForecastActionTestID);
     });
@@ -2125,7 +2129,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'her phone holds one reminder, at nine in the morning two days before the range she was shown',
+      'her phone holds one reminder from Emi, at nine in the morning two days before the range she was shown',
       async () => {
         const forecast = forecastFromHerAnswers({
           periods: [{ startedOn: herPeriodStarted, lengthDays: aWalkPeriodLengthDays }],
@@ -2137,6 +2141,9 @@ defineFeature(feature, (test) => {
         await waitFor(() => {
           expect(theRemindersOnThePhone().map((reminder) => reminder.at)).toEqual([
             new Date(year ?? 0, (month ?? 1) - 1, (day ?? 1) - 2, 9, 0, 0, 0),
+          ]);
+          expect(theRemindersOnThePhone().map((reminder) => reminder.body)).toEqual([
+            'A reminder from Emi',
           ]);
         });
       },
@@ -2165,7 +2172,7 @@ defineFeature(feature, (test) => {
       await sheReachesTheReminder();
     });
 
-    and('she picks one day before and presses Remind me', async () => {
+    and('she picks one day before and presses Turn on reminders', async () => {
       await shePresses(reminderTestID('oneDayBefore'));
       await shePresses(onboardingActionTestID);
       await screen.findByTestId(firstForecastActionTestID);
@@ -2441,7 +2448,9 @@ defineFeature(feature, (test) => {
       // The day is read inside the ring rather than anywhere on the glass, so a number found loose
       // elsewhere on the screen cannot answer for it. The ring of Today writes it as Day 2.
       expect(within(screen.getByTestId(cycleRingTestID)).getByText('Day 2')).toBeTruthy();
-      expect(within(screen.getByTestId(cycleRingTestID)).getByText(phaseLabel.period)).toBeTruthy();
+      expect(
+        within(screen.getByTestId(cycleRingTestID)).getByText(phaseFullName('period')),
+      ).toBeTruthy();
     });
 
     and('the ring is drawn on the screen she is looking at', () => {
@@ -2809,8 +2818,8 @@ defineFeature(feature, (test) => {
       // here is what the ring itself names.
       const insideTheRing = within(screen.getByTestId(cycleRingTestID));
 
-      expect(insideTheRing.getByText(phaseLabel.period)).toBeTruthy();
-      expect(insideTheRing.queryByText(phaseLabel.luteal)).toBeNull();
+      expect(insideTheRing.getByText(phaseFullName('period'))).toBeTruthy();
+      expect(insideTheRing.queryByText(phaseFullName('luteal'))).toBeNull();
     });
 
     and('a screen reader is told the day and the phase in the same sentence', () => {
@@ -3501,7 +3510,7 @@ defineFeature(feature, (test) => {
     );
 
     and('the phase she is in is written over it, in words', () => {
-      expect(thePhaseSheReads().phase).toBe('Period');
+      expect(thePhaseSheReads().phase).toBe('Period phase');
     });
 
     and('the day of her cycle is drawn far larger than the phase over it', () => {
@@ -3532,7 +3541,7 @@ defineFeature(feature, (test) => {
         const drawn = whatTheScreenSheOpensDrew();
 
         expect(drawn.indexOf(phaseCardTestID)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
-        expect(thePhaseSheReads().cardDays).toMatch(/^Period phase, days? \d+/);
+        expect(thePhaseSheReads().cardDays).toMatch(/^During your period, days? \d+/);
         expect(
           theIdentifiersDrawn().filter((identifier) =>
             theIdentifiersOfTheLineThatIsGone.includes(identifier),
@@ -3559,8 +3568,8 @@ defineFeature(feature, (test) => {
       );
       expect(inHerLutealPhase.day).toBe(theFirstLutealDayTheRuleGives);
       expect(inHerLutealPhase.day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
-      expect(inHerLutealPhase.phase).toBe('Luteal');
-      expect(inHerLutealPhase.cardDays).toMatch(/^Luteal phase, days? \d+/);
+      expect(inHerLutealPhase.phase).toBe('Luteal phase');
+      expect(inHerLutealPhase.cardDays).toMatch(/^Before your period, days? \d+/);
       expect(inHerLutealPhase.phaseColour).toBe(theInkOf('luteal'));
       // The four words stay where they are whatever the phase, so the word she reads here is
       // drawn at the size the period day drew its own.
@@ -3643,21 +3652,33 @@ defineFeature(feature, (test) => {
       }
     });
 
-    when('she presses What this phase can mean for you', async () => {
+    when('she presses How you may feel and what may help', async () => {
       await shePresses(phasePageGuideTestID);
     });
 
     then(
-      'a sheet gives her Mood, Food, Body and Training for that phase, and no designer note',
+      'a sheet gives her a short tip for Mood, Appetite, Body and Movement in that phase, and no designer note',
       () => {
         expect(screen.getByTestId(phaseGuideTestID)).toBeTruthy();
         expect(guideAreas).toEqual(['mood', 'food', 'body', 'training']);
+        expect(guideAreas.map((area) => phasePageCopy.guide.areas[area])).toEqual([
+          'Mood',
+          'Appetite',
+          'Body',
+          'Movement',
+        ]);
         for (const area of guideAreas) {
           expect(screen.getByTestId(phaseGuideAreaTestID(area))).toBeTruthy();
         }
         expect(screen.queryByText(/specialist/)).toBeNull();
       },
     );
+
+    and('the sheet says that everyone is different', () => {
+      expect(screen.getByTestId(phaseGuideEveryoneTestID)).toHaveTextContent(
+        'Everyone is different. If symptoms get in the way of daily life, talk to a doctor.',
+      );
+    });
 
     when('she presses Close', async () => {
       await shePresses(phaseGuideCloseTestID);
@@ -7012,7 +7033,7 @@ defineFeature(feature, (test) => {
       'the middle of the ring names her phase, then Day and the day she is on, then about the length of her cycle',
       () => {
         expect(theMiddleOfTheRingOfToday()).toEqual([
-          'Period',
+          'Period phase',
           ringDayNumberWords(herCycle.dayOfCycle),
           ringAboutLengthWords(herCycle.cycleLengthDays),
         ]);
@@ -7080,33 +7101,33 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'the first thing she reads is the welcome, saying Emi learns her cycle and she keeps her data',
+      'the first thing she reads is the welcome, saying her cycle and how she feels are in one place',
       () => {
         const welcome = within(screen.getByTestId('onboarding-welcome'));
 
-        expect(welcome.getByText('Emi learns your cycle. You keep your data.')).toBeTruthy();
+        expect(welcome.getByText('Your cycle and how you feel, in one place.')).toBeTruthy();
         expect(screen.queryByTestId(tourScreenTestID)).toBeNull();
       },
     );
 
-    and(
-      'the welcome says where her cycle is worked out, that there is no account, and what Emi is not',
-      () => {
-        const welcome = within(screen.getByTestId('onboarding-welcome'));
+    and('the welcome says what she can log, that there is no account, and what Emi is not', () => {
+      const welcome = within(screen.getByTestId('onboarding-welcome'));
 
-        expect(welcome.getByText('Your cycle is worked out on this phone.')).toBeTruthy();
-        expect(
-          welcome.getByText(
-            'There is no account. Emi never asks for your email address or a password.',
-          ),
-        ).toBeTruthy();
-        expect(
-          welcome.getByText(
-            'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
-          ),
-        ).toBeTruthy();
-      },
-    );
+      expect(
+        welcome.getByText('Log your periods and how you feel, to understand your cycle better.'),
+      ).toBeTruthy();
+      expect(welcome.queryByText('Your cycle is worked out on this phone.')).toBeNull();
+      expect(
+        welcome.getByText(
+          'There is no account. Emi never asks for your email address or a password.',
+        ),
+      ).toBeTruthy();
+      expect(
+        welcome.getByText(
+          "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
+        ),
+      ).toBeTruthy();
+    });
 
     and(
       'the tour after it draws the ring with its legend, says what the ring is, and names the price',
@@ -7292,6 +7313,108 @@ defineFeature(feature, (test) => {
     );
   });
   /**
+   * Three lines a woman asked for: why the year is asked, what a regular cycle is, and what the
+   * ovulation goal does not promise. Each is written out here, so a reword fails the scenario.
+   */
+  test('SCREEN-1, the first run says why it asks her year, what a regular cycle is, and that ovulation dates are approximate', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const theYearLine =
+      'Emi does not use your year of birth for anything today. You can skip this question.';
+    const theRegularHint = 'Your period starts after about the same number of days each time.';
+    const theOvulationNote = 'Dates are approximate. Emi is not a contraceptive.';
+    const theNoteInEachLanguage: Readonly<Record<Language, string>> = {
+      en: theOvulationNote,
+      es: 'Las fechas son aproximadas. Emi no es un anticonceptivo.',
+      ru: 'Даты примерные. Emi не является средством контрацепции.',
+    };
+
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi, reads the welcome, skips the tour, and skips her name', async () => {
+      app = await sheOpens('/');
+      await sheSkipsTheTour();
+      await shePresses(onboardingSkipTestID);
+    });
+
+    then(
+      'the year question says Emi does not use her year of birth today, and that she can skip it',
+      () => {
+        expect(app.pathname()).toBe('/onboarding/year-of-birth');
+        expect(screen.getByTestId(onboardingLinesTestID)).toHaveTextContent(theYearLine);
+      },
+    );
+
+    and(
+      'the question about a regular cycle says what regular means, and the first answer says it in the same words',
+      async () => {
+        await shePresses(onboardingSkipTestID);
+        await sheGivesAPeriod(0, herPeriodStarted);
+        await shePresses(onboardingActionTestID);
+        await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
+        await shePresses(onboardingActionTestID);
+        await shePresses(onboardingWayPastTestID);
+
+        expect(app.pathname()).toBe('/onboarding/regularity');
+        expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(theRegularHint);
+        expect(screen.getByTestId(regularityTestID('regular'))).toHaveTextContent(
+          'Yes, after about the same number of days',
+        );
+        expect(screen.queryByText('Yes, most months')).toBeNull();
+      },
+    );
+
+    and(
+      'the question about her goals offers to track how she feels and to track ovulation, and carries the note that the dates are approximate',
+      async () => {
+        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingSkipTestID);
+
+        expect(app.pathname()).toBe('/onboarding/goals');
+        expect(screen.getByTestId(goalTestID('symptoms'))).toHaveTextContent('Track how I feel');
+        expect(screen.getByTestId(goalTestID('fertileWindow'))).toHaveTextContent(
+          'Track ovulation',
+        );
+        expect(screen.getByTestId(onboardingLinesTestID)).toHaveTextContent(theOvulationNote);
+        expect(screen.queryByText('See my fertile window, as an estimate')).toBeNull();
+      },
+    );
+
+    and(
+      'the three lines are written in all three languages, and each ovulation note keeps the approved denial',
+      () => {
+        for (const language of languages) {
+          const held: Readonly<Record<string, unknown>> = Object.fromEntries(
+            Object.entries(catalogueOf(language)),
+          );
+
+          for (const key of [
+            'onboarding.birthYear.line.why',
+            'onboarding.regularity.line.sameDays',
+            'onboarding.goals.line.ovulation',
+          ]) {
+            expect({ language, key, written: String(held[key] ?? '').length > 0 }).toEqual({
+              language,
+              key,
+              written: true,
+            });
+          }
+
+          expect(String(held['onboarding.goals.line.ovulation'])).toBe(
+            theNoteInEachLanguage[language],
+          );
+        }
+
+        expect(languages.length).toBe(3);
+      },
+    );
+  });
+  /**
    * The forecast is the first thing Emi says back to her, so it says it to her: the name she
    * typed at the second question opens the sentence, and a woman who gave none reads a clean one.
    * The three screens between it and the hold speak in the name of Emi and never as we.
@@ -7304,10 +7427,10 @@ defineFeature(feature, (test) => {
   }) => {
     const theTitleOfHerForecast = {
       theOldGreeting: `${theNameSheGives}, here's your next period`,
-      plain: 'Your next period',
+      plain: 'Your period may start',
     };
     const theTitleOfWhatEmiDoes = {
-      now: 'Here is what Emi does with what you told it',
+      now: 'Your settings in Emi',
       theOldGreeting: `${theNameSheGives}, here's what we'll do with your answers`,
     };
     const theSaveNowSays = 'Your cycle, your data, your key.';
@@ -7376,7 +7499,7 @@ defineFeature(feature, (test) => {
     );
 
     then(
-      'the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name',
+      'the forecast she reads is labelled Your period may start, so the dates read as when it may start, and no longer greets her by name',
       () => {
         expect(app.pathname()).toBe('/onboarding/first-forecast');
         expect(theTitleSheIsReading(firstForecastTitleTestID)).toEqual([

@@ -26,8 +26,10 @@ import {
 import {
   phaseGuideAreaTestID,
   phaseGuideCloseTestID,
+  phaseGuideEveryoneTestID,
   phaseGuidePhaseTestID,
   phaseGuideTestID,
+  phaseGuideTitleTestID,
 } from '../../../src/features/phase/PhaseGuide';
 import {
   phasePageBackTestID,
@@ -320,25 +322,52 @@ describe('the diary of today', () => {
 });
 
 describe('the guidance sheet', () => {
-  it('should open over the page with the four areas of the board, and close', async () => {
+  it('should open over the page with a short tip for each of the four areas, and close', async () => {
     await sheOpensThePhasePage(herPeriodStarts(16, 2));
     expect(screen.queryByTestId(phaseGuideTestID)).toBeNull();
 
     await fireEvent.press(screen.getByTestId(phasePageGuideTestID));
 
-    expect(whatItSays(phaseGuidePhaseTestID)).toBe('Ovulation phase, days 14 to 18');
+    expect(whatItSays(phaseGuidePhaseTestID)).toBe('Ovulation phase');
+    expect(whatItSays(phaseGuideTitleTestID)).toBe('Around ovulation: what may help');
     expect(guideAreas.map((area) => whatItSays(phaseGuideAreaTestID(area)))).toEqual([
-      'MoodMany people feel more social and confident now. Plan the talks and the meetings that need energy.',
-      'FoodFresh vegetables, fibre and enough water help as oestrogen peaks. Keep regular meals.',
+      'MoodYou may feel more social and confident. A good time for plans with other people.',
+      'AppetiteYour appetite may change. Try to eat regularly and drink enough water.',
       'BodySome people feel a short pain on one side, or notice clear, stretchy discharge.',
-      'TrainingStrength and speed are often at their best. A good time for harder sessions, with a proper warm up.',
+      'MovementEnergy is often high. If you feel strong, try a harder session, with a proper warm up.',
     ]);
     expect(screen.queryByText(/specialist/)).toBeNull();
+    expect(screen.queryByText('What this phase can mean for you')).toBeNull();
+    expect(screen.queryByText(/oestrogen/)).toBeNull();
 
     await fireEvent.press(screen.getByTestId(phaseGuideCloseTestID));
 
     expect(screen.queryByTestId(phaseGuideTestID)).toBeNull();
     expect(screen.getByTestId(phasePageTestID)).toBeTruthy();
+  });
+
+  it('should say under the tips that everyone is different', async () => {
+    await sheOpensThePhasePage(herPeriodStarts(20, 2));
+
+    await fireEvent.press(screen.getByTestId(phasePageGuideTestID));
+
+    expect(whatItSays(phaseGuideTitleTestID)).toBe('Before your period: what may help');
+    expect(whatItSays(phaseGuideEveryoneTestID)).toBe(
+      'Everyone is different. If symptoms get in the way of daily life, talk to a doctor.',
+    );
+  });
+
+  it.each([
+    { cycleDay: 2, title: 'During your period: what may help' },
+    { cycleDay: 9, title: 'After your period: what may help' },
+    { cycleDay: 16, title: 'Around ovulation: what may help' },
+    { cycleDay: 20, title: 'Before your period: what may help' },
+  ])('should title the guide "$title" on day $cycleDay', async ({ cycleDay, title }) => {
+    await sheOpensThePhasePage(herPeriodStarts(cycleDay, 2));
+
+    await fireEvent.press(screen.getByTestId(phasePageGuideTestID));
+
+    expect(whatItSays(phaseGuideTitleTestID)).toBe(title);
   });
 
   it.each([2, 9, 20])('should carry guidance for all four areas on day %i', async (cycleDay) => {
@@ -443,6 +472,13 @@ describe('her records grouped by phase', () => {
       'Emi shows this after your first complete cycle.',
     );
   });
+
+  it('should say her observations will appear here while no cycle is complete', async () => {
+    await sheOpensThePhasePage(herPeriodStarts(16, 1));
+
+    expect(whatItSays(phasePagePastHeadingTestID)).toBe('Your observations will appear here');
+    expect(screen.queryByText('In your past ovulation phases')).toBeNull();
+  });
 });
 
 describe('the phase card on Today', () => {
@@ -454,7 +490,7 @@ describe('the phase card on Today', () => {
     expect(screen.getByTestId(phaseCardPressTestID).props.accessibilityRole).toBe('button');
     expect(screen.getByTestId(phaseCardChevronTestID)).toBeTruthy();
     expect(whatItSays(phaseCardLineTestID)).toBe(
-      'Energy is often at its highest. See what this phase means for you.',
+      'Energy is often at its highest. This phase is an estimate. How you may feel and what may help.',
     );
 
     await fireEvent.press(card);
