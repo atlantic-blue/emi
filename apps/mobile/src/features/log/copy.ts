@@ -5,6 +5,9 @@ import { words } from '../../language';
 import { flowLabel } from './FlowPicker';
 import { symptomName } from './symptomName';
 
+/** The title of the day entry, which always opens on today. */
+export const logTitleToday = words('log.title.today');
+
 /**
  * The words of the unexpected bleeding control. Two rules matter more here than anywhere else in
  * the product. Emi gives her no advice, because mid cycle bleeding is a question for a person who

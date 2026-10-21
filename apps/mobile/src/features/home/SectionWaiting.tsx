@@ -1,4 +1,4 @@
-import { colour, radius, space, textStyle } from '@emi/tokens';
+import { type IconName, colour, radius, space, textStyle } from '@emi/tokens';
 import { Icon } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -44,6 +44,11 @@ export function sectionWaitingTileTestID(section: WaitingSection): string {
   return `${sectionWaitingTestID(section)}-tile`;
 }
 
+/** The mark inside the tile. */
+export function sectionWaitingMarkTestID(section: WaitingSection): string {
+  return `${sectionWaitingTileTestID(section)}-mark`;
+}
+
 interface Props {
   readonly section: WaitingSection;
   /** The heading over it, which is the heading the filled section would have carried. */
@@ -61,7 +66,12 @@ export function SectionWaiting({ section, heading, needs, read }: Props): ReactN
   return (
     <View style={styles.section}>
       <View style={styles.tile} testID={sectionWaitingTileTestID(section)}>
-        <Icon colour={colour.secondaryText} name="lock" size={theMarkInTheTile} />
+        <Icon
+          colour={colour.secondaryText}
+          name={theMarkOf[section]}
+          size={theMarkInTheTile}
+          testID={sectionWaitingMarkTestID(section)}
+        />
       </View>
 
       <View style={styles.what}>
@@ -88,7 +98,18 @@ export function SectionWaiting({ section, heading, needs, read }: Props): ReactN
   );
 }
 
-/** Points. The lock inside the tile, drawn under the width of the tile that carries it. */
+/**
+ * The mark in each tile. The section of symptoms that come back takes the chart of the Insights tab
+ * rather than a padlock, because a padlock over a list of her symptoms reads as a feature she has
+ * to pay for.
+ */
+export const theMarkOf: Readonly<Record<WaitingSection, IconName>> = {
+  cycles: 'lock',
+  trend: 'lock',
+  patterns: 'chart',
+};
+
+/** Points. The mark inside the tile, drawn under the width of the tile that carries it. */
 const theMarkInTheTile = 20;
 
 /** Points. The tile, which is narrower than a tap target because nothing in it is pressed. */
@@ -124,7 +145,7 @@ const styles = StyleSheet.create({
     marginTop: space.spaceLg,
     padding: space.spaceLg,
   },
-  // The lock says the section is closed rather than empty, and it takes the recessed ground so it
+  // The mark says the section is not open yet rather than empty, and it takes the recessed ground so it
   // reads as part of the card rather than as a second thing on it.
   tile: {
     alignItems: 'center',

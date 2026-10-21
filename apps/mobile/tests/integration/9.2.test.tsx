@@ -9,7 +9,6 @@ import {
   fontFile,
   fontFileFor,
   hasRole,
-  phaseLabel,
   phaseNames,
   phasePalette,
   typeRoleNames,
@@ -23,6 +22,7 @@ import type { DayRecord } from '@emi/crypto';
 
 import { addDays } from '@emi/cycle';
 import { CycleRing, cycleRingTestID, ringCentreDayTestID } from '../../src/components/CycleRing';
+import { phaseFullName } from '../../src/features/cycle/copy';
 import { drawnRuns, registeredFaces, runsDrawnInAnUnloadedFace } from '../fixtures/drawnFaces';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herPhoneHolds } from '../fixtures/herPhone';
@@ -137,11 +137,11 @@ describe('a text colour below the contrast floor fails the build', () => {
       // The phase is read off the screen rather than assumed, so the case holds whichever day of
       // her own history she happens to be on.
       const shown = phaseNames.find(
-        (phase) => insideTheRing.queryByText(phaseLabel[phase]) !== null,
+        (phase) => insideTheRing.queryByText(phaseFullName(phase)) !== null,
       );
 
       expect(shown).toBeDefined();
-      expect(colourOf(insideTheRing.getByText(phaseLabel[shown ?? 'period']) as never)).toBe(
+      expect(colourOf(insideTheRing.getByText(phaseFullName(shown ?? 'period')) as never)).toBe(
         colour[phasePalette[shown ?? 'period'].ink],
       );
       expect(textDrawnOnAPhaseFill(screen.toJSON())).toEqual([]);

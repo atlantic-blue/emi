@@ -186,11 +186,7 @@ export const russian: CatalogueIn<'ru'> = {
   'export.where':
     'Файлы создаются на вашем телефоне. Вы сами выбираете, где их сохранить и кому отправить.',
 
-  // The word sits inside the sentence rather than opening it, so it is written in lower case.
-  'forecast.confidence.high': 'высокая',
-  'forecast.confidence.low': 'низкая',
-  'forecast.confidence.medium': 'средняя',
-  'forecast.confidence.sentence': 'Уверенность {word}, по вашим последним {cycles} циклам',
+  'forecast.confidence.sentence': 'По вашим последним {cycles} циклам',
   'forecast.cycleMoves': 'Ваш цикл заметно смещается, поэтому диапазон шире.',
   'forecast.cyclesWanted': {
     one: 'Нам нужен ещё {count} полный цикл, чтобы сказать, насколько мы уверены.',
@@ -257,17 +253,18 @@ export const russian: CatalogueIn<'ru'> = {
   'history.editLabel': 'Изменить месячные, начавшиеся {day}',
   'history.noCycles': 'Циклов пока нет. Отметьте день, когда шла кровь, и здесь появится запись.',
   'history.nothingRepeats':
-    'Пока ничто не повторилось за 3 цикла. Продолжайте отмечать, и мы вам покажем.',
+    'Пока ни один симптом не повторился примерно в одни и те же дни 3 циклов. Когда это случится, он появится здесь.',
   'history.pattern.cycleDay': 'Около дня {day} вашего цикла',
   'history.pattern.evidence': 'в {withIt} из ваших последних {read} циклов',
   'history.pattern.line': '{when}, {evidence}',
   'history.pattern.beforePeriod': 'Примерно за {days} до месячных',
   'history.patternsComplete': {
-    one: 'У вас завершён {count}.',
-    few: 'У вас завершено {count}.',
-    many: 'У вас завершено {count}.',
+    one: 'Пока завершён {count} цикл.',
+    few: 'Пока завершено {count} цикла.',
+    many: 'Пока завершено {count} циклов.',
   },
-  'history.patternsNeed': 'Здесь появятся симптомы, которые вы отметите в {needs} разных циклах.',
+  'history.patternsNeed':
+    'Здесь появятся симптомы, которые вы отметите примерно в одни и те же дни {needs} разных циклов.',
   'history.patterns': 'Повторяющиеся симптомы',
   'history.running': 'Текущий цикл',
   'history.runningWithPeriod': '{running} · месячные пока {periodDays}',
@@ -288,15 +285,22 @@ export const russian: CatalogueIn<'ru'> = {
   'home.loggedToday.temperature': 'температура',
   'home.loggedToday.weight': 'вес',
   'home.numbers.cycleLength': 'Последний цикл',
+  'home.numbers.cycleLength.means':
+    'От первого дня месячных до дня перед началом следующих. Ваш прогноз рассчитывается по длине ваших последних циклов.',
   'home.numbers.cycleLengthVariation': 'Разброс',
+  'home.numbers.cycleLengthVariation.means':
+    'Насколько длина ваших циклов отличается от цикла к циклу. Чем больше разница, тем шире диапазон прогноза.',
   'home.numbers.days': { one: '{count} день', few: '{count} дня', many: '{count} дней' },
   'home.numbers.fractionDays': '{days} дня',
-  'home.numbers.hers': 'Ваше',
-  'home.numbers.line': 'Опубликованную цифру приводит исследование, и оно в одном нажатии.',
+  'home.numbers.hers': 'Ваши показатели',
+  'home.numbers.line':
+    'Цифра рядом с каждым вашим показателем взята из опубликованного исследования, а не из ваших записей.',
   'home.numbers.noFigure': 'Нет цифры',
   'home.numbers.periodDuration': 'Последние месячные',
+  'home.numbers.periodDuration.means':
+    'Дни, которые вы отметили как месячные в прошлый раз. Неотмеченные дни не считаются.',
   'home.numbers.press': 'Откуда взяты эти цифры',
-  'home.numbers.published': 'Опубликовано',
+  'home.numbers.published': 'Исследование',
   'home.numbers.range': 'от {low} до {high}',
   'home.numbers.upTo': 'до {days}',
   'home.numbers.wider': 'Шире',
@@ -309,33 +313,34 @@ export const russian: CatalogueIn<'ru'> = {
     'Симптом, который вы отметили один или два раза, не закономерность, и мы не назовём его так.',
   'home.patterns.onCycleDay': 'около дня {day} вашего цикла',
   'home.patterns.press': 'Все повторяющиеся симптомы',
-  'home.phaseCard.period.day': 'Менструальная фаза, день {from}',
-  'home.phaseCard.period.days': 'Менструальная фаза, дни с {from} по {to}',
+  'home.phaseCard.estimate': 'Фаза определена приблизительно.',
+  'home.phaseCard.period.day': 'Во время месячных, день {from}',
+  'home.phaseCard.period.days': 'Во время месячных, дни с {from} по {to}',
   'home.phaseCard.period.line': 'Дни, когда идут месячные.',
-  'home.phaseCard.follicular.day': 'Фолликулярная фаза, день {from}',
-  'home.phaseCard.follicular.days': 'Фолликулярная фаза, дни с {from} по {to}',
+  'home.phaseCard.follicular.day': 'После месячных, день {from}',
+  'home.phaseCard.follicular.days': 'После месячных, дни с {from} по {to}',
   'home.phaseCard.follicular.line': 'Дни после месячных, до овуляции.',
   'home.phaseCard.more': 'Что можно чувствовать и как себе помочь.',
-  'home.phaseCard.ovulation.day': 'Фаза овуляции, день {from}',
-  'home.phaseCard.ovulation.days': 'Фаза овуляции, дни с {from} по {to}',
+  'home.phaseCard.ovulation.day': 'В дни овуляции, день {from}',
+  'home.phaseCard.ovulation.days': 'В дни овуляции, дни с {from} по {to}',
   'home.phaseCard.ovulation.line': 'Энергии обычно больше всего.',
-  'home.phaseCard.luteal.day': 'Лютеиновая фаза, день {from}',
-  'home.phaseCard.luteal.days': 'Лютеиновая фаза, дни с {from} по {to}',
+  'home.phaseCard.luteal.day': 'Перед месячными, день {from}',
+  'home.phaseCard.luteal.days': 'Перед месячными, дни с {from} по {to}',
   'home.phaseCard.luteal.line': 'Дни после овуляции, до следующих месячных.',
   'home.roundAction.sex': 'Секс',
   'home.roundAction.period': 'Месячные',
   'home.roundAction.phase': 'О фазе',
   // График её последних полных циклов на опубликованном диапазоне. Подпись и фраза под ним
   // считают циклы, которые нарисовал график, поэтому женщина с тремя никогда не прочитает шесть.
-  'home.trend.allInside': 'Все ваши последние {cycles} попали внутрь полосы.',
+  'home.trend.allInside': 'Все ваши последние {cycles} были в этом диапазоне.',
   'home.trend.caption':
-    'Ваши последние {cycles}. Затенённая полоса показывает опубликованный диапазон.',
+    'Продолжительность ваших последних циклов: {cycles}. Затенённая полоса показывает диапазон из опубликованного исследования.',
   'home.trend.cycleCount': {
     one: '{count} полный цикл',
     few: '{count} полных цикла',
     many: '{count} полных циклов',
   },
-  'home.trend.outside': '{outside} из ваших последних {cycles} попали за пределы полосы.',
+  'home.trend.outside': '{outside} из ваших последних {cycles} были вне этого диапазона.',
   'home.trend.press': 'Все циклы',
   'home.waiting.cycles.heading': 'Ваши циклы',
   'home.waiting.cycles.needs': 'Ваши числа появятся со вторыми месячными.',
@@ -655,6 +660,7 @@ export const russian: CatalogueIn<'ru'> = {
   'log.temperature.heading': 'Температура после сна',
   'log.temperature.hint': 'Измеряйте до того, как встанете.',
   /** The invitation the voice sets, which asks rather than labels. */
+  'log.title.today': 'Запись за сегодня',
   'log.unexpected.invitation': 'Это не месячные? Отметьте это. Это не будет началом цикла.',
   'log.unexpected.mark': 'Это не месячные',
   /** What her mark did, said as the arithmetic behaves rather than as a reassurance. */
@@ -670,6 +676,8 @@ export const russian: CatalogueIn<'ru'> = {
   'lostKey.working': 'Удаляем',
   'onboarding.back': 'Назад',
   'onboarding.birthYear.action': 'Дальше',
+  'onboarding.birthYear.line.why':
+    'Сейчас Emi никак не использует год рождения. Этот вопрос можно пропустить.',
   'onboarding.birthYear.title': 'В каком году вы родились?',
   'onboarding.birthYear.year': '{year} год',
   'onboarding.cycleLength.action': 'Дальше',
@@ -717,18 +725,19 @@ export const russian: CatalogueIn<'ru'> = {
   },
   'onboarding.firstForecast.noDate.title': 'У Emi нет даты для отсчёта',
   'onboarding.firstForecast.stillLearning': 'Ещё учится',
-  'onboarding.firstForecast.title': 'Ваши следующие месячные',
+  'onboarding.firstForecast.title': 'Месячные могут начаться',
   'onboarding.firstForecast.why.counts': {
-    one: 'Пока их меньше {needs}, Emi отсчитывает от ваших последних месячных указанную вами длину: {count} день.',
-    few: 'Пока их меньше {needs}, Emi отсчитывает от ваших последних месячных указанную вами длину: {count} дня.',
-    many: 'Пока их меньше {needs}, Emi отсчитывает от ваших последних месячных указанную вами длину: {count} дней.',
+    one: 'Emi отсчитала от начала ваших последних месячных указанную вами длину цикла: {count} день.',
+    few: 'Emi отсчитала от начала ваших последних месячных указанную вами длину цикла: {count} дня.',
+    many: 'Emi отсчитала от начала ваших последних месячных указанную вами длину цикла: {count} дней.',
   },
-  'onboarding.firstForecast.why.read': {
-    one: 'У Emi есть {count} полный цикл.',
-    few: 'У Emi есть {count} полных цикла.',
-    many: 'У Emi есть {count} полных циклов.',
+  'onboarding.firstForecast.why.fromCycles': {
+    one: 'Emi рассчитала примерные даты по вашим последним {count} циклу.',
+    few: 'Emi рассчитала примерные даты по вашим последним {count} циклам.',
+    many: 'Emi рассчитала примерные даты по вашим последним {count} циклам.',
   },
   'onboarding.firstForecast.why.title': 'Почему несколько дат?',
+  'onboarding.firstForecast.why.varies': 'Дата начала может меняться от цикла к циклу.',
   'onboarding.firstForecast.why.width': {
     one: 'Диапазон идёт на {count} день в обе стороны от этого дня.',
     few: 'Диапазон идёт на {count} дня в обе стороны от этого дня.',
@@ -739,10 +748,11 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.focus.title': 'Что из этого меняется вместе с циклом?',
   'onboarding.goals.action': 'Дальше',
   'onboarding.goals.choice.doctorRecord': 'Собирать записи для врача',
-  'onboarding.goals.choice.fertileWindow': 'Видеть фертильное окно, как оценку',
+  'onboarding.goals.choice.fertileWindow': 'Следить за овуляцией',
   'onboarding.goals.choice.forecast': 'Знать, когда ждать месячные',
-  'onboarding.goals.choice.symptoms': 'Понимать свои симптомы',
+  'onboarding.goals.choice.symptoms': 'Отслеживать самочувствие',
   'onboarding.goals.line.chooseAll': 'Можно выбрать несколько вариантов.',
+  'onboarding.goals.line.ovulation': 'Даты примерные. Emi не является средством контрацепции.',
   'onboarding.goals.title': 'Чем Emi может быть вам полезна?',
   'onboarding.lastPeriod.earlier': 'Раньше',
   'onboarding.lastPeriod.earlierMonth': 'Предыдущий месяц',
@@ -775,18 +785,24 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.periodLength.title': 'Сколько дней обычно длятся месячные?',
   'onboarding.regularity.action': 'Дальше',
   'onboarding.regularity.choice.moves': 'Нет, длина цикла меняется',
-  'onboarding.regularity.choice.regular': 'Да, почти каждый месяц',
+  'onboarding.regularity.choice.regular': 'Да, примерно через одинаковое число дней',
   'onboarding.regularity.choice.unknown': 'Пока не знаю',
   'onboarding.regularity.line.explains': 'Ответ поможет Emi понятнее объяснять прогноз.',
+  'onboarding.regularity.line.sameDays':
+    'Месячные начинаются примерно через одинаковое число дней.',
   'onboarding.regularity.title': 'Ваш цикл обычно регулярный?',
   'onboarding.reminder.action': 'Включить напоминания',
   'onboarding.reminder.choice.onTheDay': 'В день предполагаемого начала',
   'onboarding.reminder.choice.oneDayBefore': 'За 1 день',
   'onboarding.reminder.choice.twoDaysBefore': 'За 2 дня',
-  'onboarding.reminder.line.onTheDay': 'В день, когда начинается диапазон.',
-  'onboarding.reminder.line.oneDayBefore': 'За один день до начала диапазона.',
-  'onboarding.reminder.line.twoDaysBefore': 'За два дня до начала диапазона.',
+  'onboarding.reminder.line.onTheDay':
+    'Напоминание придёт в {hour} утра. Месячные могут начаться в этот же день.',
+  'onboarding.reminder.line.oneDayBefore':
+    'Напоминание придёт в {hour} утра. Месячные могут начаться на следующий день.',
+  'onboarding.reminder.line.twoDaysBefore':
+    'Напоминание придёт в {hour} утра. Месячные могут начаться примерно через 2 дня.',
   'onboarding.reminder.notNow': 'Не сейчас',
+  'onboarding.reminder.question': 'Когда вам напомнить о месячных?',
   'onboarding.reminder.title': 'Напомнить о приближении месячных?',
   'onboarding.skip': 'Пропустить',
   'onboarding.start.action': 'Сохранить и начать',
@@ -799,7 +815,7 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.today.action': 'Сохранить запись',
   'onboarding.today.allSymptoms': 'Все симптомы',
   'onboarding.today.nothingToAdd': 'Нечего добавить',
-  'onboarding.today.question': 'Это можно пропустить.',
+  'onboarding.today.question': 'Отметьте всё, что подходит.',
   'onboarding.today.title': 'Как вы себя чувствуете сегодня?',
   'onboarding.tour.price.line': 'Первый месяц бесплатно, затем 29,99 фунта в год.',
   'onboarding.tour.price.title': 'Ваше, и остаётся вашим',
@@ -816,26 +832,27 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.tour.skip': 'Пропустить',
   'onboarding.welcome.action': 'Начать',
   'onboarding.welcome.line.noAccount': 'Emi не просит регистрации, почты и пароля.',
-  'onboarding.welcome.line.onThisPhone': 'Ваш цикл считается на этом телефоне.',
   'onboarding.welcome.line.whatEmiIs':
-    'Emi показывает то, что говорят ваши собственные записи, и ничего больше. Emi не является средством контрацепции. Emi не является медицинским изделием.',
-  'onboarding.welcome.title': 'Emi изучает ваш цикл. Ваши данные остаются у вас.',
+    'Emi не заменяет консультацию врача. Emi не является средством контрацепции. Emi не является медицинским изделием.',
+  'onboarding.welcome.line.whatYouLog':
+    'Отмечайте месячные и самочувствие, чтобы лучше понимать свой цикл.',
+  'onboarding.welcome.title': 'Ваш цикл и самочувствие в одном месте.',
   'onboarding.whatEmiDoes.action': 'Дальше',
-  'onboarding.whatEmiDoes.forecast.line': 'Диапазон и то, насколько Emi уверена',
+  'onboarding.whatEmiDoes.forecast.line': 'Примерные даты начала месячных по вашим записям',
   'onboarding.whatEmiDoes.forecast.title': 'Прогноз',
   'onboarding.whatEmiDoes.log.and': 'и',
   'onboarding.whatEmiDoes.log.chosen': {
-    one: 'Ваша запись сначала показывает группу, которую вы выбрали: {groups}.',
-    few: 'Ваша запись сначала показывает группы, которые вы выбрали: {groups}.',
-    many: 'Ваша запись сначала показывает группы, которые вы выбрали: {groups}.',
+    one: 'Сначала будет показан выбранный вами раздел: {groups}.',
+    few: 'Сначала будут показаны выбранные вами разделы: {groups}.',
+    many: 'Сначала будут показаны выбранные вами разделы: {groups}.',
   },
   'onboarding.whatEmiDoes.log.line': 'Что вы видите первым',
   'onboarding.whatEmiDoes.log.title': 'Дневник',
   'onboarding.whatEmiDoes.log.usual':
-    'Ваша запись открывается в обычном порядке. Первыми идут: {groups}.',
+    'Дневник открывается в обычном порядке. Первыми идут: {groups}.',
   'onboarding.whatEmiDoes.privacy.line': 'Только вы можете это читать',
   'onboarding.whatEmiDoes.privacy.title': 'Ваша приватность',
-  'onboarding.whatEmiDoes.title': 'Вот что Emi делает с тем, что вы рассказали',
+  'onboarding.whatEmiDoes.title': 'Ваши настройки в Emi',
 
   'ovulation.popup.line':
     'Emi хранит то, что вы заметили, вместе с сегодняшним днём, и это попадает в ваш экспорт. Выберите всё, что подходит.',
@@ -941,41 +958,47 @@ export const russian: CatalogueIn<'ru'> = {
   'phase.estimate.learning': 'Это оценка по длине цикла, которую вы указали.',
   'phase.guide.body': 'Тело',
   'phase.guide.close': 'Закрыть',
+  'phase.guide.everyone':
+    'Ощущения у всех разные. Если симптомы мешают обычной жизни, обсудите их с врачом.',
   'phase.guide.follicular.body':
-    'Энергия часто растёт день за днём. Выделения могут стать заметнее.',
+    'Силы часто возвращаются день за днём. Выделения могут стать заметнее.',
   'phase.guide.follicular.food':
-    'Свежая еда, белок и клетчатка помогают, пока возвращается энергия. Ешьте регулярно.',
+    'Свежая еда и регулярное питание могут помочь, пока возвращаются силы.',
   'phase.guide.follicular.mood':
-    'Многие чувствуют себя легче и любопытнее после месячных. Хорошее время, чтобы начать новое.',
+    'После месячных может стать легче. Хорошее время, чтобы начать что-то новое.',
   'phase.guide.follicular.training':
-    'Многие могут сейчас тренироваться интенсивнее. Наращивайте нагрузку постепенно, с хорошей разминкой.',
+    'Может хотеться больше движения. Увеличивайте нагрузку постепенно.',
   'phase.guide.food': 'Аппетит',
   'phase.guide.luteal.body':
-    'Некоторые замечают вздутие, чувствительность груди или изменения кожи перед месячными.',
+    'Возможны вздутие и болезненность груди. Выбирайте удобную одежду, которая не давит.',
   'phase.guide.luteal.food':
-    'Тяга к еде бывает часто. Регулярное питание с цельными злаками и белком помогает чувствовать себя ровнее.',
+    'Может сильнее хотеться есть или тянуть на сладкое. Старайтесь есть регулярно.',
   'phase.guide.luteal.mood':
-    'Одни чувствуют себя спокойнее, другие к концу становятся чувствительнее. Оставьте запас в своих планах.',
+    'Может появиться раздражительность или тревога. Если чувствуете перегрузку, сделайте паузу.',
   'phase.guide.luteal.training':
-    'Ровные умеренные тренировки обычно даются лучше всего. Отдыхайте больше, если чувствуете усталость.',
+    'Ориентируйтесь на самочувствие. Если устали, снизьте нагрузку или отдохните.',
   'phase.guide.mood': 'Настроение',
   'phase.guide.open': 'Что можно чувствовать и как себе помочь',
   'phase.guide.ovulation.body':
     'Некоторые чувствуют короткую боль внизу живота с одной стороны или замечают прозрачные тянущиеся выделения.',
   'phase.guide.ovulation.food':
-    'Свежие овощи, клетчатка и достаточно воды помогают на пике эстрогена. Ешьте регулярно.',
+    'Аппетит может меняться. Старайтесь есть регулярно и пить достаточно воды.',
   'phase.guide.ovulation.mood':
-    'Многие сейчас общительнее и увереннее. Планируйте разговоры и встречи, которым нужна энергия.',
+    'Может хотеться больше общаться, и появляется уверенность. Хорошее время для встреч с людьми.',
   'phase.guide.ovulation.training':
-    'Сила и скорость часто на пике. Хорошее время для более тяжёлых тренировок, с хорошей разминкой.',
+    'Сил часто больше. Если чувствуете себя хорошо, попробуйте нагрузку посильнее, с хорошей разминкой.',
   'phase.guide.period.body':
-    'Спазмы, боль в пояснице или усталость бывают часто. Отдыхайте, когда нужно.',
+    'Возможны боль внизу живота, боль в пояснице или усталость. Могут помочь тепло и отдых.',
   'phase.guide.period.food':
-    'Тёплая регулярная еда и достаточно воды помогают чувствовать себя ровнее.',
+    'Аппетит может меняться. Могут помочь тёплая еда, регулярное питание и достаточно воды.',
   'phase.guide.period.mood':
-    'Некоторые в первые дни чувствуют усталость или упадок настроения. По возможности планируйте день поспокойнее.',
+    'В первые дни может быть усталость или упадок настроения. По возможности планируйте день поспокойнее.',
   'phase.guide.period.training':
-    'Мягкое движение, например прогулка или растяжка, обычно даётся лучше всего. Делайте то, что подходит вам.',
+    'Ориентируйтесь на самочувствие. Спокойная прогулка или растяжка обычно даются легко.',
+  'phase.guide.title.follicular': 'После месячных: что может помочь',
+  'phase.guide.title.luteal': 'Перед месячными: что может помочь',
+  'phase.guide.title.ovulation': 'В дни овуляции: что может помочь',
+  'phase.guide.title.period': 'Во время месячных: что может помочь',
   'phase.guide.training': 'Движение',
   'phase.name.follicular': 'Фолликулярная фаза',
   'phase.name.luteal': 'Лютеиновая фаза',
@@ -985,6 +1008,7 @@ export const russian: CatalogueIn<'ru'> = {
   'phase.past.heading.luteal': 'В ваших прошлых лютеиновых фазах',
   'phase.past.heading.ovulation': 'В ваших прошлых фазах овуляции',
   'phase.past.heading.period': 'В ваших прошлых менструальных фазах',
+  'phase.past.heading.waiting': 'Здесь появятся ваши наблюдения',
   'phase.past.nothing': 'Вы пока ничего не отмечали из этого дневника в этих фазах.',
   'phase.past.one': {
     one: 'Вы отметили «{first}» в {firstCount} из {count} цикла.',
@@ -1019,9 +1043,7 @@ export const russian: CatalogueIn<'ru'> = {
   'recovery.confirm.wrong': 'Не совпадает. Посмотрите на бумагу и попробуйте снова.',
   'recovery.step': 'Шаг {step} из {of}',
 
-  'reminder.notification.onTheDay': 'Ваш прогноз начинается сегодня.',
-  'reminder.notification.oneDayBefore': 'Ваш прогноз начинается завтра.',
-  'reminder.notification.twoDaysBefore': 'Ваш прогноз начинается через два дня.',
+  'reminder.notification': 'Напоминание от Emi',
   'settings.answer.back': 'Назад',
   'settings.answer.cancel': 'Отмена',
   'settings.answer.gaveAtFirstRun': 'В начале вы сказали нам {answer}.',
@@ -1191,7 +1213,7 @@ export const russian: CatalogueIn<'ru'> = {
   'symptom.vulval-pain': 'Боль в области вульвы',
   'symptom.weak': 'Слабость',
   'tab.insights': 'Обзор',
-  'tab.log': 'Запись',
+  'tab.log': 'Дневник',
   'tab.privacy': 'Приватность',
   'tab.today': 'Сегодня',
 };

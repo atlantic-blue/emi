@@ -36,6 +36,7 @@ import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-nativ
 import Svg, { Circle, Defs, Line, Path, Text as SvgText, TextPath } from 'react-native-svg';
 
 import {
+  phaseFullName,
   phaseName,
   ringAboutLengthWords,
   ringCycleLengthWords,
@@ -275,7 +276,7 @@ function NamedRing({
           style={[styles.phase, { color: colour[phasePalette[geometry.phase].ink] }]}
           testID={ringCentrePhaseTestID}
         >
-          {today}
+          {phaseFullName(geometry.phase)}
         </Text>
         <Text style={styles.dayAsTheSubject} testID={ringCentreDayTestID}>
           {ringDayNumberWords(day)}

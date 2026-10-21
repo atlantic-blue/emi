@@ -16,7 +16,8 @@ interface Props {
 
 /**
  * The year she was born, and the one question in Emi whose answer nothing reads. Contract
- * SCREEN-1 names it as the exception.
+ * SCREEN-1 names it as the exception, and the line under the wheel says so rather than giving her a
+ * reason the code does not have.
  *
  * The wheel runs newest first and opens part way down, on the year thirty years back from this
  * one. A list that opened on 1940, or on the newest year it offers, would ask most women to travel

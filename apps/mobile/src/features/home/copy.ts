@@ -58,6 +58,16 @@ export const measurementName: Readonly<Record<PublishedMeasurement, string>> = {
   'period-duration': words('home.numbers.periodDuration'),
 };
 
+/**
+ * One line under each measurement, which says what the number is counted from and what it changes
+ * for her. Each one is true of the arithmetic that fills the row, and none of them judges the number.
+ */
+export const measurementMeaning: Readonly<Record<PublishedMeasurement, string>> = {
+  'cycle-length': words('home.numbers.cycleLength.means'),
+  'cycle-length-variation': words('home.numbers.cycleLengthVariation.means'),
+  'period-duration': words('home.numbers.periodDuration.means'),
+};
+
 function days(count: number): string {
   return words('home.numbers.days', count);
 }
@@ -122,6 +132,9 @@ const thePhaseCardKeys: Readonly<
 
 /** The way on from the phase card, after the sentence about the phase. */
 export const phaseCardMore = words('home.phaseCard.more');
+
+/** Said on the card before the way on, because no phase is measured: each one is worked out. */
+export const phaseCardEstimate = words('home.phaseCard.estimate');
 
 /** The two lines of the phase card: the phase and its days, then one sentence about it. */
 export function phaseCardWords(

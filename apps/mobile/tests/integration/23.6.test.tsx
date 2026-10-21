@@ -94,8 +94,9 @@ const theDeleteScreenSays = {
 /** What the insights screen says while it has nothing of hers to show. */
 const theInsightsScreenSays = {
   noCycles: 'No cycles yet. Log a day you bled and this fills in.',
-  nothingRepeats: "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
-  patternsNeed: "We'll point out a symptom once it's come back in 3 cycles.",
+  nothingRepeats:
+    'No symptom has come back at about the same point in 3 cycles yet. If one does, it will show here.',
+  patternsNeed: 'Symptoms you log at about the same point in 3 different cycles will show here.',
   quoted: "Each figure is quoted in the paper's own words, so you can check it for yourself.",
 };
 
@@ -139,7 +140,8 @@ const theWordsUnderTheirKeys: Readonly<Record<string, string>> = {
   'export.forAnApplicationLine': theExportScreenSays.forAnApplicationLine,
   'history.noCycles': theInsightsScreenSays.noCycles,
   'history.nothingRepeats': theInsightsScreenSays.nothingRepeats,
-  'history.patternsNeed': "We'll point out a symptom once it's come back in {needs} cycles.",
+  'history.patternsNeed':
+    'Symptoms you log at about the same point in {needs} different cycles will show here.',
   'lock.locked.line': theLockSays.line,
   'lock.locked.refused': theLockSays.refused,
   'lock.locked.title': theLockSays.title,

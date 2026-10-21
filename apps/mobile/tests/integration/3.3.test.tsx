@@ -7,7 +7,7 @@ import {
   nextPeriodConfidenceTestID,
   nextPeriodRangeTestID,
 } from '../../src/features/forecast/NextPeriod';
-import { confidenceWords, forecastCopy, ordinal } from '../../src/features/forecast/copy';
+import { forecastCopy, ordinal } from '../../src/features/forecast/copy';
 import {
   genuinelyIrregular,
   oneLongCycle,
@@ -40,28 +40,28 @@ const sixRegularCycles: WhatSheSees = {
   recorded: 'six cycles of 28 days',
   set: veryRegular,
   range: 'Between the 19th and the 21st of July',
-  confidence: 'High confidence, based on your last 6 cycles',
+  confidence: 'Based on your last 6 cycles',
 };
 
 const oneLongCycleAmongSix: WhatSheSees = {
   recorded: 'the same six cycles with one of 40 days among them',
   set: oneLongCycle,
   range: 'Between the 27th of July and the 6th of August',
-  confidence: 'Medium confidence, based on your last 6 cycles',
+  confidence: 'Based on your last 6 cycles',
 };
 
 const sixIrregularCycles: WhatSheSees = {
   recorded: 'six cycles running from 24 days to 41 days',
   set: genuinelyIrregular,
   range: 'Between the 6th and the 18th of August',
-  confidence: 'Low confidence, based on your last 6 cycles',
+  confidence: 'Based on your last 6 cycles',
 };
 
 const twoCyclesAndNoMore: WhatSheSees = {
   recorded: 'two cycles and nothing before them',
   set: twoCyclesExactly,
   range: 'Between the 27th and the 29th of May',
-  confidence: 'High confidence, based on your last 2 cycles',
+  confidence: 'Based on your last 2 cycles',
 };
 
 const whatSheSees: readonly WhatSheSees[] = [
@@ -117,7 +117,7 @@ describe('the forecast is never shown as a single day', () => {
     });
   });
 
-  describe('how sure Emi says it is', () => {
+  describe('what the range is based on', () => {
     for (const shown of whatSheSees) {
       it(`reads ${shown.confidence.toLowerCase()}, from ${shown.recorded}`, async () => {
         await sheOpensTheForecast(shown.set);
@@ -127,15 +127,14 @@ describe('the forecast is never shown as a single day', () => {
     }
 
     for (const shown of whatSheSees) {
-      it(`is a word and never a percentage, from ${shown.recorded}`, async () => {
+      it(`names no confidence word and never a percentage, from ${shown.recorded}`, async () => {
         await sheOpensTheForecast(shown.set);
         const words = theWordsOnTheScreen();
 
         expect(words).not.toContain('%');
         expect(words).not.toMatch(/percent/i);
-        expect(Object.values(confidenceWords).filter((word) => words.includes(word))).toHaveLength(
-          1,
-        );
+        expect(words).not.toMatch(/confidence/i);
+        expect(words).not.toMatch(/\b(high|medium|low)\b/i);
       });
     }
 

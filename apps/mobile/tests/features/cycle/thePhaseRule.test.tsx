@@ -9,6 +9,7 @@ import { AccessibilityInfo } from 'react-native';
 import { cycleRingTestID } from '../../../src/components/CycleRing';
 import { listCycles } from '../../../src/data/cycleRepository';
 import { theDayPhaseOn } from '../../../src/features/calendar/herMonthPhases';
+import { phaseFullName } from '../../../src/features/cycle/copy';
 import { recordedDays } from '../../../src/features/cycle/rebuild';
 import { type RingInputFrom, ringInputFor } from '../../../src/features/cycle/ringInput';
 import { resetExpoSqlite } from '../../data/expoSqlite';
@@ -71,7 +72,7 @@ async function sheOpensTodayOn(cycleDay: number): Promise<void> {
 }
 
 function theRingCentreNames(phase: PhaseName): void {
-  expect(within(screen.getByTestId(cycleRingTestID)).getByText(phaseLabel[phase])).toBeTruthy();
+  expect(within(screen.getByTestId(cycleRingTestID)).getByText(phaseFullName(phase))).toBeTruthy();
 }
 
 beforeEach(() => {
@@ -112,7 +113,7 @@ describe('the phase Today names in the centre of the ring', () => {
     await sheOpensTodayOn(11);
 
     expect(
-      within(screen.getByTestId(cycleRingTestID)).queryByText(phaseLabel.ovulation),
+      within(screen.getByTestId(cycleRingTestID)).queryByText(phaseFullName('ovulation')),
     ).toBeNull();
   });
 });

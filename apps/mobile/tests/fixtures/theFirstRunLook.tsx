@@ -282,17 +282,11 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put the step above the drop, and the redesign canvas puts the drop above the step.
   // The canvas is the later drawing, so the welcome follows it.
   welcome: 1,
-  // The mockups put the hint under the goals. The redesign canvas puts it under the title, so the
-  // goals follow the canvas.
-  goals: 1,
-  // The mockups put a line under the year. The redesign canvas draws no line there, only the
-  // promise at the foot, so the year follows the canvas.
-  yearOfBirth: 1,
-  // The mockups put a line under the tiles. The redesign canvas puts "You can skip this." under the
+  // The mockups put a line under the tiles. The redesign canvas puts the question line under the
   // title and only the promise under the tiles, so today follows the canvas.
   todayFirstRun: 1,
   // The mockups put the sample under the question and "Not now" over the button. The redesign
-  // canvas puts the sample at the top and "Not now" under "Remind me", so the reminder follows it.
+  // canvas puts the sample at the top and "Not now" under "Turn on reminders", so the reminder follows it.
   reminder: 2,
   // The mockups put a card about this phone under the why card. The first run no longer draws it,
   // because the welcome links to the page that says who can see her records.
