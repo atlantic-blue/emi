@@ -2,9 +2,9 @@
 
 Each version lists what changed for the person who uses Emi. The version is `expo.version` in `apps/mobile/app.json`. The store build number goes up by itself on each build, and a released version names the build it shipped as.
 
-## Unreleased
+## 0.2.0 (21 October 2026)
 
-The changes from the beta feedback of 16 and 17 October 2026. They are on main and in no build yet.
+The changes from the beta feedback of 16 and 17 October 2026.
 
 ### Added
 
