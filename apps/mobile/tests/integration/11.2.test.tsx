@@ -35,7 +35,7 @@ import { openTestDatabase } from '../data/nodeDatabase';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -203,7 +203,7 @@ describe('she gives her name and the home screen greets her by it', () => {
         name: herName,
         birthYear: herBirthYear,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(await herProfile()).toMatchObject({ name: herName, birthYear: herBirthYear });
       expect(app.pathname()).toBe('/');
@@ -221,7 +221,7 @@ describe('she gives her name and the home screen greets her by it', () => {
         periodStartedOn: herPeriodStarted,
         name: `  ${herName}  `,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herProfile())?.name).toBe(herName);
       expect(screen.getByTestId(homeGreetingTestID)).toHaveTextContent(greeting(herName));
@@ -233,7 +233,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = await herProfile();
       expect(Object.keys(held ?? {}).sort()).toEqual(['cycleLengthDays', 'kind', 'recordedAt']);
@@ -243,7 +243,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
       expect(screen.getByTestId(homeGreetingTestID)).toHaveTextContent(theGreetingWithNoName);
@@ -270,7 +270,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herProfile())?.birthYear).toBeUndefined();
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
@@ -297,7 +297,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect((await herProfile())?.name).toBeUndefined();
       expect(screen.getByTestId(homeGreetingTestID)).toHaveTextContent(theGreetingWithNoName);

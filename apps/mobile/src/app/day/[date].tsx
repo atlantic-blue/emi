@@ -161,6 +161,7 @@ export default function DayRoute(): ReactNode {
       onMark={mark}
       onOpenGroup={(group: SymptomGroup) => openTheSymptoms(symptomsOfAGroup(group))}
       onPick={pick}
+      onOtherDischarge={() => router.push(periodAddress(day))}
       onSearch={() => openTheSymptoms(symptomsBySearch(hers))}
       onToggleSymptom={(slug) => writeTheSymptoms(held.filter((each) => each !== slug))}
       ring={ringNow(database, vault, profiles, today)}

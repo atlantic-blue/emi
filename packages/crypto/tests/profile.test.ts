@@ -1,4 +1,5 @@
 import { symptomGroups, type SymptomGroup } from '@emi/cycle';
+import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 
 import { canonicalJson } from '../src/canonical';
 import {
@@ -18,6 +19,7 @@ import {
   checkedProfile,
   earliestBirthYear,
   feelingValues,
+  focusAsItReadsNow,
   focusValues,
   goalValues,
   longestCycleLengthDays,
@@ -344,7 +346,7 @@ describe('the plaintext of a profile', () => {
   });
 
   describe('what she wants watched', () => {
-    it('accepts all six groups at once', () => {
+    it('accepts all seven groups at once', () => {
       expect(problemsWith({ focus: [...focusValues] })).toEqual([]);
     });
 
@@ -377,7 +379,7 @@ describe('the plaintext of a profile', () => {
         : never = true;
 
       expect(everyValueIsListed).toBe(true);
-      expect(focusValues).toHaveLength(6);
+      expect(focusValues).toHaveLength(7);
     });
   });
 
@@ -424,6 +426,63 @@ describe('the plaintext of a profile', () => {
       const older = new TextEncoder().encode('{"cycleLengthDays":90,"kind":"profile"}');
 
       expect(profileFromBytes(older)).toEqual({ cycleLengthDays: 90, kind: 'profile' });
+    });
+  });
+
+  describe('a profile sealed while digestion was one group', () => {
+    const sealedBeforeTheSplit = new TextEncoder().encode(
+      '{"focus":["sleep","digestion","pain"],"kind":"profile","recordedAt":"2026-09-23T09:14:00.000Z"}',
+    );
+
+    it('opens with appetite and digestive symptoms where digestion stood', () => {
+      expect(profileFromBytes(sealedBeforeTheSplit).focus).toEqual([
+        'sleep',
+        'appetite',
+        'digestive',
+        'pain',
+      ]);
+    });
+
+    it('reads the same when it is pulled off the server', () => {
+      const pulled = pulledFromBytes(sealedBeforeTheSplit);
+
+      expect(pulled.kind === 'profile' && pulled.profile.focus).toEqual([
+        'sleep',
+        'appetite',
+        'digestive',
+        'pain',
+      ]);
+    });
+
+    it('seals again with both groups and nothing lost', () => {
+      const opened = profileFromBytes(sealedBeforeTheSplit);
+
+      expect(profileJson(opened, { now: theDaySheAnswered })).toContain(
+        '"focus":["sleep","appetite","digestive","pain"]',
+      );
+    });
+
+    it('keeps a group once when she had also chosen it on its own', () => {
+      expect(focusAsItReadsNow(['appetite', 'digestion'])).toEqual(['appetite', 'digestive']);
+    });
+
+    it('is never sealed as digestion again', () => {
+      expect(refusedFor({ focus: ['digestion'] })).toContain('these are not: "digestion"');
+    });
+
+    it('opens and seals again inside a real envelope', () => {
+      const nonce = fixedRandom(24);
+      const sealed = xchacha20poly1305(aKey(), nonce).encrypt(sealedBeforeTheSplit);
+      const envelope = new Uint8Array([1, ...nonce, ...sealed]);
+      const opened = openProfile(envelope, aKey());
+
+      expect(opened.focus).toEqual(['sleep', 'appetite', 'digestive', 'pain']);
+      expect(
+        openProfile(
+          sealProfile(opened, aKey(), { random: fixedRandom, now: theDaySheAnswered }),
+          aKey(),
+        ),
+      ).toEqual(opened);
     });
   });
 

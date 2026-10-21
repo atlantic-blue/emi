@@ -150,16 +150,13 @@ const theScreensOfTheQuestions: readonly string[] = [
   'today',
 ];
 
-/** The one line that names Emi on purpose, because the product's name is the point of it. */
-const theGreeting = 'onboarding.welcome.title';
-
 /**
  * The screens the redesign has redrawn are written as the design writes them, and the design names
  * Emi in them by name: the welcome, the question about her name, the line about encryption, and
  * the lines under her period length and her regularity.
  */
 const theWelcomeNamingEmi = [
-  'onboarding.feeling.line.talks',
+  'onboarding.feeling.line.hard',
   'onboarding.focus.line.first',
   'onboarding.goals.title',
   'onboarding.name.line.greets',
@@ -168,7 +165,6 @@ const theWelcomeNamingEmi = [
   'onboarding.regularity.line.explains',
   'onboarding.welcome.line.noAccount',
   'onboarding.welcome.line.whatEmiIs',
-  theGreeting,
   'pastPeriods.line.forecast',
 ];
 
@@ -355,6 +351,7 @@ describe('the first run questions use her name and reply to her answers', () => 
         <OnAPhone>
           <Today
             chosen={[]}
+            onAllSymptoms={() => undefined}
             onBack={() => undefined}
             onPress={() => undefined}
             onSave={() => undefined}

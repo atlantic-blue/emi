@@ -35,9 +35,9 @@ flowchart LR
   T -- "Skip" --> N
 ```
 
-- The welcome is the first screen. It says "Emi learns your cycle. You keep your data." and three
-  lines: the cycle is worked out on this phone, there is no account, and what Emi is not, with the
-  two denials.
+- The welcome is the first screen. It says "Your cycle and how you feel, in one place." and three
+  lines: she can log her periods and how she feels, there is no account, and what Emi is not: it
+  does not replace a doctor's advice, with the two denials after it.
 - The welcome does not say "Nothing is sent anywhere". The delete sends a request to the server, so
   the sentence is not true.
 - The tour is one card: the ring at day 12 of a 29 day cycle with every arc at full colour, a

@@ -5,6 +5,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton, TextLink } from '../../components/Button';
+import { Chip } from '../../components/Chip';
 import { NumberWheel } from '../../components/NumberWheel';
 import { Calendar } from '../onboarding/Calendar';
 import { pastPeriodLengthSaid, pastPeriodNumberSaid, pastPeriodsCopy } from './copy';
@@ -14,6 +15,7 @@ import {
   pastPeriodLengthOpensOn,
   pastPeriodLengthsOffered,
   startIsInRangeAt,
+  stillGoingCanStartOn,
 } from './pastPeriods';
 
 export const pastPeriodPickerTestID = 'past-period-picker';
@@ -24,6 +26,8 @@ export const pastPeriodPickerCancelTestID = 'past-period-picker-cancel';
 export const pastPeriodPickerRefusedTestID = 'past-period-picker-refused';
 export const pastPeriodLengthWheelTestID = 'past-period-length-wheel';
 export const pastPeriodLengthPillTestID = 'past-period-length-pill';
+export const pastPeriodStillGoingTestID = 'past-period-still-going';
+export const pastPeriodStillGoingRefusedTestID = 'past-period-still-going-refused';
 
 /** The row for one length, named so a test presses the length rather than a place on the wheel. */
 export function pastPeriodLengthTestID(days: number): string {
@@ -32,6 +36,17 @@ export function pastPeriodLengthTestID(days: number): string {
 
 /** Days. Where the month of a row under another opens: one usual cycle before the row above. */
 const USUAL_CYCLE_DAYS = 28;
+
+/** How long a period ran: a number of days, or still going, which only the newest one can be. */
+type PeriodRun = number | 'still-going';
+
+function theRunOf(period: PastPeriod | undefined): PeriodRun | undefined {
+  if (period === undefined) {
+    return undefined;
+  }
+
+  return period.lengthDays ?? 'still-going';
+}
 
 /** The page under the sheet is dimmed with the ink of the text, at this much of its strength. */
 const SHADE = 0.42;
@@ -47,6 +62,8 @@ interface Props {
   /** Takes the row off. Offered only on a row she already gave. */
   readonly onRemove: () => void;
   readonly onCancel: () => void;
+  /** Offers "Still going" on the newest row. The first run offers it, for a period that has begun. */
+  readonly newestCanBeStillGoing?: boolean;
 }
 
 /**
@@ -55,6 +72,10 @@ interface Props {
  *
  * Nothing is chosen until she presses a day and turns or taps a length, so Done waits for both, and
  * for a start one cycle before the period above. A row she gave opens on her own answer.
+ *
+ * Where the newest period can be still going, "Still going" stands under the wheel as the other
+ * answer to how long it lasted. It holds no length, so Emi writes the days up to today and no more,
+ * and only for a start recent enough to be one period.
  */
 export function PastPeriodPicker({
   row,
@@ -64,14 +85,22 @@ export function PastPeriodPicker({
   onDone,
   onRemove,
   onCancel,
+  newestCanBeStillGoing = false,
 }: Props): ReactNode {
   const insets = useSafeAreaInsets();
   const given = periods[row];
   const above = periods[row - 1];
   const [startedOn, setStartedOn] = useState<string | undefined>(given?.startedOn);
-  const [lengthDays, setLengthDays] = useState<number | undefined>(given?.lengthDays);
+  const [run, setRun] = useState<PeriodRun | undefined>(theRunOf(given));
   const startIsInRange =
     startedOn !== undefined && startIsInRangeAt(row, startedOn, periods, { today, oldest });
+  const offersStillGoing = newestCanBeStillGoing && row === 0;
+  const stillGoingIsRefused =
+    run === 'still-going' &&
+    startedOn !== undefined &&
+    startIsInRange &&
+    !stillGoingCanStartOn(startedOn, today);
+  const isReady = startIsInRange && run !== undefined && !stillGoingIsRefused;
 
   return (
     <Modal animationType="slide" onRequestClose={onCancel} transparent visible>
@@ -126,25 +155,41 @@ export function PastPeriodPicker({
 
             <Text style={styles.question}>{pastPeriodsCopy.length}</Text>
             <NumberWheel
-              chosen={lengthDays}
+              chosen={typeof run === 'number' ? run : undefined}
               labelOf={pastPeriodLengthSaid}
-              onChoose={setLengthDays}
+              onChoose={setRun}
               opensOn={pastPeriodLengthOpensOn}
               pillTestID={pastPeriodLengthPillTestID}
               testID={pastPeriodLengthWheelTestID}
               testIDOf={pastPeriodLengthTestID}
               values={pastPeriodLengthsOffered}
             />
+            {offersStillGoing ? (
+              <View style={styles.stillGoing}>
+                <Chip
+                  isChosen={run === 'still-going'}
+                  label={pastPeriodsCopy.stillGoing}
+                  onPress={() => setRun(run === 'still-going' ? undefined : 'still-going')}
+                  testID={pastPeriodStillGoingTestID}
+                />
+              </View>
+            ) : null}
+            {stillGoingIsRefused ? (
+              <Text style={styles.refused} testID={pastPeriodStillGoingRefusedTestID}>
+                {pastPeriodsCopy.stillGoingTooLongAgo}
+              </Text>
+            ) : null}
           </ScrollView>
 
           <View style={styles.foot}>
             <PrimaryButton
-              isReady={startIsInRange && lengthDays !== undefined}
+              isReady={isReady}
               label={pastPeriodsCopy.done}
               onPress={() => {
-                if (startedOn !== undefined && lengthDays !== undefined) {
-                  onDone({ lengthDays, startedOn });
+                if (!isReady || startedOn === undefined || run === undefined) {
+                  return;
                 }
+                onDone(run === 'still-going' ? { startedOn } : { lengthDays: run, startedOn });
               }}
               testID={pastPeriodPickerDoneTestID}
             />
@@ -174,6 +219,7 @@ const styles = StyleSheet.create({
   question: { color: colour.text, ...textStyle('headline-sm') },
   refused: { color: colour.accent, textAlign: 'center', ...textStyle('body-sm') },
   scrim: { flex: 1 },
+  stillGoing: { alignItems: 'center' },
   shade: { ...StyleSheet.absoluteFill, backgroundColor: colour.text, opacity: SHADE },
   sheet: {
     backgroundColor: colour.card,
