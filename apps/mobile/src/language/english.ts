@@ -682,16 +682,17 @@ export const english = {
   },
   'onboarding.firstForecast.noDate.title': 'Emi has no date to count from',
   'onboarding.firstForecast.stillLearning': 'Still learning',
-  'onboarding.firstForecast.title': 'Your next period',
+  'onboarding.firstForecast.title': 'Your period may start',
   'onboarding.firstForecast.why.counts': {
-    one: 'Until it reads {needs}, it counts the {count} day you gave from your last period.',
-    other: 'Until it reads {needs}, it counts the {count} days you gave from your last period.',
+    one: 'Emi counted the {count} day you gave from the start of your last period.',
+    other: 'Emi counted the {count} days you gave from the start of your last period.',
   },
-  'onboarding.firstForecast.why.read': {
-    one: 'Emi has read {count} complete cycle.',
-    other: 'Emi has read {count} complete cycles.',
+  'onboarding.firstForecast.why.fromCycles': {
+    one: 'Emi estimated these dates from your last {count} cycle.',
+    other: 'Emi estimated these dates from your last {count} cycles.',
   },
-  'onboarding.firstForecast.why.title': 'Why a range?',
+  'onboarding.firstForecast.why.title': 'Why more than one date?',
+  'onboarding.firstForecast.why.varies': 'The start date can change from one cycle to the next.',
   'onboarding.firstForecast.why.width': {
     one: 'The range runs {count} day either side of that day.',
     other: 'The range runs {count} days either side of that day.',
@@ -790,7 +791,7 @@ export const english = {
     'Log your periods and how you feel, to understand your cycle better.',
   'onboarding.welcome.title': 'Your cycle and how you feel, in one place.',
   'onboarding.whatEmiDoes.action': 'Continue',
-  'onboarding.whatEmiDoes.forecast.line': 'A range, and how sure Emi is',
+  'onboarding.whatEmiDoes.forecast.line': 'Estimated start dates of your period, from your records',
   'onboarding.whatEmiDoes.forecast.title': 'Your forecast',
   'onboarding.whatEmiDoes.log.and': 'and',
   'onboarding.whatEmiDoes.log.chosen': {
@@ -802,7 +803,7 @@ export const english = {
   'onboarding.whatEmiDoes.log.usual': 'Your log opens in the usual order, starting with {groups}.',
   'onboarding.whatEmiDoes.privacy.line': 'Only you can read any of it',
   'onboarding.whatEmiDoes.privacy.title': 'Your privacy',
-  'onboarding.whatEmiDoes.title': 'Here is what Emi does with what you told it',
+  'onboarding.whatEmiDoes.title': 'Your settings in Emi',
 
   'ovulation.popup.line':
     'Emi keeps what you notice with today, and it goes in your export. Choose all that apply.',

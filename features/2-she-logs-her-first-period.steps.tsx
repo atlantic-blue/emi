@@ -7286,10 +7286,10 @@ defineFeature(feature, (test) => {
   }) => {
     const theTitleOfHerForecast = {
       theOldGreeting: `${theNameSheGives}, here's your next period`,
-      plain: 'Your next period',
+      plain: 'Your period may start',
     };
     const theTitleOfWhatEmiDoes = {
-      now: 'Here is what Emi does with what you told it',
+      now: 'Your settings in Emi',
       theOldGreeting: `${theNameSheGives}, here's what we'll do with your answers`,
     };
     const theSaveNowSays = 'Your cycle, your data, your key.';
@@ -7358,7 +7358,7 @@ defineFeature(feature, (test) => {
     );
 
     then(
-      'the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name',
+      'the forecast she reads is labelled Your period may start, so the dates read as when it may start, and no longer greets her by name',
       () => {
         expect(app.pathname()).toBe('/onboarding/first-forecast');
         expect(theTitleSheIsReading(firstForecastTitleTestID)).toEqual([

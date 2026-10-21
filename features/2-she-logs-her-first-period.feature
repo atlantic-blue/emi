@@ -740,7 +740,7 @@ Feature: She opens Emi and logs her first period
   Scenario: SCREEN-1, her first forecast reads the redesign label, and the screens after it speak in the name of Emi
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, gives her name, and answers every question
-    Then the forecast she reads is labelled Your next period, as the redesign draws it, and no longer greets her by name
+    Then the forecast she reads is labelled Your period may start, so the dates read as when it may start, and no longer greets her by name
     And a woman who gave no name reads the same forecast, with no gap where a name would be
     And the screen that reads her answers back is titled in the name of Emi, for a woman who gave her name and for one who did not
     And the screens after the forecast never talk as we, in each of the three languages she can read them in
