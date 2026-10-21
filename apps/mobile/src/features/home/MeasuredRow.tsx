@@ -5,7 +5,13 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { StatusPill, type PillTone } from '../../components/StatusPill';
 import { type FigureStanding, type MeasuredNumber, howHerNumberSits } from './herNumbers';
-import { herNumberReads, homeCopy, measurementName, publishedFigureReads } from './copy';
+import {
+  herNumberReads,
+  homeCopy,
+  measurementMeaning,
+  measurementName,
+  publishedFigureReads,
+} from './copy';
 
 /**
  * One measurement of hers, with the figure a paper reports for the same measurement under it.
@@ -38,6 +44,11 @@ export function herNumberTestID(measures: PublishedMeasurement): string {
 
 export function publishedNumberTestID(measures: PublishedMeasurement): string {
   return `${measuredRowTestID(measures)}-published`;
+}
+
+/** The line under the figures, which says what the number means for her. */
+export function measuredMeaningTestID(measures: PublishedMeasurement): string {
+  return `${measuredRowTestID(measures)}-means`;
 }
 
 /**
@@ -89,6 +100,10 @@ export function MeasuredRow({
           </Text>
         </View>
       </View>
+
+      <Text style={styles.means} testID={measuredMeaningTestID(number.measures)}>
+        {measurementMeaning[number.measures]}
+      </Text>
     </View>
   );
 }
@@ -141,6 +156,12 @@ const styles = StyleSheet.create({
     color: colour.text,
     ...textStyle('label-md'),
     marginBottom: space.spaceSm,
+  },
+  // What the number means sits under the figures in the quieter ink, so the figure stays the thing
+  // she reads first and the line is there when she wants it.
+  means: {
+    color: colour.secondaryText,
+    ...textStyle('body-sm'),
   },
   measurement: {
     color: colour.secondaryText,

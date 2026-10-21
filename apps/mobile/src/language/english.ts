@@ -176,10 +176,7 @@ export const english = {
   'export.where':
     'Nothing is sent anywhere. The files are made on this phone, and you decide who gets them.',
 
-  'forecast.confidence.high': 'High',
-  'forecast.confidence.low': 'Low',
-  'forecast.confidence.medium': 'Medium',
-  'forecast.confidence.sentence': '{word} confidence, based on your last {cycles} cycles',
+  'forecast.confidence.sentence': 'Based on your last {cycles} cycles',
   'forecast.cycleMoves': 'Your cycle moves around, so the range is wider.',
   'forecast.cyclesWanted': {
     one: 'We need {count} more full cycle before we can say how sure we are.',
@@ -245,16 +242,17 @@ export const english = {
   'history.editLabel': 'Edit the period that started on {day}',
   'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
   'history.nothingRepeats':
-    "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
+    'No symptom has come back at about the same point in 3 cycles yet. If one does, it will show here.',
   'history.pattern.cycleDay': 'About day {day} of your cycle',
   'history.pattern.evidence': 'in {withIt} of your last {read} cycles',
   'history.pattern.line': '{when}, {evidence}',
   'history.pattern.beforePeriod': 'About {days} before your period',
   'history.patternsComplete': {
-    one: '{count} of yours is complete.',
-    other: '{count} of yours are complete.',
+    one: '{count} complete cycle so far.',
+    other: '{count} complete cycles so far.',
   },
-  'history.patternsNeed': "We'll point out a symptom once it's come back in {needs} cycles.",
+  'history.patternsNeed':
+    'Symptoms you log at about the same point in {needs} different cycles will show here.',
   'history.patterns': 'What comes back',
   'history.running': 'Still running',
   'history.runningWithPeriod': '{running}, {periodDays} of bleeding so far',
@@ -286,16 +284,22 @@ export const english = {
   // answer back to her and offers the one group she is most likely to want, and it says what the
   // press does rather than saying anything about how she must feel.
   'home.numbers.cycleLength': 'Last cycle',
+  'home.numbers.cycleLength.means':
+    'From the first day of one period to the day before the next. Your forecast is counted from these lengths.',
   'home.numbers.cycleLengthVariation': 'Variation',
+  'home.numbers.cycleLengthVariation.means':
+    'How much your cycle lengths differ from each other. The more they differ, the wider your forecast range.',
   'home.numbers.days': { one: '{count} day', other: '{count} days' },
   'home.numbers.fractionDays': '{days} days',
-  'home.numbers.hers': 'Yours',
+  'home.numbers.hers': 'Your numbers',
   'home.numbers.line':
-    'The published figure is the one the paper reports, and the paper is one press away.',
+    'The figure beside each of yours comes from a published study, not from your records.',
   'home.numbers.noFigure': 'No figure',
   'home.numbers.periodDuration': 'Last period',
+  'home.numbers.periodDuration.means':
+    'The days you logged as your period last time. A day you did not log is not counted.',
   'home.numbers.press': 'Where these figures come from',
-  'home.numbers.published': 'Published',
+  'home.numbers.published': 'Study',
   'home.numbers.range': '{low} to {high}',
   'home.numbers.upTo': 'up to {days}',
   'home.numbers.wider': 'Wider',
@@ -326,10 +330,11 @@ export const english = {
   'home.roundAction.phase': 'Cycle phase',
   // The chart of her last complete cycles over the published range. The caption and the sentence
   // under it count the cycles the chart drew, so a woman with three of them is never told six.
-  'home.trend.allInside': 'All of your last {cycles} fell inside the band.',
-  'home.trend.caption': 'Your last {cycles}. The shaded band is the published range.',
+  'home.trend.allInside': 'All of your last {cycles} were inside that range.',
+  'home.trend.caption':
+    'How long your last {cycles} lasted. The shaded band is the range a published study reports.',
   'home.trend.cycleCount': { one: '{count} complete cycle', other: '{count} complete cycles' },
-  'home.trend.outside': '{outside} of your last {cycles} fell outside the band.',
+  'home.trend.outside': '{outside} of your last {cycles} were outside that range.',
   'home.trend.press': 'The same cycles, in full',
   'home.waiting.cycles.heading': 'Your cycles',
   'home.waiting.cycles.needs': 'Your numbers arrive with your second period.',

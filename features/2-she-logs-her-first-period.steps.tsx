@@ -345,6 +345,7 @@ import { theGroupsSheSeesFirst } from '../apps/mobile/src/features/log/herOrder'
 import {
   herNumberTestID,
   homeNumbersTestID,
+  measuredMeaningTestID,
   publishedNumberTestID,
 } from '../apps/mobile/src/features/home/MeasuredRow';
 import { cycleLengthDaysTestID } from '../apps/mobile/src/features/onboarding/CycleLength';
@@ -984,7 +985,7 @@ async function herPhoneHoldsOnePeriodAnd(name?: string): Promise<void> {
 const theHomeScreenSaysInEnglish: Readonly<Record<string, string>> = {
   'cycle.noRing.line': 'Log a day you bled and your cycle appears here.',
   'cycle.noRing.title': 'Your ring is waiting',
-  'forecast.confidence.sentence': '{word} confidence, based on your last {cycles} cycles',
+  'forecast.confidence.sentence': 'Based on your last {cycles} cycles',
   'forecast.cycleMoves': 'Your cycle moves around, so the range is wider.',
   'forecast.fertileWindow.sentence':
     'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
@@ -1000,9 +1001,10 @@ const theHomeScreenSaysInEnglish: Readonly<Record<string, string>> = {
   'home.painLine': 'You told us these days can be hard. Start with how much it hurts.',
   'home.patterns.line':
     "A symptom you logged once or twice isn't a pattern, so we won't call it one.",
-  'home.trend.allInside': 'All of your last {cycles} fell inside the band.',
-  'home.trend.caption': 'Your last {cycles}. The shaded band is the published range.',
-  'home.trend.outside': '{outside} of your last {cycles} fell outside the band.',
+  'home.trend.allInside': 'All of your last {cycles} were inside that range.',
+  'home.trend.caption':
+    'How long your last {cycles} lasted. The shaded band is the range a published study reports.',
+  'home.trend.outside': '{outside} of your last {cycles} were outside that range.',
   'home.waiting.cycles.needs': 'Your numbers arrive with your second period.',
   'home.waiting.cycles.read': "So far we've seen {cycles}.",
   'home.waiting.trend.read': 'Emi draws nothing from nothing, and it holds no sample data.',
@@ -1153,8 +1155,9 @@ const thePrivacyScreensSayInEnglish: Readonly<Record<string, string>> = {
     'Nothing is sent anywhere. The files are made on this phone, and you decide who gets them.',
   'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
   'history.nothingRepeats':
-    "Nothing has come back in 3 cycles yet. Keep logging and we'll show you.",
-  'history.patternsNeed': "We'll point out a symptom once it's come back in {needs} cycles.",
+    'No symptom has come back at about the same point in 3 cycles yet. If one does, it will show here.',
+  'history.patternsNeed':
+    'Symptoms you log at about the same point in {needs} different cycles will show here.',
   'lock.locked.line': 'Use your face, your fingerprint or your passcode to open it.',
   'lock.locked.refused': 'Still locked. Tap Unlock to try again.',
   'lock.locked.title': 'Emi is locked.',
@@ -1424,7 +1427,7 @@ function herCompleteCycles(): number {
 const theThreeSectionsSayTheyNeed: readonly string[] = [
   'Your numbers arrive with your second period.',
   'Your chart appears once 2 cycles are complete.',
-  "We'll point out a symptom once it's come back in 3 cycles.",
+  'Symptoms you log at about the same point in 3 different cycles will show here.',
 ];
 
 /** The drawing of day one, below the ring, which places a waiting section for each of the three. */
@@ -3292,10 +3295,25 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'she is told the published figure is the one the paper reports and the paper is one press away',
+      'under each of the three she reads one line that says what the number means for her',
+      () => {
+        expect(whatItSays(measuredMeaningTestID('cycle-length'))).toContain(
+          'Your forecast is counted from these lengths.',
+        );
+        expect(whatItSays(measuredMeaningTestID('period-duration'))).toContain(
+          'A day you did not log is not counted.',
+        );
+        expect(whatItSays(measuredMeaningTestID('cycle-length-variation'))).toContain(
+          'The more they differ, the wider your forecast range.',
+        );
+      },
+    );
+
+    and(
+      'she is told the figure beside each of hers comes from a published study, not from her records',
       () => {
         expect(whatItSays(homeFiguresLineTestID)).toBe(
-          'The published figure is the one the paper reports, and the paper is one press away.',
+          'The figure beside each of yours comes from a published study, not from your records.',
         );
       },
     );

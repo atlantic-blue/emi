@@ -58,6 +58,16 @@ export const measurementName: Readonly<Record<PublishedMeasurement, string>> = {
   'period-duration': words('home.numbers.periodDuration'),
 };
 
+/**
+ * One line under each measurement, which says what the number is counted from and what it changes
+ * for her. Each one is true of the arithmetic that fills the row, and none of them judges the number.
+ */
+export const measurementMeaning: Readonly<Record<PublishedMeasurement, string>> = {
+  'cycle-length': words('home.numbers.cycleLength.means'),
+  'cycle-length-variation': words('home.numbers.cycleLengthVariation.means'),
+  'period-duration': words('home.numbers.periodDuration.means'),
+};
+
 function days(count: number): string {
   return words('home.numbers.days', count);
 }
