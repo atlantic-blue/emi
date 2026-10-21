@@ -19,12 +19,12 @@ import { Focus, focusTestID } from '../../src/features/onboarding/Focus';
 import { Goals, goalTestID } from '../../src/features/onboarding/Goals';
 import { HerName, nameFieldTestID } from '../../src/features/onboarding/HerName';
 import {
-  HoldToBegin,
-  holdButtonTestID,
-  holdRingTestID,
-  holdSaidTestID,
-  holdTitleTestID,
-} from '../../src/features/onboarding/HoldToBegin';
+  SaveAndStart,
+  saveButtonTestID,
+  saveRingTestID,
+  saveSaidTestID,
+  saveTitleTestID,
+} from '../../src/features/onboarding/SaveAndStart';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
@@ -230,9 +230,10 @@ const theIdentifiersOf: Readonly<Record<FirstRunDrawing, PartIdentifiers>> = {
   focus: { ...theFrame, MultiChoiceRow: [focusTestID('sleep')] },
   goals: { ...theFrame, MultiChoiceRow: [goalTestID('forecast')] },
   hold: {
-    CycleRing: [holdRingTestID],
-    HoldToBegin: [holdTitleTestID, holdSaidTestID],
-    PrimaryButton: [holdButtonTestID],
+    CycleRing: [saveRingTestID],
+    // The drawing names the screen for the hold it used to ask for. The parts are the same.
+    HoldToBegin: [saveTitleTestID, saveSaidTestID],
+    PrimaryButton: [saveButtonTestID],
   },
   name: { ...theFrame, TextField: [nameFieldTestID] },
   periodLength: { ...theFrame, Stepper: [periodLengthWheelTestID] },
@@ -281,17 +282,11 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put the step above the drop, and the redesign canvas puts the drop above the step.
   // The canvas is the later drawing, so the welcome follows it.
   welcome: 1,
-  // The mockups put the hint under the goals. The redesign canvas puts it under the title, so the
-  // goals follow the canvas.
-  goals: 1,
-  // The mockups put a line under the year. The redesign canvas draws no line there, only the
-  // promise at the foot, so the year follows the canvas.
-  yearOfBirth: 1,
   // The mockups put a line under the tiles. The redesign canvas puts the question line under the
   // title and only the promise under the tiles, so today follows the canvas.
   todayFirstRun: 1,
   // The mockups put the sample under the question and "Not now" over the button. The redesign
-  // canvas puts the sample at the top and "Not now" under "Remind me", so the reminder follows it.
+  // canvas puts the sample at the top and "Not now" under "Turn on reminders", so the reminder follows it.
   reminder: 2,
   // The mockups put a card about this phone under the why card. The first run no longer draws it,
   // because the welcome links to the page that says who can see her records.
@@ -338,12 +333,19 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
       );
     case 'cycleLength':
       return (
-        <CycleLength chosen={undefined} onBack={nothing} onChoose={nothing} onDone={nothing} />
+        <CycleLength
+          chosen={undefined}
+          fromHerDates={undefined}
+          onBack={nothing}
+          onChoose={nothing}
+          onDone={nothing}
+        />
       );
     case 'periodLength':
       return (
         <PeriodLength
           chosen={undefined}
+          fromHerDates={undefined}
           onBack={nothing}
           onChoose={nothing}
           onDone={nothing}
@@ -392,7 +394,14 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
       );
     case 'todayFirstRun':
       return (
-        <Today chosen={[]} onBack={nothing} onPress={nothing} onSave={nothing} onSkip={nothing} />
+        <Today
+          chosen={[]}
+          onAllSymptoms={nothing}
+          onBack={nothing}
+          onPress={nothing}
+          onSave={nothing}
+          onSkip={nothing}
+        />
       );
     // The drawing has the first of the three moments pressed, so the screen is drawn with it.
     case 'reminder':
@@ -424,7 +433,7 @@ function theScreenOf(drawing: FirstRunLook): React.ReactElement {
     case 'whatEmiDoesWithIt':
       return <WhatEmiDoesWithIt focus={[]} onContinue={nothing} />;
     case 'hold':
-      return <HoldToBegin onHeld={() => Promise.resolve()} />;
+      return <SaveAndStart onSave={() => Promise.resolve()} />;
     case 'recoverySetup':
       return <RecoveryFlow code={aRecoveryCode} onConfirmed={nothing} opensTheVault={() => true} />;
     case 'recoveryCode':

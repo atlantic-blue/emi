@@ -41,7 +41,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { locksDrawnIn } from '../fixtures/drawnLocks';
 
@@ -277,7 +277,7 @@ describe('a hard period day offers the pain log first', () => {
         await sheOpensEmi();
 
         await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, feeling: answer });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect(statedFeeling(herDatabase(), await theProfileVaultOnHerPhone())).toBe(answer);
       });
@@ -287,7 +287,7 @@ describe('a hard period day offers the pain log first', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 

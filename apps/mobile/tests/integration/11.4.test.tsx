@@ -43,7 +43,7 @@ import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -303,7 +303,7 @@ describe('the period arc follows what she said until she logs her own', () => {
         periodStartedOn: herPeriodStarted,
         periodLengthDays: sheSaysHerPeriodRuns,
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(statedPeriodLengthDays(herDatabase(), await theProfileVaultOnHerPhone())).toBe(
         sheSaysHerPeriodRuns,
@@ -314,7 +314,7 @@ describe('the period arc follows what she said until she logs her own', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 

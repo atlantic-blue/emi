@@ -15,13 +15,14 @@ import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import { StatusPill } from '../../components/StatusPill';
-import { confidenceSentence, rangeSentence } from '../forecast/copy';
+import { rangeSentence } from '../forecast/copy';
 import {
   countsFromTheFirstPeriodSentence,
   cyclesBeforeAForecastSentence,
   firstRunCopy,
   stillLearningSentence,
-  whyARangeSentences,
+  whyFromHerCyclesSentences,
+  whyFromTheLengthSheGaveSentences,
 } from './copy';
 
 /**
@@ -95,21 +96,22 @@ export function FirstForecast({ cycleLengthDays, forecast, onContinue }: Props):
   );
 }
 
-/** What the why card says, each sentence read off a number the arithmetic used. */
+/**
+ * What the why card says, each count read off a number the arithmetic used. It names no confidence
+ * word: the word read as a verdict she could not check, and the count of cycles is what it rested on.
+ */
 function whyLines(forecast: ForecastResult, cycleLengthDays: number | undefined): string[] {
   if (forecast.kind === 'forecast') {
-    return [confidenceSentence(forecast)];
+    return whyFromHerCyclesSentences(forecast.fromCycles);
   }
 
   if (cycleLengthDays === undefined) {
     return [];
   }
 
-  return whyARangeSentences({
-    completeCycles: forecast.completeCycles,
+  return whyFromTheLengthSheGaveSentences({
     cycleLengthDays,
     daysEitherSide: DAYS_EITHER_SIDE_WHILE_LEARNING,
-    needsCycles: forecast.needsCycles,
   });
 }
 

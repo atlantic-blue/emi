@@ -56,7 +56,8 @@ export function patternCardEvidenceTestID(slug: string): string {
  * uses for anything she wrote in her own words.
  */
 const theDrawingOfAGroup: Readonly<Record<SymptomGroup, IconName>> = {
-  digestion: 'digestion',
+  appetite: 'appetite',
+  digestive: 'digestion',
   energy: 'energy',
   head: 'headache',
   libido: 'note',

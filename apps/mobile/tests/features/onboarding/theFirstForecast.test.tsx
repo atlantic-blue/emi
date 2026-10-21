@@ -95,7 +95,7 @@ describe('the first forecast says only what the arithmetic answered', () => {
     ]);
   });
 
-  it('reads the count of complete cycles off the answer, never a number of its own', async () => {
+  it('reads the length she gave and the width off the answer, never a number of its own', async () => {
     await sheReads({
       kind: 'learning',
       completeCycles: 1,
@@ -104,7 +104,7 @@ describe('the first forecast says only what the arithmetic answered', () => {
     });
 
     expect(textIn(screen.getByTestId(firstForecastWhyTestID)).at(-1)).toBe(
-      'Emi has read 1 complete cycle. Until it reads 2, it counts the 28 days you gave from your last period. The range runs 3 days either side of that day.',
+      'The start date can change from one cycle to the next. Emi counted the 28 days you gave from the start of your last period. The range runs 3 days either side of that day.',
     );
   });
 
@@ -115,6 +115,42 @@ describe('the first forecast says only what the arithmetic answered', () => {
     expect(screen.queryByTestId(firstForecastNeedsTestID)).toBeNull();
     expect(textIn(screen.getByTestId(firstForecastWhyTestID)).join(' ')).not.toMatch(
       /still learning|needs 2|has read/i,
+    );
+  });
+
+  it('says the start can change and names the cycles the median was taken over, from three periods she gave', async () => {
+    const answer = forecastFromHerAnswers({
+      periods: [
+        { startedOn: '2026-10-08', lengthDays: 5 },
+        { startedOn: '2026-09-10', lengthDays: 5 },
+        { startedOn: '2026-08-12', lengthDays: 5 },
+      ],
+      cycleLengthDays: 28,
+    });
+
+    expect(answer).toMatchObject({ kind: 'forecast', fromCycles: 2 });
+
+    await sheReads(answer);
+
+    expect(textIn(screen.getByTestId(firstForecastWhyTestID)).slice(-2)).toEqual([
+      'Why more than one date?',
+      'The start date can change from one cycle to the next. Emi estimated these dates from your last 2 cycles.',
+    ]);
+  });
+
+  it('reads the count of cycles off the forecast, six where six cycles carry it', async () => {
+    await sheReads(aForecastFromSixCycles());
+
+    expect(textIn(screen.getByTestId(firstForecastWhyTestID)).at(-1)).toBe(
+      'The start date can change from one cycle to the next. Emi estimated these dates from your last 6 cycles.',
+    );
+  });
+
+  it('names no confidence word, because the count of cycles is what she can check', async () => {
+    await sheReads(aForecastFromSixCycles());
+
+    expect(textIn(screen.getByTestId(firstForecastWhyTestID)).join(' ')).not.toMatch(
+      /confidence|high|medium|low/i,
     );
   });
 });

@@ -20,7 +20,7 @@ import { markTourSeen, tourIsSeen } from '../../src/features/onboarding/tour';
 import { openDatabaseSync, resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { controlsTooSmallToPress as tooSmallToPress } from '../fixtures/tapTargets';
 
@@ -88,7 +88,7 @@ async function sheAnswersEveryQuestionOfTheFirstRun(): Promise<void> {
     cycleLengthDays: defaultCycleLengthDays + 1,
   });
   // Her answers are written at the hold and nowhere else, so the walk ends there.
-  await sheHoldsTheRing();
+  await sheTapsSaveAndStart();
 }
 
 function everyControlOnTheScreen(): string[] {

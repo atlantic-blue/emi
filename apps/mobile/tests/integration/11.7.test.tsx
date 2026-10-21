@@ -52,7 +52,7 @@ import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/her
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { locksDrawnIn } from '../fixtures/drawnLocks';
 
@@ -268,7 +268,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    it('says under the question that she may choose all that apply, and that Emi encrypts her answers', async () => {
+    it('says under the question that she may choose all that apply, and under the list that the dates are approximate', async () => {
       await sheOpensEmi();
 
       await sheReachesTheGoals();
@@ -283,11 +283,15 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(
         screen.queryByText('Emi encrypts your answers on this phone. Nobody else can read them.'),
       ).toBeNull();
-      // The hint stands under the title now, so nothing is left to say under the list.
-      expect(screen.queryByTestId(onboardingLinesTestID)).toBeNull();
+      // The hint stands under the title, and the one line under the list is the ovulation note.
+      expect(screen.getByTestId(onboardingLinesTestID)).toHaveTextContent(
+        'Dates are approximate. Emi is not a contraceptive.',
+      );
       expect(screen.queryByText('Pick as many as you like.')).toBeNull();
       expect(screen.queryByText('Only you can read this.')).toBeNull();
-      expect(firstRunCopy.goals.lines).toHaveLength(0);
+      expect(firstRunCopy.goals.lines).toEqual([
+        'Dates are approximate. Emi is not a contraceptive.',
+      ]);
     });
 
     it('offers the four goals in the redesign words, each with an empty ring until she picks it', async () => {
@@ -298,12 +302,8 @@ describe('the fertile window shows only for her who asked for it', () => {
       expect(screen.getByTestId(goalTestID('forecast'))).toHaveTextContent(
         'Know when my period comes',
       );
-      expect(screen.getByTestId(goalTestID('symptoms'))).toHaveTextContent(
-        'Understand my symptoms',
-      );
-      expect(screen.getByTestId(goalTestID('fertileWindow'))).toHaveTextContent(
-        'See my fertile window, as an estimate',
-      );
+      expect(screen.getByTestId(goalTestID('symptoms'))).toHaveTextContent('Track how I feel');
+      expect(screen.getByTestId(goalTestID('fertileWindow'))).toHaveTextContent('Track ovulation');
       expect(screen.getByTestId(goalTestID('doctorRecord'))).toHaveTextContent(
         'Keep a record for my doctor',
       );
@@ -337,7 +337,7 @@ describe('the fertile window shows only for her who asked for it', () => {
         await sheOpensEmi();
 
         await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, goals: [goal] });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect(statedGoals(herDatabase(), await theProfileVaultOnHerPhone())).toEqual([goal]);
       });
@@ -350,7 +350,7 @@ describe('the fertile window shows only for her who asked for it', () => {
         periodStartedOn: herPeriodStarted,
         goals: ['doctorRecord', 'fertileWindow'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(statedGoals(herDatabase(), await theProfileVaultOnHerPhone())).toEqual([
         'doctorRecord',
@@ -371,7 +371,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 
@@ -386,7 +386,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 

@@ -127,7 +127,7 @@ describe('a day she already lived', () => {
   it('saves a symptom on that day, and only on that day', async () => {
     await sheOpens(`/day/${thatDay}`);
 
-    await press(groupTileTestID('digestion'));
+    await press(groupTileTestID('digestive'));
     await press(symptomChipTestID('bloating'));
     await press(logSymptomsSaveTestID);
 
@@ -142,7 +142,7 @@ describe('a day she already lived', () => {
   it('takes a symptom off that day with one press on its chip', async () => {
     await sheOpens(`/day/${thatDay}`);
 
-    await press(groupTileTestID('digestion'));
+    await press(groupTileTestID('digestive'));
     await press(symptomChipTestID('bloating'));
     await press(logSymptomsSaveTestID);
     await press(symptomChipTestID('bloating'));
@@ -154,7 +154,7 @@ describe('a day she already lived', () => {
   it('leaves the day as it was when she goes back from the symptoms without saving', async () => {
     await sheOpens(`/day/${thatDay}`);
 
-    await press(groupTileTestID('digestion'));
+    await press(groupTileTestID('digestive'));
     await press(symptomChipTestID('bloating'));
     await press(logHeaderLeaveTestID);
 

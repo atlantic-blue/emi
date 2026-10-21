@@ -601,10 +601,14 @@ export const english = {
   'log.flow.light': 'Light',
   'log.flow.medium': 'Medium',
   'log.flow.none': 'None',
+  'log.flow.otherDischarge': 'Other discharge',
   'log.flow.saved': 'Saved on this phone.',
   'log.flow.spotting': 'Spotting',
-  'log.flow.title': 'Your flow',
-  'log.group.digestion': 'Digestion',
+  'log.flow.spottingHint': 'Small traces of blood or brownish discharge',
+  'log.flow.spottingLabel': '{spotting}:',
+  'log.flow.title': 'Period',
+  'log.group.appetite': 'Appetite',
+  'log.group.digestive': 'Digestive symptoms',
   'log.group.energy': 'Energy',
   'log.group.head': 'Head',
   'log.group.libido': 'Libido',
@@ -637,12 +641,18 @@ export const english = {
   'lostKey.working': 'Deleting',
   'onboarding.back': 'Back',
   'onboarding.birthYear.action': 'Continue',
+  'onboarding.birthYear.line.why':
+    'Emi does not use your year of birth for anything today. You can skip this question.',
   'onboarding.birthYear.title': 'What year were you born?',
   'onboarding.birthYear.year': 'Born in {year}',
   'onboarding.cycleLength.action': 'Done',
   'onboarding.cycleLength.days': {
     one: '{count} day',
     other: '{count} days',
+  },
+  'onboarding.cycleLength.fromHerDates': {
+    one: 'Based on your records, your cycle averages {count} day. Does that look right?',
+    other: 'Based on your records, your cycle averages {count} days. Does that look right?',
   },
   'onboarding.cycleLength.line.count':
     'Count the first day of one period to the day before the next.',
@@ -676,16 +686,17 @@ export const english = {
   },
   'onboarding.firstForecast.noDate.title': 'Emi has no date to count from',
   'onboarding.firstForecast.stillLearning': 'Still learning',
-  'onboarding.firstForecast.title': 'Your next period',
+  'onboarding.firstForecast.title': 'Your period may start',
   'onboarding.firstForecast.why.counts': {
-    one: 'Until it reads {needs}, it counts the {count} day you gave from your last period.',
-    other: 'Until it reads {needs}, it counts the {count} days you gave from your last period.',
+    one: 'Emi counted the {count} day you gave from the start of your last period.',
+    other: 'Emi counted the {count} days you gave from the start of your last period.',
   },
-  'onboarding.firstForecast.why.read': {
-    one: 'Emi has read {count} complete cycle.',
-    other: 'Emi has read {count} complete cycles.',
+  'onboarding.firstForecast.why.fromCycles': {
+    one: 'Emi estimated these dates from your last {count} cycle.',
+    other: 'Emi estimated these dates from your last {count} cycles.',
   },
-  'onboarding.firstForecast.why.title': 'Why a range?',
+  'onboarding.firstForecast.why.title': 'Why more than one date?',
+  'onboarding.firstForecast.why.varies': 'The start date can change from one cycle to the next.',
   'onboarding.firstForecast.why.width': {
     one: 'The range runs {count} day either side of that day.',
     other: 'The range runs {count} days either side of that day.',
@@ -695,22 +706,12 @@ export const english = {
   'onboarding.focus.title': 'Which of these change with your cycle?',
   'onboarding.goals.action': 'Continue',
   'onboarding.goals.choice.doctorRecord': 'Keep a record for my doctor',
-  'onboarding.goals.choice.fertileWindow': 'See my fertile window, as an estimate',
+  'onboarding.goals.choice.fertileWindow': 'Track ovulation',
   'onboarding.goals.choice.forecast': 'Know when my period comes',
-  'onboarding.goals.choice.symptoms': 'Understand my symptoms',
+  'onboarding.goals.choice.symptoms': 'Track how I feel',
   'onboarding.goals.line.chooseAll': 'Choose all that apply.',
+  'onboarding.goals.line.ovulation': 'Dates are approximate. Emi is not a contraceptive.',
   'onboarding.goals.title': 'What do you want Emi to help with?',
-  'onboarding.hold.action': 'Hold to begin',
-  'onboarding.hold.held': 'Keep holding',
-  'onboarding.hold.instruction': 'Press and hold the button to begin.',
-  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
-  // day, the answers and the marker go in one transaction or none of them do.
-  'onboarding.hold.refused': "That didn't save. Press and hold the button again.",
-  // The key is made at launch or at the hold, whichever finds the keychain empty first, and it is
-  // kept in the keychain rather than anywhere a screen may name.
-  'onboarding.hold.sealed':
-    "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
-  'onboarding.hold.title': 'Your cycle, your data, your key.',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
   'onboarding.lastPeriod.later': 'Later',
@@ -731,6 +732,10 @@ export const english = {
     one: '{count} day',
     other: '{count} days',
   },
+  'onboarding.periodLength.fromHerDates': {
+    one: 'Based on your records, your period averages {count} day. Does that look right?',
+    other: 'Based on your records, your period averages {count} days. Does that look right?',
+  },
   'onboarding.periodLength.line.count': 'From the first day of bleeding until it stops.',
   'onboarding.periodLength.line.logged': 'Emi uses the days you log instead, once you log them.',
   'onboarding.periodLength.longer': 'One day longer',
@@ -739,22 +744,39 @@ export const english = {
   'onboarding.periodLength.title': 'How many days does your period usually last?',
   'onboarding.regularity.action': 'Continue',
   'onboarding.regularity.choice.moves': 'No, it moves',
-  'onboarding.regularity.choice.regular': 'Yes, most months',
+  'onboarding.regularity.choice.regular': 'Yes, after about the same number of days',
   'onboarding.regularity.choice.unknown': 'I do not know yet',
   'onboarding.regularity.line.explains': 'This only changes how Emi explains your forecast.',
+  'onboarding.regularity.line.sameDays':
+    'Your period starts after about the same number of days each time.',
   'onboarding.regularity.title': 'Regular',
-  'onboarding.reminder.action': 'Remind me',
-  'onboarding.reminder.choice.onTheDay': 'On the day',
-  'onboarding.reminder.choice.oneDayBefore': 'One day before',
-  'onboarding.reminder.choice.twoDaysBefore': 'Two days before',
-  'onboarding.reminder.line.onTheDay': 'On the day the range starts.',
-  'onboarding.reminder.line.oneDayBefore': 'One day before the range starts.',
-  'onboarding.reminder.line.twoDaysBefore': 'Two days before the range starts.',
+  'onboarding.reminder.action': 'Turn on reminders',
+  'onboarding.reminder.choice.onTheDay': 'On the expected start date',
+  'onboarding.reminder.choice.oneDayBefore': '1 day before',
+  'onboarding.reminder.choice.twoDaysBefore': '2 days before',
+  'onboarding.reminder.line.onTheDay':
+    'The reminder comes at {hour} in the morning. Your period may start that day.',
+  'onboarding.reminder.line.oneDayBefore':
+    'The reminder comes at {hour} in the morning. Your period may start the next day.',
+  'onboarding.reminder.line.twoDaysBefore':
+    'The reminder comes at {hour} in the morning. Your period may start about 2 days later.',
   'onboarding.reminder.notNow': 'Not now',
-  'onboarding.reminder.title': 'Shall Emi tell you when it is near?',
+  'onboarding.reminder.question': 'When would you like to be reminded?',
+  'onboarding.reminder.title': 'Would you like a reminder before your period?',
   'onboarding.skip': 'Skip',
+  'onboarding.start.action': 'Save and start',
+  'onboarding.start.allSet': 'All set',
+  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
+  // day, the answers and the marker go in one transaction or none of them do.
+  'onboarding.start.refused': "That didn't save. Tap Save and start again.",
+  // The key is made at launch or at the save, whichever finds the keychain empty first, and it is
+  // kept in the keychain rather than anywhere a screen may name.
+  'onboarding.start.sealed':
+    "Saving keeps your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  'onboarding.start.title': 'Your cycle, your data, your key.',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.today.action': 'Save today',
+  'onboarding.today.allSymptoms': 'All symptoms',
   'onboarding.today.nothingToAdd': 'Nothing to add',
   'onboarding.today.question': 'Choose all that apply.',
   'onboarding.today.title': 'How are you today?',
@@ -771,15 +793,16 @@ export const english = {
     'The ring is your cycle. A pointer marks today, and the number inside it is the day you are on.',
   'onboarding.tour.ring.title': 'Your cycle, in one ring.',
   'onboarding.tour.skip': 'Skip',
-  'onboarding.welcome.action': 'Continue',
+  'onboarding.welcome.action': 'Start',
   'onboarding.welcome.line.noAccount':
     'There is no account. Emi never asks for your email address or a password.',
-  'onboarding.welcome.line.onThisPhone': 'Your cycle is worked out on this phone.',
   'onboarding.welcome.line.whatEmiIs':
-    'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
-  'onboarding.welcome.title': 'Emi learns your cycle. You keep your data.',
+    "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
+  'onboarding.welcome.line.whatYouLog':
+    'Log your periods and how you feel, to understand your cycle better.',
+  'onboarding.welcome.title': 'Your cycle and how you feel, in one place.',
   'onboarding.whatEmiDoes.action': 'Continue',
-  'onboarding.whatEmiDoes.forecast.line': 'A range, and how sure Emi is',
+  'onboarding.whatEmiDoes.forecast.line': 'Estimated start dates of your period, from your records',
   'onboarding.whatEmiDoes.forecast.title': 'Your forecast',
   'onboarding.whatEmiDoes.log.and': 'and',
   'onboarding.whatEmiDoes.log.chosen': {
@@ -791,7 +814,7 @@ export const english = {
   'onboarding.whatEmiDoes.log.usual': 'Your log opens in the usual order, starting with {groups}.',
   'onboarding.whatEmiDoes.privacy.line': 'Only you can read any of it',
   'onboarding.whatEmiDoes.privacy.title': 'Your privacy',
-  'onboarding.whatEmiDoes.title': 'Here is what Emi does with what you told it',
+  'onboarding.whatEmiDoes.title': 'Your settings in Emi',
 
   'ovulation.popup.line':
     'Emi keeps what you notice with today, and it goes in your export. Choose all that apply.',
@@ -819,10 +842,13 @@ export const english = {
     'Cycles run from {minimum} to {maximum} days. Try a day in that range.',
   'pastPeriods.picker.remove': 'Remove this period',
   'pastPeriods.picker.start': 'When did it start?',
+  'pastPeriods.picker.stillGoingTooLongAgo':
+    'A period that is still going started {maximum} days ago or less. Try a later day.',
   'pastPeriods.picker.title': 'Period {number}',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Save',
   'pastPeriods.skipThisOne': 'Skip this one if you do not remember',
+  'pastPeriods.stillGoing': 'Still going',
   'pastPeriods.title': 'Your last three periods',
   'pastPeriods.wayPast': 'Skip, I will log as I go',
   'period.back': 'Back',
@@ -973,9 +999,7 @@ export const english = {
   'recovery.confirm.wrong': "That doesn't match. Check your paper and try again.",
   'recovery.step': 'Step {step} of {of}',
 
-  'reminder.notification.onTheDay': 'Your forecast starts today.',
-  'reminder.notification.oneDayBefore': 'Your forecast starts tomorrow.',
-  'reminder.notification.twoDaysBefore': 'Your forecast starts in two days.',
+  'reminder.notification': 'A reminder from Emi',
   'settings.answer.back': 'Back',
   'settings.answer.cancel': 'Cancel',
   'settings.answer.gaveAtFirstRun': 'You told us {answer} when you started.',
@@ -1126,6 +1150,7 @@ export const english = {
   'symptom.restless': 'Restless',
   'symptom.restless-sleep': 'Restless sleep',
   'symptom.sad': 'Sad',
+  'symptom.salty-craving': 'Salty',
   'symptom.sensitive': 'Sensitive',
   'symptom.sensitive-skin': 'Sensitive skin',
   'symptom.shaky': 'Shaky',
@@ -1134,6 +1159,7 @@ export const english = {
   'symptom.sluggish': 'Sluggish',
   'symptom.sound-sensitivity': 'Sound sensitivity',
   'symptom.stomach-ache': 'Stomach ache',
+  'symptom.sweet-craving': 'Sweet',
   'symptom.tearful': 'Tearful',
   'symptom.vaginal-dryness': 'Vaginal dryness',
   'symptom.vivid-dreams': 'Vivid dreams',

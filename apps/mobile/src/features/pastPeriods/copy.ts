@@ -1,7 +1,12 @@
 import { words } from '../../language';
 import { dateOf, monthOf } from '../onboarding/days';
 import { periodLengthDaysLabel } from '../onboarding/copy';
-import { longestCycleBetweenDays, shortestCycleBetweenDays } from './pastPeriods';
+import {
+  type PastPeriod,
+  longestCycleBetweenDays,
+  longestPastPeriodDays,
+  shortestCycleBetweenDays,
+} from './pastPeriods';
 
 /** The words of the list of her last periods, in the first run and on its own screen. */
 export const pastPeriodsCopy = {
@@ -18,6 +23,11 @@ export const pastPeriodsCopy = {
   length: words('pastPeriods.picker.length'),
   done: words('pastPeriods.picker.done'),
   remove: words('pastPeriods.picker.remove'),
+  stillGoing: words('pastPeriods.stillGoing'),
+  // The newest start that can still be going is one period back from today, counted as days ago.
+  stillGoingTooLongAgo: words('pastPeriods.picker.stillGoingTooLongAgo', undefined, {
+    maximum: longestPastPeriodDays - 1,
+  }),
   outOfRange: words('pastPeriods.picker.outOfRange', undefined, {
     maximum: longestCycleBetweenDays,
     minimum: shortestCycleBetweenDays,
@@ -32,6 +42,13 @@ export function pastPeriodDateSaid(day: string): string {
 /** "7 days", the length of a period as the row names it. */
 export function pastPeriodLengthSaid(days: number): string {
   return periodLengthDaysLabel(days);
+}
+
+/** "7 days" for a period she gave a length, and "Still going" for the newest one where she did not. */
+export function pastPeriodRunSaid(period: PastPeriod): string {
+  return period.lengthDays === undefined
+    ? pastPeriodsCopy.stillGoing
+    : pastPeriodLengthSaid(period.lengthDays);
 }
 
 /** "Period 2", which names the row the picker is open on. */

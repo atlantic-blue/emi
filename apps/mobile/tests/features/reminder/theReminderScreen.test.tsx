@@ -31,7 +31,7 @@ import {
 import { resetExpoSecureStore } from '../../fixtures/expoSecureStore';
 import { herDatabase } from '../../fixtures/herPhone';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../../fixtures/theSave';
 import { sheReachesTheReminder } from './theWalkToTheReminder';
 import { locksDrawnIn } from '../../fixtures/drawnLocks';
 
@@ -74,7 +74,7 @@ function theMomentSheWasPromised(daysBefore: number): Date {
 async function sheFinishesTheFirstRun(): Promise<void> {
   await fireEvent.press(await screen.findByTestId(firstForecastActionTestID));
   await sheReadsWhatEmiDoesWithIt();
-  await sheHoldsTheRing();
+  await sheTapsSaveAndStart();
 }
 
 describe('the reminder, after the first day she logs', () => {
@@ -105,30 +105,32 @@ describe('the reminder, after the first day she logs', () => {
       expect(screen.getByTestId(onboardingStepLabelTestID)).toHaveTextContent('Step 12 of 12');
     });
 
-    it('asks the design question, offers its three moments, and chooses none of them for her', async () => {
+    it('asks the question, offers its three moments, and chooses none of them for her', async () => {
       await sheOpensEmi();
       await sheReachesTheReminder(herPeriodStarted);
 
-      expect(screen.getByText('Shall Emi tell you when it is near?')).toBeTruthy();
+      expect(screen.getByText('Would you like a reminder before your period?')).toBeTruthy();
+      expect(screen.getByText('When would you like to be reminded?')).toBeTruthy();
+      expect(screen.queryByText('Shall Emi tell you when it is near?')).toBeNull();
       expect(reminderLeads.map((lead) => screen.getByTestId(reminderTestID(lead)))).toHaveLength(3);
       expect(screen.getByTestId(reminderTestID('twoDaysBefore'))).toHaveTextContent(
-        'Two days before',
+        '2 days before',
       );
-      expect(screen.getByTestId(reminderTestID('oneDayBefore'))).toHaveTextContent(
-        'One day before',
+      expect(screen.getByTestId(reminderTestID('oneDayBefore'))).toHaveTextContent('1 day before');
+      expect(screen.getByTestId(reminderTestID('onTheDay'))).toHaveTextContent(
+        'On the expected start date',
       );
-      expect(screen.getByTestId(reminderTestID('onTheDay'))).toHaveTextContent('On the day');
       for (const lead of reminderLeads) {
         expect(screen.getByTestId(reminderTestID(lead))).not.toBeSelected();
       }
       expect(screen.queryByTestId(reminderLineTestID)).toBeNull();
     });
 
-    it('waits for a moment before "Remind me" will go', async () => {
+    it('waits for a moment before "Turn on reminders" will go', async () => {
       await sheOpensEmi();
       await sheReachesTheReminder(herPeriodStarted);
 
-      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Remind me');
+      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Turn on reminders');
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
 
       await shePresses(reminderTestID('oneDayBefore'));
@@ -136,20 +138,40 @@ describe('the reminder, after the first day she logs', () => {
       expect(screen.getByTestId(reminderTestID('oneDayBefore'))).toBeSelected();
       expect(screen.getByTestId(onboardingActionTestID)).toBeEnabled();
       expect(screen.getByTestId(reminderLineTestID)).toHaveTextContent(
-        'One day before the range starts.',
+        'The reminder comes at 9 in the morning. Your period may start the next day.',
       );
     });
 
-    it('shows the words the lock screen will carry for the moment she pressed', async () => {
+    it('says the hour the reminder comes at and what it means, for each moment she presses', async () => {
       await sheOpensEmi();
       await sheReachesTheReminder(herPeriodStarted);
+
+      await shePresses(reminderTestID('twoDaysBefore'));
+      expect(screen.getByTestId(reminderLineTestID)).toHaveTextContent(
+        'The reminder comes at 9 in the morning. Your period may start about 2 days later.',
+      );
+
+      await shePresses(reminderTestID('onTheDay'));
+      expect(screen.getByTestId(reminderLineTestID)).toHaveTextContent(
+        'The reminder comes at 9 in the morning. Your period may start that day.',
+      );
+    });
+
+    it('shows the lock screen words, which name Emi and never her period, whatever she presses', async () => {
+      await sheOpensEmi();
+      await sheReachesTheReminder(herPeriodStarted);
+
+      expect(screen.getByTestId(reminderPreviewWordsTestID)).toHaveTextContent(
+        'A reminder from Emi',
+      );
 
       await shePresses(reminderTestID('onTheDay'));
 
       expect(screen.getByTestId(reminderPreviewWordsTestID)).toHaveTextContent(
-        'Your forecast starts today.',
+        'A reminder from Emi',
       );
-      expect(screen.queryByText('Your period is forecast in two days.')).toBeNull();
+      expect(screen.getByTestId(reminderPreviewWordsTestID)).not.toHaveTextContent(/period/i);
+      expect(screen.queryByText('Your forecast starts today.')).toBeNull();
     });
 
     it('draws no padlock line, because the welcome links to who can see her records', async () => {
@@ -192,7 +214,7 @@ describe('the reminder, after the first day she logs', () => {
     });
   });
 
-  describe('"Remind me", and the phone allows it', () => {
+  describe('"Turn on reminders", and the phone allows it', () => {
     it('asks the phone once, after the press and never before it', async () => {
       await sheOpensEmi();
       await sheReachesTheReminder(herPeriodStarted);
@@ -213,14 +235,14 @@ describe('the reminder, after the first day she logs', () => {
         cycleLengthDays: herCycleLengthDays,
         reminder: 'twoDaysBefore',
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readSetting(herDatabase(), 'reminderLead')).toBe('twoDaysBefore');
       await waitFor(() => {
         expect(theRemindersOnThePhone()).toEqual([
           {
             identifier: reminderIdentifier,
-            body: 'Your forecast starts in two days.',
+            body: 'A reminder from Emi',
             at: theMomentSheWasPromised(2),
           },
         ]);
@@ -228,7 +250,7 @@ describe('the reminder, after the first day she logs', () => {
     });
   });
 
-  describe('"Remind me", and the phone refuses', () => {
+  describe('"Turn on reminders", and the phone refuses', () => {
     beforeEach(() => {
       resetExpoNotifications('refuse');
     });
@@ -250,7 +272,7 @@ describe('the reminder, after the first day she logs', () => {
         cycleLengthDays: herCycleLengthDays,
         reminder: 'oneDayBefore',
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await act(async () => {
         await Promise.resolve();
       });

@@ -23,7 +23,7 @@ async function aPhoneWithAReminder() {
   migrate(db);
   writeSetting(db, 'reminderLead', 'twoDaysBefore');
   thePhoneWasAnswered('allow');
-  await scheduleHerReminder(new Date('2026-06-04T09:00:00'), 'Your forecast starts in two days.');
+  await scheduleHerReminder(new Date('2026-06-04T09:00:00'), 'A reminder from Emi');
 
   return db;
 }

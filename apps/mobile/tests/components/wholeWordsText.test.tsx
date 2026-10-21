@@ -22,7 +22,13 @@ import { productOrder } from '../../src/features/hygiene/products';
 import { GroupTiles, groupTileNameTestID } from '../../src/features/log/GroupTiles';
 import { HEADER_END, LogHeader, logHeaderEndTestID } from '../../src/features/log/LogHeader';
 import { groupHeadings } from '../../src/features/log/SymptomGroup';
-import { Today, todayTestID } from '../../src/features/onboarding/Today';
+import {
+  BOARD_TILE_BASIS,
+  NARROW_TILE_BASIS,
+  Today,
+  todayCellTestID,
+  todayTestID,
+} from '../../src/features/onboarding/Today';
 import { todayChoices, todayLabels } from '../../src/features/onboarding/copy';
 import { OnAPhone } from '../fixtures/theSafeArea';
 
@@ -38,7 +44,17 @@ const labelStyle = textStyle('label-md');
 const LABEL_SIZE = labelStyle.fontSize ?? 0;
 const LABEL_LINE = labelStyle.lineHeight ?? 0;
 
-const groups = ['sleep', 'digestion', 'skin', 'mood', 'energy', 'pain', 'head', 'libido'] as const;
+const groups = [
+  'sleep',
+  'appetite',
+  'digestive',
+  'skin',
+  'mood',
+  'energy',
+  'pain',
+  'head',
+  'libido',
+] as const;
 
 function styleOf(testID: string): TextStyle {
   return StyleSheet.flatten(screen.getByTestId(testID).props.style) as TextStyle;
@@ -128,7 +144,8 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
   it('should give each one word name under a log tile the shrink rule', async () => {
     await render(<GroupTiles groups={groups} onOpen={() => undefined} />);
 
-    expect(groupHeadings.digestion).toBe('Пищеварение');
+    expect(groupHeadings.appetite).toBe('Аппетит');
+    expect(groupHeadings.digestive).toBe('Работа ЖКТ');
     for (const group of groups) {
       if (isOneWord(groupHeadings[group])) {
         expectTheShrinkRule(groupTileNameTestID(group));
@@ -143,6 +160,7 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
       <OnAPhone>
         <Today
           chosen={[]}
+          onAllSymptoms={() => undefined}
           onBack={() => undefined}
           onPress={() => undefined}
           onSave={() => undefined}
@@ -213,5 +231,36 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
     }
 
     expect(cellWidth()).toBe(`${100 / NARROW_COLUMNS}%`);
+  });
+  it('should lay the first run Today tiles two to a row when a word is still cut at the floor', async () => {
+    await render(
+      <OnAPhone>
+        <Today
+          chosen={[]}
+          onAllSymptoms={() => undefined}
+          onBack={() => undefined}
+          onPress={() => undefined}
+          onSave={() => undefined}
+          onSkip={() => undefined}
+        />
+      </OnAPhone>,
+    );
+    const basisOf = (slug: (typeof todayChoices)[number]): unknown =>
+      StyleSheet.flatten(screen.getByTestId(todayCellTestID(slug)).props.style).flexBasis;
+    const floorOf = (slug: (typeof todayChoices)[number]): unknown =>
+      StyleSheet.flatten(screen.getByTestId(todayCellTestID(slug)).props.style).minWidth;
+
+    expect(basisOf('cramps')).toBe(BOARD_TILE_BASIS);
+
+    for (let step = 0; step < LABEL_SCALES.length; step += 1) {
+      await act(() =>
+        layOut(tileTitleTestID(todayTestID('breast-tenderness')), ['Чувствительн', 'ость груди']),
+      );
+    }
+
+    for (const slug of todayChoices) {
+      expect(basisOf(slug)).toBe(NARROW_TILE_BASIS);
+      expect(floorOf(slug)).toBe(NARROW_TILE_BASIS);
+    }
   });
 });
