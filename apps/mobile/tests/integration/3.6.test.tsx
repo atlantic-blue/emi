@@ -15,7 +15,6 @@ import {
   FULL_TURN_DEGREES,
   type PhaseName,
   coveredDegrees,
-  phaseLabel,
   ringGeometry,
 } from '@emi/tokens';
 import { render, screen, within } from '@testing-library/react-native';
@@ -36,7 +35,7 @@ import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { migrate } from '../../src/data/schema';
 import { writeProfile } from '../../src/data/profileRepository';
 import { writeSetting } from '../../src/data/settingRepository';
-import { cycleCopy } from '../../src/features/cycle/copy';
+import { cycleCopy, phaseFullName } from '../../src/features/cycle/copy';
 import { homeCopy } from '../../src/features/home/copy';
 import { logDay, recordedDays } from '../../src/features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../src/features/cycle/ringInput';
@@ -99,8 +98,8 @@ const theLargestTheyMayBeDrawn = 14;
  * the follicular phase proves nothing here, because the word it writes is not one a stranger reads.
  */
 const theDaysTheRingNamesOneOfThem: readonly { onDay: number; writes: string }[] = [
-  { onDay: 2, writes: phaseLabel.period },
-  { onDay: 16, writes: phaseLabel.ovulation },
+  { onDay: 2, writes: phaseFullName('period') },
+  { onDay: 16, writes: phaseFullName('ovulation') },
 ];
 
 interface WhatSheHasRecorded {
@@ -336,7 +335,7 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
       expect(screen.getByTestId(ringPointerTestID)).toBeTruthy();
       expect(screen.getByText(`Day ${String(theDaySheOpensIt)}`)).toBeTruthy();
-      expect(screen.getByText(phaseLabel.follicular)).toBeTruthy();
+      expect(screen.getByText(phaseFullName('follicular'))).toBeTruthy();
       expect(
         within(screen.getByTestId(homeForecastTestID)).getByTestId(nextPeriodRangeTestID),
       ).toHaveTextContent(rangeSentence(her.forecast.start));
@@ -553,7 +552,9 @@ describe('the ring shows the forecast the arithmetic produced', () => {
 
       expect(app.getPathname()).toBe('/');
       expect(theRingSays()).toBe(`Day 2 of ${herCycleLengthDays}, period`);
-      expect(within(screen.getByTestId(cycleRingTestID)).getByText(phaseLabel.period)).toBeTruthy();
+      expect(
+        within(screen.getByTestId(cycleRingTestID)).getByText(phaseFullName('period')),
+      ).toBeTruthy();
     });
   });
 });

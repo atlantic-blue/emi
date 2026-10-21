@@ -282,7 +282,7 @@ export const theDifferencesTheStepKeeps: Readonly<Partial<Record<FirstRunDrawing
   // The mockups put the step above the drop, and the redesign canvas puts the drop above the step.
   // The canvas is the later drawing, so the welcome follows it.
   welcome: 1,
-  // The mockups put a line under the tiles. The redesign canvas puts "You can skip this." under the
+  // The mockups put a line under the tiles. The redesign canvas puts the question line under the
   // title and only the promise under the tiles, so today follows the canvas.
   todayFirstRun: 1,
   // The mockups put the sample under the question and "Not now" over the button. The redesign

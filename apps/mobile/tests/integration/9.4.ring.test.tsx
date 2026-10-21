@@ -34,6 +34,7 @@ import {
   ringTrackTestID,
 } from '../../src/components/CycleRing';
 import { listCycles } from '../../src/data/cycleRepository';
+import { phaseFullName } from '../../src/features/cycle/copy';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import { type RingInput, ringInputFor } from '../../src/features/cycle/ringInput';
 import { HomeScreen } from '../../src/features/home/HomeScreen';
@@ -298,7 +299,9 @@ describe('the phase name is written in its ink and never on its own fill', () =>
 
       const phase = ringGeometry(her.ring).phase;
 
-      expect(colourOf(theWrittenName(phase))).toBe(colour[phasePalette[phase].ink]);
+      expect(colourOf(screen.getByText(phaseFullName(phase)))).toBe(
+        colour[phasePalette[phase].ink],
+      );
       expect(textDrawnOnAPhaseFill(screen.toJSON())).toEqual([]);
       // Contract changed by the todayMarker board, option C: Today marks the day with the same
       // pointer as the plain ring, an accent head over a dark stem with a white core.

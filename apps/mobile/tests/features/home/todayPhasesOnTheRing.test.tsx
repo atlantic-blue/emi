@@ -204,10 +204,10 @@ describe('the ring of Today', () => {
     ]);
   });
 
-  it('should say the phase, "Day 16" and "of about 28" in the middle', async () => {
+  it('should say the full phase name, "Day 16" and "of about 28" in the middle', async () => {
     await sheOpensToday(16, 28);
 
-    expect(whatItSays(ringCentrePhaseTestID)).toBe('Ovulation');
+    expect(whatItSays(ringCentrePhaseTestID)).toBe('Ovulation phase');
     expect(whatItSays(ringCentreDayTestID)).toBe('Day 16');
     expect(whatItSays(ringCentreLengthTestID)).toBe('of about 28');
   });
@@ -279,13 +279,13 @@ describe('the contrast of each name on its arc', () => {
 
 describe('the phase card under the ring', () => {
   it.each([
-    { cycleLengthDays: 28, cycleDay: 2, says: 'Period phase, days 1 to 5' },
-    { cycleLengthDays: 28, cycleDay: 9, says: 'Follicular phase, days 1 to 13' },
-    { cycleLengthDays: 28, cycleDay: 16, says: 'Ovulation phase, days 14 to 18' },
-    { cycleLengthDays: 28, cycleDay: 20, says: 'Luteal phase, days 19 to 28' },
-    { cycleLengthDays: 33, cycleDay: 9, says: 'Follicular phase, days 1 to 18' },
-    { cycleLengthDays: 33, cycleDay: 20, says: 'Ovulation phase, days 19 to 23' },
-    { cycleLengthDays: 33, cycleDay: 30, says: 'Luteal phase, days 24 to 33' },
+    { cycleLengthDays: 28, cycleDay: 2, says: 'During your period, days 1 to 5' },
+    { cycleLengthDays: 28, cycleDay: 9, says: 'After your period, days 1 to 13' },
+    { cycleLengthDays: 28, cycleDay: 16, says: 'Around ovulation, days 14 to 18' },
+    { cycleLengthDays: 28, cycleDay: 20, says: 'Before your period, days 19 to 28' },
+    { cycleLengthDays: 33, cycleDay: 9, says: 'After your period, days 1 to 18' },
+    { cycleLengthDays: 33, cycleDay: 20, says: 'Around ovulation, days 19 to 23' },
+    { cycleLengthDays: 33, cycleDay: 30, says: 'Before your period, days 24 to 33' },
   ])(
     'should say "$says" on day $cycleDay of a $cycleLengthDays day cycle',
     async ({ cycleLengthDays, cycleDay, says }) => {
@@ -295,12 +295,19 @@ describe('the phase card under the ring', () => {
     },
   );
 
-  it('should carry the sentence of the board for the ovulation phase', async () => {
+  it('should carry the sentence of the board, say the phase is an estimate, and offer what may help', async () => {
     await sheOpensToday(16, 28);
 
     expect(whatItSays(phaseCardLineTestID)).toBe(
-      'Energy is often at its highest. See what this phase means for you.',
+      'Energy is often at its highest. This phase is an estimate. How you may feel and what may help.',
     );
+  });
+
+  it('should no longer name the phase on the card, now that the middle of the ring names it', async () => {
+    await sheOpensToday(20, 28);
+
+    expect(whatItSays(phaseCardDaysTestID)).not.toContain('Luteal');
+    expect(whatItSays(ringCentrePhaseTestID)).toBe('Luteal phase');
   });
 
   it('should be a button now that the Cycle phase page exists, and open it', async () => {

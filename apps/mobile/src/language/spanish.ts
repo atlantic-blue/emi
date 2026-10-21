@@ -304,18 +304,19 @@ export const spanish: CatalogueIn<'es'> = {
     'Un síntoma que registraste una o dos veces no es un patrón, y no lo llamaremos así.',
   'home.patterns.onCycleDay': 'hacia el día {day} de tu ciclo',
   'home.patterns.press': 'Lo que vuelve, completo',
-  'home.phaseCard.period.day': 'Fase del periodo, día {from}',
-  'home.phaseCard.period.days': 'Fase del periodo, días {from} a {to}',
+  'home.phaseCard.estimate': 'Esta fase es una estimación.',
+  'home.phaseCard.period.day': 'Durante el periodo, día {from}',
+  'home.phaseCard.period.days': 'Durante el periodo, días {from} a {to}',
   'home.phaseCard.period.line': 'Los días en que sangras.',
-  'home.phaseCard.follicular.day': 'Fase folicular, día {from}',
-  'home.phaseCard.follicular.days': 'Fase folicular, días {from} a {to}',
+  'home.phaseCard.follicular.day': 'Después del periodo, día {from}',
+  'home.phaseCard.follicular.days': 'Después del periodo, días {from} a {to}',
   'home.phaseCard.follicular.line': 'Los días después de tu periodo, antes de la ovulación.',
-  'home.phaseCard.more': 'Mira lo que significa esta fase para ti.',
-  'home.phaseCard.ovulation.day': 'Fase de ovulación, día {from}',
-  'home.phaseCard.ovulation.days': 'Fase de ovulación, días {from} a {to}',
+  'home.phaseCard.more': 'Cómo puedes sentirte y qué puede ayudar.',
+  'home.phaseCard.ovulation.day': 'Cerca de la ovulación, día {from}',
+  'home.phaseCard.ovulation.days': 'Cerca de la ovulación, días {from} a {to}',
   'home.phaseCard.ovulation.line': 'La energía suele estar en su punto más alto.',
-  'home.phaseCard.luteal.day': 'Fase lútea, día {from}',
-  'home.phaseCard.luteal.days': 'Fase lútea, días {from} a {to}',
+  'home.phaseCard.luteal.day': 'Antes del periodo, día {from}',
+  'home.phaseCard.luteal.days': 'Antes del periodo, días {from} a {to}',
   'home.phaseCard.luteal.line': 'Los días después de la ovulación, antes de tu próximo periodo.',
   'home.roundAction.sex': 'Sexo',
   'home.roundAction.period': 'Regla',
@@ -628,6 +629,7 @@ export const spanish: CatalogueIn<'es'> = {
   'log.temperature.heading': 'Temperatura al despertar',
   'log.temperature.hint': 'Tómala antes de levantarte.',
   /** The invitation the voice sets, which asks rather than labels. */
+  'log.title.today': 'Registro de hoy',
   'log.unexpected.invitation':
     '¿No es tu periodo? Regístralo. No contará como el inicio de un ciclo.',
   'log.unexpected.mark': 'No es mi periodo',
@@ -774,7 +776,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.today.action': 'Guardar hoy',
   'onboarding.today.allSymptoms': 'Todos los síntomas',
   'onboarding.today.nothingToAdd': 'Nada que añadir',
-  'onboarding.today.question': 'Puedes saltarte esto.',
+  'onboarding.today.question': 'Marca todo lo que corresponda.',
   'onboarding.today.title': '¿Cómo estás hoy?',
   'onboarding.tour.price.line': 'Un mes gratis, después 29,99 libras al año.',
   'onboarding.tour.price.title': 'Tuyo, y sigue siendo tuyo',
@@ -919,41 +921,46 @@ export const spanish: CatalogueIn<'es'> = {
   'phase.estimate.learning': 'Es una estimación a partir de la duración de ciclo que indicaste.',
   'phase.guide.body': 'Cuerpo',
   'phase.guide.close': 'Cerrar',
-  'phase.guide.follicular.body': 'La energía suele subir día a día. El flujo puede notarse más.',
+  'phase.guide.everyone':
+    'Cada persona es diferente. Si los síntomas afectan a tu día a día, habla con un médico.',
+  'phase.guide.follicular.body': 'La energía suele volver día a día. El flujo puede notarse más.',
   'phase.guide.follicular.food':
-    'La comida fresca, las proteínas y la fibra ayudan mientras vuelve la energía. Mantén comidas regulares.',
+    'La comida fresca y las comidas regulares pueden ayudar mientras vuelve la energía.',
   'phase.guide.follicular.mood':
-    'Muchas personas se sienten más ligeras y curiosas después del periodo. Un buen momento para empezar cosas nuevas.',
-  'phase.guide.follicular.training':
-    'Muchas personas pueden entrenar más fuerte ahora. Aumenta poco a poco, con un buen calentamiento.',
-  'phase.guide.food': 'Comida',
+    'Puedes sentirte más ligera después del periodo. Un buen momento para empezar algo nuevo.',
+  'phase.guide.follicular.training': 'Puede que tengas ganas de hacer más. Aumenta poco a poco.',
+  'phase.guide.food': 'Apetito',
   'phase.guide.luteal.body':
-    'Algunas personas notan hinchazón, pechos sensibles o cambios en la piel antes del periodo.',
+    'Pueden aparecer hinchazón y pechos sensibles. Elige ropa cómoda que no apriete.',
   'phase.guide.luteal.food':
-    'Los antojos son frecuentes. Las comidas regulares con cereales integrales y proteínas pueden ayudarte a sentirte estable.',
+    'Puedes tener más hambre o ganas de dulce. Intenta comer con regularidad.',
   'phase.guide.luteal.mood':
-    'Algunas personas se sienten más tranquilas, y otras más sensibles hacia el final. Deja espacio en tus planes.',
+    'Puedes sentirte irritable o ansiosa. Si te sientes desbordada, haz una pausa.',
   'phase.guide.luteal.training':
-    'Las sesiones constantes y moderadas suelen sentar mejor. Descansa más si te sientes cansada.',
+    'Guíate por cómo te sientes. Si estás cansada, baja la intensidad o descansa.',
   'phase.guide.mood': 'Ánimo',
-  'phase.guide.open': 'Lo que esta fase puede significar para ti',
+  'phase.guide.open': 'Cómo puedes sentirte y qué puede ayudar',
   'phase.guide.ovulation.body':
     'Algunas personas sienten un dolor breve en un lado, o notan un flujo claro y elástico.',
   'phase.guide.ovulation.food':
-    'Las verduras frescas, la fibra y suficiente agua ayudan cuando el estrógeno llega a su punto más alto. Mantén comidas regulares.',
+    'Tu apetito puede cambiar. Intenta comer con regularidad y beber suficiente agua.',
   'phase.guide.ovulation.mood':
-    'Muchas personas se sienten más sociables y con más confianza ahora. Planea las charlas y las reuniones que piden energía.',
+    'Puedes sentirte más sociable y con más confianza. Un buen momento para planes con otras personas.',
   'phase.guide.ovulation.training':
-    'La fuerza y la velocidad suelen estar en su mejor momento. Un buen momento para sesiones más duras, con un buen calentamiento.',
+    'La energía suele estar alta. Si te sientes con fuerza, prueba una sesión más intensa, con un buen calentamiento.',
   'phase.guide.period.body':
-    'Los cólicos, el dolor en la parte baja de la espalda o el cansancio son frecuentes. Descansa cuando lo necesites.',
+    'Pueden aparecer cólicos, dolor en la parte baja de la espalda o cansancio. El calor y el descanso pueden ayudar.',
   'phase.guide.period.food':
-    'Las comidas calientes y regulares y suficiente agua pueden ayudarte a sentirte estable.',
+    'Tu apetito puede cambiar. La comida caliente, las comidas regulares y suficiente agua pueden ayudar.',
   'phase.guide.period.mood':
-    'Algunas personas se sienten cansadas o bajas de ánimo los primeros días. Planea un día más tranquilo cuando puedas.',
+    'Puedes sentirte cansada o con el ánimo bajo los primeros días. Si puedes, planea un día más tranquilo.',
   'phase.guide.period.training':
-    'El movimiento suave, como caminar o estirarse, suele sentar mejor. Haz lo que te siente bien.',
-  'phase.guide.training': 'Entrenamiento',
+    'Guíate por cómo te sientes. Un paseo tranquilo o estirarte suele sentar bien.',
+  'phase.guide.title.follicular': 'Después del periodo: qué puede ayudar',
+  'phase.guide.title.luteal': 'Antes del periodo: qué puede ayudar',
+  'phase.guide.title.ovulation': 'Cerca de la ovulación: qué puede ayudar',
+  'phase.guide.title.period': 'Durante el periodo: qué puede ayudar',
+  'phase.guide.training': 'Movimiento',
   'phase.name.follicular': 'Fase folicular',
   'phase.name.luteal': 'Fase lútea',
   'phase.name.ovulation': 'Fase de ovulación',
@@ -962,6 +969,7 @@ export const spanish: CatalogueIn<'es'> = {
   'phase.past.heading.luteal': 'En tus fases lúteas anteriores',
   'phase.past.heading.ovulation': 'En tus fases de ovulación anteriores',
   'phase.past.heading.period': 'En tus fases del periodo anteriores',
+  'phase.past.heading.waiting': 'Aquí aparecerán tus observaciones',
   'phase.past.nothing': 'Aún no anotaste nada de este diario en estas fases.',
   'phase.past.one': {
     one: 'Anotaste «{first}» en {firstCount} de {count} ciclo.',

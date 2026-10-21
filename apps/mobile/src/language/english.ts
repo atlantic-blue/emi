@@ -307,18 +307,19 @@ export const english = {
     "A symptom you logged once or twice isn't a pattern, so we won't call it one.",
   'home.patterns.onCycleDay': 'about day {day} of your cycle',
   'home.patterns.press': 'What comes back, in full',
-  'home.phaseCard.period.day': 'Period phase, day {from}',
-  'home.phaseCard.period.days': 'Period phase, days {from} to {to}',
+  'home.phaseCard.estimate': 'This phase is an estimate.',
+  'home.phaseCard.period.day': 'During your period, day {from}',
+  'home.phaseCard.period.days': 'During your period, days {from} to {to}',
   'home.phaseCard.period.line': 'The days you bleed.',
-  'home.phaseCard.follicular.day': 'Follicular phase, day {from}',
-  'home.phaseCard.follicular.days': 'Follicular phase, days {from} to {to}',
+  'home.phaseCard.follicular.day': 'After your period, day {from}',
+  'home.phaseCard.follicular.days': 'After your period, days {from} to {to}',
   'home.phaseCard.follicular.line': 'The days after your period, before ovulation.',
-  'home.phaseCard.more': 'See what this phase means for you.',
-  'home.phaseCard.ovulation.day': 'Ovulation phase, day {from}',
-  'home.phaseCard.ovulation.days': 'Ovulation phase, days {from} to {to}',
+  'home.phaseCard.more': 'How you may feel and what may help.',
+  'home.phaseCard.ovulation.day': 'Around ovulation, day {from}',
+  'home.phaseCard.ovulation.days': 'Around ovulation, days {from} to {to}',
   'home.phaseCard.ovulation.line': 'Energy is often at its highest.',
-  'home.phaseCard.luteal.day': 'Luteal phase, day {from}',
-  'home.phaseCard.luteal.days': 'Luteal phase, days {from} to {to}',
+  'home.phaseCard.luteal.day': 'Before your period, day {from}',
+  'home.phaseCard.luteal.days': 'Before your period, days {from} to {to}',
   'home.phaseCard.luteal.line': 'The days after ovulation, before your next period.',
   'home.roundAction.sex': 'Sex',
   'home.roundAction.period': 'Period',
@@ -624,6 +625,7 @@ export const english = {
   'log.temperature.heading': 'Waking temperature',
   'log.temperature.hint': 'Take it before you get up.',
   /** The invitation the voice sets, which asks rather than labels. */
+  'log.title.today': 'Entry for today',
   'log.unexpected.invitation': "Not your period? Log it. It won't count as the start of a cycle.",
   'log.unexpected.mark': 'Not my period',
   /** What her mark did, said as the arithmetic behaves rather than as a reassurance. */
@@ -776,7 +778,7 @@ export const english = {
   'onboarding.today.action': 'Save today',
   'onboarding.today.allSymptoms': 'All symptoms',
   'onboarding.today.nothingToAdd': 'Nothing to add',
-  'onboarding.today.question': 'You can skip this.',
+  'onboarding.today.question': 'Choose all that apply.',
   'onboarding.today.title': 'How are you today?',
   'onboarding.tour.price.line': 'One month free, then 29.99 pounds a year.',
   'onboarding.tour.price.title': 'Yours, and it stays yours',
@@ -918,41 +920,44 @@ export const english = {
   'phase.estimate.learning': 'This is an estimate from the cycle length you gave.',
   'phase.guide.body': 'Body',
   'phase.guide.close': 'Close',
+  'phase.guide.everyone':
+    'Everyone is different. If symptoms get in the way of daily life, talk to a doctor.',
   'phase.guide.follicular.body':
-    'Energy often rises day by day. Discharge can become easier to notice.',
-  'phase.guide.follicular.food':
-    'Fresh food, protein and fibre help as your energy comes back. Keep regular meals.',
+    'Energy often comes back day by day. Discharge can become easier to notice.',
+  'phase.guide.follicular.food': 'Fresh food and regular meals can help as your energy comes back.',
   'phase.guide.follicular.mood':
-    'Many people feel lighter and more curious after the period. A good time to start new things.',
-  'phase.guide.follicular.training':
-    'Many people can train harder now. Build up step by step, with a proper warm up.',
-  'phase.guide.food': 'Food',
+    'You may feel lighter after your period. A good time to start something new.',
+  'phase.guide.follicular.training': 'You may feel ready to do more. Build up step by step.',
+  'phase.guide.food': 'Appetite',
   'phase.guide.luteal.body':
-    'Some people notice bloating, tender breasts or changes in their skin before the period.',
-  'phase.guide.luteal.food':
-    'Cravings are common. Regular meals with whole grains and protein can help you feel steady.',
+    'Bloating and tender breasts can occur. Choose comfortable clothes that do not feel tight.',
+  'phase.guide.luteal.food': 'You may feel hungrier or crave sweet food. Try to eat regularly.',
   'phase.guide.luteal.mood':
-    'Some people feel calmer, and some feel more sensitive near the end. Leave room in your plans.',
-  'phase.guide.luteal.training':
-    'Steady, moderate sessions often feel best. Rest more if you feel tired.',
+    'You may feel irritable or anxious. If you feel overwhelmed, take a break.',
+  'phase.guide.luteal.training': 'Go by how you feel. If you are tired, do less or rest.',
   'phase.guide.mood': 'Mood',
-  'phase.guide.open': 'What this phase can mean for you',
+  'phase.guide.open': 'How you may feel and what may help',
   'phase.guide.ovulation.body':
     'Some people feel a short pain on one side, or notice clear, stretchy discharge.',
   'phase.guide.ovulation.food':
-    'Fresh vegetables, fibre and enough water help as oestrogen peaks. Keep regular meals.',
+    'Your appetite may change. Try to eat regularly and drink enough water.',
   'phase.guide.ovulation.mood':
-    'Many people feel more social and confident now. Plan the talks and the meetings that need energy.',
+    'You may feel more social and confident. A good time for plans with other people.',
   'phase.guide.ovulation.training':
-    'Strength and speed are often at their best. A good time for harder sessions, with a proper warm up.',
+    'Energy is often high. If you feel strong, try a harder session, with a proper warm up.',
   'phase.guide.period.body':
-    'Cramps, a sore lower back or tiredness are common. Rest when you need it.',
-  'phase.guide.period.food': 'Warm, regular meals and enough water can help you feel steady.',
+    'Cramps, a sore lower back or tiredness can occur. Warmth and rest can help.',
+  'phase.guide.period.food':
+    'Your appetite may change. Warm food, regular meals and enough water can help.',
   'phase.guide.period.mood':
-    'Some people feel tired or low on the first days. Plan a quieter day where you can.',
+    'You may feel tired or low on the first days. Plan a quieter day if you can.',
   'phase.guide.period.training':
-    'Gentle movement, such as walking or stretching, often feels best. Do what feels right.',
-  'phase.guide.training': 'Training',
+    'Go by how you feel. A gentle walk or stretching often feels good.',
+  'phase.guide.title.follicular': 'After your period: what may help',
+  'phase.guide.title.luteal': 'Before your period: what may help',
+  'phase.guide.title.ovulation': 'Around ovulation: what may help',
+  'phase.guide.title.period': 'During your period: what may help',
+  'phase.guide.training': 'Movement',
   'phase.name.follicular': 'Follicular phase',
   'phase.name.luteal': 'Luteal phase',
   'phase.name.ovulation': 'Ovulation phase',
@@ -961,6 +966,7 @@ export const english = {
   'phase.past.heading.luteal': 'In your past luteal phases',
   'phase.past.heading.ovulation': 'In your past ovulation phases',
   'phase.past.heading.period': 'In your past period phases',
+  'phase.past.heading.waiting': 'Your observations will appear here',
   'phase.past.nothing': 'You noted nothing from this diary in these phases yet.',
   'phase.past.one': {
     one: 'You noted {first} in {firstCount} of {count} cycle.',

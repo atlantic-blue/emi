@@ -94,6 +94,7 @@ import {
 } from '../apps/mobile/src/components/CycleRing';
 import {
   cycleCopy,
+  phaseFullName,
   ringAboutLengthWords,
   ringDayNumberWords,
   ringSpokenLabel,
@@ -268,11 +269,12 @@ import {
   whyTheStripIsGone,
 } from '../apps/mobile/tests/fixtures/theTodayLook';
 import { phaseCardPressTestID, phaseCardTestID } from '../apps/mobile/src/features/home/PhaseCard';
-import { guideAreas } from '../apps/mobile/src/features/phase/copy';
+import { guideAreas, phasePageCopy } from '../apps/mobile/src/features/phase/copy';
 import { phaseDiaryNoteTestID } from '../apps/mobile/src/features/phase/PhaseDiary';
 import {
   phaseGuideAreaTestID,
   phaseGuideCloseTestID,
+  phaseGuideEveryoneTestID,
   phaseGuideTestID,
 } from '../apps/mobile/src/features/phase/PhaseGuide';
 import {
@@ -2443,7 +2445,9 @@ defineFeature(feature, (test) => {
       // The day is read inside the ring rather than anywhere on the glass, so a number found loose
       // elsewhere on the screen cannot answer for it. The ring of Today writes it as Day 2.
       expect(within(screen.getByTestId(cycleRingTestID)).getByText('Day 2')).toBeTruthy();
-      expect(within(screen.getByTestId(cycleRingTestID)).getByText(phaseLabel.period)).toBeTruthy();
+      expect(
+        within(screen.getByTestId(cycleRingTestID)).getByText(phaseFullName('period')),
+      ).toBeTruthy();
     });
 
     and('the ring is drawn on the screen she is looking at', () => {
@@ -2811,8 +2815,8 @@ defineFeature(feature, (test) => {
       // here is what the ring itself names.
       const insideTheRing = within(screen.getByTestId(cycleRingTestID));
 
-      expect(insideTheRing.getByText(phaseLabel.period)).toBeTruthy();
-      expect(insideTheRing.queryByText(phaseLabel.luteal)).toBeNull();
+      expect(insideTheRing.getByText(phaseFullName('period'))).toBeTruthy();
+      expect(insideTheRing.queryByText(phaseFullName('luteal'))).toBeNull();
     });
 
     and('a screen reader is told the day and the phase in the same sentence', () => {
@@ -3488,7 +3492,7 @@ defineFeature(feature, (test) => {
     );
 
     and('the phase she is in is written over it, in words', () => {
-      expect(thePhaseSheReads().phase).toBe('Period');
+      expect(thePhaseSheReads().phase).toBe('Period phase');
     });
 
     and('the day of her cycle is drawn far larger than the phase over it', () => {
@@ -3519,7 +3523,7 @@ defineFeature(feature, (test) => {
         const drawn = whatTheScreenSheOpensDrew();
 
         expect(drawn.indexOf(phaseCardTestID)).toBeGreaterThan(drawn.indexOf(cycleRingTestID));
-        expect(thePhaseSheReads().cardDays).toMatch(/^Period phase, days? \d+/);
+        expect(thePhaseSheReads().cardDays).toMatch(/^During your period, days? \d+/);
         expect(
           theIdentifiersDrawn().filter((identifier) =>
             theIdentifiersOfTheLineThatIsGone.includes(identifier),
@@ -3546,8 +3550,8 @@ defineFeature(feature, (test) => {
       );
       expect(inHerLutealPhase.day).toBe(theFirstLutealDayTheRuleGives);
       expect(inHerLutealPhase.day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
-      expect(inHerLutealPhase.phase).toBe('Luteal');
-      expect(inHerLutealPhase.cardDays).toMatch(/^Luteal phase, days? \d+/);
+      expect(inHerLutealPhase.phase).toBe('Luteal phase');
+      expect(inHerLutealPhase.cardDays).toMatch(/^Before your period, days? \d+/);
       expect(inHerLutealPhase.phaseColour).toBe(theInkOf('luteal'));
       // The four words stay where they are whatever the phase, so the word she reads here is
       // drawn at the size the period day drew its own.
@@ -3630,21 +3634,33 @@ defineFeature(feature, (test) => {
       }
     });
 
-    when('she presses What this phase can mean for you', async () => {
+    when('she presses How you may feel and what may help', async () => {
       await shePresses(phasePageGuideTestID);
     });
 
     then(
-      'a sheet gives her Mood, Food, Body and Training for that phase, and no designer note',
+      'a sheet gives her a short tip for Mood, Appetite, Body and Movement in that phase, and no designer note',
       () => {
         expect(screen.getByTestId(phaseGuideTestID)).toBeTruthy();
         expect(guideAreas).toEqual(['mood', 'food', 'body', 'training']);
+        expect(guideAreas.map((area) => phasePageCopy.guide.areas[area])).toEqual([
+          'Mood',
+          'Appetite',
+          'Body',
+          'Movement',
+        ]);
         for (const area of guideAreas) {
           expect(screen.getByTestId(phaseGuideAreaTestID(area))).toBeTruthy();
         }
         expect(screen.queryByText(/specialist/)).toBeNull();
       },
     );
+
+    and('the sheet says that everyone is different', () => {
+      expect(screen.getByTestId(phaseGuideEveryoneTestID)).toHaveTextContent(
+        'Everyone is different. If symptoms get in the way of daily life, talk to a doctor.',
+      );
+    });
 
     when('she presses Close', async () => {
       await shePresses(phaseGuideCloseTestID);
@@ -6999,7 +7015,7 @@ defineFeature(feature, (test) => {
       'the middle of the ring names her phase, then Day and the day she is on, then about the length of her cycle',
       () => {
         expect(theMiddleOfTheRingOfToday()).toEqual([
-          'Period',
+          'Period phase',
           ringDayNumberWords(herCycle.dayOfCycle),
           ringAboutLengthWords(herCycle.cycleLengthDays),
         ]);

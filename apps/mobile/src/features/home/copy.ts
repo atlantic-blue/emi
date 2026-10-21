@@ -123,6 +123,9 @@ const thePhaseCardKeys: Readonly<
 /** The way on from the phase card, after the sentence about the phase. */
 export const phaseCardMore = words('home.phaseCard.more');
 
+/** Said on the card before the way on, because no phase is measured: each one is worked out. */
+export const phaseCardEstimate = words('home.phaseCard.estimate');
+
 /** The two lines of the phase card: the phase and its days, then one sentence about it. */
 export function phaseCardWords(
   phase: PhaseName,

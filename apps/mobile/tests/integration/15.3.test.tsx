@@ -145,12 +145,12 @@ describe('she reads her phase and her cycle day from across the room', () => {
     });
 
     it('names the phase in words over the day, and it is the phase the drawing draws her in', () => {
-      expect(thePhaseSheReads().phase).toBe('Period');
+      expect(thePhaseSheReads().phase).toBe('Period phase');
     });
 
     it('names the phase and its days on the card, as the phase rule gives them', () => {
       expect(thePhaseSheReads().cardDays).toBe(theCardTheRuleGives('period', theDaySheOpensIt));
-      expect(thePhaseSheReads().cardDays).toMatch(/^Period phase, days? \d+/);
+      expect(thePhaseSheReads().cardDays).toMatch(/^During your period, days? \d+/);
       expect(thePhaseSheReads().cardLine).not.toBe('');
     });
 
@@ -200,15 +200,15 @@ describe('she reads her phase and her cycle day from across the room', () => {
       await sheOpensEmiOn(new Date(`${theDayTheLutealDrawingNames}T12:00:00.000Z`));
 
       expect(thePhaseSheReads().day).toBe(theLutealDayTheDrawingDraws);
-      expect(thePhaseSheReads().phase).toBe('Ovulation');
-      expect(thePhaseSheReads().cardDays).toContain('Ovulation');
-      expect(thePhaseSheReads().cardDays).not.toContain('Luteal');
+      expect(thePhaseSheReads().phase).toBe('Ovulation phase');
+      expect(thePhaseSheReads().cardDays).toContain('Around ovulation');
+      expect(thePhaseSheReads().cardDays).not.toContain('Before your period');
     });
 
     it('names the luteal phase in words, writes it in the luteal ink, and names its days on the card', () => {
       const read = thePhaseSheReads();
 
-      expect(read.phase).toBe('Luteal');
+      expect(read.phase).toBe('Luteal phase');
       expect(read.phaseColour).toBe(theInkOf('luteal'));
       expect(read.cardDays).toBe(theCardTheRuleGives('luteal', theDaySheReachesHerLutealPhase));
     });
