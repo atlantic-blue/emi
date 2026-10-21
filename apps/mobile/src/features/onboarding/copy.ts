@@ -14,7 +14,7 @@ import { words } from '../../language';
 import { groupHeadings } from '../log/SymptomGroup';
 import { theGroupsSheSeesFirst } from '../log/herOrder';
 import { symptomName } from '../log/symptomName';
-import { type ReminderLead, reminderLeads } from '../reminder/reminder';
+import { type ReminderLead, reminderHour, reminderLeads } from '../reminder/reminder';
 import {
   type TodaySymptom,
   maximumCycleLengthDays,
@@ -106,6 +106,7 @@ export const firstRunCopy = {
   },
   reminder: {
     title: words('onboarding.reminder.title'),
+    question: words('onboarding.reminder.question'),
     action: words('onboarding.reminder.action'),
     notNow: words('onboarding.reminder.notNow'),
     /**
@@ -266,11 +267,16 @@ export const reminderLabels: Readonly<Record<ReminderLead, string>> = {
   onTheDay: words('onboarding.reminder.choice.onTheDay'),
 };
 
-/** The line under the question once she has chosen, which says when the reminder comes. */
+/**
+ * The line under the question once she has chosen. It says the hour the reminder comes at and what
+ * it means, which the lock screen never says.
+ */
+const theHour = { hour: String(reminderHour) };
+
 export const reminderLines: Readonly<Record<ReminderLead, string>> = {
-  twoDaysBefore: words('onboarding.reminder.line.twoDaysBefore'),
-  oneDayBefore: words('onboarding.reminder.line.oneDayBefore'),
-  onTheDay: words('onboarding.reminder.line.onTheDay'),
+  twoDaysBefore: words('onboarding.reminder.line.twoDaysBefore', undefined, theHour),
+  oneDayBefore: words('onboarding.reminder.line.oneDayBefore', undefined, theHour),
+  onTheDay: words('onboarding.reminder.line.onTheDay', undefined, theHour),
 };
 
 /** The order the screen offers them in, which the maps above cannot carry. */

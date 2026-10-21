@@ -71,21 +71,21 @@ Feature: She opens Emi and logs her first period
     Given she has never opened Emi before
     When she opens Emi
     And she reaches the reminder after the first day she logs
-    Then Remind me waits until she picks when
-    And the sample on the screen names a forecast and a day, and nothing about her body
+    Then Turn on reminders waits until she picks when
+    And the sample lock screen says only that it is a reminder from Emi
     When she picks two days before
-    And she presses Remind me and her phone allows it
+    And she presses Turn on reminders and her phone allows it
     Then her phone asked her once, after she pressed
     And she is looking at her first forecast
     When she reads on and taps Save and start
-    Then her phone holds one reminder, at nine in the morning two days before the range she was shown
+    Then her phone holds one reminder from Emi, at nine in the morning two days before the range she was shown
 
   Scenario: SCREEN-1, her phone refuses the reminder and the first run goes on
     Given she has never opened Emi before
     And her phone will refuse notifications
     When she opens Emi
     And she reaches the reminder after the first day she logs
-    And she picks one day before and presses Remind me
+    And she picks one day before and presses Turn on reminders
     Then she is looking at her first forecast
     When she reads on and taps Save and start
     Then her phone holds no reminder and no choice of one

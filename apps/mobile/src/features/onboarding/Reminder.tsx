@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { Chip } from '../../components/Chip';
-import { type ReminderLead, reminderWords } from '../reminder/reminder';
+import { type ReminderLead, reminderNotificationWords } from '../reminder/reminder';
 import { OnboardingScreen } from './OnboardingScreen';
 import { firstRunCopy, reminderChoices, reminderLabels, reminderLines } from './copy';
 
@@ -23,17 +23,11 @@ const BELL_SIZE = 34;
 /** Points. The square the word emi stands in, which is how the phone draws an application. */
 const TILE = 34;
 
-/**
- * The sample stands in for the moment she has not chosen yet with the first of the three, which is
- * the moment the redesign draws it at.
- */
-const theSampleBeforeAChoice: ReminderLead = 'twoDaysBefore';
-
 interface Props {
   /** Nothing at all until she presses one of the three. */
   readonly chosen: ReminderLead | undefined;
   readonly onChoose: (lead: ReminderLead) => void;
-  /** "Remind me", which waits for a choice. */
+  /** "Turn on reminders", which waits for a choice. */
   readonly onRemind: () => void;
   /** "Not now" and Skip. Both go on, write nothing and ask the phone nothing. */
   readonly onNotNow: () => void;
@@ -44,13 +38,13 @@ interface Props {
  * The reminder, at the end of the questions. The words she would read on her lock screen stand at
  * the top, before anything is asked, so she agrees to the words and not to an idea of them.
  *
- * Nothing is chosen until she presses a moment, and "Remind me" waits for one. The phone's own
+ * Nothing is chosen until she presses a moment, and "Turn on reminders" waits for one. The phone's own
  * permission dialog comes only after she presses it.
  */
 export function Reminder({ chosen, onChoose, onRemind, onNotNow, onBack }: Props): ReactNode {
   return (
     <OnboardingScreen
-      above={<ThePreview lead={chosen ?? theSampleBeforeAChoice} />}
+      above={<ThePreview />}
       actionIsReady={chosen !== undefined}
       actionLabel={firstRunCopy.reminder.action}
       lines={[]}
@@ -58,6 +52,7 @@ export function Reminder({ chosen, onChoose, onRemind, onNotNow, onBack }: Props
       onBack={onBack}
       onSkip={onNotNow}
       onWayPast={onNotNow}
+      question={firstRunCopy.reminder.question}
       screen="reminder"
       standsOnTheSheet={false}
       title={firstRunCopy.reminder.title}
@@ -89,7 +84,7 @@ export function Reminder({ chosen, onChoose, onRemind, onNotNow, onBack }: Props
 }
 
 /** The notification as the lock screen would draw it, with the words the phone will raise. */
-function ThePreview({ lead }: { readonly lead: ReminderLead }): ReactNode {
+function ThePreview(): ReactNode {
   return (
     <View style={styles.preview} testID={reminderPreviewTestID}>
       <View style={styles.bell}>
@@ -102,7 +97,7 @@ function ThePreview({ lead }: { readonly lead: ReminderLead }): ReactNode {
         <View style={styles.bannerWords}>
           <Text style={styles.bannerTitle}>{firstRunCopy.reminder.name}</Text>
           <Text style={styles.bannerLine} testID={reminderPreviewWordsTestID}>
-            {reminderWords[lead]}
+            {reminderNotificationWords}
           </Text>
         </View>
       </View>

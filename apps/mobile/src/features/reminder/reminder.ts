@@ -31,14 +31,10 @@ export function reminderLeadIsOffered(value: string): value is ReminderLead {
 }
 
 /**
- * The words the lock screen shows. They name Emi's forecast and a day, and never her body or a
- * symptom, because anybody who picks up the phone can read a lock screen.
+ * The words the lock screen shows, the same for every moment. They name Emi and nothing else, because
+ * anybody who picks up the phone can read a lock screen. The screen that asks says what they mean.
  */
-export const reminderWords: Readonly<Record<ReminderLead, string>> = {
-  twoDaysBefore: words('reminder.notification.twoDaysBefore'),
-  oneDayBefore: words('reminder.notification.oneDayBefore'),
-  onTheDay: words('reminder.notification.onTheDay'),
-};
+export const reminderNotificationWords: string = words('reminder.notification');
 
 /**
  * The moment the reminder is raised at, or nothing at all. Nothing where the forecast has no range

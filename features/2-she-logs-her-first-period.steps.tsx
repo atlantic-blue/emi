@@ -2087,16 +2087,16 @@ defineFeature(feature, (test) => {
       expect(app.pathname()).toBe('/onboarding/reminder');
     });
 
-    then('Remind me waits until she picks when', () => {
-      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Remind me');
+    then('Turn on reminders waits until she picks when', () => {
+      expect(screen.getByTestId(onboardingActionTestID)).toHaveTextContent('Turn on reminders');
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
-    and('the sample on the screen names a forecast and a day, and nothing about her body', () => {
+    and('the sample lock screen says only that it is a reminder from Emi', () => {
       expect(screen.getByTestId(reminderPreviewWordsTestID)).toHaveTextContent(
-        'Your forecast starts in two days.',
+        'A reminder from Emi',
       );
-      expect(screen.queryByText(/period/i)).toBeNull();
+      expect(screen.getByTestId(reminderPreviewWordsTestID)).not.toHaveTextContent(/period/i);
     });
 
     when('she picks two days before', async () => {
@@ -2106,7 +2106,7 @@ defineFeature(feature, (test) => {
       expect(timesThePhoneAsked()).toBe(0);
     });
 
-    and('she presses Remind me and her phone allows it', async () => {
+    and('she presses Turn on reminders and her phone allows it', async () => {
       await shePresses(onboardingActionTestID);
       await screen.findByTestId(firstForecastActionTestID);
     });
@@ -2124,7 +2124,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'her phone holds one reminder, at nine in the morning two days before the range she was shown',
+      'her phone holds one reminder from Emi, at nine in the morning two days before the range she was shown',
       async () => {
         const forecast = forecastFromHerAnswers({
           periods: [{ startedOn: herPeriodStarted, lengthDays: aWalkPeriodLengthDays }],
@@ -2136,6 +2136,9 @@ defineFeature(feature, (test) => {
         await waitFor(() => {
           expect(theRemindersOnThePhone().map((reminder) => reminder.at)).toEqual([
             new Date(year ?? 0, (month ?? 1) - 1, (day ?? 1) - 2, 9, 0, 0, 0),
+          ]);
+          expect(theRemindersOnThePhone().map((reminder) => reminder.body)).toEqual([
+            'A reminder from Emi',
           ]);
         });
       },
@@ -2164,7 +2167,7 @@ defineFeature(feature, (test) => {
       await sheReachesTheReminder();
     });
 
-    and('she picks one day before and presses Remind me', async () => {
+    and('she picks one day before and presses Turn on reminders', async () => {
       await shePresses(reminderTestID('oneDayBefore'));
       await shePresses(onboardingActionTestID);
       await screen.findByTestId(firstForecastActionTestID);

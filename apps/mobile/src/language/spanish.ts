@@ -750,15 +750,19 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.regularity.line.sameDays':
     'Tu periodo empieza tras más o menos el mismo número de días cada vez.',
   'onboarding.regularity.title': 'Regular',
-  'onboarding.reminder.action': 'Avísame',
-  'onboarding.reminder.choice.onTheDay': 'El mismo día',
-  'onboarding.reminder.choice.oneDayBefore': 'Un día antes',
-  'onboarding.reminder.choice.twoDaysBefore': 'Dos días antes',
-  'onboarding.reminder.line.onTheDay': 'El día en que empieza el rango.',
-  'onboarding.reminder.line.oneDayBefore': 'Un día antes de que empiece el rango.',
-  'onboarding.reminder.line.twoDaysBefore': 'Dos días antes de que empiece el rango.',
+  'onboarding.reminder.action': 'Activar recordatorios',
+  'onboarding.reminder.choice.onTheDay': 'El día previsto de inicio',
+  'onboarding.reminder.choice.oneDayBefore': '1 día antes',
+  'onboarding.reminder.choice.twoDaysBefore': '2 días antes',
+  'onboarding.reminder.line.onTheDay':
+    'El recordatorio llega a las {hour} de la mañana. Tu regla puede empezar ese mismo día.',
+  'onboarding.reminder.line.oneDayBefore':
+    'El recordatorio llega a las {hour} de la mañana. Tu regla puede empezar al día siguiente.',
+  'onboarding.reminder.line.twoDaysBefore':
+    'El recordatorio llega a las {hour} de la mañana. Tu regla puede empezar unos 2 días después.',
   'onboarding.reminder.notNow': 'Ahora no',
-  'onboarding.reminder.title': '¿Quieres que Emi te avise cuando esté cerca?',
+  'onboarding.reminder.question': '¿Cuándo quieres que te lo recordemos?',
+  'onboarding.reminder.title': '¿Quieres un recordatorio antes de tu regla?',
   'onboarding.skip': 'Omitir',
   'onboarding.start.action': 'Guardar y empezar',
   'onboarding.start.allSet': 'Todo listo',
@@ -991,9 +995,7 @@ export const spanish: CatalogueIn<'es'> = {
   'recovery.confirm.wrong': 'No coincide. Mira tu papel e inténtalo otra vez.',
   'recovery.step': 'Paso {step} de {of}',
 
-  'reminder.notification.onTheDay': 'Tu previsión empieza hoy.',
-  'reminder.notification.oneDayBefore': 'Tu previsión empieza mañana.',
-  'reminder.notification.twoDaysBefore': 'Tu previsión empieza en dos días.',
+  'reminder.notification': 'Un recordatorio de Emi',
   'settings.answer.back': 'Atrás',
   'settings.answer.cancel': 'Cancelar',
   'settings.answer.gaveAtFirstRun': 'Nos dijiste {answer} al empezar.',
