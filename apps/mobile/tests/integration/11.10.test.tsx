@@ -243,7 +243,7 @@ describe('her first forecast is a range, before anything is written', () => {
 
       await sheReachesHerFirstForecast();
 
-      expect(screen.getByText('Your next period')).toBeTruthy();
+      expect(screen.getByText('Your period may start')).toBeTruthy();
       expect(textIn(screen.getByTestId(firstForecastLearningTestID))).toEqual(['Still learning']);
       expect(textIn(screen.getByTestId(firstForecastNeedsTestID))).toEqual([
         `Emi needs ${String(CYCLES_BEFORE_A_FORECAST)} complete cycles before it forecasts from your own cycles, so this is still learning.`,
@@ -286,12 +286,12 @@ describe('her first forecast is a range, before anything is written', () => {
       await sheReachesHerFirstForecast();
 
       expect(textIn(screen.getByTestId(firstForecastWhyTestID)).slice(-2)).toEqual([
-        'Why a range?',
-        'Emi has read 0 complete cycles. Until it reads 2, it counts the 28 days you gave from your last period. The range runs 3 days either side of that day.',
+        'Why more than one date?',
+        'The start date can change from one cycle to the next. Emi counted the 28 days you gave from the start of your last period. The range runs 3 days either side of that day.',
       ]);
     });
 
-    it('counts the one cycle she lived where she gave the period before it', async () => {
+    it('counts the length she gave from her last period where she gave the period before it', async () => {
       await sheOpensEmi();
 
       await sheReachesHerFirstForecast({ periodBeforeStartedOn: theOneBefore });
@@ -305,7 +305,10 @@ describe('her first forecast is a range, before anything is written', () => {
 
       expect(forecast.kind === 'learning' ? forecast.completeCycles : -1).toBe(1);
       expect(textIn(screen.getByTestId(firstForecastWhyTestID)).join(' ')).toContain(
-        'Emi has read 1 complete cycle. Until it reads 2,',
+        'Emi counted the 28 days you gave from the start of your last period.',
+      );
+      expect(textIn(screen.getByTestId(firstForecastWhyTestID)).join(' ')).not.toMatch(
+        /has read|until it reads/i,
       );
     });
 

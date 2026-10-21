@@ -1,4 +1,4 @@
-import { MINIMUM_TAP_TARGET, colour, contrastRatio, radius } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, colour, contrastRatio, icons, radius } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
 import { AccessibilityInfo, StyleSheet, type ViewStyle } from 'react-native';
 
@@ -16,6 +16,7 @@ import {
   roundActions,
 } from '../../src/features/home/RoundAction';
 import {
+  sectionWaitingMarkTestID,
   sectionWaitingNeedsTestID,
   sectionWaitingReadTestID,
   sectionWaitingTestID,
@@ -286,6 +287,11 @@ describe('the Today screens match the redesign prototype', () => {
         expect(screen.getByTestId(sectionWaitingReadTestID(section))).toBeTruthy();
       });
     }
+
+    it('draws no padlock on the card of recurring symptoms, so it does not read as paid', () => {
+      expect(drawingIn(sectionWaitingMarkTestID('patterns'))).not.toContain(icons.lock.body);
+      expect(drawingIn(sectionWaitingMarkTestID('patterns'))).toContain(icons.chart.body);
+    });
 
     it('draws no chart, no strip and no row in any of the three', () => {
       expect(screen.queryByTestId(cycleRingTestID)).toBeNull();

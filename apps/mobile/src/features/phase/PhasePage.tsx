@@ -118,7 +118,7 @@ export function PhasePage(props: Props): ReactNode {
         <Card testID={phasePagePastTestID}>
           <View style={styles.past}>
             <Text style={styles.pastHeading} testID={phasePagePastHeadingTestID}>
-              {pastHeading(now.phase)}
+              {pastHeading(now.phase, past)}
             </Text>
             <Text style={styles.pastLine} testID={phasePagePastLineTestID}>
               {pastSentence(past)}
@@ -129,12 +129,7 @@ export function PhasePage(props: Props): ReactNode {
         <LockLine testID={phasePageLockTestID} words={phasePageCopy.lock} />
       </ScrollView>
 
-      <PhaseGuide
-        isOpen={isGuideOpen}
-        onClose={() => setGuideOpen(false)}
-        phase={now.phase}
-        phaseDays={now.phaseDays}
-      />
+      <PhaseGuide isOpen={isGuideOpen} onClose={() => setGuideOpen(false)} phase={now.phase} />
     </Screen>
   );
 }

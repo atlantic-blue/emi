@@ -94,7 +94,7 @@ describe('the ring and the top bar take the redesign look', () => {
         saidUnder(ringCentreDayTestID),
         saidUnder(ringCentreLengthTestID),
       ]).toEqual([
-        'Period',
+        'Period phase',
         ringDayNumberWords(Number(day)),
         ringAboutLengthWords(sheSaidHerCycleRuns),
       ]);

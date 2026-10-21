@@ -76,7 +76,7 @@ const theRingSheHasNotDrawnYet = {
 /** The forecast, once her own cycles carry it. */
 const theForecastSays = {
   heading: 'Your next period',
-  confidence: `confidence, based on your last ${theCyclesSheHasBehindHer} cycles`,
+  confidence: `Based on your last ${theCyclesSheHasBehindHer} cycles`,
   moves: 'Your cycle moves around, so the range is wider.',
 };
 
@@ -107,15 +107,15 @@ const herCyclesRead = {
 };
 
 const herTrendReads = {
-  caption: `Your last ${theCyclesSheHasBehindHer} complete cycles. The shaded band is the published range.`,
-  outside: `${herCyclesOutsideTheBand.length} of your last ${theCyclesSheHasBehindHer} complete cycles fell outside the band.`,
+  caption: `How long your last ${theCyclesSheHasBehindHer} complete cycles lasted. The shaded band is the range a published study reports.`,
+  outside: `${herCyclesOutsideTheBand.length} of your last ${theCyclesSheHasBehindHer} complete cycles were outside that range.`,
   waitingNeeds: `Your chart appears once ${cyclesBeforeATrend} cycles are complete.`,
   waitingRead: 'Emi draws nothing from nothing, and it holds no sample data.',
 };
 
 const whatComesBackReads = {
   line: "A symptom you logged once or twice isn't a pattern, so we won't call it one.",
-  waitingNeeds: `We'll point out a symptom once it's come back in ${cyclesBeforeAPattern} cycles.`,
+  waitingNeeds: `Symptoms you log at about the same point in ${cyclesBeforeAPattern} different cycles will show here.`,
 };
 
 /** Every key the screen she opens says, so the voice below is read over all of them at once. */
@@ -130,6 +130,9 @@ const theKeysOfTheScreenSheOpens: readonly string[] = [
   'forecast.statedLength',
   'forecast.stillLearning',
   'home.cycles.line',
+  'home.numbers.cycleLength.means',
+  'home.numbers.cycleLengthVariation.means',
+  'home.numbers.periodDuration.means',
   'home.doctorRecord',
   'home.greeting',
   'home.greeting.noName',
@@ -272,7 +275,7 @@ describe('the home screen says hello to her by name', () => {
   });
 
   describe('the forecast she reads under the ring', () => {
-    it('heads the range as hers, and says how sure they are from her own cycles', async () => {
+    it('heads the range as hers, and says how many of her own cycles it is based on', async () => {
       await sheOpensEmi({ days: herSixCyclesAndWhatSheLogged(), name: theNameSheGave });
       const said = whatItSays(homeForecastTestID);
 
