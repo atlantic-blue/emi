@@ -1150,9 +1150,9 @@ const thePrivacyScreensSayInEnglish: Readonly<Record<string, string>> = {
     "Each figure is quoted in the paper's own words, so you can check it for yourself.",
   'export.failed': "We couldn't save the files. Your phone may be out of space.",
   'export.what':
-    'Two files: one you can read or give to your doctor, and one another app can open.',
+    'Save a report for yourself or your doctor, and a file with all your records. Both files are made together, and you can share each one on its own.',
   'export.where':
-    'Nothing is sent anywhere. The files are made on this phone, and you decide who gets them.',
+    'The files are made on your phone. You choose where to save them and who to send them to.',
   'history.noCycles': 'No cycles yet. Log a day you bled and this fills in.',
   'history.nothingRepeats':
     'No symptom has come back at about the same point in 3 cycles yet. If one does, it will show here.',
@@ -1184,8 +1184,8 @@ const thePrivacyScreensSayInEnglish: Readonly<Record<string, string>> = {
   'settings.deleted.title': "It's gone.",
   'settings.deleted.withoutTheServer':
     "We couldn't reach our server to remove your account. Nothing can open what's left there: the only key was on this phone, and it went with your days.",
-  'settings.settings.answersLine': 'What you told us when you started',
-  'settings.settings.deleteLine': "One press, and it's gone for good",
+  'settings.settings.answersLine': 'Your name and your answers from setup',
+  'settings.settings.deleteLine': 'Delete your records and settings',
 };
 
 const theKeysOfThePrivacyScreens: readonly string[] = Object.keys(thePrivacyScreensSayInEnglish);
@@ -8526,7 +8526,7 @@ defineFeature(feature, (test) => {
   // before she reads its words.
   test('SCREEN-2, the cards and rows take the redesign look', ({ given, when, and, then }) => {
     const theWordsOfTheRow = 'Your answers';
-    const theLineUnderIt = 'What you told us when you started';
+    const theLineUnderIt = 'Your name and your answers from setup';
     const whatTheRowOpens = 'Your name, your year of birth and six answers';
 
     const styleOfPart = (testID: string): Record<string, unknown> =>
