@@ -13,6 +13,7 @@ import type { Database } from '../../data/database';
 import type { ReadCycle } from '../../features/cycle/cyclesRead';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { type RingInput, phaseDaysFor, ringInputFor } from '../../features/cycle/ringInput';
+import { daysLate } from '../../features/forecast/daysLate';
 import { forecastOf } from '../../features/forecast/fromCache';
 import {
   groupParameter,
@@ -45,6 +46,8 @@ interface Shown {
   /** The days of each phase of the cycle she is in, read from the same rows as the ring. */
   readonly phaseDays: CyclePhaseDays | undefined;
   readonly forecast: ReturnType<typeof forecastOf>;
+  /** How many days her period is late against that forecast, or nothing inside the window. */
+  readonly daysLate: number | undefined;
   readonly cycleLengthDays: number;
   /** How many of her cycles are complete, which every section that cannot be filled yet names. */
   readonly completeCycles: number;
@@ -110,6 +113,7 @@ function whatSheIsLookingAt(
     ovulationWindow: theWindowToAskIn(readBack, loggedToday?.ovulationPopup !== undefined),
     phaseDays: phaseDaysFor(readBack),
     forecast,
+    daysLate: daysLate(forecast, today),
     numbers: herNumbers(cycles, forecast),
     // Read off the rows the ring was drawn from, so a strip and the ring stand on one reading.
     cycles: herCycles(readBack),
@@ -181,6 +185,7 @@ export default function HomeRoute(): ReactNode {
         cycleLengthDays={shown.cycleLengthDays}
         completeCycles={shown.completeCycles}
         cycles={shown.cycles}
+        daysLate={shown.daysLate}
         feeling={shown.feeling}
         forecast={shown.forecast}
         goals={shown.goals}
@@ -189,6 +194,7 @@ export default function HomeRoute(): ReactNode {
         numbers={shown.numbers}
         onExport={() => router.push('/export')}
         onFigures={() => router.push('/cycles/figures')}
+        onItStarted={() => router.push(`/calendar/period?${dayParameter}=${today}`)}
         onLogPain={() => router.push(`/log?${groupParameter}=${painGroup}`)}
         onLogToday={() => router.push('/log')}
         onOpenCycle={(startedOn) => router.push(`/history?${cycleParameter}=${startedOn}`)}

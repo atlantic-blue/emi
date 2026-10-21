@@ -198,6 +198,7 @@ export const spanish: CatalogueIn<'es'> = {
    */
   'forecast.fertileWindow.sentence':
     'Una estimación según tus últimos {cycles} ciclos. Emi nunca dice que un día es seguro, porque ninguno lo es.',
+  'forecast.itStarted': 'Ya empezó',
   'forecast.late': {
     one: 'Tu regla se retrasa {count} día',
     other: 'Tu regla se retrasa {count} días',
@@ -603,10 +604,14 @@ export const spanish: CatalogueIn<'es'> = {
   'log.flow.light': 'Ligero',
   'log.flow.medium': 'Medio',
   'log.flow.none': 'Ninguno',
+  'log.flow.otherDischarge': 'Otro flujo',
   'log.flow.saved': 'Guardado en este teléfono.',
   'log.flow.spotting': 'Manchado',
-  'log.flow.title': 'Tu flujo',
-  'log.group.digestion': 'Digestión',
+  'log.flow.spottingHint': 'Pequeños restos de sangre o flujo marrón',
+  'log.flow.spottingLabel': '{spotting}:',
+  'log.flow.title': 'Regla',
+  'log.group.appetite': 'Apetito',
+  'log.group.digestive': 'Síntomas digestivos',
   'log.group.energy': 'Energía',
   'log.group.head': 'Cabeza',
   'log.group.libido': 'Libido',
@@ -648,6 +653,10 @@ export const spanish: CatalogueIn<'es'> = {
     one: '{count} día',
     other: '{count} días',
   },
+  'onboarding.cycleLength.fromHerDates': {
+    one: 'Según tus registros, tu ciclo dura de media {count} día. ¿Te parece bien?',
+    other: 'Según tus registros, tu ciclo dura de media {count} días. ¿Te parece bien?',
+  },
   'onboarding.cycleLength.line.count':
     'Cuenta desde el primer día de un periodo hasta el día anterior al siguiente.',
   'onboarding.cycleLength.line.held': 'Se mantiene entre {minimum} y {maximum} días.',
@@ -659,8 +668,9 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.feeling.choice.fine': 'Estoy bien con ello',
   'onboarding.feeling.choice.hard': 'Es difícil, casi todos los meses',
   'onboarding.feeling.choice.understand': 'Quiero entenderlo',
-  'onboarding.feeling.line.talks': 'Esto cambia cómo te habla Emi, y nada más.',
-  'onboarding.feeling.title': 'Cómo te sientes con ello',
+  'onboarding.feeling.line.hard':
+    'Si es difícil, Emi pone el dolor primero en los días de tu periodo.',
+  'onboarding.feeling.title': '¿Cómo te sientes normalmente durante tu periodo?',
   'onboarding.firstForecast.action': 'Continuar',
   'onboarding.firstForecast.needs': {
     one: 'Emi necesita {count} ciclo completo antes de prever a partir de tus propios ciclos, así que todavía está aprendiendo.',
@@ -680,16 +690,17 @@ export const spanish: CatalogueIn<'es'> = {
   },
   'onboarding.firstForecast.noDate.title': 'Emi no tiene una fecha desde la que contar',
   'onboarding.firstForecast.stillLearning': 'Todavía aprendiendo',
-  'onboarding.firstForecast.title': 'Tu próxima regla',
+  'onboarding.firstForecast.title': 'Tu regla puede empezar',
   'onboarding.firstForecast.why.counts': {
-    one: 'Hasta que lea {needs}, cuenta el {count} día que indicaste desde tu última regla.',
-    other: 'Hasta que lea {needs}, cuenta los {count} días que indicaste desde tu última regla.',
+    one: 'Emi contó el {count} día que indicaste desde el inicio de tu última regla.',
+    other: 'Emi contó los {count} días que indicaste desde el inicio de tu última regla.',
   },
-  'onboarding.firstForecast.why.read': {
-    one: 'Emi ha leído {count} ciclo completo.',
-    other: 'Emi ha leído {count} ciclos completos.',
+  'onboarding.firstForecast.why.fromCycles': {
+    one: 'Emi estimó estas fechas a partir de tu {count} ciclo más reciente.',
+    other: 'Emi estimó estas fechas a partir de tus {count} ciclos más recientes.',
   },
-  'onboarding.firstForecast.why.title': '¿Por qué un rango?',
+  'onboarding.firstForecast.why.title': '¿Por qué más de una fecha?',
+  'onboarding.firstForecast.why.varies': 'La fecha de inicio puede cambiar de un ciclo a otro.',
   'onboarding.firstForecast.why.width': {
     one: 'El rango abarca {count} día a cada lado de ese día.',
     other: 'El rango abarca {count} días a cada lado de ese día.',
@@ -705,13 +716,6 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.goals.line.chooseAll': 'Elige todas las que correspondan.',
   'onboarding.goals.line.ovulation': 'Las fechas son aproximadas. Emi no es un anticonceptivo.',
   'onboarding.goals.title': '¿Con qué quieres que te ayude Emi?',
-  'onboarding.hold.action': 'Mantén para empezar',
-  'onboarding.hold.held': 'Sigue manteniendo',
-  'onboarding.hold.instruction': 'Mantén pulsado el botón para empezar.',
-  'onboarding.hold.refused': 'Eso no se guardó. Mantén pulsado el botón otra vez.',
-  'onboarding.hold.sealed':
-    'Mantener el botón guarda tus respuestas, selladas con tu clave. Emi crea la clave y la guarda en el llavero de este teléfono.',
-  'onboarding.hold.title': 'Tu ciclo, tus datos, tu clave.',
   'onboarding.lastPeriod.earlier': 'Anterior',
   'onboarding.lastPeriod.earlierMonth': 'Mes anterior',
   'onboarding.lastPeriod.later': 'Siguiente',
@@ -727,6 +731,10 @@ export const spanish: CatalogueIn<'es'> = {
   },
   'onboarding.periodLength.action': 'Hecho',
   'onboarding.periodLength.days': { one: '{count} día', other: '{count} días' },
+  'onboarding.periodLength.fromHerDates': {
+    one: 'Según tus registros, tu periodo dura de media {count} día. ¿Te parece bien?',
+    other: 'Según tus registros, tu periodo dura de media {count} días. ¿Te parece bien?',
+  },
   'onboarding.periodLength.line.count': 'Desde el primer día de sangrado hasta que para.',
   'onboarding.periodLength.line.logged':
     'Emi usa en su lugar los días que anotes, en cuanto los anotes.',
@@ -752,8 +760,15 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.reminder.notNow': 'Ahora no',
   'onboarding.reminder.title': '¿Quieres que Emi te avise cuando esté cerca?',
   'onboarding.skip': 'Omitir',
+  'onboarding.start.action': 'Guardar y empezar',
+  'onboarding.start.allSet': 'Todo listo',
+  'onboarding.start.refused': 'Eso no se guardó. Toca Guardar y empezar otra vez.',
+  'onboarding.start.sealed':
+    'Guardar conserva tus respuestas, selladas con tu clave. Emi crea la clave y la guarda en el llavero de este teléfono.',
+  'onboarding.start.title': 'Tu ciclo, tus datos, tu clave.',
   'onboarding.step': 'Paso {step} de {of}',
   'onboarding.today.action': 'Guardar hoy',
+  'onboarding.today.allSymptoms': 'Todos los síntomas',
   'onboarding.today.nothingToAdd': 'Nada que añadir',
   'onboarding.today.question': 'Puedes saltarte esto.',
   'onboarding.today.title': '¿Cómo estás hoy?',
@@ -770,15 +785,17 @@ export const spanish: CatalogueIn<'es'> = {
     'El anillo es tu ciclo. Un indicador marca hoy, y el número de dentro es el día en que estás.',
   'onboarding.tour.ring.title': 'Tu ciclo, en un anillo.',
   'onboarding.tour.skip': 'Omitir',
-  'onboarding.welcome.action': 'Continuar',
+  'onboarding.welcome.action': 'Empezar',
   'onboarding.welcome.line.noAccount':
     'No hay cuenta. Emi nunca te pide tu correo ni una contraseña.',
-  'onboarding.welcome.line.onThisPhone': 'Tu ciclo se calcula en este teléfono.',
   'onboarding.welcome.line.whatEmiIs':
-    'Emi te muestra lo que dicen tus propios registros, y nada más. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
-  'onboarding.welcome.title': 'Emi aprende tu ciclo. Tus datos son tuyos.',
+    'Emi no sustituye el consejo de un médico. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
+  'onboarding.welcome.line.whatYouLog':
+    'Anota tus periodos y cómo te sientes, para entender mejor tu ciclo.',
+  'onboarding.welcome.title': 'Tu ciclo y cómo te sientes, en un solo lugar.',
   'onboarding.whatEmiDoes.action': 'Continuar',
-  'onboarding.whatEmiDoes.forecast.line': 'Un rango, y cuánta confianza tiene Emi',
+  'onboarding.whatEmiDoes.forecast.line':
+    'Fechas aproximadas de inicio de tu regla, según tus registros',
   'onboarding.whatEmiDoes.forecast.title': 'Tu previsión',
   'onboarding.whatEmiDoes.log.and': 'y',
   'onboarding.whatEmiDoes.log.chosen': {
@@ -791,7 +808,7 @@ export const spanish: CatalogueIn<'es'> = {
     'Tu registro se abre en el orden habitual, empezando por {groups}.',
   'onboarding.whatEmiDoes.privacy.line': 'Solo tú puedes leer todo esto',
   'onboarding.whatEmiDoes.privacy.title': 'Tu privacidad',
-  'onboarding.whatEmiDoes.title': 'Esto es lo que Emi hace con lo que le contaste',
+  'onboarding.whatEmiDoes.title': 'Tus ajustes en Emi',
 
   'ovulation.popup.line':
     'Emi guarda lo que notas con el día de hoy, y aparece en tu exportación. Elige todo lo que corresponda.',
@@ -820,10 +837,13 @@ export const spanish: CatalogueIn<'es'> = {
     'Los ciclos duran de {minimum} a {maximum} días. Prueba un día en ese rango.',
   'pastPeriods.picker.remove': 'Quitar este periodo',
   'pastPeriods.picker.start': '¿Cuándo empezó?',
+  'pastPeriods.picker.stillGoingTooLongAgo':
+    'Un periodo que sigue en curso empezó hace {maximum} días o menos. Prueba un día más reciente.',
   'pastPeriods.picker.title': 'Periodo {number}',
   'pastPeriods.row.date': '{date} de {month}',
   'pastPeriods.save': 'Guardar',
   'pastPeriods.skipThisOne': 'Omite este si no lo recuerdas',
+  'pastPeriods.stillGoing': 'Sigue en curso',
   'pastPeriods.title': 'Tus tres periodos más recientes',
   'pastPeriods.wayPast': 'Omitir, lo anotaré sobre la marcha',
   'period.back': 'Atrás',
@@ -1124,6 +1144,7 @@ export const spanish: CatalogueIn<'es'> = {
   'symptom.restless': 'Inquieta',
   'symptom.restless-sleep': 'Sueño inquieto',
   'symptom.sad': 'Triste',
+  'symptom.salty-craving': 'Salado',
   'symptom.sensitive': 'Sensible',
   'symptom.sensitive-skin': 'Piel sensible',
   'symptom.shaky': 'Temblorosa',
@@ -1132,6 +1153,7 @@ export const spanish: CatalogueIn<'es'> = {
   'symptom.sluggish': 'Aletargada',
   'symptom.sound-sensitivity': 'Sensibilidad al ruido',
   'symptom.stomach-ache': 'Dolor de estómago',
+  'symptom.sweet-craving': 'Dulce',
   'symptom.tearful': 'Llorosa',
   'symptom.vaginal-dryness': 'Sequedad vaginal',
   'symptom.vivid-dreams': 'Sueños vívidos',

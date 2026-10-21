@@ -18,7 +18,7 @@ export function focusCellTestID(group: FocusGroup): string {
 }
 
 /**
- * The drawing on each tile. A map rather than a list, so a seventh value arriving in `Focus`
+ * The drawing on each tile. A map rather than a list, so an eighth value arriving in `Focus`
  * leaves this file failing to compile rather than leaving one tile with no drawing on it.
  */
 export const focusIcons: Readonly<Record<FocusGroup, IconName>> = {
@@ -26,7 +26,8 @@ export const focusIcons: Readonly<Record<FocusGroup, IconName>> = {
   mood: 'mood',
   energy: 'energy',
   skin: 'skin',
-  digestion: 'digestion',
+  appetite: 'appetite',
+  digestive: 'digestion',
   pain: 'pain',
 };
 
@@ -80,8 +81,8 @@ export function Focus({ chosen, onPress, onContinue, onBack, onSkip }: Props): R
 }
 
 const styles = StyleSheet.create({
-  // Three to a row, as the redesign draws them, each one taking what is left of the row after the
-  // two gaps, so the six groups stand in two rows of three.
-  cell: { flexBasis: '30%', flexGrow: 1 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
+  // Three to a row, as the redesign draws them. The cells do not grow, so the seventh group stands
+  // centred under the two rows of three at the width of the others.
+  cell: { flexBasis: '31%', flexGrow: 0 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm, justifyContent: 'center' },
 });

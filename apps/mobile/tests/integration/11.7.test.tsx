@@ -52,7 +52,7 @@ import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/her
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 import { locksDrawnIn } from '../fixtures/drawnLocks';
 
@@ -337,7 +337,7 @@ describe('the fertile window shows only for her who asked for it', () => {
         await sheOpensEmi();
 
         await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, goals: [goal] });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect(statedGoals(herDatabase(), await theProfileVaultOnHerPhone())).toEqual([goal]);
       });
@@ -350,7 +350,7 @@ describe('the fertile window shows only for her who asked for it', () => {
         periodStartedOn: herPeriodStarted,
         goals: ['doctorRecord', 'fertileWindow'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(statedGoals(herDatabase(), await theProfileVaultOnHerPhone())).toEqual([
         'doctorRecord',
@@ -371,7 +371,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 
@@ -386,7 +386,7 @@ describe('the fertile window shows only for her who asked for it', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 

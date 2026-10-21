@@ -49,7 +49,7 @@ import { herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { textIn } from '../fixtures/renderedText';
 import { OnAPhone } from '../fixtures/theSafeArea';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -207,7 +207,7 @@ describe('what Emi does with what she said, after the forecast', () => {
       await sheOpensEmi();
       await sheReachesWhatEmiDoes();
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await screen.unmount();
 
       const app = renderRouter(appDirectory, { initialUrl: '/onboarding/the-promise' });
@@ -226,12 +226,10 @@ describe('what Emi does with what she said, after the forecast', () => {
       await sheReachesWhatEmiDoes();
 
       expect(whatEmiDoesCards).toEqual(['forecast', 'log', 'privacy']);
-      expect(textIn(screen.getByTestId(whatEmiDoesTitleTestID))).toEqual([
-        'Here is what Emi does with what you told it',
-      ]);
+      expect(textIn(screen.getByTestId(whatEmiDoesTitleTestID))).toEqual(['Your settings in Emi']);
       expect(textIn(screen.getByTestId(whatEmiDoesCardTestID('forecast')))).toEqual([
         'Your forecast',
-        'A range, and how sure Emi is',
+        'Estimated start dates of your period, from your records',
       ]);
       expect(textIn(screen.getByTestId(whatEmiDoesCardTestID('privacy')))).toEqual([
         'Your privacy',
@@ -280,7 +278,7 @@ describe('what Emi does with what she said, after the forecast', () => {
       expect(theLogLine()).toBe('Your log shows the group you chose first: sleep.');
     });
 
-    it('names all six where she pressed all six', async () => {
+    it('names all seven where she pressed all seven', async () => {
       await sheOpensEmi();
 
       await sheReachesWhatEmiDoes(focusValues);
@@ -289,7 +287,7 @@ describe('what Emi does with what she said, after the forecast', () => {
         expect(screen.getByTestId(whatEmiDoesChipTestID(group))).toBeTruthy();
       }
       expect(theLogLine()).toBe(
-        'Your log shows the groups you chose first: sleep, mood, energy, skin and hair, digestion and pain.',
+        'Your log shows the groups you chose first: sleep, mood, energy, skin and hair, appetite, digestive symptoms and pain.',
       );
     });
 
@@ -361,7 +359,7 @@ describe('what Emi does with what she said, after the forecast', () => {
 
       await sheReachesWhatEmiDoes(['mood', 'energy']);
       await shePresses(whatEmiDoesActionTestID);
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.focus).toEqual([
         'mood',

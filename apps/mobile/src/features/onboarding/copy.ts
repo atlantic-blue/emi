@@ -30,7 +30,7 @@ export const firstRunCopy = {
   welcome: {
     title: words('onboarding.welcome.title'),
     lines: [
-      words('onboarding.welcome.line.onThisPhone'),
+      words('onboarding.welcome.line.whatYouLog'),
       words('onboarding.welcome.line.noAccount'),
       words('onboarding.welcome.line.whatEmiIs'),
     ],
@@ -76,7 +76,7 @@ export const firstRunCopy = {
   },
   feeling: {
     title: words('onboarding.feeling.title'),
-    lines: [words('onboarding.feeling.line.talks')],
+    lines: [words('onboarding.feeling.line.hard')],
     action: words('onboarding.feeling.action'),
   },
   goals: {
@@ -101,6 +101,7 @@ export const firstRunCopy = {
     question: words('onboarding.today.question'),
     lines: [],
     action: words('onboarding.today.action'),
+    allSymptoms: words('onboarding.today.allSymptoms'),
     nothingToAdd: words('onboarding.today.nothingToAdd'),
   },
   reminder: {
@@ -128,13 +129,12 @@ export const firstRunCopy = {
     },
     action: words('onboarding.firstForecast.action'),
   },
-  hold: {
-    title: words('onboarding.hold.title'),
-    instruction: words('onboarding.hold.instruction'),
-    sealed: words('onboarding.hold.sealed'),
-    action: words('onboarding.hold.action'),
-    held: words('onboarding.hold.held'),
-    refused: words('onboarding.hold.refused'),
+  start: {
+    title: words('onboarding.start.title'),
+    allSet: words('onboarding.start.allSet'),
+    sealed: words('onboarding.start.sealed'),
+    action: words('onboarding.start.action'),
+    refused: words('onboarding.start.refused'),
   },
   back: words('onboarding.back'),
   skip: words('onboarding.skip'),
@@ -216,11 +216,11 @@ export const goalLabels: Readonly<Record<Goal, string>> = {
 export const goalChoices: readonly Goal[] = goalValues;
 
 /**
- * The words of the six things she can say change with her cycle. Each tile is a group of the log
+ * The words of the seven things she can say change with her cycle. Each tile is a group of the log
  * sheet, so it carries the word that group is headed with there. She presses Sleep here and reads
  * Sleep at the top of her log, and one thing is called one name.
  *
- * A map for the reason the three above are maps: a seventh value arriving in `Focus` leaves this
+ * A map for the reason the three above are maps: an eighth value arriving in `Focus` leaves this
  * file failing to compile rather than leaving her a tile she cannot press.
  */
 export const focusLabels: Readonly<Record<Focus, string>> = {
@@ -228,7 +228,8 @@ export const focusLabels: Readonly<Record<Focus, string>> = {
   mood: words('log.group.mood'),
   energy: words('log.group.energy'),
   skin: words('log.group.skin'),
-  digestion: words('log.group.digestion'),
+  appetite: words('log.group.appetite'),
+  digestive: words('log.group.digestive'),
   pain: words('log.group.pain'),
 };
 
@@ -247,7 +248,7 @@ export const todayLabels: Readonly<Record<TodaySymptom, string>> = {
   headache: symptomName('headache'),
   bloating: symptomName('bloating'),
   fatigue: symptomName('fatigue'),
-  calm: symptomName('calm'),
+  'breast-tenderness': symptomName('breast-tenderness'),
   'low-mood': symptomName('low-mood'),
 };
 
@@ -306,20 +307,27 @@ export function countsFromTheFirstPeriodSentence(cycleLengthDays: number): strin
 }
 
 /**
- * Why the answer is a range, in three sentences, each read off a number the arithmetic used: the
- * complete cycles it has, the cycles it waits for, the length she gave and the days either side.
+ * Why the forecast names more than one date, where her own cycles made it: the start moves from
+ * cycle to cycle, and the count is the number of cycles the median was taken over.
  */
-export function whyARangeSentences(counted: {
-  readonly completeCycles: number;
-  readonly needsCycles: number;
+export function whyFromHerCyclesSentences(fromCycles: number): string[] {
+  return [
+    words('onboarding.firstForecast.why.varies'),
+    words('onboarding.firstForecast.why.fromCycles', fromCycles),
+  ];
+}
+
+/**
+ * The same answer where the length she gave made the range: the start moves, the length she gave
+ * is counted from her last start, and the width either side is the one the arithmetic used.
+ */
+export function whyFromTheLengthSheGaveSentences(counted: {
   readonly cycleLengthDays: number;
   readonly daysEitherSide: number;
 }): string[] {
   return [
-    words('onboarding.firstForecast.why.read', counted.completeCycles),
-    words('onboarding.firstForecast.why.counts', counted.cycleLengthDays, {
-      needs: counted.needsCycles,
-    }),
+    words('onboarding.firstForecast.why.varies'),
+    words('onboarding.firstForecast.why.counts', counted.cycleLengthDays),
     words('onboarding.firstForecast.why.width', counted.daysEitherSide),
   ];
 }
@@ -327,6 +335,16 @@ export function whyARangeSentences(counted: {
 /** How she reads the cycle length she is setting, which is a count and takes the form to match. */
 export function cycleLengthDaysLabel(days: number): string {
   return words('onboarding.cycleLength.days', days);
+}
+
+/** The line that offers her the cycle length Emi worked out from the periods she gave. */
+export function cycleLengthFromHerDates(days: number): string {
+  return words('onboarding.cycleLength.fromHerDates', days);
+}
+
+/** The line that offers her the period length Emi worked out from the periods she gave. */
+export function periodLengthFromHerDates(days: number): string {
+  return words('onboarding.periodLength.fromHerDates', days);
 }
 
 /** How she reads the period length she is setting, which reaches one day and so takes both forms. */

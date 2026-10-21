@@ -86,6 +86,7 @@ const theLoggingScreen = (): ReactElement => (
     onMark={nothing}
     onOpenGroup={nothing}
     onPick={nothing}
+    onOtherDischarge={nothing}
     onSearch={nothing}
     onToggleSymptom={nothing}
     ring={undefined}
