@@ -368,12 +368,14 @@ import {
   weekCellTestIDs,
   weekTestID,
 } from '../apps/mobile/src/features/onboarding/Calendar';
+import { goalTestID } from '../apps/mobile/src/features/onboarding/Goals';
 import { saveScreenTestID } from '../apps/mobile/src/features/onboarding/SaveAndStart';
 import {
   onboardingActionTestID,
   onboardingBackTestID,
   onboardingEmblemTestID,
   onboardingHeaderWordTestID,
+  onboardingLinesTestID,
   onboardingProgressTestID,
   onboardingQuestionTestID,
   onboardingSheetTestID,
@@ -7270,6 +7272,108 @@ defineFeature(feature, (test) => {
 
         expect(app.pathname()).toBe('/onboarding/goals');
         expect(locksDrawnIn(screen.root)).toBe(0);
+      },
+    );
+  });
+  /**
+   * Three lines a woman asked for: why the year is asked, what a regular cycle is, and what the
+   * ovulation goal does not promise. Each is written out here, so a reword fails the scenario.
+   */
+  test('SCREEN-1, the first run says why it asks her year, what a regular cycle is, and that ovulation dates are approximate', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const theYearLine =
+      'Emi does not use your year of birth for anything today. You can skip this question.';
+    const theRegularHint = 'Your period starts after about the same number of days each time.';
+    const theOvulationNote = 'Dates are approximate. Emi is not a contraceptive.';
+    const theNoteInEachLanguage: Readonly<Record<Language, string>> = {
+      en: theOvulationNote,
+      es: 'Las fechas son aproximadas. Emi no es un anticonceptivo.',
+      ru: 'Даты примерные. Emi не является средством контрацепции.',
+    };
+
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi, reads the welcome, skips the tour, and skips her name', async () => {
+      app = await sheOpens('/');
+      await sheSkipsTheTour();
+      await shePresses(onboardingSkipTestID);
+    });
+
+    then(
+      'the year question says Emi does not use her year of birth today, and that she can skip it',
+      () => {
+        expect(app.pathname()).toBe('/onboarding/year-of-birth');
+        expect(screen.getByTestId(onboardingLinesTestID)).toHaveTextContent(theYearLine);
+      },
+    );
+
+    and(
+      'the question about a regular cycle says what regular means, and the first answer says it in the same words',
+      async () => {
+        await shePresses(onboardingSkipTestID);
+        await sheGivesAPeriod(0, herPeriodStarted);
+        await shePresses(onboardingActionTestID);
+        await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
+        await shePresses(onboardingActionTestID);
+        await shePresses(onboardingWayPastTestID);
+
+        expect(app.pathname()).toBe('/onboarding/regularity');
+        expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(theRegularHint);
+        expect(screen.getByTestId(regularityTestID('regular'))).toHaveTextContent(
+          'Yes, after about the same number of days',
+        );
+        expect(screen.queryByText('Yes, most months')).toBeNull();
+      },
+    );
+
+    and(
+      'the question about her goals offers to track how she feels and to track ovulation, and carries the note that the dates are approximate',
+      async () => {
+        await shePresses(onboardingSkipTestID);
+        await shePresses(onboardingSkipTestID);
+
+        expect(app.pathname()).toBe('/onboarding/goals');
+        expect(screen.getByTestId(goalTestID('symptoms'))).toHaveTextContent('Track how I feel');
+        expect(screen.getByTestId(goalTestID('fertileWindow'))).toHaveTextContent(
+          'Track ovulation',
+        );
+        expect(screen.getByTestId(onboardingLinesTestID)).toHaveTextContent(theOvulationNote);
+        expect(screen.queryByText('See my fertile window, as an estimate')).toBeNull();
+      },
+    );
+
+    and(
+      'the three lines are written in all three languages, and each ovulation note keeps the approved denial',
+      () => {
+        for (const language of languages) {
+          const held: Readonly<Record<string, unknown>> = Object.fromEntries(
+            Object.entries(catalogueOf(language)),
+          );
+
+          for (const key of [
+            'onboarding.birthYear.line.why',
+            'onboarding.regularity.line.sameDays',
+            'onboarding.goals.line.ovulation',
+          ]) {
+            expect({ language, key, written: String(held[key] ?? '').length > 0 }).toEqual({
+              language,
+              key,
+              written: true,
+            });
+          }
+
+          expect(String(held['onboarding.goals.line.ovulation'])).toBe(
+            theNoteInEachLanguage[language],
+          );
+        }
+
+        expect(languages.length).toBe(3);
       },
     );
   });

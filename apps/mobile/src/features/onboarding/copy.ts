@@ -45,7 +45,7 @@ export const firstRunCopy = {
   },
   birthYear: {
     title: words('onboarding.birthYear.title'),
-    lines: [],
+    lines: [words('onboarding.birthYear.line.why')],
     action: words('onboarding.birthYear.action'),
   },
   cycleLength: {
@@ -70,6 +70,7 @@ export const firstRunCopy = {
   },
   regularity: {
     title: words('onboarding.regularity.title'),
+    question: words('onboarding.regularity.line.sameDays'),
     lines: [words('onboarding.regularity.line.explains')],
     action: words('onboarding.regularity.action'),
   },
@@ -81,7 +82,7 @@ export const firstRunCopy = {
   goals: {
     title: words('onboarding.goals.title'),
     question: words('onboarding.goals.line.chooseAll'),
-    lines: [],
+    lines: [words('onboarding.goals.line.ovulation')],
     action: words('onboarding.goals.action'),
   },
   focus: {

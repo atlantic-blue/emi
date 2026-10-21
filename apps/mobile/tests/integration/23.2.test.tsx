@@ -118,7 +118,7 @@ const theKeysThatWent: readonly string[] = [
 
 /** The answers she picks from on the two questions that answer her, in her own words. */
 const theAnswersAboutHerCycle: readonly string[] = [
-  'Yes, most months',
+  'Yes, after about the same number of days',
   'No, it moves',
   'I do not know yet',
 ];
@@ -152,10 +152,12 @@ const theScreensOfTheQuestions: readonly string[] = [
 
 /**
  * The screens the redesign has redrawn are written as the design writes them, and the design names
- * Emi in them by name: the welcome, the question about her name, the line about encryption, and
- * the lines under her period length and her regularity.
+ * Emi in them by name: the welcome, the question about her name, the line about encryption, the
+ * line that says Emi does not use her year, and the lines under her period length and her
+ * regularity.
  */
 const theWelcomeNamingEmi = [
+  'onboarding.birthYear.line.why',
   'onboarding.feeling.line.hard',
   'onboarding.focus.line.first',
   'onboarding.goals.title',
@@ -553,7 +555,7 @@ describe('the first run questions use her name and reply to her answers', () => 
       }
     });
 
-    it('still denies the two claims on the welcome, each after a full stop', () => {
+    it('still denies the two claims on the welcome, and the first one again under the goals, each after a full stop', () => {
       const denial = (beginning: string): string => {
         const found = approvedDenials.find((each) => each.startsWith(beginning));
 
@@ -568,10 +570,13 @@ describe('the first run questions use her name and reply to her answers', () => 
         line.includes(denial('Emi is not a c')),
       );
 
-      expect(denying).toHaveLength(1);
+      expect(denying).toEqual([
+        'Dates are approximate. Emi is not a contraceptive.',
+        theCatalogueOf('en')['onboarding.welcome.line.whatEmiIs'],
+      ]);
+      expect(denying[1]).toContain(denial('Emi is not a m'));
 
       for (const line of denying) {
-        expect(line).toContain(denial('Emi is not a m'));
         // The gate reads a denial as a claim unless a full stop comes before it.
         expect(line.startsWith(denial('Emi is not a c'))).toBe(false);
       }
