@@ -8,16 +8,23 @@ import {
   cyclesFrom,
   daysBetween,
   forecastFrom,
+  lastLengths,
+  median,
 } from '@emi/cycle';
 
 /**
  * The periods she gives from memory: the first run asks for her last three, and the calendar asks
- * again when it has too little to forecast from. Each one is a start day and a number of days, and
- * every one of those days is written as a day she bled.
+ * again when it has too little to forecast from. Each one is a start day and a number of days, or
+ * a newest period that is still going, and every one of those days is written as a day she bled.
  */
 export interface PastPeriod {
   readonly startedOn: string;
-  readonly lengthDays: number;
+  /**
+   * Left out where the period is still going, which only the newest one can be. Emi then writes
+   * the days from its start up to today and counts on from the days she logs, never from a length
+   * she guessed.
+   */
+  readonly lengthDays?: number;
 }
 
 /** How many periods the list asks for. Three starts make two complete cycles. */
@@ -56,6 +63,14 @@ export function pastPeriodLengthIsInRange(days: number): boolean {
 }
 
 /**
+ * Whether a period that starts on this day can still be going today. Every day from the start to
+ * today is written as a day she bled, so the start is held to the days one period can run.
+ */
+export function stillGoingCanStartOn(day: string, today: string): boolean {
+  return day <= today && daysBetween(day, today) < longestPastPeriodDays;
+}
+
+/**
  * Whether a start can be the period before the one after it. The two starts are one cycle, so the
  * distance is held to the bounds a cycle runs between.
  */
@@ -85,9 +100,12 @@ export function startIsInRangeAt(
   return above !== undefined && startIsOneCycleBefore(day, above.startedOn);
 }
 
-/** The days a period was a period: from its start for its length, and never a day after today. */
+/**
+ * The days a period was a period: from its start for its length, and never a day after today. A
+ * period that is still going runs to today.
+ */
 export function theDaysItBled(period: PastPeriod, today: string): string[] {
-  return Array.from({ length: period.lengthDays }, (_unused, at) =>
+  return Array.from({ length: period.lengthDays ?? longestPastPeriodDays }, (_unused, at) =>
     addDays(period.startedOn, at),
   ).filter((day) => day <= today);
 }
@@ -124,7 +142,9 @@ export type PastPeriodsRefusal =
   | 'period-start-is-in-the-future'
   | 'period-start-is-too-long-ago'
   | 'period-before-is-out-of-range'
-  | 'past-period-length-is-out-of-range';
+  | 'past-period-length-is-out-of-range'
+  | 'only-the-newest-period-can-be-still-going'
+  | 'still-going-period-started-too-long-ago';
 
 /**
  * Why a list cannot be written, or nothing where it can. The newest period comes first, and each
@@ -154,7 +174,21 @@ export function pastPeriodsRefusal(
     return 'period-before-is-out-of-range';
   }
 
-  if (periods.some((period) => !pastPeriodLengthIsInRange(period.lengthDays))) {
+  if (periods.some((period, row) => row > 0 && period.lengthDays === undefined)) {
+    return 'only-the-newest-period-can-be-still-going';
+  }
+  if (
+    newest !== undefined &&
+    newest.lengthDays === undefined &&
+    !stillGoingCanStartOn(newest.startedOn, today)
+  ) {
+    return 'still-going-period-started-too-long-ago';
+  }
+
+  const lengths = periods.flatMap((period) =>
+    period.lengthDays === undefined ? [] : [period.lengthDays],
+  );
+  if (lengths.some((days) => !pastPeriodLengthIsInRange(days))) {
     return 'past-period-length-is-out-of-range';
   }
 
@@ -164,6 +198,39 @@ export function pastPeriodsRefusal(
 /** Every day the list says she bled, oldest first. */
 export function everyDayTheyBled(periods: readonly PastPeriod[], today: string): string[] {
   return periods.flatMap((period) => theDaysItBled(period, today)).sort();
+}
+
+/** Her usual lengths in days, worked out from the periods she gave. */
+export interface LengthsFromHerDates {
+  readonly cycleLengthDays: number;
+  readonly periodLengthDays: number;
+}
+
+/**
+ * Her usual cycle and period length, from the list alone, with the arithmetic the forecast uses:
+ * the median, rounded. Two periods make one cycle, which is enough to offer. One period or none
+ * makes no cycle, and then nothing is offered.
+ */
+export function lengthsFromHerDates(
+  periods: readonly PastPeriod[],
+): LengthsFromHerDates | undefined {
+  const days: DayRecord[] = everyDayTheyBled(periods, '9999-12-31').map((day) => ({
+    day,
+    flow: pastPeriodFlow,
+  }));
+  const cycleLengths = lastLengths(cyclesFrom(days));
+  const endedLengths = periods.flatMap((period) =>
+    period.lengthDays === undefined ? [] : [period.lengthDays],
+  );
+
+  if (cycleLengths.length === 0 || endedLengths.length === 0) {
+    return undefined;
+  }
+
+  return {
+    cycleLengthDays: Math.round(median(cycleLengths)),
+    periodLengthDays: Math.round(median(endedLengths)),
+  };
 }
 
 /**

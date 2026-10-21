@@ -21,7 +21,7 @@ import {
 } from '../../src/features/onboarding/Calendar';
 import { firstForecastActionTestID } from '../../src/features/onboarding/FirstForecast';
 import { whatEmiDoesActionTestID } from '../../src/features/onboarding/WhatEmiDoesWithIt';
-import { HOLD_MILLISECONDS, holdButtonTestID } from '../../src/features/onboarding/HoldToBegin';
+import { saveButtonTestID } from '../../src/features/onboarding/SaveAndStart';
 import {
   onboardingActionTestID,
   onboardingSkipTestID,
@@ -51,7 +51,7 @@ import {
 import { theProfileVaultOnHerPhone, theVaultOnHerPhone } from '../fixtures/herVault';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { sheAnswersEveryQuestion } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 import {
   pastPeriodLengthTestID,
@@ -88,8 +88,8 @@ const oneDayTooFarBack = dayOf(
 );
 const herCycleLengthDays = defaultCycleLengthDays + 2;
 
-/** The instant the hold ends, which is the instant everything she answered is written at. */
-const whenSheFinishesTheHold = new Date(whenSheOpensIt.getTime() + HOLD_MILLISECONDS);
+/** The instant she taps Save and start, which is the instant everything she answered is written at. */
+const whenSheSaves = whenSheOpensIt;
 
 interface OpenApp {
   /** The route she is looking at. It is read from the router rather than from the screen. */
@@ -211,7 +211,7 @@ async function sheAnswersEveryScreen(): Promise<void> {
     periodStartedOn: herPeriodStarted,
     cycleLengthDays: herCycleLengthDays,
   });
-  await sheHoldsTheRing();
+  await sheTapsSaveAndStart();
 }
 
 /**
@@ -414,7 +414,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
     });
 
@@ -426,9 +426,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         herCycleLengthDays,
       );
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
-        whenSheFinishesTheHold.toISOString(),
-      );
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheSaves.toISOString());
     });
 
     it('asks her twelve questions, holds once, and asks nothing else', async () => {
@@ -463,7 +461,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       visited.push(app.pathname());
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
       visited.push(app.pathname());
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(visited).toEqual([
         '/onboarding/welcome',
@@ -499,12 +497,21 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'what-emi-does-with-it.tsx',
       ];
 
-      for (const name of asksHerNothing) {
+      // Every symptom, opened from the link under the six tiles of today. It belongs to that
+      // question rather than asking one of its own, so it is named here and counted apart.
+      const opensFromAQuestion = ['all-symptoms.tsx'];
+
+      for (const name of [...asksHerNothing, ...opensFromAQuestion]) {
         expect(held).toContain(name);
       }
 
       expect(
-        held.filter((name) => !name.startsWith('_') && !asksHerNothing.includes(name)),
+        held.filter(
+          (name) =>
+            !name.startsWith('_') &&
+            !asksHerNothing.includes(name) &&
+            !opensFromAQuestion.includes(name),
+        ),
       ).toEqual([
         'cycle-length.tsx',
         'feeling.tsx',
@@ -519,7 +526,9 @@ describe('the first run ends on the home screen with her period recorded', () =>
         'welcome.tsx',
         'year-of-birth.tsx',
       ]);
-      expect(held).toHaveLength(firstRunScreens.length + asksHerNothing.length + 1);
+      expect(held).toHaveLength(
+        firstRunScreens.length + asksHerNothing.length + opensFromAQuestion.length + 1,
+      );
       expect(held.filter((name) => name.startsWith('_'))).toEqual(['_layout.tsx']);
     });
   });
@@ -559,7 +568,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
     });
   });
@@ -673,7 +682,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSaysNotNowToTheReminder();
       await sheReadsHerFirstForecast();
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
       expect(readDayLog(herDatabase(), theOldestDaySheMayPick)?.day).toBe(theOldestDaySheMayPick);
@@ -761,7 +770,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(controlsTooSmallToPress()).toEqual([]);
 
       await fireEvent.press(screen.getByTestId(whatEmiDoesActionTestID));
-      expect(screen.getByTestId(holdButtonTestID)).toBeTruthy();
+      expect(screen.getByTestId(saveButtonTestID)).toBeTruthy();
       expect(controlsTooSmallToPress()).toEqual([]);
     });
 
@@ -819,16 +828,14 @@ describe('the first run ends on the home screen with her period recorded', () =>
       await sheSaysNotNowToTheReminder();
       await sheReadsHerFirstForecast();
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(app.pathname()).toBe('/');
       expect(screen.getByTestId('home-screen')).toBeTruthy();
       expect(listDayLogs(herDatabase()).map((row) => [row.day, row.revision])).toEqual([
         [herPeriodStarted, 1],
       ]);
-      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(
-        whenSheFinishesTheHold.toISOString(),
-      );
+      expect(readSetting(herDatabase(), 'firstRunCompletedAt')).toBe(whenSheSaves.toISOString());
       expect(readProfile(herDatabase(), await theProfileVaultOnHerPhone())?.cycleLengthDays).toBe(
         herCycleLengthDays,
       );
@@ -837,7 +844,7 @@ describe('the first run ends on the home screen with her period recorded', () =>
       expect(row && vault.open(row.payload)).toEqual({
         day: herPeriodStarted,
         flow: 'medium',
-        recordedAt: whenSheFinishesTheHold.toISOString(),
+        recordedAt: whenSheSaves.toISOString(),
       });
     });
 

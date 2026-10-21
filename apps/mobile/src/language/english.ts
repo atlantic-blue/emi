@@ -192,6 +192,7 @@ export const english = {
    */
   'forecast.fertileWindow.sentence':
     'An estimate based on your last {cycles} cycles. Emi never says a day is safe, because no day is.',
+  'forecast.itStarted': 'It started',
   'forecast.late': {
     one: 'Your period is {count} day late',
     other: 'Your period is {count} days late',
@@ -599,10 +600,14 @@ export const english = {
   'log.flow.light': 'Light',
   'log.flow.medium': 'Medium',
   'log.flow.none': 'None',
+  'log.flow.otherDischarge': 'Other discharge',
   'log.flow.saved': 'Saved on this phone.',
   'log.flow.spotting': 'Spotting',
-  'log.flow.title': 'Your flow',
-  'log.group.digestion': 'Digestion',
+  'log.flow.spottingHint': 'Small traces of blood or brownish discharge',
+  'log.flow.spottingLabel': '{spotting}:',
+  'log.flow.title': 'Period',
+  'log.group.appetite': 'Appetite',
+  'log.group.digestive': 'Digestive symptoms',
   'log.group.energy': 'Energy',
   'log.group.head': 'Head',
   'log.group.libido': 'Libido',
@@ -641,6 +646,10 @@ export const english = {
     one: '{count} day',
     other: '{count} days',
   },
+  'onboarding.cycleLength.fromHerDates': {
+    one: 'Based on your records, your cycle averages {count} day. Does that look right?',
+    other: 'Based on your records, your cycle averages {count} days. Does that look right?',
+  },
   'onboarding.cycleLength.line.count':
     'Count the first day of one period to the day before the next.',
   'onboarding.cycleLength.line.held': 'Held between {minimum} and {maximum} days.',
@@ -652,8 +661,8 @@ export const english = {
   'onboarding.feeling.choice.fine': 'I am fine with it',
   'onboarding.feeling.choice.hard': 'It is hard, most months',
   'onboarding.feeling.choice.understand': 'I want to understand it',
-  'onboarding.feeling.line.talks': 'This changes how Emi talks to you, and nothing else.',
-  'onboarding.feeling.title': 'How you feel about it',
+  'onboarding.feeling.line.hard': 'If it is hard, Emi puts pain first on your period days.',
+  'onboarding.feeling.title': 'How do you usually feel during your period?',
   'onboarding.firstForecast.action': 'Continue',
   'onboarding.firstForecast.needs': {
     one: 'Emi needs {count} complete cycle before it forecasts from your own cycles, so this is still learning.',
@@ -697,17 +706,6 @@ export const english = {
   'onboarding.goals.choice.symptoms': 'Understand my symptoms',
   'onboarding.goals.line.chooseAll': 'Choose all that apply.',
   'onboarding.goals.title': 'What do you want Emi to help with?',
-  'onboarding.hold.action': 'Hold to begin',
-  'onboarding.hold.held': 'Keep holding',
-  'onboarding.hold.instruction': 'Press and hold the button to begin.',
-  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
-  // day, the answers and the marker go in one transaction or none of them do.
-  'onboarding.hold.refused': "That didn't save. Press and hold the button again.",
-  // The key is made at launch or at the hold, whichever finds the keychain empty first, and it is
-  // kept in the keychain rather than anywhere a screen may name.
-  'onboarding.hold.sealed':
-    "Holding the button saves your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
-  'onboarding.hold.title': 'Your cycle, your data, your key.',
   'onboarding.lastPeriod.earlier': 'Earlier',
   'onboarding.lastPeriod.earlierMonth': 'Earlier month',
   'onboarding.lastPeriod.later': 'Later',
@@ -727,6 +725,10 @@ export const english = {
   'onboarding.periodLength.days': {
     one: '{count} day',
     other: '{count} days',
+  },
+  'onboarding.periodLength.fromHerDates': {
+    one: 'Based on your records, your period averages {count} day. Does that look right?',
+    other: 'Based on your records, your period averages {count} days. Does that look right?',
   },
   'onboarding.periodLength.line.count': 'From the first day of bleeding until it stops.',
   'onboarding.periodLength.line.logged': 'Emi uses the days you log instead, once you log them.',
@@ -750,8 +752,19 @@ export const english = {
   'onboarding.reminder.notNow': 'Not now',
   'onboarding.reminder.title': 'Shall Emi tell you when it is near?',
   'onboarding.skip': 'Skip',
+  'onboarding.start.action': 'Save and start',
+  'onboarding.start.allSet': 'All set',
+  // What she reads when the write refuses. It says nothing was kept, because nothing was: the
+  // day, the answers and the marker go in one transaction or none of them do.
+  'onboarding.start.refused': "That didn't save. Tap Save and start again.",
+  // The key is made at launch or at the save, whichever finds the keychain empty first, and it is
+  // kept in the keychain rather than anywhere a screen may name.
+  'onboarding.start.sealed':
+    "Saving keeps your answers, sealed with your key. Emi makes the key and keeps it in this phone's keychain.",
+  'onboarding.start.title': 'Your cycle, your data, your key.',
   'onboarding.step': 'Step {step} of {of}',
   'onboarding.today.action': 'Save today',
+  'onboarding.today.allSymptoms': 'All symptoms',
   'onboarding.today.nothingToAdd': 'Nothing to add',
   'onboarding.today.question': 'You can skip this.',
   'onboarding.today.title': 'How are you today?',
@@ -817,10 +830,13 @@ export const english = {
     'Cycles run from {minimum} to {maximum} days. Try a day in that range.',
   'pastPeriods.picker.remove': 'Remove this period',
   'pastPeriods.picker.start': 'When did it start?',
+  'pastPeriods.picker.stillGoingTooLongAgo':
+    'A period that is still going started {maximum} days ago or less. Try a later day.',
   'pastPeriods.picker.title': 'Period {number}',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Save',
   'pastPeriods.skipThisOne': 'Skip this one if you do not remember',
+  'pastPeriods.stillGoing': 'Still going',
   'pastPeriods.title': 'Your last three periods',
   'pastPeriods.wayPast': 'Skip, I will log as I go',
   'period.back': 'Back',
@@ -1120,6 +1136,7 @@ export const english = {
   'symptom.restless': 'Restless',
   'symptom.restless-sleep': 'Restless sleep',
   'symptom.sad': 'Sad',
+  'symptom.salty-craving': 'Salty',
   'symptom.sensitive': 'Sensitive',
   'symptom.sensitive-skin': 'Sensitive skin',
   'symptom.shaky': 'Shaky',
@@ -1128,6 +1145,7 @@ export const english = {
   'symptom.sluggish': 'Sluggish',
   'symptom.sound-sensitivity': 'Sound sensitivity',
   'symptom.stomach-ache': 'Stomach ache',
+  'symptom.sweet-craving': 'Sweet',
   'symptom.tearful': 'Tearful',
   'symptom.vaginal-dryness': 'Vaginal dryness',
   'symptom.vivid-dreams': 'Vivid dreams',

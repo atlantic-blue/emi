@@ -14,7 +14,7 @@ import { dayParameter } from '../../src/features/calendar/askedMonth';
 import { dayRefusedLineTestID, dayRefusedTitleTestID } from '../../src/features/log/DayRefused';
 import { flowOptionTestID } from '../../src/features/log/FlowPicker';
 import { LogSheet } from '../../src/features/log/LogSheet';
-import { logFlowSavedTestID } from '../../src/features/log/LogFlow';
+import { logFlowSavedTestID, logFlowTitleTestID } from '../../src/features/log/LogFlow';
 import {
   unexpectedBleedingLineTestID,
   unexpectedBleedingMarkTestID,
@@ -58,7 +58,7 @@ const sheSaidHerCycleRuns = 28;
 
 /** What the flow screen says, before and after she marks a bleed as not her period. */
 const theFlowScreenSays = {
-  title: 'Your flow',
+  title: 'Period',
   saved: 'Saved on this phone.',
   invitation: "Not your period? Log it. It won't count as the start of a cycle.",
   marked: "Saved to your record. It won't count as the start of a cycle.",
@@ -226,7 +226,8 @@ describe('she logs bleeding that is not her period in plain words', () => {
     it('names the picker as the log board does, with no word for today, so a past day reads true', async () => {
       await sheOpens('/log');
 
-      expect(screen.getByText(theFlowScreenSays.title)).toBeTruthy();
+      expect(screen.getByTestId(logFlowTitleTestID)).toHaveTextContent(theFlowScreenSays.title);
+      expect(screen.queryByText('Your flow')).toBeNull();
       expect(screen.queryByText("How's your flow today?")).toBeNull();
     });
 

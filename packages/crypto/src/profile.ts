@@ -33,8 +33,17 @@ export type Goal = 'forecast' | 'symptoms' | 'fertileWindow' | 'doctorRecord';
 /** The parts of her body she wants watched, which put her own groups first in the log sheet. */
 export type Focus = Extract<
   SymptomGroup,
-  'sleep' | 'mood' | 'energy' | 'skin' | 'digestion' | 'pain'
+  'sleep' | 'mood' | 'energy' | 'skin' | 'appetite' | 'digestive' | 'pain'
 >;
+
+/**
+ * The focus value a profile sealed before digestion was split in two. It is never offered and
+ * never sealed again: a profile that holds it opens with both groups in its place.
+ */
+export const retiredDigestionFocus = 'digestion';
+
+/** The two groups the retired value stands for, in the order the log sheet draws them. */
+export const digestionFocusBecomes: readonly Focus[] = ['appetite', 'digestive'];
 
 /**
  * The one word that tells a profile from a day once both are open. It travels inside the
@@ -73,9 +82,22 @@ export const focusValues = [
   'mood',
   'energy',
   'skin',
-  'digestion',
+  'appetite',
+  'digestive',
   'pain',
 ] as const satisfies readonly Focus[];
+
+/**
+ * Her focus as it reads today. The retired `digestion` becomes appetite and digestive symptoms
+ * where it stood, so her order holds, and a group she also chose on its own is kept once.
+ */
+export function focusAsItReadsNow(focus: readonly string[]): readonly string[] {
+  const read = focus.flatMap((group) =>
+    group === retiredDigestionFocus ? [...digestionFocusBecomes] : [group],
+  );
+
+  return read.filter((group, at) => read.indexOf(group) === at);
+}
 
 /** Every key a profile may carry. A key outside this list is refused rather than sealed. */
 export const profileKeys: readonly string[] = [
@@ -210,7 +232,7 @@ export function profileFromBytes(bytes: Uint8Array): ProfileRecord {
   if (value.kind !== profileKind) {
     throw new ProfileError([`a profile names its kind as ${profileKind}, these bytes do not`]);
   }
-  return value as unknown as ProfileRecord;
+  return profileAsItReadsNow(value);
 }
 
 /** One record off the server, read as whichever of the two shapes its kind says it is. */
@@ -226,8 +248,20 @@ export function pulledFromBytes(bytes: Uint8Array): PulledRecord {
   const value = plainObjectFrom(bytes);
 
   return value.kind === profileKind
-    ? { kind: 'profile', profile: value as unknown as ProfileRecord }
+    ? { kind: 'profile', profile: profileAsItReadsNow(value) }
     : { kind: 'day', day: value as unknown as DayRecord };
+}
+
+/** An opened profile, with a focus sealed before the split read as the groups it became. */
+function profileAsItReadsNow(value: Record<string, unknown>): ProfileRecord {
+  const focus = value.focus;
+  if (!Array.isArray(focus) || !focus.includes(retiredDigestionFocus)) {
+    return value as unknown as ProfileRecord;
+  }
+  return {
+    ...value,
+    focus: focusAsItReadsNow(focus as readonly string[]),
+  } as unknown as ProfileRecord;
 }
 
 function plainObjectFrom(bytes: Uint8Array): Record<string, unknown> {

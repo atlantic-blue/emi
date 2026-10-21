@@ -42,7 +42,7 @@ import { dayOf, herDatabase } from '../fixtures/herPhone';
 import { herProfileVault, herVault, theProfileVaultOnHerPhone } from '../fixtures/herVault';
 import { sizedTextIn } from '../fixtures/renderedText';
 import { sheAnswersEveryQuestion, sheReadsWhatEmiDoesWithIt } from '../fixtures/theFirstRun';
-import { sheHoldsTheRing } from '../fixtures/theHold';
+import { sheTapsSaveAndStart } from '../fixtures/theSave';
 import { cycleLengthDaysTestID } from '../../src/features/onboarding/CycleLength';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
@@ -160,7 +160,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       expect(app.pathname()).toBe('/onboarding/focus');
     });
 
-    it('offers the six groups, with none of them pressed for her', async () => {
+    it('offers the seven groups, with none of them pressed for her', async () => {
       await sheOpensEmi();
 
       await sheReachesTheFocus();
@@ -169,7 +169,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         expect(screen.getByTestId(focusTestID(group))).toHaveTextContent(focusLabels[group]);
         expect(screen.getByTestId(focusTestID(group))).not.toBeSelected();
       }
-      expect(focusValues).toHaveLength(6);
+      expect(focusValues).toHaveLength(7);
     });
 
     it('names each tile with the heading that group carries in her log', async () => {
@@ -187,8 +187,9 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheReachesTheFocus();
 
       expect(new Set(Object.values(focusIcons)).size).toBe(focusValues.length);
+      // Digestive symptoms keep the folded tube the Digestion tile carried before the split.
       for (const group of focusValues) {
-        expect(focusIcons[group]).toBe(group);
+        expect(focusIcons[group]).toBe(group === 'digestive' ? 'digestion' : group);
       }
     });
 
@@ -240,7 +241,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       expect(firstRunCopy.focus.lines).toHaveLength(1);
     });
 
-    it('stands the six groups three to a row, as the redesign draws them', async () => {
+    it('stands the seven groups three to a row, as the redesign draws them', async () => {
       await sheOpensEmi();
 
       await sheReachesTheFocus();
@@ -276,7 +277,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         await sheOpensEmi();
 
         await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, focus: [group] });
-        await sheHoldsTheRing();
+        await sheTapsSaveAndStart();
 
         expect(statedFocus(herDatabase(), await theProfileVaultOnHerPhone())).toEqual([group]);
       });
@@ -292,7 +293,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['sleep', 'pain'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       expect(statedFocus(herDatabase(), await theProfileVaultOnHerPhone())).toEqual([
         'sleep',
@@ -307,7 +308,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['pain', 'mood', 'sleep'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const sealed = statedFocus(herDatabase(), await theProfileVaultOnHerPhone());
 
@@ -327,7 +328,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await shePresses(onboardingSkipTestID);
       await shePresses(firstForecastActionTestID);
       await sheReadsWhatEmiDoesWithIt();
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 
@@ -342,7 +343,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
 
       const held = readProfile(herDatabase(), await theProfileVaultOnHerPhone());
 
@@ -367,7 +368,7 @@ describe('the log opens on what she said changes with her cycle', () => {
             whenSheOpensIt,
           ),
         ),
-      ).toBe('focus-is-not-one-of-the-six');
+      ).toBe('focus-is-not-one-of-the-seven');
       expect(readProfile(database, herProfileVault())).toBeUndefined();
     });
 
@@ -401,7 +402,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['pain', 'sleep'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(theOrderOfHerLog().slice(0, 2)).toEqual(['pain', 'sleep']);
@@ -414,7 +415,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['sleep', 'pain'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(theOrderOfHerLog().slice(0, 2)).toEqual(['sleep', 'pain']);
@@ -424,7 +425,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(theOrderOfHerLog()).toEqual([...theGroupsTheSheetHeads]);
@@ -437,7 +438,7 @@ describe('the log opens on what she said changes with her cycle', () => {
         periodStartedOn: herPeriodStarted,
         focus: ['pain', 'sleep'],
       });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect([...theOrderOfHerLog()].sort()).toEqual([...theGroupsTheSheetHeads].sort());
@@ -447,7 +448,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, focus: ['sleep'] });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(theOrderOfHerLog()).toEqual([
@@ -460,7 +461,7 @@ describe('the log opens on what she said changes with her cycle', () => {
       await sheOpensEmi();
 
       await sheAnswersEveryQuestion({ periodStartedOn: herPeriodStarted, focus: ['mood'] });
-      await sheHoldsTheRing();
+      await sheTapsSaveAndStart();
       await sheOpensHerLog();
 
       expect(screen.getByTestId('mood-picker')).toBeTruthy();
@@ -514,9 +515,9 @@ describe('the log opens on what she said changes with her cycle', () => {
           />
         </OnAPhone>,
       );
-      await fireEvent.press(screen.getByTestId(focusTestID('digestion')));
+      await fireEvent.press(screen.getByTestId(focusTestID('digestive')));
 
-      expect(pressed).toEqual(['digestion']);
+      expect(pressed).toEqual(['digestive']);
     });
 
     it('writes no second line under a tile, because a tile names a group and nothing more', async () => {
