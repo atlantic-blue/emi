@@ -781,13 +781,14 @@ export const english = {
     'The ring is your cycle. A pointer marks today, and the number inside it is the day you are on.',
   'onboarding.tour.ring.title': 'Your cycle, in one ring.',
   'onboarding.tour.skip': 'Skip',
-  'onboarding.welcome.action': 'Continue',
+  'onboarding.welcome.action': 'Start',
   'onboarding.welcome.line.noAccount':
     'There is no account. Emi never asks for your email address or a password.',
-  'onboarding.welcome.line.onThisPhone': 'Your cycle is worked out on this phone.',
   'onboarding.welcome.line.whatEmiIs':
-    'Emi shows you what your own records say, and nothing more. Emi is not a contraceptive. Emi is not a medical device.',
-  'onboarding.welcome.title': 'Emi learns your cycle. You keep your data.',
+    "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
+  'onboarding.welcome.line.whatYouLog':
+    'Log your periods and how you feel, to understand your cycle better.',
+  'onboarding.welcome.title': 'Your cycle and how you feel, in one place.',
   'onboarding.whatEmiDoes.action': 'Continue',
   'onboarding.whatEmiDoes.forecast.line': 'A range, and how sure Emi is',
   'onboarding.whatEmiDoes.forecast.title': 'Your forecast',

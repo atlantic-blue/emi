@@ -813,10 +813,11 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.tour.skip': 'Пропустить',
   'onboarding.welcome.action': 'Начать',
   'onboarding.welcome.line.noAccount': 'Emi не просит регистрации, почты и пароля.',
-  'onboarding.welcome.line.onThisPhone': 'Ваш цикл считается на этом телефоне.',
   'onboarding.welcome.line.whatEmiIs':
-    'Emi показывает то, что говорят ваши собственные записи, и ничего больше. Emi не является средством контрацепции. Emi не является медицинским изделием.',
-  'onboarding.welcome.title': 'Emi изучает ваш цикл. Ваши данные остаются у вас.',
+    'Emi не заменяет консультацию врача. Emi не является средством контрацепции. Emi не является медицинским изделием.',
+  'onboarding.welcome.line.whatYouLog':
+    'Отмечайте месячные и самочувствие, чтобы лучше понимать свой цикл.',
+  'onboarding.welcome.title': 'Ваш цикл и самочувствие в одном месте.',
   'onboarding.whatEmiDoes.action': 'Дальше',
   'onboarding.whatEmiDoes.forecast.line': 'Диапазон и то, насколько Emi уверена',
   'onboarding.whatEmiDoes.forecast.title': 'Прогноз',

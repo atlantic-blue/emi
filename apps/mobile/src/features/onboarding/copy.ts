@@ -30,7 +30,7 @@ export const firstRunCopy = {
   welcome: {
     title: words('onboarding.welcome.title'),
     lines: [
-      words('onboarding.welcome.line.onThisPhone'),
+      words('onboarding.welcome.line.whatYouLog'),
       words('onboarding.welcome.line.noAccount'),
       words('onboarding.welcome.line.whatEmiIs'),
     ],
