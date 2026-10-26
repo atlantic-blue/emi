@@ -1,7 +1,13 @@
 import { addDays } from '@emi/cycle';
 import { type PhaseName, ringGeometry } from '@emi/tokens';
 
-import { type RingInputFrom, cycleShapeFor, fertileDaysOf, ringInputFor } from '../cycle/ringInput';
+import {
+  type RingInputFrom,
+  asSheReadItOn,
+  cycleShapeFor,
+  fertileDaysOf,
+  ringOn,
+} from '../cycle/ringInput';
 import {
   hasItsRangeOpened,
   theCycleAheadHolding,
@@ -32,14 +38,9 @@ export interface DayPhase {
   readonly ovulating: boolean;
 }
 
-/** Her days as they stood on that date, which is what the ring was drawn from on it. */
-function asSheReadItOn(from: RingInputFrom, day: string): RingInputFrom {
-  return { ...from, cycles: from.cycles.filter((cycle) => cycle.startedOn <= day), today: day };
-}
-
 /** The phase the ring would have named on that date. */
 export function thePhaseOn(from: RingInputFrom, day: string): PhaseName | undefined {
-  const input = ringInputFor(asSheReadItOn(from, day));
+  const input = ringOn(from, day);
 
   return input === undefined ? undefined : ringGeometry(input).phase;
 }

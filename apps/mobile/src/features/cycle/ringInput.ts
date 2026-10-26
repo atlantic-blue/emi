@@ -142,6 +142,15 @@ export function ringInputFor(from: RingInputFrom): RingInput | undefined {
     : { cycleLengthDays: read.shape.cycleLengthDays, day: read.day, phases: phasesOf(read.shape) };
 }
 
+/** Her days as they stood on that date: the cycles that had started by then, read on that date. */
+export function asSheReadItOn(from: RingInputFrom, day: string): RingInputFrom {
+  return { ...from, cycles: from.cycles.filter((cycle) => cycle.startedOn <= day), today: day };
+}
+
+export function ringOn(from: RingInputFrom, day: string): RingInput | undefined {
+  return ringInputFor(asSheReadItOn(from, day));
+}
+
 /**
  * The days of each of the four phases of the cycle she is in, by the phase rule, read from the
  * same shape the ring is drawn from. Nothing at all where the ring has nothing to draw.

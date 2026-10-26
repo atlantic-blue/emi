@@ -321,6 +321,7 @@ import {
   logFlowFlowCardTestID,
   logFlowOtherDischargeTestID,
   logFlowPeriodRowTestID,
+  logFlowPhaseTestID,
   logFlowSavedTestID,
   logFlowSexRowTestID,
   logFlowSpottingHintTestID,
@@ -2559,9 +2560,9 @@ defineFeature(feature, (test) => {
       });
     });
 
-    and('the ring says she is on day 4 of 28, in the follicular phase', () => {
-      expect(theRingSays()).toBe('Day 4 of 28, follicular');
-      expect(screen.getByText(phaseLabel.follicular)).toBeTruthy();
+    and('the ring says that Monday is day 1 of 28, in the period phase', () => {
+      expect(theRingSays()).toBe('Day 1 of 28, period');
+      expect(screen.getByTestId(logFlowPhaseTestID)).toHaveTextContent(phaseLabel.period);
     });
   });
 
