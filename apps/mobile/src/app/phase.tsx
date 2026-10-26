@@ -1,4 +1,4 @@
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
 import { useCallback, useReducer, useState } from 'react';
 
@@ -14,7 +14,7 @@ import {
 } from '../features/onboarding/firstRun';
 import { useFirstRun } from '../features/onboarding/FirstRunProvider';
 import { localDay } from '../features/onboarding/days';
-import { type DiaryChip, listAfterPress } from '../features/phase/diary';
+import { type DiaryChip, changeAfterPress } from '../features/phase/diary';
 import { herPastPhase } from '../features/phase/pastPhases';
 import { PhasePage } from '../features/phase/PhasePage';
 import { phaseNowFor } from '../features/phase/phaseNow';
@@ -32,6 +32,10 @@ export default function PhaseRoute(): ReactNode {
   const { isDone } = useFirstRun();
   const [today] = useState(() => localDay(new Date()));
   const [, sheWrote] = useReducer((writes: number) => writes + 1, 0);
+  const [, readAgain] = useReducer((reads: number) => reads + 1, 0);
+
+  // The log she opens from here writes the same day, and she comes back to this page, not a new one.
+  useFocusEffect(useCallback(() => readAgain(), []));
 
   const leave = useCallback(() => {
     if (router.canGoBack()) {
@@ -46,7 +50,7 @@ export default function PhaseRoute(): ReactNode {
       const held = dayLogged(database, vault, today);
       logDiary(database, vault, {
         day: today,
-        change: { [chip.field]: listAfterPress(held, chip) },
+        change: changeAfterPress(held, chip),
         now: new Date(),
       });
       sheWrote();

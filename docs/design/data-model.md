@@ -514,7 +514,8 @@ list and a screen draws from it.
   several. The list holds each value at most once and holds at least one value. Absent means not
   recorded, so an empty list is refused rather than kept as a second way to say nothing.
 - `food`, a list of `cravings`, `hungry`, `little-appetite`, `sweet`, `salty`. Optional. The same
-  list rules as `products`. The values are the "Food" chips of the `phasePage` board.
+  list rules as `products`. Emi no longer writes it. Days saved before the diary wrote to
+  `symptoms` can hold it, and Emi still reads it (see below).
 - `ovulationSigns`, a list of `egg-white-discharge`, `pain-on-one-side`, `tender-breasts`,
   `higher-sex-drive`, `positive-ovulation-test`, `higher-temperature`, `nothing-yet`. Optional. The
   same list rules as `products`. `nothing-yet` is her answer "Nothing yet" and it stands alone, so
@@ -525,16 +526,23 @@ list and a screen draws from it.
   that holds `ovulationSigns` without `answered`, or `answered` without `ovulationSigns`, is
   refused. Absent means the popup did not show on that day.
 
-### Emotions and symptoms on the Cycle phase page
+### The diary on the Cycle phase page
 
-The diary on the `phasePage` board offers three rows: Symptoms, Food and Emotions. Food is the new
-field above. The other two rows add no field, because the catalogue holds them already:
+The diary on the `phasePage` board offers three rows: Symptoms, Food and Emotions. Every chip writes
+a slug of the catalogue to `symptoms`, the same field the log writes. So a chip she presses in the
+diary shows on the day she opens from the calendar, and a symptom she saves on that day shows in the
+diary.
 
-- Emotions: `calm`, `irritable` and `anxious` were moods already. `happy` and `sad` are new entries
-  in the mood group of the catalogue, so they are written to `moods`. `energetic` is an entry of
-  the energy group, so it is written to `symptoms`, the same as the log sheet writes it.
 - Symptoms: `cramps`, `bloating`, `breast-tenderness` ("Tender breasts" on the board), `headache`,
-  `acne` and `ovulation-pain` ("Pain on one side" on the board). They are written to `symptoms`.
+  `acne` and `ovulation-pain` ("Pain on one side" on the board).
+- Food: `food-craving` ("Cravings"), `appetite-increase` ("Hungry"), `appetite-loss` ("Little
+  appetite"), `sweet-craving` ("Sweet") and `salty-craving` ("Salty").
+- Emotions: `calm`, `happy`, `energetic`, `irritable`, `anxious` and `sad`.
+
+Earlier versions of the diary wrote a mood to `moods` and a food to `food`, with the food values in
+the list above. Emi keeps those values and reads them: `cravings`, `hungry`, `little-appetite`,
+`sweet` and `salty` in `food`, and a mood of the diary in `moods`, light the same chip. When she
+takes a chip off, Emi takes it off `symptoms` and off the earlier field.
 
 ### What each field does to her cycle
 
