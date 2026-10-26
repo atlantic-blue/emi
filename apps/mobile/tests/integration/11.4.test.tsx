@@ -24,6 +24,7 @@ import {
 } from '../../src/features/onboarding/PeriodLength';
 import {
   onboardingActionTestID,
+  onboardingBackTestID,
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
@@ -235,12 +236,32 @@ describe('the period arc follows what she said until she logs her own', () => {
       await sheOpensEmi();
 
       await sheReachesThePeriodLength();
+      await fireEvent(screen.getByTestId(periodLengthWheelTestID), 'scrollBeginDrag', {
+        nativeEvent: { contentOffset: { x: 0, y: 0 } },
+      });
       await fireEvent(screen.getByTestId(periodLengthWheelTestID), 'momentumScrollEnd', {
         nativeEvent: { contentOffset: { x: 0, y: (sheSaysHerPeriodRuns - 1) * WHEEL_ROW_HEIGHT } },
       });
 
       expect(screen.getByTestId(periodLengthDaysTestID(sheSaysHerPeriodRuns))).toBeSelected();
       expect(screen.getByTestId(onboardingActionTestID)).not.toBeDisabled();
+    });
+
+    it('keeps the length she taps when the wheel reports its end two rows further on', async () => {
+      await sheOpensEmi();
+
+      await sheReachesThePeriodLength();
+      await shePresses(periodLengthDaysTestID(sheSaysHerPeriodRuns));
+      await fireEvent(screen.getByTestId(periodLengthWheelTestID), 'momentumScrollEnd', {
+        nativeEvent: { contentOffset: { x: 0, y: (sheSaysHerPeriodRuns + 1) * WHEEL_ROW_HEIGHT } },
+      });
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingBackTestID);
+
+      expect(screen.getByTestId(periodLengthDaysTestID(sheSaysHerPeriodRuns))).toBeSelected();
+      expect(
+        screen.getByTestId(periodLengthDaysTestID(sheSaysHerPeriodRuns + 2)),
+      ).not.toBeSelected();
     });
 
     it('runs from one day to fifteen, and offers nothing outside them', async () => {

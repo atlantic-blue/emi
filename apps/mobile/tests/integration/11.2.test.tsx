@@ -20,7 +20,7 @@ import {
   onboardingSkipTestID,
   onboardingWayPastTestID,
 } from '../../src/features/onboarding/OnboardingScreen';
-import { YEAR_ROW_HEIGHT, yearTestID, yearWheelTestID } from '../../src/components/YearWheel';
+import { yearTestID, yearWheelTestID } from '../../src/components/YearWheel';
 import { firstRunCopy, nameTooLongLine } from '../../src/features/onboarding/copy';
 import {
   type FirstRunRefusal,
@@ -175,10 +175,8 @@ describe('she gives her name and the home screen greets her by it', () => {
       await shePresses(onboardingActionTestID);
       await shePresses(onboardingBackTestID);
 
-      const wheel = screen.getByTestId(yearWheelTestID);
-      const travelled = birthYearsOffered(whenSheOpensIt).indexOf(herBirthYear) * YEAR_ROW_HEIGHT;
-      expect(wheel.props.contentOffset).toEqual({ x: 0, y: travelled });
       expect(screen.getByTestId(yearTestID(herBirthYear))).toBeSelected();
+      expect(screen.getByText(`Born in ${String(herBirthYear)}`)).toBeTruthy();
     });
 
     it('writes neither answer before the hold, because the hold is the only write', async () => {

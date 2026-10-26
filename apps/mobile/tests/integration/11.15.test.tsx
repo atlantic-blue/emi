@@ -233,6 +233,9 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
       const twoYearsOlder = theYearInTheMiddle - 2;
       const settledAt = birthYearsOffered(whenSheOpensIt).indexOf(twoYearsOlder) * YEAR_ROW_HEIGHT;
 
+      await fireEvent(screen.getByTestId(yearWheelTestID), 'scrollBeginDrag', {
+        nativeEvent: { contentOffset: { x: 0, y: 0 } },
+      });
       await fireEvent(screen.getByTestId(yearWheelTestID), 'momentumScrollEnd', {
         nativeEvent: { contentOffset: { x: 0, y: settledAt } },
       });
@@ -240,6 +243,20 @@ describe('the year of birth wheel opens on 1996 and chooses nothing for her', ()
       expect(screen.getByTestId(yearTestID(twoYearsOlder))).toBeSelected();
       expect(screen.getByText(`Born in ${String(twoYearsOlder)}`)).toBeTruthy();
       expect(screen.getByTestId(onboardingActionTestID)).toBeEnabled();
+    });
+
+    it('stays no answer when the wheel reports an end she did not turn it for', async () => {
+      await sheReachesTheYearSheWasBorn();
+
+      const whereItOpened = birthYearsOffered(whenSheOpensIt).indexOf(theYearInTheMiddle);
+
+      await fireEvent(screen.getByTestId(yearWheelTestID), 'momentumScrollEnd', {
+        nativeEvent: { contentOffset: { x: 0, y: whereItOpened * YEAR_ROW_HEIGHT } },
+      });
+
+      expect(screen.getByTestId(yearTestID(theYearInTheMiddle))).not.toBeSelected();
+      expect(screen.queryByText(`Born in ${String(theYearInTheMiddle)}`)).toBeNull();
+      expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
     it('reads the plain year in the middle until she picks one', async () => {

@@ -1,5 +1,5 @@
 import { MINIMUM_TAP_TARGET, colour, radius, textStyle } from '@emi/tokens';
-import { type ReactNode, useRef } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
@@ -82,6 +82,10 @@ function Row({ value, away, chosen, label, onPress, testID }: RowProps): ReactNo
  * The number it opens on is only a place to start: nothing is chosen until she turns it or taps a
  * number, so a screen built on it never keeps a number she did not pick. Coming back, it opens on
  * the number she already picked.
+ *
+ * iOS also reports a scroll end after the scroll a tap starts and when the wheel leaves the window,
+ * so only a scroll end after a drag is a choice. The offset prop stays fixed: a new offset sent
+ * while a tap scrolls the wheel moves it a second time, past the tapped row.
  */
 export function NumberWheel({
   values,
@@ -94,9 +98,16 @@ export function NumberWheel({
   pillTestID,
 }: Props): ReactNode {
   const wheel = useRef<ScrollView>(null);
+  const isTurning = useRef(false);
   const middle = Math.max(0, values.indexOf(chosen ?? opensOn));
+  const [opensAt] = useState(() => ({ x: 0, y: travelTo(middle) }));
 
   const settle = (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
+    if (!isTurning.current) {
+      return;
+    }
+    isTurning.current = false;
+
     const at = Math.round(event.nativeEvent.contentOffset.y / WHEEL_ROW_HEIGHT);
     const value = values[Math.min(Math.max(at, 0), values.length - 1)];
 
@@ -106,6 +117,7 @@ export function NumberWheel({
   };
 
   const pressed = (value: number): void => {
+    isTurning.current = false;
     wheel.current?.scrollTo({ animated: true, y: travelTo(values.indexOf(value)) });
     onChoose(value);
   };
@@ -115,9 +127,12 @@ export function NumberWheel({
       <View pointerEvents="none" style={styles.pill} testID={pillTestID} />
       <ScrollView
         contentContainerStyle={styles.list}
-        contentOffset={{ x: 0, y: travelTo(middle) }}
+        contentOffset={opensAt}
         decelerationRate="fast"
         onMomentumScrollEnd={settle}
+        onScrollBeginDrag={() => {
+          isTurning.current = true;
+        }}
         ref={wheel}
         showsVerticalScrollIndicator={false}
         snapToInterval={WHEEL_ROW_HEIGHT}
