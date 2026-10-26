@@ -1,5 +1,5 @@
 import type { DayRecord } from '@emi/crypto';
-import { type Flow, addDays, daysBetween, isBleeding } from '@emi/cycle';
+import { type Flow, addDays, daysBetween, periodsFrom } from '@emi/cycle';
 
 import type { CycleRow } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
@@ -129,9 +129,9 @@ export function savePeriodRange(db: Database, vault: DayVault, save: PeriodSave)
 }
 
 /**
- * The period of the cycle holding a day: the days of it she recorded bleeding on, from the day the
- * cycle started, for as long as the bleeding runs. A day ahead of her asks about the cycle she is
- * in, because no period ahead of her is a record yet.
+ * The period of the cycle holding a day: every day of it the cycle arithmetic counts as her period,
+ * across a gap she left unrecorded. A day ahead of her asks about the cycle she is in, because no
+ * period ahead of her is a record yet.
  *
  * It is read off her records rather than off what the month drew, because the month draws today as
  * today whether she bled on it or not, and a woman correcting the period she is having right now
@@ -148,13 +148,8 @@ export function thePeriodEmiHoldsAround(
     return [];
   }
 
-  const bled = new Set(records.filter((record) => isBleeding(record)).map((record) => record.day));
-  const held: string[] = [];
-  for (let each = holding.startedOn; bled.has(each); each = addDays(each, 1)) {
-    held.push(each);
-  }
-
-  return held;
+  const period = periodsFrom(records).find((each) => each.startedOn === holding.startedOn);
+  return period === undefined ? [] : [...period.days];
 }
 
 /** How many days after the last day of her period the list offers, as the board draws it. */

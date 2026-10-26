@@ -8,6 +8,7 @@ import {
   cyclesFrom,
   daysBetween,
   isBleeding,
+  periodsFrom,
   startsACycle,
   toDay,
   toDayNumber,
@@ -211,6 +212,35 @@ describe('the days of one period', () => {
 
     expect(cyclesFrom(days)).toEqual([
       { startedOn: '2026-01-05', endedOn: null, lengthDays: null, periodDays: 2 },
+    ]);
+  });
+});
+
+describe('the days counted into each period', () => {
+  it('holds a lone bleeding day after an unrecorded gap, as the count does', () => {
+    const days: DayRecord[] = [
+      { day: '2026-08-24', flow: 'medium' },
+      { day: '2026-08-25', flow: 'medium' },
+      { day: '2026-08-30', flow: 'medium' },
+    ];
+
+    expect(periodsFrom(days)).toEqual([
+      { startedOn: '2026-08-24', days: ['2026-08-24', '2026-08-25', '2026-08-30'] },
+    ]);
+    expect(cyclesFrom([...days, { day: '2026-08-31', flow: 'none' }])[0]?.periodDays).toBe(3);
+  });
+
+  it('stops at a day she recorded without bleeding', () => {
+    const days: DayRecord[] = [
+      { day: '2026-01-05', flow: 'medium' },
+      { day: '2026-01-06', flow: 'none' },
+      { day: '2026-01-08', flow: 'light' },
+      { day: '2026-01-20', flow: 'heavy' },
+    ];
+
+    expect(periodsFrom(days)).toEqual([
+      { startedOn: '2026-01-05', days: ['2026-01-05'] },
+      { startedOn: '2026-01-20', days: ['2026-01-20'] },
     ]);
   });
 });
