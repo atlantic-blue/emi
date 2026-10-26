@@ -2,6 +2,18 @@
 
 Each version lists what changed for the person who uses Emi. The version is `expo.version` in `apps/mobile/app.json`. The store build number goes up by itself on each build, and a released version names the build it shipped as.
 
+## Unreleased
+
+Fixes from the beta feedback of 18 to 26 October 2026.
+
+### Fixed
+
+- A tap on a row of the year, cycle or period length wheel saves that row. Before, it could save a row two places away, and a skipped year was saved. https://github.com/atlantic-blue/emi/issues/338
+- The calendar rings a forecast period only near the expected start, so the months ahead show the fertile days again. https://github.com/atlantic-blue/emi/issues/372
+- The day entry header shows the cycle day and phase of the date that is open, not of today. https://github.com/atlantic-blue/emi/issues/376
+- Edit my period opens with every saved period day ticked, also a day after a gap. https://github.com/atlantic-blue/emi/issues/390
+- Symptoms, moods and appetite saved from a calendar day show in About this phase, and the other way round. The keyboard opens only when she taps a field. https://github.com/atlantic-blue/emi/issues/375
+
 ## 0.2.0 (21 October 2026)
 
 The changes from the beta feedback of 16 and 17 October 2026.
