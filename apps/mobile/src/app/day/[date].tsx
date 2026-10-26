@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useReducer, useState } from 'react';
 
 import { useDatabase } from '../../data/DatabaseProvider';
-import { ringNow } from '../../features/cycle/ringNow';
+import { ringOnTheDay } from '../../features/cycle/ringNow';
 import { DayRefused } from '../../features/log/DayRefused';
 import { LogFlow } from '../../features/log/LogFlow';
 import { LogSymptoms, type SymptomsAsked } from '../../features/log/LogSymptoms';
@@ -32,9 +32,8 @@ function sameSymptoms(one: readonly string[], other: readonly string[]): boolean
 }
 
 /**
- * A day she already lived, opened from its own address. The ring beside the flow is the cycle she
- * is in today rather than a ring for that day, because what a corrected Tuesday changes is where
- * she stands now.
+ * A day she already lived, opened from its own address. The ring beside the flow reads the cycle
+ * day and phase that date fell on, the same reading the calendar gives that date.
  */
 export default function DayRoute(): ReactNode {
   const database = useDatabase();
@@ -164,7 +163,7 @@ export default function DayRoute(): ReactNode {
       onOtherDischarge={() => router.push(periodAddress(day))}
       onSearch={() => openTheSymptoms(symptomsBySearch(hers))}
       onToggleSymptom={(slug) => writeTheSymptoms(held.filter((each) => each !== slug))}
-      ring={ringNow(database, vault, profiles, today)}
+      ring={ringOnTheDay(database, vault, profiles, day)}
       symptoms={held}
       title={dateWords(day)}
     />

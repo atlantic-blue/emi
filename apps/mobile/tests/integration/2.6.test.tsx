@@ -51,12 +51,16 @@ const herPeriodDays = 4;
 const herLastPeriodStarted = addDays(sheForgot, -herCycleLengthDays);
 
 /**
- * What the ring says while that Monday holds no bleeding: her last period was four weeks and three
- * days ago, so the cycle she is in has run past the length she expects and the pointer is at the end
- * of it. Both readings are the ring's own words, and nothing here computes them.
+ * What the ring says about that Monday. While it holds no bleeding, her last period was four weeks
+ * before it, so the Monday is the last day of a cycle that ran one day past the length she expects.
+ * Once it holds her period, it is the first day of a new cycle. Both readings are the ring's own
+ * words, and nothing here computes them.
  */
-const theRingBefore = 'Day 32 of 32, luteal';
-const theRingAfter = `Day 4 of ${herCycleLengthDays}, follicular`;
+const theRingBefore = 'Day 29 of 29, luteal';
+const theRingAfter = `Day 1 of ${herCycleLengthDays}, period`;
+
+/** Her reading today, three days after the Monday. */
+const theRingToday = 'Day 32 of 32, luteal';
 
 /**
  * Six periods she recorded, four days of bleeding each, twenty eight days apart. The last of them
@@ -162,12 +166,20 @@ describe('a past day is edited and a future day is refused', () => {
       expect(screen.getByTestId(flowOptionTestID('heavy'))).not.toBeChecked();
     });
 
-    it('draws the cycle she is in today, because that is what a wrong Monday moved', async () => {
+    it('draws the cycle day and phase that Monday fell on', async () => {
       await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
 
       await sheOpens(sheForgot);
 
       expect(theRingSays()).toBe(theRingBefore);
+    });
+
+    it('no longer draws the cycle she is in today', async () => {
+      await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
+
+      await sheOpens(sheForgot);
+
+      expect(theRingSays()).not.toBe(theRingToday);
     });
   });
 
@@ -213,7 +225,7 @@ describe('a past day is edited and a future day is refused', () => {
       });
     });
 
-    it('redraws the ring, because the cycle she is in now starts on that Monday', async () => {
+    it('redraws the ring, because a new cycle starts on that Monday', async () => {
       await herPhoneHolds(whenSheOpensIt, [...herSixPeriods(), sheSaidNothingHappened()]);
       await sheOpens(sheForgot);
       const before = theRingShape();

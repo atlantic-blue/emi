@@ -8,7 +8,22 @@ import {
   statedPeriodLengthDays,
 } from '../onboarding/firstRun';
 import { recordedDays } from './rebuild';
-import { type RingInput, ringInputFor } from './ringInput';
+import { type RingInput, type RingInputFrom, ringInputFor, ringOn } from './ringInput';
+
+function herDays(
+  db: Database,
+  vault: DayVault,
+  profiles: ProfileVault,
+  today: string,
+): RingInputFrom {
+  return {
+    cycles: listCycles(db),
+    records: recordedDays(db, vault.open),
+    today,
+    statedCycleLengthDays: statedCycleLengthDays(db, profiles) ?? defaultCycleLengthDays,
+    statedPeriodLengthDays: statedPeriodLengthDays(db, profiles),
+  };
+}
 
 /**
  * The ring as her cycle stands now, read back out of the database every time. Nothing is patched in
@@ -21,11 +36,14 @@ export function ringNow(
   profiles: ProfileVault,
   today: string,
 ): RingInput | undefined {
-  return ringInputFor({
-    cycles: listCycles(db),
-    records: recordedDays(db, vault.open),
-    today,
-    statedCycleLengthDays: statedCycleLengthDays(db, profiles) ?? defaultCycleLengthDays,
-    statedPeriodLengthDays: statedPeriodLengthDays(db, profiles),
-  });
+  return ringInputFor(herDays(db, vault, profiles, today));
+}
+
+export function ringOnTheDay(
+  db: Database,
+  vault: DayVault,
+  profiles: ProfileVault,
+  day: string,
+): RingInput | undefined {
+  return ringOn(herDays(db, vault, profiles, day), day);
 }

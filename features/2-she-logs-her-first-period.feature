@@ -202,7 +202,7 @@ Feature: She opens Emi and logs her first period
     When she opens that Monday
     And she says her period came back that day
     Then that Monday holds the flow she picked
-    And the ring says she is on day 4 of 28, in the follicular phase
+    And the ring says that Monday is day 1 of 28, in the period phase
 
   Scenario: SCREEN-4, an edit raises the revision of the day she changed
     Given her phone holds six periods and a Monday she said nothing happened on
