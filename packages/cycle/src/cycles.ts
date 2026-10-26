@@ -145,7 +145,7 @@ function inDayOrder(days: readonly DayRecord[]): Sorted[] {
 interface Building {
   readonly startedOn: string;
   readonly startNumber: number;
-  periodDays: number;
+  readonly periodDays: number[];
   /** The last day counted into the period, so that a recorded gap can close it. */
   lastPeriodDay: number;
   periodEnded: boolean;
@@ -166,6 +166,34 @@ function saysSomethingAboutBleeding(record: DayRecord): boolean {
  * silence and never by a day of symptoms alone.
  */
 export function cyclesFrom(days: readonly DayRecord[]): Cycle[] {
+  const building = cyclesBuiltFrom(days);
+
+  return building.map((cycle, index) => {
+    const next = building[index + 1];
+    return {
+      startedOn: cycle.startedOn,
+      endedOn: next ? toDay(next.startNumber - 1) : null,
+      lengthDays: next ? next.startNumber - cycle.startNumber : null,
+      periodDays: cycle.periodEnded || next ? cycle.periodDays.length : null,
+    };
+  });
+}
+
+/** The bleeding days counted into each period. Days with no record between them do not split it. */
+export interface Period {
+  readonly startedOn: string;
+  readonly days: readonly string[];
+}
+
+/** The days of each period, by the rule `cyclesFrom` counts them with. */
+export function periodsFrom(days: readonly DayRecord[]): Period[] {
+  return cyclesBuiltFrom(days).map((cycle) => ({
+    startedOn: cycle.startedOn,
+    days: cycle.periodDays.map(toDay),
+  }));
+}
+
+function cyclesBuiltFrom(days: readonly DayRecord[]): Building[] {
   const sorted = inDayOrder(days);
   const building: Building[] = [];
 
@@ -177,14 +205,14 @@ export function cyclesFrom(days: readonly DayRecord[]): Cycle[] {
         building.push({
           startedOn: record.day,
           startNumber: number,
-          periodDays: 1,
+          periodDays: [number],
           lastPeriodDay: number,
           periodEnded: false,
         });
         continue;
       }
       if (!open.periodEnded) {
-        open.periodDays += 1;
+        open.periodDays.push(number);
         open.lastPeriodDay = number;
       }
       continue;
@@ -200,15 +228,7 @@ export function cyclesFrom(days: readonly DayRecord[]): Cycle[] {
     }
   }
 
-  return building.map((cycle, index) => {
-    const next = building[index + 1];
-    return {
-      startedOn: cycle.startedOn,
-      endedOn: next ? toDay(next.startNumber - 1) : null,
-      lengthDays: next ? next.startNumber - cycle.startNumber : null,
-      periodDays: cycle.periodEnded || next ? cycle.periodDays : null,
-    };
-  });
+  return building;
 }
 
 /** The cycles whose length is known, because the cycle after them has started. */

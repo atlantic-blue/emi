@@ -122,4 +122,17 @@ describe('where the period editor opens', () => {
 
     expect(opened).toEqual({ held: [], listed: { from: yesterday, to: today } });
   });
+
+  it('ticks a lone period day she logged after a gap, and every other day of that period', () => {
+    const records = [...aPeriod('2026-08-24', 2), ...aPeriod('2026-08-30', 1)];
+    const cycles = [aCycle('2026-08-24')];
+    const everyDay = ['2026-08-24', '2026-08-25', '2026-08-30'];
+
+    const fromTheLoneDay = whereTheEditorOpens(records, cycles, { day: '2026-08-30', today });
+    const fromTheStart = whereTheEditorOpens(records, cycles, { day: '2026-08-24', today });
+
+    expect(fromTheLoneDay.held).toEqual(everyDay);
+    expect(fromTheStart.held).toEqual(everyDay);
+    expect(fromTheLoneDay.listed).toEqual({ from: '2026-08-24', to: '2026-09-01' });
+  });
 });
