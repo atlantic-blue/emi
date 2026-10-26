@@ -2,6 +2,7 @@ import {
   type DayRange,
   FERTILE_DAYS_AFTER_OVULATION,
   FERTILE_DAYS_BEFORE_OVULATION,
+  DAYS_EITHER_SIDE_WHILE_LEARNING,
   FORECAST_WINDOW_CYCLES,
   addDays,
   cyclePhaseDays,
@@ -25,17 +26,22 @@ import { forecastOf } from '../forecast/fromCache';
  * so the calendar draws that one period only. Its fertile window is counted from the length she
  * gave at the first run, by the rule the ring uses for the cycle she is in.
  *
- * A forecast never puts a period on one day (contract CYCLE-2), so the rings cover every day the
- * period may fall on: from the first day it may start to the last day it may still run. The cycle
- * days count from the first day it may start.
+ * A forecast never puts a period on one day (contract CYCLE-2), so the rings cover a range: the
+ * days it may start on, but no more than a few days either side of the middle, and then the days
+ * it may still run. A wide range is not ringed whole, because the rings of one cycle would reach
+ * the next and cover every day of the month. The cycle days count from the first ringed day.
  */
 export const FORECAST_CYCLES_AHEAD = FORECAST_WINDOW_CYCLES;
+
+export const RINGED_DAYS_EITHER_SIDE = DAYS_EITHER_SIDE_WHILE_LEARNING;
 
 export interface CycleAhead {
   /** Zero for her next period, one for the period after it, and so on. */
   readonly order: number;
-  /** The first day the period may start on, which the cycle days count from. */
+  /** The first ringed day, which the cycle days count from. */
   readonly startsOn: string;
+  /** The last ringed day it may start on. */
+  readonly ringedTo: string;
   /** The days it may start on, which is what the day card says. */
   readonly mayStart: DayRange;
   readonly lengthDays: number;
@@ -66,7 +72,7 @@ export function theCyclesAhead(from: RingInputFrom): CycleAhead[] {
       order: 0,
       ovulationDay: ovulationDayWhileLearning(from.statedCycleLengthDays),
       periodDays,
-      startsOn: range.from,
+      ...theRingedStart(range),
     };
 
     return isStillAhead(next, from.today) ? [next] : [];
@@ -83,13 +89,28 @@ export function theCyclesAhead(from: RingInputFrom): CycleAhead[] {
       to: addDays(forecast.start.to, moved),
     };
 
-    return { lengthDays, mayStart, order, ovulationDay, periodDays, startsOn: mayStart.from };
+    return { lengthDays, mayStart, order, ovulationDay, periodDays, ...theRingedStart(mayStart) };
   }).filter((cycle) => isStillAhead(cycle, from.today));
+}
+
+function theRingedStart(mayStart: DayRange): { startsOn: string; ringedTo: string } {
+  const middle = addDays(mayStart.from, Math.floor(daysBetween(mayStart.from, mayStart.to) / 2));
+  const from = addDays(middle, -RINGED_DAYS_EITHER_SIDE);
+  const to = addDays(middle, RINGED_DAYS_EITHER_SIDE);
+
+  return {
+    startsOn: from > mayStart.from ? from : mayStart.from,
+    ringedTo: to < mayStart.to ? to : mayStart.to,
+  };
 }
 
 /** The last day a forecast period may still run on. */
 function theLastDayItMayRun(cycle: CycleAhead): string {
   return addDays(cycle.mayStart.to, cycle.periodDays - 1);
+}
+
+function theLastRingedDay(cycle: CycleAhead): string {
+  return addDays(cycle.ringedTo, cycle.periodDays - 1);
 }
 
 /** A forecast period whose last possible day is still ahead of her is drawn. */
@@ -118,9 +139,9 @@ export function theDayOfTheCycleAhead(cycle: CycleAhead, day: string): number {
   return daysBetween(cycle.startsOn, day) + 1;
 }
 
-/** Whether a date is one of the days the forecast period may fall on. */
+/** Whether a date is one of the ringed days of a forecast period. */
 export function isAForecastPeriodDay(cycle: CycleAhead, day: string): boolean {
-  return day >= cycle.startsOn && day <= theLastDayItMayRun(cycle);
+  return day >= cycle.startsOn && day <= theLastRingedDay(cycle);
 }
 
 /**
@@ -153,7 +174,7 @@ export interface PhaseAhead {
 export function thePhaseAhead(cycle: CycleAhead, day: string): PhaseAhead {
   const cycleDay = theDayOfTheCycleAhead(cycle, day);
   // Every ringed day counts as the period here, so no day is drawn both as a period and as fertile.
-  const ringedDays = daysBetween(cycle.startsOn, theLastDayItMayRun(cycle)) + 1;
+  const ringedDays = daysBetween(cycle.startsOn, theLastRingedDay(cycle)) + 1;
   const periodDays = Math.min(ringedDays, cycle.lengthDays);
 
   const phases = cyclePhaseDays({

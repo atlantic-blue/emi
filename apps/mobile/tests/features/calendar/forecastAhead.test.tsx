@@ -15,6 +15,7 @@ import { daySheetLineTestID, daySheetOpenTestID } from '../../../src/features/ca
 import { daySheetWords, monthLegendCopy } from '../../../src/features/calendar/copy';
 import {
   FORECAST_CYCLES_AHEAD,
+  RINGED_DAYS_EITHER_SIDE,
   theCyclesAhead,
 } from '../../../src/features/calendar/forecastAhead';
 import { herMonth } from '../../../src/features/calendar/herMonth';
@@ -184,6 +185,75 @@ describe('the fertile window in a month ahead', () => {
     expect(theDayPhaseOn(from, '2026-11-27')?.ovulating).toBe(false);
     expect(theDayPhaseOn(from, '2026-11-14')).toEqual(
       expect.objectContaining({ fertile: false, phase: 'period' }),
+    );
+  });
+});
+
+describe('a forecast from cycles that change a lot in length', () => {
+  /** Cycles of 24 and 46 days: a median of 35 and a spread of about 16 days either side. */
+  const herUnevenPeriods = ['2026-07-16', '2026-08-09', '2026-09-24'];
+  const from = herReading(herUnevenPeriods);
+
+  it('rings no more than three days either side of the middle of the range', () => {
+    const [next] = theCyclesAhead(from);
+
+    expect(RINGED_DAYS_EITHER_SIDE).toBe(3);
+    expect(next?.mayStart).toEqual({ from: '2026-10-13', to: '2026-11-14' });
+    expect(next?.startsOn).toBe('2026-10-26');
+  });
+
+  it('rings a forecast period that runs past the end of a month on both sides of it', () => {
+    expect(theDaysMarkedForecastIn(from, '2026-10-01')).toEqual([
+      '2026-10-26',
+      '2026-10-27',
+      '2026-10-28',
+      '2026-10-29',
+      '2026-10-30',
+      '2026-10-31',
+    ]);
+    expect(theDaysMarkedForecastIn(from, '2026-11-01')).toEqual([
+      '2026-11-01',
+      '2026-11-02',
+      '2026-11-03',
+      '2026-11-04',
+      '2026-11-05',
+      '2026-11-30',
+    ]);
+    expect(theDaysMarkedForecastIn(from, '2026-12-01')).toEqual([
+      '2026-12-01',
+      '2026-12-02',
+      '2026-12-03',
+      '2026-12-04',
+      '2026-12-05',
+      '2026-12-06',
+      '2026-12-07',
+      '2026-12-08',
+      '2026-12-09',
+      '2026-12-10',
+    ]);
+  });
+
+  it('leaves the days between the periods plain or fertile, and starts the cycle day at 1', () => {
+    for (const month of ['2026-11-01', '2026-12-01']) {
+      const days = herMonth(from, month);
+      const fertile = days.filter((day) => theDayPhaseOn(from, day.day)?.fertile === true);
+
+      expect(days.filter((day) => day.mark === 'forecast').length).toBeLessThan(days.length / 2);
+      expect(fertile.length).toBeGreaterThan(0);
+      expect(fertile.every((day) => day.mark !== 'forecast')).toBe(true);
+    }
+    expect(herMonth(from, '2026-11-01').find((day) => day.day === '2026-11-30')?.cycleDay).toBe(1);
+  });
+
+  it('keeps the whole range in the words of the card', () => {
+    const hers = herDaysOn(from, ['2026-10-28'])[0];
+
+    if (hers === undefined) {
+      throw new Error('28 October gave no day');
+    }
+
+    expect(daySheetWords(whatTheSheetSays(from, hers, undefined)).line).toBe(
+      'Your next period is likely to start between 13 October and 14 November.',
     );
   });
 });
