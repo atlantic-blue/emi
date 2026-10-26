@@ -15,7 +15,8 @@ import type { SymptomGroup } from '@emi/cycle';
 import { tabTestID } from '@emi/ui';
 import { fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
 
-import { yearTestID } from '../../src/components/YearWheel';
+import { YEAR_ROW_HEIGHT, yearTestID, yearWheelTestID } from '../../src/components/YearWheel';
+import { birthYearsOffered } from '../../src/features/onboarding/firstRun';
 import {
   type AnswerGivenAgain,
   changeProfileAnswer,
@@ -513,6 +514,34 @@ describe('she changes any answer she gave and the screen that reads it follows',
         expect(answer.sealed(await theSealedRow())).toEqual(answer.sealed(herFirstRun));
       },
     );
+  });
+
+  describe('a tap on the year wheel, two rows from the pill', () => {
+    it('saves the year she taps, though the wheel reports its end two rows further on', async () => {
+      const theYearSheTaps = 1992;
+      const theYearTheWheelReports = 1990;
+
+      await herPhoneIsSetUp();
+      await sheOpensTheApplication();
+      await sheOpensTheRow('birthYear');
+      await shePresses(yearTestID(theYearSheTaps));
+      await fireEvent(screen.getByTestId(yearWheelTestID), 'momentumScrollEnd', {
+        nativeEvent: {
+          contentOffset: {
+            x: 0,
+            y: birthYearsOffered(whenSheOpensIt).indexOf(theYearTheWheelReports) * YEAR_ROW_HEIGHT,
+          },
+        },
+      });
+      await shePresses(answerSaveTestID);
+
+      expect(herFirstRun.birthYear).toBe(theYearSheTaps + 2);
+      expect((await theSealedRow()).birthYear).toBe(theYearSheTaps);
+      expect(theRowReads('birthYear')).toEqual([
+        yourAnswersCopy.rows.birthYear,
+        String(theYearSheTaps),
+      ]);
+    });
   });
 
   describe('the greeting on the screen she opens', () => {
