@@ -14,6 +14,10 @@ import {
   phaseCardPressTestID,
   phaseCardTestID,
 } from '../../../src/features/home/PhaseCard';
+import { groupTileTestID } from '../../../src/features/log/GroupTiles';
+import { logFlowTestID } from '../../../src/features/log/LogFlow';
+import { logSymptomsSaveTestID } from '../../../src/features/log/LogSymptoms';
+import { symptomChipTestID } from '../../../src/features/log/SymptomGroup';
 import { guideAreas } from '../../../src/features/phase/copy';
 import { diaryChips } from '../../../src/features/phase/diary';
 import { herPastPhase } from '../../../src/features/phase/pastPhases';
@@ -22,6 +26,7 @@ import {
   diaryChipTestID,
   phaseDiaryAllSymptomsTestID,
   phaseDiaryNoteTestID,
+  phaseDiaryTestID,
 } from '../../../src/features/phase/PhaseDiary';
 import {
   phaseGuideAreaTestID,
@@ -225,11 +230,11 @@ describe('the diary of today', () => {
       'headache',
       'acne',
       'ovulation-pain',
-      'cravings',
-      'hungry',
-      'little-appetite',
-      'sweet',
-      'salty',
+      'food-craving',
+      'appetite-increase',
+      'appetite-loss',
+      'sweet-craving',
+      'salty-craving',
       'calm',
       'happy',
       'energetic',
@@ -257,7 +262,7 @@ describe('the diary of today', () => {
     };
 
     await pick('cramps');
-    await pick('hungry');
+    await pick('appetite-increase');
     await pick('calm');
     await pick('energetic');
     await fireEvent.changeText(screen.getByTestId(phaseDiaryNoteTestID), 'Long day at work');
@@ -266,11 +271,11 @@ describe('the diary of today', () => {
     expect(theDayOnHerPhone()).toMatchObject({
       day: today,
       flow: 'medium',
-      symptoms: ['cramps', 'energetic'],
-      food: ['hungry'],
-      moods: ['calm'],
+      symptoms: ['cramps', 'appetite-increase', 'calm', 'energetic'],
       note: 'Long day at work',
     });
+    expect(theDayOnHerPhone()).not.toHaveProperty('moods');
+    expect(theDayOnHerPhone()).not.toHaveProperty('food');
     expect(screen.getByTestId('phase-diary-symptoms-cramps').props.accessibilityState).toEqual({
       selected: true,
     });
@@ -280,33 +285,55 @@ describe('the diary of today', () => {
   it('should take a chip off the day when she presses it again', async () => {
     await sheOpensThePhasePage(herPeriodStarts(16, 2));
 
-    await fireEvent.press(screen.getByTestId('phase-diary-food-sweet'));
-    await fireEvent.press(screen.getByTestId('phase-diary-food-salty'));
-    await fireEvent.press(screen.getByTestId('phase-diary-food-sweet'));
+    await fireEvent.press(screen.getByTestId('phase-diary-food-sweet-craving'));
+    await fireEvent.press(screen.getByTestId('phase-diary-food-salty-craving'));
+    await fireEvent.press(screen.getByTestId('phase-diary-food-sweet-craving'));
 
-    expect(theDayOnHerPhone()?.food).toEqual(['salty']);
-    await fireEvent.press(screen.getByTestId('phase-diary-food-salty'));
-    expect(theDayOnHerPhone()).not.toHaveProperty('food');
+    expect(theDayOnHerPhone()?.symptoms).toEqual(['salty-craving']);
+    await fireEvent.press(screen.getByTestId('phase-diary-food-salty-craving'));
+    expect(theDayOnHerPhone()).not.toHaveProperty('symptoms');
   });
 
-  it('should open on the answers the day already holds', async () => {
+  it('should open on the answers the day already holds, in the fields an earlier diary wrote', async () => {
     const day = { day: today, recordedAt: whenSheOpensIt.toISOString() };
     await sheOpensThePhasePage([
       ...herPeriodStarts(16, 2),
-      { ...day, symptoms: ['acne', 'migraine'], moods: ['sad'], note: 'Tired' },
+      {
+        ...day,
+        symptoms: ['acne', 'migraine'],
+        moods: ['sad'],
+        food: ['little-appetite'],
+        note: 'Tired',
+      },
     ]);
 
-    expect(screen.getByTestId('phase-diary-symptoms-acne').props.accessibilityState).toEqual({
-      selected: true,
-    });
-    expect(screen.getByTestId('phase-diary-moods-sad').props.accessibilityState).toEqual({
-      selected: true,
-    });
+    for (const chip of ['symptoms-acne', 'emotions-sad', 'food-appetite-loss']) {
+      expect(screen.getByTestId(`phase-diary-${chip}`).props.accessibilityState).toEqual({
+        selected: true,
+      });
+    }
     expect(screen.getByTestId(phaseDiaryNoteTestID).props.value).toBe('Tired');
 
     await fireEvent.press(screen.getByTestId('phase-diary-symptoms-cramps'));
 
     expect(theDayOnHerPhone()?.symptoms).toEqual(['acne', 'migraine', 'cramps']);
+  });
+
+  it('should take a chip an earlier diary wrote off that field too', async () => {
+    const day = { day: today, recordedAt: whenSheOpensIt.toISOString() };
+    await sheOpensThePhasePage([
+      ...herPeriodStarts(16, 2),
+      { ...day, moods: ['sad', 'irritable'], food: ['little-appetite'] },
+    ]);
+
+    await fireEvent.press(screen.getByTestId('phase-diary-emotions-sad'));
+    await fireEvent.press(screen.getByTestId('phase-diary-food-appetite-loss'));
+
+    expect(theDayOnHerPhone()?.moods).toEqual(['irritable']);
+    expect(theDayOnHerPhone()).not.toHaveProperty('food');
+    expect(screen.getByTestId('phase-diary-emotions-sad').props.accessibilityState).toEqual({
+      selected: false,
+    });
   });
 
   it('should lead to every symptom through the log', async () => {
@@ -318,6 +345,47 @@ describe('the diary of today', () => {
 
     expect(app.pathname()).toBe('/log');
     expect(app.search()).toEqual({ on: 'symptoms' });
+  });
+});
+
+describe('the day from the calendar and the diary, on the same day', () => {
+  function theDiaryChip(label: string): ReturnType<typeof screen.getByRole> {
+    return within(screen.getByTestId(phaseDiaryTestID)).getByRole('button', { name: label });
+  }
+
+  it('should show in the diary what she saved on the day from the calendar', async () => {
+    await herPhoneHolds(herPeriodStarts(16, 2));
+    const theDay = await renderRouter(appDirectory, { initialUrl: `/day/${today}` });
+
+    await fireEvent.press(screen.getByTestId(groupTileTestID('mood')));
+    await fireEvent.press(screen.getByTestId(symptomChipTestID('calm')));
+    await fireEvent.press(screen.getByTestId(logSymptomsSaveTestID));
+    await fireEvent.press(screen.getByTestId(groupTileTestID('appetite')));
+    await fireEvent.press(screen.getByTestId(symptomChipTestID('appetite-loss')));
+    await fireEvent.press(screen.getByTestId(logSymptomsSaveTestID));
+    await theDay.unmount();
+
+    await sheOpens('/phase');
+    await screen.findByTestId(phasePageTestID);
+
+    expect(theDiaryChip('Calm').props.accessibilityState).toEqual({ selected: true });
+    expect(theDiaryChip('Little appetite').props.accessibilityState).toEqual({ selected: true });
+  });
+
+  it('should show on the day from the calendar what she pressed in the diary', async () => {
+    await herPhoneHolds(herPeriodStarts(16, 2));
+    const thePhase = await renderRouter(appDirectory, { initialUrl: '/phase' });
+    await screen.findByTestId(phasePageTestID);
+
+    await fireEvent.press(theDiaryChip('Happy'));
+    await fireEvent.press(theDiaryChip('Hungry'));
+    await thePhase.unmount();
+
+    await sheOpens(`/day/${today}`);
+    await screen.findByTestId(logFlowTestID);
+
+    expect(screen.getByTestId(symptomChipTestID('happy'))).toBeChecked();
+    expect(screen.getByTestId(symptomChipTestID('appetite-increase'))).toBeChecked();
   });
 });
 
@@ -421,7 +489,7 @@ describe('her records grouped by phase', () => {
     expect(past.noted.map((each) => [each.chip.slug, each.cycles])).toEqual([
       ['energetic', 3],
       ['ovulation-pain', 2],
-      ['hungry', 1],
+      ['appetite-increase', 1],
     ]);
   });
 
@@ -437,7 +505,7 @@ describe('her records grouped by phase', () => {
       cycles: 3,
       noted: [
         { chip: diaryChips.find((chip) => chip.slug === 'cramps'), cycles: 1 },
-        { chip: diaryChips.find((chip) => chip.slug === 'hungry'), cycles: 1 },
+        { chip: diaryChips.find((chip) => chip.slug === 'appetite-increase'), cycles: 1 },
       ],
     });
   });

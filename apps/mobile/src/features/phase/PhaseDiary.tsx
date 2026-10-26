@@ -19,7 +19,7 @@ export const phaseDiaryNoteTestID = 'phase-diary-note';
 export const phaseDiaryAllSymptomsTestID = 'phase-diary-all-symptoms';
 
 export function diaryChipTestID(chip: DiaryChip): string {
-  return `phase-diary-${chip.field}-${chip.slug}`;
+  return `phase-diary-${chip.row}-${chip.slug}`;
 }
 
 /** Points. The note box, which the board draws at a little over two lines. */

@@ -132,11 +132,7 @@ export function LogSymptoms(props: Props): ReactNode {
         />
       </View>
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-        <SymptomSearchField
-          onType={setQuery}
-          query={query}
-          takesTheKeyboard={props.asked.opensOn === 'search' ? 'at-once' : 'on-press'}
-        />
+        <SymptomSearchField onType={setQuery} query={query} />
         {isSearching ? theFound : theGroups}
       </ScrollView>
       <View style={styles.foot}>

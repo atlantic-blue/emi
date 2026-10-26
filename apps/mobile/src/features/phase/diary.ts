@@ -1,68 +1,91 @@
 import type { DayRecord } from '@emi/crypto';
 
 import { words } from '../../language';
+import type { DiaryChange } from '../log/logDay';
 
 /**
- * The chips of the diary on the Cycle phase page, from the phasePage board. Each chip writes to a
- * field the day record already holds, as `docs/design/data-model.md` maps them: a mood to `moods`,
- * a food to `food`, and everything else, Energetic included, to `symptoms`.
+ * The chips of the diary on the Cycle phase page. Every chip writes a catalogue slug to `symptoms`,
+ * the field the log writes, so the diary and the day from the calendar read the same day. Days
+ * saved before that hold a mood in `moods` and a food in `food`, and they still light the chip.
  */
 
 export type DiaryRow = 'symptoms' | 'food' | 'emotions';
 
-/** The list on the day record a chip is written to. */
-export type DiaryField = 'symptoms' | 'moods' | 'food';
-
 export interface DiaryChip {
+  readonly row: DiaryRow;
   readonly slug: string;
-  readonly field: DiaryField;
   /** The words on the chip, in her language. */
   readonly label: string;
+  /** Where the diary wrote this chip before it wrote to `symptoms`. */
+  readonly earlier?: { readonly field: 'moods' | 'food'; readonly slug: string };
 }
 
 export const diaryRowOrder: readonly DiaryRow[] = ['symptoms', 'food', 'emotions'];
 
+function aSymptom(slug: string, label: string): DiaryChip {
+  return { row: 'symptoms', slug, label };
+}
+
+function aFood(slug: string, earlier: string, label: string): DiaryChip {
+  return { row: 'food', slug, label, earlier: { field: 'food', slug: earlier } };
+}
+
+function aMood(slug: string, label: string): DiaryChip {
+  return { row: 'emotions', slug, label, earlier: { field: 'moods', slug } };
+}
+
 export const diaryRows: Readonly<Record<DiaryRow, readonly DiaryChip[]>> = {
   symptoms: [
-    { slug: 'cramps', field: 'symptoms', label: words('phase.chip.cramps') },
-    { slug: 'bloating', field: 'symptoms', label: words('phase.chip.bloating') },
-    { slug: 'breast-tenderness', field: 'symptoms', label: words('phase.chip.tenderBreasts') },
-    { slug: 'headache', field: 'symptoms', label: words('phase.chip.headache') },
-    { slug: 'acne', field: 'symptoms', label: words('phase.chip.acne') },
-    { slug: 'ovulation-pain', field: 'symptoms', label: words('phase.chip.painOnOneSide') },
+    aSymptom('cramps', words('phase.chip.cramps')),
+    aSymptom('bloating', words('phase.chip.bloating')),
+    aSymptom('breast-tenderness', words('phase.chip.tenderBreasts')),
+    aSymptom('headache', words('phase.chip.headache')),
+    aSymptom('acne', words('phase.chip.acne')),
+    aSymptom('ovulation-pain', words('phase.chip.painOnOneSide')),
   ],
   food: [
-    { slug: 'cravings', field: 'food', label: words('phase.chip.cravings') },
-    { slug: 'hungry', field: 'food', label: words('phase.chip.hungry') },
-    { slug: 'little-appetite', field: 'food', label: words('phase.chip.littleAppetite') },
-    { slug: 'sweet', field: 'food', label: words('phase.chip.sweet') },
-    { slug: 'salty', field: 'food', label: words('phase.chip.salty') },
+    aFood('food-craving', 'cravings', words('phase.chip.cravings')),
+    aFood('appetite-increase', 'hungry', words('phase.chip.hungry')),
+    aFood('appetite-loss', 'little-appetite', words('phase.chip.littleAppetite')),
+    aFood('sweet-craving', 'sweet', words('phase.chip.sweet')),
+    aFood('salty-craving', 'salty', words('phase.chip.salty')),
   ],
   emotions: [
-    { slug: 'calm', field: 'moods', label: words('phase.chip.calm') },
-    { slug: 'happy', field: 'moods', label: words('phase.chip.happy') },
-    { slug: 'energetic', field: 'symptoms', label: words('phase.chip.energetic') },
-    { slug: 'irritable', field: 'moods', label: words('phase.chip.irritable') },
-    { slug: 'anxious', field: 'moods', label: words('phase.chip.anxious') },
-    { slug: 'sad', field: 'moods', label: words('phase.chip.sad') },
+    aMood('calm', words('phase.chip.calm')),
+    aMood('happy', words('phase.chip.happy')),
+    { row: 'emotions', slug: 'energetic', label: words('phase.chip.energetic') },
+    aMood('irritable', words('phase.chip.irritable')),
+    aMood('anxious', words('phase.chip.anxious')),
+    aMood('sad', words('phase.chip.sad')),
   ],
 };
 
 /** Every chip of the diary, in the order the page draws them. */
 export const diaryChips: readonly DiaryChip[] = diaryRowOrder.flatMap((row) => diaryRows[row]);
 
-/** Whether the day holds the chip, read from the field the chip is written to. */
-export function dayHolds(record: DayRecord | undefined, chip: DiaryChip): boolean {
-  const held: readonly string[] = record?.[chip.field] ?? [];
-
-  return held.includes(chip.slug);
+function heldEarlier(record: DayRecord | undefined, chip: DiaryChip): boolean {
+  return (
+    chip.earlier !== undefined && (record?.[chip.earlier.field] ?? []).includes(chip.earlier.slug)
+  );
 }
 
-/** The list of the chip's field after one press: the chip added, or the chip taken out. */
-export function listAfterPress(record: DayRecord | undefined, chip: DiaryChip): readonly string[] {
-  const held: readonly string[] = record?.[chip.field] ?? [];
+/** Whether the day holds the chip, in `symptoms` or where the diary wrote it before. */
+export function dayHolds(record: DayRecord | undefined, chip: DiaryChip): boolean {
+  return (record?.symptoms ?? []).includes(chip.slug) || heldEarlier(record, chip);
+}
 
-  return held.includes(chip.slug)
-    ? held.filter((each) => each !== chip.slug)
-    : [...held, chip.slug];
+/** The lists of the day after one press: the chip added to `symptoms`, or taken off everywhere. */
+export function changeAfterPress(record: DayRecord | undefined, chip: DiaryChip): DiaryChange {
+  const symptoms = record?.symptoms ?? [];
+  if (!dayHolds(record, chip)) {
+    return { symptoms: [...symptoms, chip.slug] };
+  }
+
+  const change: DiaryChange = { symptoms: symptoms.filter((each) => each !== chip.slug) };
+  if (chip.earlier === undefined || !heldEarlier(record, chip)) {
+    return change;
+  }
+  const { field, slug } = chip.earlier;
+
+  return { ...change, [field]: (record?.[field] ?? []).filter((each) => each !== slug) };
 }

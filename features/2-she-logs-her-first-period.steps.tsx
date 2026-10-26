@@ -3588,8 +3588,8 @@ defineFeature(feature, (test) => {
     let app: OpenApp;
     const herChips = [
       'phase-diary-symptoms-cramps',
-      'phase-diary-food-hungry',
-      'phase-diary-moods-calm',
+      'phase-diary-food-appetite-increase',
+      'phase-diary-emotions-calm',
     ];
     const theDayOnHerPhone = (): DayRecord | undefined => {
       const held = readDayLog(herDatabase(), theDaySheOpensIt);
@@ -3638,9 +3638,7 @@ defineFeature(feature, (test) => {
         expect(new TextDecoder().decode(held?.payload)).not.toContain('Slept badly');
         expect(theDayOnHerPhone()).toMatchObject({
           flow: expect.any(String),
-          symptoms: ['cramps'],
-          food: ['hungry'],
-          moods: ['calm'],
+          symptoms: ['cramps', 'appetite-increase', 'calm'],
           note: 'Slept badly',
         });
       },

@@ -95,6 +95,19 @@ function theDayOnHerPhone(day: string): DayRecord | undefined {
   return held === undefined ? undefined : herVault().open(held.payload);
 }
 
+function fieldsThatFocusThemselves(node: unknown = screen.root): number {
+  if (Array.isArray(node)) {
+    return node.reduce<number>((count, each) => count + fieldsThatFocusThemselves(each), 0);
+  }
+  if (node === null || typeof node !== 'object') {
+    return 0;
+  }
+  const here = (node as { props?: { autoFocus?: unknown } }).props?.autoFocus === true ? 1 : 0;
+  const children = 'children' in node ? (node as { children: unknown }).children : [];
+
+  return here + fieldsThatFocusThemselves(children);
+}
+
 beforeEach(() => {
   jest.useFakeTimers();
   jest.setSystemTime(whenSheOpensIt);
@@ -202,6 +215,17 @@ describe('the log of today', () => {
 });
 
 describe('the symptoms, opened by search', () => {
+  it('opens the day and its search with no field taking the keyboard until she taps one', async () => {
+    await sheOpens(`/day/${today}`);
+    expect(fieldsThatFocusThemselves()).toBe(0);
+
+    await press(logFlowSearchTestID);
+
+    expect(screen.getByTestId(logSymptomsTestID)).toBeTruthy();
+    expect(fieldsThatFocusThemselves()).toBe(0);
+    expect(screen.getByTestId(symptomSearchTestID).props.autoFocus).toBeFalsy();
+  });
+
   it('finds a symptom of a group that is not open, by the letters she types', async () => {
     await sheOpens('/log');
 

@@ -20,22 +20,15 @@ const SEARCH_ICON = 20;
 interface Props {
   readonly query: string;
   readonly onType: (typed: string) => void;
-  /** Where she pressed Search to get here, the field takes the keyboard at once. */
-  readonly takesTheKeyboard?: 'at-once' | 'on-press';
 }
 
-export function SymptomSearchField({
-  query,
-  onType,
-  takesTheKeyboard = 'on-press',
-}: Props): ReactNode {
+export function SymptomSearchField({ query, onType }: Props): ReactNode {
   return (
     <View style={styles.field}>
       <Icon colour={colour.secondaryText} name="search" size={SEARCH_ICON} />
       <TextInput
         accessibilityLabel={symptomSearchLabel}
         autoCorrect={false}
-        autoFocus={takesTheKeyboard === 'at-once'}
         onChangeText={onType}
         placeholder={symptomSearchLabel}
         placeholderTextColor={colour.secondaryText}
