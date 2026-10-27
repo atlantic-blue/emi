@@ -2,6 +2,7 @@ import type { DayRecord } from '@emi/crypto';
 import { findSymptom } from '@emi/cycle';
 
 import { words } from '../../language';
+import { hadSex } from '../sex/hadSex';
 import { flowLabel } from './FlowPicker';
 import { symptomName } from './symptomName';
 
@@ -61,7 +62,28 @@ function theMarksOn(record: DayRecord): string[] {
     named.push(words('home.loggedToday.note'));
   }
 
+  const sex = theSexMarkOn(record);
+  if (sex !== undefined) {
+    named.push(sex);
+  }
+
   return named;
+}
+
+/**
+ * The Sex page as one mark. Her answer to "Did you have sex?" names it when she gave one, and the
+ * other two name it only on a day without that answer.
+ */
+function theSexMarkOn(record: DayRecord): string | undefined {
+  if (record.sex !== undefined) {
+    return hadSex(record) ? words('home.loggedToday.sex') : words('home.loggedToday.noSex');
+  }
+
+  if (record.sexDrive !== undefined) {
+    return words('home.loggedToday.sexDrive');
+  }
+
+  return record.orgasm === undefined ? undefined : words('home.loggedToday.orgasm');
 }
 
 /**

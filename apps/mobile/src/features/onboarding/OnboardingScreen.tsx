@@ -177,7 +177,7 @@ export function OnboardingScreen({
   );
 
   return (
-    <Screen drawsTheWash testID={`onboarding-${screen}`}>
+    <Screen drawsTheWash givesWayToTheKeyboard testID={`onboarding-${screen}`}>
       <View style={styles.head}>
         <View style={styles.row}>
           {onBack === undefined ? (

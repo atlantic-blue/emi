@@ -9,7 +9,7 @@ import type { HerDay } from '../cycle/herWeek';
 import { monthLabel } from '../onboarding/days';
 import { CycleMonth, MonthLegend, type MonthSquare } from './CycleMonth';
 import { DaySheet } from './DaySheet';
-import { calendarCopy, daySheetWords } from './copy';
+import { calendarCopy, daySheetWords, monthLegendCopy } from './copy';
 import type { DayPhase } from './herMonthPhases';
 import type { WhatTheSheetSays } from './theDaySheet';
 
@@ -52,6 +52,8 @@ interface Props {
    * a date by what this answers and works none of it out itself.
    */
   readonly phaseOn?: (day: string) => DayPhase | undefined;
+  /** Whether she recorded sex on one date of that month, which puts a heart on its disc. */
+  readonly hadSexOn?: (day: string) => boolean;
   /**
    * The day she pressed, worked out. The route hands today until she presses another day, so the
    * card and the way to her whole period are always on the glass.
@@ -86,6 +88,7 @@ export function CalendarScreen({
   today,
   days,
   phaseOn,
+  hadSexOn,
   shePressed,
   onBack,
   onToday,
@@ -106,9 +109,13 @@ export function CalendarScreen({
     }
 
     const phase = phaseOn?.(day);
+    const hadSex = hadSexOn?.(day) === true;
 
     return {
-      label: herDayLabel(hers, today),
+      hadSex,
+      label: hadSex
+        ? `${herDayLabel(hers, today)}, ${monthLegendCopy.sex}`
+        : herDayLabel(hers, today),
       mark: hers.mark,
       onPress: () => onPressDay(day),
       picked: shePressed?.day === day,
@@ -178,7 +185,7 @@ export function CalendarScreen({
           </Pressable>
         </View>
 
-        <MonthLegend />
+        <MonthLegend namesSex />
 
         <CycleMonth month={month} squareOf={squareOf} testID={calendarMonthTestID} />
 

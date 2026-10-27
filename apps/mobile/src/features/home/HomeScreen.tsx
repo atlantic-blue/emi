@@ -15,7 +15,6 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
-import { CycleRing } from '../../components/CycleRing';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
@@ -28,6 +27,7 @@ import { EmptyRing } from './EmptyRing';
 import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
 import { PhaseCard } from './PhaseCard';
+import { RingOfToday } from './RingOfToday';
 import { RoundAction, type RoundActionName } from './RoundAction';
 import { SectionWaiting } from './SectionWaiting';
 import { MeasuredRows } from './MeasuredRow';
@@ -265,7 +265,7 @@ export function HomeScreen({
         />
 
         {ring ? (
-          <CycleRing {...ring} look="named" />
+          <RingOfToday ring={ring} />
         ) : (
           <View style={styles.noRing} testID={homeNoRingTestID}>
             <EmptyRing>
