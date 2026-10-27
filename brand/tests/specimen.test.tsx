@@ -7,7 +7,6 @@ import {
   faceFamily,
   fontFile,
   fontFileFor,
-  fontFiles,
   fonts,
   letterSpacingOf,
   typeRoleNames,
@@ -52,7 +51,7 @@ describe('the type specimen a person looks at', () => {
 
   it('loads the six files the application draws in, and no family it replaced', () => {
     expect(page.match(/@font-face/g)).toHaveLength(6);
-    expect(fontFiles).toHaveLength(6);
+    expect(applicationFontFiles).toHaveLength(6);
     expect(page).not.toContain('Fraunces');
     expect(page).not.toContain('IBMPlexMono');
   });

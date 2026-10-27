@@ -8,7 +8,7 @@ import {
   faceFamily,
   fontFile,
   fontFileFor,
-  fontFiles,
+  applicationFontFiles,
   fonts,
   letterSpacingOf,
   typeRoleNames,
@@ -65,7 +65,7 @@ function fileFor(role: TypeRoleName): FontFile {
 }
 
 function fontRules(fontsBase: string): string {
-  return fontFiles
+  return applicationFontFiles
     .map((file) =>
       [
         '@font-face {',

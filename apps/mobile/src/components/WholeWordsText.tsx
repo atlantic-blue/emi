@@ -12,7 +12,7 @@ import {
  * of it is wider than the box, the platform cuts the word across two lines. This text never does
  * that. It shrinks a little until each word fits on a line, and stops at a floor.
  *
- * Russian draws in the system face, which is wider than Figtree, so most of these words are
+ * Russian draws in Mulish, which is wider than Figtree, so most of these words are
  * Russian ones on the smallest iPhone, at 375 points.
  */
 

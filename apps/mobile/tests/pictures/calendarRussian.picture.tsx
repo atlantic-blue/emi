@@ -31,7 +31,7 @@ jest.mock('expo-localization', () => ({ getLocales: jest.fn(() => [{ languageTag
 const theCaveat = [
   'Rendered, not observed: drawn from the tree the month screen produced under the test runner with',
   'the phone language set to Russian, at 393 by 852 points, which is the glass of an iPhone 16. The',
-  'shipped faces carry no Cyrillic, so the page draws the Russian words in a face the browser picks.',
+  'page loads the Figtree cuts only, so it draws the Russian words in a face the browser picks.',
   'Reproduce with: npm run generate:calendar-russian-picture.',
 ].join(' ');
 

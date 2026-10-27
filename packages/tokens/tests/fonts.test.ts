@@ -14,6 +14,7 @@ import {
   fontNameFor,
   fonts,
   fontsRoot,
+  russianStandIns,
 } from '../src/font';
 import { face, typeRoleNames, typeScale } from '../src/type';
 
@@ -46,13 +47,14 @@ describe('every shipped font carries its licence', () => {
       expect(fontFamilyNames.map((name) => fonts[name].family)).toEqual([
         'Figtree',
         'JetBrains Mono',
+        'Mulish',
       ]);
-      expect([...fontFamilyNames].sort()).toEqual([...new Set(Object.values(faceFamily))].sort());
+      expect([...new Set(Object.values(faceFamily))].sort()).toEqual(['figtree', 'jetBrainsMono']);
       expect(Object.keys(faceFamily).sort()).toEqual(Object.keys(face).sort());
     });
 
-    it('ships every file it names and loads all of them, because every face is drawn', () => {
-      expect(fontFiles).toHaveLength(6);
+    it('ships every file it names, and loads the six the faces name in English and Spanish', () => {
+      expect(fontFiles).toHaveLength(10);
       expect(applicationFontFiles.map((file) => file.name)).toEqual([
         'Figtree-Regular',
         'Figtree-SemiBold',
@@ -71,6 +73,8 @@ describe('every shipped font carries its licence', () => {
         asked.set(family, (asked.get(family) ?? new Set()).add(typeScale[role].weight));
       }
 
+      asked.set('mulish', new Set(Object.values(russianStandIns).map((file) => file.weight)));
+
       const missing = fontFamilyNames.flatMap((name) => {
         const wanted = [...(asked.get(name) ?? new Set<number>())].sort();
         const held = fonts[name].weights
@@ -83,7 +87,7 @@ describe('every shipped font carries its licence', () => {
       });
 
       expect(missing).toEqual([]);
-      expect(new Set(fontFiles.map((file) => file.path)).size).toBe(6);
+      expect(new Set(fontFiles.map((file) => file.path)).size).toBe(10);
     });
 
     describe('the cut that ships while no role asks for its weight', () => {
@@ -318,7 +322,7 @@ describe('the roles are bound to the family that ships', () => {
     );
 
     expect(answered.filter((name) => name === undefined)).toEqual([]);
-    expect(new Set(answered).size).toBe(fontFiles.length - cutsNoRoleAsksFor.length);
+    expect(new Set(answered).size).toBe(applicationFontFiles.length - cutsNoRoleAsksFor.length);
     expect(new Set(answered).size).toBe(5);
   });
 });
