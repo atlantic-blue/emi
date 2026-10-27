@@ -22,6 +22,7 @@ import { recordedDays } from '../../features/cycle/rebuild';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { addMonths, localDay, startOfMonth } from '../../features/onboarding/days';
 import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
+import { hadSex } from '../../features/sex/hadSex';
 import { sexAddress } from '../../features/sex/sexAddress';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { ProfileVault } from '../../services/vault/profileVault';
@@ -59,6 +60,7 @@ interface HerMonth {
   readonly days: HerDay[];
   /** The phase of one date, so the month draws the window the ring drew on that date. */
   readonly phaseOn: (day: string) => DayPhase | undefined;
+  readonly hadSexOn: (day: string) => boolean;
   readonly sheetFor: (day: string) => WhatTheSheetSays | undefined;
   /** Whether the sheet that asks for her past periods stands over this month. */
   readonly asksForPastPeriods: boolean;
@@ -77,6 +79,7 @@ function herMonthOf(
   return {
     asksForPastPeriods: forecastPopupShows(database, from, month),
     days,
+    hadSexOn: (day) => from.records.some((record) => record.day === day && hadSex(record)),
     phaseOn: (day) => theDayPhaseOn(from, day),
     sheetFor: (day) => {
       const hers = days.find((each) => each.day === day) ?? herDaysOn(from, [day])[0];
@@ -163,6 +166,7 @@ export default function CalendarRoute(): ReactNode {
         onRecordSex={(day) => router.push(sexAddress(day))}
         onPressDay={setShePressed}
         onToday={() => router.replace('/')}
+        hadSexOn={hers.hadSexOn}
         phaseOn={hers.phaseOn}
         today={today}
         {...theCardFor(hers.sheetFor(shePressed))}
