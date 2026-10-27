@@ -1,6 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, space, stroke, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { CycleMonth, type MonthSquare } from '../calendar/CycleMonth';
 import { firstRunCopy } from './copy';

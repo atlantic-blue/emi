@@ -1,6 +1,7 @@
 import { colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 import Svg, { Path } from 'react-native-svg';
 
 import { Card } from '../../components/Card';

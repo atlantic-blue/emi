@@ -6,9 +6,9 @@ import {
   toDayNumber,
 } from '@emi/cycle';
 import { ICON_SIZE, colour, radius, space, stroke, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 import { PrimaryButton } from '../../components/Button';

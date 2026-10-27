@@ -1,7 +1,8 @@
 import type { OvulationSign } from '@emi/crypto';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { type ReactNode, useMemo, useState } from 'react';
-import { Modal, PanResponder, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, PanResponder, Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton } from '../../components/Button';

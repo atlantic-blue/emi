@@ -32,7 +32,8 @@ import {
 } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 import Svg, { Circle, Defs, Line, Path, Text as SvgText, TextPath } from 'react-native-svg';
 
 import {

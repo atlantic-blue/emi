@@ -1,6 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 /**
  * A number she moves one step at a time, held between a floor and a ceiling.

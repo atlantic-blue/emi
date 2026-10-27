@@ -1,7 +1,8 @@
 import { addDays } from '@emi/cycle';
 import { colour, radius, space, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton, TextLink } from '../../components/Button';

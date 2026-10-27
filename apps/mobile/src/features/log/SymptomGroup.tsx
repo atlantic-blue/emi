@@ -1,6 +1,7 @@
 import type { Symptom, SymptomGroup as GroupName } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { words } from '../../language';
 import { symptomName } from './symptomName';

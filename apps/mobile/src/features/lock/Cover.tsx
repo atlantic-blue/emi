@@ -1,6 +1,7 @@
 import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { Screen } from '../../components/Screen';
 import { lockCopy } from './copy';

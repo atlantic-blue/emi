@@ -9,8 +9,8 @@ import {
   textStyle,
 } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Icon } from '@emi/ui';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Icon, CappedText as Text } from '@emi/ui';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
 import { patternsWaitingSentence } from '../cycle/patternsWaiting';

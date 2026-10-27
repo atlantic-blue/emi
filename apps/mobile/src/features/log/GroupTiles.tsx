@@ -1,10 +1,10 @@
 import type { SymptomGroup } from '@emi/cycle';
 import { type IconName, MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { Icon } from '@emi/ui';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { WholeWordsText } from '../../components/WholeWordsText';
+import { OneLabelScale, WholeWordsText } from '../../components/WholeWordsText';
 import { groupHeadings } from './SymptomGroup';
 
 /**
@@ -47,7 +47,10 @@ const TILE = 52;
 const TILE_ICON = 24;
 
 /** The board lays the tiles four to a row. */
-const TILES_IN_A_ROW = 4;
+export const TILES_IN_A_ROW = 4;
+
+/** Where a name is still cut at the smallest label size, the nine tiles take three rows of three. */
+export const NARROW_TILES_IN_A_ROW = 3;
 
 interface Props {
   /** The groups in the order she reads them. */
@@ -56,31 +59,36 @@ interface Props {
 }
 
 export function GroupTiles({ groups, onOpen }: Props): ReactNode {
-  return (
-    <View style={styles.grid} testID={groupTilesTestID}>
-      {groups.map((group) => {
-        const paint = tilePaint[group];
+  const [tilesInARow, setTilesInARow] = useState(TILES_IN_A_ROW);
 
-        return (
-          <Pressable
-            accessibilityRole="button"
-            key={group}
-            onPress={() => onOpen(group)}
-            style={styles.tile}
-            testID={groupTileTestID(group)}
-          >
-            <View style={[styles.well, { backgroundColor: colour[paint.ground] }]}>
-              <Icon colour={colour[paint.ink]} name={paint.icon} size={TILE_ICON} />
-            </View>
-            <WholeWordsText
-              label={groupHeadings[group]}
-              style={styles.name}
-              testID={groupTileNameTestID(group)}
-            />
-          </Pressable>
-        );
-      })}
-    </View>
+  return (
+    <OneLabelScale key={tilesInARow}>
+      <View style={styles.grid} testID={groupTilesTestID}>
+        {groups.map((group) => {
+          const paint = tilePaint[group];
+
+          return (
+            <Pressable
+              accessibilityRole="button"
+              key={group}
+              onPress={() => onOpen(group)}
+              style={[styles.tile, { width: `${100 / tilesInARow}%` }]}
+              testID={groupTileTestID(group)}
+            >
+              <View style={[styles.well, { backgroundColor: colour[paint.ground] }]}>
+                <Icon colour={colour[paint.ink]} name={paint.icon} size={TILE_ICON} />
+              </View>
+              <WholeWordsText
+                label={groupHeadings[group]}
+                onWordCutAtTheFloor={() => setTilesInARow(NARROW_TILES_IN_A_ROW)}
+                style={styles.name}
+                testID={groupTileNameTestID(group)}
+              />
+            </Pressable>
+          );
+        })}
+      </View>
+    </OneLabelScale>
   );
 }
 
@@ -92,7 +100,6 @@ const styles = StyleSheet.create({
     gap: space.spaceXs,
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
-    width: `${100 / TILES_IN_A_ROW}%`,
   },
   well: {
     alignItems: 'center',

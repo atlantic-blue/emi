@@ -1,8 +1,8 @@
 import type { DayRecord } from '@emi/crypto';
 import { MINIMUM_TAP_TARGET, colour, phasePalette, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Card } from '../../components/Card';
 import { LockLine } from '../../components/LockLine';

@@ -1,9 +1,9 @@
 import type { PhaseName } from '@emi/tokens';
 import { MINIMUM_TAP_TARGET, colour, phasePalette, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 
 import type { ReadCycle } from '../cycle/cyclesRead';
 import { cycleLengthSentence, cycleSentence } from '../history/copy';

@@ -1,6 +1,7 @@
 import { type Measurement, type MeasurementReading, readingIn, readingOf } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text, CappedTextInput as TextInput } from '@emi/ui';
 
 /**
  * One number a day, typed in the unit she chose and handed up in the unit a record is written in.

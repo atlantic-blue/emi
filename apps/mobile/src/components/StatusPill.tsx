@@ -1,6 +1,7 @@
 import { type ColourName, colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 /**
  * Two words that say the state of a figure: what Emi knows about it, or how wide it is.

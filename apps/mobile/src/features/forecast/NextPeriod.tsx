@@ -2,7 +2,8 @@ import type { Regularity } from '@emi/crypto';
 import type { Forecast } from '@emi/cycle';
 import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { TextLink } from '../../components/Button';
 import { confidenceSentence, forecastCopy, lateSentence, rangeSentence } from './copy';

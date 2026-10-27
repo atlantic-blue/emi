@@ -1,6 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 /**
  * The grey action under the main button of the quiz and of the sheet on the Sex page: "Back",

@@ -1,8 +1,8 @@
 import { findSymptom, type SymptomGroup } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, type IconName, colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { ReadPattern } from '../cycle/patternsRead';
 import { patternEvidenceSentence } from '../history/copy';
