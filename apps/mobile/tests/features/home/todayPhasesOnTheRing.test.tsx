@@ -212,11 +212,11 @@ describe('the ring of Today', () => {
     expect(whatItSays(ringCentreLengthTestID)).toBe('of about 28');
   });
 
-  it('should write the first letter on a follicular arc too short for its name', async () => {
+  it('should write the whole name on a follicular arc of 2 days, which once fell back to "F"', async () => {
     // A 22 day cycle with a 5 day period leaves the follicular arc 2 days, days 6 and 7.
     await sheOpensToday(3, 22);
 
-    expect(whatItSays(ringNameTestID('follicular'))).toBe('F');
+    expect(whatItSays(ringNameTestID('follicular'))).toBe('FOLLICULAR');
     expect(whatItSays(ringNameTestID('luteal'))).toBe('LUTEAL');
   });
 });

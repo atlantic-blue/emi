@@ -2,6 +2,7 @@ import { washFieldTestID, washTestID, washTintTestID } from '@emi/ui';
 
 import {
   cycleRingTestID,
+  ringArcsPressTestID,
   ringPointerTestID,
   ringCentreDayTestID,
   ringCentreLengthTestID,
@@ -143,7 +144,7 @@ export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
   },
   {
     draws: {
-      named: [cycleRingTestID, ringTrackTestID, ringPointerTestID],
+      named: [cycleRingTestID, ringTrackTestID, ringPointerTestID, ringArcsPressTestID],
       prefixed: ['ring-arc-', 'ring-name-', 'ring-pointer-'],
     },
     fills: (hers) => hers.recordedDays > 0,

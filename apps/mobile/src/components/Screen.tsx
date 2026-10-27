@@ -1,7 +1,7 @@
 import { type PhaseName, colour } from '@emi/tokens';
 import { Wash, useRoomAtTheFoot } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
@@ -36,10 +36,19 @@ interface Props {
    * before she reads a word. A screen that knows no phase passes none and draws the soft wash.
    */
   readonly washPhase?: PhaseName;
+  readonly givesWayToTheKeyboard?: boolean;
   readonly children: ReactNode;
 }
 
-export function Screen({ testID, drawsTheWash = false, washPhase, children }: Props): ReactNode {
+export const screenKeyboardRoomTestID = 'screen-keyboard-room';
+
+export function Screen({
+  testID,
+  drawsTheWash = false,
+  washPhase,
+  givesWayToTheKeyboard = false,
+  children,
+}: Props): ReactNode {
   const insets = useSafeAreaInsets();
   const roomForTheDock = useRoomAtTheFoot();
 
@@ -61,12 +70,23 @@ export function Screen({ testID, drawsTheWash = false, washPhase, children }: Pr
           <Wash phase={washPhase} />
         </View>
       ) : null}
-      {children}
+      {givesWayToTheKeyboard ? (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardRoom}
+          testID={screenKeyboardRoomTestID}
+        >
+          {children}
+        </KeyboardAvoidingView>
+      ) : (
+        children
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardRoom: { flex: 1, minHeight: 0 },
   screen: { backgroundColor: colour.ground, flex: 1 },
   // Colour and nothing else, so it is drawn behind everything on the screen and takes no touch.
   wash: { left: 0, position: 'absolute', right: 0, top: 0 },

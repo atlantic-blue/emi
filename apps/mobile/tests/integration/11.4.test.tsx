@@ -4,16 +4,21 @@ import type { DayRecord } from '@emi/crypto';
 import { addDays } from '@emi/cycle';
 import {
   FULL_TURN_DEGREES,
-  GAP_DEGREES,
   NAMED_RING_DIAMETER,
   phaseLabel,
   phaseNames,
+  ringGeometry,
 } from '@emi/tokens';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { AccessibilityInfo } from 'react-native';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
-import { cycleRingTestID, ringWholeArcTestID } from '../../src/components/CycleRing';
+import {
+  cycleRingTestID,
+  namedArcFloors,
+  ringWholeArcTestID,
+} from '../../src/components/CycleRing';
+import { phasesOf, shapeFromLength } from '../../src/features/cycle/ringInput';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
@@ -137,30 +142,45 @@ function degreesAt(x: number, y: number): number {
   return turned < 0 ? turned + FULL_TURN_DEGREES : turned;
 }
 
-/** Every phase the ring drew an arc for, which is every phase her cycle had a day for. */
-function thePhasesDrawn(): number {
-  return phaseNames.filter((phase) => screen.queryByTestId(ringWholeArcTestID(phase)) !== null)
-    .length;
-}
-
-/**
- * How many days the period arc covers, measured off the drawing rather than read out of the
- * arithmetic that made it. The period arc opens the ring at the top, so where it stops is the
- * whole of it, and the days it stands for are that share of the turn the arcs were given. The
- * ring of Today paints each arc once, whole, so the period arc is one stroke.
- */
-function thePeriodArcCoversDays(): number {
-  const ends = [screen.queryByTestId(ringWholeArcTestID('period'))]
+/** Where each arc the ring of Today drew stops, in the order the phases run. */
+function theArcEnds(): number[] {
+  return phaseNames
+    .map((phase) => screen.queryByTestId(ringWholeArcTestID(phase)))
     .filter((arc) => arc !== null)
     .map((arc) => ENDS_AT.exec(String(arc.props.d)))
     .filter((found) => found !== null)
     .map((found) => degreesAt(Number(found[1]), Number(found[2])));
+}
 
-  const arcs = thePhasesDrawn();
-  const forArcs = FULL_TURN_DEGREES - (arcs > 1 ? arcs : 0) * GAP_DEGREES;
-  const stops = Math.max(...ends);
+/**
+ * How many days the period arc covers, measured off the drawing rather than read out of the
+ * arithmetic that made it. A short arc is held at the width its name needs, so its own width no
+ * longer counts its days; the days it takes from the arcs after it still do. The drawing is held
+ * against the ring a period of each length would draw, and the one that matches every arc is it.
+ */
+function thePeriodArcCoversDays(): number {
+  const drawn = theArcEnds();
+  const ends = (periodDays: number): number[] =>
+    ringGeometry({
+      cycleLengthDays: herCycleLengthDays,
+      day: sheIsOnCycleDay,
+      phases: phasesOf(shapeFromLength(herCycleLengthDays, periodDays)),
+      minimumSweepDegrees: namedArcFloors(),
+    }).arcs.map((arc) => (arc.startDegrees + arc.sweepDegrees) % FULL_TURN_DEGREES);
+  const matching = Array.from({ length: herCycleLengthDays }, (_unused, at) => at + 1).filter(
+    (periodDays) => {
+      const expected = ends(periodDays);
+      return (
+        expected.length === drawn.length &&
+        expected.every((end, at) => Math.abs(end - (drawn[at] ?? Number.NaN)) < 0.01)
+      );
+    },
+  );
 
-  return Math.round((stops * herCycleLengthDays) / forArcs);
+  if (matching.length !== 1) {
+    throw new Error(`the drawing matches a period of ${matching.join(', ') || 'no'} days`);
+  }
+  return matching[0] ?? 0;
 }
 
 /** What the ring says about the day she is on, read off the ring and not off the arithmetic. */

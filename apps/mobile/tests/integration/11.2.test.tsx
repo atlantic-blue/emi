@@ -3,13 +3,15 @@ import { join } from 'node:path';
 import { longestName } from '@emi/crypto';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
-import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
+import { act, fireEvent, renderRouter, screen, within } from 'expo-router/testing-library';
+import { DeviceEventEmitter, StyleSheet } from 'react-native';
 
 import type { Database } from '../../src/data/database';
 import { databaseFileName, expoDatabase } from '../../src/data/expoDatabase';
 import { profileRow, readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
+import { screenKeyboardRoomTestID } from '../../src/components/Screen';
 import { homeGreetingTestID, homeScreenTestID } from '../../src/features/home/HomeScreen';
 import { greeting } from '../../src/features/home/copy';
 import { nameFieldTestID, nameTooLongTestID } from '../../src/features/onboarding/HerName';
@@ -49,6 +51,9 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const herPeriodStarted = '2026-05-09';
 
 const herName = 'Ada';
+
+const theSmallestGlassTall = 647;
+const theKeyboardTall = 260;
 
 /** What the header says to a woman who gave no name, which is hello with nothing after it. */
 const theGreetingWithNoName = 'Hello';
@@ -154,6 +159,35 @@ describe('she gives her name and the home screen greets her by it', () => {
         '/onboarding/year-of-birth',
         '/onboarding/three-periods',
       ]);
+    });
+
+    it('keeps Continue above the keyboard while she types her name', async () => {
+      await sheOpensEmi();
+
+      await shePresses(onboardingActionTestID);
+      const theRoom = screen.getByTestId(screenKeyboardRoomTestID);
+      await fireEvent(theRoom, 'layout', {
+        persist: () => undefined,
+        nativeEvent: { layout: { x: 0, y: 0, width: 375, height: theSmallestGlassTall } },
+      });
+      await act(async () => {
+        DeviceEventEmitter.emit('keyboardWillShow', {
+          duration: 0,
+          easing: 'keyboard',
+          endCoordinates: {
+            screenX: 0,
+            screenY: theSmallestGlassTall - theKeyboardTall,
+            width: 375,
+            height: theKeyboardTall,
+          },
+        });
+      });
+
+      expect(
+        StyleSheet.flatten(screen.getByTestId(screenKeyboardRoomTestID).props.style).paddingBottom,
+      ).toBe(theKeyboardTall);
+      expect(within(theRoom).getByTestId(nameFieldTestID)).toBeTruthy();
+      expect(within(theRoom).getByTestId(onboardingActionTestID)).toBeTruthy();
     });
 
     it('offers a way past each of them, because only the last period is required', async () => {
@@ -274,7 +308,7 @@ describe('she gives her name and the home screen greets her by it', () => {
       expect(screen.getByTestId(homeScreenTestID)).toBeTruthy();
     });
 
-    it('forget the name she typed before she pressed the way past it', async () => {
+    it('keep the name she typed before she pressed the way past it, and the home screen greets her by it', async () => {
       await sheOpensEmi();
 
       await shePresses(onboardingActionTestID);
@@ -297,8 +331,8 @@ describe('she gives her name and the home screen greets her by it', () => {
       await sheReadsWhatEmiDoesWithIt();
       await sheTapsSaveAndStart();
 
-      expect((await herProfile())?.name).toBeUndefined();
-      expect(screen.getByTestId(homeGreetingTestID)).toHaveTextContent(theGreetingWithNoName);
+      expect((await herProfile())?.name).toBe(herName);
+      expect(screen.getByTestId(homeGreetingTestID)).toHaveTextContent(greeting(herName));
     });
   });
 
@@ -325,6 +359,32 @@ describe('she gives her name and the home screen greets her by it', () => {
 
       expect(app.pathname()).toBe('/onboarding/year-of-birth');
       expect(screen.queryByTestId(nameTooLongTestID)).toBeNull();
+    });
+
+    it('is dropped when she presses the way past it, so the hold has nothing to refuse', async () => {
+      await sheOpensEmi();
+
+      await shePresses(onboardingActionTestID);
+      await sheTypes(aNameTooLong);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await sheGivesAPeriod(0, herPeriodStarted);
+      await shePresses(onboardingActionTestID);
+      await shePresses(cycleLengthDaysTestID(28));
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(firstForecastActionTestID);
+      await sheReadsWhatEmiDoesWithIt();
+      await sheTapsSaveAndStart();
+
+      expect((await herProfile())?.name).toBeUndefined();
+      expect(screen.getByTestId(homeGreetingTestID)).toHaveTextContent(theGreetingWithNoName);
     });
 
     it('is refused at the hold as well, so the screen is not the only thing holding it', () => {
