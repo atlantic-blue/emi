@@ -738,6 +738,12 @@ Feature: She opens Emi and logs her first period
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
     And no question of the first run draws a lock, and the sentences it drew are gone from all three languages
 
+  Scenario: SCREEN-1, a name she typed is kept when she presses Skip, and the home screen greets her by it
+    Given she has never opened Emi before
+    When she opens Emi, reads the welcome, skips the tour, types her name, and presses Skip
+    And she passes every other question she may pass, and taps Save and start
+    Then the home screen greets her by the name she typed
+
   Scenario: SCREEN-1, the first run says why it asks her year, what a regular cycle is, and that ovulation dates are approximate
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, and skips her name
