@@ -100,7 +100,7 @@ async function drawn(): Promise<DrawnScreen> {
 
   return {
     title: 'Ноябрь 2026, with the first day of a forecast period pressed',
-    note: 'The title is the nominative month name. The legend reads Месячные, Прогноз and Фертильные дни. The forecast period starts again at day 1 in dashed rings, and the card says when that period is likely to start.',
+    note: 'The title is the nominative month name. The legend reads Месячные, Прогноз, Фертильные дни and Секс. The forecast period starts again at day 1 in dashed rings, and the card says when that period is likely to start.',
     tree,
   };
 }
