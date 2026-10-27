@@ -7311,6 +7311,50 @@ defineFeature(feature, (test) => {
       },
     );
   });
+  test('SCREEN-1, a name she typed is kept when she presses Skip, and the home screen greets her by it', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    let app: OpenApp;
+
+    given('she has never opened Emi before', () => undefined);
+
+    when(
+      'she opens Emi, reads the welcome, skips the tour, types her name, and presses Skip',
+      async () => {
+        app = await sheOpens('/');
+        await sheSkipsTheTour();
+        await fireEvent.changeText(screen.getByTestId(nameFieldTestID), theNameSheGives);
+        await shePresses(onboardingSkipTestID);
+      },
+    );
+
+    and('she passes every other question she may pass, and taps Save and start', async () => {
+      await shePresses(onboardingSkipTestID);
+      await sheGivesAPeriod(0, herPeriodStarted);
+      await shePresses(onboardingActionTestID);
+      await shePresses(cycleLengthDaysTestID(defaultCycleLengthDays));
+      await shePresses(onboardingActionTestID);
+      await shePresses(onboardingWayPastTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(onboardingSkipTestID);
+      await shePresses(firstForecastActionTestID);
+      await shePresses(whatEmiDoesActionTestID);
+      await sheTapsSaveAndStart();
+    });
+
+    then('the home screen greets her by the name she typed', () => {
+      expect(app.pathname()).toBe('/');
+      expect(whatItSays(homeGreetingTestID)).toBe(`Hello, ${theNameSheGives}`);
+    });
+  });
+
   /**
    * Three lines a woman asked for: why the year is asked, what a regular cycle is, and what the
    * ovulation goal does not promise. Each is written out here, so a reword fails the scenario.

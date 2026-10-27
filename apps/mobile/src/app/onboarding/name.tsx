@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { HerName } from '../../features/onboarding/HerName';
+import { nameIsInRange } from '../../features/onboarding/firstRun';
 
 export default function NameRoute(): ReactNode {
   const router = useRouter();
@@ -13,7 +14,9 @@ export default function NameRoute(): ReactNode {
       onBack={() => router.back()}
       onContinue={() => router.push('/onboarding/year-of-birth')}
       onSkip={() => {
-        setNameTyped('');
+        if (!nameIsInRange(nameTyped)) {
+          setNameTyped('');
+        }
         router.push('/onboarding/year-of-birth');
       }}
       onType={setNameTyped}
