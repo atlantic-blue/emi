@@ -910,7 +910,8 @@ export const russian: CatalogueIn<'ru'> = {
   'period.save': 'Сохранить',
   'period.startedOnAnotherDay': 'Начались в другой день?',
   'period.title': 'Месячные',
-  'phase.about.follicular': 'Она начинается с месячных и заканчивается за день до фазы овуляции.',
+  'phase.about.follicular':
+    'Она начинается на следующий день после месячных и заканчивается за день до фазы овуляции.',
   'phase.about.luteal':
     'Она начинается на следующий день после фазы овуляции и заканчивается за день до следующих месячных.',
   'phase.about.ovulation':
