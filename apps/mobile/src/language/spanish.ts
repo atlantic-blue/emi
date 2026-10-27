@@ -329,6 +329,8 @@ export const spanish: CatalogueIn<'es'> = {
   'home.phaseCard.luteal.day': 'Antes del periodo, día {from}',
   'home.phaseCard.luteal.days': 'Antes del periodo, días {from} a {to}',
   'home.phaseCard.luteal.line': 'Los días después de la ovulación, antes de tu próximo periodo.',
+  'home.ringArc.day': 'Día {from} de este ciclo',
+  'home.ringArc.days': 'Días {from} a {to} de este ciclo',
   'home.roundAction.sex': 'Sexo',
   'home.roundAction.period': 'Regla',
   'home.roundAction.phase': 'Fase del ciclo',
