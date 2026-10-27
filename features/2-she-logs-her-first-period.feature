@@ -921,8 +921,10 @@ Feature: She opens Emi and logs her first period
     Then the sheet of products for sex on a period day opens
     When she presses Not now on the sheet
     Then her phone holds that answer on that day, sealed, beside the flow she logged
+    And the card of that day names sex, and that day carries a heart in the month
     When she presses that day again, then Record sex, then Protected again, and saves
     Then that day holds no answer about sex, and keeps its flow
+    And the card of that day no longer names sex, and the heart is gone from that day
 
   Scenario: SCREEN-2, she records discharge and a product on a day
     Given her phone holds four recorded period days, the last of them today

@@ -151,10 +151,12 @@ import {
   calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
 import {
+  daySheetLineTestID,
   daySheetOpenTestID,
   daySheetRecordSexTestID,
   daySheetTestID,
 } from '../apps/mobile/src/features/calendar/DaySheet';
+import { sexMarkTestID } from '../apps/mobile/src/features/calendar/CycleMonth';
 import {
   calendarCopy,
   editPeriodCopy,
@@ -3915,6 +3917,11 @@ defineFeature(feature, (test) => {
       expect(theDayOnHerPhone()).toMatchObject({ flow: flowSheLogged, sex: 'protected' });
     });
 
+    and('the card of that day names sex, and that day carries a heart in the month', () => {
+      expect(screen.getByTestId(daySheetLineTestID)).toHaveTextContent(/\bsex\b/i);
+      expect(screen.getByTestId(sexMarkTestID(thatDay))).toBeTruthy();
+    });
+
     when(
       'she presses that day again, then Record sex, then Protected again, and saves',
       async () => {
@@ -3931,6 +3938,15 @@ defineFeature(feature, (test) => {
       expect(theDayOnHerPhone()?.flow).toBe(flowSheLogged);
       expect(theDayOnHerPhone()).not.toHaveProperty('sex');
     });
+
+    and(
+      'the card of that day no longer names sex, and the heart is gone from that day',
+      async () => {
+        await screen.findByTestId(daySheetTestID);
+        expect(screen.getByTestId(daySheetLineTestID)).not.toHaveTextContent(/\bsex\b/i);
+        expect(screen.queryByTestId(sexMarkTestID(thatDay))).toBeNull();
+      },
+    );
   });
 
   test('SCREEN-4, a profile and a day saved while Digestion was one group read under Appetite and Digestive symptoms', ({
