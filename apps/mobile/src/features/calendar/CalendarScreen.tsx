@@ -68,6 +68,7 @@ interface Props {
   /** The way to a day she has lived, which is the address the repository already answers on. */
   readonly onOpenDay: (day: string) => void;
   readonly onRecordSex: (day: string) => void;
+  readonly onRemovePeriodDay: (day: string) => void;
   /** The way to the whole period of the day she pressed. */
   readonly onEditPeriod: (day: string) => void;
 }
@@ -92,6 +93,7 @@ export function CalendarScreen({
   onPressDay,
   onOpenDay,
   onRecordSex,
+  onRemovePeriodDay,
   onEarlierMonth,
   onLaterMonth,
   onEditPeriod,
@@ -191,10 +193,14 @@ export function CalendarScreen({
               onEditPeriod={() => onEditPeriod(shePressed.day)}
               openLabel={calendarCopy.openTheDay}
               recordSexLabel={calendarCopy.recordSex}
+              removePeriodDayLabel={calendarCopy.removePeriodDay}
               {...(shePressed.kind === 'lived'
                 ? {
                     onOpen: () => onOpenDay(shePressed.day),
                     onRecordSex: () => onRecordSex(shePressed.day),
+                    ...(shePressed.bled === true
+                      ? { onRemovePeriodDay: () => onRemovePeriodDay(shePressed.day) }
+                      : {}),
                   }
                 : {})}
             />

@@ -98,6 +98,7 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.screen.later': 'Позже',
   'calendar.screen.laterMonth': 'Следующий месяц',
   'calendar.screen.recordSex': 'Отметить секс',
+  'calendar.screen.removePeriodDay': 'Убрать день месячных',
   'calendar.today': 'Сегодня',
   'calendar.weekday.friday': 'Пятница',
   'calendar.weekday.monday': 'Понедельник',

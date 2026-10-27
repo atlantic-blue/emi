@@ -92,6 +92,7 @@ export const english = {
   'calendar.screen.later': 'Later',
   'calendar.screen.laterMonth': 'Later month',
   'calendar.screen.recordSex': 'Record sex',
+  'calendar.screen.removePeriodDay': 'Remove period day',
   'calendar.today': 'Today',
   'calendar.weekday.friday': 'Friday',
   'calendar.weekday.monday': 'Monday',

@@ -328,6 +328,7 @@ describe('the month ahead, drawn', () => {
           onLaterMonth={() => undefined}
           onOpenDay={() => undefined}
           onRecordSex={() => undefined}
+          onRemovePeriodDay={() => undefined}
           onPressDay={() => undefined}
           onToday={() => undefined}
           phaseOn={(day) => theDayPhaseOn(from, day)}

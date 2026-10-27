@@ -20,6 +20,7 @@ export const calendarCopy = {
   laterMonth: words('calendar.screen.laterMonth'),
   openTheDay: words('calendar.daySheet.open'),
   recordSex: words('calendar.screen.recordSex'),
+  removePeriodDay: words('calendar.screen.removePeriodDay'),
   today: words('calendar.today'),
 } as const;
 
