@@ -7,11 +7,15 @@ import {
 } from '@emi/cycle';
 import { render, screen } from '@testing-library/react-native';
 
+import { daysLate } from '../../../src/features/forecast/daysLate';
 import {
   FirstForecast,
   firstForecastDaysTestID,
+  firstForecastLateTestID,
   firstForecastLearningTestID,
   firstForecastNeedsTestID,
+  firstForecastRangeTestID,
+  firstForecastTitleTestID,
   firstForecastWhyTestID,
   theDaysOf,
 } from '../../../src/features/onboarding/FirstForecast';
@@ -152,5 +156,58 @@ describe('the first forecast says only what the arithmetic answered', () => {
     expect(textIn(screen.getByTestId(firstForecastWhyTestID)).join(' ')).not.toMatch(
       /confidence|high|medium|low/i,
     );
+  });
+});
+
+describe('a first forecast whose window has passed', () => {
+  const theWindowHasPassed = forecastFromHerAnswers({
+    periods: [
+      { startedOn: '2026-09-18', lengthDays: 5 },
+      { startedOn: '2026-08-21', lengthDays: 5 },
+      { startedOn: '2026-07-24', lengthDays: 5 },
+    ],
+    cycleLengthDays: 28,
+  });
+
+  async function sheReadsItOn(today: string): Promise<void> {
+    await render(
+      <OnAPhone>
+        <FirstForecast
+          cycleLengthDays={28}
+          daysLate={daysLate(theWindowHasPassed, today)}
+          forecast={theWindowHasPassed}
+          onContinue={() => undefined}
+        />
+      </OnAPhone>,
+    );
+  }
+
+  it('gives the window from the 15th to the 17th of October, which has passed by the 19th', () => {
+    expect(theWindowHasPassed).toMatchObject({
+      kind: 'forecast',
+      start: { from: '2026-10-15', to: '2026-10-17' },
+    });
+    expect(daysLate(theWindowHasPassed, '2026-10-19')).toBe(2);
+  });
+
+  it('says her period is late in the words Home uses, and draws no day of the range that passed', async () => {
+    await sheReadsItOn('2026-10-19');
+
+    expect(textIn(screen.getByTestId(firstForecastTitleTestID))).toEqual(['Your next period']);
+    expect(textIn(screen.getByTestId(firstForecastLateTestID))).toEqual([
+      'Your period is 2 days late',
+    ]);
+    expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
+    expect(screen.queryByTestId(firstForecastDaysTestID, theHiddenCircles)).toBeNull();
+    expect(screen.queryByTestId(firstForecastWhyTestID)).toBeNull();
+  });
+
+  it('still gives the range on the last day of the window', async () => {
+    await sheReadsItOn('2026-10-17');
+
+    expect(screen.queryByTestId(firstForecastLateTestID)).toBeNull();
+    expect(textIn(screen.getByTestId(firstForecastRangeTestID))).toEqual([
+      'Between the 15th and the 17th of October',
+    ]);
   });
 });
