@@ -131,6 +131,7 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     And she reaches the step that asks for her last three periods
     Then the step asks for three periods, and says the third can be skipped
+    And the step says to start with the most recent, and names each row by its place, the most recent first
     When she gives three periods, each with the day it started and the days it lasted
     And she answers the rest of the questions and taps Save and start
     Then her phone holds every bleeding day of the three periods, and no other day

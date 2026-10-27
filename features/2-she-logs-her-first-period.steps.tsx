@@ -9164,6 +9164,28 @@ defineFeature(feature, (test) => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
+    and(
+      'the step says to start with the most recent, and names each row by its place, the most recent first',
+      () => {
+        expect(screen.getByText(/Start with the most recent\./)).toBeTruthy();
+        expect(textIn(screen.getByTestId(pastPeriodRowTestID(0)))).toEqual([
+          '1',
+          'Most recent',
+          'Add the start date',
+        ]);
+        expect(textIn(screen.getByTestId(pastPeriodRowTestID(1))).slice(0, 3)).toEqual([
+          '2',
+          'The one before',
+          'Add the start date',
+        ]);
+        expect(textIn(screen.getByTestId(pastPeriodRowTestID(2))).slice(0, 3)).toEqual([
+          '3',
+          'The one before that',
+          'Add the start date',
+        ]);
+      },
+    );
+
     when(
       'she gives three periods, each with the day it started and the days it lasted',
       async () => {

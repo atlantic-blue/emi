@@ -8,7 +8,7 @@ import { PrimaryButton, TextLink } from '../../components/Button';
 import { Chip } from '../../components/Chip';
 import { NumberWheel } from '../../components/NumberWheel';
 import { Calendar } from '../onboarding/Calendar';
-import { pastPeriodLengthSaid, pastPeriodNumberSaid, pastPeriodsCopy } from './copy';
+import { pastPeriodLengthSaid, pastPeriodPlaceSaid, pastPeriodsCopy } from './copy';
 import {
   type PastPeriod,
   longestCycleBetweenDays,
@@ -122,7 +122,7 @@ export function PastPeriodPicker({
               style={styles.title}
               testID={pastPeriodPickerTitleTestID}
             >
-              {pastPeriodNumberSaid(row)}
+              {pastPeriodPlaceSaid(row)}
             </Text>
 
             <Text style={styles.question}>{pastPeriodsCopy.start}</Text>

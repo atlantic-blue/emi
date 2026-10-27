@@ -844,6 +844,7 @@ export const spanish: CatalogueIn<'es'> = {
   'pastPeriods.line.estimate': 'Añade lo que recuerdes. Una estimación está bien.',
   'pastPeriods.line.forecast':
     'Con tres periodos, Emi puede pronosticar los siguientes desde el primer día.',
+  'pastPeriods.line.mostRecentFirst': 'Empieza por el más reciente.',
   'pastPeriods.picker.done': 'Hecho',
   'pastPeriods.picker.length': '¿Cuántos días duró?',
   'pastPeriods.picker.outOfRange':
@@ -852,7 +853,9 @@ export const spanish: CatalogueIn<'es'> = {
   'pastPeriods.picker.start': '¿Cuándo empezó?',
   'pastPeriods.picker.stillGoingTooLongAgo':
     'Un periodo que sigue en curso empezó hace {maximum} días o menos. Prueba un día más reciente.',
-  'pastPeriods.picker.title': 'Periodo {number}',
+  'pastPeriods.place.mostRecent': 'El más reciente',
+  'pastPeriods.place.oneBefore': 'El anterior',
+  'pastPeriods.place.oneBeforeThat': 'El anterior a ese',
   'pastPeriods.row.date': '{date} de {month}',
   'pastPeriods.save': 'Guardar',
   'pastPeriods.skipThisOne': 'Omite este si no lo recuerdas',

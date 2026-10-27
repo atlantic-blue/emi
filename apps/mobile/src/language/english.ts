@@ -843,6 +843,7 @@ export const english = {
   'pastPeriods.line.estimate': 'Add what you remember. An estimate is fine.',
   'pastPeriods.line.forecast':
     'With three periods, Emi can forecast your next ones from the first day.',
+  'pastPeriods.line.mostRecentFirst': 'Start with the most recent.',
   'pastPeriods.picker.done': 'Done',
   'pastPeriods.picker.length': 'How many days did it last?',
   'pastPeriods.picker.outOfRange':
@@ -851,7 +852,9 @@ export const english = {
   'pastPeriods.picker.start': 'When did it start?',
   'pastPeriods.picker.stillGoingTooLongAgo':
     'A period that is still going started {maximum} days ago or less. Try a later day.',
-  'pastPeriods.picker.title': 'Period {number}',
+  'pastPeriods.place.mostRecent': 'Most recent',
+  'pastPeriods.place.oneBefore': 'The one before',
+  'pastPeriods.place.oneBeforeThat': 'The one before that',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Save',
   'pastPeriods.skipThisOne': 'Skip this one if you do not remember',

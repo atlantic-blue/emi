@@ -874,6 +874,7 @@ export const russian: CatalogueIn<'ru'> = {
   'pastPeriods.line.estimate': 'Если не помните точные даты, укажите примерные.',
   'pastPeriods.line.forecast':
     'Добавьте даты начала и продолжительность последних трёх менструаций. Так Emi сможет рассчитать следующие.',
+  'pastPeriods.line.mostRecentFirst': 'Начните с последних.',
   'pastPeriods.picker.done': 'Готово',
   'pastPeriods.picker.length': 'Сколько дней они длились?',
   'pastPeriods.picker.outOfRange':
@@ -882,7 +883,9 @@ export const russian: CatalogueIn<'ru'> = {
   'pastPeriods.picker.start': 'Когда они начались?',
   'pastPeriods.picker.stillGoingTooLongAgo':
     'Если месячные ещё идут, они начались не больше {maximum} дней назад. Выберите день позже.',
-  'pastPeriods.picker.title': 'Месячные {number}',
+  'pastPeriods.place.mostRecent': 'Последние',
+  'pastPeriods.place.oneBefore': 'Предыдущие',
+  'pastPeriods.place.oneBeforeThat': 'Ещё раньше',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Сохранить',
   'pastPeriods.skipThisOne': 'Пропустите, если не помните',

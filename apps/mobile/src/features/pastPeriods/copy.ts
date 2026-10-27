@@ -13,6 +13,7 @@ export const pastPeriodsCopy = {
   title: words('pastPeriods.title'),
   forecastLine: words('pastPeriods.line.forecast'),
   estimateLine: words('pastPeriods.line.estimate'),
+  mostRecentFirstLine: words('pastPeriods.line.mostRecentFirst'),
   action: words('pastPeriods.action'),
   wayPast: words('pastPeriods.wayPast'),
   addStart: words('pastPeriods.addStart'),
@@ -51,7 +52,17 @@ export function pastPeriodRunSaid(period: PastPeriod): string {
     : pastPeriodLengthSaid(period.lengthDays);
 }
 
-/** "Period 2", which names the row the picker is open on. */
-export function pastPeriodNumberSaid(row: number): string {
-  return words('pastPeriods.picker.title', undefined, { number: row + 1 });
+const placeOfEachRow = [
+  words('pastPeriods.place.mostRecent'),
+  words('pastPeriods.place.oneBefore'),
+  words('pastPeriods.place.oneBeforeThat'),
+] as const;
+
+export function pastPeriodPlaceSaid(row: number): string {
+  const place = placeOfEachRow[row];
+  if (place === undefined) {
+    throw new RangeError(`No period row ${row}; the list asks for ${placeOfEachRow.length}.`);
+  }
+
+  return place;
 }
