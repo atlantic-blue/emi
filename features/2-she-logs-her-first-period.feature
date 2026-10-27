@@ -227,7 +227,7 @@ Feature: She opens Emi and logs her first period
   Scenario: BRAND-3, her own cycle sizes the four arcs
     Given her phone holds six cycles of forty five days
     When she opens Emi
-    Then the ring draws four arcs, each one sized by the days of that phase
+    Then the ring draws four arcs, each one sized by the days of that phase and none narrower than its name
 
   Scenario: BRAND-3, the arcs and the ground between them cover the whole ring
     Given her phone holds six cycles of forty five days
@@ -738,6 +738,12 @@ Feature: She opens Emi and logs her first period
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
     And no question of the first run draws a lock, and the sentences it drew are gone from all three languages
 
+  Scenario: SCREEN-1, a name she typed is kept when she presses Skip, and the home screen greets her by it
+    Given she has never opened Emi before
+    When she opens Emi, reads the welcome, skips the tour, types her name, and presses Skip
+    And she passes every other question she may pass, and taps Save and start
+    Then the home screen greets her by the name she typed
+
   Scenario: SCREEN-1, the first run says why it asks her year, what a regular cycle is, and that ovulation dates are approximate
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, and skips her name
@@ -884,6 +890,16 @@ Feature: She opens Emi and logs her first period
     When she presses Close
     Then the sheet is gone and she is on the page of her phase
 
+  Scenario: SCREEN-2, she presses the period arc of the ring and reads its name and days
+    Given her phone holds four recorded period days, the last of them today
+    When she opens Emi
+    And she presses the period arc of the ring
+    Then a small card over the ring names the period and its days in this cycle
+    When she presses How you may feel and what may help on the card
+    Then the card is gone and the guide of the period phase is open
+    When she closes the guide, presses the period arc again, and presses outside the card
+    Then the card is gone and she is on Today
+
   Scenario: SCREEN-2, she records sex on a past day and removes it
     Given her phone holds four recorded period days, the last of them today
     When she opens the Sex page of yesterday
@@ -915,8 +931,10 @@ Feature: She opens Emi and logs her first period
     Then the sheet of products for sex on a period day opens
     When she presses Not now on the sheet
     Then her phone holds that answer on that day, sealed, beside the flow she logged
+    And the card of that day names sex, and that day carries a heart in the month
     When she presses that day again, then Record sex, then Protected again, and saves
     Then that day holds no answer about sex, and keeps its flow
+    And the card of that day no longer names sex, and the heart is gone from that day
 
   Scenario: SCREEN-4, she removes a day of a past month she marked as a period by mistake, in one press
     Given her phone holds four recorded period days, the last of them today
