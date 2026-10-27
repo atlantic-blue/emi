@@ -88,8 +88,8 @@ Verified by a test.
 
 Input: a cycle of some number of days, the current day, and the four phase boundaries.
 
-Output: four arcs sized by their own day counts, a gap of 3 degrees of ground between neighbouring
-arcs, elapsed days at full strength, days ahead at 20 percent, and a pointer on the current day.
+Output: four arcs sized by their own day counts, each at least as wide as its whole name on the
+ring of Today, a gap of 3 degrees of ground between neighbouring arcs, elapsed days at full strength, days ahead at 20 percent, and a pointer on the current day.
 
 Errors: the arcs and the gaps do not total 360 degrees. A gap is absent. The pointer sits on a day
 outside the cycle. A phase of zero days draws an arc rather than nothing.

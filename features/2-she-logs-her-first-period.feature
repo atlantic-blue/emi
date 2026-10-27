@@ -227,7 +227,7 @@ Feature: She opens Emi and logs her first period
   Scenario: BRAND-3, her own cycle sizes the four arcs
     Given her phone holds six cycles of forty five days
     When she opens Emi
-    Then the ring draws four arcs, each one sized by the days of that phase
+    Then the ring draws four arcs, each one sized by the days of that phase and none narrower than its name
 
   Scenario: BRAND-3, the arcs and the ground between them cover the whole ring
     Given her phone holds six cycles of forty five days
@@ -883,6 +883,16 @@ Feature: She opens Emi and logs her first period
     And the sheet says that everyone is different
     When she presses Close
     Then the sheet is gone and she is on the page of her phase
+
+  Scenario: SCREEN-2, she presses the period arc of the ring and reads its name and days
+    Given her phone holds four recorded period days, the last of them today
+    When she opens Emi
+    And she presses the period arc of the ring
+    Then a small card over the ring names the period and its days in this cycle
+    When she presses How you may feel and what may help on the card
+    Then the card is gone and the guide of the period phase is open
+    When she closes the guide, presses the period arc again, and presses outside the card
+    Then the card is gone and she is on Today
 
   Scenario: SCREEN-2, she records sex on a past day and removes it
     Given her phone holds four recorded period days, the last of them today

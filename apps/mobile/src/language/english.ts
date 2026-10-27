@@ -327,6 +327,8 @@ export const english = {
   'home.phaseCard.luteal.day': 'Before your period, day {from}',
   'home.phaseCard.luteal.days': 'Before your period, days {from} to {to}',
   'home.phaseCard.luteal.line': 'The days after ovulation, before your next period.',
+  'home.ringArc.day': 'Day {from} of this cycle',
+  'home.ringArc.days': 'Days {from} to {to} of this cycle',
   'home.roundAction.sex': 'Sex',
   'home.roundAction.period': 'Period',
   'home.roundAction.phase': 'Cycle phase',

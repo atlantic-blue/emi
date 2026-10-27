@@ -327,6 +327,8 @@ export const russian: CatalogueIn<'ru'> = {
   'home.phaseCard.luteal.day': 'Перед месячными, день {from}',
   'home.phaseCard.luteal.days': 'Перед месячными, дни с {from} по {to}',
   'home.phaseCard.luteal.line': 'Дни после овуляции, до следующих месячных.',
+  'home.ringArc.day': 'День {from} этого цикла',
+  'home.ringArc.days': 'Дни с {from} по {to} этого цикла',
   'home.roundAction.sex': 'Секс',
   'home.roundAction.period': 'Месячные',
   'home.roundAction.phase': 'О фазе',

@@ -31,6 +31,8 @@ import {
   GAP_DEGREES,
   ICON_SIZE,
   MINIMUM_TAP_TARGET,
+  NAMED_RING_DIAMETER,
+  NAMED_RING_RADIUS,
   type PhaseName,
   RING_OPEN_MILLISECONDS,
   colour,
@@ -40,6 +42,7 @@ import {
   phaseLabel,
   phaseNameInk,
   phaseNames,
+  pointOnRing,
   radius,
   stroke,
   textStyle,
@@ -84,7 +87,9 @@ import { Stepper, stepperReadingTestID } from '../apps/mobile/src/components/Ste
 import { TextField } from '../apps/mobile/src/components/TextField';
 import {
   cycleRingTestID,
+  namedArcFloors,
   ringArcTestID,
+  ringArcsPressTestID,
   ringCentreDayTestID,
   ringCentreLengthTestID,
   ringCentrePhaseTestID,
@@ -92,6 +97,13 @@ import {
   ringTrackTestID,
   ringWholeArcTestID,
 } from '../apps/mobile/src/components/CycleRing';
+import {
+  ringArcPopoverDaysTestID,
+  ringArcPopoverGuideTestID,
+  ringArcPopoverNameTestID,
+  ringArcPopoverOutsideTestID,
+  ringArcPopoverTestID,
+} from '../apps/mobile/src/features/home/RingOfToday';
 import {
   cycleCopy,
   phaseFullName,
@@ -275,6 +287,7 @@ import {
   phaseGuideAreaTestID,
   phaseGuideCloseTestID,
   phaseGuideEveryoneTestID,
+  phaseGuidePhaseTestID,
   phaseGuideTestID,
 } from '../apps/mobile/src/features/phase/PhaseGuide';
 import {
@@ -2657,16 +2670,31 @@ defineFeature(feature, (test) => {
       await sheOpens('/');
     });
 
-    then('the ring draws four arcs, each one sized by the days of that phase', () => {
-      const arcs = theArcsOnTheRing();
-      const forArcs = FULL_TURN_DEGREES - 4 * GAP_DEGREES;
+    then(
+      'the ring draws four arcs, each one sized by the days of that phase and none narrower than its name',
+      () => {
+        const arcs = theArcsOnTheRing();
+        const forArcs = FULL_TURN_DEGREES - 4 * GAP_DEGREES;
+        // Five days of forty five is narrower than "OVULATION", so that arc holds its name's width
+        // and the other three share what is left by their days.
+        const ovulation = namedArcFloors().ovulation;
 
-      expect(arcs.map((arc) => arc.phase)).toEqual(['period', 'follicular', 'ovulation', 'luteal']);
-      expect(arcs.map((arc) => Math.round(arc.sweepDegrees * 100) / 100)).toEqual(
-        [6, 24, 5, 10].map((days) => Math.round(((forArcs * days) / 45) * 100) / 100),
-      );
-      expect(new Set(arcs.map((arc) => arc.sweepDegrees)).size).toBe(4);
-    });
+        expect(arcs.map((arc) => arc.phase)).toEqual([
+          'period',
+          'follicular',
+          'ovulation',
+          'luteal',
+        ]);
+        expect(arcs.map((arc) => Math.round(arc.sweepDegrees * 100) / 100)).toEqual(
+          [6, 24, 0, 10].map(
+            (days) =>
+              Math.round((days === 0 ? ovulation : ((forArcs - ovulation) * days) / 40) * 100) /
+              100,
+          ),
+        );
+        expect(new Set(arcs.map((arc) => arc.sweepDegrees)).size).toBe(4);
+      },
+    );
   });
 
   test('BRAND-3, the arcs and the ground between them cover the whole ring', ({
@@ -3687,6 +3715,67 @@ defineFeature(feature, (test) => {
       expect(screen.queryByTestId(phaseGuideTestID)).toBeNull();
       expect(screen.getByTestId(phasePageTestID)).toBeTruthy();
       expect(app.pathname()).toBe('/phase');
+    });
+  });
+
+  test('SCREEN-2, she presses the period arc of the ring and reads its name and days', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+      await screen.findByTestId(cycleRingTestID);
+    });
+
+    and('she presses the period arc of the ring', async () => {
+      const centre = { x: NAMED_RING_DIAMETER / 2, y: NAMED_RING_DIAMETER / 2 };
+      const onTheArc = pointOnRing(centre, NAMED_RING_RADIUS, namedArcFloors().period / 2);
+
+      await fireEvent.press(screen.getByTestId(ringArcsPressTestID), {
+        nativeEvent: { locationX: onTheArc.x, locationY: onTheArc.y },
+      });
+    });
+
+    then('a small card over the ring names the period and its days in this cycle', () => {
+      expect(screen.getByTestId(ringArcPopoverNameTestID)).toHaveTextContent('Period');
+      expect(screen.getByTestId(ringArcPopoverDaysTestID)).toHaveTextContent(
+        /^Days 1 to \d+ of this cycle$/,
+      );
+    });
+
+    when('she presses How you may feel and what may help on the card', async () => {
+      await shePresses(ringArcPopoverGuideTestID);
+    });
+
+    then('the card is gone and the guide of the period phase is open', () => {
+      expect(screen.queryByTestId(ringArcPopoverTestID)).toBeNull();
+      expect(screen.getByTestId(phaseGuidePhaseTestID)).toHaveTextContent('Period phase');
+    });
+
+    when(
+      'she closes the guide, presses the period arc again, and presses outside the card',
+      async () => {
+        await shePresses(phaseGuideCloseTestID);
+        const centre = { x: NAMED_RING_DIAMETER / 2, y: NAMED_RING_DIAMETER / 2 };
+        const onTheArc = pointOnRing(centre, NAMED_RING_RADIUS, namedArcFloors().period / 2);
+        await fireEvent.press(screen.getByTestId(ringArcsPressTestID), {
+          nativeEvent: { locationX: onTheArc.x, locationY: onTheArc.y },
+        });
+        expect(screen.getByTestId(ringArcPopoverTestID)).toBeTruthy();
+        await shePresses(ringArcPopoverOutsideTestID);
+      },
+    );
+
+    then('the card is gone and she is on Today', () => {
+      expect(screen.queryByTestId(ringArcPopoverTestID)).toBeNull();
+      expect(screen.getByTestId(cycleRingTestID)).toBeTruthy();
     });
   });
 
