@@ -9,9 +9,9 @@ reads what they generate.
 `logo/` holds the wordmark, the ring and the lockup, all three drawn by one program from one set of
 numbers. `logo/README.md` says what the numbers are.
 
-`icon/` holds the application icon generator. It reads `logo/emi-ring.svg`, puts the ring on the
-stone ground at 56 percent of the width, and writes every size both stores ask for into
-`apps/mobile/assets/icon`. `icon/sizes.ts` holds the two lists, with the reason beside each size.
+`icon/` holds the application icon generator. It reads `logo/emi-icon-mark.svg`, the letters EMI
+inside the open ring, puts it in white on the ember ground at 77 percent of the width, and writes
+every size both stores ask for into `apps/mobile/assets/icon`. `icon/sizes.ts` holds the two lists, with the reason beside each size.
 It measures its own result and refuses to write when the ring misses the fraction.
 
 `icons/` holds the twenty eight line symbols and the contact sheet. `icons/README.md` says the rules

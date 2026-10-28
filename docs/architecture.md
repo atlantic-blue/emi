@@ -164,7 +164,7 @@ than into `symptoms`, so a screen that reads her history counts a mood once.
 Status: built
 
 One program draws every icon size. It is `brand/icon/generate.ts`, and `npm run generate:app-icon`
-runs it through Node with type stripping. It reads one drawn source, `brand/logo/emi-ring.svg`, and
+runs it through Node with type stripping. It reads one drawn source, `brand/logo/emi-icon-mark.svg`, and
 writes the icons into `apps/mobile/assets/icon`. The interface icons are a different set, and they
 live in `brand/icons`.
 
@@ -176,7 +176,7 @@ resample closes the gap.
 The two lists come to 24 files today: 8 for Apple and 16 for Google.
 
 The program measures the icon it made. It renders the result, finds the ink, and refuses to write
-when the ring is not 56 percent of the icon width. On the mark as drawn it reads 56.06 percent. It
+when the ring is not 77 percent of the icon width. On the mark as drawn it reads 77.00 percent. It
 also refuses when the drawn source is absent, and the refusal names the step that draws it.
 
 ## The cycle arithmetic

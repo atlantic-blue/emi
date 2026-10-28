@@ -58,14 +58,14 @@ Drawn by its own generator, rather than under the test runner. `npm run generate
 file from the numbers in `brand/logo/geometry.ts`, and a test redraws it and refuses a file edited by
 hand.
 
-On the home screen of her phone the mark is the ring alone, at 56 percent of the width and sitting a
-little above the middle so it reads as centred. One program writes all 24 files the two stores ask
-for from that one drawing.
+On the home screen of her phone the mark is the letters EMI inside the open ring, in white on ember,
+at 77 percent of the width. The ring opens at the right, where a lowercase e opens. One program
+writes all 24 files the two stores ask for from that one drawing.
 
 ![The application icon, drawn at 1024 points](../apps/mobile/assets/icon/apple-1024.png)
 
 Drawn by its own generator, rather than under the test runner. `npm run generate:app-icon` writes
-every size from `brand/logo/emi-ring.svg`, and a test refuses a size a store asks for and nobody
+every size from `brand/logo/emi-icon-mark.svg`, and a test refuses a size a store asks for and nobody
 wrote.
 
 She can read every word on every ground, because the palette is measured rather than chosen.
