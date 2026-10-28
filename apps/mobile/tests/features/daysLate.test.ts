@@ -54,16 +54,22 @@ describe('the days a period is late', () => {
     expect(daysLate(inDecember, '2027-01-02')).toBe(2);
   });
 
-  it('is nothing while Emi is still learning, with a stated length or without one', () => {
+  it('counts from the range while Emi is still learning, as it does for a forecast', () => {
     const withALength: Learning = {
       kind: 'learning',
       completeCycles: 1,
       needsCycles: 2,
       start: { from: '2026-11-14', to: '2026-11-18' },
     };
+
+    expect(daysLate(withALength, '2026-11-18')).toBeUndefined();
+    expect(daysLate(withALength, '2026-11-19')).toBe(1);
+    expect(daysLate(withALength, '2026-11-30')).toBe(12);
+  });
+
+  it('is nothing while Emi is still learning and has no range to count from', () => {
     const withoutALength: Learning = { kind: 'learning', completeCycles: 0, needsCycles: 2 };
 
-    expect(daysLate(withALength, '2026-11-30')).toBeUndefined();
     expect(daysLate(withoutALength, '2026-11-30')).toBeUndefined();
   });
 });
