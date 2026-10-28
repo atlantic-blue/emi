@@ -40,7 +40,7 @@ describe('the moods she can pick', () => {
 
     expect(shared).toEqual([]);
     expect(offered).toHaveLength(symptoms.length - moods.length);
-    expect(offered).toHaveLength(62);
+    expect(offered).toHaveLength(64);
   });
 });
 

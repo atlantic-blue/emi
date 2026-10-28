@@ -40,6 +40,8 @@ const slugsEverShipped: readonly string[] = [
   'food-craving',
   'sweet-craving',
   'salty-craving',
+  'spicy-craving',
+  'meat-craving',
   'forgetful',
   'gas',
   'greasy-hair',
@@ -106,8 +108,8 @@ function retire(slug: string, on: string): readonly Symptom[] {
 }
 
 describe('the symptom catalogue', () => {
-  it('offers seventy four symptoms, so the catalogue cannot silently shrink', () => {
-    expect(loggableSymptoms()).toHaveLength(74);
+  it('offers seventy six symptoms, so the catalogue cannot silently shrink', () => {
+    expect(loggableSymptoms()).toHaveLength(76);
     expect(loggableSymptoms()).not.toHaveLength(72);
   });
 
@@ -146,7 +148,7 @@ describe('the symptom catalogue', () => {
       'mood 12',
       'energy 8',
       'pain 11',
-      'appetite 5',
+      'appetite 7',
       'digestive 8',
       'skin 10',
       'sleep 8',
@@ -167,13 +169,15 @@ describe('the split of digestion into appetite and digestive symptoms', () => {
     expect(symptomGroups.indexOf('digestive')).toBe(symptomGroups.indexOf('appetite') + 1);
   });
 
-  it('puts hunger, cravings, sweet and salty under appetite', () => {
+  it('puts hunger, cravings, sweet, salty, spicy and meat under appetite', () => {
     expect(symptomsInGroup('appetite').map((symptom) => symptom.slug)).toEqual([
       'appetite-increase',
       'appetite-loss',
       'food-craving',
       'sweet-craving',
       'salty-craving',
+      'spicy-craving',
+      'meat-craving',
     ]);
   });
 
@@ -233,7 +237,7 @@ describe('a retired symptom', () => {
   it('is never offered again', () => {
     const offered = loggableSymptoms(afterNappingRetires).map((symptom) => symptom.slug);
 
-    expect(offered).toHaveLength(73);
+    expect(offered).toHaveLength(75);
     expect(offered).not.toContain('napping');
     expect(
       symptomsInGroup('sleep', afterNappingRetires).map((symptom) => symptom.slug),
