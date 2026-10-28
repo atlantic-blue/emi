@@ -10,8 +10,8 @@ import {
 
 /**
  * The phase rule, contract CYCLE-6. The period is days 1 to the period length. The follicular
- * phase is days 1 to the day before the ovulation phase, so it holds the period. The ovulation
- * phase is the ovulation day with two days either side. The luteal phase is the rest.
+ * phase is the day after the period to the day before the ovulation phase. The ovulation phase is
+ * the ovulation day with two days either side. The luteal phase is the rest.
  */
 
 function herPhases(cycleLengthDays: number, periodLengthDays: number): CyclePhaseDays {
@@ -39,42 +39,42 @@ describe.each([
   {
     cycle: 28,
     period: 3,
-    days: { period: [1, 3], follicular: [1, 13], ovulation: [14, 18], luteal: [19, 28] },
+    days: { period: [1, 3], follicular: [4, 13], ovulation: [14, 18], luteal: [19, 28] },
   },
   {
     cycle: 28,
     period: 7,
-    days: { period: [1, 7], follicular: [1, 13], ovulation: [14, 18], luteal: [19, 28] },
+    days: { period: [1, 7], follicular: [8, 13], ovulation: [14, 18], luteal: [19, 28] },
   },
   {
     cycle: 21,
     period: 3,
-    days: { period: [1, 3], follicular: [1, 6], ovulation: [7, 11], luteal: [12, 21] },
+    days: { period: [1, 3], follicular: [4, 6], ovulation: [7, 11], luteal: [12, 21] },
   },
   {
     cycle: 21,
     period: 7,
-    days: { period: [1, 7], follicular: [1, 7], ovulation: [8, 11], luteal: [12, 21] },
+    days: { period: [1, 7], follicular: [8, 7], ovulation: [8, 11], luteal: [12, 21] },
   },
   {
     cycle: 33,
     period: 3,
-    days: { period: [1, 3], follicular: [1, 18], ovulation: [19, 23], luteal: [24, 33] },
+    days: { period: [1, 3], follicular: [4, 18], ovulation: [19, 23], luteal: [24, 33] },
   },
   {
     cycle: 33,
     period: 7,
-    days: { period: [1, 7], follicular: [1, 18], ovulation: [19, 23], luteal: [24, 33] },
+    days: { period: [1, 7], follicular: [8, 18], ovulation: [19, 23], luteal: [24, 33] },
   },
   {
     cycle: 45,
     period: 3,
-    days: { period: [1, 3], follicular: [1, 30], ovulation: [31, 35], luteal: [36, 45] },
+    days: { period: [1, 3], follicular: [4, 30], ovulation: [31, 35], luteal: [36, 45] },
   },
   {
     cycle: 45,
     period: 7,
-    days: { period: [1, 7], follicular: [1, 30], ovulation: [31, 35], luteal: [36, 45] },
+    days: { period: [1, 7], follicular: [8, 30], ovulation: [31, 35], luteal: [36, 45] },
   },
 ])('a cycle of $cycle days with a period of $period days', ({ cycle, period, days }) => {
   const phases = herPhases(cycle, period);
@@ -83,7 +83,7 @@ describe.each([
     expect([phases.period.from, phases.period.to]).toEqual(days.period);
   });
 
-  it('should start the follicular phase on day 1, so it holds the period', () => {
+  it('should start the follicular phase on the day after the period', () => {
     expect([phases.follicular.from, phases.follicular.to]).toEqual(days.follicular);
   });
 
@@ -117,11 +117,35 @@ describe.each([
   });
 });
 
+describe('the four phases side by side', () => {
+  const shapes = [5, 15, 18, 21, 22, 28, 33, 45].flatMap((cycle) =>
+    [0, 1, 2, 5, 7, 12].map((period) => ({ cycle, period })),
+  );
+
+  it.each(shapes)(
+    'should give every day of a $cycle day cycle with a $period day period one phase',
+    ({ cycle, period }) => {
+      const phases = herPhases(cycle, period);
+      const inOrder = [phases.period, phases.follicular, phases.ovulation, phases.luteal];
+
+      expect(inOrder[0]?.from).toBe(1);
+      for (const [index, days] of inOrder.entries()) {
+        expect(days.to).toBeGreaterThanOrEqual(days.from - 1);
+        if (index > 0) {
+          expect(days.from).toBe((inOrder[index - 1]?.to ?? 0) + 1);
+        }
+      }
+      expect(inOrder[3]?.to).toBe(cycle);
+    },
+  );
+});
+
 describe('a cycle with no period length', () => {
   it('should name day 1 follicular, because no period is recorded', () => {
     const phases = herPhases(28, 0);
 
     expect(phases.period.to).toBe(0);
+    expect(phases.follicular.from).toBe(1);
     expect(phaseOnCycleDay(phases, 1)).toBe('follicular');
   });
 });

@@ -164,7 +164,7 @@ than into `symptoms`, so a screen that reads her history counts a mood once.
 Status: built
 
 One program draws every icon size. It is `brand/icon/generate.ts`, and `npm run generate:app-icon`
-runs it through Node with type stripping. It reads one drawn source, `brand/logo/emi-ring.svg`, and
+runs it through Node with type stripping. It reads one drawn source, `brand/logo/emi-icon-mark.svg`, and
 writes the icons into `apps/mobile/assets/icon`. The interface icons are a different set, and they
 live in `brand/icons`.
 
@@ -176,7 +176,7 @@ resample closes the gap.
 The two lists come to 24 files today: 8 for Apple and 16 for Google.
 
 The program measures the icon it made. It renders the result, finds the ink, and refuses to write
-when the ring is not 56 percent of the icon width. On the mark as drawn it reads 56.06 percent. It
+when the ring is not 77 percent of the icon width. On the mark as drawn it reads 77.00 percent. It
 also refuses when the drawn source is absent, and the refusal names the step that draws it.
 
 ## The cycle arithmetic
@@ -209,7 +209,8 @@ contract CYCLE-6. Its input is three whole numbers:
 Its output holds each phase as `from` and `to`, two cycle days, both inside:
 
 - `period`, day 1 to the period length.
-- `follicular`, day 1 to the day before the ovulation phase. It includes the period.
+- `follicular`, the day after the period to the day before the ovulation phase. No two phases
+  share a day.
 - `ovulation`, the ovulation day, two days before it and two days after it. It never starts on a
   period day, so in a short cycle it can hold fewer than five days. A phase with no days has `to`
   one day before `from`.

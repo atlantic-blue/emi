@@ -4,9 +4,9 @@ import { LUTEAL_LENGTH_DAYS } from './forecast';
  * The four phases of one cycle, as cycle days counted from one. This is the one place the rule
  * lives, contract CYCLE-6, and every screen that names a phase reads it from here.
  *
- * The follicular phase starts on day 1, so it holds the period. While she bleeds the phase she is
- * in is the period, and the follicular phase is the days after it up to the ovulation phase. The
- * fertile window is a different thing and stays in forecast.ts.
+ * The follicular phase starts on the day after the period, because the app names it the days after
+ * her period, so no two phases share a day. The fertile window is a different thing and stays in
+ * forecast.ts.
  */
 
 /** The four names, the same four `PhaseName` carries in `@emi/tokens`. */
@@ -40,7 +40,7 @@ export interface CyclePhaseDays {
   readonly cycleLengthDays: number;
   /** Day 1 to the period length. */
   readonly period: CycleDays;
-  /** Day 1 to the day before the ovulation phase. It holds the period. */
+  /** The day after the period to the day before the ovulation phase. */
   readonly follicular: CycleDays;
   /** The ovulation day, two days before it and two after it, never on a period day. */
   readonly ovulation: CycleDays;
@@ -89,7 +89,7 @@ export function cyclePhaseDays(from: CyclePhaseDaysFrom): CyclePhaseDays {
   return {
     cycleLengthDays: length,
     period: { from: 1, to: periodTo },
-    follicular: { from: 1, to: ovulationFrom - 1 },
+    follicular: { from: periodTo + 1, to: ovulationFrom - 1 },
     ovulation: { from: ovulationFrom, to: ovulationTo },
     luteal: { from: ovulationTo + 1, to: length },
   };

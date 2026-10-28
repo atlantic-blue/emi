@@ -14,6 +14,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
  * A day she has lived also carries Record sex beside Edit my period, so she can record sex on that
  * day in one press from the month. The calendar board draws no such link: it is kept because the
  * way through the day page sat below the fold, and she did not find it.
+ *
+ * A day she recorded bleeding on also carries Remove period day, which takes the bleeding off that
+ * day alone. The board draws no such link either.
  */
 
 export const daySheetTestID = 'calendar-day-sheet';
@@ -22,6 +25,7 @@ export const daySheetLineTestID = 'calendar-day-sheet-line';
 /** The round button that carries the mark saying the day opens. */
 export const daySheetOpenTestID = 'calendar-day-sheet-open';
 export const daySheetRecordSexTestID = 'calendar-day-sheet-record-sex';
+export const daySheetRemovePeriodDayTestID = 'calendar-day-sheet-remove-period-day';
 
 /** Points. The mark that says the day opens, at the size the other rows of Emi draw it. */
 const OPENS_MARK_SIZE = 18;
@@ -41,6 +45,8 @@ interface Props {
   readonly recordSexLabel: string;
   /** Nothing on a day ahead of her, and then the card carries no Record sex. */
   readonly onRecordSex?: () => void;
+  readonly removePeriodDayLabel: string;
+  readonly onRemovePeriodDay?: () => void;
 }
 
 export function DaySheet({
@@ -53,6 +59,8 @@ export function DaySheet({
   onEditPeriod,
   recordSexLabel,
   onRecordSex,
+  removePeriodDayLabel,
+  onRemovePeriodDay,
 }: Props): ReactNode {
   return (
     <View style={styles.card} testID={daySheetTestID}>
@@ -92,6 +100,16 @@ export function DaySheet({
             testID={daySheetRecordSexTestID}
           >
             <Text style={styles.linkLabel}>{recordSexLabel}</Text>
+          </Pressable>
+        )}
+        {onRemovePeriodDay === undefined ? null : (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onRemovePeriodDay}
+            style={styles.link}
+            testID={daySheetRemovePeriodDayTestID}
+          >
+            <Text style={styles.linkLabel}>{removePeriodDayLabel}</Text>
           </Pressable>
         )}
       </View>

@@ -18,14 +18,14 @@ import { ringSource } from '../fixtures/ringSource';
 const repositoryRoot = resolve(__dirname, '..', '..', '..', '..');
 
 // The numbers are written out here rather than imported, so that moving one in the generator is
-// caught by this test instead of being agreed with. Section 9.2 of the design gives the first two.
+// caught by this test instead of being agreed with. Option A of issue 331 gives the first one.
 // Android gives the last two: a canvas of 108 density independent pixels, of which the launcher
 // keeps the outer 18 a side and shows about the middle 72.
-const RING_FRACTION_OF_WIDTH = 0.56;
-const OPTICAL_RISE_OF_WIDTH = 0.02;
+const RING_FRACTION_OF_WIDTH = 0.77;
 const ADAPTIVE_CANVAS = 108;
 const ADAPTIVE_VISIBLE = 72;
-const stone = colourFromHex(colour.card);
+const ember = colourFromHex(colour.accent);
+const white = colourFromHex(colour.onAccent);
 
 interface Run {
   readonly status: number | null;
@@ -132,38 +132,37 @@ describe('one source generates every icon both stores ask for', () => {
   });
 
   describe('the mark on the icon', () => {
-    it('holds the ring at 56 percent of the icon width', () => {
+    it('holds the ring at 77 percent of the icon width', () => {
       const image = imageIn(run, 'apple-1024.png');
-      const box = inkBox(image, stone);
+      const box = inkBox(image, ember);
 
       expect(box.width / image.width).toBeCloseTo(RING_FRACTION_OF_WIDTH, 2);
       expect(box.height / image.height).toBeCloseTo(RING_FRACTION_OF_WIDTH, 2);
-      expect(run.out).toContain('the ring measures 56.00 percent of the width');
+      expect(run.out).toContain('the ring measures 77.00 percent of the width');
     });
 
-    it('draws it in ember on the stone ground', () => {
+    it('draws it in white on the ember ground', () => {
       const image = imageIn(run, 'apple-1024.png');
       const corner = pixelAt(image, 0, 0);
-      const box = inkBox(image, stone);
+      const box = inkBox(image, ember);
       const onTheStroke = pixelAt(image, box.left + 12, Math.round(box.top + box.height / 2));
 
-      expect(corner).toEqual({ ...stone, alpha: 255 });
-      expect(onTheStroke).toEqual({ ...colourFromHex(colour.accent), alpha: 255 });
+      expect(corner).toEqual({ ...ember, alpha: 255 });
+      expect(onTheStroke).toEqual({ ...white, alpha: 255 });
     });
 
-    it('sits it above the geometric centre, so it does not read low', () => {
+    it('sits it on the geometric centre', () => {
       const image = imageIn(run, 'apple-1024.png');
-      const centre = centreOfInk(image, stone);
+      const centre = centreOfInk(image, ember);
 
       expect(centre.x).toBeCloseTo(image.width / 2, 0);
-      expect(centre.y).toBeCloseTo(image.height / 2 - OPTICAL_RISE_OF_WIDTH * image.width, 0);
-      expect(centre.y).toBeLessThan(image.height / 2);
+      expect(centre.y).toBeCloseTo(image.height / 2, 0);
     });
 
     it('keeps the ring inside the ground, whatever padding the source carries', () => {
       const padded = generateFrom(withRing({ padding: 0.4 }));
       const image = imageIn(padded, 'apple-1024.png');
-      const box = inkBox(image, stone);
+      const box = inkBox(image, ember);
 
       expect(padded.status).toBe(0);
       expect(box.width / image.width).toBeCloseTo(RING_FRACTION_OF_WIDTH, 2);
@@ -187,11 +186,11 @@ describe('one source generates every icon both stores ask for', () => {
       ];
 
       expect(corners).toEqual([
-        { ...stone, alpha: 255 },
-        { ...stone, alpha: 255 },
-        { ...stone, alpha: 255 },
+        { ...ember, alpha: 255 },
+        { ...ember, alpha: 255 },
+        { ...ember, alpha: 255 },
       ]);
-      expect(() => inkBox(image, stone)).toThrow('no ink at all');
+      expect(() => inkBox(image, ember)).toThrow('no ink at all');
     });
 
     it('sizes the foreground ring for the square the launcher shows, not the whole canvas', () => {
@@ -290,7 +289,7 @@ describe('one source generates every icon both stores ask for', () => {
     });
 
     it('is the tree the generator writes today, byte for byte', () => {
-      const again = generateFrom(join(repositoryRoot, 'brand', 'logo', 'emi-ring.svg'));
+      const again = generateFrom(join(repositoryRoot, 'brand', 'logo', 'emi-icon-mark.svg'));
 
       expect(again.status).toBe(0);
 
@@ -304,14 +303,14 @@ describe('one source generates every icon both stores ask for', () => {
       expect(stale.map((file) => file.name)).toEqual([]);
     });
 
-    it('draws the real mark at 56 percent of the width, in ember on stone', () => {
+    it('draws the real mark at 77 percent of the width, in white on ember', () => {
       const image = decodePng(readFileSync(join(shipped, 'apple-1024.png')));
-      const box = inkBox(image, stone);
+      const box = inkBox(image, ember);
 
       expect(box.width / image.width).toBeCloseTo(RING_FRACTION_OF_WIDTH, 2);
-      expect(pixelAt(image, 0, 0)).toEqual({ ...stone, alpha: 255 });
+      expect(pixelAt(image, 0, 0)).toEqual({ ...ember, alpha: 255 });
       expect(pixelAt(image, box.left + 20, Math.round(box.top + box.height / 2))).toEqual({
-        ...colourFromHex(colour.accent),
+        ...white,
         alpha: 255,
       });
     });
@@ -380,8 +379,8 @@ describe('one source generates every icon both stores ask for', () => {
       const small = imageIn(run, 'apple-40.png');
       const large = imageIn(run, 'apple-180.png');
 
-      expect(inkBox(small, stone).width / small.width).toBeCloseTo(
-        inkBox(large, stone).width / large.width,
+      expect(inkBox(small, ember).width / small.width).toBeCloseTo(
+        inkBox(large, ember).width / large.width,
         1,
       );
     });

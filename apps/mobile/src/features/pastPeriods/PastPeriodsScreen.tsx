@@ -60,7 +60,7 @@ export function PastPeriodsScreen({
           {pastPeriodsCopy.title}
         </Text>
         <Text style={styles.line}>
-          {`${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine}`}
+          {`${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine} ${pastPeriodsCopy.mostRecentFirstLine}`}
         </Text>
         <PastPeriodsList onOpen={setOpen} periods={periods} />
       </ScrollView>

@@ -45,7 +45,7 @@ export function ThreePeriods({
       onAction={onContinue}
       onBack={onBack}
       onWayPast={onWayPast}
-      question={`${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine}`}
+      question={`${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine} ${pastPeriodsCopy.mostRecentFirstLine}`}
       screen="threePeriods"
       title={pastPeriodsCopy.title}
       wayPastLabel={pastPeriodsCopy.wayPast}

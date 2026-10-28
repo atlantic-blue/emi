@@ -1,5 +1,5 @@
 import type { DayRecord } from '@emi/crypto';
-import { type DayRange, daysBetween } from '@emi/cycle';
+import { type DayRange, daysBetween, isBleeding } from '@emi/cycle';
 import type { PhaseName } from '@emi/tokens';
 
 import type { HerDay, HerDaysFrom } from '../cycle/herWeek';
@@ -39,6 +39,7 @@ export type WhatTheSheetSays =
       readonly phase?: PhaseName;
       /** What she marked on it, in her own words, or nothing where she marked nothing. */
       readonly logged?: string;
+      readonly bled?: true;
     }
   | {
       readonly kind: 'ahead';
@@ -73,5 +74,6 @@ export function whatTheSheetSays(
     ...(hers.cycleDay === undefined ? {} : { cycleDay: hers.cycleDay }),
     ...(phase === undefined ? {} : { phase }),
     ...(logged === undefined ? {} : { logged }),
+    ...(record !== undefined && isBleeding(record) ? { bled: true } : {}),
   };
 }

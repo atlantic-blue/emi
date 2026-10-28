@@ -10,6 +10,7 @@ import type { CycleRow } from '../../../src/data/cycleRepository';
 import { readDayLog } from '../../../src/data/dayLogRepository';
 import {
   phaseCardChevronTestID,
+  phaseCardDaysTestID,
   phaseCardLineTestID,
   phaseCardPressTestID,
   phaseCardTestID,
@@ -90,13 +91,16 @@ function aDiaryDay(cyclesAgo: number, cycleDay: number, record: Partial<DayRecor
   return { day, recordedAt: `${day}T09:00:00.000Z`, ...record };
 }
 
-async function herPhoneHolds(records: readonly DayRecord[]): Promise<void> {
+async function herPhoneHolds(
+  records: readonly DayRecord[],
+  periodLengthDays = herPeriodLengthDays,
+): Promise<void> {
   await herPhoneHoldsTheseAnswers(
     whenSheOpensIt,
     {
       kind: 'profile',
       cycleLengthDays: theCycle,
-      periodLengthDays: herPeriodLengthDays,
+      periodLengthDays,
       name: 'Maria',
       recordedAt: whenSheOpensIt.toISOString(),
     },
@@ -166,7 +170,7 @@ describe('the page of each phase', () => {
     {
       cycleDay: 9,
       title: 'Follicular phase',
-      lead: `Days 1 to 13. It starts with your period and ends the day before the ovulation phase. ${learning}`,
+      lead: `Days 6 to 13. It starts the day after your period and ends the day before the ovulation phase. ${learning}`,
     },
     {
       cycleDay: 16,
@@ -186,13 +190,13 @@ describe('the page of each phase', () => {
     expect(whatItSays(phasePageLeadTestID)).toBe(lead);
   });
 
-  it('should draw the four phases with their days, the follicular one from day 1', async () => {
+  it('should draw the four phases with their days, the follicular one after the period', async () => {
     await sheOpensThePhasePage(herPeriodStarts(16, 2));
     const phases: readonly CyclePhaseName[] = ['period', 'follicular', 'ovulation', 'luteal'];
 
     expect(phases.map((phase) => whatItSays(phaseBarPartTestID(phase)))).toEqual([
       'Period\ndays 1 to 5',
-      'Follicular\ndays 1 to 13',
+      'Follicular\ndays 6 to 13',
       'Ovulation\ndays 14 to 18',
       'Luteal\ndays 19 to 28',
     ]);
@@ -493,10 +497,14 @@ describe('her records grouped by phase', () => {
     ]);
   });
 
-  it('should count the follicular phase from day 1, so it holds the period', () => {
+  it('should count the follicular phase from the day after the period, not on a period day', () => {
     const past = herPastPhase({
       cycles: threeCycles(),
-      records: [aDiaryDay(1, 1, { symptoms: ['cramps'] }), aDiaryDay(1, 13, { food: ['hungry'] })],
+      records: [
+        aDiaryDay(1, 1, { symptoms: ['cramps'] }),
+        aDiaryDay(1, 2, { symptoms: ['headache'] }),
+        aDiaryDay(1, 13, { food: ['hungry'] }),
+      ],
       phase: 'follicular',
     });
 
@@ -504,7 +512,7 @@ describe('her records grouped by phase', () => {
       kind: 'counted',
       cycles: 3,
       noted: [
-        { chip: diaryChips.find((chip) => chip.slug === 'cramps'), cycles: 1 },
+        { chip: diaryChips.find((chip) => chip.slug === 'headache'), cycles: 1 },
         { chip: diaryChips.find((chip) => chip.slug === 'appetite-increase'), cycles: 1 },
       ],
     });
@@ -546,6 +554,43 @@ describe('her records grouped by phase', () => {
 
     expect(whatItSays(phasePagePastHeadingTestID)).toBe('Your observations will appear here');
     expect(screen.queryByText('In your past ovulation phases')).toBeNull();
+  });
+});
+
+describe.each([2, 5])('the phase after a period of %i days', (periodDays) => {
+  const phases: readonly CyclePhaseName[] = ['period', 'follicular', 'ovulation', 'luteal'];
+
+  function herBleeding(): DayRecord[] {
+    const started = addDays(today, -8);
+
+    return [
+      ...herPeriodStarts(9, 2).slice(0, 1),
+      ...Array.from({ length: periodDays }, (_, index) => aBleedingDay(addDays(started, index))),
+    ];
+  }
+
+  it('should start on the card on the day after her last period day', async () => {
+    await herPhoneHolds(herBleeding(), periodDays);
+    await sheOpens('/');
+    await screen.findByTestId(phaseCardTestID);
+
+    expect(whatItSays(phaseCardDaysTestID)).toBe(`After your period, days ${periodDays + 1} to 13`);
+  });
+
+  it('should start on the bar and in the lead on the day after her last period day', async () => {
+    await herPhoneHolds(herBleeding(), periodDays);
+    await sheOpens('/phase');
+    await screen.findByTestId(phasePageTestID);
+
+    expect(phases.map((phase) => whatItSays(phaseBarPartTestID(phase)))).toEqual([
+      `Period\ndays 1 to ${periodDays}`,
+      `Follicular\ndays ${periodDays + 1} to 13`,
+      'Ovulation\ndays 14 to 18',
+      'Luteal\ndays 19 to 28',
+    ]);
+    expect(whatItSays(phasePageLeadTestID)).toMatch(
+      new RegExp(`^Days ${periodDays + 1} to 13\\. It starts the day after your period `),
+    );
   });
 });
 

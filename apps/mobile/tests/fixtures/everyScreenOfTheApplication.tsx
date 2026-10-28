@@ -181,6 +181,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
         onLaterMonth={nothing}
         onOpenDay={nothing}
         onRecordSex={nothing}
+        onRemovePeriodDay={nothing}
         onPressDay={nothing}
         onToday={nothing}
         today="2026-05-14"

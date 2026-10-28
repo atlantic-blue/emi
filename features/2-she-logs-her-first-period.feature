@@ -131,6 +131,7 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     And she reaches the step that asks for her last three periods
     Then the step asks for three periods, and says the third can be skipped
+    And the step says to start with the most recent, and names each row by its place, the most recent first
     When she gives three periods, each with the day it started and the days it lasted
     And she answers the rest of the questions and taps Save and start
     Then her phone holds every bleeding day of the three periods, and no other day
@@ -936,6 +937,14 @@ Feature: She opens Emi and logs her first period
     Then that day holds no answer about sex, and keeps its flow
     And the card of that day no longer names sex, and the heart is gone from that day
 
+  Scenario: SCREEN-4, she removes a day of a past month she marked as a period by mistake, in one press
+    Given her phone holds four recorded period days, the last of them today
+    When she opens last month in the calendar, opens a day she did not bleed on, and says her period came that day
+    Then the month fills that day, a cycle starts on it, and its card carries Remove period day
+    When she presses Remove period day
+    Then that day holds no bleeding, and no cycle starts on it
+    And the month no longer fills that day, and its card carries no Remove period day
+
   Scenario: SCREEN-2, she records discharge and a product on a day
     Given her phone holds four recorded period days, the last of them today
     When she opens the Period page of today
@@ -1017,3 +1026,13 @@ Feature: She opens Emi and logs her first period
     When she adds yesterday and saves
     Then she is back on Today, and the forecast gives the range of her next period again
     And no line says her period is late
+
+  Scenario: SCREEN-1, the window her three periods forecast has passed, and her first forecast says her period is late
+    Given today is two days after the window that three periods 28 days apart, the newest on the 18th of September, forecast
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives those three periods, each 5 days long
+    And she answers the rest of the questions
+    Then her first forecast says her period is 2 days late, and the range that passed is gone
+    When she reads on and taps Save and start
+    Then the home screen says her period is 2 days late too

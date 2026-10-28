@@ -13,7 +13,7 @@ import {
   colour,
   faceFamily,
   fontFile,
-  fontFiles,
+  applicationFontFiles,
   letterSpacingOf,
   paintedArcs,
   phaseLabel,
@@ -115,7 +115,7 @@ const words = fontFile(faceFamily.text, 'regular');
 const wordsBold = fontFile(faceFamily.text, 'semiBold');
 
 function fontRules(fontsBase: string): string {
-  return fontFiles
+  return applicationFontFiles
     .map((file) =>
       [
         '@font-face {',

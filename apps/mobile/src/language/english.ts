@@ -93,6 +93,7 @@ export const english = {
   'calendar.screen.later': 'Later',
   'calendar.screen.laterMonth': 'Later month',
   'calendar.screen.recordSex': 'Record sex',
+  'calendar.screen.removePeriodDay': 'Remove period day',
   'calendar.today': 'Today',
   'calendar.weekday.friday': 'Friday',
   'calendar.weekday.monday': 'Monday',
@@ -850,6 +851,7 @@ export const english = {
   'pastPeriods.line.estimate': 'Add what you remember. An estimate is fine.',
   'pastPeriods.line.forecast':
     'With three periods, Emi can forecast your next ones from the first day.',
+  'pastPeriods.line.mostRecentFirst': 'Start with the most recent.',
   'pastPeriods.picker.done': 'Done',
   'pastPeriods.picker.length': 'How many days did it last?',
   'pastPeriods.picker.outOfRange':
@@ -858,7 +860,9 @@ export const english = {
   'pastPeriods.picker.start': 'When did it start?',
   'pastPeriods.picker.stillGoingTooLongAgo':
     'A period that is still going started {maximum} days ago or less. Try a later day.',
-  'pastPeriods.picker.title': 'Period {number}',
+  'pastPeriods.place.mostRecent': 'Most recent',
+  'pastPeriods.place.oneBefore': 'The one before',
+  'pastPeriods.place.oneBeforeThat': 'The one before that',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Save',
   'pastPeriods.skipThisOne': 'Skip this one if you do not remember',
@@ -887,7 +891,7 @@ export const english = {
   'period.startedOnAnotherDay': 'Started on another day?',
   'period.title': 'Period',
   'phase.about.follicular':
-    'It starts with your period and ends the day before the ovulation phase.',
+    'It starts the day after your period and ends the day before the ovulation phase.',
   'phase.about.luteal':
     'It starts the day after the ovulation phase and ends the day before your next period.',
   'phase.about.ovulation':

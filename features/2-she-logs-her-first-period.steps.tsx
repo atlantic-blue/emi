@@ -166,6 +166,7 @@ import {
   daySheetLineTestID,
   daySheetOpenTestID,
   daySheetRecordSexTestID,
+  daySheetRemovePeriodDayTestID,
   daySheetTestID,
 } from '../apps/mobile/src/features/calendar/DaySheet';
 import { sexMarkTestID } from '../apps/mobile/src/features/calendar/CycleMonth';
@@ -384,6 +385,7 @@ import {
 } from '../apps/mobile/src/features/onboarding/PeriodLength';
 import {
   dayTestID,
+  earlierMonthTestID,
   weekCellTestIDs,
   weekTestID,
 } from '../apps/mobile/src/features/onboarding/Calendar';
@@ -474,6 +476,8 @@ import {
 } from '../apps/mobile/tests/fixtures/expoSecureStore';
 import {
   firstForecastActionTestID,
+  firstForecastDaysTestID,
+  firstForecastLateTestID,
   firstForecastLinesTestID,
   firstForecastNoGuessTestID,
   firstForecastRangeTestID,
@@ -503,6 +507,10 @@ import {
   sheGivesAPeriod,
   sheGivesAPeriodStillGoing,
 } from '../apps/mobile/tests/fixtures/thePastPeriods';
+import {
+  pastPeriodLengthTestID,
+  pastPeriodPickerDoneTestID,
+} from '../apps/mobile/src/features/pastPeriods/PastPeriodPicker';
 import { pastPeriodRowTestID } from '../apps/mobile/src/features/pastPeriods/PastPeriodsList';
 import { pastPeriodsSaveTestID } from '../apps/mobile/src/features/pastPeriods/PastPeriodsScreen';
 import {
@@ -4036,6 +4044,71 @@ defineFeature(feature, (test) => {
         expect(screen.queryByTestId(sexMarkTestID(thatDay))).toBeNull();
       },
     );
+  });
+
+  test('SCREEN-4, she removes a day of a past month she marked as a period by mistake, in one press', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const theWrongDay = addDays(theDaySheOpensIt, -28);
+    const theDayOnHerPhone = (): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), theWrongDay);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+    const herCycleStarts = (): string[] =>
+      listCycles(herDatabase())
+        .filter((cycle) => !cycle.isPredicted)
+        .map((cycle) => cycle.startedOn);
+    const whatTheSquareSays = (): string =>
+      String(screen.getByTestId(dayTestID(theWrongDay)).props.accessibilityLabel);
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when(
+      'she opens last month in the calendar, opens a day she did not bleed on, and says her period came that day',
+      async () => {
+        await sheOpens(`/calendar?${dayParameter}=${theWrongDay}`);
+        await screen.findByTestId(dayTestID(theWrongDay));
+        await shePresses(dayTestID(theWrongDay));
+        expect(screen.queryByTestId(daySheetRemovePeriodDayTestID)).toBeNull();
+        await shePresses(daySheetOpenTestID);
+        await screen.findByTestId(flowPickerTestID);
+        await shePresses(flowOptionTestID('medium'));
+        await shePresses(logFlowDoneTestID);
+        await screen.findByTestId(daySheetTestID);
+      },
+    );
+
+    then(
+      'the month fills that day, a cycle starts on it, and its card carries Remove period day',
+      () => {
+        expect(whatTheSquareSays()).toContain('you bled');
+        expect(herCycleStarts()).toContain(theWrongDay);
+        expect(screen.getByTestId(daySheetRemovePeriodDayTestID)).toHaveTextContent(
+          'Remove period day',
+        );
+      },
+    );
+
+    when('she presses Remove period day', async () => {
+      await shePresses(daySheetRemovePeriodDayTestID);
+    });
+
+    then('that day holds no bleeding, and no cycle starts on it', () => {
+      expect(theDayOnHerPhone()?.flow).toBe('none');
+      expect(herCycleStarts()).not.toContain(theWrongDay);
+    });
+
+    and('the month no longer fills that day, and its card carries no Remove period day', () => {
+      expect(whatTheSquareSays()).not.toContain('you bled');
+      expect(screen.queryByTestId(daySheetRemovePeriodDayTestID)).toBeNull();
+    });
   });
 
   test('SCREEN-4, a profile and a day saved while Digestion was one group read under Appetite and Digestive symptoms', ({
@@ -9313,6 +9386,28 @@ defineFeature(feature, (test) => {
       expect(screen.getByTestId(onboardingActionTestID)).toBeDisabled();
     });
 
+    and(
+      'the step says to start with the most recent, and names each row by its place, the most recent first',
+      () => {
+        expect(screen.getByText(/Start with the most recent\./)).toBeTruthy();
+        expect(textIn(screen.getByTestId(pastPeriodRowTestID(0)))).toEqual([
+          '1',
+          'Most recent',
+          'Add the start date',
+        ]);
+        expect(textIn(screen.getByTestId(pastPeriodRowTestID(1))).slice(0, 3)).toEqual([
+          '2',
+          'The one before',
+          'Add the start date',
+        ]);
+        expect(textIn(screen.getByTestId(pastPeriodRowTestID(2))).slice(0, 3)).toEqual([
+          '3',
+          'The one before that',
+          'Add the start date',
+        ]);
+      },
+    );
+
     when(
       'she gives three periods, each with the day it started and the days it lasted',
       async () => {
@@ -9643,6 +9738,78 @@ defineFeature(feature, (test) => {
     and('no line says her period is late', () => {
       expect(screen.queryByTestId(nextPeriodLateTestID)).toBeNull();
       expect(screen.queryByTestId(nextPeriodItStartedTestID)).toBeNull();
+    });
+  });
+
+  test('SCREEN-1, the window her three periods forecast has passed, and her first forecast says her period is late', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const eachLastedDays = 5;
+
+    given(
+      'today is two days after the window that three periods 28 days apart, the newest on the 18th of September, forecast',
+      () => {
+        jest.setSystemTime(whenSheIsLate);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+    });
+
+    and('she reaches the step that asks for her last three periods', async () => {
+      await sheReachesTheThreePeriodsStep();
+    });
+
+    and('she gives those three periods, each 5 days long', async () => {
+      await shePresses(pastPeriodRowTestID(0));
+      await shePresses(earlierMonthTestID);
+      await shePresses(dayTestID('2026-09-18'));
+      await shePresses(pastPeriodLengthTestID(eachLastedDays));
+      await shePresses(pastPeriodPickerDoneTestID);
+      await sheGivesAPeriod(1, '2026-08-21', eachLastedDays);
+      await sheGivesAPeriod(2, '2026-07-24', eachLastedDays);
+      await shePresses(onboardingActionTestID);
+    });
+
+    and('she answers the rest of the questions', async () => {
+      await shePresses(cycleLengthDaysTestID(28));
+      await shePresses(onboardingActionTestID);
+
+      for (let question = 0; question < theQuestionsLeftAfterTheCycleLength; question += 1) {
+        await shePassesTheQuestion();
+      }
+    });
+
+    then(
+      'her first forecast says her period is 2 days late, and the range that passed is gone',
+      () => {
+        expect(screen.getByTestId(firstForecastTestID)).toBeTruthy();
+        expect(whatItSays(firstForecastLateTestID)).toBe('Your period is 2 days late');
+        expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
+        expect(
+          screen.queryByTestId(firstForecastDaysTestID, { includeHiddenElements: true }),
+        ).toBeNull();
+        expect(screen.queryByText('Between the 15th and the 17th of October')).toBeNull();
+      },
+    );
+
+    when('she reads on and taps Save and start', async () => {
+      await shePresses(firstForecastActionTestID);
+      await shePresses(whatEmiDoesActionTestID);
+      await sheTapsSaveAndStart();
+    });
+
+    then('the home screen says her period is 2 days late too', () => {
+      expect(whatItSays(nextPeriodLateTestID)).toBe('Your period is 2 days late');
+      expect(listCycles(herDatabase()).map((cycle) => cycle.startedOn)).toEqual([
+        '2026-07-24',
+        '2026-08-21',
+        '2026-09-18',
+      ]);
     });
   });
 

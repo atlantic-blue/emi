@@ -212,7 +212,7 @@ describe('her last three periods, in one step of the first run', () => {
       expect(app.pathname()).toBe('/onboarding/three-periods');
       expect(screen.getByText(pastPeriodsCopy.title)).toBeTruthy();
       expect(screen.getByTestId(onboardingQuestionTestID)).toHaveTextContent(
-        `${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine}`,
+        `${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine} ${pastPeriodsCopy.mostRecentFirstLine}`,
       );
       for (const row of [0, 1, 2]) {
         expect(screen.getByTestId(pastPeriodRowTestID(row))).toBeTruthy();
