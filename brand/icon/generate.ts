@@ -24,7 +24,7 @@ import { iconFiles, type Artwork } from './sizes.ts';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
-export const DEFAULT_RING_SOURCE = join(repositoryRoot, 'brand', 'logo', 'emi-ring.svg');
+export const DEFAULT_RING_SOURCE = join(repositoryRoot, 'brand', 'logo', 'emi-icon-mark.svg');
 export const DEFAULT_OUTPUT = join(repositoryRoot, 'apps', 'mobile', 'assets', 'icon');
 export const MASTER_NAME = 'emi-icon.svg';
 
@@ -56,7 +56,7 @@ function inkOfRing(ring: RingSource): Box {
 
 function measuredFraction(icon: string): number {
   const rendered = decodePng(renderPng(icon, CANVAS));
-  const box = inkBox(rendered, colourFromHex(colour.card));
+  const box = inkBox(rendered, colourFromHex(colour.accent));
 
   return Math.max(box.width, box.height) / rendered.width;
 }
@@ -83,7 +83,7 @@ export function generate(ringSourcePath: string, outputPath: string): Report {
 
   const icons = new Map<Artwork, string>();
   for (const artwork of ['icon', 'adaptiveForeground', 'adaptiveBackground'] as const) {
-    icons.set(artwork, composeIcon(ring, artwork, ink, colour.card));
+    icons.set(artwork, composeIcon(ring, artwork, ink, colour.accent));
   }
 
   const square = icons.get('icon') ?? '';

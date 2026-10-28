@@ -3,21 +3,17 @@ import type { Artwork } from './sizes.ts';
 /** The composed icon is drawn on this square and rasterised down to each size the stores ask for. */
 export const CANVAS = 1000;
 
-/** Section 9.2 of the design: the ring occupies 56 percent of the icon width. */
-export const RING_FRACTION_OF_WIDTH = 0.56;
-
 /**
- * The gap in the ring opens at the upper left, so the mark carries less ink at the top than at the
- * bottom and reads low when it sits on the geometric centre. It is raised by this much of the
- * width. The design asks for "slightly above" and names no number, so this one is a choice.
+ * The mark is the letters EMI inside the open ring, as drawn in option A of issue 331. The outer
+ * edge of the ring spans 77 percent of the icon width, and the letters sit inside it.
  */
-export const OPTICAL_RISE_OF_WIDTH = 0.02;
+export const RING_FRACTION_OF_WIDTH = 0.77;
 
 /**
  * An Android adaptive icon is drawn on 108 density independent pixels. The launcher keeps the outer
  * 18 on each side, so it shows about the middle 72 behind a mask it chooses. The ring is sized and
- * raised inside that visible square, so the icon reads the same on both stores, and at 56 percent
- * of it the mark stays well inside the 66 the launcher never clips.
+ * centred inside that visible square, so the icon reads the same on both stores. At 77 percent of
+ * it the mark spans about 55 of the 108, inside the 66 the launcher never clips.
  */
 export const ADAPTIVE_VISIBLE_FRACTION = 72 / 108;
 
@@ -89,7 +85,7 @@ export function placementFor(artwork: Artwork): {
   return {
     size: RING_FRACTION_OF_WIDTH * visible * CANVAS,
     centreX: CANVAS / 2,
-    centreY: CANVAS / 2 - OPTICAL_RISE_OF_WIDTH * visible * CANVAS,
+    centreY: CANVAS / 2,
   };
 }
 
