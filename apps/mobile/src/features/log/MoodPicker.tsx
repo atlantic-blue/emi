@@ -1,6 +1,7 @@
 import { type Symptom, loggableMoods } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { groupHeadings } from './SymptomGroup';
 import { symptomName } from './symptomName';

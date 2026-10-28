@@ -16,7 +16,8 @@ import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/token
 
 import { words } from '../../language';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { EnergyScale } from './EnergyScale';
 import { MoodPicker } from './MoodPicker';

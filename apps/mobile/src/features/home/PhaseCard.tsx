@@ -8,9 +8,9 @@ import {
   space,
   textStyle,
 } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Card } from '../../components/Card';
 import { phaseCardEstimate, phaseCardMore, phaseCardWords } from './copy';

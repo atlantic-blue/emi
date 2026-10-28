@@ -224,6 +224,7 @@ export interface RingInput {
   /** The day she is on, counting from one. */
   readonly day: number;
   readonly phases: readonly PhaseSpan[];
+  readonly minimumSweepDegrees?: Readonly<Partial<Record<PhaseName, number>>>;
 }
 
 function readPhases(phases: readonly PhaseSpan[]): readonly PhaseSpan[] {
@@ -252,7 +253,12 @@ function readPhases(phases: readonly PhaseSpan[]): readonly PhaseSpan[] {
  * The ring, measured rather than drawn. It refuses a cycle it cannot draw honestly: phases that are
  * not the four in order, a part day, days that do not add up to the cycle, or a day outside it.
  */
-export function ringGeometry({ cycleLengthDays, day, phases }: RingInput): RingGeometry {
+export function ringGeometry({
+  cycleLengthDays,
+  day,
+  phases,
+  minimumSweepDegrees = {},
+}: RingInput): RingGeometry {
   const spans = readPhases(phases);
   const counted = spans.reduce((total, span) => total + span.days, 0);
 
@@ -279,13 +285,18 @@ export function ringGeometry({ cycleLengthDays, day, phases }: RingInput): RingG
   // A single arc has no neighbour, so it has no boundary to carry and it takes the whole turn.
   const gapCount = drawn.length > 1 ? drawn.length : 0;
   const forArcs = FULL_TURN_DEGREES - gapCount * GAP_DEGREES;
+  const sweeps = sweepsWithFloors(
+    drawn,
+    forArcs,
+    drawn.map((span) => minimumSweepDegrees[span.phase] ?? 0),
+  );
 
   const arcs: RingArc[] = [];
   let firstDay = 1;
   let cursor = 0;
 
-  for (const span of drawn) {
-    const sweepDegrees = (forArcs * span.days) / cycleLengthDays;
+  for (const [at, span] of drawn.entries()) {
+    const sweepDegrees = sweeps[at] ?? 0;
     const reached = day - firstDay + 1;
     const elapsedDays = Math.min(Math.max(reached, 0), span.days);
 
@@ -324,6 +335,41 @@ export function ringGeometry({ cycleLengthDays, day, phases }: RingInput): RingG
     beadDegrees:
       today.startDegrees + ((day - today.firstDay + 0.5) / today.days) * today.sweepDegrees,
   };
+}
+
+/** An arc raised to its floor can push another under its own, so the raising repeats. */
+function sweepsWithFloors(
+  spans: readonly PhaseSpan[],
+  forArcs: number,
+  floors: readonly number[],
+): number[] {
+  const sum = (values: readonly number[]): number => values.reduce((total, v) => total + v, 0);
+  const floorTotal = sum(floors);
+
+  if (floorTotal >= forArcs) {
+    return floors.map((floor) => (forArcs * floor) / floorTotal);
+  }
+
+  const isAtFloor = spans.map(() => false);
+  let sweeps: number[] = [];
+  let hasRaised = true;
+
+  while (hasRaised) {
+    const freeDegrees = forArcs - sum(floors.filter((_, at) => isAtFloor[at]));
+    const freeDays = sum(spans.filter((_, at) => !isAtFloor[at]).map((span) => span.days));
+    sweeps = spans.map((span, at) =>
+      isAtFloor[at] ? (floors[at] ?? 0) : (freeDegrees * span.days) / freeDays,
+    );
+    const under = sweeps.map((sweep, at) => !isAtFloor[at] && sweep < (floors[at] ?? 0));
+    hasRaised = under.some(Boolean);
+    under.forEach((isUnder, at) => {
+      if (isUnder) {
+        isAtFloor[at] = true;
+      }
+    });
+  }
+
+  return sweeps;
 }
 
 /** The two strengths one phase is painted in: the days she has lived, and the days ahead of her. */
@@ -460,6 +506,29 @@ export function arcPath(
   return `M ${round(from.x)} ${round(from.y)} A ${round(radius)} ${round(radius)} 0 ${overHalf} 1 ${round(to.x)} ${round(to.y)}`;
 }
 
+/** A press on the ground between two arcs goes to the nearer of the two. */
+export function arcAtPoint(
+  geometry: RingGeometry,
+  ring: { readonly centre: Point; readonly radius: number; readonly reach: number },
+  pressed: Point,
+): RingArc | undefined {
+  const dx = pressed.x - ring.centre.x;
+  const dy = pressed.y - ring.centre.y;
+  if (Math.abs(Math.hypot(dx, dy) - ring.radius) > ring.reach) {
+    return undefined;
+  }
+
+  const degrees =
+    ((Math.atan2(dy, dx) * 180) / Math.PI + 90 + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
+  const apart = (arc: RingArc): number => {
+    const middle = arc.startDegrees + arc.sweepDegrees / 2;
+    const turn = Math.abs(degrees - middle) % FULL_TURN_DEGREES;
+    return Math.max(0, Math.min(turn, FULL_TURN_DEGREES - turn) - arc.sweepDegrees / 2);
+  };
+
+  return [...geometry.arcs].sort((one, other) => apart(one) - apart(other))[0];
+}
+
 /** Enough places for a drawing measured in points, and few enough that two runs read the same. */
 function round(value: number): number {
   return Math.round(value * 1000) / 1000;
@@ -517,6 +586,15 @@ export function roomAlongArc(arc: RingArc, radius = NAMED_RING_RADIUS): number {
   const length = (radius * arc.sweepDegrees * Math.PI) / (FULL_TURN_DEGREES / 2);
 
   return length - 2 * PHASE_NAME_END_ROOM;
+}
+
+/** The narrowest sweep, in degrees, that holds a whole name on its arc. */
+export function sweepForName(name: string, radius = NAMED_RING_RADIUS): number {
+  const length = capitalsWidth(name.toLocaleUpperCase()) + 2 * PHASE_NAME_END_ROOM;
+  const degrees = (length * (FULL_TURN_DEGREES / 2)) / (Math.PI * radius);
+
+  // Rounded up, so the arc measured back from it holds the name past any error of the arithmetic.
+  return Math.ceil(degrees * 10) / 10;
 }
 
 /**

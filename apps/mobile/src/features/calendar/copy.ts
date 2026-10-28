@@ -20,6 +20,7 @@ export const calendarCopy = {
   laterMonth: words('calendar.screen.laterMonth'),
   openTheDay: words('calendar.daySheet.open'),
   recordSex: words('calendar.screen.recordSex'),
+  removePeriodDay: words('calendar.screen.removePeriodDay'),
   today: words('calendar.today'),
 } as const;
 
@@ -32,11 +33,12 @@ export const forecastPopupCopy = {
   notNow: words('calendar.forecastPopup.notNow'),
 } as const;
 
-/** The three words of the legend above the grid, in the order the board places them. */
+/** The words of the legend above the grid, in the order the board places them, and the heart last. */
 export const monthLegendCopy = {
   fertile: words('calendar.legend.fertile'),
   forecast: words('calendar.legend.forecast'),
   period: words('calendar.legend.period'),
+  sex: words('calendar.legend.sex'),
 } as const;
 
 /** The two things the card at the foot says about the day she pressed. */

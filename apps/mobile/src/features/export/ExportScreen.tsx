@@ -1,8 +1,8 @@
 import { type IconName, MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { PrimaryButton, SecondaryButton } from '../../components/Button';
 import { LockLine } from '../../components/LockLine';

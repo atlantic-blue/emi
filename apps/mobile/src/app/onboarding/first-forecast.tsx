@@ -1,8 +1,11 @@
 import { useRouter } from 'expo-router';
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 
+import { daysLate } from '../../features/forecast/daysLate';
 import { FirstForecast } from '../../features/onboarding/FirstForecast';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
+import { localDay } from '../../features/onboarding/days';
 import { forecastFromHerAnswers } from '../../features/onboarding/firstRun';
 
 /**
@@ -16,11 +19,13 @@ import { forecastFromHerAnswers } from '../../features/onboarding/firstRun';
 export default function FirstForecastRoute(): ReactNode {
   const router = useRouter();
   const { periods, cycleLengthDays } = useFirstRun();
+  const [today] = useState(() => localDay(new Date()));
   const forecast = forecastFromHerAnswers({ cycleLengthDays, periods });
 
   return (
     <FirstForecast
       cycleLengthDays={cycleLengthDays}
+      daysLate={daysLate(forecast, today)}
       forecast={forecast}
       onContinue={() => router.push('/onboarding/what-emi-does-with-it')}
     />

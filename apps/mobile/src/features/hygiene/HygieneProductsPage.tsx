@@ -1,6 +1,7 @@
 import { colour, space, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { Screen } from '../../components/Screen';
 import { WholeWordsText } from '../../components/WholeWordsText';

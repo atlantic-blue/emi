@@ -11,9 +11,9 @@ import { type TypeRoleName, fontFileFor, fontsRoot, typeScale } from '@emi/token
  * arithmetic on the same files: the advance of each glyph, out of the font, at the size the role
  * is drawn at.
  *
- * Emi ships Latin cuts only. A phone reading Russian draws the Cyrillic in a face of its own that
- * this repository does not hold, so a run holding one of those letters is refused rather than
- * answered. The widest glyph in a Latin cut is one and a third letters wide, which makes a word of
+ * A role names a Figtree cut, which has no Cyrillic. A phone reading Russian draws the role in the
+ * Mulish cut that stands in for it, so a run holding one of those letters is refused rather than
+ * answered in the wrong face. The widest glyph in a Latin cut is one and a third letters wide, which makes a word of
  * six letters half as wide again as the phone draws it, and a number that wrong fails a screen
  * that is fine. What can be said without the file is said by laying the row out at every width the
  * words could take.
@@ -127,6 +127,11 @@ function glyphReader(tables: Tables): (codePoint: number) => number {
 
 const faces = new Map<string, Face>();
 
+/** One font file, read at a path from the root of the repository's fonts directory. */
+export function theFaceAt(path: string): Face {
+  return faceAt(join(repositoryRoot, ...fontsRoot.split('/'), path));
+}
+
 function faceAt(path: string): Face {
   const held = faces.get(path);
 
@@ -188,7 +193,7 @@ export function theFaceOf(role: TypeRoleName): Face {
   );
 }
 
-/** The letters of a run the shipped face cannot draw, which a phone draws in a face of its own. */
+/** The letters of a run the Figtree cut of a role cannot draw. */
 export function theLettersWithNoGlyph(words: string, role: TypeRoleName): string[] {
   const face = theFaceOf(role);
 
@@ -201,8 +206,8 @@ export function theWidthOfWords(words: string, role: TypeRoleName): number {
 
   if (absent.length > 0) {
     throw new Error(
-      `the cut Emi ships for ${role} draws no ${absent.join('')}, so a phone draws those in a ` +
-        'face this repository does not hold, and a width for them is not read here',
+      `the Figtree cut for ${role} draws no ${absent.join('')}, so a phone draws those in the ` +
+        'Russian stand in, and a width for them is not read here',
     );
   }
 

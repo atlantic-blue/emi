@@ -1,11 +1,11 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import {
   pastPeriodDateSaid,
-  pastPeriodNumberSaid,
+  pastPeriodPlaceSaid,
   pastPeriodRunSaid,
   pastPeriodsCopy,
 } from './copy';
@@ -69,6 +69,7 @@ interface RowProps {
 }
 
 function PastPeriodRow({ row, period, canOpen, onOpen }: RowProps): ReactNode {
+  const place = pastPeriodPlaceSaid(row);
   const lead =
     period === undefined ? pastPeriodsCopy.addStart : pastPeriodDateSaid(period.startedOn);
   const under =
@@ -80,7 +81,7 @@ function PastPeriodRow({ row, period, canOpen, onOpen }: RowProps): ReactNode {
 
   return (
     <Pressable
-      accessibilityLabel={[pastPeriodNumberSaid(row), lead, under].filter(Boolean).join(', ')}
+      accessibilityLabel={[place, lead, under].filter(Boolean).join(', ')}
       accessibilityRole="button"
       accessibilityState={{ disabled: !canOpen }}
       disabled={!canOpen}
@@ -101,6 +102,7 @@ function PastPeriodRow({ row, period, canOpen, onOpen }: RowProps): ReactNode {
         </Text>
       </View>
       <View style={styles.words}>
+        <Text style={styles.place}>{place}</Text>
         <Text style={period === undefined ? styles.leadToGive : styles.lead}>{lead}</Text>
         {under === undefined ? null : <Text style={styles.under}>{under}</Text>}
       </View>
@@ -135,6 +137,7 @@ const styles = StyleSheet.create({
   notYet: { opacity: NOT_YET },
   numberGiven: { color: colour.onAccent, ...textStyle('label-md') },
   numberToGive: { color: colour.accent, ...textStyle('label-md') },
+  place: { color: colour.secondaryText, ...textStyle('label-md') },
   row: {
     alignItems: 'center',
     flexDirection: 'row',

@@ -4,7 +4,6 @@ import { colour } from '../../../packages/tokens/src/colour';
 import {
   ADAPTIVE_VISIBLE_FRACTION,
   CANVAS,
-  OPTICAL_RISE_OF_WIDTH,
   RING_FRACTION_OF_WIDTH,
   RingSourceError,
   composeIcon,
@@ -55,16 +54,15 @@ describe('the ring source is read, never guessed at', () => {
 
 describe('the mark is placed by the design, not by the file it came from', () => {
   it('takes its numbers from the design, so a drawing cannot move them', () => {
-    expect(RING_FRACTION_OF_WIDTH).toBe(0.56);
-    expect(OPTICAL_RISE_OF_WIDTH).toBe(0.02);
+    expect(RING_FRACTION_OF_WIDTH).toBe(0.77);
     expect(ADAPTIVE_VISIBLE_FRACTION).toBeCloseTo(0.6667, 4);
   });
 
-  it('gives the icon 56 percent of the width, raised above the centre', () => {
+  it('gives the icon 77 percent of the width, on the centre', () => {
     expect(placementFor('icon')).toEqual({
       size: RING_FRACTION_OF_WIDTH * CANVAS,
       centreX: CANVAS / 2,
-      centreY: CANVAS / 2 - OPTICAL_RISE_OF_WIDTH * CANVAS,
+      centreY: CANVAS / 2,
     });
   });
 
@@ -72,7 +70,7 @@ describe('the mark is placed by the design, not by the file it came from', () =>
     const adaptive = placementFor('adaptiveForeground');
 
     expect(adaptive.size).toBeCloseTo(RING_FRACTION_OF_WIDTH * ADAPTIVE_VISIBLE_FRACTION * CANVAS);
-    expect(adaptive.centreY).toBeGreaterThan(placementFor('icon').centreY);
+    expect(adaptive.centreY).toBe(placementFor('icon').centreY);
   });
 
   it('scales the drawing by its ink, so padding in the source cannot shrink the mark', () => {

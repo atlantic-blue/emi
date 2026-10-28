@@ -131,6 +131,7 @@ Feature: She opens Emi and logs her first period
     When she opens Emi
     And she reaches the step that asks for her last three periods
     Then the step asks for three periods, and says the third can be skipped
+    And the step says to start with the most recent, and names each row by its place, the most recent first
     When she gives three periods, each with the day it started and the days it lasted
     And she answers the rest of the questions and taps Save and start
     Then her phone holds every bleeding day of the three periods, and no other day
@@ -227,7 +228,7 @@ Feature: She opens Emi and logs her first period
   Scenario: BRAND-3, her own cycle sizes the four arcs
     Given her phone holds six cycles of forty five days
     When she opens Emi
-    Then the ring draws four arcs, each one sized by the days of that phase
+    Then the ring draws four arcs, each one sized by the days of that phase and none narrower than its name
 
   Scenario: BRAND-3, the arcs and the ground between them cover the whole ring
     Given her phone holds six cycles of forty five days
@@ -738,6 +739,12 @@ Feature: She opens Emi and logs her first period
     And picking that her cycle moves around marks that answer and says nothing back, as the redesign draws it
     And no question of the first run draws a lock, and the sentences it drew are gone from all three languages
 
+  Scenario: SCREEN-1, a name she typed is kept when she presses Skip, and the home screen greets her by it
+    Given she has never opened Emi before
+    When she opens Emi, reads the welcome, skips the tour, types her name, and presses Skip
+    And she passes every other question she may pass, and taps Save and start
+    Then the home screen greets her by the name she typed
+
   Scenario: SCREEN-1, the first run says why it asks her year, what a regular cycle is, and that ovulation dates are approximate
     Given she has never opened Emi before
     When she opens Emi, reads the welcome, skips the tour, and skips her name
@@ -884,6 +891,16 @@ Feature: She opens Emi and logs her first period
     When she presses Close
     Then the sheet is gone and she is on the page of her phase
 
+  Scenario: SCREEN-2, she presses the period arc of the ring and reads its name and days
+    Given her phone holds four recorded period days, the last of them today
+    When she opens Emi
+    And she presses the period arc of the ring
+    Then a small card over the ring names the period and its days in this cycle
+    When she presses How you may feel and what may help on the card
+    Then the card is gone and the guide of the period phase is open
+    When she closes the guide, presses the period arc again, and presses outside the card
+    Then the card is gone and she is on Today
+
   Scenario: SCREEN-2, she records sex on a past day and removes it
     Given her phone holds four recorded period days, the last of them today
     When she opens the Sex page of yesterday
@@ -915,8 +932,18 @@ Feature: She opens Emi and logs her first period
     Then the sheet of products for sex on a period day opens
     When she presses Not now on the sheet
     Then her phone holds that answer on that day, sealed, beside the flow she logged
+    And the card of that day names sex, and that day carries a heart in the month
     When she presses that day again, then Record sex, then Protected again, and saves
     Then that day holds no answer about sex, and keeps its flow
+    And the card of that day no longer names sex, and the heart is gone from that day
+
+  Scenario: SCREEN-4, she removes a day of a past month she marked as a period by mistake, in one press
+    Given her phone holds four recorded period days, the last of them today
+    When she opens last month in the calendar, opens a day she did not bleed on, and says her period came that day
+    Then the month fills that day, a cycle starts on it, and its card carries Remove period day
+    When she presses Remove period day
+    Then that day holds no bleeding, and no cycle starts on it
+    And the month no longer fills that day, and its card carries no Remove period day
 
   Scenario: SCREEN-2, she records discharge and a product on a day
     Given her phone holds four recorded period days, the last of them today
@@ -999,3 +1026,13 @@ Feature: She opens Emi and logs her first period
     When she adds yesterday and saves
     Then she is back on Today, and the forecast gives the range of her next period again
     And no line says her period is late
+
+  Scenario: SCREEN-1, the window her three periods forecast has passed, and her first forecast says her period is late
+    Given today is two days after the window that three periods 28 days apart, the newest on the 18th of September, forecast
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives those three periods, each 5 days long
+    And she answers the rest of the questions
+    Then her first forecast says her period is 2 days late, and the range that passed is gone
+    When she reads on and taps Save and start
+    Then the home screen says her period is 2 days late too

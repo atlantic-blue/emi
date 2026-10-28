@@ -1,6 +1,7 @@
 import { colour, radius, space, textStyle, typeScale } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { RecoveryScreen } from './RecoveryScreen';
 import { groupedRecoveryCode, recoveryCopy } from './copy';

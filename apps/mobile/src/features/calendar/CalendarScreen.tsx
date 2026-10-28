@@ -1,7 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
 import { herDayLabel } from '../cycle/copy';
@@ -9,7 +9,7 @@ import type { HerDay } from '../cycle/herWeek';
 import { monthLabel } from '../onboarding/days';
 import { CycleMonth, MonthLegend, type MonthSquare } from './CycleMonth';
 import { DaySheet } from './DaySheet';
-import { calendarCopy, daySheetWords } from './copy';
+import { calendarCopy, daySheetWords, monthLegendCopy } from './copy';
 import type { DayPhase } from './herMonthPhases';
 import type { WhatTheSheetSays } from './theDaySheet';
 
@@ -52,6 +52,8 @@ interface Props {
    * a date by what this answers and works none of it out itself.
    */
   readonly phaseOn?: (day: string) => DayPhase | undefined;
+  /** Whether she recorded sex on one date of that month, which puts a heart on its disc. */
+  readonly hadSexOn?: (day: string) => boolean;
   /**
    * The day she pressed, worked out. The route hands today until she presses another day, so the
    * card and the way to her whole period are always on the glass.
@@ -68,6 +70,7 @@ interface Props {
   /** The way to a day she has lived, which is the address the repository already answers on. */
   readonly onOpenDay: (day: string) => void;
   readonly onRecordSex: (day: string) => void;
+  readonly onRemovePeriodDay: (day: string) => void;
   /** The way to the whole period of the day she pressed. */
   readonly onEditPeriod: (day: string) => void;
 }
@@ -86,12 +89,14 @@ export function CalendarScreen({
   today,
   days,
   phaseOn,
+  hadSexOn,
   shePressed,
   onBack,
   onToday,
   onPressDay,
   onOpenDay,
   onRecordSex,
+  onRemovePeriodDay,
   onEarlierMonth,
   onLaterMonth,
   onEditPeriod,
@@ -106,9 +111,13 @@ export function CalendarScreen({
     }
 
     const phase = phaseOn?.(day);
+    const hadSex = hadSexOn?.(day) === true;
 
     return {
-      label: herDayLabel(hers, today),
+      hadSex,
+      label: hadSex
+        ? `${herDayLabel(hers, today)}, ${monthLegendCopy.sex}`
+        : herDayLabel(hers, today),
       mark: hers.mark,
       onPress: () => onPressDay(day),
       picked: shePressed?.day === day,
@@ -178,7 +187,7 @@ export function CalendarScreen({
           </Pressable>
         </View>
 
-        <MonthLegend />
+        <MonthLegend namesSex />
 
         <CycleMonth month={month} squareOf={squareOf} testID={calendarMonthTestID} />
 
@@ -191,10 +200,14 @@ export function CalendarScreen({
               onEditPeriod={() => onEditPeriod(shePressed.day)}
               openLabel={calendarCopy.openTheDay}
               recordSexLabel={calendarCopy.recordSex}
+              removePeriodDayLabel={calendarCopy.removePeriodDay}
               {...(shePressed.kind === 'lived'
                 ? {
                     onOpen: () => onOpenDay(shePressed.day),
                     onRecordSex: () => onRecordSex(shePressed.day),
+                    ...(shePressed.bled === true
+                      ? { onRemovePeriodDay: () => onRemovePeriodDay(shePressed.day) }
+                      : {}),
                   }
                 : {})}
             />

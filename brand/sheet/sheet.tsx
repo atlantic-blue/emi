@@ -14,7 +14,7 @@ import {
   faceFamily,
   fontFile,
   fontFileFor,
-  fontFiles,
+  applicationFontFiles,
   fontsRoot,
   iconNames,
   icons,
@@ -185,7 +185,7 @@ export function sizeClass(role: TypeRoleName): string {
 }
 
 function fontRules(fontsBase: string): string {
-  return fontFiles
+  return applicationFontFiles
     .map((file) =>
       [
         '@font-face {',

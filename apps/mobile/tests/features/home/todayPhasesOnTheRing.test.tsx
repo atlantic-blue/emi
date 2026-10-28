@@ -212,11 +212,11 @@ describe('the ring of Today', () => {
     expect(whatItSays(ringCentreLengthTestID)).toBe('of about 28');
   });
 
-  it('should write the first letter on a follicular arc too short for its name', async () => {
+  it('should write the whole name on a follicular arc of 2 days, which once fell back to "F"', async () => {
     // A 22 day cycle with a 5 day period leaves the follicular arc 2 days, days 6 and 7.
     await sheOpensToday(3, 22);
 
-    expect(whatItSays(ringNameTestID('follicular'))).toBe('F');
+    expect(whatItSays(ringNameTestID('follicular'))).toBe('FOLLICULAR');
     expect(whatItSays(ringNameTestID('luteal'))).toBe('LUTEAL');
   });
 });
@@ -280,10 +280,10 @@ describe('the contrast of each name on its arc', () => {
 describe('the phase card under the ring', () => {
   it.each([
     { cycleLengthDays: 28, cycleDay: 2, says: 'During your period, days 1 to 5' },
-    { cycleLengthDays: 28, cycleDay: 9, says: 'After your period, days 1 to 13' },
+    { cycleLengthDays: 28, cycleDay: 9, says: 'After your period, days 6 to 13' },
     { cycleLengthDays: 28, cycleDay: 16, says: 'Around ovulation, days 14 to 18' },
     { cycleLengthDays: 28, cycleDay: 20, says: 'Before your period, days 19 to 28' },
-    { cycleLengthDays: 33, cycleDay: 9, says: 'After your period, days 1 to 18' },
+    { cycleLengthDays: 33, cycleDay: 9, says: 'After your period, days 6 to 18' },
     { cycleLengthDays: 33, cycleDay: 20, says: 'Around ovulation, days 19 to 23' },
     { cycleLengthDays: 33, cycleDay: 30, says: 'Before your period, days 24 to 33' },
   ])(

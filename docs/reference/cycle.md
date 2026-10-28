@@ -736,7 +736,7 @@ interface CyclePhaseDays {
   readonly cycleLengthDays: number;
   /** Day 1 to the period length. */
   readonly period: CycleDays;
-  /** Day 1 to the day before the ovulation phase. It holds the period. */
+  /** The day after the period to the day before the ovulation phase. */
   readonly follicular: CycleDays;
   /** The ovulation day, two days before it and two after it, never on a period day. */
   readonly ovulation: CycleDays;

@@ -1,7 +1,8 @@
 import type { Forecast } from '@emi/cycle';
 import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { fertileWindowSentence, forecastCopy, rangeSentence } from './copy';
 

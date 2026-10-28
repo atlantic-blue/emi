@@ -58,6 +58,27 @@ Files:
 - `jetbrains-mono/JetBrainsMono-Regular.ttf`
 - `jetbrains-mono/JetBrainsMono-Medium.ttf`
 
+## Mulish
+
+Status: built
+
+Every word of the application in Russian. Figtree has no Cyrillic letters, so a phone set to Russian
+loads these cuts under the Figtree names, and each word and its digits are drawn in one face.
+
+Licence: SIL Open Font License, Version 1.1, in `apps/mobile/assets/fonts/mulish/OFL.txt`.
+Copyright 2016 The Mulish Project Authors (https://github.com/googlefonts/mulish)
+Source: https://github.com/googlefonts/mulish
+
+Files:
+
+- `mulish/Mulish-Medium.ttf`
+- `mulish/Mulish-Bold.ttf`
+- `mulish/Mulish-ExtraBold.ttf`
+- `mulish/Mulish-Black.ttf`
+
+The files are the static cuts from `fonts/ttf` in the source repository, at commit
+`5503f7a18ce79870148b9f9cb8e592ac44c044c3`.
+
 ## What the Open Font License asks of Emi
 
 Status: built
@@ -66,7 +87,7 @@ The licence text travels with the files, which is why `OFL.txt` sits in each fam
 rather than once at the root. The fonts may be bundled in the application and sold with it. They may
 not be sold on their own. The attribution sits on this page.
 
-Neither licence reserves a font name. A licence that does declares it on its first line,
+No licence here reserves a font name. A licence that does declares it on its first line,
 and the token package records it beside the family, so a family that arrives with a reservation is
 held to it rather than trusted.
 
@@ -76,7 +97,9 @@ Status: built
 
 Each cut answers a weight the design system own roles ask for. Figtree ships 400, 600, 700 and 800,
 because the redesign draws running text, a row label, a heading and a number at four weights.
-JetBrains Mono ships 400 and 500. A weight nobody asks for is bytes in the download.
+JetBrains Mono ships 400 and 500. Mulish ships 500, 700, 800 and 900: each cut stands in for the
+Figtree cut one weight below it, because Mulish draws a named weight about one step lighter. A weight
+nobody asks for is bytes in the download.
 
 Each file is a static instance rather than a variable font. A variable font registers as its default
 instance on a phone, so a weight set in a style would draw the default one, and the mistake would be

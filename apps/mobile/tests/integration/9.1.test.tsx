@@ -13,7 +13,7 @@ import { renderRouter } from 'expo-router/testing-library';
 import { Text } from 'react-native';
 
 import { Fonts } from '../../src/features/type/Fonts';
-import { fontsToLoad } from '../../src/features/type/fontsToLoad';
+import { fontsToLoadIn } from '../../src/features/type/fontsToLoad';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { drawnRuns, registeredFaces, runsDrawnInAnUnloadedFace } from '../fixtures/drawnFaces';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
@@ -86,7 +86,7 @@ describe('one face for every word, and a monospace for the figures', () => {
       expect(handed).not.toContain('IBMPlexMono');
       expect(handed).not.toContain('Newsreader');
       expect(handed).not.toContain('PlusJakartaSans');
-      expect(Object.keys(fontsToLoad)).toHaveLength(6);
+      expect(Object.keys(fontsToLoadIn('en'))).toHaveLength(6);
       expect(Object.values(faceFamily).map((name) => fonts[name].family)).toEqual([
         'Figtree',
         'Figtree',

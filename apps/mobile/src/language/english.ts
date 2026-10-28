@@ -55,6 +55,7 @@ export const english = {
   'calendar.legend.fertile': 'Fertile',
   'calendar.legend.forecast': 'Forecast',
   'calendar.legend.period': 'Period',
+  'calendar.legend.sex': 'Sex',
   'calendar.month.april': 'April',
   'calendar.month.august': 'August',
   'calendar.month.december': 'December',
@@ -92,6 +93,7 @@ export const english = {
   'calendar.screen.later': 'Later',
   'calendar.screen.laterMonth': 'Later month',
   'calendar.screen.recordSex': 'Record sex',
+  'calendar.screen.removePeriodDay': 'Remove period day',
   'calendar.today': 'Today',
   'calendar.weekday.friday': 'Friday',
   'calendar.weekday.monday': 'Monday',
@@ -279,7 +281,11 @@ export const english = {
   'home.loggedToday.flow': '{flow} flow',
   'home.loggedToday.lead': 'Logged today',
   'home.loggedToday.noFlow': 'no bleeding',
+  'home.loggedToday.noSex': 'no sex',
   'home.loggedToday.note': 'a note',
+  'home.loggedToday.orgasm': 'an answer about orgasm',
+  'home.loggedToday.sex': 'sex',
+  'home.loggedToday.sexDrive': 'sex drive',
   'home.loggedToday.temperature': 'a temperature',
   'home.loggedToday.weight': 'a weight',
   // The line a woman who said her period is hard reads on a day inside it. It names her own
@@ -327,6 +333,8 @@ export const english = {
   'home.phaseCard.luteal.day': 'Before your period, day {from}',
   'home.phaseCard.luteal.days': 'Before your period, days {from} to {to}',
   'home.phaseCard.luteal.line': 'The days after ovulation, before your next period.',
+  'home.ringArc.day': 'Day {from} of this cycle',
+  'home.ringArc.days': 'Days {from} to {to} of this cycle',
   'home.roundAction.sex': 'Sex',
   'home.roundAction.period': 'Period',
   'home.roundAction.phase': 'Cycle phase',
@@ -843,6 +851,7 @@ export const english = {
   'pastPeriods.line.estimate': 'Add what you remember. An estimate is fine.',
   'pastPeriods.line.forecast':
     'With three periods, Emi can forecast your next ones from the first day.',
+  'pastPeriods.line.mostRecentFirst': 'Start with the most recent.',
   'pastPeriods.picker.done': 'Done',
   'pastPeriods.picker.length': 'How many days did it last?',
   'pastPeriods.picker.outOfRange':
@@ -851,7 +860,9 @@ export const english = {
   'pastPeriods.picker.start': 'When did it start?',
   'pastPeriods.picker.stillGoingTooLongAgo':
     'A period that is still going started {maximum} days ago or less. Try a later day.',
-  'pastPeriods.picker.title': 'Period {number}',
+  'pastPeriods.place.mostRecent': 'Most recent',
+  'pastPeriods.place.oneBefore': 'The one before',
+  'pastPeriods.place.oneBeforeThat': 'The one before that',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Save',
   'pastPeriods.skipThisOne': 'Skip this one if you do not remember',
@@ -880,7 +891,7 @@ export const english = {
   'period.startedOnAnotherDay': 'Started on another day?',
   'period.title': 'Period',
   'phase.about.follicular':
-    'It starts with your period and ends the day before the ovulation phase.',
+    'It starts the day after your period and ends the day before the ovulation phase.',
   'phase.about.luteal':
     'It starts the day after the ovulation phase and ends the day before your next period.',
   'phase.about.ovulation':

@@ -192,14 +192,14 @@ describe('logging a flow redraws the ring', () => {
       expect(screen.queryByText(phaseLabel.follicular)).toBeNull();
     });
 
-    it('widens the period arc she is looking at and moves the pointer with it', async () => {
+    it('moves the pointer into a period arc that holds the width its name needs, from one day to two', async () => {
       await herPhoneHolds(whenSheOpensIt, herSixCycles());
       await sheOpensEmi('/log');
       const before = { arc: thePeriodArc(), pointer: thePointer() };
 
       await shePicks('heavy');
 
-      expect(thePeriodArc()).not.toBe(before.arc);
+      expect(thePeriodArc()).toBe(before.arc);
       expect(thePointer()).not.toEqual(before.pointer);
     });
 

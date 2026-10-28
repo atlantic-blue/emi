@@ -63,8 +63,8 @@ const whenSheOpensTheMonth = (): Date => new Date(`${theDaySheOpensTheMonth()}T1
 
 /**
  * Points. Every width the title could arrive at, from nothing to far wider than any glass. A month
- * name is longer in Spanish than in English, and longer again in a face the phone substitutes for
- * Cyrillic, so the rule is held at each of these rather than at the English width alone.
+ * name is longer in Spanish than in English, and longer again in Russian, so the rule is held at
+ * each of these rather than at the English width alone.
  */
 const everyWidthATitleCouldTake: readonly number[] = [0, 20, 60, 120, 200, 400, 1000];
 
@@ -95,8 +95,8 @@ function theDayTheAddressCarries(app: OpenApp): string {
  * Today. Each side keeps one fixed width, so the title stands in the middle of the glass.
  *
  * A style is the same in every language and only the words change, so one render carries every
- * case and a language arrives as a width. The title is swept rather than measured, because the
- * shipped faces carry no Cyrillic and no width for Russian can be read here.
+ * case and a language arrives as a width. The title is swept rather than measured, because no
+ * width for Russian is read here.
  */
 function theRowOfTheTitle(titleWidth: number): MeasuredWordRow {
   const aCell = (testID: string, words: number): { box: Box; words: number } => ({

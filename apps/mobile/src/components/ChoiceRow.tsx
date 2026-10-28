@@ -1,7 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 /**
  * The two rows she picks from: one of a set, or any number of a set.

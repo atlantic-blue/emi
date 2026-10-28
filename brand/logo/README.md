@@ -2,11 +2,12 @@
 
 The icons are drawn next door, in `brand/icons`.
 
-Three files, all drawn by one program from one set of numbers.
+Four files, all drawn by one program.
 
-    brand/logo/emi-wordmark.svg   the word, with the ring as the dot of the i
-    brand/logo/emi-ring.svg       the ring on its own, square, which the icon uses
-    brand/logo/emi-lockup.svg     the word on the stone ground, with its air
+    brand/logo/emi-wordmark.svg    the word, with the ring as the dot of the i
+    brand/logo/emi-ring.svg        the ring on its own, square
+    brand/logo/emi-lockup.svg      the word on the stone ground, with its air
+    brand/logo/emi-icon-mark.svg   EMI inside the open ring, which the application icon uses
 
 Redraw them after any change to the geometry or the letters:
 
@@ -59,3 +60,17 @@ repository, because nothing in the build needs to open a font: the outlines are 
 against the pixel grid, and asks whether the ground still runs through the gap into the hole. At
 16 points, the smallest the mark is drawn, the channel of ground through the gap is 1.26 pixels
 wide. A channel under one pixel cannot come out as ground anywhere, so the test refuses it.
+
+## The icon mark
+
+The application icon is the letters EMI inside the open ring, in white on ember. Beta testers
+picked it from three options in issue 331, because the ring alone was hard to find among other
+icons. `brand/logo/mark.ts` holds its numbers, in a box 100 units wide.
+
+The ring has a radius of 35 and a stroke of 7, so its outer edge spans 77 units. The gap is the
+same 40 degrees as the wordmark's, and it runs from three o'clock to 40 degrees below it, where a
+lowercase e opens.
+
+The word is Figtree ExtraBold at 26 units, with half a unit between letters, on a baseline at 59.5.
+`brand/logo/capitals.ts` holds the three capitals as outlines, taken from the font file the
+application ships. Its header names the file and its sha256.

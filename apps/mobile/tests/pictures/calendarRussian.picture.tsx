@@ -31,7 +31,7 @@ jest.mock('expo-localization', () => ({ getLocales: jest.fn(() => [{ languageTag
 const theCaveat = [
   'Rendered, not observed: drawn from the tree the month screen produced under the test runner with',
   'the phone language set to Russian, at 393 by 852 points, which is the glass of an iPhone 16. The',
-  'shipped faces carry no Cyrillic, so the page draws the Russian words in a face the browser picks.',
+  'page loads the Figtree cuts only, so it draws the Russian words in a face the browser picks.',
   'Reproduce with: npm run generate:calendar-russian-picture.',
 ].join(' ');
 
@@ -86,6 +86,7 @@ async function drawn(): Promise<DrawnScreen> {
         onLaterMonth={() => undefined}
         onOpenDay={() => undefined}
         onRecordSex={() => undefined}
+        onRemovePeriodDay={() => undefined}
         onPressDay={() => undefined}
         onToday={() => undefined}
         phaseOn={(day) => theDayPhaseOn(from, day)}
@@ -100,7 +101,7 @@ async function drawn(): Promise<DrawnScreen> {
 
   return {
     title: 'Ноябрь 2026, with the first day of a forecast period pressed',
-    note: 'The title is the nominative month name. The legend reads Месячные, Прогноз and Фертильные дни. The forecast period starts again at day 1 in dashed rings, and the card says when that period is likely to start.',
+    note: 'The title is the nominative month name. The legend reads Месячные, Прогноз, Фертильные дни and Секс. The forecast period starts again at day 1 in dashed rings, and the card says when that period is likely to start.',
     tree,
   };
 }

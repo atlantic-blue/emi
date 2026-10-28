@@ -13,9 +13,11 @@ import {
   type PhaseName,
   type PhaseSpan,
   type Point,
+  type RingArc,
   RING_DIAMETER,
   RING_OPEN_MILLISECONDS,
   RING_TRACK_WIDTH,
+  arcAtPoint,
   arcPath,
   colour,
   fontNameFor,
@@ -26,13 +28,15 @@ import {
   phaseLabel,
   phasePalette,
   ringGeometry,
+  sweepForName,
   textStyle,
   todayPointer,
   todayPointerPalette,
 } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 import Svg, { Circle, Defs, Line, Path, Text as SvgText, TextPath } from 'react-native-svg';
 
 import {
@@ -76,6 +80,7 @@ export function ringNameTestID(phase: PhaseName): string {
   return `ring-name-${phase}`;
 }
 
+export const ringArcsPressTestID = 'ring-arcs-press';
 export const ringCentrePhaseTestID = 'ring-centre-phase';
 export const ringCentreDayTestID = 'ring-centre-day';
 export const ringCentreLengthTestID = 'ring-centre-length';
@@ -96,6 +101,19 @@ interface Props {
    * of the log carries no words inside it, because the line beside it says the day and the phase.
    */
   readonly look?: 'plain' | 'named' | 'small';
+  readonly onPressArc?: (arc: RingArc) => void;
+}
+
+/** The small ring of the log takes the same floors as the ring of Today, so both draw one shape. */
+export function namedArcFloors(): Readonly<Record<PhaseName, number>> {
+  const floorOf = (phase: PhaseName): number => sweepForName(phaseName(phase));
+
+  return {
+    period: floorOf('period'),
+    follicular: floorOf('follicular'),
+    ovulation: floorOf('ovulation'),
+    luteal: floorOf('luteal'),
+  };
 }
 
 export function CycleRing({
@@ -106,13 +124,19 @@ export function CycleRing({
   daysAhead = 'faded',
   centreWord = 'phase',
   look = 'plain',
+  onPressArc,
 }: Props): ReactNode {
   if (look === 'small') {
     return <SmallRing cycleLengthDays={cycleLengthDays} day={day} phases={phases} />;
   }
 
   return look === 'named' ? (
-    <NamedRing cycleLengthDays={cycleLengthDays} day={day} phases={phases} />
+    <NamedRing
+      cycleLengthDays={cycleLengthDays}
+      day={day}
+      onPressArc={onPressArc}
+      phases={phases}
+    />
   ) : (
     <PlainRing
       centreWord={centreWord}
@@ -133,7 +157,7 @@ function PlainRing({
   diameter,
   daysAhead,
   centreWord,
-}: Required<Omit<Props, 'look'>>): ReactNode {
+}: Required<Omit<Props, 'look' | 'onPressArc'>>): ReactNode {
   const geometry = ringGeometry({ cycleLengthDays, day, phases });
   const centre = { x: diameter / 2, y: diameter / 2 };
   const radius = (diameter - RING_TRACK_WIDTH) / 2;
@@ -196,8 +220,14 @@ function NamedRing({
   cycleLengthDays,
   day,
   phases,
-}: Pick<Props, 'cycleLengthDays' | 'day' | 'phases'>): ReactNode {
-  const geometry = ringGeometry({ cycleLengthDays, day, phases });
+  onPressArc,
+}: Pick<Props, 'cycleLengthDays' | 'day' | 'phases' | 'onPressArc'>): ReactNode {
+  const geometry = ringGeometry({
+    cycleLengthDays,
+    day,
+    phases,
+    minimumSweepDegrees: namedArcFloors(),
+  });
   const diameter = NAMED_RING_DIAMETER;
   const centre = { x: diameter / 2, y: diameter / 2 };
   const opening = useOpeningMotion();
@@ -285,6 +315,22 @@ function NamedRing({
           {ringAboutLengthWords(cycleLengthDays)}
         </Text>
       </View>
+      {onPressArc === undefined ? null : (
+        <Pressable
+          onPress={(event) => {
+            const arc = arcAtPoint(
+              geometry,
+              { centre, radius: NAMED_RING_RADIUS, reach: NAMED_RING_TRACK_WIDTH },
+              { x: event.nativeEvent.locationX, y: event.nativeEvent.locationY },
+            );
+            if (arc !== undefined) {
+              onPressArc(arc);
+            }
+          }}
+          style={StyleSheet.absoluteFill}
+          testID={ringArcsPressTestID}
+        />
+      )}
     </View>
   );
 }
@@ -304,7 +350,12 @@ function SmallRing({
   day,
   phases,
 }: Pick<Props, 'cycleLengthDays' | 'day' | 'phases'>): ReactNode {
-  const geometry = ringGeometry({ cycleLengthDays, day, phases });
+  const geometry = ringGeometry({
+    cycleLengthDays,
+    day,
+    phases,
+    minimumSweepDegrees: namedArcFloors(),
+  });
   const centre = { x: SMALL_RING_DIAMETER / 2, y: SMALL_RING_DIAMETER / 2 };
 
   return (

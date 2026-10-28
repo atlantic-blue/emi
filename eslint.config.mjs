@@ -51,6 +51,25 @@ export default defineConfig([
     },
   },
   {
+    files: ['apps/mobile/src/**/*.tsx', 'packages/ui/src/**/*.tsx'],
+    ignores: ['packages/ui/src/CappedText.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react-native',
+              importNames: ['Text', 'TextInput'],
+              message:
+                'Import CappedText or CappedTextInput from @emi/ui, so the iOS text size cannot grow the text past its box.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // A brand page is markup, not React: the runtime in brand/jsx writes html, so `class` is the
     // attribute the browser reads and a list of children has nothing to reconcile.
     files: ['brand/**/*.tsx'],

@@ -1,6 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { PrimaryButton } from '../../components/Button';
 import { Screen } from '../../components/Screen';
@@ -59,7 +60,7 @@ export function PastPeriodsScreen({
           {pastPeriodsCopy.title}
         </Text>
         <Text style={styles.line}>
-          {`${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine}`}
+          {`${pastPeriodsCopy.forecastLine} ${pastPeriodsCopy.estimateLine} ${pastPeriodsCopy.mostRecentFirstLine}`}
         </Text>
         <PastPeriodsList onOpen={setOpen} periods={periods} />
       </ScrollView>

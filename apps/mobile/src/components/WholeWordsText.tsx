@@ -1,18 +1,13 @@
-import { type ReactNode, useState } from 'react';
-import {
-  type StyleProp,
-  StyleSheet,
-  Text,
-  type TextLayoutEventData,
-  type TextStyle,
-} from 'react-native';
+import { type ReactNode, createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { type StyleProp, StyleSheet, type TextLayoutEventData, type TextStyle } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 /**
  * A label in a tile, a chip or a header slot sits in a box narrower than the screen. When one word
  * of it is wider than the box, the platform cuts the word across two lines. This text never does
  * that. It shrinks a little until each word fits on a line, and stops at a floor.
  *
- * Russian draws in the system face, which is wider than Figtree, so most of these words are
+ * Russian draws in Mulish, which is wider than Figtree, so most of these words are
  * Russian ones on the smallest iPhone, at 375 points.
  */
 
@@ -49,6 +44,28 @@ export function cutsAWord(label: string, lines: readonly { readonly text: string
   return false;
 }
 
+interface SharedScale {
+  readonly step: number;
+  readonly stepDownFrom: (step: number) => void;
+}
+
+const SharedScaleContext = createContext<SharedScale | undefined>(undefined);
+
+/**
+ * Labels set side by side read as one scale only when they share one size. Inside this, every
+ * label steps down together until no word of any of them is cut, and none shrinks on its own.
+ */
+export function OneLabelScale({ children }: { readonly children: ReactNode }): ReactNode {
+  const [step, setStep] = useState(0);
+  // Every label that is cut reports from the same step in one pass, and only the first may move it.
+  const stepDownFrom = useCallback((from: number) => {
+    setStep((now) => (now === from && now < LABEL_SCALES.length - 1 ? now + 1 : now));
+  }, []);
+  const shared = useMemo(() => ({ step, stepDownFrom }), [step, stepDownFrom]);
+
+  return <SharedScaleContext.Provider value={shared}>{children}</SharedScaleContext.Provider>;
+}
+
 interface Props {
   readonly label: string;
   readonly style: StyleProp<TextStyle>;
@@ -58,9 +75,11 @@ interface Props {
 }
 
 export function WholeWordsText({ label, style, testID, onWordCutAtTheFloor }: Props): ReactNode {
-  const [step, setStep] = useState(0);
+  const [ownStep, setOwnStep] = useState(0);
+  const shared = useContext(SharedScaleContext);
+  const step = shared?.step ?? ownStep;
 
-  if (isOneWord(label)) {
+  if (shared === undefined && isOneWord(label)) {
     return (
       <Text
         adjustsFontSizeToFit
@@ -87,7 +106,11 @@ export function WholeWordsText({ label, style, testID, onWordCutAtTheFloor }: Pr
       return;
     }
     if (step < LABEL_SCALES.length - 1) {
-      setStep(step + 1);
+      if (shared === undefined) {
+        setOwnStep(step + 1);
+      } else {
+        shared.stepDownFrom(step);
+      }
       return;
     }
     onWordCutAtTheFloor?.();

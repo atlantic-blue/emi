@@ -6,16 +6,16 @@ import {
   toDayNumber,
 } from '@emi/cycle';
 import { ICON_SIZE, colour, radius, space, stroke, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import { StatusPill } from '../../components/StatusPill';
-import { rangeSentence } from '../forecast/copy';
+import { forecastCopy, lateSentence, rangeSentence } from '../forecast/copy';
 import {
   countsFromTheFirstPeriodSentence,
   cyclesBeforeAForecastSentence,
@@ -41,6 +41,7 @@ export const firstForecastLinesTestID = 'first-forecast-lines';
 export const firstForecastStillLearningTestID = 'first-forecast-still-learning';
 export const firstForecastNoGuessTestID = 'first-forecast-no-guess';
 export const firstForecastRangeTestID = 'first-forecast-range';
+export const firstForecastLateTestID = 'first-forecast-late';
 export const firstForecastLearningTestID = 'first-forecast-learning';
 export const firstForecastDaysTestID = 'first-forecast-days';
 export const firstForecastWhyTestID = 'first-forecast-why';
@@ -64,14 +65,22 @@ interface Props {
   readonly forecast: ForecastResult;
   /** The length she gave at the cycle length question, and nothing where she gave none. */
   readonly cycleLengthDays: number | undefined;
+  readonly daysLate?: number;
   readonly onContinue: () => void;
 }
 
-export function FirstForecast({ cycleLengthDays, forecast, onContinue }: Props): ReactNode {
+export function FirstForecast({
+  cycleLengthDays,
+  daysLate,
+  forecast,
+  onContinue,
+}: Props): ReactNode {
   return (
     <Screen drawsTheWash testID={firstForecastTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
-        {forecast.start === undefined ? (
+        {daysLate !== undefined ? (
+          <Late daysLate={daysLate} />
+        ) : forecast.start === undefined ? (
           <WithNoDate
             cycleLengthDays={cycleLengthDays}
             needsCycles={forecast.kind === 'learning' ? forecast.needsCycles : 0}
@@ -164,6 +173,19 @@ function WithARange({
           {stillLearningSentence(forecast.needsCycles)}
         </Text>
       ) : null}
+    </View>
+  );
+}
+
+function Late({ daysLate }: { readonly daysLate: number }): ReactNode {
+  return (
+    <View style={styles.column}>
+      <Text accessibilityRole="header" style={styles.label} testID={firstForecastTitleTestID}>
+        {forecastCopy.nextPeriod}
+      </Text>
+      <Text style={styles.range} testID={firstForecastLateTestID}>
+        {lateSentence(daysLate)}
+      </Text>
     </View>
   );
 }

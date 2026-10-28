@@ -1,7 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon, floatingShadow } from '@emi/ui';
+import { Icon, floatingShadow, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
 import { lockCopy } from './copy';

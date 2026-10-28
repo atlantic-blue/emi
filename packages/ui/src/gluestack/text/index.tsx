@@ -1,20 +1,22 @@
 import React from 'react';
 
 import type { VariantProps } from '@gluestack-ui/utils/nativewind-utils';
-import { Text as RNText } from 'react-native';
+
+import { CappedText } from '../../CappedText';
 import { textStyle } from './styles';
 
 /**
- * Copied in from gluestack-ui, with one change: the size is not defaulted.
+ * Copied in from gluestack-ui, with two changes: the size is not defaulted, and the text is drawn
+ * through CappedText.
  *
  * gluestack defaults it to `md`, which is its own `text-base` at sixteen points, and that sits on
  * top of whatever role the design system asked for. Emi has eleven text roles of its own and no
  * screen wants a twelfth, so a size arrives only when a caller names one.
  */
 
-type ITextProps = React.ComponentProps<typeof RNText> & VariantProps<typeof textStyle>;
+type ITextProps = React.ComponentProps<typeof CappedText> & VariantProps<typeof textStyle>;
 
-const Text = React.forwardRef<React.ComponentRef<typeof RNText>, ITextProps>(function Text(
+const Text = React.forwardRef<React.ComponentRef<typeof CappedText>, ITextProps>(function Text(
   {
     className,
     isTruncated,
@@ -30,7 +32,7 @@ const Text = React.forwardRef<React.ComponentRef<typeof RNText>, ITextProps>(fun
   ref,
 ) {
   return (
-    <RNText
+    <CappedText
       className={textStyle({
         isTruncated: isTruncated as boolean,
         bold: bold as boolean,

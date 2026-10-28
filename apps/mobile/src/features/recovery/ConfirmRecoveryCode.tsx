@@ -2,7 +2,8 @@ import { readRecoveryCode } from '@emi/crypto';
 import { colour, radius, space, textStyle, typeScale } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { CappedText as Text, CappedTextInput as TextInput } from '@emi/ui';
 
 import { RecoveryScreen } from './RecoveryScreen';
 import { recoveryCopy } from './copy';

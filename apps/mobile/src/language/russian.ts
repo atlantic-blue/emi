@@ -62,6 +62,7 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.legend.fertile': 'Фертильные дни',
   'calendar.legend.forecast': 'Прогноз',
   'calendar.legend.period': 'Месячные',
+  'calendar.legend.sex': 'Секс',
   'calendar.month.april': 'апреля',
   'calendar.month.august': 'августа',
   'calendar.month.december': 'декабря',
@@ -98,6 +99,7 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.screen.later': 'Позже',
   'calendar.screen.laterMonth': 'Следующий месяц',
   'calendar.screen.recordSex': 'Отметить секс',
+  'calendar.screen.removePeriodDay': 'Убрать день месячных',
   'calendar.today': 'Сегодня',
   'calendar.weekday.friday': 'Пятница',
   'calendar.weekday.monday': 'Понедельник',
@@ -281,7 +283,11 @@ export const russian: CatalogueIn<'ru'> = {
   'home.loggedToday.flow': '{flow} выделения',
   'home.loggedToday.lead': 'Сегодня отмечено',
   'home.loggedToday.noFlow': 'без кровотечения',
+  'home.loggedToday.noSex': 'без секса',
   'home.loggedToday.note': 'заметка',
+  'home.loggedToday.orgasm': 'ответ об оргазме',
+  'home.loggedToday.sex': 'секс',
+  'home.loggedToday.sexDrive': 'сексуальное желание',
   'home.loggedToday.temperature': 'температура',
   'home.loggedToday.weight': 'вес',
   'home.numbers.cycleLength': 'Последний цикл',
@@ -327,6 +333,8 @@ export const russian: CatalogueIn<'ru'> = {
   'home.phaseCard.luteal.day': 'Перед месячными, день {from}',
   'home.phaseCard.luteal.days': 'Перед месячными, дни с {from} по {to}',
   'home.phaseCard.luteal.line': 'Дни после овуляции, до следующих месячных.',
+  'home.ringArc.day': 'День {from} этого цикла',
+  'home.ringArc.days': 'Дни с {from} по {to} этого цикла',
   'home.roundAction.sex': 'Секс',
   'home.roundAction.period': 'Месячные',
   'home.roundAction.phase': 'О фазе',
@@ -874,6 +882,7 @@ export const russian: CatalogueIn<'ru'> = {
   'pastPeriods.line.estimate': 'Если не помните точные даты, укажите примерные.',
   'pastPeriods.line.forecast':
     'Добавьте даты начала и продолжительность последних трёх менструаций. Так Emi сможет рассчитать следующие.',
+  'pastPeriods.line.mostRecentFirst': 'Начните с последних.',
   'pastPeriods.picker.done': 'Готово',
   'pastPeriods.picker.length': 'Сколько дней они длились?',
   'pastPeriods.picker.outOfRange':
@@ -882,7 +891,9 @@ export const russian: CatalogueIn<'ru'> = {
   'pastPeriods.picker.start': 'Когда они начались?',
   'pastPeriods.picker.stillGoingTooLongAgo':
     'Если месячные ещё идут, они начались не больше {maximum} дней назад. Выберите день позже.',
-  'pastPeriods.picker.title': 'Месячные {number}',
+  'pastPeriods.place.mostRecent': 'Последние',
+  'pastPeriods.place.oneBefore': 'Предыдущие',
+  'pastPeriods.place.oneBeforeThat': 'Ещё раньше',
   'pastPeriods.row.date': '{date} {month}',
   'pastPeriods.save': 'Сохранить',
   'pastPeriods.skipThisOne': 'Пропустите, если не помните',
@@ -910,7 +921,8 @@ export const russian: CatalogueIn<'ru'> = {
   'period.save': 'Сохранить',
   'period.startedOnAnotherDay': 'Начались в другой день?',
   'period.title': 'Месячные',
-  'phase.about.follicular': 'Она начинается с месячных и заканчивается за день до фазы овуляции.',
+  'phase.about.follicular':
+    'Она начинается на следующий день после месячных и заканчивается за день до фазы овуляции.',
   'phase.about.luteal':
     'Она начинается на следующий день после фазы овуляции и заканчивается за день до следующих месячных.',
   'phase.about.ovulation':

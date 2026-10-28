@@ -1,7 +1,8 @@
 import { CYCLE_LENGTH_HIGH_DAYS, CYCLE_LENGTH_LOW_DAYS } from '@emi/cycle';
 import { colour, radius, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 import Svg, { Circle, Polyline, Rect } from 'react-native-svg';
 
 import { trendCaptionReads, trendSpokenLabel } from './copy';

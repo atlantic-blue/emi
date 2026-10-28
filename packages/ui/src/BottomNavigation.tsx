@@ -62,6 +62,9 @@ const TAB_HEIGHT = 52;
 /** Points. What a column takes where the bar is too narrow to hand it a quarter of itself. */
 const TAB_WIDTH = 52;
 
+/** The smallest a tab label may shrink to stay on one line, as a share of its role. */
+export const TAB_LABEL_MINIMUM_SCALE = 0.75;
+
 /** Points. What the bar draws above the room the phone keeps for itself. */
 export const dockHeight = space.spaceSm + TAB_HEIGHT;
 
@@ -137,6 +140,9 @@ export function BottomNavigation({ tabs, chosen, onChoose }: Props): ReactNode {
                 size={ICON_SIZE}
               />
               <Text
+                adjustsFontSizeToFit
+                minimumFontScale={TAB_LABEL_MINIMUM_SCALE}
+                numberOfLines={1}
                 className={`font-label-sm text-label-sm ${
                   sheIsHere ? 'text-accent' : 'text-dock-quiet'
                 }`}

@@ -7,9 +7,9 @@ import {
   stroke,
   textStyle,
 } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type TextStyle, type ViewStyle } from 'react-native';
 
 import type { DayMark } from '../cycle/herWeek';
 import { monthWeeks, weekdayColumnNames } from '../onboarding/days';
@@ -49,6 +49,11 @@ export function pickedRingTestID(day: string): string {
   return `calendar-picked-${day}`;
 }
 
+/** The small heart on the disc of a day she recorded sex on. */
+export function sexMarkTestID(day: string): string {
+  return `calendar-sex-${day}`;
+}
+
 /** The legend above the columns, which the screen reading a phase asks for. */
 export const monthLegendTestID = 'calendar-legend';
 
@@ -59,6 +64,9 @@ export type LegendEntry = 'period' | 'forecast' | 'fertile';
 export function legendTestID(of: LegendEntry): string {
   return `calendar-legend-${of}`;
 }
+
+/** The entry of the legend that names the heart, which only the calendar screen draws. */
+export const legendSexTestID = 'calendar-legend-sex';
 
 /** The dot of an entry, which is the colour or the line the grid uses for those days. */
 export function legendDotTestID(of: LegendEntry): string {
@@ -79,6 +87,10 @@ export const chosenDayMarkTestID = 'calendar-chosen-mark';
 
 /** Points. The tick sits under a number in a square, so it is drawn smaller than the number. */
 const SQUARE_MARK_SIZE = 12;
+
+/** Points. The heart of a day with sex, and the round ground it sits on at the edge of the disc. */
+const SEX_MARK_SIZE = 12;
+const SEX_MARK_GROUND = 18;
 
 /**
  * Points. How wide and how tall the disc around a date is drawn.
@@ -132,6 +144,8 @@ export interface MonthSquare {
   readonly picked?: boolean;
   /** A day the screen draws and will not take, which is dimmed rather than left out. */
   readonly outOfReach?: boolean;
+  /** A day she recorded sex on, which carries a small heart on the edge of the disc. */
+  readonly hadSex?: boolean;
   /** What a screen reader says about the square. */
   readonly label: string;
   /** Nothing where the square takes no press, and then it is read and never pressed. */
@@ -183,6 +197,11 @@ function Square({ day, square }: SquareProps): ReactNode {
             {Number(day.slice(8, 10))}
           </Text>
         </View>
+        {square.hadSex === true ? (
+          <View style={styles.sexMark} testID={sexMarkTestID(day)}>
+            <Icon colour={colour.accent} name="heart" size={SEX_MARK_SIZE} />
+          </View>
+        ) : null}
       </View>
       {chosen ? (
         <View testID={chosenDayMarkTestID}>
@@ -297,7 +316,7 @@ const theLegend: readonly { readonly of: LegendEntry; readonly dot: ViewStyle }[
  * It is off unless a screen asks for it. Two screens draw this grid and the first run asks her to
  * pick a day, where a legend would explain marks that grid never draws.
  */
-export function MonthLegend(): ReactNode {
+export function MonthLegend({ namesSex = false }: { readonly namesSex?: boolean }): ReactNode {
   return (
     <View style={styles.legend} testID={monthLegendTestID}>
       {theLegend.map(({ of, dot }) => (
@@ -306,6 +325,12 @@ export function MonthLegend(): ReactNode {
           <Text style={styles.legendWord}>{monthLegendCopy[of]}</Text>
         </View>
       ))}
+      {namesSex ? (
+        <View style={styles.legendEntry} testID={legendSexTestID}>
+          <Icon colour={colour.accent} name="heart" size={SEX_MARK_SIZE} />
+          <Text style={styles.legendWord}>{monthLegendCopy.sex}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -428,11 +453,26 @@ const styles = StyleSheet.create({
   // A border with no style named is a border a browser does not draw, so the pictures would show
   // no ring at all.
   pickedRingDrawn: { borderColor: colour.text, borderStyle: 'solid' },
+  // The heart sits over the edge of the disc rather than under it, so a week with sex in it is no
+  // taller than a week without, and its own ground keeps it legible on a filled day.
+  sexMark: {
+    alignItems: 'center',
+    backgroundColor: colour.card,
+    borderRadius: radius.full,
+    bottom: -2,
+    height: SEX_MARK_GROUND,
+    justifyContent: 'center',
+    position: 'absolute',
+    right: -2,
+    width: SEX_MARK_GROUND,
+  },
   legend: {
+    columnGap: space.spaceLg,
     flexDirection: 'row',
-    gap: space.spaceLg,
+    flexWrap: 'wrap',
     justifyContent: 'center',
     marginBottom: space.spaceMd,
+    rowGap: space.spaceSm,
   },
   legendDot: { borderRadius: radius.full, height: LEGEND_DOT, width: LEGEND_DOT },
   legendEntry: { alignItems: 'center', flexDirection: 'row', gap: space.spaceSm },

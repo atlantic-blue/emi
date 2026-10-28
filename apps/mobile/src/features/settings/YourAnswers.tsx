@@ -1,7 +1,8 @@
 import { colour, space, textStyle } from '@emi/tokens';
 import type { ProfileRecord } from '@emi/crypto';
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { RoundIconButton } from '../../components/RoundIconButton';
 import { RowGroup } from '../../components/RowGroup';
