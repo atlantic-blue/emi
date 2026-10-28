@@ -7,7 +7,7 @@ export const fontsRoot = 'apps/mobile/assets/fonts';
  * The weights that ship. A style that names a weight no file carries leaves the platform to
  * imitate it, so a weight arrives as a file first.
  */
-export type FontWeightName = 'regular' | 'medium' | 'semiBold' | 'bold' | 'extraBold';
+export type FontWeightName = 'regular' | 'medium' | 'semiBold' | 'bold' | 'extraBold' | 'black';
 
 /**
  * One file on disk, and the name the application registers it under. The two strings differ, so a
@@ -22,10 +22,11 @@ export interface FontFile {
 }
 
 /**
- * The two families this repository redistributes. One carries every word of the application and the
- * other carries the recovery code, where a reader has to tell one character from another.
+ * The three families this repository redistributes. One carries every word of the application, one
+ * carries the recovery code, where a reader has to tell one character from another, and one carries
+ * the words in Russian, because the first has no Cyrillic letters.
  */
-export type FontFamilyName = 'figtree' | 'jetBrainsMono';
+export type FontFamilyName = 'figtree' | 'jetBrainsMono' | 'mulish';
 
 /**
  * A family, its files, and the terms they travel under. A test reads the licence fields against the
@@ -102,10 +103,24 @@ export const fonts: Readonly<Record<FontFamilyName, FontFamily>> = {
       },
     },
   },
+  mulish: {
+    family: 'Mulish',
+    licence: OPEN_FONT_LICENCE,
+    licencePath: 'mulish/OFL.txt',
+    copyright: 'Copyright 2016 The Mulish Project Authors (https://github.com/googlefonts/mulish)',
+    source: 'https://github.com/googlefonts/mulish',
+    weights: ['medium', 'bold', 'extraBold', 'black'],
+    files: {
+      medium: { name: 'Mulish-Medium', weight: 500, path: 'mulish/Mulish-Medium.ttf' },
+      bold: { name: 'Mulish-Bold', weight: 700, path: 'mulish/Mulish-Bold.ttf' },
+      extraBold: { name: 'Mulish-ExtraBold', weight: 800, path: 'mulish/Mulish-ExtraBold.ttf' },
+      black: { name: 'Mulish-Black', weight: 900, path: 'mulish/Mulish-Black.ttf' },
+    },
+  },
 };
 
 /** The families as data. A test walks this to prove each has its files and its licence on disk. */
-export const fontFamilyNames: readonly FontFamilyName[] = ['figtree', 'jetBrainsMono'];
+export const fontFamilyNames: readonly FontFamilyName[] = ['figtree', 'jetBrainsMono', 'mulish'];
 
 /** Which family draws each face of the design system. Every face has one and every family is drawn. */
 export const faceFamily: Readonly<Record<FaceName, FontFamilyName>> = {
@@ -129,7 +144,7 @@ export function fontFile(family: FontFamilyName, weight: FontWeightName): FontFi
 }
 
 /**
- * The six files that ship. A test reads the assets directory against this list, so a file that
+ * The files that ship. A test reads the assets directory against this list, so a file that
  * nobody names is found rather than carried.
  */
 export const fontFiles: readonly FontFile[] = fontFamilyNames.flatMap((name) =>
@@ -151,8 +166,25 @@ export const fontFiles: readonly FontFile[] = fontFamilyNames.flatMap((name) =>
  */
 export const cutsNoRoleAsksFor: readonly string[] = ['JetBrainsMono-Regular'];
 
-/** The files the application loads, which is every file that ships, because every face is drawn. */
-export const applicationFontFiles: readonly FontFile[] = fontFiles;
+/** The files the application loads in English and in Spanish: the families the faces name. */
+export const applicationFontFiles: readonly FontFile[] = [
+  ...new Set(Object.values(faceFamily)),
+].flatMap((name) => fonts[name].weights.map((weight) => fontFile(name, weight)));
+
+/**
+ * The cut that stands in for each Figtree cut when she reads Emi in Russian. It is registered under
+ * the Figtree name, so every style draws in it with no change, and the digits and the letters of
+ * one word come from one face.
+ *
+ * Mulish draws each named weight about one step lighter than Figtree, so each stand in is the cut
+ * whose strokes cover the same share of the page, one weight up.
+ */
+export const russianStandIns: Readonly<Record<string, FontFile>> = {
+  'Figtree-Regular': fontFile('mulish', 'medium'),
+  'Figtree-SemiBold': fontFile('mulish', 'bold'),
+  'Figtree-Bold': fontFile('mulish', 'extraBold'),
+  'Figtree-ExtraBold': fontFile('mulish', 'black'),
+};
 
 /** Which file carries a weight, for any family. The three weights map onto the three cuts. */
 export const weightFiles: Readonly<Record<TypeWeight, FontWeightName>> = {

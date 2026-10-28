@@ -54,7 +54,9 @@ describe('every shipped font carries its licence', () => {
       (name) => {
         const family = fonts[name];
 
-        expect(dirname(family.licencePath)).toBe(dirname(fontFile(name, 'regular').path));
+        expect(dirname(family.licencePath)).toBe(
+          dirname(fontFile(name, family.weights[0] ?? 'regular').path),
+        );
         expect(readFileSync(inApplication(family.licencePath), 'utf8')).toContain(
           OPEN_FONT_LICENCE,
         );

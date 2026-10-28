@@ -81,9 +81,9 @@ const theMonthKeys: readonly WordKey[] = [
 ];
 
 /**
- * The languages whose letters the shipped cuts carry, so a title in them is measured rather than
- * swept. Russian is the third language Emi ships and the faces hold no Cyrillic, so a phone draws
- * those words in a face of its own and their width is nobody's to state here.
+ * The languages whose letters the Figtree cuts carry, so a title in them is measured rather than
+ * swept. Russian is drawn in the Mulish stand in, which the width reader does not take, so its
+ * titles are swept.
  */
 const theLanguagesTheFacesDraw: readonly Language[] = ['en', 'es'];
 
@@ -250,14 +250,12 @@ describe('the month title never touches the way to another month', () => {
   });
 
   describe('a title of any width at all, which is how Russian is covered', () => {
-    it('is written in letters the shipped faces carry no glyph for', () => {
+    it('is written in letters the Figtree cuts carry no glyph for', () => {
       expect(
         theLettersWithNoGlyph(theWordFor('calendar.month.september', 'ru'), 'headline-md'),
       ).toEqual(['с', 'е', 'н', 'т', 'я', 'б', 'р', 'я']);
       expect(theLettersWithNoGlyph('September', 'headline-md')).toEqual([]);
-      expect(() => theWidthOfWords('сентября 2026', 'headline-md')).toThrow(
-        'a face this repository does not hold',
-      );
+      expect(() => theWidthOfWords('сентября 2026', 'headline-md')).toThrow('the Russian stand in');
     });
 
     it.each(everyPhoneAndWidth)(
