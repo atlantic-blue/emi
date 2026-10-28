@@ -1,7 +1,15 @@
 import { addDays } from '@emi/cycle';
 import { colour, radius, space, textStyle } from '@emi/tokens';
-import { type ReactNode, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { type ReactNode, useRef, useState } from 'react';
+import {
+  type LayoutChangeEvent,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton, TextLink } from '../../components/Button';
@@ -24,7 +32,9 @@ export const pastPeriodPickerDoneTestID = 'past-period-picker-done';
 export const pastPeriodPickerRemoveTestID = 'past-period-picker-remove';
 export const pastPeriodPickerCancelTestID = 'past-period-picker-cancel';
 export const pastPeriodPickerRefusedTestID = 'past-period-picker-refused';
+export const pastPeriodPickerBodyTestID = 'past-period-picker-body';
 export const pastPeriodLengthWheelTestID = 'past-period-length-wheel';
+export const pastPeriodLengthAnswersTestID = 'past-period-length-answers';
 export const pastPeriodLengthPillTestID = 'past-period-length-pill';
 export const pastPeriodStillGoingTestID = 'past-period-still-going';
 export const pastPeriodStillGoingRefusedTestID = 'past-period-still-going-refused';
@@ -102,6 +112,35 @@ export function PastPeriodPicker({
     !stillGoingCanStartOn(startedOn, today);
   const isReady = startIsInRange && run !== undefined && !stillGoingIsRefused;
 
+  const body = useRef<ScrollView>(null);
+  const bodyHeight = useRef<number | undefined>(undefined);
+  const lengthEnds = useRef<number | undefined>(undefined);
+  const keepsTheLengthInView = useRef(given !== undefined);
+
+  // Picking a day can make the calendar taller after the pick, so each new layout scrolls again
+  // until she drags the body herself.
+  const showTheLength = (): void => {
+    if (
+      !keepsTheLengthInView.current ||
+      bodyHeight.current === undefined ||
+      lengthEnds.current === undefined
+    ) {
+      return;
+    }
+    const travel = lengthEnds.current - bodyHeight.current;
+    if (travel > 0) {
+      body.current?.scrollTo({ animated: true, y: travel });
+    } else {
+      keepsTheLengthInView.current = false;
+    }
+  };
+
+  const chooseTheStart = (day: string): void => {
+    setStartedOn(day);
+    keepsTheLengthInView.current = true;
+    showTheLength();
+  };
+
   return (
     <Modal animationType="slide" onRequestClose={onCancel} transparent visible>
       <View style={styles.scrim}>
@@ -116,7 +155,19 @@ export function PastPeriodPicker({
           style={[styles.sheet, { paddingBottom: insets.bottom + space.spaceLg }]}
           testID={pastPeriodPickerTestID}
         >
-          <ScrollView contentContainerStyle={styles.body} nestedScrollEnabled>
+          <ScrollView
+            contentContainerStyle={styles.body}
+            nestedScrollEnabled
+            onLayout={(event: LayoutChangeEvent) => {
+              bodyHeight.current = event.nativeEvent.layout.height;
+              showTheLength();
+            }}
+            onScrollBeginDrag={() => {
+              keepsTheLengthInView.current = false;
+            }}
+            ref={body}
+            testID={pastPeriodPickerBodyTestID}
+          >
             <Text
               accessibilityRole="header"
               style={styles.title}
@@ -132,7 +183,7 @@ export function PastPeriodPicker({
                 chosen={startedOn}
                 earliest={oldest}
                 latest={today}
-                onChoose={setStartedOn}
+                onChoose={chooseTheStart}
                 opensOn={startedOn ?? today}
                 today={today}
               />
@@ -142,7 +193,7 @@ export function PastPeriodPicker({
                 chosen={startedOn}
                 earliest={addDays(above.startedOn, -longestCycleBetweenDays)}
                 latest={above.startedOn}
-                onChoose={setStartedOn}
+                onChoose={chooseTheStart}
                 opensOn={startedOn ?? addDays(above.startedOn, -USUAL_CYCLE_DAYS)}
                 today={today}
               />
@@ -154,26 +205,36 @@ export function PastPeriodPicker({
             ) : null}
 
             <Text style={styles.question}>{pastPeriodsCopy.length}</Text>
-            <NumberWheel
-              chosen={typeof run === 'number' ? run : undefined}
-              labelOf={pastPeriodLengthSaid}
-              onChoose={setRun}
-              opensOn={pastPeriodLengthOpensOn}
-              pillTestID={pastPeriodLengthPillTestID}
-              testID={pastPeriodLengthWheelTestID}
-              testIDOf={pastPeriodLengthTestID}
-              values={pastPeriodLengthsOffered}
-            />
-            {offersStillGoing ? (
-              <View style={styles.stillGoing}>
-                <Chip
-                  isChosen={run === 'still-going'}
-                  label={pastPeriodsCopy.stillGoing}
-                  onPress={() => setRun(run === 'still-going' ? undefined : 'still-going')}
-                  testID={pastPeriodStillGoingTestID}
-                />
-              </View>
-            ) : null}
+            <View
+              onLayout={(event: LayoutChangeEvent) => {
+                const { y, height } = event.nativeEvent.layout;
+                lengthEnds.current = y + height;
+                showTheLength();
+              }}
+              style={styles.lengthAnswers}
+              testID={pastPeriodLengthAnswersTestID}
+            >
+              <NumberWheel
+                chosen={typeof run === 'number' ? run : undefined}
+                labelOf={pastPeriodLengthSaid}
+                onChoose={setRun}
+                opensOn={pastPeriodLengthOpensOn}
+                pillTestID={pastPeriodLengthPillTestID}
+                testID={pastPeriodLengthWheelTestID}
+                testIDOf={pastPeriodLengthTestID}
+                values={pastPeriodLengthsOffered}
+              />
+              {offersStillGoing ? (
+                <View style={styles.stillGoing}>
+                  <Chip
+                    isChosen={run === 'still-going'}
+                    label={pastPeriodsCopy.stillGoing}
+                    onPress={() => setRun(run === 'still-going' ? undefined : 'still-going')}
+                    testID={pastPeriodStillGoingTestID}
+                  />
+                </View>
+              ) : null}
+            </View>
             {stillGoingIsRefused ? (
               <Text style={styles.refused} testID={pastPeriodStillGoingRefusedTestID}>
                 {pastPeriodsCopy.stillGoingTooLongAgo}
@@ -216,6 +277,7 @@ const styles = StyleSheet.create({
   above: { flex: 1, minHeight: space.marginLg },
   body: { gap: space.spaceMd, paddingBottom: space.spaceMd },
   foot: { gap: space.spaceXs, paddingTop: space.spaceSm },
+  lengthAnswers: { gap: space.spaceMd },
   question: { color: colour.text, ...textStyle('headline-sm') },
   refused: { color: colour.accent, textAlign: 'center', ...textStyle('body-sm') },
   scrim: { flex: 1 },
