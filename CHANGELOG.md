@@ -2,6 +2,29 @@
 
 Each version lists what changed for the person who uses Emi. The version is `expo.version` in `apps/mobile/app.json`. The store build number goes up by itself on each build, and a released version names the build it shipped as.
 
+## 0.2.1 (28 October 2026)
+
+Fixes from the beta feedback of 18 to 26 October 2026.
+
+### Fixed
+
+- A tap on a row of the year, cycle or period length wheel saves that row. Before, it could save a row two places away, and a skipped year was saved. https://github.com/atlantic-blue/emi/issues/338
+- The calendar rings a forecast period only near the expected start, so the months ahead show the fertile days again. https://github.com/atlantic-blue/emi/issues/372
+- The day entry header shows the cycle day and phase of the date that is open, not of today. https://github.com/atlantic-blue/emi/issues/376
+- Edit my period opens with every saved period day ticked, also a day after a gap. A period day can be removed from the calendar day in one press. https://github.com/atlantic-blue/emi/issues/390
+- Symptoms, moods and appetite saved from a calendar day show in About this phase, and the other way round. The keyboard opens only when she taps a field. https://github.com/atlantic-blue/emi/issues/375
+- The first forecast says the period is late when its window has passed. https://github.com/atlantic-blue/emi/issues/353
+- Skip in the first run keeps the name she typed, and Continue stays above the keyboard. https://github.com/atlantic-blue/emi/issues/352
+- The calendar day card shows sex, and a heart marks the day in the calendar. https://github.com/atlantic-blue/emi/issues/404 https://github.com/atlantic-blue/emi/issues/374
+- Each past period row has a name by its place, and the period sheet scrolls so the length wheel sits above Done. https://github.com/atlantic-blue/emi/issues/385
+- Text grows to at most 1.3 times its size, tab and tile labels keep whole words, and Russian text uses one typeface that holds Cyrillic. https://github.com/atlantic-blue/emi/issues/386
+- The phase after the period starts on the day after the period, not on day 1. https://github.com/atlantic-blue/emi/issues/393
+- Each arc on the ring is wide enough for its name. A tap on an arc opens a card with the phase name, its days and a link to the phase guide. https://github.com/atlantic-blue/emi/issues/394
+
+### Changed
+
+- The app icon shows EMI inside the open ring, so it is easier to recognise among other apps. https://github.com/atlantic-blue/emi/issues/331
+
 ## 0.2.0 (21 October 2026)
 
 The changes from the beta feedback of 16 and 17 October 2026.
