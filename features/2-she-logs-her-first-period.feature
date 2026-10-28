@@ -1017,3 +1017,13 @@ Feature: She opens Emi and logs her first period
     When she adds yesterday and saves
     Then she is back on Today, and the forecast gives the range of her next period again
     And no line says her period is late
+
+  Scenario: SCREEN-1, the window her three periods forecast has passed, and her first forecast says her period is late
+    Given today is two days after the window that three periods 28 days apart, the newest on the 18th of September, forecast
+    When she opens Emi
+    And she reaches the step that asks for her last three periods
+    And she gives those three periods, each 5 days long
+    And she answers the rest of the questions
+    Then her first forecast says her period is 2 days late, and the range that passed is gone
+    When she reads on and taps Save and start
+    Then the home screen says her period is 2 days late too
