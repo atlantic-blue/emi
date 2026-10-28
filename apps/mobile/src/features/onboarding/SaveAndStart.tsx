@@ -1,7 +1,7 @@
 import { RING_DIAMETER, RING_TRACK_WIDTH, colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import { type ReactNode, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 
 import { PrimaryButton } from '../../components/Button';

@@ -1,9 +1,9 @@
 import { flowValues } from '@emi/crypto';
 import type { Flow } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { words } from '../../language';
 

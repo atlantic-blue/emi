@@ -7,9 +7,9 @@ import {
   stroke,
   textStyle,
 } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View, type TextStyle, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, type TextStyle, type ViewStyle } from 'react-native';
 
 import type { DayMark } from '../cycle/herWeek';
 import { monthWeeks, weekdayColumnNames } from '../onboarding/days';

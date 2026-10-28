@@ -1,7 +1,8 @@
 import { longestName } from '@emi/crypto';
 import { colour, space, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { TextField } from '../../components/TextField';
 import { OnboardingScreen } from './OnboardingScreen';

@@ -1,6 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { WholeWordsText } from './WholeWordsText';
 

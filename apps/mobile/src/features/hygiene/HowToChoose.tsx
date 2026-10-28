@@ -1,6 +1,7 @@
 import { colour, space, stroke, textStyle } from '@emi/tokens';
 import { Fragment, type ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { Card } from '../../components/Card';
 import { words } from '../../language';

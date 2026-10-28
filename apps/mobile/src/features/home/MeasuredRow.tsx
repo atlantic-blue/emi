@@ -1,7 +1,8 @@
 import type { PublishedMeasurement } from '@emi/cycle';
 import { colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { StatusPill, type PillTone } from '../../components/StatusPill';
 import { type FigureStanding, type MeasuredNumber, howHerNumberSits } from './herNumbers';

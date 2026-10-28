@@ -1,6 +1,7 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { CappedText as Text, CappedTextInput as TextInput } from '@emi/ui';
 
 /**
  * One line she types into, with the question above it.

@@ -8,7 +8,8 @@ import {
   textStyle,
 } from '@emi/tokens';
 import { type ReactNode, useRef, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { CycleRing } from '../../components/CycleRing';
 import { words } from '../../language';

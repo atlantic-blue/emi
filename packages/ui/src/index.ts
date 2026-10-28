@@ -5,6 +5,7 @@
 export const packageName = '@emi/ui';
 
 export * from './BottomNavigation';
+export * from './CappedText';
 export * from './Icon';
 export * from './Wash';
 export * from './floating';

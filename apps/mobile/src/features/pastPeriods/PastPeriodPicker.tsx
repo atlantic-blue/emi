@@ -7,9 +7,9 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PrimaryButton, TextLink } from '../../components/Button';

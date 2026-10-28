@@ -19,7 +19,13 @@ import {
   productTileTestID,
 } from '../../src/features/hygiene/HygieneProductsPage';
 import { productOrder } from '../../src/features/hygiene/products';
-import { GroupTiles, groupTileNameTestID } from '../../src/features/log/GroupTiles';
+import {
+  GroupTiles,
+  NARROW_TILES_IN_A_ROW,
+  TILES_IN_A_ROW,
+  groupTileNameTestID,
+  groupTileTestID,
+} from '../../src/features/log/GroupTiles';
 import { HEADER_END, LogHeader, logHeaderEndTestID } from '../../src/features/log/LogHeader';
 import { groupHeadings } from '../../src/features/log/SymptomGroup';
 import {
@@ -141,17 +147,48 @@ describe('a label keeps every word whole', () => {
 });
 
 describe('the Russian labels the beta group saw broken on iPhone SE', () => {
-  it('should give each one word name under a log tile the shrink rule', async () => {
+  it('should size every name under the log tiles on one shared scale, with no name shrinking on its own', async () => {
     await render(<GroupTiles groups={groups} onOpen={() => undefined} />);
 
     expect(groupHeadings.appetite).toBe('Аппетит');
     expect(groupHeadings.digestive).toBe('Работа ЖКТ');
     for (const group of groups) {
-      if (isOneWord(groupHeadings[group])) {
-        expectTheShrinkRule(groupTileNameTestID(group));
-      } else {
-        expect(screen.getByTestId(groupTileNameTestID(group)).props.onTextLayout).toBeDefined();
-      }
+      const name = screen.getByTestId(groupTileNameTestID(group));
+      expect(name.props.adjustsFontSizeToFit).toBeUndefined();
+      expect(name.props.onTextLayout).toBeDefined();
+      expect(styleOf(groupTileNameTestID(group)).fontSize).toBe(LABEL_SIZE);
+    }
+  });
+
+  it('should step every name under the log tiles down together when one word is cut', async () => {
+    await render(<GroupTiles groups={groups} onOpen={() => undefined} />);
+
+    await act(() => {
+      layOut(groupTileNameTestID('mood'), ['Настроени', 'е']);
+      layOut(groupTileNameTestID('digestive'), ['Работ', 'а ЖКТ']);
+    });
+
+    for (const group of groups) {
+      expect(styleOf(groupTileNameTestID(group)).fontSize).toBeCloseTo(
+        LABEL_SIZE * LABEL_SCALES[1],
+      );
+    }
+  });
+
+  it('should lay the log tiles three to a row, at their own size again, when a word is still cut at the floor', async () => {
+    await render(<GroupTiles groups={groups} onOpen={() => undefined} />);
+    const widthOf = (group: (typeof groups)[number]): unknown =>
+      StyleSheet.flatten(screen.getByTestId(groupTileTestID(group)).props.style).width;
+
+    expect(widthOf('mood')).toBe(`${100 / TILES_IN_A_ROW}%`);
+
+    for (let step = 0; step < LABEL_SCALES.length; step += 1) {
+      await act(() => layOut(groupTileNameTestID('mood'), ['Настроени', 'е']));
+    }
+
+    for (const group of groups) {
+      expect(widthOf(group)).toBe(`${100 / NARROW_TILES_IN_A_ROW}%`);
+      expect(styleOf(groupTileNameTestID(group)).fontSize).toBe(LABEL_SIZE);
     }
   });
 

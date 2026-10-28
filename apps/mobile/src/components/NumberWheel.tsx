@@ -6,10 +6,10 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  Text,
   type TextStyle,
   View,
 } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 /** Points. Taller than the tap floor, so the number in the pill has room for its larger type. */
 export const WHEEL_ROW_HEIGHT = MINIMUM_TAP_TARGET + 8;

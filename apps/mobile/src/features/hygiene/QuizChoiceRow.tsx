@@ -1,6 +1,7 @@
 import { colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 /**
  * One answer of the quiz, as the hygieneQuiz board draws it: a white row with a radio ring at the

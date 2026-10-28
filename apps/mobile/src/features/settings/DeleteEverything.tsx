@@ -1,7 +1,7 @@
 import { colour, radius, space, textStyle } from '@emi/tokens';
-import { Icon } from '@emi/ui';
+import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { PrimaryButton, SecondaryButton, TextLink } from '../../components/Button';
 import { RoundIconButton } from '../../components/RoundIconButton';

@@ -27,3 +27,10 @@ export function textStyle(role: TypeRoleName): TextStyle {
     lineHeight: step.lineHeight,
   };
 }
+
+/**
+ * The most the iOS text size setting may enlarge a run of text, as a multiple of its role. Past
+ * this the labels in a tile, a chip or a tab no longer fit their box, so the scale stops reading
+ * as one scale.
+ */
+export const MAXIMUM_TEXT_GROWTH = 1.3;

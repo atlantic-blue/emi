@@ -1,7 +1,8 @@
 import { type SymptomGroup, symptomsInGroup, symptoms as theCatalogue } from '@emi/cycle';
 import { colour, radius, space, textStyle } from '@emi/tokens';
 import { type ReactNode, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { CappedText as Text } from '@emi/ui';
 
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
