@@ -891,7 +891,7 @@ export const english = {
   'period.startedOnAnotherDay': 'Started on another day?',
   'period.title': 'Period',
   'phase.about.follicular':
-    'It starts with your period and ends the day before the ovulation phase.',
+    'It starts the day after your period and ends the day before the ovulation phase.',
   'phase.about.luteal':
     'It starts the day after the ovulation phase and ends the day before your next period.',
   'phase.about.ovulation':

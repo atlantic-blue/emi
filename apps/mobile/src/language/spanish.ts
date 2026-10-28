@@ -892,7 +892,7 @@ export const spanish: CatalogueIn<'es'> = {
   'period.startedOnAnotherDay': '¿Empezó otro día?',
   'period.title': 'Regla',
   'phase.about.follicular':
-    'Empieza con tu periodo y termina el día antes de la fase de ovulación.',
+    'Empieza el día después de tu periodo y termina el día antes de la fase de ovulación.',
   'phase.about.luteal':
     'Empieza el día después de la fase de ovulación y termina el día antes de tu próximo periodo.',
   'phase.about.ovulation':

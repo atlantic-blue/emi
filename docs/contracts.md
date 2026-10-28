@@ -363,10 +363,11 @@ Input: her cycle length, her period length, and the cycle day of the forecast ov
 cycles are complete, the ovulation day is the cycle length plus one, minus the luteal length.
 
 Output: four phases, as cycle days counted from one. The period is days 1 to the period length. The
-follicular phase is days 1 to the day before the ovulation phase, so it includes the period. The
-ovulation phase is five days: the ovulation day, two days before it and two days after it. The
-luteal phase is the day after the ovulation phase to the last day of the cycle. On a period day the
-phase she is in is the period. A day past the last day is luteal until the next period starts.
+follicular phase is the day after the period to the day before the ovulation phase, so no two
+phases share a day. The ovulation phase is five days: the ovulation day, two days before it and
+two days after it. The luteal phase is the day after the ovulation phase to the last day of the
+cycle. On a period day the phase she is in is the period. A day past the last day is luteal until
+the next period starts.
 
 The ring draws four arcs that do not overlap: the period arc, then the follicular days after the
 period, then the ovulation phase, then the luteal phase. The fertile window of CYCLE-4 is a

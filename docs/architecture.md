@@ -209,7 +209,8 @@ contract CYCLE-6. Its input is three whole numbers:
 Its output holds each phase as `from` and `to`, two cycle days, both inside:
 
 - `period`, day 1 to the period length.
-- `follicular`, day 1 to the day before the ovulation phase. It includes the period.
+- `follicular`, the day after the period to the day before the ovulation phase. No two phases
+  share a day.
 - `ovulation`, the ovulation day, two days before it and two days after it. It never starts on a
   period day, so in a short cycle it can hold fewer than five days. A phase with no days has `to`
   one day before `from`.

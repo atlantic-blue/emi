@@ -56,12 +56,7 @@ export interface CycleShape {
   readonly fertileToDay: number;
 }
 
-/**
- * The four arcs, from the phase rule in `@emi/cycle`. The arcs never overlap, so the period arc is
- * days 1 to the period length and the follicular arc is the days after it up to the ovulation
- * phase. The follicular phase itself starts on day 1 and holds the period: the ring draws the
- * period over it because the period is the phase she is in while she bleeds.
- */
+/** The four arcs, from the phase rule in `@emi/cycle`, which gives the four phases no shared day. */
 export function phasesOf(shape: CycleShape): PhaseSpan[] {
   const phases = cyclePhaseDays({
     cycleLengthDays: shape.cycleLengthDays,
@@ -72,7 +67,7 @@ export function phasesOf(shape: CycleShape): PhaseSpan[] {
 
   return [
     { phase: 'period', days: periodDays },
-    { phase: 'follicular', days: phases.follicular.to - periodDays },
+    { phase: 'follicular', days: phases.follicular.to - phases.follicular.from + 1 },
     { phase: 'ovulation', days: phases.ovulation.to - phases.ovulation.from + 1 },
     { phase: 'luteal', days: phases.luteal.to - phases.luteal.from + 1 },
   ];
