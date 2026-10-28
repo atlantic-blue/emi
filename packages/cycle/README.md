@@ -29,14 +29,14 @@ length variation of 2.6 days. Each one carries what it measures, what the paper 
 and the citation, so a screen can put her own number beside a published one and say where that
 one came from.
 
-`symptoms` is the catalogue: seventy entries across eight groups. `loggableSymptoms` leaves out the
+`symptoms` is the catalogue: seventy five entries across nine groups. `loggableSymptoms` leaves out the
 retired ones, `findSymptom` resolves a retired slug anyway, and `unknownSymptomSlugs` returns the
 offenders rather than a boolean, so a refusal can name them.
 
 `moods` reads the mood group of that same catalogue, because a mood is the thing she reaches for
 every day and a record keeps it in its own field. `loggableMoods`, `findMood` and
 `unknownMoodSlugs` work the way the symptom four do, and `symptomsOutsideTheMoodPicker` returns the
-other sixty, which is what the log sheet offers as symptoms. There is one catalogue and one slug for
+other sixty three, which is what the log sheet offers as symptoms. There is one catalogue and one slug for
 each thing in it, so no word can be offered twice or counted twice.
 
 ## How to run its tests

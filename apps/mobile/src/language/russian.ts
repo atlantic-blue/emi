@@ -1153,6 +1153,7 @@ export const russian: CatalogueIn<'ru'> = {
   'symptom.acne': 'Акне',
   'symptom.angry': 'Злость',
   'symptom.anxious': 'Тревога',
+  'symptom.appetite-normal': 'Нормальный аппетит',
   'symptom.appetite-increase': 'Повышенный аппетит',
   'symptom.appetite-loss': 'Потеря аппетита',
   'symptom.bloating': 'Вздутие',

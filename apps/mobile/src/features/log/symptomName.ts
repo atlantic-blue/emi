@@ -38,6 +38,7 @@ const keysOfTheCatalogue: readonly WordKey[] = [
   'symptom.leg-ache',
   'symptom.shoulder-tension',
   'symptom.vulval-pain',
+  'symptom.appetite-normal',
   'symptom.appetite-increase',
   'symptom.appetite-loss',
   'symptom.food-craving',

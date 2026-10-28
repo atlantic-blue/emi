@@ -1117,6 +1117,7 @@ export const spanish: CatalogueIn<'es'> = {
   'symptom.acne': 'Acné',
   'symptom.angry': 'Enfadada',
   'symptom.anxious': 'Ansiosa',
+  'symptom.appetite-normal': 'Apetito normal',
   'symptom.appetite-increase': 'Más apetito',
   'symptom.appetite-loss': 'Falta de apetito',
   'symptom.bloating': 'Hinchazón',
