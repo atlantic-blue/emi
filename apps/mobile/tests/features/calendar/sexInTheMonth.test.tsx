@@ -168,6 +168,7 @@ describe('the heart in the month and in its legend', () => {
           onOpenDay={() => undefined}
           onPressDay={() => undefined}
           onRecordSex={() => undefined}
+          onRemovePeriodDay={() => undefined}
           onToday={() => undefined}
           today={theDaySheOpensIt}
         />

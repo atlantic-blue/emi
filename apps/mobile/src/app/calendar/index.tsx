@@ -19,9 +19,11 @@ import {
 } from '../../features/calendar/theDaySheet';
 import { type HerDay, herDaysOn } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
+import { editFlow } from '../../features/log/editDay';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { addMonths, localDay, startOfMonth } from '../../features/onboarding/days';
 import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
+import { useRescheduleHerReminder } from '../../features/reminder/rescheduleHerReminder';
 import { hadSex } from '../../features/sex/hadSex';
 import { sexAddress } from '../../features/sex/sexAddress';
 import type { DayVault } from '../../services/vault/dayVault';
@@ -113,6 +115,7 @@ export default function CalendarRoute(): ReactNode {
   // having changed it, and the card is worked out again from the days read on the way back. Until
   // she presses a day the card names today, so the way to her whole period is always on the glass.
   const [shePressed, setShePressed] = useState<string>(today);
+  const rescheduleTheReminder = useRescheduleHerReminder();
 
   useFocusEffect(
     useCallback(() => {
@@ -149,6 +152,15 @@ export default function CalendarRoute(): ReactNode {
     setHers(herMonthOf(database, vault, profiles, today, month));
   }, [database, month, profiles, today, vault]);
 
+  const removeThePeriodDay = useCallback(
+    (day: string) => {
+      editFlow(database, vault, { day, flow: 'none', now: new Date(), today });
+      setHers(herMonthOf(database, vault, profiles, today, month));
+      rescheduleTheReminder();
+    },
+    [database, month, profiles, rescheduleTheReminder, today, vault],
+  );
+
   if (!isDone) {
     return <Redirect href="/onboarding/welcome" />;
   }
@@ -164,6 +176,7 @@ export default function CalendarRoute(): ReactNode {
         onLaterMonth={() => sheMovesTo(addMonths(month, 1))}
         onOpenDay={(day) => router.push(`/day/${day}`)}
         onRecordSex={(day) => router.push(sexAddress(day))}
+        onRemovePeriodDay={removeThePeriodDay}
         onPressDay={setShePressed}
         onToday={() => router.replace('/')}
         hadSexOn={hers.hadSexOn}

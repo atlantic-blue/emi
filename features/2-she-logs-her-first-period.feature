@@ -937,6 +937,14 @@ Feature: She opens Emi and logs her first period
     Then that day holds no answer about sex, and keeps its flow
     And the card of that day no longer names sex, and the heart is gone from that day
 
+  Scenario: SCREEN-4, she removes a day of a past month she marked as a period by mistake, in one press
+    Given her phone holds four recorded period days, the last of them today
+    When she opens last month in the calendar, opens a day she did not bleed on, and says her period came that day
+    Then the month fills that day, a cycle starts on it, and its card carries Remove period day
+    When she presses Remove period day
+    Then that day holds no bleeding, and no cycle starts on it
+    And the month no longer fills that day, and its card carries no Remove period day
+
   Scenario: SCREEN-2, she records discharge and a product on a day
     Given her phone holds four recorded period days, the last of them today
     When she opens the Period page of today

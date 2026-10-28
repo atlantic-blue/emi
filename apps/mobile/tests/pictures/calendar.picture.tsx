@@ -140,7 +140,7 @@ const theStates: readonly State[] = [
   },
   {
     title: 'The month before, with a day she bled on pressed',
-    note: 'Her period ran from the fourteenth. The picked day carries a ring of its own, and the card says its cycle day, its phase and that nothing else is logged. The round button opens that day, and Record sex opens the Sex page of that day.',
+    note: 'Her period ran from the fourteenth. The picked day carries a ring of its own, and the card says its cycle day, its phase and that nothing else is logged. The round button opens that day, and Record sex opens the Sex page of that day. Remove period day sits on the next line, under the edge of this frame, and takes the bleeding off that day alone.',
     month: aDaySheWasBleedingOn,
     shePressed: aDaySheWasBleedingOn,
   },
@@ -159,6 +159,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
         onLaterMonth={() => undefined}
         onOpenDay={() => undefined}
         onRecordSex={() => undefined}
+        onRemovePeriodDay={() => undefined}
         onPressDay={() => undefined}
         onToday={() => undefined}
         phaseOn={(day) => theDayPhaseOn(from, day)}

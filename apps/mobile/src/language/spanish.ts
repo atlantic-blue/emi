@@ -97,6 +97,7 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.screen.later': 'Siguiente',
   'calendar.screen.laterMonth': 'Mes siguiente',
   'calendar.screen.recordSex': 'Registrar sexo',
+  'calendar.screen.removePeriodDay': 'Quitar día de periodo',
   'calendar.today': 'Hoy',
   'calendar.weekday.friday': 'Viernes',
   'calendar.weekday.monday': 'Lunes',

@@ -166,6 +166,7 @@ import {
   daySheetLineTestID,
   daySheetOpenTestID,
   daySheetRecordSexTestID,
+  daySheetRemovePeriodDayTestID,
   daySheetTestID,
 } from '../apps/mobile/src/features/calendar/DaySheet';
 import { sexMarkTestID } from '../apps/mobile/src/features/calendar/CycleMonth';
@@ -4043,6 +4044,71 @@ defineFeature(feature, (test) => {
         expect(screen.queryByTestId(sexMarkTestID(thatDay))).toBeNull();
       },
     );
+  });
+
+  test('SCREEN-4, she removes a day of a past month she marked as a period by mistake, in one press', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const theWrongDay = addDays(theDaySheOpensIt, -28);
+    const theDayOnHerPhone = (): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), theWrongDay);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+    const herCycleStarts = (): string[] =>
+      listCycles(herDatabase())
+        .filter((cycle) => !cycle.isPredicted)
+        .map((cycle) => cycle.startedOn);
+    const whatTheSquareSays = (): string =>
+      String(screen.getByTestId(dayTestID(theWrongDay)).props.accessibilityLabel);
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when(
+      'she opens last month in the calendar, opens a day she did not bleed on, and says her period came that day',
+      async () => {
+        await sheOpens(`/calendar?${dayParameter}=${theWrongDay}`);
+        await screen.findByTestId(dayTestID(theWrongDay));
+        await shePresses(dayTestID(theWrongDay));
+        expect(screen.queryByTestId(daySheetRemovePeriodDayTestID)).toBeNull();
+        await shePresses(daySheetOpenTestID);
+        await screen.findByTestId(flowPickerTestID);
+        await shePresses(flowOptionTestID('medium'));
+        await shePresses(logFlowDoneTestID);
+        await screen.findByTestId(daySheetTestID);
+      },
+    );
+
+    then(
+      'the month fills that day, a cycle starts on it, and its card carries Remove period day',
+      () => {
+        expect(whatTheSquareSays()).toContain('you bled');
+        expect(herCycleStarts()).toContain(theWrongDay);
+        expect(screen.getByTestId(daySheetRemovePeriodDayTestID)).toHaveTextContent(
+          'Remove period day',
+        );
+      },
+    );
+
+    when('she presses Remove period day', async () => {
+      await shePresses(daySheetRemovePeriodDayTestID);
+    });
+
+    then('that day holds no bleeding, and no cycle starts on it', () => {
+      expect(theDayOnHerPhone()?.flow).toBe('none');
+      expect(herCycleStarts()).not.toContain(theWrongDay);
+    });
+
+    and('the month no longer fills that day, and its card carries no Remove period day', () => {
+      expect(whatTheSquareSays()).not.toContain('you bled');
+      expect(screen.queryByTestId(daySheetRemovePeriodDayTestID)).toBeNull();
+    });
   });
 
   test('SCREEN-4, a profile and a day saved while Digestion was one group read under Appetite and Digestive symptoms', ({
