@@ -70,6 +70,7 @@ export const symptoms: readonly Symptom[] = [
   { slug: 'shoulder-tension', group: 'pain' },
   { slug: 'vulval-pain', group: 'pain' },
 
+  { slug: 'appetite-normal', group: 'appetite' },
   { slug: 'appetite-increase', group: 'appetite' },
   { slug: 'appetite-loss', group: 'appetite' },
   { slug: 'food-craving', group: 'appetite' },

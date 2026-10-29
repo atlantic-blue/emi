@@ -92,7 +92,7 @@ describe('a retired symptom still reads on an old record', () => {
       const sleep = symptomsInGroup('sleep', afterNappingRetires).map((symptom) => symptom.slug);
 
       expect(sleep).not.toContain('napping');
-      expect(loggableSymptoms(afterNappingRetires)).toHaveLength(75);
+      expect(loggableSymptoms(afterNappingRetires)).toHaveLength(76);
     });
   });
 

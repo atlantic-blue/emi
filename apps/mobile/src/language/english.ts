@@ -1115,6 +1115,7 @@ export const english = {
   'symptom.acne': 'Acne',
   'symptom.angry': 'Angry',
   'symptom.anxious': 'Anxious',
+  'symptom.appetite-normal': 'Normal appetite',
   'symptom.appetite-increase': 'Increased appetite',
   'symptom.appetite-loss': 'Loss of appetite',
   'symptom.bloating': 'Bloating',

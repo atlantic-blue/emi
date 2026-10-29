@@ -490,6 +490,10 @@ flowchart LR
 - `flow`, one of `none`, `spotting`, `light`, `medium`, `heavy`, optional.
 - `bleedingIsUnexpected`, a boolean, optional.
 - `symptoms`, a list of slugs from the catalogue in `packages/cycle/src/symptoms.ts`, optional.
+  The Appetite group holds `appetite-normal` ("Normal appetite"), `appetite-increase`,
+  `appetite-loss`, `food-craving`, `sweet-craving` and `salty-craving`. A day saved before
+  `appetite-normal` existed does not hold it and reads as before, because a record keeps only the
+  slugs she picked.
 - `moods`, a list of slugs from the mood group of that catalogue, optional.
 - `energy`, a whole number from 1 to 5, optional.
 - `temperatureCelsius`, a number from 34.0 to 42.0 with one decimal place, optional.
