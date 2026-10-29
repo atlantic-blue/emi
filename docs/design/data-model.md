@@ -540,7 +540,9 @@ diary.
 - Symptoms: `cramps`, `bloating`, `breast-tenderness` ("Tender breasts" on the board), `headache`,
   `acne` and `ovulation-pain` ("Pain on one side" on the board).
 - Food: `food-craving` ("Cravings"), `appetite-increase` ("Hungry"), `appetite-loss` ("Little
-  appetite"), `sweet-craving` ("Sweet") and `salty-craving` ("Salty").
+  appetite"), `sweet-craving` ("Sweet"), `salty-craving` ("Salty"), `spicy-craving` ("Spicy") and
+  `meat-craving` ("Meat"). `spicy-craving` and `meat-craving` came after the diary stopped writing
+  `food`, so they have no value in `food`, and a day saved before them simply does not hold them.
 - Emotions: `calm`, `happy`, `energetic`, `irritable`, `anxious` and `sad`.
 
 Earlier versions of the diary wrote a mood to `moods` and a food to `food`, with the food values in

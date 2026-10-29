@@ -41,6 +41,8 @@ const slugsEverShipped: readonly string[] = [
   'food-craving',
   'sweet-craving',
   'salty-craving',
+  'spicy-craving',
+  'meat-craving',
   'forgetful',
   'gas',
   'greasy-hair',
@@ -107,9 +109,9 @@ function retire(slug: string, on: string): readonly Symptom[] {
 }
 
 describe('the symptom catalogue', () => {
-  it('offers seventy five symptoms, so the catalogue cannot silently shrink', () => {
-    expect(loggableSymptoms()).toHaveLength(75);
-    expect(loggableSymptoms()).not.toHaveLength(74);
+  it('offers seventy seven symptoms, so the catalogue cannot silently shrink', () => {
+    expect(loggableSymptoms()).toHaveLength(77);
+    expect(loggableSymptoms()).not.toHaveLength(76);
   });
 
   it('holds every slug it ever shipped, and holds nothing it never shipped', () => {
@@ -147,7 +149,7 @@ describe('the symptom catalogue', () => {
       'mood 12',
       'energy 8',
       'pain 11',
-      'appetite 6',
+      'appetite 8',
       'digestive 8',
       'skin 10',
       'sleep 8',
@@ -168,7 +170,7 @@ describe('the split of digestion into appetite and digestive symptoms', () => {
     expect(symptomGroups.indexOf('digestive')).toBe(symptomGroups.indexOf('appetite') + 1);
   });
 
-  it('puts a normal appetite, hunger, cravings, sweet and salty under appetite', () => {
+  it('puts a normal appetite, hunger, cravings, sweet, salty, spicy and meat under appetite', () => {
     expect(symptomsInGroup('appetite').map((symptom) => symptom.slug)).toEqual([
       'appetite-normal',
       'appetite-increase',
@@ -176,6 +178,8 @@ describe('the split of digestion into appetite and digestive symptoms', () => {
       'food-craving',
       'sweet-craving',
       'salty-craving',
+      'spicy-craving',
+      'meat-craving',
     ]);
   });
 
@@ -235,7 +239,7 @@ describe('a retired symptom', () => {
   it('is never offered again', () => {
     const offered = loggableSymptoms(afterNappingRetires).map((symptom) => symptom.slug);
 
-    expect(offered).toHaveLength(74);
+    expect(offered).toHaveLength(76);
     expect(offered).not.toContain('napping');
     expect(
       symptomsInGroup('sleep', afterNappingRetires).map((symptom) => symptom.slug),

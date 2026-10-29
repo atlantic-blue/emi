@@ -44,6 +44,8 @@ const keysOfTheCatalogue: readonly WordKey[] = [
   'symptom.food-craving',
   'symptom.sweet-craving',
   'symptom.salty-craving',
+  'symptom.spicy-craving',
+  'symptom.meat-craving',
   'symptom.nausea',
   'symptom.bloating',
   'symptom.constipation',

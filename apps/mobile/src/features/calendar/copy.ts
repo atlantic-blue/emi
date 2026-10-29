@@ -1,6 +1,5 @@
-import { phaseLabel } from '@emi/tokens';
-
 import { words } from '../../language';
+import { phaseName } from '../cycle/copy';
 import { monthNames, ordinal } from '../forecast/copy';
 import type { WhatSheChanged } from './savePeriod';
 import { weekdayOf } from '../onboarding/days';
@@ -127,7 +126,7 @@ function theCycleSaid(says: Extract<WhatTheSheetSays, { kind: 'lived' }>): strin
 
   return words('calendar.daySheet.cycleDay', undefined, {
     day: says.cycleDay,
-    phase: phaseLabel[says.phase].toLowerCase(),
+    phase: phaseName(says.phase).toLowerCase(),
   });
 }
 
