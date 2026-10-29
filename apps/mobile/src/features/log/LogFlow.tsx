@@ -8,7 +8,7 @@ import {
   textStyle,
 } from '@emi/tokens';
 import { Icon, CappedText as Text } from '@emi/ui';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { PrimaryButton } from '../../components/Button';
@@ -21,6 +21,7 @@ import { SettingsRow } from '../../components/SettingsRow';
 import { words } from '../../language';
 import { cycleCopy, phaseName, ringCycleLengthWords, ringDayNumberWords } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
+import { DayNote } from './DayNote';
 import { FlowPicker } from './FlowPicker';
 import { GroupTiles } from './GroupTiles';
 import { LogHeader } from './LogHeader';
@@ -30,7 +31,7 @@ import { UnexpectedBleeding } from './UnexpectedBleeding';
 /**
  * The log of one day, from the log board and the day board: the header, the small ring of today
  * with the day of her cycle and its phase, her flow as five round buttons, her symptoms as the
- * eight group tiles, and the line that says where the day is kept.
+ * eight group tiles, a note in her own words, and the line that says where the day is kept.
  *
  * The flow is written on the press, as it always was. A tile opens the symptoms of its group, so
  * the screen never lists every symptom at once.
@@ -115,6 +116,8 @@ interface Props {
   readonly groups: readonly SymptomGroup[];
   /** What the day already carries. Empty where it carries nothing. */
   readonly symptoms: readonly string[];
+  /** Her note on the day as it is saved. Empty where she wrote none. */
+  readonly note: string;
   readonly dayPages?: DayPages;
   readonly onPick: (flow: Flow) => void;
   readonly onMark: (marked: boolean) => void;
@@ -124,6 +127,8 @@ interface Props {
   readonly onOtherDischarge: () => void;
   /** A press on a chip of the day takes that symptom off the day. */
   readonly onToggleSymptom: (slug: string) => void;
+  /** The whole note as the box holds it. The screen writes it only when it differs. */
+  readonly onNote: (note: string) => void;
   readonly onLeave: () => void;
   readonly onDone: () => void;
 }
@@ -132,6 +137,14 @@ export function LogFlow(props: Props): ReactNode {
   // The mark answers a question about bleeding, so it is offered on the days that carry some. The
   // test is the arithmetic's own, which is why a spot can be marked and a day of nothing cannot.
   const sheBled = props.chosen !== undefined && isBleeding({ day: props.day, flow: props.chosen });
+  const [note, setNote] = useState(props.note);
+  // A day keeps no blank note, so blank is sent as empty and matches the day it is compared with.
+  const giveTheNote = () => props.onNote(note.trim() === '' ? '' : note);
+  // Done can be pressed while the box still has focus, and then the box never ends its editing.
+  const leaving = (leave: () => void) => () => {
+    giveTheNote();
+    leave();
+  };
 
   return (
     <Screen
@@ -145,8 +158,8 @@ export function LogFlow(props: Props): ReactNode {
           doneTestID={logFlowDoneTestID}
           leave={props.leave}
           leaveLabel={props.leave === 'back' ? logFlowCopy.back : logFlowCopy.close}
-          onDone={props.onDone}
-          onLeave={props.onLeave}
+          onDone={leaving(props.onDone)}
+          onLeave={leaving(props.onLeave)}
           title={props.title}
           titleTestID={logFlowWhenTestID}
         />
@@ -199,6 +212,8 @@ export function LogFlow(props: Props): ReactNode {
           </View>
         </Card>
 
+        <DayNote note={note} onChange={setNote} onEndEditing={giveTheNote} />
+
         {props.dayPages === undefined ? null : (
           <Card testID={logFlowDayPagesTestID}>
             <RowGroup testID={`${logFlowDayPagesTestID}-rows`}>
@@ -219,7 +234,9 @@ export function LogFlow(props: Props): ReactNode {
         )}
 
         {/* The line says the day is saved, so it waits until the day holds something to save. */}
-        {props.chosen === undefined && props.symptoms.length === 0 ? null : (
+        {props.chosen === undefined &&
+        props.symptoms.length === 0 &&
+        props.note.trim() === '' ? null : (
           <View style={styles.saved}>
             <LockLine testID={logFlowSavedTestID} words={logFlowCopy.saved} />
           </View>
@@ -230,7 +247,7 @@ export function LogFlow(props: Props): ReactNode {
         <View style={styles.foot}>
           <PrimaryButton
             label={logFlowCopy.done}
-            onPress={props.onDone}
+            onPress={leaving(props.onDone)}
             testID={logFlowFootDoneTestID}
           />
         </View>

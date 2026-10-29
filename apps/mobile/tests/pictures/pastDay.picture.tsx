@@ -119,7 +119,9 @@ async function drawn(state: State): Promise<DrawnScreen> {
           marked={false}
           onDone={() => undefined}
           onLeave={() => undefined}
+          note=""
           onMark={() => undefined}
+          onNote={() => undefined}
           onOpenGroup={() => undefined}
           onPick={() => undefined}
           onOtherDischarge={() => undefined}

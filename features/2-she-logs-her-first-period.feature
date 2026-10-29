@@ -212,6 +212,14 @@ Feature: She opens Emi and logs her first period
     Then that Monday is at revision 2
     And today holds nothing, because she edited a Monday and not today
 
+  Scenario: SCREEN-4, she writes a note on a day she lived and reads it when she opens the day again
+    Given her phone holds six periods and a Monday she said nothing happened on
+    When she opens that Monday
+    And she writes her own thoughts in the note and presses Done
+    Then that Monday holds her note, sealed, beside the flow it already held
+    When she opens that Monday again
+    Then the note box shows the words she wrote
+
   Scenario: SCREEN-4, a day that has not happened yet is refused
     Given her phone holds six periods and a Monday she said nothing happened on
     When she opens a day two days ahead of today

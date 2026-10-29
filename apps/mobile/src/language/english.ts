@@ -610,6 +610,8 @@ export const english = {
   'log.energy.hint': 'Press the one you chose again to clear it',
   'log.flow.done': 'Done',
   'log.flow.close': 'Close',
+  'log.note.title': 'Note',
+  'log.note.placeholder': 'Write a note',
   'log.symptoms.title': 'Symptoms',
   'log.symptoms.search': 'Search',
   'log.flow.heavy': 'Heavy',
