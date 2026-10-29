@@ -6,6 +6,7 @@ import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 import {
   ringCentreDayTestID,
   ringCentreLengthTestID,
+  ringCentreNextPeriodTestID,
   ringCentrePhaseTestID,
 } from '../../src/components/CycleRing';
 import {
@@ -28,8 +29,9 @@ import {
  * drawings it is held to, and the two days it is read on.
  *
  * The approved todayPhases board replaces the line. The day of her cycle moves into the middle of
- * the ring as "Day N", with the phase name over it, and the place under the ring takes a phase card
- * that names the phase and its days. The drawings are still read, because the day and the phase
+ * the ring as "Day N", with the phase name over it during her period and how long until her next
+ * period on the other days, and the place under the ring takes a phase card that names the phase
+ * and its days. The drawings are still read, because the day and the phase
  * each drawing is drawn on come from them.
  *
  * Two drawings carry it, because the whole question of this step is a word a stranger could read.
@@ -135,6 +137,10 @@ function saidUnder(testID: string): string {
   return textIn(screen.getByTestId(testID)).join(' ');
 }
 
+function saidIfDrawn(testID: string): string | undefined {
+  return screen.queryByTestId(testID) === null ? undefined : saidUnder(testID);
+}
+
 /** What the middle of the ring of Today and the card under it say, and the size of each part. */
 export interface PhaseOnTheGlass {
   /** The day of her cycle, taken out of "Day N" in the middle of the ring. */
@@ -143,10 +149,13 @@ export interface PhaseOnTheGlass {
   readonly daySaid: string;
   /** The length under it, "of about N". */
   readonly lengthSaid: string;
-  /** The phase name in the middle of the ring. */
-  readonly phase: string;
+  /** The phase name over the day, which the middle of the ring writes during her period. */
+  readonly phase: string | undefined;
+  /** How long until her next period, which the middle of the ring writes in place of the phase. */
+  readonly nextPeriod: string | undefined;
   readonly dayPoints: number | undefined;
-  readonly phasePoints: number | undefined;
+  /** The size of the line over the day, whichever of the two it is. */
+  readonly topLinePoints: number | undefined;
   /** The colour the phase name was drawn in, read back off the rendered style. */
   readonly phaseColour: string | undefined;
   /** The first line of the card under the ring: the phase and its days. */
@@ -158,15 +167,20 @@ export interface PhaseOnTheGlass {
 
 export function thePhaseSheReads(): PhaseOnTheGlass {
   const daySaid = saidUnder(ringCentreDayTestID);
+  const phase = saidIfDrawn(ringCentrePhaseTestID);
 
   return {
     day: Number(daySaid.replace(/\D+/g, '')),
     daySaid,
     lengthSaid: saidUnder(ringCentreLengthTestID),
-    phase: saidUnder(ringCentrePhaseTestID),
+    phase,
+    nextPeriod: saidIfDrawn(ringCentreNextPeriodTestID),
     dayPoints: pointsOf(ringCentreDayTestID),
-    phasePoints: pointsOf(ringCentrePhaseTestID),
-    phaseColour: colourOf(screen.getByTestId(ringCentrePhaseTestID)),
+    topLinePoints: pointsOf(
+      phase === undefined ? ringCentreNextPeriodTestID : ringCentrePhaseTestID,
+    ),
+    phaseColour:
+      phase === undefined ? undefined : colourOf(screen.getByTestId(ringCentrePhaseTestID)),
     cardDays: saidUnder(phaseCardDaysTestID),
     cardLine: saidUnder(phaseCardLineTestID),
     cardDaysPoints: pointsOf(phaseCardDaysTestID),

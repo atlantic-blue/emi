@@ -82,6 +82,7 @@ export function ringNameTestID(phase: PhaseName): string {
 
 export const ringArcsPressTestID = 'ring-arcs-press';
 export const ringCentrePhaseTestID = 'ring-centre-phase';
+export const ringCentreNextPeriodTestID = 'ring-centre-next-period';
 export const ringCentreDayTestID = 'ring-centre-day';
 export const ringCentreLengthTestID = 'ring-centre-length';
 
@@ -102,6 +103,11 @@ interface Props {
    */
   readonly look?: 'plain' | 'named' | 'small';
   readonly onPressArc?: (arc: RingArc) => void;
+  /**
+   * How long until her next period, in words. The ring of Today writes it in place of her phase,
+   * because the pointer and the arc it sits on already name the phase.
+   */
+  readonly nextPeriod?: string;
 }
 
 /** The small ring of the log takes the same floors as the ring of Today, so both draw one shape. */
@@ -125,6 +131,7 @@ export function CycleRing({
   centreWord = 'phase',
   look = 'plain',
   onPressArc,
+  nextPeriod,
 }: Props): ReactNode {
   if (look === 'small') {
     return <SmallRing cycleLengthDays={cycleLengthDays} day={day} phases={phases} />;
@@ -134,6 +141,7 @@ export function CycleRing({
     <NamedRing
       cycleLengthDays={cycleLengthDays}
       day={day}
+      nextPeriod={nextPeriod}
       onPressArc={onPressArc}
       phases={phases}
     />
@@ -157,7 +165,7 @@ function PlainRing({
   diameter,
   daysAhead,
   centreWord,
-}: Required<Omit<Props, 'look' | 'onPressArc'>>): ReactNode {
+}: Required<Omit<Props, 'look' | 'onPressArc' | 'nextPeriod'>>): ReactNode {
   const geometry = ringGeometry({ cycleLengthDays, day, phases });
   const centre = { x: diameter / 2, y: diameter / 2 };
   const radius = (diameter - RING_TRACK_WIDTH) / 2;
@@ -221,7 +229,8 @@ function NamedRing({
   day,
   phases,
   onPressArc,
-}: Pick<Props, 'cycleLengthDays' | 'day' | 'phases' | 'onPressArc'>): ReactNode {
+  nextPeriod,
+}: Pick<Props, 'cycleLengthDays' | 'day' | 'phases' | 'onPressArc' | 'nextPeriod'>): ReactNode {
   const geometry = ringGeometry({
     cycleLengthDays,
     day,
@@ -254,7 +263,9 @@ function NamedRing({
 
   return (
     <View
-      accessibilityLabel={ringSpokenLabel(day, cycleLengthDays, today)}
+      accessibilityLabel={[ringSpokenLabel(day, cycleLengthDays, today), nextPeriod]
+        .filter((said) => said !== undefined)
+        .join(', ')}
       accessibilityRole="image"
       accessible
       style={[styles.ring, { height: diameter, width: diameter }]}
@@ -302,12 +313,21 @@ function NamedRing({
         />
       </Animated.View>
       <View pointerEvents="none" style={styles.middle}>
-        <Text
-          style={[styles.phase, { color: colour[phasePalette[geometry.phase].ink] }]}
-          testID={ringCentrePhaseTestID}
-        >
-          {phaseFullName(geometry.phase)}
-        </Text>
+        {nextPeriod === undefined ? (
+          <Text
+            style={[styles.phase, { color: colour[phasePalette[geometry.phase].ink] }]}
+            testID={ringCentrePhaseTestID}
+          >
+            {phaseFullName(geometry.phase)}
+          </Text>
+        ) : (
+          <Text
+            style={[styles.nextPeriod, { color: colour[phasePalette.period.ink] }]}
+            testID={ringCentreNextPeriodTestID}
+          >
+            {nextPeriod}
+          </Text>
+        )}
         <Text style={styles.dayAsTheSubject} testID={ringCentreDayTestID}>
           {ringDayNumberWords(day)}
         </Text>
@@ -549,6 +569,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
+  },
+  // The top line sits where the inner edge of the band is narrower than across the middle, so it
+  // wraps a track and a half inside the band rather than run into the arcs at the largest text.
+  nextPeriod: {
+    ...textStyle(PHASE_NAME_ROLE),
+    maxWidth: 2 * (NAMED_RING_RADIUS - 1.5 * NAMED_RING_TRACK_WIDTH),
+    textAlign: 'center',
   },
   // Contract SCREEN-2 refuses the four words of the cycle above 14 points, and the phase name is
   // one of them, so the ring writes it at the label size wherever it is drawn.

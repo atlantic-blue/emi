@@ -333,6 +333,27 @@ export const russian: CatalogueIn<'ru'> = {
   'home.phaseCard.luteal.day': 'Перед месячными, день {from}',
   'home.phaseCard.luteal.days': 'Перед месячными, дни с {from} по {to}',
   'home.phaseCard.luteal.line': 'Дни после овуляции, до следующих месячных.',
+  'home.ring.nextPeriod.in': {
+    one: 'До месячных от {from} до {count} дня',
+    few: 'До месячных от {from} до {count} дней',
+    many: 'До месячных от {from} до {count} дней',
+  },
+  'home.ring.nextPeriod.today': 'Месячные, скорее всего, сегодня',
+  'home.ring.nextPeriod.within': {
+    one: 'Месячные начнутся в течение {count} дня',
+    few: 'Месячные начнутся в течение {count} дней',
+    many: 'Месячные начнутся в течение {count} дней',
+  },
+  'home.ring.ovulation.in': {
+    one: 'До предполагаемой овуляции от {from} до {count} дня',
+    few: 'До предполагаемой овуляции от {from} до {count} дней',
+    many: 'До предполагаемой овуляции от {from} до {count} дней',
+  },
+  'home.ring.ovulation.within': {
+    one: 'Предполагаемая овуляция в течение {count} дня',
+    few: 'Предполагаемая овуляция в течение {count} дней',
+    many: 'Предполагаемая овуляция в течение {count} дней',
+  },
   'home.ringArc.day': 'День {from} этого цикла',
   'home.ringArc.days': 'Дни с {from} по {to} этого цикла',
   'home.roundAction.sex': 'Секс',

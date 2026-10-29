@@ -33,7 +33,7 @@ const whenSheOpensIt = new Date('2026-05-14T12:00:00.000Z');
 const today = dayOf(whenSheOpensIt);
 
 /** How many sections the record holds. A guard that measured none would report success. */
-const theSectionsTheScreenHas = 12;
+const theSectionsTheScreenHas = 13;
 
 interface Read {
   readonly state: HerDataState;
@@ -257,7 +257,7 @@ describe('every section of the screen she opens is drawn from her own data or ab
       );
 
       expect(quiet.filter((section) => (section.simplyGoes ?? '').length === 0)).toEqual([]);
-      expect(quiet).toHaveLength(7);
+      expect(quiet).toHaveLength(8);
     });
   });
 });

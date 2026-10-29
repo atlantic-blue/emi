@@ -333,6 +333,23 @@ export const english = {
   'home.phaseCard.luteal.day': 'Before your period, day {from}',
   'home.phaseCard.luteal.days': 'Before your period, days {from} to {to}',
   'home.phaseCard.luteal.line': 'The days after ovulation, before your next period.',
+  'home.ring.nextPeriod.in': {
+    one: 'Period in {from} to {count} day',
+    other: 'Period in {from} to {count} days',
+  },
+  'home.ring.nextPeriod.today': 'Period likely today',
+  'home.ring.nextPeriod.within': {
+    one: 'Period within {count} day',
+    other: 'Period within {count} days',
+  },
+  'home.ring.ovulation.in': {
+    one: 'Estimated ovulation in {from} to {count} day',
+    other: 'Estimated ovulation in {from} to {count} days',
+  },
+  'home.ring.ovulation.within': {
+    one: 'Estimated ovulation within {count} day',
+    other: 'Estimated ovulation within {count} days',
+  },
   'home.ringArc.day': 'Day {from} of this cycle',
   'home.ringArc.days': 'Days {from} to {to} of this cycle',
   'home.roundAction.sex': 'Sex',

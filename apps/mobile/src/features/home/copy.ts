@@ -3,6 +3,7 @@ import type { PhaseName } from '@emi/tokens';
 
 import { type WordKey, words } from '../../language';
 import type { MeasuredNumber } from './herNumbers';
+import type { Countdown, OvulationCountdown } from './ringCountdown';
 
 /**
  * The words of the one screen she opens. They stay small, which is design section 9.1: she reads
@@ -259,4 +260,23 @@ export function patternCardReads(pattern: {
     name: pattern.name,
     when: patternWhenReads(pattern.anchor, pattern.day),
   });
+}
+
+/** The line in the middle of the ring that says how long until her next period. */
+export function nextPeriodWords(countdown: Countdown): string {
+  switch (countdown.kind) {
+    case 'in':
+      return words('home.ring.nextPeriod.in', countdown.toDays, { from: countdown.fromDays });
+    case 'within':
+      return words('home.ring.nextPeriod.within', countdown.toDays);
+    case 'today':
+      return words('home.ring.nextPeriod.today');
+  }
+}
+
+/** The line under the ring that says how long until the estimated ovulation. */
+export function ovulationWords(countdown: OvulationCountdown): string {
+  return countdown.kind === 'in'
+    ? words('home.ring.ovulation.in', countdown.toDays, { from: countdown.fromDays })
+    : words('home.ring.ovulation.within', countdown.toDays);
 }

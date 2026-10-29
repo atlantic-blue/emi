@@ -330,6 +330,23 @@ export const spanish: CatalogueIn<'es'> = {
   'home.phaseCard.luteal.day': 'Antes del periodo, día {from}',
   'home.phaseCard.luteal.days': 'Antes del periodo, días {from} a {to}',
   'home.phaseCard.luteal.line': 'Los días después de la ovulación, antes de tu próximo periodo.',
+  'home.ring.nextPeriod.in': {
+    one: 'Periodo dentro de {from} a {count} día',
+    other: 'Periodo dentro de {from} a {count} días',
+  },
+  'home.ring.nextPeriod.today': 'Periodo probablemente hoy',
+  'home.ring.nextPeriod.within': {
+    one: 'Periodo en un plazo de {count} día',
+    other: 'Periodo en un plazo de {count} días',
+  },
+  'home.ring.ovulation.in': {
+    one: 'Ovulación estimada dentro de {from} a {count} día',
+    other: 'Ovulación estimada dentro de {from} a {count} días',
+  },
+  'home.ring.ovulation.within': {
+    one: 'Ovulación estimada en un plazo de {count} día',
+    other: 'Ovulación estimada en un plazo de {count} días',
+  },
   'home.ringArc.day': 'Día {from} de este ciclo',
   'home.ringArc.days': 'Días {from} a {to} de este ciclo',
   'home.roundAction.sex': 'Sexo',

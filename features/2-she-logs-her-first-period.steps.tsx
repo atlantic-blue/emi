@@ -8,7 +8,9 @@ import {
   CYCLE_LENGTH_LOW_DAYS,
   CYCLES_BEFORE_A_FORECAST,
   addDays,
+  cyclePhaseDays,
   findSymptom,
+  ovulationDayWhileLearning,
   type PublishedFigure,
   type PublishedMeasurement,
   publishedFigures,
@@ -92,6 +94,7 @@ import {
   ringArcsPressTestID,
   ringCentreDayTestID,
   ringCentreLengthTestID,
+  ringCentreNextPeriodTestID,
   ringCentrePhaseTestID,
   ringNameTestID,
   ringTrackTestID,
@@ -103,6 +106,7 @@ import {
   ringArcPopoverNameTestID,
   ringArcPopoverOutsideTestID,
   ringArcPopoverTestID,
+  ringOvulationLineTestID,
 } from '../apps/mobile/src/features/home/RingOfToday';
 import {
   cycleCopy,
@@ -734,7 +738,10 @@ import {
 } from '../apps/mobile/tests/fixtures/theLogSheLandsOn';
 import {
   herFourRecordedPeriodDays,
+  herPeriodStartedOn,
   herPhoneHoldsFourRecordedPeriodDays,
+  sheSaidHerCycleRuns,
+  sheSaidHerPeriodRunsFor,
   theCalendarButton,
   theCalendarButtonTooSmallToPress,
   theDayTheRingCentreSays,
@@ -2847,7 +2854,7 @@ defineFeature(feature, (test) => {
       const later = thePointerDegrees();
       const ovulation = theArcsOnTheRing().find((arc) => arc.phase === 'ovulation') as DrawnArc;
 
-      expect(theRingSays()).toBe('Day 33 of 45, ovulation');
+      expect(theRingSays()).toBe('Day 33 of 45, ovulation, Period in 12 to 14 days');
       expect(later).toBeGreaterThan(early);
       expect(later).toBeLessThanOrEqual(ovulation.startDegrees + ovulation.sweepDegrees);
     });
@@ -3594,7 +3601,7 @@ defineFeature(feature, (test) => {
     and('the day of her cycle is drawn far larger than the phase over it', () => {
       const read = thePhaseSheReads();
 
-      expect(read.dayPoints).toBeGreaterThan(read.phasePoints ?? 0);
+      expect(read.dayPoints).toBeGreaterThan(read.topLinePoints ?? 0);
       expect(read.dayPoints).toBeGreaterThan(theLargestTheyMayBeDrawn * 2);
     });
 
@@ -3628,33 +3635,94 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('the same screen three weeks later reads her luteal phase the same way', async () => {
-      const onHerPeriodDay = thePhaseSheReads();
+    and(
+      'the same screen three weeks later says how long until her next period over the day, and names her luteal phase on the card',
+      async () => {
+        const onHerPeriodDay = thePhaseSheReads();
 
-      await app.close();
-      resetExpoSqlite();
-      resetExpoSecureStore();
-      const threeWeeksLater = new Date(`${theDaySheReachesHerLutealPhase}T12:00:00.000Z`);
-      jest.setSystemTime(threeWeeksLater);
-      await herPhoneHoldsFourRecordedPeriodDays(threeWeeksLater);
+        await app.close();
+        resetExpoSqlite();
+        resetExpoSecureStore();
+        const threeWeeksLater = new Date(`${theDaySheReachesHerLutealPhase}T12:00:00.000Z`);
+        jest.setSystemTime(threeWeeksLater);
+        await herPhoneHoldsFourRecordedPeriodDays(threeWeeksLater);
+        await sheOpens('/');
+
+        const inHerLutealPhase = thePhaseSheReads();
+
+        expect(
+          partsMissing(theTopOfTheDrawing('todayLuteal'), whatTheScreenSheOpensDrew()),
+        ).toEqual(theStripTheCalendarReplaced);
+        expect(inHerLutealPhase.day).toBe(theFirstLutealDayTheRuleGives);
+        expect(inHerLutealPhase.day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
+        expect(inHerLutealPhase.phase).toBeUndefined();
+        expect(inHerLutealPhase.nextPeriod).toMatch(/^Period (in \d+ to|within) \d+ days?$/);
+        expect(inHerLutealPhase.cardDays).toMatch(/^Before your period, days? \d+/);
+        // The four words stay where they are whatever the phase, so the line over the day is drawn
+        // at the size the period day drew its phase.
+        expect(inHerLutealPhase.topLinePoints).toBe(onHerPeriodDay.topLinePoints);
+        expect(inHerLutealPhase.dayPoints).toBe(onHerPeriodDay.dayPoints);
+        expect(theFourWordsDrawnTooLargeOn(screen.toJSON())).toEqual([]);
+      },
+    );
+  });
+
+  test('SCREEN-2, outside her period the ring counts down to her next period and to the estimated ovulation', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const theOvulationArc = cyclePhaseDays({
+      cycleLengthDays: sheSaidHerCycleRuns,
+      periodLengthDays: sheSaidHerPeriodRunsFor,
+      ovulationDay: ovulationDayWhileLearning(sheSaidHerCycleRuns),
+    }).ovulation;
+    const herCycleDay = sheSaidHerPeriodRunsFor + 2;
+
+    given(
+      'her phone holds four recorded period days, and today is after her period and before the ovulation arc',
+      async () => {
+        expect(herCycleDay).toBeLessThan(theOvulationArc.from);
+        const thatDay = new Date(`${addDays(herPeriodStartedOn, herCycleDay - 1)}T12:00:00.000Z`);
+        jest.setSystemTime(thatDay);
+        await herPhoneHoldsFourRecordedPeriodDays(thatDay);
+      },
+    );
+
+    when('she opens Emi', async () => {
       await sheOpens('/');
-
-      const inHerLutealPhase = thePhaseSheReads();
-
-      expect(partsMissing(theTopOfTheDrawing('todayLuteal'), whatTheScreenSheOpensDrew())).toEqual(
-        theStripTheCalendarReplaced,
-      );
-      expect(inHerLutealPhase.day).toBe(theFirstLutealDayTheRuleGives);
-      expect(inHerLutealPhase.day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
-      expect(inHerLutealPhase.phase).toBe('Luteal phase');
-      expect(inHerLutealPhase.cardDays).toMatch(/^Before your period, days? \d+/);
-      expect(inHerLutealPhase.phaseColour).toBe(theInkOf('luteal'));
-      // The four words stay where they are whatever the phase, so the word she reads here is
-      // drawn at the size the period day drew its own.
-      expect(inHerLutealPhase.phasePoints).toBe(onHerPeriodDay.phasePoints);
-      expect(inHerLutealPhase.dayPoints).toBe(onHerPeriodDay.dayPoints);
-      expect(theFourWordsDrawnTooLargeOn(screen.toJSON())).toEqual([]);
     });
+
+    then(
+      'over the day the ring says how long until her next period, as a range of days and not one day',
+      () => {
+        const said = textIn(screen.getByTestId(ringCentreNextPeriodTestID)).join('');
+        const [from, to] = (said.match(/\d+/g) ?? []).map(Number);
+
+        expect(said).toMatch(/^Period in \d+ to \d+ days$/);
+        expect(from).toBeLessThan(to ?? 0);
+        expect(screen.queryByTestId(ringCentrePhaseTestID)).toBeNull();
+      },
+    );
+
+    and(
+      'under the ring a line says how long until the estimated ovulation, as a range of days marked as an estimate',
+      () => {
+        expect(textIn(screen.getByTestId(ringOvulationLineTestID)).join('')).toBe(
+          `Estimated ovulation in ${theOvulationArc.from - herCycleDay} to ${theOvulationArc.to - herCycleDay} days`,
+        );
+      },
+    );
+
+    and(
+      'a screen reader hears the day, the phase and how long until her next period in one sentence',
+      () => {
+        expect(theRingSays()).toBe(
+          `Day ${herCycleDay} of ${sheSaidHerCycleRuns}, follicular, ${textIn(screen.getByTestId(ringCentreNextPeriodTestID)).join('')}`,
+        );
+      },
+    );
   });
 
   test('SCREEN-2, she opens the page of her phase from Today and records her diary there', ({
