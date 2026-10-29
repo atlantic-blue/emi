@@ -78,9 +78,7 @@ export function FirstForecast({
   return (
     <Screen drawsTheWash testID={firstForecastTestID}>
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
-        {daysLate !== undefined ? (
-          <Late daysLate={daysLate} />
-        ) : forecast.start === undefined ? (
+        {forecast.start === undefined ? (
           <WithNoDate
             cycleLengthDays={cycleLengthDays}
             needsCycles={forecast.kind === 'learning' ? forecast.needsCycles : 0}
@@ -88,6 +86,7 @@ export function FirstForecast({
         ) : (
           <WithARange
             cycleLengthDays={cycleLengthDays}
+            daysLate={daysLate}
             forecast={forecast}
             start={forecast.start}
           />
@@ -126,10 +125,12 @@ function whyLines(forecast: ForecastResult, cycleLengthDays: number | undefined)
 
 function WithARange({
   cycleLengthDays,
+  daysLate,
   forecast,
   start,
 }: {
   readonly cycleLengthDays: number | undefined;
+  readonly daysLate: number | undefined;
   readonly forecast: ForecastResult;
   readonly start: DayRange;
 }): ReactNode {
@@ -138,11 +139,17 @@ function WithARange({
   return (
     <View style={styles.column}>
       <Text accessibilityRole="header" style={styles.label} testID={firstForecastTitleTestID}>
-        {firstRunCopy.firstForecast.title}
+        {daysLate === undefined ? firstRunCopy.firstForecast.title : forecastCopy.nextPeriod}
       </Text>
-      <Text style={styles.range} testID={firstForecastRangeTestID}>
-        {rangeSentence(start)}
-      </Text>
+      {daysLate === undefined ? (
+        <Text style={styles.range} testID={firstForecastRangeTestID}>
+          {rangeSentence(start)}
+        </Text>
+      ) : (
+        <Text style={styles.range} testID={firstForecastLateTestID}>
+          {lateSentence(daysLate)}
+        </Text>
+      )}
       {isLearning ? (
         <View style={styles.tagRow} testID={firstForecastLearningTestID}>
           <StatusPill label={firstRunCopy.firstForecast.stillLearning} tone="accent" />
@@ -173,19 +180,6 @@ function WithARange({
           {stillLearningSentence(forecast.needsCycles)}
         </Text>
       ) : null}
-    </View>
-  );
-}
-
-function Late({ daysLate }: { readonly daysLate: number }): ReactNode {
-  return (
-    <View style={styles.column}>
-      <Text accessibilityRole="header" style={styles.label} testID={firstForecastTitleTestID}>
-        {forecastCopy.nextPeriod}
-      </Text>
-      <Text style={styles.range} testID={firstForecastLateTestID}>
-        {lateSentence(daysLate)}
-      </Text>
     </View>
   );
 }

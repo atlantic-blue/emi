@@ -476,7 +476,7 @@ import {
 } from '../apps/mobile/tests/fixtures/expoSecureStore';
 import {
   firstForecastActionTestID,
-  firstForecastDaysTestID,
+  firstForecastDayTestID,
   firstForecastLateTestID,
   firstForecastLinesTestID,
   firstForecastNoGuessTestID,
@@ -484,6 +484,7 @@ import {
   firstForecastStillLearningTestID,
   firstForecastTestID,
   firstForecastTitleTestID,
+  firstForecastWhyTestID,
 } from '../apps/mobile/src/features/onboarding/FirstForecast';
 import {
   whatEmiDoesActionTestID,
@@ -9785,15 +9786,18 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'her first forecast says her period is 2 days late, and the range that passed is gone',
+      'her first forecast says her period is 2 days late in place of the range, and the why card keeps the days that passed',
       () => {
         expect(screen.getByTestId(firstForecastTestID)).toBeTruthy();
         expect(whatItSays(firstForecastLateTestID)).toBe('Your period is 2 days late');
         expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
-        expect(
-          screen.queryByTestId(firstForecastDaysTestID, { includeHiddenElements: true }),
-        ).toBeNull();
         expect(screen.queryByText('Between the 15th and the 17th of October')).toBeNull();
+        expect(screen.getByTestId(firstForecastWhyTestID)).toBeTruthy();
+        expect(
+          ['2026-10-15', '2026-10-16', '2026-10-17'].map((day) =>
+            screen.queryByTestId(firstForecastDayTestID(day), { includeHiddenElements: true }),
+          ),
+        ).not.toContain(null);
       },
     );
 

@@ -1033,6 +1033,6 @@ Feature: She opens Emi and logs her first period
     And she reaches the step that asks for her last three periods
     And she gives those three periods, each 5 days long
     And she answers the rest of the questions
-    Then her first forecast says her period is 2 days late, and the range that passed is gone
+    Then her first forecast says her period is 2 days late in place of the range, and the why card keeps the days that passed
     When she reads on and taps Save and start
     Then the home screen says her period is 2 days late too
