@@ -75,6 +75,8 @@ export const symptoms: readonly Symptom[] = [
   { slug: 'food-craving', group: 'appetite' },
   { slug: 'sweet-craving', group: 'appetite' },
   { slug: 'salty-craving', group: 'appetite' },
+  { slug: 'spicy-craving', group: 'appetite' },
+  { slug: 'meat-craving', group: 'appetite' },
 
   { slug: 'nausea', group: 'digestive' },
   { slug: 'bloating', group: 'digestive' },
