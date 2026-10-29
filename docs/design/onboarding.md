@@ -37,7 +37,9 @@ flowchart LR
 
 - The welcome is the first screen. It says "Your cycle and how you feel, in one place." and three
   lines: she can log her periods and how she feels, there is no account, and what Emi is not: it
-  does not replace a doctor's advice, with the two denials after it.
+  does not replace a doctor's advice, with the two denials after it. The line ends with one sentence:
+  Emi does not make diagnoses, but her records can help when she sees a doctor. Download data makes
+  the report for that visit, named "Report for your doctor".
 - The welcome does not say "Nothing is sent anywhere". The delete sends a request to the server, so
   the sentence is not true.
 - The tour is one card: the ring at day 12 of a 29 day cycle with every arc at full colour, a

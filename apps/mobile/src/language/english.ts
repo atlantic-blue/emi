@@ -812,7 +812,7 @@ export const english = {
   'onboarding.welcome.line.noAccount':
     'There is no account. Emi never asks for your email address or a password.',
   'onboarding.welcome.line.whatEmiIs':
-    "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
+    "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device. Emi does not make diagnoses, but your records can help when you see a doctor.",
   'onboarding.welcome.line.whatYouLog':
     'Log your periods and how you feel, to understand your cycle better.',
   'onboarding.welcome.title': 'Your cycle and how you feel, in one place.',
