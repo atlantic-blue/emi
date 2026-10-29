@@ -6,6 +6,7 @@ import {
   type CycleAhead,
   hasItsRangeOpened,
   isAForecastPeriodDay,
+  isALikelyPeriodDay,
   theCycleAheadHolding,
   theCyclesAhead,
   theDayOfTheCycleAhead,
@@ -23,8 +24,11 @@ import { type RingInputFrom, ringInputFor } from './ringInput';
  * ring cannot name different days.
  */
 
-/** The four states a day is drawn in. */
-export type DayMark = 'bled' | 'today' | 'forecast' | 'plain';
+/**
+ * The states a day is drawn in. A forecast day is one of the period days counted from the middle of
+ * the range, and a possible day is a ringed day either side of them.
+ */
+export type DayMark = 'bled' | 'today' | 'forecast' | 'possible' | 'plain';
 
 /** The week runs Monday to Sunday, which is the week the calendar of the first run already draws. */
 export const DAYS_IN_A_WEEK = 7;
@@ -137,7 +141,11 @@ function markOf({ bled, cycleDay, day, forecast, ring, today }: MarkFrom): DayMa
   }
 
   if (forecast !== undefined) {
-    return isAForecastPeriodDay(forecast, day) ? 'forecast' : 'plain';
+    if (!isAForecastPeriodDay(forecast, day)) {
+      return 'plain';
+    }
+
+    return isALikelyPeriodDay(forecast, day) ? 'forecast' : 'possible';
   }
 
   // The rest of the period she is in, on the days ahead of her before the next forecast period.

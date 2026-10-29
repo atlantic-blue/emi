@@ -62,6 +62,7 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.legend.fertile': 'Фертильные дни',
   'calendar.legend.forecast': 'Прогноз',
   'calendar.legend.period': 'Месячные',
+  'calendar.legend.possible': 'Возможные дни',
   'calendar.legend.sex': 'Секс',
   'calendar.month.april': 'апреля',
   'calendar.month.august': 'августа',
@@ -87,6 +88,17 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.monthTitle.november': 'Ноябрь',
   'calendar.monthTitle.october': 'Октябрь',
   'calendar.monthTitle.september': 'Сентябрь',
+  'calendar.nextPeriod.in': {
+    one: 'До следующих месячных, скорее всего, от {from} до {count} дня.',
+    few: 'До следующих месячных, скорее всего, от {from} до {count} дней.',
+    many: 'До следующих месячных, скорее всего, от {from} до {count} дней.',
+  },
+  'calendar.nextPeriod.today': 'Следующие месячные, скорее всего, начнутся сегодня.',
+  'calendar.nextPeriod.within': {
+    one: 'Следующие месячные, скорее всего, начнутся в течение {count} дня.',
+    few: 'Следующие месячные, скорее всего, начнутся в течение {count} дней.',
+    many: 'Следующие месячные, скорее всего, начнутся в течение {count} дней.',
+  },
   // Russian writes a day of the month as a plain number, so it adds no suffix to any of them.
   'calendar.ordinal.first': '',
   'calendar.ordinal.other': '',
@@ -114,6 +126,7 @@ export const russian: CatalogueIn<'ru'> = {
   'cycle.day.cycleDay': 'день цикла {cycle}',
   'cycle.day.expected': 'ожидаются месячные',
   'cycle.day.notYet': 'ещё нет, этот день не наступил',
+  'cycle.day.possible': 'возможны месячные',
   'cycle.figures.back': 'Назад',
   'cycle.figures.cycleLength': 'Длина цикла',
   'cycle.figures.cycleLengthVariation': 'Разброс длины цикла',

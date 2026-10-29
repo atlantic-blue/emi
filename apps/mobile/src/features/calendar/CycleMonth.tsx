@@ -2,6 +2,7 @@ import {
   MINIMUM_TAP_TARGET,
   type PhaseName,
   colour,
+  fontNameFor,
   radius,
   space,
   stroke,
@@ -57,8 +58,8 @@ export function sexMarkTestID(day: string): string {
 /** The legend above the columns, which the screen reading a phase asks for. */
 export const monthLegendTestID = 'calendar-legend';
 
-/** The three things the legend names. */
-export type LegendEntry = 'period' | 'forecast' | 'fertile';
+/** The four things the legend names. */
+export type LegendEntry = 'period' | 'forecast' | 'possible' | 'fertile';
 
 /** One entry of that legend: a dot and the word beside it. */
 export function legendTestID(of: LegendEntry): string {
@@ -292,12 +293,16 @@ function theNumber(square: MonthSquare, chosen: boolean): TextStyle[] | TextStyl
   return styles.dayNumber;
 }
 
-/** The three things the legend names, in the order the board places them. */
+/** The four things the legend names, in the order the board places them. */
 const theLegend: readonly { readonly of: LegendEntry; readonly dot: ViewStyle }[] = [
   { dot: { backgroundColor: colour.period }, of: 'period' },
   {
     dot: { borderColor: colour.period, borderStyle: 'dashed', borderWidth: stroke.icon },
     of: 'forecast',
+  },
+  {
+    dot: { borderColor: colour.luteal, borderStyle: 'dotted', borderWidth: stroke.icon },
+    of: 'possible',
   },
   {
     dot: {
@@ -382,14 +387,15 @@ export function CycleMonth({ testID, month, heading, legend, squareOf }: Props):
 }
 
 /**
- * What each of the four states adds to a square. A filled day and a ringed day are told apart by a
- * fill against a line, and an expected day by the line being broken, so none of the three needs
- * colour to be read.
+ * What each state adds to a square. A filled day and a ringed day are told apart by a fill against a
+ * line, an expected day by the line being broken, and a possible day by a lighter line of dots, so
+ * none of them needs colour to be read.
  */
 const theMark: Readonly<Record<DayMark, ViewStyle>> = StyleSheet.create({
   bled: { backgroundColor: colour.period, borderColor: colour.period },
   forecast: { borderColor: colour.period, borderStyle: 'dashed' },
   plain: {},
+  possible: { borderColor: colour.luteal, borderStyle: 'dotted' },
   today: { borderColor: colour.accent, borderStyle: 'solid' },
 });
 
@@ -400,11 +406,12 @@ const styles = StyleSheet.create({
     marginTop: space.spaceMd,
     padding: space.spaceMd,
   },
-  // The cycle day is the smallest thing in a square, because it is the number she checks rather
-  // than the number she looks for, and the date under it is what she scans the row by.
+  // The cycle day is the smallest and palest thing in a square, because it is the number she checks
+  // rather than the number she looks for, and the date under it is what she scans the row by.
   cycleDay: {
-    color: colour.secondaryText,
+    color: colour.dockQuiet,
     ...textStyle('label-sm'),
+    fontFamily: fontNameFor('text', 400),
   },
   // The square is what her thumb finds and the disc inside it is what she reads, so the square
   // carries the height a thumb needs and no colour of its own at all.

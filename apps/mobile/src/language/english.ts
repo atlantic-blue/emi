@@ -55,6 +55,7 @@ export const english = {
   'calendar.legend.fertile': 'Fertile',
   'calendar.legend.forecast': 'Forecast',
   'calendar.legend.period': 'Period',
+  'calendar.legend.possible': 'Possible',
   'calendar.legend.sex': 'Sex',
   'calendar.month.april': 'April',
   'calendar.month.august': 'August',
@@ -80,6 +81,15 @@ export const english = {
   'calendar.monthTitle.november': 'November',
   'calendar.monthTitle.october': 'October',
   'calendar.monthTitle.september': 'September',
+  'calendar.nextPeriod.in': {
+    one: 'Your next period is likely to start in {from} to {count} day.',
+    other: 'Your next period is likely to start in {from} to {count} days.',
+  },
+  'calendar.nextPeriod.today': 'Your next period is likely to start today.',
+  'calendar.nextPeriod.within': {
+    one: 'Your next period is likely to start within {count} day.',
+    other: 'Your next period is likely to start within {count} days.',
+  },
   // English writes a day of the month as an ordinal and Spanish writes it as a plain number, so
   // the suffix is a word like any other. A language that adds none carries the empty string.
   'calendar.ordinal.first': 'st',
@@ -108,6 +118,7 @@ export const english = {
   'cycle.day.cycleDay': 'cycle day {cycle}',
   'cycle.day.expected': 'your period is expected',
   'cycle.day.notYet': 'not yet, this day has not happened',
+  'cycle.day.possible': 'your period may come',
   'cycle.figures.back': 'Back',
   'cycle.figures.cycleLength': 'Cycle length',
   'cycle.figures.cycleLengthVariation': 'Cycle length variation',
