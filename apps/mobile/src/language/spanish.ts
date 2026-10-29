@@ -614,6 +614,8 @@ export const spanish: CatalogueIn<'es'> = {
   'log.energy.hint': 'Pulsa otra vez la que elegiste para quitarla',
   'log.flow.done': 'Hecho',
   'log.flow.close': 'Cerrar',
+  'log.note.title': 'Nota',
+  'log.note.placeholder': 'Escribe una nota',
   'log.symptoms.title': 'Síntomas',
   'log.symptoms.search': 'Buscar',
   'log.flow.heavy': 'Abundante',

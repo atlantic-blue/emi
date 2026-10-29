@@ -201,6 +201,11 @@ export function logDiary(db: Database, vault: DayVault, log: DiaryLog): DayAndCy
   return held ? editDay(db, write, vault.open) : logDay(db, write, vault.open);
 }
 
+/** Her note on that day, and an empty note where she wrote none. */
+export function noteLogged(db: Database, vault: DayVault, day: string): string {
+  return dayLogged(db, vault, day)?.note ?? '';
+}
+
 /** The day as she left it, so the diary opens on the answers she gave it before. */
 export function dayLogged(db: Database, vault: DayVault, day: string): DayRecord | undefined {
   const held = readDayLog(db, day);

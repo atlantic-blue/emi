@@ -630,6 +630,8 @@ export const russian: CatalogueIn<'ru'> = {
   'log.energy.hint': 'Нажмите выбранное ещё раз, чтобы снять',
   'log.flow.done': 'Сохранить',
   'log.flow.close': 'Закрыть',
+  'log.note.title': 'Заметка',
+  'log.note.placeholder': 'Напишите заметку',
   'log.symptoms.title': 'Самочувствие',
   'log.symptoms.search': 'Поиск',
   'log.flow.heavy': 'Обильные',
