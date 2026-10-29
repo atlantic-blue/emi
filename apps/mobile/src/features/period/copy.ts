@@ -8,7 +8,12 @@ export const periodPageCopy = {
   heading: words('period.heading'),
   back: words('period.back'),
   save: words('period.save'),
-  startedOnAnotherDay: words('period.startedOnAnotherDay'),
+  date: {
+    group: words('period.group.date'),
+    today: words('calendar.today'),
+    yesterday: words('calendar.yesterday'),
+    pick: words('period.date.pick'),
+  },
   lock: words('onboarding.encrypts'),
   groups: {
     flow: words('period.group.flow'),

@@ -1,6 +1,7 @@
+import { addDays } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, space, textStyle } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { CappedText as Text } from '@emi/ui';
 
 import { PrimaryButton } from '../../components/Button';
@@ -10,6 +11,8 @@ import { LockLine } from '../../components/LockLine';
 import { RoundIconButton } from '../../components/RoundIconButton';
 import { Screen } from '../../components/Screen';
 import { HighlightRow } from '../highlight/HighlightRow';
+import { Calendar } from '../onboarding/Calendar';
+import { addMonths, startOfMonth } from '../onboarding/days';
 import { type HighlightSlug, periodHighlights } from '../highlight/highlights';
 import type { PeriodAnswers } from '../log/logDay';
 import {
@@ -23,8 +26,8 @@ import { periodPageCopy } from './copy';
 
 /**
  * The Period page, from the periodPage board (issue 275): the two highlights, the day and its
- * title, Flow, Discharge and What you used, the line about privacy, and Save. Under Flow, the
- * periodStartedEarlier board adds the way to a period that started on another day.
+ * title, Flow, Discharge and What you used, the line about privacy, and Save. The date comes first
+ * in the card, so the day a period started is the first thing she chooses.
  *
  * A press only changes what the page holds. Nothing is written until she presses Save, so she can
  * pick, change and take off an answer before anything reaches the day.
@@ -37,7 +40,16 @@ export const periodPageDayTestID = 'period-page-day';
 export const periodPageHeadingTestID = 'period-page-heading';
 export const periodPageLockTestID = 'period-page-lock';
 export const periodPageSaveTestID = 'period-page-save';
-export const periodPageAnotherDayTestID = 'period-page-another-day';
+export const periodPageDaysTestID = 'period-page-days';
+
+export type PeriodDateChoice = 'today' | 'yesterday' | 'pick';
+
+export function periodDateTestID(choice: PeriodDateChoice): string {
+  return `period-page-date-${choice}`;
+}
+
+/** Months. How far back the grid reaches from the month of today. */
+const MONTHS_THE_GRID_REACHES_BACK = 12;
 
 export function periodChipTestID(group: PeriodGroup, value: string): string {
   return `period-page-${group}-${value}`;
@@ -47,19 +59,34 @@ export function periodChipTestID(group: PeriodGroup, value: string): string {
 const TURNED_AROUND = [{ rotate: '180deg' }] as const;
 
 interface Props {
-  /** The date above the title. */
+  /** The words of the date above the title. */
   readonly day: string;
+  /** The day the page records, and her own day, which the date choices are measured from. */
+  readonly date: string;
+  readonly today: string;
   /** What the day already holds, which the page opens on. */
   readonly held: PeriodAnswers;
   readonly onBack: () => void;
   readonly onSave: (answers: PeriodAnswers) => void;
-  /** Opens the period editor, so a period can start on a day before this one. */
-  readonly onStartedOnAnotherDay: () => void;
+  readonly onChooseDay: (day: string) => void;
   readonly onHighlight: (slug: HighlightSlug) => void;
 }
 
 export function PeriodPage(props: Props): ReactNode {
   const [answers, setAnswers] = useState<PeriodAnswers>(props.held);
+  const [isChoosingDay, setIsChoosingDay] = useState(false);
+  const yesterday = addDays(props.today, -1);
+  const chosenDate: PeriodDateChoice =
+    isChoosingDay || (props.date !== props.today && props.date !== yesterday)
+      ? 'pick'
+      : props.date === props.today
+        ? 'today'
+        : 'yesterday';
+  const dateChoices: readonly { choice: PeriodDateChoice; onPress: () => void }[] = [
+    { choice: 'today', onPress: () => props.onChooseDay(props.today) },
+    { choice: 'yesterday', onPress: () => props.onChooseDay(yesterday) },
+    { choice: 'pick', onPress: () => setIsChoosingDay((was) => !was) },
+  ];
 
   return (
     <Screen drawsTheWash testID={periodPageTestID}>
@@ -96,6 +123,36 @@ export function PeriodPage(props: Props): ReactNode {
 
         <Card>
           <View style={styles.groups}>
+            <View style={styles.group}>
+              <Text style={styles.groupName}>{periodPageCopy.date.group}</Text>
+              <View style={styles.chips}>
+                {dateChoices.map(({ choice, onPress }) => (
+                  <Chip
+                    isChosen={choice === chosenDate}
+                    key={choice}
+                    label={periodPageCopy.date[choice]}
+                    onPress={onPress}
+                    testID={periodDateTestID(choice)}
+                  />
+                ))}
+              </View>
+              {isChoosingDay ? (
+                <View testID={periodPageDaysTestID}>
+                  <Calendar
+                    canChoose={(each) => each <= props.today}
+                    chosen={props.date}
+                    earliest={addMonths(startOfMonth(props.today), -MONTHS_THE_GRID_REACHES_BACK)}
+                    latest={props.today}
+                    onChoose={(each) => {
+                      setIsChoosingDay(false);
+                      props.onChooseDay(each);
+                    }}
+                    opensOn={props.date}
+                    today={props.today}
+                  />
+                </View>
+              ) : null}
+            </View>
             {periodGroupOrder.map((group) => (
               <View key={group} style={styles.group}>
                 <Text style={styles.groupName}>{periodPageCopy.groups[group]}</Text>
@@ -114,16 +171,6 @@ export function PeriodPage(props: Props): ReactNode {
                     />
                   ))}
                 </View>
-                {group === 'flow' ? (
-                  <Pressable
-                    accessibilityRole="link"
-                    onPress={props.onStartedOnAnotherDay}
-                    style={styles.anotherDay}
-                    testID={periodPageAnotherDayTestID}
-                  >
-                    <Text style={styles.anotherDayLabel}>{periodPageCopy.startedOnAnotherDay}</Text>
-                  </Pressable>
-                ) : null}
               </View>
             ))}
           </View>
@@ -143,8 +190,6 @@ export function PeriodPage(props: Props): ReactNode {
 }
 
 const styles = StyleSheet.create({
-  anotherDay: { alignSelf: 'flex-start', justifyContent: 'center', minHeight: MINIMUM_TAP_TARGET },
-  anotherDayLabel: { color: colour.accent, ...textStyle('button-md') },
   backMark: { transform: TURNED_AROUND },
   body: { gap: space.spaceLg, paddingHorizontal: space.margin, paddingVertical: space.spaceXl },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },

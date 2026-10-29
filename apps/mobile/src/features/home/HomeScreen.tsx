@@ -1,5 +1,5 @@
 import type { DayRecord, Feeling, Goal, Regularity } from '@emi/crypto';
-import type { CyclePhaseDays, ForecastResult } from '@emi/cycle';
+import { type CyclePhaseDays, type ForecastResult, isBleeding } from '@emi/cycle';
 import {
   type IconName,
   MINIMUM_TAP_TARGET,
@@ -13,7 +13,7 @@ import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { PrimaryButton } from '../../components/Button';
+import { PrimaryButton, SecondaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Screen } from '../../components/Screen';
 import { cycleCopy } from '../cycle/copy';
@@ -74,6 +74,7 @@ export const homeNoRingTestID = 'home-no-ring';
 export const homeNoRingTitleTestID = 'home-no-ring-title';
 export const homeNoRingLineTestID = 'home-no-ring-line';
 export const homeLogTodayTestID = 'home-log-today';
+export const homePeriodActionTestID = 'home-period-action';
 export const homeForecastTestID = 'home-forecast';
 export const homePainLineTestID = 'home-pain-line';
 export const homeFertileWindowTestID = 'home-fertile-window';
@@ -177,8 +178,13 @@ interface Props {
   readonly onFigures?: () => void;
   /** The way to the Sex page of today, which the first round action takes her by. */
   readonly onSex: () => void;
-  /** The way to the Period page of today, which the second round action takes her by. */
+  /** The way to the Period page of today, which the second round action and Log period take her by. */
   readonly onPeriod: () => void;
+  /**
+   * Ends the period she is in by recording no bleeding on today. Where today already holds
+   * bleeding, End period opens the Period page of today instead, so her own answer is not overwritten.
+   */
+  readonly onEndPeriod?: () => void;
   /**
    * The way into the log that the one button offers, and the only way off a screen with no ring on
    * it. It is required rather than offered, because a woman on day one has recorded nothing and a
@@ -233,6 +239,7 @@ export function HomeScreen({
   onLogToday,
   onSex,
   onPeriod,
+  onEndPeriod,
   onOpenLogged,
   onLogPain,
   onExport,
@@ -244,6 +251,8 @@ export function HomeScreen({
 }: Props): ReactNode {
   const marked = whatSheMarkedOn(loggedToday);
   const isAPeriodDay = ring !== undefined && ringGeometry(ring).phase === 'period';
+  const endsByRecordingNoBleeding =
+    onEndPeriod !== undefined && (loggedToday === undefined || !isBleeding(loggedToday));
   const pressOf: Readonly<Record<RoundActionName, (() => void) | undefined>> = {
     sex: onSex,
     period: onPeriod,
@@ -283,6 +292,15 @@ export function HomeScreen({
             </Text>
           </View>
         )}
+
+        <View style={styles.periodAction}>
+          <SecondaryButton
+            label={isAPeriodDay ? homeCopy.periodAction.end : homeCopy.periodAction.log}
+            labelRole="label-md"
+            onPress={isAPeriodDay && endsByRecordingNoBleeding ? onEndPeriod : onPeriod}
+            testID={homePeriodActionTestID}
+          />
+        </View>
 
         {ring === undefined || phaseDays === undefined ? null : (
           <View style={styles.phaseCard}>
@@ -594,6 +612,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: space.spaceLg,
   },
+  periodAction: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.margin },
   // The card sits under the ring and names the phase she is in and its days.
   phaseCard: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.margin },
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it

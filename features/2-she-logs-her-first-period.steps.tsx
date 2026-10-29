@@ -235,6 +235,7 @@ import {
   homeNoRingTitleTestID,
   homePatternsLineTestID,
   homePatternsPressTestID,
+  homePeriodActionTestID,
   homeScreenTestID,
   homeTrendCountTestID,
   homeTrendPressTestID,
@@ -314,7 +315,7 @@ import { periodDayLabel } from '../apps/mobile/src/features/period/copy';
 import { sheOpensTheSymptomGroupsFromToday } from '../apps/mobile/tests/fixtures/theSymptomGroupsFromToday';
 import {
   periodChipTestID,
-  periodPageAnotherDayTestID,
+  periodDateTestID,
   periodPageDayTestID,
   periodPageSaveTestID,
   periodPageTestID,
@@ -640,7 +641,6 @@ import {
   editPeriodListTestID,
   editPeriodRowTestID,
   editPeriodSaveTestID,
-  editPeriodScreenTestID,
 } from '../apps/mobile/src/features/calendar/EditPeriodScreen';
 import {
   nextPeriodItStartedTestID,
@@ -9576,7 +9576,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2', ({
+  test('SCREEN-2, she logs a period that started yesterday from Home in one press, and the ring says day 2', ({
     given,
     when,
     then,
@@ -9585,35 +9585,66 @@ defineFeature(feature, (test) => {
     let app: OpenApp;
     const yesterday = addDays(today, -1);
 
-    given('her phone holds her first run answers and not one recorded day', async () => {
-      await herPhoneHolds(whenSheOpensIt, [], sheSaysHerCycleRuns);
-    });
+    given(
+      'her phone holds her first run answers with a period of five days, and not one recorded day',
+      async () => {
+        await herPhoneHolds(whenSheOpensIt, [], sheSaysHerCycleRuns, 5);
+      },
+    );
 
     when('she opens Emi', async () => {
       app = await sheOpens('/');
     });
 
-    and('she presses Period under the ring', async () => {
-      await shePresses(roundActionTestID('period'));
+    and('she presses Log period, the one action under the ring', async () => {
+      expect(textIn(screen.getByTestId(homePeriodActionTestID)).join('')).toBe('Log period');
 
-      expect(app.pathname()).toBe('/period');
-      expect(screen.getByTestId(periodPageTestID)).toBeTruthy();
+      await shePresses(homePeriodActionTestID);
     });
 
-    and('she presses Started on another day?', async () => {
-      await shePresses(periodPageAnotherDayTestID);
+    then(
+      'she is on the Period page of today, and the date is its first choice, with Today chosen',
+      () => {
+        expect(app.pathname()).toBe('/period');
+        expect(screen.getByTestId(periodPageDayTestID)).toHaveTextContent(periodDayLabel(today));
+
+        const chips: string[] = [];
+        const walk = (node: unknown): void => {
+          if (Array.isArray(node)) {
+            node.forEach(walk);
+            return;
+          }
+          if (node === null || typeof node !== 'object' || !('props' in node)) {
+            return;
+          }
+          const { props, children } = node as { props: { testID?: unknown }; children?: unknown };
+          if (
+            typeof props.testID === 'string' &&
+            /^period-page-(date|flow|discharge|products)-/.test(props.testID) &&
+            !chips.includes(props.testID)
+          ) {
+            chips.push(props.testID);
+          }
+          walk(children ?? null);
+        };
+        walk(screen.toJSON());
+
+        expect(chips[0]).toBe(periodDateTestID('today'));
+        expect(
+          screen.getByTestId(periodDateTestID('today')).props.accessibilityState?.selected,
+        ).toBe(true);
+      },
+    );
+
+    and('the page carries no link Started on another day?', () => {
+      expect(screen.queryByText('Started on another day?')).toBeNull();
     });
 
-    then('she is looking at the period picker, and it lists today', () => {
-      expect(app.pathname()).toBe('/calendar/period');
-      expect(screen.getByTestId(editPeriodScreenTestID)).toBeTruthy();
-      expect(screen.getByTestId(editPeriodRowTestID(today))).toBeTruthy();
-    });
-
-    when('she presses today, then Add the day before, and saves', async () => {
-      await shePresses(editPeriodRowTestID(today));
-      await shePresses(editPeriodAddBeforeTestID);
-      await shePresses(editPeriodSaveTestID);
+    when('she presses Yesterday, then Medium, and saves', async () => {
+      await shePresses(periodDateTestID('yesterday'));
+      await screen.findByText(periodDayLabel(yesterday));
+      await shePresses(periodChipTestID('flow', 'medium'));
+      await shePresses(periodPageSaveTestID);
     });
 
     then('she is on the screen she opened, and no Period page is left under it', () => {
@@ -9628,6 +9659,57 @@ defineFeature(feature, (test) => {
     and('the ring says she is on day 2 of a cycle of the length she gave', () => {
       expect(theRingSays()).toBe(ringSpokenLabel(2, sheSaysHerCycleRuns, phaseLabel.period));
     });
+
+    and('the action under the ring says End period', () => {
+      expect(textIn(screen.getByTestId(homePeriodActionTestID)).join('')).toBe('End period');
+    });
+  });
+
+  test('SCREEN-2, she ends her period from Home in one press', ({ given, when, then, and }) => {
+    let app: OpenApp;
+    const yesterday = addDays(today, -1);
+
+    given(
+      'her phone holds her first run answers with a period of five days, and one bleeding day, yesterday',
+      async () => {
+        await herPhoneHolds(whenSheOpensIt, [aBleedingDay(yesterday)], sheSaysHerCycleRuns, 5);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('the action under the ring says End period', () => {
+      expect(textIn(screen.getByTestId(homePeriodActionTestID)).join('')).toBe('End period');
+    });
+
+    when('she presses End period', async () => {
+      await shePresses(homePeriodActionTestID);
+    });
+
+    then('her phone holds no bleeding on today, sealed', () => {
+      const row = readDayLog(herDatabase(), today);
+
+      expect(row).toBeDefined();
+      expect(new TextDecoder().decode(row?.payload)).not.toContain('"flow":"none"');
+      expect(whatWasRecordedOn(today)?.flow).toBe('none');
+    });
+
+    and('her period lasted one day', () => {
+      const cycles = listCycles(herDatabase()).filter((cycle) => !cycle.isPredicted);
+
+      expect(cycles.map((cycle) => cycle.startedOn)).toEqual([yesterday]);
+      expect(cycles[0]?.periodLengthDays).toBe(1);
+    });
+
+    and(
+      'she is still on the screen she opened, and the action under the ring says Log period',
+      () => {
+        expect(app.pathname()).toBe('/');
+        expect(textIn(screen.getByTestId(homePeriodActionTestID)).join('')).toBe('Log period');
+      },
+    );
   });
 
   test('SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast', ({

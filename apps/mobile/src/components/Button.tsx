@@ -1,4 +1,12 @@
-import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
+import {
+  MINIMUM_TAP_TARGET,
+  type TypeRoleName,
+  colour,
+  radius,
+  space,
+  stroke,
+  textStyle,
+} from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { CappedText as Text } from '@emi/ui';
@@ -21,6 +29,8 @@ interface ActionProps {
   readonly isReady?: boolean;
   readonly onPress: () => void;
   readonly testID?: string;
+  /** A label that names her period is held to the size SCREEN-2 allows those words on Home. */
+  readonly labelRole?: TypeRoleName;
 }
 
 /** Points. The affirmative action stands taller than the one beside it, which is how they differ. */
@@ -64,7 +74,13 @@ function useHeldDown(): {
  * The affirmative action. It steps to the darker of the two primaries while her thumb is down, so
  * the press is answered by the button and not only by what happens next.
  */
-export function PrimaryButton({ label, isReady = true, onPress, testID }: ActionProps): ReactNode {
+export function PrimaryButton({
+  label,
+  isReady = true,
+  onPress,
+  testID,
+  labelRole,
+}: ActionProps): ReactNode {
   const { heldDown, onPressIn, onPressOut } = useHeldDown();
 
   return (
@@ -87,7 +103,14 @@ export function PrimaryButton({ label, isReady = true, onPress, testID }: Action
       }
       testID={testID}
     >
-      <Text style={isReady ? styles.affirmativeLabel : styles.spentLabel}>{label}</Text>
+      <Text
+        style={[
+          isReady ? styles.affirmativeLabel : styles.spentLabel,
+          labelRole === undefined ? null : textStyle(labelRole),
+        ]}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
@@ -98,6 +121,7 @@ export function SecondaryButton({
   isReady = true,
   onPress,
   testID,
+  labelRole,
 }: ActionProps): ReactNode {
   const { heldDown, onPressIn, onPressOut } = useHeldDown();
 
@@ -116,7 +140,14 @@ export function SecondaryButton({
       }
       testID={testID}
     >
-      <Text style={isReady ? styles.quieterLabel : styles.spentLabel}>{label}</Text>
+      <Text
+        style={[
+          isReady ? styles.quieterLabel : styles.spentLabel,
+          labelRole === undefined ? null : textStyle(labelRole),
+        ]}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }
