@@ -83,7 +83,9 @@ const theLoggingScreen = (): ReactElement => (
     marked={false}
     onDone={nothing}
     onLeave={nothing}
+    note=""
     onMark={nothing}
+    onNote={nothing}
     onOpenGroup={nothing}
     onPick={nothing}
     onOtherDischarge={nothing}

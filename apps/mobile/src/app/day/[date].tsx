@@ -11,8 +11,10 @@ import { LogSymptoms, type SymptomsAsked } from '../../features/log/LogSymptoms'
 import { symptomsBySearch, symptomsOfAGroup } from '../../features/log/askedGroup';
 import {
   editFlow,
+  editNote,
   editSymptoms,
   flowOn,
+  noteOn,
   refusalFor,
   symptomsOn,
   unexpectedOn,
@@ -115,6 +117,16 @@ export default function DayRoute(): ReactNode {
     [database, day, today, vault],
   );
 
+  const writeTheNote = useCallback(
+    (note: string) => {
+      if (note !== noteOn(database, vault, { day, today })) {
+        editNote(database, vault, { day, note, now: new Date(), today });
+        sheWrote();
+      }
+    },
+    [database, day, today, vault],
+  );
+
   if (!isDone) {
     return <Redirect href="/onboarding/welcome" />;
   }
@@ -158,11 +170,13 @@ export default function DayRoute(): ReactNode {
       onDone={leave}
       onLeave={leave}
       onMark={mark}
+      onNote={writeTheNote}
       onOpenGroup={(group: SymptomGroup) => openTheSymptoms(symptomsOfAGroup(group))}
       onPick={pick}
       onOtherDischarge={() => router.push(periodAddress(day))}
       onSearch={() => openTheSymptoms(symptomsBySearch(hers))}
       onToggleSymptom={(slug) => writeTheSymptoms(held.filter((each) => each !== slug))}
+      note={noteOn(database, vault, { day, today })}
       ring={ringOnTheDay(database, vault, profiles, day)}
       symptoms={held}
       title={dateWords(day)}

@@ -353,6 +353,7 @@ import {
   logFlowTitleTestID,
   logFlowWhenTestID,
 } from '../apps/mobile/src/features/log/LogFlow';
+import { dayNoteFieldTestID } from '../apps/mobile/src/features/log/DayNote';
 import { groupTileTestID, groupTilesTestID } from '../apps/mobile/src/features/log/GroupTiles';
 import { logHeaderLeaveTestID } from '../apps/mobile/src/features/log/LogHeader';
 import {
@@ -2623,6 +2624,43 @@ defineFeature(feature, (test) => {
 
     and('today holds nothing, because she edited a Monday and not today', () => {
       expect(whatWasRecordedOn(today)).toBeUndefined();
+    });
+  });
+
+  test('SCREEN-4, she writes a note on a day she lived and reads it when she opens the day again', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const herNote = 'Could not focus at work, and a walk after dinner helped.';
+
+    given('her phone holds six periods and a Monday she said nothing happened on', async () => {
+      await herPhoneHolds(whenSheOpensIt, herSixPeriodsAndAWrongMonday());
+    });
+
+    when('she opens that Monday', async () => {
+      await sheOpens(`/day/${sheForgot}`);
+    });
+
+    and('she writes her own thoughts in the note and presses Done', async () => {
+      await fireEvent.changeText(screen.getByTestId(dayNoteFieldTestID), herNote);
+      await shePresses(logFlowDoneTestID);
+    });
+
+    then('that Monday holds her note, sealed, beside the flow it already held', () => {
+      const held = readDayLog(herDatabase(), sheForgot);
+
+      expect(new TextDecoder().decode(held?.payload)).not.toContain('walk after dinner');
+      expect(whatWasRecordedOn(sheForgot)).toMatchObject({ flow: 'none', note: herNote });
+    });
+
+    when('she opens that Monday again', async () => {
+      await sheOpens(`/day/${sheForgot}`);
+    });
+
+    then('the note box shows the words she wrote', () => {
+      expect(screen.getByTestId(dayNoteFieldTestID).props.value).toBe(herNote);
     });
   });
 

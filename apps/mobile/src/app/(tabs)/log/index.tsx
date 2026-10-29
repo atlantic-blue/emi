@@ -10,8 +10,10 @@ import { LogFlow } from '../../../features/log/LogFlow';
 import { LogSymptoms, type SymptomsAsked } from '../../../features/log/LogSymptoms';
 import {
   flowLogged,
+  logDiary,
   logFlow,
   logSymptoms,
+  noteLogged,
   symptomsLogged,
   unexpectedLogged,
 } from '../../../features/log/logDay';
@@ -53,6 +55,9 @@ export default function LogFlowRoute(): ReactNode {
   // A write lands in the database, which React cannot see, so the write says it happened and the
   // day and the ring are read again on the render that follows.
   const [, sheWrote] = useReducer((writes: number) => writes + 1, 0);
+  // The note can change on the Cycle phase page while this tab stays mounted, so the log is drawn
+  // again from the day each time she looks at the tab.
+  const [looked, sheLooked] = useReducer((times: number) => times + 1, 0);
   // A flow can start a period, which moves the forecast, so the reminder is worked out again.
   const rescheduleTheReminder = useRescheduleHerReminder();
   const askedByTheAddress = symptomsAskedBy(address, hers);
@@ -61,6 +66,7 @@ export default function LogFlowRoute(): ReactNode {
   useFocusEffect(
     useCallback(() => {
       setHers(statedFocus(database, profiles) ?? []);
+      sheLooked();
 
       // The symptoms she opened from a tile close when she leaves the tab, so the tab opens on
       // the flow the next time. The dock clears the address for the same reason.
@@ -132,6 +138,16 @@ export default function LogFlowRoute(): ReactNode {
     [database, today, vault],
   );
 
+  const writeTheNote = useCallback(
+    (note: string) => {
+      if (note !== noteLogged(database, vault, today)) {
+        logDiary(database, vault, { day: today, change: { note }, now: new Date() });
+        sheWrote();
+      }
+    },
+    [database, today, vault],
+  );
+
   // A chip of the day takes its symptom off the day at once, as a flow is written at once.
   const takeOff = useCallback(
     (slug: string) => {
@@ -168,17 +184,20 @@ export default function LogFlowRoute(): ReactNode {
       day={today}
       dones="top"
       groups={groupsInHerOrder(hers)}
+      key={looked}
       leave="close"
       marked={unexpectedLogged(database, vault, today)}
       onDone={leaveTheLog}
       onLeave={leaveTheLog}
       onMark={mark}
+      onNote={writeTheNote}
       onOpenGroup={(group: SymptomGroup) => openTheSymptoms(symptomsOfAGroup(group))}
       onPick={pick}
       onOtherDischarge={() => router.push(periodAddress())}
       onSearch={() => openTheSymptoms(symptomsBySearch(hers))}
       onToggleSymptom={takeOff}
       ring={ringNow(database, vault, profiles, today)}
+      note={noteLogged(database, vault, today)}
       symptoms={symptomsLogged(database, vault, today)}
       title={logTitleToday}
     />

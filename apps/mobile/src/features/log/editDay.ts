@@ -3,7 +3,15 @@ import { CycleError, type Flow, toDayNumber } from '@emi/cycle';
 import type { Database } from '../../data/database';
 import type { DayVault } from '../../services/vault/dayVault';
 import type { DayAndCycles } from '../cycle/rebuild';
-import { flowLogged, logFlow, logSymptoms, symptomsLogged, unexpectedLogged } from './logDay';
+import {
+  flowLogged,
+  logDiary,
+  logFlow,
+  logSymptoms,
+  noteLogged,
+  symptomsLogged,
+  unexpectedLogged,
+} from './logDay';
 
 /**
  * Which days she may open, and the one write a day she opened takes. A day behind her is a memory
@@ -104,6 +112,25 @@ export function editSymptoms(db: Database, vault: DayVault, edit: SymptomEdit): 
   requireSheCanEdit(edit);
 
   return logSymptoms(db, vault, { day: edit.day, symptoms: edit.symptoms, now: edit.now });
+}
+
+/** Her note on that day, and an empty note where she wrote none. */
+export function noteOn(db: Database, vault: DayVault, open: DayToOpen): string {
+  requireSheCanEdit(open);
+
+  return noteLogged(db, vault, open.day);
+}
+
+export interface NoteEdit extends DayToOpen {
+  readonly note: string;
+  readonly now: Date;
+}
+
+/** The note of a day she reopened. An empty note takes the note off the day. */
+export function editNote(db: Database, vault: DayVault, edit: NoteEdit): DayAndCycles {
+  requireSheCanEdit(edit);
+
+  return logDiary(db, vault, { day: edit.day, change: { note: edit.note }, now: edit.now });
 }
 
 function requireSheCanEdit(open: DayToOpen): void {
