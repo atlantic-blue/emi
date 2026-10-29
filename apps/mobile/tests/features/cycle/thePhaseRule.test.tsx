@@ -88,7 +88,7 @@ afterEach(() => {
   jest.restoreAllMocks();
 });
 
-describe('the phase Today names in the centre of the ring', () => {
+describe('the phase Today names on the ring', () => {
   it.each([
     { cycleDay: 1, phase: 'period' },
     { cycleDay: 5, phase: 'period' },
@@ -103,10 +103,14 @@ describe('the phase Today names in the centre of the ring', () => {
   ] as const)('should name $phase on cycle day $cycleDay', async ({ cycleDay, phase }) => {
     await sheOpensTodayOn(cycleDay);
 
-    theRingCentreNames(phase);
-    expect(screen.getByTestId(cycleRingTestID).props.accessibilityLabel).toBe(
-      `Day ${cycleDay} of ${herCycleLengthDays}, ${phaseLabel[phase].toLowerCase()}`,
-    );
+    if (phase === 'period') {
+      theRingCentreNames(phase);
+    }
+    // Outside her period the middle of the ring counts down to the next one, and the sentence a
+    // screen reader hears carries that after the phase.
+    expect(
+      screen.getByTestId(cycleRingTestID).props.accessibilityLabel.split(', ').slice(0, 2),
+    ).toEqual([`Day ${cycleDay} of ${herCycleLengthDays}`, phaseLabel[phase].toLowerCase()]);
   });
 
   it('should no longer name ovulation on the first day of the fertile window', async () => {

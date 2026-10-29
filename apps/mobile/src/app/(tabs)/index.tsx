@@ -30,6 +30,7 @@ import { herCycles } from '../../features/home/herCycles';
 import { type TrendCycle, herTrend } from '../../features/home/herTrend';
 import { type MeasuredNumber, herNumbers } from '../../features/home/herNumbers';
 import { herPatterns } from '../../features/home/herPatterns';
+import { type RingCountdown, ringCountdownFor } from '../../features/home/ringCountdown';
 import type { ReadPattern } from '../../features/cycle/patternsRead';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { useRescheduleHerReminder } from '../../features/reminder/rescheduleHerReminder';
@@ -45,6 +46,8 @@ interface Shown {
   readonly ring: RingInput | undefined;
   /** The days of each phase of the cycle she is in, read from the same rows as the ring. */
   readonly phaseDays: CyclePhaseDays | undefined;
+  /** How long until her next period and her estimated ovulation, from the same forecast and phases. */
+  readonly countdown: RingCountdown | undefined;
   readonly forecast: ReturnType<typeof forecastOf>;
   /** How many days her period is late against that forecast, or nothing inside the window. */
   readonly daysLate: number | undefined;
@@ -104,14 +107,18 @@ function whatSheIsLookingAt(
   };
 
   const loggedToday = readBack.records.find((record) => record.day === today);
+  const ring = ringInputFor(readBack);
+  const phaseDays = phaseDaysFor(readBack);
 
   return {
-    ring: ringInputFor(readBack),
+    ring,
+    countdown:
+      ring === undefined ? undefined : ringCountdownFor({ forecast, phaseDays, ring, today }),
     // Picked out of the days the ring was built from, so the row under the actions and the ring
     // above it can never stand on two different readings of today.
     loggedToday,
     ovulationWindow: theWindowToAskIn(readBack, loggedToday?.ovulationPopup !== undefined),
-    phaseDays: phaseDaysFor(readBack),
+    phaseDays,
     forecast,
     daysLate: daysLate(forecast, today),
     numbers: herNumbers(cycles, forecast),
@@ -184,6 +191,7 @@ export default function HomeRoute(): ReactNode {
       <HomeScreen
         cycleLengthDays={shown.cycleLengthDays}
         completeCycles={shown.completeCycles}
+        countdown={shown.countdown}
         cycles={shown.cycles}
         daysLate={shown.daysLate}
         feeling={shown.feeling}

@@ -6,6 +6,7 @@ import {
   ringPointerTestID,
   ringCentreDayTestID,
   ringCentreLengthTestID,
+  ringCentreNextPeriodTestID,
   ringCentrePhaseTestID,
   ringTrackTestID,
 } from '../../src/components/CycleRing';
@@ -14,6 +15,7 @@ import { learningTestID } from '../../src/features/forecast/Learning';
 import { nextPeriodTestID } from '../../src/features/forecast/NextPeriod';
 import { homeCyclesTestID } from '../../src/features/home/CycleStrip';
 import { homeTrendTestID } from '../../src/features/home/CycleTrend';
+import { ringOvulationLineTestID } from '../../src/features/home/RingOfToday';
 import {
   homeCalendarTestID,
   homeGreetingTestID,
@@ -127,6 +129,12 @@ export const theSectionsOfTheScreenSheOpens: readonly Section[] = [
     name: 'the day of her cycle in the middle of the ring',
     simplyGoes:
       'it is written inside the ring, so it goes with the ring and the two lines replace both',
+  },
+  {
+    draws: { named: [ringCentreNextPeriodTestID, ringOvulationLineTestID] },
+    fills: (hers) => hers.dayOfHerCycle !== undefined,
+    name: 'how long until her next period and her estimated ovulation',
+    simplyGoes: 'it counts from the ring, so it goes with the ring',
   },
   {
     draws: {
