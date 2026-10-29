@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react-native';
 import { daysLate } from '../../../src/features/forecast/daysLate';
 import {
   FirstForecast,
+  firstForecastDayTestID,
   firstForecastDaysTestID,
   firstForecastLateTestID,
   firstForecastLearningTestID,
@@ -190,7 +191,7 @@ describe('a first forecast whose window has passed', () => {
     expect(daysLate(theWindowHasPassed, '2026-10-19')).toBe(2);
   });
 
-  it('says her period is late in the words Home uses, and draws no day of the range that passed', async () => {
+  it('says her period is late in the words Home uses, in place of the range that passed', async () => {
     await sheReadsItOn('2026-10-19');
 
     expect(textIn(screen.getByTestId(firstForecastTitleTestID))).toEqual(['Your next period']);
@@ -198,8 +199,19 @@ describe('a first forecast whose window has passed', () => {
       'Your period is 2 days late',
     ]);
     expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
-    expect(screen.queryByTestId(firstForecastDaysTestID, theHiddenCircles)).toBeNull();
-    expect(screen.queryByTestId(firstForecastWhyTestID)).toBeNull();
+  });
+
+  it('keeps the why card with the days that passed, and no tag or learning line', async () => {
+    await sheReadsItOn('2026-10-19');
+
+    expect(screen.getByTestId(firstForecastWhyTestID)).toBeTruthy();
+    expect(
+      ['2026-10-15', '2026-10-16', '2026-10-17'].map((day) =>
+        screen.queryByTestId(firstForecastDayTestID(day), theHiddenCircles),
+      ),
+    ).not.toContain(null);
+    expect(screen.queryByTestId(firstForecastLearningTestID)).toBeNull();
+    expect(screen.queryByTestId(firstForecastNeedsTestID)).toBeNull();
   });
 
   it('still gives the range on the last day of the window', async () => {
@@ -209,5 +221,50 @@ describe('a first forecast whose window has passed', () => {
     expect(textIn(screen.getByTestId(firstForecastRangeTestID))).toEqual([
       'Between the 15th and the 17th of October',
     ]);
+  });
+});
+
+describe('a learning first forecast whose range has passed', () => {
+  const oneLearningPeriod = forecastFromHerAnswers({
+    periods: [{ startedOn: '2026-09-14', lengthDays: 5 }],
+    cycleLengthDays: 28,
+  });
+
+  beforeEach(async () => {
+    await render(
+      <OnAPhone>
+        <FirstForecast
+          cycleLengthDays={28}
+          daysLate={daysLate(oneLearningPeriod, '2026-10-28')}
+          forecast={oneLearningPeriod}
+          onContinue={() => undefined}
+        />
+      </OnAPhone>,
+    );
+  });
+
+  it('gives the range from the 9th to the 15th of October, 13 days behind the 28th', () => {
+    expect(oneLearningPeriod).toMatchObject({
+      kind: 'learning',
+      start: { from: '2026-10-09', to: '2026-10-15' },
+    });
+    expect(daysLate(oneLearningPeriod, '2026-10-28')).toBe(13);
+  });
+
+  it('says the period is late and keeps the tag, the why card with the passed days and the learning line', () => {
+    expect(textIn(screen.getByTestId(firstForecastLateTestID))).toEqual([
+      'Your period is 13 days late',
+    ]);
+    expect(screen.queryByTestId(firstForecastRangeTestID)).toBeNull();
+    expect(textIn(screen.getByTestId(firstForecastLearningTestID))).toEqual(['Still learning']);
+    expect(screen.getByTestId(firstForecastWhyTestID)).toBeTruthy();
+    expect(
+      theDaysOf({ from: '2026-10-09', to: '2026-10-15' }).map((day) =>
+        screen.queryByTestId(firstForecastDayTestID(day), theHiddenCircles),
+      ),
+    ).not.toContain(null);
+    expect(textIn(screen.getByTestId(firstForecastNeedsTestID)).join(' ')).toEqual(
+      'Emi needs 2 complete cycles before it forecasts from your own cycles, so this is still learning.',
+    );
   });
 });

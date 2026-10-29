@@ -5,10 +5,12 @@ import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { CappedText as Text } from '@emi/ui';
 
+import { TextLink } from '../../components/Button';
 import { NextPeriod } from './NextPeriod';
 import {
   cyclesWantedSentence,
   forecastCopy,
+  lateSentence,
   learningCopy,
   rangeSentence,
   statedLengthSentence,
@@ -29,6 +31,8 @@ import {
 
 export const learningTestID = 'learning';
 export const learningRangeTestID = 'learning-range';
+export const learningLateTestID = 'learning-late';
+export const learningItStartedTestID = 'learning-it-started';
 export const learningCyclesWantedTestID = 'learning-cycles-wanted';
 export const learningStatedLengthTestID = 'learning-stated-length';
 
@@ -36,17 +40,42 @@ interface LearningProps {
   readonly learning: LearningState;
   /** The length she gave at the first run, read from the settings by whoever draws the screen. */
   readonly cycleLengthDays: number;
+  /** How many days the period is late, from `daysLate`, and nothing inside the range. */
+  readonly daysLate?: number;
+  readonly onItStarted?: () => void;
 }
 
-export function Learning({ learning, cycleLengthDays }: LearningProps): ReactNode {
+export function Learning({
+  learning,
+  cycleLengthDays,
+  daysLate,
+  onItStarted,
+}: LearningProps): ReactNode {
+  const offersTheLink = daysLate !== undefined && onItStarted !== undefined;
+
   return (
-    <View accessible style={styles.block} testID={learningTestID}>
+    <View accessible={!offersTheLink} style={styles.block} testID={learningTestID}>
       {learning.start === undefined ? null : (
         <>
           <Text style={styles.label}>{forecastCopy.nextPeriod}</Text>
-          <Text style={styles.range} testID={learningRangeTestID}>
-            {rangeSentence(learning.start)}
-          </Text>
+          {daysLate === undefined ? (
+            <Text style={styles.range} testID={learningRangeTestID}>
+              {rangeSentence(learning.start)}
+            </Text>
+          ) : (
+            <Text style={styles.range} testID={learningLateTestID}>
+              {lateSentence(daysLate)}
+            </Text>
+          )}
+          {offersTheLink ? (
+            <View style={styles.itStarted}>
+              <TextLink
+                label={forecastCopy.itStarted}
+                onPress={onItStarted}
+                testID={learningItStartedTestID}
+              />
+            </View>
+          ) : null}
         </>
       )}
       <Text style={styles.label}>{learningCopy.stillLearning}</Text>
@@ -68,7 +97,7 @@ interface Props {
    * There is no range to explain the width of before two cycles are complete.
    */
   readonly regularity?: Regularity;
-  /** How many days the period is late, which only a settled forecast can be. */
+  /** How many days the period is late, counted from the range of either state. */
   readonly daysLate?: number;
   /** The way to the period editor on today, offered under the late line. */
   readonly onItStarted?: () => void;
@@ -86,7 +115,14 @@ export function NextPeriodOrLearning({
   onItStarted,
 }: Props): ReactNode {
   if (result.kind === 'learning') {
-    return <Learning cycleLengthDays={cycleLengthDays} learning={result} />;
+    return (
+      <Learning
+        cycleLengthDays={cycleLengthDays}
+        daysLate={daysLate}
+        learning={result}
+        onItStarted={onItStarted}
+      />
+    );
   }
 
   return (
@@ -101,6 +137,7 @@ export function NextPeriodOrLearning({
 
 const styles = StyleSheet.create({
   block: { paddingHorizontal: space.spaceLg, paddingVertical: space.spaceMd },
+  itStarted: { alignSelf: 'flex-start', marginLeft: -space.spaceSm },
   // The same size and colour the settled forecast draws its range at, because the two ends mean
   // the same thing on both screens and only the sentence under them changes.
   range: {
