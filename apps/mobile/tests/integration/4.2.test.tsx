@@ -124,14 +124,14 @@ describe('a symptom is found by search and saved in one action', () => {
       }
     });
 
-    it('offers all seventy four, so nothing in the catalogue is unreachable', async () => {
+    it('offers all seventy six, so nothing in the catalogue is unreachable', async () => {
       const database = migrated();
       await sheOpensTheSheet(database);
 
       // The mood group is reached through the picker at the top of the sheet, not through this
-      // list, so the seventy four arrive as sixty two chips and twelve mood chips.
-      expect(loggableSymptoms()).toHaveLength(74);
-      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(62);
+      // list, so the seventy six arrive as sixty four chips and twelve mood chips.
+      expect(loggableSymptoms()).toHaveLength(76);
+      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(64);
       expect(screen.getAllByTestId(/^mood-chip-/)).toHaveLength(12);
     });
   });
@@ -196,7 +196,7 @@ describe('a symptom is found by search and saved in one action', () => {
       await sheSearchesFor('cram');
       await sheSearchesFor('');
 
-      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(62);
+      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(64);
     });
 
     it('never offers a retired symptom, however she spells it', async () => {

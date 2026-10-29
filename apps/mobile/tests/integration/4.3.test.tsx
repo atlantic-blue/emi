@@ -391,7 +391,7 @@ describe('mood and energy are saved and read back', () => {
         expect(screen.queryByTestId(`symptom-chip-${mood.slug}`)).toBeNull();
         expect(screen.getByTestId(`mood-chip-${mood.slug}`)).toBeTruthy();
       }
-      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(62);
+      expect(screen.getAllByTestId(/^symptom-chip-/)).toHaveLength(64);
       expect(screen.queryByTestId('symptom-group-mood')).toBeNull();
     });
 

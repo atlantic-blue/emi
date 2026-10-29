@@ -8,6 +8,8 @@ import { AccessibilityInfo } from 'react-native';
 
 import type { CycleRow } from '../../../src/data/cycleRepository';
 import { readDayLog } from '../../../src/data/dayLogRepository';
+import { everythingIn } from '../../../src/features/export/everything';
+import { readableHtml } from '../../../src/features/export/readableDocument';
 import {
   phaseCardChevronTestID,
   phaseCardDaysTestID,
@@ -239,6 +241,8 @@ describe('the diary of today', () => {
       'appetite-loss',
       'sweet-craving',
       'salty-craving',
+      'spicy-craving',
+      'meat-craving',
       'calm',
       'happy',
       'energetic',
@@ -349,6 +353,53 @@ describe('the diary of today', () => {
 
     expect(app.pathname()).toBe('/log');
     expect(app.search()).toEqual({ on: 'symptoms' });
+  });
+});
+
+describe('spicy and meat in the Food row', () => {
+  function theFoodChip(label: string): ReturnType<typeof screen.getByRole> {
+    return within(screen.getByTestId(phaseDiaryTestID)).getByRole('button', { name: label });
+  }
+
+  it('should save Spicy and Meat on the day and show them chosen when she comes back', async () => {
+    await herPhoneHolds(herPeriodStarts(20, 2));
+    const thePhase = await renderRouter(appDirectory, { initialUrl: '/phase' });
+    await screen.findByTestId(phasePageTestID);
+
+    await fireEvent.press(theFoodChip('Spicy'));
+    await fireEvent.press(theFoodChip('Meat'));
+    await thePhase.unmount();
+
+    expect(theDayOnHerPhone()?.symptoms).toEqual(['spicy-craving', 'meat-craving']);
+    expect(theDayOnHerPhone()).not.toHaveProperty('food');
+
+    await sheOpens('/phase');
+    await screen.findByTestId(phasePageTestID);
+
+    expect(theFoodChip('Spicy').props.accessibilityState).toEqual({ selected: true });
+    expect(theFoodChip('Meat').props.accessibilityState).toEqual({ selected: true });
+  });
+
+  it('should read a day an older version saved, with no Spicy or Meat on it', async () => {
+    const day = { day: today, recordedAt: whenSheOpensIt.toISOString() };
+    await sheOpensThePhasePage([...herPeriodStarts(20, 2), { ...day, food: ['sweet', 'salty'] }]);
+
+    expect(theFoodChip('Sweet').props.accessibilityState).toEqual({ selected: true });
+    expect(theFoodChip('Salty').props.accessibilityState).toEqual({ selected: true });
+    expect(theFoodChip('Spicy').props.accessibilityState).toEqual({ selected: false });
+    expect(theFoodChip('Meat').props.accessibilityState).toEqual({ selected: false });
+  });
+
+  it('should name Spicy and Meat in English in the export, like Sweet', async () => {
+    await sheOpensThePhasePage(herPeriodStarts(20, 2));
+
+    await fireEvent.press(theFoodChip('Sweet'));
+    await fireEvent.press(theFoodChip('Spicy'));
+    await fireEvent.press(theFoodChip('Meat'));
+
+    expect(readableHtml(everythingIn(herDatabase(), herVault(), whenSheOpensIt))).toContain(
+      'Sweet, Spicy, Meat',
+    );
   });
 });
 

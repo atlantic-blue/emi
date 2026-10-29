@@ -49,6 +49,8 @@ export const diaryRows: Readonly<Record<DiaryRow, readonly DiaryChip[]>> = {
     aFood('appetite-loss', 'little-appetite', words('phase.chip.littleAppetite')),
     aFood('sweet-craving', 'sweet', words('phase.chip.sweet')),
     aFood('salty-craving', 'salty', words('phase.chip.salty')),
+    { row: 'food', slug: 'spicy-craving', label: words('phase.chip.spicy') },
+    { row: 'food', slug: 'meat-craving', label: words('phase.chip.meat') },
   ],
   emotions: [
     aMood('calm', words('phase.chip.calm')),
