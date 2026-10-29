@@ -38,7 +38,7 @@ const whatTheWelcomeSays = {
   lines: [
     'Log your periods and how you feel, to understand your cycle better.',
     'There is no account. Emi never asks for your email address or a password.',
-    "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
+    "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device. Emi does not make diagnoses, but your records can help when you see a doctor.",
   ],
   action: 'Start',
 };
@@ -62,11 +62,25 @@ const whatTheWelcomeSaidBefore: Readonly<Record<Language, readonly string[]>> = 
   ],
 };
 
-/** The line that says what Emi is not, in each language, which every language must carry. */
+/** The line that says what Emi is not and what her records are for, in each language. */
 const whatEmiIsNot: Readonly<Record<Language, string>> = {
-  en: "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device.",
-  es: 'Emi no sustituye el consejo de un médico. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
-  ru: 'Emi не заменяет консультацию врача. Emi не является средством контрацепции. Emi не является медицинским изделием.',
+  en: "Emi does not replace a doctor's advice. Emi is not a contraceptive. Emi is not a medical device. Emi does not make diagnoses, but your records can help when you see a doctor.",
+  es: 'Emi no sustituye el consejo de un médico. Emi no es un anticonceptivo. Emi no es un dispositivo médico. Emi no hace diagnósticos, pero tus registros pueden ayudar cuando vayas al médico.',
+  ru: 'Emi не заменяет консультацию врача. Emi не является средством контрацепции. Emi не является медицинским изделием. Emi не ставит диагнозов, но данные в приложении могут помочь при обращении к врачу.',
+};
+
+/** The sentence the welcome ends on: Emi does not diagnose, and her records can help at a doctor. */
+const theDoctorSentence: Readonly<Record<Language, string>> = {
+  en: 'Emi does not make diagnoses, but your records can help when you see a doctor.',
+  es: 'Emi no hace diagnósticos, pero tus registros pueden ayudar cuando vayas al médico.',
+  ru: 'Emi не ставит диагнозов, но данные в приложении могут помочь при обращении к врачу.',
+};
+
+/** The name Download data gives the report she can take to a doctor. */
+const theReportForTheDoctor: Readonly<Record<Language, string>> = {
+  en: 'Report for your doctor',
+  es: 'Informe para tu médico',
+  ru: 'Отчёт для врача',
 };
 
 const whatTheTourSays = {
@@ -142,12 +156,37 @@ describe('the welcome and the tour say what the redesign says', () => {
       expect(wordKeys).not.toContain('onboarding.welcome.line.onThisPhone');
     });
 
-    it('says in every language that Emi does not replace a doctor, with the two denials after it', () => {
+    it('says in every language that Emi does not replace a doctor, the two denials, and that it does not diagnose', () => {
       for (const language of languages) {
         expect({
           language,
           said: catalogueOf(language)['onboarding.welcome.line.whatEmiIs'],
         }).toEqual({ language, said: whatEmiIsNot[language] });
+      }
+    });
+
+    it('shows the sentence about a doctor at the end of the line about what Emi is', async () => {
+      await sheOpensEmi();
+
+      const welcome = within(screen.getByTestId('onboarding-welcome'));
+      const line = welcome.getByText(/Emi does not make diagnoses/);
+      const said = String(line.props.children);
+
+      expect(said).toBe(whatEmiIsNot.en);
+      expect(said.endsWith(theDoctorSentence.en)).toBe(true);
+    });
+
+    it('points at a report that Download data names for the doctor, in every language', () => {
+      for (const language of languages) {
+        const catalogue = catalogueOf(language);
+
+        expect({
+          language,
+          welcome: formsOf(catalogue['onboarding.welcome.line.whatEmiIs'])[0]?.endsWith(
+            theDoctorSentence[language],
+          ),
+          report: catalogue['export.forADoctor'],
+        }).toEqual({ language, welcome: true, report: theReportForTheDoctor[language] });
       }
     });
 

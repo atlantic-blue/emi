@@ -810,7 +810,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.welcome.line.noAccount':
     'No hay cuenta. Emi nunca te pide tu correo ni una contraseña.',
   'onboarding.welcome.line.whatEmiIs':
-    'Emi no sustituye el consejo de un médico. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
+    'Emi no sustituye el consejo de un médico. Emi no es un anticonceptivo. Emi no es un dispositivo médico. Emi no hace diagnósticos, pero tus registros pueden ayudar cuando vayas al médico.',
   'onboarding.welcome.line.whatYouLog':
     'Anota tus periodos y cómo te sientes, para entender mejor tu ciclo.',
   'onboarding.welcome.title': 'Tu ciclo y cómo te sientes, en un solo lugar.',
