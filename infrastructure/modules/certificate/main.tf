@@ -29,21 +29,24 @@ resource "aws_acm_certificate" "site" {
   }
 }
 
-# One record for each name on the certificate. Two names that prove ownership through the same
-# record collapse into one entry, because the map is keyed by the record and not by the name.
-resource "aws_route53_record" "validation" {
-  for_each = {
+# Certificate Manager returns one proof of ownership for each name, and which record carries a
+# proof is not known until the certificate exists. A for_each key has to be known before the plan
+# runs, so the loop walks the names the module was given and reads each name's proof out of the map
+# below. Keying it on the records refused every first plan.
+locals {
+  proof = {
     for option in aws_acm_certificate.site.domain_validation_options :
-    option.resource_record_name => {
-      type  = option.resource_record_type
-      value = option.resource_record_value
-    }
+    option.domain_name => option
   }
+}
+
+resource "aws_route53_record" "validation" {
+  for_each = toset(concat([var.domain_name], var.other_names))
 
   zone_id = var.zone_id
-  name    = each.key
-  type    = each.value.type
-  records = [each.value.value]
+  name    = local.proof[each.value].resource_record_name
+  type    = local.proof[each.value].resource_record_type
+  records = [local.proof[each.value].resource_record_value]
   ttl     = 60
 
   # The value is one Certificate Manager chose, so a record left behind by an earlier certificate

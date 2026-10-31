@@ -71,6 +71,7 @@ function firstStepOf(name: string): Step {
 }
 
 const defaultOf = (variable: string): string => variableDefaultOf(configuration, variable);
+
 /** The run script of one named step, so a rule reads the step it means and not the whole job. */
 function scriptOf(jobName: string, stepName: string): string {
   const found = (job(jobName).steps ?? []).find((step) => step.name === stepName);
@@ -119,6 +120,17 @@ function terraformRoots(): string[] {
     .map((file) => dirname(file));
 
   return [...new Set(roots)].sort();
+}
+
+/**
+ * Every for_each expression of one configuration, each read to the blank line that closes it. A
+ * key has to be known before the plan runs, so what a loop is driven from is a rule and not a
+ * style.
+ */
+function loopsIn(configuration: string): string[] {
+  return [...configuration.matchAll(/for_each\s*=\s*([\s\S]*?)\n\s*\n/g)].flatMap((match) =>
+    match[1] === undefined ? [] : [match[1].trim()],
+  );
 }
 
 /** The region of one aliased provider, read from the block that declares the alias. */
@@ -834,9 +846,18 @@ describe('the website on myemi.app, which is feature 26', () => {
     it('writes one validation record for each name into the zone it was handed', () => {
       const record = inModule('resource "aws_route53_record" "validation"');
 
-      expect(record).toContain('aws_acm_certificate.site.domain_validation_options');
+      expect(certificateModule).toContain('aws_acm_certificate.site.domain_validation_options');
+      expect(record).toContain('for_each = toset(concat([var.domain_name], var.other_names))');
       expect(record).toContain('zone_id = var.zone_id');
       expect(call()).toContain('zone_id     = data.aws_route53_zone.site.zone_id');
+    });
+
+    it('drives no loop from a value that is unknown until the certificate exists', () => {
+      const loops = [...loopsIn(certificateModule), ...loopsIn(website)];
+
+      expect(loops).not.toEqual([]);
+      expect(loops.filter((loop) => loop.includes('domain_validation_options'))).toEqual([]);
+      expect(loops).toContain('toset(concat([var.domain_name], var.other_names))');
     });
 
     it('hands on an address that exists only once it is issued', () => {

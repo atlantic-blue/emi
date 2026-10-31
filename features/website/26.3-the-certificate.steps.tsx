@@ -64,7 +64,8 @@ defineFeature(feature, (test) => {
       const lookup = bodyOf(root, 'data "aws_route53_zone" "site"');
 
       expect(certificate).toContain('validation_method         = "DNS"');
-      expect(record).toContain('aws_acm_certificate.site.domain_validation_options');
+      expect(theModule).toContain('aws_acm_certificate.site.domain_validation_options');
+      expect(record).toContain('for_each = toset(concat([var.domain_name], var.other_names))');
       expect(record).toContain('zone_id = var.zone_id');
       expect(call).toContain('zone_id     = data.aws_route53_zone.site.zone_id');
       expect(valueOf(root, /zone_id\s*=\s*([^\n]+)/.exec(lookup)?.[1] ?? '')).toBe(theZone);
