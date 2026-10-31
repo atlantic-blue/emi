@@ -1,5 +1,7 @@
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
+
+import { renderNotFoundPage } from './src/notFoundPage.ts';
 
 /** Where the build writes when the command line names no directory. */
 export const defaultOutputDirectory = 'dist';
@@ -14,7 +16,11 @@ export const notFoundFile = '404.html';
 export function buildWebsite(into: string): string[] {
   mkdirSync(into, { recursive: true });
 
-  return [];
+  const page = join(into, notFoundFile);
+
+  writeFileSync(page, renderNotFoundPage(), 'utf8');
+
+  return [page];
 }
 
 // jest loads this module as CommonJS, where `import.meta` does not exist, and node loads it as a
