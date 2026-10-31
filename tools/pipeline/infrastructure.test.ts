@@ -558,6 +558,19 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(grantedOnEveryResource(planStatements, action)).toBe(true);
     });
 
+    // The website root looks the zone up with data "aws_route53_zone", and that read fills the
+    // data source's tags, so the provider calls ListTagsForResource on the zone. Without the
+    // action the plan is refused before it reaches a resource, so this is the grant the lookup
+    // stands on rather than one the records need.
+    it('reads the tags of that one zone, because the zone lookup reads them', () => {
+      const readTheTags = 'route53:ListTagsForResource';
+
+      for (const statements of [applyStatements, planStatements]) {
+        expect(resourcesOf(statementsReaching(statements, readTheTags))).toEqual([theZone]);
+        expect(grantedOnEveryResource(statements, readTheTags)).toBe(false);
+      }
+    });
+
     it('reads the certificate from us-east-1 alone, because CloudFront reads it from nowhere else', () => {
       const certificates = `arn:aws:acm:us-east-1:${defaultOf('account_id')}:certificate/*`;
 
