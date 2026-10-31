@@ -178,6 +178,34 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
   });
 
+  describe('a gate piped into a filter', () => {
+    /** Every run script of the workflow, with the job that holds it. */
+    const scripts = Object.entries(deploy.jobs ?? {}).flatMap(([name, each]) =>
+      (each.steps ?? []).flatMap((step) =>
+        step.run === undefined ? [] : [{ job: name, run: step.run }],
+      ),
+    );
+
+    // A shell pipeline exits with the status of its last command, so terraform plan piped into tee
+    // reports what tee did. GitHub documents the default shell as bash -e, and pipefail arrives
+    // only when a step names its shell, so a refused plan reads as a green job.
+    it('is read by its own status and not by the status of the filter', () => {
+      const unguarded = scripts
+        .filter((script) => /\|\s*(tee|head|tail|grep)\b/.test(script.run))
+        .filter((script) => !script.run.includes('set -o pipefail'))
+        .map(
+          (script) =>
+            `the ${script.job} job pipes a command into a filter and reads the status of the filter`,
+        );
+
+      expect(unguarded).toEqual([]);
+    });
+
+    it('is there to be found, so an empty list is not a pass by accident', () => {
+      expect(scripts.filter((script) => /\|\s*tee\b/.test(script.run))).not.toEqual([]);
+    });
+  });
+
   describe('the pipeline carries no key of its own', () => {
     it('reads each role from a repository variable', () => {
       expect(job('plan').env?.ROLE).toBe('${{ vars.AWS_PLAN_ROLE_ARN }}');
