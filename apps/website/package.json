@@ -1,0 +1,18 @@
+{
+  "name": "@emi/website",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types build.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --ci"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/react-dom": "~19.2.7"
+  }
+}
