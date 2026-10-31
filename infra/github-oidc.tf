@@ -80,7 +80,13 @@ data "aws_iam_policy_document" "plan" {
     sid    = "DescribeWhatExists"
     effect = "Allow"
     actions = [
+      "acm:ListCertificates",
       "apigateway:GET",
+      "cloudfront:ListCachePolicies",
+      "cloudfront:ListDistributions",
+      "cloudfront:ListFunctions",
+      "cloudfront:ListOriginAccessControls",
+      "cloudfront:ListResponseHeadersPolicies",
       "dynamodb:DescribeContinuousBackups",
       "dynamodb:DescribeTable",
       "dynamodb:DescribeTimeToLive",
@@ -97,8 +103,81 @@ data "aws_iam_policy_document" "plan" {
       "lambda:ListVersionsByFunction",
       "logs:DescribeLogGroups",
       "logs:ListTagsForResource",
+      "route53:GetChange",
+      "route53:ListHostedZones",
+      "route53:ListHostedZonesByName",
     ]
     resources = ["*"]
+  }
+
+  # The website of feature 26. Each statement below is the read of a statement the apply role holds,
+  # at the same scope, so a plan sees what a merge would change and can alter none of it.
+  statement {
+    sid    = "ReadTheWebsiteCertificate"
+    effect = "Allow"
+    actions = [
+      "acm:DescribeCertificate",
+      "acm:GetCertificate",
+      "acm:ListTagsForCertificate",
+    ]
+    resources = ["arn:aws:acm:us-east-1:${var.account_id}:certificate/*"]
+  }
+
+  statement {
+    sid    = "ReadTheDistribution"
+    effect = "Allow"
+    actions = [
+      "cloudfront:DescribeFunction",
+      "cloudfront:GetCachePolicy",
+      "cloudfront:GetCachePolicyConfig",
+      "cloudfront:GetDistribution",
+      "cloudfront:GetDistributionConfig",
+      "cloudfront:GetFunction",
+      "cloudfront:GetOriginAccessControl",
+      "cloudfront:GetOriginAccessControlConfig",
+      "cloudfront:GetResponseHeadersPolicy",
+      "cloudfront:GetResponseHeadersPolicyConfig",
+      "cloudfront:ListTagsForResource",
+    ]
+    resources = [
+      "arn:aws:cloudfront::${var.account_id}:distribution/*",
+      "arn:aws:cloudfront::${var.account_id}:origin-access-control/*",
+      "arn:aws:cloudfront::${var.account_id}:function/*",
+      "arn:aws:cloudfront::${var.account_id}:response-headers-policy/*",
+      "arn:aws:cloudfront::${var.account_id}:cache-policy/*",
+    ]
+  }
+
+  statement {
+    sid    = "ReadTheWebsiteBucket"
+    effect = "Allow"
+    actions = [
+      "s3:GetBucketAcl",
+      "s3:GetBucketCors",
+      "s3:GetBucketLogging",
+      "s3:GetBucketObjectLockConfiguration",
+      "s3:GetBucketPolicy",
+      "s3:GetBucketPublicAccessBlock",
+      "s3:GetBucketRequestPayment",
+      "s3:GetBucketTagging",
+      "s3:GetBucketVersioning",
+      "s3:GetBucketWebsite",
+      "s3:GetEncryptionConfiguration",
+      "s3:GetLifecycleConfiguration",
+      "s3:GetReplicationConfiguration",
+      "s3:ListBucket",
+    ]
+    resources = ["arn:aws:s3:::emi-website-*"]
+  }
+
+  statement {
+    sid    = "ReadTheMyemiZone"
+    effect = "Allow"
+    actions = [
+      "route53:GetHostedZone",
+      "route53:ListResourceRecordSets",
+    ]
+    resources = ["arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K"]
   }
 }
 
@@ -236,6 +315,133 @@ data "aws_iam_policy_document" "apply" {
     sid       = "ListTheOidcProviders"
     effect    = "Allow"
     actions   = ["iam:ListOpenIDConnectProviders"]
+    resources = ["*"]
+  }
+
+  # ── The website on myemi.app, which the pipeline builds from feature 26 ─────
+
+  # CloudFront reads a certificate from us-east-1 and from nowhere else, so the certificate of a
+  # site in eu-central-1 lives there. A certificate address carries a generated identifier, so
+  # every certificate of the region is the tightest pattern the service offers.
+  statement {
+    sid       = "TheWebsiteCertificate"
+    effect    = "Allow"
+    actions   = ["acm:*"]
+    resources = ["arn:aws:acm:us-east-1:${var.account_id}:certificate/*"]
+  }
+
+  # Asking for a certificate acts on no certificate, and neither does listing them.
+  statement {
+    sid    = "AskForACertificate"
+    effect = "Allow"
+    actions = [
+      "acm:ListCertificates",
+      "acm:RequestCertificate",
+    ]
+    resources = ["*"]
+  }
+
+  # A CloudFront address carries a generated identifier, so each resource type is named as every
+  # one of its kind in this account. Account 230345688874 also holds the distributions of other
+  # Atlantic Blue products, which is why the actions are named one by one instead of as
+  # cloudfront:*.
+  statement {
+    sid    = "TheDistribution"
+    effect = "Allow"
+    actions = [
+      "cloudfront:CreateDistribution",
+      "cloudfront:CreateInvalidation",
+      "cloudfront:DeleteCachePolicy",
+      "cloudfront:DeleteDistribution",
+      "cloudfront:DeleteFunction",
+      "cloudfront:DeleteOriginAccessControl",
+      "cloudfront:DeleteResponseHeadersPolicy",
+      "cloudfront:DescribeFunction",
+      "cloudfront:GetCachePolicy",
+      "cloudfront:GetCachePolicyConfig",
+      "cloudfront:GetDistribution",
+      "cloudfront:GetDistributionConfig",
+      "cloudfront:GetFunction",
+      "cloudfront:GetInvalidation",
+      "cloudfront:GetOriginAccessControl",
+      "cloudfront:GetOriginAccessControlConfig",
+      "cloudfront:GetResponseHeadersPolicy",
+      "cloudfront:GetResponseHeadersPolicyConfig",
+      "cloudfront:ListTagsForResource",
+      "cloudfront:PublishFunction",
+      "cloudfront:TagResource",
+      "cloudfront:UntagResource",
+      "cloudfront:UpdateCachePolicy",
+      "cloudfront:UpdateDistribution",
+      "cloudfront:UpdateFunction",
+      "cloudfront:UpdateOriginAccessControl",
+      "cloudfront:UpdateResponseHeadersPolicy",
+    ]
+    resources = [
+      "arn:aws:cloudfront::${var.account_id}:distribution/*",
+      "arn:aws:cloudfront::${var.account_id}:origin-access-control/*",
+      "arn:aws:cloudfront::${var.account_id}:function/*",
+      "arn:aws:cloudfront::${var.account_id}:response-headers-policy/*",
+      "arn:aws:cloudfront::${var.account_id}:cache-policy/*",
+    ]
+  }
+
+  # Making an origin access control, a function or a policy acts on no resource, and neither does
+  # listing any of them. The service authorization reference says so for each action here, and the
+  # apply of 2026-09-19 died on exactly this shape for the log groups.
+  statement {
+    sid    = "MakeADistributionPart"
+    effect = "Allow"
+    actions = [
+      "cloudfront:CreateCachePolicy",
+      "cloudfront:CreateFunction",
+      "cloudfront:CreateOriginAccessControl",
+      "cloudfront:CreateResponseHeadersPolicy",
+      "cloudfront:ListCachePolicies",
+      "cloudfront:ListDistributions",
+      "cloudfront:ListFunctions",
+      "cloudfront:ListOriginAccessControls",
+      "cloudfront:ListResponseHeadersPolicies",
+    ]
+    resources = ["*"]
+  }
+
+  # The bucket the site is served from, and the pages in it. Step 26.4 names it
+  # emi-website-<account identifier>.
+  statement {
+    sid     = "TheWebsiteBucket"
+    effect  = "Allow"
+    actions = ["s3:*"]
+    resources = [
+      "arn:aws:s3:::emi-website-*",
+      "arn:aws:s3:::emi-website-*/*",
+    ]
+  }
+
+  # One zone, written out rather than built from a variable, so widening it is one visible token.
+  # The registration owns the myemi.app zone and Terraform never creates or destroys it. This
+  # account holds the zones of other Atlantic Blue products too, so a pattern here that reached
+  # every zone would let a plan of the website delete a record of another site.
+  statement {
+    sid    = "TheMyemiZone"
+    effect = "Allow"
+    actions = [
+      "route53:ChangeResourceRecordSets",
+      "route53:GetHostedZone",
+      "route53:ListResourceRecordSets",
+    ]
+    resources = ["arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K"]
+  }
+
+  # Waiting for a record change to spread acts on no zone, and neither does finding one by name.
+  statement {
+    sid    = "ReadARecordChange"
+    effect = "Allow"
+    actions = [
+      "route53:GetChange",
+      "route53:ListHostedZones",
+      "route53:ListHostedZonesByName",
+    ]
     resources = ["*"]
   }
 }
