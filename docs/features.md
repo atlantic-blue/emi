@@ -1,7 +1,8 @@
 # The features of Emi, and what version 1 does not do
 
 Emi is a period and cycle tracker. Emi stands for Every Month Insights. Seven features build
-version 1. An eighth feature writes the documents you are reading now.
+version 1. An eighth feature writes the documents you are reading now. A ninth feature puts the
+website on myemi.app.
 
 This document is the map. It names each feature, and it names every contract that the feature
 builds. It also carries the long term list, which is the whole product the operator wants, and it
@@ -197,6 +198,27 @@ The architecture, the privacy claim, the brand, this map and a readme in every p
 
 This feature builds no contract of its own. It writes down what the other seven build, and it adds
 the pipeline checks that stop these documents drifting from the code.
+
+## Feature 9: The website on myemi.app
+
+The home page on myemi.app, in English, Russian and Spanish, served as static files. Six steps.
+
+The site carries the privacy policy and the support page the App Store review asks for, so it
+arrives before the first submission.
+
+It is the first thing a woman sees who is not holding the application yet, so it keeps the promise
+the application keeps. No third party, no cookie, and no script that counts her visit.
+
+The contracts it builds:
+
+- `SITE-1` the domain, with one certificate for `myemi.app` and `www.myemi.app`, and http that
+  answers 301 to https.
+- `SITE-2` the private bucket, which only the distribution reads.
+- `SITE-3` the three languages, each with a home page, and an address that does not exist answering
+  404 with an Emi page.
+- `SITE-4` the pages, built from the tokens by a TypeScript program.
+- `SITE-5` the deploy, which a merge into `main` runs and a pull request never does.
+- `SITE-6` the five headers, on every response.
 
 ## The long term list
 
