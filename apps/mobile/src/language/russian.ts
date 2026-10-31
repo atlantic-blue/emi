@@ -842,7 +842,7 @@ export const russian: CatalogueIn<'ru'> = {
   'onboarding.today.nothingToAdd': 'Нечего добавить',
   'onboarding.today.question': 'Отметьте всё, что подходит.',
   'onboarding.today.title': 'Как вы себя чувствуете сегодня?',
-  'onboarding.tour.price.line': 'Первый месяц бесплатно, затем 29,99 фунта в год.',
+  'onboarding.tour.price.line': 'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
   'onboarding.tour.price.title': 'Ваше, и остаётся вашим',
   'onboarding.tour.ring.action': 'Дальше',
   'onboarding.tour.ring.legend.after': 'После неё',

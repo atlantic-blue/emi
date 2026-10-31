@@ -30,7 +30,7 @@ flowchart LR
   S --> F2["2. She logs her first period"]
   S --> F3["3. Emi predicts"]
   S --> F4["4. She logs how she feels"]
-  S --> F7["7. She pays for a year"]
+  S --> F7["7. She pays every month"]
   S --> F8["8. Anybody can read how it works"]
   F2 --> F5["5. Nobody else can read her data"]
   F5 --> F6["6. Her cycle survives a new phone"]
@@ -175,17 +175,17 @@ The contracts it builds:
 - `AUTH-1` the request signature, over the method, the path, the instant and the hash of the body.
 - `KEEP-1` a log line that carries a request identifier and a duration, and nothing about her.
 
-## Feature 7: She pays for a year, and the price is the promise
+## Feature 7: She pays every month, and the price is the promise
 
-One month free, then 29.99 pounds a year. Read and export stay open forever if she stops paying. Six
-steps.
+One month free, then 29.99 pounds a month. Read and export stay open forever if she stops
+paying. Six steps.
 
 The price is the product. There is no free tier, because a free tier is paid for with her data.
 
 The contracts it builds:
 
-- `PAY-1` one yearly product at 29.99 pounds, with a one month introductory free period, in both
-  stores.
+- `PAY-1` one monthly auto renewing product at 29.99 pounds, with a one month introductory free
+  period, in both stores.
 - `PAY-2` the entitlement, read on launch, kept when the store cannot be reached.
 - `PAY-3` the receipt checked on the server, against the store that issued it.
 - `PAY-4` a lapse that stops new writes and nothing else.
@@ -318,7 +318,7 @@ its condition.
 
 ### Money
 
-- 29.99 pounds a year. State: in version 1, `PAY-1`.
+- 29.99 pounds a month. State: in version 1, `PAY-1`.
 - No free tier paid for with her data. State: in version 1, `KEEP-4`.
 - The price is the trust signal. State: in version 1, `PAY-1`.
 
