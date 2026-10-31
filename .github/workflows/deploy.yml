@@ -84,6 +84,9 @@ jobs:
         if: env.ROLE != ''
         working-directory: infra
         run: |
+          # A shell pipeline exits with the status of its last command, so without this line a
+          # refused plan reports what tee did and the job reads as green.
+          set -o pipefail
           terraform init -input=false -lock=false
           terraform plan -input=false -lock=false -no-color | tee plan.txt
       - name: put the plan in the run summary
