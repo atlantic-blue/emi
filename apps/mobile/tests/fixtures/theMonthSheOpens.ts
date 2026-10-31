@@ -403,6 +403,19 @@ export function theDaysOfHerNextForecastPeriod(): string[] {
   );
 }
 
+/** The days of her next period counted from the middle of its range, which the month marks strongest. */
+export function theMostLikelyDaysOfHerNextPeriod(): string[] {
+  const next = theCyclesAheadOfHer()[0];
+
+  if (next === undefined) {
+    throw new Error('her three cycles produced no forecast period ahead of her');
+  }
+
+  return Array.from({ length: next.periodDays }, (_unused, index) =>
+    addDays(next.likelyFrom, index),
+  );
+}
+
 /**
  * The cycle day the drawing counts over each date, up to the day before her next forecast period,
  * and a count that starts again at 1 from that day. The drawing is older than issue 270 and counts
@@ -588,6 +601,9 @@ export function theMarkOnTheSquare(day: string): DayMark {
   }
   if (style.borderStyle === 'dashed') {
     return 'forecast';
+  }
+  if (style.borderStyle === 'dotted') {
+    return 'possible';
   }
 
   return style.borderColor === colour.accent ? 'today' : 'plain';
@@ -866,10 +882,11 @@ export function theOvulationDayOfTheForecastCycle(): string {
   );
 }
 
-/** The three words of the legend above the grid, or nothing where the screen draws no legend. */
+/** The four words of the legend above the grid, or nothing where the screen draws no legend. */
 export interface LegendSheReads {
   readonly period: string;
   readonly forecast: string;
+  readonly possible: string;
   readonly fertile: string;
 }
 
@@ -882,6 +899,7 @@ export function theLegendSheReads(): LegendSheReads | undefined {
     fertile: saidUnder(legendTestID('fertile')),
     forecast: saidUnder(legendTestID('forecast')),
     period: saidUnder(legendTestID('period')),
+    possible: saidUnder(legendTestID('possible')),
   };
 }
 
@@ -908,7 +926,12 @@ export function theLegendDots(): Readonly<Record<LegendEntry, LegendMark>> {
     };
   };
 
-  return { fertile: markOf('fertile'), forecast: markOf('forecast'), period: markOf('period') };
+  return {
+    fertile: markOf('fertile'),
+    forecast: markOf('forecast'),
+    period: markOf('period'),
+    possible: markOf('possible'),
+  };
 }
 
 /** Whether the month put the panel at the foot on the glass. */

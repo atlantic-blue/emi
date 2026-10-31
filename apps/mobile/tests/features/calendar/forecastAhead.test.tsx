@@ -21,6 +21,7 @@ import {
 import { herMonth } from '../../../src/features/calendar/herMonth';
 import { theDayPhaseOn } from '../../../src/features/calendar/herMonthPhases';
 import { type HerReading, whatTheSheetSays } from '../../../src/features/calendar/theDaySheet';
+import { herDayLabel } from '../../../src/features/cycle/copy';
 import { type HerDay, herDaysOn } from '../../../src/features/cycle/herWeek';
 import { recordedDays } from '../../../src/features/cycle/rebuild';
 import { monthLabel } from '../../../src/features/onboarding/days';
@@ -72,9 +73,16 @@ const herThreePeriods = ['2026-07-25', '2026-08-22', '2026-09-19'];
 /** One period, so Emi is still learning. */
 const herOnePeriod = ['2026-09-19'];
 
+function theDaysMarkedIn(from: HerReading, month: string, mark: HerDay['mark']): string[] {
+  return herMonth(from, month)
+    .filter((day) => day.mark === mark)
+    .map((day) => day.day);
+}
+
+/** Every day the month rings for a forecast period, the most likely days and the days either side. */
 function theDaysMarkedForecastIn(from: HerReading, month: string): string[] {
   return herMonth(from, month)
-    .filter((day) => day.mark === 'forecast')
+    .filter((day) => day.mark === 'forecast' || day.mark === 'possible')
     .map((day) => day.day);
 }
 
@@ -132,6 +140,51 @@ describe('the forecast periods in the months ahead', () => {
   });
 });
 
+describe('the most likely days of a forecast period', () => {
+  it('marks the period counted from the middle of the range more strongly than the days either side', () => {
+    // It may start on 13, 14 or 15 November, so the middle is 14 November and it runs five days.
+    const from = herReading(herThreePeriods);
+
+    expect(theDaysMarkedIn(from, '2026-11-01', 'forecast')).toEqual([
+      '2026-11-14',
+      '2026-11-15',
+      '2026-11-16',
+      '2026-11-17',
+      '2026-11-18',
+    ]);
+    expect(theDaysMarkedIn(from, '2026-11-01', 'possible')).toEqual(['2026-11-13', '2026-11-19']);
+  });
+
+  it('counts the middle from the length she gave while Emi is still learning', () => {
+    // She gave 28 days, so the middle is 17 October and three days either side may start it.
+    const from = herReading(herOnePeriod);
+
+    expect(theCyclesAhead(from)[0]?.likelyFrom).toBe('2026-10-17');
+    expect(theDaysMarkedIn(from, '2026-10-01', 'forecast')).toEqual([
+      '2026-10-17',
+      '2026-10-18',
+      '2026-10-19',
+      '2026-10-20',
+      '2026-10-21',
+    ]);
+    expect(theDaysMarkedIn(from, '2026-10-01', 'possible')).toEqual([
+      '2026-10-14',
+      '2026-10-15',
+      '2026-10-16',
+      '2026-10-22',
+      '2026-10-23',
+      '2026-10-24',
+    ]);
+  });
+
+  it('says a possible day in words, for a woman who is listening', () => {
+    const [possible] = herDaysOn(herReading(herThreePeriods), ['2026-11-13']);
+
+    expect(possible?.mark).toBe('possible');
+    expect(herDayLabel(possible as HerDay, today)).toContain(english['cycle.day.possible']);
+  });
+});
+
 describe('the cycle day over a date ahead of her', () => {
   it('starts again at 1 on each forecast period, and counts on from there', () => {
     const november = herMonth(herReading(herThreePeriods), '2026-11-01');
@@ -151,7 +204,7 @@ describe('the cycle day over a date ahead of her', () => {
 
     expect(dayOf('2026-10-18')?.cycleDay).toBe(30);
     expect(dayOf('2026-10-18')?.mark).toBe('forecast');
-    expect(dayOf('2026-10-22')?.mark).toBe('forecast');
+    expect(dayOf('2026-10-22')?.mark).toBe('possible');
     expect(dayOf('2026-10-23')?.mark).toBe('plain');
   });
 
@@ -354,14 +407,26 @@ describe('the month ahead, drawn', () => {
   it('draws the forecast period in dashed rings, the cycle day 1 over its first day', async () => {
     await sheReads('2026-11-01', '2026-11-14');
 
-    expect(discOf('2026-11-13').borderStyle).toBe('dashed');
-    expect(discOf('2026-11-19').borderStyle).toBe('dashed');
-    expect(discOf('2026-11-13').borderColor).toBe(colour.period);
+    expect(discOf('2026-11-14').borderStyle).toBe('dashed');
+    expect(discOf('2026-11-18').borderStyle).toBe('dashed');
+    expect(discOf('2026-11-14').borderColor).toBe(colour.period);
     expect(discOf('2026-11-12').borderStyle).toBeUndefined();
     expect(discOf('2026-11-20').borderStyle).toBeUndefined();
     expect(screen.getByTestId(cycleDayTestID('2026-11-13')).props.children).toBe(1);
     expect(discOf('2026-11-28').backgroundColor).toBe(colour.ovulation);
     expect(discOf('2026-11-25').backgroundColor).toBe(colour.washWarm);
+  });
+
+  it('draws the days either side of the most likely days in a lighter dotted ring', async () => {
+    await sheReads('2026-11-01', '2026-11-14');
+
+    for (const day of ['2026-11-13', '2026-11-19']) {
+      expect(discOf(day)).toEqual(
+        expect.objectContaining({ borderColor: colour.luteal, borderStyle: 'dotted' }),
+      );
+    }
+    expect(screen.getByTestId(legendTestID('possible'))).toBeTruthy();
+    expect(screen.getByText(monthLegendCopy.possible)).toBeTruthy();
   });
 
   it('gives a forecast day a card with no way into the day', async () => {

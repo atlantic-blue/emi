@@ -8,8 +8,10 @@ import { theCyclesAhead } from '../../src/features/calendar/forecastAhead';
 import { herMonth } from '../../src/features/calendar/herMonth';
 import { theDayPhaseOn } from '../../src/features/calendar/herMonthPhases';
 import { type HerReading, whatTheSheetSays } from '../../src/features/calendar/theDaySheet';
+import { theWaitForHerNextPeriod } from '../../src/features/calendar/theWait';
 import { herDaysOn } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
+import { forecastOf } from '../../src/features/forecast/fromCache';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { iPhone16Size } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
@@ -70,8 +72,9 @@ async function drawn(): Promise<DrawnScreen> {
   const month = '2026-11-01';
   const pressed = theCyclesAhead(from).find((cycle) => cycle.startsOn >= month)?.startsOn;
   const hers = pressed === undefined ? undefined : herDaysOn(from, [pressed])[0];
+  const wait = theWaitForHerNextPeriod(forecastOf(from.cycles, from.statedCycleLengthDays), today);
 
-  if (hers === undefined) {
+  if (hers === undefined || wait === undefined) {
     throw new Error('her three cycles reached no forecast period in November');
   }
 
@@ -92,6 +95,7 @@ async function drawn(): Promise<DrawnScreen> {
         phaseOn={(day) => theDayPhaseOn(from, day)}
         shePressed={whatTheSheetSays(from, hers, undefined)}
         today={today}
+        waitForNextPeriod={wait}
       />
     </OnAPhone>,
   );
@@ -101,7 +105,7 @@ async function drawn(): Promise<DrawnScreen> {
 
   return {
     title: 'Ноябрь 2026, with the first day of a forecast period pressed',
-    note: 'The title is the nominative month name. The legend reads Месячные, Прогноз, Фертильные дни and Секс. The forecast period starts again at day 1 in dashed rings, and the card says when that period is likely to start.',
+    note: 'The title is the nominative month name. A line above the legend says how many days until her next period is likely to start. The legend reads Месячные, Прогноз, Возможные дни, Фертильные дни and Секс. The forecast period starts again at day 1. Its most likely days are dashed rings and the days either side are dotted rings, and the card says when that period is likely to start.',
     tree,
   };
 }

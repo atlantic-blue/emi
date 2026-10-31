@@ -430,7 +430,7 @@ Feature: She opens Emi and logs her first period
     And every one of those before her next forecast period is the day the ring says for that date
     And the count starts again at 1 on the day the forecast puts her next period on
     And the days she bled are filled
-    And the days the forecast puts her next period on are dashed rings
+    And the most likely days of her next forecast period are dashed rings, and the days either side are dotted rings
     And today is ringed
     And every square is as high as a thumb needs, and takes its width from the month
 
@@ -482,7 +482,7 @@ Feature: She opens Emi and logs her first period
     Given her phone holds three recorded cycles
     When she opens the month
     And she presses the way to a later month
-    Then the forecast period in that month is drawn in dashed rings, and its cycle day starts at 1
+    Then the forecast period in that month is drawn in dashed and dotted rings, and its cycle day starts at 1
     And the fertile window of that forecast cycle is tinted, with its ovulation day filled
     When she presses the first day of that forecast period
     Then the card says a later period is likely to start between that day and a later one
@@ -673,7 +673,9 @@ Feature: She opens Emi and logs her first period
     And the days she bled are filled with the colour of her period
     And every day of the fertile window the forecast names is tinted
     And the one day the forecast names as the estimated ovulation is filled
-    And a legend above the grid names her period, the forecast and her fertile days
+    And a legend above the grid names her period, the forecast, the possible days and her fertile days
+    And a line above the legend says in how many days her next period is likely to start
+    And the day of her cycle over each date is smaller and paler than the date
     When she presses the day the drawing names
     Then a card at the foot names that day, over the way to her whole period
     And pressing the open button on that card opens the day it names

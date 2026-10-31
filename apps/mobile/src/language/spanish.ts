@@ -60,6 +60,7 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.legend.fertile': 'Fértil',
   'calendar.legend.forecast': 'Previsión',
   'calendar.legend.period': 'Periodo',
+  'calendar.legend.possible': 'Posible',
   'calendar.legend.sex': 'Sexo',
   'calendar.month.april': 'abril',
   'calendar.month.august': 'agosto',
@@ -85,6 +86,15 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.monthTitle.november': 'Noviembre',
   'calendar.monthTitle.october': 'Octubre',
   'calendar.monthTitle.september': 'Septiembre',
+  'calendar.nextPeriod.in': {
+    one: 'Es probable que tu próximo periodo empiece dentro de {from} a {count} día.',
+    other: 'Es probable que tu próximo periodo empiece dentro de {from} a {count} días.',
+  },
+  'calendar.nextPeriod.today': 'Es probable que tu próximo periodo empiece hoy.',
+  'calendar.nextPeriod.within': {
+    one: 'Es probable que tu próximo periodo empiece en un plazo de {count} día.',
+    other: 'Es probable que tu próximo periodo empiece en un plazo de {count} días.',
+  },
   // Spanish writes a day of the month as a plain number, so it adds no suffix to any of them.
   'calendar.ordinal.first': '',
   'calendar.ordinal.other': '',
@@ -112,6 +122,7 @@ export const spanish: CatalogueIn<'es'> = {
   'cycle.day.cycleDay': 'día {cycle} del ciclo',
   'cycle.day.expected': 'se espera tu periodo',
   'cycle.day.notYet': 'todavía no, este día no ha ocurrido',
+  'cycle.day.possible': 'puede llegar tu periodo',
   'cycle.figures.back': 'Atrás',
   'cycle.figures.cycleLength': 'Duración del ciclo',
   'cycle.figures.cycleLengthVariation': 'Variación de la duración del ciclo',

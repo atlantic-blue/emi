@@ -9,9 +9,10 @@ import type { HerDay } from '../cycle/herWeek';
 import { monthLabel } from '../onboarding/days';
 import { CycleMonth, MonthLegend, type MonthSquare } from './CycleMonth';
 import { DaySheet } from './DaySheet';
-import { calendarCopy, daySheetWords, monthLegendCopy } from './copy';
+import { calendarCopy, daySheetWords, monthLegendCopy, theWaitSaid } from './copy';
 import type { DayPhase } from './herMonthPhases';
 import type { WhatTheSheetSays } from './theDaySheet';
+import type { TheWait } from './theWait';
 
 export const calendarScreenTestID = 'calendar-screen';
 export const calendarHeaderTestID = 'calendar-screen-header';
@@ -28,6 +29,8 @@ export const calendarHeaderStartTestID = 'calendar-screen-header-start';
 export const calendarHeaderEndTestID = 'calendar-screen-header-end';
 /** The row under the header that carries the two ways to another month. */
 export const calendarPagesTestID = 'calendar-screen-pages';
+/** The line above the legend that says how long until her next period. */
+export const calendarNextPeriodTestID = 'calendar-screen-next-period';
 /** The panel at the foot, which holds the card of the day she pressed. */
 export const calendarPanelTestID = 'calendar-screen-panel';
 
@@ -54,6 +57,8 @@ interface Props {
   readonly phaseOn?: (day: string) => DayPhase | undefined;
   /** Whether she recorded sex on one date of that month, which puts a heart on its disc. */
   readonly hadSexOn?: (day: string) => boolean;
+  /** How long until her next period, from today. Nothing where Emi has no range to count from. */
+  readonly waitForNextPeriod?: TheWait;
   /**
    * The day she pressed, worked out. The route hands today until she presses another day, so the
    * card and the way to her whole period are always on the glass.
@@ -90,6 +95,7 @@ export function CalendarScreen({
   days,
   phaseOn,
   hadSexOn,
+  waitForNextPeriod,
   shePressed,
   onBack,
   onToday,
@@ -187,6 +193,12 @@ export function CalendarScreen({
           </Pressable>
         </View>
 
+        {waitForNextPeriod === undefined ? null : (
+          <Text style={styles.nextPeriod} testID={calendarNextPeriodTestID}>
+            {theWaitSaid(waitForNextPeriod)}
+          </Text>
+        )}
+
         <MonthLegend namesSex />
 
         <CycleMonth month={month} squareOf={squareOf} testID={calendarMonthTestID} />
@@ -245,6 +257,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
+  },
+  nextPeriod: {
+    color: colour.text,
+    textAlign: 'center',
+    ...textStyle('choice-sm'),
   },
   pageLabel: {
     color: colour.secondaryText,

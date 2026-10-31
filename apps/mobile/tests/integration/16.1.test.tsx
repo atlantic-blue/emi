@@ -38,6 +38,7 @@ import {
   theCycleDaysAfterIssue270,
   theDayHerNextPeriodIsForecastOn,
   theDaysOfHerNextForecastPeriod,
+  theMostLikelyDaysOfHerNextPeriod,
   theSquaresCountingTheirCycleDayBelowTheDate,
   theSquaresTakingAWidthOfTheirOwn,
   theSquaresTheMonthDrew,
@@ -163,9 +164,12 @@ describe('she opens a month and reads the cycle day of every day in it', () => {
 
     it('rings every day the forecast puts her next period on, from its first day', async () => {
       await sheOpensTheMonth();
+      const likely = theMostLikelyDaysOfHerNextPeriod();
 
       expect(theDaysOfHerNextForecastPeriod().map((day) => theMarkOnTheSquare(day))).toEqual(
-        theDaysOfHerNextForecastPeriod().map(() => 'forecast'),
+        theDaysOfHerNextForecastPeriod().map((day) =>
+          likely.includes(day) ? 'forecast' : 'possible',
+        ),
       );
       expect(theDaysOfHerNextForecastPeriod()).toContain(theDayTheDrawingOutlines());
     });

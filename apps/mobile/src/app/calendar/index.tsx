@@ -17,8 +17,10 @@ import {
   type WhatTheSheetSays,
   whatTheSheetSays,
 } from '../../features/calendar/theDaySheet';
+import { type TheWait, theWaitForHerNextPeriod } from '../../features/calendar/theWait';
 import { type HerDay, herDaysOn } from '../../features/cycle/herWeek';
 import { recordedDays } from '../../features/cycle/rebuild';
+import { forecastOf } from '../../features/forecast/fromCache';
 import { editFlow } from '../../features/log/editDay';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
 import { addMonths, localDay, startOfMonth } from '../../features/onboarding/days';
@@ -66,6 +68,7 @@ interface HerMonth {
   readonly sheetFor: (day: string) => WhatTheSheetSays | undefined;
   /** Whether the sheet that asks for her past periods stands over this month. */
   readonly asksForPastPeriods: boolean;
+  readonly waitForNextPeriod: TheWait | undefined;
 }
 
 function herMonthOf(
@@ -81,6 +84,10 @@ function herMonthOf(
   return {
     asksForPastPeriods: forecastPopupShows(database, from, month),
     days,
+    waitForNextPeriod: theWaitForHerNextPeriod(
+      forecastOf(from.cycles, from.statedCycleLengthDays),
+      today,
+    ),
     hadSexOn: (day) => from.records.some((record) => record.day === day && hadSex(record)),
     phaseOn: (day) => theDayPhaseOn(from, day),
     sheetFor: (day) => {
@@ -182,6 +189,9 @@ export default function CalendarRoute(): ReactNode {
         hadSexOn={hers.hadSexOn}
         phaseOn={hers.phaseOn}
         today={today}
+        {...(hers.waitForNextPeriod === undefined
+          ? {}
+          : { waitForNextPeriod: hers.waitForNextPeriod })}
         {...theCardFor(hers.sheetFor(shePressed))}
       />
       {hers.asksForPastPeriods ? (

@@ -8,6 +8,7 @@ import {
   CYCLE_LENGTH_LOW_DAYS,
   CYCLES_BEFORE_A_FORECAST,
   addDays,
+  daysBetween,
   findSymptom,
   type PublishedFigure,
   type PublishedMeasurement,
@@ -160,6 +161,7 @@ import {
   calendarEarlierTestID,
   calendarEditPeriodTestID,
   calendarLaterTestID,
+  calendarNextPeriodTestID,
   calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
 import {
@@ -169,11 +171,16 @@ import {
   daySheetRemovePeriodDayTestID,
   daySheetTestID,
 } from '../apps/mobile/src/features/calendar/DaySheet';
-import { sexMarkTestID } from '../apps/mobile/src/features/calendar/CycleMonth';
+import {
+  cycleDayTestID,
+  dateTestID,
+  sexMarkTestID,
+} from '../apps/mobile/src/features/calendar/CycleMonth';
 import {
   calendarCopy,
   editPeriodCopy,
   monthLegendCopy,
+  theWaitSaid,
 } from '../apps/mobile/src/features/calendar/copy';
 import { dayParameter } from '../apps/mobile/src/features/calendar/askedMonth';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
@@ -564,6 +571,7 @@ import {
   theDatesOfTheDrawing,
   theDayHerNextPeriodIsForecastOn,
   theDaysOfHerNextForecastPeriod,
+  theMostLikelyDaysOfHerNextPeriod,
   theMonthAfterSheOpens,
   theOvulationDayOfTheForecastCycle,
   theDayAheadSheCannotOpen,
@@ -4959,12 +4967,20 @@ defineFeature(feature, (test) => {
       expect(theDaysTheDrawingFills().length).toBeGreaterThan(1);
     });
 
-    and('the days the forecast puts her next period on are dashed rings', () => {
-      expect(theDaysOfHerNextForecastPeriod().map((day) => theMarkOnTheSquare(day))).toEqual(
-        theDaysOfHerNextForecastPeriod().map(() => 'forecast'),
-      );
-      expect(theMarkOnTheSquare(addDays(theDayHerNextPeriodIsForecastOn(), -1))).toBe('plain');
-    });
+    and(
+      'the most likely days of her next forecast period are dashed rings, and the days either side are dotted rings',
+      () => {
+        const likely = theMostLikelyDaysOfHerNextPeriod();
+
+        expect(theDaysOfHerNextForecastPeriod().map((day) => theMarkOnTheSquare(day))).toEqual(
+          theDaysOfHerNextForecastPeriod().map((day) =>
+            likely.includes(day) ? 'forecast' : 'possible',
+          ),
+        );
+        expect(likely.map((day) => theMarkOnTheSquare(day))).toEqual(likely.map(() => 'forecast'));
+        expect(theMarkOnTheSquare(addDays(theDayHerNextPeriodIsForecastOn(), -1))).toBe('plain');
+      },
+    );
 
     and('today is ringed', () => {
       expect(theMarkOnTheSquare(theDaySheOpensTheMonth())).toBe('today');
@@ -5277,7 +5293,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'the forecast period in that month is drawn in dashed rings, and its cycle day starts at 1',
+      'the forecast period in that month is drawn in dashed and dotted rings, and its cycle day starts at 1',
       () => {
         const inThatMonth = theCyclesAheadOfHer().find(
           (cycle) => startOfMonth(cycle.startsOn) === theMonthAfterSheOpens(),
@@ -5287,7 +5303,10 @@ defineFeature(feature, (test) => {
         theForecastPeriodStarts = String(inThatMonth?.startsOn);
 
         expect(theCycleDayOver(theForecastPeriodStarts)).toBe(1);
-        expect(theMarkOnTheSquare(theForecastPeriodStarts)).toBe('forecast');
+        expect(theMarkOnTheSquare(theForecastPeriodStarts)).toBe(
+          theForecastPeriodStarts < String(inThatMonth?.likelyFrom) ? 'possible' : 'forecast',
+        );
+        expect(theMarkOnTheSquare(String(inThatMonth?.likelyFrom))).toBe('forecast');
         expect(theMarkOnTheSquare(addDays(theForecastPeriodStarts, -1))).toBe('plain');
       },
     );
@@ -7175,15 +7194,44 @@ defineFeature(feature, (test) => {
       expect(theDateInkOn(ovulation)).toBe(colour.text);
     });
 
-    and('a legend above the grid names her period, the forecast and her fertile days', () => {
-      expect(theLegendSheReads()).toEqual({
-        fertile: monthLegendCopy.fertile,
-        forecast: monthLegendCopy.forecast,
-        period: monthLegendCopy.period,
-      });
-      expect(theLegendDots().period.fill).toBe(colour.period);
-      expect(theLegendDots().forecast.lineStyle).toBe('dashed');
-      expect(theLegendDots().fertile.fill).toBe(colour.washWarm);
+    and(
+      'a legend above the grid names her period, the forecast, the possible days and her fertile days',
+      () => {
+        expect(theLegendSheReads()).toEqual({
+          fertile: monthLegendCopy.fertile,
+          forecast: monthLegendCopy.forecast,
+          period: monthLegendCopy.period,
+          possible: monthLegendCopy.possible,
+        });
+        expect(theLegendDots().period.fill).toBe(colour.period);
+        expect(theLegendDots().forecast.lineStyle).toBe('dashed');
+        expect(theLegendDots().possible.lineStyle).toBe('dotted');
+        expect(theLegendDots().fertile.fill).toBe(colour.washWarm);
+      },
+    );
+
+    and('a line above the legend says in how many days her next period is likely to start', () => {
+      const next = theCyclesAheadOfHer()[0];
+      const today = theDaySheOpensTheMonth();
+
+      expect(next).toBeDefined();
+      expect(textIn(screen.getByTestId(calendarNextPeriodTestID)).join('')).toBe(
+        theWaitSaid({
+          fromDays: daysBetween(today, String(next?.mayStart.from)),
+          kind: 'in',
+          toDays: daysBetween(today, String(next?.mayStart.to)),
+        }),
+      );
+    });
+
+    and('the day of her cycle over each date is smaller and paler than the date', () => {
+      for (const day of theSquaresTheMonthDrew()) {
+        const cycleDay = StyleSheet.flatten(screen.getByTestId(cycleDayTestID(day)).props.style);
+        const date = StyleSheet.flatten(screen.getByTestId(dateTestID(day)).props.style);
+
+        expect(Number(cycleDay.fontSize)).toBeLessThan(Number(date.fontSize));
+        expect(cycleDay.color).toBe(colour.dockQuiet);
+      }
     });
 
     when('she presses the day the drawing names', async () => {
