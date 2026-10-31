@@ -3,6 +3,9 @@ name: deploy
 # A pull request gets a plan. A merge into main gets the apply. Nothing is ever applied from a
 # machine, which is why there is no other path into the account.
 #
+# Each cloud job runs once for every Terraform root the repository holds: infra for the vault,
+# and infrastructure/website for myemi.app. Each root keeps its own state, so the two never meet.
+#
 # Both cloud jobs read their role from a repository variable and skip every step while that
 # variable is empty. The roles do not exist until somebody runs the bootstrap in infra/README.md,
 # and a job that tried to reach the account before then would turn main red on every merge.
@@ -11,11 +14,13 @@ on:
   pull_request:
     paths:
       - 'infra/**'
+      - 'infrastructure/**'
       - '.github/workflows/deploy.yml'
   push:
     branches: [main]
     paths:
       - 'infra/**'
+      - 'infrastructure/**'
       - '.github/workflows/deploy.yml'
 
 permissions:
@@ -40,21 +45,29 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
           terraform_wrapper: false
       - name: format
-        run: terraform fmt -check -recursive infra
-      - name: validate
-        working-directory: infra
         run: |
-          terraform init -backend=false -input=false
-          terraform validate
+          for directory in infra infrastructure; do
+            terraform fmt -check -recursive "${directory}"
+          done
+      - name: validate
+        run: |
+          for root in infra infrastructure/website; do
+            terraform -chdir="${root}" init -backend=false -input=false
+            terraform -chdir="${root}" validate
+          done
 
   plan:
-    name: plan the infrastructure
+    name: plan ${{ matrix.root }}
     needs: check
     runs-on: ubuntu-latest
     # A pull request from a fork gets no token it could assume a role with, so it is not asked to.
     if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository
+    strategy:
+      fail-fast: false
+      matrix:
+        root: [infra, infrastructure/website]
     env:
       ROLE: ${{ vars.AWS_PLAN_ROLE_ARN }}
     steps:
@@ -65,7 +78,7 @@ jobs:
             echo "It is waiting for the bootstrap named in infra/README.md to create the roles."
             echo "Set the repository variable to the plan role address to turn this job on."
           else
-            echo "Planning as ${ROLE}."
+            echo "Planning ${{ matrix.root }} as ${ROLE}."
           fi
       - uses: actions/checkout@v7
         if: env.ROLE != ''
@@ -82,7 +95,7 @@ jobs:
           aws-region: eu-central-1
       - name: plan
         if: env.ROLE != ''
-        working-directory: infra
+        working-directory: ${{ matrix.root }}
         run: |
           # A shell pipeline exits with the status of its last command, so without this line a
           # refused plan reports what tee did and the job reads as green.
@@ -91,20 +104,24 @@ jobs:
           terraform plan -input=false -lock=false -no-color | tee plan.txt
       - name: put the plan in the run summary
         if: env.ROLE != ''
-        working-directory: infra
+        working-directory: ${{ matrix.root }}
         run: |
           {
-            echo '## Terraform plan'
+            echo "## Terraform plan: ${{ matrix.root }}"
             echo '```'
             cat plan.txt
             echo '```'
           } >> "${GITHUB_STEP_SUMMARY}"
 
   apply:
-    name: apply the infrastructure
+    name: apply ${{ matrix.root }}
     needs: check
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    strategy:
+      fail-fast: false
+      matrix:
+        root: [infra, infrastructure/website]
     env:
       ROLE: ${{ vars.AWS_APPLY_ROLE_ARN }}
     steps:
@@ -115,7 +132,7 @@ jobs:
             echo "It is waiting for the bootstrap named in infra/README.md to create the roles."
             echo "Set the repository variable to the apply role address to turn this job on."
           else
-            echo "Applying as ${ROLE}."
+            echo "Applying ${{ matrix.root }} as ${ROLE}."
           fi
       - uses: actions/checkout@v7
         if: env.ROLE != ''
@@ -132,7 +149,7 @@ jobs:
           aws-region: eu-central-1
       - name: apply
         if: env.ROLE != ''
-        working-directory: infra
+        working-directory: ${{ matrix.root }}
         run: |
           terraform init -input=false
           terraform apply -auto-approve -input=false
