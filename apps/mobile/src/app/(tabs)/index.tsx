@@ -22,7 +22,7 @@ import {
   theSymptoms,
 } from '../../features/log/askedGroup';
 import { HomeScreen } from '../../features/home/HomeScreen';
-import { logOvulationAnswer } from '../../features/log/logDay';
+import { logFlow, logOvulationAnswer } from '../../features/log/logDay';
 import { OvulationPopup } from '../../features/ovulation/OvulationPopup';
 import { fertileWindowLabel } from '../../features/ovulation/copy';
 import { theWindowToAskIn } from '../../features/ovulation/signs';
@@ -157,6 +157,12 @@ export default function HomeRoute(): ReactNode {
     [database, profiles, today, vault],
   );
 
+  const endThePeriod = useCallback(() => {
+    logFlow(database, vault, { day: today, flow: 'none', now: new Date() });
+    setShown(whatSheIsLookingAt(database, vault, profiles, today));
+    rescheduleTheReminder();
+  }, [database, profiles, rescheduleTheReminder, today, vault]);
+
   // She logs a day and comes back to this screen rather than to a new one, so the rows are read
   // again every time it is looked at. Reading them once at the first render would leave the ring
   // drawing the cycle she was in before she wrote to it.
@@ -204,6 +210,7 @@ export default function HomeRoute(): ReactNode {
         onOpenPhase={() => router.push('/phase')}
         onOpenPattern={(slug) => router.push(`/history?${patternParameter}=${slug}`)}
         onOpenPatterns={() => router.push('/history')}
+        onEndPeriod={endThePeriod}
         onPeriod={() => router.push('/period')}
         onSex={() => router.push('/sex')}
         patterns={shown.patterns}

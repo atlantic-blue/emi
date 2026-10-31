@@ -16,6 +16,10 @@ export const homeCopy = {
     period: words('home.roundAction.period'),
     phase: words('home.roundAction.phase'),
   },
+  periodAction: {
+    log: words('home.periodAction.log'),
+    end: words('home.periodAction.end'),
+  },
   loggedToday: {
     lead: words('home.loggedToday.lead'),
   },

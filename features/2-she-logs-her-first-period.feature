@@ -1005,16 +1005,26 @@ Feature: She opens Emi and logs her first period
     When she opens Today again the same day
     Then the sheet does not show again
 
-  Scenario: SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2
-    Given her phone holds her first run answers and not one recorded day
+  Scenario: SCREEN-2, she logs a period that started yesterday from Home in one press, and the ring says day 2
+    Given her phone holds her first run answers with a period of five days, and not one recorded day
     When she opens Emi
-    And she presses Period under the ring
-    And she presses Started on another day?
-    Then she is looking at the period picker, and it lists today
-    When she presses today, then Add the day before, and saves
+    And she presses Log period, the one action under the ring
+    Then she is on the Period page of today, and the date is its first choice, with Today chosen
+    And the page carries no link Started on another day?
+    When she presses Yesterday, then Medium, and saves
     Then she is on the screen she opened, and no Period page is left under it
     And her period started yesterday
     And the ring says she is on day 2 of a cycle of the length she gave
+    And the action under the ring says End period
+
+  Scenario: SCREEN-2, she ends her period from Home in one press
+    Given her phone holds her first run answers with a period of five days, and one bleeding day, yesterday
+    When she opens Emi
+    Then the action under the ring says End period
+    When she presses End period
+    Then her phone holds no bleeding on today, sealed
+    And her period lasted one day
+    And she is still on the screen she opened, and the action under the ring says Log period
 
   Scenario: SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast
     Given her phone holds one period and the cycle length she gave
