@@ -3,6 +3,18 @@ import { join, resolve } from 'node:path';
 
 import { parse } from 'yaml';
 
+import {
+  type PolicyStatement,
+  bodyOf as blockBodyOf,
+  configurationOf,
+  defaultOf as variableDefaultOf,
+  grantedOnEveryResource,
+  resolved,
+  standsOnEveryResource,
+  statementsIn,
+  statementsReaching,
+} from './policy.ts';
+
 const repositoryRoot = resolve(__dirname, '..', '..');
 const infrastructureDirectory = join(repositoryRoot, 'infra');
 
@@ -28,40 +40,9 @@ const job = (name: string): Job => {
   return found;
 };
 
-const configurationFiles = readdirSync(infrastructureDirectory).filter((file) =>
-  file.endsWith('.tf'),
-);
-const configuration = configurationFiles
-  .map((file) => readFileSync(join(infrastructureDirectory, file), 'utf8'))
-  .join('\n');
+const configuration = configurationOf(infrastructureDirectory);
 
-/**
- * The body of one top level block, so an assertion reads inside the resource it names rather than
- * anywhere in the file. Interpolations balance their own braces, so counting them is enough.
- */
-function bodyOf(header: string): string {
-  const start = configuration.indexOf(header);
-  if (start < 0) {
-    throw new Error(`the configuration has no ${header}`);
-  }
-
-  const opening = configuration.indexOf('{', start);
-  let depth = 0;
-
-  for (let at = opening; at < configuration.length; at += 1) {
-    if (configuration[at] === '{') {
-      depth += 1;
-    }
-    if (configuration[at] === '}') {
-      depth -= 1;
-      if (depth === 0) {
-        return configuration.slice(opening + 1, at);
-      }
-    }
-  }
-
-  throw new Error(`${header} is never closed`);
-}
+const bodyOf = (header: string): string => blockBodyOf(configuration, header);
 
 function actionsIn(policy: string): string[] {
   return [...policy.matchAll(/"([a-z0-9-]+:[A-Za-z*]+)"/g)].flatMap((match) =>
@@ -77,13 +58,7 @@ function firstStepOf(name: string): Step {
   return first;
 }
 
-function defaultOf(variable: string): string {
-  const found = /default\s+=\s+"([^"]*)"/.exec(bodyOf(`variable "${variable}"`));
-  if (!found?.[1]) {
-    throw new Error(`the variable ${variable} has no text default`);
-  }
-  return found[1];
-}
+const defaultOf = (variable: string): string => variableDefaultOf(configuration, variable);
 
 function expressionOf(name: string): string {
   const found = new RegExp(`\\n\\s+${name}\\s+=\\s+"([^"]*)"`).exec(configuration);
@@ -114,66 +89,27 @@ function subjectOf(name: string): string {
  * what the project reads with today, so the rule below meets a new one already written down.
  */
 const collectionLevelActions: readonly string[] = [
+  'acm:ListCertificates',
+  'acm:RequestCertificate',
+  'cloudfront:CreateCachePolicy',
+  'cloudfront:CreateFunction',
+  'cloudfront:CreateOriginAccessControl',
+  'cloudfront:CreateResponseHeadersPolicy',
+  'cloudfront:ListCachePolicies',
+  'cloudfront:ListDistributions',
+  'cloudfront:ListFunctions',
+  'cloudfront:ListOriginAccessControls',
+  'cloudfront:ListResponseHeadersPolicies',
   'dynamodb:ListTables',
   'iam:ListOpenIDConnectProviders',
   'iam:ListRoles',
   'lambda:ListFunctions',
   'logs:DescribeLogGroups',
+  'route53:GetChange',
+  'route53:ListHostedZones',
+  'route53:ListHostedZonesByName',
   's3:ListAllMyBuckets',
 ];
-
-interface PolicyStatement {
-  readonly sid: string;
-  readonly actions: readonly string[];
-  readonly resources: readonly string[];
-}
-
-function listedIn(body: string, field: string): string[] {
-  const found = new RegExp(`${field}\\s*=\\s*\\[([^\\]]*)\\]`).exec(body);
-
-  if (found?.[1] === undefined) {
-    return [];
-  }
-
-  return found[1]
-    .split(',')
-    .map((entry) => entry.trim().replace(/^"|"$/g, ''))
-    .filter((entry) => entry.length > 0 && !entry.startsWith('#'));
-}
-
-/** Every statement of one policy document, read as the account reads it. */
-function statementsIn(policy: string): PolicyStatement[] {
-  return policy
-    .split(/\bstatement\s*\{/)
-    .slice(1)
-    .map((body) => ({
-      sid: /sid\s*=\s*"([^"]*)"/.exec(body)?.[1] ?? '',
-      actions: listedIn(body, 'actions'),
-      resources: listedIn(body, 'resources'),
-    }));
-}
-
-/**
- * True where a statement stands on every resource. Anything else names one, whether it names it
- * as an address pattern or through a local, and naming one is what denies a collection.
- */
-function standsOnEveryResource(statement: PolicyStatement): boolean {
-  return statement.resources.length === 1 && statement.resources[0] === '*';
-}
-
-/** True where a statement's actions reach the given one, by name or through a wildcard. */
-function reaches(statement: PolicyStatement, action: string): boolean {
-  return statement.actions.some(
-    (granted) =>
-      granted === action ||
-      granted === '*' ||
-      (granted.endsWith('*') && action.startsWith(granted.slice(0, -1))),
-  );
-}
-
-function grantedOnEveryResource(statements: readonly PolicyStatement[], action: string): boolean {
-  return statements.filter(standsOnEveryResource).some((statement) => reaches(statement, action));
-}
 
 /** Each collection level action a statement names while standing on a named resource. */
 function deniedByItsScope(statements: readonly PolicyStatement[], role: string): string[] {
@@ -476,6 +412,10 @@ describe('the infrastructure is applied only by the pipeline', () => {
         'ReadTheState',
         'ReadTheStateObject',
         'DescribeWhatExists',
+        'ReadTheWebsiteCertificate',
+        'ReadTheDistribution',
+        'ReadTheWebsiteBucket',
+        'ReadTheMyemiZone',
       ]);
       expect(applyStatements.length).toBeGreaterThan(5);
       expect(applyStatements.every((statement) => statement.actions.length > 0)).toBe(true);
@@ -571,6 +511,134 @@ describe('the infrastructure is applied only by the pipeline', () => {
 `;
 
       expect(deniedByItsScope(statementsIn(written), 'apply')).toHaveLength(1);
+    });
+  });
+
+  describe('the record grant reaches only the myemi.app zone', () => {
+    const planStatements = statementsIn(planPolicy);
+    const applyStatements = statementsIn(applyPolicy);
+    const theZone = 'arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K';
+    const changeARecord = 'route53:ChangeResourceRecordSets';
+    const zonelessActions = [
+      'route53:GetChange',
+      'route53:ListHostedZones',
+      'route53:ListHostedZonesByName',
+    ];
+
+    /** Each resource a statement stands on, with every variable reference read as its value. */
+    const resourcesOf = (statements: readonly PolicyStatement[]): string[] =>
+      statements.flatMap((statement) =>
+        statement.resources.map((resource) => resolved(configuration, resource)),
+      );
+
+    it('names one zone in the grant that changes a record, and no other resource', () => {
+      const granting = statementsReaching(applyStatements, changeARecord);
+
+      expect(granting.map((statement) => statement.sid)).toEqual(['TheMyemiZone']);
+      expect(resourcesOf(granting)).toEqual([theZone]);
+    });
+
+    it('changes a record through no statement that stands on every resource', () => {
+      expect(grantedOnEveryResource(applyStatements, changeARecord)).toBe(false);
+      expect(grantedOnEveryResource(planStatements, changeARecord)).toBe(false);
+    });
+
+    it('lets a pull request read the one zone and change no record anywhere', () => {
+      expect(resourcesOf(statementsReaching(planStatements, 'route53:GetHostedZone'))).toEqual([
+        theZone,
+      ]);
+      expect(
+        resourcesOf(statementsReaching(planStatements, 'route53:ListResourceRecordSets')),
+      ).toEqual([theZone]);
+      expect(statementsReaching(planStatements, changeARecord)).toEqual([]);
+    });
+
+    it.each(zonelessActions)('grants %s on every resource, which is where it acts', (action) => {
+      expect(grantedOnEveryResource(applyStatements, action)).toBe(true);
+      expect(grantedOnEveryResource(planStatements, action)).toBe(true);
+    });
+
+    it('reads the certificate from us-east-1 alone, because CloudFront reads it from nowhere else', () => {
+      const certificates = `arn:aws:acm:us-east-1:${defaultOf('account_id')}:certificate/*`;
+
+      for (const statements of [applyStatements, planStatements]) {
+        expect(resourcesOf(statementsReaching(statements, 'acm:DescribeCertificate'))).toEqual([
+          certificates,
+        ]);
+      }
+
+      expect(grantedOnEveryResource(applyStatements, 'acm:RequestCertificate')).toBe(true);
+    });
+
+    it('holds every CloudFront grant to the resources of this account', () => {
+      const scoped = applyStatements.filter(
+        (statement) =>
+          statement.sid === 'TheDistribution' || statement.sid === 'ReadTheDistribution',
+      );
+      const account = defaultOf('account_id');
+
+      expect(resourcesOf(scoped)).toEqual([
+        `arn:aws:cloudfront::${account}:distribution/*`,
+        `arn:aws:cloudfront::${account}:origin-access-control/*`,
+        `arn:aws:cloudfront::${account}:function/*`,
+        `arn:aws:cloudfront::${account}:response-headers-policy/*`,
+        `arn:aws:cloudfront::${account}:cache-policy/*`,
+      ]);
+      expect(grantedOnEveryResource(applyStatements, 'cloudfront:CreateDistribution')).toBe(false);
+    });
+
+    it('writes in no bucket but the one the website is served from', () => {
+      const bucket = applyStatements.filter((statement) => statement.sid === 'TheWebsiteBucket');
+
+      expect(resourcesOf(bucket)).toEqual([
+        'arn:aws:s3:::emi-website-*',
+        'arn:aws:s3:::emi-website-*/*',
+      ]);
+      expect(grantedOnEveryResource(applyStatements, 's3:PutObject')).toBe(false);
+      expect(grantedOnEveryResource(planStatements, 's3:GetObject')).toBe(false);
+    });
+
+    it('needs no new grant for the website state, because a star matches a slash as well', () => {
+      const key = resolved(configuration, expressionOf('state_key_arn'));
+      const covers = (object: string): boolean =>
+        new RegExp(`^${key.replace(/\./g, '\\.').replace(/\*/g, '.*')}$`).test(object);
+
+      expect(key).toBe('arn:aws:s3:::abs-terraform/emi/*');
+      expect(covers('arn:aws:s3:::abs-terraform/emi/website/terraform.tfstate')).toBe(true);
+      expect(covers('arn:aws:s3:::abs-terraform/emi/website/terraform.tfstate.tflock')).toBe(true);
+      expect(covers('arn:aws:s3:::abs-terraform/sava-mix/terraform.tfstate')).toBe(false);
+    });
+
+    it('gives the plan role the read of every grant the apply role writes with', () => {
+      const reads = [
+        'acm:DescribeCertificate',
+        'cloudfront:GetDistribution',
+        'cloudfront:GetOriginAccessControl',
+        'cloudfront:GetResponseHeadersPolicy',
+        'cloudfront:ListDistributions',
+        'route53:GetHostedZone',
+        's3:GetBucketPolicy',
+      ];
+      const missing = reads.filter(
+        (action) => statementsReaching(planStatements, action).length === 0,
+      );
+
+      expect(missing).toEqual([]);
+    });
+
+    it('names each statement it adds, so a reviewer reads the scope without a plan', () => {
+      const added = [
+        'TheWebsiteCertificate',
+        'AskForACertificate',
+        'TheDistribution',
+        'MakeADistributionPart',
+        'TheWebsiteBucket',
+        'TheMyemiZone',
+        'ReadARecordChange',
+      ];
+      const sids = applyStatements.map((statement) => statement.sid);
+
+      expect(added.filter((sid) => !sids.includes(sid))).toEqual([]);
     });
   });
 

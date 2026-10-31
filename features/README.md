@@ -16,3 +16,8 @@ at rather than the call the code made.
 Run the tier with `npm run test:behaviour`. Read what it covers with `npm run check:features`,
 which reports every feature with no file yet, and fails on a contract that a covered feature
 leaves without a scenario.
+
+A subdirectory holds a scenario that proves something other than a screen. `website/` holds the
+grants the pipeline needs before it can build myemi.app. `npm run check:features` reads this
+directory one level deep, so a scenario in a subdirectory names no contract and maps to no feature.
+Each one moves into a numbered feature file as soon as `docs/features.md` names its feature.
