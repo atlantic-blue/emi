@@ -3,7 +3,7 @@
 Emi is a period and cycle tracker. This document shows what it looks like. It follows one woman
 through the product, one feature at a time, and it puts a picture under each thing she does.
 
-`features.md` names the eight features. `contracts.md` says what each part must do. Neither one
+`features.md` names the nine features. `contracts.md` says what each part must do. Neither one
 shows anybody a screen, so a person who wants to know what Emi looks like has to run it. This is the
 document that answers that instead.
 
@@ -34,7 +34,7 @@ is the thing this check exists to catch. It fails too when the story names a pic
 there, and when the line under a picture does not say how the picture was made. It names, without
 failing, every picture in `brand/screens` that no section shows.
 
-Three sections show no picture, and each one says why on its own line, beginning `Nothing to show:`.
+Four sections show no picture, and each one says why on its own line, beginning `Nothing to show:`.
 The run repeats those reasons every time, so a section that has quietly stopped being true is read
 by whoever runs the check rather than by nobody.
 
@@ -388,3 +388,13 @@ scenarios, and `check:story` holds this document to the features and to the pict
 
 Nothing to show: this feature writes documents and checks rather than screens, so there is nothing
 in the application to draw. The documents themselves are the artefact, and they are in `docs/`.
+
+## Feature 9: The website on myemi.app
+
+myemi.app is the page a woman reads before she installs anything. It carries the home page in
+English, Russian and Spanish, the privacy policy, and the support page the App Store review asks
+for.
+
+Nothing to show: not one page of the site is built, so there is no screen to draw. The six
+contracts in `contracts.md` are the whole of the website today, and the pages arrive after the
+certificate, the bucket and the distribution.
