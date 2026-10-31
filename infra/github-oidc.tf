@@ -170,12 +170,16 @@ data "aws_iam_policy_document" "plan" {
     resources = ["arn:aws:s3:::emi-website-*"]
   }
 
+  # The tag read belongs to the lookup and not to the records. data "aws_route53_zone" carries a
+  # tags attribute, so the provider calls ListTagsForResource on the zone, and a plan without this
+  # action is refused before it reads a single record.
   statement {
     sid    = "ReadTheMyemiZone"
     effect = "Allow"
     actions = [
       "route53:GetHostedZone",
       "route53:ListResourceRecordSets",
+      "route53:ListTagsForResource",
     ]
     resources = ["arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K"]
   }
@@ -429,6 +433,7 @@ data "aws_iam_policy_document" "apply" {
       "route53:ChangeResourceRecordSets",
       "route53:GetHostedZone",
       "route53:ListResourceRecordSets",
+      "route53:ListTagsForResource",
     ]
     resources = ["arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K"]
   }

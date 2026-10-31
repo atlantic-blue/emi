@@ -443,10 +443,10 @@ describe('a contract in one document and missing from the other fails the run', 
   const declared = contractsDeclaredIn(contracts);
   const mapped = contractsMappedIn(features);
 
-  it('declares forty seven contracts across twelve groups', () => {
-    expect(declared).toHaveLength(47);
-    expect(new Set(declared).size).toBe(47);
-    expect(new Set(declared.map((contract) => contract.split('-')[0])).size).toBe(12);
+  it('declares fifty three contracts across thirteen groups', () => {
+    expect(declared).toHaveLength(53);
+    expect(new Set(declared).size).toBe(53);
+    expect(new Set(declared.map((contract) => contract.split('-')[0])).size).toBe(13);
   });
 
   it('names every declared contract under exactly one feature', () => {
@@ -454,7 +454,7 @@ describe('a contract in one document and missing from the other fails the run', 
     expect(mapped).toHaveLength(declared.length);
   });
 
-  it('spreads the contracts over the seven features that build them', () => {
+  it('spreads the contracts over the eight features that build them', () => {
     const built = new Set(mapped.map((entry) => entry.feature));
 
     expect([...built].sort()).toEqual([
@@ -465,13 +465,14 @@ describe('a contract in one document and missing from the other fails the run', 
       'Feature 5',
       'Feature 6',
       'Feature 7',
+      'Feature 9',
     ]);
   });
 
   it('counts the mapped contracts in the run this repository makes', () => {
     const run = check();
 
-    expect(run.output).toContain(`47 contract(s) mapped to a feature in ${featureDocument}`);
+    expect(run.output).toContain(`53 contract(s) mapped to a feature in ${featureDocument}`);
     expect(run.status).toBe(0);
   }, 180_000);
 

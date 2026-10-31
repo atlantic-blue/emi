@@ -143,7 +143,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
       const sections = sectionsIn(readFileSync(join(repositoryRoot, storyDocument), 'utf8'));
       const firstRun = sections.find((section) => section.number === 2);
 
-      expect(sections.map((section) => section.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+      expect(sections.map((section) => section.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
       expect(firstRun?.beats.length).toBeGreaterThanOrEqual(6);
       expect(firstRun?.beats.map((beat) => beat.picture)).toContain('../brand/screens/welcome.png');
       expect(
@@ -167,7 +167,7 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
         `${storyDocument} tells ${shipped.told.length} of the ${shipped.features.length} feature(s)`,
       );
       expect(shipped.features.length).toBeGreaterThanOrEqual(8);
-      expect(shipped.told.map((feature) => feature.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+      expect(shipped.told.map((feature) => feature.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
 
     it('names every picture under a line saying it was rendered and not photographed', () => {
@@ -297,13 +297,14 @@ describe('the story of Emi is a document, and a picture it names that nobody dre
       );
     });
 
-    it('names the three sections of this repository that show nothing, with their reasons', () => {
+    it('names the four sections of this repository that show nothing, with their reasons', () => {
       const shownNothing = shipped.notes.filter((note) => note.includes('shows no picture'));
 
-      expect(shownNothing).toHaveLength(3);
+      expect(shownNothing).toHaveLength(4);
       expect(shownNothing.join(' ')).toContain('feature 6 shows no picture');
       expect(shownNothing.join(' ')).toContain('feature 7 shows no picture');
       expect(shownNothing.join(' ')).toContain('feature 8 shows no picture');
+      expect(shownNothing.join(' ')).toContain('feature 9 shows no picture');
     });
   });
 

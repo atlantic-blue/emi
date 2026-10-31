@@ -15,13 +15,13 @@ A contract verified by a test is proved by a green run in the pipeline. A contra
 operator is one no test can judge, such as whether a logo is good, so the operator looks at a
 rendered result before the step closes. A few contracts are verified both ways.
 
-The contracts are grouped. There are twelve groups.
+The contracts are grouped. There are thirteen groups.
 
 `TOKEN` is a design token and its measured value. `BRAND` is a drawn asset. `SEE` is accessibility.
 `TABLE` is one table, at field level. `ENVELOPE` is the encrypted record format. `VAULT` is key
 handling on the phone. `CYCLE` is the prediction arithmetic. `SCREEN` is what one screen does.
 `WIRE` is one endpoint of the application programming interface. `AUTH` is the request signature.
-`PAY` is the subscription. `KEEP` is a promise about her data.
+`PAY` is the subscription. `KEEP` is a promise about her data. `SITE` is the website on myemi.app.
 
 This document does not say what is built today. `architecture.md` says that, section by section.
 
@@ -564,3 +564,68 @@ Output: the application's dependency list holds no analytics, no advertising ide
 reporter that ships her content.
 
 Errors: any such package is present, named by the test.
+
+## SITE, the website
+
+### SITE-1, the domain
+
+Verified by a test.
+
+Output: `https://myemi.app` answers with a certificate from Amazon Web Services Certificate
+Manager, for `myemi.app` and for `www.myemi.app`. `www.myemi.app` answers 301 to
+`https://myemi.app`, with the same path. A request over http answers 301 to https.
+
+Errors: content served over http. A certificate for another name. A hosted zone that Terraform
+creates or destroys, because the registration of the domain owns the zone.
+
+### SITE-2, the bucket
+
+Verified by a test.
+
+Output: one private bucket in Amazon S3, in eu-central-1, that only the Amazon CloudFront
+distribution reads, through origin access control.
+
+Errors: public access on the bucket. The website endpoint of the bucket turned on. Any principal
+other than the distribution allowed to read the bucket.
+
+### SITE-3, the languages
+
+Verified by a test.
+
+Output: `/en/`, `/ru/` and `/es/` each serve a home page. `/` answers 301 to `/en/`. An address
+that does not exist answers 404 with an Emi page.
+
+Errors: a page that one language has and another language does not. A page that says Emi is
+something it is not. Emi is not a contraceptive. Emi is not a medical device.
+
+### SITE-4, the pages
+
+Verified by a test.
+
+Output: static pages of hypertext markup and one stylesheet, built from `apps/website` by a
+TypeScript program. The components come from shadcn, drawn with React on the machine that builds
+the site. Every colour, face, size, gap and corner comes from `packages/tokens`.
+
+Errors: a colour or a face that is not a token. A request to a third party from a page. A cookie.
+A script that counts her visit or that advertises to her. A script tag on a page that needs none.
+
+### SITE-5, the deploy
+
+Verified by a test.
+
+Output: a merge into `main` that changes the site builds the site, uploads it to the bucket, and
+clears the cache of the distribution.
+
+Errors: an upload from a pull request. An upload from a machine. A password, a key or a token
+written into the repository.
+
+### SITE-6, the headers
+
+Verified by a test.
+
+Output: every response carries five headers. `Strict-Transport-Security` for two years, with every
+subdomain. A `Content-Security-Policy` that allows the origin of the site and nothing else.
+`X-Content-Type-Options` of nosniff. `X-Frame-Options` of DENY. `Referrer-Policy` of
+strict-origin-when-cross-origin.
+
+Errors: a response that is missing one of the five.

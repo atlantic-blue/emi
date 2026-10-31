@@ -18,6 +18,11 @@ which reports every feature with no file yet, and fails on a contract that a cov
 leaves without a scenario.
 
 A subdirectory holds a scenario that proves something other than a screen. `website/` holds the
-grants the pipeline needs before it can build myemi.app. `npm run check:features` reads this
-directory one level deep, so a scenario in a subdirectory names no contract and maps to no feature.
-Each one moves into a numbered feature file as soon as `docs/features.md` names its feature.
+contracts of myemi.app and the grants the pipeline needs before it can build the site.
+`npm run check:features` reads this directory one level deep, so a scenario in a subdirectory names
+no contract and maps to no feature.
+
+`docs/features.md` names the website as feature 9, and these scenarios stay here until the site
+exists. A numbered feature file must hold a scenario for each contract of its feature, and no
+`SITE` contract can pass before the certificate, the bucket, the distribution and the pages are
+built. Each one moves into `features/9-the-website-on-myemi-app.feature` as that work lands.
