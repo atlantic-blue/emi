@@ -99,6 +99,23 @@ export function resolved(configuration: string, text: string): string {
 }
 
 /**
+ * One Terraform expression read as the value it will carry, with every variable reference replaced
+ * by that variable's default. Both spellings are read: the interpolated form inside a string, and
+ * the bare one an argument list uses, because a rule about a name has to see the finished name
+ * rather than the expression that composes it.
+ */
+export function valueOf(configuration: string, expression: string): string {
+  return expression
+    .trim()
+    .replace(/^"|"$/g, '')
+    .replace(
+      /\$\{var\.([a-z_]+)\}|\bvar\.([a-z_]+)\b/g,
+      (_, braced: string | undefined, bare: string | undefined) =>
+        defaultOf(configuration, (braced ?? bare) as string),
+    );
+}
+
+/**
  * True where a statement stands on every resource. Anything else names one, whether it names it
  * as an address pattern or through a local, and naming one is what denies a collection.
  */

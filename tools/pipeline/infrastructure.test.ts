@@ -1,5 +1,6 @@
+import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 
 import { parse } from 'yaml';
 
@@ -9,19 +10,26 @@ import {
   configurationOf,
   defaultOf as variableDefaultOf,
   grantedOnEveryResource,
+  listedIn,
   resolved,
   standsOnEveryResource,
   statementsIn,
   statementsReaching,
+  valueOf,
 } from './policy.ts';
 
 const repositoryRoot = resolve(__dirname, '..', '..');
 const infrastructureDirectory = join(repositoryRoot, 'infra');
 
 type Step = { name?: string; uses?: string; run?: string; if?: string };
-type Job = { if?: string; env?: Record<string, string>; steps?: Step[] };
+type Job = {
+  if?: string;
+  env?: Record<string, string>;
+  steps?: Step[];
+  strategy?: { matrix?: Record<string, string[]> };
+};
 type Workflow = {
-  on?: Record<string, { branches?: string[] }>;
+  on?: Record<string, { branches?: string[]; paths?: string[] }>;
   permissions?: Record<string, string>;
   jobs?: Record<string, Job>;
 };
@@ -41,6 +49,10 @@ const job = (name: string): Job => {
 };
 
 const configuration = configurationOf(infrastructureDirectory);
+const website = configurationOf(join(repositoryRoot, 'infrastructure', 'website'));
+const certificateModule = configurationOf(
+  join(repositoryRoot, 'infrastructure', 'modules', 'certificate'),
+);
 
 const bodyOf = (header: string): string => blockBodyOf(configuration, header);
 
@@ -59,6 +71,72 @@ function firstStepOf(name: string): Step {
 }
 
 const defaultOf = (variable: string): string => variableDefaultOf(configuration, variable);
+/** The run script of one named step, so a rule reads the step it means and not the whole job. */
+function scriptOf(jobName: string, stepName: string): string {
+  const found = (job(jobName).steps ?? []).find((step) => step.name === stepName);
+
+  if (found?.run === undefined) {
+    throw new Error(`the ${jobName} job has no ${stepName} step that runs anything`);
+  }
+
+  return found.run;
+}
+
+/** The words a shell for loop walks, so a rule reads the list the step actually iterates. */
+function forListIn(script: string, variable: string): string[] {
+  const found = new RegExp(`for ${variable} in ([^;\\n]+)`).exec(script);
+
+  return found?.[1]?.trim().split(/\s+/) ?? [];
+}
+
+/** The roots one job runs over, which is empty where the job runs over nothing. */
+const matrixRootsOf = (jobName: string): string[] => job(jobName).strategy?.matrix?.root ?? [];
+
+/**
+ * Every Terraform root the repository holds, found by the backend each one declares. A directory
+ * with no backend is a module, and a module is applied by whoever calls it. So the backend is what
+ * makes a directory a root, and a root the pipeline does not name is a root somebody would apply
+ * by hand.
+ */
+function terraformRoots(): string[] {
+  const listed = spawnSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '*.tf'],
+    {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+    },
+  );
+
+  if (listed.status !== 0) {
+    throw new Error(`git could not list the Terraform files: ${listed.stderr}`);
+  }
+
+  const roots = listed.stdout
+    .split('\n')
+    .filter((file) => file.length > 0)
+    .filter((file) => read(file).includes('backend "s3"'))
+    .map((file) => dirname(file));
+
+  return [...new Set(roots)].sort();
+}
+
+/** The region of one aliased provider, read from the block that declares the alias. */
+function regionOfAlias(configuration: string, alias: string): string {
+  const at = configuration.search(new RegExp(`alias\\s*=\\s*"${alias}"`));
+
+  if (at < 0) {
+    throw new Error(`the configuration declares no provider aliased ${alias}`);
+  }
+
+  const found = /region\s*=\s*"([^"]+)"/.exec(configuration.slice(at));
+
+  if (!found?.[1]) {
+    throw new Error(`the provider aliased ${alias} names no region`);
+  }
+
+  return found[1];
+}
 
 function expressionOf(name: string): string {
   const found = new RegExp(`\\n\\s+${name}\\s+=\\s+"([^"]*)"`).exec(configuration);
@@ -689,6 +767,135 @@ describe('the infrastructure is applied only by the pipeline', () => {
 
       expect(backend).toContain('bucket       = "abs-terraform"');
       expect(backend).toContain('key          = "emi/terraform.tfstate"');
+    });
+  });
+});
+
+describe('the website on myemi.app, which is feature 26', () => {
+  const inWebsite = (header: string): string => blockBodyOf(website, header);
+  const inModule = (header: string): string => blockBodyOf(certificateModule, header);
+  const call = (): string => inWebsite('module "certificate"');
+
+  describe('the state sits apart from the vault, so a site change cannot move her days', () => {
+    it('writes its own key in the shared bucket, with native locking', () => {
+      const backend = inWebsite('backend "s3"');
+
+      expect(backend).toContain('bucket       = "abs-terraform"');
+      expect(backend).toContain('key          = "emi/website/terraform.tfstate"');
+      expect(backend).toContain('region       = "us-east-1"');
+      expect(backend).toContain('encrypt      = true');
+      expect(backend).toContain('use_lockfile = true');
+    });
+
+    it('takes a key the vault root does not write', () => {
+      expect(inWebsite('backend "s3"')).not.toContain('"emi/terraform.tfstate"');
+      expect(bodyOf('backend "s3"')).toContain('key          = "emi/terraform.tfstate"');
+    });
+  });
+
+  describe('the zone the registration owns', () => {
+    it('is read and never declared, because a second zone takes the domain off the air', () => {
+      expect(website).toContain('data "aws_route53_zone" "site"');
+      expect(website).not.toContain('resource "aws_route53_zone"');
+      expect(certificateModule).not.toContain('resource "aws_route53_zone"');
+    });
+
+    it('is the one zone the pipeline may change a record in', () => {
+      const lookup = inWebsite('data "aws_route53_zone" "site"');
+
+      expect(valueOf(website, /zone_id\s*=\s*([^\n]+)/.exec(lookup)?.[1] ?? '')).toBe(
+        'Z06550332F4OHMRD78K',
+      );
+      expect(applyPolicy).toContain('arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K');
+    });
+  });
+
+  describe('the certificate, which CloudFront reads from us-east-1 alone', () => {
+    it('is asked for through the provider in that region', () => {
+      expect(call()).toContain('aws = aws.us_east_1');
+      expect(regionOfAlias(website, 'us_east_1')).toBe('us-east-1');
+    });
+
+    it('covers myemi.app and www.myemi.app and no other name', () => {
+      const primary = /domain_name\s*=\s*([^\n]+)/.exec(call())?.[1] ?? '';
+      const covered = [primary, ...listedIn(call(), 'other_names')].map((name) =>
+        valueOf(website, name),
+      );
+
+      expect(covered).toEqual(['myemi.app', 'www.myemi.app']);
+    });
+
+    it('is validated through the Domain Name System, which needs nobody to read an email', () => {
+      expect(inModule('resource "aws_acm_certificate" "site"')).toContain(
+        'validation_method         = "DNS"',
+      );
+    });
+
+    it('writes one validation record for each name into the zone it was handed', () => {
+      const record = inModule('resource "aws_route53_record" "validation"');
+
+      expect(record).toContain('aws_acm_certificate.site.domain_validation_options');
+      expect(record).toContain('zone_id = var.zone_id');
+      expect(call()).toContain('zone_id     = data.aws_route53_zone.site.zone_id');
+    });
+
+    it('hands on an address that exists only once it is issued', () => {
+      expect(inModule('output "certificate_arn"')).toContain(
+        'aws_acm_certificate_validation.site.certificate_arn',
+      );
+      expect(inWebsite('output "certificate_arn"')).toContain('module.certificate.certificate_arn');
+    });
+
+    it('carries the tags the vault root carries, on both providers', () => {
+      const blocks = [...website.matchAll(/default_tags \{\s*tags = \{([^}]*)\}/g)].flatMap(
+        (match) => (match[1] === undefined ? [] : [match[1]]),
+      );
+
+      expect(blocks).toHaveLength(2);
+      for (const block of blocks) {
+        expect(block).toContain('Project   = var.project_name');
+        expect(block).toContain('ManagedBy = "terraform"');
+      }
+    });
+  });
+
+  describe('what the website is not allowed to hold', () => {
+    it.each([
+      'aws_db_instance',
+      'aws_rds_cluster',
+      'aws_elasticache_cluster',
+      'aws_opensearch_domain',
+      'aws_nat_gateway',
+      'aws_lb',
+      'aws_instance',
+    ])('declares no %s, because it would bill while nobody uses Emi', (kind) => {
+      expect(website).not.toContain(`resource "${kind}"`);
+      expect(certificateModule).not.toContain(`resource "${kind}"`);
+    });
+  });
+
+  describe('the pipeline reads both roots', () => {
+    it('plans and applies every Terraform root the repository holds', () => {
+      const roots = terraformRoots();
+
+      expect(roots).toEqual(['infra', 'infrastructure/website']);
+      expect(matrixRootsOf('plan')).toEqual(roots);
+      expect(matrixRootsOf('apply')).toEqual(roots);
+    });
+
+    it('formats and validates them in the job no credential reaches', () => {
+      expect(forListIn(scriptOf('check', 'format'), 'directory')).toEqual([
+        'infra',
+        'infrastructure',
+      ]);
+      expect(forListIn(scriptOf('check', 'validate'), 'root')).toEqual(terraformRoots());
+    });
+
+    it('runs at all when a change touches either directory', () => {
+      for (const event of ['pull_request', 'push']) {
+        expect(deploy.on?.[event]?.paths).toContain('infra/**');
+        expect(deploy.on?.[event]?.paths).toContain('infrastructure/**');
+      }
     });
   });
 });
