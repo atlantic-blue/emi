@@ -359,9 +359,9 @@ Nothing to show: the vault is not running, `docs/architecture.md` says so, no ro
 recovery screens, and nothing yet sends a day up or pulls one down. A second phone cannot restore
 her history today, so there is no screen of this to photograph.
 
-## Feature 7: She pays for a year, and the price is the promise
+## Feature 7: She pays every month, and the price is the promise
 
-One month free, then 29.99 pounds a year, and no free tier at all, because a free tier is paid for
+One month free, then 29.99 pounds a month, and no free tier at all, because a free tier is paid for
 with her data. If she stops paying she keeps what she wrote: reading her history and exporting it
 stay open forever, and only new writes stop.
 

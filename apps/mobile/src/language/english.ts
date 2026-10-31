@@ -810,7 +810,7 @@ export const english = {
   'onboarding.today.nothingToAdd': 'Nothing to add',
   'onboarding.today.question': 'Choose all that apply.',
   'onboarding.today.title': 'How are you today?',
-  'onboarding.tour.price.line': 'One month free, then 29.99 pounds a year.',
+  'onboarding.tour.price.line': 'One month free, then 29.99 pounds a month.',
   'onboarding.tour.price.title': 'Yours, and it stays yours',
   'onboarding.tour.ring.action': 'Next',
   'onboarding.tour.ring.legend.after': 'After it',

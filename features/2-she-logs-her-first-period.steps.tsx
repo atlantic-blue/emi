@@ -415,6 +415,7 @@ import {
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import {
+  tourPriceTestID,
   tourScreenTestID,
   tourSkipTestID,
 } from '../apps/mobile/src/features/onboarding/TourScreen';
@@ -7411,7 +7412,7 @@ defineFeature(feature, (test) => {
         for (const line of tourCopy.lines) {
           expect(tour.getByText(line)).toBeTruthy();
         }
-        expect(tour.getByText('One month free, then 29.99 pounds a year.')).toBeTruthy();
+        expect(tour.getByText('One month free, then 29.99 pounds a month.')).toBeTruthy();
       },
     );
 
@@ -7441,6 +7442,75 @@ defineFeature(feature, (test) => {
         expect(languages.length).toBe(3);
       },
     );
+  });
+
+  /**
+   * The price she reads before Emi asks her for anything. One sentence carries the whole promise
+   * about money, so a price rewritten in English and left behind in another language would ask two
+   * women for two different numbers.
+   */
+  test('SCREEN-1, the tour says 29.99 pounds a month in every language', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const thePriceSheReads = 'One month free, then 29.99 pounds a month.';
+    const thePriceInEachLanguage: Readonly<Record<Language, string>> = {
+      en: thePriceSheReads,
+      es: 'Un mes gratis, después 29,99 libras al mes.',
+      ru: 'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
+    };
+    const howEachLanguageSaysAYear: Readonly<Record<Language, RegExp>> = {
+      en: /year/iu,
+      es: /año/iu,
+      ru: /год/iu,
+    };
+    const thePriceLineIn = (language: Language): string =>
+      String(theCatalogueOf(language)['onboarding.tour.price.line']);
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi and reads the card about money on the tour', async () => {
+      await sheOpens('/');
+      await shePresses(onboardingActionTestID);
+    });
+
+    then(
+      'the card tells her the first month is free and the price after it is 29.99 pounds a month',
+      () => {
+        const price = within(screen.getByTestId(tourPriceTestID));
+
+        expect(price.getByText('Yours, and it stays yours')).toBeTruthy();
+        expect(price.getByText(thePriceSheReads)).toBeTruthy();
+      },
+    );
+
+    and(
+      'a woman who reads Emi in Russian or in Spanish is told the same free month and the same price',
+      () => {
+        for (const language of languages) {
+          const said = thePriceLineIn(language);
+
+          expect({ language, said }).toEqual({ language, said: thePriceInEachLanguage[language] });
+        }
+
+        expect(languages.length).toBe(3);
+      },
+    );
+
+    and('no language still tells her the price buys her a year', () => {
+      for (const language of languages) {
+        const said = thePriceLineIn(language);
+
+        expect({ language, aYear: howEachLanguageSaysAYear[language].test(said) }).toEqual({
+          language,
+          aYear: false,
+        });
+      }
+
+      expect(languages.length).toBe(3);
+    });
   });
 
   /**
