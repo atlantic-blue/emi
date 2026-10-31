@@ -90,7 +90,7 @@ const whatTheTourSays = {
     'Four arcs divide the ring: the days you bleed, the days after them, the days around ovulation, and the days before your next period.',
   ],
   legend: ['Period', 'After it', 'Ovulation', 'Before the next'],
-  price: ['Yours, and it stays yours', 'One month free, then 29.99 pounds a year.'],
+  price: ['Yours, and it stays yours', 'One month free, then 29.99 pounds a month.'],
 };
 
 function formsOf(held: Words): string[] {

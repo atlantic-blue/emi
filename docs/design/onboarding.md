@@ -210,7 +210,7 @@ only holds a locked copy it can't open.
 Line: Keep your recovery code, and your history follows you to a new phone. We can't open your
 history, so we can never hand it to anyone.
 
-Line: Your first month is free, then it's 29.99 pounds a year. There's no free version, because a
+Line: Your first month is free, then it's 29.99 pounds a month. There's no free version, because a
 free app is paid for with your data.
 
 Action: Continue.

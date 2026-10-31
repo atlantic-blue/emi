@@ -808,7 +808,7 @@ export const spanish: CatalogueIn<'es'> = {
   'onboarding.today.nothingToAdd': 'Nada que añadir',
   'onboarding.today.question': 'Marca todo lo que corresponda.',
   'onboarding.today.title': '¿Cómo estás hoy?',
-  'onboarding.tour.price.line': 'Un mes gratis, después 29,99 libras al año.',
+  'onboarding.tour.price.line': 'Un mes gratis, después 29,99 libras al mes.',
   'onboarding.tour.price.title': 'Tuyo, y sigue siendo tuyo',
   'onboarding.tour.ring.action': 'Siguiente',
   'onboarding.tour.ring.legend.after': 'Después',

@@ -493,8 +493,8 @@ message and the same timing as a bad signature.
 
 Verified by a test.
 
-Output: one yearly product at 29.99 pounds, with a one month introductory free period, in both
-stores.
+Output: one monthly auto renewing product at 29.99 pounds, with a one month introductory free
+period, in both stores.
 
 Errors: a configuration test finds a different price, a different period, or no product at all.
 
