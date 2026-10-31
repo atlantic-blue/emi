@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -24,7 +25,7 @@ describe('the website builds the page behind an address it does not hold', () =>
       buildWebsite(directory);
 
       expect(existsSync(join(directory, notFoundFile))).toBe(true);
-      expect(pageIn(directory)).toContain('This page does not exist');
+      expect(pageIn(directory)).toContain('<h1>This page does not exist</h1>');
     });
 
     it('offers her the way back to the Emi home page', () => {
@@ -67,5 +68,40 @@ describe('the website builds the page behind an address it does not hold', () =>
 
       expect(existsSync(join(absent, notFoundFile))).toBe(true);
     });
+  });
+
+  describe('the command the deploy runs', () => {
+    function spawned(
+      command: string,
+      parameters: string[],
+    ): { status: number | null; output: string } {
+      const run = spawnSync(command, parameters, { cwd: join(__dirname, '..'), encoding: 'utf8' });
+
+      return { status: run.status, output: `${run.stdout}${run.stderr}` };
+    }
+
+    // The script in the manifest is run rather than a copy of it here, because the flag that
+    // reads JSX is the thing most easily lost, and a copy would still carry it.
+    it('compiles the JSX pages and writes the page, the way a merge will', () => {
+      const run = spawned('npm', ['run', 'build', '--', directory]);
+
+      expect(run.output).toContain(notFoundFile);
+      expect(run.status).toBe(0);
+      expect(pageIn(directory)).toContain('<h1>This page does not exist</h1>');
+    }, 60_000);
+
+    it('refuses to start without the loader, naming the file node cannot read', () => {
+      const run = spawned(process.execPath, [
+        '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON',
+        '--experimental-strip-types',
+        'build.ts',
+        directory,
+      ]);
+
+      expect(run.status).not.toBe(0);
+      expect(run.output).toContain('Unknown file extension ".tsx"');
+      expect(run.output).toContain('NotFoundPage.tsx');
+      expect(existsSync(join(directory, notFoundFile))).toBe(false);
+    }, 60_000);
   });
 });

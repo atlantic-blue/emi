@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
 
-import { renderNotFoundPage } from './src/notFoundPage.ts';
+import { renderNotFoundPage } from './src/NotFoundPage.tsx';
 
 /** Where the build writes when the command line names no directory. */
 export const defaultOutputDirectory = 'dist';

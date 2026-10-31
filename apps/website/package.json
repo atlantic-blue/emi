@@ -4,7 +4,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types build.ts",
+    "build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --import ./jsxLoader.ts build.ts",
     "typecheck": "tsc --noEmit",
     "test": "jest --ci"
   },
@@ -13,6 +13,10 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@babel/core": "7.29.7",
+    "@babel/plugin-transform-react-jsx": "7.29.7",
+    "@babel/preset-typescript": "7.29.7",
+    "@types/babel__core": "7.20.5",
     "@types/react-dom": "~19.2.7"
   }
 }

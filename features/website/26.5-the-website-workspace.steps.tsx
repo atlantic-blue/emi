@@ -7,25 +7,19 @@ import { defineFeature, loadFeature } from 'jest-cucumber';
 
 const feature = loadFeature(join(__dirname, '26.5-the-website-workspace.feature'));
 
-const websiteRoot = resolve(__dirname, '..', '..', 'apps', 'website');
+const repositoryRoot = resolve(__dirname, '..', '..');
 const notFoundFile = '404.html';
 
 /**
- * The build runs as a node process of its own, which is how the deploy runs it. This runner maps
- * React to the copy the application ships, and react-dom refuses a React copy of another version,
- * so the build cannot be imported here until the website holds a runner of its own.
+ * The build runs as the command a merge runs, so the flags it needs live in the manifest of the
+ * workspace and nowhere else. It cannot be imported here: this runner maps React to the copy the
+ * application ships, and react-dom refuses a React copy of another version.
  */
 function buildInto(directory: string): { status: number | null; output: string } {
-  const run = spawnSync(
-    process.execPath,
-    [
-      '--disable-warning=MODULE_TYPELESS_PACKAGE_JSON',
-      '--experimental-strip-types',
-      'build.ts',
-      directory,
-    ],
-    { cwd: websiteRoot, encoding: 'utf8' },
-  );
+  const run = spawnSync('npm', ['run', 'build', '--workspace', 'apps/website', '--', directory], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+  });
 
   return { status: run.status, output: `${run.stdout}${run.stderr}` };
 }
@@ -56,7 +50,7 @@ defineFeature(feature, (test) => {
     });
 
     then('a page tells her that page does not exist', () => {
-      expect(page).toContain('This page does not exist');
+      expect(page).toContain('<h1>This page does not exist</h1>');
     });
 
     and('it offers her the way back to the Emi home page', () => {
