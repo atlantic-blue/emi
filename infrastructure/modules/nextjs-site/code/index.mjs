@@ -7,9 +7,12 @@
  * first apply and the first deploy.
  *
  * It answers 503 rather than 200 so a reader, a monitor and a store review all read the site as
- * not ready instead of reading an empty page as the product. The answer has to be the shape a
- * function url expects: a handler that returns nothing makes the url answer 200 with the JSON
- * `null`, which reads as a working site serving an empty document.
+ * not ready instead of reading an empty page as the product.
+ *
+ * The handler is async, and that is not a style. The Node runtime keeps what a handler returns
+ * only when the call gives back a promise. A plain function is run, its value is dropped, and the
+ * invocation finishes with null, so the function url answers 200 with the body `null`, which
+ * reads as a working site serving an empty document.
  *
  * The page carries no script, no stylesheet and no colour. A colour belongs in `packages/tokens`,
  * and this file is served before anything of the site exists, so it reaches no other host for
@@ -31,7 +34,7 @@ const page = [
   '',
 ].join('\n');
 
-export function handler() {
+export async function handler() {
   return {
     statusCode: 503,
     headers: {

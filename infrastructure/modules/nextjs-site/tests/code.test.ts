@@ -74,7 +74,9 @@ describe('the artifact each platform reads is the TypeScript beside it', () => {
   it('keeps the export in the module, because a Lambda runtime resolves index.handler', () => {
     const artifact = readFileSync(join(moduleDirectory, 'code', 'index.mjs'), 'utf8');
 
-    expect(artifact).toContain('export function handler()');
+    // Async survives the stripping as well as the export does. The runtime drops what a plain
+    // function returns, so losing the word here would answer 200 with the body null.
+    expect(artifact).toContain('export async function handler()');
   });
 
   it('carries no type, because neither runtime reads TypeScript', () => {

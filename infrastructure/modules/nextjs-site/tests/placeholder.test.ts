@@ -1,6 +1,6 @@
 import { handler } from '../src/placeholder.ts';
 
-import { lambdaAnswer } from './runArtifact.ts';
+import { lambdaInvocation } from './runArtifact.ts';
 
 interface Answer {
   readonly statusCode: number;
@@ -8,20 +8,31 @@ interface Answer {
   readonly body: string;
 }
 
-/**
- * The answer the committed artifact gives, imported and called the way the Lambda runtime calls
- * it. A function url answers 200 with the JSON `null` when a handler returns nothing, so what the
- * handler returns is read here rather than only what the source says it returns.
- */
-const fromArtifact = (): Answer => lambdaAnswer() as Answer;
+const invoked = lambdaInvocation();
+
+/** The answer the committed artifact gives, after the call is awaited the way the runtime awaits it. */
+const fromArtifact = (): Answer => invoked.answer as Answer;
 
 const theLine = 'Emi. Every Month Insights. The site is on its way.';
 
 describe('the site says it is on its way until a deploy replaces the code', () => {
+  describe('the shape the Lambda runtime needs, which decides whether the answer is kept at all', () => {
+    // The runtime keeps what a handler returns only when the call gives back a promise. A plain
+    // function is run, its value is dropped, and the invocation finishes with null, which the
+    // function url answered as 200 with the body null while this file read 503 on import.
+    it('exports a handler whose call gives back a promise', () => {
+      expect(invoked.returnsPromise).toBe(true);
+      expect(invoked.kind).toBe('AsyncFunction');
+    });
+
+    it('carries the answer in that promise rather than beside it', async () => {
+      await expect(handler()).resolves.toMatchObject({ statusCode: 503 });
+    });
+  });
+
   describe('the answer the function url gives', () => {
     it('is 503, so nobody reads an empty page as the product', () => {
       expect(fromArtifact().statusCode).toBe(503);
-      expect(handler().statusCode).toBe(503);
     });
 
     it('is a page and not a payload, so a browser draws it', () => {
