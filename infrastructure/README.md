@@ -48,6 +48,28 @@ node --disable-warning=ExperimentalWarning --experimental-strip-types \
 A test fails when the artifact is not what the source says, so a stale artifact cannot reach the
 account.
 
+## How the site gets there
+
+The `website` job of `.github/workflows/deploy.yml` ships it. On a merge into `main` that changes
+`apps/website` or `packages/tokens`, the job builds the application with OpenNext, puts the server
+half on the function as new code, uploads the other half to the bucket, clears the cache of the
+distribution, and then reads https://myemi.app with a browser. A live site that answers wrongly
+fails the job, so a build that passes every check and then breaks in front of a reader is caught
+in the run that shipped it.
+
+A pull request builds the site and ships nothing.
+
+The job reads the apply role from the repository variable `AWS_APPLY_ROLE_ARN`, which is the
+variable the apply job reads. While that variable is empty, the job builds the site, says in its
+log what it waits for, and ships nothing.
+
+Terraform must apply this directory before the first deploy. The bucket, the function and the
+distribution are what the job writes to, and it reads their names with `terraform output` from
+`website/`.
+
+Nothing ships from a machine. No package script reaches the account, and there is no other path
+into it.
+
 ## The zone
 
 `Z06550332F4OHMRD78K`, in account 230345688874. The registration made it and the registrar's name

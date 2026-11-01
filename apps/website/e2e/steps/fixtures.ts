@@ -16,6 +16,17 @@ export interface WhatSheIsReading {
 }
 
 /**
+ * What came back from the live host: the status, the headers the edge added, and the address she
+ * ended on after every move. A page is not opened for these, because a redirect and a header are
+ * answers to a request and a browser that followed them has already thrown the first answer away.
+ */
+export interface WhatCameBack {
+  status: number | null;
+  headers: Record<string, string>;
+  landedOn: string | null;
+}
+
+/**
  * A scenario asks for one address and then reads the answer across several steps, so the answer
  * is a fixture rather than a variable in the module: two widths run as two tests, and a variable
  * here would be one value shared by both.
@@ -33,6 +44,7 @@ export const test = bdd.extend<{
   answered: WhatTheSiteAnswered;
   asked: WhatThePageAsked;
   reading: WhatSheIsReading;
+  cameBack: WhatCameBack;
 }>({
   answered: async ({}, handTo) => {
     await handTo({ status: null });
@@ -48,5 +60,8 @@ export const test = bdd.extend<{
   },
   reading: async ({}, handTo) => {
     await handTo({ language: '' });
+  },
+  cameBack: async ({}, handTo) => {
+    await handTo({ status: null, headers: {}, landedOn: null });
   },
 });

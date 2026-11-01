@@ -9,18 +9,27 @@ name: deploy
 # Both cloud jobs read their role from a repository variable and skip every step while that
 # variable is empty. The roles do not exist until somebody runs the bootstrap in infra/README.md,
 # and a job that tried to reach the account before then would turn main red on every merge.
+#
+# The website job below is the only path from a merge to the page a reader opens. It builds the
+# site on both events and ships it on a merge, and then reads the live host with a browser,
+# because the headers and the moves between addresses are added at the edge and no local run has
+# either.
 
 on:
   pull_request:
     paths:
       - 'infra/**'
       - 'infrastructure/**'
+      - 'apps/website/**'
+      - 'packages/tokens/**'
       - '.github/workflows/deploy.yml'
   push:
     branches: [main]
     paths:
       - 'infra/**'
       - 'infrastructure/**'
+      - 'apps/website/**'
+      - 'packages/tokens/**'
       - '.github/workflows/deploy.yml'
 
 permissions:
@@ -153,3 +162,118 @@ jobs:
         run: |
           terraform init -input=false
           terraform apply -auto-approve -input=false
+
+  website:
+    name: build and ship the website
+    needs: [check, apply]
+    runs-on: ubuntu-latest
+    # The build runs on both events, and the apply runs on a merge alone. A job that needs a
+    # skipped job is skipped with it, so the result of the apply is read rather than waited for,
+    # and a pull request still gets the build. On a merge that changes both, the infrastructure
+    # goes first and the code then lands on the function it made.
+    if: >-
+      always() &&
+      needs.check.result == 'success' &&
+      (needs.apply.result == 'success' || needs.apply.result == 'skipped')
+    env:
+      ROLE: ${{ vars.AWS_APPLY_ROLE_ARN }}
+      SHIPS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - name: say whether this job ships anything
+        run: |
+          if [ "${SHIPS}" != "true" ]; then
+            echo "This event builds the site and ships nothing. A merge into main ships it."
+          elif [ -z "${ROLE}" ]; then
+            echo "AWS_APPLY_ROLE_ARN is empty, so this job ships nothing."
+            echo "It is waiting for the bootstrap named in infra/README.md to create the roles."
+            echo "Set the repository variable to the apply role address to turn the deploy on."
+          else
+            echo "Shipping the site to https://myemi.app as ${ROLE}."
+          fi
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: build the site for Lambda
+        working-directory: apps/website
+        run: npm run build:lambda
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - uses: hashicorp/setup-terraform@v3
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: assume the apply role
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE }}
+          aws-region: eu-central-1
+      - name: read what the infrastructure made
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        working-directory: infrastructure/website
+        run: |
+          terraform init -input=false -lock=false
+          {
+            echo "BUCKET=$(terraform output -raw bucket_name)"
+            echo "FUNCTION=$(terraform output -raw function_name)"
+            echo "DISTRIBUTION=$(terraform output -raw distribution_id)"
+          } >> "${GITHUB_ENV}"
+      - name: put the new code on the server function
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        run: |
+          # The archive is made from inside the folder, because the runtime loads index.mjs from
+          # the root of what it is given and finds nothing under a folder name.
+          cd apps/website/.open-next/server-functions/default
+          zip -r -q "${RUNNER_TEMP}/server-function.zip" .
+          aws lambda update-function-code \
+            --function-name "${FUNCTION}" \
+            --zip-file "fileb://${RUNNER_TEMP}/server-function.zip" \
+            --no-cli-pager > /dev/null
+          aws lambda wait function-updated --function-name "${FUNCTION}"
+      - name: upload the files the pages ask for
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        run: |
+          # The name of a file under _next/static carries its content, so a reader may keep it for
+          # a year. Every other file is asked for by a name that does not change, so it is kept
+          # for minutes and no longer.
+          aws s3 sync apps/website/.open-next/assets "s3://${BUCKET}" --delete \
+            --exclude '_next/static/*' \
+            --cache-control 'public, max-age=300, must-revalidate'
+          # No --delete here. A page she opened before the merge still asks for the chunks that
+          # build it, and the name of each one is its content, so the old ones stay.
+          aws s3 sync apps/website/.open-next/assets/_next/static "s3://${BUCKET}/_next/static" \
+            --cache-control 'public, max-age=31536000, immutable'
+      - name: clear the cache of the distribution
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        run: |
+          cleared=$(aws cloudfront create-invalidation \
+            --distribution-id "${DISTRIBUTION}" \
+            --paths '/*' \
+            --query 'Invalidation.Id' \
+            --output text)
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "${DISTRIBUTION}" --id "${cleared}"
+      - name: install the browser that reads the live site
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        run: npx playwright install --with-deps chromium
+      # The last word on the deploy, and the only step that reads what she gets. It reads the real
+      # host, so it answers the sentences a local site cannot: the headers the distribution adds,
+      # and the moves a function at the edge makes.
+      - name: read the live site
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        run: npm run test:e2e:run --workspace apps/website
+        env:
+          BASE_URL: https://myemi.app
+      - if: always() && env.SHIPS == 'true' && env.ROLE != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: what-the-browser-saw-live
+          path: |
+            apps/website/e2e/report/
+            apps/website/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
