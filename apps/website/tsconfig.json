@@ -2,15 +2,17 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023"],
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "lib": ["ES2023", "dom", "dom.iterable"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
+    "plugins": [{ "name": "next" }],
     "types": ["jest", "node"],
     "noEmit": true
   },
-  "include": ["build.ts", "jsxLoader.ts", "src", "test"]
+  "include": ["app", "test", "next.config.ts"],
+  "exclude": ["node_modules", ".next", ".open-next"]
 }

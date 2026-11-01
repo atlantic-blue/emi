@@ -69,4 +69,4 @@ pictures: ## regenerate every generated picture and document
 
 clean: ## remove node_modules and the build output
 	rm -rf node_modules apps/*/node_modules packages/*/node_modules services/*/node_modules
-	rm -rf apps/*/dist apps/*/.expo apps/*/web-build coverage infra/build
+	rm -rf apps/*/dist apps/*/.expo apps/*/web-build apps/*/.next apps/*/.open-next coverage infra/build

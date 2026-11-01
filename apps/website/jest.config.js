@@ -6,6 +6,14 @@ module.exports = {
   workerIdleMemoryLimit: '1GB',
   testEnvironment: 'node',
   rootDir: __dirname,
+  // test-renderer, which the application tier and its testing library both ask for, brings
+  // react-reconciler, and that peer depends on react ^19.3.0. So react hoists to the root at
+  // 19.3.0 while react-dom hoists at 19.2.3, and server rendering refuses two versions outright.
+  // Every react import in this run is pointed at the copy beside this workspace, which is the
+  // version the site ships.
+  moduleNameMapper: {
+    '^react$': require.resolve('react'),
+  },
   testMatch: ['<rootDir>/test/**/*.test.ts', '<rootDir>/test/**/*.test.tsx'],
   transform: {
     '^.+\\.[jt]sx?$': [

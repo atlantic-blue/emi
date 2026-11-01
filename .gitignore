@@ -3,6 +3,12 @@ node_modules/
 dist/
 coverage/
 web-build/
+
+# What a Next.js build writes: the compiled site, the Lambda package, and the type
+# declarations Next.js regenerates on every build.
+.next/
+.open-next/
+next-env.d.ts
 *.log
 .DS_Store
 ios/
