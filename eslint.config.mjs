@@ -1,5 +1,42 @@
 import { defineConfig, globalIgnores } from 'eslint/config';
 import expo from 'eslint-config-expo/flat.js';
+import nextWebVitals from 'eslint-config-next/core-web-vitals';
+import nextTypeScript from 'eslint-config-next/typescript';
+
+/** The one workspace that is web code. Everything else here is a React Native application. */
+const website = 'apps/website';
+
+const websiteSources = `${website}/**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}`;
+
+// Expo and Next.js each define the plugins react, react-hooks and the TypeScript plugin, and
+// ESLint refuses a second definition of a plugin name once both reach the same file. The expo
+// configuration reads every file, so it is told to stop at the website. A block carrying nothing
+// but `ignores` keeps its own list: that shape is a repository wide ignore, and adding the website
+// to it would leave the site unread rather than read by the other configuration.
+const expoAwayFromTheWebsite = expo.map((block) =>
+  Object.keys(block).every((key) => key === 'ignores')
+    ? block
+    : { ...block, ignores: [...(block.ignores ?? []), `${website}/**`] },
+);
+
+/**
+ * A configuration written for a repository that holds one Next.js application, applied to one
+ * directory of a repository that holds four workspaces. Each block names its files relative to the
+ * root it shipped for, so every pattern moves under the website, and a block that names no file
+ * reads every source there. The ignores the two sets carry are dropped on purpose: the built output
+ * is in the global list above, which is the one place this repository states it.
+ */
+function onlyInTheWebsite(blocks) {
+  return blocks
+    .filter((block) => Object.keys(block).some((key) => key !== 'ignores'))
+    .map((block) => ({
+      ...block,
+      files:
+        block.files === undefined
+          ? [websiteSources]
+          : block.files.map((pattern) => `${website}/${pattern}`),
+    }));
+}
 
 // A hex colour written anywhere but the token package is a colour nobody measured, so the
 // contrast test cannot see it and it drifts from the palette on its own.
@@ -39,7 +76,18 @@ export default defineConfig([
     'coverage/**',
     'apps/mobile/expo-env.d.ts',
   ]),
-  expo,
+  ...expoAwayFromTheWebsite,
+  // The site is read the way a browser reads it: the core web vitals set, the TypeScript set, the
+  // React hooks rules, and the browser and node names declared as globals, all from Next.js itself.
+  ...onlyInTheWebsite([...nextWebVitals, ...nextTypeScript]),
+  {
+    // The App Router keeps no `pages` directory, so this rule looks for one it will never find and
+    // says so on every run. Next.js ships it on because most sites still hold that directory.
+    files: [websiteSources],
+    rules: {
+      '@next/next/no-html-link-for-pages': 'off',
+    },
+  },
   {
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
