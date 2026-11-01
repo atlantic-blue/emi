@@ -1,21 +1,22 @@
 import type { Language } from './language';
 
-/** Every word one page needs, in one language. */
+import { english } from './english';
+import { russian } from './russian';
+import { spanish } from './spanish';
+
+export type SiteWordKey = keyof typeof english;
+
+/** Every word one page needs, in one language. A key the site draws is a key all three hold. */
 export type SiteWords = Readonly<Record<SiteWordKey, string>>;
 
-export type SiteWordKey =
-  | 'brandLine'
-  | 'tagline'
-  | 'line'
-  | 'store'
-  | 'beta'
-  | 'price'
-  | 'footerLine'
-  | 'languageLabel'
-  | 'pageDescription';
+const catalogues: Readonly<Record<Language, SiteWords>> = {
+  en: english,
+  ru: russian,
+  es: spanish,
+};
 
-export const siteWordKeys: readonly SiteWordKey[] = [];
-
-export function wordsIn(_language: Language): SiteWords {
-  throw new Error('myemi.app holds no words yet');
+export function wordsIn(language: Language): SiteWords {
+  return catalogues[language];
 }
+
+export const siteWordKeys: readonly SiteWordKey[] = Object.keys(english).sort() as SiteWordKey[];

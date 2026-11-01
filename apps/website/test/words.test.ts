@@ -4,6 +4,7 @@ import { russian as applicationRussian } from '../../mobile/src/language/russian
 import { spanish as applicationSpanish } from '../../mobile/src/language/spanish';
 import {
   type Language,
+  type SiteWordKey,
   english,
   fallbackLanguage,
   isLanguage,
@@ -91,7 +92,11 @@ describe('the words of one page in three languages', () => {
   });
 
   it('writes every other word of a language in that language', () => {
-    for (const key of siteWordKeys.filter((named) => named !== 'brandLine')) {
+    const translated = Object.keys(english).filter((key) => key !== 'brandLine') as SiteWordKey[];
+
+    expect(translated.length).toBeGreaterThan(0);
+
+    for (const key of translated) {
       expect(russian[key]).not.toBe(english[key]);
       expect(spanish[key]).not.toBe(english[key]);
     }

@@ -54,24 +54,45 @@ no page draws a figure yet, so it is not served yet.
 `components.json` points `npx shadcn add` at that theme and that stylesheet. A component it adds
 arrives with shadcn's own colour names, so point its classes at Emi tokens before committing it.
 
+## The language in the address
+
+Every page sits under a language: `/en/`, `/ru/` and `/es/`. That is contract SITE-3, and it is
+why the root layout is `app/[lang]/layout.tsx` and not `app/layout.tsx`. Next.js sets the `lang`
+attribute of the html element in a layout, and a layout above the segment cannot read which
+language the address asked for.
+
+`app/words` holds the words, one file per language, the way `apps/mobile/src/language` holds the
+words of the application. A sentence that already exists there is copied from there rather than
+written again: the price line is the application's own, and `test/words.test.ts` reads the two
+against each other so they cannot drift. The two sentences at the end of the footer are the
+approved denials of `tools/pipeline/forbiddenClaims.ts`, and the same test reads those against the
+gate's own list.
+
+`next.config.ts` sets `trailingSlash`, because the contract and the redirect at the edge both name
+`/en/` with the slash. Without it Next.js answers that address with a redirect.
+
+An address naming a language the site does not serve answers 404 with the Emi page, and so does any
+deeper address: `app/[lang]/[...rest]` matches what no other route does and answers the same way.
+Next.js has its own page for an address outside every language, and that page carries none of Emi,
+which is what that route exists to prevent.
+
 ## What is here, and what arrives later
 
-Today the site holds the document every page arrives in, the header and the footer, three
-components under `components/ui`, and one page: the one behind an address the site does not have.
+Today the site holds the document every page arrives in, the header with the language switcher, the
+footer, three components under `components/ui`, the home page in three languages, and the page
+behind an address the site does not have.
 
 `public/emi-wordmark.svg` is the mark the header draws, and it is the file
 `brand/logo/emi-wordmark.svg` generates. `npm run generate:logo` writes that file, so copy it
 across after a redraw; `test/wordmark.test.ts` reads the two against each other and fails on the
 day they differ.
 
-`test/pictures` holds two captures of that page, at 1280 and at 390 points wide. They were taken
-by hand, so read them as a record of one run and not as a gate. The suite under `e2e/` now reads
-that page at the same two widths on every pull request: the gherkin is in `e2e/features`, the
-steps that drive the browser are in `e2e/steps`, and `playwright.config.ts` declares the two
-widths. `.features-gen` holds the Playwright tests generated from the gherkin and is not
-committed.
+`test/pictures` holds four captures, of the home page and of the page behind an address the site
+does not have, each at 1280 and at 390 points wide. They were taken by hand from the built site,
+so read them as a record of one run and not as a gate. The suite under `e2e/` reads both pages at
+the same two widths on every pull request: the gherkin is in `e2e/features`, the steps that drive
+the browser are in `e2e/steps`, and `playwright.config.ts` declares the two widths.
+`.features-gen` holds the Playwright tests generated from the gherkin and is not committed.
 
-The page carries no content width, because no token names one. The card runs the width of the
-window at 1280 until the home page of step 13 brings a layout.
-
-The home page, the three languages and the language switcher arrive in the steps after this one.
+The home page is the one place with a content width, and the two measures are Tailwind's own
+rather than tokens, because `packages/tokens` names no page width.

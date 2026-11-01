@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import RootLayout from '../../apps/website/app/layout';
-import NotFound from '../../apps/website/app/not-found';
+import RootLayout from '../../apps/website/app/[lang]/layout';
+import NotFound from '../../apps/website/app/[lang]/not-found';
 
 const feature = loadFeature(join(__dirname, '26.9-react-in-node.feature'));
 
@@ -24,11 +24,9 @@ function standingInTheProcess(names: readonly string[]): string[] {
  * Next.js puts the page it chose inside the root layout and answers with one document, so the
  * scenario composes them the same way and reads the whole document she is sent.
  */
-function whatTheSiteSends(): string {
+async function whatTheSiteSends(): Promise<string> {
   return renderToStaticMarkup(
-    <RootLayout>
-      <NotFound />
-    </RootLayout>,
+    await RootLayout({ children: <NotFound />, params: Promise.resolve({ lang: 'en' }) }),
   );
 }
 
@@ -43,8 +41,8 @@ defineFeature(feature, (test) => {
       expect(address).not.toBe('/');
     });
 
-    when('the site draws her page where the site draws every page', () => {
-      page = whatTheSiteSends();
+    when('the site draws her page where the site draws every page', async () => {
+      page = await whatTheSiteSends();
     });
 
     then('she reads that the page does not exist, and the way back to the Emi home page', () => {

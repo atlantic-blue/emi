@@ -1,5 +1,8 @@
 import Image from 'next/image';
 
+import { type Language, fallbackLanguage } from '@/app/words';
+import { LanguageSwitcher } from '@/components/languageSwitcher';
+
 /**
  * The file the site serves the mark from. It is the drawing in `brand/logo/emi-wordmark.svg`, and
  * `test/wordmark.test.ts` reads the two files against each other, so the one a browser asks for
@@ -11,13 +14,16 @@ export const WORDMARK_FILE = '/emi-wordmark.svg';
 export const WORDMARK_UNITS = { width: 3002, height: 1879 } as const;
 
 /**
- * A thin band at the top of every page, carrying the mark and nothing else. The mark is served by
- * this site, so a browser asks no other company for it, and it is not passed through the image
- * server: a drawing has no pixels to resize.
+ * A thin band at the top of every page, carrying the mark and the language she reads in. The mark
+ * is served by this site, so a browser asks no other company for it, and it is not passed through
+ * the image server: a drawing has no pixels to resize.
+ *
+ * The page a woman reaches by accident has no language in its address, so the band takes the
+ * fallback there and the switcher still offers her the three.
  */
-export function SiteHeader() {
+export function SiteHeader({ language = fallbackLanguage }: { language?: Language }) {
   return (
-    <header className="bg-ground px-margin py-spaceMd">
+    <header className="flex items-center justify-between bg-ground px-margin py-spaceMd">
       <a className="inline-flex items-center" href="/">
         <Image
           alt="Emi"
@@ -29,6 +35,7 @@ export function SiteHeader() {
           width={WORDMARK_UNITS.width}
         />
       </a>
+      <LanguageSwitcher language={language} />
     </header>
   );
 }
