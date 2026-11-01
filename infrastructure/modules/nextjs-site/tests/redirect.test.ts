@@ -1,9 +1,18 @@
-import type { FunctionResponse, ViewerRequest, ViewerRequestEvent } from '../src/redirect.ts';
+import type {
+  FunctionResponse,
+  QueryValue,
+  ViewerRequest,
+  ViewerRequestEvent,
+} from '../src/redirect.ts';
 import { handler } from '../src/redirect.ts';
 
 import { cloudFrontAnswer } from './runArtifact.ts';
 
-function asked(host: string, uri: string, querystring = ''): ViewerRequestEvent {
+function asked(
+  host: string,
+  uri: string,
+  querystring: Record<string, QueryValue> = {},
+): ViewerRequestEvent {
   return { request: { uri, querystring, headers: { host: { value: host } } } };
 }
 
@@ -28,7 +37,9 @@ describe('one address answers for the site, and the origin is told which one she
     });
 
     it('keeps the query string too, so a link with one is not cut in half', () => {
-      for (const answer of bothWays(asked('www.myemi.app', '/en/privacy', 'from=store'))) {
+      const event = asked('www.myemi.app', '/en/privacy', { from: { value: 'store' } });
+
+      for (const answer of bothWays(event)) {
         expect(locationOf(answer)).toBe('https://myemi.app/en/privacy?from=store');
       }
     });
@@ -49,7 +60,7 @@ describe('one address answers for the site, and the origin is told which one she
     });
 
     it('carries a query string across', () => {
-      expect(locationOf(handler(asked('myemi.app', '/', 'from=store')))).toBe(
+      expect(locationOf(handler(asked('myemi.app', '/', { from: { value: 'store' } })))).toBe(
         'https://myemi.app/en/?from=store',
       );
     });
@@ -84,9 +95,53 @@ describe('one address answers for the site, and the origin is told which one she
     });
   });
 
+  describe('the query string she arrived with', () => {
+    // request.querystring is an object of keys to { value } or { multiValue }, not a string, so
+    // joining it onto an address wrote "?[object Object]" and every link with a query lost it.
+    it('is left off entirely when there is none', () => {
+      for (const answer of bothWays(asked('www.myemi.app', '/en/'))) {
+        expect(locationOf(answer)).toBe('https://myemi.app/en/');
+      }
+    });
+
+    it('carries one key across', () => {
+      const event = asked('www.myemi.app', '/en/', { x: { value: '1' } });
+
+      for (const answer of bothWays(event)) {
+        expect(locationOf(answer)).toBe('https://myemi.app/en/?x=1');
+      }
+    });
+
+    it('carries every value of a key that was asked for more than once', () => {
+      const event = asked('www.myemi.app', '/en/', {
+        tag: { value: 'one', multiValue: [{ value: 'one' }, { value: 'two' }] },
+      });
+
+      for (const answer of bothWays(event)) {
+        expect(locationOf(answer)).toBe('https://myemi.app/en/?tag=one&tag=two');
+      }
+    });
+
+    it('reaches the root redirect too, which is where a store link lands', () => {
+      const event = asked('myemi.app', '/', { from: { value: 'store' } });
+
+      for (const answer of bothWays(event)) {
+        expect(locationOf(answer)).toBe('https://myemi.app/en/?from=store');
+      }
+    });
+
+    it('names no object, because that is what the fault looked like', () => {
+      const event = asked('www.myemi.app', '/en/', { x: { value: '1' } });
+
+      for (const answer of bothWays(event)) {
+        expect(locationOf(answer)).not.toContain('object Object');
+      }
+    });
+  });
+
   describe('a request that carries no host', () => {
     it('reaches the origin rather than failing, because the distribution matched an alias', () => {
-      const answer = handler({ request: { uri: '/en/', querystring: '', headers: {} } });
+      const answer = handler({ request: { uri: '/en/', querystring: {}, headers: {} } });
 
       expect((answer as ViewerRequest).uri).toBe('/en/');
     });

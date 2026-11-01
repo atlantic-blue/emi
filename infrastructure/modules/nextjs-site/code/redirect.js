@@ -26,10 +26,15 @@
 /** The default language of SITE-3, which is where the root sends a reader. */
 const defaultLanguage = 'en';
 
+/**
+ * One key of the query string. A key asked for more than once carries every value it was asked
+ * for in multiValue, and value alone is the first of them.
+ */
+
 function handler(event) {
   const request = event.request;
   const host = request.headers.host ? request.headers.host.value : '';
-  const query = request.querystring === '' ? '' : '?' + request.querystring;
+  const query = queryOf(request.querystring);
 
   if (host.indexOf('www.') === 0) {
     return movedTo('https://' + host.slice(4) + request.uri + query);
@@ -42,6 +47,53 @@ function handler(event) {
   request.headers['x-forwarded-host'] = { value: host };
 
   return request;
+}
+
+/**
+ * The query string written back as a reader would type it.
+ *
+ * It arrives as an object and not as a string, so joining it onto an address wrote
+ * "?[object Object]" and every link carrying a query lost what it carried. The values are passed
+ * through as they arrived, because CloudFront hands them over encoded and encoding them again
+ * would turn a space into %2520.
+ *
+ * The loops are written by index rather than with for...of, because this file is evaluated by the
+ * CloudFront runtime and a parse error there takes the whole site down.
+ */
+function queryOf(querystring) {
+  const keys = Object.keys(querystring);
+  const pairs = [];
+
+  for (let at = 0; at < keys.length; at += 1) {
+    const key = keys[at];
+
+    if (key === undefined) {
+      continue;
+    }
+
+    const asked = querystring[key];
+
+    if (asked === undefined) {
+      continue;
+    }
+
+    const many = asked.multiValue;
+
+    if (many === undefined) {
+      pairs.push(key + '=' + asked.value);
+      continue;
+    }
+
+    for (let each = 0; each < many.length; each += 1) {
+      const one = many[each];
+
+      if (one !== undefined) {
+        pairs.push(key + '=' + one.value);
+      }
+    }
+  }
+
+  return pairs.length === 0 ? '' : '?' + pairs.join('&');
 }
 
 function movedTo(address) {
