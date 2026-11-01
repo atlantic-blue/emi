@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import { servedFont } from './fonts';
+import './globals.css';
+
 export const metadata: Metadata = {
   title: 'Emi',
   description: 'A period and cycle tracker that keeps your records to yourself.',
@@ -14,7 +17,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${servedFont.variable} bg-ground font-text text-body-lg text-text`}>
+        {children}
+      </body>
     </html>
   );
 }

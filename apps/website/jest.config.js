@@ -13,6 +13,14 @@ module.exports = {
   // version the site ships.
   moduleNameMapper: {
     '^react$': require.resolve('react'),
+    // A stylesheet and the loader that copies the font files are answered by a bundler, and no
+    // runner runs one. Both are stood in for, and a real build reads both for what they stand in
+    // for, in test/builtSite.test.ts.
+    '\\.css$': require.resolve('./test/doubles/stylesheet.ts'),
+    '^next/font/local$': require.resolve('./test/doubles/nextFontLocal.ts'),
+    // The alias the pages use, which components.json also names, so a component added by the
+    // shadcn command resolves here without a second entry.
+    '^@/(.*)$': '<rootDir>/$1',
   },
   testMatch: ['<rootDir>/test/**/*.test.ts', '<rootDir>/test/**/*.test.tsx'],
   transform: {
