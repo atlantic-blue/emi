@@ -99,6 +99,7 @@ data "aws_iam_policy_document" "plan" {
       "iam:ListRolePolicies",
       "lambda:GetFunction",
       "lambda:GetFunctionCodeSigningConfig",
+      "lambda:GetFunctionUrlConfig",
       "lambda:GetPolicy",
       "lambda:ListVersionsByFunction",
       "logs:DescribeLogGroups",
@@ -148,14 +149,20 @@ data "aws_iam_policy_document" "plan" {
     ]
   }
 
+  # A plan refreshes the bucket by reading every part of it, one call for each part, so a part the
+  # list below misses refuses the plan rather than reporting a difference. The ownership control,
+  # the acceleration and the notification are the three the site bucket of step 26.4 adds.
   statement {
     sid    = "ReadTheWebsiteBucket"
     effect = "Allow"
     actions = [
+      "s3:GetAccelerateConfiguration",
       "s3:GetBucketAcl",
       "s3:GetBucketCors",
       "s3:GetBucketLogging",
+      "s3:GetBucketNotification",
       "s3:GetBucketObjectLockConfiguration",
+      "s3:GetBucketOwnershipControls",
       "s3:GetBucketPolicy",
       "s3:GetBucketPublicAccessBlock",
       "s3:GetBucketRequestPayment",
@@ -348,12 +355,15 @@ data "aws_iam_policy_document" "apply" {
   # A CloudFront address carries a generated identifier, so each resource type is named as every
   # one of its kind in this account. Account 230345688874 also holds the distributions of other
   # Atlantic Blue products, which is why the actions are named one by one instead of as
-  # cloudfront:*.
+  # cloudfront:*. A distribution asked for with tags is created by CreateDistributionWithTags and
+  # never by CreateDistribution, and the website root tags everything it makes, so the role needs
+  # both names for the one call.
   statement {
     sid    = "TheDistribution"
     effect = "Allow"
     actions = [
       "cloudfront:CreateDistribution",
+      "cloudfront:CreateDistributionWithTags",
       "cloudfront:CreateInvalidation",
       "cloudfront:DeleteCachePolicy",
       "cloudfront:DeleteDistribution",
