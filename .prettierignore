@@ -3,6 +3,9 @@ node_modules/
 dist/
 coverage/
 package-lock.json
+.features-gen/
+apps/website/e2e/report/
+test-results/
 brand/sheet/brand-sheet.html
 brand/screens/*.html
 

@@ -14,6 +14,12 @@ next-env.d.ts
 ios/
 android/
 
+# What the browser tier writes: the Playwright tests generated from the gherkin, the report a
+# run leaves behind, and the traces it keeps when a scenario fails.
+.features-gen/
+apps/website/e2e/report/
+test-results/
+
 # Terraform working files. The provider lock is committed; the plugins and the plan are not.
 .terraform/
 *.tfstate

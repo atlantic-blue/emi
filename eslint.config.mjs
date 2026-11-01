@@ -71,6 +71,9 @@ export default defineConfig([
     '**/dist/**',
     '**/.next/**',
     '**/.open-next/**',
+    // The Playwright tests playwright-bdd writes from the gherkin, and what a run leaves behind.
+    '**/.features-gen/**',
+    '**/test-results/**',
     'apps/website/next-env.d.ts',
     '**/.expo/**',
     'coverage/**',
