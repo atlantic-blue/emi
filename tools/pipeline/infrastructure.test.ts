@@ -773,6 +773,68 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
   });
 
+  // Step 26.4 serves the site from a Lambda function behind the distribution, and the roles as
+  // they stand refuse four calls that shape makes. Creating a distribution that carries tags is a
+  // different action from creating one without them, and the website root tags everything. The
+  // function url and three parts of the bucket are read by every plan once they exist, and a part
+  // a plan cannot read refuses the plan rather than reporting a difference.
+  describe('the grants the site on Lambda needs, which is step 26.4', () => {
+    const planStatements = statementsIn(planPolicy);
+    const applyStatements = statementsIn(applyPolicy);
+    const theBucket = 'arn:aws:s3:::emi-website-*';
+    const bucketParts = [
+      's3:GetAccelerateConfiguration',
+      's3:GetBucketNotification',
+      's3:GetBucketOwnershipControls',
+    ];
+
+    /** Each resource a statement stands on, with every variable reference read as its value. */
+    const resourcesOf = (statements: readonly PolicyStatement[]): string[] =>
+      statements.flatMap((statement) =>
+        statement.resources.map((resource) => resolved(configuration, resource)),
+      );
+
+    it('creates a distribution that carries tags, which is an action of its own', () => {
+      const granting = statementsReaching(applyStatements, 'cloudfront:CreateDistributionWithTags');
+
+      expect(granting.map((statement) => statement.sid)).toEqual(['TheDistribution']);
+      expect(resourcesOf(granting)).toContain(
+        `arn:aws:cloudfront::${defaultOf('account_id')}:distribution/*`,
+      );
+      expect(grantedOnEveryResource(applyStatements, 'cloudfront:CreateDistributionWithTags')).toBe(
+        false,
+      );
+    });
+
+    it('reads the function url, where the other reads of a function already stand', () => {
+      const granting = statementsReaching(planStatements, 'lambda:GetFunctionUrlConfig');
+
+      expect(granting.map((statement) => statement.sid)).toEqual(['DescribeWhatExists']);
+      expect(statementsReaching(planStatements, 'lambda:GetFunction')[0]?.sid).toBe(
+        'DescribeWhatExists',
+      );
+    });
+
+    it.each(bucketParts)('reads %s on the site bucket and on no other bucket', (action) => {
+      expect(resourcesOf(statementsReaching(planStatements, action))).toEqual([theBucket]);
+      expect(grantedOnEveryResource(planStatements, action)).toBe(false);
+    });
+
+    it('leaves the plan role reading, so not one of the four grants writes', () => {
+      const added = ['lambda:GetFunctionUrlConfig', ...bucketParts];
+      const actions = actionsIn(planPolicy);
+
+      expect(added.filter((action) => !actions.includes(action))).toEqual([]);
+      expect(
+        actions.filter(
+          (action) => !/^(apigateway:GET|[a-z0-9]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
+        ),
+      ).toEqual([]);
+      expect(statementsReaching(planStatements, 'cloudfront:CreateDistributionWithTags')).toEqual(
+        [],
+      );
+    });
+  });
   describe('the state', () => {
     it('sits in the shared bucket under a key of Emi own', () => {
       const backend = bodyOf('backend "s3"');
