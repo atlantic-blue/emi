@@ -26,9 +26,20 @@ const widths = [
   { name: 'phone', width: 390, height: 844 },
 ] as const;
 
+/** The sentences every copy of the site can answer, whether it was started here or deployed. */
+const everywhere = 'e2e/features/*.feature';
+
+/**
+ * The sentences only the real host can answer. The headers come from the distribution, after the
+ * origin has answered, and the moves between addresses come from a function at the edge, before a
+ * request reaches the origin at all. A site started here has neither, so a run that read these
+ * against itself would fail every one of them for the wrong reason.
+ */
+const liveOnly = 'e2e/live/*.feature';
+
 export default defineConfig({
   testDir: defineBddConfig({
-    features: 'e2e/features/*.feature',
+    features: liveHost === undefined ? everywhere : [everywhere, liveOnly],
     steps: 'e2e/steps/*.ts',
   }),
   fullyParallel: true,
