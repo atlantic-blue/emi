@@ -1,7 +1,13 @@
-/** Who makes Emi. */
-export const MADE_BY = '';
+import { Separator } from '@/components/ui/separator';
 
-/** The band at the foot of every page. It says nothing yet. */
+/** Who makes Emi. The page says it in words rather than in a mark, so a reader can read it aloud. */
+export const MADE_BY = 'Emi is made by Atlantic Blue Solutions Limited.';
+
 export function SiteFooter() {
-  return <footer />;
+  return (
+    <footer className="bg-ground px-margin pb-marginMd pt-margin">
+      <Separator className="mb-margin" />
+      <p className="font-text text-body-sm text-secondaryText">{MADE_BY}</p>
+    </footer>
+  );
 }
