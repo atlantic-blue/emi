@@ -32,6 +32,9 @@ export default defineConfig([
   globalIgnores([
     '**/node_modules/**',
     '**/dist/**',
+    '**/.next/**',
+    '**/.open-next/**',
+    'apps/website/next-env.d.ts',
     '**/.expo/**',
     'coverage/**',
     'apps/mobile/expo-env.d.ts',

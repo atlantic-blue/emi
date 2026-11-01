@@ -4,19 +4,24 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --import ./jsxLoader.ts build.ts",
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev",
+    "build": "NEXT_TELEMETRY_DISABLED=1 next build",
+    "build:lambda": "NEXT_TELEMETRY_DISABLED=1 open-next build",
+    "start": "NEXT_TELEMETRY_DISABLED=1 next start",
     "typecheck": "tsc --noEmit",
     "test": "jest --ci"
   },
   "dependencies": {
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "next": "16.4.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
     "@babel/plugin-transform-react-jsx": "7.29.7",
+    "@babel/preset-env": "7.29.7",
     "@babel/preset-typescript": "7.29.7",
-    "@types/babel__core": "7.20.5",
+    "@opennextjs/aws": "4.1.14",
     "@types/react-dom": "~19.2.7"
   }
 }

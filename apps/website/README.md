@@ -1,35 +1,36 @@
 # apps/website
 
-`@emi/website` is the site on myemi.app. It is static files: pages of hypertext markup written by a
-TypeScript program on the machine that builds them, and uploaded to a storage bucket that only the
-distribution in front of it may read.
+`@emi/website` is the site on myemi.app. It is a Next.js application that uses the App Router. Its
+pages render on an AWS Lambda function, and the files a browser asks for by name sit in a private
+bucket beside it. Only the CloudFront distribution in front of the two may read either one.
 
-There is no site framework and no generator here. Each page is a React component in a `.tsx` file
-under `src/`, written with JSX. `build.ts` draws the component, turns it into markup, and writes the
-file. Nothing in the output runs in a browser, because a page that needs no interaction needs no
-script. That is contract SITE-4: no cookie, no request to a third party, and no script that counts
-her visit.
+`@opennextjs/aws` turns a Next.js build into those two things: the code of the server function, and
+a folder of assets. `npm run build` compiles the pages. `npm run build:lambda` packages that build
+into `.open-next/server-functions/default` and `.open-next/assets`. Neither directory is committed.
 
-Node strips the types out of a `.ts` file on its own and refuses a `.tsx` file, because it does not
-read JSX. So `jsxLoader.ts` registers a module hook that compiles every `.tsx` file through babel,
-with the same preset and the same automatic runtime the test runners use. The build asks for it with
-`--import`, which runs it before the entry point. There is no bundler and no build output to keep.
+Next.js reports a build to its author unless the environment says otherwise, so every script that
+starts Next.js or OpenNext sets `NEXT_TELEMETRY_DISABLED=1` in front of the command. That is part of
+contract SITE-4, and a test in `test/` reads the manifest and fails on a script that forgets it.
 
 ## The commands
 
-`npm run build --workspace apps/website` writes into `apps/website/dist`. Give it a directory to
-write somewhere else, which is what the tests do.
+`npm run dev --workspace apps/website` serves the site on this machine while you work on it.
 
-`npm test --workspace apps/website` runs the unit tests under `test/`. The root `npm test` runs
-them too.
+`npm run build --workspace apps/website` compiles the pages into `.next`.
+
+`npm run build:lambda --workspace apps/website` packages that build for Lambda and for the bucket.
+
+`npm test --workspace apps/website` runs the unit tests under `test/`, which render the components
+with `react-dom/server` in node. The root `npm test` runs them too.
 
 `npm run typecheck --workspace apps/website` reads the types. The root `npm run typecheck` reads
 this workspace with the rest.
 
 ## What is here, and what arrives later
 
-Today the site holds one page, the one behind an address the site does not have. It says the page
-does not exist and links to the home page. It carries no style.
+Today the site holds the document every page arrives in and one page: the one behind an address the
+site does not have. It says the page does not exist and offers the way back. It carries no style.
 
-The components, the theme drawn from `packages/tokens`, the home page and the three languages
-arrive in the steps after this one.
+The components from shadcn, the theme drawn from `packages/tokens`, the fonts the site serves
+itself, the home page and the three languages arrive in the steps after this one. No colour or face
+is written here until they do.
