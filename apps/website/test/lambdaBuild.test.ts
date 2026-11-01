@@ -246,7 +246,13 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
         try {
           expect(readdirSync(join(unpacked, 'apps', 'website'))).toContain('open-next.config.mjs');
 
-          const answered = askThePackage(unpacked, '/en/an-address-nobody-has');
+          const asked = askThePackage(unpacked, '/en/an-address-nobody-has');
+
+          // The site keeps one form of an address and moves the other, so a move is followed
+          // here, the way the browser in front of it follows one. What matters is the page she is
+          // left holding, not which of the two forms she happened to type.
+          const answered =
+            asked.location === null ? asked : askThePackage(unpacked, asked.location);
 
           expect(answered.statusCode).toBe(404);
           expect(answered.body).toContain('This page does not exist');
