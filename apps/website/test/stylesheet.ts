@@ -75,3 +75,47 @@ export async function whatTheMarkupDraws(
 
   return Object.fromEntries(classes.map((name) => [name, declarationsOf(stylesheet, name)]));
 }
+
+/**
+ * The order the stylesheet writes rules in, for the classes it knows out of the ones given. This
+ * is where the one order of a class list comes from: a reader follows a word from the page to the
+ * rule the browser obeys, and the rules arrive in one sequence.
+ *
+ * A class the theme does not know is absent from the answer, because the stylesheet writes no rule
+ * for it.
+ */
+export async function orderOfTheStylesheet(classes: readonly string[]): Promise<string[]> {
+  const stylesheet = await stylesheetFor(classes);
+  const written: string[] = [];
+
+  for (const [, selector] of stylesheet.matchAll(/\.((?:\\.|[\w-])+)(?![\w-])/g)) {
+    const name = (selector ?? '').replace(/\\(.)/g, '$1');
+
+    if (classes.includes(name) && !written.includes(name)) {
+      written.push(name);
+    }
+  }
+
+  return written;
+}
+
+/**
+ * Every run of two or more words inside a quote. A class list is written as one, and so is a
+ * sentence, so the caller decides which runs are class lists by asking the stylesheet which words
+ * it knows. What a template puts in with its own expression is dropped, because the words around
+ * it are the ones somebody ordered.
+ */
+export function quotedWordRuns(source: string): string[][] {
+  const quoted = /'([^'\n]*)'|"([^"\n]*)"|`([^`]*)`/g;
+
+  return [...source.matchAll(quoted)]
+    .map(([, single, double, template]) => single ?? double ?? template ?? '')
+    .map((text) => text.replace(/\$\{[^}]*\}/g, ' '))
+    .map((text) =>
+      text
+        .trim()
+        .split(/\s+/)
+        .filter((word) => word.length > 0),
+    )
+    .filter((words) => words.length > 1);
+}
