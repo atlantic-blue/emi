@@ -75,6 +75,8 @@ Sections further down name directories that do not exist yet. Those names are ou
 purpose, because the design may name a thing before anybody builds it. This list may not.
 
 - `apps/mobile` is the Expo application. It holds the screens and the data layer.
+- `apps/website` is the site on myemi.app. It holds the program that draws each page and
+  writes it as a file.
 - `packages/tokens` holds the colours, the type scale and the spacing. It is the only place a colour
   value may be written.
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.
