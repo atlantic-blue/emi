@@ -16,7 +16,7 @@ export function Separator({
   return (
     <SeparatorPrimitive.Root
       className={cn(
-        'bg-line shrink-0',
+        'shrink-0 bg-line',
         orientation === 'horizontal' ? 'h-hairline w-full' : 'h-full w-hairline',
         className,
       )}
