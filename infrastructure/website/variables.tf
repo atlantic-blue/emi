@@ -21,3 +21,9 @@ variable "zone_id" {
   type        = string
   default     = "Z06550332F4OHMRD78K"
 }
+
+variable "account_id" {
+  description = "Amazon Web Services account the site is served from. A bucket name is global, so the site bucket carries it"
+  type        = string
+  default     = "230345688874"
+}
