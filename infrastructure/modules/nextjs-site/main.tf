@@ -202,6 +202,18 @@ resource "aws_lambda_permission" "server" {
   function_url_auth_type = "AWS_IAM"
 }
 
+# A function url behind an origin access control is authorised twice: once for the url, and once
+# for the function underneath it. With only the url name granted, every signed request from the
+# distribution answered 403 and named function url authorization, so the site served nothing. The
+# condition is the same on both, so neither name reaches further than this one distribution.
+resource "aws_lambda_permission" "server_invoke" {
+  statement_id  = "InvokeFromThisDistributionAlone"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.server.function_name
+  principal     = "cloudfront.amazonaws.com"
+  source_arn    = aws_cloudfront_distribution.site.arn
+}
+
 # ── The distribution, which is the only way in ───────────────────────────────
 
 resource "aws_cloudfront_origin_access_control" "assets" {
