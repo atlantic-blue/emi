@@ -213,10 +213,11 @@ The contracts it builds:
 
 - `SITE-1` the domain, with one certificate for `myemi.app` and `www.myemi.app`, and http that
   answers 301 to https.
-- `SITE-2` the private bucket, which only the distribution reads.
+- `SITE-2` the two origins, a private bucket of the assets and a server function on Lambda,
+  each reached by the distribution alone.
 - `SITE-3` the three languages, each with a home page, and an address that does not exist answering
   404 with an Emi page.
-- `SITE-4` the pages, built from the tokens by a TypeScript program.
+- `SITE-4` the pages, rendered by Next.js through OpenNext and drawn from the tokens.
 - `SITE-5` the deploy, which a merge into `main` runs and a pull request never does.
 - `SITE-6` the five headers, on every response.
 

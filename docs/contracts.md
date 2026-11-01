@@ -578,15 +578,18 @@ Manager, for `myemi.app` and for `www.myemi.app`. `www.myemi.app` answers 301 to
 Errors: content served over http. A certificate for another name. A hosted zone that Terraform
 creates or destroys, because the registration of the domain owns the zone.
 
-### SITE-2, the bucket
+### SITE-2, the origins
 
 Verified by a test.
 
-Output: one private bucket in Amazon S3, in eu-central-1, that only the Amazon CloudFront
-distribution reads, through origin access control.
+Output: two origins. One private bucket in Amazon S3, in eu-central-1, for the static assets, and
+one Amazon Web Services Lambda server function, reachable only through a function url whose
+authentication type is `AWS_IAM`. Only the Amazon CloudFront distribution reads the bucket and calls
+the function, each through origin access control.
 
-Errors: public access on the bucket. The website endpoint of the bucket turned on. Any principal
-other than the distribution allowed to read the bucket.
+Errors: public access on the bucket. The website endpoint of the bucket turned on. A function url
+with no authentication. Any principal other than the distribution allowed to read the bucket or call
+the function.
 
 ### SITE-3, the languages
 
@@ -602,22 +605,24 @@ something it is not. Emi is not a contraceptive. Emi is not a medical device.
 
 Verified by a test.
 
-Output: static pages of hypertext markup and one stylesheet, built from `apps/website` by a
-TypeScript program. The components come from shadcn, drawn with React on the machine that builds
-the site. Every colour, face, size, gap and corner comes from `packages/tokens`.
+Output: pages rendered by a Next.js App Router application on Amazon Web Services Lambda, built by
+OpenNext. The components come from shadcn, written in React JSX, and every colour, face, size, gap
+and corner comes from `packages/tokens`. The site serves its own fonts.
 
-Errors: a colour or a face that is not a token. A request to a third party from a page. A cookie.
-A script that counts her visit or that advertises to her. A script tag on a page that needs none.
+Errors: a colour or a font that is not a token. A request from a page to any host other than
+myemi.app. A cookie. An analytics script or an advertising script. Next.js telemetry turned on in
+the build.
 
 ### SITE-5, the deploy
 
 Verified by a test.
 
-Output: a merge into `main` that changes the site builds the site, uploads it to the bucket, and
-clears the cache of the distribution.
+Output: a merge into `main` that changes the site builds it with OpenNext, updates the code of the
+server function, uploads the assets to the bucket, clears the cache of the distribution, and checks
+the live site.
 
-Errors: an upload from a pull request. An upload from a machine. A password, a key or a token
-written into the repository.
+Errors: an upload or a code update from a pull request, and an upload or a code update from a
+machine. A password, a key or a token written into the repository.
 
 ### SITE-6, the headers
 
