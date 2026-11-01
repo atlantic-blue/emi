@@ -89,6 +89,7 @@
     "jest-cucumber": "^4.5.0",
     "patch-package": "8.0.1",
     "prettier": "3.9.7",
+    "prettier-plugin-tailwindcss": "0.8.1",
     "typescript": "~6.0.3",
     "yaml": "2.9.1"
   },

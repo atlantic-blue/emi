@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
  * behind it by its own surface, which is how every card of the redesign is drawn.
  */
 export function Card({ className, ...rest }: ComponentProps<'div'>) {
-  return <div className={cn('bg-card rounded-xxl p-margin', className)} {...rest} />;
+  return <div className={cn('rounded-xxl bg-card p-margin', className)} {...rest} />;
 }
 
 export function CardHeader({ className, ...rest }: ComponentProps<'div'>) {

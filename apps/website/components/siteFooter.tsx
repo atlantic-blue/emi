@@ -5,7 +5,7 @@ export const MADE_BY = 'Emi is made by Atlantic Blue Solutions Limited.';
 
 export function SiteFooter() {
   return (
-    <footer className="bg-ground px-margin pb-marginMd pt-margin">
+    <footer className="bg-ground px-margin pt-margin pb-marginMd">
       <Separator className="mb-margin" />
       <p className="font-text text-body-sm text-secondaryText">{MADE_BY}</p>
     </footer>
