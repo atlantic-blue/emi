@@ -68,7 +68,8 @@
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile",
     "test:website": "npm test --workspace apps/website",
-    "test:behaviour": "npm run test:behaviour --workspace apps/mobile"
+    "test:behaviour": "npm run test:behaviour --workspace apps/mobile",
+    "test:e2e": "npm run test:e2e --workspace apps/website"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",

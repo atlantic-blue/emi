@@ -26,6 +26,14 @@ with `react-dom/server` in node. The root `npm test` runs them too.
 `npm run typecheck --workspace apps/website` reads the types. The root `npm run typecheck` reads
 this workspace with the rest.
 
+`npm run test:e2e` opens the site in a real browser. It builds the site, starts it on port 3100,
+and reads it with Chromium at 1280 and at 390 points wide. The root `npm run test:e2e` runs the
+same thing. It is not part of the root `npm test`, so the `check` job of the pipeline needs no
+browser; a job of its own installs Chromium and runs it. Set `BASE_URL` to read another host
+instead, and the suite starts no site of its own. The last command of the script refuses a run that
+carried out no scenario, because a browser suite with nothing to do reports a pass that reads the
+same as every other pass.
+
 ## Where the colours, the sizes and the faces come from
 
 `tailwind.config.ts` is the theme, and it reads `packages/tokens`. Every colour, face, size, gap
@@ -57,9 +65,11 @@ across after a redraw; `test/wordmark.test.ts` reads the two against each other 
 day they differ.
 
 `test/pictures` holds two captures of that page, at 1280 and at 390 points wide. They were taken
-by hand: `npm run build`, then `node .next/standalone/apps/website/server.js`, then a headless
-Chromium at each width. Nothing regenerates them, so read them as a record of one run and not as a
-gate. The Playwright suite of step 12 takes over that job.
+by hand, so read them as a record of one run and not as a gate. The suite under `e2e/` now reads
+that page at the same two widths on every pull request: the gherkin is in `e2e/features`, the
+steps that drive the browser are in `e2e/steps`, and `playwright.config.ts` declares the two
+widths. `.features-gen` holds the Playwright tests generated from the gherkin and is not
+committed.
 
 The page carries no content width, because no token names one. The card runs the width of the
 window at 1280 until the home page of step 13 brings a layout.
