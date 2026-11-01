@@ -4,7 +4,13 @@
  * first apply and the first deploy.
  *
  * It answers 503 rather than 200 so a reader, a monitor and a store review all read the site as
- * not ready instead of reading an empty page as the product.
+ * not ready instead of reading an empty page as the product. The answer has to be the shape a
+ * function url expects: a handler that returns nothing makes the url answer 200 with the JSON
+ * `null`, which reads as a working site serving an empty document.
+ *
+ * The page carries no script, no stylesheet and no colour. A colour belongs in `packages/tokens`,
+ * and this file is served before anything of the site exists, so it reaches no other host for
+ * anything.
  */
 
 export interface PlaceholderResponse {
@@ -13,14 +19,29 @@ export interface PlaceholderResponse {
   readonly body: string;
 }
 
+const page = [
+  '<!doctype html>',
+  '<html lang="en">',
+  '  <head>',
+  '    <meta charset="utf-8" />',
+  '    <meta name="viewport" content="width=device-width, initial-scale=1" />',
+  '    <title>Emi</title>',
+  '  </head>',
+  '  <body>',
+  '    <p>Emi. Every Month Insights. The site is on its way.</p>',
+  '  </body>',
+  '</html>',
+  '',
+].join('\n');
+
 export function handler(): PlaceholderResponse {
   return {
     statusCode: 503,
     headers: {
-      'content-type': 'text/plain; charset=utf-8',
+      'content-type': 'text/html; charset=utf-8',
       'cache-control': 'no-store',
       'retry-after': '3600',
     },
-    body: 'The Emi website is not published yet.\n',
+    body: page,
   };
 }
