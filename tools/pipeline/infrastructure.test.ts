@@ -982,3 +982,293 @@ describe('the website on myemi.app, which is feature 26', () => {
     });
   });
 });
+describe('the site on Lambda behind CloudFront, which is step 26.4', () => {
+  /**
+   * Read when a rule asks for it, so a module that is not written yet fails the rules that read it
+   * and not the whole file, which would take the ninety rules above down with it.
+   */
+  const siteModule = (): string =>
+    configurationOf(join(repositoryRoot, 'infrastructure', 'modules', 'nextjs-site'));
+
+  const inSite = (header: string): string => blockBodyOf(siteModule(), header);
+
+  /** How many times a line appears in the module, so a rule can say "on every behaviour". */
+  const times = (line: string): number => siteModule().split(line).length - 1;
+
+  describe('the assets, in a bucket only the distribution reads, which is SITE-2', () => {
+    it('blocks every way a bucket can be made public', () => {
+      const block = inSite('resource "aws_s3_bucket_public_access_block" "assets"');
+
+      expect(block).toContain('block_public_acls       = true');
+      expect(block).toContain('block_public_policy     = true');
+      expect(block).toContain('ignore_public_acls      = true');
+      expect(block).toContain('restrict_public_buckets = true');
+    });
+
+    it('lets no access control list say who reads it', () => {
+      expect(inSite('resource "aws_s3_bucket_ownership_controls" "assets"')).toContain(
+        'object_ownership = "BucketOwnerEnforced"',
+      );
+    });
+
+    it('writes every object encrypted', () => {
+      expect(
+        inSite('resource "aws_s3_bucket_server_side_encryption_configuration" "assets"'),
+      ).toContain('sse_algorithm = "AES256"');
+    });
+
+    it('is read by this distribution and by no other principal', () => {
+      const policy = inSite('data "aws_iam_policy_document" "assets"');
+      const [statement] = statementsIn(policy);
+
+      expect(statement?.actions).toEqual(['s3:GetObject']);
+      expect(policy).toContain('identifiers = ["cloudfront.amazonaws.com"]');
+      expect(policy).toContain('variable = "AWS:SourceArn"');
+      expect(policy).toContain('values   = [aws_cloudfront_distribution.site.arn]');
+    });
+
+    it('turns on no website endpoint, so the bucket has no address of its own', () => {
+      expect(siteModule()).not.toContain('aws_s3_bucket_website_configuration');
+    });
+
+    it('carries the account in its name, because a bucket name is global', () => {
+      expect(inSite('locals')).toContain(
+        'bucket_name   = "${var.project_name}-website-${var.account_id}"',
+      );
+    });
+  });
+
+  describe('the server function, reachable only through the distribution, which is SITE-2', () => {
+    it('answers a function url that refuses a call nobody signed', () => {
+      expect(inSite('resource "aws_lambda_function_url" "server"')).toContain(
+        'authorization_type = "AWS_IAM"',
+      );
+    });
+
+    it('is called by this distribution and by no other principal', () => {
+      const permission = inSite('resource "aws_lambda_permission" "server"');
+
+      expect(permission).toContain('action                 = "lambda:InvokeFunctionUrl"');
+      expect(permission).toContain('principal              = "cloudfront.amazonaws.com"');
+      expect(permission).toContain('source_arn             = aws_cloudfront_distribution.site.arn');
+      expect(permission).toContain('function_url_auth_type = "AWS_IAM"');
+    });
+
+    it('runs on the runtime, the size and the entry point the step names', () => {
+      const server = inSite('resource "aws_lambda_function" "server"');
+
+      expect(server).toContain('handler       = "index.handler"');
+      expect(server).toContain('runtime       = "nodejs22.x"');
+      expect(server).toContain('architectures = ["arm64"]');
+      expect(server).toContain('memory_size   = 1024');
+      expect(server).toContain('timeout       = 10');
+    });
+
+    it('keeps its log lines for a fortnight, because a page view needs no longer', () => {
+      const group = inSite('resource "aws_cloudwatch_log_group" "server"');
+
+      expect(group).toContain('name              = "/aws/lambda/${local.function_name}"');
+      expect(group).toContain('retention_in_days = 14');
+    });
+
+    it('may write its own logs and nothing else, so a fault here cannot reach her days', () => {
+      const [statement] = statementsIn(inSite('data "aws_iam_policy_document" "server"'));
+
+      expect(statement?.actions).toEqual(['logs:CreateLogStream', 'logs:PutLogEvents']);
+      expect(statement?.resources).toEqual(['${aws_cloudwatch_log_group.server.arn}:*']);
+    });
+
+    it('keeps the code a deploy puts there, so an apply cannot put the placeholder back', () => {
+      expect(inSite('resource "aws_lambda_function" "server"')).toContain(
+        'ignore_changes = [filename, source_code_hash, layers, publish]',
+      );
+    });
+
+    it('starts from the artifact a Lambda runtime can resolve, which is not TypeScript', () => {
+      expect(inSite('data "archive_file" "placeholder"')).toContain(
+        'source_file = "${path.module}/code/index.mjs"',
+      );
+    });
+  });
+
+  describe('both origins are signed, so neither answers the address it has of its own', () => {
+    it.each([
+      ['assets', 's3'],
+      ['server', 'lambda'],
+    ])('signs every request CloudFront makes to the %s origin', (origin, kind) => {
+      const control = inSite(`resource "aws_cloudfront_origin_access_control" "${origin}"`);
+
+      expect(control).toContain(`origin_access_control_origin_type = "${kind}"`);
+      expect(control).toContain('signing_behavior                  = "always"');
+      expect(control).toContain('signing_protocol                  = "sigv4"');
+      expect(inSite('resource "aws_cloudfront_distribution" "site"')).toContain(
+        `origin_access_control_id = aws_cloudfront_origin_access_control.${origin}.id`,
+      );
+    });
+  });
+
+  describe('every response carries the six headers of SITE-6', () => {
+    const policy = (): string => inSite('resource "aws_cloudfront_response_headers_policy" "site"');
+
+    it('asks for https for two years, under every name under myemi.app', () => {
+      expect(policy()).toContain('access_control_max_age_sec = 63072000');
+      expect(policy()).toContain('include_subdomains         = true');
+    });
+
+    it('allows the origin of the site and nothing else', () => {
+      expect(policy()).toContain(
+        `content_security_policy = "default-src 'self'; frame-ancestors 'none'"`,
+      );
+    });
+
+    it('refuses a frame and a guess at a content type', () => {
+      expect(policy()).toContain('frame_option = "DENY"');
+      expect(policy()).toContain('content_type_options {');
+    });
+
+    it('sends no path of hers to another site', () => {
+      expect(policy()).toContain('referrer_policy = "strict-origin-when-cross-origin"');
+    });
+
+    it('refuses the camera, the microphone and her location, which is the sixth', () => {
+      expect(policy()).toContain('header   = "Permissions-Policy"');
+      expect(policy()).toContain('value    = "camera=(), microphone=(), geolocation=()"');
+    });
+
+    it('is set over whatever a page answered, on every behaviour the site has', () => {
+      const overrides = [...policy().matchAll(/override\s*=\s*(\w+)/g)].map((found) => found[1]);
+
+      expect(overrides).toHaveLength(6);
+      expect(overrides.filter((value) => value !== 'true')).toEqual([]);
+      expect(
+        times('response_headers_policy_id = aws_cloudfront_response_headers_policy.site.id'),
+      ).toBe(2);
+    });
+  });
+
+  describe('the distribution, which is the only way in', () => {
+    const distribution = (): string => inSite('resource "aws_cloudfront_distribution" "site"');
+
+    it('turns http into https on every behaviour, which closes SITE-1', () => {
+      expect(times('viewer_protocol_policy     = "redirect-to-https"')).toBe(2);
+      expect(distribution()).not.toContain('allow-all');
+    });
+
+    it('answers for the apex and for www, with the certificate of step 26.3', () => {
+      expect(distribution()).toContain(
+        'aliases             = concat([var.domain_name], var.other_names)',
+      );
+      expect(distribution()).toContain('acm_certificate_arn      = var.certificate_arn');
+      expect(distribution()).toContain('minimum_protocol_version = "TLSv1.2_2021"');
+    });
+
+    it('speaks the two newer versions of http', () => {
+      expect(distribution()).toContain('http_version        = "http2and3"');
+    });
+
+    it('keeps a page for as long as the page says, and no longer', () => {
+      const cache = inSite('resource "aws_cloudfront_cache_policy" "pages"');
+
+      expect(cache).toContain('min_ttl     = 0');
+      expect(cache).toContain('default_ttl = 0');
+    });
+
+    it('varies a cached page on the four headers the App Router answers differently for', () => {
+      const cache = inSite('resource "aws_cloudfront_cache_policy" "pages"');
+
+      expect(listedIn(blockBodyOf(cache, 'headers {'), 'items')).toEqual([
+        'next-router-prefetch',
+        'next-router-state-tree',
+        'next-url',
+        'rsc',
+      ]);
+    });
+
+    it('forwards every viewer header except Host, which a function url refuses to answer for', () => {
+      expect(distribution()).toContain('origin_request_policy_id   = local.all_viewer_except_host');
+      expect(inSite('locals')).toContain(
+        'all_viewer_except_host = "b689b0a8-53d0-40ab-baf2-68738e2966ac"',
+      );
+    });
+
+    it('sends the built files to the bucket and every other address to the function', () => {
+      const assets = blockBodyOf(distribution(), 'dynamic "ordered_cache_behavior"');
+
+      expect(listedIn(inSite('locals'), 'asset_paths')).toContain('/_next/static/*');
+      expect(assets).toContain('for_each = local.asset_paths');
+      expect(assets).toContain('target_origin_id           = "assets"');
+      expect(blockBodyOf(distribution(), 'default_cache_behavior')).toContain(
+        'target_origin_id           = "server"',
+      );
+    });
+
+    it('runs the redirect at the edge, before a request reaches either origin', () => {
+      const behaviour = blockBodyOf(distribution(), 'default_cache_behavior');
+
+      expect(behaviour).toContain('event_type   = "viewer-request"');
+      expect(behaviour).toContain('function_arn = aws_cloudfront_function.redirect.arn');
+      expect(inSite('resource "aws_cloudfront_function" "redirect"')).toContain(
+        'code    = file("${path.module}/code/redirect.js")',
+      );
+    });
+
+    it('bills the cheaper price class, because her readers are in Europe', () => {
+      expect(distribution()).toContain('price_class = "PriceClass_100"');
+    });
+  });
+
+  describe('the addresses that reach it, which closes SITE-1', () => {
+    it('points both names at the distribution, over version four and version six', () => {
+      const record = inSite('resource "aws_route53_record" "site"');
+
+      expect(record).toContain('["A", "AAAA"]');
+      expect(record).toContain(
+        'name                   = aws_cloudfront_distribution.site.domain_name',
+      );
+      expect(record).toContain('zone_id                = "Z2FDTNDATAQYW2"');
+      expect(inSite('resource "aws_cloudfront_distribution" "site"')).toContain(
+        'is_ipv6_enabled     = true',
+      );
+    });
+
+    it('writes them in the zone the registration owns, and declares no zone', () => {
+      expect(inSite('resource "aws_route53_record" "site"')).toContain('zone_id = var.zone_id');
+      expect(siteModule()).not.toContain('resource "aws_route53_zone"');
+    });
+  });
+
+  describe('the root hands the module what it cannot read for itself', () => {
+    const call = (): string => blockBodyOf(website, 'module "site"');
+
+    it('passes the certificate of step 26.3, which exists only once it is issued', () => {
+      expect(call()).toContain('source = "../modules/nextjs-site"');
+      expect(call()).toContain('certificate_arn = module.certificate.certificate_arn');
+    });
+
+    it('passes the zone it looked up and the account the bucket is named after', () => {
+      expect(call()).toContain('zone_id         = data.aws_route53_zone.site.zone_id');
+      expect(call()).toContain('account_id      = var.account_id');
+      expect(variableDefaultOf(website, 'account_id')).toBe(defaultOf('account_id'));
+    });
+
+    it('hands on what a deploy needs to name, and nothing else', () => {
+      for (const output of ['bucket_name', 'function_name', 'distribution_id']) {
+        expect(blockBodyOf(website, `output "${output}"`)).toContain(`module.site.${output}`);
+      }
+    });
+  });
+
+  describe('what the module is not allowed to hold', () => {
+    it.each([
+      'aws_db_instance',
+      'aws_rds_cluster',
+      'aws_elasticache_cluster',
+      'aws_opensearch_domain',
+      'aws_nat_gateway',
+      'aws_lb',
+      'aws_instance',
+    ])('declares no %s, because it would bill while nobody uses Emi', (kind) => {
+      expect(siteModule()).not.toContain(`resource "${kind}"`);
+    });
+  });
+});
