@@ -22,6 +22,16 @@ contracts of myemi.app and the grants the pipeline needs before it can build the
 `npm run check:features` reads this directory one level deep, so a scenario in a subdirectory names
 no contract and maps to no feature.
 
+The tier runs as two projects of one runner. Every scenario outside `website/` runs under the
+preset of the phone, which is the runtime a screen of Emi has. The scenarios in `website/` run in
+node with the transforms `apps/website` uses, because Next.js draws those pages on a server: there
+is no window, no document and nothing of a phone behind a page a woman reads on myemi.app. A page
+drawn beside a browser global the server does not have proves nothing about what reaches her.
+
+So a scenario of the site may render a page with `react-dom/server` and read the words she gets.
+`npm run test:behaviour` runs both projects, and `--selectProjects behaviour` or
+`--selectProjects "behaviour website"` runs one of them.
+
 `docs/features.md` names the website as feature 9, and these scenarios stay here until the site
 exists. A numbered feature file must hold a scenario for each contract of its feature, and no
 `SITE` contract can pass before the certificate, the bucket, the distribution and the pages are
