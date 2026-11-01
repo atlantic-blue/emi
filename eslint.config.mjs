@@ -79,6 +79,14 @@ export default defineConfig([
     },
   },
   {
+    // CloudFront evaluates this artifact as a script and calls the global handler by name, so
+    // nothing in the file refers to it and the rule reads an entry point as dead code.
+    files: ['infrastructure/modules/nextjs-site/code/redirect.js'],
+    rules: {
+      'no-unused-vars': 'off',
+    },
+  },
+  {
     // The tools read their own configuration through CommonJS, so they see the Node globals.
     files: ['**/*.config.js'],
     languageOptions: {

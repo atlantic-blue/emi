@@ -77,3 +77,14 @@ module "certificate" {
   other_names = ["www.${var.domain_name}"]
   zone_id     = data.aws_route53_zone.site.zone_id
 }
+
+module "site" {
+  source = "../modules/nextjs-site"
+
+  project_name    = var.project_name
+  domain_name     = var.domain_name
+  other_names     = ["www.${var.domain_name}"]
+  certificate_arn = module.certificate.certificate_arn
+  zone_id         = data.aws_route53_zone.site.zone_id
+  account_id      = var.account_id
+}
