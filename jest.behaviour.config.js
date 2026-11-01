@@ -6,6 +6,7 @@ const { testTimeout, ...mobile } = require('./apps/mobile/jest.config.js');
 
 const features = resolve(__dirname, 'features');
 const websiteWorkspace = resolve(__dirname, 'apps', 'website');
+const websiteDoubles = resolve(websiteWorkspace, 'test', 'doubles');
 
 /** The same cap as the application tier, on the run and on each project inside it. */
 const cap = {
@@ -59,6 +60,13 @@ const theWebsite = {
   // copy beside the website workspace, which is the version the site ships.
   moduleNameMapper: {
     '^react$': require.resolve('react', { paths: [websiteWorkspace] }),
+    // A stylesheet and the loader that copies the font files are answered by a bundler, and no
+    // runner runs one. The website tier stands in the same two doubles, from the same directory,
+    // and a real build reads both for what they stand in for.
+    '\\.css$': resolve(websiteDoubles, 'stylesheet.ts'),
+    '^next/font/local$': resolve(websiteDoubles, 'nextFontLocal.ts'),
+    // The alias the pages of the site use, which components.json also names.
+    '^@/(.*)$': `${websiteWorkspace}/$1`,
   },
   transform: {
     '^.+\\.[jt]sx?$': [

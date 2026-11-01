@@ -3,6 +3,9 @@
   "compilerOptions": {
     "types": ["jest", "node"],
     "allowImportingTsExtensions": true,
+    "paths": {
+      "@/*": ["../apps/website/*"]
+    },
     "noEmit": true
   },
   "include": ["**/*.ts", "**/*.tsx", "../apps/mobile/nativewind-env.d.ts"]
