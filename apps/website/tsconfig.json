@@ -10,7 +10,11 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
     "jsx": "preserve",
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "types": ["jest", "node"],
     "paths": {
       "@/*": ["./*"]
@@ -23,6 +27,7 @@
     "e2e",
     "lib",
     "test",
+    "tools",
     "next.config.ts",
     "playwright.config.ts",
     "tailwind.config.ts"
