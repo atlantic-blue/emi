@@ -8,10 +8,17 @@ import type { NextConfig } from 'next';
  *
  * `@emi/tokens` ships TypeScript rather than a build, because every other workspace reads it that
  * way, so the site compiles it with its own pages.
+ *
+ * `trailingSlash` keeps the slash the site hands out. Every address of Emi ends in one: the
+ * function at the edge sends the bare root to `/en/`, and `/ru/` and `/es/` are what the language
+ * switcher points at and what a store listing carries. Without this, the framework answers each of
+ * them with a 308 to the form without the slash, so the address a woman follows is never the
+ * address that answers her.
  */
 const config: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
+  trailingSlash: true,
   transpilePackages: ['@emi/tokens'],
 };
 
