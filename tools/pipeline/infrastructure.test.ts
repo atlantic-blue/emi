@@ -1054,6 +1054,30 @@ describe('the site on Lambda behind CloudFront, which is step 26.4', () => {
       expect(permission).toContain('function_url_auth_type = "AWS_IAM"');
     });
 
+    // A function url behind an origin access control is authorised twice, once for the url and
+    // once for the function underneath it. With only the url name granted, every signed request
+    // from the distribution answered 403, pointing at function url authorization.
+    it('is granted both names an invoke through a function url is checked against', () => {
+      const named = [...siteModule().matchAll(/"aws_lambda_permission" "(\w+)"/g)].flatMap(
+        (found) => (found[1] === undefined ? [] : [found[1]]),
+      );
+      const blockOf = (name: string): string =>
+        inSite(`resource "aws_lambda_permission" "${name}"`);
+      const actions = named.map((name) => /action\s+=\s+"([^"]+)"/.exec(blockOf(name))?.[1]);
+
+      expect([...actions].sort()).toEqual(['lambda:InvokeFunction', 'lambda:InvokeFunctionUrl']);
+
+      // Read as values rather than as lines, because the two blocks align their names to
+      // different widths and the rule is about who may call, not about the formatting.
+      const valueOf = (block: string, field: string): string | undefined =>
+        new RegExp(`${field}\\s+=\\s+(\\S+)`).exec(block)?.[1];
+
+      for (const name of named) {
+        expect(valueOf(blockOf(name), 'principal')).toBe('"cloudfront.amazonaws.com"');
+        expect(valueOf(blockOf(name), 'source_arn')).toBe('aws_cloudfront_distribution.site.arn');
+      }
+    });
+
     it('runs on the runtime, the size and the entry point the step names', () => {
       const server = inSite('resource "aws_lambda_function" "server"');
 
