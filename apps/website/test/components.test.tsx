@@ -2,7 +2,7 @@ import { colour, radius, space, typeScale } from '@emi/tokens';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { SiteFooter } from '../components/siteFooter';
-import { SiteHeader, WORDMARK_FILE } from '../components/siteHeader';
+import { SiteHeader } from '../components/siteHeader';
 import { Button, buttonVariants } from '../components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Separator } from '../components/ui/separator';
@@ -129,12 +129,16 @@ describe('the hairline between one part of a page and the next', () => {
 });
 
 describe('the band at the top of every page', () => {
-  it('carries the mark, which this site serves itself, and the way home', () => {
+  it('carries the mark, drawn inside the page, and the way home', () => {
     const drawn = markup(<SiteHeader />);
 
-    expect(drawn).toContain(`src="${WORDMARK_FILE}"`);
-    expect(WORDMARK_FILE.startsWith('/')).toBe(true);
-    expect(drawn).toContain('alt="Emi"');
+    // Drawn in the page rather than asked for as a file, because an element carrying a picture
+    // writes a style on itself and the policy of this site refuses one.
+    expect(drawn).toContain('<svg');
+    expect(drawn).toContain('role="img"');
+    expect(drawn).toContain('aria-label="Emi"');
+    expect(drawn).not.toContain('<img');
+    expect(drawn).not.toContain('style=');
     expect(drawn).toMatch(/<a [^>]*href="\/"/);
   });
 

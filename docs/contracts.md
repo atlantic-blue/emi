@@ -628,9 +628,19 @@ machine. A password, a key or a token written into the repository.
 
 Verified by a test.
 
-Output: every response carries five headers. `Strict-Transport-Security` for two years, with every
-subdomain. A `Content-Security-Policy` that allows the origin of the site and nothing else.
-`X-Content-Type-Options` of nosniff. `X-Frame-Options` of DENY. `Referrer-Policy` of
-strict-origin-when-cross-origin.
+Output: every response carries six headers. `Strict-Transport-Security` for two years, with every
+subdomain. A `Content-Security-Policy`. `X-Content-Type-Options` of nosniff. `X-Frame-Options` of
+DENY. `Referrer-Policy` of strict-origin-when-cross-origin. A `Permissions-Policy` that hands out
+neither the camera, nor the microphone, nor her location.
 
-Errors: a response that is missing one of the five.
+The content policy of a page comes from the function that draws it, and carries a nonce of 128 bits
+made for that one response. The policy names that nonce for a script and for a style, and allows
+nothing else inline, so the scripts Next.js writes into the markup run and a script written in by
+anybody else does not. A nonce is spent when its response is: the next page gets another one. Every
+other response, which is every file from the bucket, carries the policy of the edge: the origin of
+the site, and no frame. The edge sets the other five headers over whatever the origin answered, and
+keeps the content policy the function sent.
+
+Errors: a response that is missing one of the six. A page whose policy carries no nonce, or carries
+the nonce of another response. A policy allowing an inline script on its own account. A style
+written on an element of a page, which no nonce can cover.

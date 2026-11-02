@@ -5,10 +5,14 @@ Feature: What every answer from myemi.app carries
   the page reach this site and no other, to put the page in no frame, to pass her address to
   nobody, and to hand out neither the camera nor the microphone nor her location.
 
-  None of them come from the application. They are added at the edge, after the origin has
-  answered, so nothing a page renders can take them off and nothing a local run can show. A site
-  started on this machine sends none of them, which is why these sentences are read against the
-  real host and nowhere else.
+  Five of them are added at the edge, after the origin has answered, so nothing a page renders can
+  take them off. The content policy is the one exception, and it has to be: a page is drawn with
+  scripts written into its markup, and only the function that draws them can put a secret on them
+  and name the same secret in the policy. So a page carries the policy of the function, and a file
+  from the bucket, which draws nothing and carries no policy of its own, is covered by the edge.
+
+  A site started on this machine has no edge at all, which is why these sentences are read against
+  the real host and nowhere else.
 
   Scenario: every answer she gets carries the headers that keep the promise
     When she asks the live site for "/en/", and follows nothing
@@ -16,3 +20,7 @@ Feature: What every answer from myemi.app carries
     And it lets the page reach this site and nothing else, and puts the page in no frame
     And it refuses a guessed type, and keeps her address off another site
     And it hands out neither the camera, nor the microphone, nor her location
+
+  Scenario: a file the page loads beside it is covered by the edge
+    When she asks the live site for "/emi-wordmark.svg", and follows nothing
+    Then a file it serves from the bucket is covered by the policy of the edge

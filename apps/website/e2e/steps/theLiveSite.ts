@@ -58,12 +58,24 @@ Then(
 Then(
   'it lets the page reach this site and nothing else, and puts the page in no frame',
   ({ cameBack }) => {
-    expect(cameBack.headers['content-security-policy']).toBe(
-      "default-src 'self'; frame-ancestors 'none'",
-    );
+    const policy = cameBack.headers['content-security-policy'] ?? '';
+
+    // A page is drawn by the function, and that function writes a policy carrying a secret of its
+    // own for each answer, so the one on the record here is the shape rather than the string: one
+    // origin, a secret for the scripts of this answer, nothing inline allowed on its own account.
+    expect(policy).toMatch(/^default-src 'self';/);
+    expect(policy).toMatch(/script-src 'self' 'nonce-[A-Za-z0-9+/_-]+={0,2}' 'strict-dynamic'/);
+    expect(policy).not.toContain('unsafe-inline');
+    expect(policy).toContain("frame-ancestors 'none'");
     expect(cameBack.headers['x-frame-options']).toBe('DENY');
   },
 );
+
+Then('a file it serves from the bucket is covered by the policy of the edge', ({ cameBack }) => {
+  expect(cameBack.headers['content-security-policy']).toBe(
+    "default-src 'self'; frame-ancestors 'none'",
+  );
+});
 
 Then('it refuses a guessed type, and keeps her address off another site', ({ cameBack }) => {
   expect(cameBack.headers['x-content-type-options']).toBe('nosniff');

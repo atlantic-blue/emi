@@ -6,7 +6,10 @@
  * of the package it was given, and the package carries its own copy of Next.js and of every chunk
  * the pages need, so a loader inside the test runner would resolve none of it the same way.
  *
- * Takes the directory of the package and the address, and writes the answer to stdout as JSON.
+ * Takes the directory of the package and the address, and writes the answer to stdout as JSON:
+ * the status, every header it set, and the body. A header is kept because the policy a page
+ * answers with is set by the proxy inside this package, so the package is the only place it can
+ * be read.
  */
 
 const [directory, address] = process.argv.slice(2);
@@ -50,6 +53,7 @@ async function ask(): Promise<void> {
   process.stdout.write(
     JSON.stringify({
       statusCode: answer.statusCode,
+      headers: answer.headers ?? {},
       location: answer.headers?.location ?? null,
       body: answer.isBase64Encoded ? Buffer.from(body, 'base64').toString('utf8') : body,
     }),

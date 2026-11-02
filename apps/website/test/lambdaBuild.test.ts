@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 
 import { colour, colourNames, fontFile, fonts } from '@emi/tokens';
+import { getScriptNonceFromHeader } from 'next/dist/server/app-render/get-script-nonce-from-header';
 
 import { SERVED_FACE_VARIABLE } from '../lib/face';
 
@@ -137,7 +138,7 @@ function theWholePackageSomewhereElse(): string {
 function askThePackage(
   unpacked: string,
   address: string,
-): { statusCode: number; location: string | null; body: string } {
+): { statusCode: number; headers: Record<string, string>; location: string | null; body: string } {
   const asked = spawnSync(
     process.execPath,
     [
@@ -155,6 +156,7 @@ function askThePackage(
 
   return JSON.parse(asked.stdout) as {
     statusCode: number;
+    headers: Record<string, string>;
     location: string | null;
     body: string;
   };
@@ -257,6 +259,90 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
           expect(answered.statusCode).toBe(404);
           expect(answered.body).toContain('This page does not exist');
           expect(answered.body).toContain('Go to the Emi home page');
+        } finally {
+          rmSync(unpacked, { force: true, recursive: true });
+        }
+      },
+      longEnoughForACompiler,
+    );
+
+    it(
+      'answers a page with a policy naming a secret, and puts that secret on its scripts',
+      () => {
+        const unpacked = theWholePackageSomewhereElse();
+
+        try {
+          const asked = askThePackage(unpacked, '/en/');
+          const policy = asked.headers['content-security-policy'] ?? '';
+          const secret = getScriptNonceFromHeader(policy) ?? '';
+
+          expect(asked.statusCode).toBe(200);
+          expect(secret).not.toBe('');
+          expect(Buffer.from(secret, 'base64').length).toBeGreaterThanOrEqual(16);
+          expect(policy).toContain(`script-src 'self' 'nonce-${secret}' 'strict-dynamic'`);
+          expect(policy).not.toContain('unsafe-inline');
+
+          const tags = [...asked.body.matchAll(/<script\b[^>]*>/g)].map(([tag]) => tag);
+
+          expect(tags.length).toBeGreaterThan(0);
+          expect(tags.filter((tag) => !tag.includes(`nonce="${secret}"`))).toEqual([]);
+        } finally {
+          rmSync(unpacked, { force: true, recursive: true });
+        }
+      },
+      longEnoughForACompiler,
+    );
+
+    it(
+      'gives the next page a secret of its own, so the scripts of one page are dead in another',
+      () => {
+        const unpacked = theWholePackageSomewhereElse();
+
+        try {
+          const secrets = ['/en/', '/en/'].map((address) => {
+            const asked = askThePackage(unpacked, address);
+
+            return getScriptNonceFromHeader(asked.headers['content-security-policy'] ?? '') ?? '';
+          });
+
+          expect(secrets.filter((secret) => secret === '')).toEqual([]);
+          expect(new Set(secrets).size).toBe(secrets.length);
+        } finally {
+          rmSync(unpacked, { force: true, recursive: true });
+        }
+      },
+      longEnoughForACompiler,
+    );
+
+    it(
+      'answers the page nobody meant to open under that policy too, and writes no style on it',
+      () => {
+        const unpacked = theWholePackageSomewhereElse();
+
+        try {
+          const asked = askThePackage(unpacked, '/nothing/');
+          const policy = asked.headers['content-security-policy'] ?? '';
+
+          expect(asked.statusCode).toBe(404);
+          expect(getScriptNonceFromHeader(policy)).not.toBeUndefined();
+          expect(asked.body).toContain('This page does not exist');
+          expect([...asked.body.matchAll(/style="[^"]*"/g)].map(([found]) => found)).toEqual([]);
+        } finally {
+          rmSync(unpacked, { force: true, recursive: true });
+        }
+      },
+      longEnoughForACompiler,
+    );
+
+    it(
+      'leaves a file of the bucket without one, because the policy of the edge covers those',
+      () => {
+        const unpacked = theWholePackageSomewhereElse();
+
+        try {
+          const asked = askThePackage(unpacked, '/emi-wordmark.svg');
+
+          expect(asked.headers['content-security-policy']).toBeUndefined();
         } finally {
           rmSync(unpacked, { force: true, recursive: true });
         }

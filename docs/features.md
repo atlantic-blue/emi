@@ -219,7 +219,8 @@ The contracts it builds:
   404 with an Emi page.
 - `SITE-4` the pages, rendered by Next.js through OpenNext and drawn from the tokens.
 - `SITE-5` the deploy, which a merge into `main` runs and a pull request never does.
-- `SITE-6` the five headers, on every response.
+- `SITE-6` the six headers, on every response, the content policy of a page carrying a nonce
+  made for that one response.
 
 ## The long term list
 

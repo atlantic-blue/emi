@@ -16,6 +16,15 @@ export interface WhatThePageAsked {
   readonly of: string[];
 }
 
+/**
+ * Every complaint the browser made while the page loaded: a refusal from the content security
+ * policy, an error the page threw, or anything else it wrote to the console as an error. A refused
+ * script leaves the page standing, so this is the only place the refusal appears.
+ */
+export interface WhatTheBrowserRefused {
+  readonly of: string[];
+}
+
 /** The language of the page the scenario opened, for the steps that read it afterwards. */
 export interface WhatSheIsReading {
   language: string;
@@ -51,6 +60,7 @@ export const test = bdd.extend<{
   asked: WhatThePageAsked;
   reading: WhatSheIsReading;
   cameBack: WhatCameBack;
+  complaints: WhatTheBrowserRefused;
 }>({
   answered: async ({}, handTo) => {
     await handTo({ status: null, landedOn: null, moves: 0, movedBy: null });
@@ -69,5 +79,19 @@ export const test = bdd.extend<{
   },
   cameBack: async ({}, handTo) => {
     await handTo({ status: null, headers: {}, landedOn: null });
+  },
+  complaints: async ({ page }, handTo) => {
+    const of: string[] = [];
+
+    page.on('console', (message) => {
+      if (message.type() === 'error') {
+        of.push(message.text());
+      }
+    });
+    page.on('pageerror', (thrown) => {
+      of.push(thrown.message);
+    });
+
+    await handTo({ of });
   },
 });

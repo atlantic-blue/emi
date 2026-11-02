@@ -29,6 +29,7 @@
     "test",
     "tools",
     "next.config.ts",
+    "proxy.ts",
     "playwright.config.ts",
     "tailwind.config.ts"
   ],

@@ -1174,11 +1174,19 @@ describe('the site on Lambda behind CloudFront, which is step 26.4', () => {
       expect(policy()).toContain('value    = "camera=(), microphone=(), geolocation=()"');
     });
 
-    it('is set over whatever a page answered, on every behaviour the site has', () => {
+    it('is set over whatever a page answered, except the policy a page sets for itself', () => {
       const overrides = [...policy().matchAll(/override\s*=\s*(\w+)/g)].map((found) => found[1]);
+      const kept = [...policy().matchAll(/(\w+) \{\s*[^}]*override\s*=\s*false/g)].map(
+        (found) => found[1],
+      );
 
       expect(overrides).toHaveLength(6);
-      expect(overrides.filter((value) => value !== 'true')).toEqual([]);
+      // Five are the edge's to state, and nothing a page says may take them off. The sixth is the
+      // content policy, and the page writes a secret into that one for each response, so the edge
+      // keeps what the page sent and adds its own only where a page sent none, which is a file
+      // from the bucket.
+      expect(overrides.filter((value) => value !== 'true')).toEqual(['false']);
+      expect(kept).toEqual(['content_security_policy']);
       expect(
         times('response_headers_policy_id = aws_cloudfront_response_headers_policy.site.id'),
       ).toBe(2);
