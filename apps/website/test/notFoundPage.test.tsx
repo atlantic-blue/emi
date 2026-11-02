@@ -1,9 +1,8 @@
 import { colour } from '@emi/tokens';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import RootLayout from '../app/layout';
-import NotFound from '../app/not-found';
-import { MADE_BY } from '../components/siteFooter';
+import RootLayout from '../app/[lang]/layout';
+import NotFound from '../app/[lang]/not-found';
 import { WORDMARK_FILE } from '../components/siteHeader';
 import { SERVED_FACE_VARIABLE } from '../lib/face';
 import { whatTheMarkupDraws } from './stylesheet';
@@ -26,7 +25,7 @@ describe('the page behind an address the site does not have', () => {
   it('arrives inside the header, a card and the footer, so it looks like the rest of the site', () => {
     expect(page()).toContain('<header');
     expect(page()).toContain('<footer');
-    expect(page()).toContain(MADE_BY);
+    expect(page()).toContain('Emi is made by Atlantic Blue Solutions Limited.');
     expect(page()).toContain(WORDMARK_FILE);
   });
 
@@ -40,24 +39,27 @@ describe('the page behind an address the site does not have', () => {
 });
 
 describe('the document every page arrives in', () => {
-  const document = (): string =>
-    markupOf(
-      <RootLayout>
-        <NotFound />
-      </RootLayout>,
-    );
+  const documentIn = async (lang: string): Promise<string> =>
+    markupOf(await RootLayout({ children: <NotFound />, params: Promise.resolve({ lang }) }));
 
-  it('declares the language, so a screen reader says the words the right way', () => {
-    expect(document()).toMatch(/^<html lang="en">/);
+  it('declares the language, so a screen reader says the words the right way', async () => {
+    expect(await documentIn('ru')).toMatch(/^<html lang="ru">/);
+    expect(await documentIn('es')).toMatch(/^<html lang="es">/);
   });
 
-  it('puts the page inside the body', () => {
-    expect(document()).toMatch(/<body class="[^"]+">/);
-    expect(document()).toContain('This page does not exist');
+  it('declares the fallback where the address names a language the site does not serve', async () => {
+    expect(await documentIn('de')).toMatch(/^<html lang="en">/);
+  });
+
+  it('puts the page inside the body', async () => {
+    const document = await documentIn('en');
+
+    expect(document).toMatch(/<body class="[^"]+">/);
+    expect(document).toContain('This page does not exist');
   });
 
   it('sets the face the site serves and the paper it draws on, on the body', async () => {
-    const drawn = document();
+    const drawn = await documentIn('en');
     const painted = Object.values(await whatTheMarkupDraws(drawn)).join(' ');
 
     expect(painted).toContain(`background-color: ${colour.ground}`);

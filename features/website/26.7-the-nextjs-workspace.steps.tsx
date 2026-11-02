@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import RootLayout from '../../apps/website/app/layout';
-import NotFound from '../../apps/website/app/not-found';
+import RootLayout from '../../apps/website/app/[lang]/layout';
+import NotFound from '../../apps/website/app/[lang]/not-found';
 
 const feature = loadFeature(join(__dirname, '26.7-the-nextjs-workspace.feature'));
 
@@ -13,11 +13,9 @@ const feature = loadFeature(join(__dirname, '26.7-the-nextjs-workspace.feature')
  * scenario composes them the same way. Reading the page on its own would read half of what she is
  * sent: the words, and not the document they arrive in.
  */
-function whatTheSiteSends(): string {
+async function whatTheSiteSends(): Promise<string> {
   return renderToStaticMarkup(
-    <RootLayout>
-      <NotFound />
-    </RootLayout>,
+    await RootLayout({ children: <NotFound />, params: Promise.resolve({ lang: 'en' }) }),
   );
 }
 
@@ -32,8 +30,8 @@ defineFeature(feature, (test) => {
       expect(address).not.toBe('/');
     });
 
-    when('the site answers her', () => {
-      page = whatTheSiteSends();
+    when('the site answers her', async () => {
+      page = await whatTheSiteSends();
     });
 
     then('she reads that the page does not exist', () => {

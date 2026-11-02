@@ -15,8 +15,8 @@ import { defineFeature, loadFeature } from 'jest-cucumber';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { servedFont } from '../../apps/website/app/fonts';
-import RootLayout from '../../apps/website/app/layout';
-import NotFound from '../../apps/website/app/not-found';
+import RootLayout from '../../apps/website/app/[lang]/layout';
+import NotFound from '../../apps/website/app/[lang]/not-found';
 import { SERVED_FACE_VARIABLE } from '../../apps/website/lib/face';
 import { fontLoaderCalls } from '../../apps/website/test/doubles/nextFontLocal';
 import { whatTheMarkupDraws } from '../../apps/website/test/stylesheet';
@@ -65,11 +65,9 @@ function everyFileAPageIsBuiltFrom(): string[] {
  * Next.js puts the page it chose inside the root layout and answers with one document, so the
  * scenario composes them the same way and reads the whole document she is sent.
  */
-function whatTheSiteSends(): string {
+async function whatTheSiteSends(): Promise<string> {
   return renderToStaticMarkup(
-    <RootLayout>
-      <NotFound />
-    </RootLayout>,
+    await RootLayout({ children: <NotFound />, params: Promise.resolve({ lang: 'en' }) }),
   );
 }
 
@@ -87,7 +85,7 @@ defineFeature(feature, (test) => {
     });
 
     when('the site draws her page', async () => {
-      page = whatTheSiteSends();
+      page = await whatTheSiteSends();
       painted = await whatTheMarkupDraws(page);
       everyDeclaration = Object.values(painted).join(' ');
     });
