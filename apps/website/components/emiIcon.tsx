@@ -17,12 +17,28 @@ import { colour } from '@emi/tokens';
  * One picture with one name, so a reader whose software speaks the page aloud hears the product
  * named once rather than hearing three shapes described.
  *
+ * The home page draws the mark a second time, beside the name of the person building Emi, and the
+ * board gives that copy no name at all. There it is decoration standing next to the words it would
+ * otherwise repeat, so it is drawn with nothing for a reader's software to read out.
+ *
  * No namespace is declared on it. A browser reading this element inside a page already knows what
  * it is, and the site may name no other company, not even as the address of a specification.
  */
-export function EmiIcon({ className }: { className?: string }) {
+export function EmiIcon({
+  className,
+  decorative = false,
+}: {
+  className?: string;
+  decorative?: boolean;
+}) {
   return (
-    <svg aria-label="Emi" className={className} role="img" viewBox="0 0 1000 1000">
+    <svg
+      aria-hidden={decorative ? true : undefined}
+      aria-label={decorative ? undefined : 'Emi'}
+      className={className}
+      role={decorative ? undefined : 'img'}
+      viewBox="0 0 1000 1000"
+    >
       <rect fill={colour.accent} height="1000" width="1000" />
       <g transform="translate(0.3295 0.0856) scale(9.9934)">
         <path

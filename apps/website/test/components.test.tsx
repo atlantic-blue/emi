@@ -188,7 +188,7 @@ describe('the band at the top of every page', () => {
       const painted = Object.values(await whatTheMarkupDraws(header())).join(' ');
 
       expect(painted).toContain(websiteColour.siteGround);
-      expect(painted).toContain(websiteColour.siteLine);
+      expect(painted).toContain(websiteColour.siteHeaderLine);
       expect(painted).toContain(`color: ${websiteColour.siteText}`);
       expect(painted).toContain(`padding-inline: ${space.spaceXl}px`);
     },

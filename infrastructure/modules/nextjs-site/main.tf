@@ -51,6 +51,7 @@ locals {
     "/robots.txt",
     "/sitemap.xml",
     "/emi-icon.svg",
+    "/the-home-screen.png",
   ]
 }
 

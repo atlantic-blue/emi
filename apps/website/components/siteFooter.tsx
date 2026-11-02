@@ -3,6 +3,13 @@ import { LanguageSwitcher } from '@/components/languageSwitcher';
 import { LANGUAGES_ANCHOR } from '@/components/siteHeader';
 import { NO_PAGE_YET } from '@/lib/addresses';
 
+/**
+ * What every link in the band at the foot carries at the width of a phone, from the board's own
+ * styles: a box forty four pixels tall, which is what a thumb can hit. Wider than a phone the
+ * links sit in a column and the words are target enough.
+ */
+export const aThumbCanHitIt = 'phone:flex phone:min-h-[44px] phone:items-center';
+
 interface FooterLink {
   readonly word: SiteWordKey;
   /** A path under the language, or nothing when no page exists for it anywhere yet. */
@@ -63,6 +70,9 @@ export const footerGroups: readonly FooterGroup[] = [
  *
  * Three links have no page anywhere yet, in or out of this site, so they point at the home page
  * rather than at a guess at an address somebody else will give them.
+ *
+ * The legal line at the end is the one place the board underlines a link, and it is where a reader
+ * looks for the terms she is agreeing to. Every other link on the site carries no decoration.
  */
 export function SiteFooter({ language = fallbackLanguage }: { language?: Language }) {
   const words = wordsIn(language);
@@ -72,9 +82,7 @@ export function SiteFooter({ language = fallbackLanguage }: { language?: Languag
   return (
     <footer className="w-full bg-siteFooterGround font-text text-body-sm text-siteQuietText">
       <div className="mx-auto flex max-w-[1024px] flex-col gap-spaceLg px-spaceXl pt-spaceXl pb-[32px]">
-        <p className="border-hairline border-b border-siteLine pb-spaceLg">
-          {words.footerDisclaimer}
-        </p>
+        <p className="border-b-hairline border-b-siteLine pb-spaceLg">{words.footerDisclaimer}</p>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-spaceXl">
           {footerGroups.map((group) => (
             <nav
@@ -85,7 +93,7 @@ export function SiteFooter({ language = fallbackLanguage }: { language?: Languag
               <span className="font-semibold text-siteText">{words[group.title]}</span>
               {group.links.map((link) => (
                 <a
-                  className="text-siteQuietText no-underline"
+                  className={`text-siteQuietText no-underline ${aThumbCanHitIt}`}
                   href={addressOf(link)}
                   key={link.word}
                 >
@@ -95,13 +103,19 @@ export function SiteFooter({ language = fallbackLanguage }: { language?: Languag
             </nav>
           ))}
         </div>
-        <div className="flex flex-wrap justify-between gap-x-spaceXl gap-y-spaceSm border-hairline border-t border-siteLine pt-spaceLg">
+        <div className="flex flex-wrap justify-between gap-x-spaceXl gap-y-spaceSm border-t-hairline border-t-siteLine pt-spaceLg">
           <span>{words.footerCopyright}</span>
           <span className="flex flex-wrap gap-x-spaceLg gap-y-spaceMd" id={LANGUAGES_ANCHOR}>
-            <a className="text-siteQuietText no-underline" href={`/${language}/privacy-policy/`}>
+            <a
+              className={`text-siteQuietText underline ${aThumbCanHitIt}`}
+              href={`/${language}/privacy-policy/`}
+            >
               {words.footerPrivacyPolicy}
             </a>
-            <a className="text-siteQuietText no-underline" href={`/${language}/terms/`}>
+            <a
+              className={`text-siteQuietText underline ${aThumbCanHitIt}`}
+              href={`/${language}/terms/`}
+            >
               {words.footerTerms}
             </a>
             <LanguageSwitcher language={language} />

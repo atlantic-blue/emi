@@ -49,7 +49,7 @@ export function SiteHeader({ language = fallbackLanguage }: { language?: Languag
   const under = (path: string): string => `/${language}/${path}`;
 
   return (
-    <header className="w-full border-hairline border-b border-siteLine/60 bg-siteGround/85 font-text text-siteText">
+    <header className="w-full border-b-hairline border-b-siteHeaderLine bg-siteGround/85 font-text text-siteText">
       <div className="mx-auto flex min-h-[48px] max-w-[1024px] flex-wrap items-center justify-between gap-x-spaceXl px-spaceXl">
         <a
           aria-label={words.headerHomeLabel}

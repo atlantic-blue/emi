@@ -19,7 +19,9 @@ export type WebsiteColourName =
   | 'siteBlack'
   | 'siteFooterGround'
   | 'siteLine'
+  | 'siteHeaderLine'
   | 'siteTintLine'
+  | 'siteShadow'
   | 'siteText'
   | 'siteQuietText'
   | 'siteAccent'
@@ -59,7 +61,9 @@ const ALL: readonly WebsiteColourName[] = [
   'siteBlack',
   'siteFooterGround',
   'siteLine',
+  'siteHeaderLine',
   'siteTintLine',
+  'siteShadow',
   'siteText',
   'siteQuietText',
   'siteAccent',
@@ -119,15 +123,36 @@ export const websiteColours: Readonly<Record<WebsiteColourName, WebsiteColourTok
     roles: ['ground'],
     textOn: [],
   },
-  /** The hairline under the band at the top, and the two rules inside the band at the foot. */
+  /** The two rules inside the band at the foot of a page. */
   siteLine: {
     value: '#DCC1B9',
+    roles: ['line'],
+    textOn: [],
+  },
+  /**
+   * The rule under the band at the top, which the board paints at six tenths of the rule in the
+   * band at the foot. It is a value of its own rather than the one above at six tenths, because
+   * the band it sits under is itself part transparent and the two are read together.
+   */
+  siteHeaderLine: {
+    value: 'rgba(220, 193, 185, 0.6)',
     roles: ['line'],
     textOn: [],
   },
   /** The rule between two rows of a card, which is quieter than a rule between two bands. */
   siteTintLine: {
     value: '#EFE6E3',
+    roles: ['line'],
+    textOn: [],
+  },
+  /**
+   * What the screenshot of the application casts on the page behind it. It is the colour the words
+   * are set in, carried at a quarter, and it is written out rather than asked for as a quarter of
+   * that colour because a browser mixes those two in a space that gives a slightly different value
+   * back.
+   */
+  siteShadow: {
+    value: 'rgba(31, 27, 25, 0.25)',
     roles: ['line'],
     textOn: [],
   },
