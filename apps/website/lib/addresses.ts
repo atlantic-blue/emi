@@ -8,6 +8,13 @@
  */
 export const NO_PAGE_YET = '/';
 
+/**
+ * This site, written out whole. Every address a page gives a browser is a path, because a path is
+ * the one form that cannot send her to another host by mistake. A chat application is the
+ * exception: it reads the tags of a page on its own server, where a path beginning with a slash
+ * points at the chat company instead, so the tags it reads name the host and the path together.
+ */
 export const SITE_ORIGIN = 'https://myemi.app';
 
+/** The picture a chat draws beside the words. One picture, in every language. */
 export const SHARE_PREVIEW = '/share-preview.png';

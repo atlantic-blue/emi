@@ -195,7 +195,13 @@ defineFeature(feature, (test) => {
 
       // The browser reads the tags off the document the server really drew, and asks the site for
       // the picture, so the deploy proves the live host and not only this checkout.
-      expect(theSteps).toContain("content('og:image')");
+      for (const tag of ['og:title', 'og:description', 'og:locale', 'og:url', 'og:image']) {
+        expect({ tag, read: theSteps.includes(`'${tag}'`) }).toEqual({ tag, read: true });
+      }
+
+      expect(theSteps).toContain("'og:image:width'");
+      expect(theSteps).toContain("'og:image:height'");
+      expect(theSteps).toContain("'twitter:card'");
       expect(theSteps).toContain('request.get(');
       expect(theSteps).toContain('status()).toBe(200)');
     });

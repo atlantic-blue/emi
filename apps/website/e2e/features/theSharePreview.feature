@@ -22,7 +22,7 @@ Feature: What a chat draws when she sends somebody the address
     And the card is the kind a chat draws large
 
     Examples:
-      | address | title                             | locale |
-      | /en/    | Emi: understand your body, safely | en_GB  |
-      | /ru/    | Emi: понимайте своё тело бережно  | ru_RU  |
-      | /es/    | Emi: entiende tu cuerpo, con calma | es_ES |
+      | address | title | locale |
+      | /en/ | Emi: understand your body, safely | en_GB |
+      | /ru/ | Emi: понимайте своё тело бережно | ru_RU |
+      | /es/ | Emi: entiende tu cuerpo, con calma | es_ES |
