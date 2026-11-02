@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { websiteColour } from '@emi/tokens';
 import { renderToStaticMarkup } from 'react-dom/server';
 
@@ -151,14 +154,41 @@ describe('the page a woman meets Emi on', () => {
     },
   );
 
-  it('leaves no hole of the board unmarked, so a reader can tell nothing was promised', async () => {
-    const page = await pageIn('en');
-    const holes = [...page.matchAll(/\[[A-Z][^\]]*\]/g)].map(([found]) => found);
+  /**
+   * The board marks the text nobody has written yet in capitals inside square brackets, so a
+   * reader can tell a hole from a promise. The page is held to the board's own set of them: a hole
+   * the board does not leave is a hole somebody added, and a hole the board leaves and the page
+   * drops is a sentence that reads as finished while it is not.
+   */
+  it('leaves the holes the board leaves, and no others', async () => {
+    const bracketed = (text: string): string[] =>
+      [...new Set([...text.matchAll(/\[[A-Z][^\]]*\]/g)].map(([found]) => found))].sort();
 
-    expect(holes.length).toBeGreaterThan(0);
+    const board = readFileSync(
+      join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'docs',
+        'design',
+        'website',
+        'home-v2',
+        'render',
+        'MainV2.html',
+      ),
+      'utf8',
+    );
 
-    for (const hole of holes) {
-      expect(thePlaceholders.some((waiting) => waiting.includes(hole))).toBe(true);
+    const onTheBoard = bracketed(board);
+
+    expect(onTheBoard.length).toBeGreaterThan(0);
+    expect(bracketed(await pageIn('en'))).toEqual(onTheBoard);
+
+    // Each of the three the board leaves standing on its own is held in one place, away from the
+    // catalogues, because a hole is not a word and reads the same in every language.
+    for (const waiting of thePlaceholders) {
+      expect(onTheBoard).toContain(waiting);
     }
   });
 

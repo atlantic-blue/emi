@@ -402,8 +402,19 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
 
       expect(served).toHaveLength(cuts.length);
 
+      // Each rule names the format of the file it serves, read off the token package rather than
+      // written out, because the board draws a heading from a web font and the other two roles
+      // from the files the canvas itself holds.
+      const formats = { ttf: 'truetype', woff2: 'woff2' } as const;
+
+      expect([...served].sort()).toHaveLength(cuts.length);
+
       for (const rule of served) {
-        expect(rule).toContain('format("truetype")');
+        const named = Object.values(formats).filter((format) =>
+          rule.includes(`format("${format}")`),
+        );
+
+        expect(named).toHaveLength(1);
         expect(rule).toMatch(/url\((?!https?:|\/\/)[^)]+\)/);
       }
 
@@ -412,10 +423,13 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
         // hyphen of its own as an underscore, so the cut is read by the part of the name the
         // board chose.
         const named = cut.name.replace('-', '_');
+        const owned = served.filter((rule) => rule.includes(named));
 
-        expect(servedFiles().some((file) => file.includes(named) && file.endsWith('.ttf'))).toBe(
-          true,
-        );
+        expect(owned).toHaveLength(1);
+        expect(owned[0]).toContain(`format("${formats[cut.format]}")`);
+        expect(
+          servedFiles().some((file) => file.includes(named) && file.endsWith(`.${cut.format}`)),
+        ).toBe(true);
       }
     });
 

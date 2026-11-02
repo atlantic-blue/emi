@@ -85,21 +85,6 @@ export const russian: SiteWords = {
   carouselPause: 'Пауза',
   carouselPlay: 'Пуск',
 
-  // The band that the board the operator drew last took off the page. Still here so the
-  // page above compiles while the tests of this step go red.
-  priceEyebrow: 'ОДНА ЦЕНА',
-  priceHeadline: '29,99 фунта в месяц. Первый месяц бесплатно.',
-  priceLine: 'Платите так, как вам удобно.',
-  priceAppStoreNote: 'Месяц бесплатно, затем каждый месяц. Отменить можно в настройках Apple.',
-  priceCardTitle: 'Картой, на этом сайте',
-  priceCardNote: 'Оплатите здесь, затем войдите на iPhone.',
-  priceStarsTitle: 'Звёзды Telegram',
-  priceStarsNote: 'Оплатите в боте Emi, затем войдите через Telegram.',
-  noteBody:
-    'У меня две дочери. Я создаю Emi, чтобы у них было спокойное место, где можно понять своё тело: точные сведения, знания о том, что до сих пор под запретом, и сообщество, где можно спросить без осуждения, с юных лет. И попутно помочь всем остальным, кому нужно то же самое.',
-  founderName: 'Julian Tellez',
-  founderRole: 'Основатель Emi',
-
   privacyHeadline: 'Ваши данные всегда зашифрованы.',
   privacyLink: 'Как Emi оберегает ваши данные ›',
 

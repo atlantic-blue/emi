@@ -8,7 +8,10 @@ import {
   letterSpacingOf,
   websiteColour,
   websiteFace,
+  websiteFaceNames,
+  websiteFaceStack,
   websitePhoneWidth,
+  websiteTabletWidth,
 } from '@emi/tokens';
 
 import { SERVED_FACE_VARIABLES } from './lib/face';
@@ -68,31 +71,22 @@ function asAFamily(name: string): string {
 }
 
 /**
- * The three families of the approved board, each behind the custom property the font loader built
- * from the files the site serves. The family's own name follows it, so a reader whose browser
- * already holds the face reads the same letters before the file arrives, and the board's own
- * fallbacks follow that.
+ * The three families of the approved board, each in the board's own order, with the custom property
+ * the font loader built set immediately in front of the family the site serves. A reader whose
+ * browser already holds that face reads the same letters before the file arrives, and a reader
+ * whose machine holds one of the faces the board names ahead of it reads that one, which is what
+ * the board does on the same machine.
  */
-const families = {
-  display: [
-    `var(${SERVED_FACE_VARIABLES.display})`,
-    asAFamily(websiteFace.display),
-    'Georgia',
-    'serif',
-  ],
-  text: [
-    `var(${SERVED_FACE_VARIABLES.text})`,
-    asAFamily(websiteFace.text),
-    'system-ui',
-    'sans-serif',
-  ],
-  data: [
-    `var(${SERVED_FACE_VARIABLES.data})`,
-    asAFamily(websiteFace.data),
-    'ui-monospace',
-    'monospace',
-  ],
-};
+const families = Object.fromEntries(
+  websiteFaceNames.map((role) => [
+    role,
+    websiteFaceStack[role].flatMap((family) =>
+      family === websiteFace[role]
+        ? [`var(${SERVED_FACE_VARIABLES[role]})`, asAFamily(family)]
+        : [asAFamily(family)],
+    ),
+  ]),
+);
 
 /**
  * The theme and nothing else. Which directories Tailwind reads for the classes it must write is
@@ -113,9 +107,16 @@ const config = {
     spacing: { ...fromTokens(space, inPixels), ...fromTokens(stroke, inPixels) },
     borderRadius: fromTokens(radius, inPixels),
     borderWidth: fromTokens(stroke, inPixels),
-    // The one width the board changes the shape of a band at. It extends the breakpoints rather
-    // than replacing them, so the ones Tailwind ships still draw.
-    extend: { screens: { phone: { max: inPixels(websitePhoneWidth) } } },
+    // The two widths the board changes the shape of a band at. They extend the breakpoints rather
+    // than replacing them, so the ones Tailwind ships still draw. The wider one is written first,
+    // because Tailwind writes these rules in the order they are read here and the narrower width
+    // has to be the one that wins where both of them match.
+    extend: {
+      screens: {
+        tablet: { max: inPixels(websiteTabletWidth) },
+        phone: { max: inPixels(websitePhoneWidth) },
+      },
+    },
   },
 } as const;
 

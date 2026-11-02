@@ -78,21 +78,6 @@ export const spanish: SiteWords = {
   carouselPause: 'Pausa',
   carouselPlay: 'Reanudar',
 
-  // The band that the board the operator drew last took off the page. Still here so the
-  // page above compiles while the tests of this step go red.
-  priceEyebrow: 'UN PRECIO',
-  priceHeadline: '29,99 libras al mes. El primer mes es gratis.',
-  priceLine: 'Paga como mejor te vaya.',
-  priceAppStoreNote: 'Un mes gratis, después cada mes. Cancela en los ajustes de Apple.',
-  priceCardTitle: 'Tarjeta, en este sitio',
-  priceCardNote: 'Paga aquí, después inicia sesión en tu iPhone.',
-  priceStarsTitle: 'Estrellas de Telegram',
-  priceStarsNote: 'Paga en el bot de Emi, después entra con Telegram.',
-  noteBody:
-    'Tengo dos hijas. Estoy creando Emi para que tengan un lugar tranquilo donde entender su cuerpo: información precisa, educación sobre los temas que siguen siendo tabú, y una comunidad donde preguntar sin juicios, desde pequeñas. Y por el camino, ayudar a todas las demás personas que necesitan lo mismo.',
-  founderName: 'Julian Tellez',
-  founderRole: 'Fundador de Emi',
-
   privacyHeadline: 'Tus datos están siempre cifrados.',
   privacyLink: 'Cómo Emi cuida tus datos ›',
 

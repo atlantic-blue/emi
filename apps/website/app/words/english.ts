@@ -108,22 +108,6 @@ export const english = {
   carouselPlay: 'Play',
 
   // The one promise the whole product rests on.
-
-  // The band that the board the operator drew last took off the page. Still here so the
-  // page above compiles while the tests of this step go red.
-  priceEyebrow: 'ONE PRICE',
-  priceHeadline: '£29.99 a month. The first month is free.',
-  priceLine: 'Pay the way that suits you.',
-  priceAppStoreNote: 'One month free, then monthly. Cancel in your Apple settings.',
-  priceCardTitle: 'Card, on this site',
-  priceCardNote: 'Pay here, then sign in on your iPhone.',
-  priceStarsTitle: 'Telegram Stars',
-  priceStarsNote: 'Pay in the Emi bot, then log in with Telegram.',
-  noteBody:
-    'I have two daughters. I am building Emi so they have a safe place to understand their bodies: accurate information, education on the subjects that are still taboo, and a community to ask without judgement, from a young age. And along the way, to help everyone else who needs the same.',
-  founderName: 'Julian Tellez',
-  founderRole: 'Founder of Emi',
-
   privacyHeadline: 'Your data is always encrypted.',
   privacyLink: 'How Emi protects your data ›',
 
