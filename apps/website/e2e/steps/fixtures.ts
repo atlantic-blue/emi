@@ -33,6 +33,35 @@ export interface WhatSheIsReading {
 }
 
 /**
+ * What her software found on the page it read: every element a rule refused, the floors the rules
+ * really held while they read, and every press she can see with the size of its box.
+ *
+ * A refusal is kept as a sentence rather than as a structure, because the only reader of it is a
+ * person looking at a failed run, and that person needs the rule, the element and the amount.
+ */
+export interface WhatHerSoftwareFound {
+  readonly refused: string[];
+  floors: TheFloorsTheRulesHeld | null;
+  readonly presses: APressSheCanSee[];
+}
+
+/** The numbers the rules were holding the page to, read out of the reader's own settings. */
+export interface TheFloorsTheRulesHeld {
+  readonly aWord: number;
+  readonly aLargeWord: number;
+  readonly whereLargeStarts: number;
+  readonly aPress: number;
+  readonly spaceAroundAPress: number;
+}
+
+/** One press on the page, as her thumb meets it: what it is called, and how big its box is. */
+export interface APressSheCanSee {
+  readonly called: string;
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
  * The two pictures the pixel comparison holds against each other: the design the operator approved,
  * and the page the site serves. Decoded, because what the comparison reads is pixels and not bytes.
  *
@@ -75,6 +104,7 @@ export const test = bdd.extend<{
   reading: WhatSheIsReading;
   cameBack: WhatCameBack;
   complaints: WhatTheBrowserRefused;
+  found: WhatHerSoftwareFound;
   looking: WhatSheIsLookingAt;
 }>({
   answered: async ({}, handTo) => {
@@ -94,6 +124,9 @@ export const test = bdd.extend<{
   },
   looking: async ({}, handTo) => {
     await handTo({ atTheDesign: null, atThePage: null });
+  },
+  found: async ({}, handTo) => {
+    await handTo({ refused: [], floors: null, presses: [] });
   },
   cameBack: async ({}, handTo) => {
     await handTo({ status: null, headers: {}, landedOn: null });

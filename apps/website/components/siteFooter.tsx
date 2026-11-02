@@ -4,11 +4,16 @@ import { LANGUAGES_ANCHOR } from '@/components/siteHeader';
 import { NO_PAGE_YET } from '@/lib/addresses';
 
 /**
- * What every link in the band at the foot carries at the width of a phone, from the board's own
- * styles: a box forty four pixels tall, which is what a thumb can hit. Wider than a phone the
- * links sit in a column and the words are target enough.
+ * What every link in the band at the foot carries at the width of a phone: a box forty four pixels
+ * tall, and six pixels of hit area on each side of the words. Wider than a phone a pointer does the
+ * pressing and the words are target enough.
+ *
+ * The six pixels are padding that an equal negative margin pays for, so the box she presses grows
+ * and nothing she looks at moves. The narrowest link of the band is Terms in English, at forty
+ * pixels, and twelve pixels of hit area carries it past the floor in every language.
  */
-export const aThumbCanHitIt = 'phone:flex phone:min-h-[44px] phone:items-center';
+export const aThumbCanHitIt =
+  'phone:-mx-[6px] phone:flex phone:min-h-[44px] phone:items-center phone:px-[6px]';
 
 interface FooterLink {
   readonly word: SiteWordKey;
