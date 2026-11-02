@@ -161,3 +161,21 @@ export function icoEntries(bytes: Uint8Array): IcoEntry[] {
 
   return entries;
 }
+
+/** One square as a document names it to a browser, in the shape Next.js writes a link tag from. */
+export interface IconLink {
+  readonly url: string;
+  readonly sizes: string;
+  readonly type: string;
+}
+
+/**
+ * What the document tells a browser, for one kind of link. A browser reads the sizes off the page
+ * it has just opened and then asks for the one it is about to draw, so this list and the folder
+ * are the same list or she gets a hole.
+ */
+export function iconLinks(declaration: Declaration): IconLink[] {
+  return iconFiles
+    .filter((file) => file.declaration === declaration)
+    .map((file) => ({ url: addressOf(file), sizes: sizesOf(file), type: mediaTypeOf(file) }));
+}

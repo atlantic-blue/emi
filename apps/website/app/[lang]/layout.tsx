@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { fallbackLanguage, isLanguage, wordsIn } from '@/app/words';
 import { SiteFooter } from '@/components/siteFooter';
 import { SiteHeader } from '@/components/siteHeader';
+import { iconLinks } from '@/tools/theIcons';
 
 import { servedFonts } from '../fonts';
 import '../globals.css';
@@ -19,8 +20,17 @@ async function languageOf({ params }: WhichLanguage) {
   return isLanguage(lang) ? lang : fallbackLanguage;
 }
 
+/**
+ * The squares come from one list, so a size added to that list reaches her browser without
+ * anybody editing this file. They do not change with the language: the words of a page are
+ * translated and the mark is the same mark everywhere.
+ */
 export async function generateMetadata(asked: WhichLanguage): Promise<Metadata> {
-  return { title: 'Emi', description: wordsIn(await languageOf(asked)).pageDescription };
+  return {
+    title: 'Emi',
+    description: wordsIn(await languageOf(asked)).pageDescription,
+    icons: { icon: iconLinks('icon'), apple: iconLinks('apple') },
+  };
 }
 
 /**
