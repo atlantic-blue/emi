@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import RootLayout from '../app/[lang]/layout';
 import NotFound from '../app/[lang]/not-found';
 import HomePage from '../app/[lang]/page';
 import { type Language, languages } from '../app/words';
@@ -21,16 +23,24 @@ function stylesWrittenInto(markup: string): string[] {
   ];
 }
 
+/**
+ * The whole document a browser is sent, because a style written anywhere in it is refused, and the
+ * band at the top and the band at the foot are part of every one of them.
+ */
+async function documentAround(children: ReactNode, lang: string): Promise<string> {
+  return renderToStaticMarkup(await RootLayout({ children, params: Promise.resolve({ lang }) }));
+}
+
 const homePageIn = async (language: Language): Promise<string> =>
-  renderToStaticMarkup(await HomePage({ params: Promise.resolve({ lang: language }) }));
+  documentAround(await HomePage({ params: Promise.resolve({ lang: language }) }), language);
 
 describe('no page of the site writes a style the policy would refuse', () => {
   it.each(languages)('the page a woman meets Emi on, in %s', async (language) => {
     expect(stylesWrittenInto(await homePageIn(language))).toEqual([]);
   });
 
-  it('the page behind an address the site does not have', () => {
-    expect(stylesWrittenInto(renderToStaticMarkup(<NotFound />))).toEqual([]);
+  it('the page behind an address the site does not have', async () => {
+    expect(stylesWrittenInto(await documentAround(<NotFound />, 'en'))).toEqual([]);
   });
 
   it('reads a style where one is written, so a page that grows one fails this', () => {
