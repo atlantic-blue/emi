@@ -19,7 +19,7 @@ export const russian: SiteWords = {
   heroHeadline: 'Понимайте своё тело бережно.',
   heroLine:
     'Emi начинает с вашего цикла: прогноз по вашим собственным данным и то, насколько он точен. Затем точные знания и сообщество, где можно спросить о том, о чём говорить не принято. Ваши данные всегда зашифрованы.',
-  heroPriceLine: 'Месяц бесплатно, затем 29,99 фунта в месяц.',
+  heroPriceLine: 'Первый месяц бесплатно.',
   heroCancel: 'Отменить можно в любой момент.',
   ringLabel: 'Кольцо цикла, день {day} из примерно 31, {phase}.',
   ringPeriod: 'МЕСЯЧНЫЕ',
@@ -63,15 +63,30 @@ export const russian: SiteWords = {
   parentsLine:
     'Точные сведения, которыми можно поделиться с дочерью, о том, о чём до сих пор трудно говорить. Учитесь вместе, там, где спокойно.',
 
-  noteEyebrow: 'ПОЧЕМУ Я СОЗДАЮ EMI',
-  noteBody:
+  noteEyebrow: 'ПОЧЕМУ МЫ СОЗДАЁМ EMI',
+  founderControlsLabel: 'управление рассказами основателей',
+  founderPrevious: 'Предыдущий основатель',
+  founderNext: 'Следующий основатель',
+  founderIuliiaRole: 'Соосновательница Emi, ведущая сообщества Emi',
+  founderJulianRole: 'Сооснователь Emi',
+  founderJulianNote:
     'У меня две дочери. Я создаю Emi, чтобы у них было спокойное место, где можно понять своё тело: точные сведения, знания о том, что до сих пор под запретом, и сообщество, где можно спросить без осуждения, с юных лет. И попутно помочь всем остальным, кому нужно то же самое.',
-  founderName: 'Julian Tellez',
-  founderRole: 'Основатель Emi',
 
-  privacyHeadline: 'Ваши данные всегда зашифрованы.',
-  privacyLink: 'Как Emi оберегает ваши данные ›',
+  reviewsEyebrow: 'ОТЗЫВЫ',
+  reviewsHeadline: 'Что люди говорят об Emi.',
+  reviewsRating: '[RATING] в App Store, из [COUNT] оценок',
+  reviewControlsLabel: 'управление отзывами',
+  reviewPrevious: 'Предыдущий отзыв',
+  reviewNext: 'Следующий отзыв',
+  reviewFromTheStore: 'Отзыв в App Store',
+  reviewFromTheCommunity: 'Участница сообщества Emi',
+  reviewFromTheBeta: 'Тестировщица в TestFlight',
 
+  carouselPause: 'Пауза',
+  carouselPlay: 'Пуск',
+
+  // The band that the board the operator drew last took off the page. Still here so the
+  // page above compiles while the tests of this step go red.
   priceEyebrow: 'ОДНА ЦЕНА',
   priceHeadline: '29,99 фунта в месяц. Первый месяц бесплатно.',
   priceLine: 'Платите так, как вам удобно.',
@@ -80,6 +95,13 @@ export const russian: SiteWords = {
   priceCardNote: 'Оплатите здесь, затем войдите на iPhone.',
   priceStarsTitle: 'Звёзды Telegram',
   priceStarsNote: 'Оплатите в боте Emi, затем войдите через Telegram.',
+  noteBody:
+    'У меня две дочери. Я создаю Emi, чтобы у них было спокойное место, где можно понять своё тело: точные сведения, знания о том, что до сих пор под запретом, и сообщество, где можно спросить без осуждения, с юных лет. И попутно помочь всем остальным, кому нужно то же самое.',
+  founderName: 'Julian Tellez',
+  founderRole: 'Основатель Emi',
+
+  privacyHeadline: 'Ваши данные всегда зашифрованы.',
+  privacyLink: 'Как Emi оберегает ваши данные ›',
 
   tryTitle: 'Пока не готовы скачивать?',
   tryLine: 'Попробуйте бесплатный калькулятор. Ничего из введённого не покидает страницу.',

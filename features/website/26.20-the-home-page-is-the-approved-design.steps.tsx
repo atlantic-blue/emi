@@ -21,8 +21,11 @@ const designDirectory = join(repositoryRoot, 'docs', 'design', 'website', 'home-
 // Compiling the stylesheet of the whole page takes longer than the tier's own limit allows.
 jest.setTimeout(180_000);
 
-/** The two widths the board was drawn at: a desktop, and the phone most of her reading is on. */
-const widths = [1280, 390];
+/**
+ * The widths the board was drawn at: a desktop, a tablet, and the phone most of her reading is on.
+ * The tablet joined them with the board that added the row of reviews, which changes shape there.
+ */
+const widths = [1280, 834, 390];
 
 /** One pixel in a thousand, which is the budget the browser suite holds the page to. */
 const theBudget = 0.001;
@@ -291,7 +294,7 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'a browser holds the page against the design at both widths, and keeps the picture of any difference',
+      'a browser holds the page against the design at every width, and keeps the picture of any difference',
       () => {
         const suite = asPlaywrightReadsIt();
         const sentence = 'the home page matches the approved design pixel for pixel';

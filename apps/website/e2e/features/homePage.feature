@@ -1,8 +1,8 @@
 Feature: The page a woman meets Emi on
 
   A woman hears about Emi from somebody and opens myemi.app before she holds the application. She
-  reads one page. It has to say what Emi is, what Emi costs, and what Emi is not, in the language
-  she reads, and it has to ask her for nothing.
+  reads one page. It has to say what Emi is, what the first month costs, and what Emi is not, in
+  the language she reads, and it has to ask her for nothing.
 
   So the page is read in all three languages, because a page one language has and another does not
   is the error SITE-3 names. It is read at the width of a phone as well as at the width of a
@@ -16,8 +16,8 @@ Feature: The page a woman meets Emi on
   Scenario Outline: she opens the home page in the language she reads
     Given a woman opens the home page in <language>
     Then the site answers with a page
-    And she reads the headline and what Emi costs, in <language>
-    And the press to the store and the press to pay are both on the page, inside the screen she holds
+    And she reads the headline and what the first month costs, in <language>
+    And the press to the store and the press to the calculator are both on the page, inside the screen she holds
     And the page asked no other host for anything
     And the page kept nothing on her machine
 

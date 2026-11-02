@@ -53,8 +53,15 @@ const howMuchOfThePageMayDiffer = 0.001;
  * The window is grown to the whole height of the page before the picture is taken. Playwright can
  * stitch a picture of a page taller than its window, and a stitched picture carries the seam, which
  * reads as a difference nobody wrote.
+ *
+ * The browser is told the reader asked for less motion before either page is opened. Two bands of
+ * the page carry a carousel that moves on by one card every seven seconds, and the design is one
+ * still picture of it, so a page whose cards had moved would differ from the design for a reason
+ * nobody wrote. Pressing the page's own Pause would not do: the press renames itself Play, and the
+ * design says Pause.
  */
 async function pictureOf(page: Page, address: string): Promise<PNG> {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(address);
   await page.evaluate(() => document.fonts.ready);
   await page.waitForFunction(() => document.fonts.status === 'loaded');

@@ -27,4 +27,4 @@ Feature: The home page is the page that was approved
     And the three bands that carry a rule draw it on one side, not four
     And the five links of the legal line are underlined, because the board underlines them
     And the page writes no style of its own, so her browser refuses nothing
-    And a browser holds the page against the design at both widths, and keeps the picture of any difference
+    And a browser holds the page against the design at every width, and keeps the picture of any difference

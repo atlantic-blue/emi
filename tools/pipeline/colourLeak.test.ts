@@ -89,7 +89,12 @@ describe('a colour cannot be written outside the token package', () => {
       (file) =>
         watched.includes(extname(file)) &&
         file !== 'package-lock.json' &&
-        !file.startsWith('packages/tokens/'),
+        !file.startsWith('packages/tokens/') &&
+        // The approved design of the website, committed as the canvas wrote it. The canvas is
+        // where a colour of the site is chosen, so its own export of them is the source this rule
+        // protects rather than a place the rule was broken. The formatter and the linter skip the
+        // same directory, for the same reason.
+        !file.startsWith('docs/design/website/'),
     );
 
     expect(files.length).toBeGreaterThan(10);

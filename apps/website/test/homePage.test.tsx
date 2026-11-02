@@ -4,7 +4,14 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { approvedDenials } from '../../../tools/pipeline/forbiddenClaims';
 import HomePage from '../app/[lang]/page';
 import { type Language, brandEyebrowOf, languages, wordsIn } from '../app/words';
+import { CARDS_ACROSS } from '../components/reviewRow';
 import { LANGUAGES_ANCHOR } from '../components/siteHeader';
+import {
+  A_NAME_NOBODY_HAS_SIGNED,
+  A_REVIEW_NOBODY_HAS_WRITTEN,
+  THE_NOTE_IULIIA_HAS_NOT_WRITTEN,
+  thePlaceholders,
+} from '../lib/thePlaceholders';
 import { whatTheMarkupDraws } from './stylesheet';
 
 /** Compiling the stylesheet takes a moment, and each case that reads it compiles its own markup. */
@@ -68,19 +75,16 @@ const theWordsOfTheBoard = [
   'parentsHeadline',
   'parentsLine',
   'noteEyebrow',
-  'noteBody',
-  'founderName',
-  'founderRole',
+  'founderIuliiaRole',
   'privacyHeadline',
   'privacyLink',
-  'priceEyebrow',
-  'priceHeadline',
-  'priceLine',
-  'priceAppStoreNote',
-  'priceCardTitle',
-  'priceCardNote',
-  'priceStarsTitle',
-  'priceStarsNote',
+  'reviewsEyebrow',
+  'reviewsHeadline',
+  'reviewsRating',
+  'reviewFromTheStore',
+  'reviewFromTheCommunity',
+  'reviewFromTheBeta',
+  'carouselPause',
   'tryTitle',
   'tryLine',
   'tryLink',
@@ -98,12 +102,64 @@ describe('the page a woman meets Emi on', () => {
     expect(absent).toEqual([]);
   });
 
-  it.each(languages)('says what Emi costs where the board says it, in %s', async (language) => {
-    const words = wordsIn(language);
-    const page = await pageIn(language);
+  it.each(languages)(
+    'says the first month is free, and names no amount, in %s',
+    async (language) => {
+      const words = wordsIn(language);
+      const page = await pageIn(language);
 
-    expect(page).toContain(words.heroPriceLine);
-    expect(page).toContain(words.priceHeadline);
+      expect(page).toContain(words.heroPriceLine);
+      expect(page).toContain(words.heroCancel);
+
+      // The approved board took the amount off this page. The till is the one place a reader is told
+      // what a month costs, so a number here would be a second place for it to live, and two places
+      // for one price is how the page and the till come to say different things. The amount comes out
+      // of the till's own line, because the ring is full of numbers that are not money.
+      const amount = /\d+[.,]\d\d/.exec(words.price)?.[0] ?? '';
+
+      expect(amount).toMatch(/\d/);
+      expect(page).not.toContain(amount);
+      expect(page).not.toMatch(/[£$€]/);
+    },
+  );
+
+  it.each(languages)(
+    'stands the first founder first, with the other beside her, in %s',
+    async (language) => {
+      const words = wordsIn(language);
+      const page = await pageIn(language);
+
+      expect(page.indexOf('Iuliia Nikolaeva')).toBeGreaterThan(-1);
+      expect(page).toContain(THE_NOTE_IULIIA_HAS_NOT_WRITTEN);
+      expect(page).toContain(words.founderIuliiaRole);
+
+      // The second founder is one press away rather than on the page she is handed, so his note and
+      // his role are not drawn until the band moves.
+      expect(page).not.toContain(words.founderJulianNote);
+    },
+  );
+
+  it.each(languages)(
+    'draws three of the six review cards, each still a hole, in %s',
+    async (language) => {
+      const page = await pageIn(language);
+      const cards = page.split(A_REVIEW_NOBODY_HAS_WRITTEN);
+
+      expect(cards).toHaveLength(CARDS_ACROSS + 1);
+      expect(page.split(A_NAME_NOBODY_HAS_SIGNED)).toHaveLength(CARDS_ACROSS + 1);
+      expect(page).toContain(wordsIn(language).reviewsRating);
+    },
+  );
+
+  it('leaves no hole of the board unmarked, so a reader can tell nothing was promised', async () => {
+    const page = await pageIn('en');
+    const holes = [...page.matchAll(/\[[A-Z][^\]]*\]/g)].map(([found]) => found);
+
+    expect(holes.length).toBeGreaterThan(0);
+
+    for (const hole of holes) {
+      expect(thePlaceholders.some((waiting) => waiting.includes(hole))).toBe(true);
+    }
   });
 
   // The board puts the brand line over the hero in capitals, and it is the one line that stays in

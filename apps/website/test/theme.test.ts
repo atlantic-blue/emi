@@ -17,10 +17,12 @@ import {
   websiteColours,
   websiteFace,
   websiteFaceNames,
+  websiteFaceStack,
   websiteFontCuts,
   websiteFontFile,
   websiteFontsRoot,
   websitePhoneWidth,
+  websiteTabletWidth,
   CONTRAST_FLOOR,
   contrastRatio,
 } from '@emi/tokens';
@@ -47,6 +49,12 @@ const repositoryRoot = join(websiteWorkspace, '..', '..');
 
 const longEnoughToCompile = 60_000;
 
+/**
+ * The three names a Mac answers with its own interface face and every other machine answers with
+ * nothing. The board asks for them ahead of the heading face, so the site asks for them too.
+ */
+const theFacesOnlyAMacHolds = ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display'];
+
 /** One compile for the whole file: every class the theme can draw, asked for at once. */
 const everyClass = [
   ...colourNames.map((name) => `bg-${name}`),
@@ -62,6 +70,7 @@ const everyClass = [
   'font-text',
   'font-data',
   'phone:hidden',
+  'tablet:hidden',
   'sm:flex',
   'bg-brandBlue',
   'p-brandGap',
@@ -155,15 +164,33 @@ describe('the gaps, the corners and the strokes', () => {
   });
 });
 
-describe('the one width the board changes the shape of a band at', () => {
-  it('reaches a browser as a width of its own, and keeps the ones Tailwind ships', () => {
-    const phone = [...stylesheet.matchAll(/@media \(([^)]*)\) \{([^@]*)\}/g)].find(([, , rules]) =>
-      (rules ?? '').includes('phone\\:'),
-    );
+describe('the two widths the board changes the shape of a band at', () => {
+  function queryHolding(prefix: string): { query: string; at: number } {
+    const blocks = [...stylesheet.matchAll(/@media \(([^)]*)\) \{([^@]*)\}/g)];
+    const found = blocks.find(([, , rules]) => (rules ?? '').includes(`${prefix}\\:`));
 
-    expect(phone?.[1]).toContain(`${websitePhoneWidth}px`);
+    if (found === undefined) {
+      throw new Error(`No media query of the stylesheet carries a ${prefix} class.`);
+    }
+
+    return { query: found[1] ?? '', at: found.index ?? -1 };
+  }
+
+  it('reaches a browser as two widths of its own, and keeps the ones Tailwind ships', () => {
+    expect(queryHolding('phone').query).toContain(`${websitePhoneWidth}px`);
+    expect(queryHolding('tablet').query).toContain(`${websiteTabletWidth}px`);
     expect(declarationsOf(stylesheet, 'phone:hidden')).toContain('display: none');
+    expect(declarationsOf(stylesheet, 'tablet:hidden')).toContain('display: none');
     expect(declarationsOf(stylesheet, 'sm:flex')).toContain('display: flex');
+  });
+
+  /**
+   * At the width of a phone both queries match, so the one that comes last is the one a browser
+   * obeys. The narrower width has to be that one, or a band on a phone draws the shape the board
+   * gives a tablet.
+   */
+  it('writes the narrower width after the wider one, so the narrower one wins', () => {
+    expect(queryHolding('phone').at).toBeGreaterThan(queryHolding('tablet').at);
   });
 });
 
@@ -234,6 +261,37 @@ describe('the files the site serves those faces from', () => {
     expect(source).not.toContain('next/font/google');
     expect(servedFonts.every((font) => font.variable.length > 0)).toBe(true);
   });
+});
+
+describe('the families each role asks a browser for', () => {
+  it.each([...websiteFaceNames])('writes the board’s own list for %s, in its order', (name) => {
+    const written = declarationsOf(stylesheet, `font-${name}`);
+    const asked = /font-family:\s*([^;]+);/.exec(written)?.[1] ?? '';
+
+    const named = asked
+      .split(',')
+      .map((family) => family.trim().replace(/^"|"$/g, ''))
+      .filter((family) => !family.startsWith('var('));
+
+    expect(named).toEqual([...websiteFaceStack[name]]);
+  });
+
+  /**
+   * A heading on a Mac is drawn in Apple's own interface face, which the board asks for first and
+   * which no licence lets Emi ship. Those are the only families allowed in front of the served one,
+   * and they are allowed because a face a machine already holds asks nobody for a file. A family
+   * from a font service in that position would be a request to another company.
+   */
+  it.each([...websiteFaceNames])(
+    'puts only a face a machine already holds in front of the served one, for %s',
+    (name) => {
+      const stack = websiteFaceStack[name];
+      const ahead = stack.slice(0, stack.indexOf(websiteFace[name]));
+
+      expect(stack).toContain(websiteFace[name]);
+      expect(ahead).toEqual(name === 'display' ? theFacesOnlyAMacHolds : []);
+    },
+  );
 });
 
 describe('the stylesheet the site serves', () => {

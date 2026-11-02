@@ -13,7 +13,12 @@
  *
  * The brand line stays in English in all three languages: it says what the four letters of the
  * name stand for, and a translation of it would name something Emi is not called. So do the name
- * of the product, the name of Apple's store, and the name of the person building it.
+ * of the product and the name of Apple's store.
+ *
+ * The board leaves a hole for a review nobody has written yet, and for a note one of the two
+ * founders has not written yet. Those sit in `lib/thePlaceholders.ts` rather than here: a hole is
+ * not a word of the product, and it reads the same in every language until the text that fills it
+ * arrives.
  *
  * `{day}` and `{phase}` are filled by the ring, which is the one part of the page that changes
  * while she reads it.
@@ -30,7 +35,7 @@ export const english = {
   heroHeadline: 'Understand your body, safely.',
   heroLine:
     'Emi starts with your cycle: a forecast from your own data, and how sure it is. Then accurate education, and a community where you can ask what people are told not to. Your data is always encrypted.',
-  heroPriceLine: 'Free for a month, then £29.99 a month.',
+  heroPriceLine: 'Free for your first month.',
   heroCancel: 'Cancel anytime.',
   ringLabel: 'Cycle ring at day {day} of about 31, {phase}.',
   ringPeriod: 'PERIOD',
@@ -77,18 +82,35 @@ export const english = {
   parentsLine:
     'Accurate information you can share with your daughter, about the subjects that still feel hard to talk about. Learn together, in a space made to feel safe.',
 
-  // Who is building it, and why, in his own words.
-  noteEyebrow: 'WHY I AM BUILDING EMI',
-  noteBody:
+  // Who is building it, and why, in their own words. Two people, one at a time.
+  noteEyebrow: 'WHY WE ARE BUILDING EMI',
+  founderControlsLabel: 'founder controls',
+  founderPrevious: 'Previous founder',
+  founderNext: 'Next founder',
+  founderIuliiaRole: 'Co-founder of Emi, host of the Emi Community',
+  founderJulianRole: 'Co-founder of Emi',
+  founderJulianNote:
     'I have two daughters. I am building Emi so they have a safe place to understand their bodies: accurate information, education on the subjects that are still taboo, and a community to ask without judgement, from a young age. And along the way, to help everyone else who needs the same.',
-  founderName: 'Julian Tellez',
-  founderRole: 'Founder of Emi',
+
+  // What other people say, one row of cards at a time.
+  reviewsEyebrow: 'REVIEWS',
+  reviewsHeadline: 'What people say about Emi.',
+  reviewsRating: '[RATING] on the App Store, from [COUNT] ratings',
+  reviewControlsLabel: 'review controls',
+  reviewPrevious: 'Previous review',
+  reviewNext: 'Next review',
+  reviewFromTheStore: 'App Store review',
+  reviewFromTheCommunity: 'Emi Community member',
+  reviewFromTheBeta: 'TestFlight beta tester',
+
+  // The two presses that hold both carousels still, and start them again.
+  carouselPause: 'Pause',
+  carouselPlay: 'Play',
 
   // The one promise the whole product rests on.
-  privacyHeadline: 'Your data is always encrypted.',
-  privacyLink: 'How Emi protects your data ›',
 
-  // One price, and the three ways to pay it.
+  // The band that the board the operator drew last took off the page. Still here so the
+  // page above compiles while the tests of this step go red.
   priceEyebrow: 'ONE PRICE',
   priceHeadline: '£29.99 a month. The first month is free.',
   priceLine: 'Pay the way that suits you.',
@@ -97,6 +119,13 @@ export const english = {
   priceCardNote: 'Pay here, then sign in on your iPhone.',
   priceStarsTitle: 'Telegram Stars',
   priceStarsNote: 'Pay in the Emi bot, then log in with Telegram.',
+  noteBody:
+    'I have two daughters. I am building Emi so they have a safe place to understand their bodies: accurate information, education on the subjects that are still taboo, and a community to ask without judgement, from a young age. And along the way, to help everyone else who needs the same.',
+  founderName: 'Julian Tellez',
+  founderRole: 'Founder of Emi',
+
+  privacyHeadline: 'Your data is always encrypted.',
+  privacyLink: 'How Emi protects your data ›',
 
   // For a reader who is not ready to install anything.
   tryTitle: 'Not ready to download?',
