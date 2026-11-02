@@ -52,6 +52,11 @@ locals {
     "/sitemap.xml",
     "/emi-icon.svg",
     "/the-home-screen.png",
+    "/icon-16.png",
+    "/icon-32.png",
+    "/icon-192.png",
+    "/icon-512.png",
+    "/apple-touch-icon.png",
   ]
 }
 

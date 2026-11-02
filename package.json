@@ -18,6 +18,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "generate:app-icon": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types brand/icon/generate.ts",
+    "generate:website-icons": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types apps/website/tools/writeTheIcons.ts",
     "typecheck": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project features/tsconfig.json && npm run typecheck --workspaces --if-present",
     "check:patches": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkPatches.ts",
     "check:documents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkDocuments.ts",
