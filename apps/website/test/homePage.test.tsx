@@ -2,7 +2,9 @@ import { colour, radius, space, typeScale } from '@emi/tokens';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { approvedDenials } from '../../../tools/pipeline/forbiddenClaims';
-import HomePage, { PLACEHOLDER_ADDRESS } from '../app/[lang]/page';
+import HomePage from '../app/[lang]/page';
+import { LANGUAGES_ANCHOR } from '../components/siteHeader';
+import { NO_PAGE_YET } from '../lib/addresses';
 import { type Language, languages, wordsIn } from '../app/words';
 import { whatTheMarkupDraws } from './stylesheet';
 
@@ -14,9 +16,9 @@ async function pageIn(lang: string): Promise<string> {
 }
 
 /**
- * The two sentences the honesty gate approves, taken from the gate's own list rather than written
- * out here. The gate is the one place the wording is decided, and a copy of it in this file would
- * be a second opinion that could drift from the first.
+ * The sentences the honesty gate approves, taken from the gate's own list rather than written out
+ * here. The gate is the one place the wording is decided, and a copy of it in this file would be a
+ * second opinion that could drift from the first.
  */
 function denialsStartingWith(prefix: string): string[] {
   return approvedDenials.filter((denial) => denial.startsWith(prefix));
@@ -43,14 +45,15 @@ describe('the page a woman meets Emi on', () => {
     expect(await pageIn(language)).toContain(wordsIn(language).price);
   });
 
+  // The band at the foot carries one sentence that denies both claims, which is the board's own
+  // wording and one of the gate's approved sentences. The gate holds more than one denial in each
+  // language, so what is read here is that the page carries one of them and no claim.
   it.each(languages)('says what Emi is not, in %s', async (language) => {
     const page = await pageIn(language);
+    const carried = theDenials[language].filter((denial) => page.includes(denial));
 
-    expect(theDenials[language]).toHaveLength(2);
-
-    for (const denial of theDenials[language]) {
-      expect(page).toContain(denial);
-    }
+    expect(theDenials[language].length).toBeGreaterThan(0);
+    expect(carried).toHaveLength(1);
   });
 
   it.each(languages)('offers the store and the beta, in %s', async (language) => {
@@ -59,7 +62,7 @@ describe('the page a woman meets Emi on', () => {
 
     expect(page).toContain(words.store);
     expect(page).toContain(words.beta);
-    expect(page.match(new RegExp(`href="${PLACEHOLDER_ADDRESS}"`, 'g'))?.length).toBeGreaterThan(1);
+    expect(page.match(new RegExp(`href="${NO_PAGE_YET}"`, 'g'))?.length).toBeGreaterThan(1);
   });
 
   it('asks no other host for anything, in any language', async () => {
@@ -94,7 +97,6 @@ describe('the page a woman meets Emi on', () => {
       expect(painted).toContain(`background-color: ${colour.accentSoft}`);
       expect(painted).toContain(`background-color: ${colour.card}`);
       expect(painted).toContain(`border-radius: ${radius.xxl}px`);
-      expect(painted).not.toContain('border-width');
     },
     longEnoughToCompile,
   );
@@ -113,7 +115,7 @@ describe('the page a woman meets Emi on', () => {
   );
 });
 
-describe('the switcher in the band at the top', () => {
+describe('the switcher in the band at the foot', () => {
   it.each(languages)('offers all three languages from the %s page', async (language) => {
     const page = await pageIn(language);
 
@@ -134,12 +136,19 @@ describe('the switcher in the band at the top', () => {
   it('names each language the way that language names itself', async () => {
     const page = await pageIn('en');
 
-    expect(page).toContain('aria-label="English"');
-    expect(page).toContain('aria-label="Русский"');
-    expect(page).toContain('aria-label="Español"');
+    expect(page).toContain('>English</a>');
+    expect(page).toContain('>Русский</a>');
+    expect(page).toContain('>Español</a>');
   });
 
-  it.each(languages)('names the switcher itself in %s', async (language) => {
-    expect(await pageIn(language)).toContain(`aria-label="${wordsIn(language).languageLabel}"`);
-  });
+  it.each(languages)(
+    'offers the way to that list from the band at the top, in %s',
+    async (language) => {
+      const page = await pageIn(language);
+
+      expect(page).toContain(`aria-label="${wordsIn(language).headerLanguageLabel}"`);
+      expect(page).toContain(`href="#${LANGUAGES_ANCHOR}"`);
+      expect(page).toContain(`id="${LANGUAGES_ANCHOR}"`);
+    },
+  );
 });

@@ -22,5 +22,5 @@ Feature: What every answer from myemi.app carries
     And it hands out neither the camera, nor the microphone, nor her location
 
   Scenario: a file the page loads beside it is covered by the edge
-    When she asks the live site for "/emi-wordmark.svg", and follows nothing
+    When she asks the live site for "/emi-icon.svg", and follows nothing
     Then a file it serves from the bucket is covered by the policy of the edge

@@ -160,8 +160,14 @@ describe('the words a screen may not use', () => {
       expect(interfaceClaimsIn(aScreen, screen)).toEqual([]);
     });
 
-    it('is refused where nothing puts a full stop in front of it', () => {
+    it('passes where it is the whole of a value, which is how a catalogue holds one sentence', () => {
       const screen = `export const line = '${theDenial}';\n`;
+
+      expect(interfaceClaimsIn(aScreen, screen)).toEqual([]);
+    });
+
+    it('is refused where other words wrap it, because that is not the approved sentence', () => {
+      const screen = `export const line = 'Somebody said ${theDenial}';\n`;
 
       expect(interfaceClaimsIn(aScreen, screen)).toHaveLength(1);
     });

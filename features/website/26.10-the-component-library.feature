@@ -11,7 +11,7 @@ Feature: The site draws in the colours and the letters Emi draws in
 
   A face is the second thing. A page that loads its letters from a font service sends her browser
   to another company, and that company learns she opened a page about periods. So the site serves
-  its own letters, from the files this repository already ships to the phone.
+  its own letters, from the files this repository ships beside the site itself.
 
   Scenario: the website components draw in the emi tokens
     Given a woman opens an address myemi.app does not have

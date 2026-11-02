@@ -1,15 +1,17 @@
 import {
   colour,
-  face,
   radius,
   space,
   stroke,
   typeRoleNames,
   typeScale,
   letterSpacingOf,
+  websiteColour,
+  websiteFace,
+  websitePhoneWidth,
 } from '@emi/tokens';
 
-import { SERVED_FACE_VARIABLE } from './lib/face';
+import { SERVED_FACE_VARIABLES } from './lib/face';
 
 /**
  * The theme of myemi.app, built from `packages/tokens` and from nothing else.
@@ -58,23 +60,52 @@ const text = Object.fromEntries(
 );
 
 /**
- * The site serves the Figtree cuts, and the variable carries the family the font loader built from
- * those files. The token's own family name follows it, so a reader whose browser already has the
- * face reads the same letters before the file arrives.
+ * A family name of more than one word has to arrive quoted, or a browser reads each word as a
+ * family of its own and finds none of them.
+ */
+function asAFamily(name: string): string {
+  return name.includes(' ') ? `"${name}"` : name;
+}
+
+/**
+ * The three families of the approved board, each behind the custom property the font loader built
+ * from the files the site serves. The family's own name follows it, so a reader whose browser
+ * already holds the face reads the same letters before the file arrives, and the board's own
+ * fallbacks follow that.
  */
 const families = {
-  display: [`var(${SERVED_FACE_VARIABLE})`, face.display, 'sans-serif'],
-  text: [`var(${SERVED_FACE_VARIABLE})`, face.text, 'sans-serif'],
+  display: [
+    `var(${SERVED_FACE_VARIABLES.display})`,
+    asAFamily(websiteFace.display),
+    'Georgia',
+    'serif',
+  ],
+  text: [
+    `var(${SERVED_FACE_VARIABLES.text})`,
+    asAFamily(websiteFace.text),
+    'system-ui',
+    'sans-serif',
+  ],
+  data: [
+    `var(${SERVED_FACE_VARIABLES.data})`,
+    asAFamily(websiteFace.data),
+    'ui-monospace',
+    'monospace',
+  ],
 };
 
 /**
  * The theme and nothing else. Which directories Tailwind reads for the classes it must write is
  * stated in `app/globals.css`, beside the import, which is where a reader of a Tailwind
  * stylesheet looks for it.
+ *
+ * Two palettes, because the site and the phone are two surfaces and the board paints them in
+ * different values. Every name of the site's own palette starts with `site`, so one flat namespace
+ * carries both without either answering for the other.
  */
 const config = {
   theme: {
-    colors: fromTokens(colour, (value) => value),
+    colors: { ...fromTokens(colour, (value) => value), ...fromTokens(websiteColour, (v) => v) },
     fontFamily: families,
     fontSize: text,
     // A rule Emi draws as a filled box takes its thickness as a height, so the two stroke widths
@@ -82,6 +113,9 @@ const config = {
     spacing: { ...fromTokens(space, inPixels), ...fromTokens(stroke, inPixels) },
     borderRadius: fromTokens(radius, inPixels),
     borderWidth: fromTokens(stroke, inPixels),
+    // The one width the board changes the shape of a band at. It extends the breakpoints rather
+    // than replacing them, so the ones Tailwind ships still draw.
+    extend: { screens: { phone: { max: inPixels(websitePhoneWidth) } } },
   },
 } as const;
 

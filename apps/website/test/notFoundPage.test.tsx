@@ -1,9 +1,9 @@
-import { colour } from '@emi/tokens';
+import { websiteColour } from '@emi/tokens';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import RootLayout from '../app/[lang]/layout';
 import NotFound from '../app/[lang]/not-found';
-import { SERVED_FACE_VARIABLE } from '../lib/face';
+import { SERVED_FACE_VARIABLES } from '../lib/face';
 import { whatTheMarkupDraws } from './stylesheet';
 
 function markupOf(element: Parameters<typeof renderToStaticMarkup>[0]): string {
@@ -24,7 +24,7 @@ describe('the page behind an address the site does not have', () => {
   it('arrives inside the header, a card and the footer, so it looks like the rest of the site', () => {
     expect(page()).toContain('<header');
     expect(page()).toContain('<footer');
-    expect(page()).toContain('Emi is made by Atlantic Blue Solutions Limited.');
+    expect(page()).toContain('Atlantic Blue Solutions Limited.');
     expect(page()).toContain('aria-label="Emi"');
   });
 
@@ -61,8 +61,8 @@ describe('the document every page arrives in', () => {
     const drawn = await documentIn('en');
     const painted = Object.values(await whatTheMarkupDraws(drawn)).join(' ');
 
-    expect(painted).toContain(`background-color: ${colour.ground}`);
-    expect(painted).toContain(`color: ${colour.text}`);
-    expect(painted).toContain(`font-family: var(${SERVED_FACE_VARIABLE})`);
+    expect(painted).toContain(`background-color: ${websiteColour.siteGround}`);
+    expect(painted).toContain(`color: ${websiteColour.siteText}`);
+    expect(painted).toContain(`font-family: var(${SERVED_FACE_VARIABLES.text})`);
   }, 60_000);
 });

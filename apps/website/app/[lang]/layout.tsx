@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { fallbackLanguage, isLanguage, wordsIn } from '@/app/words';
 
-import { servedFont } from '../fonts';
+import { servedFonts } from '../fonts';
 import '../globals.css';
 
 /** The address of every page of the site, which is one language and then a path. */
@@ -34,9 +34,11 @@ export default async function RootLayout({
   children,
   params,
 }: WhichLanguage & { children: ReactNode }) {
+  const faces = servedFonts.map((font) => font.variable).join(' ');
+
   return (
     <html lang={await languageOf({ params })}>
-      <body className={`${servedFont.variable} bg-ground font-text text-body-lg text-text`}>
+      <body className={`${faces} bg-siteGround font-text text-body-lg text-siteText`}>
         {children}
       </body>
     </html>

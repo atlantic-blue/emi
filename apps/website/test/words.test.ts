@@ -1,4 +1,4 @@
-import { approvedDenials } from '../../../tools/pipeline/forbiddenClaims';
+import { approvedDenials, claimsIn } from '../../../tools/pipeline/forbiddenClaims';
 import { english as applicationEnglish } from '../../mobile/src/language/english';
 import { russian as applicationRussian } from '../../mobile/src/language/russian';
 import { spanish as applicationSpanish } from '../../mobile/src/language/spanish';
@@ -70,19 +70,26 @@ describe('the words of one page in three languages', () => {
     expect(wordsIn(language).price).toBe(theApplication[language]['onboarding.tour.price.line']);
   });
 
-  it.each(languages)('ends the footer with the two approved denials, in %s', (language) => {
+  it.each(languages)('opens the foot of the page with an approved denial, in %s', (language) => {
+    const disclaimer = wordsIn(language).footerDisclaimer;
     const denials = approvedDenialsIn(language);
+    const [said] = disclaimer.split('. ');
 
-    expect(denials).toHaveLength(2);
-    expect(wordsIn(language).footerLine.endsWith(denials.join(' '))).toBe(true);
+    // The board writes both denials as one sentence and the approved home design carries it word
+    // for word, so the gate holds that sentence rather than the two it is built from.
+    expect(denials).toContain(`${said ?? ''}.`);
+    expect(disclaimer.startsWith(said ?? '')).toBe(true);
   });
 
-  it.each(languages)('says who makes Emi in front of them, in %s', (language) => {
-    const line = wordsIn(language).footerLine;
-    const denials = approvedDenialsIn(language);
+  it.each(languages)('says what Emi is not before anything else it says, in %s', (language) => {
+    const disclaimer = wordsIn(language).footerDisclaimer;
 
-    expect(line).toContain('Atlantic Blue Solutions Limited.');
-    expect(line.indexOf('Atlantic Blue')).toBeLessThan(line.indexOf(denials[0] as string));
+    expect(claimsIn('the footer', disclaimer)).toEqual([]);
+    expect(disclaimer.split('. ')).toHaveLength(3);
+  });
+
+  it.each(languages)('names who she would be paying, in %s', (language) => {
+    expect(wordsIn(language).footerCopyright).toContain('Atlantic Blue Solutions Limited.');
   });
 
   it('writes the brand line in English everywhere, because it says what the name stands for', () => {
@@ -91,14 +98,37 @@ describe('the words of one page in three languages', () => {
     }
   });
 
-  it('writes every other word of a language in that language', () => {
-    const translated = Object.keys(english).filter((key) => key !== 'brandLine') as SiteWordKey[];
+  /**
+   * The words that stay in English in all three languages. Each one is a name rather than a word:
+   * the brand line says what the four letters stand for, Emi is called Emi everywhere, and Apple's
+   * store carries one name in every country. A fourth entry here is a translation somebody forgot.
+   */
+  const namesRatherThanWords: readonly SiteWordKey[] = [
+    'brandLine',
+    'headerEmi',
+    'footerEmiGroup',
+    'footerAppStore',
+  ];
 
-    expect(translated.length).toBeGreaterThan(0);
+  it('writes every other word of a language in that language', () => {
+    const translated = Object.keys(english).filter(
+      (key) => !namesRatherThanWords.includes(key as SiteWordKey),
+    ) as SiteWordKey[];
+
+    expect(translated.length).toBeGreaterThan(30);
 
     for (const key of translated) {
       expect(russian[key]).not.toBe(english[key]);
       expect(spanish[key]).not.toBe(english[key]);
     }
+  });
+
+  it('keeps a name the same in all three, and keeps that list short', () => {
+    for (const key of namesRatherThanWords) {
+      expect(russian[key]).toBe(english[key]);
+      expect(spanish[key]).toBe(english[key]);
+    }
+
+    expect(namesRatherThanWords.length).toBeLessThan(5);
   });
 });

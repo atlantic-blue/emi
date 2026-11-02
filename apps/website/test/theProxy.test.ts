@@ -111,7 +111,7 @@ describe('which requests it answers for', () => {
   it.each([
     '/_next/static/chunks/main.js',
     '/_next/image',
-    '/emi-wordmark.svg',
+    '/emi-icon.svg',
     '/favicon.ico',
     '/robots.txt',
     '/sitemap.xml',

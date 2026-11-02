@@ -5,13 +5,7 @@ import { SiteFooter } from '@/components/siteFooter';
 import { SiteHeader } from '@/components/siteHeader';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-
-/**
- * Where the two presses point until the store listing exists. The site root rather than a guess at
- * the address Apple will give the application, because a link to a page that does not exist yet is
- * a promise the site cannot keep.
- */
-export const PLACEHOLDER_ADDRESS = '/';
+import { NO_PAGE_YET } from '@/lib/addresses';
 
 /**
  * The page a woman meets Emi on, in the language her address names. A language the site does not
@@ -49,13 +43,10 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         </section>
         <section className="bg-accentSoft px-margin py-marginLg">
           <Card className="mx-auto flex max-w-xl flex-col items-center gap-spaceLg text-center">
-            <a className={buttonVariants()} href={PLACEHOLDER_ADDRESS}>
+            <a className={buttonVariants()} href={NO_PAGE_YET}>
               {words.store}
             </a>
-            <a
-              className="font-text text-button-lg text-accent underline"
-              href={PLACEHOLDER_ADDRESS}
-            >
+            <a className="font-text text-button-lg text-accent underline" href={NO_PAGE_YET}>
               {words.beta}
             </a>
             <p className="font-text text-body-lg text-text">{words.price}</p>
