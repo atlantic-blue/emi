@@ -3,7 +3,7 @@ import { join, resolve, sep } from 'node:path';
 
 import { defineFeature, loadFeature } from 'jest-cucumber';
 
-import { WORDMARK_FILE } from '../../apps/website/components/siteHeader';
+import { ICON_FILE } from '../../apps/website/components/siteHeader';
 import { moduleDirectory } from '../../infrastructure/modules/nextjs-site/tests/runArtifact';
 import { bodyOf, configurationOf, listedIn } from '../../tools/pipeline/policy';
 
@@ -72,7 +72,7 @@ defineFeature(feature, (test) => {
     });
 
     when('her browser asks for the drawing of the name that every page carries', () => {
-      asked = WORDMARK_FILE;
+      asked = ICON_FILE;
 
       expect(files).toContain(asked);
     });

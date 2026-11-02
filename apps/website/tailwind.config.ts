@@ -9,7 +9,7 @@ import {
   letterSpacingOf,
 } from '@emi/tokens';
 
-import { SERVED_FACE_VARIABLE } from './lib/face';
+import { SERVED_FACE_VARIABLES } from './lib/face';
 
 /**
  * The theme of myemi.app, built from `packages/tokens` and from nothing else.
@@ -63,8 +63,8 @@ const text = Object.fromEntries(
  * face reads the same letters before the file arrives.
  */
 const families = {
-  display: [`var(${SERVED_FACE_VARIABLE})`, face.display, 'sans-serif'],
-  text: [`var(${SERVED_FACE_VARIABLE})`, face.text, 'sans-serif'],
+  display: [`var(${SERVED_FACE_VARIABLES.text})`, face.display, 'sans-serif'],
+  text: [`var(${SERVED_FACE_VARIABLES.text})`, face.text, 'sans-serif'],
 };
 
 /**

@@ -13,10 +13,17 @@ import {
 import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 
-import { colour, colourNames, fontFile, fonts } from '@emi/tokens';
+import {
+  colour,
+  colourNames,
+  websiteColour,
+  websiteColourNames,
+  websiteFaceNames,
+  websiteFontCuts,
+} from '@emi/tokens';
 import { getScriptNonceFromHeader } from 'next/dist/server/app-render/get-script-nonce-from-header';
 
-import { SERVED_FACE_VARIABLE } from '../lib/face';
+import { SERVED_FACE_VARIABLES } from '../lib/face';
 
 const workspace = resolve(__dirname, '..');
 
@@ -51,12 +58,17 @@ function paintsNothing(value: string): boolean {
 }
 
 /**
- * A minifier may write a six digit colour as three digits where each pair repeats, so a token and
- * the colour it became are compared in one notation.
+ * A minifier may write a six digit colour as three digits where each pair repeats, and a colour
+ * carried at an opacity arrives as eight digits with the opacity on the end. A token and the colour
+ * it became are compared in one notation, so the comparison reads which colour it is and not how
+ * much of it is painted.
+ *
+ * The opacity is not dropped silently: a colour at an opacity is still that colour, and the board
+ * writes two of them that way, so what is read here is whether the six digits are a token.
  */
 function asWritten(value: string): string {
   const lowered = value.toLowerCase();
-  const digits = lowered.slice(1);
+  const digits = lowered.length === 9 ? lowered.slice(1, 7) : lowered.slice(1);
 
   if (
     digits.length === 6 &&
@@ -67,7 +79,7 @@ function asWritten(value: string): string {
     return `#${digits[0]}${digits[2]}${digits[4]}`;
   }
 
-  return lowered;
+  return `#${digits}`;
 }
 
 /** Where the pages of the build sit inside the package, which the runtime unpacks at /var/task. */
@@ -340,7 +352,7 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
         const unpacked = theWholePackageSomewhereElse();
 
         try {
-          const asked = askThePackage(unpacked, '/emi-wordmark.svg');
+          const asked = askThePackage(unpacked, '/emi-icon.svg');
 
           expect(asked.headers['content-security-policy']).toBeUndefined();
         } finally {
@@ -354,7 +366,10 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
   describe('what the browser is sent', () => {
     it('serves one stylesheet, and every colour in it is a colour the token package holds', () => {
       const built = builtStylesheet();
-      const written = new Set(colourNames.map((name) => asWritten(colour[name])));
+      const written = new Set([
+        ...colourNames.map((name) => asWritten(colour[name])),
+        ...websiteColourNames.map((name) => asWritten(websiteColour[name])),
+      ]);
 
       const strangers = [...built.matchAll(/#[0-9a-fA-F]{3,8}\b/g)]
         .map(([value]) => value)
@@ -377,25 +392,31 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
       const built = builtStylesheet();
       const faces = [...built.matchAll(/@font-face\{([^}]*)\}/g)].map(([, rule]) => rule ?? '');
       const served = faces.filter((rule) => rule.includes('url('));
+      const cuts = websiteFaceNames.flatMap((name) => websiteFontCuts[name]);
 
-      expect(served).toHaveLength(fonts.figtree.weights.length);
+      expect(served).toHaveLength(cuts.length);
 
       for (const rule of served) {
         expect(rule).toContain('format("truetype")');
         expect(rule).toMatch(/url\((?!https?:|\/\/)[^)]+\)/);
       }
 
-      for (const weight of fonts.figtree.weights) {
-        const cut = fontFile('figtree', weight).name.replace('-', '_');
+      for (const cut of cuts) {
+        // The bundler writes a hash into the name it serves a file under, and it writes a
+        // hyphen of its own as an underscore, so the cut is read by the part of the name the
+        // board chose.
+        const named = cut.name.replace('-', '_');
 
-        expect(servedFiles().some((file) => file.includes(cut) && file.endsWith('.ttf'))).toBe(
+        expect(servedFiles().some((file) => file.includes(named) && file.endsWith('.ttf'))).toBe(
           true,
         );
       }
     });
 
     it('declares the custom property the theme reads, so the pages draw in the served face', () => {
-      expect(builtStylesheet()).toContain(SERVED_FACE_VARIABLE);
+      for (const name of websiteFaceNames) {
+        expect(builtStylesheet()).toContain(SERVED_FACE_VARIABLES[name]);
+      }
     });
 
     it('asks no other company for a file, in any stylesheet it serves', () => {
@@ -422,11 +443,11 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
       expect(named).toEqual([]);
     });
 
-    it('serves the mark the brand draws, to the byte', () => {
-      const drawn = join(workspace, '..', '..', 'brand', 'logo', 'emi-wordmark.svg');
+    it('serves the icon the application ships, to the byte', () => {
+      const shipped = join(workspace, '..', 'mobile', 'assets', 'icon', 'emi-icon.svg');
 
-      expect(readFileSync(join(assets, 'emi-wordmark.svg'), 'utf8')).toBe(
-        readFileSync(drawn, 'utf8'),
+      expect(readFileSync(join(assets, 'emi-icon.svg'), 'utf8')).toBe(
+        readFileSync(shipped, 'utf8'),
       );
     });
   });

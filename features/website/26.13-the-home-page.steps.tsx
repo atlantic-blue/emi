@@ -66,21 +66,21 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('she reads what Emi is not, in the two sentences Emi is held to', () => {
+    and('she reads what Emi is not, in the words Emi is held to', () => {
       for (const language of languages) {
         const denials = approvedDenials.filter((denial) =>
           denial.startsWith(denialOpening[language]),
         );
+        const onThePage = denials.filter(
+          (denial) => pages.get(language)?.includes(denial) === true,
+        );
 
-        expect(denials).toHaveLength(2);
-
-        for (const denial of denials) {
-          expect(pages.get(language)).toContain(denial);
-        }
+        expect(denials.length).toBeGreaterThan(0);
+        expect(onThePage).toHaveLength(1);
       }
     });
 
-    and('the other two languages are one press away, in the band at the top', () => {
+    and('the other two languages are one press away, in the band at the foot', () => {
       for (const language of languages) {
         const page = pages.get(language) as string;
 

@@ -4,10 +4,6 @@ import { join } from 'node:path';
 import {
   colour,
   colourNames,
-  face,
-  fontFile,
-  fonts,
-  fontsRoot,
   letterSpacingOf,
   radius,
   radiusNames,
@@ -16,10 +12,21 @@ import {
   stroke,
   typeRoleNames,
   typeScale,
+  websiteColour,
+  websiteColourNames,
+  websiteColours,
+  websiteFace,
+  websiteFaceNames,
+  websiteFontCuts,
+  websiteFontFile,
+  websiteFontsRoot,
+  websitePhoneWidth,
+  CONTRAST_FLOOR,
+  contrastRatio,
 } from '@emi/tokens';
 
-import { servedFont } from '../app/fonts';
-import { SERVED_FACE_VARIABLE } from '../lib/face';
+import { servedFonts } from '../app/fonts';
+import { SERVED_FACE_VARIABLES } from '../lib/face';
 import { fontLoaderCalls } from './doubles/nextFontLocal';
 import { declarationsOf, stylesheetFor, websiteWorkspace } from './stylesheet';
 
@@ -29,6 +36,11 @@ import { declarationsOf, stylesheetFor, websiteWorkspace } from './stylesheet';
  *
  * The cases below read what Tailwind writes rather than what the theme says, because a theme is a
  * claim and a rule is what a browser obeys.
+ *
+ * Two palettes reach the theme. The phone's palette is `colour`, and the site has one of its own in
+ * `websiteColour`, taken from the board the operator approved. They are two surfaces drawn in
+ * different values, and one flat namespace carries both because every name of the site's own starts
+ * with `site`.
  */
 
 const repositoryRoot = join(websiteWorkspace, '..', '..');
@@ -39,6 +51,8 @@ const longEnoughToCompile = 60_000;
 const everyClass = [
   ...colourNames.map((name) => `bg-${name}`),
   ...colourNames.map((name) => `text-${name}`),
+  ...websiteColourNames.map((name) => `bg-${name}`),
+  ...websiteColourNames.map((name) => `text-${name}`),
   ...typeRoleNames.map((name) => `text-${name}`),
   ...spaceNames.map((name) => `p-${name}`),
   ...radiusNames.map((name) => (name === 'DEFAULT' ? 'rounded' : `rounded-${name}`)),
@@ -47,6 +61,8 @@ const everyClass = [
   'font-display',
   'font-text',
   'font-data',
+  'phone:hidden',
+  'sm:flex',
   'bg-brandBlue',
   'p-brandGap',
 ];
@@ -57,13 +73,50 @@ beforeAll(async () => {
   stylesheet = await stylesheetFor(everyClass);
 }, longEnoughToCompile);
 
-describe('the palette of the site is the palette of the phone', () => {
+describe('the palette of the phone reaches the site unchanged', () => {
   it.each([...colourNames])('draws %s at the value the token package holds', (name) => {
     expect(declarationsOf(stylesheet, `bg-${name}`)).toBe(`background-color: ${colour[name]};`);
   });
 
   it('draws no colour the token package never named', () => {
     expect(declarationsOf(stylesheet, 'bg-brandBlue')).toBe('');
+  });
+});
+
+describe('the palette the approved board paints the site in', () => {
+  it.each([...websiteColourNames])('draws %s at the value the board paints', (name) => {
+    expect(declarationsOf(stylesheet, `bg-${name}`)).toBe(
+      `background-color: ${websiteColour[name]};`,
+    );
+  });
+
+  it('names every colour of its own apart, so neither palette answers for the other', () => {
+    expect(websiteColourNames.filter((name) => (colourNames as string[]).includes(name))).toEqual(
+      [],
+    );
+    expect(websiteColourNames.every((name) => name.startsWith('site'))).toBe(true);
+  });
+
+  // Contract TOKEN-2. A text colour whose ground nobody measured is the drift this exists to stop,
+  // so the ground is declared beside the value and the ratio is read here rather than approved by
+  // eye on a board.
+  it.each([...websiteColourNames])('says which grounds %s may carry text on', (name) => {
+    const token = websiteColours[name];
+
+    if (!token.roles.includes('text')) {
+      expect(token.textOn).toEqual([]);
+
+      return;
+    }
+
+    expect(token.textOn.length).toBeGreaterThan(0);
+
+    for (const ground of token.textOn) {
+      expect(websiteColours[ground].roles).toContain('ground');
+      expect(contrastRatio(token.value, websiteColour[ground])).toBeGreaterThanOrEqual(
+        CONTRAST_FLOOR,
+      );
+    }
   });
 });
 
@@ -102,50 +155,76 @@ describe('the gaps, the corners and the strokes', () => {
   });
 });
 
+describe('the one width the board changes the shape of a band at', () => {
+  it('reaches a browser as a width of its own, and keeps the ones Tailwind ships', () => {
+    const phone = [...stylesheet.matchAll(/@media \(([^)]*)\) \{([^@]*)\}/g)].find(([, , rules]) =>
+      (rules ?? '').includes('phone\\:'),
+    );
+
+    expect(phone?.[1]).toContain(`${websitePhoneWidth}px`);
+    expect(declarationsOf(stylesheet, 'phone:hidden')).toContain('display: none');
+    expect(declarationsOf(stylesheet, 'sm:flex')).toContain('display: flex');
+  });
+});
+
 describe('the faces the site draws in', () => {
-  it.each(['display', 'text'] as const)('names the %s face the token package names', (name) => {
+  it.each([...websiteFaceNames])('names the %s face of the board', (name) => {
     const written = declarationsOf(stylesheet, `font-${name}`);
 
-    expect(written).toContain(`var(${SERVED_FACE_VARIABLE})`);
-    expect(written).toContain(face[name]);
+    expect(written).toContain(`var(${SERVED_FACE_VARIABLES[name]})`);
+    expect(written).toContain(websiteFace[name]);
   });
 
-  it('names no face the site does not serve yet', () => {
-    expect(declarationsOf(stylesheet, 'font-data')).toBe('');
-  });
+  it.each([...websiteFaceNames])(
+    'asks for the family the site serves before any family a browser may already hold, for %s',
+    (name) => {
+      const written = declarationsOf(stylesheet, `font-${name}`);
 
-  it('asks the browser for the family the site serves before any family it may already hold', () => {
+      expect(written.indexOf(SERVED_FACE_VARIABLES[name])).toBeLessThan(
+        written.indexOf(websiteFace[name]),
+      );
+    },
+  );
+
+  it('writes a family of more than one word quoted, or a browser reads each word as a family', () => {
     const written = declarationsOf(stylesheet, 'font-text');
 
-    expect(written.indexOf(SERVED_FACE_VARIABLE)).toBeLessThan(written.indexOf(face.text));
+    expect(websiteFace.text).toContain(' ');
+    expect(written).toContain(`"${websiteFace.text}"`);
+  });
+
+  it('draws the three the board names and no fourth', () => {
+    expect([...websiteFaceNames]).toEqual(['display', 'text', 'data']);
   });
 });
 
 describe('the files the site serves those faces from', () => {
-  const asked = fontLoaderCalls[0];
-
-  it('asked the bundler for exactly the Figtree cuts the token package ships', () => {
-    expect(asked?.src.map((source) => source.path.split('/').pop())).toEqual(
-      fonts.figtree.weights.map((weight) => fontFile('figtree', weight).path.split('/').pop()),
+  it('asked the bundler for exactly the cuts the token package names, in their order', () => {
+    expect(fontLoaderCalls.flatMap((call) => call.src.map((source) => source.path))).toEqual(
+      websiteFaceNames.flatMap((name) =>
+        websiteFontCuts[name].map((cut) => `../assets/fonts/${websiteFontFile(cut)}`),
+      ),
     );
   });
 
   it('asked for a file that is in this repository, for every cut', () => {
-    for (const weight of fonts.figtree.weights) {
-      expect(existsSync(join(repositoryRoot, fontsRoot, fontFile('figtree', weight).path))).toBe(
-        true,
-      );
+    for (const name of websiteFaceNames) {
+      for (const cut of websiteFontCuts[name]) {
+        expect(existsSync(join(repositoryRoot, websiteFontsRoot, websiteFontFile(cut)))).toBe(true);
+      }
     }
   });
 
   it('asked for each cut at the weight the token package gives it', () => {
-    expect(asked?.src.map((source) => source.weight)).toEqual(
-      fonts.figtree.weights.map((weight) => `${fontFile('figtree', weight).weight}`),
+    expect(fontLoaderCalls.flatMap((call) => call.src.map((source) => source.weight))).toEqual(
+      websiteFaceNames.flatMap((name) => websiteFontCuts[name].map((cut) => `${cut.weight}`)),
     );
   });
 
   it('names the same custom property the theme reads, which the loader refuses to be handed', () => {
-    expect(asked?.variable).toBe(SERVED_FACE_VARIABLE);
+    expect(fontLoaderCalls.map((call) => call.variable)).toEqual(
+      websiteFaceNames.map((name) => SERVED_FACE_VARIABLES[name]),
+    );
   });
 
   it('names no font service, and no other host', () => {
@@ -153,7 +232,7 @@ describe('the files the site serves those faces from', () => {
 
     expect(source).not.toMatch(/https?:\/\//);
     expect(source).not.toContain('next/font/google');
-    expect(servedFont.variable.length).toBeGreaterThan(0);
+    expect(servedFonts.every((font) => font.variable.length > 0)).toBe(true);
   });
 });
 
@@ -163,7 +242,7 @@ describe('the stylesheet the site serves', () => {
   it('holds no value of its own, because a value here is one no gate reads', () => {
     expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
     expect(source).not.toMatch(/\b\d+px\b/);
-    expect(source).not.toContain(face.display);
+    expect(source).not.toContain(websiteFace.display);
   });
 
   it('names the theme, which is where the values come from', () => {

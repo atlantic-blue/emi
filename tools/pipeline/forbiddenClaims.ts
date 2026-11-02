@@ -134,6 +134,9 @@ export const interfaceWording: readonly string[] = [...forbiddenWording, ...inte
 export const approvedDenials: readonly string[] = [
   'Emi is not a contraceptive.',
   'Emi is not a medical device.',
+  // The board of the website writes both denials as one sentence, and the approved home design
+  // carries it word for word, so the site says it the way the design says it.
+  'Emi is not a contraceptive and not a medical device.',
   'Emi makes no claim to prevent or achieve a pregnancy, and it carries no certification badge that an auditor did not sign.',
   'Emi never says a day is safe, because no day is.',
   // The note in the fertile window on the Sex page, from the sexPage board.
@@ -142,11 +145,13 @@ export const approvedDenials: readonly string[] = [
   // Spanish, word for word as the catalogue writes them.
   'Emi no es un anticonceptivo.',
   'Emi no es un dispositivo médico.',
+  'Emi no es un anticonceptivo ni un dispositivo médico.',
   'Emi nunca dice que un día es seguro, porque ninguno lo es.',
   'Esto no es un anticonceptivo.',
   // Russian, word for word as the catalogue writes them.
   'Emi не является средством контрацепции.',
   'Emi не является медицинским изделием.',
+  'Emi не является средством контрацепции и не является медицинским изделием.',
   'Emi никогда не говорит, что день безопасный, потому что безопасных дней нет.',
   'Это не контрацепция.',
 ];
@@ -185,9 +190,16 @@ function collapsed(text: string): string {
 }
 
 /**
- * A denial only counts where it begins a sentence. A quotation that wraps one in other words is not
- * the approved sentence, so it is left in the text and found like any other claim.
+ * What may stand in front of a denial for it to still be the approved sentence: the start of the
+ * file, the end of the sentence before it, or the quote that opens a string. A catalogue of words
+ * holds one sentence to a value, so the character in front of the first word of the first sentence
+ * is the quote rather than a full stop.
+ *
+ * A letter is not here, so a quotation that wraps a denial in other words is not the approved
+ * sentence: it is left in the text and found like any other claim.
  */
+const mayPrecedeADenial: readonly string[] = ['', '.', '!', '?', "'", '"', '`'];
+
 function withoutDenials(text: string, denials: readonly string[]): string {
   let cleaned = text;
 
@@ -197,7 +209,7 @@ function withoutDenials(text: string, denials: readonly string[]): string {
     for (let at = cleaned.indexOf(sentence); at >= 0; at = cleaned.indexOf(sentence, at + 1)) {
       const previous = cleaned.slice(0, at).trimEnd().slice(-1);
 
-      if (previous === '' || previous === '.' || previous === '!' || previous === '?') {
+      if (mayPrecedeADenial.includes(previous)) {
         cleaned = `${cleaned.slice(0, at)} ${cleaned.slice(at + sentence.length)}`;
       }
     }

@@ -4,20 +4,23 @@ import { extname, join, relative, resolve } from 'node:path';
 import {
   colour,
   colourNames,
-  fontFile,
-  fonts,
-  fontsRoot,
   radius,
   space,
   typeScale,
+  websiteColour,
+  websiteColourNames,
+  websiteFaceNames,
+  websiteFontCuts,
+  websiteFontFile,
+  websiteFontsRoot,
 } from '@emi/tokens';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { servedFont } from '../../apps/website/app/fonts';
+import { servedFonts } from '../../apps/website/app/fonts';
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import NotFound from '../../apps/website/app/[lang]/not-found';
-import { SERVED_FACE_VARIABLE } from '../../apps/website/lib/face';
+import { SERVED_FACE_VARIABLES } from '../../apps/website/lib/face';
 import { fontLoaderCalls } from '../../apps/website/test/doubles/nextFontLocal';
 import { whatTheMarkupDraws } from '../../apps/website/test/stylesheet';
 
@@ -93,18 +96,23 @@ defineFeature(feature, (test) => {
     then('she reads what happened, and the way back to the Emi home page', () => {
       expect(page).toContain('This page does not exist');
       expect(page).toMatch(/<a[^>]*href="\/"[^>]*>[^<]*Emi[^<]*<\/a>/);
-      expect(page).toContain('Emi is made by Atlantic Blue Solutions Limited.');
+      expect(page).toContain('Atlantic Blue Solutions Limited.');
     });
 
     and('every colour she is shown is a colour the token package measured', () => {
-      const measured = new Set(colourNames.map((name) => colour[name].toLowerCase()));
+      // Two palettes reach a page of the site: the phone's, and the one the approved board paints
+      // the site itself in. Both are measured in the token package.
+      const measured = new Set([
+        ...colourNames.map((name) => colour[name].toLowerCase()),
+        ...websiteColourNames.map((name) => websiteColour[name].toLowerCase()),
+      ]);
       const shown = [...everyDeclaration.matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map(([value]) =>
         value.toLowerCase(),
       );
 
       expect(shown.length).toBeGreaterThan(0);
       expect(shown.filter((value) => !measured.has(value))).toEqual([]);
-      expect(everyDeclaration).toContain(`background-color: ${colour.ground}`);
+      expect(everyDeclaration).toContain(`background-color: ${websiteColour.siteGround}`);
       expect(everyDeclaration).toContain(`background-color: ${colour.card}`);
       expect(everyDeclaration).toContain(`background-color: ${colour.accent}`);
       expect(everyDeclaration).toContain(`color: ${colour.text}`);
@@ -114,18 +122,22 @@ defineFeature(feature, (test) => {
     and(
       'the words are set in the letters this site serves, and in no face from a font service',
       () => {
-        const asked = fontLoaderCalls[0];
-
-        expect(everyDeclaration).toContain(`font-family: var(${SERVED_FACE_VARIABLE})`);
-        expect(asked?.variable).toBe(SERVED_FACE_VARIABLE);
-        expect(asked?.src.map((source) => source.path.split('/').pop())).toEqual(
-          fonts.figtree.weights.map((weight) => fontFile('figtree', weight).path.split('/').pop()),
+        expect(everyDeclaration).toContain(`font-family: var(${SERVED_FACE_VARIABLES.text})`);
+        expect(fontLoaderCalls.map((call) => call.variable)).toEqual(
+          websiteFaceNames.map((name) => SERVED_FACE_VARIABLES[name]),
+        );
+        expect(fontLoaderCalls.flatMap((call) => call.src.map((source) => source.path))).toEqual(
+          websiteFaceNames.flatMap((name) =>
+            websiteFontCuts[name].map((cut) => `../assets/fonts/${websiteFontFile(cut)}`),
+          ),
         );
 
-        for (const weight of fonts.figtree.weights) {
-          expect(
-            existsSync(join(repositoryRoot, fontsRoot, fontFile('figtree', weight).path)),
-          ).toBe(true);
+        for (const name of websiteFaceNames) {
+          for (const cut of websiteFontCuts[name]) {
+            expect(existsSync(join(repositoryRoot, websiteFontsRoot, websiteFontFile(cut)))).toBe(
+              true,
+            );
+          }
         }
       },
     );
@@ -141,7 +153,8 @@ defineFeature(feature, (test) => {
       // The font loader writes a class of its own, which is the one class on the page Tailwind
       // never saw. Every other class she is sent must be a word the theme gave a value, or the
       // page is asking the browser for something nobody chose.
-      const classes = Object.keys(painted).filter((name) => name !== servedFont.variable);
+      const written = new Set(servedFonts.map((font) => font.variable));
+      const classes = Object.keys(painted).filter((name) => !written.has(name));
       const drawingNothing = classes.filter((name) => painted[name] === '');
 
       expect(classes.length).toBeGreaterThan(20);

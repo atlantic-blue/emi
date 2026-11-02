@@ -41,9 +41,14 @@ export async function stylesheetFor(classes: readonly string[]): Promise<string>
   return compiler.build([...classes]);
 }
 
-/** The selector Tailwind writes for a class, which escapes the colon a variant carries. */
+/**
+ * The selector Tailwind writes for a class. A class name carries characters a selector cannot hold
+ * plainly: the colon of a variant, and the brackets, commas and slashes of a value written into the
+ * name. Tailwind escapes each one, so a reader looking for `h-[44px]` has to look for
+ * `.h-\[44px\]` or find nothing, which reads exactly like a class the theme never knew.
+ */
 function selectorOf(className: string): string {
-  return `.${className.replace(/:/g, '\\:')}`;
+  return `.${className.replace(/[^A-Za-z0-9_-]/g, (character) => `\\${character}`)}`;
 }
 
 function forARegularExpression(text: string): string {

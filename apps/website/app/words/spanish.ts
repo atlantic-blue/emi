@@ -1,6 +1,6 @@
 import type { SiteWords } from './words';
 
-/** Every word the home page draws in Spanish. The notes in english.ts hold for this file too. */
+/** Every word the site draws in Spanish. The notes in english.ts hold for this file too. */
 export const spanish: SiteWords = {
   brandLine: 'Emi. Every Month Insights.',
   tagline: 'Conócete mejor.',
@@ -8,8 +8,40 @@ export const spanish: SiteWords = {
   store: 'Descárgala en el App Store',
   beta: 'Únete a la beta en TestFlight ›',
   price: 'Un mes gratis, después 29,99 libras al mes.',
-  footerLine:
-    'Emi está hecha por Atlantic Blue Solutions Limited. Emi no es un anticonceptivo. Emi no es un dispositivo médico.',
   languageLabel: 'Idioma',
   pageDescription: 'Un registro de ciclo y menstruación que mantiene tus datos contigo.',
+
+  headerHomeLabel: 'Página de inicio de Emi',
+  headerMainLabel: 'Principal',
+  headerEmi: 'Emi',
+  headerPrivacy: 'Privacidad',
+  headerCalculator: 'Calculadora',
+  headerPulse: 'Pulso',
+  headerBuy: 'Comprar',
+  headerSupport: 'Soporte',
+  headerLanguageLabel: 'Cambiar idioma',
+  headerMenuLabel: 'Abrir el menú',
+  headerSignInLabel: 'Iniciar sesión',
+
+  footerDisclaimer:
+    'Emi no es un anticonceptivo ni un dispositivo médico. Un pronóstico es una estimación de tus ciclos anteriores. El primer mes es gratis con una suscripción mensual en la App Store.',
+  footerEmiGroup: 'Emi',
+  footerAppStore: 'App Store',
+  footerBeta: 'Únete a la prueba',
+  footerBuyOnTheWeb: 'Comprar en la web',
+  footerPrivacyGroup: 'Privacidad',
+  footerHowEmiProtects: 'Cómo Emi cuida tus datos',
+  footerOpenCode: 'El código abierto',
+  footerTransparency: 'Informe de transparencia',
+  footerLearnGroup: 'Aprender',
+  footerCalculator: 'Calculadora del próximo periodo',
+  footerGuides: 'Guías por fase',
+  footerPulse: 'El pulso de Emi',
+  footerHelpGroup: 'Ayuda',
+  footerSupport: 'Soporte',
+  footerCommunity: 'Comunidad de Emi',
+  footerAccount: 'Tu cuenta',
+  footerCopyright: 'Derechos de autor 2026 Atlantic Blue Solutions Limited.',
+  footerPrivacyPolicy: 'Política de privacidad',
+  footerTerms: 'Términos',
 };

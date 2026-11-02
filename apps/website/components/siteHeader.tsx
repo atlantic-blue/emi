@@ -1,4 +1,4 @@
-import { type Language, fallbackLanguage } from '@/app/words';
+import { type Language, type SiteWordKey, fallbackLanguage } from '@/app/words';
 import { EmiWordmark } from '@/components/emiWordmark';
 import { LanguageSwitcher } from '@/components/languageSwitcher';
 
@@ -11,6 +11,22 @@ export const WORDMARK_FILE = '/emi-wordmark.svg';
 
 /** The size the drawing is made at. The same test reads these two against its own canvas. */
 export const WORDMARK_UNITS = { width: 3002, height: 1879 } as const;
+
+/** The file the site serves the mark from once the band draws the approved icon. */
+export const ICON_FILE = '/emi-icon.svg';
+
+/** The address the three language links in the band at the foot of the page sit at. */
+export const LANGUAGES_ANCHOR = 'site-languages';
+
+/** The six ways into the product, each with the path it sits at under the language. */
+export const mainLinks: readonly { readonly word: SiteWordKey; readonly path: string }[] = [
+  { word: 'headerEmi', path: '' },
+  { word: 'headerPrivacy', path: 'privacy/' },
+  { word: 'headerCalculator', path: 'calculator/' },
+  { word: 'headerPulse', path: 'pulse/' },
+  { word: 'headerBuy', path: 'buy/' },
+  { word: 'headerSupport', path: 'support/' },
+];
 
 /**
  * A thin band at the top of every page, carrying the mark and the language she reads in. The mark
