@@ -29,7 +29,7 @@ Feature: One address answers for Emi
     Then she lands on "<landed on>"
 
     Examples:
-      | asked                         | landed on                 |
-      | http://www.myemi.app/         | https://myemi.app/en/     |
-      | https://www.myemi.app/en/     | https://myemi.app/en/     |
-      | https://www.myemi.app/privacy | https://myemi.app/privacy |
+      | asked                         | landed on                  |
+      | http://www.myemi.app/         | https://myemi.app/en/      |
+      | https://www.myemi.app/en/     | https://myemi.app/en/      |
+      | https://www.myemi.app/privacy | https://myemi.app/privacy/ |
