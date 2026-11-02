@@ -39,7 +39,19 @@ locals {
   caching_optimized = "658327ea-f89d-4fab-a63d-7e88639e58f6"
 
   # The paths OpenNext writes into the bucket. Everything else is a page, and a page is rendered.
-  asset_paths = ["/_next/static/*", "/favicon.ico", "/robots.txt", "/sitemap.xml"]
+  #
+  # A file in apps/website/public reaches the bucket under this same name, so it needs an entry
+  # here as well. Without one it falls to the server function, which renders pages and serves no
+  # file, so the page that asks for it reads 404. A distribution carries 25 cache behaviours
+  # before the quota has to be raised, so a folder of many files wants one wildcard rather than an
+  # entry for each.
+  asset_paths = [
+    "/_next/static/*",
+    "/favicon.ico",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/emi-wordmark.svg",
+  ]
 }
 
 # ── The assets, in a bucket only the distribution reads ──────────────────────
