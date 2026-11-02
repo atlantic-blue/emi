@@ -78,6 +78,10 @@ export default defineConfig([
     '**/.expo/**',
     'coverage/**',
     'apps/mobile/expo-env.d.ts',
+    // The approved design of the website, and the program that rendered it, both committed as the
+    // canvas wrote them. They are a record of a drawing rather than code this repository keeps, so
+    // a rule here would ask somebody to edit the design to satisfy it.
+    'docs/design/website/home-v2/**',
   ]),
   ...expoAwayFromTheWebsite,
   // The site is read the way a browser reads it: the core web vitals set, the TypeScript set, the

@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Emi home, version 2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"Newsreader";src:url("ds/emi/fonts/Newsreader16pt-Regular.ttf");font-weight:400}
+@font-face{font-family:"Newsreader";src:url("ds/emi/fonts/Newsreader16pt-Medium.ttf");font-weight:500}
+@font-face{font-family:"Plus Jakarta Sans";src:url("ds/emi/fonts/PlusJakartaSans-Regular.ttf");font-weight:400}
+@font-face{font-family:"Plus Jakarta Sans";src:url("ds/emi/fonts/PlusJakartaSans-SemiBold.ttf");font-weight:600}
+@font-face{font-family:"JetBrains Mono";src:url("ds/emi/fonts/JetBrainsMono-Medium.ttf");font-weight:500}
+body{margin:0;background:#FFF8F5}
+a{color:#843117}a:hover{color:#5C2018}
+input[type=range]{accent-color:#A3482C}
+@media (max-width: 640px){h1[style*="font-size: 64px"]{font-size:48px !important;line-height:52px !important}h2[style*="font-size: 48px"]{font-size:32px !important;line-height:40px !important}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; color: #1F1B19; font-family: &quot;Plus Jakarta Sans&quot;, system-ui, sans-serif;">
+<dc-import name="Header" hint-size="100%,48px"></dc-import>
+<main>
+
+<section aria-labelledby="hero-title" style="background: #FFF8F5;">
+<div style="box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 96px 24px 104px; display: flex; flex-wrap: wrap; align-items: center; gap: 64px;">
+<div style="flex: 999 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; color: #843117;">EMI · EVERY MONTH INSIGHTS</span>
+<h1 id="hero-title" style="margin: 0; font-family: Newsreader, Georgia, serif; font-size: 64px; line-height: 68px; font-weight: 500; letter-spacing: -0.02em;">Understand your body, safely.</h1>
+<p style="margin: 0; max-width: 520px; font-size: 19px; line-height: 28px; color: #56423D;">Emi starts with your cycle: a forecast from your own data, and how sure it is. Then accurate education, and a community where you can ask what people are told not to. Your data is always encrypted.</p>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding-top: 8px;">
+<a href="#" aria-label="Download on the App Store" style="display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 20px; border-radius: 12px; background: #000000; color: #FFFFFF; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.6zM14.1 5.6c.6-.8 1.1-1.8 1-2.9-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2.1-.5 2.7-1.3z"></path></svg><span style="display: flex; flex-direction: column;"><span style="font-size: 12px; line-height: 16px;">Download on the</span><span style="font-size: 19px; line-height: 20px; font-weight: 600;">App Store</span></span></a>
+<span style="font-size: 14px; line-height: 20px; color: #56423D;">Free for a month, then £29.99 a month.<br>Cancel anytime.</span>
+</div>
+</div>
+
+<div style="flex: 1 1 340px; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+<div style="position: relative; width: 320px; height: 320px; max-width: 100%;">
+<svg width="320" height="320" viewBox="0 0 320 320" role="img" aria-label="{{ringLabel}}" style="display: block; max-width: 100%; height: auto;">
+<g fill="none" stroke-width="26" stroke-linecap="butt">
+<path d="M 163.12 41.04 A 119 119 0 0 1 259.80 95.19" stroke="#B8434E"></path>
+<path d="M 262.53 99.60 A 119 119 0 0 1 151.70 278.71" stroke="#F5DCCB"></path>
+<path d="M 146.53 278.24 A 119 119 0 0 1 53.97 214.02" stroke="#E9A15F"></path>
+<path d="M 51.71 209.35 A 119 119 0 0 1 156.88 41.04" stroke="#C27E86"></path>
+</g>
+<g transform="{{markerTransform}}">
+<rect x="264" y="156.5" width="33" height="7" rx="3.5" fill="#FFFFFF" stroke="#2E2224" stroke-width="1.5"></rect>
+<polygon points="300,160 312,154 312,166" fill="#B8434E"></polygon>
+</g>
+</svg>
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; pointer-events: none;">
+<span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.02em; color: #1F1B19;">{{phaseLabel}}</span>
+<span style="font-size: 56px; line-height: 60px; font-weight: 600; letter-spacing: -0.03em;">Day {{day}}</span>
+<span style="font-size: 16px; line-height: 24px; color: #56423D;">of about 31</span>
+</div>
+</div>
+<label style="width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; line-height: 20px; color: #56423D; text-align: center;">Move through a cycle
+<input type="range" min="1" max="31" step="1" value="{{day}}" onChange="{{onDay}}" style="width: 100%; min-height: 44px;">
+</label>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="forecast-title" style="background: #FFFFFF;">
+<div style="box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 112px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 64px;">
+<div style="flex: 1 1 320px; display: flex; justify-content: center;">
+<img src="/_blob/797e3d46d2df35dd822032622f5dc2e5" alt="The Emi home screen with the ring at day 8 of about 31." style="width: 300px; height: auto; border-radius: 40px; box-shadow: 0 24px 48px -16px rgba(31, 27, 25, 0.25);">
+</div>
+<div style="flex: 999 1 440px; min-width: 0; display: flex; flex-direction: column; gap: 24px;">
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; color: #843117;">YOUR CYCLE</span>
+<h2 id="forecast-title" style="margin: 0; font-family: Newsreader, Georgia, serif; font-size: 48px; line-height: 56px; font-weight: 500; letter-spacing: -0.02em;">A range of days, and how sure Emi is.</h2>
+<p style="margin: 0; font-size: 19px; line-height: 28px; color: #56423D;">Emi learns from your own cycles, not from an average. It gives you a window, not a single date, and says how confident it is. Until it has two full cycles, it tells you it is still learning.</p>
+<div style="background: #FBF2EE; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 12px; max-width: 440px;">
+<span style="font-size: 14px; line-height: 20px; color: #56423D;">Your next period</span>
+<span style="font-family: Newsreader, Georgia, serif; font-size: 24px; line-height: 30px; font-weight: 500;">Between the 8th and the 14th of October</span>
+<span style="font-size: 14px; line-height: 20px; color: #56423D;">High confidence, from your last 6 cycles</span>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #56423D;">Emi is not a contraceptive and not a medical device.</p>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="learn-title" style="background: #FBF2EE;">
+<div style="box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 112px 24px; display: flex; flex-direction: column; gap: 48px;">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 720px;">
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; color: #843117;">EDUCATION</span>
+<h2 id="learn-title" style="margin: 0; font-family: Newsreader, Georgia, serif; font-size: 48px; line-height: 56px; font-weight: 500; letter-spacing: -0.02em;">Accurate answers to the questions people are taught not to ask.</h2>
+<p style="margin: 0; font-size: 19px; line-height: 28px; color: #56423D;">Clear guides on what your body is doing in each phase, and what may help. Written plainly, without embarrassment.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+<a href="Calculator.dc.html" style="background: #FFFFFF; border-radius: 24px; padding: 28px; min-height: 200px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; color: #1F1B19; text-decoration: none;"><span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.02em; color: #5C2018;">PERIOD</span><span style="font-family: Newsreader, Georgia, serif; font-size: 24px; line-height: 30px; font-weight: 500;">Cramps, tiredness and what may help.</span><span aria-hidden="true" style="margin-top: auto; height: 6px; border-radius: 9999px; background: #B8434E;"></span></a>
+<a href="Calculator.dc.html" style="background: #FFFFFF; border-radius: 24px; padding: 28px; min-height: 200px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; color: #1F1B19; text-decoration: none;"><span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.02em; color: #5E3B10;">FOLLICULAR</span><span style="font-family: Newsreader, Georgia, serif; font-size: 24px; line-height: 30px; font-weight: 500;">The days after your period.</span><span aria-hidden="true" style="margin-top: auto; height: 6px; border-radius: 9999px; background: #F5DCCB;"></span></a>
+<a href="Calculator.dc.html" style="background: #FFFFFF; border-radius: 24px; padding: 28px; min-height: 200px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; color: #1F1B19; text-decoration: none;"><span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.02em; color: #404218;">OVULATION</span><span style="font-family: Newsreader, Georgia, serif; font-size: 24px; line-height: 30px; font-weight: 500;">An estimate, from your past cycles.</span><span aria-hidden="true" style="margin-top: auto; height: 6px; border-radius: 9999px; background: #E9A15F;"></span></a>
+<a href="Calculator.dc.html" style="background: #FFFFFF; border-radius: 24px; padding: 28px; min-height: 200px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; color: #1F1B19; text-decoration: none;"><span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.02em; color: #433246;">LUTEAL</span><span style="font-family: Newsreader, Georgia, serif; font-size: 24px; line-height: 30px; font-weight: 500;">Cramps in the luteal phase, and more.</span><span aria-hidden="true" style="margin-top: auto; height: 6px; border-radius: 9999px; background: #C27E86;"></span></a>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="community-title" style="background: #342F2D; color: #F8EFEB;">
+<div style="box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 112px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 48px 64px;">
+<div style="display: flex; flex-direction: column; gap: 16px;">
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; color: #FFB59F;">COMMUNITY</span>
+<h2 id="community-title" style="margin: 0; font-family: Newsreader, Georgia, serif; font-size: 48px; line-height: 56px; font-weight: 500; letter-spacing: -0.02em;">A safe place to ask, and to help each other.</h2>
+<p style="margin: 0; font-size: 19px; line-height: 28px; color: #CCC5BE;">The Emi Community is where people ask questions, share what helped them and suggest what Emi should do next.</p>
+<a href="#" style="align-self: flex-start; font-size: 16px; line-height: 44px; color: #FFB59F; text-decoration: none;">Join the Emi Community on Telegram ›</a>
+</div>
+<div style="background: #F8EFEB; color: #1F1B19; border-radius: 24px; padding: 36px; display: flex; flex-direction: column; gap: 12px;">
+<span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.02em; color: #843117;">FOR PARENTS AND DAUGHTERS</span>
+<span style="font-family: Newsreader, Georgia, serif; font-size: 32px; line-height: 40px; font-weight: 500;">Start the conversation early.</span>
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">Accurate information you can share with your daughter, about the subjects that still feel hard to talk about. Learn together, in a space made to feel safe.</p>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="note-title" style="background: #FFFFFF;">
+<div style="box-sizing: border-box; max-width: 760px; margin: 0 auto; padding: 120px 24px; display: flex; flex-direction: column; gap: 32px;">
+<h2 id="note-title" style="margin: 0; font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; color: #843117;">WHY I AM BUILDING EMI</h2>
+<p style="margin: 0; font-family: Newsreader, Georgia, serif; font-size: 32px; line-height: 44px; font-weight: 400; letter-spacing: -0.01em;">I have two daughters. I am building Emi so they have a safe place to understand their bodies: accurate information, education on the subjects that are still taboo, and a community to ask without judgement, from a young age. And along the way, to help everyone else who needs the same.</p>
+<div style="display: flex; align-items: center; gap: 16px;">
+<img src="/_blob/2f3b95d653826b5ca02acab62e8534de" alt="" style="width: 48px; height: 48px; border-radius: 12px; display: block;">
+<span style="display: flex; flex-direction: column;"><span style="font-size: 16px; line-height: 24px; font-weight: 600;">Julian Tellez</span><span style="font-size: 14px; line-height: 20px; color: #56423D;">Founder of Emi</span></span>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="privacy-title" style="background: #FFF8F5; border-top: 1px solid #EFE6E3;">
+<div style="box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 72px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px 48px;">
+<div style="display: flex; align-items: center; gap: 20px;">
+<span style="width: 56px; height: 56px; border-radius: 9999px; background: #FFFFFF; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#843117" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>
+<h2 id="privacy-title" style="margin: 0; font-family: Newsreader, Georgia, serif; font-size: 32px; line-height: 40px; font-weight: 500;">Your data is always encrypted.</h2>
+</div>
+<a href="Protection.dc.html" style="font-size: 16px; line-height: 44px; font-weight: 600; text-decoration: none;">How Emi protects your data ›</a>
+</div>
+</section>
+
+<section aria-labelledby="price-title" style="background: #F8EFEB;">
+<div style="box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 112px 24px; display: flex; flex-wrap: wrap; gap: 48px 64px;">
+<div style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 16px;">
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 12px; line-height: 16px; font-weight: 500; letter-spacing: 0.08em; color: #843117;">ONE PRICE</span>
+<h2 id="price-title" style="margin: 0; font-family: Newsreader, Georgia, serif; font-size: 48px; line-height: 56px; font-weight: 500; letter-spacing: -0.02em;">£29.99 a month. The first month is free.</h2>
+<p style="margin: 0; font-size: 19px; line-height: 28px; color: #56423D;">Pay the way that suits you.</p>
+</div>
+<div style="flex: 999 1 440px; min-width: 0; background: #FFFFFF; border-radius: 24px; overflow: hidden;">
+<a href="#" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 80px; padding: 16px 28px; border-bottom: 1px solid #EFE6E3; color: #1F1B19; text-decoration: none;"><span style="display: flex; flex-direction: column;"><span style="font-size: 19px; line-height: 26px; font-weight: 600;">App Store</span><span style="font-size: 14px; line-height: 20px; color: #56423D;">One month free, then monthly. Cancel in your Apple settings.</span></span><span aria-hidden="true" style="font-size: 24px; color: #843117;">›</span></a>
+<a href="Checkout.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 80px; padding: 16px 28px; border-bottom: 1px solid #EFE6E3; color: #1F1B19; text-decoration: none;"><span style="display: flex; flex-direction: column;"><span style="font-size: 19px; line-height: 26px; font-weight: 600;">Card, on this site</span><span style="font-size: 14px; line-height: 20px; color: #56423D;">Pay here, then sign in on your iPhone.</span></span><span aria-hidden="true" style="font-size: 24px; color: #843117;">›</span></a>
+<a href="#" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 80px; padding: 16px 28px; color: #1F1B19; text-decoration: none;"><span style="display: flex; flex-direction: column;"><span style="font-size: 19px; line-height: 26px; font-weight: 600;">Telegram Stars</span><span style="font-size: 14px; line-height: 20px; color: #56423D;">Pay in the Emi bot, then log in with Telegram.</span></span><span aria-hidden="true" style="font-size: 24px; color: #843117;">›</span></a>
+</div>
+</div>
+</section>
+
+<section aria-labelledby="try-title" style="background: #FFFFFF;">
+<div style="box-sizing: border-box; max-width: 1120px; margin: 0 auto; padding: 96px 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+<a href="Calculator.dc.html" style="background: #FBF2EE; border-radius: 24px; padding: 36px; display: flex; flex-direction: column; gap: 12px; min-height: 200px; box-sizing: border-box; color: #1F1B19; text-decoration: none;"><span id="try-title" style="font-family: Newsreader, Georgia, serif; font-size: 32px; line-height: 40px; font-weight: 500;">Not ready to download?</span><span style="font-size: 16px; line-height: 24px; color: #56423D;">Try the free calculator. Nothing you enter leaves the page.</span><span style="margin-top: auto; font-size: 16px; font-weight: 600; color: #843117;">When is my next period? ›</span></a>
+<a href="Support.dc.html" style="background: #FBF2EE; border-radius: 24px; padding: 36px; display: flex; flex-direction: column; gap: 12px; min-height: 200px; box-sizing: border-box; color: #1F1B19; text-decoration: none;"><span style="font-family: Newsreader, Georgia, serif; font-size: 32px; line-height: 40px; font-weight: 500;">Questions?</span><span style="font-size: 16px; line-height: 24px; color: #56423D;">We reply in English, Russian and Spanish.</span><span style="margin-top: auto; font-size: 16px; font-weight: 600; color: #843117;">Visit support ›</span></a>
+</div>
+</section>
+
+<section aria-labelledby="end-title" style="background: #342F2D; color: #F8EFEB;">
+<div style="box-sizing: border-box; max-width: 760px; margin: 0 auto; padding: 120px 24px; display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center;">
+<h2 id="end-title" style="margin: 0; font-family: Newsreader, Georgia, serif; font-size: 48px; line-height: 56px; font-weight: 500; letter-spacing: -0.02em;">Understand your body, safely.</h2>
+<a href="#" aria-label="Download on the App Store" style="display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 20px; border-radius: 12px; background: #FFFFFF; color: #000000; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="#000000" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.6zM14.1 5.6c.6-.8 1.1-1.8 1-2.9-.9 0-2.1.6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2.1-.5 2.7-1.3z"></path></svg><span style="display: flex; flex-direction: column; text-align: left;"><span style="font-size: 12px; line-height: 16px;">Download on the</span><span style="font-size: 19px; line-height: 20px; font-weight: 600;">App Store</span></span></a>
+<span style="font-size: 14px; line-height: 20px; color: #CCC5BE;">Free for a month, then £29.99 a month. Cancel anytime.</span>
+</div>
+</section>
+</main>
+<dc-import name="Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":5000}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { day: 8 };
+}
+renderVals() {
+const day = this.state.day;
+let phase = 'LUTEAL PHASE';
+if (day <= 5) phase = 'PERIOD';
+else if (day <= 16) phase = 'FOLLICULAR PHASE';
+else if (day <= 21) phase = 'OVULATION';
+const deg = ((day - 0.5) / 31) * 360 - 90;
+return {
+day: day,
+phaseLabel: phase,
+ringLabel: 'Cycle ring at day ' + day + ' of about 31, ' + phase.toLowerCase() + '.',
+markerTransform: 'rotate(' + deg.toFixed(1) + ' 160 160)',
+onDay: (e) => this.setState({ day: Number(e.target.value) })
+};
+}
+}
+</script>
+</body>
+</html>
