@@ -1,3 +1,5 @@
+import type { PNG } from 'pngjs';
+
 import { test as bdd } from 'playwright-bdd';
 
 /** What the server said when she asked for the address, which the steps after the ask read. */
@@ -31,6 +33,18 @@ export interface WhatSheIsReading {
 }
 
 /**
+ * The two pictures the pixel comparison holds against each other: the design the operator approved,
+ * and the page the site serves. Decoded, because what the comparison reads is pixels and not bytes.
+ *
+ * A fixture rather than a variable in the module, because the two widths run as two tests and a
+ * variable here would be one value shared by both.
+ */
+export interface WhatSheIsLookingAt {
+  atTheDesign: PNG | null;
+  atThePage: PNG | null;
+}
+
+/**
  * What came back from the live host: the status, the headers the edge added, and the address she
  * ended on after every move. A page is not opened for these, because a redirect and a header are
  * answers to a request and a browser that followed them has already thrown the first answer away.
@@ -61,6 +75,7 @@ export const test = bdd.extend<{
   reading: WhatSheIsReading;
   cameBack: WhatCameBack;
   complaints: WhatTheBrowserRefused;
+  looking: WhatSheIsLookingAt;
 }>({
   answered: async ({}, handTo) => {
     await handTo({ status: null, landedOn: null, moves: 0, movedBy: null });
@@ -76,6 +91,9 @@ export const test = bdd.extend<{
   },
   reading: async ({}, handTo) => {
     await handTo({ language: '' });
+  },
+  looking: async ({}, handTo) => {
+    await handTo({ atTheDesign: null, atThePage: null });
   },
   cameBack: async ({}, handTo) => {
     await handTo({ status: null, headers: {}, landedOn: null });

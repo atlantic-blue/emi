@@ -1284,18 +1284,40 @@ this height; a screen that wants another passes its own, because the prototype p
 
 ```
 type WebsiteColourName =
-  'siteGround' | 'siteFooterGround' | 'siteLine' | 'siteText' | 'siteQuietText';
+  | 'siteGround'
+  | 'siteCard'
+  | 'siteTint'
+  | 'siteTintDeep'
+  | 'siteNight'
+  | 'siteBlack'
+  | 'siteFooterGround'
+  | 'siteLine'
+  | 'siteHeaderLine'
+  | 'siteTintLine'
+  | 'siteShadow'
+  | 'siteText'
+  | 'siteQuietText'
+  | 'siteAccent'
+  | 'siteSlider'
+  | 'siteNightAccent'
+  | 'siteNightQuietText'
+  | 'sitePeriodInk'
+  | 'siteFollicularInk'
+  | 'siteOvulationInk'
+  | 'siteLutealInk';
 ```
 
-The five values the header and the footer of the board are drawn in.
+Every value the board paints myemi.app in.
 
 ### `WebsiteColourRole`
 
 ```
-type WebsiteColourRole = 'ground' | 'text' | 'line';
+type WebsiteColourRole = 'ground' | 'text' | 'line' | 'control';
 ```
 
-What a colour of the site is allowed to do, in the words `colour.ts` uses.
+What a colour of the site is allowed to do, in the words `colour.ts` uses, and one more. A
+browser draws a range control in a colour of its own choosing unless it is told which, and that
+colour is neither a ground, nor a word, nor a rule.
 
 ### `WebsiteColourToken`
 

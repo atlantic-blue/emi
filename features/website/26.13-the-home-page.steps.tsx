@@ -5,7 +5,7 @@ import { defineFeature, loadFeature } from 'jest-cucumber';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import HomePage from '../../apps/website/app/[lang]/page';
-import { type Language, languages, wordsIn } from '../../apps/website/app/words';
+import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 import { approvedDenials } from '../../tools/pipeline/forbiddenClaims';
 
@@ -57,12 +57,21 @@ defineFeature(feature, (test) => {
         const page = pages.get(language) as string;
         const words = wordsIn(language);
 
-        expect(page).toContain(words.brandLine);
-        expect(page).toContain(words.tagline);
-        expect(page).toContain(words.line);
-        expect(page).toContain(words.price);
+        expect(page).toContain(brandEyebrowOf(words));
+        expect(page).toContain(words.heroHeadline);
+        expect(page).toContain(words.heroLine);
+        expect(page).toContain(words.heroPriceLine);
+        expect(page).toContain(words.priceHeadline);
         expect(page).toContain(words.store);
-        expect(page).toContain(words.beta);
+
+        // The board writes the price in its own sentence rather than in the application's, so what
+        // travels between the two is the amount. A page and a till that name different amounts is
+        // the thing this reads for, and `price` is held to the application's line by the words
+        // test beside the site.
+        const amount = /\d+[.,]\d\d/.exec(words.price)?.[0];
+
+        expect(amount).toBeDefined();
+        expect(page).toContain(amount as string);
       }
     });
 

@@ -383,7 +383,13 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
     it('carries the paper, the card, the one colour that acts and the words she reads', () => {
       const built = builtStylesheet();
 
-      for (const name of ['ground', 'card', 'accent', 'text'] as const) {
+      for (const name of ['siteGround', 'siteCard', 'siteAccent', 'siteText'] as const) {
+        expect(built).toContain(asWritten(websiteColour[name]));
+      }
+
+      // The ring of the hero is the ring the application draws, so the four phases come out of the
+      // one palette both surfaces read rather than being painted twice.
+      for (const name of ['period', 'follicular', 'ovulation', 'luteal'] as const) {
         expect(built).toContain(asWritten(colour[name]));
       }
     });

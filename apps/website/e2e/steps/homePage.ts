@@ -8,39 +8,37 @@ import { test } from './fixtures';
  * reads the words from the same file the page draws them from agrees with the page whatever the
  * page says.
  *
- * The brand line stays in English on all three pages, so the headline read here is the line under
- * it, which is translated.
+ * Four sentences each: the headline, what a month costs, the press to Apple's store, and the press
+ * to pay here instead. The last two are the only two things this page asks her to do.
  */
 const theLanguages = {
   English: {
     address: '/en/',
     tag: 'en',
-    headline: 'Get to know yourself better.',
-    price: 'One month free, then 29.99 pounds a month.',
+    headline: 'Understand your body, safely.',
+    price: 'Free for a month, then £29.99 a month.',
     store: 'Download on the App Store',
-    beta: 'Join the beta on TestFlight ›',
+    pay: 'Card, on this site',
   },
   Russian: {
     address: '/ru/',
     tag: 'ru',
-    headline: 'Узнайте себя лучше.',
-    price: 'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
+    headline: 'Понимайте своё тело бережно.',
+    price: 'Месяц бесплатно, затем 29,99 фунта в месяц.',
     store: 'Загрузите в App Store',
-    beta: 'Присоединиться к бета-версии в TestFlight ›',
+    pay: 'Картой, на этом сайте',
   },
   Spanish: {
     address: '/es/',
     tag: 'es',
-    headline: 'Conócete mejor.',
-    price: 'Un mes gratis, después 29,99 libras al mes.',
+    headline: 'Entiende tu cuerpo, con calma.',
+    price: 'Gratis un mes, después 29,99 libras al mes.',
     store: 'Descárgala en el App Store',
-    beta: 'Únete a la beta en TestFlight ›',
+    pay: 'Tarjeta, en este sitio',
   },
 } as const;
 
 type LanguageName = keyof typeof theLanguages;
-
-const theBrandLine = 'Emi. Every Month Insights.';
 
 function asKnown(language: string): LanguageName {
   if (language in theLanguages) {
@@ -69,14 +67,13 @@ Then('the site answers with a page', async ({ answered }) => {
 Then('she reads the headline and what Emi costs, in {word}', async ({ page }, language: string) => {
   const words = theLanguages[asKnown(language)];
 
-  await expect(page.getByText(theBrandLine)).toBeVisible();
-  await expect(page.getByText(words.headline)).toBeVisible();
-  await expect(page.getByText(words.price)).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.headline);
+  await expect(page.getByText(words.price).first()).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', words.tag);
 });
 
 Then(
-  'the press to the store and the press to the beta are both on the page, inside the screen she holds',
+  'the press to the store and the press to pay are both on the page, inside the screen she holds',
   async ({ page, reading }) => {
     const words = theLanguages[asKnown(reading.language)];
     const screen = page.viewportSize();
@@ -85,15 +82,16 @@ Then(
       throw new Error('The browser reported no screen size.');
     }
 
-    for (const name of [words.store, words.beta]) {
-      const press = page.getByRole('link', { name });
-
+    for (const press of [
+      page.getByRole('link', { name: words.store }).first(),
+      page.getByRole('link', { name: new RegExp(words.pay) }),
+    ]) {
       await expect(press).toBeVisible();
 
       const box = await press.boundingBox();
 
       if (box === null) {
-        throw new Error(`The browser reported no box for ${name}.`);
+        throw new Error('The browser reported no box for a press she has to be able to reach.');
       }
 
       expect(box.x).toBeGreaterThanOrEqual(0);
@@ -119,6 +117,6 @@ When('she presses Russian in the header', async ({ page }) => {
 
 Then('the page she gets is in Russian', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('lang', theLanguages.Russian.tag);
-  await expect(page.getByText(theLanguages.Russian.price)).toBeVisible();
+  await expect(page.getByText(theLanguages.Russian.price).first()).toBeVisible();
   expect(new URL(page.url()).pathname).toBe(theLanguages.Russian.address);
 });

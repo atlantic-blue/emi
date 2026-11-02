@@ -9,12 +9,36 @@
  * last.
  */
 
-/** The five values the header and the footer of the board are drawn in. */
+/** Every value the board paints myemi.app in. */
 export type WebsiteColourName =
-  'siteGround' | 'siteFooterGround' | 'siteLine' | 'siteText' | 'siteQuietText';
+  | 'siteGround'
+  | 'siteCard'
+  | 'siteTint'
+  | 'siteTintDeep'
+  | 'siteNight'
+  | 'siteBlack'
+  | 'siteFooterGround'
+  | 'siteLine'
+  | 'siteHeaderLine'
+  | 'siteTintLine'
+  | 'siteShadow'
+  | 'siteText'
+  | 'siteQuietText'
+  | 'siteAccent'
+  | 'siteSlider'
+  | 'siteNightAccent'
+  | 'siteNightQuietText'
+  | 'sitePeriodInk'
+  | 'siteFollicularInk'
+  | 'siteOvulationInk'
+  | 'siteLutealInk';
 
-/** What a colour of the site is allowed to do, in the words `colour.ts` uses. */
-export type WebsiteColourRole = 'ground' | 'text' | 'line';
+/**
+ * What a colour of the site is allowed to do, in the words `colour.ts` uses, and one more. A
+ * browser draws a range control in a colour of its own choosing unless it is told which, and that
+ * colour is neither a ground, nor a word, nor a rule.
+ */
+export type WebsiteColourRole = 'ground' | 'text' | 'line' | 'control';
 
 /**
  * A value and the rules that travel with it, in the shape `colour.ts` uses: a value on its own
@@ -30,10 +54,26 @@ export interface WebsiteColourToken {
 
 const ALL: readonly WebsiteColourName[] = [
   'siteGround',
+  'siteCard',
+  'siteTint',
+  'siteTintDeep',
+  'siteNight',
+  'siteBlack',
   'siteFooterGround',
   'siteLine',
+  'siteHeaderLine',
+  'siteTintLine',
+  'siteShadow',
   'siteText',
   'siteQuietText',
+  'siteAccent',
+  'siteSlider',
+  'siteNightAccent',
+  'siteNightQuietText',
+  'sitePeriodInk',
+  'siteFollicularInk',
+  'siteOvulationInk',
+  'siteLutealInk',
 ];
 
 /**
@@ -47,15 +87,72 @@ export const websiteColours: Readonly<Record<WebsiteColourName, WebsiteColourTok
     roles: ['ground'],
     textOn: [],
   },
+  /** A card lifted off the paper, and the ground Apple's own press is drawn on. */
+  siteCard: {
+    value: '#FFFFFF',
+    roles: ['ground', 'text'],
+    textOn: ['siteBlack'],
+  },
+  /** The tinted band, and the card inside a plain one. */
+  siteTint: {
+    value: '#FBF2EE',
+    roles: ['ground'],
+    textOn: [],
+  },
+  /** The deeper tint the price sits on, and the words of the dark band. */
+  siteTintDeep: {
+    value: '#F8EFEB',
+    roles: ['ground', 'text'],
+    textOn: ['siteNight'],
+  },
+  /** The two dark bands: where she is asked to join, and where she is asked to install. */
+  siteNight: {
+    value: '#342F2D',
+    roles: ['ground'],
+    textOn: [],
+  },
+  /** Apple's own press, which is Apple's colour and not Emi's. */
+  siteBlack: {
+    value: '#000000',
+    roles: ['ground', 'text'],
+    textOn: ['siteCard'],
+  },
   /** The quieter paper under the band at the foot of a page. */
   siteFooterGround: {
     value: '#F5ECE8',
     roles: ['ground'],
     textOn: [],
   },
-  /** The hairline under the band at the top, and the two rules inside the band at the foot. */
+  /** The two rules inside the band at the foot of a page. */
   siteLine: {
     value: '#DCC1B9',
+    roles: ['line'],
+    textOn: [],
+  },
+  /**
+   * The rule under the band at the top, which the board paints at six tenths of the rule in the
+   * band at the foot. It is a value of its own rather than the one above at six tenths, because
+   * the band it sits under is itself part transparent and the two are read together.
+   */
+  siteHeaderLine: {
+    value: 'rgba(220, 193, 185, 0.6)',
+    roles: ['line'],
+    textOn: [],
+  },
+  /** The rule between two rows of a card, which is quieter than a rule between two bands. */
+  siteTintLine: {
+    value: '#EFE6E3',
+    roles: ['line'],
+    textOn: [],
+  },
+  /**
+   * What the screenshot of the application casts on the page behind it. It is the colour the words
+   * are set in, carried at a quarter, and it is written out rather than asked for as a quarter of
+   * that colour because a browser mixes those two in a space that gives a slightly different value
+   * back.
+   */
+  siteShadow: {
+    value: 'rgba(31, 27, 25, 0.25)',
     roles: ['line'],
     textOn: [],
   },
@@ -63,13 +160,62 @@ export const websiteColours: Readonly<Record<WebsiteColourName, WebsiteColourTok
   siteText: {
     value: '#1F1B19',
     roles: ['text'],
-    textOn: ['siteGround', 'siteFooterGround'],
+    textOn: ['siteGround', 'siteCard', 'siteTint', 'siteTintDeep', 'siteFooterGround'],
   },
   /** A label, a link in the foot of a page, and the quieter half of a line. */
   siteQuietText: {
     value: '#56423D',
     roles: ['text'],
-    textOn: ['siteGround', 'siteFooterGround'],
+    textOn: ['siteGround', 'siteCard', 'siteTint', 'siteTintDeep', 'siteFooterGround'],
+  },
+  /** The colour a link acts in, and the small label standing over a section. */
+  siteAccent: {
+    value: '#843117',
+    roles: ['text'],
+    textOn: ['siteGround', 'siteCard', 'siteTint', 'siteTintDeep'],
+  },
+  /** The colour a browser draws the slider of the ring in. */
+  siteSlider: {
+    value: '#A3482C',
+    roles: ['control'],
+    textOn: [],
+  },
+  /** The label and the link inside a dark band, where the acting colour would disappear. */
+  siteNightAccent: {
+    value: '#FFB59F',
+    roles: ['text'],
+    textOn: ['siteNight'],
+  },
+  /** The quieter half of a line inside a dark band. */
+  siteNightQuietText: {
+    value: '#CCC5BE',
+    roles: ['text'],
+    textOn: ['siteNight'],
+  },
+  /**
+   * The four phases, as the label over each guide. They are darker than the four the ring is drawn
+   * in, because a word has to be read and a band of colour only has to be seen. The board uses the
+   * first of them for a link a reader is standing on as well.
+   */
+  sitePeriodInk: {
+    value: '#5C2018',
+    roles: ['text'],
+    textOn: ['siteCard'],
+  },
+  siteFollicularInk: {
+    value: '#5E3B10',
+    roles: ['text'],
+    textOn: ['siteCard'],
+  },
+  siteOvulationInk: {
+    value: '#404218',
+    roles: ['text'],
+    textOn: ['siteCard'],
+  },
+  siteLutealInk: {
+    value: '#433246',
+    roles: ['text'],
+    textOn: ['siteCard'],
   },
 };
 

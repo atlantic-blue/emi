@@ -17,7 +17,7 @@ Feature: The page a woman meets Emi on
     Given a woman opens the home page in <language>
     Then the site answers with a page
     And she reads the headline and what Emi costs, in <language>
-    And the press to the store and the press to the beta are both on the page, inside the screen she holds
+    And the press to the store and the press to pay are both on the page, inside the screen she holds
     And the page asked no other host for anything
     And the page kept nothing on her machine
 

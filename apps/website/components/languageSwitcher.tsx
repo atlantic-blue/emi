@@ -1,4 +1,5 @@
 import { type Language, languages } from '@/app/words';
+import { aThumbCanHitIt } from '@/components/siteFooter';
 
 /**
  * How each language names itself, which is the name a reader of that language looks for. The site
@@ -11,14 +12,18 @@ const ownNameOf: Readonly<Record<Language, string>> = {
   es: 'Español',
 };
 
-/** Three links, one for each language the site serves, as the board draws them in the legal line. */
+/**
+ * Three links, one for each language the site serves, as the board draws them in the legal line.
+ * The board underlines them, along with the policy and the terms beside them, because that line is
+ * where a reader looks for what she is agreeing to.
+ */
 export function LanguageSwitcher({ language }: { language: Language }) {
   return (
     <>
       {languages.map((spoken) => (
         <a
           aria-current={spoken === language ? 'page' : undefined}
-          className="text-siteQuietText no-underline"
+          className={`text-siteQuietText underline ${aThumbCanHitIt}`}
           href={`/${spoken}/`}
           hrefLang={spoken}
           key={spoken}
