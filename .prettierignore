@@ -17,3 +17,8 @@ docs/design/warm-humanist-editorial/*.html
 # The copy review is committed word for word as it was written, and the formatter would put a
 # blank line under each of its seventeen headings.
 docs/design/prototype/copy-review.md
+
+# The approved design of the website, committed as the canvas and its renderer wrote it. The home
+# page is held to the pictures beside this markup, so a line the formatter moved would make the
+# markup a different page from the one the pictures show.
+docs/design/website/home-v2/
