@@ -16,3 +16,7 @@ export const fallbackLanguage: Language = 'en';
 export function isLanguage(tag: string): tag is Language {
   return (languages as readonly string[]).includes(tag);
 }
+
+export function localeOf(language: Language): string {
+  return language;
+}

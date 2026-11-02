@@ -7,3 +7,7 @@
  * language, and until it exists that address answers 404 with the Emi page.
  */
 export const NO_PAGE_YET = '/';
+
+export const SITE_ORIGIN = 'https://myemi.app';
+
+export const SHARE_PREVIEW = '/share-preview.png';

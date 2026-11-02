@@ -32,3 +32,7 @@ export const siteWordKeys: readonly SiteWordKey[] = Object.keys(english).sort() 
 export function brandEyebrowOf(words: SiteWords): string {
   return words.brandLine.toUpperCase().replace('. ', ' · ').replace(/\.$/, '');
 }
+
+export function pageTitleOf(words: SiteWords): string {
+  return words.brandLine;
+}
