@@ -57,15 +57,12 @@ Then('the card names the language and region {string}', async ({ page }, locale:
   expect(address).toBe(`https://myemi.app${new URL(page.url()).pathname}`);
 });
 
-Then(
-  'the card points at the picture with a whole address, on https://myemi.app',
-  async ({ page }) => {
-    expect(await content(page, 'og:image')).toBe(THE_PICTURE);
-    expect(await content(page, 'twitter:image')).toBe(THE_PICTURE);
-    expect(await content(page, 'og:image:width')).toBe(String(THE_SIZE.width));
-    expect(await content(page, 'og:image:height')).toBe(String(THE_SIZE.height));
-  },
-);
+Then('the card points at the picture with a whole address, not a path', async ({ page }) => {
+  expect(await content(page, 'og:image')).toBe(THE_PICTURE);
+  expect(await content(page, 'twitter:image')).toBe(THE_PICTURE);
+  expect(await content(page, 'og:image:width')).toBe(String(THE_SIZE.width));
+  expect(await content(page, 'og:image:height')).toBe(String(THE_SIZE.height));
+});
 
 Then('the picture is there, and it is the size the card promised', async ({ page, request }) => {
   const address = await content(page, 'og:image');

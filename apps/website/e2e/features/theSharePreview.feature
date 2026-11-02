@@ -17,7 +17,7 @@ Feature: What a chat draws when she sends somebody the address
     Then the card her sister would see is titled "<title>"
     And the card says what Emi is, in the words of that page
     And the card names the language and region "<locale>"
-    And the card points at the picture with a whole address, on https://myemi.app
+    And the card points at the picture with a whole address, not a path
     And the picture is there, and it is the size the card promised
     And the card is the kind a chat draws large
 
