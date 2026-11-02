@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
-import { readFileSync, readdirSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join, resolve, sep } from 'node:path';
 
 import { parse } from 'yaml';
 
@@ -995,6 +995,21 @@ describe('the site on Lambda behind CloudFront, which is step 26.4', () => {
   /** How many times a line appears in the module, so a rule can say "on every behaviour". */
   const times = (line: string): number => siteModule().split(line).length - 1;
 
+  /**
+   * The address a browser asks for each file under `apps/website/public`, read down through the
+   * subfolders. Next.js copies that folder into the assets of the build under these same names, so
+   * a file here is a file in the bucket, and one the distribution never asks the bucket for is a
+   * 404 on a page.
+   */
+  const addressesOfThePublicFolder = (): string[] => {
+    const folder = join(repositoryRoot, 'apps', 'website', 'public');
+
+    return readdirSync(folder, { encoding: 'utf8', recursive: true })
+      .filter((entry) => statSync(join(folder, entry)).isFile())
+      .map((entry) => `/${entry.split(sep).join('/')}`)
+      .sort();
+  };
+
   describe('the assets, in a bucket only the distribution reads, which is SITE-2', () => {
     it('blocks every way a bucket can be made public', () => {
       const block = inSite('resource "aws_s3_bucket_public_access_block" "assets"');
@@ -1224,6 +1239,14 @@ describe('the site on Lambda behind CloudFront, which is step 26.4', () => {
       expect(blockBodyOf(distribution(), 'default_cache_behavior')).toContain(
         'target_origin_id           = "server"',
       );
+    });
+
+    it('sends every file the site keeps beside its pages to the bucket as well', () => {
+      const addresses = addressesOfThePublicFolder();
+      const sentToTheBucket = listedIn(inSite('locals'), 'asset_paths');
+
+      expect(addresses.length).toBeGreaterThan(0);
+      expect(addresses.filter((address) => !sentToTheBucket.includes(address))).toEqual([]);
     });
 
     it('runs the redirect at the edge, before a request reaches either origin', () => {
