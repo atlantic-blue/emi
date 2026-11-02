@@ -21,8 +21,11 @@ const designDirectory = join(repositoryRoot, 'docs', 'design', 'website', 'home-
 // Compiling the stylesheet of the whole page takes longer than the tier's own limit allows.
 jest.setTimeout(180_000);
 
-/** The two widths the board was drawn at: a desktop, and the phone most of her reading is on. */
-const widths = [1280, 390];
+/**
+ * The widths the board was drawn at: a desktop, a tablet, and the phone most of her reading is on.
+ * The tablet joined them with the board that added the row of reviews, which changes shape there.
+ */
+const widths = [1280, 834, 390];
 
 /** One pixel in a thousand, which is the budget the browser suite holds the page to. */
 const theBudget = 0.001;
@@ -35,9 +38,17 @@ function theDesign(): string {
   return read(join(designDirectory, 'render', 'MainV2.html'));
 }
 
-/** What a reader of the design actually sees, as the text between its tags, in the order it comes. */
+/**
+ * What a reader actually sees, as the text between the tags, in the order it comes.
+ *
+ * The design is a whole document and a page of the site arrives as the markup inside one, with no
+ * body tag of its own, so the body is taken where there is one and the whole thing where there is
+ * not. Reading a page from a body tag it never had would answer with nothing at all, which reads
+ * exactly like a page that says nothing.
+ */
 function visibleTextOf(markup: string): string[] {
-  const body = markup.slice(markup.indexOf('<body>'), markup.indexOf('</body>'));
+  const opens = markup.indexOf('<body>');
+  const body = opens === -1 ? markup : markup.slice(opens, markup.indexOf('</body>'));
   const withoutCode = body.replace(/<(script|style)[\s\S]*?<\/\1>/g, '');
 
   const found = [...withoutCode.matchAll(/>([^<>]+)</g)]
@@ -105,10 +116,16 @@ function rulesIn(markup: string, stylesheet: string): Rule[] {
   return found;
 }
 
-/** How many rules the design draws, and on which side each one sits. */
+/**
+ * Every rule the design draws, and on which side each one sits.
+ *
+ * A board writes a rule on one side of a band as `border-top` or `border-bottom`, and the edge of
+ * a control it draws all the way round as plain `border`. Both are read, because a rule the board
+ * puts on one side becoming four is the drift this exists to catch, and so is the reverse.
+ */
 function rulesOfTheDesign(): string[] {
-  return [...theDesign().matchAll(/border-(top|bottom|left|right):\s*1px/g)].map(
-    ([, side]) => side ?? '',
+  return [...theDesign().matchAll(/border(-(?:top|bottom|left|right))?:\s*1px/g)].map(
+    ([, side]) => side?.slice(1) ?? 'every side',
   );
 }
 
@@ -196,17 +213,26 @@ defineFeature(feature, (test) => {
       // The board is in English, so the other two pages are held to the keys the English page
       // draws rather than to the board's own sentences. A key drawn in one language and not in
       // another is a page that says less than its neighbour, which is the error SITE-3 names.
+      //
+      // A key counts as drawn when the page shows its whole sentence as a piece of text, not when
+      // the markup happens to hold the letters somewhere. Two roles of the same band read "Co-
+      // founder of Emi" and "Co-founder of Emi, host of the Emi Community", so a search through
+      // the markup finds the shorter one inside the longer one and then asks the other two
+      // languages for a sentence their page never had a reason to draw.
       const english = wordsIn('en');
+      const shownIn = (language: Language): Set<string> =>
+        new Set(visibleTextOf(drawn[language] ?? ''));
+      const shownInEnglish = shownIn('en');
       const keysDrawn = Object.keys(english).filter((key) =>
-        (drawn.en ?? '').includes(english[key as keyof typeof english]),
+        shownInEnglish.has(english[key as keyof typeof english]),
       );
 
       expect(keysDrawn.length).toBeGreaterThan(50);
 
       for (const language of ['ru', 'es'] as const) {
-        const words = wordsIn(language);
+        const shown = shownIn(language);
         const absent = keysDrawn.filter(
-          (key) => !(drawn[language] ?? '').includes(words[key as keyof typeof english]),
+          (key) => !shown.has(wordsIn(language)[key as keyof typeof english]),
         );
 
         expect(absent).toEqual([]);
@@ -252,7 +278,7 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('the three bands that carry a rule draw it on one side, not four', () => {
+    and('every rule sits on the sides the board puts it on, and on no others', () => {
       const wanted = rulesOfTheDesign();
       const found = rulesIn(drawn.en ?? '', stylesheet);
 
@@ -261,7 +287,6 @@ defineFeature(feature, (test) => {
 
       for (const rule of found) {
         expect(rule.sides).toHaveLength(1);
-        expect(rule.sides).not.toContain('every side');
         expect(rule.colours).toEqual(rule.sides);
       }
 
@@ -291,7 +316,7 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'a browser holds the page against the design at both widths, and keeps the picture of any difference',
+      'a browser holds the page against the design at every width, and keeps the picture of any difference',
       () => {
         const suite = asPlaywrightReadsIt();
         const sentence = 'the home page matches the approved design pixel for pixel';

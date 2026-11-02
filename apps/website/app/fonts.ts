@@ -3,7 +3,8 @@ import localFont from 'next/font/local';
 /**
  * The three faces myemi.app serves, read from the files beside this workspace. No font service is
  * named here or anywhere else on the site: a face fetched from another company tells that company a
- * woman opened a page about periods.
+ * woman opened a page about periods. The heading face is the board's own two files for a second
+ * reason as well, which `packages/tokens/src/website.ts` records beside the cuts.
  *
  * The files are the ones the approved board names in its own styles, so a page of the site measures
  * the same as the design it was drawn from. `packages/tokens/src/website.ts` holds which cut belongs
@@ -16,8 +17,8 @@ import localFont from 'next/font/local';
 
 export const displayFont = localFont({
   src: [
-    { path: '../assets/fonts/Newsreader16pt-Regular.ttf', weight: '400', style: 'normal' },
-    { path: '../assets/fonts/Newsreader16pt-Medium.ttf', weight: '500', style: 'normal' },
+    { path: '../assets/fonts/Inter-400.woff2', weight: '400', style: 'normal' },
+    { path: '../assets/fonts/Inter-600.woff2', weight: '600', style: 'normal' },
   ],
   display: 'swap',
   variable: '--font-emi-display',

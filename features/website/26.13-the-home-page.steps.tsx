@@ -13,10 +13,8 @@ const feature = loadFeature(join(__dirname, '26.13-the-home-page.feature'));
 
 const websiteWorkspace = resolve(__dirname, '..', '..', 'apps', 'website');
 
-/** The width of a desktop, and the width of the phone most of her reading happens on. */
-const desktop = 1280;
-
-const phone = 390;
+/** The three widths the board was drawn at, smallest first, which is the order the suite reports. */
+const theWidthsOfTheBoard = [390, 834, 1280];
 
 /** Where each language writes a denial, which is how the two are picked out of the gate's list. */
 const denialOpening: Readonly<Record<Language, string>> = {
@@ -52,7 +50,7 @@ defineFeature(feature, (test) => {
       expect([...pages.keys()]).toEqual([...languages]);
     });
 
-    then('she reads what Emi is and what it costs, in that language', () => {
+    then('she reads what Emi is and what the first month costs, in that language', () => {
       for (const language of languages) {
         const page = pages.get(language) as string;
         const words = wordsIn(language);
@@ -61,17 +59,20 @@ defineFeature(feature, (test) => {
         expect(page).toContain(words.heroHeadline);
         expect(page).toContain(words.heroLine);
         expect(page).toContain(words.heroPriceLine);
-        expect(page).toContain(words.priceHeadline);
+        expect(page).toContain(words.heroCancel);
         expect(page).toContain(words.store);
 
-        // The board writes the price in its own sentence rather than in the application's, so what
-        // travels between the two is the amount. A page and a till that name different amounts is
-        // the thing this reads for, and `price` is held to the application's line by the words
-        // test beside the site.
-        const amount = /\d+[.,]\d\d/.exec(words.price)?.[0];
+        // The approved board names no amount on this page, so neither does the page. The till is
+        // where a reader is told what a month costs, and `price` is held to the application's own
+        // line by the words test beside the site. A number that arrived here would be a second
+        // place the price lives, and two places drift. The amount is taken out of the till's own
+        // line, because the ring and every drawing on the page are full of numbers that are not
+        // money.
+        const amount = /\d+[.,]\d\d/.exec(words.price)?.[0] ?? '';
 
-        expect(amount).toBeDefined();
-        expect(page).toContain(amount as string);
+        expect(amount).toMatch(/\d/);
+        expect(page).not.toContain(amount);
+        expect(page).not.toMatch(/[£$€]/);
       }
     });
 
@@ -108,20 +109,17 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and(
-      'a browser reads all three pages, at the width of a desktop and at the width of a phone',
-      () => {
-        const suite = asPlaywrightReadsIt();
-        const sentences = whatTheBrowserSuiteReads();
+    and('a browser reads all three pages, at every width the board was drawn at', () => {
+      const suite = asPlaywrightReadsIt();
+      const sentences = whatTheBrowserSuiteReads();
 
-        expect(suite.widths).toEqual([phone, desktop]);
-        expect(sentences).toContain('| English  |');
-        expect(sentences).toContain('| Russian  |');
-        expect(sentences).toContain('| Spanish  |');
-        expect(sentences).toContain('she reads the headline and what Emi costs');
-        expect(sentences).toContain('she presses Russian in the header');
-      },
-    );
+      expect(suite.widths).toEqual(theWidthsOfTheBoard);
+      expect(sentences).toContain('| English  |');
+      expect(sentences).toContain('| Russian  |');
+      expect(sentences).toContain('| Spanish  |');
+      expect(sentences).toContain('she reads the headline and what the first month costs');
+      expect(sentences).toContain('she presses Russian in the header');
+    });
 
     and(
       'no page asks another company for anything, and no page keeps anything on her machine',

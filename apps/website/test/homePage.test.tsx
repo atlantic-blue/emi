@@ -1,10 +1,20 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { websiteColour } from '@emi/tokens';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { approvedDenials } from '../../../tools/pipeline/forbiddenClaims';
 import HomePage from '../app/[lang]/page';
 import { type Language, brandEyebrowOf, languages, wordsIn } from '../app/words';
+import { CARDS_ACROSS } from '../components/reviewRow';
 import { LANGUAGES_ANCHOR } from '../components/siteHeader';
+import {
+  A_NAME_NOBODY_HAS_SIGNED,
+  A_REVIEW_NOBODY_HAS_WRITTEN,
+  THE_NOTE_IULIIA_HAS_NOT_WRITTEN,
+  thePlaceholders,
+} from '../lib/thePlaceholders';
 import { whatTheMarkupDraws } from './stylesheet';
 
 /** Compiling the stylesheet takes a moment, and each case that reads it compiles its own markup. */
@@ -68,19 +78,16 @@ const theWordsOfTheBoard = [
   'parentsHeadline',
   'parentsLine',
   'noteEyebrow',
-  'noteBody',
-  'founderName',
-  'founderRole',
+  'founderIuliiaRole',
   'privacyHeadline',
   'privacyLink',
-  'priceEyebrow',
-  'priceHeadline',
-  'priceLine',
-  'priceAppStoreNote',
-  'priceCardTitle',
-  'priceCardNote',
-  'priceStarsTitle',
-  'priceStarsNote',
+  'reviewsEyebrow',
+  'reviewsHeadline',
+  'reviewsRating',
+  'reviewFromTheStore',
+  'reviewFromTheCommunity',
+  'reviewFromTheBeta',
+  'carouselPause',
   'tryTitle',
   'tryLine',
   'tryLink',
@@ -98,12 +105,91 @@ describe('the page a woman meets Emi on', () => {
     expect(absent).toEqual([]);
   });
 
-  it.each(languages)('says what Emi costs where the board says it, in %s', async (language) => {
-    const words = wordsIn(language);
-    const page = await pageIn(language);
+  it.each(languages)(
+    'says the first month is free, and names no amount, in %s',
+    async (language) => {
+      const words = wordsIn(language);
+      const page = await pageIn(language);
 
-    expect(page).toContain(words.heroPriceLine);
-    expect(page).toContain(words.priceHeadline);
+      expect(page).toContain(words.heroPriceLine);
+      expect(page).toContain(words.heroCancel);
+
+      // The approved board took the amount off this page. The till is the one place a reader is told
+      // what a month costs, so a number here would be a second place for it to live, and two places
+      // for one price is how the page and the till come to say different things. The amount comes out
+      // of the till's own line, because the ring is full of numbers that are not money.
+      const amount = /\d+[.,]\d\d/.exec(words.price)?.[0] ?? '';
+
+      expect(amount).toMatch(/\d/);
+      expect(page).not.toContain(amount);
+      expect(page).not.toMatch(/[£$€]/);
+    },
+  );
+
+  it.each(languages)(
+    'stands the first founder first, with the other beside her, in %s',
+    async (language) => {
+      const words = wordsIn(language);
+      const page = await pageIn(language);
+
+      expect(page.indexOf('Iuliia Nikolaeva')).toBeGreaterThan(-1);
+      expect(page).toContain(THE_NOTE_IULIIA_HAS_NOT_WRITTEN);
+      expect(page).toContain(words.founderIuliiaRole);
+
+      // The second founder is one press away rather than on the page she is handed, so his note and
+      // his role are not drawn until the band moves.
+      expect(page).not.toContain(words.founderJulianNote);
+    },
+  );
+
+  it.each(languages)(
+    'draws three of the six review cards, each still a hole, in %s',
+    async (language) => {
+      const page = await pageIn(language);
+      const cards = page.split(A_REVIEW_NOBODY_HAS_WRITTEN);
+
+      expect(cards).toHaveLength(CARDS_ACROSS + 1);
+      expect(page.split(A_NAME_NOBODY_HAS_SIGNED)).toHaveLength(CARDS_ACROSS + 1);
+      expect(page).toContain(wordsIn(language).reviewsRating);
+    },
+  );
+
+  /**
+   * The board marks the text nobody has written yet in capitals inside square brackets, so a
+   * reader can tell a hole from a promise. The page is held to the board's own set of them: a hole
+   * the board does not leave is a hole somebody added, and a hole the board leaves and the page
+   * drops is a sentence that reads as finished while it is not.
+   */
+  it('leaves the holes the board leaves, and no others', async () => {
+    const bracketed = (text: string): string[] =>
+      [...new Set([...text.matchAll(/\[[A-Z][^\]]*\]/g)].map(([found]) => found))].sort();
+
+    const board = readFileSync(
+      join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'docs',
+        'design',
+        'website',
+        'home-v2',
+        'render',
+        'MainV2.html',
+      ),
+      'utf8',
+    );
+
+    const onTheBoard = bracketed(board);
+
+    expect(onTheBoard.length).toBeGreaterThan(0);
+    expect(bracketed(await pageIn('en'))).toEqual(onTheBoard);
+
+    // Each of the three the board leaves standing on its own is held in one place, away from the
+    // catalogues, because a hole is not a word and reads the same in every language.
+    for (const waiting of thePlaceholders) {
+      expect(onTheBoard).toContain(waiting);
+    }
   });
 
   // The board puts the brand line over the hero in capitals, and it is the one line that stays in

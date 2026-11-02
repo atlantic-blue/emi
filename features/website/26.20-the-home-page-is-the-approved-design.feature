@@ -24,7 +24,7 @@ Feature: The home page is the page that was approved
     And every sentence of the board is on the page, in English, in Russian and in Spanish
     And the brand line stands over the hero in capitals, and is still the one line nobody translates
     And the ring starts at day 8 in the follicular phase, and answers every other day the way the board does
-    And the three bands that carry a rule draw it on one side, not four
+    And every rule sits on the sides the board puts it on, and on no others
     And the five links of the legal line are underlined, because the board underlines them
     And the page writes no style of its own, so her browser refuses nothing
-    And a browser holds the page against the design at both widths, and keeps the picture of any difference
+    And a browser holds the page against the design at every width, and keeps the picture of any difference

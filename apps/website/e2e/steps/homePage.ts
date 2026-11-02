@@ -8,33 +8,34 @@ import { test } from './fixtures';
  * reads the words from the same file the page draws them from agrees with the page whatever the
  * page says.
  *
- * Four sentences each: the headline, what a month costs, the press to Apple's store, and the press
- * to pay here instead. The last two are the only two things this page asks her to do.
+ * Four sentences each: the headline, what the first month costs, the press to Apple's store, and
+ * the press that reads the free calculator instead. The last two are the only two things this page
+ * asks her to do. The approved board names no amount here, so neither does this list.
  */
 const theLanguages = {
   English: {
     address: '/en/',
     tag: 'en',
     headline: 'Understand your body, safely.',
-    price: 'Free for a month, then £29.99 a month.',
+    firstMonth: 'Free for your first month.',
     store: 'Download on the App Store',
-    pay: 'Card, on this site',
+    instead: 'When is my next period?',
   },
   Russian: {
     address: '/ru/',
     tag: 'ru',
     headline: 'Понимайте своё тело бережно.',
-    price: 'Месяц бесплатно, затем 29,99 фунта в месяц.',
+    firstMonth: 'Первый месяц бесплатно.',
     store: 'Загрузите в App Store',
-    pay: 'Картой, на этом сайте',
+    instead: 'Когда мои следующие месячные?',
   },
   Spanish: {
     address: '/es/',
     tag: 'es',
     headline: 'Entiende tu cuerpo, con calma.',
-    price: 'Gratis un mes, después 29,99 libras al mes.',
+    firstMonth: 'Tu primer mes es gratis.',
     store: 'Descárgala en el App Store',
-    pay: 'Tarjeta, en este sitio',
+    instead: '¿Cuándo es mi próximo periodo?',
   },
 } as const;
 
@@ -64,16 +65,19 @@ Then('the site answers with a page', async ({ answered }) => {
   expect(answered.status).toBe(200);
 });
 
-Then('she reads the headline and what Emi costs, in {word}', async ({ page }, language: string) => {
-  const words = theLanguages[asKnown(language)];
+Then(
+  'she reads the headline and what the first month costs, in {word}',
+  async ({ page }, language: string) => {
+    const words = theLanguages[asKnown(language)];
 
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.headline);
-  await expect(page.getByText(words.price).first()).toBeVisible();
-  await expect(page.locator('html')).toHaveAttribute('lang', words.tag);
-});
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.headline);
+    await expect(page.getByText(words.firstMonth).first()).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', words.tag);
+  },
+);
 
 Then(
-  'the press to the store and the press to pay are both on the page, inside the screen she holds',
+  'the press to the store and the press to the calculator are both on the page, inside the screen she holds',
   async ({ page, reading }) => {
     const words = theLanguages[asKnown(reading.language)];
     const screen = page.viewportSize();
@@ -84,7 +88,7 @@ Then(
 
     for (const press of [
       page.getByRole('link', { name: words.store }).first(),
-      page.getByRole('link', { name: new RegExp(words.pay) }),
+      page.getByRole('link', { name: new RegExp(words.instead) }),
     ]) {
       await expect(press).toBeVisible();
 
@@ -117,6 +121,6 @@ When('she presses Russian in the header', async ({ page }) => {
 
 Then('the page she gets is in Russian', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('lang', theLanguages.Russian.tag);
-  await expect(page.getByText(theLanguages.Russian.price).first()).toBeVisible();
+  await expect(page.getByText(theLanguages.Russian.firstMonth).first()).toBeVisible();
   expect(new URL(page.url()).pathname).toBe(theLanguages.Russian.address);
 });

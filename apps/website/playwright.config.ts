@@ -17,12 +17,16 @@ const ownSite = `http://127.0.0.1:${port}`;
 const liveHost = process.env.BASE_URL;
 
 /**
- * Two widths of one browser. A desktop, and the phone most of the reading of myemi.app happens
- * on. A suite that only ever ran at one width cannot see the other, and a press that sits off the
- * side of a phone is a press she cannot reach.
+ * Three widths of one browser. A desktop, a tablet, and the phone most of the reading of myemi.app
+ * happens on. A suite that only ever ran at one width cannot see the others, and a press that sits
+ * off the side of a phone is a press she cannot reach.
+ *
+ * The tablet is here because the board changes the shape of the row of reviews at 1024 px as well
+ * as at 641 px, and a width between the two is the only width that reads the middle shape.
  */
 const widths = [
   { name: 'desktop', width: 1280, height: 800 },
+  { name: 'tablet', width: 834, height: 1112 },
   { name: 'phone', width: 390, height: 844 },
 ] as const;
 

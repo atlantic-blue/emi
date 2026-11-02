@@ -14,6 +14,7 @@ import {
   spanish,
   wordsIn,
 } from '../app/words';
+import { thePlaceholders } from '../lib/thePlaceholders';
 
 /** The application's own catalogues, which this site copies its price line from. */
 const theApplication: Readonly<Record<Language, Readonly<Record<string, unknown>>>> = {
@@ -100,16 +101,17 @@ describe('the words of one page in three languages', () => {
 
   /**
    * The words that stay in English in all three languages. Each one is a name rather than a word:
-   * the brand line says what the four letters stand for, Emi is called Emi everywhere, Apple's
-   * store carries one name in every country, and the person building Emi is called what he is
-   * called. A sixth entry here is a translation somebody forgot.
+   * the brand line says what the four letters stand for, Emi is called Emi everywhere, and Apple's
+   * store carries one name in every country. A sixth entry here is a translation somebody forgot.
+   *
+   * The names of the two people building Emi are not here, because they are not words of a
+   * catalogue at all. They sit beside the band that draws them, where nobody can translate them.
    */
   const namesRatherThanWords: readonly SiteWordKey[] = [
     'brandLine',
     'headerEmi',
     'footerEmiGroup',
     'footerAppStore',
-    'founderName',
   ];
 
   it('writes every other word of a language in that language', () => {
@@ -132,5 +134,20 @@ describe('the words of one page in three languages', () => {
     }
 
     expect(namesRatherThanWords.length).toBeLessThan(6);
+  });
+
+  /**
+   * The board leaves a hole for text nobody has written yet, and a hole reads the same in every
+   * language until the text arrives. A hole kept in a catalogue would be refused by the case above
+   * as an untranslated word, so it is kept beside the band instead, and this says so.
+   */
+  it('holds no hole of the board, because a hole is not a word', () => {
+    for (const language of languages) {
+      const held = Object.values(wordsIn(language));
+
+      expect(held.filter((said) => thePlaceholders.some((hole) => said === hole))).toEqual([]);
+    }
+
+    expect(thePlaceholders.every((hole) => /^\[/.test(hole))).toBe(true);
   });
 });

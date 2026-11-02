@@ -13,16 +13,18 @@ Feature: A browser reads the page nobody meant to open
   mistyped the address, or she followed a link from somewhere old, and she is already lost. The
   page has one job, and the browser is the only witness that it does it.
 
-  This scenario is about that witness, and about whether it will be believed. It reads at two
-  widths, because a suite that only ever ran at one width cannot see the phone. It can be pointed
+  This scenario is about that witness, and about whether it will be believed. It reads at every
+  width the board was drawn at, because a suite that only ever ran at one width cannot see the
+  others, and a band that changes shape between two of them is only read at the one in the
+  middle. It can be pointed
   at the live host, so the same sentences that pass here are the ones that pass against
   myemi.app. And a run that opened no page at all is refused, because a browser suite with nothing
   to do reports a pass that reads the same as every other pass.
 
-  Scenario: playwright opens the not found page at two widths
+  Scenario: playwright opens the not found page at every width the board was drawn at
     Given the suite that reads myemi.app in a browser
     Then it starts the site this repository builds, and reads it there
-    And it reads at the width of a desktop and at the width of a phone
+    And it reads at the width of a desktop, of a tablet and of a phone
     And what it reads is the status, the words she gets, and her press back to Emi
     And a sentence nobody taught it stops the run instead of being skipped
     And told another host, it reads that host and starts no site of its own

@@ -1,5 +1,9 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+
+import { websiteFontCuts, websiteFontFile, websiteFontsRoot } from '@emi/tokens';
+
+import { asPlaywrightReadsIt } from './theConfiguration';
 
 /**
  * The approved design of the home page, as the repository holds it.
@@ -41,17 +45,30 @@ describe('the approved home design, in the repository', () => {
   it('holds the board the operator approved, its render and a picture at each width', () => {
     const held = [
       join('boards', 'MainV2.dc.html'),
+      join('boards', 'MainV2.tablet.dc.html'),
+      join('boards', 'MainV2.phone.dc.html'),
       join('boards', 'Header.dc.html'),
       join('boards', 'Footer.dc.html'),
+      join('boards', 'ds', 'emi', 'tokens.json'),
       join('render', 'MainV2.html'),
-      join('render', 'render.ts'),
+      join('render-board.ts'),
       join('reference', 'MainV2-1280.png'),
+      join('reference', 'MainV2-834.png'),
       join('reference', 'MainV2-390.png'),
     ];
 
     const absent = held.filter((file) => !existsSync(join(repositoryRoot, designDirectory, file)));
 
     expect(absent).toEqual([]);
+  });
+
+  it('holds a picture at each width the browser suite reads the page at', () => {
+    const drawnAt = readdirSync(join(repositoryRoot, designDirectory, 'reference'))
+      .map((file) => Number(/MainV2-(\d+)\.png/.exec(file)?.[1]))
+      .filter((width) => Number.isFinite(width))
+      .sort((one, other) => one - other);
+
+    expect(drawnAt).toEqual([...asPlaywrightReadsIt().widths]);
   });
 
   it('says where the design changes, so nobody edits the render by hand', () => {
@@ -72,15 +89,38 @@ describe('the approved home design, in the repository', () => {
     expect(absent).toEqual([]);
   });
 
-  it('names the five faces and the two pictures, so a shorter list is a reader that stopped early', () => {
+  it('names the seven faces and the two pictures, so a shorter list is a reader that stopped early', () => {
     expect(filesNamedIn(theMarkup())).toEqual([
       'assets/2f3b95d653826b5ca02acab62e8534de.svg',
       'assets/797e3d46d2df35dd822032622f5dc2e5.png',
+      'fonts/Inter-400.woff2',
+      'fonts/Inter-600.woff2',
       'fonts/JetBrainsMono-Medium.ttf',
       'fonts/Newsreader16pt-Medium.ttf',
       'fonts/Newsreader16pt-Regular.ttf',
       'fonts/PlusJakartaSans-Regular.ttf',
       'fonts/PlusJakartaSans-SemiBold.ttf',
     ]);
+  });
+
+  /**
+   * The board asks for the heading face by the family a machine may already hold, and the site has
+   * to serve the very file the board drew with. A second release of one family measures differently,
+   * so the two files are read byte for byte rather than by name.
+   */
+  it('serves the board’s own heading cuts, byte for byte, so the letters measure the same', () => {
+    for (const cut of websiteFontCuts.display) {
+      const file = websiteFontFile(cut);
+      const beside = readFileSync(join(renderDirectory, 'fonts', file));
+      const served = readFileSync(join(repositoryRoot, websiteFontsRoot, file));
+
+      expect(served.equals(beside)).toBe(true);
+    }
+  });
+
+  it('serves no face the board stopped asking for', () => {
+    const served = readdirSync(join(repositoryRoot, websiteFontsRoot));
+
+    expect(served.filter((file) => file.startsWith('Newsreader'))).toEqual([]);
   });
 });

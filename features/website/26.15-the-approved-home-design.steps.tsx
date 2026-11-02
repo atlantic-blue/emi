@@ -62,7 +62,11 @@ defineFeature(feature, (test) => {
     and('every face and every picture the render asks for sits beside it', () => {
       const named = filesNamedIn(markup);
 
-      expect(named.filter((file) => file.startsWith('fonts/'))).toHaveLength(5);
+      // A count rather than a list, so a face the canvas stops asking for fails this. The board
+      // the operator drew last asks for seven: two cuts of the heading face, two of the text face,
+      // one small label face, and the two cuts of the face the earlier board set its headings in,
+      // which the bands the canvas imports still declare.
+      expect(named.filter((file) => file.startsWith('fonts/'))).toHaveLength(7);
       expect(named.filter((file) => file.startsWith('assets/'))).toHaveLength(2);
       expect(named.filter((file) => !existsSync(join(renderDirectory, file)))).toEqual([]);
       expect(named.filter((file) => statSync(join(renderDirectory, file)).size === 0)).toEqual([]);

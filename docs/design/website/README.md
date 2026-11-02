@@ -8,15 +8,20 @@ step that builds the site builds it from these files.
 
 `home-v2/boards/` holds the canvas sources: `MainV2.dc.html` is the home page, `Header.dc.html` is
 the band at the top, and `Footer.dc.html` is the band at the bottom. The board imports the other
-two, and each one leaves a hole for a value it does not own.
+two, and each one leaves a hole for a value it does not own. `MainV2.tablet.dc.html` and
+`MainV2.phone.dc.html` are the same board at the two narrower widths, and `boards/ds/emi/` holds
+the tokens and the faces the canvas itself reads.
 
 `home-v2/render/MainV2.html` is that board as plain markup, with every hole filled and the two
-imports inlined. `home-v2/render/render.ts` is the program that wrote it. The five faces it loads
+imports inlined. `home-v2/render-board.ts` is the program that wrote it. The seven faces it loads
 are in `home-v2/render/fonts/`, and the two pictures it draws are in `home-v2/render/assets/`. Open
 the markup in a browser and you see the page the operator approved.
 
-`home-v2/reference/MainV2-1280.png` and `home-v2/reference/MainV2-390.png` are that markup in
-Chrome, at the width of a desktop and at the width of a phone.
+`home-v2/reference/MainV2-1280.png`, `-834.png` and `-390.png` are that markup in Chrome, at the
+width of a desktop, a tablet and a phone. Those three were taken on a Mac, where a heading is drawn
+in Apple's own interface face, so they are taller or shorter than the same markup on Linux. The
+comparison the pipeline runs never reads them: it draws the markup and the page in one browser on
+one machine, which is the only way two pictures can be held against each other.
 
 ## How the design changes
 
@@ -30,6 +35,12 @@ one in the pictures, and the home page is held to the pictures.
 
 ## The licence of the faces
 
-The five font files in `home-v2/render/fonts/` are Newsreader, Plus Jakarta Sans and JetBrains
-Mono. Each one is published under the SIL Open Font License, version 1.1, and is redistributed here
-unmodified. `docs/licences.md` names the faces the application ships, which are a different set.
+The seven font files in `home-v2/render/fonts/` are Inter, Newsreader, Plus Jakarta Sans and
+JetBrains Mono. Each one is published under the SIL Open Font License, version 1.1, and is
+redistributed here unmodified. `docs/licences.md` names the faces the application ships, which are
+a different set.
+
+The board asks for a heading in Apple's own interface face first and in Inter behind it. No licence
+lets Emi ship Apple's face, so the site serves the two Inter files and asks for Apple's by name.
+The two Inter files the site serves are copied from `home-v2/render/fonts/`, byte for byte, because
+another release of the same family measures differently and the page is held to this markup.

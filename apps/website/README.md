@@ -27,7 +27,7 @@ with `react-dom/server` in node. The root `npm test` runs them too.
 this workspace with the rest.
 
 `npm run test:e2e` opens the site in a real browser. It builds the site, starts it on port 3100,
-and reads it with Chromium at 1280 and at 390 points wide. The root `npm run test:e2e` runs the
+and reads it with Chromium at 1280, 834 and 390 points wide. The root `npm run test:e2e` runs the
 same thing. It is not part of the root `npm test`, so the `check` job of the pipeline needs no
 browser; a job of its own installs Chromium and runs it. Set `BASE_URL` to read another host
 instead, and the suite starts no site of its own. The last command of the script refuses a run that
@@ -55,13 +55,18 @@ outside the token package is an eslint rule, and eslint reads TypeScript and not
 palette written in `app/globals.css` would be a palette no gate measures. The stylesheet holds the
 import, the two directories Tailwind reads, and the name of the theme. Nothing else.
 
-`app/fonts.ts` serves three families from `assets/fonts`: Newsreader for a heading, Plus Jakarta
-Sans for text and JetBrains Mono for a small label. They are the five files the approved board
-names in its own styles, copied from `docs/design/website/home-v2/render/fonts/`, so a page
-measures the same as the design it was drawn from. Each one is published under the SIL Open Font
-License, version 1.1, which `docs/design/website/README.md` records. No font service is named
-anywhere: a face fetched from another company tells that company a woman opened a page about
-periods.
+`app/fonts.ts` serves three families from `assets/fonts`: Inter for a heading, Plus Jakarta Sans
+for text and JetBrains Mono for a small label. They are the five files the approved board names in
+its own styles, copied from `docs/design/website/home-v2/render/fonts/`, so a page measures the
+same as the design it was drawn from. Each one is published under the SIL Open Font License,
+version 1.1, which `docs/design/website/README.md` records. No font service is named anywhere: a
+face fetched from another company tells that company a woman opened a page about periods, and the
+same family from a service is a different release that measures differently.
+
+A heading asks for Apple's own interface face ahead of Inter, because the board does. No licence
+lets Emi ship that face, so a Mac draws a heading in it and every other machine draws it in the
+Inter the site serves, which is what the board does on the same two machines. `packages/tokens`
+holds the whole list under `websiteFaceStack`.
 
 The phone draws in Figtree and keeps its own files. The two surfaces share no face.
 
@@ -78,7 +83,11 @@ language the address asked for.
 `app/words` holds the words, one file per language, the way `apps/mobile/src/language` holds the
 words of the application. A sentence that already exists there is copied from there rather than
 written again: the price line is the application's own, and `test/words.test.ts` reads the two
-against each other so they cannot drift. The band at the foot opens with an approved denial of
+against each other so they cannot drift. The home page names no amount, because the board took it
+off; the till is the one place a reader is told what a month costs. `lib/thePlaceholders.ts` holds
+the text the board leaves a hole for, which is not a word of a catalogue because it reads the same
+in every language until the text that fills it arrives. The band at the foot opens with an
+approved denial of
 `tools/pipeline/forbiddenClaims.ts`, word for word, and the same test reads it against the gate's
 own list. It is also the board's own sentence, so the gate and the design agree and neither has to
 be bent for the other.
@@ -105,11 +114,12 @@ the file the approved board draws. The scenario in
 against each other, so the drawing at the top of a page cannot drift from the drawing on her home
 screen.
 
-`test/pictures` holds four captures, of the home page and of the page behind an address the site
-does not have, each at 1280 and at 390 points wide. They were taken by hand from the built site,
-so read them as a record of one run and not as a gate. The suite under `e2e/` reads both pages at
-the same two widths on every pull request: the gherkin is in `e2e/features`, the steps that drive
-the browser are in `e2e/steps`, and `playwright.config.ts` declares the two widths.
+`test/pictures` holds captures of the home page at 1280, 834 and 390 points wide, and of the page
+behind an address the site does not have at 1280 and 390. They were taken by hand from the built
+site with the reader's own settings asking for less motion, so both carousels of the home page sit
+on their first card. Read them as a record of one run and not as a gate. The suite under `e2e/`
+reads every page at all three widths on every pull request: the gherkin is in `e2e/features`, the
+steps that drive the browser are in `e2e/steps`, and `playwright.config.ts` declares the widths.
 `.features-gen` holds the Playwright tests generated from the gherkin and is not committed.
 
 The home page is the one place with a content width, and the two measures are Tailwind's own

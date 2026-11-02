@@ -2,11 +2,18 @@ import { websiteColour } from '@emi/tokens';
 import { notFound } from 'next/navigation';
 
 import { brandEyebrowOf, isLanguage, wordsIn } from '@/app/words';
+import { CarouselsProvider } from '@/components/carousels';
 import { CycleRing } from '@/components/cycleRing';
-import { EmiIcon } from '@/components/emiIcon';
+import { type Founder, FounderNote } from '@/components/founderNote';
+import { type Review, ReviewRow } from '@/components/reviewRow';
 import { SiteFooter } from '@/components/siteFooter';
 import { SiteHeader } from '@/components/siteHeader';
 import { NO_PAGE_YET } from '@/lib/addresses';
+import {
+  A_NAME_NOBODY_HAS_SIGNED,
+  A_REVIEW_NOBODY_HAS_WRITTEN,
+  THE_NOTE_IULIIA_HAS_NOT_WRITTEN,
+} from '@/lib/thePlaceholders';
 
 /**
  * The page a woman meets Emi on, in the language her address names. A language the site does not
@@ -77,345 +84,336 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
     },
   ];
 
-  /** The three ways to pay, in the board's order. The last carries no rule under it. */
-  const theWaysToPay = [
+  /**
+   * The two people building Emi, in the board's order. A name is a name in every language, so the
+   * names and the initials are here and only the roles and the written note are words.
+   */
+  const theFounders: Founder[] = [
     {
-      title: words.footerAppStore,
-      note: words.priceAppStoreNote,
-      address: NO_PAGE_YET,
-      rule: true,
+      initials: 'IN',
+      name: 'Iuliia Nikolaeva',
+      role: words.founderIuliiaRole,
+      note: THE_NOTE_IULIIA_HAS_NOT_WRITTEN,
+      awaited: true,
     },
-    { title: words.priceCardTitle, note: words.priceCardNote, address: under('buy/'), rule: true },
-    { title: words.priceStarsTitle, note: words.priceStarsNote, address: NO_PAGE_YET, rule: false },
+    {
+      initials: 'JT',
+      name: 'Julian Tellez',
+      role: words.founderJulianRole,
+      note: words.founderJulianNote,
+      awaited: false,
+    },
   ];
+
+  /** The six cards of the row of reviews, each a hole, under the three places one comes from. */
+  const theReviews: Review[] = [
+    words.reviewFromTheStore,
+    words.reviewFromTheCommunity,
+    words.reviewFromTheBeta,
+    words.reviewFromTheStore,
+    words.reviewFromTheCommunity,
+    words.reviewFromTheBeta,
+  ].map((source) => ({
+    quote: A_REVIEW_NOBODY_HAS_WRITTEN,
+    name: A_NAME_NOBODY_HAS_SIGNED,
+    source,
+  }));
 
   return (
     <div className="min-h-screen bg-siteCard font-text leading-[normal] text-siteText">
       <SiteHeader language={lang} />
       <main>
-        <section aria-labelledby="hero-title" className="bg-siteGround">
-          <div
-            className={`mx-auto flex ${theWidestBand} flex-wrap items-center gap-[64px] px-spaceXl pt-[96px] pb-[104px]`}
-          >
-            <div className="flex min-w-[0px] flex-[999_1_440px] flex-col gap-spaceXl">
-              <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteAccent">
-                {brandEyebrowOf(words)}
-              </span>
-              <h1
-                className="font-display text-[64px] leading-[68px] font-medium tracking-[-0.02em] phone:text-[48px] phone:leading-[52px]"
-                id="hero-title"
-              >
-                {words.heroHeadline}
-              </h1>
-              <p className="max-w-[520px] text-[19px] leading-[28px] text-siteQuietText">
-                {words.heroLine}
-              </p>
-              <div className="flex flex-wrap items-center gap-x-spaceXl gap-y-spaceLg pt-spaceSm">
+        <CarouselsProvider founders={theFounders.length} reviews={theReviews.length}>
+          <section aria-labelledby="hero-title" className="bg-siteGround">
+            <div
+              className={`mx-auto flex ${theWidestBand} flex-wrap items-center gap-[64px] px-spaceXl pt-[96px] pb-[104px]`}
+            >
+              <div className="flex min-w-[0px] flex-[999_1_440px] flex-col gap-spaceXl">
+                <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteAccent">
+                  {brandEyebrowOf(words)}
+                </span>
+                <h1
+                  className="font-display text-[64px] leading-[68px] font-semibold tracking-[-0.015em] phone:text-[48px] phone:leading-[52px]"
+                  id="hero-title"
+                >
+                  {words.heroHeadline}
+                </h1>
+                <p className="max-w-[520px] text-[19px] leading-[28px] text-siteQuietText">
+                  {words.heroLine}
+                </p>
+                <div className="flex flex-wrap items-center gap-x-spaceXl gap-y-spaceLg pt-spaceSm">
+                  <a
+                    aria-label={words.store}
+                    className="box-content flex min-h-[52px] items-center gap-spaceSm rounded bg-siteBlack px-margin text-siteCard no-underline"
+                    href={NO_PAGE_YET}
+                  >
+                    <AppleMark paint={websiteColour.siteCard} />
+                    <span className="flex flex-col">
+                      <span className="text-[12px] leading-[16px]">{words.storeSmall}</span>
+                      <span className="text-[19px] leading-[20px] font-semibold">
+                        {words.footerAppStore}
+                      </span>
+                    </span>
+                  </a>
+                  <span className="text-[14px] leading-[20px] text-siteQuietText">
+                    {words.heroPriceLine}
+                    <br />
+                    {words.heroCancel}
+                  </span>
+                </div>
+              </div>
+              <CycleRing language={lang} />
+            </div>
+          </section>
+
+          <section aria-labelledby="forecast-title" className="bg-siteCard">
+            <div
+              className={`mx-auto flex ${theWidestBand} flex-wrap items-center gap-[64px] px-spaceXl py-[112px]`}
+            >
+              <div className="flex flex-[1_1_320px] justify-center">
+                <picture className="block w-[300px]">
+                  <img
+                    alt={words.cycleScreenAlt}
+                    className="block h-auto w-full rounded-[40px] shadow-[0_24px_48px_-16px] shadow-siteShadow"
+                    src="/the-home-screen.png"
+                  />
+                </picture>
+              </div>
+              <div className="flex min-w-[0px] flex-[999_1_440px] flex-col gap-spaceXl">
+                <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteAccent">
+                  {words.cycleEyebrow}
+                </span>
+                <h2
+                  className="font-display text-[48px] leading-[56px] font-semibold tracking-[-0.015em] phone:text-[32px] phone:leading-[40px]"
+                  id="forecast-title"
+                >
+                  {words.cycleHeadline}
+                </h2>
+                <p className="text-[19px] leading-[28px] text-siteQuietText">{words.cycleLine}</p>
+                <div className="box-content flex max-w-[440px] flex-col gap-spaceMd rounded-lg bg-siteTint p-spaceXl">
+                  <span className="text-[14px] leading-[20px] text-siteQuietText">
+                    {words.cycleNextLabel}
+                  </span>
+                  <span className="font-display text-[24px] leading-[30px] font-semibold">
+                    {words.cycleNextRange}
+                  </span>
+                  <span className="text-[14px] leading-[20px] text-siteQuietText">
+                    {words.cycleNextConfidence}
+                  </span>
+                </div>
+                <p className="text-[14px] leading-[20px] text-siteQuietText">{words.cycleDenial}</p>
+              </div>
+            </div>
+          </section>
+
+          <section aria-labelledby="learn-title" className="bg-siteTint">
+            <div
+              className={`mx-auto flex ${theWidestBand} flex-col gap-[48px] px-spaceXl py-[112px]`}
+            >
+              <div className="flex max-w-[720px] flex-col gap-spaceLg">
+                <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteAccent">
+                  {words.learnEyebrow}
+                </span>
+                <h2
+                  className="font-display text-[48px] leading-[56px] font-semibold tracking-[-0.015em] phone:text-[32px] phone:leading-[40px]"
+                  id="learn-title"
+                >
+                  {words.learnHeadline}
+                </h2>
+                <p className="text-[19px] leading-[28px] text-siteQuietText">{words.learnLine}</p>
+              </div>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-margin">
+                {theGuides.map((guide) => (
+                  <a
+                    className="flex min-h-[200px] flex-col gap-spaceSm rounded-[24px] bg-siteCard p-marginMd text-siteText no-underline"
+                    href={under('calculator/')}
+                    key={guide.label}
+                  >
+                    <span
+                      className={`text-[12px] leading-[16px] font-semibold tracking-[0.02em] ${guide.ink}`}
+                    >
+                      {guide.label}
+                    </span>
+                    <span className="font-display text-[24px] leading-[30px] font-semibold">
+                      {guide.title}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className={`mt-auto h-[6px] rounded-full ${guide.rule}`}
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section aria-labelledby="community-title" className="bg-siteNight text-siteTintDeep">
+            <div
+              className={`mx-auto grid ${theWidestBand} grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-x-[64px] gap-y-[48px] px-spaceXl py-[112px]`}
+            >
+              <div className="flex flex-col gap-spaceLg">
+                <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteNightAccent">
+                  {words.communityEyebrow}
+                </span>
+                <h2
+                  className="font-display text-[48px] leading-[56px] font-semibold tracking-[-0.015em] phone:text-[32px] phone:leading-[40px]"
+                  id="community-title"
+                >
+                  {words.communityHeadline}
+                </h2>
+                <p className="text-[19px] leading-[28px] text-siteNightQuietText">
+                  {words.communityLine}
+                </p>
                 <a
-                  aria-label={words.store}
-                  className="box-content flex min-h-[52px] items-center gap-spaceSm rounded bg-siteBlack px-margin text-siteCard no-underline"
+                  className="self-start text-[16px] leading-[44px] text-siteNightAccent no-underline"
                   href={NO_PAGE_YET}
                 >
-                  <AppleMark paint={websiteColour.siteCard} />
-                  <span className="flex flex-col">
-                    <span className="text-[12px] leading-[16px]">{words.storeSmall}</span>
-                    <span className="text-[19px] leading-[20px] font-semibold">
-                      {words.footerAppStore}
-                    </span>
-                  </span>
+                  {words.communityJoin}
                 </a>
-                <span className="text-[14px] leading-[20px] text-siteQuietText">
-                  {words.heroPriceLine}
-                  <br />
-                  {words.heroCancel}
+              </div>
+              <div className="flex flex-col gap-spaceMd rounded-[24px] bg-siteTintDeep p-[36px] text-siteText">
+                <span className="text-[12px] leading-[16px] font-semibold tracking-[0.02em] text-siteAccent">
+                  {words.parentsEyebrow}
                 </span>
+                <span className="font-display text-[32px] leading-[40px] font-semibold">
+                  {words.parentsHeadline}
+                </span>
+                <p className="text-[16px] leading-[24px] text-siteQuietText">{words.parentsLine}</p>
               </div>
             </div>
-            <CycleRing language={lang} />
-          </div>
-        </section>
+          </section>
 
-        <section aria-labelledby="forecast-title" className="bg-siteCard">
-          <div
-            className={`mx-auto flex ${theWidestBand} flex-wrap items-center gap-[64px] px-spaceXl py-[112px]`}
-          >
-            <div className="flex flex-[1_1_320px] justify-center">
-              <picture className="block w-[300px]">
-                <img
-                  alt={words.cycleScreenAlt}
-                  className="block h-auto w-full rounded-[40px] shadow-[0_24px_48px_-16px] shadow-siteShadow"
-                  src="/the-home-screen.png"
-                />
-              </picture>
-            </div>
-            <div className="flex min-w-[0px] flex-[999_1_440px] flex-col gap-spaceXl">
-              <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteAccent">
-                {words.cycleEyebrow}
-              </span>
-              <h2
-                className="font-display text-[48px] leading-[56px] font-medium tracking-[-0.02em] phone:text-[32px] phone:leading-[40px]"
-                id="forecast-title"
-              >
-                {words.cycleHeadline}
-              </h2>
-              <p className="text-[19px] leading-[28px] text-siteQuietText">{words.cycleLine}</p>
-              <div className="box-content flex max-w-[440px] flex-col gap-spaceMd rounded-lg bg-siteTint p-spaceXl">
-                <span className="text-[14px] leading-[20px] text-siteQuietText">
-                  {words.cycleNextLabel}
-                </span>
-                <span className="font-display text-[24px] leading-[30px] font-medium">
-                  {words.cycleNextRange}
-                </span>
-                <span className="text-[14px] leading-[20px] text-siteQuietText">
-                  {words.cycleNextConfidence}
-                </span>
-              </div>
-              <p className="text-[14px] leading-[20px] text-siteQuietText">{words.cycleDenial}</p>
-            </div>
-          </div>
-        </section>
+          <section aria-labelledby="note-title" className="bg-siteCard">
+            <FounderNote
+              controls={words.founderControlsLabel}
+              eyebrow={words.noteEyebrow}
+              founders={theFounders}
+              next={words.founderNext}
+              pause={words.carouselPause}
+              play={words.carouselPlay}
+              previous={words.founderPrevious}
+            />
+          </section>
 
-        <section aria-labelledby="learn-title" className="bg-siteTint">
-          <div
-            className={`mx-auto flex ${theWidestBand} flex-col gap-[48px] px-spaceXl py-[112px]`}
+          <section
+            aria-labelledby="privacy-title"
+            className="border-t-hairline border-t-siteTintLine bg-siteGround"
           >
-            <div className="flex max-w-[720px] flex-col gap-spaceLg">
-              <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteAccent">
-                {words.learnEyebrow}
-              </span>
-              <h2
-                className="font-display text-[48px] leading-[56px] font-medium tracking-[-0.02em] phone:text-[32px] phone:leading-[40px]"
-                id="learn-title"
-              >
-                {words.learnHeadline}
-              </h2>
-              <p className="text-[19px] leading-[28px] text-siteQuietText">{words.learnLine}</p>
-            </div>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-margin">
-              {theGuides.map((guide) => (
-                <a
-                  className="flex min-h-[200px] flex-col gap-spaceSm rounded-[24px] bg-siteCard p-marginMd text-siteText no-underline"
-                  href={under('calculator/')}
-                  key={guide.label}
-                >
-                  <span
-                    className={`text-[12px] leading-[16px] font-semibold tracking-[0.02em] ${guide.ink}`}
-                  >
-                    {guide.label}
-                  </span>
-                  <span className="font-display text-[24px] leading-[30px] font-medium">
-                    {guide.title}
-                  </span>
-                  <span
+            <div
+              className={`mx-auto flex ${theWidestBand} flex-wrap items-center justify-between gap-x-[48px] gap-y-spaceXl px-spaceXl py-[72px]`}
+            >
+              <div className="flex items-center gap-margin">
+                <span className="flex h-marginLg w-marginLg flex-[0_0_auto] items-center justify-center rounded-full bg-siteCard">
+                  <svg
                     aria-hidden="true"
-                    className={`mt-auto h-[6px] rounded-full ${guide.rule}`}
-                  />
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section aria-labelledby="community-title" className="bg-siteNight text-siteTintDeep">
-          <div
-            className={`mx-auto grid ${theWidestBand} grid-cols-[repeat(auto-fit,minmax(320px,1fr))] gap-x-[64px] gap-y-[48px] px-spaceXl py-[112px]`}
-          >
-            <div className="flex flex-col gap-spaceLg">
-              <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteNightAccent">
-                {words.communityEyebrow}
-              </span>
-              <h2
-                className="font-display text-[48px] leading-[56px] font-medium tracking-[-0.02em] phone:text-[32px] phone:leading-[40px]"
-                id="community-title"
-              >
-                {words.communityHeadline}
-              </h2>
-              <p className="text-[19px] leading-[28px] text-siteNightQuietText">
-                {words.communityLine}
-              </p>
+                    fill="none"
+                    height="26"
+                    stroke={websiteColour.siteAccent}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.75}
+                    viewBox="0 0 24 24"
+                    width="26"
+                  >
+                    <rect height="10" rx="2" width="14" x="5" y="11" />
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                  </svg>
+                </span>
+                <h2
+                  className="font-display text-[32px] leading-[40px] font-semibold"
+                  id="privacy-title"
+                >
+                  {words.privacyHeadline}
+                </h2>
+              </div>
               <a
-                className="self-start text-[16px] leading-[44px] text-siteNightAccent no-underline"
-                href={NO_PAGE_YET}
+                className="text-[16px] leading-[44px] font-semibold text-siteAccent no-underline"
+                href={under('privacy/')}
               >
-                {words.communityJoin}
+                {words.privacyLink}
               </a>
             </div>
-            <div className="flex flex-col gap-spaceMd rounded-[24px] bg-siteTintDeep p-[36px] text-siteText">
-              <span className="text-[12px] leading-[16px] font-semibold tracking-[0.02em] text-siteAccent">
-                {words.parentsEyebrow}
-              </span>
-              <span className="font-display text-[32px] leading-[40px] font-medium">
-                {words.parentsHeadline}
-              </span>
-              <p className="text-[16px] leading-[24px] text-siteQuietText">{words.parentsLine}</p>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        <section aria-labelledby="note-title" className="bg-siteCard">
-          <div className="mx-auto flex max-w-[760px] flex-col gap-[32px] px-spaceXl py-[120px]">
-            <h2
-              className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteAccent"
-              id="note-title"
+          <section aria-labelledby="reviews-title" className="bg-siteTintDeep">
+            <ReviewRow
+              controls={words.reviewControlsLabel}
+              eyebrow={words.reviewsEyebrow}
+              headline={words.reviewsHeadline}
+              next={words.reviewNext}
+              pause={words.carouselPause}
+              play={words.carouselPlay}
+              previous={words.reviewPrevious}
+              rating={words.reviewsRating}
+              reviews={theReviews}
+            />
+          </section>
+
+          <section aria-labelledby="try-title" className="bg-siteCard">
+            <div
+              className={`mx-auto grid ${theWidestBand} grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-spaceXl px-spaceXl py-[96px]`}
             >
-              {words.noteEyebrow}
-            </h2>
-            <p className="font-display text-[32px] leading-[44px] font-normal tracking-[-0.01em]">
-              {words.noteBody}
-            </p>
-            <div className="flex items-center gap-spaceLg">
-              <span className="block h-[48px] w-[48px] overflow-hidden rounded">
-                <EmiIcon className="h-full w-full" decorative />
-              </span>
-              <span className="flex flex-col">
-                <span className="text-[16px] leading-[24px] font-semibold">
-                  {words.founderName}
-                </span>
-                <span className="text-[14px] leading-[20px] text-siteQuietText">
-                  {words.founderRole}
-                </span>
-              </span>
-            </div>
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="privacy-title"
-          className="border-t-hairline border-t-siteTintLine bg-siteGround"
-        >
-          <div
-            className={`mx-auto flex ${theWidestBand} flex-wrap items-center justify-between gap-x-[48px] gap-y-spaceXl px-spaceXl py-[72px]`}
-          >
-            <div className="flex items-center gap-margin">
-              <span className="flex h-marginLg w-marginLg flex-[0_0_auto] items-center justify-center rounded-full bg-siteCard">
-                <svg
-                  aria-hidden="true"
-                  fill="none"
-                  height="26"
-                  stroke={websiteColour.siteAccent}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.75}
-                  viewBox="0 0 24 24"
-                  width="26"
-                >
-                  <rect height="10" rx="2" width="14" x="5" y="11" />
-                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-                </svg>
-              </span>
-              <h2
-                className="font-display text-[32px] leading-[40px] font-medium"
-                id="privacy-title"
+              <a
+                className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
+                href={under('calculator/')}
               >
-                {words.privacyHeadline}
-              </h2>
-            </div>
-            <a
-              className="text-[16px] leading-[44px] font-semibold text-siteAccent no-underline"
-              href={under('privacy/')}
-            >
-              {words.privacyLink}
-            </a>
-          </div>
-        </section>
-
-        <section aria-labelledby="price-title" className="bg-siteTintDeep">
-          <div
-            className={`mx-auto flex ${theWidestBand} flex-wrap gap-x-[64px] gap-y-[48px] px-spaceXl py-[112px]`}
-          >
-            <div className="flex flex-[1_1_360px] flex-col gap-spaceLg">
-              <span className="font-data text-[12px] leading-[16px] font-medium tracking-[0.08em] text-siteAccent">
-                {words.priceEyebrow}
-              </span>
-              <h2
-                className="font-display text-[48px] leading-[56px] font-medium tracking-[-0.02em] phone:text-[32px] phone:leading-[40px]"
-                id="price-title"
-              >
-                {words.priceHeadline}
-              </h2>
-              <p className="text-[19px] leading-[28px] text-siteQuietText">{words.priceLine}</p>
-            </div>
-            <div className="min-w-[0px] flex-[999_1_440px] overflow-hidden rounded-[24px] bg-siteCard">
-              {theWaysToPay.map((way) => (
-                <a
-                  className={`box-content flex min-h-[80px] items-center justify-between gap-spaceLg px-marginMd py-spaceLg text-siteText no-underline ${
-                    way.rule ? 'border-b-hairline border-b-siteTintLine' : ''
-                  }`}
-                  href={way.address}
-                  key={way.title}
+                <span
+                  className="font-display text-[32px] leading-[40px] font-semibold"
+                  id="try-title"
                 >
-                  <span className="flex flex-col">
-                    <span className="text-[19px] leading-[26px] font-semibold">{way.title}</span>
-                    <span className="text-[14px] leading-[20px] text-siteQuietText">
-                      {way.note}
-                    </span>
-                  </span>
-                  <span aria-hidden="true" className="text-[24px] text-siteAccent">
-                    ›
-                  </span>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section aria-labelledby="try-title" className="bg-siteCard">
-          <div
-            className={`mx-auto grid ${theWidestBand} grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-spaceXl px-spaceXl py-[96px]`}
-          >
-            <a
-              className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
-              href={under('calculator/')}
-            >
-              <span className="font-display text-[32px] leading-[40px] font-medium" id="try-title">
-                {words.tryTitle}
-              </span>
-              <span className="text-[16px] leading-[24px] text-siteQuietText">{words.tryLine}</span>
-              <span className="mt-auto text-[16px] font-semibold text-siteAccent">
-                {words.tryLink}
-              </span>
-            </a>
-            <a
-              className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
-              href={under('support/')}
-            >
-              <span className="font-display text-[32px] leading-[40px] font-medium">
-                {words.askTitle}
-              </span>
-              <span className="text-[16px] leading-[24px] text-siteQuietText">{words.askLine}</span>
-              <span className="mt-auto text-[16px] font-semibold text-siteAccent">
-                {words.askLink}
-              </span>
-            </a>
-          </div>
-        </section>
-
-        <section aria-labelledby="end-title" className="bg-siteNight text-siteTintDeep">
-          <div className="mx-auto flex max-w-[760px] flex-col items-center gap-spaceXl px-spaceXl py-[120px] text-center">
-            <h2
-              className="font-display text-[48px] leading-[56px] font-medium tracking-[-0.02em] phone:text-[32px] phone:leading-[40px]"
-              id="end-title"
-            >
-              {words.heroHeadline}
-            </h2>
-            <a
-              aria-label={words.store}
-              className="box-content flex min-h-[52px] items-center gap-spaceSm rounded bg-siteCard px-margin text-siteBlack no-underline"
-              href={NO_PAGE_YET}
-            >
-              <AppleMark paint={websiteColour.siteBlack} />
-              <span className="flex flex-col text-left">
-                <span className="text-[12px] leading-[16px]">{words.storeSmall}</span>
-                <span className="text-[19px] leading-[20px] font-semibold">
-                  {words.footerAppStore}
+                  {words.tryTitle}
                 </span>
+                <span className="text-[16px] leading-[24px] text-siteQuietText">
+                  {words.tryLine}
+                </span>
+                <span className="mt-auto text-[16px] font-semibold text-siteAccent">
+                  {words.tryLink}
+                </span>
+              </a>
+              <a
+                className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
+                href={under('support/')}
+              >
+                <span className="font-display text-[32px] leading-[40px] font-semibold">
+                  {words.askTitle}
+                </span>
+                <span className="text-[16px] leading-[24px] text-siteQuietText">
+                  {words.askLine}
+                </span>
+                <span className="mt-auto text-[16px] font-semibold text-siteAccent">
+                  {words.askLink}
+                </span>
+              </a>
+            </div>
+          </section>
+
+          <section aria-labelledby="end-title" className="bg-siteNight text-siteTintDeep">
+            <div className="mx-auto flex max-w-[760px] flex-col items-center gap-spaceXl px-spaceXl py-[120px] text-center">
+              <h2
+                className="font-display text-[48px] leading-[56px] font-semibold tracking-[-0.015em] phone:text-[32px] phone:leading-[40px]"
+                id="end-title"
+              >
+                {words.heroHeadline}
+              </h2>
+              <a
+                aria-label={words.store}
+                className="box-content flex min-h-[52px] items-center gap-spaceSm rounded bg-siteCard px-margin text-siteBlack no-underline"
+                href={NO_PAGE_YET}
+              >
+                <AppleMark paint={websiteColour.siteBlack} />
+                <span className="flex flex-col text-left">
+                  <span className="text-[12px] leading-[16px]">{words.storeSmall}</span>
+                  <span className="text-[19px] leading-[20px] font-semibold">
+                    {words.footerAppStore}
+                  </span>
+                </span>
+              </a>
+              <span className="text-[14px] leading-[20px] text-siteNightQuietText">
+                {`${words.heroPriceLine} ${words.heroCancel}`}
               </span>
-            </a>
-            <span className="text-[14px] leading-[20px] text-siteNightQuietText">
-              {`${words.heroPriceLine} ${words.heroCancel}`}
-            </span>
-          </div>
-        </section>
+            </div>
+          </section>
+        </CarouselsProvider>
       </main>
       <SiteFooter language={lang} />
     </div>

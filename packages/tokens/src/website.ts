@@ -21,6 +21,7 @@ export type WebsiteColourName =
   | 'siteLine'
   | 'siteHeaderLine'
   | 'siteTintLine'
+  | 'siteControlLine'
   | 'siteShadow'
   | 'siteText'
   | 'siteQuietText'
@@ -63,6 +64,7 @@ const ALL: readonly WebsiteColourName[] = [
   'siteLine',
   'siteHeaderLine',
   'siteTintLine',
+  'siteControlLine',
   'siteShadow',
   'siteText',
   'siteQuietText',
@@ -142,6 +144,16 @@ export const websiteColours: Readonly<Record<WebsiteColourName, WebsiteColourTok
   /** The rule between two rows of a card, which is quieter than a rule between two bands. */
   siteTintLine: {
     value: '#EFE6E3',
+    roles: ['line'],
+    textOn: [],
+  },
+  /**
+   * The edge of a control a reader can press: the three buttons that move a carousel. It is darker
+   * than every other rule of the site, because a rule between two bands only has to be seen and
+   * the edge of a button has to say where the button ends.
+   */
+  siteControlLine: {
+    value: '#89726C',
     roles: ['line'],
     textOn: [],
   },
@@ -237,36 +249,69 @@ export const websiteColour: Readonly<Record<WebsiteColourName, string>> = values
 export type WebsiteFaceName = 'display' | 'text' | 'data';
 
 /**
- * The three families the board sets its words in. A heading is a serif, running text is a humanist
- * sans, and a small label over a section is monospaced so the letters hold their place.
+ * The family the site serves for each role. Running text is a humanist sans, a small label over a
+ * section is monospaced so the letters hold their place, and a heading is a grotesque.
+ *
+ * A heading names the family the board reaches for on a machine that holds none of Apple's own:
+ * `websiteFaceStack` below holds the whole list, in the board's order.
  */
 export const websiteFace: Readonly<Record<WebsiteFaceName, string>> = {
-  display: 'Newsreader',
+  display: 'Inter',
   text: 'Plus Jakarta Sans',
   data: 'JetBrains Mono',
+};
+
+/**
+ * Every family a role names, in the order the board writes them, with the served family somewhere
+ * inside the list rather than always at its head.
+ *
+ * A heading on a Mac is drawn in Apple's own interface face, which the board asks for first and
+ * which no licence lets Emi ship. The served family stands behind it, and draws the heading on
+ * every machine that has none of the three above it, which is every machine the pipeline runs on.
+ * A face a machine already holds asks nobody for a file, so naming one first costs no privacy.
+ */
+export const websiteFaceStack: Readonly<Record<WebsiteFaceName, readonly string[]>> = {
+  display: [
+    '-apple-system',
+    'BlinkMacSystemFont',
+    'SF Pro Display',
+    websiteFace.display,
+    'Helvetica Neue',
+    'Arial',
+    'sans-serif',
+  ],
+  text: [websiteFace.text, 'system-ui', 'sans-serif'],
+  data: [websiteFace.data, 'ui-monospace', 'monospace'],
 };
 
 /** One file of one family, at the weight the board asks that file for. */
 export interface WebsiteFontCut {
   readonly name: string;
   readonly weight: 400 | 500 | 600;
+  readonly format: 'ttf' | 'woff2';
 }
 
 /**
  * The five files the site serves, under the role each one carries. They are the files the board
  * itself names in `docs/design/website/home-v2/render/MainV2.html`, so a page of the site measures
  * the same as the design it was drawn from.
+ *
+ * The two cuts of the heading face are the board's own two files rather than the same family from
+ * a font service. The service builds that family from one variable file of another release, and it
+ * draws a heading wider or narrower than the board draws it: at 32 px and weight 600 the two
+ * disagree by 9 px over 57 characters, which moves a word onto the next line and lengthens the
+ * whole page.
  */
 export const websiteFontCuts: Readonly<Record<WebsiteFaceName, readonly WebsiteFontCut[]>> = {
   display: [
-    { name: 'Newsreader16pt-Regular', weight: 400 },
-    { name: 'Newsreader16pt-Medium', weight: 500 },
+    { name: 'Inter-400', weight: 400, format: 'woff2' },
+    { name: 'Inter-600', weight: 600, format: 'woff2' },
   ],
   text: [
-    { name: 'PlusJakartaSans-Regular', weight: 400 },
-    { name: 'PlusJakartaSans-SemiBold', weight: 600 },
+    { name: 'PlusJakartaSans-Regular', weight: 400, format: 'ttf' },
+    { name: 'PlusJakartaSans-SemiBold', weight: 600, format: 'ttf' },
   ],
-  data: [{ name: 'JetBrainsMono-Medium', weight: 500 }],
+  data: [{ name: 'JetBrainsMono-Medium', weight: 500, format: 'ttf' }],
 };
 
 /** The roles as data, in the order a page reads them. */
@@ -281,7 +326,7 @@ export const websiteFontsRoot = 'apps/website/assets/fonts';
 
 /** The name of one file on disk, under `websiteFontsRoot`. */
 export function websiteFontFile(cut: WebsiteFontCut): string {
-  return `${cut.name}.ttf`;
+  return `${cut.name}.${cut.format}`;
 }
 
 /**
@@ -291,3 +336,18 @@ export function websiteFontFile(cut: WebsiteFontCut): string {
  * and the theme of the site names it `phone`.
  */
 export const websitePhoneWidth = 640;
+
+/**
+ * The second width the board changes the shape of a band at, in pixels. At this width and narrower
+ * the row of reviews drops from three cards to two, and the one it drops is the one a reader at
+ * this width would only see half of.
+ */
+export const websiteTabletWidth = 1023;
+
+/**
+ * How long one card of a carousel stands before the next one takes its place, in milliseconds.
+ *
+ * Both carousels of the home page move on this one wait, together, because two waits running next
+ * to each other put two things in motion at two different moments and a reader cannot read either.
+ */
+export const websiteCarouselWait = 7000;

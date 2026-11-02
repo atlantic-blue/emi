@@ -14,10 +14,11 @@ const websiteWorkspace = resolve(__dirname, '..', '..', 'apps', 'website');
 
 const theCommandThatRefusesAnEmptyRun = join(websiteWorkspace, 'e2e', 'refuseAnEmptyRun.ts');
 
-/** The width of a desktop, and the width of the phone most of her reading happens on. */
-const desktop = 1280;
-
-const phone = 390;
+/**
+ * The three widths the board was drawn at, smallest first, which is the order the suite reports
+ * them in: a desktop, a tablet, and the phone most of her reading happens on.
+ */
+const theWidthsOfTheBoard = [390, 834, 1280];
 
 function asOneList(value: string | readonly string[] | undefined): string[] {
   return value === undefined ? [] : [value].flat();
@@ -58,7 +59,11 @@ function theScriptsThatRunTheSuite(): string {
 }
 
 defineFeature(feature, (test) => {
-  test('playwright opens the not found page at two widths', ({ given, then, and }) => {
+  test('playwright opens the not found page at every width the board was drawn at', ({
+    given,
+    then,
+    and,
+  }) => {
     let suite: WhatTheSuiteDeclares;
 
     given('the suite that reads myemi.app in a browser', () => {
@@ -76,9 +81,13 @@ defineFeature(feature, (test) => {
       expect(theScriptsThatRunTheSuite()).toContain('playwright test');
     });
 
-    and('it reads at the width of a desktop and at the width of a phone', () => {
-      expect(suite.widths).toEqual([phone, desktop]);
-      expect(suite.browsers).toEqual(['chromium', 'chromium']);
+    and('it reads at the width of a desktop, of a tablet and of a phone', () => {
+      expect(suite.widths).toEqual(theWidthsOfTheBoard);
+
+      // One browser at each width, and the same browser at all of them. Two engines drawing one
+      // page write different bytes, so a comparison across two of them would report on the
+      // machine rather than on the page.
+      expect(suite.browsers).toEqual(theWidthsOfTheBoard.map(() => 'chromium'));
     });
 
     and('what it reads is the status, the words she gets, and her press back to Emi', () => {
@@ -106,7 +115,7 @@ defineFeature(feature, (test) => {
 
       expect(live.baseURL).toBe('https://myemi.app');
       expect(live.startsAServer).toBe(false);
-      expect(live.widths).toEqual([phone, desktop]);
+      expect(live.widths).toEqual(theWidthsOfTheBoard);
     });
 
     and('a run that carried out no scenario at all is refused', () => {
