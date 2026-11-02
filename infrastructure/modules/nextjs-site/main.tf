@@ -295,9 +295,15 @@ resource "aws_cloudfront_response_headers_policy" "site" {
 
     # The origin of the site and nothing else. No third party host can be reached from a page, so
     # nothing on the site can report that she read it.
+    #
+    # This one is not set over what the origin answered, and the other five are. A page is drawn
+    # with scripts written into its markup, and only the function that draws them can put a secret
+    # on them and name the same secret here, so the function writes this header for each page it
+    # answers and the edge keeps what it wrote. The policy below is what reaches a response that
+    # carries none of its own, which is every file from the bucket.
     content_security_policy {
       content_security_policy = "default-src 'self'; frame-ancestors 'none'"
-      override                = true
+      override                = false
     }
 
     content_type_options {

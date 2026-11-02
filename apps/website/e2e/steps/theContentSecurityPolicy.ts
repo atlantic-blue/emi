@@ -10,7 +10,11 @@ import { test } from './fixtures';
  */
 const { Given, Then } = createBdd(test);
 
-const theHeadlineSheReads = 'This page does not exist';
+// The sentence about reading the headline is defined once, in notFound.ts: every steps file of this
+// suite shares one namespace, and a second definition of a sentence stops the whole run.
+
+/** What a browser writes to the console when the policy stopped it drawing something. */
+const aRefusal = /refused to|content security policy/i;
 
 /** A secret in a policy, as the specification writes one. */
 const aSecret = /'nonce-([A-Za-z0-9+/_-]+={0,2})'/;
@@ -40,13 +44,11 @@ Then(
   },
 );
 
-Then('she reads that the page does not exist', async ({ page }) => {
-  await expect(page.getByText(theHeadlineSheReads)).toBeVisible();
-});
-
 Then('her browser refused nothing on the page', async ({ page, complaints }) => {
   // The page draws itself after it arrives, so a refusal can land after the words do.
   await page.waitForLoadState('networkidle');
 
-  expect(complaints.of).toEqual([]);
+  // A refusal, and not every complaint. The page she opens is a 404 by design and a browser writes
+  // that to the console as well, so reading the whole console would fail on the page working.
+  expect(complaints.of.filter((said) => aRefusal.test(said))).toEqual([]);
 });
