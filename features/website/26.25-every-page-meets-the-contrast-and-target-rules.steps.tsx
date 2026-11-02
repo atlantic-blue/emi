@@ -151,15 +151,48 @@ function theAddressesIn(sentences: string): string[] {
 }
 
 /**
- * The largest floor the rules of a press set on one axis, in pixels. A line height is not one of
- * them: it sets the height of a line of text rather than of the box her thumb lands on, so a press
- * that leans on it is read here as having no floor at all.
+ * The largest floor the rules of a press set on one axis, in pixels. Down the page a line height
+ * counts, because a press that draws one line of text is as tall as that line, which is how the
+ * two presses at the top of the page reach a thumb without a box of their own.
  */
 function theFloorOn(axis: 'width' | 'height', declarations: string): number {
-  const written = new RegExp(String.raw`(?<![-\w])(?:min-)?${axis}: (\d+(?:\.\d+)?)px`, 'g');
+  const lines = axis === 'height' ? '(?:min-|line-)?' : '(?:min-)?';
+  const written = new RegExp(String.raw`(?<![-\w])${lines}${axis}: (\d+(?:\.\d+)?)px`, 'g');
   const found = [...declarations.matchAll(written)].map(([, value]) => Number(value));
 
   return found.length === 0 ? 0 : Math.max(...found);
+}
+
+/**
+ * One value of a declaration, in pixels, or nothing where the rules do not set it. A negative step
+ * of the theme arrives as a sum rather than as a number, so both forms are read.
+ */
+function pixelsOf(property: string, declarations: string): number | null {
+  const plain = new RegExp(String.raw`(?<![-\w])${property}: (-?\d+(?:\.\d+)?)px`);
+  const taken = new RegExp(String.raw`(?<![-\w])${property}: calc\((\d+(?:\.\d+)?)px \* -1\)`);
+  const found = plain.exec(declarations)?.[1];
+  const subtracted = taken.exec(declarations)?.[1];
+
+  if (subtracted !== undefined) {
+    return -Number(subtracted);
+  }
+
+  return found === undefined ? null : Number(found);
+}
+
+/**
+ * How much hit area a press grows around its words on each side, in pixels, where the growth
+ * costs the page nothing. Padding makes the box she presses bigger, and an equal negative margin
+ * gives the room back to the layout, so every other press stays where the board drew it.
+ *
+ * Padding nobody pays for is not counted. It moves the page, and the drawn page is the one the
+ * operator approved.
+ */
+function theHitAreaAround(declarations: string): number {
+  const padding = pixelsOf('padding-inline', declarations);
+  const paidFor = pixelsOf('margin-inline', declarations);
+
+  return padding !== null && paidFor === -padding ? padding : 0;
 }
 
 defineFeature(feature, (test) => {
@@ -245,23 +278,36 @@ defineFeature(feature, (test) => {
           }
 
           const drawn = press.classes.map((name) => declarationsOf(stylesheet, name)).join(' ');
-          const across = theFloorOn('width', drawn);
           const down = theFloorOn('height', drawn);
+          const across = theFloorOn('width', drawn);
+          const around = theHitAreaAround(drawn);
 
-          if (across < whatAThumbNeeds || down < whatAThumbNeeds) {
-            tooSmall.push(`${press.called} is held to ${across} by ${down}`);
+          if (down < whatAThumbNeeds) {
+            tooSmall.push(`${press.called} is ${down} tall, and a thumb needs ${whatAThumbNeeds}`);
+          }
+
+          // Across, a press reaches her thumb one of two ways: a box held to the floor, or words
+          // with hit area grown around them. How wide the words themselves are is a thing only a
+          // browser knows, so the browser measures the whole of every press at the width of a
+          // phone, and this says each press has one of the two.
+          if (across < whatAThumbNeeds && around === 0) {
+            tooSmall.push(`${press.called} is as wide as its words, with no hit area around them`);
           }
         }
 
         expect(presses.length).toBeGreaterThan(15);
         expect(tooSmall).toEqual([]);
 
+        // The browser measures what this cannot: the box of every press at the width of a phone,
+        // named with its size where it is under the floor.
+        expect(theBrowserMeasures).toContain('whatAThumbNeeds');
+        expect(theBrowserMeasures).toContain('press.width} by ${press.height}');
+        expect(theBrowserMeasures).toContain('theWidthAThumbPressesAt');
+
         // Above the width of a phone a pointer does the pressing, and a pointer is held to the
         // floor of the guidelines, which the browser reads with the rule rather than by measuring.
         expect([...theRulesSheIsHeldTo]).toContain('target-size');
         expect(whatAPointerNeeds).toBe(24);
-        expect(theBrowserMeasures).toContain('whatAThumbNeeds');
-        expect(theBrowserMeasures).toContain('press.width} by ${press.height}');
       },
     );
 

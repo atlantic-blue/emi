@@ -53,7 +53,10 @@ export function SiteHeader({ language = fallbackLanguage }: { language?: Languag
       <div className="mx-auto flex min-h-[48px] max-w-[1024px] flex-wrap items-center justify-between gap-x-spaceXl px-spaceXl">
         <a
           aria-label={words.headerHomeLabel}
-          className="flex min-h-[44px] items-center"
+          // The mark is thirty two pixels wide, so eight pixels of hit area on each side carries the
+          // way home past the floor a thumb needs. The padding is paid for by an equal negative
+          // margin, so the box she presses grows and the mark stays where it was drawn.
+          className="flex min-h-[44px] items-center phone:-mx-[8px] phone:px-[8px]"
           href={under('')}
         >
           {/* The corner is on the wrapper rather than on the drawing, so the drawing stays the file
@@ -79,7 +82,10 @@ export function SiteHeader({ language = fallbackLanguage }: { language?: Languag
         <div className="flex items-center gap-spaceLg">
           <a
             aria-label={words.headerLanguageLabel}
-            className="text-body-sm leading-[44px] text-siteQuietText no-underline"
+            // Two letters are nineteen pixels wide, and fourteen pixels of hit area on each side
+            // carries them past the floor. The negative margin pays for the padding, so the two
+            // presses beside this one stay where the board drew them.
+            className="text-body-sm leading-[44px] text-siteQuietText no-underline phone:-mx-[14px] phone:px-[14px]"
             href={`#${LANGUAGES_ANCHOR}`}
           >
             {shortNameOf[language]}
