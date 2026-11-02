@@ -1,24 +1,26 @@
-import { type Language, type SiteWordKey, fallbackLanguage } from '@/app/words';
-import { EmiWordmark } from '@/components/emiWordmark';
-import { LanguageSwitcher } from '@/components/languageSwitcher';
+import { type Language, type SiteWordKey, fallbackLanguage, wordsIn } from '@/app/words';
+import { EmiIcon } from '@/components/emiIcon';
 
 /**
- * The file the site serves the mark from. It is the drawing in `brand/logo/emi-wordmark.svg`, and
- * `test/wordmark.test.tsx` reads the two files against each other, so the one a browser asks for
- * cannot drift from the one the brand generates.
+ * The file the site serves the mark from. It is the icon the community chose in issue 331, the one
+ * the application ships as `apps/mobile/assets/icon/emi-icon.svg`, and the one the approved board
+ * draws. The band below draws the same outlines inside the page, and the scenario of step 26.19
+ * reads the copy against the file, so the drawing at the top of a page cannot drift from the drawing
+ * on her home screen.
+ *
+ * The file is served as well as drawn, because a reader who saves the page, a store listing and a
+ * link somebody shares all ask for the mark by name.
  */
-export const WORDMARK_FILE = '/emi-wordmark.svg';
-
-/** The size the drawing is made at. The same test reads these two against its own canvas. */
-export const WORDMARK_UNITS = { width: 3002, height: 1879 } as const;
-
-/** The file the site serves the mark from once the band draws the approved icon. */
 export const ICON_FILE = '/emi-icon.svg';
 
 /** The address the three language links in the band at the foot of the page sit at. */
 export const LANGUAGES_ANCHOR = 'site-languages';
 
-/** The six ways into the product, each with the path it sits at under the language. */
+/**
+ * The six ways into the product, in the order the board puts them, each with the path it sits at
+ * under the language. A page that does not exist yet answers 404 with the Emi page, which is what
+ * `app/[lang]/[...rest]` is for, so a link here is never a dead end outside the site.
+ */
 export const mainLinks: readonly { readonly word: SiteWordKey; readonly path: string }[] = [
   { word: 'headerEmi', path: '' },
   { word: 'headerPrivacy', path: 'privacy/' },
@@ -28,22 +30,100 @@ export const mainLinks: readonly { readonly word: SiteWordKey; readonly path: st
   { word: 'headerSupport', path: 'support/' },
 ];
 
+/** How each language names itself in two letters, which is all the band has room for. */
+const shortNameOf: Readonly<Record<Language, string>> = { en: 'EN', ru: 'RU', es: 'ES' };
+
 /**
- * A thin band at the top of every page, carrying the mark and the language she reads in. The mark
- * is drawn inside the page: the content security policy of this site names a secret for a style,
- * a style written on an element cannot carry one, and an element carrying a picture writes one on
- * itself. So the drawing travels in the markup, which also costs her browser one request fewer.
+ * The band at the top of every page, from `docs/design/website/home-v2/boards/Header.dc.html`.
  *
- * The page a woman reaches by accident has no language in its address, so the band takes the
- * fallback there and the switcher still offers her the three.
+ * At the width of a phone the six links are not drawn and the menu button is, because six links
+ * across a phone are six links she cannot read. The width is `websitePhoneWidth` in the token
+ * package and the theme names it `phone`.
+ *
+ * The language link points at the three language links in the band at the foot of the page. The site
+ * ships no script of its own, so a control that opened a list would open nothing, and a link to the
+ * list that is already on the page works before anything has loaded.
  */
 export function SiteHeader({ language = fallbackLanguage }: { language?: Language }) {
+  const words = wordsIn(language);
+  const under = (path: string): string => `/${language}/${path}`;
+
   return (
-    <header className="flex items-center justify-between bg-ground px-margin py-spaceMd">
-      <a className="inline-flex items-center" href="/">
-        <EmiWordmark className="h-spaceXl w-auto" />
-      </a>
-      <LanguageSwitcher language={language} />
+    <header className="w-full border-hairline border-b border-siteLine/60 bg-siteGround/85 font-text text-siteText">
+      <div className="mx-auto flex min-h-[48px] max-w-[1024px] flex-wrap items-center justify-between gap-x-spaceXl px-spaceXl">
+        <a
+          aria-label={words.headerHomeLabel}
+          className="flex min-h-[44px] items-center"
+          href={under('')}
+        >
+          {/* The corner is on the wrapper rather than on the drawing, so the drawing stays the file
+              the application ships and the test can hold the two together. */}
+          <span className="block h-[32px] w-[32px] overflow-hidden rounded-[7px]">
+            <EmiIcon className="h-full w-full" />
+          </span>
+        </a>
+        <nav
+          aria-label={words.headerMainLabel}
+          className="flex flex-1 flex-wrap items-center justify-center gap-x-marginMd phone:hidden"
+        >
+          {mainLinks.map(({ word, path }) => (
+            <a
+              className="text-body-sm leading-[44px] text-siteText no-underline"
+              href={under(path)}
+              key={word}
+            >
+              {words[word]}
+            </a>
+          ))}
+        </nav>
+        <div className="flex items-center gap-spaceLg">
+          <a
+            aria-label={words.headerLanguageLabel}
+            className="text-body-sm leading-[44px] text-siteQuietText no-underline"
+            href={`#${LANGUAGES_ANCHOR}`}
+          >
+            {shortNameOf[language]}
+          </a>
+          <button
+            aria-label={words.headerMenuLabel}
+            className="hidden h-[44px] w-[44px] items-center justify-center phone:flex"
+            type="button"
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="20"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth={1.75}
+              viewBox="0 0 24 24"
+              width="20"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+          <a
+            aria-label={words.headerSignInLabel}
+            className="flex h-[44px] w-[44px] items-center justify-center text-siteText"
+            href={under('sign-in/')}
+          >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.75}
+              viewBox="0 0 24 24"
+              width="18"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+            </svg>
+          </a>
+        </div>
+      </div>
     </header>
   );
 }

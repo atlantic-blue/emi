@@ -34,11 +34,11 @@ export default async function RootLayout({
   children,
   params,
 }: WhichLanguage & { children: ReactNode }) {
+  const faces = servedFonts.map((font) => font.variable).join(' ');
+
   return (
     <html lang={await languageOf({ params })}>
-      <body
-        className={`${servedFonts.map((font) => font.variable).join(' ')} bg-ground font-text text-body-lg text-text`}
-      >
+      <body className={`${faces} bg-siteGround font-text text-body-lg text-siteText`}>
         {children}
       </body>
     </html>

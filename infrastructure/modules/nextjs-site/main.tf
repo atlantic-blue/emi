@@ -50,7 +50,7 @@ locals {
     "/favicon.ico",
     "/robots.txt",
     "/sitemap.xml",
-    "/emi-wordmark.svg",
+    "/emi-icon.svg",
   ]
 }
 
