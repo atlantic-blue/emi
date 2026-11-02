@@ -10,6 +10,10 @@ function markupOf(element: Parameters<typeof renderToStaticMarkup>[0]): string {
   return renderToStaticMarkup(element);
 }
 
+/** The whole document she is sent, because the page is half of it and the frame is the other half. */
+const documentIn = async (lang: string): Promise<string> =>
+  markupOf(await RootLayout({ children: <NotFound />, params: Promise.resolve({ lang }) }));
+
 describe('the page behind an address the site does not have', () => {
   const page = (): string => markupOf(<NotFound />);
 
@@ -21,26 +25,26 @@ describe('the page behind an address the site does not have', () => {
     expect(page()).toMatch(/href="\/"/);
   });
 
-  it('arrives inside the header, a card and the footer, so it looks like the rest of the site', () => {
-    expect(page()).toContain('<header');
-    expect(page()).toContain('<footer');
-    expect(page()).toContain('Atlantic Blue Solutions Limited.');
-    expect(page()).toContain('aria-label="Emi"');
+  it('arrives inside the header, a card and the footer, so it looks like the rest of the site', async () => {
+    const document = await documentIn('en');
+
+    expect(document).toContain('<header');
+    expect(document).toContain('<footer');
+    expect(document).toContain('Atlantic Blue Solutions Limited.');
+    expect(document).toContain('aria-label="Emi"');
   });
 
   it('names Emi, so she can tell whose page she is reading', () => {
     expect(page()).toContain('Emi');
   });
 
-  it('asks no other host for anything', () => {
+  it('asks no other host for anything, page and frame alike', async () => {
     expect(page()).not.toMatch(/https?:\/\//);
+    expect(await documentIn('en')).not.toMatch(/https?:\/\//);
   });
 });
 
 describe('the document every page arrives in', () => {
-  const documentIn = async (lang: string): Promise<string> =>
-    markupOf(await RootLayout({ children: <NotFound />, params: Promise.resolve({ lang }) }));
-
   it('declares the language, so a screen reader says the words the right way', async () => {
     expect(await documentIn('ru')).toMatch(/^<html lang="ru">/);
     expect(await documentIn('es')).toMatch(/^<html lang="es">/);

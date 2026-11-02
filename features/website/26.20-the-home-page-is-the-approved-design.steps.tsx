@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
 import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
 import { markerTransformOf, phaseKeyOf } from '../../apps/website/components/cycleRing';
@@ -168,8 +169,17 @@ function theAnchorAround(markup: string, text: string): string {
   return markup.slice(markup.lastIndexOf('<a', at), at + 1);
 }
 
+/**
+ * The whole document she is sent. Next.js puts the page inside the root layout and answers with
+ * one of them, and every sentence of the board below the bands belongs to the layout, so a read of
+ * the page on its own would miss them.
+ */
 async function pageIn(language: Language): Promise<string> {
-  return renderToStaticMarkup(await HomePage({ params: Promise.resolve({ lang: language }) }));
+  const page = await HomePage({ params: Promise.resolve({ lang: language }) });
+
+  return renderToStaticMarkup(
+    await RootLayout({ children: page, params: Promise.resolve({ lang: language }) }),
+  );
 }
 
 defineFeature(feature, (test) => {

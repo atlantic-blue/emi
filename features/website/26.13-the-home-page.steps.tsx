@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { renderToStaticMarkup } from 'react-dom/server';
 
+import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
 import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
@@ -23,9 +24,18 @@ const denialOpening: Readonly<Record<Language, string>> = {
   es: 'Emi no es un',
 };
 
-/** The page Next.js draws for an address, as a reader receives it. */
+/**
+ * The page Next.js draws for an address, as a reader receives it. Next.js puts the page inside the
+ * root layout and answers with one document, so the scenario composes them the same way: the band
+ * at the top and the band at the foot are the layout's, and a read of the page on its own would
+ * read half of what she is sent.
+ */
 async function thePageAt(lang: string): Promise<string> {
-  return renderToStaticMarkup(await HomePage({ params: Promise.resolve({ lang }) }));
+  const page = await HomePage({ params: Promise.resolve({ lang }) });
+
+  return renderToStaticMarkup(
+    await RootLayout({ children: page, params: Promise.resolve({ lang }) }),
+  );
 }
 
 /** Every sentence the browser suite reads, as one piece of text. */

@@ -5,6 +5,7 @@ import { websiteColour } from '@emi/tokens';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { approvedDenials } from '../../../tools/pipeline/forbiddenClaims';
+import RootLayout from '../app/[lang]/layout';
 import HomePage from '../app/[lang]/page';
 import { type Language, brandEyebrowOf, languages, wordsIn } from '../app/words';
 import { CARDS_ACROSS } from '../components/reviewRow';
@@ -20,8 +21,17 @@ import { whatTheMarkupDraws } from './stylesheet';
 /** Compiling the stylesheet takes a moment, and each case that reads it compiles its own markup. */
 const longEnoughToCompile = 60_000;
 
+/**
+ * The whole document she is sent, which is the page inside the layout. Next.js composes the two
+ * and answers with one of them, and the band at the top and the band at the foot belong to the
+ * layout, so a read of the page on its own would read less than she is handed.
+ */
 async function pageIn(lang: string): Promise<string> {
-  return renderToStaticMarkup(await HomePage({ params: Promise.resolve({ lang }) }));
+  const page = await HomePage({ params: Promise.resolve({ lang }) });
+
+  return renderToStaticMarkup(
+    await RootLayout({ children: page, params: Promise.resolve({ lang }) }),
+  );
 }
 
 /**
