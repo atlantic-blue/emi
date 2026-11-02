@@ -1,11 +1,10 @@
-import { colour, radius, space, typeScale } from '@emi/tokens';
+import { websiteColour } from '@emi/tokens';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import { approvedDenials } from '../../../tools/pipeline/forbiddenClaims';
 import HomePage from '../app/[lang]/page';
+import { type Language, brandEyebrowOf, languages, wordsIn } from '../app/words';
 import { LANGUAGES_ANCHOR } from '../components/siteHeader';
-import { NO_PAGE_YET } from '../lib/addresses';
-import { type Language, languages, wordsIn } from '../app/words';
 import { whatTheMarkupDraws } from './stylesheet';
 
 /** Compiling the stylesheet takes a moment, and each case that reads it compiles its own markup. */
@@ -30,40 +29,111 @@ const theDenials: Readonly<Record<Language, string[]>> = {
   es: denialsStartingWith('Emi no es un'),
 };
 
+/**
+ * Every sentence of the approved board, by the name the catalogues give it, in the order a reader
+ * meets it down the page. A page that stops drawing one of these says less than the board the
+ * operator approved, and the pixel comparison would only say that something moved.
+ */
+const theWordsOfTheBoard = [
+  'heroHeadline',
+  'heroLine',
+  'storeSmall',
+  'heroPriceLine',
+  'heroCancel',
+  'ringOfAbout',
+  'ringMove',
+  'cycleEyebrow',
+  'cycleHeadline',
+  'cycleLine',
+  'cycleNextLabel',
+  'cycleNextRange',
+  'cycleNextConfidence',
+  'cycleDenial',
+  'learnEyebrow',
+  'learnHeadline',
+  'learnLine',
+  'learnPeriodLabel',
+  'learnPeriodTitle',
+  'learnFollicularLabel',
+  'learnFollicularTitle',
+  'learnOvulationLabel',
+  'learnOvulationTitle',
+  'learnLutealLabel',
+  'learnLutealTitle',
+  'communityEyebrow',
+  'communityHeadline',
+  'communityLine',
+  'communityJoin',
+  'parentsEyebrow',
+  'parentsHeadline',
+  'parentsLine',
+  'noteEyebrow',
+  'noteBody',
+  'founderName',
+  'founderRole',
+  'privacyHeadline',
+  'privacyLink',
+  'priceEyebrow',
+  'priceHeadline',
+  'priceLine',
+  'priceAppStoreNote',
+  'priceCardTitle',
+  'priceCardNote',
+  'priceStarsTitle',
+  'priceStarsNote',
+  'tryTitle',
+  'tryLine',
+  'tryLink',
+  'askTitle',
+  'askLine',
+  'askLink',
+] as const;
+
 describe('the page a woman meets Emi on', () => {
-  it.each(languages)('is drawn in %s', async (language) => {
+  it.each(languages)('draws every sentence of the approved board, in %s', async (language) => {
+    const words = wordsIn(language);
+    const page = await pageIn(language);
+    const absent = theWordsOfTheBoard.filter((key) => !page.includes(words[key]));
+
+    expect(absent).toEqual([]);
+  });
+
+  it.each(languages)('says what Emi costs where the board says it, in %s', async (language) => {
     const words = wordsIn(language);
     const page = await pageIn(language);
 
-    expect(page).toContain(words.brandLine);
-    expect(page).toContain(words.tagline);
-    expect(page).toContain(words.line);
-    expect(page).toContain(words.price);
+    expect(page).toContain(words.heroPriceLine);
+    expect(page).toContain(words.priceHeadline);
   });
 
-  it.each(languages)('says what Emi costs, in %s', async (language) => {
-    expect(await pageIn(language)).toContain(wordsIn(language).price);
+  // The board puts the brand line over the hero in capitals, and it is the one line that stays in
+  // English in all three languages, so it is derived from that line rather than held again.
+  it.each(languages)('stands the brand line over the hero in capitals, in %s', async (language) => {
+    expect(await pageIn(language)).toContain(brandEyebrowOf(wordsIn(language)));
   });
 
-  // The band at the foot carries one sentence that denies both claims, which is the board's own
-  // wording and one of the gate's approved sentences. The gate holds more than one denial in each
-  // language, so what is read here is that the page carries one of them and no claim.
-  it.each(languages)('says what Emi is not, in %s', async (language) => {
+  // The page denies both claims twice: once beside the forecast, where a reader decides what a
+  // forecast is, and once in the band at the foot. Both are the board's own sentence, which is one
+  // of the gate's approved denials.
+  it.each(languages)('says what Emi is not, twice, in %s', async (language) => {
     const page = await pageIn(language);
     const carried = theDenials[language].filter((denial) => page.includes(denial));
 
     expect(theDenials[language].length).toBeGreaterThan(0);
     expect(carried).toHaveLength(1);
+    expect(page.split(wordsIn(language).cycleDenial)).toHaveLength(3);
   });
 
-  it.each(languages)('offers the store and the beta, in %s', async (language) => {
-    const words = wordsIn(language);
-    const page = await pageIn(language);
+  it.each(languages)(
+    'offers Apple store twice, at the top and at the end, in %s',
+    async (language) => {
+      const page = await pageIn(language);
+      const words = wordsIn(language);
 
-    expect(page).toContain(words.store);
-    expect(page).toContain(words.beta);
-    expect(page.match(new RegExp(`href="${NO_PAGE_YET}"`, 'g'))?.length).toBeGreaterThan(1);
-  });
+      expect(page.split(`aria-label="${words.store}"`)).toHaveLength(3);
+      expect(page.split(words.footerAppStore).length).toBeGreaterThan(3);
+    },
+  );
 
   it('asks no other host for anything, in any language', async () => {
     for (const language of languages) {
@@ -76,40 +146,23 @@ describe('the page a woman meets Emi on', () => {
   });
 
   it(
-    'draws the headline large and centred, in the two tones of the design',
-    async () => {
-      const drawn = await pageIn('en');
-      const painted = Object.values(await whatTheMarkupDraws(drawn)).join(' ');
-
-      expect(painted).toContain(`font-size: ${typeScale['display-lg-mobile'].size}px`);
-      expect(painted).toContain(`color: ${colour.text}`);
-      expect(painted).toContain(`color: ${colour.secondaryText}`);
-      expect(painted).toContain('text-align: center');
-    },
-    longEnoughToCompile,
-  );
-
-  it(
-    'puts the price in a card with no border, on a tinted band',
+    'paints the nine bands of the board in the palette the board paints them in',
     async () => {
       const painted = Object.values(await whatTheMarkupDraws(await pageIn('en'))).join(' ');
 
-      expect(painted).toContain(`background-color: ${colour.accentSoft}`);
-      expect(painted).toContain(`background-color: ${colour.card}`);
-      expect(painted).toContain(`border-radius: ${radius.xxl}px`);
-    },
-    longEnoughToCompile,
-  );
+      for (const ground of [
+        'siteGround',
+        'siteCard',
+        'siteTint',
+        'siteNight',
+        'siteTintDeep',
+      ] as const) {
+        expect(painted).toContain(`background-color: ${websiteColour[ground]}`);
+      }
 
-  it(
-    'draws the press to the store as a capsule a thumb can hit',
-    async () => {
-      const painted = Object.values(await whatTheMarkupDraws(await pageIn('en'))).join(' ');
-
-      expect(painted).toContain(`background-color: ${colour.accent}`);
-      expect(painted).toContain(`color: ${colour.onAccent}`);
-      expect(painted).toContain(`border-radius: ${radius.full}px`);
-      expect(painted).toContain(`min-height: ${space.marginLg}px`);
+      expect(painted).toContain(`color: ${websiteColour.siteAccent}`);
+      expect(painted).toContain(`color: ${websiteColour.siteNightAccent}`);
+      expect(painted).toContain(`color: ${websiteColour.siteQuietText}`);
     },
     longEnoughToCompile,
   );

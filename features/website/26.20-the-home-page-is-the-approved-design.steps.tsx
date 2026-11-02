@@ -1,0 +1,314 @@
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+import { defineFeature, loadFeature } from 'jest-cucumber';
+import { renderToStaticMarkup } from 'react-dom/server';
+
+import HomePage from '../../apps/website/app/[lang]/page';
+import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
+import { markerTransformOf, phaseKeyOf } from '../../apps/website/components/cycleRing';
+import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
+import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
+
+const feature = loadFeature(join(__dirname, '26.20-the-home-page-is-the-approved-design.feature'));
+
+const repositoryRoot = resolve(__dirname, '..', '..');
+
+const websiteWorkspace = join(repositoryRoot, 'apps', 'website');
+
+const designDirectory = join(repositoryRoot, 'docs', 'design', 'website', 'home-v2');
+
+// Compiling the stylesheet of the whole page takes longer than the tier's own limit allows.
+jest.setTimeout(180_000);
+
+/** The two widths the board was drawn at: a desktop, and the phone most of her reading is on. */
+const widths = [1280, 390];
+
+/** One pixel in a thousand, which is the budget the browser suite holds the page to. */
+const theBudget = 0.001;
+
+function read(file: string): string {
+  return readFileSync(file, 'utf8');
+}
+
+function theDesign(): string {
+  return read(join(designDirectory, 'render', 'MainV2.html'));
+}
+
+/** What a reader of the design actually sees, as the text between its tags, in the order it comes. */
+function visibleTextOf(markup: string): string[] {
+  const body = markup.slice(markup.indexOf('<body>'), markup.indexOf('</body>'));
+  const withoutCode = body.replace(/<(script|style)[\s\S]*?<\/\1>/g, '');
+
+  const found = [...withoutCode.matchAll(/>([^<>]+)</g)]
+    .map(([, text]) => (text ?? '').replace(/\s+/g, ' ').trim())
+    .filter((text) => text.length > 0);
+
+  return [...new Set(found)];
+}
+
+/** Every opening tag of a kind of element, in the order a reader meets them. */
+function openingTagsOf(markup: string, element: string): string[] {
+  return [...markup.matchAll(new RegExp(`<${element}\\b[^>]*>`, 'g'))].map(([tag]) => tag);
+}
+
+function classesOf(tag: string): string[] {
+  const found = /class="([^"]*)"/.exec(tag);
+
+  return found === null ? [] : (found[1] ?? '').split(/\s+/).filter((name) => name.length > 0);
+}
+
+/** What one element draws, as the declarations of every class on it, joined in one line. */
+function drawnBy(tag: string, stylesheet: string): string {
+  return classesOf(tag)
+    .map((name) => declarationsOf(stylesheet, name))
+    .join(' ');
+}
+
+/** The ground the design paints a band on, from the band's own style. */
+function groundsOfTheDesign(): string[] {
+  return openingTagsOf(theDesign(), 'section').map((tag) => {
+    const found = /background:\s*([^;"]+)/.exec(tag);
+
+    return (found?.[1] ?? '').trim();
+  });
+}
+
+/** The property each element sets a rule with, which is how a rule on four sides is told from one. */
+const aRuleWidth = /border(?:-(top|right|bottom|left))?-width:\s*([^;]+)/g;
+
+interface Rule {
+  readonly sides: string[];
+  readonly colours: string[];
+}
+
+/** Every element of a page that draws a rule, and which sides of it the rule is on. */
+function rulesIn(markup: string, stylesheet: string): Rule[] {
+  const found: Rule[] = [];
+
+  for (const tag of openingTagsOf(markup, '[a-zA-Z]+')) {
+    const drawn = drawnBy(tag, stylesheet);
+    const sides = [...drawn.matchAll(aRuleWidth)].map(([, side]) => side ?? 'every side');
+
+    if (sides.length === 0) {
+      continue;
+    }
+
+    found.push({
+      sides,
+      colours: [...drawn.matchAll(/border(?:-(top|right|bottom|left))?-color:/g)].map(
+        ([, side]) => side ?? 'every side',
+      ),
+    });
+  }
+
+  return found;
+}
+
+/** How many rules the design draws, and on which side each one sits. */
+function rulesOfTheDesign(): string[] {
+  return [...theDesign().matchAll(/border-(top|bottom|left|right):\s*1px/g)].map(
+    ([, side]) => side ?? '',
+  );
+}
+
+/**
+ * The words of a link the design leaves underlined. A link in the board carries
+ * `text-decoration: none` unless it is one of these, and these are the legal line at the foot of
+ * the page, where a reader looks for the terms she is agreeing to.
+ *
+ * Two more anchors carry no decoration either, and both hold a drawing rather than words, so
+ * nothing of them is underlined and neither is read here.
+ */
+function underlinedInTheDesign(): string[] {
+  const markup = theDesign();
+  const words: string[] = [];
+
+  for (const found of markup.matchAll(/<a\b[^>]*>/g)) {
+    const tag = found[0];
+
+    if (tag.includes('text-decoration: none')) {
+      continue;
+    }
+
+    const opens = (found.index ?? 0) + tag.length;
+    const text = markup.slice(opens, markup.indexOf('</a>', opens)).trim();
+
+    if (text.length > 0 && !text.startsWith('<')) {
+      words.push(text);
+    }
+  }
+
+  return [...new Set(words)];
+}
+
+/** The element of a page that holds one piece of text, so what it draws can be read. */
+function theAnchorAround(markup: string, text: string): string {
+  const at = markup.indexOf(`>${text}<`);
+
+  expect(at).toBeGreaterThanOrEqual(0);
+
+  return markup.slice(markup.lastIndexOf('<a', at), at + 1);
+}
+
+async function pageIn(language: Language): Promise<string> {
+  return renderToStaticMarkup(await HomePage({ params: Promise.resolve({ lang: language }) }));
+}
+
+defineFeature(feature, (test) => {
+  test('the home page matches the approved design pixel for pixel', ({ given, then, and }) => {
+    const drawn: Partial<Record<Language, string>> = {};
+    let stylesheet = '';
+
+    given('a woman opens the home page of myemi.app', async () => {
+      for (const language of languages) {
+        drawn[language] = await pageIn(language);
+      }
+
+      stylesheet = await stylesheetFor(classesIn(drawn.en ?? ''));
+    });
+
+    then(
+      "she reads the nine bands of the approved board, in the board's order and on its grounds",
+      () => {
+        const bands = openingTagsOf(drawn.en ?? '', 'section');
+        const wanted = groundsOfTheDesign();
+
+        expect(wanted).toHaveLength(9);
+        expect(bands).toHaveLength(wanted.length);
+
+        const painted = bands.map((tag) => {
+          const found = /background-color:\s*([^;]+)/.exec(drawnBy(tag, stylesheet));
+
+          return (found?.[1] ?? '').trim();
+        });
+
+        expect(painted).toEqual(wanted);
+      },
+    );
+
+    and('every sentence of the board is on the page, in English, in Russian and in Spanish', () => {
+      const said = visibleTextOf(theDesign());
+
+      expect(said.length).toBeGreaterThan(80);
+      expect(said.filter((text) => !(drawn.en ?? '').includes(text))).toEqual([]);
+
+      // The board is in English, so the other two pages are held to the keys the English page
+      // draws rather than to the board's own sentences. A key drawn in one language and not in
+      // another is a page that says less than its neighbour, which is the error SITE-3 names.
+      const english = wordsIn('en');
+      const keysDrawn = Object.keys(english).filter((key) =>
+        (drawn.en ?? '').includes(english[key as keyof typeof english]),
+      );
+
+      expect(keysDrawn.length).toBeGreaterThan(50);
+
+      for (const language of ['ru', 'es'] as const) {
+        const words = wordsIn(language);
+        const absent = keysDrawn.filter(
+          (key) => !(drawn[language] ?? '').includes(words[key as keyof typeof english]),
+        );
+
+        expect(absent).toEqual([]);
+      }
+    });
+
+    and(
+      'the brand line stands over the hero in capitals, and is still the one line nobody translates',
+      () => {
+        for (const language of languages) {
+          expect(drawn[language]).toContain(brandEyebrowOf(wordsIn(language)));
+          expect(wordsIn(language).brandLine).toBe(wordsIn('en').brandLine);
+        }
+
+        expect(brandEyebrowOf(wordsIn('en'))).toBe('EMI · EVERY MONTH INSIGHTS');
+      },
+    );
+
+    and(
+      'the ring starts at day 8 in the follicular phase, and answers every other day the way the board does',
+      () => {
+        const design = theDesign();
+        const atDayEight = /rotate\([^)]*\)/.exec(design)?.[0] ?? '';
+
+        expect(atDayEight).toBe('rotate(-2.9 160 160)');
+        expect(drawn.en).toContain(atDayEight);
+        expect(drawn.en).toContain(wordsIn('en').ringFollicular);
+        expect(drawn.en).toContain('Day 8');
+
+        // The board's own four phases, at the day each one begins and the day it ends.
+        expect([1, 5].map(phaseKeyOf)).toEqual(['ringPeriod', 'ringPeriod']);
+        expect([6, 16].map(phaseKeyOf)).toEqual(['ringFollicular', 'ringFollicular']);
+        expect([17, 21].map(phaseKeyOf)).toEqual(['ringOvulation', 'ringOvulation']);
+        expect([22, 31].map(phaseKeyOf)).toEqual(['ringLuteal', 'ringLuteal']);
+
+        // The board's own arithmetic, written again here, because a formula read off the same line
+        // the page reads it off agrees with the page whatever the page says.
+        for (let day = 1; day <= 31; day += 1) {
+          const degrees = (((day - 0.5) / 31) * 360 - 90).toFixed(1);
+
+          expect(markerTransformOf(day)).toBe(`rotate(${degrees} 160 160)`);
+        }
+      },
+    );
+
+    and('the three bands that carry a rule draw it on one side, not four', () => {
+      const wanted = rulesOfTheDesign();
+      const found = rulesIn(drawn.en ?? '', stylesheet);
+
+      expect(wanted.length).toBeGreaterThan(0);
+      expect(found).toHaveLength(wanted.length);
+
+      for (const rule of found) {
+        expect(rule.sides).toHaveLength(1);
+        expect(rule.sides).not.toContain('every side');
+        expect(rule.colours).toEqual(rule.sides);
+      }
+
+      expect(found.map((rule) => rule.sides[0]).sort()).toEqual([...wanted].sort());
+    });
+
+    and(
+      'the five links of the legal line are underlined, because the board underlines them',
+      () => {
+        const underlined = underlinedInTheDesign();
+
+        expect(underlined).toEqual(['Privacy policy', 'Terms', 'English', 'Русский', 'Español']);
+
+        for (const text of underlined) {
+          const anchor = theAnchorAround(drawn.en ?? '', text);
+
+          expect(drawnBy(anchor, stylesheet)).toContain('text-decoration-line: underline');
+        }
+      },
+    );
+
+    and('the page writes no style of its own, so her browser refuses nothing', () => {
+      for (const language of languages) {
+        expect(drawn[language]).not.toMatch(/style="/);
+        expect(drawn[language]).not.toMatch(/<style[\s>]/);
+      }
+    });
+
+    and(
+      'a browser holds the page against the design at both widths, and keeps the picture of any difference',
+      () => {
+        const suite = asPlaywrightReadsIt();
+        const sentence = 'the home page matches the approved design pixel for pixel';
+        const theFeature = read(
+          join(websiteWorkspace, 'e2e', 'features', 'homeMatchesTheDesign.feature'),
+        );
+        const theSteps = read(join(websiteWorkspace, 'e2e', 'steps', 'homeMatchesTheDesign.ts'));
+
+        expect(theFeature).toContain(`Scenario: ${sentence}`);
+        expect([...suite.widths].sort()).toEqual([...widths].sort());
+
+        expect(theSteps).toContain('MainV2.html');
+        expect(theSteps).toContain("'/en/'");
+        expect(theSteps).toContain(`${theBudget}`);
+        expect(theSteps).toContain('pixelmatch');
+        expect(theSteps).toContain('writeFileSync');
+      },
+    );
+  });
+});

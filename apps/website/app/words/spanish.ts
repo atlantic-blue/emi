@@ -3,13 +3,83 @@ import type { SiteWords } from './words';
 /** Every word the site draws in Spanish. The notes in english.ts hold for this file too. */
 export const spanish: SiteWords = {
   brandLine: 'Emi. Every Month Insights.',
-  tagline: 'Conócete mejor.',
-  line: 'Un diario tranquilo para tu ciclo. Solo tú puedes leer tus días.',
   store: 'Descárgala en el App Store',
-  beta: 'Únete a la beta en TestFlight ›',
+  storeSmall: 'Descárgala en el',
   price: 'Un mes gratis, después 29,99 libras al mes.',
   languageLabel: 'Idioma',
   pageDescription: 'Un registro de ciclo y menstruación que mantiene tus datos contigo.',
+
+  heroHeadline: 'Entiende tu cuerpo, con calma.',
+  heroLine:
+    'Emi empieza por tu ciclo: un pronóstico con tus propios datos, y hasta qué punto es fiable. Después, educación precisa y una comunidad donde puedes preguntar lo que a nadie le dejan preguntar. Tus datos están siempre cifrados.',
+  heroPriceLine: 'Gratis un mes, después 29,99 libras al mes.',
+  heroCancel: 'Cancela cuando quieras.',
+  ringLabel: 'Anillo del ciclo en el día {day} de unos 31, {phase}.',
+  ringPeriod: 'PERIODO',
+  ringFollicular: 'FASE FOLICULAR',
+  ringOvulation: 'OVULACIÓN',
+  ringLuteal: 'FASE LÚTEA',
+  ringDay: 'Día {day}',
+  ringOfAbout: 'de unos 31',
+  ringMove: 'Recorre un ciclo',
+
+  cycleEyebrow: 'TU CICLO',
+  cycleHeadline: 'Un rango de días, y cuánta confianza tiene Emi.',
+  cycleLine:
+    'Emi aprende de tus propios ciclos, no de una media. Te da una ventana, no una fecha única, y dice cuánta confianza tiene. Hasta que no tiene dos ciclos completos, te dice que sigue aprendiendo.',
+  cycleScreenAlt: 'La pantalla de inicio de Emi con el anillo en el día 8 de unos 31.',
+  cycleNextLabel: 'Tu próximo periodo',
+  cycleNextRange: 'Entre el 8 y el 14 de octubre',
+  cycleNextConfidence: 'Confianza alta, de tus últimos 6 ciclos',
+  cycleDenial: 'Emi no es un anticonceptivo ni un dispositivo médico.',
+
+  learnEyebrow: 'EDUCACIÓN',
+  learnHeadline: 'Respuestas precisas a las preguntas que enseñan a no hacer.',
+  learnLine:
+    'Guías claras sobre qué hace tu cuerpo en cada fase, y qué puede ayudar. Escritas con sencillez, sin vergüenza.',
+  learnPeriodLabel: 'PERIODO',
+  learnPeriodTitle: 'Calambres, cansancio y qué puede ayudar.',
+  learnFollicularLabel: 'FOLICULAR',
+  learnFollicularTitle: 'Los días después del periodo.',
+  learnOvulationLabel: 'OVULACIÓN',
+  learnOvulationTitle: 'Una estimación, de tus ciclos anteriores.',
+  learnLutealLabel: 'LÚTEA',
+  learnLutealTitle: 'Calambres en la fase lútea, y más.',
+
+  communityEyebrow: 'COMUNIDAD',
+  communityHeadline: 'Un lugar tranquilo para preguntar y ayudarse.',
+  communityLine:
+    'La Comunidad de Emi reúne a personas que hacen preguntas, cuentan qué les ayudó y proponen qué debe hacer Emi a continuación.',
+  communityJoin: 'Únete a la Comunidad de Emi en Telegram ›',
+  parentsEyebrow: 'PARA MADRES, PADRES E HIJAS',
+  parentsHeadline: 'Empieza la conversación pronto.',
+  parentsLine:
+    'Información precisa que puedes compartir con tu hija, sobre los temas de los que todavía cuesta hablar. Aprended juntas, en un espacio tranquilo.',
+
+  noteEyebrow: 'POR QUÉ ESTOY CREANDO EMI',
+  noteBody:
+    'Tengo dos hijas. Estoy creando Emi para que tengan un lugar tranquilo donde entender su cuerpo: información precisa, educación sobre los temas que siguen siendo tabú, y una comunidad donde preguntar sin juicios, desde pequeñas. Y por el camino, ayudar a todas las demás personas que necesitan lo mismo.',
+  founderName: 'Julian Tellez',
+  founderRole: 'Fundador de Emi',
+
+  privacyHeadline: 'Tus datos están siempre cifrados.',
+  privacyLink: 'Cómo Emi cuida tus datos ›',
+
+  priceEyebrow: 'UN PRECIO',
+  priceHeadline: '29,99 libras al mes. El primer mes es gratis.',
+  priceLine: 'Paga como mejor te vaya.',
+  priceAppStoreNote: 'Un mes gratis, después cada mes. Cancela en los ajustes de Apple.',
+  priceCardTitle: 'Tarjeta, en este sitio',
+  priceCardNote: 'Paga aquí, después inicia sesión en tu iPhone.',
+  priceStarsTitle: 'Estrellas de Telegram',
+  priceStarsNote: 'Paga en el bot de Emi, después entra con Telegram.',
+
+  tryTitle: '¿No quieres descargar nada todavía?',
+  tryLine: 'Prueba la calculadora gratuita. Nada de lo que escribes sale de la página.',
+  tryLink: '¿Cuándo es mi próximo periodo? ›',
+  askTitle: '¿Preguntas?',
+  askLine: 'Respondemos en inglés, ruso y español.',
+  askLink: 'Ir a soporte ›',
 
   headerHomeLabel: 'Página de inicio de Emi',
   headerMainLabel: 'Principal',

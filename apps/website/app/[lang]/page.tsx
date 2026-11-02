@@ -35,19 +35,16 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
       <main className="flex-1">
         <section className="bg-ground px-margin py-marginLg text-center">
           <h1 className="mx-auto max-w-3xl font-display text-display-lg-mobile text-text sm:text-display-lg">
-            {words.brandLine} <span className="text-secondaryText">{words.tagline}</span>
+            {words.heroHeadline}
           </h1>
           <p className="mx-auto mt-margin max-w-xl font-text text-body-lg text-secondaryText">
-            {words.line}
+            {words.heroLine}
           </p>
         </section>
         <section className="bg-accentSoft px-margin py-marginLg">
           <Card className="mx-auto flex max-w-xl flex-col items-center gap-spaceLg text-center">
             <a className={buttonVariants()} href={NO_PAGE_YET}>
               {words.store}
-            </a>
-            <a className="font-text text-button-lg text-accent underline" href={NO_PAGE_YET}>
-              {words.beta}
             </a>
             <p className="font-text text-body-lg text-text">{words.price}</p>
           </Card>

@@ -100,14 +100,16 @@ describe('the words of one page in three languages', () => {
 
   /**
    * The words that stay in English in all three languages. Each one is a name rather than a word:
-   * the brand line says what the four letters stand for, Emi is called Emi everywhere, and Apple's
-   * store carries one name in every country. A fourth entry here is a translation somebody forgot.
+   * the brand line says what the four letters stand for, Emi is called Emi everywhere, Apple's
+   * store carries one name in every country, and the person building Emi is called what he is
+   * called. A sixth entry here is a translation somebody forgot.
    */
   const namesRatherThanWords: readonly SiteWordKey[] = [
     'brandLine',
     'headerEmi',
     'footerEmiGroup',
     'footerAppStore',
+    'founderName',
   ];
 
   it('writes every other word of a language in that language', () => {
@@ -129,6 +131,6 @@ describe('the words of one page in three languages', () => {
       expect(spanish[key]).toBe(english[key]);
     }
 
-    expect(namesRatherThanWords.length).toBeLessThan(5);
+    expect(namesRatherThanWords.length).toBeLessThan(6);
   });
 });
