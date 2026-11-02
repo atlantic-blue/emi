@@ -3,7 +3,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import RootLayout from '../app/[lang]/layout';
 import NotFound from '../app/[lang]/not-found';
-import { WORDMARK_FILE } from '../components/siteHeader';
 import { SERVED_FACE_VARIABLE } from '../lib/face';
 import { whatTheMarkupDraws } from './stylesheet';
 
@@ -26,7 +25,7 @@ describe('the page behind an address the site does not have', () => {
     expect(page()).toContain('<header');
     expect(page()).toContain('<footer');
     expect(page()).toContain('Emi is made by Atlantic Blue Solutions Limited.');
-    expect(page()).toContain(WORDMARK_FILE);
+    expect(page()).toContain('aria-label="Emi"');
   });
 
   it('names Emi, so she can tell whose page she is reading', () => {
