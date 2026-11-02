@@ -3,6 +3,12 @@ import { test as bdd } from 'playwright-bdd';
 /** What the server said when she asked for the address, which the steps after the ask read. */
 export interface WhatTheSiteAnswered {
   status: number | null;
+  /** The address she is on now, as she would read it in the bar, after every move it made. */
+  landedOn: string | null;
+  /** How many moves the browser followed before it got her here. */
+  moves: number;
+  /** The status of the first of those moves, which is what says whether it is permanent. */
+  movedBy: number | null;
 }
 
 /** Every host the page asked for something, in the order it asked. */
@@ -47,7 +53,7 @@ export const test = bdd.extend<{
   cameBack: WhatCameBack;
 }>({
   answered: async ({}, handTo) => {
-    await handTo({ status: null });
+    await handTo({ status: null, landedOn: null, moves: 0, movedBy: null });
   },
   asked: async ({ page }, handTo) => {
     const of: string[] = [];
