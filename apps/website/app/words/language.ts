@@ -16,3 +16,18 @@ export const fallbackLanguage: Language = 'en';
 export function isLanguage(tag: string): tag is Language {
   return (languages as readonly string[]).includes(tag);
 }
+
+/**
+ * The language and the region a page is written for, as a chat application wants it: a tag of two
+ * halves, where the list above holds only the first. The region is the one Emi is sold in, so
+ * English is the British one, because the price on every page of this site is in pounds.
+ */
+const locales: Readonly<Record<Language, string>> = {
+  en: 'en_GB',
+  ru: 'ru_RU',
+  es: 'es_ES',
+};
+
+export function localeOf(language: Language): string {
+  return locales[language];
+}

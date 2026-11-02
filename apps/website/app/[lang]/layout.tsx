@@ -1,13 +1,23 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
-import { fallbackLanguage, isLanguage, wordsIn } from '@/app/words';
+import { fallbackLanguage, isLanguage, localeOf, pageTitleOf, wordsIn } from '@/app/words';
 import { SiteFooter } from '@/components/siteFooter';
 import { SiteHeader } from '@/components/siteHeader';
+import { SHARE_PREVIEW, SITE_ORIGIN } from '@/lib/addresses';
 import { iconLinks } from '@/tools/theIcons';
 
 import { servedFonts } from '../fonts';
 import '../globals.css';
+
+/**
+ * The picture, in pixels. A chat lays the card out from these two numbers before it has the file,
+ * so a number here that the file is not makes the card jump once the picture arrives. The
+ * scenario reads them against the committed file rather than against this declaration.
+ */
+const SHARE_PREVIEW_WIDTH = 1200;
+
+const SHARE_PREVIEW_HEIGHT = 630;
 
 /** The address of every page of the site, which is one language and then a path. */
 interface WhichLanguage {
@@ -24,12 +34,42 @@ async function languageOf({ params }: WhichLanguage) {
  * The squares come from one list, so a size added to that list reaches her browser without
  * anybody editing this file. They do not change with the language: the words of a page are
  * translated and the mark is the same mark everywhere.
+ *
+ * The second group of tags is the card a chat application draws when a woman sends somebody the
+ * address. That is a different reader from a browser: it asks for the document, takes these tags
+ * out of the head, throws the rest away, and never opens the page at all. So the card has to
+ * carry the whole of what her sister sees before she decides whether to tap, and it has to carry
+ * it in the language of the address, because a Russian page sent to a Russian reader that draws
+ * an English line in her chat reads as somebody else's link.
+ *
+ * Both groups say the same three things, because the two readers that matter here read different
+ * ones: one reads the Open Graph tags and the other reads its own.
  */
 export async function generateMetadata(asked: WhichLanguage): Promise<Metadata> {
+  const language = await languageOf(asked);
+  const words = wordsIn(language);
+  const title = pageTitleOf(words);
+  const picture = `${SITE_ORIGIN}${SHARE_PREVIEW}`;
+
   return {
-    title: 'Emi',
-    description: wordsIn(await languageOf(asked)).pageDescription,
+    title,
+    description: words.pageDescription,
     icons: { icon: iconLinks('icon'), apple: iconLinks('apple') },
+    openGraph: {
+      title,
+      description: words.pageDescription,
+      url: `${SITE_ORIGIN}/${language}/`,
+      locale: localeOf(language),
+      // The two numbers let a chat lay the card out before it has the file, so they are the size
+      // the file really is. The picture carries no words of a language, so all three share it.
+      images: [{ url: picture, width: SHARE_PREVIEW_WIDTH, height: SHARE_PREVIEW_HEIGHT }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: words.pageDescription,
+      images: [picture],
+    },
   };
 }
 

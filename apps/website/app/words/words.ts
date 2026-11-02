@@ -32,3 +32,19 @@ export const siteWordKeys: readonly SiteWordKey[] = Object.keys(english).sort() 
 export function brandEyebrowOf(words: SiteWords): string {
   return words.brandLine.toUpperCase().replace('. ', ' · ').replace(/\.$/, '');
 }
+
+/**
+ * What a tab says, and what a chat draws as the first line of the card when somebody sends the
+ * address on: the name, and then the sentence the page itself opens with.
+ *
+ * Derived from the headline rather than held as a word of its own, for the reason the line above
+ * is: a second copy of a sentence is a second thing somebody can translate by mistake, and the tab
+ * and the first line of the page would then say two different things in the same language. The
+ * headline is a sentence and this is a title, so it loses the full stop, and it follows a colon,
+ * so it starts in lower case.
+ */
+export function pageTitleOf(words: SiteWords): string {
+  const sentence = words.heroHeadline.replace(/\.$/, '');
+
+  return `Emi: ${sentence.charAt(0).toLocaleLowerCase()}${sentence.slice(1)}`;
+}

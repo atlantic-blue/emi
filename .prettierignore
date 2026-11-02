@@ -22,3 +22,8 @@ docs/design/prototype/copy-review.md
 # page is held to the pictures beside this markup, so a line the formatter moved would make the
 # markup a different page from the one the pictures show.
 docs/design/website/home-v2/
+
+# The share preview board and the page drawn from it, committed as the canvas wrote them, for the
+# same reason as the home page above. The program beside them is ordinary code and is formatted.
+docs/design/website/share-preview/boards/
+docs/design/website/share-preview/render/

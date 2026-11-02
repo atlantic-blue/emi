@@ -40,6 +40,22 @@ const otherCompanies: readonly string[] = [
 ];
 
 /**
+ * This site, written out whole. A page has to name its own host in the tags a chat reads, because
+ * the chat reads them on its own server where a path points at the chat company instead. Naming
+ * itself is not asking anybody for anything, so it comes out of the text before the search.
+ */
+const theSiteItself = 'https://myemi.app';
+
+function reachesAnotherCompany(source: string): boolean {
+  const withoutItsOwnHost = source.split(theSiteItself).join('');
+
+  return (
+    /https?:\/\//.test(withoutItsOwnHost) ||
+    otherCompanies.some((host) => withoutItsOwnHost.includes(host))
+  );
+}
+
+/**
  * What a page is built from, which is what reaches her browser. The settings of the command that
  * adds a component name its own schema, and no page is built from them.
  */
@@ -167,13 +183,19 @@ defineFeature(feature, (test) => {
 
       expect(readable.length).toBeGreaterThan(8);
 
-      const reaching = readable.filter((file) => {
-        const source = readFileSync(file, 'utf8');
-
-        return /https?:\/\//.test(source) || otherCompanies.some((host) => source.includes(host));
-      });
+      const reaching = readable.filter((file) => reachesAnotherCompany(readFileSync(file, 'utf8')));
 
       expect(reaching.map((file) => relative(repositoryRoot, file))).toEqual([]);
+
+      // Letting the site name itself did not turn the search off: a face asked of anybody else is
+      // still found, and so is a host nobody put on the list above.
+      expect(reachesAnotherCompany(`the card points at ${theSiteItself}/share-preview.png`)).toBe(
+        false,
+      );
+      expect(
+        reachesAnotherCompany('@import url("https://fonts.googleapis.com/css2?family=Inter")'),
+      ).toBe(true);
+      expect(reachesAnotherCompany('fetch("http://someone-elses-host.example/count")')).toBe(true);
 
       const typing = readable.filter((file) =>
         /#[0-9a-fA-F]{3,8}\b/.test(readFileSync(file, 'utf8')),
