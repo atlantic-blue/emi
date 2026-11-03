@@ -13,6 +13,7 @@ import { Button, buttonVariants } from '../components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Separator } from '../components/ui/separator';
 import { declarationsOf, stylesheetFor, websiteWorkspace, whatTheMarkupDraws } from './stylesheet';
+import { hostsAPageMayNotName } from './theHostsAPageMayName';
 
 /** Compiling the stylesheet takes a moment, and each case here compiles its own markup. */
 const longEnoughToCompile = 60_000;
@@ -199,11 +200,19 @@ describe('the band at the top of every page', () => {
 describe('the band at the foot of every page', () => {
   const footer = (): string => markup(<SiteFooter language="en" />);
 
-  it('says what Emi is not, and asks no other company for anything', () => {
+  /**
+   * The presses of the band that nobody has an address for yet. Written out rather than read off
+   * the shape of a link, because a count taken from the shape follows it: the day one of them
+   * gains an address, the derived count drops by one as well, the band is one press shorter, and
+   * nothing fails.
+   */
+  const theWordsWaitingForAnAddress = ['footerAppStore', 'footerBeta', 'footerOpenCode'];
+
+  it('says what Emi is not, and names no company but the community chat', () => {
     const drawn = footer();
 
     expect(drawn).toContain(wordsIn('en').footerDisclaimer);
-    expect(drawn).not.toMatch(/https?:\/\//);
+    expect(hostsAPageMayNotName(drawn)).toEqual([]);
     expect(drawn).not.toContain('style=');
   });
 
@@ -237,9 +246,17 @@ describe('the band at the foot of every page', () => {
     const everyAddress = [...drawn.matchAll(/href="([^"]*)"/g)].map(([, found]) => found);
 
     expect(everyAddress).toContain(NO_PAGE_YET);
+
     expect(everyAddress.filter((address) => address === NO_PAGE_YET)).toHaveLength(
-      footerGroups.flatMap((group) => group.links).filter((link) => link.path === undefined).length,
+      theWordsWaitingForAnAddress.length,
     );
+
+    // The band draws each of the three, so the three named above are three presses a reader meets
+    // and not three words nobody uses. A list that drifted out of the band would otherwise hold
+    // the count right while it described a band that is not there.
+    for (const word of theWordsWaitingForAnAddress) {
+      expect(footerGroups.flatMap((group) => group.links).map((link) => link.word)).toContain(word);
+    }
   });
 
   it(

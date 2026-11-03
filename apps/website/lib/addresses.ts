@@ -18,3 +18,6 @@ export const SITE_ORIGIN = 'https://myemi.app';
 
 /** The picture a chat draws beside the words. One picture, in every language. */
 export const SHARE_PREVIEW = '/share-preview.png';
+
+/** Where the Emi Community reads and writes. No link carries it yet. */
+export const THE_EMI_COMMUNITY: string = NO_PAGE_YET;

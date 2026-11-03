@@ -4,7 +4,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import RootLayout from '../app/[lang]/layout';
 import NotFound from '../app/[lang]/not-found';
 import { SERVED_FACE_VARIABLES } from '../lib/face';
+import { hostsIn } from '../lib/theOnePrice';
 import { whatTheMarkupDraws } from './stylesheet';
+import { hostsAPageMayNotName } from './theHostsAPageMayName';
 
 function markupOf(element: Parameters<typeof renderToStaticMarkup>[0]): string {
   return renderToStaticMarkup(element);
@@ -38,9 +40,12 @@ describe('the page behind an address the site does not have', () => {
     expect(page()).toContain('Emi');
   });
 
-  it('asks no other host for anything, page and frame alike', async () => {
-    expect(page()).not.toMatch(/https?:\/\//);
-    expect(await documentIn('en')).not.toMatch(/https?:\/\//);
+  it('names no host but the community chat, page and frame alike', async () => {
+    // The page itself offers nothing outside the site. The frame around it carries the band at the
+    // foot, and that band names the chat the Emi Community reads on, which she opens by pressing
+    // and not by arriving here.
+    expect(hostsIn(page())).toEqual([]);
+    expect(hostsAPageMayNotName(await documentIn('en'))).toEqual([]);
   });
 });
 
