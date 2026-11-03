@@ -63,19 +63,33 @@ export async function generateMetadata(asked: WhichLanguage): Promise<Metadata> 
     alternates: theLinksOf(language),
     icons: { icon: iconLinks('icon'), apple: iconLinks('apple') },
     openGraph: {
+      // A chat files a card by its kind and writes the host name where no name is given, so a page
+      // that says neither arrives as myemi.app beside a video and a profile.
+      type: 'website',
+      siteName: 'Emi',
       title,
       description: words.pageDescription,
       url: `${SITE_ORIGIN}/${language}/`,
       locale: localeOf(language),
       // The two numbers let a chat lay the card out before it has the file, so they are the size
-      // the file really is. The picture carries no words of a language, so all three share it.
-      images: [{ url: picture, width: SHARE_PREVIEW_WIDTH, height: SHARE_PREVIEW_HEIGHT }],
+      // the file really is. The picture carries no words of a language, so all three share it, and
+      // the sentence beside it is the one her own language holds.
+      images: [
+        {
+          url: picture,
+          width: SHARE_PREVIEW_WIDTH,
+          height: SHARE_PREVIEW_HEIGHT,
+          alt: words.sharePictureAlt,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description: words.pageDescription,
-      images: [picture],
+      // The address with the sentence rather than the address alone, which is what makes this
+      // reader carry the description too.
+      images: [{ url: picture, alt: words.sharePictureAlt }],
     },
   };
 }
