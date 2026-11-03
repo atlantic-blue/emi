@@ -32,3 +32,20 @@ export const THE_EMI_COMMUNITY = 'https://t.me/+89GgSCh6Ff85YTZk';
  * and check, and the press that takes her there is the whole of that offer.
  */
 export const THE_EMI_CODE = 'https://github.com/atlantic-blue/emi';
+
+/**
+ * Where a privacy question goes, which is the one address of this site a reader writes to rather
+ * than opens. It carries the scheme, because that is the form a mail application answers.
+ *
+ * It is not a word of a catalogue: it reads the same in every language, and a word there is
+ * translated into three.
+ */
+export const THE_PRIVACY_INBOX = 'mailto:privacy@myemi.app';
+
+/**
+ * The same address as a reader reads it on the page, and as she would type it into her own mail
+ * application. A press cannot carry this form, so it is not an address of the list above.
+ */
+export function thePrivacyAddress(): string {
+  return THE_PRIVACY_INBOX.replace('mailto:', '');
+}

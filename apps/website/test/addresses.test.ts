@@ -8,6 +8,8 @@ import {
   SITE_ORIGIN,
   THE_EMI_CODE,
   THE_EMI_COMMUNITY,
+  THE_PRIVACY_INBOX,
+  thePrivacyAddress,
 } from '../lib/addresses';
 import { hostsIn, theOneHost } from '../lib/theOnePrice';
 import { websiteWorkspace } from './stylesheet';
@@ -26,8 +28,12 @@ const theInvite = 'https://t.me/+89GgSCh6Ff85YTZk';
  */
 const theCode = 'https://github.com/atlantic-blue/emi';
 
-/** Every address the module hands a page, by the name a reader of the code sees. */
-const theAddresses = Object.entries<string>(everyAddress).filter(
+/**
+ * Every address the module hands a page, by the name a reader of the code sees. The module also
+ * exports one reader of an address, so the entries are read as unknown and the strings picked out,
+ * rather than declared to be strings and then filtered.
+ */
+const theAddresses = Object.entries<unknown>(everyAddress).filter(
   (entry): entry is [string, string] => typeof entry[1] === 'string',
 );
 
@@ -39,6 +45,7 @@ describe('the addresses a page gives a browser', () => {
       'SITE_ORIGIN',
       'THE_EMI_CODE',
       'THE_EMI_COMMUNITY',
+      'THE_PRIVACY_INBOX',
     ]);
   });
 
@@ -46,7 +53,15 @@ describe('the addresses a page gives a browser', () => {
     for (const [name, address] of theAddresses) {
       expect({ name, address }).toEqual({ name, address: address.trim() });
       expect({ name, spaced: /\s/.test(address) }).toEqual({ name, spaced: false });
-      expect({ name, follows: address.startsWith('/') || address.startsWith('https://') }).toEqual({
+      // A path, a page on another host, or an address a mail application answers. Those are the
+      // three forms a press on this site carries, and nothing else is followable as it stands.
+      expect({
+        name,
+        follows:
+          address.startsWith('/') ||
+          address.startsWith('https://') ||
+          address.startsWith('mailto:'),
+      }).toEqual({
         name,
         follows: true,
       });
@@ -70,6 +85,12 @@ describe('the addresses a page gives a browser', () => {
 
     expect(open.protocol).toBe('https:');
     expect(open.host).toBe('github.com');
+  });
+
+  it('takes a privacy question to this site rather than to a mail company', () => {
+    expect(THE_PRIVACY_INBOX).toBe('mailto:privacy@myemi.app');
+    expect(thePrivacyAddress()).toBe('privacy@myemi.app');
+    expect(thePrivacyAddress().split('@')[1]).toBe(theOneHost);
   });
 
   it('is the one file an outside host is written in, so one edit moves every link that uses it', () => {

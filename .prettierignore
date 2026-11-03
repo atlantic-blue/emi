@@ -31,3 +31,7 @@ docs/design/website/protection/
 # same reason as the home page above. The program beside them is ordinary code and is formatted.
 docs/design/website/share-preview/boards/
 docs/design/website/share-preview/render/
+
+# The approved design of the privacy policy, committed as the canvas and its renderer wrote it,
+# for the same reason as the home page above.
+docs/design/website/privacy-policy/
