@@ -5,6 +5,7 @@ import { fallbackLanguage, isLanguage, localeOf, pageTitleOf, wordsIn } from '@/
 import { SiteFooter } from '@/components/siteFooter';
 import { SiteHeader } from '@/components/siteHeader';
 import { SHARE_PREVIEW, SITE_ORIGIN } from '@/lib/addresses';
+import { theLinksOf } from '@/lib/theAddressesOfAPage';
 import { iconLinks } from '@/tools/theIcons';
 
 import { servedFonts } from '../fonts';
@@ -44,6 +45,11 @@ async function languageOf({ params }: WhichLanguage) {
  *
  * Both groups say the same three things, because the two readers that matter here read different
  * ones: one reads the Open Graph tags and the other reads its own.
+ *
+ * The third reader is a search engine, and it reads the links rather than the tags. The site
+ * serves one page at three addresses, and a search engine that is not told so keeps three pages
+ * and can offer a Russian reader the English one. Every page of the site arrives inside this
+ * document, so a page added later carries its links without asking for them.
  */
 export async function generateMetadata(asked: WhichLanguage): Promise<Metadata> {
   const language = await languageOf(asked);
@@ -54,6 +60,7 @@ export async function generateMetadata(asked: WhichLanguage): Promise<Metadata> 
   return {
     title,
     description: words.pageDescription,
+    alternates: theLinksOf(language),
     icons: { icon: iconLinks('icon'), apple: iconLinks('apple') },
     openGraph: {
       title,
