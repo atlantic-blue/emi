@@ -97,6 +97,53 @@ export const russian: SiteWords = {
   askLine: 'Мы отвечаем на английском, русском и испанском.',
   askLink: 'Перейти в поддержку ›',
 
+  protectionEyebrow: 'Приватность',
+  protectionHeadline: 'Ваши дни принадлежат вам.',
+  protectionHeadlineQuiet: 'Не нам.',
+  protectionLine:
+    'Emi шифрует каждый день на вашем телефоне ключом, который остаётся на телефоне. Код открыт, и вы можете сверить эту страницу с ним.',
+  protectionReadTheCode: 'Открыть код',
+  protectionReadTheDocument: 'Читать полный документ ›',
+  protectionScreenAlt:
+    'Экран «Приватность» в Emi. На нём написано: ваши дни можете читать только вы. Зашифровано на этом телефоне ключом, который есть только у вас.',
+
+  protectionDayHeadline: 'Что происходит с одним днём.',
+  protectionLogTitle: 'Вы записываете день.',
+  protectionLogLine: 'Месячные, симптомы, настроение, секс или заметка.',
+  protectionSealTitle: 'Телефон запечатывает его.',
+  protectionSealLine:
+    'Emi шифрует день до того, как записать его. Ключ лежит в связке ключей вашего iPhone.',
+  protectionLeavesTitle: 'Наружу уходит только результат.',
+  protectionLeavesLine:
+    'При синхронизации сервер хранит шифртекст, номер ревизии и время записи. Ключа у него нет.',
+  protectionBuilt: 'Уже в приложении',
+  protectionNotBuilt: 'Спроектировано, ещё не сделано',
+
+  protectionKeysHeadline: 'У кого ключи.',
+  protectionKeysHeadlineQuiet: 'Не у Emi.',
+  protectionPhoneTitle: 'Ваш телефон',
+  protectionPhoneLine: 'Ключ хранилища шифрует каждый день. Он никогда не покидает телефон.',
+  protectionYouTitle: 'Вы',
+  protectionYouLine:
+    'Код восстановления из 26 символов, показанный один раз. Держите его отдельно от телефона.',
+  protectionEmiLine:
+    'Ключа нет. Поэтому ни один запрос к Emi или к Amazon Web Services не вернёт ни одного вашего дня.',
+
+  protectionLimitsHeadline: 'От чего Emi не спасает.',
+  protectionLimitsLine:
+    'Четыре предела, названные здесь и не спрятанные. Каждый говорит, что вы можете сделать.',
+  protectionLostTitle: 'Потерян телефон и потерян код',
+  protectionLostLine: 'Дни пропали. Emi, которая могла бы их вернуть, могла бы их и прочитать.',
+  protectionUnlockedTitle: 'Телефон, который кто-то может разблокировать',
+  protectionUnlockedLine:
+    'Он прочитает экран. Держите блокировку приложения включённой. Она включена по умолчанию.',
+  protectionHostileTitle: 'Телефон с враждебной программой',
+  protectionHostileLine:
+    'Ни одно приложение не устоит против системы изнутри. Обновляйте iOS вовремя.',
+  protectionOutsideTitle: 'Что узнаёт внешний мир',
+  protectionOutsideLine:
+    'При синхронизации сервер узнаёт, сколько у вас записей и когда была сделана каждая.',
+
   headerHomeLabel: 'Главная страница Emi',
   headerMainLabel: 'Основное',
   headerEmi: 'Emi',

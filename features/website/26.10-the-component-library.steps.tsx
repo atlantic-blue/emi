@@ -56,8 +56,15 @@ const theSiteItself = 'https://myemi.app';
  */
 const theCommunitySheCanOpen = 'https://t.me/+89GgSCh6Ff85YTZk';
 
+/**
+ * The second, and the same argument: the code of Emi, which the page about the encryption invites
+ * her to go and read. A press is not a request, and the whole address rather than the host, so
+ * anything else on that company is still refused.
+ */
+const theCodeSheCanRead = 'https://github.com/atlantic-blue/emi';
+
 function reachesAnotherCompany(source: string): boolean {
-  const withoutWhatSheChose = [theSiteItself, theCommunitySheCanOpen].reduce(
+  const withoutWhatSheChose = [theSiteItself, theCommunitySheCanOpen, theCodeSheCanRead].reduce(
     (text, allowed) => text.split(allowed).join(''),
     source,
   );

@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import * as everyAddress from '../lib/addresses';
-import { NO_PAGE_YET, SHARE_PREVIEW, SITE_ORIGIN, THE_EMI_COMMUNITY } from '../lib/addresses';
+import {
+  NO_PAGE_YET,
+  SHARE_PREVIEW,
+  SITE_ORIGIN,
+  THE_EMI_CODE,
+  THE_EMI_COMMUNITY,
+} from '../lib/addresses';
 import { hostsIn, theOneHost } from '../lib/theOnePrice';
 import { websiteWorkspace } from './stylesheet';
 
@@ -12,6 +18,13 @@ import { websiteWorkspace } from './stylesheet';
  * with that file whatever the file said, and the invite is the one part of it nobody can derive.
  */
 const theInvite = 'https://t.me/+89GgSCh6Ff85YTZk';
+
+/**
+ * Where the code is, written out for the same reason. It is the second host outside this site a
+ * page names, and the page that explains the encryption rests on it: every claim there is one a
+ * reader can go and check.
+ */
+const theCode = 'https://github.com/atlantic-blue/emi';
 
 /** Every address the module hands a page, by the name a reader of the code sees. */
 const theAddresses = Object.entries<string>(everyAddress).filter(
@@ -24,6 +37,7 @@ describe('the addresses a page gives a browser', () => {
       'NO_PAGE_YET',
       'SHARE_PREVIEW',
       'SITE_ORIGIN',
+      'THE_EMI_CODE',
       'THE_EMI_COMMUNITY',
     ]);
   });
@@ -49,10 +63,20 @@ describe('the addresses a page gives a browser', () => {
     expect(invited.pathname).toBe('/+89GgSCh6Ff85YTZk');
   });
 
+  it('sends her to the code the page about the encryption invites her to read', () => {
+    expect(THE_EMI_CODE).toBe(theCode);
+
+    const open = new URL(THE_EMI_CODE);
+
+    expect(open.protocol).toBe('https:');
+    expect(open.host).toBe('github.com');
+  });
+
   it('is the one file an outside host is written in, so one edit moves every link that uses it', () => {
     const source = readFileSync(join(websiteWorkspace, 'lib', 'addresses.ts'), 'utf8');
+    const theTwoOutside = [new URL(theInvite).host, new URL(theCode).host];
     const outside = (text: string): string[] =>
-      hostsIn(text).filter((host) => host !== theOneHost && host !== new URL(theInvite).host);
+      hostsIn(text).filter((host) => host !== theOneHost && !theTwoOutside.includes(host));
 
     expect(outside(source)).toEqual([]);
 

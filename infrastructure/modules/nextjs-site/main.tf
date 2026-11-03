@@ -52,6 +52,7 @@ locals {
     "/sitemap.xml",
     "/emi-icon.svg",
     "/the-home-screen.png",
+    "/the-privacy-screen.png",
     "/icon-16.png",
     "/icon-32.png",
     "/icon-192.png",

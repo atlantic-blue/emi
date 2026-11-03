@@ -1296,6 +1296,7 @@ type WebsiteColourName =
   | 'siteTintLine'
   | 'siteControlLine'
   | 'siteShadow'
+  | 'siteFaintShadow'
   | 'siteText'
   | 'siteQuietText'
   | 'siteAccent'
@@ -1363,10 +1364,10 @@ The value of every colour of the site, for a theme that wants the string and not
 ### `WebsiteFaceName`
 
 ```
-type WebsiteFaceName = 'display' | 'text' | 'data';
+type WebsiteFaceName = 'display' | 'text' | 'data' | 'serif';
 ```
 
-The three roles the board gives a face, under the names the theme of the site reads.
+The four roles the boards give a face, under the names the theme of the site reads.
 
 ### `websiteFace`
 
@@ -1394,6 +1395,9 @@ which no licence lets Emi ship. The served family stands behind it, and draws th
 every machine that has none of the three above it, which is every machine the pipeline runs on.
 A face a machine already holds asks nobody for a file, so naming one first costs no privacy.
 
+The serif names the served family first, because the board does: it is the whole point of that
+board's headings, and Georgia behind it is only there for a machine that fetched nothing.
+
 ### `WebsiteFontCut`
 
 ```
@@ -1412,9 +1416,13 @@ One file of one family, at the weight the board asks that file for.
 const websiteFontCuts: Readonly<Record<WebsiteFaceName, readonly WebsiteFontCut[]>>
 ```
 
-The five files the site serves, under the role each one carries. They are the files the board
-itself names in `docs/design/website/home-v2/render/MainV2.html`, so a page of the site measures
-the same as the design it was drawn from.
+The seven files the site serves, under the role each one carries. They are the files the boards
+themselves name in `docs/design/website/home-v2/render/MainV2.html` and in
+`docs/design/website/protection/render/Protection.html`, so a page of the site measures the same
+as the design it was drawn from.
+
+The two serif cuts arrived with the second board. One page of the site draws them, so a reader
+who never opens that page fetches neither: a browser asks for a face when a glyph needs it.
 
 The two cuts of the heading face are the board's own two files rather than the same family from
 a font service. The service builds that family from one variable file of another release, and it

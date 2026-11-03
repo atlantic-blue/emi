@@ -275,7 +275,13 @@ defineFeature(feature, (test) => {
         const theFeature = read(
           join(websiteWorkspace, 'e2e', 'features', 'homeMatchesTheDesign.feature'),
         );
-        const theSteps = read(join(websiteWorkspace, 'e2e', 'steps', 'homeMatchesTheDesign.ts'));
+        // The sentences of the scenario and the reading behind them. The reading sits in a file
+        // of its own, because two pages of the site are each held to a board of their own and one
+        // set of numbers is read by both.
+        const theSteps = [
+          read(join(websiteWorkspace, 'e2e', 'steps', 'homeMatchesTheDesign.ts')),
+          read(join(websiteWorkspace, 'e2e', 'steps', 'theDesignComparison.ts')),
+        ].join('\n');
 
         expect(theFeature).toContain(`Scenario: ${sentence}`);
         expect([...suite.widths]).toEqual(widths);

@@ -12,4 +12,5 @@ export const SERVED_FACE_VARIABLES: Readonly<Record<WebsiteFaceName, string>> = 
   display: '--font-emi-display',
   text: '--font-emi-text',
   data: '--font-emi-data',
+  serif: '--font-emi-serif',
 };

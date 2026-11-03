@@ -90,6 +90,52 @@ export const spanish: SiteWords = {
   askLine: 'Respondemos en inglés, ruso y español.',
   askLink: 'Ir a soporte ›',
 
+  protectionEyebrow: 'Privacidad',
+  protectionHeadline: 'Tus días son tuyos.',
+  protectionHeadlineQuiet: 'No nuestros.',
+  protectionLine:
+    'Emi cifra cada día en tu teléfono, con una clave que se queda en tu teléfono. El código es público, así que puedes comprobar esta página con él.',
+  protectionReadTheCode: 'Lee el código',
+  protectionReadTheDocument: 'Lee el documento completo ›',
+  protectionScreenAlt:
+    'La pantalla de Privacidad en Emi. Dice: solo tú puedes leer tus días. Cifrados en este teléfono, con una clave que solo tienes tú.',
+
+  protectionDayHeadline: 'Qué pasa con un día.',
+  protectionLogTitle: 'Registras un día.',
+  protectionLogLine: 'Periodo, síntomas, ánimo, sexo o una nota.',
+  protectionSealTitle: 'Tu teléfono lo sella.',
+  protectionSealLine:
+    'Emi cifra el día antes de escribirlo. La clave está en el llavero de tu iPhone.',
+  protectionLeavesTitle: 'Solo sale el resultado.',
+  protectionLeavesLine:
+    'Con la sincronización, el servidor guarda el texto cifrado, un número de revisión y la hora de escritura. No tiene ninguna clave.',
+  protectionBuilt: 'Ya en la aplicación',
+  protectionNotBuilt: 'Diseñado, todavía sin hacer',
+
+  protectionKeysHeadline: 'Quién tiene las claves.',
+  protectionKeysHeadlineQuiet: 'Emi no.',
+  protectionPhoneTitle: 'Tu teléfono',
+  protectionPhoneLine: 'La clave del almacén cifra cada día. Nunca sale del teléfono.',
+  protectionYouTitle: 'Tú',
+  protectionYouLine:
+    'Un código de recuperación de 26 caracteres, que se muestra una vez. Guárdalo lejos del teléfono.',
+  protectionEmiLine:
+    'Ninguna clave. Así que ninguna petición a Emi, ni a Amazon Web Services, puede devolver uno de tus días.',
+
+  protectionLimitsHeadline: 'De qué no te libra Emi.',
+  protectionLimitsLine:
+    'Cuatro límites, dichos aquí y no escondidos. Cada uno dice qué puedes hacer.',
+  protectionLostTitle: 'Un teléfono perdido y un código perdido',
+  protectionLostLine: 'Los días ya no están. Una Emi que pudiera recuperarlos podría leerlos.',
+  protectionUnlockedTitle: 'Un teléfono que alguien puede desbloquear',
+  protectionUnlockedLine:
+    'Puede leer la pantalla. Deja puesto el bloqueo de la aplicación. Viene puesto.',
+  protectionHostileTitle: 'Un teléfono con algo hostil dentro',
+  protectionHostileLine: 'Ninguna aplicación se defiende por debajo del sistema. Ten iOS al día.',
+  protectionOutsideTitle: 'Qué aprende el exterior',
+  protectionOutsideLine:
+    'Con la sincronización, el servidor aprende cuántos registros guardas y cuándo se escribió cada uno.',
+
   headerHomeLabel: 'Página de inicio de Emi',
   headerMainLabel: 'Principal',
   headerEmi: 'Emi',

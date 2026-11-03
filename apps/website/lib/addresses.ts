@@ -25,3 +25,10 @@ export const SHARE_PREVIEW = '/share-preview.png';
  * edit moves every press that carries it.
  */
 export const THE_EMI_COMMUNITY = 'https://t.me/+89GgSCh6Ff85YTZk';
+
+/**
+ * Where the code of Emi is, which is the second host outside this site that a page names. The
+ * page that explains the encryption rests on it: every claim on that page is one a reader can go
+ * and check, and the press that takes her there is the whole of that offer.
+ */
+export const THE_EMI_CODE = 'https://github.com/atlantic-blue/emi';
