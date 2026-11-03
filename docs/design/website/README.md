@@ -4,8 +4,9 @@ These files are the approved design of myemi.app. The operator approved the boar
 canvas. A session cannot open that canvas, so the design is committed here, and every step that
 builds the site builds it from these files.
 
-One directory for each page: `home-v2/` is "Home, version 2" and `protection/` is "How Emi
-protects your data". Each one holds the same four things, described below for the home page.
+One directory for each page: `home-v2/` is "Home, version 2", `protection/` is "How Emi protects
+your data", and `privacy-policy/` is "Privacy policy". Each one holds the same four things,
+described below for the home page.
 
 ## What is here
 
@@ -36,6 +37,22 @@ faces and the one screenshot it draws, and `reference/Protection-1280.png`, `-83
 This board sets its four headings in Newsreader. The site serves that family for this page alone,
 from `protection/render/fonts/`, byte for byte, and no other page names it in a class. The
 screenshot it draws is served as `apps/website/public/the-privacy-screen.png`, also byte for byte.
+
+## The privacy policy
+
+`privacy-policy/` holds the same shapes again: `boards/Privacy.dc.html` with its tablet and phone
+boards, the same header and footer boards, `render/Privacy.html` with the faces it loads and the
+one drawing it fetches, which is the mark in the band at the top, and
+`reference/Privacy-1280.png`, `-834.png` and `-390.png`.
+
+This board sets its heading, the line under it and its eight section headings in Newsreader, from
+the same files `protection/` uses. It draws no screenshot, so the page adds no file to the ones
+the edge serves.
+
+The date at the top is the one hole this board keeps. It reads `LAST UPDATED [DATE]` on the canvas
+and on the page, because nobody set a date for the policy, and a page showing a date it was never
+given would be the first sentence on it that is not true. Setting the date is an edit to the board
+and to the three catalogues of words together.
 
 ## How the design changes
 

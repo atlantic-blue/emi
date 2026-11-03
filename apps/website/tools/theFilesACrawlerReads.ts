@@ -32,6 +32,10 @@ export interface PageOfTheSite {
 export const thePagesOfTheSite: readonly PageOfTheSite[] = [
   { path: '', serves: 'the home page, which each language serves under its own language' },
   { path: 'privacy/', serves: 'how Emi protects your data, which is the encryption explained' },
+  {
+    path: 'privacy-policy/',
+    serves: 'the privacy policy, which the App Store asks for by address',
+  },
 ];
 
 /** Where the two files sit. Next.js copies this folder into the assets of the build. */
