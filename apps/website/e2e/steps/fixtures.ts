@@ -74,6 +74,38 @@ export interface WhatSheIsLookingAt {
 }
 
 /**
+ * One press on the page a woman can reach, as her browser reports it.
+ *
+ * What it is called is read the way her own software reads it: the name written beside it, or the
+ * words inside it when no name is written. A press with a picture in it and no name is announced
+ * to her as "link", so the words are the only thing left to tell the two apart.
+ */
+export interface APressSheCanMake {
+  /** Where it takes her, as the page wrote it. */
+  readonly address: string;
+  readonly called: string;
+  /** Whether it keeps her in the tab she is reading in, which keeps the way back on her screen. */
+  readonly opensWhereSheIs: boolean;
+  /** Whether the page it opens is denied a handle back on the page she came from. */
+  readonly handsNothingBack: boolean;
+}
+
+/**
+ * Every press the page offers her, divided by where it sits. The band at the foot belongs to every
+ * page of the site and the part in the middle belongs to the page, and the two carry one press each
+ * to the same place, so each one is read on its own.
+ *
+ * A fixture rather than a variable in the module, because three widths run as three tests and a
+ * variable here would be one value shared by all of them.
+ */
+export interface WhatEveryPressDoes {
+  readonly inThePage: APressSheCanMake[];
+  readonly atTheFoot: APressSheCanMake[];
+  /** The language the page declared, which says what a path of this site has to start with. */
+  reading: string;
+}
+
+/**
  * What came back from the live host: the status, the headers the edge added, and the address she
  * ended on after every move. A page is not opened for these, because a redirect and a header are
  * answers to a request and a browser that followed them has already thrown the first answer away.
@@ -106,6 +138,7 @@ export const test = bdd.extend<{
   complaints: WhatTheBrowserRefused;
   found: WhatHerSoftwareFound;
   looking: WhatSheIsLookingAt;
+  pressing: WhatEveryPressDoes;
 }>({
   answered: async ({}, handTo) => {
     await handTo({ status: null, landedOn: null, moves: 0, movedBy: null });
@@ -127,6 +160,9 @@ export const test = bdd.extend<{
   },
   found: async ({}, handTo) => {
     await handTo({ refused: [], floors: null, presses: [] });
+  },
+  pressing: async ({}, handTo) => {
+    await handTo({ inThePage: [], atTheFoot: [], reading: '' });
   },
   cameBack: async ({}, handTo) => {
     await handTo({ status: null, headers: {}, landedOn: null });

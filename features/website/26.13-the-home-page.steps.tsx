@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
 import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
+import { hostsAPageMayNotName } from '../../apps/website/test/theHostsAPageMayName';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 import { approvedDenials } from '../../tools/pipeline/forbiddenClaims';
 
@@ -135,7 +136,10 @@ defineFeature(feature, (test) => {
       'no page asks another company for anything, and no page keeps anything on her machine',
       () => {
         for (const language of languages) {
-          expect(pages.get(language)).not.toMatch(/https?:\/\//);
+          // A press is not a request. The community chat is the one host the page writes down, and
+          // her browser goes there when she decides to and not while the page loads, which is what
+          // the browser reads below.
+          expect(hostsAPageMayNotName(pages.get(language) ?? '')).toEqual([]);
         }
 
         expect(whatTheBrowserSuiteReads()).toContain('the page asked no other host for anything');

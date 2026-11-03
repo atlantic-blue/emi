@@ -17,6 +17,7 @@ import {
   thePlaceholders,
 } from '../lib/thePlaceholders';
 import { whatTheMarkupDraws } from './stylesheet';
+import { hostsAPageMayNotName } from './theHostsAPageMayName';
 
 /** Compiling the stylesheet takes a moment, and each case that reads it compiles its own markup. */
 const longEnoughToCompile = 60_000;
@@ -231,9 +232,9 @@ describe('the page a woman meets Emi on', () => {
     },
   );
 
-  it('asks no other host for anything, in any language', async () => {
+  it('names no host but the community chat she chooses to open, in any language', async () => {
     for (const language of languages) {
-      expect(await pageIn(language)).not.toMatch(/https?:\/\//);
+      expect(hostsAPageMayNotName(await pageIn(language))).toEqual([]);
     }
   });
 
