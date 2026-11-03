@@ -1,5 +1,10 @@
+import type { Metadata } from 'next';
+
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+
+/** What this page tells a search engine. */
+export const metadata: Metadata = {};
 
 /** What she reads at the top of the page she did not mean to open. */
 export const notFoundHeadline = 'This page does not exist';
