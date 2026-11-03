@@ -46,12 +46,25 @@ const otherCompanies: readonly string[] = [
  */
 const theSiteItself = 'https://myemi.app';
 
+/**
+ * The one address outside this site that a page is allowed to hold: the invite to the Emi
+ * Community. A press is not a request, so a page that writes this down asks nobody for anything
+ * until she decides to open it, and it comes out of the text before the search.
+ *
+ * The whole address and not the host. Any other address on the same chat is still refused, so this
+ * stays one invite the operator chose rather than permission to reach that company.
+ */
+const theCommunitySheCanOpen = 'https://t.me/+89GgSCh6Ff85YTZk';
+
 function reachesAnotherCompany(source: string): boolean {
-  const withoutItsOwnHost = source.split(theSiteItself).join('');
+  const withoutWhatSheChose = [theSiteItself, theCommunitySheCanOpen].reduce(
+    (text, allowed) => text.split(allowed).join(''),
+    source,
+  );
 
   return (
-    /https?:\/\//.test(withoutItsOwnHost) ||
-    otherCompanies.some((host) => withoutItsOwnHost.includes(host))
+    /https?:\/\//.test(withoutWhatSheChose) ||
+    otherCompanies.some((host) => withoutWhatSheChose.includes(host))
   );
 }
 
@@ -196,6 +209,12 @@ defineFeature(feature, (test) => {
         reachesAnotherCompany('@import url("https://fonts.googleapis.com/css2?family=Inter")'),
       ).toBe(true);
       expect(reachesAnotherCompany('fetch("http://someone-elses-host.example/count")')).toBe(true);
+
+      // Letting her open the community did not open the chat company either. The one invite reads
+      // clean and every other address on the same host is still refused.
+      expect(reachesAnotherCompany(`she presses ${theCommunitySheCanOpen}`)).toBe(false);
+      expect(reachesAnotherCompany('https://t.me/+somebody-elses-invite')).toBe(true);
+      expect(reachesAnotherCompany('fetch("https://api.telegram.org/sendMessage")')).toBe(true);
 
       const typing = readable.filter((file) =>
         /#[0-9a-fA-F]{3,8}\b/.test(readFileSync(file, 'utf8')),

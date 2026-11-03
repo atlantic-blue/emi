@@ -83,11 +83,14 @@ Then(
       },
     ]);
 
-    expect(
-      pressing.atTheFoot
-        .filter((press) => press.called === words.footerCommunity)
-        .map((press) => press.address),
-    ).toEqual([THE_EMI_COMMUNITY]);
+    expect(pressing.atTheFoot.filter((press) => press.called === words.footerCommunity)).toEqual([
+      {
+        address: THE_EMI_COMMUNITY,
+        called: words.footerCommunity,
+        opensWhereSheIs: true,
+        handsNothingBack: true,
+      },
+    ]);
   },
 );
 

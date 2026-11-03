@@ -1,7 +1,7 @@
 import { type Language, type SiteWordKey, fallbackLanguage, wordsIn } from '@/app/words';
 import { LanguageSwitcher } from '@/components/languageSwitcher';
 import { LANGUAGES_ANCHOR } from '@/components/siteHeader';
-import { NO_PAGE_YET } from '@/lib/addresses';
+import { NO_PAGE_YET, THE_EMI_COMMUNITY } from '@/lib/addresses';
 
 /**
  * What every link in the band at the foot carries at the width of a phone: a box forty four pixels
@@ -19,6 +19,11 @@ interface FooterLink {
   readonly word: SiteWordKey;
   /** A path under the language, or nothing when no page exists for it anywhere yet. */
   readonly path?: string;
+  /**
+   * A whole address on another host, for the one press of the band that does not lead to a page of
+   * this site. It wins over the path, and it is what marks the press as leaving the site.
+   */
+  readonly outside?: string;
 }
 
 interface FooterGroup {
@@ -59,7 +64,7 @@ export const footerGroups: readonly FooterGroup[] = [
     title: 'footerHelpGroup',
     links: [
       { word: 'footerSupport', path: 'support/' },
-      { word: 'footerCommunity' },
+      { word: 'footerCommunity', outside: THE_EMI_COMMUNITY },
       { word: 'footerAccount', path: 'sign-in/' },
     ],
   },
@@ -81,8 +86,8 @@ export const footerGroups: readonly FooterGroup[] = [
  */
 export function SiteFooter({ language = fallbackLanguage }: { language?: Language }) {
   const words = wordsIn(language);
-  const addressOf = ({ path }: FooterLink): string =>
-    path === undefined ? NO_PAGE_YET : `/${language}/${path}`;
+  const addressOf = ({ path, outside }: FooterLink): string =>
+    outside ?? (path === undefined ? NO_PAGE_YET : `/${language}/${path}`);
 
   return (
     <footer className="w-full bg-siteFooterGround font-text text-body-sm text-siteQuietText">
@@ -101,6 +106,7 @@ export function SiteFooter({ language = fallbackLanguage }: { language?: Languag
                   className={`text-siteQuietText no-underline ${aThumbCanHitIt}`}
                   href={addressOf(link)}
                   key={link.word}
+                  rel={link.outside === undefined ? undefined : 'noopener'}
                 >
                   {words[link.word]}
                 </a>

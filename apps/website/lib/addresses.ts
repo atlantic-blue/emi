@@ -19,5 +19,9 @@ export const SITE_ORIGIN = 'https://myemi.app';
 /** The picture a chat draws beside the words. One picture, in every language. */
 export const SHARE_PREVIEW = '/share-preview.png';
 
-/** Where the Emi Community reads and writes. No link carries it yet. */
-export const THE_EMI_COMMUNITY: string = NO_PAGE_YET;
+/**
+ * Where the Emi Community reads and writes, which is the one host outside this site that a page
+ * names. An invite rather than a public name, so it can be revoked: it is held here alone, and one
+ * edit moves every press that carries it.
+ */
+export const THE_EMI_COMMUNITY = 'https://t.me/+89GgSCh6Ff85YTZk';

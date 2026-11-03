@@ -167,7 +167,14 @@ defineFeature(feature, (test) => {
               handsNothingBack: true,
             },
           ]);
-          expect(inTheBand.map((press) => press.address)).toEqual([THE_EMI_COMMUNITY]);
+          expect(inTheBand).toEqual([
+            {
+              address: THE_EMI_COMMUNITY,
+              called: words.footerCommunity,
+              opensWhereSheIs: true,
+              handsNothingBack: true,
+            },
+          ]);
         }
       },
     );

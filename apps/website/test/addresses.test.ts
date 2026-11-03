@@ -14,7 +14,7 @@ import { websiteWorkspace } from './stylesheet';
 const theInvite = 'https://t.me/+89GgSCh6Ff85YTZk';
 
 /** Every address the module hands a page, by the name a reader of the code sees. */
-const theAddresses = Object.entries(everyAddress).filter(
+const theAddresses = Object.entries<string>(everyAddress).filter(
   (entry): entry is [string, string] => typeof entry[1] === 'string',
 );
 

@@ -6,7 +6,7 @@ import { CarouselsProvider } from '@/components/carousels';
 import { CycleRing } from '@/components/cycleRing';
 import { type Founder, FounderNote } from '@/components/founderNote';
 import { type Review, ReviewRow } from '@/components/reviewRow';
-import { NO_PAGE_YET } from '@/lib/addresses';
+import { NO_PAGE_YET, THE_EMI_COMMUNITY } from '@/lib/addresses';
 import {
   A_NAME_NOBODY_HAS_SIGNED,
   A_REVIEW_NOBODY_HAS_WRITTEN,
@@ -262,7 +262,8 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
               </p>
               <a
                 className="self-start text-[16px] leading-[44px] text-siteNightAccent no-underline"
-                href={NO_PAGE_YET}
+                href={THE_EMI_COMMUNITY}
+                rel="noopener"
               >
                 {words.communityJoin}
               </a>
