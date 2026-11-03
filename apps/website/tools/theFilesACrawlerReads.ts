@@ -10,7 +10,7 @@
  * from the list the pages are drawn from, so a fourth language arrives in the sitemap by itself.
  */
 
-import { type Language, languages } from '../app/words/language.ts';
+import { type Language, fallbackLanguage, languages } from '../app/words/language.ts';
 import { SITE_ORIGIN } from '../lib/addresses.ts';
 
 /** One page of the site. Each language serves it, at its own address under that language. */
@@ -82,16 +82,51 @@ export interface AnEntryOfTheSitemap {
 export function theEntriesOfTheSitemap(
   pages: readonly PageOfTheSite[] = thePagesOfTheSite,
 ): AnEntryOfTheSitemap[] {
-  return pages.flatMap(() => languages.slice(0, 0).map(() => ({ address: '', elsewhere: [] })));
+  return pages.flatMap((page) =>
+    languages.map((language) => ({
+      address: theAddressOfAPage(language, page),
+      elsewhere: [
+        ...languages.map((each) => ({
+          forReadersOf: each,
+          address: theAddressOfAPage(each, page),
+        })),
+        {
+          forReadersOf: FOR_A_READER_OF_NONE,
+          address: theAddressOfAPage(fallbackLanguage, page),
+        },
+      ],
+    })),
+  );
 }
 
-/** What `robots.txt` says: every path, to every crawler, and where the list of pages is. */
+/**
+ * What `robots.txt` says: every path, to every crawler, and where the list of pages is. The site
+ * holds nothing a reader may not read, so it closes nothing off, and a crawl delay would only slow
+ * a crawler down over a site of three pages.
+ */
 export function theRobotsFile(): string {
-  return '';
+  return `User-agent: *\nAllow: /\n\nSitemap: ${SITEMAP_ADDRESS}\n`;
 }
 
 export function theSitemapFile(pages: readonly PageOfTheSite[] = thePagesOfTheSite): string {
-  return theEntriesOfTheSitemap(pages)
-    .map((entry) => entry.address)
-    .join('');
+  const lines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<urlset xmlns="${SITEMAP_NAMESPACE}" xmlns:xhtml="${LINK_NAMESPACE}">`,
+  ];
+
+  for (const entry of theEntriesOfTheSitemap(pages)) {
+    lines.push('  <url>', `    <loc>${entry.address}</loc>`);
+
+    for (const page of entry.elsewhere) {
+      lines.push(
+        `    <xhtml:link rel="alternate" hreflang="${page.forReadersOf}" href="${page.address}" />`,
+      );
+    }
+
+    lines.push('  </url>');
+  }
+
+  lines.push('</urlset>', '');
+
+  return lines.join('\n');
 }
