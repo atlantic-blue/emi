@@ -117,6 +117,28 @@ export interface WhatCameBack {
 }
 
 /**
+ * What a crawler read off the site before it read any page of it: the answer to each of the two
+ * files it asks for, and the pages the second one names.
+ */
+export interface WhatACrawlerRead {
+  robots: WhatAFileAnswered;
+  sitemap: WhatAFileAnswered;
+  /** Every page the list names, as the markup of the list gave it. */
+  pages: APageTheListNames[];
+}
+
+export interface WhatAFileAnswered {
+  status: number | null;
+  text: string;
+}
+
+/** One page of the list: its own address, and the same page offered in each language. */
+export interface APageTheListNames {
+  readonly address: string;
+  readonly elsewhere: readonly { readonly forReadersOf: string; readonly address: string }[];
+}
+
+/**
  * A scenario asks for one address and then reads the answer across several steps, so the answer
  * is a fixture rather than a variable in the module: two widths run as two tests, and a variable
  * here would be one value shared by both.
@@ -135,6 +157,7 @@ export const test = bdd.extend<{
   asked: WhatThePageAsked;
   reading: WhatSheIsReading;
   cameBack: WhatCameBack;
+  crawled: WhatACrawlerRead;
   complaints: WhatTheBrowserRefused;
   found: WhatHerSoftwareFound;
   looking: WhatSheIsLookingAt;
@@ -166,6 +189,13 @@ export const test = bdd.extend<{
   },
   cameBack: async ({}, handTo) => {
     await handTo({ status: null, headers: {}, landedOn: null });
+  },
+  crawled: async ({}, handTo) => {
+    await handTo({
+      robots: { status: null, text: '' },
+      sitemap: { status: null, text: '' },
+      pages: [],
+    });
   },
   complaints: async ({ page }, handTo) => {
     const of: string[] = [];
