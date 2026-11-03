@@ -31,6 +31,12 @@ export const english = {
   languageLabel: 'Language',
   pageDescription: 'A period and cycle tracker that keeps your records to yourself.',
 
+  // Read out to a woman whose software speaks a picture to her, and drawn as words by a chat
+  // that has no room for one. The picture is a single file for all three languages and its own
+  // words are English, so each language says what it shows rather than quoting it.
+  sharePictureAlt:
+    'The Emi icon, the headline Understand your body, safely, and the cycle ring at day 8 of about 31, follicular phase.',
+
   // The hero, and the ring a reader can move through a cycle.
   heroHeadline: 'Understand your body, safely.',
   heroLine:

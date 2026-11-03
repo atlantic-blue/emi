@@ -13,6 +13,17 @@ import { pngSize } from '../tools/theIcons';
 
 const thePicture = join(__dirname, '..', 'public', 'share-preview.png');
 
+/**
+ * The one picture a card points at. The metadata type allows one or several, and allows each of
+ * them to be written as an address or as an address with its size and its description, so this
+ * reads whichever way the layout wrote it.
+ */
+function theOnePicture(images: unknown): { url?: string; alt?: string } {
+  const [first] = Array.isArray(images) ? images : [images];
+
+  return (first ?? {}) as { url?: string; alt?: string };
+}
+
 describe('the title a tab and a chat both read', () => {
   it('opens with the name and then the sentence the page opens with', () => {
     expect(languages.map((language) => pageTitleOf(wordsIn(language)))).toEqual([
@@ -67,29 +78,48 @@ describe('what the layout tells a chat', () => {
     expect(metadata.title).toBe(title);
     expect(metadata.description).toBe(words.pageDescription);
     expect(metadata.openGraph).toEqual({
+      type: 'website',
+      siteName: 'Emi',
       title,
       description: words.pageDescription,
       url: `${SITE_ORIGIN}/${language}/`,
       locale: localeOf(language),
-      images: [{ url: `${SITE_ORIGIN}${SHARE_PREVIEW}`, width: 1200, height: 630 }],
+      images: [
+        {
+          url: `${SITE_ORIGIN}${SHARE_PREVIEW}`,
+          width: 1200,
+          height: 630,
+          alt: words.sharePictureAlt,
+        },
+      ],
     });
     expect(metadata.twitter).toEqual({
       card: 'summary_large_image',
       title,
       description: words.pageDescription,
-      images: [`${SITE_ORIGIN}${SHARE_PREVIEW}`],
+      images: [{ url: `${SITE_ORIGIN}${SHARE_PREVIEW}`, alt: words.sharePictureAlt }],
     });
   });
 
-  it('draws the same picture for every language, because the picture has no words of one', async () => {
-    const pointed = await Promise.all(
+  it('points every language at the one picture, and describes it in each', async () => {
+    const shown = await Promise.all(
       languages.map(async (language) => {
         const metadata = await generateMetadata({ params: Promise.resolve({ lang: language }) });
-
-        return JSON.stringify(metadata.openGraph?.images);
+        return theOnePicture(metadata.openGraph?.images);
       }),
     );
 
-    expect(new Set(pointed).size).toBe(1);
+    // One file for all three, because the picture holds no words of a language. The sentence
+    // beside it is three, because the woman reading the card does.
+    expect(new Set(shown.map((picture) => picture?.url)).size).toBe(1);
+    expect(new Set(shown.map((picture) => picture?.alt)).size).toBe(languages.length);
+  });
+
+  it('tells a woman who cannot see the picture what it shows, in her own language', () => {
+    expect(languages.map((language) => wordsIn(language).sharePictureAlt)).toEqual([
+      'The Emi icon, the headline Understand your body, safely, and the cycle ring at day 8 of about 31, follicular phase.',
+      'Иконка Emi, заголовок «Понимайте своё тело бережно» и кольцо цикла на дне 8 из примерно 31, фолликулярная фаза.',
+      'El icono de Emi, el titular Entiende tu cuerpo, con calma, y el anillo del ciclo en el día 8 de unos 31, fase folicular.',
+    ]);
   });
 });

@@ -12,6 +12,11 @@ Feature: What a chat draws when she sends somebody the address
   site it came from is just a name, so a path beginning with a slash points at the chat company
   instead and the card arrives with an empty rectangle in it.
 
+  The chat is also told what it is holding: a page, of a site called Emi, and not a video or a
+  profile. And the picture is described in words, for a sister whose software speaks a page aloud,
+  and for a chat with no room to draw one. The description is written in the language of the
+  address, because the page is.
+
   Scenario Outline: a shared link shows the Emi preview
     Given a woman opens the page at "<address>"
     Then the card her sister would see is titled "<title>"
@@ -26,3 +31,15 @@ Feature: What a chat draws when she sends somebody the address
       | /en/ | Emi: understand your body, safely | en_GB |
       | /ru/ | Emi: понимайте своё тело бережно | ru_RU |
       | /es/ | Emi: entiende tu cuerpo, con calma | es_ES |
+
+  Scenario Outline: a shared link names the site and describes its picture
+    Given a woman opens the page at "<address>"
+    Then the card says it is a page of a site, and that the site is Emi
+    And the card describes the picture as "<description>"
+    And a chat that reads the other set of tags gets the same description
+
+    Examples:
+      | address | description |
+      | /en/ | The Emi icon, the headline Understand your body, safely, and the cycle ring at day 8 of about 31, follicular phase. |
+      | /ru/ | Иконка Emi, заголовок «Понимайте своё тело бережно» и кольцо цикла на дне 8 из примерно 31, фолликулярная фаза. |
+      | /es/ | El icono de Emi, el titular Entiende tu cuerpo, con calma, y el anillo del ciclo en el día 8 de unos 31, fase folicular. |
