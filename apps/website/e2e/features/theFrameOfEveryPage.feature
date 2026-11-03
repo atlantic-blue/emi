@@ -28,6 +28,9 @@ Feature: The way in and the way out of every page
       | /en/         | en       |
       | /ru/         | ru       |
       | /es/         | es       |
+      | /en/privacy/ | en       |
+      | /ru/privacy/ | ru       |
+      | /es/privacy/ | es       |
       | /en/nothing/ | en       |
       | /ru/nothing/ | ru       |
       | /es/nothing/ | es       |

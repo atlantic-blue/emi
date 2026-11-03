@@ -1,8 +1,11 @@
 # The design of the website
 
-These files are the approved design of myemi.app. The operator approved the board "Home, version 2"
-on the design canvas. A session cannot open that canvas, so the design is committed here, and every
-step that builds the site builds it from these files.
+These files are the approved design of myemi.app. The operator approved the boards on the design
+canvas. A session cannot open that canvas, so the design is committed here, and every step that
+builds the site builds it from these files.
+
+One directory for each page: `home-v2/` is "Home, version 2" and `protection/` is "How Emi
+protects your data". Each one holds the same four things, described below for the home page.
 
 ## What is here
 
@@ -22,6 +25,17 @@ width of a desktop, a tablet and a phone. Those three were taken on a Mac, where
 in Apple's own interface face, so they are taller or shorter than the same markup on Linux. The
 comparison the pipeline runs never reads them: it draws the markup and the page in one browser on
 one machine, which is the only way two pictures can be held against each other.
+
+## The page that explains the encryption
+
+`protection/` holds the same shapes under its own names: `boards/Protection.dc.html` with its
+tablet and phone boards, the same header and footer boards, `render/Protection.html` with the
+faces and the one screenshot it draws, and `reference/Protection-1280.png`, `-834.png` and
+`-390.png`.
+
+This board sets its four headings in Newsreader. The site serves that family for this page alone,
+from `protection/render/fonts/`, byte for byte, and no other page names it in a class. The
+screenshot it draws is served as `apps/website/public/the-privacy-screen.png`, also byte for byte.
 
 ## How the design changes
 

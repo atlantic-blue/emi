@@ -183,7 +183,7 @@ defineFeature(feature, (test) => {
         const wanted = websiteFaceNames.flatMap((name) =>
           websiteFontCuts[name].map((cut) => websiteFontFile(cut)),
         );
-        const stylesheet = await stylesheetFor(['font-display', 'font-text', 'font-data']);
+        const stylesheet = await stylesheetFor(websiteFaceNames.map((name) => `font-${name}`));
 
         expect(asked).toEqual(wanted);
 

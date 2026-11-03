@@ -73,6 +73,17 @@ function elsewhereIn(entry: Element): Record<string, string> {
 }
 
 /**
+ * The page one address of the list names. The longest path that matches, because every address of
+ * this site ends in a slash and the home page's path is empty, so a shorter path matches every
+ * address there is.
+ */
+function thePageAt(address: string) {
+  return [...thePagesOfTheSite]
+    .sort((one, other) => other.path.length - one.path.length)
+    .find((page) => address.endsWith(`/${page.path}`));
+}
+
+/**
  * Every page under a language that the router really serves. A directory in brackets is not a
  * page: it is the one that answers 404 for every address the site does not have.
  */
@@ -128,7 +139,12 @@ defineFeature(feature, (test) => {
         );
 
         expect(entries().map(addressIn).sort()).toEqual([...promised].sort());
-        expect(promised).toEqual([`${THE_SITE}/en/`, `${THE_SITE}/ru/`, `${THE_SITE}/es/`]);
+        // The home page, in all three languages, whatever else the site has gained since.
+        // A list that stopped naming it is a search engine that stopped offering it.
+        expect(promised).toEqual(
+          expect.arrayContaining([`${THE_SITE}/en/`, `${THE_SITE}/ru/`, `${THE_SITE}/es/`]),
+        );
+        expect(promised).toHaveLength(thePagesOfTheSite.length * languages.length);
       },
     );
 
@@ -147,7 +163,7 @@ defineFeature(feature, (test) => {
 
         for (const entry of entries()) {
           const address = addressIn(entry);
-          const page = thePagesOfTheSite.find((each) => address.endsWith(`/${each.path}`));
+          const page = thePageAt(address);
           const language = languages.find((each) => address.includes(`/${each}/`));
 
           expect({ address, read: page !== undefined && language !== undefined }).toEqual({

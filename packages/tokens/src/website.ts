@@ -23,6 +23,7 @@ export type WebsiteColourName =
   | 'siteTintLine'
   | 'siteControlLine'
   | 'siteShadow'
+  | 'siteFaintShadow'
   | 'siteText'
   | 'siteQuietText'
   | 'siteAccent'
@@ -66,6 +67,7 @@ const ALL: readonly WebsiteColourName[] = [
   'siteTintLine',
   'siteControlLine',
   'siteShadow',
+  'siteFaintShadow',
   'siteText',
   'siteQuietText',
   'siteAccent',
@@ -168,6 +170,16 @@ export const websiteColours: Readonly<Record<WebsiteColourName, WebsiteColourTok
     roles: ['line'],
     textOn: [],
   },
+  /**
+   * The same cast, a fifth as strong, under the screenshot on the page that explains the
+   * encryption. That board lifts the picture off the paper by a few pixels rather than standing it
+   * on the page, so the two are two values rather than one value at two distances.
+   */
+  siteFaintShadow: {
+    value: 'rgba(31, 27, 25, 0.05)',
+    roles: ['line'],
+    textOn: [],
+  },
   /** Every word of the site a reader is meant to read first. */
   siteText: {
     value: '#1F1B19',
@@ -245,8 +257,8 @@ function valuesOf(): Record<WebsiteColourName, string> {
 /** The value of every colour of the site, for a theme that wants the string and nothing else. */
 export const websiteColour: Readonly<Record<WebsiteColourName, string>> = valuesOf();
 
-/** The three roles the board gives a face, under the names the theme of the site reads. */
-export type WebsiteFaceName = 'display' | 'text' | 'data';
+/** The four roles the boards give a face, under the names the theme of the site reads. */
+export type WebsiteFaceName = 'display' | 'text' | 'data' | 'serif';
 
 /**
  * The family the site serves for each role. Running text is a humanist sans, a small label over a
@@ -259,6 +271,7 @@ export const websiteFace: Readonly<Record<WebsiteFaceName, string>> = {
   display: 'Inter',
   text: 'Plus Jakarta Sans',
   data: 'JetBrains Mono',
+  serif: 'Newsreader',
 };
 
 /**
@@ -269,6 +282,9 @@ export const websiteFace: Readonly<Record<WebsiteFaceName, string>> = {
  * which no licence lets Emi ship. The served family stands behind it, and draws the heading on
  * every machine that has none of the three above it, which is every machine the pipeline runs on.
  * A face a machine already holds asks nobody for a file, so naming one first costs no privacy.
+ *
+ * The serif names the served family first, because the board does: it is the whole point of that
+ * board's headings, and Georgia behind it is only there for a machine that fetched nothing.
  */
 export const websiteFaceStack: Readonly<Record<WebsiteFaceName, readonly string[]>> = {
   display: [
@@ -282,6 +298,7 @@ export const websiteFaceStack: Readonly<Record<WebsiteFaceName, readonly string[
   ],
   text: [websiteFace.text, 'system-ui', 'sans-serif'],
   data: [websiteFace.data, 'ui-monospace', 'monospace'],
+  serif: [websiteFace.serif, 'Georgia', 'serif'],
 };
 
 /** One file of one family, at the weight the board asks that file for. */
@@ -292,9 +309,13 @@ export interface WebsiteFontCut {
 }
 
 /**
- * The five files the site serves, under the role each one carries. They are the files the board
- * itself names in `docs/design/website/home-v2/render/MainV2.html`, so a page of the site measures
- * the same as the design it was drawn from.
+ * The seven files the site serves, under the role each one carries. They are the files the boards
+ * themselves name in `docs/design/website/home-v2/render/MainV2.html` and in
+ * `docs/design/website/protection/render/Protection.html`, so a page of the site measures the same
+ * as the design it was drawn from.
+ *
+ * The two serif cuts arrived with the second board. One page of the site draws them, so a reader
+ * who never opens that page fetches neither: a browser asks for a face when a glyph needs it.
  *
  * The two cuts of the heading face are the board's own two files rather than the same family from
  * a font service. The service builds that family from one variable file of another release, and it
@@ -312,10 +333,14 @@ export const websiteFontCuts: Readonly<Record<WebsiteFaceName, readonly WebsiteF
     { name: 'PlusJakartaSans-SemiBold', weight: 600, format: 'ttf' },
   ],
   data: [{ name: 'JetBrainsMono-Medium', weight: 500, format: 'ttf' }],
+  serif: [
+    { name: 'Newsreader16pt-Regular', weight: 400, format: 'ttf' },
+    { name: 'Newsreader16pt-Medium', weight: 500, format: 'ttf' },
+  ],
 };
 
 /** The roles as data, in the order a page reads them. */
-export const websiteFaceNames: readonly WebsiteFaceName[] = ['display', 'text', 'data'];
+export const websiteFaceNames: readonly WebsiteFaceName[] = ['display', 'text', 'data', 'serif'];
 
 /**
  * Where the site keeps those files, from the root of the repository. The site serves its own faces,

@@ -66,9 +66,7 @@ const everyClass = [
   ...radiusNames.map((name) => (name === 'DEFAULT' ? 'rounded' : `rounded-${name}`)),
   ...Object.keys(stroke).map((name) => `h-${name}`),
   ...Object.keys(stroke).map((name) => `border-${name}`),
-  'font-display',
-  'font-text',
-  'font-data',
+  ...websiteFaceNames.map((name) => `font-${name}`),
   'phone:hidden',
   'tablet:hidden',
   'sm:flex',
@@ -220,8 +218,13 @@ describe('the faces the site draws in', () => {
     expect(written).toContain(`"${websiteFace.text}"`);
   });
 
-  it('draws the three the board names and no fourth', () => {
-    expect([...websiteFaceNames]).toEqual(['display', 'text', 'data']);
+  /**
+   * The roles, written out. Three come from the home board. The fourth is the serif the board of
+   * the page that explains the encryption sets its headings in, and only that page names it, so a
+   * fifth role here is a face the site started serving that no board asked for.
+   */
+  it('draws the four the boards name and no fifth', () => {
+    expect([...websiteFaceNames]).toEqual(['display', 'text', 'data', 'serif']);
   });
 });
 

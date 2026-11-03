@@ -14,6 +14,7 @@ import {
 } from '../lib/theAddressesOfAPage';
 import {
   CRAWLER_FOLDER,
+  type PageOfTheSite,
   FOR_A_READER_OF_NONE,
   LINK_NAMESPACE,
   ROBOTS_FILE,
@@ -111,6 +112,17 @@ function thePagesTheRouterServes(): string[] {
   ].sort();
 }
 
+/**
+ * The page one address of the list names. The longest path that matches, because every address of
+ * this site ends in a slash and the home page's path is empty, so a shorter path matches every
+ * address there is.
+ */
+function thePageAt(address: string): PageOfTheSite | undefined {
+  return [...thePagesOfTheSite]
+    .sort((one, other) => other.path.length - one.path.length)
+    .find((page) => address.endsWith(`/${page.path}`));
+}
+
 describe('the files a crawler reads before it reads a page', () => {
   describe('what the site keeps for a crawler', () => {
     it.each([ROBOTS_FILE, SITEMAP_FILE])(
@@ -172,7 +184,7 @@ describe('the files a crawler reads before it reads a page', () => {
 
       for (const entry of entries) {
         const address = addressIn(entry);
-        const page = thePagesOfTheSite.find((each) => address.endsWith(`/${each.path}`));
+        const page = thePageAt(address);
         const language = languages.find((each) => address.includes(`/${each}/`));
 
         expect({ address, found: page !== undefined && language !== undefined }).toEqual({
@@ -192,9 +204,14 @@ describe('the files a crawler reads before it reads a page', () => {
     it('calls a reader of none of the three languages what a page of the site calls her', () => {
       expect(FOR_A_READER_OF_NONE).toBe(FOR_A_READER_OF_NONE_ON_A_PAGE);
 
+      // The page she is offered is the page the entry is about, in the language the site falls
+      // back to. Offering her the home page instead would send a reader of a fourth language to
+      // the front door whichever page a search engine had found her.
       for (const entry of entriesIn(parsed())) {
+        const address = addressIn(entry);
+
         expect(elsewhereIn(entry)[FOR_A_READER_OF_NONE]).toBe(
-          `${SITE_ORIGIN}/${fallbackLanguage}/`,
+          `${SITE_ORIGIN}/${fallbackLanguage}/${thePageAt(address)?.path ?? ''}`,
         );
       }
     });
@@ -217,13 +234,13 @@ describe('the files a crawler reads before it reads a page', () => {
     it('puts a page the list gains into the sitemap, so a list the files do not match fails', () => {
       const withTheNextPage = [
         ...thePagesOfTheSite,
-        { path: 'privacy/', serves: 'how Emi protects your data' },
+        { path: 'calculator/', serves: 'the free next period calculator' },
       ];
       const sitemap = theSitemapFile(withTheNextPage);
 
-      expect(sitemap).toContain(`<loc>${SITE_ORIGIN}/ru/privacy/</loc>`);
+      expect(sitemap).toContain(`<loc>${SITE_ORIGIN}/ru/calculator/</loc>`);
       expect(sitemap).toContain(
-        `hreflang="${FOR_A_READER_OF_NONE}" href="${SITE_ORIGIN}/en/privacy/"`,
+        `hreflang="${FOR_A_READER_OF_NONE}" href="${SITE_ORIGIN}/en/calculator/"`,
       );
       expect(sitemap).not.toBe(committed(SITEMAP_FILE));
       expect(theEntriesOfTheSitemap(withTheNextPage).length).toBe(

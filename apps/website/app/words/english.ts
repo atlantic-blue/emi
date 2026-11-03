@@ -125,6 +125,55 @@ export const english = {
   askLine: 'We reply in English, Russian and Spanish.',
   askLink: 'Visit support ›',
 
+  // The page that explains the encryption, from boards/Protection.dc.html. The name of Emi is not
+  // here: the third column of the dark band is called Emi in every language, so it sits beside the
+  // band it is drawn in, where nobody can translate it, as the names of the two founders do.
+  protectionEyebrow: 'Privacy',
+  protectionHeadline: 'Your days are yours.',
+  protectionHeadlineQuiet: 'Not ours.',
+  protectionLine:
+    'Emi encrypts each day on your phone, with a key that stays on your phone. The code is public, so you can check this page against it.',
+  protectionReadTheCode: 'Read the code',
+  protectionReadTheDocument: 'Read the full document ›',
+  protectionScreenAlt:
+    'The Privacy screen in Emi. It says: Only you can read your days. Encrypted on this phone, with a key only you hold.',
+
+  // What happens to one day, in the order it happens in.
+  protectionDayHeadline: 'What happens to one day.',
+  protectionLogTitle: 'You log a day.',
+  protectionLogLine: 'Period, symptoms, mood, sex or a note.',
+  protectionSealTitle: 'Your phone seals it.',
+  protectionSealLine:
+    'Emi encrypts the day before it writes it. The key is in your iPhone keychain.',
+  protectionLeavesTitle: 'Only the result leaves.',
+  protectionLeavesLine:
+    'With sync, the server keeps ciphertext, a revision number and a write time. It holds no key.',
+  protectionBuilt: 'In the app today',
+  protectionNotBuilt: 'Designed, not built yet',
+
+  // Who holds the keys, which is the answer she came for.
+  protectionKeysHeadline: 'Who holds the keys.',
+  protectionKeysHeadlineQuiet: 'Not Emi.',
+  protectionPhoneTitle: 'Your phone',
+  protectionPhoneLine: 'The vault key encrypts every day. It never leaves the phone.',
+  protectionYouTitle: 'You',
+  protectionYouLine: 'A recovery code of 26 characters, shown once. Keep it away from the phone.',
+  protectionEmiLine:
+    'No key. So no request to Emi, or to Amazon Web Services, can return one of your days.',
+
+  // The four limits, at the size of everything above them.
+  protectionLimitsHeadline: 'What Emi does not defend against.',
+  protectionLimitsLine: 'Four limits, stated here and not hidden. Each one says what you can do.',
+  protectionLostTitle: 'A lost phone and a lost code',
+  protectionLostLine: 'The days are gone. An Emi that could recover them could read them.',
+  protectionUnlockedTitle: 'A phone somebody can unlock',
+  protectionUnlockedLine: 'They can read the screen. Keep the app lock on. It is on by default.',
+  protectionHostileTitle: 'A phone running something hostile',
+  protectionHostileLine: 'No app can defend itself from under the system. Keep iOS current.',
+  protectionOutsideTitle: 'What the outside learns',
+  protectionOutsideLine:
+    'With sync, the server learns how many records you keep, and when each one was written.',
+
   // The band at the top of the page, from boards/Header.dc.html.
   headerHomeLabel: 'Emi home',
   headerMainLabel: 'Main',
