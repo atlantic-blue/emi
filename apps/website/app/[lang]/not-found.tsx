@@ -3,8 +3,13 @@ import type { Metadata } from 'next';
 import { buttonVariants } from '@/components/ui/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-/** What this page tells a search engine. */
-export const metadata: Metadata = {};
+/**
+ * What this page tells a search engine about addresses, which is nothing. Next.js reads the
+ * metadata of the layouts and then of this file for an address no route holds, so the links the
+ * layout gives every page are cleared here. An address kept for a page that is not there sends
+ * the next reader to this page again.
+ */
+export const metadata: Metadata = { alternates: null };
 
 /** What she reads at the top of the page she did not mean to open. */
 export const notFoundHeadline = 'This page does not exist';
