@@ -128,7 +128,12 @@ defineFeature(feature, (test) => {
         );
 
         expect(entries().map(addressIn).sort()).toEqual([...promised].sort());
-        expect(promised).toEqual([`${THE_SITE}/en/`, `${THE_SITE}/ru/`, `${THE_SITE}/es/`]);
+        // The home page, in all three languages, whatever else the site has gained since.
+        // A list that stopped naming it is a search engine that stopped offering it.
+        expect(promised).toEqual(
+          expect.arrayContaining([`${THE_SITE}/en/`, `${THE_SITE}/ru/`, `${THE_SITE}/es/`]),
+        );
+        expect(promised).toHaveLength(thePagesOfTheSite.length * languages.length);
       },
     );
 

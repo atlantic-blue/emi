@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>How Emi protects your data</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"Newsreader";src:url("ds/emi/fonts/Newsreader16pt-Regular.ttf");font-weight:400}
+@font-face{font-family:"Newsreader";src:url("ds/emi/fonts/Newsreader16pt-Medium.ttf");font-weight:500}
+@font-face{font-family:"Plus Jakarta Sans";src:url("ds/emi/fonts/PlusJakartaSans-Regular.ttf");font-weight:400}
+@font-face{font-family:"Plus Jakarta Sans";src:url("ds/emi/fonts/PlusJakartaSans-SemiBold.ttf");font-weight:600}
+@font-face{font-family:"JetBrains Mono";src:url("ds/emi/fonts/JetBrainsMono-Medium.ttf");font-weight:500}
+body{margin:0;background:#FFFFFF}
+a{color:#843117}a:hover{color:#5C2018}
+@media (max-width: 640px){h1[style*="font-size: 64px"]{font-size:48px !important;line-height:52px !important}h2[style*="font-size: 32px"]{font-size:24px !important;line-height:30px !important}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; color: #1F1B19; font-family: &quot;Plus Jakarta Sans&quot;, system-ui, sans-serif;">
+<dc-import name="Header" hint-size="100%,48px"></dc-import>
+<main>
+<section style="box-sizing: border-box; max-width: 860px; margin: 0 auto; padding: 88px 24px 0; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 20px;">
+<span style="font-size: 16px; line-height: 24px; font-weight: 600; color: #843117;">Privacy</span>
+<h1 style="margin: 0; font-family: &quot;Newsreader&quot;, Georgia, serif; font-size: 64px; line-height: 68px; font-weight: 500; letter-spacing: -0.02em;">Your days are yours. <span style="color: #89726C;">Not ours.</span></h1>
+<p style="margin: 0; font-size: 19px; line-height: 28px; color: #56423D; max-width: 620px;">Emi encrypts each day on your phone, with a key that stays on your phone. The code is public, so you can check this page against it.</p>
+<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 24px; align-items: center;">
+<a href="#" style="font-size: 16px; font-weight: 600; color: #FFFFFF; background: #A3482C; text-decoration: none; padding: 0 24px; line-height: 44px; border-radius: 9999px;">Read the code</a>
+<a href="#" style="font-size: 16px; text-decoration: none;">Read the full document ›</a>
+</div>
+<img src="/_blob/60c742bcf446127694567c2f64c18b27" alt="The Privacy screen in Emi. It says: Only you can read your days. Encrypted on this phone, with a key only you hold." style="width: 320px; height: 420px; object-fit: cover; object-position: top; margin-top: 32px; border-radius: 40px 40px 0 0; box-shadow: 0 4px 20px -2px rgba(31, 27, 25, 0.05);">
+</section>
+
+<section style="background: #FBF2EE; padding: 80px 0;">
+<div style="box-sizing: border-box; max-width: 1024px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 32px;">
+<h2 style="margin: 0; text-align: center; font-family: &quot;Newsreader&quot;, Georgia, serif; font-size: 32px; line-height: 40px; font-weight: 500; letter-spacing: -0.01em;">What happens to one day.</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
+<div style="background: #FFFFFF; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 12px;">
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 32px; line-height: 40px; font-weight: 500; color: #5C2018;">1</span>
+<h3 style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 600;">You log a day.</h3>
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">Period, symptoms, mood, sex or a note.</p>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 12px;">
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 32px; line-height: 40px; font-weight: 500; color: #5E3B10;">2</span>
+<h3 style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 600;">Your phone seals it.</h3>
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">Emi encrypts the day before it writes it. The key is in your iPhone keychain.</p>
+<span style="align-self: flex-start; font-size: 12px; line-height: 16px; font-weight: 600; color: #1F1B19; background: #EFE6E3; border-radius: 9999px; padding: 4px 12px;">In the app today</span>
+</div>
+<div style="background: #FFFFFF; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 12px;">
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 32px; line-height: 40px; font-weight: 500; color: #433246;">3</span>
+<h3 style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 600;">Only the result leaves.</h3>
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">With sync, the server keeps ciphertext, a revision number and a write time. It holds no key.</p>
+<span style="align-self: flex-start; font-size: 12px; line-height: 16px; font-weight: 600; color: #56423D; border: 1px solid #89726C; border-radius: 9999px; padding: 3px 12px;">Designed, not built yet</span>
+</div>
+</div>
+</div>
+</section>
+
+<section style="background: #342F2D; color: #F8EFEB; padding: 88px 0;">
+<div style="box-sizing: border-box; max-width: 1024px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 40px;">
+<h2 style="margin: 0; text-align: center; font-family: &quot;Newsreader&quot;, Georgia, serif; font-size: 32px; line-height: 40px; font-weight: 500; letter-spacing: -0.01em;">Who holds the keys. <span style="color: #CCC5BE;">Not Emi.</span></h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; text-align: center;">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFB59F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"></rect><path d="M11 18h2"></path></svg>
+<h3 style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 600;">Your phone</h3>
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: #CCC5BE;">The vault key encrypts every day. It never leaves the phone.</p>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFB59F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16H6z"></path><path d="M9 9h6M9 13h6M9 17h3"></path></svg>
+<h3 style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 600;">You</h3>
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: #CCC5BE;">A recovery code of 26 characters, shown once. Keep it away from the phone.</p>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFB59F" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16v10H4z"></path><path d="M3 3l18 18"></path></svg>
+<h3 style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 600;">Emi</h3>
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: #CCC5BE;">No key. So no request to Emi, or to Amazon Web Services, can return one of your days.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section style="padding: 88px 0;">
+<div style="box-sizing: border-box; max-width: 1024px; margin: 0 auto; padding: 0 24px; display: flex; flex-direction: column; gap: 32px;">
+<div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+<h2 style="margin: 0; font-family: &quot;Newsreader&quot;, Georgia, serif; font-size: 32px; line-height: 40px; font-weight: 500; letter-spacing: -0.01em;">What Emi does not defend against.</h2>
+<p style="margin: 0; font-size: 19px; line-height: 28px; color: #56423D; max-width: 600px;">Four limits, stated here and not hidden. Each one says what you can do.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+<div style="background: #FBF2EE; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 8px;"><h3 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 600;">A lost phone and a lost code</h3><p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">The days are gone. An Emi that could recover them could read them.</p></div>
+<div style="background: #FBF2EE; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 8px;"><h3 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 600;">A phone somebody can unlock</h3><p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">They can read the screen. Keep the app lock on. It is on by default.</p></div>
+<div style="background: #FBF2EE; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 8px;"><h3 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 600;">A phone running something hostile</h3><p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">No app can defend itself from under the system. Keep iOS current.</p></div>
+<div style="background: #FBF2EE; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 8px;"><h3 style="margin: 0; font-size: 16px; line-height: 24px; font-weight: 600;">What the outside learns</h3><p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">With sync, the server learns how many records you keep, and when each one was written.</p></div>
+</div>
+</div>
+</section>
+</main>
+<dc-import name="Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2400}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

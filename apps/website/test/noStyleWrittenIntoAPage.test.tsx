@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import RootLayout from '../app/[lang]/layout';
 import NotFound from '../app/[lang]/not-found';
 import HomePage from '../app/[lang]/page';
+import PrivacyPage from '../app/[lang]/privacy/page';
 import { type Language, languages } from '../app/words';
 
 /**
@@ -34,9 +35,16 @@ async function documentAround(children: ReactNode, lang: string): Promise<string
 const homePageIn = async (language: Language): Promise<string> =>
   documentAround(await HomePage({ params: Promise.resolve({ lang: language }) }), language);
 
+const privacyPageIn = async (language: Language): Promise<string> =>
+  documentAround(await PrivacyPage({ params: Promise.resolve({ lang: language }) }), language);
+
 describe('no page of the site writes a style the policy would refuse', () => {
   it.each(languages)('the page a woman meets Emi on, in %s', async (language) => {
     expect(stylesWrittenInto(await homePageIn(language))).toEqual([]);
+  });
+
+  it.each(languages)('the page that explains the encryption, in %s', async (language) => {
+    expect(stylesWrittenInto(await privacyPageIn(language))).toEqual([]);
   });
 
   it('the page behind an address the site does not have', async () => {

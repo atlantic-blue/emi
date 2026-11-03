@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { websiteFontCuts, websiteFontFile, websiteFontsRoot } from '@emi/tokens';
+import { websiteFaceNames, websiteFontCuts, websiteFontFile, websiteFontsRoot } from '@emi/tokens';
 
 import { asPlaywrightReadsIt } from './theConfiguration';
 
@@ -118,9 +118,17 @@ describe('the approved home design, in the repository', () => {
     }
   });
 
-  it('serves no face the board stopped asking for', () => {
-    const served = readdirSync(join(repositoryRoot, websiteFontsRoot));
+  /**
+   * The served folder against the cuts the token package names, both ways. A face the boards
+   * stopped asking for is still being sent to every reader, and a face one of them asks for and
+   * the site does not hold is a heading drawn in whatever the machine had instead.
+   */
+  it('serves exactly the faces the approved boards ask for, and no other', () => {
+    const served = readdirSync(join(repositoryRoot, websiteFontsRoot)).sort();
+    const asked = websiteFaceNames
+      .flatMap((name) => websiteFontCuts[name].map(websiteFontFile))
+      .sort();
 
-    expect(served.filter((file) => file.startsWith('Newsreader'))).toEqual([]);
+    expect(served).toEqual(asked);
   });
 });

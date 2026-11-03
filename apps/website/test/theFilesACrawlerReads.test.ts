@@ -217,13 +217,13 @@ describe('the files a crawler reads before it reads a page', () => {
     it('puts a page the list gains into the sitemap, so a list the files do not match fails', () => {
       const withTheNextPage = [
         ...thePagesOfTheSite,
-        { path: 'privacy/', serves: 'how Emi protects your data' },
+        { path: 'calculator/', serves: 'the free next period calculator' },
       ];
       const sitemap = theSitemapFile(withTheNextPage);
 
-      expect(sitemap).toContain(`<loc>${SITE_ORIGIN}/ru/privacy/</loc>`);
+      expect(sitemap).toContain(`<loc>${SITE_ORIGIN}/ru/calculator/</loc>`);
       expect(sitemap).toContain(
-        `hreflang="${FOR_A_READER_OF_NONE}" href="${SITE_ORIGIN}/en/privacy/"`,
+        `hreflang="${FOR_A_READER_OF_NONE}" href="${SITE_ORIGIN}/en/calculator/"`,
       );
       expect(sitemap).not.toBe(committed(SITEMAP_FILE));
       expect(theEntriesOfTheSitemap(withTheNextPage).length).toBe(
