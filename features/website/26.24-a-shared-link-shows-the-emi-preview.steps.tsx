@@ -121,12 +121,14 @@ defineFeature(feature, (test) => {
     and('the chat is given the whole address of the picture, not a path it cannot follow', () => {
       for (const language of languages) {
         const [picture] = shared[language].openGraph.images ?? [];
+        const [forTheOtherReader] = shared[language].twitter.images ?? [];
 
-        expect({ language, address: picture?.url }).toEqual({
-          language,
-          address: 'https://myemi.app/share-preview.png',
-        });
-        expect(shared[language].twitter.images).toEqual(['https://myemi.app/share-preview.png']);
+        for (const read of [picture, forTheOtherReader]) {
+          expect({ language, address: read?.url }).toEqual({
+            language,
+            address: 'https://myemi.app/share-preview.png',
+          });
+        }
       }
 
       expect(`${SITE_ORIGIN}${SHARE_PREVIEW}`).toBe('https://myemi.app/share-preview.png');

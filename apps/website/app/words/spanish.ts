@@ -8,6 +8,8 @@ export const spanish: SiteWords = {
   price: 'Un mes gratis, después 29,99 libras al mes.',
   languageLabel: 'Idioma',
   pageDescription: 'Un registro de ciclo y menstruación que mantiene tus datos contigo.',
+  sharePictureAlt:
+    'El icono de Emi, el titular Entiende tu cuerpo, con calma, y el anillo del ciclo en el día 8 de unos 31, fase folicular.',
 
   heroHeadline: 'Entiende tu cuerpo, con calma.',
   heroLine:

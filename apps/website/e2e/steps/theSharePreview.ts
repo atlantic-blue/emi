@@ -75,3 +75,19 @@ Then('the picture is there, and it is the size the card promised', async ({ page
 Then('the card is the kind a chat draws large', async ({ page }) => {
   expect(await content(page, 'twitter:card')).toBe('summary_large_image');
 });
+
+Then('the card says it is a page of a site, and that the site is Emi', async ({ page }) => {
+  expect(await content(page, 'og:type')).toBe('website');
+  expect(await content(page, 'og:site_name')).toBe('Emi');
+});
+
+Then('the card describes the picture as {string}', async ({ page }, described: string) => {
+  expect(await content(page, 'og:image:alt')).toBe(described);
+});
+
+Then('a chat that reads the other set of tags gets the same description', async ({ page }) => {
+  const described = await content(page, 'og:image:alt');
+
+  expect(described === null ? '' : described.trim().length).toBeGreaterThan(0);
+  expect(await content(page, 'twitter:image:alt')).toBe(described);
+});
