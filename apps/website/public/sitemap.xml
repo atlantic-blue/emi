@@ -42,4 +42,25 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/privacy/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/privacy/" />
   </url>
+  <url>
+    <loc>https://myemi.app/en/privacy-policy/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/privacy-policy/" />
+  </url>
+  <url>
+    <loc>https://myemi.app/ru/privacy-policy/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/privacy-policy/" />
+  </url>
+  <url>
+    <loc>https://myemi.app/es/privacy-policy/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/privacy-policy/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/privacy-policy/" />
+  </url>
 </urlset>

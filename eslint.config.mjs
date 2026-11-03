@@ -83,6 +83,7 @@ export default defineConfig([
     // a rule here would ask somebody to edit the design to satisfy it.
     'docs/design/website/home-v2/**',
     'docs/design/website/protection/**',
+    'docs/design/website/privacy-policy/**',
   ]),
   ...expoAwayFromTheWebsite,
   // The site is read the way a browser reads it: the core web vitals set, the TypeScript set, the

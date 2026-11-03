@@ -24,13 +24,16 @@ Feature: The addresses a search engine reads
     And it names the same page in each language, and the English page for a reader of none
 
     Examples:
-      | address      |
-      | /en/         |
-      | /ru/         |
-      | /es/         |
-      | /en/privacy/ |
-      | /ru/privacy/ |
-      | /es/privacy/ |
+      | address             |
+      | /en/                |
+      | /ru/                |
+      | /es/                |
+      | /en/privacy/        |
+      | /ru/privacy/        |
+      | /es/privacy/        |
+      | /en/privacy-policy/ |
+      | /ru/privacy-policy/ |
+      | /es/privacy-policy/ |
 
   Scenario: the page she reached by accident names no address
     Given a woman opens the page at "/en/nothing/"

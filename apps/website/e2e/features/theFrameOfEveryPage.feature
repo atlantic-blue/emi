@@ -24,13 +24,16 @@ Feature: The way in and the way out of every page
     And both bands read in the language the page declares, which is "<language>"
 
     Examples:
-      | address      | language |
-      | /en/         | en       |
-      | /ru/         | ru       |
-      | /es/         | es       |
-      | /en/privacy/ | en       |
-      | /ru/privacy/ | ru       |
-      | /es/privacy/ | es       |
-      | /en/nothing/ | en       |
-      | /ru/nothing/ | ru       |
-      | /es/nothing/ | es       |
+      | address             | language |
+      | /en/                | en       |
+      | /ru/                | ru       |
+      | /es/                | es       |
+      | /en/privacy/        | en       |
+      | /ru/privacy/        | ru       |
+      | /es/privacy/        | es       |
+      | /en/privacy-policy/ | en       |
+      | /ru/privacy-policy/ | ru       |
+      | /es/privacy-policy/ | es       |
+      | /en/nothing/        | en       |
+      | /ru/nothing/        | ru       |
+      | /es/nothing/        | es       |

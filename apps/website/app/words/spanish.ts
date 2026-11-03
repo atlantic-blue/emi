@@ -136,6 +136,37 @@ export const spanish: SiteWords = {
   protectionOutsideLine:
     'Con la sincronización, el servidor aprende cuántos registros guardas y cuándo se escribió cada uno.',
 
+  // La política de privacidad, desde boards/Privacy.dc.html.
+  policyUpdated: 'ÚLTIMA ACTUALIZACIÓN [DATE]',
+  policyTitle: 'Política de privacidad',
+  policyLine: 'No podemos leer tus registros. Esta página dice por qué.',
+  policyNoAccount: 'Sin cuenta',
+  policyNoTracking: 'Sin rastreo',
+  policyEncrypted: 'Cifrado en tu teléfono',
+  policyWhoTitle: 'Quiénes somos',
+  policyWhoLine: 'Emi la hace Atlantic Blue Solutions Limited.',
+  policyStoresTitle: 'Qué guarda Emi',
+  policyStoresLine:
+    'Emi guarda las fechas, los síntomas, el ánimo y el sexo que registras. Se quedan en tu teléfono. Emi cifra cada día antes de escribirlo, con una clave que vive en el llavero de tu iPhone.',
+  policyHowTheEncryptionWorks: 'Cómo funciona el cifrado ›',
+  policyCollectTitle: 'Qué recogemos',
+  policyCollectLine:
+    'Nada. No hay cuenta, ni analítica, ni publicidad, ni rastreo. No podemos leer tus registros.',
+  policySharingTitle: 'Compartir',
+  policySharingLine:
+    'Tus registros salen del teléfono solo cuando exportas un archivo. Tú eliges a dónde va.',
+  policyRemindersTitle: 'Recordatorios y Face ID',
+  policyRemindersLine:
+    'Los recordatorios se programan en tu teléfono. Ningún servidor los envía. iOS se encarga de Face ID, así que Emi nunca ve los datos de tu cara.',
+  policyDeletingTitle: 'Borrado',
+  policyDeletingLine:
+    'Borra Emi o usa Borrar datos en la app. Cualquiera de las dos quita todo del teléfono.',
+  policyChildrenTitle: 'Niños',
+  policyChildrenLine: 'Emi no está hecha para niños menores de 13 años.',
+  policyContactTitle: 'Contacto y cambios',
+  policyContactBefore: 'Envía tus preguntas de privacidad a',
+  policyContactAfter: '. Cuando esta política cambia, cambia la fecha de arriba.',
+
   headerHomeLabel: 'Página de inicio de Emi',
   headerMainLabel: 'Principal',
   headerEmi: 'Emi',

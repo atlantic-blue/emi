@@ -174,6 +174,38 @@ export const english = {
   protectionOutsideLine:
     'With sync, the server learns how many records you keep, and when each one was written.',
 
+  // The privacy policy, from boards/Privacy.dc.html. The App Store asks for this address before it
+  // takes the application, and the date at the top is a hole until somebody sets one.
+  policyUpdated: 'LAST UPDATED [DATE]',
+  policyTitle: 'Privacy policy',
+  policyLine: 'We cannot read your records. This page says why.',
+  policyNoAccount: 'No account needed',
+  policyNoTracking: 'No tracking',
+  policyEncrypted: 'Encrypted on your phone',
+  policyWhoTitle: 'Who we are',
+  policyWhoLine: 'Emi is made by Atlantic Blue Solutions Limited.',
+  policyStoresTitle: 'What Emi stores',
+  policyStoresLine:
+    'Emi stores the dates, symptoms, moods and sex that you log. They stay on your phone. Emi encrypts each day before it writes it, with a key kept in your iPhone keychain.',
+  policyHowTheEncryptionWorks: 'How the encryption works ›',
+  policyCollectTitle: 'What we collect',
+  policyCollectLine:
+    'Nothing. There is no account, no analytics, no advertising and no tracking. We cannot read your records.',
+  policySharingTitle: 'Sharing',
+  policySharingLine:
+    'Your records leave your phone only when you export a file. You choose where the file goes.',
+  policyRemindersTitle: 'Reminders and Face ID',
+  policyRemindersLine:
+    'Reminders are scheduled on your phone. No server sends them. iOS handles Face ID, so Emi never sees your face data.',
+  policyDeletingTitle: 'Deleting',
+  policyDeletingLine:
+    'Delete Emi, or use Delete my data in the app. Either one removes everything on the phone.',
+  policyChildrenTitle: 'Children',
+  policyChildrenLine: 'Emi is not made for children under 13.',
+  policyContactTitle: 'Contact and changes',
+  policyContactBefore: 'Send privacy questions to',
+  policyContactAfter: '. When this policy changes, the date at the top changes.',
+
   // The band at the top of the page, from boards/Header.dc.html.
   headerHomeLabel: 'Emi home',
   headerMainLabel: 'Main',
