@@ -145,11 +145,11 @@ export const russian: SiteWords = {
     'При синхронизации сервер узнаёт, сколько у вас записей и когда была сделана каждая.',
 
   // Политика приватности, по boards/Privacy.dc.html.
-  policyUpdated: 'ПОСЛЕДНЕЕ ОБНОВЛЕНИЕ [DATE]',
+  policyUpdated: 'ПОСЛЕДНЕЕ ОБНОВЛЕНИЕ 4 НОЯБРЯ 2026',
   policyTitle: 'Политика приватности',
   policyLine: 'Мы не можем прочитать ваши записи. На этой странице сказано почему.',
-  policyNoAccount: 'Аккаунт не нужен',
-  policyNoTracking: 'Никакой слежки',
+  policyAccountOptional: 'Аккаунт не обязателен',
+  policyUsageOptional: 'Анонимная статистика, только с вашего согласия',
   policyEncrypted: 'Зашифровано на вашем телефоне',
   policyWhoTitle: 'Кто мы',
   policyWhoLine: 'Emi делает Atlantic Blue Solutions Limited.',
@@ -159,7 +159,30 @@ export const russian: SiteWords = {
   policyHowTheEncryptionWorks: 'Как работает шифрование ›',
   policyCollectTitle: 'Что мы собираем',
   policyCollectLine:
-    'Ничего. Нет аккаунта, нет аналитики, нет рекламы и нет слежки. Мы не можем прочитать ваши записи.',
+    'Emi не может прочитать ваши записи. Ваш аккаунт знает только то, за что вы заплатили. Всё остальное анонимно и необязательно.',
+  policyAccountTitle: 'Ваш аккаунт',
+  policyAccountLine:
+    'Ваш аккаунт хранит хешированный идентификатор, способ входа и то, за что вы заплатили. Его хранит Amazon Web Services, в Amazon Cognito. С ним вы можете заплатить на сайте или через Telegram Stars. С ним вы можете вернуть покупки на новом телефоне. С ним вы можете управлять подпиской. Он никогда не хранит данные о здоровье. Он необязателен: Emi работает и без него.',
+  policyPaymentsTitle: 'Платежи',
+  policyPaymentsAppleLine: 'В App Store платёж принимает Apple.',
+  policyPaymentsTelegramLine: 'При оплате через Telegram Stars платёж принимает Telegram.',
+  policyPaymentsWebBefore: 'На сайте',
+  policyPaymentsWebAfter: 'принимает платёж.',
+  policyUsageTitle: 'Анонимная статистика и отчёты об ошибках',
+  policyUsageLine:
+    'Emi может отправлять названия событий и отчёты об ошибках в Sentry и TelemetryDeck. Оба размещены в Европейском союзе. Они не связаны с вами и не содержат данных о здоровье. Emi отправляет их только если вы это включите. Они нужны, чтобы мы исправляли ошибки, считали пользователей и узнавали, какие руководства помогают.',
+  policyProcessorsTitle: 'Кто обрабатывает данные для нас',
+  policyProcessorsApple: 'принимает платёж в App Store.',
+  policyProcessorsAmazon: 'хранит ваш аккаунт.',
+  policyProcessorsTelegram: 'принимает платёж через Telegram Stars.',
+  policyProcessorsCard: 'принимает платёж на сайте.',
+  policyProcessorsSentry: 'получает отчёты об ошибках.',
+  policyProcessorsTelemetry: 'получает названия событий.',
+  policyRetentionTitle: 'Сколько мы это храним',
+  policyRightsTitle: 'Ваши права',
+  policyRightsBefore:
+    'Вы можете запросить свои данные, попросить нас их удалить и отозвать согласие в любое время. Пишите на',
+  policyLegalBasisTitle: 'Правовое основание',
   policySharingTitle: 'Передача',
   policySharingLine:
     'Ваши записи покидают телефон только когда вы выгружаете файл. Вы выбираете, куда он идёт.',
@@ -169,6 +192,8 @@ export const russian: SiteWords = {
   policyDeletingTitle: 'Удаление',
   policyDeletingLine:
     'Удалите Emi или нажмите «Удалить данные» в приложении. Любое из двух убирает с телефона всё.',
+  policyDeletingAccountBefore:
+    'Удаление Emi не удаляет ваш аккаунт. Чтобы удалить аккаунт, напишите на',
   policyChildrenTitle: 'Дети',
   policyChildrenLine: 'Emi не предназначена для детей младше 13 лет.',
   policyContactTitle: 'Связь и изменения',
