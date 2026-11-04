@@ -68,7 +68,10 @@ function declarations(key: string, value: unknown): string[] {
   }
   if (key === 'transform' && Array.isArray(value)) {
     const parts = value.flatMap((each) =>
-      Object.entries(each as Record<string, number>).map(([name, to]) => `${name}(${to})`),
+      Object.entries(each as Record<string, number | string>).map(
+        ([name, to]) =>
+          `${name}(${typeof to === 'number' && name.startsWith('translate') ? `${to}px` : to})`,
+      ),
     );
 
     return parts.length > 0 ? [`transform: ${parts.join(' ')}`] : [];
@@ -97,6 +100,48 @@ export function cssFrom(style: unknown): string {
   return Object.entries(style as Record<string, unknown>)
     .flatMap(([key, value]) => declarations(key, value))
     .join('; ');
+}
+
+function flattened(style: unknown): Record<string, unknown> {
+  if (Array.isArray(style)) {
+    return Object.assign({}, ...style.map(flattened)) as Record<string, unknown>;
+  }
+
+  return style !== null && typeof style === 'object' ? (style as Record<string, unknown>) : {};
+}
+
+/**
+ * The tree as the phone draws it at a larger text size. The phone grows each run of text by the
+ * text size she chose, up to the limit the run carries, and grows nothing else.
+ */
+export function atTextSize(node: unknown, growth: number): unknown {
+  if (Array.isArray(node)) {
+    return node.map((each) => atTextSize(each, growth));
+  }
+  if (node === null || typeof node !== 'object') {
+    return node;
+  }
+
+  const drawn = node as RenderedNode;
+  const children = drawn.children === undefined ? undefined : atTextSize(drawn.children, growth);
+
+  if (drawn.type !== 'Text') {
+    return { ...drawn, children };
+  }
+
+  const limit = drawn.props?.maxFontSizeMultiplier;
+  const by = typeof limit === 'number' ? Math.min(growth, limit) : growth;
+  const own = flattened(drawn.props?.style);
+  const grown: Record<string, number> = {};
+
+  for (const key of ['fontSize', 'lineHeight']) {
+    const value = own[key];
+    if (typeof value === 'number') {
+      grown[key] = value * by;
+    }
+  }
+
+  return { ...drawn, props: { ...drawn.props, style: [drawn.props?.style, grown] }, children };
 }
 
 /** React Native holds a colour as a packed number by the time the tree is read back. */
