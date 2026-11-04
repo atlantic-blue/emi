@@ -371,7 +371,14 @@ Feature: She opens Emi and logs her first period
     And the words period, bleeding, fertile and ovulation are still drawn at 14 points or less
     And the phase is written in the ink of that phase, and never on the colour of it
     And under the ring a card names the phase and its days, and the line under the ring is gone
-    And the same screen three weeks later reads her luteal phase the same way
+    And the same screen three weeks later says how long until her next period over the day, and names her luteal phase on the card
+
+  Scenario: SCREEN-2, outside her period the ring counts down to her next period and to the estimated ovulation
+    Given her phone holds four recorded period days, and today is after her period and before the ovulation arc
+    When she opens Emi
+    Then over the day the ring says how long until her next period, as a range of days and not one day
+    And under the ring a line says how long until the estimated ovulation, as a range of days marked as an estimate
+    And a screen reader hears the day, the phase and how long until her next period in one sentence
 
   Scenario: SCREEN-2, she starts a log from the screen she opens in one press
     Given her phone holds four recorded period days, the last of them today

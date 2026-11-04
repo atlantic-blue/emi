@@ -1,7 +1,12 @@
 import { join } from 'node:path';
 
 import type { DayRecord } from '@emi/crypto';
-import { addDays } from '@emi/cycle';
+import {
+  DAYS_EITHER_SIDE_WHILE_LEARNING,
+  addDays,
+  cyclePhaseDays,
+  ovulationDayWhileLearning,
+} from '@emi/cycle';
 import {
   CONTRAST_FLOOR,
   NAMED_RING_DIAMETER,
@@ -22,9 +27,11 @@ import {
   cycleRingTestID,
   ringCentreDayTestID,
   ringCentreLengthTestID,
+  ringCentreNextPeriodTestID,
   ringCentrePhaseTestID,
   ringNameTestID,
 } from '../../../src/components/CycleRing';
+import { ringOvulationLineTestID } from '../../../src/features/home/RingOfToday';
 import { tabs } from '../../../src/features/chrome/tabs';
 import { phasesOf, shapeFromLength } from '../../../src/features/cycle/ringInput';
 import {
@@ -204,10 +211,13 @@ describe('the ring of Today', () => {
     ]);
   });
 
-  it('should say the full phase name, "Day 16" and "of about 28" in the middle', async () => {
+  it('should say how long until her period, "Day 16" and "of about 28" in the middle', async () => {
     await sheOpensToday(16, 28);
 
-    expect(whatItSays(ringCentrePhaseTestID)).toBe('Ovulation phase');
+    expect(screen.queryByTestId(ringCentrePhaseTestID)).toBeNull();
+    expect(whatItSays(ringCentreNextPeriodTestID)).toBe(
+      `Period in ${13 - DAYS_EITHER_SIDE_WHILE_LEARNING} to ${13 + DAYS_EITHER_SIDE_WHILE_LEARNING} days`,
+    );
     expect(whatItSays(ringCentreDayTestID)).toBe('Day 16');
     expect(whatItSays(ringCentreLengthTestID)).toBe('of about 28');
   });
@@ -218,6 +228,68 @@ describe('the ring of Today', () => {
 
     expect(whatItSays(ringNameTestID('follicular'))).toBe('FOLLICULAR');
     expect(whatItSays(ringNameTestID('luteal'))).toBe('LUTEAL');
+  });
+});
+
+describe('the countdown on the ring of Today', () => {
+  const eitherSide = DAYS_EITHER_SIDE_WHILE_LEARNING;
+  /** The ovulation arc of a 28 day cycle with a 5 day period, by the phase rule the ring draws. */
+  const theOvulationArc = cyclePhaseDays({
+    cycleLengthDays: 28,
+    periodLengthDays: herPeriodLengthDays,
+    ovulationDay: ovulationDayWhileLearning(28),
+  }).ovulation;
+
+  it('should write how long until her next period over the day, in place of her phase', async () => {
+    await sheOpensToday(9, 28);
+
+    // Day 9 of 28: her next period is counted to day 29, which is 20 days away, give or take.
+    expect(whatItSays(ringCentreNextPeriodTestID)).toBe(
+      `Period in ${20 - eitherSide} to ${20 + eitherSide} days`,
+    );
+    expect(screen.queryByTestId(ringCentrePhaseTestID)).toBeNull();
+  });
+
+  it('should still name the period phase over the day during her period, and count down to nothing', async () => {
+    await sheOpensToday(3, 28);
+
+    expect(whatItSays(ringCentrePhaseTestID)).toBe('Period phase');
+    expect(screen.queryByTestId(ringCentreNextPeriodTestID)).toBeNull();
+  });
+
+  it('should count to the far end of the range once the range has opened', async () => {
+    await sheOpensToday(29, 28);
+
+    expect(whatItSays(ringCentreNextPeriodTestID)).toBe(`Period within ${eitherSide} days`);
+  });
+
+  it('should name her phase again once the range has passed, where the card says she is late', async () => {
+    await sheOpensToday(28 + eitherSide + 2, 28);
+
+    expect(screen.queryByTestId(ringCentreNextPeriodTestID)).toBeNull();
+    expect(whatItSays(ringCentrePhaseTestID)).toBe('Luteal phase');
+  });
+
+  it('should say under the ring how long until the estimated ovulation, counted to its arc', async () => {
+    await sheOpensToday(9, 28);
+
+    expect(whatItSays(ringOvulationLineTestID)).toBe(
+      `Estimated ovulation in ${theOvulationArc.from - 9} to ${theOvulationArc.to - 9} days`,
+    );
+  });
+
+  it('should draw no ovulation line once the ovulation arc has begun', async () => {
+    await sheOpensToday(theOvulationArc.from, 28);
+
+    expect(screen.queryByTestId(ringOvulationLineTestID)).toBeNull();
+  });
+
+  it('should tell a screen reader the day, the phase and the countdown in one sentence', async () => {
+    await sheOpensToday(9, 28);
+
+    expect(screen.getByTestId(cycleRingTestID).props.accessibilityLabel).toBe(
+      `Day 9 of 28, follicular, Period in ${20 - eitherSide} to ${20 + eitherSide} days`,
+    );
   });
 });
 
@@ -303,11 +375,12 @@ describe('the phase card under the ring', () => {
     );
   });
 
-  it('should no longer name the phase on the card, now that the middle of the ring names it', async () => {
+  it('should leave the phase name to its arc, and name it neither on the card nor in the middle', async () => {
     await sheOpensToday(20, 28);
 
     expect(whatItSays(phaseCardDaysTestID)).not.toContain('Luteal');
-    expect(whatItSays(ringCentrePhaseTestID)).toBe('Luteal phase');
+    expect(screen.queryByTestId(ringCentrePhaseTestID)).toBeNull();
+    expect(whatItSays(ringNameTestID('luteal'))).toBe('LUTEAL');
   });
 
   it('should be a button now that the Cycle phase page exists, and open it', async () => {

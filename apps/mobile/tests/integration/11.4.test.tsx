@@ -413,8 +413,10 @@ describe('the period arc follows what she said until she logs her own', () => {
       await sheOpensEmi();
 
       expect(thePeriodArcCoversDays()).toBe(sheBledForDays);
-      expect(theRingSays()).toBe(
-        `Day ${sheIsOnCycleDay} of ${herCycleLengthDays}, ${phaseLabel.follicular.toLowerCase()}`,
+      expect(theRingSays()).toMatch(
+        new RegExp(
+          `^Day ${sheIsOnCycleDay} of ${herCycleLengthDays}, ${phaseLabel.follicular.toLowerCase()}, Period in \\d+ to \\d+ days$`,
+        ),
       );
     });
 
@@ -423,8 +425,10 @@ describe('the period arc follows what she said until she logs her own', () => {
       await sheOpensEmi();
 
       expect(thePeriodArcCoversDays()).toBe(aPeriodStillRunning().length);
-      expect(theRingSays()).toBe(
-        `Day ${sheIsOnCycleDay} of ${herCycleLengthDays}, ${phaseLabel.follicular.toLowerCase()}`,
+      expect(theRingSays()).toMatch(
+        new RegExp(
+          `^Day ${sheIsOnCycleDay} of ${herCycleLengthDays}, ${phaseLabel.follicular.toLowerCase()}, Period in \\d+ to \\d+ days$`,
+        ),
       );
     });
 

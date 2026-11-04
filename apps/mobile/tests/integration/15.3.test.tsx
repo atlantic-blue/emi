@@ -157,7 +157,7 @@ describe('she reads her phase and her cycle day from across the room', () => {
     it('draws the day far larger than the phase over it, which is what reads across a room', () => {
       const read = thePhaseSheReads();
 
-      expect(read.dayPoints).toBeGreaterThan(read.phasePoints ?? 0);
+      expect(read.dayPoints).toBeGreaterThan(read.topLinePoints ?? 0);
       expect(read.dayPoints).toBeGreaterThan(theLargestTheyMayBeDrawn * 2);
     });
 
@@ -194,33 +194,33 @@ describe('she reads her phase and her cycle day from across the room', () => {
       expect(thePhaseSheReads().day).toBe(theDayTheRingSaysFor(theDaySheReachesHerLutealPhase));
     });
 
-    it('names the ovulation phase on the day the older luteal drawing names', async () => {
+    it('names the ovulation phase on the card, on the day the older luteal drawing names', async () => {
       resetExpoSqlite();
       resetExpoSecureStore();
       await sheOpensEmiOn(new Date(`${theDayTheLutealDrawingNames}T12:00:00.000Z`));
 
       expect(thePhaseSheReads().day).toBe(theLutealDayTheDrawingDraws);
-      expect(thePhaseSheReads().phase).toBe('Ovulation phase');
+      expect(thePhaseSheReads().phase).toBeUndefined();
       expect(thePhaseSheReads().cardDays).toContain('Around ovulation');
       expect(thePhaseSheReads().cardDays).not.toContain('Before your period');
     });
 
-    it('names the luteal phase in words, writes it in the luteal ink, and names its days on the card', () => {
+    it('writes how long until her period over the day in place of the phase, and names the phase days on the card', () => {
       const read = thePhaseSheReads();
 
-      expect(read.phase).toBe('Luteal phase');
-      expect(read.phaseColour).toBe(theInkOf('luteal'));
+      expect(read.phase).toBeUndefined();
+      expect(read.nextPeriod).toMatch(/^Period (in \d+ to|within) \d+ days?$/);
       expect(read.cardDays).toBe(theCardTheRuleGives('luteal', theDaySheReachesHerLutealPhase));
     });
 
-    it('draws the phase at the size a period day drew it, because the size never moves', async () => {
+    it('draws the line over the day at the size a period day drew the phase, because the size never moves', async () => {
       const luteal = thePhaseSheReads();
 
       resetExpoSqlite();
       resetExpoSecureStore();
       await sheOpensEmiOn(whenSheOpensIt);
 
-      expect(luteal.phasePoints).toBe(thePhaseSheReads().phasePoints);
+      expect(luteal.topLinePoints).toBe(thePhaseSheReads().topLinePoints);
       expect(luteal.dayPoints).toBe(thePhaseSheReads().dayPoints);
       expect(luteal.cardDaysPoints).toBe(thePhaseSheReads().cardDaysPoints);
     });
