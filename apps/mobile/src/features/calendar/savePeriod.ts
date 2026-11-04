@@ -17,7 +17,8 @@ import { firstRunFlow } from '../onboarding/firstRun';
  * stays where it is and the server is never asked to take it again.
  */
 
-export type PeriodRefusal = 'nothing-changed' | 'no-day-is-left' | 'day-is-not-hers-to-log';
+export type PeriodRefusal =
+  'nothing-changed' | 'no-day-is-left' | 'no-period-is-held' | 'day-is-not-hers-to-log';
 
 export class PeriodSaveError extends Error {
   readonly refusal: PeriodRefusal;
@@ -110,11 +111,25 @@ export function savePeriodRange(db: Database, vault: DayVault, save: PeriodSave)
     );
   }
 
+  return logTheChanges(db, vault, { changed, today: save.today, now: save.now });
+}
+
+interface TheChanges {
+  readonly changed: WhatSheChanged;
+  readonly today: string;
+  readonly now: Date;
+}
+
+function logTheChanges(
+  db: Database,
+  vault: DayVault,
+  { changed, today, now }: TheChanges,
+): DaysAndCycles {
   for (const day of [...changed.added, ...changed.removed]) {
-    if (refusalFor({ day, today: save.today }) !== undefined) {
+    if (refusalFor({ day, today }) !== undefined) {
       throw new PeriodSaveError(
         'day-is-not-hers-to-log',
-        `${day} is not a day she can record, and ${save.today} is the last one she can`,
+        `${day} is not a day she can record, and ${today} is the last one she can`,
       );
     }
   }
@@ -124,7 +139,30 @@ export function savePeriodRange(db: Database, vault: DayVault, save: PeriodSave)
       ...changed.added.map((day) => ({ day, flow: theFlowOfADaySheAdds })),
       ...changed.removed.map((day) => ({ day, flow: theFlowOfADaySheTakesOff })),
     ].sort((one, other) => one.day.localeCompare(other.day)),
-    now: save.now,
+    now,
+  });
+}
+
+export interface PeriodDelete {
+  readonly held: readonly string[];
+  readonly today: string;
+  readonly now: Date;
+}
+
+/**
+ * A whole period taken off in one action, after she confirmed it. Every day takes the write that
+ * Remove period day on the calendar gives one day, so the two places leave the same records: no
+ * bleeding on that day, and everything else the day holds kept.
+ */
+export function deletePeriod(db: Database, vault: DayVault, remove: PeriodDelete): DaysAndCycles {
+  if (remove.held.length === 0) {
+    throw new PeriodSaveError('no-period-is-held', 'Emi holds no day of this period to delete');
+  }
+
+  return logTheChanges(db, vault, {
+    changed: { added: [], removed: remove.held },
+    today: remove.today,
+    now: remove.now,
   });
 }
 

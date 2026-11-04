@@ -57,7 +57,7 @@ interface State {
 const theStates: readonly State[] = [
   {
     title: 'The period Emi holds, as she opens the screen',
-    note: 'One row for each day of her period and the two days after it. The four days she recorded bleeding on carry a tick. Nothing has changed yet, so the line under the list says there is nothing to save and Save takes no press.',
+    note: 'One row for each day of her period and the two days after it. The four days she recorded bleeding on carry a tick. Nothing has changed yet, so the line under the list says there is nothing to save and Save takes no press. Delete this period sits under that line, and asks before it takes the whole period off.',
     ticked: theDaysEmiHolds(),
   },
   {
@@ -80,6 +80,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
         onAddAfter={() => undefined}
         onAddBefore={() => undefined}
         onCancel={() => undefined}
+        onDelete={() => undefined}
         onSave={() => undefined}
         onToggle={() => undefined}
         ticked={state.ticked}

@@ -155,6 +155,11 @@ export const editPeriodCopy = {
   /** The marker on a day she has taken off it. */
   takenOff: words('calendar.editPeriod.takenOffDay'),
   cancel: words('calendar.editPeriod.cancel'),
+  delete: words('calendar.editPeriod.delete'),
+  deleteConfirm: words('calendar.editPeriod.deleteConfirm'),
+  deleteKeep: words('calendar.editPeriod.deleteKeep'),
+  deleteLine: words('calendar.editPeriod.deleteLine'),
+  deleteTitle: words('calendar.editPeriod.deleteTitle'),
   noDayLeft: words('calendar.editPeriod.noDayLeft'),
   save: words('calendar.editPeriod.save'),
   title: words('calendar.editPeriod.title'),

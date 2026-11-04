@@ -33,6 +33,12 @@ export const english = {
   'calendar.editPeriod.addedDay': 'Added',
   'calendar.editPeriod.bothChanges': '{added} {removed}',
   'calendar.editPeriod.cancel': 'Cancel',
+  'calendar.editPeriod.delete': 'Delete this period',
+  'calendar.editPeriod.deleteConfirm': 'Delete period',
+  'calendar.editPeriod.deleteKeep': 'Keep it',
+  'calendar.editPeriod.deleteLine':
+    'Emi marks every day of this period as no bleeding. Symptoms and notes on those days stay.',
+  'calendar.editPeriod.deleteTitle': 'Delete this period?',
   'calendar.editPeriod.lead': {
     one: 'Press the days you bled. Emi holds {count} day, from {date}.',
     other: 'Press the days you bled. Emi holds {count} days, from {date}.',
