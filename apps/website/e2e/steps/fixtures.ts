@@ -1,5 +1,7 @@
 import type { PNG } from 'pngjs';
 
+import type { APairOfPictures } from './theDesignComparison';
+
 import { test as bdd } from 'playwright-bdd';
 
 /** What the server said when she asked for the address, which the steps after the ask read. */
@@ -71,6 +73,21 @@ export interface APressSheCanSee {
 export interface WhatSheIsLookingAt {
   atTheDesign: PNG | null;
   atThePage: PNG | null;
+}
+
+/**
+ * Each part of the page the pixel comparison holds against the design: the band at the top, the
+ * title, and the band at the foot, with the picture of each taken from both documents.
+ *
+ * Several parts rather than one whole page, because the words of the policy are version 1 and the
+ * board is not, so the page is taller than the drawing and says other things in the middle. The
+ * parts named here are the ones the board still describes.
+ *
+ * A fixture rather than a variable in the module, because three widths run as three tests and a
+ * variable here would be one value shared by all of them.
+ */
+export interface WhatSheIsComparing {
+  readonly parts: APairOfPictures[];
 }
 
 /**
@@ -161,6 +178,7 @@ export const test = bdd.extend<{
   complaints: WhatTheBrowserRefused;
   found: WhatHerSoftwareFound;
   looking: WhatSheIsLookingAt;
+  comparing: WhatSheIsComparing;
   pressing: WhatEveryPressDoes;
 }>({
   answered: async ({}, handTo) => {
@@ -180,6 +198,9 @@ export const test = bdd.extend<{
   },
   looking: async ({}, handTo) => {
     await handTo({ atTheDesign: null, atThePage: null });
+  },
+  comparing: async ({}, handTo) => {
+    await handTo({ parts: [] });
   },
   found: async ({}, handTo) => {
     await handTo({ refused: [], floors: null, presses: [] });
