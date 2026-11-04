@@ -22,7 +22,7 @@ import { words } from '../../language';
 import { cycleCopy, phaseName, ringCycleLengthWords, ringDayNumberWords } from '../cycle/copy';
 import type { RingInput } from '../cycle/ringInput';
 import { DayNote } from './DayNote';
-import { FlowPicker } from './FlowPicker';
+import { FlowPicker, flowLabel } from './FlowPicker';
 import { GroupTiles } from './GroupTiles';
 import { LogHeader } from './LogHeader';
 import { SymptomChip } from './SymptomGroup';
@@ -38,10 +38,6 @@ import { UnexpectedBleeding } from './UnexpectedBleeding';
  */
 export const logFlowCopy = {
   title: words('log.flow.title'),
-  spottingLabel: words('log.flow.spottingLabel', undefined, {
-    spotting: words('log.flow.spotting'),
-  }),
-  spottingHint: words('log.flow.spottingHint'),
   otherDischarge: words('log.flow.otherDischarge'),
   saved: words('log.flow.saved'),
   noRing: cycleCopy.noRing,
@@ -53,6 +49,18 @@ export const logFlowCopy = {
   sex: words('sex.title'),
   period: words('period.title'),
 } as const;
+
+/** What each flow that carries blood means, in the line under the flows. None carries no line. */
+const flowCaption: Readonly<Record<Exclude<Flow, 'none'>, string>> = {
+  spotting: words('log.flow.spottingHint'),
+  light: words('log.flow.lightHint'),
+  medium: words('log.flow.mediumHint'),
+  heavy: words('log.flow.heavyHint'),
+};
+
+function captionLabel(flow: Exclude<Flow, 'none'>): string {
+  return words('log.flow.captionLabel', undefined, { flow: flowLabel[flow] });
+}
 
 export const logFlowTestID = 'log-flow';
 export const logFlowDoneTestID = 'log-flow-done';
@@ -70,8 +78,8 @@ export const logFlowPhaseTestID = 'log-flow-phase';
 /** The heading over the flow picker. */
 export const logFlowTitleTestID = 'log-flow-title';
 
-/** The line under the flow that says what spotting means. */
-export const logFlowSpottingHintTestID = 'log-flow-spotting-hint';
+/** The line under the flow that says what the flow she picked means. */
+export const logFlowCaptionTestID = 'log-flow-caption';
 
 /** The link beside the Period heading that opens the discharge on the Period page. */
 export const logFlowOtherDischargeTestID = 'log-flow-other-discharge';
@@ -183,10 +191,12 @@ export function LogFlow(props: Props): ReactNode {
               </Pressable>
             </View>
             <FlowPicker chosen={props.chosen} onPick={props.onPick} />
-            <Text style={styles.hint} testID={logFlowSpottingHintTestID}>
-              <Text style={styles.hintLabel}>{logFlowCopy.spottingLabel}</Text>{' '}
-              {logFlowCopy.spottingHint}
-            </Text>
+            {props.chosen === undefined || props.chosen === 'none' ? null : (
+              <Text style={styles.hint} testID={logFlowCaptionTestID}>
+                <Text style={styles.hintLabel}>{captionLabel(props.chosen)}</Text>{' '}
+                {flowCaption[props.chosen]}
+              </Text>
+            )}
             {sheBled && <UnexpectedBleeding marked={props.marked} onMark={props.onMark} />}
           </View>
         </Card>

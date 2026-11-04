@@ -345,6 +345,7 @@ import {
   patternWhenReads,
 } from '../apps/mobile/src/features/home/copy';
 import {
+  logFlowCaptionTestID,
   logFlowDoneTestID,
   logFlowFlowCardTestID,
   logFlowOtherDischargeTestID,
@@ -352,7 +353,6 @@ import {
   logFlowPhaseTestID,
   logFlowSavedTestID,
   logFlowSexRowTestID,
-  logFlowSpottingHintTestID,
   logFlowSymptomsCardTestID,
   logFlowTestID,
   logFlowTitleTestID,
@@ -4417,7 +4417,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-2, she reads what spotting means on the log and opens other discharge from it', ({
+  test('SCREEN-2, she reads what the flow she picks means on the log and opens other discharge from it', ({
     given,
     when,
     then,
@@ -4434,11 +4434,32 @@ defineFeature(feature, (test) => {
       await screen.findByTestId(logFlowTestID);
     });
 
-    then('the flow section is called Period, and it says what spotting means', () => {
+    then('the flow section is called Period, and it says what Medium means', () => {
       expect(screen.getByTestId(logFlowTitleTestID)).toHaveTextContent('Period');
-      expect(screen.getByTestId(logFlowSpottingHintTestID)).toHaveTextContent(
-        'Spotting: Small traces of blood or brownish discharge',
+      expect(screen.getByTestId(logFlowCaptionTestID)).toHaveTextContent(
+        'Medium: A steady flow of blood',
       );
+    });
+
+    when('she presses Heavy', async () => {
+      await shePresses(flowOptionTestID('heavy'));
+    });
+
+    then('the line under the flows says what Heavy means', () => {
+      expect(screen.getByTestId(logFlowCaptionTestID)).toHaveTextContent(
+        'Heavy: A lot of blood. You change your pad or tampon often',
+      );
+      expect(screen.queryByText(/Small traces of blood/)).toBeNull();
+    });
+
+    when('she presses None', async () => {
+      await shePresses(flowOptionTestID('none'));
+    });
+
+    then('no line under the flows says what a flow means', () => {
+      expect(screen.queryByTestId(logFlowCaptionTestID)).toBeNull();
+      expect(screen.queryByText(/Small traces of blood/)).toBeNull();
+      expect(screen.queryByText(/A lot of blood/)).toBeNull();
     });
 
     when('she presses Other discharge', async () => {
