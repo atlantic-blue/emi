@@ -26,6 +26,25 @@ export interface ABandToLeaveOut {
 }
 
 /**
+ * One area of a page a comparison leaves out, found by the element it starts at the top of and the
+ * element it ends at the bottom of, and named by what a reader calls that part of the page.
+ *
+ * Both documents are asked for the same two elements, so an area is the same part of the page on
+ * each side however far down the page it has moved. Where one document draws more there than the
+ * other, the two ends can be two different elements on the page and one element in the design.
+ */
+export interface AnAreaOfAPage {
+  readonly called: string;
+  readonly from: string;
+  readonly to: string;
+}
+
+/** Where one of those areas stands in a picture, in rows, with the name it was asked for. */
+export interface AnAreaMeasured extends ABandToLeaveOut {
+  readonly called: string;
+}
+
+/**
  * How a page of the site is held against the design it was drawn from. Two pages are built from
  * two boards and each has a scenario of its own, so the sentences differ and the reading does not.
  * One reading, because a second copy of it is a second set of numbers somebody can move.
@@ -113,17 +132,17 @@ export function bothOf(looking: WhatSheIsLookingAt): { design: PNG; page: PNG } 
   return { design: atTheDesign, page: atThePage };
 }
 
-export function bothBandsOf(looking: WhatSheIsLookingAt): {
-  inTheDesign: ABandToLeaveOut;
-  onThePage: ABandToLeaveOut;
+export function bothSetsOfAreasOf(looking: WhatSheIsLookingAt): {
+  inTheDesign: AnAreaMeasured[];
+  onThePage: AnAreaMeasured[];
 } {
-  const { theBandInTheDesign, theBandOnThePage } = looking;
+  const { theAreasInTheDesign, theAreasOnThePage } = looking;
 
-  if (theBandInTheDesign === null || theBandOnThePage === null) {
-    throw new Error('The band has to be measured on both sides before it can be left out.');
+  if (theAreasInTheDesign.length === 0 || theAreasOnThePage.length === 0) {
+    throw new Error('Every area has to be measured on both sides before it can be left out.');
   }
 
-  return { inTheDesign: theBandInTheDesign, onThePage: theBandOnThePage };
+  return { inTheDesign: theAreasInTheDesign, onThePage: theAreasOnThePage };
 }
 
 /**
@@ -137,34 +156,67 @@ export function howMuchOfItMoved(looking: WhatSheIsLookingAt, called: string): v
 }
 
 /**
- * The same comparison, with one band of each side left out. The band is where the page and the
- * design are allowed to differ, and it is allowed to be a different height on each side, so the
- * rows above it are read from the top of both pictures and the rows below it are read from the
- * bottom of both. Nothing is painted over and nothing is skipped past: every row outside the band
- * is held to the design as before.
+ * The same comparison, with the named areas of each side left out. Each area is a place the page
+ * and the design are allowed to differ, and each one is allowed to be a different height on the
+ * two sides, so the rows between one area and the next are read from the bottom of the area above
+ * them on each side. Nothing is painted over and nothing is skipped past: every row outside the
+ * areas is held to the design, pixel for pixel.
  *
- * The two remainders have to be the same height, or the pages differ somewhere other than the band
- * and the comparison would be reading one section of the page against another.
+ * Each stretch between two areas has to be the same height on both sides, or the pages differ
+ * somewhere other than the areas and the comparison would be reading one part of the page against
+ * another. That is what the height of each stretch being equal says, and a failure names the area
+ * the stretch sits above.
  */
-export function howMuchOfItMovedOutside(looking: WhatSheIsLookingAt, called: string): void {
+export function howMuchOfItMovedOutsideTheAreas(looking: WhatSheIsLookingAt, called: string): void {
   const { design, page } = bothOf(looking);
-  const { inTheDesign, onThePage } = bothBandsOf(looking);
+  const { inTheDesign, onThePage } = bothSetsOfAreasOf(looking);
 
   expect(page.width).toBe(design.width);
-  expect(onThePage.from).toBe(inTheDesign.from);
-  expect(page.height - onThePage.to).toBe(design.height - inTheDesign.to);
+  expect(onThePage.map((area) => area.called)).toEqual(inTheDesign.map((area) => area.called));
+
+  let downTheDesign = 0;
+  let downThePage = 0;
+
+  for (const [at, area] of inTheDesign.entries()) {
+    const onTheOther = onThePage[at];
+
+    if (onTheOther === undefined) {
+      throw new Error(`${area.called} was not measured on the page.`);
+    }
+
+    holdOneAgainstTheOther(
+      rowsOf(design, downTheDesign, area.from),
+      rowsOf(page, downThePage, onTheOther.from),
+      `${called}-above-${area.called}`,
+    );
+
+    downTheDesign = area.to;
+    downThePage = onTheOther.to;
+  }
 
   holdOneAgainstTheOther(
-    rowsOf(design, 0, inTheDesign.from),
-    rowsOf(page, 0, onThePage.from),
-    `${called}-above-the-band`,
+    rowsOf(design, downTheDesign, design.height),
+    rowsOf(page, downThePage, page.height),
+    `${called}-under-the-last-area`,
   );
+}
 
-  holdOneAgainstTheOther(
-    rowsOf(design, inTheDesign.to, design.height),
-    rowsOf(page, onThePage.to, page.height),
-    `${called}-under-the-band`,
-  );
+/**
+ * How much taller the page is than the design inside the areas that were left out, which is the
+ * whole of the difference in the height of the two documents where nothing else moved.
+ */
+export function howMuchTheAreasGrew(looking: WhatSheIsLookingAt): number {
+  const { inTheDesign, onThePage } = bothSetsOfAreasOf(looking);
+
+  return onThePage.reduce((grown, area, at) => {
+    const inTheOther = inTheDesign[at];
+
+    if (inTheOther === undefined) {
+      throw new Error(`${area.called} was not measured in the design.`);
+    }
+
+    return grown + (area.to - area.from) - (inTheOther.to - inTheOther.from);
+  }, 0);
 }
 
 function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
@@ -198,25 +250,57 @@ function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
 }
 
 /**
- * Where the band of the two founders stands in the page a browser is looking at: the top of the
- * note, and the row under the band that holds it. Read in the browser rather than written down,
- * because the page and the design put the band at different heights and both are measured the same
- * way.
+ * Where each named area stands in the document a browser is looking at, in rows down the page.
+ * Read in the browser rather than written down, because the page and the design put the same part
+ * of the page at different heights, and both are measured the same way.
+ *
+ * The areas come back in the order they were asked for, and that order has to be the order they
+ * stand in down the page, or the stretches between them would overlap and a comparison of them
+ * would be reading one part of the page against another.
  */
-export async function theBandOfTheFounders(page: Page): Promise<ABandToLeaveOut> {
-  return await page.evaluate(() => {
-    const band = document.querySelector('section[aria-labelledby="note-title"]');
-    const note = band?.querySelector('blockquote');
+export async function theAreasToLeaveOut(
+  page: Page,
+  areas: readonly AnAreaOfAPage[],
+): Promise<AnAreaMeasured[]> {
+  const measured: AnAreaMeasured[] = [];
 
-    if (band === null || band === undefined || note === null || note === undefined) {
-      throw new Error('The page draws no band of the two founders.');
+  for (const area of areas) {
+    const rows = await page.evaluate(
+      ([from, to]) => {
+        const opens = document.querySelector(from as string);
+        const closes = document.querySelector(to as string);
+
+        if (opens === null || closes === null) {
+          throw new Error(`The document holds no ${from} or no ${to}.`);
+        }
+
+        return {
+          top: opens.getBoundingClientRect().top + window.scrollY,
+          bottom: closes.getBoundingClientRect().bottom + window.scrollY,
+        };
+      },
+      [area.from, area.to] as const,
+    );
+
+    const from = Math.floor(rows.top);
+    const to = Math.ceil(rows.bottom);
+    const above = measured.at(-1);
+
+    if (to <= from) {
+      throw new Error(`The area called ${area.called} measured ${to - from} px tall.`);
     }
 
-    const top = note.getBoundingClientRect().top + window.scrollY;
-    const under = band.getBoundingClientRect().bottom + window.scrollY;
+    if (above !== undefined && from < above.to) {
+      throw new Error(
+        `The area called ${area.called} starts at row ${from}, which is above the bottom of ` +
+          `${above.called} at row ${above.to}. The areas have to be named down the page.`,
+      );
+    }
 
-    return { from: Math.floor(top), to: Math.ceil(under) };
-  });
+    measured.push({ called: area.called, from, to });
+  }
+
+  return measured;
 }
 
 /** One part of a page, held against the same part of the design it was drawn from. */

@@ -8,7 +8,7 @@ import { websiteColour, websiteFontsRoot } from '@emi/tokens';
 
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import PrivacyPage, { generateMetadata } from '../../apps/website/app/[lang]/privacy/page';
-import { type Language, languages, wordsIn } from '../../apps/website/app/words';
+import { type Language, type SiteWordKey, languages, wordsIn } from '../../apps/website/app/words';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 import { SITEMAP_FILE, thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
@@ -35,6 +35,38 @@ const THE_CODE = 'https://github.com/atlantic-blue/emi';
 
 /** The heading face of this board, which no other page of the site draws in. */
 const THE_HEADING_FACE = 'font-family: &quot;Newsreader&quot;, Georgia, serif';
+
+/**
+ * The three sentences of the board that version 1 overtook, word for word as the board draws them.
+ *
+ * There is no free note to log yet. And nothing restores a lost phone yet, so the first limit told
+ * her to keep a code that no screen of the application shows her and that would not bring her days
+ * back if it did. The page says what she can do today, which is the export, by its own name.
+ *
+ * Nobody has redrawn the board, so this list is why the reading below does not fail on them.
+ */
+const theSentencesTheBoardSaidFirst: readonly string[] = [
+  'Period, symptoms, mood, sex or a note.',
+  'A lost phone and a lost code',
+  'The days are gone. An Emi that could recover them could read them.',
+];
+
+/** What the page says in each of those places, which is read in every language. */
+const theWordsThePageSaysInstead: readonly SiteWordKey[] = [
+  'protectionLogLine',
+  'protectionLostTitle',
+  'protectionLostLine',
+  // The paragraph the board has no room for at all: the account, the payments and the reports.
+  'protectionAlsoBefore',
+  'protectionAlsoPolicy',
+];
+
+/** The application's own name for the export, which is the one thing she can do about a lost phone. */
+const theExportIsCalled: Readonly<Record<Language, string>> = {
+  en: 'Download data',
+  ru: 'Скачать данные',
+  es: 'Descargar datos',
+};
 
 function read(file: string): string {
   return readFileSync(file, 'utf8');
@@ -164,9 +196,15 @@ defineFeature(feature, (test) => {
     and('every sentence of the board is on the page, in English, in Russian and in Spanish', () => {
       const said = visibleTextOf(theDesign());
       const inTheMiddle = visibleTextOf(theMiddleOfTheDesign());
+      const overtaken = theSentencesTheBoardSaidFirst.filter((text) => said.includes(text));
 
       expect(inTheMiddle.length).toBeGreaterThan(25);
-      expect(said.filter((text) => !visibleTextOf(inEnglish()).includes(text))).toEqual([]);
+      expect(overtaken).toEqual(theSentencesTheBoardSaidFirst);
+      expect(
+        said.filter(
+          (text) => !overtaken.includes(text) && !visibleTextOf(inEnglish()).includes(text),
+        ),
+      ).toEqual([]);
 
       // The board is in English, so the other two pages are held to the keys the English page
       // draws rather than to the board's own sentences. A key drawn in one language and not in
@@ -188,6 +226,20 @@ defineFeature(feature, (test) => {
         );
 
         expect(absent).toEqual([]);
+      }
+
+      // And what the page says where the board has been overtaken, in all three languages. The
+      // check above reads the board, so a page that had gone back to the board's wording in one
+      // language would still pass it.
+      for (const language of languages) {
+        const shown = shownIn(language);
+        const words = wordsIn(language);
+
+        expect(theWordsThePageSaysInstead.filter((key) => !shown.has(words[key]))).toEqual([]);
+
+        // The one thing she can do about a lost phone today, named the way the application names
+        // it, so a woman who reads it here finds that row in her own settings.
+        expect(words.protectionLostLine).toContain(theExportIsCalled[language]);
       }
     });
 
@@ -247,6 +299,21 @@ defineFeature(feature, (test) => {
         expect(page.indexOf(wordsIn('en').protectionNotBuilt)).toBeGreaterThan(
           page.indexOf(wordsIn('en').protectionLeavesTitle),
         );
+
+        // The recovery code carries it too. The code is written and no screen of the application
+        // reaches it, so the card that says she holds one says that it is not built yet, and it
+        // says it on the dark band where that card stands.
+        for (const language of languages) {
+          const markup = drawn[language] ?? '';
+          const words = wordsIn(language);
+          const band = markup.slice(markup.indexOf('id="keys-title"'));
+
+          expect(markup.split(words.protectionNotBuilt)).toHaveLength(3);
+          expect(band).toContain(words.protectionNotBuilt);
+          expect(band.indexOf(words.protectionYouLine)).toBeLessThan(
+            band.indexOf(words.protectionNotBuilt),
+          );
+        }
       },
     );
 

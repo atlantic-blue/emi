@@ -93,9 +93,53 @@ const theDenials: Readonly<Record<Language, string[]>> = {
 };
 
 /**
+ * Only the clock is stood in for where a case reads the forecast card. Next.js draws a page by
+ * awaiting it, and a run that held the ordinary timers of the platform still would never finish
+ * drawing one.
+ */
+function withTheClockOn(day: Date): void {
+  jest.useFakeTimers({
+    now: day,
+    doNotFake: [
+      'cancelAnimationFrame',
+      'cancelIdleCallback',
+      'clearImmediate',
+      'clearInterval',
+      'clearTimeout',
+      'hrtime',
+      'nextTick',
+      'performance',
+      'queueMicrotask',
+      'requestAnimationFrame',
+      'requestIdleCallback',
+      'setImmediate',
+      'setInterval',
+      'setTimeout',
+    ],
+  });
+}
+
+/** What the card says on 4 November 2026: the week of the 16th, twelve days after that day. */
+const theWindowAServerDraws: Readonly<Record<Language, string>> = {
+  en: 'Between the 16th and the 22nd of November',
+  ru: 'Между 16 и 22 ноября',
+  es: 'Entre el 16 y el 22 de noviembre',
+};
+
+/** What it says on 19 December 2026, where the week runs over the turn of the year. */
+const theWindowAcrossTheYear: Readonly<Record<Language, string>> = {
+  en: 'Between the 31st of December and the 6th of January',
+  ru: 'Между 31 декабря и 6 января',
+  es: 'Entre el 31 de diciembre y el 6 de enero',
+};
+
+/**
  * Every sentence of the approved board, by the name the catalogues give it, in the order a reader
  * meets it down the page. A page that stops drawing one of these says less than the board the
  * operator approved, and the pixel comparison would only say that something moved.
+ *
+ * The window of the forecast card is not here. It is the one sentence the page works out rather
+ * than draws, so it is read in the cases below for the day it is drawn on.
  */
 const theWordsOfTheBoard = [
   'heroHeadline',
@@ -109,7 +153,6 @@ const theWordsOfTheBoard = [
   'cycleHeadline',
   'cycleLine',
   'cycleNextLabel',
-  'cycleNextRange',
   'cycleNextConfidence',
   'cycleDenial',
   'learnEyebrow',
@@ -158,6 +201,54 @@ describe('the page a woman meets Emi on', () => {
 
     expect(absent).toEqual([]);
   });
+
+  /**
+   * The forecast card, drawn the way a server draws it, which is what a reader whose scripts never
+   * run is handed. The board wrote two days in October 2026 into it, so the page served a forecast
+   * for a week that had already gone to everybody who read it after that.
+   *
+   * The clock is stood in for, so the sentence is a sentence and not the arithmetic read back at
+   * itself. Her browser counting it again is read in `theForecastCard.test.tsx`.
+   */
+  it.each(languages)('names a week that is still ahead of her, in %s', async (language) => {
+    withTheClockOn(new Date(2026, 10, 4));
+
+    try {
+      const page = await pageIn(language);
+
+      expect(page).toContain(theWindowAServerDraws[language]);
+      expect(page).toContain(wordsIn(language).cycleNextLabel);
+      expect(page).not.toContain(wordsIn(language).cycleMonthOctober);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it.each(languages)('counts the window from the day it is drawn on, in %s', async (language) => {
+    withTheClockOn(new Date(2026, 11, 19));
+
+    try {
+      expect(await pageIn(language)).toContain(theWindowAcrossTheYear[language]);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  /**
+   * The one promise the whole product rests on, which the page makes twice: at the end of the hero
+   * and again as a band of its own. It used to say her data is always encrypted, and an export is a
+   * readable file she holds, so it now says where the encryption happens and what it covers.
+   */
+  it.each(languages)(
+    'promises the encryption of her records on her phone, twice, in %s',
+    async (language) => {
+      const words = wordsIn(language);
+      const page = await pageIn(language);
+
+      expect(words.heroLine.endsWith(words.privacyHeadline)).toBe(true);
+      expect(page.split(words.privacyHeadline)).toHaveLength(3);
+    },
+  );
 
   it.each(languages)(
     'says the first month is free, and names no amount, in %s',

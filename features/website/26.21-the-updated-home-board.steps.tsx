@@ -297,13 +297,18 @@ defineFeature(feature, (test) => {
         expect(theSteps).toContain('pixelmatch');
         expect(theSteps).toContain('writeFileSync');
 
-        // One band is read on its own, because the board drew a hole where one of the two has
-        // since written her note. The rows above it and the rows below it are still held to the
-        // board, so the scenario says which part of the page it leaves out and nothing else.
-        expect(theFeature).toContain('every band but the one the two founders sign is the design');
+        // Four parts are read on their own: the note, where the board drew a hole one of the two
+        // has since filled, and the three sentences version 1 overtook. The rows between them are
+        // still held to the board, so the scenario says which parts of the page it leaves out and
+        // nothing else.
+        expect(theFeature).toContain(
+          'every part of the page the board still describes is the design',
+        );
         expect(theSteps).toContain('note-title');
-        expect(theSteps).toContain('above-the-band');
-        expect(theSteps).toContain('under-the-band');
+        expect(theSteps).toContain('the-forecast-card');
+        expect(theSteps).toContain('the-promise');
+        expect(theSteps).toContain('above-');
+        expect(theSteps).toContain('under-the-last-area');
 
         // The comparison is taken with the reader's own settings asking for less motion, so both
         // carousels stand on their first card while the picture is taken. Pressing the page's own

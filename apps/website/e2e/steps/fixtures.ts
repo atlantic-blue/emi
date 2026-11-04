@@ -4,7 +4,7 @@ import type { APairOfPictures } from './theDesignComparison';
 
 import { test as bdd } from 'playwright-bdd';
 
-import type { ABandToLeaveOut } from './theDesignComparison';
+import type { AnAreaMeasured } from './theDesignComparison';
 
 /** What the server said when she asked for the address, which the steps after the ask read. */
 export interface WhatTheSiteAnswered {
@@ -76,12 +76,13 @@ export interface WhatSheIsLookingAt {
   atTheDesign: PNG | null;
   atThePage: PNG | null;
   /**
-   * Where the band the two founders sign stands in each of the two, for the one comparison that
-   * reads that band on its own. The board drew a hole where one of them has since written her
-   * note, so the band is a different height on each side and the rows outside it are what line up.
+   * Where each area the comparison leaves out stands in each of the two, down the page. The board
+   * drew a hole where one of the founders has since written her note, and three more places where
+   * version 1 says something the board does not, so each of those is a different height on the two
+   * sides and the rows between them are what line up.
    */
-  theBandInTheDesign: ABandToLeaveOut | null;
-  theBandOnThePage: ABandToLeaveOut | null;
+  readonly theAreasInTheDesign: AnAreaMeasured[];
+  readonly theAreasOnThePage: AnAreaMeasured[];
 }
 
 /**
@@ -209,8 +210,8 @@ export const test = bdd.extend<{
     await handTo({
       atTheDesign: null,
       atThePage: null,
-      theBandInTheDesign: null,
-      theBandOnThePage: null,
+      theAreasInTheDesign: [],
+      theAreasOnThePage: [],
     });
   },
   comparing: async ({}, handTo) => {

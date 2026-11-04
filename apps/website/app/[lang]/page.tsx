@@ -5,8 +5,10 @@ import { brandEyebrowOf, isLanguage, wordsIn } from '@/app/words';
 import { CarouselsProvider } from '@/components/carousels';
 import { CycleRing } from '@/components/cycleRing';
 import { type Founder, FounderNote } from '@/components/founderNote';
+import { NextPeriodWindow } from '@/components/nextPeriodWindow';
 import { type Review, ReviewRow } from '@/components/reviewRow';
 import { JULIANS_PHOTOGRAPH, NO_PAGE_YET, THE_EMI_COMMUNITY } from '@/lib/addresses';
+import { asADayNumber, theDayOf } from '@/lib/theNextPeriodRange';
 import { A_NAME_NOBODY_HAS_SIGNED, A_REVIEW_NOBODY_HAS_WRITTEN } from '@/lib/thePlaceholders';
 
 /**
@@ -26,6 +28,11 @@ import { A_NAME_NOBODY_HAS_SIGNED, A_REVIEW_NOBODY_HAS_WRITTEN } from '@/lib/the
  * The page is drawn on each request. Nothing on it is hers, so there is nothing to keep private
  * from a cache, and a build that drew the three pages once would still have to be deployed to say
  * a different price.
+ *
+ * One sentence of it is worked out rather than written: the window of the forecast card, which is
+ * counted from the day it is drawn for. A cache that holds the page for a day draws a window a day
+ * older, and her browser counts it again from her own clock, so the card never names a day that
+ * has passed.
  */
 
 /** The nine bands, each at the measures the board gives it. One place, so the order reads as one. */
@@ -188,7 +195,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                   {words.cycleNextLabel}
                 </span>
                 <span className="font-display text-[24px] leading-[30px] font-semibold">
-                  {words.cycleNextRange}
+                  <NextPeriodWindow drawnOn={asADayNumber(theDayOf(new Date()))} language={lang} />
                 </span>
                 <span className="text-[14px] leading-[20px] text-siteQuietText">
                   {words.cycleNextConfidence}

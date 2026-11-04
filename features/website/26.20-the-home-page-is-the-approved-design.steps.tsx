@@ -6,7 +6,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
-import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
+import {
+  type Language,
+  type SiteWordKey,
+  brandEyebrowOf,
+  languages,
+  wordsIn,
+} from '../../apps/website/app/words';
 import { markerTransformOf, phaseKeyOf } from '../../apps/website/components/cycleRing';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
@@ -30,6 +36,41 @@ const widths = [1280, 834, 390];
 
 /** One pixel in a thousand, which is the budget the browser suite holds the page to. */
 const theBudget = 0.001;
+
+/**
+ * The four sentences of the board that version 1 overtook, word for word as the board draws them.
+ *
+ * Two of them promise that her data is always encrypted, and an export is a readable file she
+ * holds, so the page says where the encryption happens and what it covers. The other two are the
+ * forecast card: the application names no confidence, and the board's two days in October 2026
+ * were in the past for every reader after that month.
+ *
+ * Nobody has redrawn the board, so the page says what the product does and this list is why the
+ * reading below does not fail on it.
+ */
+const theSentencesTheBoardSaidFirst: readonly string[] = [
+  'Emi starts with your cycle: a forecast from your own data, and how sure it is. Then accurate education, and a community where you can ask what people are told not to. Your data is always encrypted.',
+  'Between the 8th and the 14th of October',
+  'High confidence, from your last 6 cycles',
+  'Your data is always encrypted.',
+];
+
+/** What the page says in each of those places, which is read in every language. */
+const theWordsThePageSaysInstead: readonly SiteWordKey[] = [
+  'heroLine',
+  'cycleNextConfidence',
+  'privacyHeadline',
+];
+
+/**
+ * How sure the forecast is, in the application's own words with the board's count of cycles
+ * written in. The application never says a confidence, so neither does this card.
+ */
+const theConfidenceTheApplicationSays: Readonly<Record<Language, string>> = {
+  en: 'Based on your last 6 cycles',
+  ru: 'По вашим последним 6 циклам',
+  es: 'Según tus últimos 6 ciclos',
+};
 
 function read(file: string): string {
   return readFileSync(file, 'utf8');
@@ -218,15 +259,23 @@ defineFeature(feature, (test) => {
       const said = visibleTextOf(theDesign());
 
       // The board was approved while one of the two founders had not written her note, so it draws
-      // a hole where the page now draws her own sentences. It is the one sentence of the board the
-      // page does not draw, and it is picked out by the name it opens with so that a second one
-      // cannot arrive under the same exception.
+      // a hole where the page now draws her own sentences. It is picked out by the name it opens
+      // with so that a second one cannot arrive under the same exception.
       const filled = said.filter((text) => text.startsWith('[IULIIA'));
 
+      // And four sentences of the board say more than version 1 does, so the page says what it
+      // does instead. Each one is written out here rather than matched by a pattern, so a fifth is
+      // a deliberate edit of this list and of the list of what the page says in its place.
+      const overtaken = theSentencesTheBoardSaidFirst.filter((text) => said.includes(text));
+
       expect(filled).toHaveLength(1);
+      expect(overtaken).toEqual(theSentencesTheBoardSaidFirst);
       expect(said.length).toBeGreaterThan(80);
       expect(
-        said.filter((text) => !filled.includes(text) && !(drawn.en ?? '').includes(text)),
+        said.filter(
+          (text) =>
+            !filled.includes(text) && !overtaken.includes(text) && !(drawn.en ?? '').includes(text),
+        ),
       ).toEqual([]);
 
       // The board is in English, so the other two pages are held to the keys the English page
@@ -255,6 +304,26 @@ defineFeature(feature, (test) => {
         );
 
         expect(absent).toEqual([]);
+      }
+
+      // And what the page says where the board has been overtaken, in all three languages. The
+      // check above reads the board, so it would pass on a page that had quietly gone back to the
+      // board's own wording in one language.
+      for (const language of languages) {
+        const shown = shownIn(language);
+        const words = wordsIn(language);
+        const absent = theWordsThePageSaysInstead.filter((key) => !shown.has(words[key]));
+
+        expect(absent).toEqual([]);
+        expect(words.heroLine.endsWith(words.privacyHeadline)).toBe(true);
+        expect(words.cycleNextConfidence).toBe(theConfidenceTheApplicationSays[language]);
+
+        // The window is counted from the day the page is drawn, so the sentence itself is read in
+        // apps/website/test, with the clock stood in for. What is read here is that the card is
+        // not drawing a hole of the catalogue at a reader.
+        expect(
+          [...shown].filter((text) => /\{(from|to|month|fromMonth|toMonth)\}/.test(text)),
+        ).toEqual([]);
       }
     });
 
