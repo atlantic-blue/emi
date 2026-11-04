@@ -20,7 +20,13 @@ Feature: The page she reads is the page that was approved
   desktop and at the width of the phone most of the reading happens on, and on a failure it writes
   the picture of the difference, so the answer names the place rather than only the amount.
 
+  One band is the exception. The board was approved while one of the two founders had not written
+  her note, so it draws a hole of 73 characters where the page now draws the 46 words she wrote,
+  and his photograph stands where the board drew two letters. That band is read on its own: what
+  stands above it and what stands below it are still held to the design, pixel for pixel, and the
+  band is allowed to be taller on the page than on the board by the height her sentences take.
+
   Scenario: the home page matches the approved design pixel for pixel
     Given a woman opens the home page beside the design the operator approved
-    Then the page she reads is as tall as the design, so no section is missing and none was added
-    And what she is looking at is the design, to within one pixel in a thousand
+    Then the page she reads is as tall as the design, apart from the note one founder has written
+    And every band but the one the two founders sign is the design, to within one pixel in a thousand

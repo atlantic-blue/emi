@@ -63,6 +63,8 @@ export const spanish: SiteWords = {
   founderPrevious: 'Fundador anterior',
   founderNext: 'Fundador siguiente',
   founderIuliiaRole: 'Cofundadora de Emi, anfitriona de la Comunidad Emi',
+  founderIuliiaNote:
+    'Después de 9 años de práctica psicológica y de trabajar con más de 1.500 mujeres, creé Emi para ofrecer un espacio seguro y libre de vergüenza. Un lugar donde mujeres de cualquier edad puedan explorar libremente su cuerpo, acceder a información precisa sobre los temas más tabú y sentirse realmente ellas mismas.',
   founderJulianRole: 'Cofundador de Emi',
   founderJulianNote:
     'Tengo dos hijas. Estoy creando Emi para que tengan un lugar tranquilo donde entender su cuerpo: información precisa, educación sobre los temas que siguen siendo tabú, y una comunidad donde preguntar sin juicios, desde pequeñas. Y por el camino, ayudar a todas las demás personas que necesitan lo mismo.',

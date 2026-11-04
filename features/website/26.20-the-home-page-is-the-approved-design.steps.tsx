@@ -217,8 +217,17 @@ defineFeature(feature, (test) => {
     and('every sentence of the board is on the page, in English, in Russian and in Spanish', () => {
       const said = visibleTextOf(theDesign());
 
+      // The board was approved while one of the two founders had not written her note, so it draws
+      // a hole where the page now draws her own sentences. It is the one sentence of the board the
+      // page does not draw, and it is picked out by the name it opens with so that a second one
+      // cannot arrive under the same exception.
+      const filled = said.filter((text) => text.startsWith('[IULIIA'));
+
+      expect(filled).toHaveLength(1);
       expect(said.length).toBeGreaterThan(80);
-      expect(said.filter((text) => !(drawn.en ?? '').includes(text))).toEqual([]);
+      expect(
+        said.filter((text) => !filled.includes(text) && !(drawn.en ?? '').includes(text)),
+      ).toEqual([]);
 
       // The board is in English, so the other two pages are held to the keys the English page
       // draws rather than to the board's own sentences. A key drawn in one language and not in

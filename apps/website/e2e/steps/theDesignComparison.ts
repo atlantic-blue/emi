@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import type { Page } from '@playwright/test';
+import { type Page, expect } from '@playwright/test';
 import pixelmatch from 'pixelmatch';
 import { PNG } from 'pngjs';
 
@@ -11,6 +11,18 @@ import type { WhatSheIsLookingAt } from './fixtures';
 export interface AWindow {
   readonly width: number;
   readonly height: number;
+}
+
+/**
+ * The rows of a picture that a comparison reads, counted down from the top. A band whose height
+ * one side cannot match is named this way rather than painted over, so the rows above it and the
+ * rows below it are each still held to the design, pixel for pixel.
+ */
+export interface ABandToLeaveOut {
+  /** The first row of the band, which is the last row the comparison above it reads. */
+  readonly from: number;
+  /** The row under the band, which is the first row the comparison below it reads. */
+  readonly to: number;
 }
 
 /**
@@ -78,6 +90,19 @@ export async function pictureOf(page: Page, address: string, window: AWindow): P
   return PNG.sync.read(await page.screenshot());
 }
 
+/**
+ * The rows of a picture from one row to another, as a picture of its own, so the comparison below
+ * reads one rectangle of each side rather than two whole pages that no longer line up.
+ */
+function rowsOf(picture: PNG, from: number, to: number): PNG {
+  const height = to - from;
+  const cut = new PNG({ width: picture.width, height });
+
+  picture.data.copy(cut.data, 0, from * picture.width * 4, to * picture.width * 4);
+
+  return cut;
+}
+
 export function bothOf(looking: WhatSheIsLookingAt): { design: PNG; page: PNG } {
   const { atTheDesign, atThePage } = looking;
 
@@ -88,14 +113,67 @@ export function bothOf(looking: WhatSheIsLookingAt): { design: PNG; page: PNG } 
   return { design: atTheDesign, page: atThePage };
 }
 
+export function bothBandsOf(looking: WhatSheIsLookingAt): {
+  inTheDesign: ABandToLeaveOut;
+  onThePage: ABandToLeaveOut;
+} {
+  const { theBandInTheDesign, theBandOnThePage } = looking;
+
+  if (theBandInTheDesign === null || theBandOnThePage === null) {
+    throw new Error('The band has to be measured on both sides before it can be left out.');
+  }
+
+  return { inTheDesign: theBandInTheDesign, onThePage: theBandOnThePage };
+}
+
 /**
  * The comparison itself. The name is part of the failure and part of the file the failure leaves,
  * because a run reads three widths of two pages and the reader has to know which one moved.
  */
 export function howMuchOfItMoved(looking: WhatSheIsLookingAt, called: string): void {
   const { design, page } = bothOf(looking);
+
+  holdOneAgainstTheOther(design, page, called);
+}
+
+/**
+ * The same comparison, with one band of each side left out. The band is where the page and the
+ * design are allowed to differ, and it is allowed to be a different height on each side, so the
+ * rows above it are read from the top of both pictures and the rows below it are read from the
+ * bottom of both. Nothing is painted over and nothing is skipped past: every row outside the band
+ * is held to the design as before.
+ *
+ * The two remainders have to be the same height, or the pages differ somewhere other than the band
+ * and the comparison would be reading one section of the page against another.
+ */
+export function howMuchOfItMovedOutside(looking: WhatSheIsLookingAt, called: string): void {
+  const { design, page } = bothOf(looking);
+  const { inTheDesign, onThePage } = bothBandsOf(looking);
+
+  expect(page.width).toBe(design.width);
+  expect(onThePage.from).toBe(inTheDesign.from);
+  expect(page.height - onThePage.to).toBe(design.height - inTheDesign.to);
+
+  holdOneAgainstTheOther(
+    rowsOf(design, 0, inTheDesign.from),
+    rowsOf(page, 0, onThePage.from),
+    `${called}-above-the-band`,
+  );
+
+  holdOneAgainstTheOther(
+    rowsOf(design, inTheDesign.to, design.height),
+    rowsOf(page, onThePage.to, page.height),
+    `${called}-under-the-band`,
+  );
+}
+
+function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
   const { width, height } = design;
   const difference = new PNG({ width, height });
+
+  expect(page.width).toBe(width);
+  expect(page.height).toBe(height);
+  expect(height).toBeGreaterThan(0);
 
   const differing = pixelmatch(design.data, page.data, difference.data, width, height, {
     threshold: howCloseAPixelMustBe,
@@ -117,6 +195,28 @@ export function howMuchOfItMoved(looking: WhatSheIsLookingAt, called: string): v
         `The difference is drawn in ${picture}.`,
     );
   }
+}
+
+/**
+ * Where the band of the two founders stands in the page a browser is looking at: the top of the
+ * note, and the row under the band that holds it. Read in the browser rather than written down,
+ * because the page and the design put the band at different heights and both are measured the same
+ * way.
+ */
+export async function theBandOfTheFounders(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const band = document.querySelector('section[aria-labelledby="note-title"]');
+    const note = band?.querySelector('blockquote');
+
+    if (band === null || band === undefined || note === null || note === undefined) {
+      throw new Error('The page draws no band of the two founders.');
+    }
+
+    const top = note.getBoundingClientRect().top + window.scrollY;
+    const under = band.getBoundingClientRect().bottom + window.scrollY;
+
+    return { from: Math.floor(top), to: Math.ceil(under) };
+  });
 }
 
 /** One part of a page, held against the same part of the design it was drawn from. */

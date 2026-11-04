@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { websiteColour } from '@emi/tokens';
@@ -10,10 +10,10 @@ import HomePage from '../app/[lang]/page';
 import { type Language, brandEyebrowOf, languages, wordsIn } from '../app/words';
 import { CARDS_ACROSS } from '../components/reviewRow';
 import { LANGUAGES_ANCHOR } from '../components/siteHeader';
+import { JULIANS_PHOTOGRAPH } from '../lib/addresses';
 import {
   A_NAME_NOBODY_HAS_SIGNED,
   A_REVIEW_NOBODY_HAS_WRITTEN,
-  THE_NOTE_IULIIA_HAS_NOT_WRITTEN,
   thePlaceholders,
 } from '../lib/thePlaceholders';
 import { whatTheMarkupDraws } from './stylesheet';
@@ -33,6 +33,48 @@ async function pageIn(lang: string): Promise<string> {
   return renderToStaticMarkup(
     await RootLayout({ children: page, params: Promise.resolve({ lang }) }),
   );
+}
+
+/**
+ * The band where the two people building Emi say why, cut out of the document she is handed. A
+ * read of the whole document would be satisfied by a sentence anywhere on the page, and what each
+ * case below asks is what stands in this one band.
+ */
+function theBandOfTheFoundersIn(page: string): string {
+  const opens = page.indexOf('<section aria-labelledby="note-title"');
+  const closes = page.indexOf('</section>', opens);
+
+  if (opens < 0 || closes < 0) {
+    throw new Error('The page draws no band of the founders.');
+  }
+
+  return page.slice(opens, closes);
+}
+
+/**
+ * The one hole of the approved board that the page no longer draws. It is read out of the board
+ * by the name it opens with rather than written out here, so the sentence lives in one place and
+ * a second hole cannot arrive under the same exception.
+ */
+function theHoleSheHasSinceFilled(onTheBoard: readonly string[]): string {
+  const found = onTheBoard.filter((hole) => hole.startsWith('[IULIIA'));
+
+  expect(found).toHaveLength(1);
+
+  return found[0] ?? '';
+}
+
+/** The note inside that band, which is the one part of it the approved board drew as a hole. */
+function theNoteIn(page: string): string {
+  const band = theBandOfTheFoundersIn(page);
+  const opens = band.indexOf('<blockquote');
+  const closes = band.indexOf('</blockquote>', opens);
+
+  if (opens < 0 || closes < 0) {
+    throw new Error('The band of the founders draws no note.');
+  }
+
+  return band.slice(opens, closes);
 }
 
 /**
@@ -90,6 +132,7 @@ const theWordsOfTheBoard = [
   'parentsLine',
   'noteEyebrow',
   'founderIuliiaRole',
+  'founderIuliiaNote',
   'privacyHeadline',
   'privacyLink',
   'reviewsEyebrow',
@@ -143,15 +186,34 @@ describe('the page a woman meets Emi on', () => {
       const words = wordsIn(language);
       const page = await pageIn(language);
 
-      expect(page.indexOf('Iuliia Nikolaeva')).toBeGreaterThan(-1);
-      expect(page).toContain(THE_NOTE_IULIIA_HAS_NOT_WRITTEN);
+      expect(theBandOfTheFoundersIn(page)).toContain('Iuliia Nikolaeva');
       expect(page).toContain(words.founderIuliiaRole);
 
-      // The second founder is one press away rather than on the page she is handed, so his note and
-      // his role are not drawn until the band moves.
+      // The note she wrote, in this reader's own language, drawn in the ink of the band rather
+      // than in the quieter tone the board drew the hole in. The band is read rather than the
+      // document, because a sentence anywhere on the page would satisfy a read of the document
+      // while the band she signed stayed a hole.
+      expect(theNoteIn(page)).toContain(words.founderIuliiaNote);
+      expect(theNoteIn(page)).toContain('text-siteText');
+      expect(theNoteIn(page)).not.toContain('text-siteQuietText');
+      expect(theNoteIn(page)).not.toMatch(/\[[A-Z]/);
+
+      // The second founder is one press away rather than on the page she is handed, so his note,
+      // his role and his photograph are not drawn until the band moves.
       expect(page).not.toContain(words.founderJulianNote);
+      expect(page).not.toContain(JULIANS_PHOTOGRAPH);
     },
   );
+
+  /**
+   * The photograph is a file the site serves, so the name the page points at and the name the
+   * folder holds are read against each other. A page pointing at a file nobody committed draws an
+   * empty circle, and every test that reads words would still pass.
+   */
+  it('serves the photograph the band points at', () => {
+    expect(JULIANS_PHOTOGRAPH).toBe('/julian-tellez.jpg');
+    expect(statSync(join(__dirname, '..', 'public', JULIANS_PHOTOGRAPH)).isFile()).toBe(true);
+  });
 
   it.each(languages)(
     'draws three of the six review cards, each still a hole, in %s',
@@ -170,6 +232,11 @@ describe('the page a woman meets Emi on', () => {
    * reader can tell a hole from a promise. The page is held to the board's own set of them: a hole
    * the board does not leave is a hole somebody added, and a hole the board leaves and the page
    * drops is a sentence that reads as finished while it is not.
+   *
+   * One hole is the exception, and it is named rather than filtered by a pattern, so filling the
+   * next one is a deliberate edit here. The first founder wrote her note after the board was
+   * approved, and the board is a record of a drawing that nobody edits for a sentence that
+   * arrived later, so the page draws her sentences where the board still draws the hole.
    */
   it('leaves the holes the board leaves, and no others', async () => {
     const bracketed = (text: string): string[] =>
@@ -192,14 +259,16 @@ describe('the page a woman meets Emi on', () => {
     );
 
     const onTheBoard = bracketed(board);
+    const filled = theHoleSheHasSinceFilled(onTheBoard);
+    const stillAHole = onTheBoard.filter((hole) => hole !== filled);
 
     expect(onTheBoard.length).toBeGreaterThan(0);
-    expect(bracketed(await pageIn('en'))).toEqual(onTheBoard);
+    expect(bracketed(await pageIn('en'))).toEqual(stillAHole);
 
-    // Each of the three the board leaves standing on its own is held in one place, away from the
+    // Each of the two the board leaves standing on its own is held in one place, away from the
     // catalogues, because a hole is not a word and reads the same in every language.
     for (const waiting of thePlaceholders) {
-      expect(onTheBoard).toContain(waiting);
+      expect(stillAHole).toContain(waiting);
     }
   });
 
