@@ -28,6 +28,7 @@ import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
 import { PhaseCard } from './PhaseCard';
 import { RingOfToday } from './RingOfToday';
+import type { RingCountdown } from './ringCountdown';
 import { RoundAction, type RoundActionName } from './RoundAction';
 import { SectionWaiting } from './SectionWaiting';
 import { MeasuredRows } from './MeasuredRow';
@@ -95,6 +96,8 @@ interface Props {
    * cache the ring is. The card under the ring names the days of the phase she is in.
    */
   readonly phaseDays?: CyclePhaseDays;
+  /** How long until her next period and her estimated ovulation, which the ring writes. */
+  readonly countdown?: RingCountdown;
   /** Her own day, which the calendar button opens her month on. */
   readonly today?: string;
   /**
@@ -219,6 +222,7 @@ interface Props {
 export function HomeScreen({
   ring,
   phaseDays,
+  countdown,
   today,
   loggedToday,
   forecast,
@@ -274,7 +278,7 @@ export function HomeScreen({
         />
 
         {ring ? (
-          <RingOfToday ring={ring} />
+          <RingOfToday ring={ring} {...(countdown === undefined ? {} : { countdown })} />
         ) : (
           <View style={styles.noRing} testID={homeNoRingTestID}>
             <EmptyRing>

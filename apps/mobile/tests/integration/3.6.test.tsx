@@ -544,7 +544,9 @@ describe('the ring shows the forecast the arithmetic produced', () => {
       const app = renderRouter(appDirectory, { initialUrl: '/' });
       await app;
 
-      expect(theRingSays()).toBe(`Day 2 of ${herCycleLengthDays}, follicular`);
+      expect(theRingSays()).toMatch(
+        new RegExp(`^Day 2 of ${herCycleLengthDays}, follicular, Period in \\d+ to \\d+ days$`),
+      );
 
       await fireEvent.press(screen.getByTestId(tabTestID('log/index')));
       await fireEvent.press(screen.getByTestId(flowOptionTestID('heavy')));
