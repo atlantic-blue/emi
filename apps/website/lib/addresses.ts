@@ -49,3 +49,13 @@ export const THE_PRIVACY_INBOX = 'mailto:privacy@myemi.app';
 export function thePrivacyAddress(): string {
   return THE_PRIVACY_INBOX.replace('mailto:', '');
 }
+
+/**
+ * The photograph of one of the two people building Emi, served beside the pages. The other is
+ * drawn as her initials until she sends one, so this is one name and not a list.
+ *
+ * It is not a word of a catalogue: a face reads the same in every language. It is held here
+ * because the distribution is told each file under `public` by name, and a test reads the file
+ * under this name to prove the page does not point at one that is not there.
+ */
+export const JULIANS_PHOTOGRAPH = '/julian-tellez.jpg';

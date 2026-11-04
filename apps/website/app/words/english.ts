@@ -15,10 +15,9 @@
  * name stand for, and a translation of it would name something Emi is not called. So do the name
  * of the product and the name of Apple's store.
  *
- * The board leaves a hole for a review nobody has written yet, and for a note one of the two
- * founders has not written yet. Those sit in `lib/thePlaceholders.ts` rather than here: a hole is
- * not a word of the product, and it reads the same in every language until the text that fills it
- * arrives.
+ * The board leaves a hole for a review nobody has written yet. Those sit in
+ * `lib/thePlaceholders.ts` rather than here: a hole is not a word of the product, and it reads the
+ * same in every language until the text that fills it arrives.
  *
  * `{day}` and `{phase}` are filled by the ring, which is the one part of the page that changes
  * while she reads it.
@@ -94,6 +93,8 @@ export const english = {
   founderPrevious: 'Previous founder',
   founderNext: 'Next founder',
   founderIuliiaRole: 'Co-founder of Emi, host of the Emi Community',
+  founderIuliiaNote:
+    'After 9 years of psychological practice and working with over 1,500 women, I built Emi to create a safe, shame-free space. A place where women of any age can freely explore their bodies, access accurate education on the most taboo subjects, and truly feel like themselves.',
   founderJulianRole: 'Co-founder of Emi',
   founderJulianNote:
     'I have two daughters. I am building Emi so they have a safe place to understand their bodies: accurate information, education on the subjects that are still taboo, and a community to ask without judgement, from a young age. And along the way, to help everyone else who needs the same.',

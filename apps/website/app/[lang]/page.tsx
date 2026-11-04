@@ -6,12 +6,8 @@ import { CarouselsProvider } from '@/components/carousels';
 import { CycleRing } from '@/components/cycleRing';
 import { type Founder, FounderNote } from '@/components/founderNote';
 import { type Review, ReviewRow } from '@/components/reviewRow';
-import { NO_PAGE_YET, THE_EMI_COMMUNITY } from '@/lib/addresses';
-import {
-  A_NAME_NOBODY_HAS_SIGNED,
-  A_REVIEW_NOBODY_HAS_WRITTEN,
-  THE_NOTE_IULIIA_HAS_NOT_WRITTEN,
-} from '@/lib/thePlaceholders';
+import { JULIANS_PHOTOGRAPH, NO_PAGE_YET, THE_EMI_COMMUNITY } from '@/lib/addresses';
+import { A_NAME_NOBODY_HAS_SIGNED, A_REVIEW_NOBODY_HAS_WRITTEN } from '@/lib/thePlaceholders';
 
 /**
  * The page a woman meets Emi on, in the language her address names. A language the site does not
@@ -84,22 +80,23 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
   /**
    * The two people building Emi, in the board's order. A name is a name in every language, so the
-   * names and the initials are here and only the roles and the written note are words.
+   * names, the initials and the photographs are here and only the roles and the notes are words.
+   *
+   * One of the two has sent a photograph. The other is drawn as her initials until she sends hers.
    */
   const theFounders: Founder[] = [
     {
       initials: 'IN',
       name: 'Iuliia Nikolaeva',
       role: words.founderIuliiaRole,
-      note: THE_NOTE_IULIIA_HAS_NOT_WRITTEN,
-      awaited: true,
+      note: words.founderIuliiaNote,
     },
     {
       initials: 'JT',
+      photograph: JULIANS_PHOTOGRAPH,
       name: 'Julian Tellez',
       role: words.founderJulianRole,
       note: words.founderJulianNote,
-      awaited: false,
     },
   ];
 

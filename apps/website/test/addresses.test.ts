@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import * as everyAddress from '../lib/addresses';
 import {
+  JULIANS_PHOTOGRAPH,
   NO_PAGE_YET,
   SHARE_PREVIEW,
   SITE_ORIGIN,
@@ -40,6 +41,7 @@ const theAddresses = Object.entries<unknown>(everyAddress).filter(
 describe('the addresses a page gives a browser', () => {
   it('holds every address a page of this site uses, and nothing that is not one', () => {
     expect(theAddresses.map(([name]) => name).sort()).toEqual([
+      'JULIANS_PHOTOGRAPH',
       'NO_PAGE_YET',
       'SHARE_PREVIEW',
       'SITE_ORIGIN',
@@ -119,5 +121,10 @@ describe('the addresses a page gives a browser', () => {
   it('offers the picture a chat draws as a file of this site', () => {
     expect(SHARE_PREVIEW).toBe('/share-preview.png');
     expect(hostsIn(SHARE_PREVIEW)).toEqual([]);
+  });
+
+  it('serves the face of one of the two founders as a file of this site', () => {
+    expect(JULIANS_PHOTOGRAPH).toBe('/julian-tellez.jpg');
+    expect(hostsIn(JULIANS_PHOTOGRAPH)).toEqual([]);
   });
 });

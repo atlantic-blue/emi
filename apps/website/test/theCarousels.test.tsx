@@ -37,8 +37,8 @@ const theReviews = [
 }));
 
 const theFounders = [
-  { initials: 'IN', name: 'Iuliia Nikolaeva', role: 'Co-founder', note: 'Hers', awaited: true },
-  { initials: 'JT', name: 'Julian Tellez', role: 'Co-founder', note: 'His', awaited: false },
+  { initials: 'IN', name: 'Iuliia Nikolaeva', role: 'Co-founder', note: 'Hers' },
+  { initials: 'JT', name: 'Julian Tellez', role: 'Co-founder', note: 'His' },
 ];
 
 interface Reading {

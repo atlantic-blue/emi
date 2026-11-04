@@ -9,10 +9,10 @@ import { websiteFace, websiteFaceStack, websiteTabletWidth } from '@emi/tokens';
 import HomePage from '../../apps/website/app/[lang]/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import { CARDS_ACROSS } from '../../apps/website/components/reviewRow';
+import { JULIANS_PHOTOGRAPH } from '../../apps/website/lib/addresses';
 import {
   A_NAME_NOBODY_HAS_SIGNED,
   A_REVIEW_NOBODY_HAS_WRITTEN,
-  THE_NOTE_IULIIA_HAS_NOT_WRITTEN,
 } from '../../apps/website/lib/thePlaceholders';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
@@ -182,16 +182,22 @@ defineFeature(feature, (test) => {
 
         expect(page).toContain('Iuliia Nikolaeva');
         expect(page).toContain(words.founderIuliiaRole);
-        expect(page).toContain(THE_NOTE_IULIIA_HAS_NOT_WRITTEN);
+
+        // The board drew her note as a hole and she has since written it, so the page draws the
+        // sentences she sent in the language this reader opened it in.
+        expect(page).toContain(words.founderIuliiaNote);
+        expect(page).not.toContain('[IULIIA');
 
         // One at a time: the other founder is behind a press, so nothing of him is on the page a
         // reader is handed.
         expect(page).not.toContain('Julian Tellez');
         expect(page).not.toContain(words.founderJulianNote);
 
-        // Two dots, because there are two of them, and a round badge of initials where the board
-        // draws one instead of a picture.
+        // Two dots, because there are two of them, and a round badge of initials for the one of
+        // them who has not sent a photograph. His stands in that circle instead, and it is behind
+        // the press with the rest of him.
         expect(page).toContain('>IN<');
+        expect(page).not.toContain(JULIANS_PHOTOGRAPH);
         expect(page).toContain(words.noteEyebrow);
       }
 
@@ -290,6 +296,14 @@ defineFeature(feature, (test) => {
         expect(theSteps).toContain("'/en/'");
         expect(theSteps).toContain('pixelmatch');
         expect(theSteps).toContain('writeFileSync');
+
+        // One band is read on its own, because the board drew a hole where one of the two has
+        // since written her note. The rows above it and the rows below it are still held to the
+        // board, so the scenario says which part of the page it leaves out and nothing else.
+        expect(theFeature).toContain('every band but the one the two founders sign is the design');
+        expect(theSteps).toContain('note-title');
+        expect(theSteps).toContain('above-the-band');
+        expect(theSteps).toContain('under-the-band');
 
         // The comparison is taken with the reader's own settings asking for less motion, so both
         // carousels stand on their first card while the picture is taken. Pressing the page's own

@@ -2,6 +2,8 @@ import type { PNG } from 'pngjs';
 
 import { test as bdd } from 'playwright-bdd';
 
+import type { ABandToLeaveOut } from './theDesignComparison';
+
 /** What the server said when she asked for the address, which the steps after the ask read. */
 export interface WhatTheSiteAnswered {
   status: number | null;
@@ -71,6 +73,13 @@ export interface APressSheCanSee {
 export interface WhatSheIsLookingAt {
   atTheDesign: PNG | null;
   atThePage: PNG | null;
+  /**
+   * Where the band the two founders sign stands in each of the two, for the one comparison that
+   * reads that band on its own. The board drew a hole where one of them has since written her
+   * note, so the band is a different height on each side and the rows outside it are what line up.
+   */
+  theBandInTheDesign: ABandToLeaveOut | null;
+  theBandOnThePage: ABandToLeaveOut | null;
 }
 
 /**
@@ -179,7 +188,12 @@ export const test = bdd.extend<{
     await handTo({ language: '' });
   },
   looking: async ({}, handTo) => {
-    await handTo({ atTheDesign: null, atThePage: null });
+    await handTo({
+      atTheDesign: null,
+      atThePage: null,
+      theBandInTheDesign: null,
+      theBandOnThePage: null,
+    });
   },
   found: async ({}, handTo) => {
     await handTo({ refused: [], floors: null, presses: [] });
