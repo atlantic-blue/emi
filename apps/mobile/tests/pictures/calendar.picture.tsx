@@ -12,8 +12,10 @@ import {
   whatTheSheetSays,
 } from '../../src/features/calendar/theDaySheet';
 import { theCyclesAhead } from '../../src/features/calendar/forecastAhead';
+import { type TheWait, theWaitForHerNextPeriod } from '../../src/features/calendar/theWait';
 import { herDaysOn } from '../../src/features/cycle/herWeek';
 import { recordedDays } from '../../src/features/cycle/rebuild';
+import { forecastOf } from '../../src/features/forecast/fromCache';
 import { startOfMonth } from '../../src/features/onboarding/days';
 import { defaultCycleLengthDays } from '../../src/features/onboarding/firstRun';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
@@ -100,6 +102,16 @@ function herForecastPeriodInTheMonthAfter(): string {
   return next.startsOn;
 }
 
+/** The line above the legend, counted from the day she opens the month. */
+function theWaitFor(from: HerReading): { waitForNextPeriod?: TheWait } {
+  const wait = theWaitForHerNextPeriod(
+    forecastOf(from.cycles, from.statedCycleLengthDays),
+    theDaySheOpensIt,
+  );
+
+  return wait === undefined ? {} : { waitForNextPeriod: wait };
+}
+
 /** The card as the screen works it out, for the day she pressed. */
 function theSheetFor(state: State): WhatTheSheetSays {
   const from = herReading();
@@ -128,13 +140,13 @@ interface State {
 const theStates: readonly State[] = [
   {
     title: 'The month she is in, with today named at the foot',
-    note: 'Day sixteen. The five days she bled are filled, today is ringed, and the next forecast period starts again at day 1 in dashed rings. The card names today, its cycle day, its phase and what she marked on it, over Edit my period and Record sex.',
+    note: 'Day sixteen. A line above the legend says how many days until her next period is likely to start. The five days she bled are filled, today is ringed, and the next forecast period starts again at day 1, its most likely days in dashed rings and the days either side in dotted rings. The card names today, its cycle day, its phase and what she marked on it, over Edit my period and Record sex.',
     month: theDaySheOpensIt,
     shePressed: theDaySheOpensIt,
   },
   {
     title: 'The month after, with the first day of a forecast period pressed',
-    note: 'A month she has not lived. The forecast periods are dashed rings, the cycle day starts again at 1 on each of them, and the fertile window is tinted with the ovulation day filled. The card says when that period is likely to start. It has no open button, because there is nothing to record on a day ahead of her.',
+    note: 'A month she has not lived. The most likely days of each forecast period are dashed rings and the days either side are dotted rings, the cycle day starts again at 1 on each of them, and the fertile window is tinted with the ovulation day filled. The card says when that period is likely to start. It has no open button, because there is nothing to record on a day ahead of her.',
     month: '2026-10-01',
     shePressed: herForecastPeriodInTheMonthAfter(),
   },
@@ -165,6 +177,7 @@ async function drawn(state: State): Promise<DrawnScreen> {
         phaseOn={(day) => theDayPhaseOn(from, day)}
         shePressed={theSheetFor(state)}
         today={theDaySheOpensIt}
+        {...theWaitFor(from)}
       />
     </OnAPhone>,
   );

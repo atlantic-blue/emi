@@ -1,15 +1,35 @@
-import { readFileSync, readdirSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { dirname, join, resolve, sep } from 'node:path';
 
 import { parse } from 'yaml';
+
+import {
+  type PolicyStatement,
+  bodyOf as blockBodyOf,
+  configurationOf,
+  defaultOf as variableDefaultOf,
+  grantedOnEveryResource,
+  listedIn,
+  resolved,
+  standsOnEveryResource,
+  statementsIn,
+  statementsReaching,
+  valueOf,
+} from './policy.ts';
 
 const repositoryRoot = resolve(__dirname, '..', '..');
 const infrastructureDirectory = join(repositoryRoot, 'infra');
 
 type Step = { name?: string; uses?: string; run?: string; if?: string };
-type Job = { if?: string; env?: Record<string, string>; steps?: Step[] };
+type Job = {
+  if?: string;
+  env?: Record<string, string>;
+  steps?: Step[];
+  strategy?: { matrix?: Record<string, string[]> };
+};
 type Workflow = {
-  on?: Record<string, { branches?: string[] }>;
+  on?: Record<string, { branches?: string[]; paths?: string[] }>;
   permissions?: Record<string, string>;
   jobs?: Record<string, Job>;
 };
@@ -28,40 +48,13 @@ const job = (name: string): Job => {
   return found;
 };
 
-const configurationFiles = readdirSync(infrastructureDirectory).filter((file) =>
-  file.endsWith('.tf'),
+const configuration = configurationOf(infrastructureDirectory);
+const website = configurationOf(join(repositoryRoot, 'infrastructure', 'website'));
+const certificateModule = configurationOf(
+  join(repositoryRoot, 'infrastructure', 'modules', 'certificate'),
 );
-const configuration = configurationFiles
-  .map((file) => readFileSync(join(infrastructureDirectory, file), 'utf8'))
-  .join('\n');
 
-/**
- * The body of one top level block, so an assertion reads inside the resource it names rather than
- * anywhere in the file. Interpolations balance their own braces, so counting them is enough.
- */
-function bodyOf(header: string): string {
-  const start = configuration.indexOf(header);
-  if (start < 0) {
-    throw new Error(`the configuration has no ${header}`);
-  }
-
-  const opening = configuration.indexOf('{', start);
-  let depth = 0;
-
-  for (let at = opening; at < configuration.length; at += 1) {
-    if (configuration[at] === '{') {
-      depth += 1;
-    }
-    if (configuration[at] === '}') {
-      depth -= 1;
-      if (depth === 0) {
-        return configuration.slice(opening + 1, at);
-      }
-    }
-  }
-
-  throw new Error(`${header} is never closed`);
-}
+const bodyOf = (header: string): string => blockBodyOf(configuration, header);
 
 function actionsIn(policy: string): string[] {
   return [...policy.matchAll(/"([a-z0-9-]+:[A-Za-z*]+)"/g)].flatMap((match) =>
@@ -77,11 +70,83 @@ function firstStepOf(name: string): Step {
   return first;
 }
 
-function defaultOf(variable: string): string {
-  const found = /default\s+=\s+"([^"]*)"/.exec(bodyOf(`variable "${variable}"`));
-  if (!found?.[1]) {
-    throw new Error(`the variable ${variable} has no text default`);
+const defaultOf = (variable: string): string => variableDefaultOf(configuration, variable);
+
+/** The run script of one named step, so a rule reads the step it means and not the whole job. */
+function scriptOf(jobName: string, stepName: string): string {
+  const found = (job(jobName).steps ?? []).find((step) => step.name === stepName);
+
+  if (found?.run === undefined) {
+    throw new Error(`the ${jobName} job has no ${stepName} step that runs anything`);
   }
+
+  return found.run;
+}
+
+/** The words a shell for loop walks, so a rule reads the list the step actually iterates. */
+function forListIn(script: string, variable: string): string[] {
+  const found = new RegExp(`for ${variable} in ([^;\\n]+)`).exec(script);
+
+  return found?.[1]?.trim().split(/\s+/) ?? [];
+}
+
+/** The roots one job runs over, which is empty where the job runs over nothing. */
+const matrixRootsOf = (jobName: string): string[] => job(jobName).strategy?.matrix?.root ?? [];
+
+/**
+ * Every Terraform root the repository holds, found by the backend each one declares. A directory
+ * with no backend is a module, and a module is applied by whoever calls it. So the backend is what
+ * makes a directory a root, and a root the pipeline does not name is a root somebody would apply
+ * by hand.
+ */
+function terraformRoots(): string[] {
+  const listed = spawnSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '*.tf'],
+    {
+      cwd: repositoryRoot,
+      encoding: 'utf8',
+    },
+  );
+
+  if (listed.status !== 0) {
+    throw new Error(`git could not list the Terraform files: ${listed.stderr}`);
+  }
+
+  const roots = listed.stdout
+    .split('\n')
+    .filter((file) => file.length > 0)
+    .filter((file) => read(file).includes('backend "s3"'))
+    .map((file) => dirname(file));
+
+  return [...new Set(roots)].sort();
+}
+
+/**
+ * Every for_each expression of one configuration, each read to the blank line that closes it. A
+ * key has to be known before the plan runs, so what a loop is driven from is a rule and not a
+ * style.
+ */
+function loopsIn(configuration: string): string[] {
+  return [...configuration.matchAll(/for_each\s*=\s*([\s\S]*?)\n\s*\n/g)].flatMap((match) =>
+    match[1] === undefined ? [] : [match[1].trim()],
+  );
+}
+
+/** The region of one aliased provider, read from the block that declares the alias. */
+function regionOfAlias(configuration: string, alias: string): string {
+  const at = configuration.search(new RegExp(`alias\\s*=\\s*"${alias}"`));
+
+  if (at < 0) {
+    throw new Error(`the configuration declares no provider aliased ${alias}`);
+  }
+
+  const found = /region\s*=\s*"([^"]+)"/.exec(configuration.slice(at));
+
+  if (!found?.[1]) {
+    throw new Error(`the provider aliased ${alias} names no region`);
+  }
+
   return found[1];
 }
 
@@ -114,66 +179,27 @@ function subjectOf(name: string): string {
  * what the project reads with today, so the rule below meets a new one already written down.
  */
 const collectionLevelActions: readonly string[] = [
+  'acm:ListCertificates',
+  'acm:RequestCertificate',
+  'cloudfront:CreateCachePolicy',
+  'cloudfront:CreateFunction',
+  'cloudfront:CreateOriginAccessControl',
+  'cloudfront:CreateResponseHeadersPolicy',
+  'cloudfront:ListCachePolicies',
+  'cloudfront:ListDistributions',
+  'cloudfront:ListFunctions',
+  'cloudfront:ListOriginAccessControls',
+  'cloudfront:ListResponseHeadersPolicies',
   'dynamodb:ListTables',
   'iam:ListOpenIDConnectProviders',
   'iam:ListRoles',
   'lambda:ListFunctions',
   'logs:DescribeLogGroups',
+  'route53:GetChange',
+  'route53:ListHostedZones',
+  'route53:ListHostedZonesByName',
   's3:ListAllMyBuckets',
 ];
-
-interface PolicyStatement {
-  readonly sid: string;
-  readonly actions: readonly string[];
-  readonly resources: readonly string[];
-}
-
-function listedIn(body: string, field: string): string[] {
-  const found = new RegExp(`${field}\\s*=\\s*\\[([^\\]]*)\\]`).exec(body);
-
-  if (found?.[1] === undefined) {
-    return [];
-  }
-
-  return found[1]
-    .split(',')
-    .map((entry) => entry.trim().replace(/^"|"$/g, ''))
-    .filter((entry) => entry.length > 0 && !entry.startsWith('#'));
-}
-
-/** Every statement of one policy document, read as the account reads it. */
-function statementsIn(policy: string): PolicyStatement[] {
-  return policy
-    .split(/\bstatement\s*\{/)
-    .slice(1)
-    .map((body) => ({
-      sid: /sid\s*=\s*"([^"]*)"/.exec(body)?.[1] ?? '',
-      actions: listedIn(body, 'actions'),
-      resources: listedIn(body, 'resources'),
-    }));
-}
-
-/**
- * True where a statement stands on every resource. Anything else names one, whether it names it
- * as an address pattern or through a local, and naming one is what denies a collection.
- */
-function standsOnEveryResource(statement: PolicyStatement): boolean {
-  return statement.resources.length === 1 && statement.resources[0] === '*';
-}
-
-/** True where a statement's actions reach the given one, by name or through a wildcard. */
-function reaches(statement: PolicyStatement, action: string): boolean {
-  return statement.actions.some(
-    (granted) =>
-      granted === action ||
-      granted === '*' ||
-      (granted.endsWith('*') && action.startsWith(granted.slice(0, -1))),
-  );
-}
-
-function grantedOnEveryResource(statements: readonly PolicyStatement[], action: string): boolean {
-  return statements.filter(standsOnEveryResource).some((statement) => reaches(statement, action));
-}
 
 /** Each collection level action a statement names while standing on a named resource. */
 function deniedByItsScope(statements: readonly PolicyStatement[], role: string): string[] {
@@ -239,6 +265,34 @@ describe('the infrastructure is applied only by the pipeline', () => {
 
       expect(elsewhere).toEqual([]);
       expect(Object.values(scripts.scripts).filter((s) => s.includes('terraform'))).toEqual([]);
+    });
+  });
+
+  describe('a gate piped into a filter', () => {
+    /** Every run script of the workflow, with the job that holds it. */
+    const scripts = Object.entries(deploy.jobs ?? {}).flatMap(([name, each]) =>
+      (each.steps ?? []).flatMap((step) =>
+        step.run === undefined ? [] : [{ job: name, run: step.run }],
+      ),
+    );
+
+    // A shell pipeline exits with the status of its last command, so terraform plan piped into tee
+    // reports what tee did. GitHub documents the default shell as bash -e, and pipefail arrives
+    // only when a step names its shell, so a refused plan reads as a green job.
+    it('is read by its own status and not by the status of the filter', () => {
+      const unguarded = scripts
+        .filter((script) => /\|\s*(tee|head|tail|grep)\b/.test(script.run))
+        .filter((script) => !script.run.includes('set -o pipefail'))
+        .map(
+          (script) =>
+            `the ${script.job} job pipes a command into a filter and reads the status of the filter`,
+        );
+
+      expect(unguarded).toEqual([]);
+    });
+
+    it('is there to be found, so an empty list is not a pass by accident', () => {
+      expect(scripts.filter((script) => /\|\s*tee\b/.test(script.run))).not.toEqual([]);
     });
   });
 
@@ -476,6 +530,10 @@ describe('the infrastructure is applied only by the pipeline', () => {
         'ReadTheState',
         'ReadTheStateObject',
         'DescribeWhatExists',
+        'ReadTheWebsiteCertificate',
+        'ReadTheDistribution',
+        'ReadTheWebsiteBucket',
+        'ReadTheMyemiZone',
       ]);
       expect(applyStatements.length).toBeGreaterThan(5);
       expect(applyStatements.every((statement) => statement.actions.length > 0)).toBe(true);
@@ -574,12 +632,698 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
   });
 
+  describe('the record grant reaches only the myemi.app zone', () => {
+    const planStatements = statementsIn(planPolicy);
+    const applyStatements = statementsIn(applyPolicy);
+    const theZone = 'arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K';
+    const changeARecord = 'route53:ChangeResourceRecordSets';
+    const zonelessActions = [
+      'route53:GetChange',
+      'route53:ListHostedZones',
+      'route53:ListHostedZonesByName',
+    ];
+
+    /** Each resource a statement stands on, with every variable reference read as its value. */
+    const resourcesOf = (statements: readonly PolicyStatement[]): string[] =>
+      statements.flatMap((statement) =>
+        statement.resources.map((resource) => resolved(configuration, resource)),
+      );
+
+    it('names one zone in the grant that changes a record, and no other resource', () => {
+      const granting = statementsReaching(applyStatements, changeARecord);
+
+      expect(granting.map((statement) => statement.sid)).toEqual(['TheMyemiZone']);
+      expect(resourcesOf(granting)).toEqual([theZone]);
+    });
+
+    it('changes a record through no statement that stands on every resource', () => {
+      expect(grantedOnEveryResource(applyStatements, changeARecord)).toBe(false);
+      expect(grantedOnEveryResource(planStatements, changeARecord)).toBe(false);
+    });
+
+    it('lets a pull request read the one zone and change no record anywhere', () => {
+      expect(resourcesOf(statementsReaching(planStatements, 'route53:GetHostedZone'))).toEqual([
+        theZone,
+      ]);
+      expect(
+        resourcesOf(statementsReaching(planStatements, 'route53:ListResourceRecordSets')),
+      ).toEqual([theZone]);
+      expect(statementsReaching(planStatements, changeARecord)).toEqual([]);
+    });
+
+    it.each(zonelessActions)('grants %s on every resource, which is where it acts', (action) => {
+      expect(grantedOnEveryResource(applyStatements, action)).toBe(true);
+      expect(grantedOnEveryResource(planStatements, action)).toBe(true);
+    });
+
+    // The website root looks the zone up with data "aws_route53_zone", and that read fills the
+    // data source's tags, so the provider calls ListTagsForResource on the zone. Without the
+    // action the plan is refused before it reaches a resource, so this is the grant the lookup
+    // stands on rather than one the records need.
+    it('reads the tags of that one zone, because the zone lookup reads them', () => {
+      const readTheTags = 'route53:ListTagsForResource';
+
+      for (const statements of [applyStatements, planStatements]) {
+        expect(resourcesOf(statementsReaching(statements, readTheTags))).toEqual([theZone]);
+        expect(grantedOnEveryResource(statements, readTheTags)).toBe(false);
+      }
+    });
+
+    it('reads the certificate from us-east-1 alone, because CloudFront reads it from nowhere else', () => {
+      const certificates = `arn:aws:acm:us-east-1:${defaultOf('account_id')}:certificate/*`;
+
+      for (const statements of [applyStatements, planStatements]) {
+        expect(resourcesOf(statementsReaching(statements, 'acm:DescribeCertificate'))).toEqual([
+          certificates,
+        ]);
+      }
+
+      expect(grantedOnEveryResource(applyStatements, 'acm:RequestCertificate')).toBe(true);
+    });
+
+    it('holds every CloudFront grant to the resources of this account', () => {
+      const scoped = applyStatements.filter(
+        (statement) =>
+          statement.sid === 'TheDistribution' || statement.sid === 'ReadTheDistribution',
+      );
+      const account = defaultOf('account_id');
+
+      expect(resourcesOf(scoped)).toEqual([
+        `arn:aws:cloudfront::${account}:distribution/*`,
+        `arn:aws:cloudfront::${account}:origin-access-control/*`,
+        `arn:aws:cloudfront::${account}:function/*`,
+        `arn:aws:cloudfront::${account}:response-headers-policy/*`,
+        `arn:aws:cloudfront::${account}:cache-policy/*`,
+      ]);
+      expect(grantedOnEveryResource(applyStatements, 'cloudfront:CreateDistribution')).toBe(false);
+    });
+
+    it('writes in no bucket but the one the website is served from', () => {
+      const bucket = applyStatements.filter((statement) => statement.sid === 'TheWebsiteBucket');
+
+      expect(resourcesOf(bucket)).toEqual([
+        'arn:aws:s3:::emi-website-*',
+        'arn:aws:s3:::emi-website-*/*',
+      ]);
+      expect(grantedOnEveryResource(applyStatements, 's3:PutObject')).toBe(false);
+      expect(grantedOnEveryResource(planStatements, 's3:GetObject')).toBe(false);
+    });
+
+    it('needs no new grant for the website state, because a star matches a slash as well', () => {
+      const key = resolved(configuration, expressionOf('state_key_arn'));
+      const covers = (object: string): boolean =>
+        new RegExp(`^${key.replace(/\./g, '\\.').replace(/\*/g, '.*')}$`).test(object);
+
+      expect(key).toBe('arn:aws:s3:::abs-terraform/emi/*');
+      expect(covers('arn:aws:s3:::abs-terraform/emi/website/terraform.tfstate')).toBe(true);
+      expect(covers('arn:aws:s3:::abs-terraform/emi/website/terraform.tfstate.tflock')).toBe(true);
+      expect(covers('arn:aws:s3:::abs-terraform/sava-mix/terraform.tfstate')).toBe(false);
+    });
+
+    it('gives the plan role the read of every grant the apply role writes with', () => {
+      const reads = [
+        'acm:DescribeCertificate',
+        'cloudfront:GetDistribution',
+        'cloudfront:GetOriginAccessControl',
+        'cloudfront:GetResponseHeadersPolicy',
+        'cloudfront:ListDistributions',
+        'route53:GetHostedZone',
+        's3:GetBucketPolicy',
+      ];
+      const missing = reads.filter(
+        (action) => statementsReaching(planStatements, action).length === 0,
+      );
+
+      expect(missing).toEqual([]);
+    });
+
+    it('names each statement it adds, so a reviewer reads the scope without a plan', () => {
+      const added = [
+        'TheWebsiteCertificate',
+        'AskForACertificate',
+        'TheDistribution',
+        'MakeADistributionPart',
+        'TheWebsiteBucket',
+        'TheMyemiZone',
+        'ReadARecordChange',
+      ];
+      const sids = applyStatements.map((statement) => statement.sid);
+
+      expect(added.filter((sid) => !sids.includes(sid))).toEqual([]);
+    });
+  });
+
+  // Step 26.4 serves the site from a Lambda function behind the distribution, and the roles as
+  // they stand refuse four calls that shape makes. Creating a distribution that carries tags is a
+  // different action from creating one without them, and the website root tags everything. The
+  // function url and three parts of the bucket are read by every plan once they exist, and a part
+  // a plan cannot read refuses the plan rather than reporting a difference.
+  describe('the grants the site on Lambda needs, which is step 26.4', () => {
+    const planStatements = statementsIn(planPolicy);
+    const applyStatements = statementsIn(applyPolicy);
+    const theBucket = 'arn:aws:s3:::emi-website-*';
+    const bucketParts = [
+      's3:GetAccelerateConfiguration',
+      's3:GetBucketNotification',
+      's3:GetBucketOwnershipControls',
+    ];
+
+    /** Each resource a statement stands on, with every variable reference read as its value. */
+    const resourcesOf = (statements: readonly PolicyStatement[]): string[] =>
+      statements.flatMap((statement) =>
+        statement.resources.map((resource) => resolved(configuration, resource)),
+      );
+
+    it('creates a distribution that carries tags, which is an action of its own', () => {
+      const granting = statementsReaching(applyStatements, 'cloudfront:CreateDistributionWithTags');
+
+      expect(granting.map((statement) => statement.sid)).toEqual(['TheDistribution']);
+      expect(resourcesOf(granting)).toContain(
+        `arn:aws:cloudfront::${defaultOf('account_id')}:distribution/*`,
+      );
+      expect(grantedOnEveryResource(applyStatements, 'cloudfront:CreateDistributionWithTags')).toBe(
+        false,
+      );
+    });
+
+    it('reads the function url, where the other reads of a function already stand', () => {
+      const granting = statementsReaching(planStatements, 'lambda:GetFunctionUrlConfig');
+
+      expect(granting.map((statement) => statement.sid)).toEqual(['DescribeWhatExists']);
+      expect(statementsReaching(planStatements, 'lambda:GetFunction')[0]?.sid).toBe(
+        'DescribeWhatExists',
+      );
+    });
+
+    it.each(bucketParts)('reads %s on the site bucket and on no other bucket', (action) => {
+      expect(resourcesOf(statementsReaching(planStatements, action))).toEqual([theBucket]);
+      expect(grantedOnEveryResource(planStatements, action)).toBe(false);
+    });
+
+    it('leaves the plan role reading, so not one of the four grants writes', () => {
+      const added = ['lambda:GetFunctionUrlConfig', ...bucketParts];
+      const actions = actionsIn(planPolicy);
+
+      expect(added.filter((action) => !actions.includes(action))).toEqual([]);
+      expect(
+        actions.filter(
+          (action) => !/^(apigateway:GET|[a-z0-9]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
+        ),
+      ).toEqual([]);
+      expect(statementsReaching(planStatements, 'cloudfront:CreateDistributionWithTags')).toEqual(
+        [],
+      );
+    });
+  });
   describe('the state', () => {
     it('sits in the shared bucket under a key of Emi own', () => {
       const backend = bodyOf('backend "s3"');
 
       expect(backend).toContain('bucket       = "abs-terraform"');
       expect(backend).toContain('key          = "emi/terraform.tfstate"');
+    });
+  });
+});
+
+describe('the website on myemi.app, which is feature 26', () => {
+  const inWebsite = (header: string): string => blockBodyOf(website, header);
+  const inModule = (header: string): string => blockBodyOf(certificateModule, header);
+  const call = (): string => inWebsite('module "certificate"');
+
+  describe('the state sits apart from the vault, so a site change cannot move her days', () => {
+    it('writes its own key in the shared bucket, with native locking', () => {
+      const backend = inWebsite('backend "s3"');
+
+      expect(backend).toContain('bucket       = "abs-terraform"');
+      expect(backend).toContain('key          = "emi/website/terraform.tfstate"');
+      expect(backend).toContain('region       = "us-east-1"');
+      expect(backend).toContain('encrypt      = true');
+      expect(backend).toContain('use_lockfile = true');
+    });
+
+    it('takes a key the vault root does not write', () => {
+      expect(inWebsite('backend "s3"')).not.toContain('"emi/terraform.tfstate"');
+      expect(bodyOf('backend "s3"')).toContain('key          = "emi/terraform.tfstate"');
+    });
+  });
+
+  describe('the zone the registration owns', () => {
+    it('is read and never declared, because a second zone takes the domain off the air', () => {
+      expect(website).toContain('data "aws_route53_zone" "site"');
+      expect(website).not.toContain('resource "aws_route53_zone"');
+      expect(certificateModule).not.toContain('resource "aws_route53_zone"');
+    });
+
+    it('is the one zone the pipeline may change a record in', () => {
+      const lookup = inWebsite('data "aws_route53_zone" "site"');
+
+      expect(valueOf(website, /zone_id\s*=\s*([^\n]+)/.exec(lookup)?.[1] ?? '')).toBe(
+        'Z06550332F4OHMRD78K',
+      );
+      expect(applyPolicy).toContain('arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K');
+    });
+  });
+
+  describe('the certificate, which CloudFront reads from us-east-1 alone', () => {
+    it('is asked for through the provider in that region', () => {
+      expect(call()).toContain('aws = aws.us_east_1');
+      expect(regionOfAlias(website, 'us_east_1')).toBe('us-east-1');
+    });
+
+    it('covers myemi.app and www.myemi.app and no other name', () => {
+      const primary = /domain_name\s*=\s*([^\n]+)/.exec(call())?.[1] ?? '';
+      const covered = [primary, ...listedIn(call(), 'other_names')].map((name) =>
+        valueOf(website, name),
+      );
+
+      expect(covered).toEqual(['myemi.app', 'www.myemi.app']);
+    });
+
+    it('is validated through the Domain Name System, which needs nobody to read an email', () => {
+      expect(inModule('resource "aws_acm_certificate" "site"')).toContain(
+        'validation_method         = "DNS"',
+      );
+    });
+
+    it('writes one validation record for each name into the zone it was handed', () => {
+      const record = inModule('resource "aws_route53_record" "validation"');
+
+      expect(certificateModule).toContain('aws_acm_certificate.site.domain_validation_options');
+      expect(record).toContain('for_each = toset(concat([var.domain_name], var.other_names))');
+      expect(record).toContain('zone_id = var.zone_id');
+      expect(call()).toContain('zone_id     = data.aws_route53_zone.site.zone_id');
+    });
+
+    it('drives no loop from a value that is unknown until the certificate exists', () => {
+      const loops = [...loopsIn(certificateModule), ...loopsIn(website)];
+
+      expect(loops).not.toEqual([]);
+      expect(loops.filter((loop) => loop.includes('domain_validation_options'))).toEqual([]);
+      expect(loops).toContain('toset(concat([var.domain_name], var.other_names))');
+    });
+
+    it('hands on an address that exists only once it is issued', () => {
+      expect(inModule('output "certificate_arn"')).toContain(
+        'aws_acm_certificate_validation.site.certificate_arn',
+      );
+      expect(inWebsite('output "certificate_arn"')).toContain('module.certificate.certificate_arn');
+    });
+
+    it('carries the tags the vault root carries, on both providers', () => {
+      const blocks = [...website.matchAll(/default_tags \{\s*tags = \{([^}]*)\}/g)].flatMap(
+        (match) => (match[1] === undefined ? [] : [match[1]]),
+      );
+
+      expect(blocks).toHaveLength(2);
+      for (const block of blocks) {
+        expect(block).toContain('Project   = var.project_name');
+        expect(block).toContain('ManagedBy = "terraform"');
+      }
+    });
+  });
+
+  describe('what the website is not allowed to hold', () => {
+    it.each([
+      'aws_db_instance',
+      'aws_rds_cluster',
+      'aws_elasticache_cluster',
+      'aws_opensearch_domain',
+      'aws_nat_gateway',
+      'aws_lb',
+      'aws_instance',
+    ])('declares no %s, because it would bill while nobody uses Emi', (kind) => {
+      expect(website).not.toContain(`resource "${kind}"`);
+      expect(certificateModule).not.toContain(`resource "${kind}"`);
+    });
+  });
+
+  describe('the pipeline reads both roots', () => {
+    it('plans and applies every Terraform root the repository holds', () => {
+      const roots = terraformRoots();
+
+      expect(roots).toEqual(['infra', 'infrastructure/website']);
+      expect(matrixRootsOf('plan')).toEqual(roots);
+      expect(matrixRootsOf('apply')).toEqual(roots);
+    });
+
+    it('formats and validates them in the job no credential reaches', () => {
+      expect(forListIn(scriptOf('check', 'format'), 'directory')).toEqual([
+        'infra',
+        'infrastructure',
+      ]);
+      expect(forListIn(scriptOf('check', 'validate'), 'root')).toEqual(terraformRoots());
+    });
+
+    it('runs at all when a change touches either directory', () => {
+      for (const event of ['pull_request', 'push']) {
+        expect(deploy.on?.[event]?.paths).toContain('infra/**');
+        expect(deploy.on?.[event]?.paths).toContain('infrastructure/**');
+      }
+    });
+  });
+});
+describe('the site on Lambda behind CloudFront, which is step 26.4', () => {
+  /**
+   * Read when a rule asks for it, so a module that is not written yet fails the rules that read it
+   * and not the whole file, which would take the ninety rules above down with it.
+   */
+  const siteModule = (): string =>
+    configurationOf(join(repositoryRoot, 'infrastructure', 'modules', 'nextjs-site'));
+
+  const inSite = (header: string): string => blockBodyOf(siteModule(), header);
+
+  /** How many times a line appears in the module, so a rule can say "on every behaviour". */
+  const times = (line: string): number => siteModule().split(line).length - 1;
+
+  /**
+   * The address a browser asks for each file under `apps/website/public`, read down through the
+   * subfolders. Next.js copies that folder into the assets of the build under these same names, so
+   * a file here is a file in the bucket, and one the distribution never asks the bucket for is a
+   * 404 on a page.
+   */
+  const addressesOfThePublicFolder = (): string[] => {
+    const folder = join(repositoryRoot, 'apps', 'website', 'public');
+
+    return readdirSync(folder, { encoding: 'utf8', recursive: true })
+      .filter((entry) => statSync(join(folder, entry)).isFile())
+      .map((entry) => `/${entry.split(sep).join('/')}`)
+      .sort();
+  };
+
+  describe('the assets, in a bucket only the distribution reads, which is SITE-2', () => {
+    it('blocks every way a bucket can be made public', () => {
+      const block = inSite('resource "aws_s3_bucket_public_access_block" "assets"');
+
+      expect(block).toContain('block_public_acls       = true');
+      expect(block).toContain('block_public_policy     = true');
+      expect(block).toContain('ignore_public_acls      = true');
+      expect(block).toContain('restrict_public_buckets = true');
+    });
+
+    it('lets no access control list say who reads it', () => {
+      expect(inSite('resource "aws_s3_bucket_ownership_controls" "assets"')).toContain(
+        'object_ownership = "BucketOwnerEnforced"',
+      );
+    });
+
+    it('writes every object encrypted', () => {
+      expect(
+        inSite('resource "aws_s3_bucket_server_side_encryption_configuration" "assets"'),
+      ).toContain('sse_algorithm = "AES256"');
+    });
+
+    it('is read by this distribution and by no other principal', () => {
+      const policy = inSite('data "aws_iam_policy_document" "assets"');
+      const [statement] = statementsIn(policy);
+
+      expect(statement?.actions).toEqual(['s3:GetObject']);
+      expect(policy).toContain('identifiers = ["cloudfront.amazonaws.com"]');
+      expect(policy).toContain('variable = "AWS:SourceArn"');
+      expect(policy).toContain('values   = [aws_cloudfront_distribution.site.arn]');
+    });
+
+    it('turns on no website endpoint, so the bucket has no address of its own', () => {
+      expect(siteModule()).not.toContain('aws_s3_bucket_website_configuration');
+    });
+
+    it('carries the account in its name, because a bucket name is global', () => {
+      expect(inSite('locals')).toContain(
+        'bucket_name   = "${var.project_name}-website-${var.account_id}"',
+      );
+    });
+  });
+
+  describe('the server function, reachable only through the distribution, which is SITE-2', () => {
+    it('answers a function url that refuses a call nobody signed', () => {
+      expect(inSite('resource "aws_lambda_function_url" "server"')).toContain(
+        'authorization_type = "AWS_IAM"',
+      );
+    });
+
+    it('is called by this distribution and by no other principal', () => {
+      const permission = inSite('resource "aws_lambda_permission" "server"');
+
+      expect(permission).toContain('action                 = "lambda:InvokeFunctionUrl"');
+      expect(permission).toContain('principal              = "cloudfront.amazonaws.com"');
+      expect(permission).toContain('source_arn             = aws_cloudfront_distribution.site.arn');
+      expect(permission).toContain('function_url_auth_type = "AWS_IAM"');
+    });
+
+    // A function url behind an origin access control is authorised twice, once for the url and
+    // once for the function underneath it. With only the url name granted, every signed request
+    // from the distribution answered 403, pointing at function url authorization.
+    it('is granted both names an invoke through a function url is checked against', () => {
+      const named = [...siteModule().matchAll(/"aws_lambda_permission" "(\w+)"/g)].flatMap(
+        (found) => (found[1] === undefined ? [] : [found[1]]),
+      );
+      const blockOf = (name: string): string =>
+        inSite(`resource "aws_lambda_permission" "${name}"`);
+      const actions = named.map((name) => /action\s+=\s+"([^"]+)"/.exec(blockOf(name))?.[1]);
+
+      expect([...actions].sort()).toEqual(['lambda:InvokeFunction', 'lambda:InvokeFunctionUrl']);
+
+      // Read as values rather than as lines, because the two blocks align their names to
+      // different widths and the rule is about who may call, not about the formatting.
+      const valueOf = (block: string, field: string): string | undefined =>
+        new RegExp(`${field}\\s+=\\s+(\\S+)`).exec(block)?.[1];
+
+      for (const name of named) {
+        expect(valueOf(blockOf(name), 'principal')).toBe('"cloudfront.amazonaws.com"');
+        expect(valueOf(blockOf(name), 'source_arn')).toBe('aws_cloudfront_distribution.site.arn');
+      }
+    });
+
+    it('runs on the runtime, the size and the entry point the step names', () => {
+      const server = inSite('resource "aws_lambda_function" "server"');
+
+      expect(server).toContain('handler       = "index.handler"');
+      expect(server).toContain('runtime       = "nodejs22.x"');
+      expect(server).toContain('architectures = ["arm64"]');
+      expect(server).toContain('memory_size   = 1024');
+      expect(server).toContain('timeout       = 10');
+    });
+
+    it('keeps its log lines for a fortnight, because a page view needs no longer', () => {
+      const group = inSite('resource "aws_cloudwatch_log_group" "server"');
+
+      expect(group).toContain('name              = "/aws/lambda/${local.function_name}"');
+      expect(group).toContain('retention_in_days = 14');
+    });
+
+    it('may write its own logs and nothing else, so a fault here cannot reach her days', () => {
+      const [statement] = statementsIn(inSite('data "aws_iam_policy_document" "server"'));
+
+      expect(statement?.actions).toEqual(['logs:CreateLogStream', 'logs:PutLogEvents']);
+      expect(statement?.resources).toEqual(['${aws_cloudwatch_log_group.server.arn}:*']);
+    });
+
+    it('keeps the code a deploy puts there, so an apply cannot put the placeholder back', () => {
+      expect(inSite('resource "aws_lambda_function" "server"')).toContain(
+        'ignore_changes = [filename, source_code_hash, layers, publish]',
+      );
+    });
+
+    it('starts from the artifact a Lambda runtime can resolve, which is not TypeScript', () => {
+      expect(inSite('data "archive_file" "placeholder"')).toContain(
+        'source_file = "${path.module}/code/index.mjs"',
+      );
+    });
+  });
+
+  describe('both origins are signed, so neither answers the address it has of its own', () => {
+    it.each([
+      ['assets', 's3'],
+      ['server', 'lambda'],
+    ])('signs every request CloudFront makes to the %s origin', (origin, kind) => {
+      const control = inSite(`resource "aws_cloudfront_origin_access_control" "${origin}"`);
+
+      expect(control).toContain(`origin_access_control_origin_type = "${kind}"`);
+      expect(control).toContain('signing_behavior                  = "always"');
+      expect(control).toContain('signing_protocol                  = "sigv4"');
+      expect(inSite('resource "aws_cloudfront_distribution" "site"')).toContain(
+        `origin_access_control_id = aws_cloudfront_origin_access_control.${origin}.id`,
+      );
+    });
+  });
+
+  describe('every response carries the six headers of SITE-6', () => {
+    const policy = (): string => inSite('resource "aws_cloudfront_response_headers_policy" "site"');
+
+    it('asks for https for two years, under every name under myemi.app', () => {
+      expect(policy()).toContain('access_control_max_age_sec = 63072000');
+      expect(policy()).toContain('include_subdomains         = true');
+    });
+
+    it('allows the origin of the site and nothing else', () => {
+      expect(policy()).toContain(
+        `content_security_policy = "default-src 'self'; frame-ancestors 'none'"`,
+      );
+    });
+
+    it('refuses a frame and a guess at a content type', () => {
+      expect(policy()).toContain('frame_option = "DENY"');
+      expect(policy()).toContain('content_type_options {');
+    });
+
+    it('sends no path of hers to another site', () => {
+      expect(policy()).toContain('referrer_policy = "strict-origin-when-cross-origin"');
+    });
+
+    it('refuses the camera, the microphone and her location, which is the sixth', () => {
+      expect(policy()).toContain('header   = "Permissions-Policy"');
+      expect(policy()).toContain('value    = "camera=(), microphone=(), geolocation=()"');
+    });
+
+    it('is set over whatever a page answered, except the policy a page sets for itself', () => {
+      const overrides = [...policy().matchAll(/override\s*=\s*(\w+)/g)].map((found) => found[1]);
+      const kept = [...policy().matchAll(/(\w+) \{\s*[^}]*override\s*=\s*false/g)].map(
+        (found) => found[1],
+      );
+
+      expect(overrides).toHaveLength(6);
+      // Five are the edge's to state, and nothing a page says may take them off. The sixth is the
+      // content policy, and the page writes a secret into that one for each response, so the edge
+      // keeps what the page sent and adds its own only where a page sent none, which is a file
+      // from the bucket.
+      expect(overrides.filter((value) => value !== 'true')).toEqual(['false']);
+      expect(kept).toEqual(['content_security_policy']);
+      expect(
+        times('response_headers_policy_id = aws_cloudfront_response_headers_policy.site.id'),
+      ).toBe(2);
+    });
+  });
+
+  describe('the distribution, which is the only way in', () => {
+    const distribution = (): string => inSite('resource "aws_cloudfront_distribution" "site"');
+
+    it('turns http into https on every behaviour, which closes SITE-1', () => {
+      expect(times('viewer_protocol_policy     = "redirect-to-https"')).toBe(2);
+      expect(distribution()).not.toContain('allow-all');
+    });
+
+    it('answers for the apex and for www, with the certificate of step 26.3', () => {
+      expect(distribution()).toContain(
+        'aliases             = concat([var.domain_name], var.other_names)',
+      );
+      expect(distribution()).toContain('acm_certificate_arn      = var.certificate_arn');
+      expect(distribution()).toContain('minimum_protocol_version = "TLSv1.2_2021"');
+    });
+
+    it('speaks the two newer versions of http', () => {
+      expect(distribution()).toContain('http_version        = "http2and3"');
+    });
+
+    it('keeps a page for as long as the page says, and no longer', () => {
+      const cache = inSite('resource "aws_cloudfront_cache_policy" "pages"');
+
+      expect(cache).toContain('min_ttl     = 0');
+      expect(cache).toContain('default_ttl = 0');
+    });
+
+    it('varies a cached page on the four headers the App Router answers differently for', () => {
+      const cache = inSite('resource "aws_cloudfront_cache_policy" "pages"');
+
+      expect(listedIn(blockBodyOf(cache, 'headers {'), 'items')).toEqual([
+        'next-router-prefetch',
+        'next-router-state-tree',
+        'next-url',
+        'rsc',
+      ]);
+    });
+
+    it('forwards every viewer header except Host, which a function url refuses to answer for', () => {
+      expect(distribution()).toContain('origin_request_policy_id   = local.all_viewer_except_host');
+      expect(inSite('locals')).toContain(
+        'all_viewer_except_host = "b689b0a8-53d0-40ab-baf2-68738e2966ac"',
+      );
+    });
+
+    it('sends the built files to the bucket and every other address to the function', () => {
+      const assets = blockBodyOf(distribution(), 'dynamic "ordered_cache_behavior"');
+
+      expect(listedIn(inSite('locals'), 'asset_paths')).toContain('/_next/static/*');
+      expect(assets).toContain('for_each = local.asset_paths');
+      expect(assets).toContain('target_origin_id           = "assets"');
+      expect(blockBodyOf(distribution(), 'default_cache_behavior')).toContain(
+        'target_origin_id           = "server"',
+      );
+    });
+
+    it('sends every file the site keeps beside its pages to the bucket as well', () => {
+      const addresses = addressesOfThePublicFolder();
+      const sentToTheBucket = listedIn(inSite('locals'), 'asset_paths');
+
+      expect(addresses.length).toBeGreaterThan(0);
+      expect(addresses.filter((address) => !sentToTheBucket.includes(address))).toEqual([]);
+    });
+
+    it('runs the redirect at the edge, before a request reaches either origin', () => {
+      const behaviour = blockBodyOf(distribution(), 'default_cache_behavior');
+
+      expect(behaviour).toContain('event_type   = "viewer-request"');
+      expect(behaviour).toContain('function_arn = aws_cloudfront_function.redirect.arn');
+      expect(inSite('resource "aws_cloudfront_function" "redirect"')).toContain(
+        'code    = file("${path.module}/code/redirect.js")',
+      );
+    });
+
+    it('bills the cheaper price class, because her readers are in Europe', () => {
+      expect(distribution()).toContain('price_class = "PriceClass_100"');
+    });
+  });
+
+  describe('the addresses that reach it, which closes SITE-1', () => {
+    it('points both names at the distribution, over version four and version six', () => {
+      const record = inSite('resource "aws_route53_record" "site"');
+
+      expect(record).toContain('["A", "AAAA"]');
+      expect(record).toContain(
+        'name                   = aws_cloudfront_distribution.site.domain_name',
+      );
+      expect(record).toContain('zone_id                = "Z2FDTNDATAQYW2"');
+      expect(inSite('resource "aws_cloudfront_distribution" "site"')).toContain(
+        'is_ipv6_enabled     = true',
+      );
+    });
+
+    it('writes them in the zone the registration owns, and declares no zone', () => {
+      expect(inSite('resource "aws_route53_record" "site"')).toContain('zone_id = var.zone_id');
+      expect(siteModule()).not.toContain('resource "aws_route53_zone"');
+    });
+  });
+
+  describe('the root hands the module what it cannot read for itself', () => {
+    const call = (): string => blockBodyOf(website, 'module "site"');
+
+    it('passes the certificate of step 26.3, which exists only once it is issued', () => {
+      expect(call()).toContain('source = "../modules/nextjs-site"');
+      expect(call()).toContain('certificate_arn = module.certificate.certificate_arn');
+    });
+
+    it('passes the zone it looked up and the account the bucket is named after', () => {
+      expect(call()).toContain('zone_id         = data.aws_route53_zone.site.zone_id');
+      expect(call()).toContain('account_id      = var.account_id');
+      expect(variableDefaultOf(website, 'account_id')).toBe(defaultOf('account_id'));
+    });
+
+    it('hands on what a deploy needs to name, and nothing else', () => {
+      for (const output of ['bucket_name', 'function_name', 'distribution_id']) {
+        expect(blockBodyOf(website, `output "${output}"`)).toContain(`module.site.${output}`);
+      }
+    });
+  });
+
+  describe('what the module is not allowed to hold', () => {
+    it.each([
+      'aws_db_instance',
+      'aws_rds_cluster',
+      'aws_elasticache_cluster',
+      'aws_opensearch_domain',
+      'aws_nat_gateway',
+      'aws_lb',
+      'aws_instance',
+    ])('declares no %s, because it would bill while nobody uses Emi', (kind) => {
+      expect(siteModule()).not.toContain(`resource "${kind}"`);
     });
   });
 });

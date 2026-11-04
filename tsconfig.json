@@ -14,5 +14,5 @@
     "noEmit": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["brand", "tools"]
+  "include": ["brand", "infrastructure", "tools"]
 }

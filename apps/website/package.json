@@ -1,0 +1,43 @@
+{
+  "name": "@emi/website",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "dev": "NEXT_TELEMETRY_DISABLED=1 next dev",
+    "build": "NEXT_TELEMETRY_DISABLED=1 next build",
+    "build:lambda": "NEXT_TELEMETRY_DISABLED=1 open-next build && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/copyTheServerChunks.ts",
+    "start": "NEXT_TELEMETRY_DISABLED=1 next start",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --ci",
+    "test:e2e": "npm run build && npm run test:e2e:run",
+    "test:e2e:run": "bddgen test && playwright test && node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON e2e/refuseAnEmptyRun.ts e2e/report/scenarios.json"
+  },
+  "dependencies": {
+    "@emi/tokens": "*",
+    "@radix-ui/react-separator": "1.2.0",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "next": "16.4.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tailwind-merge": "3.7.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@babel/core": "7.29.7",
+    "@babel/plugin-transform-react-jsx": "7.29.7",
+    "@babel/preset-env": "7.29.7",
+    "@babel/preset-typescript": "7.29.7",
+    "@opennextjs/aws": "4.1.14",
+    "@playwright/test": "1.64.1",
+    "@tailwindcss/node": "4.3.3",
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/pngjs": "6.0.5",
+    "@types/react-dom": "~19.2.7",
+    "pixelmatch": "8.0.0",
+    "playwright-bdd": "9.2.1",
+    "pngjs": "7.0.0",
+    "tailwindcss": "4.3.3"
+  }
+}

@@ -1,0 +1,211 @@
+import type { SiteWords } from './words';
+
+/**
+ * Every word the site draws in Russian. The notes in english.ts hold for this file too.
+ *
+ * The honesty gate holds this file to a list of Russian stems, and the ordinary words for keeping
+ * something out of reach are on it, because in Russian they read as the promise Emi does not make.
+ * So the sentences about her records reach for other words: `оберегает` where the English says
+ * protects, `зашифрованы` for encrypted, and `спокойно` where the English says safe.
+ */
+export const russian: SiteWords = {
+  brandLine: 'Emi. Every Month Insights.',
+  store: 'Загрузите в App Store',
+  storeSmall: 'Загрузите в',
+  price: 'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
+  languageLabel: 'Язык',
+  pageDescription: 'Трекер цикла и менструаций, который оставляет ваши записи вам.',
+  sharePictureAlt:
+    'Иконка Emi, заголовок «Понимайте своё тело бережно» и кольцо цикла на дне 8 из примерно 31, фолликулярная фаза.',
+
+  heroHeadline: 'Понимайте своё тело бережно.',
+  heroLine:
+    'Emi начинает с вашего цикла: прогноз по вашим собственным данным и то, насколько он точен. Затем точные знания и сообщество, где можно спросить о том, о чём говорить не принято. Ваши данные всегда зашифрованы.',
+  heroPriceLine: 'Первый месяц бесплатно.',
+  heroCancel: 'Отменить можно в любой момент.',
+  ringLabel: 'Кольцо цикла, день {day} из примерно 31, {phase}.',
+  ringPeriod: 'МЕСЯЧНЫЕ',
+  ringFollicular: 'ФОЛЛИКУЛЯРНАЯ ФАЗА',
+  ringOvulation: 'ОВУЛЯЦИЯ',
+  ringLuteal: 'ЛЮТЕИНОВАЯ ФАЗА',
+  ringDay: 'День {day}',
+  ringOfAbout: 'из примерно 31',
+  ringMove: 'Пройдите по циклу',
+
+  cycleEyebrow: 'ВАШ ЦИКЛ',
+  cycleHeadline: 'Диапазон дней и то, насколько Emi уверена.',
+  cycleLine:
+    'Emi учится на ваших собственных циклах, а не на среднем значении. Она даёт окно, а не одну дату, и говорит, насколько уверена. Пока у неё нет двух полных циклов, она говорит, что ещё учится.',
+  cycleScreenAlt: 'Главный экран Emi с кольцом на дне 8 из примерно 31.',
+  cycleNextLabel: 'Ваши следующие месячные',
+  cycleNextRange: 'Между 8 и 14 октября',
+  cycleNextConfidence: 'Высокая уверенность, по вашим последним 6 циклам',
+  cycleDenial: 'Emi не является средством контрацепции и не является медицинским изделием.',
+
+  learnEyebrow: 'ОБУЧЕНИЕ',
+  learnHeadline: 'Точные ответы на вопросы, которые не принято задавать.',
+  learnLine:
+    'Понятные руководства о том, что делает ваше тело в каждой фазе и что может помочь. Написано просто, без стеснения.',
+  learnPeriodLabel: 'МЕСЯЧНЫЕ',
+  learnPeriodTitle: 'Спазмы, усталость и что может помочь.',
+  learnFollicularLabel: 'ФОЛЛИКУЛЯРНАЯ',
+  learnFollicularTitle: 'Дни после месячных.',
+  learnOvulationLabel: 'ОВУЛЯЦИЯ',
+  learnOvulationTitle: 'Оценка по вашим прошлым циклам.',
+  learnLutealLabel: 'ЛЮТЕИНОВАЯ',
+  learnLutealTitle: 'Спазмы в лютеиновой фазе и не только.',
+
+  communityEyebrow: 'СООБЩЕСТВО',
+  communityHeadline: 'Место, где можно спросить и помочь друг другу.',
+  communityLine:
+    'Сообщество Emi собирает людей, которые задают вопросы, делятся тем, что им помогло, и предлагают, что Emi сделать дальше.',
+  communityJoin: 'Присоединиться к сообществу Emi в Telegram ›',
+  parentsEyebrow: 'ДЛЯ РОДИТЕЛЕЙ И ДОЧЕРЕЙ',
+  parentsHeadline: 'Начните разговор раньше.',
+  parentsLine:
+    'Точные сведения, которыми можно поделиться с дочерью, о том, о чём до сих пор трудно говорить. Учитесь вместе, там, где спокойно.',
+
+  noteEyebrow: 'ПОЧЕМУ МЫ СОЗДАЁМ EMI',
+  founderControlsLabel: 'управление рассказами основателей',
+  founderPrevious: 'Предыдущий основатель',
+  founderNext: 'Следующий основатель',
+  founderIuliiaRole: 'Соосновательница Emi, ведущая сообщества Emi',
+  founderJulianRole: 'Сооснователь Emi',
+  founderJulianNote:
+    'У меня две дочери. Я создаю Emi, чтобы у них было спокойное место, где можно понять своё тело: точные сведения, знания о том, что до сих пор под запретом, и сообщество, где можно спросить без осуждения, с юных лет. И попутно помочь всем остальным, кому нужно то же самое.',
+
+  reviewsEyebrow: 'ОТЗЫВЫ',
+  reviewsHeadline: 'Что люди говорят об Emi.',
+  reviewsRating: '[RATING] в App Store, из [COUNT] оценок',
+  reviewControlsLabel: 'управление отзывами',
+  reviewPrevious: 'Предыдущий отзыв',
+  reviewNext: 'Следующий отзыв',
+  reviewFromTheStore: 'Отзыв в App Store',
+  reviewFromTheCommunity: 'Участница сообщества Emi',
+  reviewFromTheBeta: 'Тестировщица в TestFlight',
+
+  carouselPause: 'Пауза',
+  carouselPlay: 'Пуск',
+
+  privacyHeadline: 'Ваши данные всегда зашифрованы.',
+  privacyLink: 'Как Emi оберегает ваши данные ›',
+
+  tryTitle: 'Пока не готовы скачивать?',
+  tryLine: 'Попробуйте бесплатный калькулятор. Ничего из введённого не покидает страницу.',
+  tryLink: 'Когда мои следующие месячные? ›',
+  askTitle: 'Вопросы?',
+  askLine: 'Мы отвечаем на английском, русском и испанском.',
+  askLink: 'Перейти в поддержку ›',
+
+  protectionEyebrow: 'Приватность',
+  protectionHeadline: 'Ваши дни принадлежат вам.',
+  protectionHeadlineQuiet: 'Не нам.',
+  protectionLine:
+    'Emi шифрует каждый день на вашем телефоне ключом, который остаётся на телефоне. Код открыт, и вы можете сверить эту страницу с ним.',
+  protectionReadTheCode: 'Открыть код',
+  protectionReadTheDocument: 'Читать полный документ ›',
+  protectionScreenAlt:
+    'Экран «Приватность» в Emi. На нём написано: ваши дни можете читать только вы. Зашифровано на этом телефоне ключом, который есть только у вас.',
+
+  protectionDayHeadline: 'Что происходит с одним днём.',
+  protectionLogTitle: 'Вы записываете день.',
+  protectionLogLine: 'Месячные, симптомы, настроение, секс или заметка.',
+  protectionSealTitle: 'Телефон запечатывает его.',
+  protectionSealLine:
+    'Emi шифрует день до того, как записать его. Ключ лежит в связке ключей вашего iPhone.',
+  protectionLeavesTitle: 'Наружу уходит только результат.',
+  protectionLeavesLine:
+    'При синхронизации сервер хранит шифртекст, номер ревизии и время записи. Ключа у него нет.',
+  protectionBuilt: 'Уже в приложении',
+  protectionNotBuilt: 'Спроектировано, ещё не сделано',
+
+  protectionKeysHeadline: 'У кого ключи.',
+  protectionKeysHeadlineQuiet: 'Не у Emi.',
+  protectionPhoneTitle: 'Ваш телефон',
+  protectionPhoneLine: 'Ключ хранилища шифрует каждый день. Он никогда не покидает телефон.',
+  protectionYouTitle: 'Вы',
+  protectionYouLine:
+    'Код восстановления из 26 символов, показанный один раз. Держите его отдельно от телефона.',
+  protectionEmiLine:
+    'Ключа нет. Поэтому ни один запрос к Emi или к Amazon Web Services не вернёт ни одного вашего дня.',
+
+  protectionLimitsHeadline: 'От чего Emi не спасает.',
+  protectionLimitsLine:
+    'Четыре предела, названные здесь и не спрятанные. Каждый говорит, что вы можете сделать.',
+  protectionLostTitle: 'Потерян телефон и потерян код',
+  protectionLostLine: 'Дни пропали. Emi, которая могла бы их вернуть, могла бы их и прочитать.',
+  protectionUnlockedTitle: 'Телефон, который кто-то может разблокировать',
+  protectionUnlockedLine:
+    'Он прочитает экран. Держите блокировку приложения включённой. Она включена по умолчанию.',
+  protectionHostileTitle: 'Телефон с враждебной программой',
+  protectionHostileLine:
+    'Ни одно приложение не устоит против системы изнутри. Обновляйте iOS вовремя.',
+  protectionOutsideTitle: 'Что узнаёт внешний мир',
+  protectionOutsideLine:
+    'При синхронизации сервер узнаёт, сколько у вас записей и когда была сделана каждая.',
+
+  // Политика приватности, по boards/Privacy.dc.html.
+  policyUpdated: 'ПОСЛЕДНЕЕ ОБНОВЛЕНИЕ [DATE]',
+  policyTitle: 'Политика приватности',
+  policyLine: 'Мы не можем прочитать ваши записи. На этой странице сказано почему.',
+  policyNoAccount: 'Аккаунт не нужен',
+  policyNoTracking: 'Никакой слежки',
+  policyEncrypted: 'Зашифровано на вашем телефоне',
+  policyWhoTitle: 'Кто мы',
+  policyWhoLine: 'Emi делает Atlantic Blue Solutions Limited.',
+  policyStoresTitle: 'Что хранит Emi',
+  policyStoresLine:
+    'Emi хранит даты, симптомы, настроение и секс, которые вы отмечаете. Они остаются на вашем телефоне. Emi шифрует каждый день перед записью, ключом, который лежит в связке ключей вашего iPhone.',
+  policyHowTheEncryptionWorks: 'Как работает шифрование ›',
+  policyCollectTitle: 'Что мы собираем',
+  policyCollectLine:
+    'Ничего. Нет аккаунта, нет аналитики, нет рекламы и нет слежки. Мы не можем прочитать ваши записи.',
+  policySharingTitle: 'Передача',
+  policySharingLine:
+    'Ваши записи покидают телефон только когда вы выгружаете файл. Вы выбираете, куда он идёт.',
+  policyRemindersTitle: 'Напоминания и Face ID',
+  policyRemindersLine:
+    'Напоминания планируются на вашем телефоне. Их не отправляет никакой сервер. Face ID обрабатывает iOS, поэтому Emi никогда не видит данные вашего лица.',
+  policyDeletingTitle: 'Удаление',
+  policyDeletingLine:
+    'Удалите Emi или нажмите «Удалить данные» в приложении. Любое из двух убирает с телефона всё.',
+  policyChildrenTitle: 'Дети',
+  policyChildrenLine: 'Emi не предназначена для детей младше 13 лет.',
+  policyContactTitle: 'Связь и изменения',
+  policyContactBefore: 'Вопросы о приватности пишите на',
+  policyContactAfter: '. Когда политика меняется, меняется и дата сверху.',
+
+  headerHomeLabel: 'Главная страница Emi',
+  headerMainLabel: 'Основное',
+  headerEmi: 'Emi',
+  headerPrivacy: 'Приватность',
+  headerCalculator: 'Калькулятор',
+  headerPulse: 'Пульс',
+  headerBuy: 'Купить',
+  headerSupport: 'Поддержка',
+  headerLanguageLabel: 'Сменить язык',
+  headerMenuLabel: 'Открыть меню',
+  headerSignInLabel: 'Войти',
+
+  footerDisclaimer:
+    'Emi не является средством контрацепции и не является медицинским изделием. Прогноз даёт оценку по вашим прошлым циклам. Первый месяц бесплатно при месячной подписке в App Store.',
+  footerEmiGroup: 'Emi',
+  footerAppStore: 'App Store',
+  footerBeta: 'Участвовать в тестировании',
+  footerBuyOnTheWeb: 'Купить на сайте',
+  footerPrivacyGroup: 'Приватность',
+  footerHowEmiProtects: 'Как Emi оберегает ваши данные',
+  footerOpenCode: 'Открытый код',
+  footerTransparency: 'Отчёт о прозрачности',
+  footerLearnGroup: 'Обучение',
+  footerCalculator: 'Калькулятор следующих месячных',
+  footerGuides: 'Руководства по фазам',
+  footerPulse: 'Emi Пульс',
+  footerHelpGroup: 'Помощь',
+  footerSupport: 'Поддержка',
+  footerCommunity: 'Сообщество Emi',
+  footerAccount: 'Ваш аккаунт',
+  footerCopyright: 'Авторское право 2026 Atlantic Blue Solutions Limited.',
+  footerPrivacyPolicy: 'Политика приватности',
+  footerTerms: 'Условия',
+};

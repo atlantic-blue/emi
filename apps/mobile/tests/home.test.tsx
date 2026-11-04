@@ -51,6 +51,7 @@ describe('the home screen', () => {
       'Hello',
       cycleCopy.noRing.title,
       cycleCopy.noRing.line,
+      homeCopy.periodAction.log,
       // No ring means no phase to open, so the Cycle phase action is not drawn on this screen.
       homeCopy.roundAction.sex,
       homeCopy.roundAction.period,

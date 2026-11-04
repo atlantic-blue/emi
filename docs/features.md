@@ -1,7 +1,8 @@
 # The features of Emi, and what version 1 does not do
 
 Emi is a period and cycle tracker. Emi stands for Every Month Insights. Seven features build
-version 1. An eighth feature writes the documents you are reading now.
+version 1. An eighth feature writes the documents you are reading now. A ninth feature puts the
+website on myemi.app.
 
 This document is the map. It names each feature, and it names every contract that the feature
 builds. It also carries the long term list, which is the whole product the operator wants, and it
@@ -30,7 +31,7 @@ flowchart LR
   S --> F2["2. She logs her first period"]
   S --> F3["3. Emi predicts"]
   S --> F4["4. She logs how she feels"]
-  S --> F7["7. She pays for a year"]
+  S --> F7["7. She pays every month"]
   S --> F8["8. Anybody can read how it works"]
   F2 --> F5["5. Nobody else can read her data"]
   F5 --> F6["6. Her cycle survives a new phone"]
@@ -175,17 +176,17 @@ The contracts it builds:
 - `AUTH-1` the request signature, over the method, the path, the instant and the hash of the body.
 - `KEEP-1` a log line that carries a request identifier and a duration, and nothing about her.
 
-## Feature 7: She pays for a year, and the price is the promise
+## Feature 7: She pays every month, and the price is the promise
 
-One month free, then 29.99 pounds a year. Read and export stay open forever if she stops paying. Six
-steps.
+One month free, then 29.99 pounds a month. Read and export stay open forever if she stops
+paying. Six steps.
 
 The price is the product. There is no free tier, because a free tier is paid for with her data.
 
 The contracts it builds:
 
-- `PAY-1` one yearly product at 29.99 pounds, with a one month introductory free period, in both
-  stores.
+- `PAY-1` one monthly auto renewing product at 29.99 pounds, with a one month introductory free
+  period, in both stores.
 - `PAY-2` the entitlement, read on launch, kept when the store cannot be reached.
 - `PAY-3` the receipt checked on the server, against the store that issued it.
 - `PAY-4` a lapse that stops new writes and nothing else.
@@ -197,6 +198,29 @@ The architecture, the privacy claim, the brand, this map and a readme in every p
 
 This feature builds no contract of its own. It writes down what the other seven build, and it adds
 the pipeline checks that stop these documents drifting from the code.
+
+## Feature 9: The website on myemi.app
+
+The home page on myemi.app, in English, Russian and Spanish, served as static files. Six steps.
+
+The site carries the privacy policy and the support page the App Store review asks for, so it
+arrives before the first submission.
+
+It is the first thing a woman sees who is not holding the application yet, so it keeps the promise
+the application keeps. No third party, no cookie, and no script that counts her visit.
+
+The contracts it builds:
+
+- `SITE-1` the domain, with one certificate for `myemi.app` and `www.myemi.app`, and http that
+  answers 301 to https.
+- `SITE-2` the two origins, a private bucket of the assets and a server function on Lambda,
+  each reached by the distribution alone.
+- `SITE-3` the three languages, each with a home page, and an address that does not exist answering
+  404 with an Emi page.
+- `SITE-4` the pages, rendered by Next.js through OpenNext and drawn from the tokens.
+- `SITE-5` the deploy, which a merge into `main` runs and a pull request never does.
+- `SITE-6` the six headers, on every response, the content policy of a page carrying a nonce
+  made for that one response.
 
 ## The long term list
 
@@ -318,7 +342,7 @@ its condition.
 
 ### Money
 
-- 29.99 pounds a year. State: in version 1, `PAY-1`.
+- 29.99 pounds a month. State: in version 1, `PAY-1`.
 - No free tier paid for with her data. State: in version 1, `KEEP-4`.
 - The price is the trust signal. State: in version 1, `PAY-1`.
 

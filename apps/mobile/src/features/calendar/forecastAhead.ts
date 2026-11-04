@@ -42,6 +42,8 @@ export interface CycleAhead {
   readonly startsOn: string;
   /** The last ringed day it may start on. */
   readonly ringedTo: string;
+  /** The middle of the days it may start on, where the arithmetic puts the start. */
+  readonly likelyFrom: string;
   /** The days it may start on, which is what the day card says. */
   readonly mayStart: DayRange;
   readonly lengthDays: number;
@@ -93,12 +95,17 @@ export function theCyclesAhead(from: RingInputFrom): CycleAhead[] {
   }).filter((cycle) => isStillAhead(cycle, from.today));
 }
 
-function theRingedStart(mayStart: DayRange): { startsOn: string; ringedTo: string } {
+function theRingedStart(mayStart: DayRange): {
+  startsOn: string;
+  ringedTo: string;
+  likelyFrom: string;
+} {
   const middle = addDays(mayStart.from, Math.floor(daysBetween(mayStart.from, mayStart.to) / 2));
   const from = addDays(middle, -RINGED_DAYS_EITHER_SIDE);
   const to = addDays(middle, RINGED_DAYS_EITHER_SIDE);
 
   return {
+    likelyFrom: middle,
     startsOn: from > mayStart.from ? from : mayStart.from,
     ringedTo: to < mayStart.to ? to : mayStart.to,
   };
@@ -142,6 +149,14 @@ export function theDayOfTheCycleAhead(cycle: CycleAhead, day: string): number {
 /** Whether a date is one of the ringed days of a forecast period. */
 export function isAForecastPeriodDay(cycle: CycleAhead, day: string): boolean {
   return day >= cycle.startsOn && day <= theLastRingedDay(cycle);
+}
+
+/**
+ * Whether a date is one of the period days counted from the middle of the range, which the month
+ * marks more strongly than the ringed days either side of them.
+ */
+export function isALikelyPeriodDay(cycle: CycleAhead, day: string): boolean {
+  return day >= cycle.likelyFrom && day <= addDays(cycle.likelyFrom, cycle.periodDays - 1);
 }
 
 /**

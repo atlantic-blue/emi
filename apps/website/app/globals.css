@@ -1,0 +1,15 @@
+/*
+ * The one stylesheet the site serves. It holds no colour, no size, no gap and no corner of its
+ * own: every value comes from the theme named below, which reads packages/tokens.
+ *
+ * Tailwind reads a directory for the classes it must write rules for, and it reads the whole
+ * repository unless it is told where to look. The two directories a page is built from are named
+ * here, so a word that looks like a class in some other file never becomes a rule the browser
+ * downloads.
+ */
+@import 'tailwindcss' source(none);
+
+@source './';
+@source '../components/';
+
+@config '../tailwind.config.ts';

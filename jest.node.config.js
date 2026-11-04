@@ -10,6 +10,9 @@ module.exports = {
     '<rootDir>/packages/**/tests/**/*.test.ts',
     '<rootDir>/services/**/tests/**/*.test.ts',
     '<rootDir>/tools/**/*.test.ts',
+    // The Terraform modules carry the TypeScript of a CloudFront function and a Lambda handler,
+    // and a test under a directory no tier reads is a test that never runs.
+    '<rootDir>/infrastructure/**/tests/**/*.test.ts',
     '<rootDir>/brand/**/tests/**/*.test.ts',
     '<rootDir>/brand/**/tests/**/*.test.tsx',
   ],

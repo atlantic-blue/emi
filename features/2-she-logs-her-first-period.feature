@@ -437,7 +437,7 @@ Feature: She opens Emi and logs her first period
     And every one of those before her next forecast period is the day the ring says for that date
     And the count starts again at 1 on the day the forecast puts her next period on
     And the days she bled are filled
-    And the days the forecast puts her next period on are dashed rings
+    And the most likely days of her next forecast period are dashed rings, and the days either side are dotted rings
     And today is ringed
     And every square is as high as a thumb needs, and takes its width from the month
 
@@ -489,7 +489,7 @@ Feature: She opens Emi and logs her first period
     Given her phone holds three recorded cycles
     When she opens the month
     And she presses the way to a later month
-    Then the forecast period in that month is drawn in dashed rings, and its cycle day starts at 1
+    Then the forecast period in that month is drawn in dashed and dotted rings, and its cycle day starts at 1
     And the fertile window of that forecast cycle is tinted, with its ovulation day filled
     When she presses the first day of that forecast period
     Then the card says a later period is likely to start between that day and a later one
@@ -680,7 +680,9 @@ Feature: She opens Emi and logs her first period
     And the days she bled are filled with the colour of her period
     And every day of the fertile window the forecast names is tinted
     And the one day the forecast names as the estimated ovulation is filled
-    And a legend above the grid names her period, the forecast and her fertile days
+    And a legend above the grid names her period, the forecast, the possible days and her fertile days
+    And a line above the legend says in how many days her next period is likely to start
+    And the day of her cycle over each date is smaller and paler than the date
     When she presses the day the drawing names
     Then a card at the foot names that day, over the way to her whole period
     And pressing the open button on that card opens the day it names
@@ -745,6 +747,13 @@ Feature: She opens Emi and logs her first period
     And the welcome says what she can log, that there is no account, what Emi is not, and that her records can help at a doctor
     And the tour after it draws the ring with its legend, says what the ring is, and names the price
     And the welcome and the tour are in her own language, and say no word a screen refuses
+
+  Scenario: SCREEN-1, the tour says 29.99 pounds a month in every language
+    Given she has never opened Emi before
+    When she opens Emi and reads the card about money on the tour
+    Then the card tells her the first month is free and the price after it is 29.99 pounds a month
+    And a woman who reads Emi in Russian or in Spanish is told the same free month and the same price
+    And no language still tells her the price buys her a year
 
   Scenario: SCREEN-1, the first run asks her name and then the year she was born
     Given she has never opened Emi before
@@ -1010,16 +1019,26 @@ Feature: She opens Emi and logs her first period
     When she opens Today again the same day
     Then the sheet does not show again
 
-  Scenario: SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2
-    Given her phone holds her first run answers and not one recorded day
+  Scenario: SCREEN-2, she logs a period that started yesterday from Home in one press, and the ring says day 2
+    Given her phone holds her first run answers with a period of five days, and not one recorded day
     When she opens Emi
-    And she presses Period under the ring
-    And she presses Started on another day?
-    Then she is looking at the period picker, and it lists today
-    When she presses today, then Add the day before, and saves
+    And she presses Log period, the one action under the ring
+    Then she is on the Period page of today, and the date is its first choice, with Today chosen
+    And the page carries no link Started on another day?
+    When she presses Yesterday, then Medium, and saves
     Then she is on the screen she opened, and no Period page is left under it
     And her period started yesterday
     And the ring says she is on day 2 of a cycle of the length she gave
+    And the action under the ring says End period
+
+  Scenario: SCREEN-2, she ends her period from Home in one press
+    Given her phone holds her first run answers with a period of five days, and one bleeding day, yesterday
+    When she opens Emi
+    Then the action under the ring says End period
+    When she presses End period
+    Then her phone holds no bleeding on today, sealed
+    And her period lasted one day
+    And she is still on the screen she opened, and the action under the ring says Log period
 
   Scenario: SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast
     Given her phone holds one period and the cycle length she gave

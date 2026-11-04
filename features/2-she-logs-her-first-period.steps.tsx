@@ -9,6 +9,7 @@ import {
   CYCLES_BEFORE_A_FORECAST,
   addDays,
   cyclePhaseDays,
+  daysBetween,
   findSymptom,
   ovulationDayWhileLearning,
   type PublishedFigure,
@@ -164,6 +165,7 @@ import {
   calendarEarlierTestID,
   calendarEditPeriodTestID,
   calendarLaterTestID,
+  calendarNextPeriodTestID,
   calendarTodayTestID,
 } from '../apps/mobile/src/features/calendar/CalendarScreen';
 import {
@@ -173,11 +175,16 @@ import {
   daySheetRemovePeriodDayTestID,
   daySheetTestID,
 } from '../apps/mobile/src/features/calendar/DaySheet';
-import { sexMarkTestID } from '../apps/mobile/src/features/calendar/CycleMonth';
+import {
+  cycleDayTestID,
+  dateTestID,
+  sexMarkTestID,
+} from '../apps/mobile/src/features/calendar/CycleMonth';
 import {
   calendarCopy,
   editPeriodCopy,
   monthLegendCopy,
+  theWaitSaid,
 } from '../apps/mobile/src/features/calendar/copy';
 import { dayParameter } from '../apps/mobile/src/features/calendar/askedMonth';
 import { tabs } from '../apps/mobile/src/features/chrome/tabs';
@@ -239,6 +246,7 @@ import {
   homeNoRingTitleTestID,
   homePatternsLineTestID,
   homePatternsPressTestID,
+  homePeriodActionTestID,
   homeScreenTestID,
   homeTrendCountTestID,
   homeTrendPressTestID,
@@ -318,7 +326,7 @@ import { periodDayLabel } from '../apps/mobile/src/features/period/copy';
 import { sheOpensTheSymptomGroupsFromToday } from '../apps/mobile/tests/fixtures/theSymptomGroupsFromToday';
 import {
   periodChipTestID,
-  periodPageAnotherDayTestID,
+  periodDateTestID,
   periodPageDayTestID,
   periodPageSaveTestID,
   periodPageTestID,
@@ -411,6 +419,7 @@ import {
   onboardingWayPastTestID,
 } from '../apps/mobile/src/features/onboarding/OnboardingScreen';
 import {
+  tourPriceTestID,
   tourScreenTestID,
   tourSkipTestID,
 } from '../apps/mobile/src/features/onboarding/TourScreen';
@@ -568,6 +577,7 @@ import {
   theDatesOfTheDrawing,
   theDayHerNextPeriodIsForecastOn,
   theDaysOfHerNextForecastPeriod,
+  theMostLikelyDaysOfHerNextPeriod,
   theMonthAfterSheOpens,
   theOvulationDayOfTheForecastCycle,
   theDayAheadSheCannotOpen,
@@ -644,7 +654,6 @@ import {
   editPeriodListTestID,
   editPeriodRowTestID,
   editPeriodSaveTestID,
-  editPeriodScreenTestID,
 } from '../apps/mobile/src/features/calendar/EditPeriodScreen';
 import {
   nextPeriodItStartedTestID,
@@ -5027,12 +5036,20 @@ defineFeature(feature, (test) => {
       expect(theDaysTheDrawingFills().length).toBeGreaterThan(1);
     });
 
-    and('the days the forecast puts her next period on are dashed rings', () => {
-      expect(theDaysOfHerNextForecastPeriod().map((day) => theMarkOnTheSquare(day))).toEqual(
-        theDaysOfHerNextForecastPeriod().map(() => 'forecast'),
-      );
-      expect(theMarkOnTheSquare(addDays(theDayHerNextPeriodIsForecastOn(), -1))).toBe('plain');
-    });
+    and(
+      'the most likely days of her next forecast period are dashed rings, and the days either side are dotted rings',
+      () => {
+        const likely = theMostLikelyDaysOfHerNextPeriod();
+
+        expect(theDaysOfHerNextForecastPeriod().map((day) => theMarkOnTheSquare(day))).toEqual(
+          theDaysOfHerNextForecastPeriod().map((day) =>
+            likely.includes(day) ? 'forecast' : 'possible',
+          ),
+        );
+        expect(likely.map((day) => theMarkOnTheSquare(day))).toEqual(likely.map(() => 'forecast'));
+        expect(theMarkOnTheSquare(addDays(theDayHerNextPeriodIsForecastOn(), -1))).toBe('plain');
+      },
+    );
 
     and('today is ringed', () => {
       expect(theMarkOnTheSquare(theDaySheOpensTheMonth())).toBe('today');
@@ -5345,7 +5362,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'the forecast period in that month is drawn in dashed rings, and its cycle day starts at 1',
+      'the forecast period in that month is drawn in dashed and dotted rings, and its cycle day starts at 1',
       () => {
         const inThatMonth = theCyclesAheadOfHer().find(
           (cycle) => startOfMonth(cycle.startsOn) === theMonthAfterSheOpens(),
@@ -5355,7 +5372,10 @@ defineFeature(feature, (test) => {
         theForecastPeriodStarts = String(inThatMonth?.startsOn);
 
         expect(theCycleDayOver(theForecastPeriodStarts)).toBe(1);
-        expect(theMarkOnTheSquare(theForecastPeriodStarts)).toBe('forecast');
+        expect(theMarkOnTheSquare(theForecastPeriodStarts)).toBe(
+          theForecastPeriodStarts < String(inThatMonth?.likelyFrom) ? 'possible' : 'forecast',
+        );
+        expect(theMarkOnTheSquare(String(inThatMonth?.likelyFrom))).toBe('forecast');
         expect(theMarkOnTheSquare(addDays(theForecastPeriodStarts, -1))).toBe('plain');
       },
     );
@@ -7243,15 +7263,44 @@ defineFeature(feature, (test) => {
       expect(theDateInkOn(ovulation)).toBe(colour.text);
     });
 
-    and('a legend above the grid names her period, the forecast and her fertile days', () => {
-      expect(theLegendSheReads()).toEqual({
-        fertile: monthLegendCopy.fertile,
-        forecast: monthLegendCopy.forecast,
-        period: monthLegendCopy.period,
-      });
-      expect(theLegendDots().period.fill).toBe(colour.period);
-      expect(theLegendDots().forecast.lineStyle).toBe('dashed');
-      expect(theLegendDots().fertile.fill).toBe(colour.washWarm);
+    and(
+      'a legend above the grid names her period, the forecast, the possible days and her fertile days',
+      () => {
+        expect(theLegendSheReads()).toEqual({
+          fertile: monthLegendCopy.fertile,
+          forecast: monthLegendCopy.forecast,
+          period: monthLegendCopy.period,
+          possible: monthLegendCopy.possible,
+        });
+        expect(theLegendDots().period.fill).toBe(colour.period);
+        expect(theLegendDots().forecast.lineStyle).toBe('dashed');
+        expect(theLegendDots().possible.lineStyle).toBe('dotted');
+        expect(theLegendDots().fertile.fill).toBe(colour.washWarm);
+      },
+    );
+
+    and('a line above the legend says in how many days her next period is likely to start', () => {
+      const next = theCyclesAheadOfHer()[0];
+      const today = theDaySheOpensTheMonth();
+
+      expect(next).toBeDefined();
+      expect(textIn(screen.getByTestId(calendarNextPeriodTestID)).join('')).toBe(
+        theWaitSaid({
+          fromDays: daysBetween(today, String(next?.mayStart.from)),
+          kind: 'in',
+          toDays: daysBetween(today, String(next?.mayStart.to)),
+        }),
+      );
+    });
+
+    and('the day of her cycle over each date is smaller and paler than the date', () => {
+      for (const day of theSquaresTheMonthDrew()) {
+        const cycleDay = StyleSheet.flatten(screen.getByTestId(cycleDayTestID(day)).props.style);
+        const date = StyleSheet.flatten(screen.getByTestId(dateTestID(day)).props.style);
+
+        expect(Number(cycleDay.fontSize)).toBeLessThan(Number(date.fontSize));
+        expect(cycleDay.color).toBe(colour.dockQuiet);
+      }
     });
 
     when('she presses the day the drawing names', async () => {
@@ -7431,7 +7480,7 @@ defineFeature(feature, (test) => {
         for (const line of tourCopy.lines) {
           expect(tour.getByText(line)).toBeTruthy();
         }
-        expect(tour.getByText('One month free, then 29.99 pounds a year.')).toBeTruthy();
+        expect(tour.getByText('One month free, then 29.99 pounds a month.')).toBeTruthy();
       },
     );
 
@@ -7461,6 +7510,75 @@ defineFeature(feature, (test) => {
         expect(languages.length).toBe(3);
       },
     );
+  });
+
+  /**
+   * The price she reads before Emi asks her for anything. One sentence carries the whole promise
+   * about money, so a price rewritten in English and left behind in another language would ask two
+   * women for two different numbers.
+   */
+  test('SCREEN-1, the tour says 29.99 pounds a month in every language', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    const thePriceSheReads = 'One month free, then 29.99 pounds a month.';
+    const thePriceInEachLanguage: Readonly<Record<Language, string>> = {
+      en: thePriceSheReads,
+      es: 'Un mes gratis, después 29,99 libras al mes.',
+      ru: 'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
+    };
+    const howEachLanguageSaysAYear: Readonly<Record<Language, RegExp>> = {
+      en: /year/iu,
+      es: /año/iu,
+      ru: /год/iu,
+    };
+    const thePriceLineIn = (language: Language): string =>
+      String(theCatalogueOf(language)['onboarding.tour.price.line']);
+
+    given('she has never opened Emi before', () => undefined);
+
+    when('she opens Emi and reads the card about money on the tour', async () => {
+      await sheOpens('/');
+      await shePresses(onboardingActionTestID);
+    });
+
+    then(
+      'the card tells her the first month is free and the price after it is 29.99 pounds a month',
+      () => {
+        const price = within(screen.getByTestId(tourPriceTestID));
+
+        expect(price.getByText('Yours, and it stays yours')).toBeTruthy();
+        expect(price.getByText(thePriceSheReads)).toBeTruthy();
+      },
+    );
+
+    and(
+      'a woman who reads Emi in Russian or in Spanish is told the same free month and the same price',
+      () => {
+        for (const language of languages) {
+          const said = thePriceLineIn(language);
+
+          expect({ language, said }).toEqual({ language, said: thePriceInEachLanguage[language] });
+        }
+
+        expect(languages.length).toBe(3);
+      },
+    );
+
+    and('no language still tells her the price buys her a year', () => {
+      for (const language of languages) {
+        const said = thePriceLineIn(language);
+
+        expect({ language, aYear: howEachLanguageSaysAYear[language].test(said) }).toEqual({
+          language,
+          aYear: false,
+        });
+      }
+
+      expect(languages.length).toBe(3);
+    });
   });
 
   /**
@@ -9644,7 +9762,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('SCREEN-2, she starts a period yesterday from the Period page of today, and the ring says day 2', ({
+  test('SCREEN-2, she logs a period that started yesterday from Home in one press, and the ring says day 2', ({
     given,
     when,
     then,
@@ -9653,35 +9771,66 @@ defineFeature(feature, (test) => {
     let app: OpenApp;
     const yesterday = addDays(today, -1);
 
-    given('her phone holds her first run answers and not one recorded day', async () => {
-      await herPhoneHolds(whenSheOpensIt, [], sheSaysHerCycleRuns);
-    });
+    given(
+      'her phone holds her first run answers with a period of five days, and not one recorded day',
+      async () => {
+        await herPhoneHolds(whenSheOpensIt, [], sheSaysHerCycleRuns, 5);
+      },
+    );
 
     when('she opens Emi', async () => {
       app = await sheOpens('/');
     });
 
-    and('she presses Period under the ring', async () => {
-      await shePresses(roundActionTestID('period'));
+    and('she presses Log period, the one action under the ring', async () => {
+      expect(textIn(screen.getByTestId(homePeriodActionTestID)).join('')).toBe('Log period');
 
-      expect(app.pathname()).toBe('/period');
-      expect(screen.getByTestId(periodPageTestID)).toBeTruthy();
+      await shePresses(homePeriodActionTestID);
     });
 
-    and('she presses Started on another day?', async () => {
-      await shePresses(periodPageAnotherDayTestID);
+    then(
+      'she is on the Period page of today, and the date is its first choice, with Today chosen',
+      () => {
+        expect(app.pathname()).toBe('/period');
+        expect(screen.getByTestId(periodPageDayTestID)).toHaveTextContent(periodDayLabel(today));
+
+        const chips: string[] = [];
+        const walk = (node: unknown): void => {
+          if (Array.isArray(node)) {
+            node.forEach(walk);
+            return;
+          }
+          if (node === null || typeof node !== 'object' || !('props' in node)) {
+            return;
+          }
+          const { props, children } = node as { props: { testID?: unknown }; children?: unknown };
+          if (
+            typeof props.testID === 'string' &&
+            /^period-page-(date|flow|discharge|products)-/.test(props.testID) &&
+            !chips.includes(props.testID)
+          ) {
+            chips.push(props.testID);
+          }
+          walk(children ?? null);
+        };
+        walk(screen.toJSON());
+
+        expect(chips[0]).toBe(periodDateTestID('today'));
+        expect(
+          screen.getByTestId(periodDateTestID('today')).props.accessibilityState?.selected,
+        ).toBe(true);
+      },
+    );
+
+    and('the page carries no link Started on another day?', () => {
+      expect(screen.queryByText('Started on another day?')).toBeNull();
     });
 
-    then('she is looking at the period picker, and it lists today', () => {
-      expect(app.pathname()).toBe('/calendar/period');
-      expect(screen.getByTestId(editPeriodScreenTestID)).toBeTruthy();
-      expect(screen.getByTestId(editPeriodRowTestID(today))).toBeTruthy();
-    });
-
-    when('she presses today, then Add the day before, and saves', async () => {
-      await shePresses(editPeriodRowTestID(today));
-      await shePresses(editPeriodAddBeforeTestID);
-      await shePresses(editPeriodSaveTestID);
+    when('she presses Yesterday, then Medium, and saves', async () => {
+      await shePresses(periodDateTestID('yesterday'));
+      await screen.findByText(periodDayLabel(yesterday));
+      await shePresses(periodChipTestID('flow', 'medium'));
+      await shePresses(periodPageSaveTestID);
     });
 
     then('she is on the screen she opened, and no Period page is left under it', () => {
@@ -9696,6 +9845,57 @@ defineFeature(feature, (test) => {
     and('the ring says she is on day 2 of a cycle of the length she gave', () => {
       expect(theRingSays()).toBe(ringSpokenLabel(2, sheSaysHerCycleRuns, phaseLabel.period));
     });
+
+    and('the action under the ring says End period', () => {
+      expect(textIn(screen.getByTestId(homePeriodActionTestID)).join('')).toBe('End period');
+    });
+  });
+
+  test('SCREEN-2, she ends her period from Home in one press', ({ given, when, then, and }) => {
+    let app: OpenApp;
+    const yesterday = addDays(today, -1);
+
+    given(
+      'her phone holds her first run answers with a period of five days, and one bleeding day, yesterday',
+      async () => {
+        await herPhoneHolds(whenSheOpensIt, [aBleedingDay(yesterday)], sheSaysHerCycleRuns, 5);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      app = await sheOpens('/');
+    });
+
+    then('the action under the ring says End period', () => {
+      expect(textIn(screen.getByTestId(homePeriodActionTestID)).join('')).toBe('End period');
+    });
+
+    when('she presses End period', async () => {
+      await shePresses(homePeriodActionTestID);
+    });
+
+    then('her phone holds no bleeding on today, sealed', () => {
+      const row = readDayLog(herDatabase(), today);
+
+      expect(row).toBeDefined();
+      expect(new TextDecoder().decode(row?.payload)).not.toContain('"flow":"none"');
+      expect(whatWasRecordedOn(today)?.flow).toBe('none');
+    });
+
+    and('her period lasted one day', () => {
+      const cycles = listCycles(herDatabase()).filter((cycle) => !cycle.isPredicted);
+
+      expect(cycles.map((cycle) => cycle.startedOn)).toEqual([yesterday]);
+      expect(cycles[0]?.periodLengthDays).toBe(1);
+    });
+
+    and(
+      'she is still on the screen she opened, and the action under the ring says Log period',
+      () => {
+        expect(app.pathname()).toBe('/');
+        expect(textIn(screen.getByTestId(homePeriodActionTestID)).join('')).toBe('Log period');
+      },
+    );
   });
 
   test('SCREEN-4, she adds her past periods from the sheet over a month Emi cannot forecast', ({

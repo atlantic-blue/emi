@@ -154,6 +154,7 @@ describe('an export with no documentation comment fails the pipeline', () => {
         'packages/tokens/src/text.ts',
         'packages/tokens/src/type.ts',
         'packages/tokens/src/wash.ts',
+        'packages/tokens/src/website.ts',
       ]);
     });
 

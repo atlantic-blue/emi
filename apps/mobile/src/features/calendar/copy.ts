@@ -1,6 +1,7 @@
 import { words } from '../../language';
 import { phaseName } from '../cycle/copy';
-import { monthNames, ordinal } from '../forecast/copy';
+import { lateSentence, monthNames, ordinal } from '../forecast/copy';
+import type { TheWait } from './theWait';
 import type { WhatSheChanged } from './savePeriod';
 import { weekdayOf } from '../onboarding/days';
 import type { PeriodItWaitsFor, WhatTheSheetSays } from './theDaySheet';
@@ -37,8 +38,23 @@ export const monthLegendCopy = {
   fertile: words('calendar.legend.fertile'),
   forecast: words('calendar.legend.forecast'),
   period: words('calendar.legend.period'),
+  possible: words('calendar.legend.possible'),
   sex: words('calendar.legend.sex'),
 } as const;
+
+/** The line above the month that says how long until her next period. */
+export function theWaitSaid(wait: TheWait): string {
+  switch (wait.kind) {
+    case 'in':
+      return words('calendar.nextPeriod.in', wait.toDays, { from: wait.fromDays });
+    case 'within':
+      return words('calendar.nextPeriod.within', wait.toDays);
+    case 'today':
+      return words('calendar.nextPeriod.today');
+    case 'late':
+      return lateSentence(wait.daysLate);
+  }
+}
 
 /** The two things the card at the foot says about the day she pressed. */
 export interface DaySheetSaid {

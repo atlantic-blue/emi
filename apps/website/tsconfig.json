@@ -1,0 +1,37 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "dom", "dom.iterable"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "types": ["jest", "node"],
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "noEmit": true
+  },
+  "include": [
+    "app",
+    "components",
+    "e2e",
+    "lib",
+    "test",
+    "tools",
+    "next.config.ts",
+    "proxy.ts",
+    "playwright.config.ts",
+    "tailwind.config.ts"
+  ],
+  "exclude": ["node_modules", ".next", ".open-next", ".features-gen"]
+}

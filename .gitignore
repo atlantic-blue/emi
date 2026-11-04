@@ -3,10 +3,22 @@ node_modules/
 dist/
 coverage/
 web-build/
+
+# What a Next.js build writes: the compiled site, the Lambda package, and the type
+# declarations Next.js regenerates on every build.
+.next/
+.open-next/
+next-env.d.ts
 *.log
 .DS_Store
 ios/
 android/
+
+# What the browser tier writes: the Playwright tests generated from the gherkin, the report a
+# run leaves behind, and the traces it keeps when a scenario fails.
+.features-gen/
+apps/website/e2e/report/
+test-results/
 
 # Terraform working files. The provider lock is committed; the plugins and the plan are not.
 .terraform/

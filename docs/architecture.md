@@ -75,6 +75,8 @@ Sections further down name directories that do not exist yet. Those names are ou
 purpose, because the design may name a thing before anybody builds it. This list may not.
 
 - `apps/mobile` is the Expo application. It holds the screens and the data layer.
+- `apps/website` is the site on myemi.app. It is a Next.js application whose pages render on a
+  Lambda function, packaged by OpenNext, with the static files beside it in a bucket.
 - `packages/tokens` holds the colours, the type scale and the spacing. It is the only place a colour
   value may be written.
 - `packages/cycle` holds the symptom catalogue. The prediction arithmetic arrives beside it.

@@ -55,6 +55,21 @@ function anExampleStartingWith(beginning: string): string {
   return found;
 }
 
+/**
+ * The approved sentence that denies two claims at once, found by the words that join the two halves
+ * rather than by the claims themselves, so this file holds no claim of its own and the repository
+ * wide scan can read it with everything else.
+ */
+function theDenialJoinedBy(joiner: string): string {
+  const found = approvedDenials.find((sentence) => sentence.includes(joiner));
+
+  if (found === undefined) {
+    throw new Error(`no approved denial joins two claims with "${joiner}"`);
+  }
+
+  return found;
+}
+
 function theDenialStartingWith(beginning: string): string {
   const found = approvedDenials.find((sentence) => sentence.startsWith(beginning));
 
@@ -179,13 +194,63 @@ describe(`a ${aPregnancyClaim} claim anywhere in the repository fails the pipeli
   // Russian denies with не, where English denies with not and with no.
   const negating = [' not ', ' no ', ' nunca ', ' ningun', ' ningún', ' не '];
 
+  // The board of the website denies both claims in one sentence, and a sentence is approved only as
+  // the whole sentence. Each one is found by the words that join its two halves, because naming the
+  // claims would put them in this file.
+  const joinedDenials = [' and not a ', ' ni un ', ' и не является '].map(theDenialJoinedBy);
+
+  it('reads the sentence the approved board writes as a denial, in all three languages', () => {
+    expect(new Set(joinedDenials).size).toBe(3);
+
+    for (const denial of joinedDenials) {
+      expect(claimsIn('a page of the site', denial)).toEqual([]);
+    }
+  });
+
+  it('reads every approved sentence as a denial, so none of them is a claim on its own', () => {
+    expect(approvedDenials.length).toBeGreaterThan(10);
+
+    for (const denial of approvedDenials) {
+      expect(claimsIn('a page of the site', denial)).toEqual([]);
+    }
+  });
+
+  it('reads a denial that opens a quoted value, which is how a catalogue of words holds one', () => {
+    for (const denial of joinedDenials) {
+      const catalogue = `export const words = { footerDisclaimer: '${denial} A forecast is an estimate.' };`;
+
+      expect(claimsIn('a catalogue of words', catalogue)).toEqual([]);
+    }
+  });
+
+  it('still reads a denial wrapped in other words inside that value as a claim', () => {
+    for (const denial of joinedDenials) {
+      const wrapped = `export const words = { footerDisclaimer: 'Somebody said ${denial}' };`;
+
+      expect(claimsIn('a catalogue of words', wrapped).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('still reads the words of a denial as a claim once the denial is taken out of them', () => {
+    const inEnglish = approvedDenials.filter((sentence) => sentence.includes(' is not a '));
+
+    expect(inEnglish.length).toBeGreaterThan(2);
+
+    for (const denial of inEnglish) {
+      const asserted = denial.replace(' is not a ', ' is a ');
+
+      expect(asserted).not.toBe(denial);
+      expect(claimsIn('a page of the site', asserted).length).toBeGreaterThan(0);
+    }
+  });
+
   it('carries no approved sentence that denies nothing, in either language', () => {
     const asserting = approvedDenials.filter(
       (sentence) => !negating.some((word) => sentence.toLowerCase().includes(word)),
     );
 
     expect(asserting).toEqual([]);
-    expect(approvedDenials.filter((sentence) => sentence.startsWith('Emi no '))).toHaveLength(2);
+    expect(approvedDenials.filter((sentence) => sentence.startsWith('Emi no '))).toHaveLength(3);
   });
 });
 

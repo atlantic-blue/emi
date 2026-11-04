@@ -22,6 +22,7 @@ interface Tier {
 
 const tiers: readonly Tier[] = [
   { tier: 'the application tier', file: join('apps', 'mobile', 'jest.config.js') },
+  { tier: 'the website tier', file: join('apps', 'website', 'jest.config.js') },
   { tier: 'the workspace tier', file: 'jest.node.config.js' },
   { tier: 'the behaviour tier', file: 'jest.behaviour.config.js' },
   { tier: 'the pictures', file: join('brand', 'screens', 'jest.config.js') },

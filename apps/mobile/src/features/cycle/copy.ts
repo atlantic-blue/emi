@@ -92,6 +92,9 @@ export function herDayLabel(day: HerDay, today: string): string {
   if (day.mark === 'forecast') {
     said.push(words('cycle.day.expected'));
   }
+  if (day.mark === 'possible') {
+    said.push(words('cycle.day.possible'));
+  }
 
   return said.join(', ');
 }

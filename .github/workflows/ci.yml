@@ -33,3 +33,28 @@ jobs:
       - run: npm run check:pictures
       - run: npm run check:mockups
       - run: npm test
+
+  browser:
+    name: a browser opens the site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Builds the site, starts it, and reads it with a browser at both widths. The last command
+      # of the script refuses a run that carried out no scenario, because a browser suite with
+      # nothing to do reports a pass that reads the same as every other pass.
+      - run: npm run test:e2e
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: what-the-browser-saw
+          path: |
+            apps/website/e2e/report/
+            apps/website/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

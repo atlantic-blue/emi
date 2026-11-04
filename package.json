@@ -18,6 +18,9 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "generate:app-icon": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types brand/icon/generate.ts",
+    "generate:website-icons": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types apps/website/tools/writeTheIcons.ts",
+    "generate:crawler-files": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types apps/website/tools/writeTheFilesACrawlerReads.ts",
+    "generate:share-preview": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types docs/design/website/share-preview/render.ts",
     "typecheck": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project features/tsconfig.json && npm run typecheck --workspaces --if-present",
     "check:patches": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkPatches.ts",
     "check:documents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkDocuments.ts",
@@ -64,10 +67,12 @@
     "generate:edit-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern editPeriod.picture",
     "generate:wash-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern wash.picture",
     "generate:answers-again-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answersAgain.picture",
-    "test": "npm run test:workspace && npm run test:mobile && npm run test:behaviour",
+    "test": "npm run test:workspace && npm run test:mobile && npm run test:website && npm run test:behaviour",
     "test:workspace": "jest --ci --config jest.node.config.js",
     "test:mobile": "npm test --workspace apps/mobile",
-    "test:behaviour": "npm run test:behaviour --workspace apps/mobile"
+    "test:website": "npm test --workspace apps/website",
+    "test:behaviour": "npm run test:behaviour --workspace apps/mobile",
+    "test:e2e": "npm run test:e2e --workspace apps/website"
   },
   "devDependencies": {
     "@babel/core": "7.29.7",
@@ -83,14 +88,17 @@
     "babel-jest": "29.7.0",
     "eslint": "9.39.5",
     "eslint-config-expo": "57.0.2",
+    "eslint-config-next": "16.4.3",
     "jest": "29.7.0",
     "jest-cucumber": "^4.5.0",
     "patch-package": "8.0.1",
     "prettier": "3.9.7",
+    "prettier-plugin-tailwindcss": "0.8.1",
     "typescript": "~6.0.3",
     "yaml": "2.9.1"
   },
   "overrides": {
-    "lightningcss": "1.30.1"
+    "lightningcss": "1.30.1",
+    "playwright-core": "1.64.1"
   }
 }

@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useDatabase } from '../data/DatabaseProvider';
-import { dayParameter } from '../features/calendar/askedMonth';
 import { highlightAddress } from '../features/highlight/highlights';
 import { DayRefused } from '../features/log/DayRefused';
 import { refusalFor } from '../features/log/editDay';
@@ -13,6 +12,7 @@ import { localDay } from '../features/onboarding/days';
 import { periodAnswersDiffer } from '../features/period/answers';
 import { periodDayLabel } from '../features/period/copy';
 import { PeriodPage } from '../features/period/PeriodPage';
+import { periodAddress } from '../features/period/periodAddress';
 import { useRescheduleHerReminder } from '../features/reminder/rescheduleHerReminder';
 import { useVault } from '../services/vault/VaultProvider';
 
@@ -20,9 +20,8 @@ import { useVault } from '../services/vault/VaultProvider';
  * The Period page of one day: today where the address names no day, and a past day where it names
  * one. A day ahead of her is refused, as every other day she opens is.
  *
- * Started on another day? replaces this page with the period editor on the same day. A page left
- * under the editor would still hold the answers from before the editor saved, and its Save would
- * write them back over the days the editor just wrote.
+ * A date she chooses replaces the page rather than pushing a new one, so Back still leaves to the
+ * screen she opened it from.
  */
 export default function PeriodRoute(): ReactNode {
   const database = useDatabase();
@@ -70,12 +69,15 @@ export default function PeriodRoute(): ReactNode {
 
   return (
     <PeriodPage
+      date={day}
       day={periodDayLabel(day)}
       held={periodLogged(database, vault, day)}
+      key={day}
       onBack={leave}
+      onChooseDay={(chosen) => router.replace(periodAddress(chosen === today ? undefined : chosen))}
       onHighlight={(slug) => router.push(highlightAddress(slug))}
       onSave={save}
-      onStartedOnAnotherDay={() => router.replace(`/calendar/period?${dayParameter}=${day}`)}
+      today={today}
     />
   );
 }

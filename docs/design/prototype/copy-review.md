@@ -148,7 +148,7 @@ Tile icons the set does not have yet, from screens 13 and 14: `skin`, `digestion
 - Cut "Private enclave", "Local Key Generation · 256-bit AES", "2.5s".
 
 ### 20. Free month (waits for feature 7)
-- Keep "One month free, then £29.99 a year", "Start the free month", "Restore a purchase", and the
+- Keep "One month free, then £29.99 a month", "Start the free month", "Restore a purchase", and the
   renewal line.
 - Rewrite "If you stop paying" body as: "You can still read and export every day you logged."
 - Rewrite "Why Emi costs money" body as: "A free tracker is paid for with your data. Emi shows no ads

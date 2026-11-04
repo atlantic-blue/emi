@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 
-import { colour } from '@emi/tokens';
+import { daysBetween } from '@emi/cycle';
+import { colour, fontNameFor } from '@emi/tokens';
 import { within } from '@testing-library/react-native';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { StyleSheet, type ViewStyle } from 'react-native';
@@ -8,9 +9,12 @@ import { StyleSheet, type ViewStyle } from 'react-native';
 import {
   calendarEditPeriodTestID,
   calendarMonthTestID,
+  calendarNextPeriodTestID,
 } from '../../src/features/calendar/CalendarScreen';
 import {
+  cycleDayTestID,
   dateDiscTestID,
+  dateTestID,
   dayTestID,
   monthLegendTestID,
 } from '../../src/features/calendar/CycleMonth';
@@ -36,6 +40,7 @@ import {
   theLegendDots,
   theLegendSheReads,
   theMarkOnTheSquare,
+  theCyclesAheadOfHer,
   theDayHerNextPeriodIsForecastOn,
   theOvulationDayOfTheForecastCycle,
   theOvulationDayTheForecastNames,
@@ -115,6 +120,56 @@ describe('the month grid takes the redesign look', () => {
       expect(disc.width).toBe(disc.height);
       expect(Number(disc.width)).toBeGreaterThanOrEqual(32);
       expect(Number(disc.borderRadius)).toBeGreaterThanOrEqual(Number(disc.width) / 2);
+    });
+  });
+
+  describe('the day of her cycle over each date', () => {
+    it('is smaller, paler and lighter than the date under it', async () => {
+      await sheOpensTheMonth();
+
+      for (const day of theSquaresTheMonthDrew()) {
+        const cycleDay = styleOf(cycleDayTestID(day)) as ViewStyle & {
+          color?: string;
+          fontSize?: number;
+          fontFamily?: string;
+        };
+        const date = styleOf(dateTestID(day)) as ViewStyle & { color?: string; fontSize?: number };
+
+        expect(Number(cycleDay.fontSize)).toBeLessThan(Number(date.fontSize));
+        expect(cycleDay.color).toBe(colour.dockQuiet);
+        expect(cycleDay.color).not.toBe(date.color);
+        expect(cycleDay.fontFamily).toBe(fontNameFor('text', 400));
+      }
+    });
+  });
+
+  describe('the line above the legend', () => {
+    it('says in how many days her next period is likely to start, from the range of the forecast', async () => {
+      await sheOpensTheMonth();
+      const next = theCyclesAheadOfHer()[0];
+
+      if (next === undefined) {
+        throw new Error('her three cycles produced no forecast period ahead of her');
+      }
+
+      const from = daysBetween(theDaySheOpensTheMonth(), next.mayStart.from);
+      const to = daysBetween(theDaySheOpensTheMonth(), next.mayStart.to);
+
+      expect(from).toBeGreaterThan(0);
+      expect(screen.getByTestId(calendarNextPeriodTestID).props.children).toBe(
+        `Your next period is likely to start in ${from} to ${to} days.`,
+      );
+    });
+
+    it('stands above the legend and the grid', async () => {
+      await sheOpensTheMonth();
+
+      const drawn = screen.queryAllByTestId(/.+/).map((element) => String(element.props.testID));
+
+      expect(drawn.indexOf(calendarNextPeriodTestID)).toBeGreaterThan(-1);
+      expect(drawn.indexOf(calendarNextPeriodTestID)).toBeLessThan(
+        drawn.indexOf(monthLegendTestID),
+      );
     });
   });
 
@@ -200,6 +255,7 @@ describe('the month grid takes the redesign look', () => {
         fertile: monthLegendCopy.fertile,
         forecast: monthLegendCopy.forecast,
         period: monthLegendCopy.period,
+        possible: monthLegendCopy.possible,
       });
     });
 
@@ -209,6 +265,7 @@ describe('the month grid takes the redesign look', () => {
 
       expect(dots.period.fill).toBe(colour.period);
       expect(dots.forecast).toEqual({ fill: undefined, line: colour.period, lineStyle: 'dashed' });
+      expect(dots.possible).toEqual({ fill: undefined, line: colour.luteal, lineStyle: 'dotted' });
       expect(dots.fertile.fill).toBe(colour.washWarm);
       expect(dots.fertile.line).toBe(colour.ovulation);
     });

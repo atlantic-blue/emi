@@ -15,13 +15,13 @@ A contract verified by a test is proved by a green run in the pipeline. A contra
 operator is one no test can judge, such as whether a logo is good, so the operator looks at a
 rendered result before the step closes. A few contracts are verified both ways.
 
-The contracts are grouped. There are twelve groups.
+The contracts are grouped. There are thirteen groups.
 
 `TOKEN` is a design token and its measured value. `BRAND` is a drawn asset. `SEE` is accessibility.
 `TABLE` is one table, at field level. `ENVELOPE` is the encrypted record format. `VAULT` is key
 handling on the phone. `CYCLE` is the prediction arithmetic. `SCREEN` is what one screen does.
 `WIRE` is one endpoint of the application programming interface. `AUTH` is the request signature.
-`PAY` is the subscription. `KEEP` is a promise about her data.
+`PAY` is the subscription. `KEEP` is a promise about her data. `SITE` is the website on myemi.app.
 
 This document does not say what is built today. `architecture.md` says that, section by section.
 
@@ -493,8 +493,8 @@ message and the same timing as a bad signature.
 
 Verified by a test.
 
-Output: one yearly product at 29.99 pounds, with a one month introductory free period, in both
-stores.
+Output: one monthly auto renewing product at 29.99 pounds, with a one month introductory free
+period, in both stores.
 
 Errors: a configuration test finds a different price, a different period, or no product at all.
 
@@ -564,3 +564,83 @@ Output: the application's dependency list holds no analytics, no advertising ide
 reporter that ships her content.
 
 Errors: any such package is present, named by the test.
+
+## SITE, the website
+
+### SITE-1, the domain
+
+Verified by a test.
+
+Output: `https://myemi.app` answers with a certificate from Amazon Web Services Certificate
+Manager, for `myemi.app` and for `www.myemi.app`. `www.myemi.app` answers 301 to
+`https://myemi.app`, with the same path. A request over http answers 301 to https.
+
+Errors: content served over http. A certificate for another name. A hosted zone that Terraform
+creates or destroys, because the registration of the domain owns the zone.
+
+### SITE-2, the origins
+
+Verified by a test.
+
+Output: two origins. One private bucket in Amazon S3, in eu-central-1, for the static assets, and
+one Amazon Web Services Lambda server function, reachable only through a function url whose
+authentication type is `AWS_IAM`. Only the Amazon CloudFront distribution reads the bucket and calls
+the function, each through origin access control.
+
+Errors: public access on the bucket. The website endpoint of the bucket turned on. A function url
+with no authentication. Any principal other than the distribution allowed to read the bucket or call
+the function.
+
+### SITE-3, the languages
+
+Verified by a test.
+
+Output: `/en/`, `/ru/` and `/es/` each serve a home page. `/` answers 301 to `/en/`. An address
+that does not exist answers 404 with an Emi page.
+
+Errors: a page that one language has and another language does not. A page that says Emi is
+something it is not. Emi is not a contraceptive. Emi is not a medical device.
+
+### SITE-4, the pages
+
+Verified by a test.
+
+Output: pages rendered by a Next.js App Router application on Amazon Web Services Lambda, built by
+OpenNext. The components come from shadcn, written in React JSX, and every colour, face, size, gap
+and corner comes from `packages/tokens`. The site serves its own fonts.
+
+Errors: a colour or a font that is not a token. A request from a page to any host other than
+myemi.app. A cookie. An analytics script or an advertising script. Next.js telemetry turned on in
+the build.
+
+### SITE-5, the deploy
+
+Verified by a test.
+
+Output: a merge into `main` that changes the site builds it with OpenNext, updates the code of the
+server function, uploads the assets to the bucket, clears the cache of the distribution, and checks
+the live site.
+
+Errors: an upload or a code update from a pull request, and an upload or a code update from a
+machine. A password, a key or a token written into the repository.
+
+### SITE-6, the headers
+
+Verified by a test.
+
+Output: every response carries six headers. `Strict-Transport-Security` for two years, with every
+subdomain. A `Content-Security-Policy`. `X-Content-Type-Options` of nosniff. `X-Frame-Options` of
+DENY. `Referrer-Policy` of strict-origin-when-cross-origin. A `Permissions-Policy` that hands out
+neither the camera, nor the microphone, nor her location.
+
+The content policy of a page comes from the function that draws it, and carries a nonce of 128 bits
+made for that one response. The policy names that nonce for a script and for a style, and allows
+nothing else inline, so the scripts Next.js writes into the markup run and a script written in by
+anybody else does not. A nonce is spent when its response is: the next page gets another one. Every
+other response, which is every file from the bucket, carries the policy of the edge: the origin of
+the site, and no frame. The edge sets the other five headers over whatever the origin answered, and
+keeps the content policy the function sent.
+
+Errors: a response that is missing one of the six. A page whose policy carries no nonce, or carries
+the nonce of another response. A policy allowing an inline script on its own account. A style
+written on an element of a page, which no nonce can cover.

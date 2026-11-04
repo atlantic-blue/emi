@@ -8,6 +8,8 @@ import { AccessibilityInfo } from 'react-native';
 
 import { CycleRing, cycleRingTestID } from '../../../src/components/CycleRing';
 import { listCycles } from '../../../src/data/cycleRepository';
+import { dayTestID } from '../../../src/features/calendar/CycleMonth';
+import { homePeriodActionTestID } from '../../../src/features/home/HomeScreen';
 import { readDayLog } from '../../../src/data/dayLogRepository';
 import {
   highlightPageBackTestID,
@@ -18,17 +20,13 @@ import {
 import { highlightTestID } from '../../../src/features/highlight/HighlightRow';
 import { readings } from '../../../src/features/highlight/highlights';
 import { hygienePageTestID } from '../../../src/features/hygiene/HygieneProductsPage';
-import {
-  editPeriodCancelTestID,
-  editPeriodRowTestID,
-  editPeriodScreenTestID,
-} from '../../../src/features/calendar/EditPeriodScreen';
 import { dayRefusedTestID } from '../../../src/features/log/DayRefused';
 import { periodAnswersAfterPress } from '../../../src/features/period/answers';
 import {
   periodChipTestID,
-  periodPageAnotherDayTestID,
+  periodDateTestID,
   periodPageBackTestID,
+  periodPageDaysTestID,
   periodPageDayTestID,
   periodPageHeadingTestID,
   periodPageHighlightsTestID,
@@ -100,6 +98,17 @@ async function sheOpens(url: string): Promise<{ pathname: () => string }> {
   await app;
 
   return { pathname: () => app.getPathname() };
+}
+
+async function sheOpensThePeriodPageFromHome(
+  records: readonly DayRecord[],
+): Promise<{ pathname: () => string }> {
+  await herPhoneHolds(records);
+  const app = await sheOpens('/');
+  await fireEvent.press(await screen.findByTestId(homePeriodActionTestID));
+  await screen.findByTestId(periodPageTestID);
+
+  return app;
 }
 
 async function sheOpensThePeriodPage(
@@ -444,18 +453,17 @@ describe('a past day', () => {
   });
 });
 
-describe('started on another day', () => {
-  it('should carry the link under the flows and above Discharge, as the periodStartedEarlier board does', async () => {
+describe('the date comes first', () => {
+  it('should put Date above Flow, with Today, Yesterday and Pick a date, and Today chosen on today', async () => {
     await sheOpensThePeriodPage(aPeriodLongAgo);
 
-    expect(whatItSays(periodPageAnotherDayTestID)).toBe('Started on another day?');
-    expect(screen.getByTestId(periodPageAnotherDayTestID).props.accessibilityRole).toBe('link');
+    expect(screen.getByText('Date')).toBeTruthy();
+    expect(whatItSays(periodDateTestID('today'))).toBe('Today');
+    expect(whatItSays(periodDateTestID('yesterday'))).toBe('Yesterday');
+    expect(whatItSays(periodDateTestID('pick'))).toBe('Pick a date');
+    expect(isChosen(periodDateTestID('today'))).toBe(true);
+    expect(isChosen(periodDateTestID('yesterday'))).toBe(false);
 
-    const wanted = [
-      periodChipTestID('flow', 'heavy'),
-      periodPageAnotherDayTestID,
-      periodChipTestID('discharge', 'none'),
-    ];
     const order: string[] = [];
     const walk = (node: unknown): void => {
       if (Array.isArray(node)) {
@@ -466,61 +474,93 @@ describe('started on another day', () => {
         return;
       }
       const { props, children } = node as { props: { testID?: unknown }; children?: unknown };
-      if (typeof props.testID === 'string' && wanted.includes(props.testID)) {
+      if (typeof props.testID === 'string' && props.testID.startsWith('period-page-')) {
         order.push(props.testID);
       }
       walk(children ?? null);
     };
     walk(screen.toJSON());
-    expect([...new Set(order)]).toEqual([
-      periodChipTestID('flow', 'heavy'),
-      periodPageAnotherDayTestID,
-      periodChipTestID('discharge', 'none'),
-    ]);
+    const chips = order.filter(
+      (testID) => testID.startsWith('period-page-date-') || testID.startsWith('period-page-flow-'),
+    );
+    expect(chips.indexOf(periodDateTestID('pick'))).toBeLessThan(
+      chips.indexOf(periodChipTestID('flow', 'none')),
+    );
   });
 
-  it('should open the period editor on today, from the Period page of today', async () => {
+  it('should no longer carry the link Started on another day?', async () => {
     await sheOpensThePeriodPage(aPeriodLongAgo);
 
-    await press(periodPageAnotherDayTestID);
-
-    expect(await screen.findByTestId(editPeriodScreenTestID)).toBeTruthy();
-    expect(screen.getByTestId(editPeriodRowTestID(today))).toBeTruthy();
-    expect(screen.queryByTestId(editPeriodRowTestID(addDays(today, -19)))).toBeNull();
+    expect(screen.queryByText('Started on another day?')).toBeNull();
+    expect(screen.queryByTestId('period-page-another-day')).toBeNull();
   });
 
-  it('should open the period editor on the day the page names, from a past day', async () => {
+  it('should stand the page on yesterday when she presses Yesterday, and save to that day', async () => {
     const yesterday = addDays(today, -1);
-    await sheOpensThePeriodPage(aPeriodLongAgo, periodAddress(yesterday));
+    const app = await sheOpensThePeriodPageFromHome(aPeriodLongAgo);
 
-    await press(periodPageAnotherDayTestID);
+    await press(periodDateTestID('yesterday'));
+    await screen.findByText('Sunday, 11 October');
 
-    expect(await screen.findByTestId(editPeriodScreenTestID)).toBeTruthy();
-    expect(screen.getByTestId(editPeriodRowTestID(yesterday))).toBeTruthy();
-  });
+    expect(isChosen(periodDateTestID('yesterday'))).toBe(true);
+    expect(isChosen(periodDateTestID('today'))).toBe(false);
 
-  it('should open the editor on the period that holds today, so the day before is one press away', async () => {
-    await sheOpensThePeriodPage([...herPeriodSoFar, aBleedingDay(today)]);
+    await press(periodChipTestID('flow', 'medium'));
+    await press(periodPageSaveTestID);
 
-    await press(periodPageAnotherDayTestID);
-
-    await screen.findByTestId(editPeriodScreenTestID);
+    expect(theDayOnHerPhone(yesterday)?.flow).toBe('medium');
+    expect(theDayOnHerPhone()).toBeUndefined();
     expect(
-      screen.getByTestId(editPeriodRowTestID(herPeriodStarted)).props.accessibilityState,
-    ).toMatchObject({
-      checked: true,
-    });
+      listCycles(herDatabase())
+        .filter((cycle) => !cycle.isPredicted)
+        .at(-1)?.startedOn,
+    ).toBe(yesterday);
+    expect(app.pathname()).toBe('/');
+    expect(screen.queryByTestId(periodPageTestID)).toBeNull();
   });
 
-  it('should leave no Period page under the editor, so its Save cannot write over the days the editor saved', async () => {
+  it('should open the month on Pick a date, and stand the page on the day she presses', async () => {
+    const aWeekAgo = addDays(today, -7);
     await sheOpensThePeriodPage(aPeriodLongAgo);
 
-    await press(periodPageAnotherDayTestID);
-    await screen.findByTestId(editPeriodScreenTestID);
-    await press(editPeriodCancelTestID);
+    expect(screen.queryByTestId(periodPageDaysTestID)).toBeNull();
 
-    expect(screen.queryByTestId(periodPageTestID)).toBeNull();
-    expect(screen.queryByTestId(editPeriodScreenTestID)).toBeNull();
+    await press(periodDateTestID('pick'));
+
+    expect(screen.getByTestId(periodPageDaysTestID)).toBeTruthy();
+    expect(isChosen(periodDateTestID('pick'))).toBe(true);
+    expect(isChosen(periodDateTestID('today'))).toBe(false);
+
+    await press(dayTestID(aWeekAgo));
+    await screen.findByText('Monday, 5 October');
+
+    expect(screen.queryByTestId(periodPageDaysTestID)).toBeNull();
+    expect(isChosen(periodDateTestID('pick'))).toBe(true);
+
+    await press(periodChipTestID('flow', 'light'));
+    await press(periodPageSaveTestID);
+
+    expect(theDayOnHerPhone(aWeekAgo)?.flow).toBe('light');
+    expect(theDayOnHerPhone()).toBeUndefined();
+  });
+
+  it('should take no press on a day ahead of her in the month', async () => {
+    await sheOpensThePeriodPage(aPeriodLongAgo);
+    await press(periodDateTestID('pick'));
+
+    await press(dayTestID(addDays(today, 1)));
+
+    expect(whatItSays(periodPageDayTestID)).toBe('Monday, 12 October');
+    expect(theDayOnHerPhone(addDays(today, 1))).toBeUndefined();
+  });
+
+  it('should come back to today when she presses Today on a past day', async () => {
+    await sheOpensThePeriodPage(aPeriodLongAgo, periodAddress(addDays(today, -1)));
+
+    await press(periodDateTestID('today'));
+    await screen.findByText('Monday, 12 October');
+
+    expect(isChosen(periodDateTestID('today'))).toBe(true);
   });
 });
 

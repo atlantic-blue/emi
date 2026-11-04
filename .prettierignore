@@ -3,6 +3,9 @@ node_modules/
 dist/
 coverage/
 package-lock.json
+.features-gen/
+apps/website/e2e/report/
+test-results/
 brand/sheet/brand-sheet.html
 brand/screens/*.html
 
@@ -14,3 +17,21 @@ docs/design/warm-humanist-editorial/*.html
 # The copy review is committed word for word as it was written, and the formatter would put a
 # blank line under each of its seventeen headings.
 docs/design/prototype/copy-review.md
+
+# The approved design of the website, committed as the canvas and its renderer wrote it. The home
+# page is held to the pictures beside this markup, so a line the formatter moved would make the
+# markup a different page from the one the pictures show.
+docs/design/website/home-v2/
+
+# The approved design of the privacy page, committed as the canvas and its renderer wrote it,
+# for the same reason as the home page above.
+docs/design/website/protection/
+
+# The share preview board and the page drawn from it, committed as the canvas wrote them, for the
+# same reason as the home page above. The program beside them is ordinary code and is formatted.
+docs/design/website/share-preview/boards/
+docs/design/website/share-preview/render/
+
+# The approved design of the privacy policy, committed as the canvas and its renderer wrote it,
+# for the same reason as the home page above.
+docs/design/website/privacy-policy/
