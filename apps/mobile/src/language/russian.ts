@@ -1040,7 +1040,7 @@ export const russian: CatalogueIn<'ru'> = {
   'phase.guide.luteal.training':
     'Ориентируйтесь на самочувствие. Если устали, снизьте нагрузку или отдохните.',
   'phase.guide.mood': 'Настроение',
-  'phase.guide.open': 'Что можно чувствовать и как себе помочь',
+  'phase.guide.open': 'Что вы можете чувствовать и как себе помочь',
   'phase.guide.ovulation.body':
     'Некоторые чувствуют короткую боль внизу живота с одной стороны или замечают прозрачные тянущиеся выделения.',
   'phase.guide.ovulation.food':
