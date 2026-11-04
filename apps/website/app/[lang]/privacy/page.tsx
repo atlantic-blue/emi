@@ -205,9 +205,16 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
             {words.protectionReadTheDocument}
           </a>
         </div>
+        {/*
+          The frame is shorter than the screenshot, so the browser crops it. Held to the top of the
+          screenshot, the crop cuts through the row that offers the download, and the page ends on
+          half a sentence. The picture is pulled up by 13 px, which puts the bottom edge of the
+          frame on the rule under that row. The 13 px it hides at the top is the bezel, which the
+          rounded corners of the frame already draw over.
+        */}
         <img
           alt={words.protectionScreenAlt}
-          className="mt-[32px] h-[420px] w-[320px] rounded-t-[40px] object-cover object-top shadow-[0_4px_20px_-2px] shadow-siteFaintShadow"
+          className="mt-[32px] h-[420px] w-[320px] rounded-t-[40px] object-cover object-[50%_-13px] shadow-[0_4px_20px_-2px] shadow-siteFaintShadow"
           src="/the-privacy-screen.png"
         />
       </section>
