@@ -77,13 +77,37 @@ function drawnBy(tag: string, stylesheet: string): string {
     .join(' ');
 }
 
-/** The ground the design paints a band on, from the band's own style. */
-function groundsOfTheDesign(): string[] {
-  return openingTagsOf(theDesign(), 'section').map((tag) => {
-    const found = /background:\s*([^;"]+)/.exec(tag);
+/** What the design labels each band with, and the ground it paints that band on. */
+function bandsOfTheDesign(): { band: string; ground: string }[] {
+  return openingTagsOf(theDesign(), 'section').map((tag) => ({
+    band: /aria-labelledby="([^"]+)"/.exec(tag)?.[1] ?? '',
+    ground: (/background:\s*([^;"]+)/.exec(tag)?.[1] ?? '').trim(),
+  }));
+}
 
-    return (found?.[1] ?? '').trim();
-  });
+/**
+ * The band of the design the page does not draw. Nobody has written a review of Emi yet, so the
+ * band of reviews is held back whole rather than drawn with six cards of holes in it, which is
+ * `apps/website/lib/theReviews.ts` being empty.
+ */
+const THE_BAND_HELD_BACK = 'reviews-title';
+
+/** One band of the design, as its own markup, so what stands inside it can be read on its own. */
+function theBandOfTheDesign(band: string): string {
+  const markup = theDesign();
+  const opens = markup.indexOf(`<section aria-labelledby="${band}"`);
+  const closes = markup.indexOf('</section>', opens);
+
+  if (opens < 0 || closes < 0) {
+    throw new Error(`The design draws no band called ${band}.`);
+  }
+
+  return markup.slice(opens, closes);
+}
+
+/** The design with one band cut out of it, which is what the rest of the board still says. */
+function theDesignWithout(band: string): string {
+  return theDesign().replace(theBandOfTheDesign(band), '');
 }
 
 /** The property each element sets a rule with, which is how a rule on four sides is told from one. */
@@ -125,9 +149,9 @@ function rulesIn(markup: string, stylesheet: string): Rule[] {
  * puts on one side becoming four is the drift this exists to catch, and so is the reverse.
  */
 function rulesOfTheDesign(): string[] {
-  return [...theDesign().matchAll(/border(-(?:top|bottom|left|right))?:\s*1px/g)].map(
-    ([, side]) => side?.slice(1) ?? 'every side',
-  );
+  return [
+    ...theDesignWithout(THE_BAND_HELD_BACK).matchAll(/border(-(?:top|bottom|left|right))?:\s*1px/g),
+  ].map(([, side]) => side?.slice(1) ?? 'every side');
 }
 
 /**
@@ -196,13 +220,19 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      "she reads the nine bands of the approved board, in the board's order and on its grounds",
+      "she reads eight of the nine bands of the approved board, in the board's order and on its grounds",
       () => {
         const bands = openingTagsOf(drawn.en ?? '', 'section');
-        const wanted = groundsOfTheDesign();
+        const onTheBoard = bandsOfTheDesign();
+        const wanted = onTheBoard
+          .filter(({ band }) => band !== THE_BAND_HELD_BACK)
+          .map(({ ground }) => ground);
 
-        expect(wanted).toHaveLength(9);
+        expect(onTheBoard).toHaveLength(9);
+        expect(onTheBoard.map(({ band }) => band)).toContain(THE_BAND_HELD_BACK);
+        expect(wanted).toHaveLength(8);
         expect(bands).toHaveLength(wanted.length);
+        expect(drawn.en).not.toContain(THE_BAND_HELD_BACK);
 
         const painted = bands.map((tag) => {
           const found = /background-color:\s*([^;]+)/.exec(drawnBy(tag, stylesheet));
@@ -218,16 +248,29 @@ defineFeature(feature, (test) => {
       const said = visibleTextOf(theDesign());
 
       // The board was approved while one of the two founders had not written her note, so it draws
-      // a hole where the page now draws her own sentences. It is the one sentence of the board the
-      // page does not draw, and it is picked out by the name it opens with so that a second one
-      // cannot arrive under the same exception.
+      // a hole where the page now draws her own sentences. It is picked out by the name it opens
+      // with so that a second one cannot arrive under the same exception.
       const filled = said.filter((text) => text.startsWith('[IULIIA'));
 
+      // And the band of reviews is held back whole, so its own sentences are not on the page. A
+      // sentence counts as held back only when the rest of the board does not say it as well: the
+      // press that holds both carousels still reads the same in both bands, and that one is still
+      // required here.
+      const elsewhere = visibleTextOf(theDesignWithout(THE_BAND_HELD_BACK));
+      const heldBack = visibleTextOf(theBandOfTheDesign(THE_BAND_HELD_BACK)).filter(
+        (text) => !elsewhere.includes(text),
+      );
+      const excused = [...filled, ...heldBack];
+
       expect(filled).toHaveLength(1);
+      expect(heldBack.length).toBeGreaterThan(0);
       expect(said.length).toBeGreaterThan(80);
+
+      // Every other sentence of the board is on the page, and not one of the held back ones is.
       expect(
-        said.filter((text) => !filled.includes(text) && !(drawn.en ?? '').includes(text)),
+        said.filter((text) => !excused.includes(text) && !(drawn.en ?? '').includes(text)),
       ).toEqual([]);
+      expect(heldBack.filter((text) => (drawn.en ?? '').includes(text))).toEqual([]);
 
       // The board is in English, so the other two pages are held to the keys the English page
       // draws rather than to the board's own sentences. A key drawn in one language and not in
@@ -298,6 +341,8 @@ defineFeature(feature, (test) => {
     );
 
     and('every rule sits on the sides the board puts it on, and on no others', () => {
+      // Read off the board without the band it holds back, because the three presses of that band
+      // each draw a rule all the way round and none of the three is on the page.
       const wanted = rulesOfTheDesign();
       const found = rulesIn(drawn.en ?? '', stylesheet);
 

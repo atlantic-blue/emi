@@ -113,17 +113,69 @@ export function bothOf(looking: WhatSheIsLookingAt): { design: PNG; page: PNG } 
   return { design: atTheDesign, page: atThePage };
 }
 
-export function bothBandsOf(looking: WhatSheIsLookingAt): {
-  inTheDesign: ABandToLeaveOut;
-  onThePage: ABandToLeaveOut;
+export function bothSetsOfBandsOf(looking: WhatSheIsLookingAt): {
+  inTheDesign: readonly ABandToLeaveOut[];
+  onThePage: readonly ABandToLeaveOut[];
 } {
-  const { theBandInTheDesign, theBandOnThePage } = looking;
+  const { theBandsInTheDesign, theBandsOnThePage } = looking;
 
-  if (theBandInTheDesign === null || theBandOnThePage === null) {
-    throw new Error('The band has to be measured on both sides before it can be left out.');
+  if (theBandsInTheDesign === null || theBandsOnThePage === null) {
+    throw new Error('The bands have to be measured on both sides before they can be left out.');
   }
 
-  return { inTheDesign: theBandInTheDesign, onThePage: theBandOnThePage };
+  return { inTheDesign: theBandsInTheDesign, onThePage: theBandsOnThePage };
+}
+
+/**
+ * The stretches of a picture a comparison reads: from the top to the first band left out, between
+ * one band and the next, and from the last band to the foot. A band left out is named rather than
+ * painted over, so every row outside the bands is still held to the design.
+ */
+function theRowsBetween(bands: readonly ABandToLeaveOut[], height: number): ABandToLeaveOut[] {
+  const rows: ABandToLeaveOut[] = [];
+  let from = 0;
+
+  for (const band of bands) {
+    if (band.from < from || band.to < band.from) {
+      throw new Error(`A band from ${band.from} to ${band.to} is out of order or inside out.`);
+    }
+
+    rows.push({ from, to: band.from });
+    from = band.to;
+  }
+
+  rows.push({ from, to: height });
+
+  return rows;
+}
+
+/** What the failure calls one of those stretches, so a reader knows which part of the page moved. */
+function theNameOfTheRows(at: number, of: number): string {
+  if (at === 0) {
+    return 'above-the-bands';
+  }
+
+  if (at === of - 1) {
+    return 'under-the-bands';
+  }
+
+  return of > 3 ? `between-the-bands-${at}` : 'between-the-bands';
+}
+
+/** How much taller the page is than the design, which is the bands left out and nothing else. */
+export function howMuchTheBandsGrewBy(
+  inTheDesign: readonly ABandToLeaveOut[],
+  onThePage: readonly ABandToLeaveOut[],
+): number {
+  return onThePage.reduce((grown, band, at) => {
+    const drawn = inTheDesign[at];
+
+    if (drawn === undefined) {
+      throw new Error(`The design has no band to hold band ${at} of the page against.`);
+    }
+
+    return grown + (band.to - band.from) - (drawn.to - drawn.from);
+  }, 0);
 }
 
 /**
@@ -137,34 +189,39 @@ export function howMuchOfItMoved(looking: WhatSheIsLookingAt, called: string): v
 }
 
 /**
- * The same comparison, with one band of each side left out. The band is where the page and the
- * design are allowed to differ, and it is allowed to be a different height on each side, so the
- * rows above it are read from the top of both pictures and the rows below it are read from the
- * bottom of both. Nothing is painted over and nothing is skipped past: every row outside the band
- * is held to the design as before.
+ * The same comparison, with named bands of each side left out. A band left out is where the page
+ * and the design are allowed to differ, and it is allowed to be a different height on each side,
+ * so the stretches between them are read in order from the top of both pictures. Nothing is
+ * painted over and nothing is skipped past: every row outside those bands is held to the design as
+ * before.
  *
- * The two remainders have to be the same height, or the pages differ somewhere other than the band
- * and the comparison would be reading one section of the page against another.
+ * Each pair of stretches has to be the same height, or the pages differ somewhere other than the
+ * bands and the comparison would be reading one section of the page against another.
  */
 export function howMuchOfItMovedOutside(looking: WhatSheIsLookingAt, called: string): void {
   const { design, page } = bothOf(looking);
-  const { inTheDesign, onThePage } = bothBandsOf(looking);
+  const { inTheDesign, onThePage } = bothSetsOfBandsOf(looking);
 
   expect(page.width).toBe(design.width);
-  expect(onThePage.from).toBe(inTheDesign.from);
-  expect(page.height - onThePage.to).toBe(design.height - inTheDesign.to);
+  expect(onThePage).toHaveLength(inTheDesign.length);
+  expect(inTheDesign.length).toBeGreaterThan(0);
 
-  holdOneAgainstTheOther(
-    rowsOf(design, 0, inTheDesign.from),
-    rowsOf(page, 0, onThePage.from),
-    `${called}-above-the-band`,
-  );
+  const drawn = theRowsBetween(inTheDesign, design.height);
+  const built = theRowsBetween(onThePage, page.height);
 
-  holdOneAgainstTheOther(
-    rowsOf(design, inTheDesign.to, design.height),
-    rowsOf(page, onThePage.to, page.height),
-    `${called}-under-the-band`,
-  );
+  for (const [at, rows] of drawn.entries()) {
+    const against = built[at];
+
+    if (against === undefined) {
+      throw new Error(`The page has no rows to hold stretch ${at} of the design against.`);
+    }
+
+    holdOneAgainstTheOther(
+      rowsOf(design, rows.from, rows.to),
+      rowsOf(page, against.from, against.to),
+      `${called}-${theNameOfTheRows(at, drawn.length)}`,
+    );
+  }
 }
 
 function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
@@ -173,6 +230,8 @@ function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
 
   expect(page.width).toBe(width);
   expect(page.height).toBe(height);
+  // A stretch of no rows at all compares clean whatever either side draws, and a band that swallowed
+  // the whole page would leave every stretch empty, so an empty one is refused rather than passed.
   expect(height).toBeGreaterThan(0);
 
   const differing = pixelmatch(design.data, page.data, difference.data, width, height, {
@@ -216,6 +275,38 @@ export async function theBandOfTheFounders(page: Page): Promise<ABandToLeaveOut>
     const under = band.getBoundingClientRect().bottom + window.scrollY;
 
     return { from: Math.floor(top), to: Math.ceil(under) };
+  });
+}
+
+/**
+ * Where the band of reviews stands in the document a browser is looking at. The design draws it,
+ * and the page draws it only once somebody has written a review, so a document that holds the band
+ * is measured by the band itself and a document without it reports the row where it would stand
+ * and no height. The row is the foot of the band above it, which is the top of the band in the
+ * document that has one, so the two sides line up to the pixel.
+ */
+export async function theBandOfTheReviews(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const down = (box: DOMRect): { from: number; to: number } => ({
+      from: Math.round(box.top + window.scrollY),
+      to: Math.round(box.bottom + window.scrollY),
+    });
+
+    const band = document.querySelector('section[aria-labelledby="reviews-title"]');
+
+    if (band !== null) {
+      return down(band.getBoundingClientRect());
+    }
+
+    const above = document.querySelector('section[aria-labelledby="privacy-title"]');
+
+    if (above === null) {
+      throw new Error('The document draws no band above where the reviews would stand.');
+    }
+
+    const row = Math.round(above.getBoundingClientRect().bottom + window.scrollY);
+
+    return { from: row, to: row };
   });
 }
 

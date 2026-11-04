@@ -7,15 +7,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { approvedDenials } from '../../../tools/pipeline/forbiddenClaims';
 import RootLayout from '../app/[lang]/layout';
 import HomePage from '../app/[lang]/page';
-import { type Language, brandEyebrowOf, languages, wordsIn } from '../app/words';
-import { CARDS_ACROSS } from '../components/reviewRow';
+import { type Language, type SiteWordKey, brandEyebrowOf, languages, wordsIn } from '../app/words';
 import { LANGUAGES_ANCHOR } from '../components/siteHeader';
 import { JULIANS_PHOTOGRAPH } from '../lib/addresses';
-import {
-  A_NAME_NOBODY_HAS_SIGNED,
-  A_REVIEW_NOBODY_HAS_WRITTEN,
-  thePlaceholders,
-} from '../lib/thePlaceholders';
+import { theRealReviews } from '../lib/theReviews';
 import { whatTheMarkupDraws } from './stylesheet';
 import { hostsAPageMayNotName } from './theHostsAPageMayName';
 
@@ -52,9 +47,9 @@ function theBandOfTheFoundersIn(page: string): string {
 }
 
 /**
- * The one hole of the approved board that the page no longer draws. It is read out of the board
- * by the name it opens with rather than written out here, so the sentence lives in one place and
- * a second hole cannot arrive under the same exception.
+ * The one hole of the approved board that the page fills. It is read out of the board by the name
+ * it opens with rather than written out here, so the sentence lives in one place and a second hole
+ * cannot arrive under the same exception.
  */
 function theHoleSheHasSinceFilled(onTheBoard: readonly string[]): string {
   const found = onTheBoard.filter((hole) => hole.startsWith('[IULIIA'));
@@ -62,6 +57,38 @@ function theHoleSheHasSinceFilled(onTheBoard: readonly string[]): string {
   expect(found).toHaveLength(1);
 
   return found[0] ?? '';
+}
+
+/** The approved board, as the plain render of it committed beside the page. */
+function theBoard(): string {
+  return readFileSync(
+    join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'docs',
+      'design',
+      'website',
+      'home-v2',
+      'render',
+      'MainV2.html',
+    ),
+    'utf8',
+  );
+}
+
+/** The band of reviews as the board draws it, which is the band the page holds back. */
+function theBandOfReviewsInTheBoard(): string {
+  const board = theBoard();
+  const opens = board.indexOf('<section aria-labelledby="reviews-title"');
+  const closes = board.indexOf('</section>', opens);
+
+  if (opens < 0 || closes < 0) {
+    throw new Error('The approved board draws no band of reviews.');
+  }
+
+  return board.slice(opens, closes);
 }
 
 /** The note inside that band, which is the one part of it the approved board drew as a hole. */
@@ -135,12 +162,6 @@ const theWordsOfTheBoard = [
   'founderIuliiaNote',
   'privacyHeadline',
   'privacyLink',
-  'reviewsEyebrow',
-  'reviewsHeadline',
-  'reviewsRating',
-  'reviewFromTheStore',
-  'reviewFromTheCommunity',
-  'reviewFromTheBeta',
   'carouselPause',
   'tryTitle',
   'tryLine',
@@ -149,6 +170,20 @@ const theWordsOfTheBoard = [
   'askLine',
   'askLink',
 ] as const;
+
+/**
+ * The sentences of the one band the board draws and the page does not. Nobody has written a review
+ * yet, so the band is held back whole, and every word of it is held back with it: a page that drew
+ * the heading over an empty row would still be telling a reader that other people have spoken.
+ */
+const theWordsOfTheBandHeldBack: readonly SiteWordKey[] = [
+  'reviewsEyebrow',
+  'reviewsHeadline',
+  'reviewsRating',
+  'reviewFromTheStore',
+  'reviewFromTheCommunity',
+  'reviewFromTheBeta',
+];
 
 describe('the page a woman meets Emi on', () => {
   it.each(languages)('draws every sentence of the approved board, in %s', async (language) => {
@@ -215,17 +250,56 @@ describe('the page a woman meets Emi on', () => {
     expect(statSync(join(__dirname, '..', 'public', JULIANS_PHOTOGRAPH)).isFile()).toBe(true);
   });
 
+  /**
+   * The band of reviews is the one band of the board the page does not draw. Nobody has said
+   * anything about Emi yet, so the board's six cards stood on the live page as six holes in
+   * brackets, under a rating and a count that were holes as well.
+   *
+   * The list the band is drawn from is read here too, because it is the thing that decides: a band
+   * that went missing for some other reason would pass a read of the markup alone.
+   */
   it.each(languages)(
-    'draws three of the six review cards, each still a hole, in %s',
+    'draws no band of reviews while nobody has written one, in %s',
     async (language) => {
+      const words = wordsIn(language);
       const page = await pageIn(language);
-      const cards = page.split(A_REVIEW_NOBODY_HAS_WRITTEN);
 
-      expect(cards).toHaveLength(CARDS_ACROSS + 1);
-      expect(page.split(A_NAME_NOBODY_HAS_SIGNED)).toHaveLength(CARDS_ACROSS + 1);
-      expect(page).toContain(wordsIn(language).reviewsRating);
+      expect(theRealReviews).toEqual([]);
+      expect(page).not.toContain('reviews-title');
+
+      for (const key of theWordsOfTheBandHeldBack) {
+        expect(page).not.toContain(words[key]);
+      }
+
+      // The one figure left on the page is the note the two founders sign. The band of reviews drew
+      // three of them, so a count says the cards are gone and not only their words.
+      expect(page.match(/<figure\b/g)).toHaveLength(1);
+
+      // The presses of the band go with it, and the one press that holds both carousels still is
+      // drawn once rather than twice, beside the band that is left.
+      expect(page).not.toContain(`aria-label="${words.reviewControlsLabel}"`);
+      expect(page).not.toContain(`aria-label="${words.reviewPrevious}"`);
+      expect(page).not.toContain(`aria-label="${words.reviewNext}"`);
+      expect(page.split(`>${words.carouselPause}<`)).toHaveLength(2);
     },
   );
+
+  /**
+   * The band is held back by the list being empty and by nothing else, so the day somebody writes
+   * a review the band is on the page with her words in it. The band itself is proved drawing in
+   * test/theBandOfReviews.test.tsx, which renders the page with one review in the list.
+   */
+  it('draws the eight bands of the board it still draws, in the board’s order', async () => {
+    const order = (markup: string): string[] =>
+      [...markup.matchAll(/<section aria-labelledby="([^"]+)"/g)].map(([, name]) => name ?? '');
+
+    const onTheBoard = order(theBoard());
+    const onThePage = order(await pageIn('en'));
+
+    expect(onTheBoard).toHaveLength(9);
+    expect(onTheBoard).toContain('reviews-title');
+    expect(onThePage).toEqual(onTheBoard.filter((band) => band !== 'reviews-title'));
+  });
 
   /**
    * The board marks the text nobody has written yet in capitals inside square brackets, so a
@@ -233,43 +307,32 @@ describe('the page a woman meets Emi on', () => {
    * the board does not leave is a hole somebody added, and a hole the board leaves and the page
    * drops is a sentence that reads as finished while it is not.
    *
-   * One hole is the exception, and it is named rather than filtered by a pattern, so filling the
-   * next one is a deliberate edit here. The first founder wrote her note after the board was
-   * approved, and the board is a record of a drawing that nobody edits for a sentence that
-   * arrived later, so the page draws her sentences where the board still draws the hole.
+   * Both exceptions are read off the board rather than written out here, so the next hole to be
+   * filled or held back is a deliberate edit of this file. The first founder wrote her note after
+   * the board was approved, and the board is a record of a drawing that nobody edits for a
+   * sentence that arrived later, so the page draws her sentences where the board draws the hole.
+   * Every other hole the board leaves stands in the band of reviews, and the page holds that band
+   * back whole, so a reader meets no hole at all.
    */
-  it('leaves the holes the board leaves, and no others', async () => {
+  it('leaves none of the holes the board leaves, because each one is filled or held back', async () => {
     const bracketed = (text: string): string[] =>
       [...new Set([...text.matchAll(/\[[A-Z][^\]]*\]/g)].map(([found]) => found))].sort();
 
-    const board = readFileSync(
-      join(
-        __dirname,
-        '..',
-        '..',
-        '..',
-        'docs',
-        'design',
-        'website',
-        'home-v2',
-        'render',
-        'MainV2.html',
-      ),
-      'utf8',
-    );
-
-    const onTheBoard = bracketed(board);
+    const onTheBoard = bracketed(theBoard());
     const filled = theHoleSheHasSinceFilled(onTheBoard);
-    const stillAHole = onTheBoard.filter((hole) => hole !== filled);
+    const inTheBandHeldBack = bracketed(theBandOfReviewsInTheBoard());
 
     expect(onTheBoard.length).toBeGreaterThan(0);
-    expect(bracketed(await pageIn('en'))).toEqual(stillAHole);
+    expect(inTheBandHeldBack.length).toBeGreaterThan(0);
 
-    // Each of the two the board leaves standing on its own is held in one place, away from the
-    // catalogues, because a hole is not a word and reads the same in every language.
-    for (const waiting of thePlaceholders) {
-      expect(stillAHole).toContain(waiting);
+    // Nothing in brackets is left on the page a reader opens, in any language.
+    for (const language of languages) {
+      expect(bracketed(await pageIn(language))).toEqual([]);
     }
+
+    // And each hole the board leaves is accounted for: the note she has since written, or a card,
+    // a rating or a count of the band the page does not draw.
+    expect(onTheBoard.filter((hole) => hole !== filled).sort()).toEqual(inTheBandHeldBack);
   });
 
   // The board puts the brand line over the hero in capitals, and it is the one line that stays in
@@ -312,7 +375,7 @@ describe('the page a woman meets Emi on', () => {
   });
 
   it(
-    'paints the nine bands of the board in the palette the board paints them in',
+    'paints the bands of the board in the palette the board paints them in',
     async () => {
       const painted = Object.values(await whatTheMarkupDraws(await pageIn('en'))).join(' ');
 

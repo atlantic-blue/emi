@@ -33,6 +33,16 @@ interface Carousels {
 
 const nothingShared = createContext<Carousels | null>(null);
 
+/**
+ * Where a carousel stands after a move, coming back round the end of its own list. A band with no
+ * cards stands on nothing and stays there: one of the two bands is drawn only when it has something
+ * to show, and coming back round a list of nothing has no answer, so without this the clock would
+ * put that band on a card that is not a number.
+ */
+export function movedTo(at: number, by: number, cards: number): number {
+  return cards === 0 ? 0 : (at + cards + by) % cards;
+}
+
 /** The query a reader's own settings answer, which is the one thing that beats the clock. */
 export const LESS_MOTION = '(prefers-reduced-motion: reduce)';
 
@@ -73,8 +83,8 @@ export function CarouselsProvider({
     }
 
     const clock = setInterval(() => {
-      setFounder((at) => (at + 1) % founders);
-      setReview((at) => (at + 1) % reviews);
+      setFounder((at) => movedTo(at, 1, founders));
+      setReview((at) => movedTo(at, 1, reviews));
     }, websiteCarouselWait);
 
     return () => {
@@ -89,8 +99,8 @@ export function CarouselsProvider({
         review,
         paused,
         togglePause: () => setPaused((was) => !was),
-        stepFounder: (by) => setFounder((at) => (at + founders + by) % founders),
-        stepReview: (by) => setReview((at) => (at + reviews + by) % reviews),
+        stepFounder: (by) => setFounder((at) => movedTo(at, by, founders)),
+        stepReview: (by) => setReview((at) => movedTo(at, by, reviews)),
       }}
     >
       {children}
