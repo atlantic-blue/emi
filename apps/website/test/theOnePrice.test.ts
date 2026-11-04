@@ -104,6 +104,20 @@ describe('the site asks for one price', () => {
     ]);
   });
 
+  /**
+   * A count of people carries a separator between its thousands, which is the separator an amount
+   * of money carries between its pounds and its pence. One of the founders' notes says she worked
+   * with over 1,500 women, and a reader of that sentence is not being quoted a price.
+   */
+  it('reads a count of thousands as a count and not as money', () => {
+    expect(amountsOfMoneyIn('over 1,500 women')).toEqual([]);
+    expect(amountsOfMoneyIn('más de 1.500 mujeres')).toEqual([]);
+    expect(amountsOfMoneyIn('29.99 pounds a month')).toEqual(['29.99']);
+
+    // A pound sign in front still makes a figure money, however it is grouped.
+    expect(amountsOfMoneyIn('£1,500 a month')).toEqual(['£1,500']);
+  });
+
   it('refuses an amount in a file that holds the words of no language', () => {
     expect(problemsWithWhatItCosts({ file: 'words.ts', text: 'it costs 19.99' })).toEqual([
       'words.ts asks for 19.99, and the one price is 29.99 a month',

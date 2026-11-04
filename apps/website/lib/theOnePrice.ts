@@ -47,9 +47,14 @@ export function whoseWordsAreIn(file: string): Language | null {
  * Every amount of money a text names: a figure with a separator and two places after it, with or
  * without the pound sign in front. A year, a day of the month and a cycle length carry no
  * separator, so none of them is read as money.
+ *
+ * A separator between thousands is not one either, which is why the two places have to be the last
+ * two digits of the figure. English writes a count of people as 1,500 and Spanish writes it as
+ * 1.500, and the first four characters of both read as an amount of money until a third digit is
+ * refused after them.
  */
 export function amountsOfMoneyIn(text: string): string[] {
-  return [...text.matchAll(/£\s?\d+(?:[.,]\d+)?|\d+[.,]\d{2}/g)].map(([found]) => found);
+  return [...text.matchAll(/£\s?\d+(?:[.,]\d+)?|\d+[.,]\d{2}(?!\d)/g)].map(([found]) => found);
 }
 
 /** One amount in the one form, so an amount written in two languages can be compared. */
