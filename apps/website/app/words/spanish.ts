@@ -139,11 +139,11 @@ export const spanish: SiteWords = {
     'Con la sincronización, el servidor aprende cuántos registros guardas y cuándo se escribió cada uno.',
 
   // La política de privacidad, desde boards/Privacy.dc.html.
-  policyUpdated: 'ÚLTIMA ACTUALIZACIÓN [DATE]',
+  policyUpdated: 'ÚLTIMA ACTUALIZACIÓN 4 DE NOVIEMBRE DE 2026',
   policyTitle: 'Política de privacidad',
   policyLine: 'No podemos leer tus registros. Esta página dice por qué.',
-  policyNoAccount: 'Sin cuenta',
-  policyNoTracking: 'Sin rastreo',
+  policyAccountOptional: 'La cuenta es opcional',
+  policyUsageOptional: 'Uso anónimo, solo si lo aceptas',
   policyEncrypted: 'Cifrado en tu teléfono',
   policyWhoTitle: 'Quiénes somos',
   policyWhoLine: 'Emi la hace Atlantic Blue Solutions Limited.',
@@ -153,7 +153,30 @@ export const spanish: SiteWords = {
   policyHowTheEncryptionWorks: 'Cómo funciona el cifrado ›',
   policyCollectTitle: 'Qué recogemos',
   policyCollectLine:
-    'Nada. No hay cuenta, ni analítica, ni publicidad, ni rastreo. No podemos leer tus registros.',
+    'Emi no puede leer tus registros. Tu cuenta solo sabe qué has pagado. Todo lo demás es anónimo y opcional.',
+  policyAccountTitle: 'Tu cuenta',
+  policyAccountLine:
+    'Tu cuenta guarda un identificador con hash, cómo inicias sesión y qué has pagado. La guarda Amazon Web Services, en Amazon Cognito. Con ella puedes pagar en la web o con Telegram Stars. Con ella puedes restaurar tus compras en un teléfono nuevo. Con ella puedes gestionar tu suscripción. Nunca guarda datos de salud. Es opcional: Emi funciona sin ella.',
+  policyPaymentsTitle: 'Pagos',
+  policyPaymentsAppleLine: 'En la App Store, Apple cobra el pago.',
+  policyPaymentsTelegramLine: 'Con Telegram Stars, Telegram cobra el pago.',
+  policyPaymentsWebBefore: 'En la web,',
+  policyPaymentsWebAfter: 'cobra el pago.',
+  policyUsageTitle: 'Uso anónimo e informes de errores',
+  policyUsageLine:
+    'Emi puede enviar nombres de eventos e informes de errores a Sentry y TelemetryDeck. Los dos están alojados en la Unión Europea. No están ligados a ti y no llevan datos de salud. Emi los envía solo si tú lo activas. Sirven para que arreglemos errores, contemos usuarias y sepamos qué guías ayudan.',
+  policyProcessorsTitle: 'Quién procesa datos por nosotros',
+  policyProcessorsApple: 'cobra el pago en la App Store.',
+  policyProcessorsAmazon: 'guarda tu cuenta.',
+  policyProcessorsTelegram: 'cobra el pago con Telegram Stars.',
+  policyProcessorsCard: 'cobra el pago en la web.',
+  policyProcessorsSentry: 'recibe informes de errores.',
+  policyProcessorsTelemetry: 'recibe nombres de eventos.',
+  policyRetentionTitle: 'Cuánto tiempo lo guardamos',
+  policyRightsTitle: 'Tus derechos',
+  policyRightsBefore:
+    'Puedes pedir tus datos, pedirnos que los borremos y retirar tu consentimiento en cualquier momento. Escribe a',
+  policyLegalBasisTitle: 'Base legal',
   policySharingTitle: 'Compartir',
   policySharingLine:
     'Tus registros salen del teléfono solo cuando exportas un archivo. Tú eliges a dónde va.',
@@ -163,6 +186,7 @@ export const spanish: SiteWords = {
   policyDeletingTitle: 'Borrado',
   policyDeletingLine:
     'Borra Emi o usa Borrar datos en la app. Cualquiera de las dos quita todo del teléfono.',
+  policyDeletingAccountBefore: 'Borrar Emi no borra tu cuenta. Para borrar tu cuenta, escribe a',
   policyChildrenTitle: 'Niños',
   policyChildrenLine: 'Emi no está hecha para niños menores de 13 años.',
   policyContactTitle: 'Contacto y cambios',

@@ -3,22 +3,32 @@ import { notFound } from 'next/navigation';
 
 import { type SiteWords, isLanguage, wordsIn } from '@/app/words';
 import { THE_PRIVACY_INBOX, thePrivacyAddress } from '@/lib/addresses';
+import {
+  A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN,
+  A_LEGAL_BASIS_NOBODY_HAS_WRITTEN,
+  A_RETENTION_NOBODY_HAS_SET,
+} from '@/lib/thePlaceholders';
 import { theLinksOf } from '@/lib/theAddressesOfAPage';
 
 /**
- * The privacy policy, in the language her address names. It is the board the operator approved,
- * `docs/design/website/privacy-policy/boards/Privacy.dc.html`, part for part and value for value,
- * with its plain render beside it. A browser holds this page against that render at three widths
- * and refuses a difference of more than one pixel in a thousand, so a measure written here that
- * the board does not draw fails that comparison.
+ * The privacy policy, in the language her address names. It is laid out as the board the operator
+ * approved lays it out, `docs/design/website/privacy-policy/boards/Privacy.dc.html`: the band at
+ * the top, the title and the line under it, three cards, then one column of sections at one size.
+ *
+ * The words are version 1 and the board is not. The board was drawn when Emi had no account, took
+ * no payment and sent nothing anywhere, so it says "No account needed" and "No tracking" and
+ * answers "What we collect" with "Nothing". Version 1 adds an optional account, the payments that
+ * need it, and anonymous usage she can switch on, so each of those three became false. A browser
+ * still holds the bands and the title of this page against the board; it no longer holds the words,
+ * because the board draws the policy of a product that no longer exists.
  *
  * Every value is a class and none is a style attribute, because the content policy of SITE-6 names
  * a secret for a style and a style written on an element cannot carry one, so a browser would
  * refuse it and the page would quietly draw wrong.
  *
- * The date at the top is the five characters the board draws rather than a date. Nobody set one, and
- * a policy showing a date it was never given would be the first sentence on the page that is not
- * true.
+ * Three answers are holes rather than sentences: who takes a payment on the web, how long an
+ * account is kept, and the ground in law for keeping it. Nobody has chosen, set or written any of
+ * them, and a policy that answered anyway would be the first sentence on the page that is not true.
  */
 
 /** The path this page sits at under a language, which its own head and the sitemap both name. */
@@ -33,13 +43,13 @@ const theReadingColumn = 'max-w-[720px]';
 /** A heading of one section, at the one size the board draws it at. */
 const aSectionHeading = 'font-serif text-[24px] leading-[30px] font-medium';
 
-/** What one of the three cards is: a drawing of the thing Emi does not do, and its title. */
+/** What one of the three cards is: a drawing of what Emi does, and its title. */
 interface ACard {
   readonly drawing: React.ReactNode;
   readonly title: string;
 }
 
-/** What one of the eight sections is: a heading, and what it answers. */
+/** What one of the fifteen sections is: a heading, and the blocks that answer it. */
 interface ASection {
   readonly title: string;
   readonly answer: React.ReactNode;
@@ -96,25 +106,45 @@ export default async function PrivacyPolicyPage({ params }: { params: Promise<{ 
 
   const words: SiteWords = wordsIn(lang);
 
+  /** Where she writes about her own data, drawn the way the last section draws it. */
+  const theInbox = (
+    <a className="text-siteAccent underline" href={THE_PRIVACY_INBOX}>
+      {thePrivacyAddress()}
+    </a>
+  );
+
+  /**
+   * The six companies that handle something for Emi, each with the one thing it handles. A name is
+   * written here rather than in a catalogue, because a company is called the same thing in all
+   * three languages and a name in a catalogue is a name somebody can translate by mistake. The
+   * fourth is a hole, because nobody has chosen who takes a payment on the web.
+   */
+  const theProcessors: readonly string[] = [
+    `Apple ${words.policyProcessorsApple}`,
+    `Amazon Web Services ${words.policyProcessorsAmazon}`,
+    `Telegram ${words.policyProcessorsTelegram}`,
+    `${A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN} ${words.policyProcessorsCard}`,
+    `Sentry ${words.policyProcessorsSentry}`,
+    `TelemetryDeck ${words.policyProcessorsTelemetry}`,
+  ];
+
   const theCards: ACard[] = [
     {
       drawing: (
         <ACardDrawing>
           <circle cx="12" cy="8" r="4" />
           <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
-          <path d="M3 3l18 18" />
         </ACardDrawing>
       ),
-      title: words.policyNoAccount,
+      title: words.policyAccountOptional,
     },
     {
       drawing: (
         <ACardDrawing>
           <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" />
-          <path d="M3 3l18 18" />
         </ACardDrawing>
       ),
-      title: words.policyNoTracking,
+      title: words.policyUsageOptional,
     },
     {
       drawing: (
@@ -128,33 +158,72 @@ export default async function PrivacyPolicyPage({ params }: { params: Promise<{ 
   ];
 
   const theSections: ASection[] = [
-    { title: words.policyWhoTitle, answer: words.policyWhoLine },
+    { title: words.policyWhoTitle, answer: <p>{words.policyWhoLine}</p> },
     {
       title: words.policyStoresTitle,
       answer: (
-        <>
+        <p>
           {`${words.policyStoresLine} `}
           <a className="text-siteAccent no-underline" href={`/${lang}/privacy/`}>
             {words.policyHowTheEncryptionWorks}
           </a>
-        </>
+        </p>
       ),
     },
-    { title: words.policyCollectTitle, answer: words.policyCollectLine },
-    { title: words.policySharingTitle, answer: words.policySharingLine },
-    { title: words.policyRemindersTitle, answer: words.policyRemindersLine },
-    { title: words.policyDeletingTitle, answer: words.policyDeletingLine },
-    { title: words.policyChildrenTitle, answer: words.policyChildrenLine },
+    { title: words.policyCollectTitle, answer: <p>{words.policyCollectLine}</p> },
+    { title: words.policyAccountTitle, answer: <p>{words.policyAccountLine}</p> },
+    {
+      title: words.policyPaymentsTitle,
+      answer: (
+        <p>
+          {`${words.policyPaymentsAppleLine} ${words.policyPaymentsTelegramLine} `}
+          {`${words.policyPaymentsWebBefore} ${A_CARD_PROCESSOR_NOBODY_HAS_CHOSEN} `}
+          {words.policyPaymentsWebAfter}
+        </p>
+      ),
+    },
+    { title: words.policyUsageTitle, answer: <p>{words.policyUsageLine}</p> },
+    {
+      title: words.policyProcessorsTitle,
+      answer: (
+        <ul className="m-0 p-0 flex list-none flex-col gap-spaceXs">
+          {theProcessors.map((processor) => (
+            <li key={processor}>{processor}</li>
+          ))}
+        </ul>
+      ),
+    },
+    { title: words.policyRetentionTitle, answer: <p>{A_RETENTION_NOBODY_HAS_SET}</p> },
+    {
+      title: words.policyRightsTitle,
+      answer: (
+        <p>
+          {`${words.policyRightsBefore} `}
+          {theInbox}.
+        </p>
+      ),
+    },
+    { title: words.policyLegalBasisTitle, answer: <p>{A_LEGAL_BASIS_NOBODY_HAS_WRITTEN}</p> },
+    { title: words.policySharingTitle, answer: <p>{words.policySharingLine}</p> },
+    { title: words.policyRemindersTitle, answer: <p>{words.policyRemindersLine}</p> },
+    {
+      title: words.policyDeletingTitle,
+      answer: (
+        <p>
+          {`${words.policyDeletingLine} ${words.policyDeletingAccountBefore} `}
+          {theInbox}.
+        </p>
+      ),
+    },
+    { title: words.policyChildrenTitle, answer: <p>{words.policyChildrenLine}</p> },
     {
       title: words.policyContactTitle,
       answer: (
-        <>
+        <p>
           {`${words.policyContactBefore} `}
-          <a className="text-siteAccent underline" href={THE_PRIVACY_INBOX}>
-            {thePrivacyAddress()}
-          </a>
+          {theInbox}
           {words.policyContactAfter}
-        </>
+        </p>
       ),
     },
   ];
@@ -195,7 +264,7 @@ export default async function PrivacyPolicyPage({ params }: { params: Promise<{ 
         {theSections.map((section) => (
           <section className="flex flex-col gap-spaceSm" key={section.title}>
             <h2 className={aSectionHeading}>{section.title}</h2>
-            <p>{section.answer}</p>
+            {section.answer}
           </section>
         ))}
       </article>
