@@ -2,8 +2,14 @@ import { flowValues } from '@emi/crypto';
 import type { Flow } from '@emi/cycle';
 import { MINIMUM_TAP_TARGET, colour, radius, space, textStyle } from '@emi/tokens';
 import { Icon, CappedText as Text } from '@emi/ui';
-import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { type ReactNode, useState } from 'react';
+import {
+  type LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 
 import { words } from '../../language';
 
@@ -48,12 +54,84 @@ export const dropsOf: Readonly<Record<Flow, number>> = {
   heavy: 3,
 };
 
-export function FlowPicker({ chosen, onPick }: Props): ReactNode {
+/** Points. The width and the height of each word, as the row drew it on one line. */
+export interface WordSize {
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * True when the five values do not fit across the row. Each value takes its disc or its word,
+ * whichever is wider, so a row narrower than their sum pushes the words into each other.
+ */
+export function wordsOverflowTheRow(
+  rowWidth: number,
+  words: readonly (WordSize | undefined)[],
+): boolean {
+  if (
+    rowWidth <= 0 ||
+    words.length !== flowValues.length ||
+    words.some((word) => word === undefined)
+  ) {
+    return false;
+  }
+
+  const taken = words.reduce((sum, word) => sum + Math.max(FLOW_DISC, word?.width ?? 0), 0);
+
+  return taken > rowWidth;
+}
+
+/**
+ * Points. How far a word on two lines moves sideways from the middle of its disc. A word at either
+ * end moves inwards until it stays inside the row, and every other word stays centred.
+ */
+export function sidewaysShift(rowWidth: number, at: number, wordWidth: number): number {
+  const step = (rowWidth - FLOW_DISC) / (flowValues.length - 1);
+  const centredFrom = FLOW_DISC / 2 + at * step - wordWidth / 2;
+  const insideFrom = Math.min(Math.max(centredFrom, 0), rowWidth - wordWidth);
+
+  return insideFrom - centredFrom;
+}
+
+export function isOnTheLowerLine(at: number): boolean {
+  return at % 2 === 1;
+}
+
+export function flowLabelTestID(flow: Flow): string {
+  return `flow-label-${flow}`;
+}
+
+export function FlowPicker(props: Props): ReactNode {
+  const { fontScale } = useWindowDimensions();
+
+  return <FlowOptions key={fontScale} {...props} />;
+}
+
+function FlowOptions({ chosen, onPick }: Props): ReactNode {
+  const [rowWidth, setRowWidth] = useState(0);
+  const [words, setWords] = useState<Partial<Record<Flow, WordSize>>>({});
+  const isOnTwoLines = wordsOverflowTheRow(
+    rowWidth,
+    flowValues.map((flow) => words[flow]),
+  );
+
+  const measureTheWord = (flow: Flow) => (event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setWords((now) => ({ ...now, [flow]: { width, height } }));
+  };
+
   return (
-    <View accessibilityRole="radiogroup" style={styles.options} testID={flowPickerTestID}>
-      {flowValues.map((flow) => {
+    <View
+      accessibilityRole="radiogroup"
+      onLayout={(event) => setRowWidth(event.nativeEvent.layout.width)}
+      style={[styles.options, isOnTwoLines && styles.optionsOnTwoLines]}
+      testID={flowPickerTestID}
+    >
+      {flowValues.map((flow, at) => {
         const isChosen = flow === chosen;
         const ink = isChosen ? colour.onAccent : colour.accent;
+        const word = words[flow];
+        const isLower = isOnTheLowerLine(at);
 
         return (
           <Pressable
@@ -62,7 +140,11 @@ export function FlowPicker({ chosen, onPick }: Props): ReactNode {
             accessibilityState={{ checked: isChosen }}
             key={flow}
             onPress={() => onPick(flow)}
-            style={styles.option}
+            style={[
+              styles.option,
+              isOnTwoLines && styles.optionOnTwoLines,
+              isOnTwoLines && !isLower && styles.optionOnTheUpperLine,
+            ]}
             testID={flowOptionTestID(flow)}
           >
             <View style={[styles.disc, isChosen ? styles.discChosen : styles.discPlain]}>
@@ -73,12 +155,28 @@ export function FlowPicker({ chosen, onPick }: Props): ReactNode {
                   size={NONE_SIZE}
                 />
               ) : (
-                Array.from({ length: dropsOf[flow] }, (_unused, at) => (
-                  <Icon colour={ink} key={at} name="drop" size={DROP_SIZE} />
+                Array.from({ length: dropsOf[flow] }, (_unused, drop) => (
+                  <Icon colour={ink} key={drop} name="drop" size={DROP_SIZE} />
                 ))
               )}
             </View>
-            <Text style={styles.label}>{flowLabel[flow]}</Text>
+            <Text
+              onLayout={isOnTwoLines ? undefined : measureTheWord(flow)}
+              style={[
+                styles.label,
+                isOnTwoLines && word !== undefined
+                  ? {
+                      // The option is as wide as its disc, so the word is given its own width back.
+                      width: Math.ceil(word.width) + 1,
+                      marginTop: isLower ? word.height : 0,
+                      transform: [{ translateX: sidewaysShift(rowWidth, at, word.width) }],
+                    }
+                  : undefined,
+              ]}
+              testID={flowLabelTestID(flow)}
+            >
+              {flowLabel[flow]}
+            </Text>
           </Pressable>
         );
       })}
@@ -110,5 +208,9 @@ const styles = StyleSheet.create({
     minHeight: MINIMUM_TAP_TARGET,
     minWidth: MINIMUM_TAP_TARGET,
   },
+  // An upper word reaches over the columns of its neighbours, so its press must be found first.
+  optionOnTheUpperLine: { zIndex: 1 },
+  optionOnTwoLines: { width: FLOW_DISC },
   options: { flexDirection: 'row', justifyContent: 'space-between' },
+  optionsOnTwoLines: { alignItems: 'flex-start' },
 });

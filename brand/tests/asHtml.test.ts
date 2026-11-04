@@ -1,6 +1,6 @@
 import { colour, textStyle } from '@emi/tokens';
 
-import { markupOf } from '../screens/asHtml.ts';
+import { atTextSize, markupOf } from '../screens/asHtml.ts';
 
 /**
  * The renderer turns a rendered React Native tree into markup. A field is the part a picture used
@@ -204,5 +204,55 @@ describe('a picture of a screen draws what a field holds', () => {
 
       expect(markupOf(unknown)).toContain('a word');
     });
+  });
+});
+
+describe('a picture drawn at a larger text size', () => {
+  const label = textStyle('label-md');
+  const size = label.fontSize ?? 0;
+  const aWord = {
+    type: 'Text',
+    props: { maxFontSizeMultiplier: 1.3, style: [label] },
+    children: ['Abundante'],
+  };
+
+  it('grows each run of text by the growth, up to the limit it carries', () => {
+    const drawn = markupOf(atTextSize(aWord, 3));
+
+    expect(drawn).toContain(`font-size: ${size * 1.3}px`);
+    expect(drawn).toContain(`line-height: ${(label.lineHeight ?? 0) * 1.3}px`);
+  });
+
+  it('keeps a run that may not grow at its own size', () => {
+    const fixed = { ...aWord, props: { ...aWord.props, maxFontSizeMultiplier: 1 } };
+    const drawn = markupOf(atTextSize(fixed, 1.3));
+
+    expect(drawn).not.toContain(`font-size: ${size * 1.3}px`);
+    expect(drawn).toContain(`font-size: ${size}px`);
+  });
+
+  it('grows nothing but text', () => {
+    const box = { type: 'View', props: { style: { width: 54 } }, children: [aWord] };
+    const drawn = markupOf(atTextSize(box, 1.3));
+
+    expect(drawn).toContain('width: 54px');
+    expect(drawn).toContain(`font-size: ${size * 1.3}px`);
+  });
+});
+
+describe('a picture of a moved box', () => {
+  it('moves it by points, as the phone does', () => {
+    const moved = { type: 'View', props: { style: { transform: [{ translateX: -12 }] } } };
+
+    expect(markupOf(moved)).toContain('transform: translateX(-12px)');
+  });
+
+  it('keeps a turn and a scale as they are written', () => {
+    const turned = {
+      type: 'View',
+      props: { style: { transform: [{ rotate: '180deg' }, { scale: 1 }] } },
+    };
+
+    expect(markupOf(turned)).toContain('transform: rotate(180deg) scale(1)');
   });
 });
