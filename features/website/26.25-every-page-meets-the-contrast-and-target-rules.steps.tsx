@@ -58,8 +58,8 @@ interface APress {
   readonly classes: readonly string[];
   /**
    * The classes of the press and of everything it sits inside. A press is drawn only where every
-   * one of them is drawn, and the header hides its six ways into the product on the band that
-   * holds them rather than on each link, so the press alone cannot answer whether she sees it.
+   * one of them is drawn, and the header hides its ways into the product on the band that holds
+   * them rather than on each link, so the press alone cannot answer whether she sees it.
    */
   readonly chain: readonly (readonly string[])[];
 }
@@ -256,7 +256,7 @@ defineFeature(feature, (test) => {
         const presses = [...everyPressIn(header), ...everyPressIn(footer)];
         const silent = presses.filter((press) => press.called.length === 0);
 
-        expect(presses.length).toBeGreaterThan(15);
+        expect(presses.length).toBeGreaterThan(12);
         expect(silent).toEqual([]);
       },
     );
@@ -295,7 +295,7 @@ defineFeature(feature, (test) => {
           }
         }
 
-        expect(presses.length).toBeGreaterThan(15);
+        expect(presses.length).toBeGreaterThan(12);
         expect(tooSmall).toEqual([]);
 
         // The browser measures what this cannot: the box of every press at the width of a phone,

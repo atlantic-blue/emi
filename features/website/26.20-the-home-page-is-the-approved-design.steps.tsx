@@ -6,10 +6,21 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
-import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
+import {
+  type Language,
+  type SiteWordKey,
+  brandEyebrowOf,
+  languages,
+  wordsIn,
+} from '../../apps/website/app/words';
 import { markerTransformOf, phaseKeyOf } from '../../apps/website/components/cycleRing';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
+import {
+  theKeysTheFrameHoldsBack,
+  theKeysTheHomePageHoldsBack,
+  theWordsHeldBackIn,
+} from '../../apps/website/test/theWordsAPressTookWithIt';
 
 const feature = loadFeature(join(__dirname, '26.20-the-home-page-is-the-approved-design.feature'));
 
@@ -78,12 +89,33 @@ function drawnBy(tag: string, stylesheet: string): string {
 }
 
 /** The ground the design paints a band on, from the band's own style. */
-function groundsOfTheDesign(): string[] {
-  return openingTagsOf(theDesign(), 'section').map((tag) => {
-    const found = /background:\s*([^;"]+)/.exec(tag);
+/**
+ * The band of the board the page does not draw, by the heading it names itself to her software by.
+ *
+ * It is two cards, and each card is a press and the sentence that explains the press: one to the
+ * free calculator and one to support. Neither page is built, so a press to either would answer 404,
+ * and the band has nothing left to say without them. It comes back whole on the day those two pages
+ * ship.
+ */
+const theBandThatWaitsForItsPages = 'try-title';
 
-    return (found?.[1] ?? '').trim();
-  });
+/** One band of the board: the heading it names itself by, and the ground it is painted on. */
+interface ABandOfTheBoard {
+  readonly labelledBy: string;
+  readonly ground: string;
+}
+
+function bandsOfTheDesign(): ABandOfTheBoard[] {
+  return openingTagsOf(theDesign(), 'section').map((tag) => ({
+    labelledBy: (/aria-labelledby="([^"]+)"/.exec(tag)?.[1] ?? '').trim(),
+    ground: (/background:\s*([^;"]+)/.exec(tag)?.[1] ?? '').trim(),
+  }));
+}
+
+function groundsOfTheDesign(): string[] {
+  return bandsOfTheDesign()
+    .filter((band) => band.labelledBy !== theBandThatWaitsForItsPages)
+    .map((band) => band.ground);
 }
 
 /** The property each element sets a rule with, which is how a rule on four sides is told from one. */
@@ -196,12 +228,19 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      "she reads the nine bands of the approved board, in the board's order and on its grounds",
+      "she reads the eight bands of the approved board whose presses have pages, in the board's order and on its grounds",
       () => {
         const bands = openingTagsOf(drawn.en ?? '', 'section');
         const wanted = groundsOfTheDesign();
 
-        expect(wanted).toHaveLength(9);
+        // Nine on the board, and the one left out is the band of the two offers.
+        expect(bandsOfTheDesign()).toHaveLength(9);
+        expect(bandsOfTheDesign().map((band) => band.labelledBy)).toContain(
+          theBandThatWaitsForItsPages,
+        );
+        expect(drawn.en ?? '').not.toContain(`aria-labelledby="${theBandThatWaitsForItsPages}"`);
+
+        expect(wanted).toHaveLength(8);
         expect(bands).toHaveLength(wanted.length);
 
         const painted = bands.map((tag) => {
@@ -223,10 +262,17 @@ defineFeature(feature, (test) => {
       // cannot arrive under the same exception.
       const filled = said.filter((text) => text.startsWith('[IULIIA'));
 
+      // The board draws every press the page holds back, so the sentences those presses took with
+      // them are the other exception to this reading.
+      const heldBack = theWordsHeldBackIn('en');
+
       expect(filled).toHaveLength(1);
       expect(said.length).toBeGreaterThan(80);
       expect(
-        said.filter((text) => !filled.includes(text) && !(drawn.en ?? '').includes(text)),
+        said.filter(
+          (text) =>
+            !filled.includes(text) && !heldBack.includes(text) && !(drawn.en ?? '').includes(text),
+        ),
       ).toEqual([]);
 
       // The board is in English, so the other two pages are held to the keys the English page
@@ -247,6 +293,13 @@ defineFeature(feature, (test) => {
       );
 
       expect(keysDrawn.length).toBeGreaterThan(50);
+      expect(
+        keysDrawn.filter((key) =>
+          [...theKeysTheFrameHoldsBack, ...theKeysTheHomePageHoldsBack].includes(
+            key as SiteWordKey,
+          ),
+        ),
+      ).toEqual([]);
 
       for (const language of ['ru', 'es'] as const) {
         const shown = shownIn(language);
@@ -313,13 +366,15 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the five links of the legal line are underlined, because the board underlines them',
+      'the four links of the legal line are underlined, because the board underlines them',
       () => {
+        // The board underlines five. The terms are the fifth, and that page is still to be built,
+        // so the press is not drawn and the four left are what the page underlines.
         const underlined = underlinedInTheDesign();
 
         expect(underlined).toEqual(['Privacy policy', 'Terms', 'English', 'Русский', 'Español']);
 
-        for (const text of underlined) {
+        for (const text of underlined.filter((text) => text !== wordsIn('en').footerTerms)) {
           const anchor = theAnchorAround(drawn.en ?? '', text);
 
           expect(drawnBy(anchor, stylesheet)).toContain('text-decoration-line: underline');

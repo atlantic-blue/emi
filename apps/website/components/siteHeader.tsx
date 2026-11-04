@@ -16,19 +16,48 @@ export const ICON_FILE = '/emi-icon.svg';
 /** The address the three language links in the band at the foot of the page sit at. */
 export const LANGUAGES_ANCHOR = 'site-languages';
 
+/** One way into the product, at the path it sits at under the language. */
+export interface AWayIn {
+  readonly word: SiteWordKey;
+  readonly path: string;
+  /**
+   * Whether the page behind it is still to be built. A way in marked this way is not drawn, and it
+   * comes back by taking this one line off it on the day its page ships.
+   */
+  readonly waitsForItsPage?: boolean;
+}
+
 /**
  * The six ways into the product, in the order the board puts them, each with the path it sits at
- * under the language. A page that does not exist yet answers 404 with the Emi page, which is what
- * `app/[lang]/[...rest]` is for, so a link here is never a dead end outside the site.
+ * under the language.
+ *
+ * Four of the six have no page yet. Their address answers 404 with the Emi page, which is honest
+ * about the address and tells her nothing at the moment she is deciding whether to trust Emi, so
+ * the band draws the two that lead somewhere and holds the other four here until they do.
  */
-export const mainLinks: readonly { readonly word: SiteWordKey; readonly path: string }[] = [
+export const mainLinks: readonly AWayIn[] = [
   { word: 'headerEmi', path: '' },
   { word: 'headerPrivacy', path: 'privacy/' },
-  { word: 'headerCalculator', path: 'calculator/' },
-  { word: 'headerPulse', path: 'pulse/' },
-  { word: 'headerBuy', path: 'buy/' },
-  { word: 'headerSupport', path: 'support/' },
+  { word: 'headerCalculator', path: 'calculator/', waitsForItsPage: true },
+  { word: 'headerPulse', path: 'pulse/', waitsForItsPage: true },
+  { word: 'headerBuy', path: 'buy/', waitsForItsPage: true },
+  { word: 'headerSupport', path: 'support/', waitsForItsPage: true },
 ];
+
+/**
+ * Where she signs in, which has no page yet either. The square is drawn on the day the page ships,
+ * by taking this one line off it.
+ */
+export const theWayIn: AWayIn = {
+  word: 'headerSignInLabel',
+  path: 'sign-in/',
+  waitsForItsPage: true,
+};
+
+/** Every way in the band draws, which is every one whose page a reader can open. */
+export function theWaysIn(): readonly AWayIn[] {
+  return mainLinks.filter((link) => link.waitsForItsPage !== true);
+}
 
 /** How each language names itself in two letters, which is all the band has room for. */
 const shortNameOf: Readonly<Record<Language, string>> = { en: 'EN', ru: 'RU', es: 'ES' };
@@ -36,9 +65,9 @@ const shortNameOf: Readonly<Record<Language, string>> = { en: 'EN', ru: 'RU', es
 /**
  * The band at the top of every page, from `docs/design/website/home-v2/boards/Header.dc.html`.
  *
- * At the width of a phone the six links are not drawn and the menu button is, because six links
- * across a phone are six links she cannot read. The width is `websitePhoneWidth` in the token
- * package and the theme names it `phone`.
+ * At the width of a phone the links are not drawn and the menu button is, because a row of links
+ * across a phone is a row she cannot read. The width is `websitePhoneWidth` in the token package
+ * and the theme names it `phone`.
  *
  * The language link points at the three language links in the band at the foot of the page. The site
  * ships no script of its own, so a control that opened a list would open nothing, and a link to the
@@ -69,7 +98,7 @@ export function SiteHeader({ language = fallbackLanguage }: { language?: Languag
           aria-label={words.headerMainLabel}
           className="flex flex-1 flex-wrap items-center justify-center gap-x-marginMd phone:hidden"
         >
-          {mainLinks.map(({ word, path }) => (
+          {theWaysIn().map(({ word, path }) => (
             <a
               className="text-body-sm leading-[44px] text-siteText no-underline"
               href={under(path)}
@@ -108,26 +137,28 @@ export function SiteHeader({ language = fallbackLanguage }: { language?: Languag
               <path d="M4 7h16M4 12h16M4 17h16" />
             </svg>
           </button>
-          <a
-            aria-label={words.headerSignInLabel}
-            className="flex h-[44px] w-[44px] items-center justify-center text-siteText"
-            href={under('sign-in/')}
-          >
-            <svg
-              aria-hidden="true"
-              fill="none"
-              height="18"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.75}
-              viewBox="0 0 24 24"
-              width="18"
+          {theWayIn.waitsForItsPage === true ? null : (
+            <a
+              aria-label={words.headerSignInLabel}
+              className="flex h-[44px] w-[44px] items-center justify-center text-siteText"
+              href={under(theWayIn.path)}
             >
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
-            </svg>
-          </a>
+              <svg
+                aria-hidden="true"
+                fill="none"
+                height="18"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.75}
+                viewBox="0 0 24 24"
+                width="18"
+              >
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
+              </svg>
+            </a>
+          )}
         </div>
       </div>
     </header>

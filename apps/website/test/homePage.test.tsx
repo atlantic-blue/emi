@@ -11,6 +11,8 @@ import { type Language, brandEyebrowOf, languages, wordsIn } from '../app/words'
 import { CARDS_ACROSS } from '../components/reviewRow';
 import { LANGUAGES_ANCHOR } from '../components/siteHeader';
 import { JULIANS_PHOTOGRAPH } from '../lib/addresses';
+import { theStoreListingIsOpen } from '../lib/theStoreListing';
+import { theKeysTheHomePageHoldsBack } from './theWordsAPressTookWithIt';
 import {
   A_NAME_NOBODY_HAS_SIGNED,
   A_REVIEW_NOBODY_HAS_WRITTEN,
@@ -93,14 +95,18 @@ const theDenials: Readonly<Record<Language, string[]>> = {
 };
 
 /**
- * Every sentence of the approved board, by the name the catalogues give it, in the order a reader
- * meets it down the page. A page that stops drawing one of these says less than the board the
- * operator approved, and the pixel comparison would only say that something moved.
+ * Every sentence of the approved board the page still draws, by the name the catalogues give it,
+ * in the order a reader meets it down the page. A page that stops drawing one of these says less
+ * than the board the operator approved, and the pixel comparison would only say that something
+ * moved.
+ *
+ * The sentences a press took with it are not here, and the case under the list names them: a press
+ * whose page nobody has built is not drawn, and the two sentences of the store go with the two
+ * presses to it.
  */
 const theWordsOfTheBoard = [
   'heroHeadline',
   'heroLine',
-  'storeSmall',
   'heroPriceLine',
   'heroCancel',
   'ringOfAbout',
@@ -142,12 +148,6 @@ const theWordsOfTheBoard = [
   'reviewFromTheCommunity',
   'reviewFromTheBeta',
   'carouselPause',
-  'tryTitle',
-  'tryLine',
-  'tryLink',
-  'askTitle',
-  'askLine',
-  'askLink',
 ] as const;
 
 describe('the page a woman meets Emi on', () => {
@@ -291,17 +291,48 @@ describe('the page a woman meets Emi on', () => {
   });
 
   it.each(languages)(
-    'offers Apple store twice, at the top and at the end, in %s',
+    'offers no press to the store, because Apple has not opened the listing, in %s',
     async (language) => {
       const page = await pageIn(language);
       const words = wordsIn(language);
 
-      expect(page.split(`aria-label="${words.store}"`)).toHaveLength(3);
-      expect(page.split(words.footerAppStore).length).toBeGreaterThan(3);
+      expect(theStoreListingIsOpen).toBe(false);
+      expect(page).not.toContain(`aria-label="${words.store}"`);
+      expect(page).not.toContain(words.storeSmall);
     },
   );
 
-  it('names no host but the community chat she chooses to open, in any language', async () => {
+  it.each(languages)(
+    'holds back every sentence that belongs to a press with no page, in %s',
+    async (language) => {
+      const words = wordsIn(language);
+      const page = await pageIn(language);
+      const stillSaid = theKeysTheHomePageHoldsBack.filter((key) => page.includes(words[key]));
+
+      expect(stillSaid).toEqual([]);
+    },
+  );
+
+  it.each(languages)('says what each phase is, and presses nowhere, in %s', async (language) => {
+    const words = wordsIn(language);
+    const page = await pageIn(language);
+
+    // The four cards of the phases keep their words. The guide behind each one is not written, so
+    // the card is a card and not a press, and nothing on the page points at the calculator.
+    for (const key of [
+      'learnPeriodTitle',
+      'learnFollicularTitle',
+      'learnOvulationTitle',
+      'learnLutealTitle',
+    ] as const) {
+      expect(page).toContain(words[key]);
+    }
+
+    expect(page).not.toContain(`href="/${language}/calculator/"`);
+    expect(page).not.toContain(`href="/${language}/support/"`);
+  });
+
+  it('names no host but the three she chooses to open, in any language', async () => {
     for (const language of languages) {
       expect(hostsAPageMayNotName(await pageIn(language))).toEqual([]);
     }

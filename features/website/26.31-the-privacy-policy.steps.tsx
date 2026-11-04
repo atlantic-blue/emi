@@ -561,9 +561,9 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'a browser holds the bands and the title of the page against the board, and keeps the picture of any difference',
+      'a browser holds the title of the page against the board, and keeps the picture of any difference',
       () => {
-        const sentence = 'the bands and the title of the privacy policy are the approved design';
+        const sentence = 'the title of the privacy policy is the approved design';
         const sentences = join(
           websiteWorkspace,
           'e2e',
@@ -576,14 +576,14 @@ defineFeature(feature, (test) => {
         expect(read(steps)).toContain("'privacy-policy', 'render', 'Privacy.html'");
         expect(read(steps)).toContain("'/en/privacy-policy/'");
 
-        // The three parts the board still describes. The words in between are version 1 and the
-        // board is not, so a comparison of the middle would report the same difference every run.
-        for (const part of [
-          'the-band-at-the-top',
-          'the-title-of-the-policy',
-          'the-band-at-the-foot',
-        ]) {
-          expect(read(steps)).toContain(`called: '${part}'`);
+        // The one part the board still describes. The words under it are version 1 and the board
+        // is not, and the two bands the whole site shares each draw presses to pages nobody has
+        // built yet, so a comparison of any of the three would report the same difference every
+        // run.
+        expect(read(steps)).toContain("called: 'the-title-of-the-policy'");
+
+        for (const part of ['the-band-at-the-top', 'the-band-at-the-foot']) {
+          expect(read(steps)).not.toContain(`called: '${part}'`);
         }
 
         // A picture of the board at each width the browser reads the page at, so a width the

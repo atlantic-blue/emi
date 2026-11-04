@@ -1,10 +1,6 @@
-import type { PNG } from 'pngjs';
-
 import type { APairOfPictures } from './theDesignComparison';
 
 import { test as bdd } from 'playwright-bdd';
-
-import type { ABandToLeaveOut } from './theDesignComparison';
 
 /** What the server said when she asked for the address, which the steps after the ask read. */
 export interface WhatTheSiteAnswered {
@@ -66,31 +62,12 @@ export interface APressSheCanSee {
 }
 
 /**
- * The two pictures the pixel comparison holds against each other: the design the operator approved,
- * and the page the site serves. Decoded, because what the comparison reads is pixels and not bytes.
+ * Each part of the page the pixel comparison holds against the design, with the picture of each
+ * taken from both documents. The three pages of the site each name their own parts.
  *
- * A fixture rather than a variable in the module, because the two widths run as two tests and a
- * variable here would be one value shared by both.
- */
-export interface WhatSheIsLookingAt {
-  atTheDesign: PNG | null;
-  atThePage: PNG | null;
-  /**
-   * Where the band the two founders sign stands in each of the two, for the one comparison that
-   * reads that band on its own. The board drew a hole where one of them has since written her
-   * note, so the band is a different height on each side and the rows outside it are what line up.
-   */
-  theBandInTheDesign: ABandToLeaveOut | null;
-  theBandOnThePage: ABandToLeaveOut | null;
-}
-
-/**
- * Each part of the page the pixel comparison holds against the design: the band at the top, the
- * title, and the band at the foot, with the picture of each taken from both documents.
- *
- * Several parts rather than one whole page, because the words of the policy are version 1 and the
- * board is not, so the page is taller than the drawing and says other things in the middle. The
- * parts named here are the ones the board still describes.
+ * Parts rather than one whole page. Every board was drawn before some of the presses on it waited
+ * for a page, so a board draws presses the site holds back, and the words of the policy are version
+ * 1 while its board is not. The parts each scenario names are the ones its board still describes.
  *
  * A fixture rather than a variable in the module, because three widths run as three tests and a
  * variable here would be one value shared by all of them.
@@ -117,14 +94,16 @@ export interface APressSheCanMake {
 }
 
 /**
- * Every press the page offers her, divided by where it sits. The band at the foot belongs to every
- * page of the site and the part in the middle belongs to the page, and the two carry one press each
- * to the same place, so each one is read on its own.
+ * Every press the page offers her, divided by where it sits. The band at the top and the band at
+ * the foot belong to every page of the site and the part in the middle belongs to the page, and two
+ * of the three carry one press each to the same place, so each one is read on its own.
  *
  * A fixture rather than a variable in the module, because three widths run as three tests and a
  * variable here would be one value shared by all of them.
  */
 export interface WhatEveryPressDoes {
+  /** The ways into the product, which the band at the top of every page carries. */
+  readonly atTheTop: APressSheCanMake[];
   readonly inThePage: APressSheCanMake[];
   readonly atTheFoot: APressSheCanMake[];
   /** The language the page declared, which says what a path of this site has to start with. */
@@ -186,7 +165,6 @@ export const test = bdd.extend<{
   crawled: WhatACrawlerRead;
   complaints: WhatTheBrowserRefused;
   found: WhatHerSoftwareFound;
-  looking: WhatSheIsLookingAt;
   comparing: WhatSheIsComparing;
   pressing: WhatEveryPressDoes;
 }>({
@@ -205,14 +183,6 @@ export const test = bdd.extend<{
   reading: async ({}, handTo) => {
     await handTo({ language: '' });
   },
-  looking: async ({}, handTo) => {
-    await handTo({
-      atTheDesign: null,
-      atThePage: null,
-      theBandInTheDesign: null,
-      theBandOnThePage: null,
-    });
-  },
   comparing: async ({}, handTo) => {
     await handTo({ parts: [] });
   },
@@ -220,7 +190,7 @@ export const test = bdd.extend<{
     await handTo({ refused: [], floors: null, presses: [] });
   },
   pressing: async ({}, handTo) => {
-    await handTo({ inThePage: [], atTheFoot: [], reading: '' });
+    await handTo({ atTheTop: [], inThePage: [], atTheFoot: [], reading: '' });
   },
   cameBack: async ({}, handTo) => {
     await handTo({ status: null, headers: {}, landedOn: null });

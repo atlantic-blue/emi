@@ -48,7 +48,7 @@ the site's own palette starts with `site`, because Tailwind carries one flat nam
 otherwise answer `bg-ground` with whichever of the two was written last.
 
 `phone:` is the one breakpoint the board adds, at `websitePhoneWidth`. At that width and narrower
-the six links in the band at the top are not drawn and the menu button is.
+the links in the band at the top are not drawn and the menu button is.
 
 The theme is TypeScript rather than a block inside the stylesheet. The rule that refuses a colour
 outside the token package is an eslint rule, and eslint reads TypeScript and not stylesheets, so a

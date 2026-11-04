@@ -40,7 +40,7 @@ describe('the page behind an address the site does not have', () => {
     expect(page()).toContain('Emi');
   });
 
-  it('names no host but the community chat, page and frame alike', async () => {
+  it('names no host but the three a press carries, page and frame alike', async () => {
     // The page itself offers nothing outside the site. The frame around it carries the band at the
     // foot, and that band names the chat the Emi Community reads on, which she opens by pressing
     // and not by arriving here.

@@ -21,7 +21,11 @@ Feature: The page that explains the encryption is the page that was approved
   desktop, of a tablet, and of the phone most of the reading happens on, and on a failure it writes
   the picture of the difference, so the answer names the place rather than only the amount.
 
+  The two bands the whole site shares are left out. Each drew presses to pages nobody has built yet,
+  so the site holds those presses back and the board still draws them. What the page itself says is
+  read whole, which is every claim this scenario exists for.
+
   Scenario: the privacy page matches the approved design pixel for pixel
     Given a woman opens the privacy page beside the design the operator approved
-    Then the privacy page is as tall as the design, so no section is missing and none was added
+    Then what the page says about the encryption is as tall as the design, so no section is missing and none was added
     And what she reads about the encryption is the design, to within one pixel in a thousand
