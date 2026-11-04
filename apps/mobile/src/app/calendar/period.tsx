@@ -9,6 +9,7 @@ import { EditPeriodScreen } from '../../features/calendar/EditPeriodScreen';
 import { dayParameter } from '../../features/calendar/askedMonth';
 import {
   type DaysListed,
+  deletePeriod,
   savePeriodRange,
   theDaysOf,
   whereTheEditorOpens,
@@ -73,6 +74,12 @@ export default function EditPeriodRoute(): ReactNode {
     leave();
   }, [database, held, leave, rescheduleTheReminder, ticked, today, vault]);
 
+  const deleteIt = useCallback(() => {
+    deletePeriod(database, vault, { held, now: new Date(), today });
+    rescheduleTheReminder();
+    leave();
+  }, [database, held, leave, rescheduleTheReminder, today, vault]);
+
   const toggle = useCallback((each: string) => {
     setTicked((hersNow) =>
       hersNow.includes(each) ? hersNow.filter((one) => one !== each) : [...hersNow, each].sort(),
@@ -105,6 +112,7 @@ export default function EditPeriodRoute(): ReactNode {
       listed={theDaysOf(listed)}
       onAddBefore={addBefore}
       onCancel={leave}
+      onDelete={deleteIt}
       onSave={save}
       onToggle={toggle}
       ticked={ticked}

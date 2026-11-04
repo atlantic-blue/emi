@@ -38,6 +38,12 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.editPeriod.addedDay': 'Добавлен',
   'calendar.editPeriod.bothChanges': '{added} {removed}',
   'calendar.editPeriod.cancel': 'Отмена',
+  'calendar.editPeriod.delete': 'Удалить эти месячные',
+  'calendar.editPeriod.deleteConfirm': 'Удалить месячные',
+  'calendar.editPeriod.deleteKeep': 'Оставить',
+  'calendar.editPeriod.deleteLine':
+    'Emi отметит каждый день этих месячных как день без кровотечения. Симптомы и заметки за эти дни останутся.',
+  'calendar.editPeriod.deleteTitle': 'Удалить эти месячные?',
   'calendar.editPeriod.lead': {
     one: 'Укажите дни с месячными. Emi хранит {count} день, с {date}.',
     few: 'Укажите дни с месячными. Emi хранит {count} дня, с {date}.',

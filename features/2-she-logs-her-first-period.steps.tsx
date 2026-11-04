@@ -203,6 +203,7 @@ import {
   historyArcTestID,
   historyBackTestID,
   historyCycleTestID,
+  historyEditTestID,
   historyPatternTestID,
   historyPatternsTestID,
   historyScreenTestID,
@@ -649,8 +650,14 @@ import {
   whenSheOpensEmi,
 } from '../apps/mobile/tests/fixtures/thePeriodSheCorrects';
 import {
+  deletePeriodConfirmTestID,
+  deletePeriodKeepTestID,
+  deletePeriodSheetTestID,
+} from '../apps/mobile/src/features/calendar/DeletePeriodSheet';
+import {
   editPeriodAddBeforeTestID,
   editPeriodChangeTestID,
+  editPeriodDeleteTestID,
   editPeriodListTestID,
   editPeriodRowTestID,
   editPeriodSaveTestID,
@@ -4224,6 +4231,89 @@ defineFeature(feature, (test) => {
     and('the month no longer fills that day, and its card carries no Remove period day', () => {
       expect(whatTheSquareSays()).not.toContain('you bled');
       expect(screen.queryByTestId(daySheetRemovePeriodDayTestID)).toBeNull();
+    });
+  });
+
+  test('SCREEN-4, she deletes a period she logged by mistake from Your cycles, after she confirms', ({
+    given,
+    when,
+    and,
+    then,
+  }) => {
+    const theWrongDay = addDays(theDaySheOpensIt, -28);
+    const theDayOnHerPhone = (): DayRecord | undefined => {
+      const held = readDayLog(herDatabase(), theWrongDay);
+
+      return held === undefined ? undefined : herVault().open(held.payload);
+    };
+    const herCycleStarts = (): string[] =>
+      listCycles(herDatabase())
+        .filter((cycle) => !cycle.isPredicted)
+        .map((cycle) => cycle.startedOn);
+    let app: OpenApp | undefined;
+
+    given('her phone holds four recorded period days, the last of them today', async () => {
+      jest.setSystemTime(whenSheOpensTheStrip);
+      await herPhoneHoldsFourRecordedPeriodDays(whenSheOpensTheStrip);
+    });
+
+    when(
+      'she opens last month in the calendar, opens a day she did not bleed on, and says her period came that day',
+      async () => {
+        app = await sheOpens(`/calendar?${dayParameter}=${theWrongDay}`);
+        await screen.findByTestId(dayTestID(theWrongDay));
+        await shePresses(dayTestID(theWrongDay));
+        await shePresses(daySheetOpenTestID);
+        await screen.findByTestId(flowPickerTestID);
+        await shePresses(flowOptionTestID('medium'));
+        await shePresses(logFlowDoneTestID);
+        await screen.findByTestId(daySheetTestID);
+        expect(herCycleStarts()).toContain(theWrongDay);
+      },
+    );
+
+    and(
+      'she opens History, presses Edit on the cycle that starts that day, and presses Delete this period',
+      async () => {
+        await app?.close();
+        app = await sheOpens('/history');
+        await fireEvent.press(await screen.findByTestId(historyEditTestID(theWrongDay)));
+        await fireEvent.press(await screen.findByTestId(editPeriodDeleteTestID));
+      },
+    );
+
+    then('Emi asks before it deletes, and Keep it leaves that period as it was', async () => {
+      expect(await screen.findByTestId(deletePeriodSheetTestID)).toHaveTextContent(
+        /^Delete this period\?/,
+      );
+      await shePresses(deletePeriodKeepTestID);
+      expect(screen.queryByTestId(deletePeriodSheetTestID)).toBeNull();
+      expect(theDayOnHerPhone()?.flow).toBe('medium');
+      expect(herCycleStarts()).toContain(theWrongDay);
+    });
+
+    when('she presses Delete this period again, then Delete period', async () => {
+      await shePresses(editPeriodDeleteTestID);
+      await shePresses(deletePeriodConfirmTestID);
+    });
+
+    then(
+      'she is back on History, and Your cycles holds no cycle that starts that day',
+      async () => {
+        expect(await screen.findByTestId(historyScreenTestID)).toBeTruthy();
+        expect(app?.pathname()).toBe('/history');
+        expect(screen.queryByTestId(historyCycleTestID(theWrongDay))).toBeNull();
+        expect(herCycleStarts()).not.toContain(theWrongDay);
+      },
+    );
+
+    and('that day holds no bleeding, and the month no longer fills that day', async () => {
+      expect(theDayOnHerPhone()?.flow).toBe('none');
+      await app?.close();
+      await sheOpens(`/calendar?${dayParameter}=${theWrongDay}`);
+      expect(
+        String((await screen.findByTestId(dayTestID(theWrongDay))).props.accessibilityLabel),
+      ).not.toContain('you bled');
     });
   });
 

@@ -1,10 +1,11 @@
 import { MINIMUM_TAP_TARGET, colour, radius, space, stroke, textStyle } from '@emi/tokens';
 import { Icon, CappedText as Text } from '@emi/ui';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { PrimaryButton } from '../../components/Button';
+import { PrimaryButton, TextLink } from '../../components/Button';
 import { Screen } from '../../components/Screen';
+import { DeletePeriodSheet } from './DeletePeriodSheet';
 import { aPeriodRowSaid, editPeriodCopy, whatEmiHoldsSaid, whatSheChangedSaid } from './copy';
 import { sheCanSave, whatSheChanged } from './savePeriod';
 
@@ -18,6 +19,7 @@ export const editPeriodChangeTestID = 'edit-period-change';
 export const editPeriodSaveTestID = 'edit-period-save';
 export const editPeriodAddBeforeTestID = 'edit-period-add-before';
 export const editPeriodAddAfterTestID = 'edit-period-add-after';
+export const editPeriodDeleteTestID = 'edit-period-delete';
 
 /** The two kinds of change she can make to the period Emi holds. */
 export const periodChanges = ['added', 'takenOff'] as const;
@@ -58,6 +60,7 @@ interface Props {
   readonly onAddAfter?: () => void;
   readonly onSave: () => void;
   readonly onCancel: () => void;
+  readonly onDelete: () => void;
 }
 
 function changeOf(
@@ -88,9 +91,11 @@ export function EditPeriodScreen({
   onAddAfter,
   onSave,
   onCancel,
+  onDelete,
 }: Props): ReactNode {
   const changed = whatSheChanged({ held, ticked });
   const hers = new Set(ticked);
+  const [isAsking, setIsAsking] = useState(false);
 
   return (
     <Screen drawsTheWash testID={editPeriodScreenTestID}>
@@ -167,6 +172,16 @@ export function EditPeriodScreen({
             {ticked.length === 0 ? editPeriodCopy.noDayLeft : whatSheChangedSaid(changed)}
           </Text>
         </View>
+
+        {held.length === 0 ? null : (
+          <View style={styles.delete}>
+            <TextLink
+              label={editPeriodCopy.delete}
+              onPress={() => setIsAsking(true)}
+              testID={editPeriodDeleteTestID}
+            />
+          </View>
+        )}
       </ScrollView>
 
       <View style={styles.footer}>
@@ -177,6 +192,16 @@ export function EditPeriodScreen({
           testID={editPeriodSaveTestID}
         />
       </View>
+
+      {isAsking ? (
+        <DeletePeriodSheet
+          onDelete={() => {
+            setIsAsking(false);
+            onDelete();
+          }}
+          onKeep={() => setIsAsking(false)}
+        />
+      ) : null}
     </Screen>
   );
 }
@@ -217,6 +242,7 @@ const styles = StyleSheet.create({
     padding: space.spaceMd,
   },
   changeWords: { color: colour.text, ...textStyle('body-sm') },
+  delete: { alignItems: 'flex-start' },
   footer: { padding: space.spaceLg },
   header: {
     alignItems: 'center',
