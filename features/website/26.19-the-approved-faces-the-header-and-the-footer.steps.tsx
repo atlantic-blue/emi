@@ -144,17 +144,19 @@ defineFeature(feature, (test) => {
         expect(linksIn(main)).toEqual([
           { address: '/en/', words: words.headerEmi },
           { address: '/en/privacy/', words: words.headerPrivacy },
+          { address: '/en/support/', words: words.headerSupport },
         ]);
 
-        // The band holds all six the board drew. Four of them wait for a page: the calculator, Pulse,
-        // the till and support are each marked in the code, so each one is drawn again by taking one
-        // line off its entry on the day its page ships.
+        // The band holds all six the board drew. Three of them wait for a page: the calculator,
+        // Pulse and the till are each marked in the code, so each one is drawn again by taking one
+        // line off its entry on the day its page ships. Support was the fourth, and its page
+        // shipped in step 27.2, so the band carries it again.
         expect(mainLinks).toHaveLength(6);
         expect(
           mainLinks.filter((link) => link.waitsForItsPage === true).map((link) => link.path),
-        ).toEqual(['calculator/', 'pulse/', 'buy/', 'support/']);
+        ).toEqual(['calculator/', 'pulse/', 'buy/']);
 
-        for (const waiting of ['Calculator', 'Pulse', 'Buy', 'Support']) {
+        for (const waiting of ['Calculator', 'Pulse', 'Buy']) {
           expect({ waiting, drawn: main.includes(`>${waiting}</a>`) }).toEqual({
             waiting,
             drawn: false,

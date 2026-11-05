@@ -17,12 +17,14 @@ import { type Language, type SiteWordKey, wordsIn } from '../app/words';
  * The heading of the group about learning is among them. All three of its presses wait for a page,
  * so the band draws neither the group nor its heading: a heading over nothing reads as a part of
  * the page that failed to load.
+ *
+ * "Support" is no longer among them, in either band. Its page ships in step 27.2, so step 27.3
+ * takes the mark off the two presses that carry it and they are drawn again.
  */
 export const theKeysTheFrameHoldsBack: readonly SiteWordKey[] = [
   'headerCalculator',
   'headerPulse',
   'headerBuy',
-  'headerSupport',
   'footerAppStore',
   'footerBuyOnTheWeb',
   'footerTransparency',
@@ -30,7 +32,6 @@ export const theKeysTheFrameHoldsBack: readonly SiteWordKey[] = [
   'footerCalculator',
   'footerGuides',
   'footerPulse',
-  'footerSupport',
   'footerAccount',
   'footerTerms',
 ];
@@ -40,8 +41,9 @@ export const theKeysTheFrameHoldsBack: readonly SiteWordKey[] = [
  * reason.
  *
  * The two of the store wait for Apple to issue an address for the listing rather than for a page of
- * this site. The six after them are the band of the two offers, which is two cards that are each a
- * press and the sentence explaining it, so neither has anything left to say without its page.
+ * this site. The three after them are one card of the band of two offers, which is a press and the
+ * sentence explaining it, so it has nothing left to say without its page. The other card of that
+ * band offers the support page, which ships in step 27.2, so its three words are drawn again.
  */
 export const theKeysTheHomePageHoldsBack: readonly SiteWordKey[] = [
   'store',
@@ -49,9 +51,6 @@ export const theKeysTheHomePageHoldsBack: readonly SiteWordKey[] = [
   'tryTitle',
   'tryLine',
   'tryLink',
-  'askTitle',
-  'askLine',
-  'askLink',
 ];
 
 /** Every sentence a press took with it, in one language, as a reader would have read it. */

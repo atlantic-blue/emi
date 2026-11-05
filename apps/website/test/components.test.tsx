@@ -189,12 +189,12 @@ describe('the band at the top of every page', () => {
     expect(MINIMUM_TAP_TARGET).toBe(44);
   });
 
-  it('draws the two ways in whose page exists, and holds the other four until theirs do', () => {
+  it('draws the three ways in whose page exists, and holds the other three until theirs do', () => {
     const drawn = header();
     const words = wordsIn('en');
 
     expect(mainLinks).toHaveLength(6);
-    expect(theWaysIn().map((link) => link.path)).toEqual(['', 'privacy/']);
+    expect(theWaysIn().map((link) => link.path)).toEqual(['', 'privacy/', 'support/']);
 
     for (const link of mainLinks) {
       expect({
@@ -246,7 +246,6 @@ describe('the band at the foot of every page', () => {
     'footerCalculator',
     'footerGuides',
     'footerPulse',
-    'footerSupport',
     'footerAccount',
   ];
 
@@ -255,6 +254,7 @@ describe('the band at the foot of every page', () => {
     'footerBeta',
     'footerHowEmiProtects',
     'footerOpenCode',
+    'footerSupport',
     'footerCommunity',
   ];
 
@@ -290,7 +290,7 @@ describe('the band at the foot of every page', () => {
     }
   });
 
-  it('draws each press whose page exists, and holds the eight that wait for theirs', () => {
+  it('draws each press whose page exists, and holds the seven that wait for theirs', () => {
     const drawn = footer();
     const words = wordsIn('en');
     const everyLink = footerGroups.flatMap((group) => group.links);

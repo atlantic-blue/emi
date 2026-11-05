@@ -31,9 +31,9 @@ export interface AWayIn {
  * The six ways into the product, in the order the board puts them, each with the path it sits at
  * under the language.
  *
- * Four of the six have no page yet. Their address answers 404 with the Emi page, which is honest
+ * Three of the six have no page yet. Their address answers 404 with the Emi page, which is honest
  * about the address and tells her nothing at the moment she is deciding whether to trust Emi, so
- * the band draws the two that lead somewhere and holds the other four here until they do.
+ * the band draws the three that lead somewhere and holds the other three here until they do.
  */
 export const mainLinks: readonly AWayIn[] = [
   { word: 'headerEmi', path: '' },
@@ -41,7 +41,7 @@ export const mainLinks: readonly AWayIn[] = [
   { word: 'headerCalculator', path: 'calculator/', waitsForItsPage: true },
   { word: 'headerPulse', path: 'pulse/', waitsForItsPage: true },
   { word: 'headerBuy', path: 'buy/', waitsForItsPage: true },
-  { word: 'headerSupport', path: 'support/', waitsForItsPage: true },
+  { word: 'headerSupport', path: 'support/' },
 ];
 
 /**

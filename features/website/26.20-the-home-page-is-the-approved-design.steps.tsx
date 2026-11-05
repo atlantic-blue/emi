@@ -132,17 +132,24 @@ function bandsOfTheDesign(): { band: string; ground: string }[] {
 }
 
 /**
- * The two bands of the design the page does not draw.
+ * The one band of the design the page does not draw. Nobody has written a review of Emi yet, so
+ * the band of reviews is held back whole rather than drawn with six cards of holes in it, which is
+ * `apps/website/lib/theReviews.ts` being empty.
  *
- * Nobody has written a review of Emi yet, so the band of reviews is held back whole rather than
- * drawn with six cards of holes in it, which is `apps/website/lib/theReviews.ts` being empty.
- *
- * The band of the two offers is two cards, and each card is a press and the sentence that explains
- * the press: one to the free calculator and one to support. Neither page is built, so a press to
- * either would answer 404, and the band has nothing left to say without them. It comes back whole
- * on the day those two pages ship.
+ * The band of the two offers is not held back any more. It is two cards, and each card is a press
+ * and the sentence that explains the press: one to the free calculator and one to support. The
+ * support page shipped in step 27.2, so that card is drawn and the band is drawn with it. The
+ * calculator is still to be built, so its card is not drawn, and the page therefore labels the
+ * band by the card that is left.
  */
-const THE_BANDS_HELD_BACK = ['reviews-title', 'try-title'];
+const THE_BANDS_HELD_BACK = ['reviews-title'];
+
+/**
+ * What the board calls the band of the two offers, and what the page calls it. The board labels
+ * it by the card for the calculator, which the page does not draw, so the page labels it by the
+ * card for support instead.
+ */
+const THE_BAND_OF_THE_TWO_OFFERS = { onTheBoard: 'try-title', onThePage: 'ask-title' };
 
 /** One band of the design, as its own markup, so what stands inside it can be read on its own. */
 function theBandOfTheDesign(band: string): string {
@@ -281,15 +288,25 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      "she reads seven of the nine bands of the approved board, in the board's order and on its grounds",
+      "she reads eight of the nine bands of the approved board, in the board's order and on its grounds",
       () => {
         const bands = openingTagsOf(drawn.en ?? '', 'section');
         const onTheBoard = bandsOfTheDesign();
         const wanted = groundsOfTheDesign();
 
-        // Nine on the board. The two left out are the band of reviews, which nobody has written
-        // one for, and the band of the two offers, whose two pages are still to be built.
+        // Nine on the board. The one left out is the band of reviews, which nobody has written one
+        // for. The band of the two offers is drawn with one of its two cards, so it is here, under
+        // the name the page gives it.
         expect(onTheBoard).toHaveLength(9);
+        expect(onTheBoard.map((each) => each.band)).toContain(
+          THE_BAND_OF_THE_TWO_OFFERS.onTheBoard,
+        );
+        expect(drawn.en ?? '').toContain(
+          `aria-labelledby="${THE_BAND_OF_THE_TWO_OFFERS.onThePage}"`,
+        );
+        expect(drawn.en ?? '').not.toContain(
+          `aria-labelledby="${THE_BAND_OF_THE_TWO_OFFERS.onTheBoard}"`,
+        );
 
         for (const band of THE_BANDS_HELD_BACK) {
           expect({ band, onTheBoard: onTheBoard.map((each) => each.band).includes(band) }).toEqual({
@@ -302,7 +319,7 @@ defineFeature(feature, (test) => {
           }).toEqual({ band, onThePage: false });
         }
 
-        expect(wanted).toHaveLength(7);
+        expect(wanted).toHaveLength(8);
         expect(bands).toHaveLength(wanted.length);
 
         const painted = bands.map((tag) => {

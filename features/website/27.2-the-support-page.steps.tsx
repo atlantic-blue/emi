@@ -251,29 +251,28 @@ defineFeature(feature, (test) => {
       ];
     };
 
-    given(
-      'a woman opens the support page at its own address, which no press leads to yet',
-      async () => {
-        for (const language of languages) {
-          drawn[language] = await pageIn(language);
-        }
+    given('a woman follows "Support" from the band at the top of myemi.app', async () => {
+      for (const language of languages) {
+        drawn[language] = await pageIn(language);
+      }
 
-        // The band at the top holds its way here back, because step 26.26 draws no press whose
-        // page was not built and this page was not built when that list was written. Step 27.3
-        // takes the mark off. Until it does, the word is still in all three catalogues and the
-        // band draws it nowhere.
-        expect(theKeysTheFrameHoldsBack).toContain('headerSupport');
-        expect(mainLinks.find((way) => way.word === 'headerSupport')?.path).toBe(THE_SUPPORT_PAGE);
+      // The press she arrived through. It was held back while this page did not exist, and step
+      // 27.3 took the mark off, so the word is drawn again in both bands and in all three
+      // languages. The band at the top is above the page, so it is read from the whole document.
+      expect(theKeysTheFrameHoldsBack).not.toContain('headerSupport');
+      expect(
+        mainLinks.find((way) => way.word === 'headerSupport')?.waitsForItsPage,
+      ).toBeUndefined();
 
-        for (const language of languages) {
-          const document = drawn[language] ?? '';
-          const band = document.slice(0, document.indexOf('<main'));
+      for (const language of languages) {
+        const document = drawn[language] ?? '';
+        const band = document.slice(0, document.indexOf('<main'));
 
-          expect(band).not.toContain(wordsIn(language).headerSupport);
-          expect(band).not.toContain(`/${language}/${THE_SUPPORT_PAGE}`);
-        }
-      },
-    );
+        expect(addressOf(theAnchorAround(band, wordsIn(language).headerSupport))).toBe(
+          `/${language}/${THE_SUPPORT_PAGE}`,
+        );
+      }
+    });
 
     then('she reads the title, the box she searches in, three cards and four questions', () => {
       const middle = theMiddleOf(inEnglish());

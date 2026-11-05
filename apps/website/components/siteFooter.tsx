@@ -46,10 +46,10 @@ export interface FooterGroup {
  * The four groups the board puts in the band at the foot of a page, in its order: where to get the
  * application, how Emi protects her data, what she can learn, and how to reach somebody.
  *
- * Eight of the twelve presses have no page yet, so the band draws the four that lead somewhere and
- * holds the other eight here until theirs ship. The store waits for a listing rather than for a
+ * Seven of the twelve presses have no page yet, so the band draws the five that lead somewhere and
+ * holds the other seven here until theirs ship. The store waits for a listing rather than for a
  * page of this site: Apple opens the pre-order on 17 November 2026, and pasting the address Apple
- * gives into `THE_APP_STORE_LISTING` draws this press and the two on the home page.
+ * gives into `THE_APP_STORE_LISTING` draws this press and the one on the home page.
  *
  * The group about learning is left with no press at all, so the band draws neither it nor its
  * heading. A heading over nothing reads as a part of the page that failed to load.
@@ -86,7 +86,7 @@ export const footerGroups: readonly FooterGroup[] = [
   {
     title: 'footerHelpGroup',
     links: [
-      { word: 'footerSupport', path: 'support/', waitsForItsPage: true },
+      { word: 'footerSupport', path: 'support/' },
       { word: 'footerCommunity', outside: THE_EMI_COMMUNITY },
       { word: 'footerAccount', path: 'sign-in/', waitsForItsPage: true },
     ],
@@ -140,8 +140,9 @@ export function theGroupsOfTheBand(): readonly FooterGroup[] {
  * `tools/pipeline/forbiddenClaims.ts` and it is the board's own words, so the gate and the design
  * agree and neither has to be bent for the other.
  *
- * A press whose page does not exist yet is not drawn. Four presses are left: the beta and the code
- * on Apple's host and on GitHub, the page that explains the encryption, and the community chat.
+ * A press whose page does not exist yet is not drawn. Five presses are left: the beta and the code
+ * on Apple's host and on GitHub, the page that explains the encryption, the support page, and the
+ * community chat.
  *
  * The legal line at the end is the one place the board underlines a link, and it is where a reader
  * looks for the terms she is agreeing to. Every other link on the site carries no decoration.

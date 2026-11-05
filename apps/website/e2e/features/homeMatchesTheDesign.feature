@@ -23,12 +23,13 @@ Feature: The page she reads is the page that was approved
   Nine parts are the exception, and each is read on its own.
 
   Five of them carry a press the site no longer draws. The band at the top draws six ways into the
-  product on the board and the two whose page exists on the page. The band at the foot draws twelve
-  presses on the board and the four whose page exists on the page. The band at the head of the page
-  and the band at the end each draw a press to Apple's store, and Apple has issued no address for
-  the listing. The band of the two offers is a press to the free calculator and a press to support
-  and the sentence explaining each, and neither page is built, so the page draws no rows of it at
-  all.
+  product on the board and the three whose page exists on the page. The band at the foot draws
+  twelve presses on the board and the five whose page exists on the page. The band at the head of
+  the page and the band at the end each draw a press to Apple's store, and Apple has issued no
+  address for the listing. The band of the two offers is a press to the free calculator and a
+  press to support and the sentence explaining each. The support page is built and the calculator
+  is not, so the page draws one card of that band where the board draws two, and it labels the
+  band by the card it draws.
 
   Two are older. The board was approved while one of the two founders had not written her note, so
   it draws a hole of 73 characters where the page now draws the 46 words she wrote, and his

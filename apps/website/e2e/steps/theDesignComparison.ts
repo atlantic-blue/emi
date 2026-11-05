@@ -460,13 +460,18 @@ export async function theBandOfTheTwoOffers(page: Page): Promise<ABandToLeaveOut
       to: Math.round(box.bottom + window.scrollY),
     });
 
-    const band = document.querySelector('section[aria-labelledby="try-title"]');
+    // The board labels the band by the card for the calculator, and the page draws that card
+    // nowhere, so on the page the band is labelled by the card for support instead. Either name
+    // is the same band.
+    const band =
+      document.querySelector('section[aria-labelledby="try-title"]') ??
+      document.querySelector('section[aria-labelledby="ask-title"]');
 
     if (band !== null) {
       return down(band.getBoundingClientRect());
     }
 
-    // The band of reviews stands above it on the board. The page draws neither, so the row is the
+    // The band of reviews stands above it on the board. A document that draws neither reports the
     // foot of the band above that one, which is the same row the band of reviews reports.
     const above =
       document.querySelector('section[aria-labelledby="reviews-title"]') ??

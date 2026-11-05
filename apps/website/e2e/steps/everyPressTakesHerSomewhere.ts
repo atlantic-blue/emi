@@ -131,9 +131,11 @@ Then('no press takes her to a page that is still to be built', ({ pressing }) =>
 
   expect(leadingNowhere.map((press) => press.called)).toEqual([]);
 
-  // The six pages nobody has built yet. A press to one of them is not drawn at all, so none of
-  // the six appears at the end of any address on the page.
-  for (const path of ['buy/', 'calculator/', 'pulse/', 'support/', 'sign-in/', 'terms/']) {
+  // The five pages nobody has built yet. A press to one of them is not drawn at all, so none of
+  // the five appears at the end of any address on the page. The support page was the sixth of
+  // these; it is built, so a press to it is read in the step below as a press the site answers
+  // 200 for.
+  for (const path of ['buy/', 'calculator/', 'pulse/', 'sign-in/', 'terms/']) {
     expect({
       waitingFor: path,
       pressed: everyPress.some((press) => press.address.endsWith(`/${path}`)),
