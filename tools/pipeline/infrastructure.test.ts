@@ -190,6 +190,8 @@ const collectionLevelActions: readonly string[] = [
   'cloudfront:ListFunctions',
   'cloudfront:ListOriginAccessControls',
   'cloudfront:ListResponseHeadersPolicies',
+  'cognito-idp:CreateUserPool',
+  'cognito-idp:ListUserPools',
   'dynamodb:ListTables',
   'iam:ListOpenIDConnectProviders',
   'iam:ListRoles',
@@ -384,7 +386,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
 
     it('gives the plan role nothing but reads', () => {
       const writes = actionsIn(planPolicy).filter(
-        (action) => !/^(apigateway:GET|[a-z0-9]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
+        (action) => !/^(apigateway:GET|[a-z0-9-]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
       );
 
       expect(actionsIn(planPolicy).length).toBeGreaterThan(0);
@@ -534,6 +536,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         'ReadTheDistribution',
         'ReadTheWebsiteBucket',
         'ReadTheMyemiZone',
+        'ReadTheUserPool',
       ]);
       expect(applyStatements.length).toBeGreaterThan(5);
       expect(applyStatements.every((statement) => statement.actions.length > 0)).toBe(true);
@@ -827,7 +830,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(added.filter((action) => !actions.includes(action))).toEqual([]);
       expect(
         actions.filter(
-          (action) => !/^(apigateway:GET|[a-z0-9]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
+          (action) => !/^(apigateway:GET|[a-z0-9-]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
         ),
       ).toEqual([]);
       expect(statementsReaching(planStatements, 'cloudfront:CreateDistributionWithTags')).toEqual(
@@ -1324,6 +1327,186 @@ describe('the site on Lambda behind CloudFront, which is step 26.4', () => {
       'aws_instance',
     ])('declares no %s, because it would bill while nobody uses Emi', (kind) => {
       expect(siteModule()).not.toContain(`resource "${kind}"`);
+    });
+  });
+});
+
+describe('the pool she signs in to, which is step 28.2', () => {
+  const cognito = read('infra/cognito.tf');
+  const readme = read('infra/README.md');
+  const pool = bodyOf('resource "aws_cognito_user_pool" "accounts"');
+  const clients = ['iphone', 'website'] as const;
+
+  const inClient = (name: string): string =>
+    bodyOf(`resource "aws_cognito_user_pool_client" "${name}"`);
+
+  describe('the pool carries a sign in and nothing of her', () => {
+    it('is on the tier that carries the email one time code, which Lite does not', () => {
+      expect(pool).toContain('user_pool_tier = "ESSENTIALS"');
+    });
+
+    it('allows the email code as a first factor, beside the password the service insists on', () => {
+      const policy = blockBodyOf(pool, 'sign_in_policy');
+
+      expect(listedIn(policy, 'allowed_first_auth_factors')).toEqual(['PASSWORD', 'EMAIL_OTP']);
+    });
+
+    it('asks for no second factor, because a code cannot be a first factor beside one', () => {
+      expect(pool).toContain('mfa_configuration = "OFF"');
+    });
+
+    it('keeps her address out of the username, so a hashed name fits the same pool', () => {
+      expect(listedIn(pool, 'alias_attributes')).toEqual(['email']);
+      expect(configuration).not.toContain('username_attributes');
+    });
+
+    it('verifies an address itself, because an alias signs her in only once it is verified', () => {
+      expect(listedIn(pool, 'auto_verified_attributes')).toEqual(['email']);
+    });
+
+    it('offers no way to recover a password, because there is no password to recover', () => {
+      const recovery = blockBodyOf(pool, 'recovery_mechanism');
+
+      expect(recovery).toContain('name     = "admin_only"');
+      expect(pool).not.toContain('verified_email');
+    });
+
+    it('declares no attribute, so it holds no account identifier and no count of her days', () => {
+      expect(pool).not.toContain('schema {');
+      expect(cognito).not.toContain('custom:');
+    });
+
+    it('cannot be removed by a configuration change alone, as the vault table cannot', () => {
+      expect(pool).toContain('deletion_protection = "ACTIVE"');
+    });
+
+    it('is made after the role is allowed to make it, which is one apply for both', () => {
+      expect(pool).toContain('depends_on = [aws_iam_role_policy.apply]');
+    });
+  });
+
+  describe('the two clients, one on her phone and one on the site', () => {
+    it.each(clients)('gives the %s client no secret, because neither one can keep one', (name) => {
+      expect(inClient(name)).toContain('generate_secret = false');
+    });
+
+    it.each(clients)('lets the %s client start a code sign in and refresh, and no more', (name) => {
+      expect(listedIn(inClient(name), 'explicit_auth_flows')).toEqual([
+        'ALLOW_USER_AUTH',
+        'ALLOW_REFRESH_TOKEN_AUTH',
+      ]);
+    });
+
+    it.each(clients)('keeps the %s client signed in for thirty days, by the hour', (name) => {
+      const client = inClient(name);
+      const units = blockBodyOf(client, 'token_validity_units');
+
+      expect(client).toContain('access_token_validity  = 1');
+      expect(client).toContain('id_token_validity      = 1');
+      expect(client).toContain('refresh_token_validity = 30');
+      expect(units).toContain('access_token  = "hours"');
+      expect(units).toContain('refresh_token = "days"');
+    });
+
+    it.each(clients)('ends the %s token when she signs out', (name) => {
+      expect(inClient(name)).toContain('enable_token_revocation = true');
+    });
+
+    it.each(clients)('never tells the %s client whether an address has an account', (name) => {
+      expect(inClient(name)).toContain('prevent_user_existence_errors = "ENABLED"');
+    });
+
+    it.each(clients)('reads her address through the %s client and no other attribute', (name) => {
+      const client = inClient(name);
+
+      expect(listedIn(client, 'read_attributes')).toEqual(['email', 'email_verified']);
+      expect(listedIn(client, 'write_attributes')).toEqual(['email']);
+    });
+
+    it.each(clients)('gives the %s client fifteen minutes to carry a code', (name) => {
+      expect(inClient(name)).toContain('auth_session_validity = 15');
+    });
+
+    it('hands the application the pool, its issuer and both client identifiers', () => {
+      expect(blockBodyOf(cognito, 'output "user_pool_id"')).toContain(
+        'aws_cognito_user_pool.accounts.id',
+      );
+      expect(blockBodyOf(cognito, 'output "user_pool_issuer"')).toContain(
+        '"https://${aws_cognito_user_pool.accounts.endpoint}"',
+      );
+      expect(blockBodyOf(cognito, 'output "iphone_client_id"')).toContain(
+        'aws_cognito_user_pool_client.iphone.id',
+      );
+      expect(blockBodyOf(cognito, 'output "website_client_id"')).toContain(
+        'aws_cognito_user_pool_client.website.id',
+      );
+    });
+  });
+
+  describe('what this step leaves out, because it needs a key or a sender', () => {
+    it('names no identity provider, so Apple, Google and Telegram wait for their keys', () => {
+      expect(configuration).not.toContain('aws_cognito_identity_provider');
+      expect(cognito).not.toContain('supported_identity_providers');
+      expect(cognito).not.toContain('provider_details');
+    });
+
+    it('holds no secret and no private key, because this repository is public', () => {
+      expect(cognito).not.toContain('client_secret');
+      expect(cognito).not.toContain('BEGIN PRIVATE KEY');
+      expect(cognito).not.toContain('bot_token');
+    });
+
+    it('names no sender, and the readme says the code waits for one', () => {
+      expect(pool).not.toContain('email_configuration');
+      expect(readme).toContain('Amazon Simple Email Service');
+    });
+  });
+
+  describe('the grants, so a merge makes the pool and a pull request only reads it', () => {
+    const planStatements = statementsIn(planPolicy);
+    const applyStatements = statementsIn(applyPolicy);
+    const everyPool = `arn:aws:cognito-idp:*:${defaultOf('account_id')}:userpool/*`;
+
+    const scopeOf = (statements: readonly PolicyStatement[], action: string): string[][] =>
+      statementsReaching(statements, action).map((statement) =>
+        statement.resources.map((resource) => resolved(configuration, resource)),
+      );
+
+    it('makes a pool through a statement that stands on every resource', () => {
+      expect(grantedOnEveryResource(applyStatements, 'cognito-idp:CreateUserPool')).toBe(true);
+    });
+
+    it('changes a pool through a statement that names one, and never through a wider one', () => {
+      for (const action of [
+        'cognito-idp:UpdateUserPool',
+        'cognito-idp:CreateUserPoolClient',
+        'cognito-idp:DeleteUserPool',
+      ]) {
+        expect(scopeOf(applyStatements, action)).toEqual([[everyPool]]);
+      }
+    });
+
+    it('gives the plan role the same read at the same scope', () => {
+      expect(scopeOf(planStatements, 'cognito-idp:DescribeUserPool')).toEqual([[everyPool]]);
+      expect(scopeOf(planStatements, 'cognito-idp:DescribeUserPoolClient')).toEqual([[everyPool]]);
+    });
+
+    it('gives the plan role no write of the pool at all', () => {
+      for (const action of [
+        'cognito-idp:CreateUserPool',
+        'cognito-idp:CreateUserPoolClient',
+        'cognito-idp:UpdateUserPool',
+        'cognito-idp:UpdateUserPoolClient',
+        'cognito-idp:DeleteUserPool',
+        'cognito-idp:DeleteUserPoolClient',
+        'cognito-idp:SetUserPoolMfaConfig',
+        'cognito-idp:TagResource',
+        'cognito-idp:AdminCreateUser',
+        'cognito-idp:AdminDeleteUser',
+        'cognito-idp:ListUsers',
+      ]) {
+        expect(scopeOf(planStatements, action)).toEqual([]);
+      }
     });
   });
 });
