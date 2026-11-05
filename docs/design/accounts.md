@@ -1,8 +1,9 @@
-# The account: Google, Apple, and the code that is not an account
+# The account: four ways in, and the code that is not an account
 
 Emi has a vault account today, and nobody signs in to it. The phone makes an Ed25519 key pair, the
 account identifier falls out of the public key, and every request carries a signature. This document
-designs a sign in on top of that, through Amazon Cognito, with Google and Apple and nothing else.
+designs a sign in on top of that, through Amazon Cognito, with Sign in with Apple, Google,
+Telegram and a code sent to her email address.
 
 Two sentences hold the whole design up.
 
@@ -14,7 +15,8 @@ So a woman who signs in and has no recovery code reaches her own ciphertext and 
 of it. That is the design working. It is also the moment the product feels broken, so a large part
 of this document is about what she sees in that moment.
 
-Nothing here is built. The pull request that carries this document builds no product code.
+The pull request that carried this document built no product code. Step 2 of the path is in the
+repository since 2026-11-05, and the section "What is built today" says what that covers.
 
 ## How to read this document
 
@@ -24,7 +26,8 @@ Every section carries one status line, the same as `architecture.md` and `privac
 built` means the code is in this repository now. `Status: designed` means this document describes it
 and nobody wrote it yet.
 
-Three sections say built. They report what the repository and the cloud account hold on 2026-09-19.
+Three sections say built. They report what the repository and the cloud account hold on 2026-09-19,
+with one paragraph added on 2026-11-05.
 Everything else is a proposal.
 
 ## The decisions this design starts from
@@ -34,15 +37,18 @@ Status: designed
 The operator settled four things. They are written here as given. This document builds them and does
 not argue with them.
 
-Google and Apple only. There is no email address and no password anywhere in this feature. Amazon
-Cognito holds federated identities alone, so there is no password to reset and no reset path to
-design.
+Four ways in, and no password. Sign in with Apple, Google, Telegram and a code sent to her email
+address, all through one user pool. There is no password anywhere in this feature, so there is no
+password to reset and no reset path to design. The section "The four ways in, at field level" holds
+what the pool keeps for each one. This replaces the decision of 2026-09-19, which was Google and
+Apple alone with no email address.
 
 Nothing about signing in opens a record. The recovery code stays the only thing that wraps the vault
 key.
 
-Emi has an account and it carries an email address, so Emi can write to her. Both providers hand the
-address over at sign in, so no screen asks her to type one.
+Emi has an account and it carries an email address, so Emi can write to her. Apple and Google hand
+the address over at sign in. A woman who signs in with a code types her address once, to be sent
+one. A woman who signs in with Telegram gives no address, because the Telegram login returns none.
 
 She signs in later, never in the first run. Contract SCREEN-1 stays exactly as it is, and so do its
 tests.
@@ -119,6 +125,12 @@ can ask for them back", and nothing asks.
 So feature 6 step 7, the restore onto a second phone, cannot run today. The sign in is what names
 the old partition. The device binding is what lets the new phone sign for it. The recovery code is
 what opens the days, and it always was.
+
+Step 2 of the path below is in the repository on 2026-11-05: `infra/cognito.tf` holds the user pool,
+an app client for the phone and one for the site, and the email one time code as a first factor. It
+is in the repository and not in the account, because the pipeline applies it on a merge. No
+identity provider is declared yet, and the code cannot be delivered until a sender is verified with
+Amazon Simple Email Service, which `infra/README.md` says in full.
 
 ## What a sign in does, and what it never does
 
@@ -582,6 +594,77 @@ search.
 
 Contracts WIRE-5 and PAY-4 are untouched. A pull, an export and a delete work whatever any of this
 says.
+
+## The four ways in, at field level
+
+Status: designed
+
+The operator settled the method set again on 4 November 2026. Version 1 signs in with Sign in with
+Apple, Google, Telegram and a code sent to her email address. All four go through one Amazon
+Cognito user pool, and Cognito issues the tokens every time.
+
+Telegram cannot be an OpenID Connect provider of the pool. Its configuration at
+`https://oauth.telegram.org/.well-known/openid-configuration` names no userinfo endpoint, and the
+Cognito flow calls one. So Telegram goes through the custom sign in of the pool, with the Lambda
+triggers of step 3 of the path below.
+
+### What the pool holds for each way
+
+The pool holds a sign in. It holds no vault key, no day and no account identifier, and no custom
+attribute of any kind, so there is nowhere in it to write a count of her days.
+
+Five attribute names carry everything, and four of them are the pool's own: `sub`, `username`,
+`email`, `email_verified` and `identities`.
+
+The code sent to her address makes a local user. The application writes a random identifier as the
+`username`, carrying nothing about her, because the account identifier of the vault may not appear
+here. Her address is held in `email` and it is the alias she types. Cognito marks `email_verified`
+true the first time she answers a code. No password is set, and `identities` is empty.
+
+Sign in with Apple makes a user Cognito names itself, `SignInWithApple_` followed by the subject
+Apple returns. `email` holds whatever Apple hands over, which may be a relay address at
+`privaterelay.appleid.com`. `identities` holds the provider name and the provider subject. No
+password is set.
+
+Google makes the same shape, named `Google_` followed by the subject.
+
+Telegram makes a local user named `tg_` followed by a salted hash of her Telegram identifier, so
+the pool never holds the raw one. `email` is absent, because the Telegram login returns no address.
+No password is set, and the verify trigger is what authenticates her.
+
+### Why the word PASSWORD is in the configuration
+
+Cognito refuses a list of first factors that leaves `PASSWORD` out, so the pool names it and
+nothing uses it. No screen of Emi asks for a password. Neither app client allows a password flow,
+so no client can present one. Account recovery is set to `admin_only`, so nobody can ask for a
+password by saying they lost one. The factor has nothing to accept.
+
+### One person who signs in two ways is two users, and one vault account
+
+Each way she signs in makes its own user in the pool, so two ways are two users and two subjects.
+The pool is not where they meet.
+
+They meet in the vault. The identity lookup item names one account for each identity, a link is
+refused when that identity already names another account, and an account holds at most one identity
+for each provider.
+
+One consequence has to be designed around, because it fails quietly. `email` is an alias, and an
+alias is verified on one user at a time. If she answers a code on an address and later signs in
+with Apple on the same address, the alias moves to whichever user verified it last, and the address
+stops signing in the first user. So nothing in Emi looks her up by her address, outside the moment
+she types it to ask for a code, and every lookup in the vault keys on the identity digest.
+
+Making it one user instead is possible: a federated identity can be linked to the local user at
+the first federated sign in. That is a decision for the step that adds Apple and Google, named
+there rather than taken here.
+
+### What this supersedes
+
+The sections below were written for Google and Apple alone and are now narrower than the decision:
+"Where the sign in is offered" and its words on the screen, "One sign in, one account, and what a
+person may hold", "What Google and Apple learn", and the first paragraph of "What this design moves,
+and what it may not touch". Each one is corrected by the step that builds its screen, and this
+section is the method set until then.
 
 ## The data model, at field level
 
