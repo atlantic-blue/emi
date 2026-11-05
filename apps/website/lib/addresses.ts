@@ -34,6 +34,16 @@ export const THE_EMI_COMMUNITY = 'https://t.me/+89GgSCh6Ff85YTZk';
 export const THE_EMI_CODE = 'https://github.com/atlantic-blue/emi';
 
 /**
+ * Where she joins the beta, which is the third host outside this site that a page names. Apple
+ * runs it, and the invite is a whole address on Apple's host rather than a path, so the press that
+ * carries it leaves the site the way the community press does.
+ *
+ * The invite can be closed, so it is held here alone and one edit moves every press that carries
+ * it.
+ */
+export const THE_EMI_BETA = 'https://testflight.apple.com/join/xFSv5Gqa';
+
+/**
  * Where a privacy question goes, which is the one address of this site a reader writes to rather
  * than opens. It carries the scheme, because that is the form a mail application answers.
  *
@@ -43,11 +53,25 @@ export const THE_EMI_CODE = 'https://github.com/atlantic-blue/emi';
 export const THE_PRIVACY_INBOX = 'mailto:privacy@myemi.app';
 
 /**
+ * Where a question about using Emi goes, which the approved support board writes. It is a second
+ * address rather than the one above, because a woman asking why a forecast moved is not writing
+ * about her own data and the two are read by different people.
+ *
+ * Neither address receives mail yet. The domain answered with no mail record on 4 November 2026.
+ */
+export const THE_SUPPORT_INBOX = 'mailto:hello@myemi.app';
+
+/**
  * The same address as a reader reads it on the page, and as she would type it into her own mail
  * application. A press cannot carry this form, so it is not an address of the list above.
  */
 export function thePrivacyAddress(): string {
   return THE_PRIVACY_INBOX.replace('mailto:', '');
+}
+
+/** The support address in the same form, for a page that writes it out rather than pressing it. */
+export function theSupportAddress(): string {
+  return THE_SUPPORT_INBOX.replace('mailto:', '');
 }
 
 /**

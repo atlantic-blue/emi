@@ -6,6 +6,7 @@ import NotFound from '../app/[lang]/not-found';
 import HomePage from '../app/[lang]/page';
 import PrivacyPage from '../app/[lang]/privacy/page';
 import PrivacyPolicyPage from '../app/[lang]/privacy-policy/page';
+import SupportPage from '../app/[lang]/support/page';
 import { type Language, languages } from '../app/words';
 
 /**
@@ -45,6 +46,9 @@ const privacyPolicyIn = async (language: Language): Promise<string> =>
     language,
   );
 
+const supportPageIn = async (language: Language): Promise<string> =>
+  documentAround(await SupportPage({ params: Promise.resolve({ lang: language }) }), language);
+
 describe('no page of the site writes a style the policy would refuse', () => {
   it.each(languages)('the page a woman meets Emi on, in %s', async (language) => {
     expect(stylesWrittenInto(await homePageIn(language))).toEqual([]);
@@ -56,6 +60,10 @@ describe('no page of the site writes a style the policy would refuse', () => {
 
   it.each(languages)('the privacy policy, in %s', async (language) => {
     expect(stylesWrittenInto(await privacyPolicyIn(language))).toEqual([]);
+  });
+
+  it.each(languages)('the support page, in %s', async (language) => {
+    expect(stylesWrittenInto(await supportPageIn(language))).toEqual([]);
   });
 
   it('the page behind an address the site does not have', async () => {

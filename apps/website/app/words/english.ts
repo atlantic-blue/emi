@@ -238,6 +238,45 @@ export const english = {
   policyContactBefore: 'Send privacy questions to',
   policyContactAfter: '. When this policy changes, the date at the top changes.',
 
+  // The support page, from boards/Support.dc.html. Four parts of that board describe a product
+  // that does not exist yet, so the page answers four of its questions differently.
+  //
+  // The board answers the first question with "Only with your recovery code". Sync and restore
+  // are designed and are not built, so the answer below says what a lost phone costs today. The
+  // answer about deleting says what deleting the application takes and what it leaves, because
+  // the key is kept in the keychain on purpose and the keychain outlives the application. The
+  // card about a subscription is not drawn and the answer about cancelling keeps only its first
+  // sentence, because the account page does not exist yet.
+  //
+  // The words of the card nobody draws stay here, in all three languages, so the card comes back
+  // with one edit on the day that page ships.
+  supportTitle: 'Emi Support',
+  supportSearch: 'Search support',
+  supportNothingFound: 'Nothing found.',
+  supportNothingFoundAfter: 'and we reply in English, Russian or Spanish.',
+  supportCannotLookUp:
+    'We cannot see your records, so we cannot look up your account. Tell us what you see on the screen.',
+  supportEmailUs: 'Email us',
+  supportEmailUsLine: 'In English, Russian or Spanish',
+  supportCommunity: 'Emi Community',
+  supportCommunityLine: 'Ask other people, on Telegram',
+  supportBeta: 'The beta',
+  supportBetaLine: 'Try the next version on TestFlight',
+  supportSubscription: 'Subscription',
+  supportSubscriptionLine: 'Renew, cancel or get a receipt',
+  supportQuestionsHeadline: 'Common questions.',
+  supportLostPhoneQuestion: 'I lost my phone. Can you restore my records?',
+  supportLostPhoneAnswer:
+    'No. Sync is designed and not built yet, so your days live on that phone and nowhere else. What survives it is the file you saved yourself, with Download data.',
+  supportLearningQuestion: 'Why does Emi say it is still learning?',
+  supportLearningAnswer:
+    'Emi needs 2 complete cycles before it forecasts. Until then it counts by the cycle length you give it.',
+  supportDeleteQuestion: 'How do I delete everything?',
+  supportDeleteAnswer:
+    'Open Privacy in the app and choose Delete data. That removes every day, every answer and the key. Deleting the app takes your days with it and leaves the key in your iPhone keychain.',
+  supportCancelQuestion: 'How do I cancel my subscription?',
+  supportCancelAnswer: 'If you paid in the App Store, cancel in your Apple account settings.',
+
   // The band at the top of the page, from boards/Header.dc.html.
   headerHomeLabel: 'Emi home',
   headerMainLabel: 'Main',

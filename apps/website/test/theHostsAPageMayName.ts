@@ -10,14 +10,28 @@ import { hostsIn, theOneHost } from '../lib/theOnePrice';
 export const theChatTheCommunityIsOn = 't.me';
 
 /**
+ * The second, which the support page names: where Apple hands out the beta. Written out here for
+ * the reason the chat above is.
+ */
+export const theStoreTheBetaIsOn = 'testflight.apple.com';
+
+/** The two hosts that are not Emi and that a page of this site is allowed to name. */
+export const theHostsAPageMayName: readonly string[] = [
+  theChatTheCommunityIsOn,
+  theStoreTheBetaIsOn,
+];
+
+/**
  * Every host a piece of markup names that this site has no business naming.
  *
  * A link is not a request. SITE-4 holds the site to asking no other company for anything, and a
  * press she has not made yet asks nobody for anything: her browser goes to the community when she
- * decides to, and not before. So the community's chat is allowed in the markup, and the list below
+ * decides to, and not before. So the two hosts above are allowed in the markup, and the list below
  * is still empty for a tracker, a font service or an analytics host, which a page would fetch
  * without her ever pressing anything.
  */
 export function hostsAPageMayNotName(markup: string): string[] {
-  return hostsIn(markup).filter((host) => host !== theOneHost && host !== theChatTheCommunityIsOn);
+  return hostsIn(markup).filter(
+    (host) => host !== theOneHost && !theHostsAPageMayName.includes(host),
+  );
 }

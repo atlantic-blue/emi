@@ -63,11 +63,20 @@ const theCommunitySheCanOpen = 'https://t.me/+89GgSCh6Ff85YTZk';
  */
 const theCodeSheCanRead = 'https://github.com/atlantic-blue/emi';
 
+/**
+ * The third, and the same argument again: the invite to the beta, which the support page offers
+ * her. Apple hands the beta out, the invite can be closed, and the whole address rather than the
+ * host, so anything else on that company is still refused.
+ */
+const theBetaSheCanJoin = 'https://testflight.apple.com/join/xFSv5Gqa';
+
 function reachesAnotherCompany(source: string): boolean {
-  const withoutWhatSheChose = [theSiteItself, theCommunitySheCanOpen, theCodeSheCanRead].reduce(
-    (text, allowed) => text.split(allowed).join(''),
-    source,
-  );
+  const withoutWhatSheChose = [
+    theSiteItself,
+    theCommunitySheCanOpen,
+    theCodeSheCanRead,
+    theBetaSheCanJoin,
+  ].reduce((text, allowed) => text.split(allowed).join(''), source);
 
   return (
     /https?:\/\//.test(withoutWhatSheChose) ||
@@ -220,6 +229,8 @@ defineFeature(feature, (test) => {
       // Letting her open the community did not open the chat company either. The one invite reads
       // clean and every other address on the same host is still refused.
       expect(reachesAnotherCompany(`she presses ${theCommunitySheCanOpen}`)).toBe(false);
+      expect(reachesAnotherCompany(`she joins ${theBetaSheCanJoin}`)).toBe(false);
+      expect(reachesAnotherCompany('https://testflight.apple.com/join/somebody-elses')).toBe(true);
       expect(reachesAnotherCompany('https://t.me/+somebody-elses-invite')).toBe(true);
       expect(reachesAnotherCompany('fetch("https://api.telegram.org/sendMessage")')).toBe(true);
 

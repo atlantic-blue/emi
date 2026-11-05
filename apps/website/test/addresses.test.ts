@@ -7,10 +7,13 @@ import {
   NO_PAGE_YET,
   SHARE_PREVIEW,
   SITE_ORIGIN,
+  THE_EMI_BETA,
   THE_EMI_CODE,
   THE_EMI_COMMUNITY,
   THE_PRIVACY_INBOX,
+  THE_SUPPORT_INBOX,
   thePrivacyAddress,
+  theSupportAddress,
 } from '../lib/addresses';
 import { hostsIn, theOneHost } from '../lib/theOnePrice';
 import { websiteWorkspace } from './stylesheet';
@@ -30,6 +33,12 @@ const theInvite = 'https://t.me/+89GgSCh6Ff85YTZk';
 const theCode = 'https://github.com/atlantic-blue/emi';
 
 /**
+ * Where Apple hands out the beta, written out for the same reason. It is the third host outside
+ * this site a page names, and the support page is the one page that names it.
+ */
+const theBeta = 'https://testflight.apple.com/join/xFSv5Gqa';
+
+/**
  * Every address the module hands a page, by the name a reader of the code sees. The module also
  * exports one reader of an address, so the entries are read as unknown and the strings picked out,
  * rather than declared to be strings and then filtered.
@@ -45,9 +54,11 @@ describe('the addresses a page gives a browser', () => {
       'NO_PAGE_YET',
       'SHARE_PREVIEW',
       'SITE_ORIGIN',
+      'THE_EMI_BETA',
       'THE_EMI_CODE',
       'THE_EMI_COMMUNITY',
       'THE_PRIVACY_INBOX',
+      'THE_SUPPORT_INBOX',
     ]);
   });
 
@@ -89,17 +100,34 @@ describe('the addresses a page gives a browser', () => {
     expect(open.host).toBe('github.com');
   });
 
+  it('sends her to the beta on the host Apple hands it out from', () => {
+    expect(THE_EMI_BETA).toBe(theBeta);
+
+    const invited = new URL(THE_EMI_BETA);
+
+    expect(invited.protocol).toBe('https:');
+    expect(invited.host).toBe('testflight.apple.com');
+    expect(invited.pathname).toBe('/join/xFSv5Gqa');
+  });
+
   it('takes a privacy question to this site rather than to a mail company', () => {
     expect(THE_PRIVACY_INBOX).toBe('mailto:privacy@myemi.app');
     expect(thePrivacyAddress()).toBe('privacy@myemi.app');
     expect(thePrivacyAddress().split('@')[1]).toBe(theOneHost);
   });
 
+  it('takes a question about using Emi to the address the support board writes', () => {
+    expect(THE_SUPPORT_INBOX).toBe('mailto:hello@myemi.app');
+    expect(theSupportAddress()).toBe('hello@myemi.app');
+    expect(theSupportAddress().split('@')[1]).toBe(theOneHost);
+    expect(THE_SUPPORT_INBOX).not.toBe(THE_PRIVACY_INBOX);
+  });
+
   it('is the one file an outside host is written in, so one edit moves every link that uses it', () => {
     const source = readFileSync(join(websiteWorkspace, 'lib', 'addresses.ts'), 'utf8');
-    const theTwoOutside = [new URL(theInvite).host, new URL(theCode).host];
+    const theThreeOutside = [theInvite, theCode, theBeta].map((address) => new URL(address).host);
     const outside = (text: string): string[] =>
-      hostsIn(text).filter((host) => host !== theOneHost && !theTwoOutside.includes(host));
+      hostsIn(text).filter((host) => host !== theOneHost && !theThreeOutside.includes(host));
 
     expect(outside(source)).toEqual([]);
 

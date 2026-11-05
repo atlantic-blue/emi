@@ -36,6 +36,10 @@ export const thePagesOfTheSite: readonly PageOfTheSite[] = [
     path: 'privacy-policy/',
     serves: 'the privacy policy, which the App Store asks for by address',
   },
+  {
+    path: 'support/',
+    serves: 'the support page, which the App Store asks for by address',
+  },
 ];
 
 /** Where the two files sit. Next.js copies this folder into the assets of the build. */
