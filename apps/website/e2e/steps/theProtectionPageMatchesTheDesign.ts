@@ -21,12 +21,20 @@ import {
  */
 const theDesign = theDesignAt('protection', 'render', 'Protection.html');
 
+/** Where the frame of the phone sits in the list below, which one reading needs by itself. */
+const THE_PHONE = 1;
+
 /**
- * The four areas this comparison leaves out, in the order they stand down the page. Each one is
+ * The five areas this comparison leaves out, in the order they stand down the page. Each one is
  * found by the same elements in the drawing and in the page, and the board carries no name on any
  * of its bands, so each area is found by where it sits rather than by what it is called.
  *
- * Every one of them is a place version 1 says something the board does not. The opening gains a
+ * The frame of the phone is one of them. The board crops the screenshot part way down a row of the
+ * screen and the page pulls it up to the rule under that row, so the two hold different pixels in a
+ * frame of the same size. What the frame stops on is read off the screenshot itself, in
+ * `test/thePhonePictureOnThePrivacyPage.test.tsx`.
+ *
+ * The other four are places version 1 says something the board does not. The opening gains a
  * paragraph about the account, the payments and the reports, which the board was drawn before any
  * of existed. The first step drops the note nobody can write yet. The card that says she holds a
  * recovery code says that it is designed and not built, because no screen of the application shows
@@ -43,6 +51,7 @@ const theAreas: readonly AnAreaOfAPage[] = [
     from: 'main > section:nth-of-type(1) > p',
     to: 'main > section:nth-of-type(1) > p:last-of-type',
   },
+  { called: 'the-phone', from: 'main img', to: 'main img' },
   {
     called: 'what-she-logs',
     from: 'main > section:nth-of-type(2) > div > div > div:first-child > p',
@@ -84,14 +93,24 @@ Then(
   'the privacy page is as tall as the design, apart from the parts that say what version 1 does',
   ({ looking }) => {
     const { design, page } = bothOf(looking);
+    const onThePage = looking.theAreasOnThePage[THE_PHONE];
+    const inTheDesign = looking.theAreasInTheDesign[THE_PHONE];
+
+    if (onThePage === undefined || inTheDesign === undefined) {
+      throw new Error('The frame of the phone was not measured on both sides.');
+    }
 
     expect(page.width).toBe(design.width);
     expect(page.height - design.height).toBe(howMuchTheAreasGrew(looking));
+
+    // The frame the phone sits in is one size, set in both, so a crop that moved what is inside it
+    // cannot have moved anything around it.
+    expect(onThePage.to - onThePage.from).toBe(inTheDesign.to - inTheDesign.from);
   },
 );
 
 Then(
-  'what she reads about the encryption is the design, to within one pixel in a thousand',
+  'what she reads about the encryption is the design, outside those parts, to within one pixel in a thousand',
   ({ looking }) => {
     howMuchOfItMovedOutsideTheAreas(looking, 'the-privacy-page');
   },

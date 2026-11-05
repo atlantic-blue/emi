@@ -21,15 +21,23 @@ Feature: The page that explains the encryption is the page that was approved
   desktop, of a tablet, and of the phone most of the reading happens on, and on a failure it writes
   the picture of the difference, so the answer names the place rather than only the amount.
 
-  Four parts of the page are the exception, because each one says what version 1 does and the board
-  was drawn before any of it existed. The opening gains a paragraph about the account, the payments
-  and the anonymous reports. The first step drops the note nobody can write yet. The card that says
-  she holds a recovery code says that it is designed and not built, because no screen of the
-  application shows her one. And the first limit tells her to download her data, because nothing
-  restores a lost phone yet, so a code would not bring her days back. Each of those four is read on
-  its own, and everything between them is still held to the design.
+  Five parts of the page are left out of that comparison, and only those five.
+
+  The first is the frame the phone stands in. The board crops the screenshot to its top edge, and
+  that stops part way down a row of the screen, so the page pulls the picture up to stop on the rule
+  under that row instead. The frame is the same size on both sides. What it stops on is read in the
+  website tier, off the pixels of the screenshot itself.
+
+  The other four say what version 1 does, and the board was drawn before any of it existed. The
+  opening gains a paragraph about the account, the payments and the anonymous reports. The first
+  step drops the note nobody can write yet. The card that says she holds a recovery code says that
+  it is designed and not built, because no screen of the application shows her one. And the first
+  limit tells her to download her data, because nothing restores a lost phone yet, so a code would
+  not bring her days back.
+
+  Each of the five is read on its own, and everything between them is still held to the design.
 
   Scenario: the privacy page matches the approved design pixel for pixel
     Given a woman opens the privacy page beside the design the operator approved
     Then the privacy page is as tall as the design, apart from the parts that say what version 1 does
-    And what she reads about the encryption is the design, to within one pixel in a thousand
+    And what she reads about the encryption is the design, outside those parts, to within one pixel in a thousand
