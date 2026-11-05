@@ -88,34 +88,50 @@ function drawnBy(tag: string, stylesheet: string): string {
     .join(' ');
 }
 
-/** The ground the design paints a band on, from the band's own style. */
-/**
- * The band of the board the page does not draw, by the heading it names itself to her software by.
- *
- * It is two cards, and each card is a press and the sentence that explains the press: one to the
- * free calculator and one to support. Neither page is built, so a press to either would answer 404,
- * and the band has nothing left to say without them. It comes back whole on the day those two pages
- * ship.
- */
-const theBandThatWaitsForItsPages = 'try-title';
-
-/** One band of the board: the heading it names itself by, and the ground it is painted on. */
-interface ABandOfTheBoard {
-  readonly labelledBy: string;
-  readonly ground: string;
-}
-
-function bandsOfTheDesign(): ABandOfTheBoard[] {
+/** What the design labels each band with, and the ground it paints that band on. */
+function bandsOfTheDesign(): { band: string; ground: string }[] {
   return openingTagsOf(theDesign(), 'section').map((tag) => ({
-    labelledBy: (/aria-labelledby="([^"]+)"/.exec(tag)?.[1] ?? '').trim(),
+    band: /aria-labelledby="([^"]+)"/.exec(tag)?.[1] ?? '',
     ground: (/background:\s*([^;"]+)/.exec(tag)?.[1] ?? '').trim(),
   }));
 }
 
+/**
+ * The two bands of the design the page does not draw.
+ *
+ * Nobody has written a review of Emi yet, so the band of reviews is held back whole rather than
+ * drawn with six cards of holes in it, which is `apps/website/lib/theReviews.ts` being empty.
+ *
+ * The band of the two offers is two cards, and each card is a press and the sentence that explains
+ * the press: one to the free calculator and one to support. Neither page is built, so a press to
+ * either would answer 404, and the band has nothing left to say without them. It comes back whole
+ * on the day those two pages ship.
+ */
+const THE_BANDS_HELD_BACK = ['reviews-title', 'try-title'];
+
+/** One band of the design, as its own markup, so what stands inside it can be read on its own. */
+function theBandOfTheDesign(band: string): string {
+  const markup = theDesign();
+  const opens = markup.indexOf(`<section aria-labelledby="${band}"`);
+  const closes = markup.indexOf('</section>', opens);
+
+  if (opens < 0 || closes < 0) {
+    throw new Error(`The design draws no band called ${band}.`);
+  }
+
+  return markup.slice(opens, closes);
+}
+
+/** The design with those bands cut out of it, which is what the rest of the board still says. */
+function theDesignWithout(bands: readonly string[]): string {
+  return bands.reduce((markup, band) => markup.replace(theBandOfTheDesign(band), ''), theDesign());
+}
+
+/** The grounds the design paints, in its order, without the bands the page holds back. */
 function groundsOfTheDesign(): string[] {
   return bandsOfTheDesign()
-    .filter((band) => band.labelledBy !== theBandThatWaitsForItsPages)
-    .map((band) => band.ground);
+    .filter(({ band }) => !THE_BANDS_HELD_BACK.includes(band))
+    .map(({ ground }) => ground);
 }
 
 /** The property each element sets a rule with, which is how a rule on four sides is told from one. */
@@ -157,9 +173,11 @@ function rulesIn(markup: string, stylesheet: string): Rule[] {
  * puts on one side becoming four is the drift this exists to catch, and so is the reverse.
  */
 function rulesOfTheDesign(): string[] {
-  return [...theDesign().matchAll(/border(-(?:top|bottom|left|right))?:\s*1px/g)].map(
-    ([, side]) => side?.slice(1) ?? 'every side',
-  );
+  return [
+    ...theDesignWithout(THE_BANDS_HELD_BACK).matchAll(
+      /border(-(?:top|bottom|left|right))?:\s*1px/g,
+    ),
+  ].map(([, side]) => side?.slice(1) ?? 'every side');
 }
 
 /**
@@ -228,19 +246,28 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      "she reads the eight bands of the approved board whose presses have pages, in the board's order and on its grounds",
+      "she reads seven of the nine bands of the approved board, in the board's order and on its grounds",
       () => {
         const bands = openingTagsOf(drawn.en ?? '', 'section');
+        const onTheBoard = bandsOfTheDesign();
         const wanted = groundsOfTheDesign();
 
-        // Nine on the board, and the one left out is the band of the two offers.
-        expect(bandsOfTheDesign()).toHaveLength(9);
-        expect(bandsOfTheDesign().map((band) => band.labelledBy)).toContain(
-          theBandThatWaitsForItsPages,
-        );
-        expect(drawn.en ?? '').not.toContain(`aria-labelledby="${theBandThatWaitsForItsPages}"`);
+        // Nine on the board. The two left out are the band of reviews, which nobody has written
+        // one for, and the band of the two offers, whose two pages are still to be built.
+        expect(onTheBoard).toHaveLength(9);
 
-        expect(wanted).toHaveLength(8);
+        for (const band of THE_BANDS_HELD_BACK) {
+          expect({ band, onTheBoard: onTheBoard.map((each) => each.band).includes(band) }).toEqual({
+            band,
+            onTheBoard: true,
+          });
+          expect({
+            band,
+            onThePage: (drawn.en ?? '').includes(`aria-labelledby="${band}"`),
+          }).toEqual({ band, onThePage: false });
+        }
+
+        expect(wanted).toHaveLength(7);
         expect(bands).toHaveLength(wanted.length);
 
         const painted = bands.map((tag) => {
@@ -257,23 +284,32 @@ defineFeature(feature, (test) => {
       const said = visibleTextOf(theDesign());
 
       // The board was approved while one of the two founders had not written her note, so it draws
-      // a hole where the page now draws her own sentences. It is the one sentence of the board the
-      // page does not draw, and it is picked out by the name it opens with so that a second one
-      // cannot arrive under the same exception.
+      // a hole where the page now draws her own sentences. It is picked out by the name it opens
+      // with so that a second one cannot arrive under the same exception.
       const filled = said.filter((text) => text.startsWith('[IULIIA'));
 
-      // The board draws every press the page holds back, so the sentences those presses took with
-      // them are the other exception to this reading.
-      const heldBack = theWordsHeldBackIn('en');
+      // And two bands are held back whole, so their own sentences are not on the page. A sentence
+      // counts as held back only when the rest of the board does not say it as well: the press
+      // that holds both carousels still reads the same in both bands, and that one is still
+      // required here.
+      const elsewhere = visibleTextOf(theDesignWithout(THE_BANDS_HELD_BACK));
+      const heldBack = THE_BANDS_HELD_BACK.flatMap((band) =>
+        visibleTextOf(theBandOfTheDesign(band)).filter((text) => !elsewhere.includes(text)),
+      );
+
+      // The board also draws every press the two bands the whole site shares no longer draw, so
+      // the sentences those presses took with them are the third exception to this reading.
+      const excused = [...filled, ...heldBack, ...theWordsHeldBackIn('en')];
 
       expect(filled).toHaveLength(1);
+      expect(heldBack.length).toBeGreaterThan(0);
       expect(said.length).toBeGreaterThan(80);
+
+      // Every other sentence of the board is on the page, and not one of the held back ones is.
       expect(
-        said.filter(
-          (text) =>
-            !filled.includes(text) && !heldBack.includes(text) && !(drawn.en ?? '').includes(text),
-        ),
+        said.filter((text) => !excused.includes(text) && !(drawn.en ?? '').includes(text)),
       ).toEqual([]);
+      expect(heldBack.filter((text) => (drawn.en ?? '').includes(text))).toEqual([]);
 
       // The board is in English, so the other two pages are held to the keys the English page
       // draws rather than to the board's own sentences. A key drawn in one language and not in
@@ -351,6 +387,8 @@ defineFeature(feature, (test) => {
     );
 
     and('every rule sits on the sides the board puts it on, and on no others', () => {
+      // Read off the board without the band it holds back, because the three presses of that band
+      // each draw a rule all the way round and none of the three is on the page.
       const wanted = rulesOfTheDesign();
       const found = rulesIn(drawn.en ?? '', stylesheet);
 

@@ -20,19 +20,25 @@ Feature: The page she reads is the page that was approved
   desktop and at the width of the phone most of the reading happens on, and on a failure it writes
   the picture of the difference, so the answer names the place rather than only the amount.
 
-  Five bands are read, and they are the bands the board still draws. Six are left out, each one for
-  the same reason: it carries a press to a page nobody has built yet, so the page holds that press
-  back and the board draws it. The band at the top drew six ways into the product. The band at the
-  head of the page and the band at the end each drew a press to Apple's store, and Apple has issued
-  no address for the listing. The band of the two offers was a press to the calculator and a press
-  to support and the sentence explaining each, so nothing of it is left. The band at the foot drew
-  twelve presses. And the band the two founders sign is left out for its own older reason: the board
-  drew a hole of 73 characters where one of them has since written the 46 words of her note.
+  Seven bands are the exception, and each is read on its own.
 
-  A comparison of those six would report the same difference every run, and a comparison nobody can
-  read is a comparison nobody keeps. Each one comes back as its board is redrawn or its page ships.
+  Five of them carry a press the site no longer draws. The band at the top draws six ways into the
+  product on the board and the two whose page exists on the page. The band at the foot draws twelve
+  presses on the board and the four whose page exists on the page. The band at the head of the page
+  and the band at the end each draw a press to Apple's store, and Apple has issued no address for
+  the listing. The band of the two offers is a press to the free calculator and a press to support
+  and the sentence explaining each, and neither page is built, so the page draws no rows of it at
+  all.
+
+  The other two are older. The board was approved while one of the two founders had not written her
+  note, so it draws a hole of 73 characters where the page now draws the 46 words she wrote, and
+  his photograph stands where the board drew two letters. And the board draws a band of six reviews
+  that nobody has written, so the page draws no band there at all until somebody has.
+
+  What stands above those seven, between them and below them is still held to the design, pixel for
+  pixel, and the whole of the difference in height is what the seven do.
 
   Scenario: the home page matches the approved design pixel for pixel
     Given a woman opens the home page beside the design the operator approved
-    Then each band the board still draws is as tall as that band of the design
-    And each of those bands is the design, to within one pixel in a thousand
+    Then the page she reads is as tall as the design, apart from the seven bands it draws differently
+    And every band but those seven is the design, to within one pixel in a thousand

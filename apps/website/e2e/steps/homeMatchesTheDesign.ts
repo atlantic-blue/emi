@@ -1,14 +1,25 @@
 import { existsSync } from 'node:fs';
 
 import { expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
 import { test } from './fixtures';
 import {
-  type APartOfAPage,
-  howMuchOfThePartMoved,
+  type ABandToLeaveOut,
+  bothOf,
+  bothSetsOfBandsOf,
+  howMuchOfItMovedOutside,
+  howMuchTheBandsGrewBy,
+  pictureOf,
+  theBandAtTheEnd,
+  theBandAtTheFoot,
+  theBandAtTheTop,
+  theBandOfTheFounders,
+  theBandOfTheHero,
+  theBandOfTheReviews,
+  theBandOfTheTwoOffers,
   theDesignAt,
-  thePartsHeldAgainstTheDesign,
 } from './theDesignComparison';
 
 /**
@@ -19,60 +30,61 @@ import {
 const theDesign = theDesignAt('home-v2', 'render', 'MainV2.html');
 
 /**
- * The bands of the page this scenario holds against the board, each found by the heading it names
- * itself to her software by.
+ * The seven bands this comparison leaves out, in the order a reader meets them down the page. Each
+ * one is measured in each document, so what stands between them is still held to the board, pixel
+ * for pixel.
  *
- * These five are what the board still describes. Four bands and the two frames around them are
- * left out, and each one is left out for the same reason: it carries a press whose page nobody has
- * built yet, so the page does not draw that press and the board does. A comparison that read those
- * bands would report the same difference every run, and a comparison nobody can read is a
- * comparison nobody keeps.
+ * Five of the seven carry a press the site no longer draws, because the page behind it is still to
+ * be built or, for the two presses to Apple's store, because Apple has issued no address for the
+ * listing. The band of the two offers is nothing but those presses and the sentences explaining
+ * them, so the page draws no rows of it at all.
  *
- * What is left out, in the order she meets it. The band at the top, which drew six ways into the
- * product and now draws the two whose page exists. The band at the head of the page, which drew
- * the press to Apple's store before Apple issued an address for the listing. The band the two
- * founders sign, where the board drew a hole and one of them has since written her note. The band
- * of the two offers, which was a press to the calculator and a press to support and the sentence
- * explaining each, so it is not drawn at all. The band at the end, which drew the second press to
- * the store. And the band at the foot, which drew twelve presses and now draws the four whose page
- * exists.
- *
- * The box of each band is read in each document rather than given here, because the page is
- * shorter than the board, so a band sits further up it.
+ * The other two are older. The board drew a hole where one of the two founders has since written
+ * her note, and it draws a row of reviews that the page holds back until somebody has written one.
  */
-const theBands: readonly APartOfAPage[] = [
-  {
-    called: 'the-band-of-the-forecast',
-    from: 'section[aria-labelledby="forecast-title"]',
-    to: 'section[aria-labelledby="forecast-title"]',
-  },
-  {
-    called: 'the-band-of-the-four-phases',
-    from: 'section[aria-labelledby="learn-title"]',
-    to: 'section[aria-labelledby="learn-title"]',
-  },
-  {
-    called: 'the-band-of-the-community',
-    from: 'section[aria-labelledby="community-title"]',
-    to: 'section[aria-labelledby="community-title"]',
-  },
-  {
-    called: 'the-band-that-offers-the-privacy-page',
-    from: 'section[aria-labelledby="privacy-title"]',
-    to: 'section[aria-labelledby="privacy-title"]',
-  },
-  {
-    called: 'the-row-of-reviews',
-    from: 'section[aria-labelledby="reviews-title"]',
-    to: 'section[aria-labelledby="reviews-title"]',
-  },
-];
+const theBandsInOrder = [
+  'the band at the top',
+  'the band at the head of the page',
+  'the band the two founders sign',
+  'the band of reviews',
+  'the band of the two offers',
+  'the band at the end',
+  'the band at the foot',
+] as const;
+
+type TheNameOfABand = (typeof theBandsInOrder)[number];
+
+async function theBandsLeftOut(page: Page): Promise<ABandToLeaveOut[]> {
+  return [
+    await theBandAtTheTop(page),
+    await theBandOfTheHero(page),
+    await theBandOfTheFounders(page),
+    await theBandOfTheReviews(page),
+    await theBandOfTheTwoOffers(page),
+    await theBandAtTheEnd(page),
+    await theBandAtTheFoot(page),
+  ];
+}
+
+/** One of those bands, by its name, so a step reads the band it is about and not a position. */
+function theBand(
+  bands: readonly ABandToLeaveOut[],
+  called: TheNameOfABand,
+): { readonly from: number; readonly to: number; readonly tall: number } {
+  const band = bands[theBandsInOrder.indexOf(called)];
+
+  if (band === undefined) {
+    throw new Error(`${called} was not measured.`);
+  }
+
+  return { from: band.from, to: band.to, tall: band.to - band.from };
+}
 
 const { Given, Then } = createBdd(test);
 
 Given(
   'a woman opens the home page beside the design the operator approved',
-  async ({ page, comparing }) => {
+  async ({ page, looking }) => {
     expect(existsSync(theDesign), `The approved design is not at ${theDesign}.`).toBe(true);
 
     const window = page.viewportSize();
@@ -81,32 +93,68 @@ Given(
       throw new Error('The browser reported no window size.');
     }
 
-    comparing.parts.push(
-      ...(await thePartsHeldAgainstTheDesign(
-        page,
-        `file://${theDesign}`,
-        '/en/',
-        window,
-        theBands,
-      )),
-    );
+    // Each band is measured while that side is still open, because the measurement is of the
+    // document the picture was taken of and the next picture replaces it. The two are kept in the
+    // order a reader meets them down the page, which is the order the comparison reads them in.
+    looking.atTheDesign = await pictureOf(page, `file://${theDesign}`, window);
+    looking.theBandsInTheDesign = await theBandsLeftOut(page);
+    looking.atThePage = await pictureOf(page, '/en/', window);
+    looking.theBandsOnThePage = await theBandsLeftOut(page);
   },
 );
 
-Then('each band the board still draws is as tall as that band of the design', ({ comparing }) => {
-  expect(comparing.parts.map((pair) => pair.called)).toEqual(theBands.map((band) => band.called));
+Then(
+  'the page she reads is as tall as the design, apart from the seven bands it draws differently',
+  ({ looking }) => {
+    const { design, page } = bothOf(looking);
+    const { inTheDesign, onThePage } = bothSetsOfBandsOf(looking);
 
-  for (const { called, design, page } of comparing.parts) {
-    expect({ called, width: page.width, height: page.height }).toEqual({
-      called,
-      width: design.width,
-      height: design.height,
-    });
-  }
-});
+    expect(page.width).toBe(design.width);
+    expect(onThePage).toHaveLength(theBandsInOrder.length);
 
-Then('each of those bands is the design, to within one pixel in a thousand', ({ comparing }) => {
-  for (const pair of comparing.parts) {
-    howMuchOfThePartMoved(pair);
-  }
-});
+    // Every row outside those seven lines up, so the whole of the difference in height is what the
+    // seven do: her sentences over the hole the board drew, less the two bands the page does not
+    // draw, less the two presses to the store. A section that went missing or a section somebody
+    // added shows up here as it did before.
+    expect(page.height - design.height).toBe(howMuchTheBandsGrewBy(inTheDesign, onThePage));
+
+    // The note is taller on the page than the hole on the board, because she wrote more than the
+    // hole held.
+    expect(theBand(onThePage, 'the band the two founders sign').tall).toBeGreaterThanOrEqual(
+      theBand(inTheDesign, 'the band the two founders sign').tall,
+    );
+
+    // The band of reviews and the band of the two offers are each a band on the board and no rows
+    // at all on the page, which is the whole of what holding them back costs in height.
+    for (const called of ['the band of reviews', 'the band of the two offers'] as const) {
+      expect({ called, onTheBoard: theBand(inTheDesign, called).tall > 0 }).toEqual({
+        called,
+        onTheBoard: true,
+      });
+      expect({ called, onThePage: theBand(onThePage, called).tall }).toEqual({
+        called,
+        onThePage: 0,
+      });
+    }
+
+    // The band at the head of the page draws one press to the store on the board and none on the
+    // page, and the band at the end is the same press again, so neither is taller on the page.
+    // Neither is always shorter either: at the width of a desktop the ring beside the words is
+    // what sets the height of the band at the head, and the press stood in a row under words that
+    // are shorter than the ring. What the two bands really cost in height is in the arithmetic
+    // above, which holds at every width.
+    for (const called of ['the band at the head of the page', 'the band at the end'] as const) {
+      expect({
+        called,
+        taller: theBand(onThePage, called).tall > theBand(inTheDesign, called).tall,
+      }).toEqual({ called, taller: false });
+    }
+  },
+);
+
+Then(
+  'every band but those seven is the design, to within one pixel in a thousand',
+  ({ looking }) => {
+    howMuchOfItMovedOutside(looking, 'the-home-page');
+  },
+);

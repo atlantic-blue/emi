@@ -6,10 +6,9 @@ import { createRoot } from 'react-dom/client';
 
 import { websiteCarouselWait } from '@emi/tokens';
 
-import { CarouselsProvider, LESS_MOTION } from '../components/carousels';
+import { CarouselsProvider, LESS_MOTION, movedTo } from '../components/carousels';
 import { FounderNote } from '../components/founderNote';
-import { ReviewRow } from '../components/reviewRow';
-import { A_NAME_NOBODY_HAS_SIGNED, A_REVIEW_NOBODY_HAS_WRITTEN } from '../lib/thePlaceholders';
+import { type Review, ReviewRow } from '../components/reviewRow';
 
 /**
  * The two bands of the home page that move on their own.
@@ -22,17 +21,22 @@ import { A_NAME_NOBODY_HAS_SIGNED, A_REVIEW_NOBODY_HAS_WRITTEN } from '../lib/th
  * founders still as well, and the cases read both after one press.
  */
 
-/** The six cards of the board, named by where each one was said, so one card can be told apart. */
-const theReviews = [
+/**
+ * Six cards, named by where each one was said, so one card can be told apart from the next. These
+ * are a fixture of this file and not the product's own list: nobody has written a review yet, so
+ * `lib/theReviews.ts` is empty and the page draws no band at all. What this file reads is the band
+ * itself, with cards in it, which is what a reader meets the day the first review arrives.
+ */
+const theReviews: Review[] = [
   'App Store review',
   'Emi Community member',
   'TestFlight beta tester',
   'App Store review again',
   'Emi Community member again',
   'TestFlight beta tester again',
-].map((source) => ({
-  quote: A_REVIEW_NOBODY_HAS_WRITTEN,
-  name: A_NAME_NOBODY_HAS_SIGNED,
+].map((source, at) => ({
+  quote: `What she said, number ${at + 1}.`,
+  name: `Reader ${at + 1}`,
   source,
 }));
 
@@ -55,6 +59,8 @@ interface Reading {
 let holder: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
 let lessMotion = false;
+/** Which reviews the page is drawn with, which a case changes before it opens the page again. */
+let showTheseReviews: Review[] = theReviews;
 
 /**
  * jsdom answers no media query at all, so the page's read of the reader's own settings is answered
@@ -73,7 +79,10 @@ function answerTheMotionQuery(): void {
   });
 }
 
-/** A fresh page, for a case that changes what the reader's machine answers before it is drawn. */
+/**
+ * A fresh page, for a case that changes what the reader's machine answers, or which reviews the
+ * page holds, before it is drawn.
+ */
 function openThePageAgain(): void {
   act(() => {
     root.unmount();
@@ -85,10 +94,15 @@ function openThePageAgain(): void {
   draw();
 }
 
+/**
+ * The page as the home page draws it: the band of the founders always, and the band of reviews only
+ * while there is a review to put in it. The page itself reads the same length to decide, so a case
+ * that hands this none is reading the page a stranger opens today.
+ */
 function draw(): void {
   act(() => {
     root.render(
-      <CarouselsProvider founders={theFounders.length} reviews={theReviews.length}>
+      <CarouselsProvider founders={theFounders.length} reviews={showTheseReviews.length}>
         <FounderNote
           controls="founder controls"
           eyebrow="WHY WE ARE BUILDING EMI"
@@ -98,17 +112,19 @@ function draw(): void {
           play="Play"
           previous="Previous founder"
         />
-        <ReviewRow
-          controls="review controls"
-          eyebrow="REVIEWS"
-          headline="What people say about Emi."
-          next="Next review"
-          pause="Pause"
-          play="Play"
-          previous="Previous review"
-          rating="[RATING] on the App Store, from [COUNT] ratings"
-          reviews={theReviews}
-        />
+        {showTheseReviews.length > 0 && (
+          <ReviewRow
+            controls="review controls"
+            eyebrow="REVIEWS"
+            headline="What people say about Emi."
+            next="Next review"
+            pause="Pause"
+            play="Play"
+            previous="Previous review"
+            rating="4.8 on the App Store, from 112 ratings"
+            reviews={showTheseReviews}
+          />
+        )}
       </CarouselsProvider>,
     );
   });
@@ -126,9 +142,15 @@ function whatSheSees(): Reading {
     .map((press) => press.textContent ?? '')
     .find((said) => said === 'Pause' || said === 'Play');
 
-  const dots = [...holder.querySelectorAll('[aria-hidden="true"]')]
-    .filter((row) => row.children.length === theReviews.length)
-    .flatMap((row) => [...row.children]);
+  // Both bands carry a row of dots and the band of the founders is drawn first, so the row of
+  // the reviews is the second one. A page with no reviews draws one row of dots and no second,
+  // which reads here as no dot of the reviews at all rather than as the founders' row.
+  const rowsOfDots = [...holder.querySelectorAll('[aria-hidden="true"]')].filter(
+    (row) =>
+      row.children.length > 0 &&
+      [...row.children].every((dot) => dot.className.includes('rounded-full')),
+  );
+  const dots = [...(rowsOfDots[1]?.children ?? [])];
 
   return {
     sources: sources.slice(1),
@@ -163,6 +185,7 @@ beforeEach(() => {
   // run, and without it every render here prints a warning and the clock never settles.
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   lessMotion = false;
+  showTheseReviews = theReviews;
   jest.useFakeTimers();
   answerTheMotionQuery();
   holder = document.createElement('div');
@@ -261,6 +284,55 @@ describe('the row of reviews a reader is handed', () => {
     ]);
   });
 
+  it('is not drawn at all while nobody has written a review', () => {
+    showTheseReviews = [];
+    openThePageAgain();
+
+    const seen = whatSheSees();
+
+    // No card, no dot, and none of the words of the band: a reader meets the band above it and
+    // then the band under it, with nothing in between promising her a review somebody might write.
+    expect(seen.sources).toEqual([]);
+    expect(seen.dot).toBe(-1);
+    expect(holder.textContent).not.toContain('REVIEWS');
+    expect(holder.textContent).not.toContain('What people say about Emi.');
+    expect(holder.querySelectorAll('figure')).toHaveLength(1);
+    expect(holder.textContent).not.toMatch(/\[[A-Z]/);
+
+    // The band of the founders is on the same clock, and it keeps moving. One band holding nothing
+    // would otherwise take the other one with it, because they share the wait.
+    expect(seen.founder).toBe('Iuliia Nikolaeva');
+    letTheWaitGoBy();
+    expect(whatSheSees().founder).toBe('Julian Tellez');
+  });
+
+  it('comes back with one card the day the first review arrives', () => {
+    const [first] = theReviews;
+
+    showTheseReviews = first === undefined ? [] : [first];
+    openThePageAgain();
+
+    const seen = whatSheSees();
+
+    // One review, one card, one dot. The row draws what it holds rather than filling three cards
+    // from a list of one, which would print the same person's words three times across the band.
+    expect(seen.sources).toEqual(['App Store review']);
+    expect(seen.dot).toBe(0);
+    expect(holder.textContent).toContain('What she said, number 1.');
+    expect(holder.textContent).toContain('Reader 1');
+    expect(holder.querySelectorAll('figure')).toHaveLength(2);
+
+    // It stays on that one card however long she waits, because coming back round a list of one
+    // lands on the same card, and the founders beside it still move.
+    letTheWaitGoBy(3);
+
+    const later = whatSheSees();
+
+    expect(later.sources).toEqual(['App Store review']);
+    expect(later.dot).toBe(0);
+    expect(later.founder).toBe('Julian Tellez');
+  });
+
   it('never moves at all for a reader who asked her machine for less motion', () => {
     lessMotion = true;
     openThePageAgain();
@@ -274,6 +346,22 @@ describe('the row of reviews a reader is handed', () => {
     // She is not told it is paused, because she never asked this page for anything. The press is
     // still there and still says Pause, so she can move a card herself.
     expect(seen.pause).toBe('Pause');
+  });
+});
+
+describe('where one clock leaves a carousel', () => {
+  it('comes back round the end of the list it is moving through', () => {
+    expect(movedTo(0, 1, 6)).toBe(1);
+    expect(movedTo(5, 1, 6)).toBe(0);
+    expect(movedTo(0, -1, 6)).toBe(5);
+  });
+
+  it('leaves a band that holds no cards on nothing, rather than on a card that is not a number', () => {
+    // The band of reviews holds nothing until somebody writes one, and the clock that moves the
+    // founders beside it runs anyway. Coming back round a list of none has no answer, so this is
+    // the one place that answer is given, and giving it anywhere else would be two places.
+    expect(movedTo(0, 1, 0)).toBe(0);
+    expect(movedTo(0, -1, 0)).toBe(0);
   });
 });
 

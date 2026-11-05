@@ -1,4 +1,6 @@
-import type { APairOfPictures } from './theDesignComparison';
+import type { PNG } from 'pngjs';
+
+import type { ABandToLeaveOut, APairOfPictures } from './theDesignComparison';
 
 import { test as bdd } from 'playwright-bdd';
 
@@ -65,9 +67,35 @@ export interface APressSheCanSee {
  * Each part of the page the pixel comparison holds against the design, with the picture of each
  * taken from both documents. The three pages of the site each name their own parts.
  *
- * Parts rather than one whole page. Every board was drawn before some of the presses on it waited
- * for a page, so a board draws presses the site holds back, and the words of the policy are version
- * 1 while its board is not. The parts each scenario names are the ones its board still describes.
+ * A fixture rather than a variable in the module, because the two widths run as two tests and a
+ * variable here would be one value shared by both.
+ */
+export interface WhatSheIsLookingAt {
+  atTheDesign: PNG | null;
+  atThePage: PNG | null;
+  /**
+   * Where each band the comparison leaves out stands in each of the two, in the order a reader
+   * meets them down the page.
+   *
+   * Seven are left out of the home page and three of the page that explains the encryption. Most
+   * of them carry a press the site no longer draws, because the page behind it is still to be
+   * built or because Apple has issued no address for the listing. The board drew a hole where one
+   * of the two founders has since written her note, so that band is a different height on each
+   * side. And nobody has written a review, so the band of reviews is the whole of its height on
+   * the board and nothing at all on the page. The rows outside them all are what line up.
+   */
+  theBandsInTheDesign: readonly ABandToLeaveOut[] | null;
+  theBandsOnThePage: readonly ABandToLeaveOut[] | null;
+}
+
+/**
+ * Each part of the page the pixel comparison holds against the design, with the picture of each
+ * taken from both documents.
+ *
+ * Parts rather than one whole page, because the words of the privacy policy are version 1 and its
+ * board is not, so the page is taller than the drawing and says other things in the middle, and
+ * because the two bands the whole site shares draw presses the board still has. The one part named
+ * there is what the board still describes.
  *
  * A fixture rather than a variable in the module, because three widths run as three tests and a
  * variable here would be one value shared by all of them.
@@ -165,6 +193,7 @@ export const test = bdd.extend<{
   crawled: WhatACrawlerRead;
   complaints: WhatTheBrowserRefused;
   found: WhatHerSoftwareFound;
+  looking: WhatSheIsLookingAt;
   comparing: WhatSheIsComparing;
   pressing: WhatEveryPressDoes;
 }>({
@@ -182,6 +211,14 @@ export const test = bdd.extend<{
   },
   reading: async ({}, handTo) => {
     await handTo({ language: '' });
+  },
+  looking: async ({}, handTo) => {
+    await handTo({
+      atTheDesign: null,
+      atThePage: null,
+      theBandsInTheDesign: null,
+      theBandsOnThePage: null,
+    });
   },
   comparing: async ({}, handTo) => {
     await handTo({ parts: [] });

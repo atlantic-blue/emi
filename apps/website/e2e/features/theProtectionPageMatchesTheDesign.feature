@@ -21,11 +21,19 @@ Feature: The page that explains the encryption is the page that was approved
   desktop, of a tablet, and of the phone most of the reading happens on, and on a failure it writes
   the picture of the difference, so the answer names the place rather than only the amount.
 
-  The two bands the whole site shares are left out. Each drew presses to pages nobody has built yet,
-  so the site holds those presses back and the board still draws them. What the page itself says is
-  read whole, which is every claim this scenario exists for.
+  Three bands are left out of that comparison. The frame the phone stands in, because the board
+  crops the screenshot to its top edge, and that stops part way down a row of the screen, so the
+  page pulls the picture up to stop on the rule under that row instead. The frame is the same size
+  on both sides. What it stops on is read in the website tier, off the pixels of the screenshot
+  itself.
+
+  The other two are the bands the whole site shares. The board draws six ways into the product at
+  the top and twelve presses at the foot, and the site draws the presses whose page exists, so each
+  band says less than the board does. Every row above them, between them and below them is still
+  held to the design, and the band at the foot is shorter on the page, which is the whole of the
+  difference in height.
 
   Scenario: the privacy page matches the approved design pixel for pixel
     Given a woman opens the privacy page beside the design the operator approved
-    Then what the page says about the encryption is as tall as the design, so no section is missing and none was added
-    And what she reads about the encryption is the design, to within one pixel in a thousand
+    Then the privacy page is as tall as the design, apart from the band at the foot, so no section is missing and none was added
+    And what she reads about the encryption is the design, outside the phone, to within one pixel in a thousand

@@ -4,16 +4,12 @@ import { join, resolve } from 'node:path';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { websiteFace, websiteFaceStack, websiteTabletWidth } from '@emi/tokens';
+import { websiteFace, websiteFaceStack } from '@emi/tokens';
 
 import HomePage from '../../apps/website/app/[lang]/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
-import { CARDS_ACROSS } from '../../apps/website/components/reviewRow';
 import { JULIANS_PHOTOGRAPH } from '../../apps/website/lib/addresses';
-import {
-  A_NAME_NOBODY_HAS_SIGNED,
-  A_REVIEW_NOBODY_HAS_WRITTEN,
-} from '../../apps/website/lib/thePlaceholders';
+import { theRealReviews } from '../../apps/website/lib/theReviews';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 
@@ -87,11 +83,15 @@ async function pageIn(language: Language): Promise<string> {
 }
 
 /**
- * The band of the board the page does not draw, by the heading it names itself to her software by.
- * Its two cards are a press to the free calculator and a press to support, and neither page is
- * built. It comes back whole on the day those two pages ship.
+ * The two bands of the board the page does not draw, by the heading each names itself to her
+ * software by.
+ *
+ * Nobody has written a review of Emi yet, so the band of reviews is held back whole. The band of
+ * the two offers is a press to the free calculator and a press to support, and the sentence
+ * explaining each, and neither page is built. Each comes back whole on the day what it waits for
+ * arrives.
  */
-const theBandThatWaitsForItsPages = 'try-title';
+const theBandsHeldBack = ['reviews-title', 'try-title'];
 
 defineFeature(feature, (test) => {
   test('the home page matches the approved design pixel for pixel', ({ given, then, and }) => {
@@ -106,26 +106,30 @@ defineFeature(feature, (test) => {
       stylesheet = await stylesheetFor(classesIn(drawn.en ?? ''));
     });
 
-    then('she reads the bands of the board the operator drew last, in its order', () => {
-      const wanted = bandsOfTheDesign();
-      const found = openingTagsOf(drawn.en ?? '', 'section').map(
-        (tag) => /aria-labelledby="([^"]+)"/.exec(tag)?.[1] ?? '',
-      );
+    then(
+      'she reads seven of the nine bands of the board the operator drew last, in its order',
+      () => {
+        const wanted = bandsOfTheDesign();
+        const found = openingTagsOf(drawn.en ?? '', 'section').map(
+          (tag) => /aria-labelledby="([^"]+)"/.exec(tag)?.[1] ?? '',
+        );
 
-      // Nine on the board, and eight on the page. The band of the two offers is two cards that are
-      // each a press and the sentence explaining it, one to the calculator and one to support, and
-      // neither page is built, so the band has nothing left to say and is not drawn.
-      expect(wanted).toHaveLength(9);
-      expect(wanted).toContain(theBandThatWaitsForItsPages);
-      expect(found).toEqual(wanted.filter((band) => band !== theBandThatWaitsForItsPages));
-      expect(found).toHaveLength(8);
+        expect(wanted).toHaveLength(9);
 
-      // The band of one price left and the band of reviews took its place. Naming both says which
-      // way round the change went, so a page that kept the old one fails here and not only on a
-      // count of nine.
-      expect(wanted).toContain('reviews-title');
-      expect(wanted).not.toContain('price-title');
-    });
+        // The band of one price left and the band of reviews took its place. Naming both says which
+        // way round the change went, so a page that kept the old one fails here and not only on a
+        // count of nine.
+        expect(wanted).toContain('reviews-title');
+        expect(wanted).not.toContain('price-title');
+
+        // The page draws every band of the board except those two, in the board's own order. The
+        // order is read against the board rather than written out, so a band that drifted up or down
+        // the page fails here as it did before.
+        expect(wanted).toContain('try-title');
+        expect(found).toEqual(wanted.filter((band) => !theBandsHeldBack.includes(band)));
+        expect(found).toHaveLength(7);
+      },
+    );
 
     and(
       'the heading of every band is set in the face the board sets it in, at the weight it names',
@@ -143,16 +147,18 @@ defineFeature(feature, (test) => {
         expect(drawn.en).not.toContain('Newsreader');
 
         // The weight and the tracking the new board gives a large heading, read off the board
-        // itself rather than written out here, so the two cannot drift apart.
+        // itself rather than written out here, so the two cannot drift apart. The forecast is the
+        // heading it is read on: the board gives every large heading the same weight and tracking,
+        // and this one is on the page, which the band of reviews is not.
         const asTheBoardDraws =
-          /<h2 id="reviews-title"[^>]*style="([^"]*)"/.exec(theDesign())?.[1] ?? '';
+          /<h2 id="forecast-title"[^>]*style="([^"]*)"/.exec(theDesign())?.[1] ?? '';
         const weight = /font-weight: (\d+)/.exec(asTheBoardDraws)?.[1] ?? '';
         const tracking = /letter-spacing: ([^;"]+)/.exec(asTheBoardDraws)?.[1] ?? '';
 
         expect(weight).toBe('600');
         expect(tracking).toBe('-0.015em');
 
-        const headline = theTagAround(drawn.en ?? '', wordsIn('en').reviewsHeadline);
+        const headline = theTagAround(drawn.en ?? '', wordsIn('en').cycleHeadline);
         const drawnAs = drawnBy(headline, stylesheet);
 
         // Tailwind writes a weight through a property of its own, so the value it stands for is
@@ -219,31 +225,50 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('six reviews stand three at a time, two on a tablet and one on a phone', () => {
-      const page = drawn.en ?? '';
-      const cards = openingTagsOf(page, 'figure');
+    and('no band of reviews stands on the page, because nobody has written one yet', () => {
+      // The list the band is drawn from. Nothing else decides, so a page that drew the band for
+      // some other reason fails here, and the day somebody writes a review this line is what
+      // changes.
+      expect(theRealReviews).toEqual([]);
 
-      // One figure for the founder note and three for the row of reviews.
-      expect(cards).toHaveLength(CARDS_ACROSS + 1);
-      expect(page.split(A_REVIEW_NOBODY_HAS_WRITTEN)).toHaveLength(CARDS_ACROSS + 1);
-      expect(page.split(A_NAME_NOBODY_HAS_SIGNED)).toHaveLength(CARDS_ACROSS + 1);
+      for (const language of languages) {
+        const page = drawn[language] ?? '';
+        const words = wordsIn(language);
 
-      // Six dots under the row, because the board holds six cards and shows three of them.
-      expect(page).toContain(wordsIn('en').reviewsRating);
+        // Not the band, not its heading, not the rating and the count that were holes, and not the
+        // three places a review comes from.
+        expect(page).not.toContain('reviews-title');
+        expect(page).not.toContain(words.reviewsEyebrow);
+        expect(page).not.toContain(words.reviewsHeadline);
+        expect(page).not.toContain(words.reviewsRating);
+        expect(page).not.toContain(words.reviewFromTheStore);
+        expect(page).not.toContain(words.reviewFromTheCommunity);
+        expect(page).not.toContain(words.reviewFromTheBeta);
 
-      // The third card goes at the tablet width and the second goes at the phone width, so a
-      // reader at either width never meets a card cut off the side of her screen. The first figure
-      // of the page is the founder note, so the row of reviews is the three after it.
-      const [first, second, third] = cards.slice(-CARDS_ACROSS);
+        // One figure is left on the page, the note the two founders sign. The band of reviews drew
+        // three more, so the count says the cards are gone and not only their words.
+        expect(openingTagsOf(page, 'figure')).toHaveLength(1);
 
-      expect(drawnBy(first ?? '', stylesheet)).not.toContain('display: none');
-      expect(drawnBy(second ?? '', stylesheet)).toContain('display: none');
-      expect(drawnBy(third ?? '', stylesheet)).toContain('display: none');
-      expect(`${second}`).toContain('phone:hidden');
-      expect(`${third}`).toContain('tablet:hidden');
-      expect(declarationsOf(stylesheet, 'tablet:grid-cols-2')).toContain('repeat(2');
-      expect(declarationsOf(stylesheet, 'phone:grid-cols-1')).toContain('repeat(1');
-      expect(stylesheet).toContain(`${websiteTabletWidth}px`);
+        // And nothing in capitals inside brackets is left anywhere on the page she opens.
+        expect(page).not.toMatch(/\[[A-Z]/);
+      }
+
+      // The band is held back and not deleted, so the component still names the measures the
+      // board gives the row: three cards wide on a desktop, two on a tablet and one on a phone.
+      // The stylesheet of this page carries none of them, because a class no element asks for is
+      // not compiled, so they are read off the component and proved drawing by the cases that put
+      // a review in the list.
+      const band = read(join(websiteWorkspace, 'components', 'reviewRow.tsx'));
+
+      expect(band).toContain('grid-cols-3');
+      expect(band).toContain('tablet:grid-cols-2');
+      expect(band).toContain('phone:grid-cols-1');
+
+      const cases = read(join(websiteWorkspace, 'test', 'theBandOfReviews.test.tsx'));
+
+      expect(cases).toContain('is not on the page while the list is empty');
+      expect(cases).toContain('is on the page as soon as one person has written one');
+      expect(cases).toContain('comes back at the measures the board gives the row');
     });
 
     and(
@@ -252,9 +277,10 @@ defineFeature(feature, (test) => {
         const page = drawn.en ?? '';
         const words = wordsIn('en');
 
-        // The press that holds them still is drawn twice, once beside each band, and both copies
-        // read Pause on the page a reader is handed.
-        expect(page.split(`>${words.carouselPause}<`)).toHaveLength(3);
+        // The press that holds them still is drawn beside each band that is on the page, and it
+        // reads Pause on the page a reader is handed. One band is on the page today, so one press
+        // is, and the second comes back with the band of reviews.
+        expect(page.split(`>${words.carouselPause}<`)).toHaveLength(2);
         expect(page).not.toContain(`>${words.carouselPlay}<`);
 
         // Every press that holds only a drawing says what it does, because a reader who cannot see
@@ -262,12 +288,15 @@ defineFeature(feature, (test) => {
         for (const label of [
           words.founderPrevious,
           words.founderNext,
-          words.reviewPrevious,
-          words.reviewNext,
           words.founderControlsLabel,
-          words.reviewControlsLabel,
         ]) {
           expect(page).toContain(`aria-label="${label}"`);
+        }
+
+        // The presses of the band that is held back are not on the page at all, because a press
+        // beside nothing is a press that announces a band a reader cannot see.
+        for (const label of [words.reviewPrevious, words.reviewNext, words.reviewControlsLabel]) {
+          expect(page).not.toContain(`aria-label="${label}"`);
         }
 
         // One clock and one paused state for both bands, which is one place rather than two.
@@ -286,7 +315,7 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'a browser holds the page against the board at all three widths, and keeps the picture of any difference',
+      'a browser holds the page against the board at all three widths, leaving out the seven bands that differ, and keeps the picture of any difference',
       () => {
         const suite = asPlaywrightReadsIt();
         const sentence = 'the home page matches the approved design pixel for pixel';
@@ -309,22 +338,25 @@ defineFeature(feature, (test) => {
         expect(theSteps).toContain('pixelmatch');
         expect(theSteps).toContain('writeFileSync');
 
-        // The bands that carry a press to a page nobody has built are read neither in the browser
-        // nor here, and so is the band the two founders sign, where the board drew a hole she has
-        // since filled. The scenario names the five bands it does read, so the picture it takes is
-        // of the parts the board still describes and of nothing else.
-        expect(theFeature).toContain('each band the board still draws is as tall as that band');
-        expect(theSteps).not.toContain('note-title');
-
-        for (const band of [
-          'the-band-of-the-forecast',
-          'the-band-of-the-four-phases',
-          'the-band-of-the-community',
-          'the-band-that-offers-the-privacy-page',
-          'the-row-of-reviews',
-        ]) {
-          expect(theSteps).toContain(`called: '${band}'`);
-        }
+        // Seven bands are left out, and nothing else is. Five of them carry a press the site no
+        // longer draws, because the page behind it is still to be built or because Apple has
+        // issued no address for the listing. The board drew a hole where one of the two founders
+        // has since written her note, so that band is a different height on each side. And the
+        // band of reviews is on the board and not on the page, so it is left out at its full
+        // height on the board and at no height on the page. Every row outside those seven is
+        // still held to the board, so the scenario says which parts of the page it leaves out and
+        // nothing else.
+        expect(theFeature).toContain('every band but those seven is the design');
+        expect(theSteps).toContain('note-title');
+        expect(theSteps).toContain('reviews-title');
+        expect(theSteps).toContain('try-title');
+        expect(theSteps).toContain('hero-title');
+        expect(theSteps).toContain('end-title');
+        expect(theSteps).toContain('body > div > header');
+        expect(theSteps).toContain('body > div > footer');
+        expect(theSteps).toContain('above-the-bands');
+        expect(theSteps).toContain('between-the-bands');
+        expect(theSteps).toContain('under-the-bands');
 
         // The comparison is taken with the reader's own settings asking for less motion, so both
         // carousels stand on their first card while the picture is taken. Pressing the page's own

@@ -6,13 +6,14 @@ import { CarouselControls, CarouselDots, useCarousels } from '@/components/carou
  * The band of what other people say about Emi, three cards at a time on a desktop.
  *
  * It is the band of the approved board in `docs/design/website/home-v2/boards/MainV2.dc.html`. The
- * row always holds the three cards the board holds, and the board hides the third of them below the
+ * row holds the three cards the board holds, and the board hides the third of them below the
  * tablet width and the second as well below the phone width, so a card never arrives half cut off
  * the side of a narrow screen. The cards that are hidden are still drawn, because that is what the
  * board draws and the page is held to the board pixel for pixel.
  *
- * Every card is a hole until a reader has written something. `lib/thePlaceholders.ts` says why
- * those holes are not words.
+ * Every card is somebody's own words, from `lib/theReviews.ts`. The page draws this band only
+ * while that list holds something, so the band says what people said and never that somebody is
+ * going to say something.
  */
 
 export interface Review {
@@ -25,9 +26,13 @@ export interface Review {
 /** How many cards of the row a reader sees at the width of a desktop. */
 export const CARDS_ACROSS = 3;
 
-/** The three the row shows, from the one it has moved to, wrapping round the end of the list. */
+/**
+ * The three the row shows, from the one it has moved to, wrapping round the end of the list. A list
+ * shorter than three shows what it holds rather than the same review twice, because a reader who
+ * met one quote three times would be reading a row that pretends to be fuller than it is.
+ */
 export function showing(reviews: readonly Review[], at: number): Review[] {
-  return Array.from({ length: CARDS_ACROSS }, (_nothing, across) => {
+  return Array.from({ length: Math.min(CARDS_ACROSS, reviews.length) }, (_nothing, across) => {
     const found = reviews[(at + across) % reviews.length];
 
     if (found === undefined) {
