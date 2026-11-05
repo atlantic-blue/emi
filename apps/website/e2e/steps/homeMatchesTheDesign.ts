@@ -39,7 +39,8 @@ const theDesign = theDesignAt('home-v2', 'render', 'MainV2.html');
  * Five of the nine carry a press the site no longer draws, because the page behind it is still to
  * be built or, for the two presses to Apple's store, because Apple has issued no address for the
  * listing. The band of the two offers is nothing but those presses and the sentences explaining
- * them, so the page draws no rows of it at all.
+ * them, and one of its two cards offers the support page, which is built, so the page draws that
+ * card and not the other.
  *
  * Two are older. The board drew a hole where one of the two founders has since written her note,
  * and it draws a row of reviews that the page holds back until somebody has written one.
@@ -138,18 +139,19 @@ Then(
       theBand(inTheDesign, 'the band the two founders sign').tall,
     );
 
-    // The band of reviews and the band of the two offers are each a band on the board and no rows
-    // at all on the page, which is the whole of what holding them back costs in height.
-    for (const called of ['the band of reviews', 'the band of the two offers'] as const) {
-      expect({ called, onTheBoard: theBand(inTheDesign, called).tall > 0 }).toEqual({
-        called,
-        onTheBoard: true,
-      });
-      expect({ called, onThePage: theBand(onThePage, called).tall }).toEqual({
-        called,
-        onThePage: 0,
-      });
-    }
+    // The band of reviews is a band on the board and no rows at all on the page, which is the
+    // whole of what holding it back costs in height.
+    expect(theBand(inTheDesign, 'the band of reviews').tall).toBeGreaterThan(0);
+    expect(theBand(onThePage, 'the band of reviews').tall).toBe(0);
+
+    // The band of the two offers is on both, with two cards on the board and one on the page. One
+    // card is never taller than two: at this width they stand side by side and the band is the
+    // same height, and narrower than that they stack and the board is the taller.
+    expect(theBand(onThePage, 'the band of the two offers').tall).toBeGreaterThan(0);
+    expect(
+      theBand(onThePage, 'the band of the two offers').tall >
+        theBand(inTheDesign, 'the band of the two offers').tall,
+    ).toBe(false);
 
     // The band at the head of the page draws one press to the store on the board and none on the
     // page, and the band at the end is the same press again, so neither is taller on the page.

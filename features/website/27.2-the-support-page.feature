@@ -1,14 +1,14 @@
 Feature: The support page
 
   A woman cannot work out why her forecast moved, or she lost her phone, or she wants her money
-  back. Apple asks for the address of this page before it will take the application at all, so it
-  stands between Emi and the store alongside the privacy policy.
+  back. The band at the top of every page of this site offers her "Support", and Apple asks for
+  the same address before it will take the application at all, so this page stands between Emi and
+  the store alongside the privacy policy.
 
-  No press on the site leads here yet. The two bands the whole site shares hold back every press
-  whose page was not built, and "Support" was one of them. The page exists now, so the press comes
-  back, and it comes back in step 27.3 rather than here: this change ships the page and nothing
-  else. So the scenario opens the address the way Apple will, and reads that the band at the top
-  still draws no way to it.
+  The press was held back for a while. The two bands the whole site shares draw no press whose
+  page was not built, and this page was not built when that rule arrived, so "Support" went with
+  the others. Step 27.3 took the mark off both of its presses, so she arrives through the band
+  again.
 
   The page is a title, a box she searches in, a row of cards that each take her somewhere, and
   four common questions. It is built from the board the operator approved, and four parts of that
@@ -43,7 +43,7 @@ Feature: The support page
   question, which is what the page is drawn with before anything runs.
 
   Scenario: the support page answers what Emi can answer today
-    Given a woman opens the support page at its own address, which no press leads to yet
+    Given a woman follows "Support" from the band at the top of myemi.app
     Then she reads the title, the box she searches in, three cards and four questions
     And the card for a subscription is not drawn, and its words wait in all three languages
     And the answer about a lost phone says what today costs her, not the restore nobody built

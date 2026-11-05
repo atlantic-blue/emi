@@ -1,7 +1,7 @@
 import { websiteColour } from '@emi/tokens';
 import { notFound } from 'next/navigation';
 
-import { brandEyebrowOf, isLanguage, wordsIn } from '@/app/words';
+import { type SiteWordKey, brandEyebrowOf, isLanguage, wordsIn } from '@/app/words';
 import { CarouselsProvider } from '@/components/carousels';
 import { CycleRing } from '@/components/cycleRing';
 import { type Founder, FounderNote } from '@/components/founderNote';
@@ -44,15 +44,47 @@ import { theStoreListingIsOpen } from '@/lib/theStoreListing';
 /** Each band, at the measures the board gives it. One place, so the order reads as one. */
 const theWidestBand = 'max-w-[1120px]';
 
+/** One of the two cards the board offers a reader who is not ready to install anything. */
+interface AnOffer {
+  /** What it is called on the page, which is also what labels the band when it is drawn first. */
+  readonly named: string;
+  readonly title: SiteWordKey;
+  readonly line: SiteWordKey;
+  readonly press: SiteWordKey;
+  readonly path: string;
+  /**
+   * Whether the page behind it is still to be built. An offer marked this way is not drawn, and it
+   * comes back by taking this one line off it on the day its page ships.
+   */
+  readonly waitsForItsPage?: boolean;
+}
+
 /**
- * Whether the free calculator and the support page exist. Both are still to be built, so the page
- * draws neither the band that offers them nor a press to either one.
+ * The two offers, in the order the board puts them: the free calculator, and the support page.
  *
- * It reads false until those two pages ship, and the list the sitemap is written from says which
- * pages the site serves. The scenario of step 26.26 holds the two together, so this cannot go on
- * reading false after a page arrives.
+ * Each card is a press and the sentence that explains the press, so a card whose page is still to
+ * be built has nothing left to say and is not drawn at all. The calculator is still to be built.
+ * The support page ships in step 27.2, so its card is drawn and the band is drawn with it.
+ *
+ * The list the sitemap is written from says which pages the site serves, and the scenario of step
+ * 26.26 holds the two together, so a mark here cannot go on waiting after its page arrives.
  */
-const theCalculatorAndSupportExist: boolean = false;
+const theOffers: readonly AnOffer[] = [
+  {
+    named: 'try-title',
+    title: 'tryTitle',
+    line: 'tryLine',
+    press: 'tryLink',
+    path: 'calculator/',
+    waitsForItsPage: true,
+  },
+  { named: 'ask-title', title: 'askTitle', line: 'askLine', press: 'askLink', path: 'support/' },
+];
+
+/** Every offer the band draws, which is every one whose page a reader can open. */
+export function theOffersOnThePage(): readonly AnOffer[] {
+  return theOffers.filter((offer) => offer.waitsForItsPage !== true);
+}
 
 /** Apple's own mark, which is Apple's drawing and not Emi's, at the two sizes the board draws it. */
 function AppleMark({ paint }: { paint: string }) {
@@ -370,48 +402,37 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
           </section>
         )}
 
-        {/* The band of the two offers. The calculator and the support page are both still to be
-            built, and each of these two cards is a press and the sentence that explains the press,
-            so neither has anything left to say without its page. The band comes back whole on the
-            day those two pages ship. Its words are in the catalogues under tryTitle, tryLine,
-            tryLink, askTitle, askLine and askLink, and the board draws it at
+        {/* The band of the two offers. A card is a press and the sentence that explains the
+            press, so a card whose page is still to be built has nothing left to say and is not
+            drawn. The calculator is still to be built; the support page is not. The band is
+            labelled by the first card it draws, because the card that used to label it is the one
+            that may be missing. The board draws both at
             docs/design/website/home-v2/boards/MainV2.dc.html. */}
-        {theCalculatorAndSupportExist ? (
-          <section aria-labelledby="try-title" className="bg-siteCard">
+        {theOffersOnThePage().length > 0 ? (
+          <section aria-labelledby={theOffersOnThePage()[0]?.named} className="bg-siteCard">
             <div
               className={`mx-auto grid ${theWidestBand} grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-spaceXl px-spaceXl py-[96px]`}
             >
-              <a
-                className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
-                href={under('calculator/')}
-              >
-                <span
-                  className="font-display text-[32px] leading-[40px] font-semibold"
-                  id="try-title"
+              {theOffersOnThePage().map((offer) => (
+                <a
+                  className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
+                  href={under(offer.path)}
+                  key={offer.named}
                 >
-                  {words.tryTitle}
-                </span>
-                <span className="text-[16px] leading-[24px] text-siteQuietText">
-                  {words.tryLine}
-                </span>
-                <span className="mt-auto text-[16px] font-semibold text-siteAccent">
-                  {words.tryLink}
-                </span>
-              </a>
-              <a
-                className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
-                href={under('support/')}
-              >
-                <span className="font-display text-[32px] leading-[40px] font-semibold">
-                  {words.askTitle}
-                </span>
-                <span className="text-[16px] leading-[24px] text-siteQuietText">
-                  {words.askLine}
-                </span>
-                <span className="mt-auto text-[16px] font-semibold text-siteAccent">
-                  {words.askLink}
-                </span>
-              </a>
+                  <span
+                    className="font-display text-[32px] leading-[40px] font-semibold"
+                    id={offer.named}
+                  >
+                    {words[offer.title]}
+                  </span>
+                  <span className="text-[16px] leading-[24px] text-siteQuietText">
+                    {words[offer.line]}
+                  </span>
+                  <span className="mt-auto text-[16px] font-semibold text-siteAccent">
+                    {words[offer.press]}
+                  </span>
+                </a>
+              ))}
             </div>
           </section>
         ) : null}

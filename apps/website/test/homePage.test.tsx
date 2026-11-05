@@ -381,26 +381,35 @@ describe('the page a woman meets Emi on', () => {
    * proved drawing in test/theBandOfReviews.test.tsx, which renders the page with one review in
    * the list.
    *
-   * The band of the two offers is held back by the two pages behind its two presses not existing.
-   * It is a press to the free calculator and a press to support, and the sentence explaining each,
-   * so it has nothing left to say without them.
+   * The band of the two offers is on the page with one of its two cards. The support page ships
+   * in step 27.2, so the card that offers it is drawn; the free calculator is still to be built,
+   * and its card is a press and the sentence explaining the press, so it has nothing left to say
+   * without its page. The band is labelled by the card it draws first, which is why the name it
+   * carries on the page is the second of the two names the board gives it.
    */
-  it('draws the seven bands of the board it still draws, in the board’s order', async () => {
+  it('draws the eight bands of the board it still draws, in the board’s order', async () => {
     const order = (markup: string): string[] =>
       [...markup.matchAll(/<section aria-labelledby="([^"]+)"/g)].map(([, name]) => name ?? '');
 
-    const heldBack = ['reviews-title', 'try-title'];
+    const heldBack = ['reviews-title'];
     const onTheBoard = order(theBoard());
     const onThePage = order(await pageIn('en'));
 
     expect(onTheBoard).toHaveLength(9);
 
-    for (const band of heldBack) {
+    for (const band of [...heldBack, 'try-title']) {
       expect({ band, onTheBoard: onTheBoard.includes(band) }).toEqual({ band, onTheBoard: true });
     }
 
-    expect(onThePage).toEqual(onTheBoard.filter((band) => !heldBack.includes(band)));
-    expect(onThePage).toHaveLength(7);
+    // The band of the two offers is the one band the page and the board name differently. The
+    // board labels it by the card for the calculator, and the page draws that card nowhere, so
+    // the page labels it by the card that is left.
+    expect(onThePage).toEqual(
+      onTheBoard
+        .filter((band) => !heldBack.includes(band))
+        .map((band) => (band === 'try-title' ? 'ask-title' : band)),
+    );
+    expect(onThePage).toHaveLength(8);
   });
 
   /**
@@ -483,7 +492,8 @@ describe('the page a woman meets Emi on', () => {
     const page = await pageIn(language);
 
     // The four cards of the phases keep their words. The guide behind each one is not written, so
-    // the card is a card and not a press, and nothing on the page points at the calculator.
+    // the card is a card and not a press, and nothing on the page points at the calculator. The
+    // support page is the one of the two offers that exists, so the page does point there.
     for (const key of [
       'learnPeriodTitle',
       'learnFollicularTitle',
@@ -494,7 +504,7 @@ describe('the page a woman meets Emi on', () => {
     }
 
     expect(page).not.toContain(`href="/${language}/calculator/"`);
-    expect(page).not.toContain(`href="/${language}/support/"`);
+    expect(page).toContain(`href="/${language}/support/"`);
   });
 
   it('names no host but the three she chooses to open, in any language', async () => {

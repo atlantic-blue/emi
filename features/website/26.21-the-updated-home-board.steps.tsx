@@ -83,15 +83,20 @@ async function pageIn(language: Language): Promise<string> {
 }
 
 /**
- * The two bands of the board the page does not draw, by the heading each names itself to her
- * software by.
- *
- * Nobody has written a review of Emi yet, so the band of reviews is held back whole. The band of
- * the two offers is a press to the free calculator and a press to support, and the sentence
- * explaining each, and neither page is built. Each comes back whole on the day what it waits for
- * arrives.
+ * The one band of the board the page does not draw, by the heading it names itself to her software
+ * by. Nobody has written a review of Emi yet, so the band of reviews is held back whole, and it
+ * comes back on the day somebody writes one.
  */
-const theBandsHeldBack = ['reviews-title', 'try-title'];
+const theBandsHeldBack = ['reviews-title'];
+
+/**
+ * What the board calls the band of the two offers, and what the page calls it. Each card of it is
+ * a press and the sentence that explains the press, so a card whose page is still to be built has
+ * nothing left to say. The calculator is still to be built and the support page is not, and the
+ * board names the band after the card the page does not draw, so the page names it after the one
+ * it does.
+ */
+const theBandOfTheTwoOffers = { onTheBoard: 'try-title', onThePage: 'ask-title' };
 
 defineFeature(feature, (test) => {
   test('the home page matches the approved design pixel for pixel', ({ given, then, and }) => {
@@ -107,7 +112,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she reads seven of the nine bands of the board the operator drew last, in its order',
+      'she reads eight of the nine bands of the board the operator drew last, in its order',
       () => {
         const wanted = bandsOfTheDesign();
         const found = openingTagsOf(drawn.en ?? '', 'section').map(
@@ -122,12 +127,18 @@ defineFeature(feature, (test) => {
         expect(wanted).toContain('reviews-title');
         expect(wanted).not.toContain('price-title');
 
-        // The page draws every band of the board except those two, in the board's own order. The
+        // The page draws every band of the board except that one, in the board's own order. The
         // order is read against the board rather than written out, so a band that drifted up or down
         // the page fails here as it did before.
-        expect(wanted).toContain('try-title');
-        expect(found).toEqual(wanted.filter((band) => !theBandsHeldBack.includes(band)));
-        expect(found).toHaveLength(7);
+        expect(wanted).toContain(theBandOfTheTwoOffers.onTheBoard);
+        expect(found).toEqual(
+          wanted
+            .filter((band) => !theBandsHeldBack.includes(band))
+            .map((band) =>
+              band === theBandOfTheTwoOffers.onTheBoard ? theBandOfTheTwoOffers.onThePage : band,
+            ),
+        );
+        expect(found).toHaveLength(8);
       },
     );
 

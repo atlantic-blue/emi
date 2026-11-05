@@ -15,6 +15,12 @@ Feature: The home page is the page that was approved
   draws six cards of it as holes in brackets, because nobody had written a review when it was drawn.
   Nobody has since, so the page holds that band back whole and draws eight of the nine.
 
+  One of those eight arrives with half of itself. The board offers her two things there, the free
+  calculator and the support page, and each card is a press and the sentence that explains the
+  press. The calculator is still to be built, so its card has nothing left to say and is not
+  drawn. That card is the one the board names the band after, so the page names the band after
+  the card it does draw.
+
   So the page becomes the board. A browser reads the two side by side and refuses a difference of
   more than one pixel in a thousand, which is the scenario in the browser suite under this same
   sentence. What a picture cannot see is read here instead, because each of these is worth about
@@ -24,7 +30,7 @@ Feature: The home page is the page that was approved
 
   Scenario: the home page matches the approved design pixel for pixel
     Given a woman opens the home page of myemi.app
-    Then she reads seven of the nine bands of the approved board, in the board's order and on its grounds
+    Then she reads eight of the nine bands of the approved board, in the board's order and on its grounds
     And every sentence of the board is on the page, in English, in Russian and in Spanish
     And the brand line stands over the hero in capitals, and is still the one line nobody translates
     And the ring starts at day 8 in the follicular phase, and answers every other day the way the board does

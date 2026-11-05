@@ -90,6 +90,9 @@ interface APageSheOpened {
 }
 
 /** What draws each page of the site, by the path the list of pages gives it. */
+/** The path the support page sits at under a language, as the list of pages writes it. */
+const THE_SUPPORT_PAGE = 'support/';
+
 const whatDrawsThePageAt: Readonly<
   Record<string, (asked: { params: Promise<{ lang: string }> }) => Promise<ReactNode>>
 > = {
@@ -224,6 +227,42 @@ defineFeature(feature, (test) => {
             pressed: page.presses.some((press) => press.address.endsWith(`/${path}`)),
           }).toEqual({ onThePage: page.address, waitingFor: path, pressed: false });
         }
+      }
+    });
+
+    and('the three presses to the support page are drawn again, now that the page exists', () => {
+      // The page the three carry her to is one the list of pages names, which is what says it is
+      // built. Two of the three are in the bands every page of the site shares, so they are read
+      // on every page she opened; the third is a card of the home page.
+      expect(thePagesOfTheSite.map((page) => page.path)).toContain(THE_SUPPORT_PAGE);
+
+      for (const page of opened) {
+        const carryingHer = page.presses.filter(
+          (press) => press.address === `/${page.language}/${THE_SUPPORT_PAGE}`,
+        );
+
+        expect({
+          onThePage: page.address,
+          presses: carryingHer.length,
+        }).toEqual({
+          onThePage: page.address,
+          presses: page.address === `/${page.language}/` ? 3 : 2,
+        });
+      }
+
+      // Each of the three says the word its catalogue gives it, so a press that lost its name is
+      // a press her software announces as "link".
+      for (const language of languages) {
+        const words = wordsIn(language);
+        const said = (presses: readonly APressSheCanMake[]): string[] =>
+          presses
+            .filter((press) => press.address === `/${language}/${THE_SUPPORT_PAGE}`)
+            .map((press) => press.called);
+
+        expect(said(atTheFoot.get(language) ?? [])).toEqual([words.footerSupport]);
+        expect(said(insideTheHomePage.get(language) ?? [])).toEqual([
+          `${words.askTitle} ${words.askLine} ${words.askLink}`,
+        ]);
       }
     });
 
