@@ -45,3 +45,9 @@ variable "log_retention_days" {
   type        = number
   default     = 30
 }
+
+variable "domain_name" {
+  description = "Domain Emi sends from, and the domain the website answers on. The sender identity carries this name"
+  type        = string
+  default     = "myemi.app"
+}

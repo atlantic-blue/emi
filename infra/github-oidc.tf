@@ -205,6 +205,53 @@ data "aws_iam_policy_document" "plan" {
     ]
     resources = ["arn:aws:cognito-idp:*:${var.account_id}:userpool/*"]
   }
+
+  # ── The sender of step 28.8, read at the scope the apply role writes at ────
+
+  # The identity Emi sends from and the configuration set its rates are counted on.
+  statement {
+    sid    = "ReadTheSender"
+    effect = "Allow"
+    actions = [
+      "ses:GetConfigurationSet",
+      "ses:GetConfigurationSetEventDestinations",
+      "ses:GetEmailIdentity",
+      "ses:ListTagsForResource",
+    ]
+    resources = [
+      "arn:aws:ses:${var.region}:${var.account_id}:identity/${var.domain_name}",
+      "arn:aws:ses:${var.region}:${var.account_id}:configuration-set/${var.project_name}",
+    ]
+  }
+
+  statement {
+    sid    = "ReadTheEmailEventTopic"
+    effect = "Allow"
+    actions = [
+      "sns:GetTopicAttributes",
+      "sns:ListTagsForResource",
+    ]
+    resources = ["arn:aws:sns:${var.region}:${var.account_id}:${var.project_name}-*"]
+  }
+
+  # A plan reads the tags of an alarm by its address, and reads the alarm itself through the
+  # statement below.
+  statement {
+    sid       = "ReadTheEmailAlarmTags"
+    effect    = "Allow"
+    actions   = ["cloudwatch:ListTagsForResource"]
+    resources = ["arn:aws:cloudwatch:${var.region}:${var.account_id}:alarm:${var.project_name}-*"]
+  }
+
+  # The reference for DescribeAlarms says the permission has to stand on every resource, and that
+  # a narrower scope returns nothing. This reads the name and the state of every alarm in the
+  # account, and it is a read.
+  statement {
+    sid       = "ReadEveryAlarm"
+    effect    = "Allow"
+    actions   = ["cloudwatch:DescribeAlarms"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role_policy" "plan" {
@@ -506,6 +553,88 @@ data "aws_iam_policy_document" "apply" {
     sid       = "MakeAUserPool"
     effect    = "Allow"
     actions   = ["cognito-idp:CreateUserPool"]
+    resources = ["*"]
+  }
+
+  # ── The sender, which is step 28.8 ─────────────────────────────────────────
+
+  # The identity Emi sends from, its signing, its envelope sender domain, and the configuration
+  # set its bounce and complaint rates are counted on. Both resources carry a name Emi chose
+  # rather than a generated identifier, so each one is named in full and no pattern here reaches
+  # the identity of another product in this account.
+  #
+  # The records this step writes into the myemi.app zone need no new grant of their own. The
+  # TheMyemiZone statement above already allows route53:ChangeResourceRecordSets on that one zone
+  # and on nothing else.
+  statement {
+    sid    = "TheSender"
+    effect = "Allow"
+    actions = [
+      "ses:CreateConfigurationSet",
+      "ses:CreateConfigurationSetEventDestination",
+      "ses:CreateEmailIdentity",
+      "ses:DeleteConfigurationSet",
+      "ses:DeleteConfigurationSetEventDestination",
+      "ses:DeleteEmailIdentity",
+      "ses:GetConfigurationSet",
+      "ses:GetConfigurationSetEventDestinations",
+      "ses:GetEmailIdentity",
+      "ses:ListTagsForResource",
+      "ses:PutConfigurationSetReputationOptions",
+      "ses:PutEmailIdentityConfigurationSetAttributes",
+      "ses:PutEmailIdentityDkimSigningAttributes",
+      "ses:PutEmailIdentityMailFromAttributes",
+      "ses:TagResource",
+      "ses:UntagResource",
+      "ses:UpdateConfigurationSetEventDestination",
+    ]
+    resources = [
+      "arn:aws:ses:${var.region}:${var.account_id}:identity/${var.domain_name}",
+      "arn:aws:ses:${var.region}:${var.account_id}:configuration-set/${var.project_name}",
+    ]
+  }
+
+  # The topic the bounce and the complaint arrive on. A topic address is its name, so the prefix
+  # reaches the topics of Emi and no other product. The policy that lets the mail service publish
+  # to it is written with sns:SetTopicAttributes.
+  statement {
+    sid    = "TheEmailEventTopic"
+    effect = "Allow"
+    actions = [
+      "sns:CreateTopic",
+      "sns:DeleteTopic",
+      "sns:GetTopicAttributes",
+      "sns:ListTagsForResource",
+      "sns:SetTopicAttributes",
+      "sns:TagResource",
+      "sns:UntagResource",
+    ]
+    resources = ["arn:aws:sns:${var.region}:${var.account_id}:${var.project_name}-*"]
+  }
+
+  # The two reputation alarms. An alarm address carries its name, so the prefix names the alarms
+  # of Emi alone.
+  statement {
+    sid    = "TheEmailAlarms"
+    effect = "Allow"
+    actions = [
+      "cloudwatch:DeleteAlarms",
+      "cloudwatch:ListTagsForResource",
+      "cloudwatch:PutMetricAlarm",
+      "cloudwatch:TagResource",
+      "cloudwatch:UntagResource",
+    ]
+    resources = ["arn:aws:cloudwatch:${var.region}:${var.account_id}:alarm:${var.project_name}-*"]
+  }
+
+  # Reading an alarm is the one read here that names no resource. The reference for DescribeAlarms
+  # says the permission has to stand on every resource, and that a narrower scope returns nothing,
+  # so this grant reads the name and the state of every alarm in the account. It writes nothing,
+  # and the write above stays scoped to the alarms of Emi.
+  statement {
+    sid       = "ReadEveryAlarm"
+    effect    = "Allow"
+    actions   = ["cloudwatch:DescribeAlarms"]
     resources = ["*"]
   }
 }

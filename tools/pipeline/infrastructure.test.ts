@@ -190,6 +190,7 @@ const collectionLevelActions: readonly string[] = [
   'cloudfront:ListFunctions',
   'cloudfront:ListOriginAccessControls',
   'cloudfront:ListResponseHeadersPolicies',
+  'cloudwatch:DescribeAlarms',
   'cognito-idp:CreateUserPool',
   'cognito-idp:ListUserPools',
   'dynamodb:ListTables',
@@ -201,6 +202,9 @@ const collectionLevelActions: readonly string[] = [
   'route53:ListHostedZones',
   'route53:ListHostedZonesByName',
   's3:ListAllMyBuckets',
+  'ses:ListConfigurationSets',
+  'ses:ListEmailIdentities',
+  'sns:ListTopics',
 ];
 
 /** Each collection level action a statement names while standing on a named resource. */
@@ -537,6 +541,10 @@ describe('the infrastructure is applied only by the pipeline', () => {
         'ReadTheWebsiteBucket',
         'ReadTheMyemiZone',
         'ReadTheUserPool',
+        'ReadTheSender',
+        'ReadTheEmailEventTopic',
+        'ReadTheEmailAlarmTags',
+        'ReadEveryAlarm',
       ]);
       expect(applyStatements.length).toBeGreaterThan(5);
       expect(applyStatements.every((statement) => statement.actions.length > 0)).toBe(true);
@@ -1508,5 +1516,191 @@ describe('the pool she signs in to, which is step 28.2', () => {
         expect(scopeOf(planStatements, action)).toEqual([]);
       }
     });
+  });
+});
+
+// Step 28.7 grants the two roles what step 28.8 then uses, and it grants nothing else. The split
+// exists because an apply reads a policy per request: pull request 515 changed the apply role and
+// made the user pool in one apply, the create ran a second after the policy change, and the
+// account refused it because the new permission was not active yet. So the permissions merge on
+// their own, and the resources follow in the next merge.
+describe('the grants the sender needs, which is step 28.7', () => {
+  const planStatements = statementsIn(planPolicy);
+  const applyStatements = statementsIn(applyPolicy);
+  const account = defaultOf('account_id');
+  const region = defaultOf('region');
+  const project = defaultOf('project_name');
+  const theIdentity = `arn:aws:ses:${region}:${account}:identity/${defaultOf('domain_name')}`;
+  const theConfigurationSet = `arn:aws:ses:${region}:${account}:configuration-set/${project}`;
+  const theSender = [theIdentity, theConfigurationSet];
+  const theTopics = `arn:aws:sns:${region}:${account}:${project}-*`;
+  const theAlarms = `arn:aws:cloudwatch:${region}:${account}:alarm:${project}-*`;
+  const theZone = 'arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K';
+
+  /** Each resource a grant of one action stands on, with every variable read as its value. */
+  const scopeOf = (statements: readonly PolicyStatement[], action: string): string[][] =>
+    statementsReaching(statements, action).map((statement) =>
+      statement.resources.map((resource) => resolved(configuration, resource)),
+    );
+
+  const identityWrites = [
+    'ses:CreateEmailIdentity',
+    'ses:DeleteEmailIdentity',
+    'ses:PutEmailIdentityConfigurationSetAttributes',
+    'ses:PutEmailIdentityDkimSigningAttributes',
+    'ses:PutEmailIdentityMailFromAttributes',
+  ];
+
+  const configurationSetWrites = [
+    'ses:CreateConfigurationSet',
+    'ses:CreateConfigurationSetEventDestination',
+    'ses:DeleteConfigurationSet',
+    'ses:DeleteConfigurationSetEventDestination',
+    'ses:PutConfigurationSetReputationOptions',
+    'ses:UpdateConfigurationSetEventDestination',
+  ];
+
+  const topicWrites = ['sns:CreateTopic', 'sns:DeleteTopic', 'sns:SetTopicAttributes'];
+
+  const alarmWrites = ['cloudwatch:DeleteAlarms', 'cloudwatch:PutMetricAlarm'];
+
+  const senderReads = [
+    'ses:GetConfigurationSet',
+    'ses:GetConfigurationSetEventDestinations',
+    'ses:GetEmailIdentity',
+  ];
+
+  describe('the merge may make the sender, in the resources of Emi and in no others', () => {
+    it.each(identityWrites)('writes %s on the myemi.app identity alone', (action) => {
+      expect(scopeOf(applyStatements, action)).toEqual([theSender]);
+      expect(grantedOnEveryResource(applyStatements, action)).toBe(false);
+    });
+
+    it.each(configurationSetWrites)('writes %s on the configuration set of Emi alone', (action) => {
+      expect(scopeOf(applyStatements, action)).toEqual([theSender]);
+      expect(grantedOnEveryResource(applyStatements, action)).toBe(false);
+    });
+
+    it.each(topicWrites)('writes %s on a topic named for Emi alone', (action) => {
+      expect(scopeOf(applyStatements, action)).toEqual([[theTopics]]);
+      expect(grantedOnEveryResource(applyStatements, action)).toBe(false);
+    });
+
+    it.each(alarmWrites)('writes %s on an alarm named for Emi alone', (action) => {
+      expect(scopeOf(applyStatements, action)).toEqual([[theAlarms]]);
+      expect(grantedOnEveryResource(applyStatements, action)).toBe(false);
+    });
+
+    it('tags what it makes at the same scope, so a tag change needs no wider grant', () => {
+      expect(scopeOf(applyStatements, 'ses:TagResource')).toEqual([theSender]);
+      expect(scopeOf(applyStatements, 'sns:TagResource')).toEqual([[theTopics]]);
+      expect(scopeOf(applyStatements, 'cloudwatch:TagResource')).toEqual([[theAlarms]]);
+    });
+
+    it('sends no message and reads no address, because this grant builds the sender', () => {
+      for (const action of [
+        'ses:SendEmail',
+        'ses:SendBulkEmail',
+        'ses:SendRawEmail',
+        'ses:ListSuppressedDestinations',
+        'ses:GetSuppressedDestination',
+        'sns:Subscribe',
+        'sns:Publish',
+      ]) {
+        expect(scopeOf(applyStatements, action)).toEqual([]);
+        expect(scopeOf(planStatements, action)).toEqual([]);
+      }
+    });
+  });
+
+  describe('the record change still names the myemi.app zone and nothing else', () => {
+    it('writes a record through one statement, which stands on that zone', () => {
+      const granting = statementsReaching(applyStatements, 'route53:ChangeResourceRecordSets');
+
+      expect(granting.map((statement) => statement.sid)).toEqual(['TheMyemiZone']);
+      expect(scopeOf(applyStatements, 'route53:ChangeResourceRecordSets')).toEqual([[theZone]]);
+    });
+
+    it('writes a record through no statement that stands on every resource', () => {
+      expect(grantedOnEveryResource(applyStatements, 'route53:ChangeResourceRecordSets')).toBe(
+        false,
+      );
+    });
+
+    it('leaves a pull request reading that zone and changing no record in it', () => {
+      expect(scopeOf(planStatements, 'route53:ListResourceRecordSets')).toEqual([[theZone]]);
+      expect(statementsReaching(planStatements, 'route53:ChangeResourceRecordSets')).toEqual([]);
+    });
+  });
+
+  describe('a pull request reads the sender at the same scope and writes none of it', () => {
+    it.each(senderReads)('reads %s on the sender of Emi alone', (action) => {
+      expect(scopeOf(planStatements, action)).toEqual([theSender]);
+      expect(grantedOnEveryResource(planStatements, action)).toBe(false);
+    });
+
+    it('reads the topic and the tags of an alarm at the scope the merge writes at', () => {
+      expect(scopeOf(planStatements, 'sns:GetTopicAttributes')).toEqual([[theTopics]]);
+      expect(scopeOf(planStatements, 'cloudwatch:ListTagsForResource')).toEqual([[theAlarms]]);
+    });
+
+    it.each([...identityWrites, ...configurationSetWrites, ...topicWrites, ...alarmWrites])(
+      'gives a pull request no %s at any scope',
+      (action) => {
+        expect(scopeOf(planStatements, action)).toEqual([]);
+      },
+    );
+
+    it('adds no action to the plan role that is not a read', () => {
+      expect(
+        actionsIn(planPolicy).filter(
+          (action) => !/^(apigateway:GET|[a-z0-9-]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
+        ),
+      ).toEqual([]);
+    });
+  });
+
+  // An alarm is the one resource here whose read names no resource at all. The reference for
+  // DescribeAlarms says the permission has to stand on every resource and that a narrower scope
+  // returns nothing, which is the same shape as the log groups of 2026-09-19.
+  describe('the one read that names no resource', () => {
+    it('is named in the list of actions that act on no single resource', () => {
+      expect(collectionLevelActions).toContain('cloudwatch:DescribeAlarms');
+    });
+
+    it('stands on every resource for both roles, because a narrower scope reads nothing', () => {
+      for (const statements of [applyStatements, planStatements]) {
+        expect(grantedOnEveryResource(statements, 'cloudwatch:DescribeAlarms')).toBe(true);
+      }
+    });
+
+    it('is the only grant of the sender that stands on every resource', () => {
+      const wide = [...applyStatements, ...planStatements]
+        .filter(standsOnEveryResource)
+        .flatMap((statement) => statement.actions)
+        .filter((action) => /^(ses|sns|cloudwatch):/.test(action));
+
+      expect([...new Set(wide)]).toEqual(['cloudwatch:DescribeAlarms']);
+    });
+  });
+
+  it('names each statement it adds, so a reviewer reads the scope without a plan', () => {
+    const added = [
+      'TheSender',
+      'TheEmailEventTopic',
+      'TheEmailAlarms',
+      'ReadEveryAlarm',
+      'ReadTheSender',
+      'ReadTheEmailEventTopic',
+      'ReadTheEmailAlarmTags',
+    ];
+    const sids = [...applyStatements, ...planStatements].map((statement) => statement.sid);
+
+    expect(added.filter((sid) => !sids.includes(sid))).toEqual([]);
+  });
+
+  it('holds the sender domain as a variable, so no statement spells the domain twice', () => {
+    expect(defaultOf('domain_name')).toBe('myemi.app');
+    expect(theIdentity).toBe('arn:aws:ses:eu-central-1:230345688874:identity/myemi.app');
   });
 });
