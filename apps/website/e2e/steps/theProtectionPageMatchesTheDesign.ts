@@ -4,7 +4,14 @@ import { expect } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
 import { test } from './fixtures';
-import { bothOf, howMuchOfItMoved, pictureOf, theDesignAt } from './theDesignComparison';
+import {
+  bothBandsOf,
+  bothOf,
+  howMuchOfItMovedOutside,
+  pictureOf,
+  theBandOfThePhone,
+  theDesignAt,
+} from './theDesignComparison';
 
 /**
  * The approved design of the page that explains the encryption, as plain markup beside this suite.
@@ -27,7 +34,9 @@ Given(
     }
 
     looking.atTheDesign = await pictureOf(page, `file://${theDesign}`, window);
+    looking.theBandInTheDesign = await theBandOfThePhone(page);
     looking.atThePage = await pictureOf(page, '/en/privacy/', window);
+    looking.theBandOnThePage = await theBandOfThePhone(page);
   },
 );
 
@@ -35,15 +44,20 @@ Then(
   'the privacy page is as tall as the design, so no section is missing and none was added',
   ({ looking }) => {
     const { design, page } = bothOf(looking);
+    const { inTheDesign, onThePage } = bothBandsOf(looking);
 
     expect(page.width).toBe(design.width);
     expect(page.height).toBe(design.height);
+
+    // The frame the phone sits in is one size, set in both, so a crop that moved what is inside it
+    // cannot have moved anything around it.
+    expect(onThePage.to - onThePage.from).toBe(inTheDesign.to - inTheDesign.from);
   },
 );
 
 Then(
-  'what she reads about the encryption is the design, to within one pixel in a thousand',
+  'what she reads about the encryption is the design, outside the phone, to within one pixel in a thousand',
   ({ looking }) => {
-    howMuchOfItMoved(looking, 'the-privacy-page');
+    howMuchOfItMovedOutside(looking, 'the-privacy-page');
   },
 );
