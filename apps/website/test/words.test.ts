@@ -14,7 +14,7 @@ import {
   spanish,
   wordsIn,
 } from '../app/words';
-import { thePlaceholders } from '../lib/thePlaceholders';
+import { theHolesOfThePolicy } from '../lib/thePlaceholders';
 
 /** The application's own catalogues, which this site copies its price line from. */
 const theApplication: Readonly<Record<Language, Readonly<Record<string, unknown>>>> = {
@@ -137,17 +137,18 @@ describe('the words of one page in three languages', () => {
   });
 
   /**
-   * The board leaves a hole for text nobody has written yet, and a hole reads the same in every
+   * A page leaves a hole for text nobody has written yet, and a hole reads the same in every
    * language until the text arrives. A hole kept in a catalogue would be refused by the case above
-   * as an untranslated word, so it is kept beside the band instead, and this says so.
+   * as an untranslated word, so it is kept beside the page instead, and this says so.
    */
-  it('holds no hole of the board, because a hole is not a word', () => {
+  it('holds no hole of a page, because a hole is not a word', () => {
     for (const language of languages) {
       const held = Object.values(wordsIn(language));
 
-      expect(held.filter((said) => thePlaceholders.some((hole) => said === hole))).toEqual([]);
+      expect(held.filter((said) => theHolesOfThePolicy.some((hole) => said === hole))).toEqual([]);
     }
 
-    expect(thePlaceholders.every((hole) => /^\[/.test(hole))).toBe(true);
+    expect(theHolesOfThePolicy.length).toBeGreaterThan(0);
+    expect(theHolesOfThePolicy.every((hole) => /^\[/.test(hole))).toBe(true);
   });
 });

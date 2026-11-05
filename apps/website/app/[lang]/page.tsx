@@ -7,7 +7,7 @@ import { CycleRing } from '@/components/cycleRing';
 import { type Founder, FounderNote } from '@/components/founderNote';
 import { type Review, ReviewRow } from '@/components/reviewRow';
 import { JULIANS_PHOTOGRAPH, NO_PAGE_YET, THE_EMI_COMMUNITY } from '@/lib/addresses';
-import { A_NAME_NOBODY_HAS_SIGNED, A_REVIEW_NOBODY_HAS_WRITTEN } from '@/lib/thePlaceholders';
+import { theCardsOf, theRealReviews } from '@/lib/theReviews';
 
 /**
  * The page a woman meets Emi on, in the language her address names. A language the site does not
@@ -26,9 +26,14 @@ import { A_NAME_NOBODY_HAS_SIGNED, A_REVIEW_NOBODY_HAS_WRITTEN } from '@/lib/the
  * The page is drawn on each request. Nothing on it is hers, so there is nothing to keep private
  * from a cache, and a build that drew the three pages once would still have to be deployed to say
  * a different price.
+ *
+ * One band of the board is not on the page. It says what other people think of Emi, and nobody has
+ * said anything yet, so the board's six cards stood on the live page as six holes in brackets. The
+ * band is drawn from `lib/theReviews.ts` and that list is empty, so the page draws eight of the
+ * nine bands and the comparison with the board leaves the ninth out until a real review arrives.
  */
 
-/** The nine bands, each at the measures the board gives it. One place, so the order reads as one. */
+/** Each band, at the measures the board gives it. One place, so the order reads as one. */
 const theWidestBand = 'max-w-[1120px]';
 
 /** Apple's own mark, which is Apple's drawing and not Emi's, at the two sizes the board draws it. */
@@ -100,19 +105,17 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
     },
   ];
 
-  /** The six cards of the row of reviews, each a hole, under the three places one comes from. */
-  const theReviews: Review[] = [
-    words.reviewFromTheStore,
-    words.reviewFromTheCommunity,
-    words.reviewFromTheBeta,
-    words.reviewFromTheStore,
-    words.reviewFromTheCommunity,
-    words.reviewFromTheBeta,
-  ].map((source) => ({
-    quote: A_REVIEW_NOBODY_HAS_WRITTEN,
-    name: A_NAME_NOBODY_HAS_SIGNED,
-    source,
-  }));
+  /**
+   * The cards of the row of reviews: one for each person who has said something about Emi and
+   * agreed to it being printed. Nobody has yet, so the list is empty and the band below is not
+   * drawn. `lib/theReviews.ts` is the one place an entry is added, and adding one brings the band
+   * back with that person's own words in it.
+   */
+  const theReviews: Review[] = theCardsOf(theRealReviews, {
+    store: words.reviewFromTheStore,
+    community: words.reviewFromTheCommunity,
+    beta: words.reviewFromTheBeta,
+  });
 
   return (
     <main>
@@ -329,19 +332,21 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
           </div>
         </section>
 
-        <section aria-labelledby="reviews-title" className="bg-siteTintDeep">
-          <ReviewRow
-            controls={words.reviewControlsLabel}
-            eyebrow={words.reviewsEyebrow}
-            headline={words.reviewsHeadline}
-            next={words.reviewNext}
-            pause={words.carouselPause}
-            play={words.carouselPlay}
-            previous={words.reviewPrevious}
-            rating={words.reviewsRating}
-            reviews={theReviews}
-          />
-        </section>
+        {theReviews.length > 0 && (
+          <section aria-labelledby="reviews-title" className="bg-siteTintDeep">
+            <ReviewRow
+              controls={words.reviewControlsLabel}
+              eyebrow={words.reviewsEyebrow}
+              headline={words.reviewsHeadline}
+              next={words.reviewNext}
+              pause={words.carouselPause}
+              play={words.carouselPlay}
+              previous={words.reviewPrevious}
+              rating={words.reviewsRating}
+              reviews={theReviews}
+            />
+          </section>
+        )}
 
         <section aria-labelledby="try-title" className="bg-siteCard">
           <div

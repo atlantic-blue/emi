@@ -76,12 +76,14 @@ export interface WhatSheIsLookingAt {
   atTheDesign: PNG | null;
   atThePage: PNG | null;
   /**
-   * Where the band the two founders sign stands in each of the two, for the one comparison that
-   * reads that band on its own. The board drew a hole where one of them has since written her
-   * note, so the band is a different height on each side and the rows outside it are what line up.
+   * Where each band the comparison leaves out stands in each of the two, in the order a reader
+   * meets them down the page. Two bands are left out of the home page. The board drew a hole where
+   * one of the two founders has since written her note, so that band is a different height on each
+   * side. And nobody has written a review, so the band of reviews is the whole of its height on the
+   * board and nothing at all on the page. The rows outside both are what line up.
    */
-  theBandInTheDesign: ABandToLeaveOut | null;
-  theBandOnThePage: ABandToLeaveOut | null;
+  theBandsInTheDesign: readonly ABandToLeaveOut[] | null;
+  theBandsOnThePage: readonly ABandToLeaveOut[] | null;
 }
 
 /**
@@ -209,8 +211,8 @@ export const test = bdd.extend<{
     await handTo({
       atTheDesign: null,
       atThePage: null,
-      theBandInTheDesign: null,
-      theBandOnThePage: null,
+      theBandsInTheDesign: null,
+      theBandsOnThePage: null,
     });
   },
   comparing: async ({}, handTo) => {
