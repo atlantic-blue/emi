@@ -18,7 +18,7 @@ import {
   theCardOfTheRecoveryCode,
   theDesignAt,
   theFirstLimit,
-  theLineAboutWhatSheLogs,
+  theFirstStepCard,
   theOpeningOfTheEncryptionPage,
 } from './theDesignComparison';
 
@@ -38,20 +38,21 @@ const theDesign = theDesignAt('protection', 'render', 'Protection.html');
  * page pulls it up to the rule under that row.
  *
  * The other four are places version 1 says something the board does not. The opening gains a
- * paragraph about the account, the payments and the reports. The first step drops the note nobody
- * can write yet. The card that says she holds a recovery code says that it is designed and not
- * built, because no screen of the application shows her one. And the first limit names the export
- * instead of a code, because nothing restores a lost phone yet.
+ * paragraph about the account, the payments and the reports. The first of the three steps drops
+ * the note nobody can write yet. The card that says she holds a recovery code says that it is
+ * designed and not built, because no screen of the application shows her one. And the first limit
+ * names the export instead of a code, because nothing restores a lost phone yet.
  *
- * Each of those four is the element that changed and not the band around it, so the three steps
- * beside the first one and the three limits beside the first one are still held to the drawing.
+ * Each of those four is the smallest box that holds every row that differs, and not the band
+ * around it, so the two steps beside the first one and the three limits beside the first one are
+ * still held to the drawing.
  */
 async function theBandsLeftOut(page: Page): Promise<ABandToLeaveOut[]> {
   return [
     await theBandAtTheTop(page),
     await theOpeningOfTheEncryptionPage(page),
     await theBandOfThePhone(page),
-    await theLineAboutWhatSheLogs(page),
+    await theFirstStepCard(page),
     await theCardOfTheRecoveryCode(page),
     await theFirstLimit(page),
     await theBandAtTheFoot(page),

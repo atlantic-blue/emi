@@ -398,14 +398,20 @@ export async function theOpeningOfTheEncryptionPage(page: Page): Promise<ABandTo
 }
 
 /**
- * Where the line under the first of the three steps stands. The board says she can log a note and
- * there is no note to log yet, so the page names one thing fewer.
+ * Where the first of the three steps stands: the whole card, not the sentence inside it.
+ *
+ * The board says she can log a note and there is no note to log yet, so the page names one thing
+ * fewer and the sentence is a line shorter. The card is the smallest box that holds every row that
+ * differs: on a desktop the three cards stand in one row and the row is as tall as the tallest of
+ * them, so the card is the same height on both sides while the design draws a second line of text
+ * where the page draws the ground of the card. Leaving out the sentence alone would leave those
+ * rows in the comparison and count a height the band never lost.
  */
-export async function theLineAboutWhatSheLogs(page: Page): Promise<ABandToLeaveOut> {
+export async function theFirstStepCard(page: Page): Promise<ABandToLeaveOut> {
   return await rowsOfTheFirst(
     page,
-    'main > section:nth-of-type(2) > div > div > div:first-child > p',
-    'line about what she logs',
+    'main > section:nth-of-type(2) > div > div > div:first-child',
+    'first of the three steps',
   );
 }
 
