@@ -190,6 +190,21 @@ data "aws_iam_policy_document" "plan" {
     ]
     resources = ["arn:aws:route53:::hostedzone/Z06550332F4OHMRD78K"]
   }
+
+  # The pool she signs in to, which is step 28.2. A pool address carries an identifier the service
+  # generates, so a pattern cannot say which pool belongs to Emi. This is the read of the apply
+  # statement below, at the same scope.
+  statement {
+    sid    = "ReadTheUserPool"
+    effect = "Allow"
+    actions = [
+      "cognito-idp:DescribeUserPool",
+      "cognito-idp:DescribeUserPoolClient",
+      "cognito-idp:GetUserPoolMfaConfig",
+      "cognito-idp:ListTagsForResource",
+    ]
+    resources = ["arn:aws:cognito-idp:*:${var.account_id}:userpool/*"]
+  }
 }
 
 resource "aws_iam_role_policy" "plan" {
@@ -457,6 +472,40 @@ data "aws_iam_policy_document" "apply" {
       "route53:ListHostedZones",
       "route53:ListHostedZonesByName",
     ]
+    resources = ["*"]
+  }
+
+  # ── The sign in, which is step 28.2 ────────────────────────────────────────
+
+  # A pool address carries an identifier the service generates and never the name, so every pool
+  # of this account is the tightest pattern the service offers. The pool itself refuses a delete
+  # while its deletion protection is on.
+  statement {
+    sid    = "TheUserPool"
+    effect = "Allow"
+    actions = [
+      "cognito-idp:CreateUserPoolClient",
+      "cognito-idp:DeleteUserPool",
+      "cognito-idp:DeleteUserPoolClient",
+      "cognito-idp:DescribeUserPool",
+      "cognito-idp:DescribeUserPoolClient",
+      "cognito-idp:GetUserPoolMfaConfig",
+      "cognito-idp:ListTagsForResource",
+      "cognito-idp:SetUserPoolMfaConfig",
+      "cognito-idp:TagResource",
+      "cognito-idp:UntagResource",
+      "cognito-idp:UpdateUserPool",
+      "cognito-idp:UpdateUserPoolClient",
+    ]
+    resources = ["arn:aws:cognito-idp:*:${var.account_id}:userpool/*"]
+  }
+
+  # Making a pool acts on no pool, so the account reads it against a resource that carries no
+  # identifier and the pattern above can never match it.
+  statement {
+    sid       = "MakeAUserPool"
+    effect    = "Allow"
+    actions   = ["cognito-idp:CreateUserPool"]
     resources = ["*"]
   }
 }
