@@ -3,7 +3,7 @@ import { appendFileSync, existsSync, readFileSync, statSync, writeFileSync } fro
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import type { DrawnScreen, PhoneSize } from './asHtml';
+import type { DrawnScreen, PhoneSize, PictureLanguage } from './asHtml';
 import { pageSize, screenDocument } from './asHtml';
 
 /**
@@ -62,6 +62,8 @@ export interface Picture {
   readonly script: string;
   /** The glass each screen is drawn on. Left out where an ordinary phone is the point. */
   readonly size?: PhoneSize;
+  /** The language the screens were rendered in. Left out for English. */
+  readonly language?: PictureLanguage;
 }
 
 /**
@@ -240,7 +242,10 @@ export function drawOrCheckPage(page: DrawnPage): PictureResult {
 export function drawOrCheck(picture: Picture): PictureResult {
   return drawOrCheckPage({
     name: picture.name,
-    markup: screenDocument(picture.screens, picture.caveat, picture.size),
+    markup: screenDocument(picture.screens, picture.caveat, {
+      size: picture.size,
+      language: picture.language,
+    }),
     size: windowFor(picture.screens.length, picture.caveat, picture.size),
     script: picture.script,
     holds: `the ${picture.screens.length} screen(s)`,

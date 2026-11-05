@@ -1,4 +1,4 @@
-import { applicationFontFiles, colour } from '@emi/tokens';
+import { applicationFontFiles, colour, russianStandIns } from '@emi/tokens';
 
 /**
  * A rendered React Native tree, turned into the markup a browser can draw. The tree comes from the
@@ -448,13 +448,23 @@ export function markupOf(node: unknown): string {
  */
 const FONTS_FROM_HERE = '../../apps/mobile/assets/fonts';
 
-/** The files the application loads, declared under the names it registers them under. */
-const FACES = applicationFontFiles
-  .map(
-    (file) =>
-      `@font-face { font-family: '${file.name}'; src: url('${FONTS_FROM_HERE}/${file.path}') format('truetype'); }`,
-  )
-  .join('\n');
+/** The language a picture is drawn in, which decides the file behind each registered name. */
+export type PictureLanguage = 'en' | 'es' | 'ru';
+
+/**
+ * The files the application loads, declared under the names it registers them under. In Russian
+ * the phone registers a Mulish cut under each Figtree name, because Figtree has no Cyrillic.
+ */
+function facesIn(language: PictureLanguage): string {
+  return applicationFontFiles
+    .map((registered) => {
+      const file =
+        language === 'ru' ? (russianStandIns[registered.name] ?? registered) : registered;
+
+      return `@font-face { font-family: '${registered.name}'; src: url('${FONTS_FROM_HERE}/${file.path}') format('truetype'); }`;
+    })
+    .join('\n');
+}
 
 const resetFor = (size: PhoneSize): string => `
 * { box-sizing: border-box; }
@@ -489,8 +499,10 @@ svg { flex-shrink: 0; }
 export function screenDocument(
   screens: readonly DrawnScreen[],
   caveat: string,
-  size: PhoneSize = phoneSize,
+  page: { readonly size?: PhoneSize; readonly language?: PictureLanguage } = {},
 ): string {
+  const size = page.size ?? phoneSize;
+
   const drawn = screens
     .map(
       (screen) =>
@@ -500,7 +512,7 @@ export function screenDocument(
 
   return [
     '<!doctype html><html><head><meta charset="utf-8" />',
-    `<style>${FACES}\n${resetFor(size)}</style></head><body>`,
+    `<style>${facesIn(page.language ?? 'en')}\n${resetFor(size)}</style></head><body>`,
     `<div class="screens">${drawn}</div>`,
     `<p class="caveat">${escaped(caveat)}</p>`,
     '</body></html>',
