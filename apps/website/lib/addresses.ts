@@ -1,10 +1,14 @@
 /**
- * Where a link points when the page it would point at does not exist yet, in this site or outside
- * it. The home page of the site rather than a guess at the address Apple or anybody else will give
- * a page later, because a link to an address nobody has issued is a promise the site cannot keep.
+ * The home page of the site, as the one address a page can send her to without naming a language.
  *
- * A page this site will serve later is not this: it is linked at its own address under the
- * language, and until it exists that address answers 404 with the Emi page.
+ * No press carries it. A press whose page does not exist yet is not drawn at all, because a press
+ * that leads to the page she is already reading tells her nothing and a press to an address nobody
+ * has issued is a promise the site cannot keep. The entries that wait for a page are marked
+ * `waitsForItsPage` where they are listed, and the scenario of step 26.26 refuses this address
+ * anywhere a reader can press.
+ *
+ * It stays here because the page she reaches by accident offers one way back, and because every
+ * test of that rule needs the address the rule is about.
  */
 export const NO_PAGE_YET = '/';
 
@@ -20,8 +24,8 @@ export const SITE_ORIGIN = 'https://myemi.app';
 export const SHARE_PREVIEW = '/share-preview.png';
 
 /**
- * Where the Emi Community reads and writes, which is the one host outside this site that a page
- * names. An invite rather than a public name, so it can be revoked: it is held here alone, and one
+ * Where the Emi Community reads and writes, which is the first of the three hosts outside this site
+ * that a page names. An invite rather than a public name, so it can be revoked: it is held here alone, and one
  * edit moves every press that carries it.
  */
 export const THE_EMI_COMMUNITY = 'https://t.me/+89GgSCh6Ff85YTZk';
@@ -42,6 +46,16 @@ export const THE_EMI_CODE = 'https://github.com/atlantic-blue/emi';
  * it.
  */
 export const THE_EMI_BETA = 'https://testflight.apple.com/join/xFSv5Gqa';
+
+/**
+ * Where the listing of Emi is in Apple's store. Apple issues the address with the pre-order on
+ * 17 November 2026, so it is empty today, and empty is the one thing it is allowed to be: a guess
+ * at the address Apple will give is a press that answers nothing.
+ *
+ * Every press to the store reads `theStoreListingIsOpen`, which is this address being filled in,
+ * so pasting the address Apple gives here draws all three of them and changes nothing else.
+ */
+export const THE_APP_STORE_LISTING = '';
 
 /**
  * Where a privacy question goes, which is the one address of this site a reader writes to rather

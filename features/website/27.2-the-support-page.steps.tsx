@@ -12,6 +12,7 @@ import { renderToStaticMarkup } from 'react-dom/server.node';
 import { websiteFontsRoot } from '@emi/tokens';
 
 import RootLayout from '../../apps/website/app/[lang]/layout';
+import { mainLinks } from '../../apps/website/components/siteHeader';
 import SupportPage, { generateMetadata } from '../../apps/website/app/[lang]/support/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import {
@@ -21,6 +22,7 @@ import {
   theSupportAddress,
 } from '../../apps/website/lib/addresses';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
+import { theKeysTheFrameHoldsBack } from '../../apps/website/test/theWordsAPressTookWithIt';
 import { SITEMAP_FILE, thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
 
 const feature = loadFeature(join(__dirname, '27.2-the-support-page.feature'));
@@ -249,19 +251,29 @@ defineFeature(feature, (test) => {
       ];
     };
 
-    given('a woman follows "Support" from the band at the top of myemi.app', async () => {
-      for (const language of languages) {
-        drawn[language] = await pageIn(language);
-      }
+    given(
+      'a woman opens the support page at its own address, which no press leads to yet',
+      async () => {
+        for (const language of languages) {
+          drawn[language] = await pageIn(language);
+        }
 
-      // The press she arrived through, which has pointed at this address since the band was
-      // built. The band at the top is above the page, so it is read from the whole document.
-      const band = inEnglish().slice(0, inEnglish().indexOf('<main'));
+        // The band at the top holds its way here back, because step 26.26 draws no press whose
+        // page was not built and this page was not built when that list was written. Step 27.3
+        // takes the mark off. Until it does, the word is still in all three catalogues and the
+        // band draws it nowhere.
+        expect(theKeysTheFrameHoldsBack).toContain('headerSupport');
+        expect(mainLinks.find((way) => way.word === 'headerSupport')?.path).toBe(THE_SUPPORT_PAGE);
 
-      expect(addressOf(theAnchorAround(band, wordsIn('en').headerSupport))).toBe(
-        `/en/${THE_SUPPORT_PAGE}`,
-      );
-    });
+        for (const language of languages) {
+          const document = drawn[language] ?? '';
+          const band = document.slice(0, document.indexOf('<main'));
+
+          expect(band).not.toContain(wordsIn(language).headerSupport);
+          expect(band).not.toContain(`/${language}/${THE_SUPPORT_PAGE}`);
+        }
+      },
+    );
 
     then('she reads the title, the box she searches in, three cards and four questions', () => {
       const middle = theMiddleOf(inEnglish());
@@ -593,9 +605,9 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'a browser holds the bands and the title of the page against the board, and keeps the picture of any difference',
+      'a browser holds the title of the page against the board, and keeps the picture of any difference',
       () => {
-        const sentence = 'the bands and the title of the support page are the approved design';
+        const sentence = 'the title of the support page is the approved design';
         const sentences = join(
           websiteWorkspace,
           'e2e',
@@ -608,16 +620,12 @@ defineFeature(feature, (test) => {
         expect(read(steps)).toContain("'support', 'render', 'Support.html'");
         expect(read(steps)).toContain("'/en/support/'");
 
-        // The three parts the board still describes. The middle of the page is four corrections
-        // away from the middle of the board, so a comparison of it would report the same
-        // difference every run.
-        for (const part of [
-          'the-band-at-the-top',
-          'the-title-of-the-support-page',
-          'the-band-at-the-foot',
-        ]) {
-          expect(read(steps)).toContain(`called: '${part}'`);
-        }
+        // The one part the board still describes. The middle of the page is four corrections away
+        // from the middle of the board, and the two bands the whole site shares hold back presses
+        // the board draws, so a comparison of any of those would report the same difference every
+        // run.
+        expect(read(steps)).toContain("called: 'the-title-of-the-support-page'");
+        expect(read(steps)).not.toContain("called: 'the-band-at-the-foot'");
 
         // A picture of the board at each width the browser reads the page at, so a width the
         // suite gains is a width the design was never drawn at.

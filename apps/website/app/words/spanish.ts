@@ -13,7 +13,7 @@ export const spanish: SiteWords = {
 
   heroHeadline: 'Entiende tu cuerpo, con calma.',
   heroLine:
-    'Emi empieza por tu ciclo: un pronóstico con tus propios datos, y hasta qué punto es fiable. Después, educación precisa y una comunidad donde puedes preguntar lo que a nadie le dejan preguntar. Tus datos están siempre cifrados.',
+    'Emi empieza por tu ciclo: un pronóstico con tus propios datos, y hasta qué punto es fiable. Después, educación precisa y una comunidad donde puedes preguntar lo que a nadie le dejan preguntar. Tus registros se cifran en tu teléfono.',
   heroPriceLine: 'Tu primer mes es gratis.',
   heroCancel: 'Cancela cuando quieras.',
   ringLabel: 'Anillo del ciclo en el día {day} de unos 31, {phase}.',
@@ -31,8 +31,25 @@ export const spanish: SiteWords = {
     'Emi aprende de tus propios ciclos, no de una media. Te da una ventana, no una fecha única, y dice cuánta confianza tiene. Hasta que no tiene dos ciclos completos, te dice que sigue aprendiendo.',
   cycleScreenAlt: 'La pantalla de inicio de Emi con el anillo en el día 8 de unos 31.',
   cycleNextLabel: 'Tu próximo periodo',
-  cycleNextRange: 'Entre el 8 y el 14 de octubre',
-  cycleNextConfidence: 'Confianza alta, de tus últimos 6 ciclos',
+  cycleNextRange: 'Entre el {from} y el {to} de {month}',
+  cycleNextRangeAcrossMonths: 'Entre el {from} de {fromMonth} y el {to} de {toMonth}',
+  cycleNextConfidence: 'Según tus últimos 6 ciclos',
+  cycleMonthJanuary: 'enero',
+  cycleMonthFebruary: 'febrero',
+  cycleMonthMarch: 'marzo',
+  cycleMonthApril: 'abril',
+  cycleMonthMay: 'mayo',
+  cycleMonthJune: 'junio',
+  cycleMonthJuly: 'julio',
+  cycleMonthAugust: 'agosto',
+  cycleMonthSeptember: 'septiembre',
+  cycleMonthOctober: 'octubre',
+  cycleMonthNovember: 'noviembre',
+  cycleMonthDecember: 'diciembre',
+  cycleDayFirst: '{day}',
+  cycleDaySecond: '{day}',
+  cycleDayThird: '{day}',
+  cycleDayOther: '{day}',
   cycleDenial: 'Emi no es un anticonceptivo ni un dispositivo médico.',
 
   learnEyebrow: 'EDUCACIÓN',
@@ -82,7 +99,7 @@ export const spanish: SiteWords = {
   carouselPause: 'Pausa',
   carouselPlay: 'Reanudar',
 
-  privacyHeadline: 'Tus datos están siempre cifrados.',
+  privacyHeadline: 'Tus registros se cifran en tu teléfono.',
   privacyLink: 'Cómo Emi cuida tus datos ›',
 
   tryTitle: '¿No quieres descargar nada todavía?',
@@ -99,12 +116,16 @@ export const spanish: SiteWords = {
     'Emi cifra cada día en tu teléfono, con una clave que se queda en tu teléfono. El código es público, así que puedes comprobar esta página con él.',
   protectionReadTheCode: 'Lee el código',
   protectionReadTheDocument: 'Lee el documento completo ›',
+  protectionAlsoBefore:
+    'Emi también tiene una cuenta opcional, acepta pagos y envía informes anónimos de errores y de uso solo si tú los activas. Lee',
+  protectionAlsoPolicy: 'la política de privacidad',
+  protectionAlsoAfter: ' para ver qué guarda cada uno y por qué.',
   protectionScreenAlt:
     'La pantalla de Privacidad en Emi. Dice: solo tú puedes leer tus días. Cifrados en este teléfono, con una clave que solo tienes tú.',
 
   protectionDayHeadline: 'Qué pasa con un día.',
   protectionLogTitle: 'Registras un día.',
-  protectionLogLine: 'Periodo, síntomas, ánimo, sexo o una nota.',
+  protectionLogLine: 'Periodo, síntomas, ánimo o sexo.',
   protectionSealTitle: 'Tu teléfono lo sella.',
   protectionSealLine:
     'Emi cifra el día antes de escribirlo. La clave está en el llavero de tu iPhone.',
@@ -127,8 +148,9 @@ export const spanish: SiteWords = {
   protectionLimitsHeadline: 'De qué no te libra Emi.',
   protectionLimitsLine:
     'Cuatro límites, dichos aquí y no escondidos. Cada uno dice qué puedes hacer.',
-  protectionLostTitle: 'Un teléfono perdido y un código perdido',
-  protectionLostLine: 'Los días ya no están. Una Emi que pudiera recuperarlos podría leerlos.',
+  protectionLostTitle: 'Un teléfono perdido',
+  protectionLostLine:
+    'Todavía no hay restauración, así que los días se van con el teléfono. Usa Descargar datos en Emi para guardar una copia.',
   protectionUnlockedTitle: 'Un teléfono que alguien puede desbloquear',
   protectionUnlockedLine:
     'Puede leer la pantalla. Deja puesto el bloqueo de la aplicación. Viene puesto.',

@@ -24,11 +24,11 @@ Feature: The home page is the page that was approved
 
   Scenario: the home page matches the approved design pixel for pixel
     Given a woman opens the home page of myemi.app
-    Then she reads eight of the nine bands of the approved board, in the board's order and on its grounds
+    Then she reads seven of the nine bands of the approved board, in the board's order and on its grounds
     And every sentence of the board is on the page, in English, in Russian and in Spanish
     And the brand line stands over the hero in capitals, and is still the one line nobody translates
     And the ring starts at day 8 in the follicular phase, and answers every other day the way the board does
     And every rule sits on the sides the board puts it on, and on no others
-    And the five links of the legal line are underlined, because the board underlines them
+    And the four links of the legal line are underlined, because the board underlines them
     And the page writes no style of its own, so her browser refuses nothing
     And a browser holds the page against the design at every width, and keeps the picture of any difference

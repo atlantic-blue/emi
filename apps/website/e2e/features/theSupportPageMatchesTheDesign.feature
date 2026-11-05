@@ -17,16 +17,18 @@ Feature: The support page is laid out the way it was approved
   card for a subscription, and the account page is not served. The board draws the line that says
   nothing matched, and the page draws that line only once a reader has typed a word no question
   carries. So the middle of the page is not the middle of the board, and a comparison of it would
-  report the same difference every run.
+  report the same difference every run. The two bands the whole site shares are out for the reason
+  they are out of the other two comparisons: each drew presses to pages nobody has built yet, so
+  the site holds those presses back and the board still draws them.
 
-  So this scenario reads the three parts the board still describes: the band at the top of the
-  site, the title of the page, and the band at the foot. Each part is measured in each document
-  and then held against the other, in one browser, at the width of a desktop, of a tablet, and of
-  the phone most of the reading happens on. On a failure it writes the picture of the difference,
-  so the answer names the place rather than only the amount. What the words say is read in
-  features/website, where a reader can be held to all three languages at once.
+  So this scenario reads the one part the board still describes, which is the title. It is
+  measured in each document and then held against the other, in one browser, at the width of a
+  desktop, of a tablet, and of the phone most of the reading happens on. On a failure it writes
+  the picture of the difference, so the answer names the place rather than only the amount. What
+  the words say is read in features/website, where a reader can be held to all three languages at
+  once.
 
-  Scenario: the bands and the title of the support page are the approved design
+  Scenario: the title of the support page is the approved design
     Given a woman opens the support page beside the design the operator approved
-    Then each part of the support page she reads is as tall as that part of the design
-    And each part of the support page is the design, to within one pixel in a thousand
+    Then the title of the support page she reads is as tall as the title of the design
+    And the title of the support page is the design, to within one pixel in a thousand

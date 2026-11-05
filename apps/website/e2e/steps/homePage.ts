@@ -8,9 +8,12 @@ import { test } from './fixtures';
  * reads the words from the same file the page draws them from agrees with the page whatever the
  * page says.
  *
- * Four sentences each: the headline, what the first month costs, the press to Apple's store, and
- * the press that reads the free calculator instead. The last two are the only two things this page
- * asks her to do. The approved board names no amount here, so neither does this list.
+ * Four sentences each: the headline, what the first month costs, the press that offers her the
+ * community, and the press to the page that explains the encryption. The last two are the only two
+ * things this page asks her to do today. The press to Apple's store is not drawn, because Apple has
+ * issued no address for the listing, and the press to the free calculator is not drawn, because
+ * that page is still to be built. The approved board names no amount here, so neither does this
+ * list.
  */
 const theLanguages = {
   English: {
@@ -18,24 +21,24 @@ const theLanguages = {
     tag: 'en',
     headline: 'Understand your body, safely.',
     firstMonth: 'Free for your first month.',
-    store: 'Download on the App Store',
-    instead: 'When is my next period?',
+    community: 'Join the Emi Community on Telegram',
+    protection: 'How Emi protects your data',
   },
   Russian: {
     address: '/ru/',
     tag: 'ru',
     headline: 'Понимайте своё тело бережно.',
     firstMonth: 'Первый месяц бесплатно.',
-    store: 'Загрузите в App Store',
-    instead: 'Когда мои следующие месячные?',
+    community: 'Присоединиться к сообществу Emi в Telegram',
+    protection: 'Как Emi оберегает ваши данные',
   },
   Spanish: {
     address: '/es/',
     tag: 'es',
     headline: 'Entiende tu cuerpo, con calma.',
     firstMonth: 'Tu primer mes es gratis.',
-    store: 'Descárgala en el App Store',
-    instead: '¿Cuándo es mi próximo periodo?',
+    community: 'Únete a la Comunidad de Emi en Telegram',
+    protection: 'Cómo Emi cuida tus datos',
   },
 } as const;
 
@@ -77,7 +80,7 @@ Then(
 );
 
 Then(
-  'the press to the store and the press to the calculator are both on the page, inside the screen she holds',
+  'the press to the community and the press to the privacy page are both on the page, inside the screen she holds',
   async ({ page, reading }) => {
     const words = theLanguages[asKnown(reading.language)];
     const screen = page.viewportSize();
@@ -87,8 +90,8 @@ Then(
     }
 
     for (const press of [
-      page.getByRole('link', { name: words.store }).first(),
-      page.getByRole('link', { name: new RegExp(words.instead) }),
+      page.getByRole('link', { name: new RegExp(words.community) }).first(),
+      page.getByRole('link', { name: new RegExp(words.protection) }).first(),
     ]) {
       await expect(press).toBeVisible();
 

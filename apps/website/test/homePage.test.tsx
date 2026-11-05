@@ -11,6 +11,8 @@ import { type Language, type SiteWordKey, brandEyebrowOf, languages, wordsIn } f
 import { LANGUAGES_ANCHOR } from '../components/siteHeader';
 import { JULIANS_PHOTOGRAPH } from '../lib/addresses';
 import { theRealReviews } from '../lib/theReviews';
+import { theStoreListingIsOpen } from '../lib/theStoreListing';
+import { theKeysTheHomePageHoldsBack } from './theWordsAPressTookWithIt';
 import { whatTheMarkupDraws } from './stylesheet';
 import { hostsAPageMayNotName } from './theHostsAPageMayName';
 
@@ -120,14 +122,62 @@ const theDenials: Readonly<Record<Language, string[]>> = {
 };
 
 /**
- * Every sentence of the approved board, by the name the catalogues give it, in the order a reader
- * meets it down the page. A page that stops drawing one of these says less than the board the
- * operator approved, and the pixel comparison would only say that something moved.
+ * Only the clock is stood in for where a case reads the forecast card. Next.js draws a page by
+ * awaiting it, and a run that held the ordinary timers of the platform still would never finish
+ * drawing one.
+ */
+function withTheClockOn(day: Date): void {
+  jest.useFakeTimers({
+    now: day,
+    doNotFake: [
+      'cancelAnimationFrame',
+      'cancelIdleCallback',
+      'clearImmediate',
+      'clearInterval',
+      'clearTimeout',
+      'hrtime',
+      'nextTick',
+      'performance',
+      'queueMicrotask',
+      'requestAnimationFrame',
+      'requestIdleCallback',
+      'setImmediate',
+      'setInterval',
+      'setTimeout',
+    ],
+  });
+}
+
+/** What the card says on 4 November 2026: the week of the 16th, twelve days after that day. */
+const theWindowAServerDraws: Readonly<Record<Language, string>> = {
+  en: 'Between the 16th and the 22nd of November',
+  ru: 'Между 16 и 22 ноября',
+  es: 'Entre el 16 y el 22 de noviembre',
+};
+
+/** What it says on 19 December 2026, where the week runs over the turn of the year. */
+const theWindowAcrossTheYear: Readonly<Record<Language, string>> = {
+  en: 'Between the 31st of December and the 6th of January',
+  ru: 'Между 31 декабря и 6 января',
+  es: 'Entre el 31 de diciembre y el 6 de enero',
+};
+
+/**
+ * Every sentence of the approved board the page still draws, by the name the catalogues give it,
+ * in the order a reader meets it down the page. A page that stops drawing one of these says less
+ * than the board the operator approved, and the pixel comparison would only say that something
+ * moved.
+ *
+ * The sentences a press took with it are not here, and the case under the list names them: a press
+ * whose page nobody has built is not drawn, and the two sentences of the store go with the two
+ * presses to it.
+ *
+ * The window of the forecast card is not here either. It is the one sentence the page works out
+ * rather than draws, so it is read in the cases below for the day it is drawn on.
  */
 const theWordsOfTheBoard = [
   'heroHeadline',
   'heroLine',
-  'storeSmall',
   'heroPriceLine',
   'heroCancel',
   'ringOfAbout',
@@ -136,7 +186,6 @@ const theWordsOfTheBoard = [
   'cycleHeadline',
   'cycleLine',
   'cycleNextLabel',
-  'cycleNextRange',
   'cycleNextConfidence',
   'cycleDenial',
   'learnEyebrow',
@@ -163,12 +212,6 @@ const theWordsOfTheBoard = [
   'privacyHeadline',
   'privacyLink',
   'carouselPause',
-  'tryTitle',
-  'tryLine',
-  'tryLink',
-  'askTitle',
-  'askLine',
-  'askLink',
 ] as const;
 
 /**
@@ -193,6 +236,54 @@ describe('the page a woman meets Emi on', () => {
 
     expect(absent).toEqual([]);
   });
+
+  /**
+   * The forecast card, drawn the way a server draws it, which is what a reader whose scripts never
+   * run is handed. The board wrote two days in October 2026 into it, so the page served a forecast
+   * for a week that had already gone to everybody who read it after that.
+   *
+   * The clock is stood in for, so the sentence is a sentence and not the arithmetic read back at
+   * itself. Her browser counting it again is read in `theForecastCard.test.tsx`.
+   */
+  it.each(languages)('names a week that is still ahead of her, in %s', async (language) => {
+    withTheClockOn(new Date(2026, 10, 4));
+
+    try {
+      const page = await pageIn(language);
+
+      expect(page).toContain(theWindowAServerDraws[language]);
+      expect(page).toContain(wordsIn(language).cycleNextLabel);
+      expect(page).not.toContain(wordsIn(language).cycleMonthOctober);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it.each(languages)('counts the window from the day it is drawn on, in %s', async (language) => {
+    withTheClockOn(new Date(2026, 11, 19));
+
+    try {
+      expect(await pageIn(language)).toContain(theWindowAcrossTheYear[language]);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  /**
+   * The one promise the whole product rests on, which the page makes twice: at the end of the hero
+   * and again as a band of its own. It used to say her data is always encrypted, and an export is a
+   * readable file she holds, so it now says where the encryption happens and what it covers.
+   */
+  it.each(languages)(
+    'promises the encryption of her records on her phone, twice, in %s',
+    async (language) => {
+      const words = wordsIn(language);
+      const page = await pageIn(language);
+
+      expect(words.heroLine.endsWith(words.privacyHeadline)).toBe(true);
+      expect(page.split(words.privacyHeadline)).toHaveLength(3);
+    },
+  );
 
   it.each(languages)(
     'says the first month is free, and names no amount, in %s',
@@ -285,20 +376,31 @@ describe('the page a woman meets Emi on', () => {
   );
 
   /**
-   * The band is held back by the list being empty and by nothing else, so the day somebody writes
-   * a review the band is on the page with her words in it. The band itself is proved drawing in
-   * test/theBandOfReviews.test.tsx, which renders the page with one review in the list.
+   * The band of reviews is held back by the list being empty and by nothing else, so the day
+   * somebody writes a review the band is on the page with her words in it. The band itself is
+   * proved drawing in test/theBandOfReviews.test.tsx, which renders the page with one review in
+   * the list.
+   *
+   * The band of the two offers is held back by the two pages behind its two presses not existing.
+   * It is a press to the free calculator and a press to support, and the sentence explaining each,
+   * so it has nothing left to say without them.
    */
-  it('draws the eight bands of the board it still draws, in the board’s order', async () => {
+  it('draws the seven bands of the board it still draws, in the board’s order', async () => {
     const order = (markup: string): string[] =>
       [...markup.matchAll(/<section aria-labelledby="([^"]+)"/g)].map(([, name]) => name ?? '');
 
+    const heldBack = ['reviews-title', 'try-title'];
     const onTheBoard = order(theBoard());
     const onThePage = order(await pageIn('en'));
 
     expect(onTheBoard).toHaveLength(9);
-    expect(onTheBoard).toContain('reviews-title');
-    expect(onThePage).toEqual(onTheBoard.filter((band) => band !== 'reviews-title'));
+
+    for (const band of heldBack) {
+      expect({ band, onTheBoard: onTheBoard.includes(band) }).toEqual({ band, onTheBoard: true });
+    }
+
+    expect(onThePage).toEqual(onTheBoard.filter((band) => !heldBack.includes(band)));
+    expect(onThePage).toHaveLength(7);
   });
 
   /**
@@ -354,17 +456,48 @@ describe('the page a woman meets Emi on', () => {
   });
 
   it.each(languages)(
-    'offers Apple store twice, at the top and at the end, in %s',
+    'offers no press to the store, because Apple has not opened the listing, in %s',
     async (language) => {
       const page = await pageIn(language);
       const words = wordsIn(language);
 
-      expect(page.split(`aria-label="${words.store}"`)).toHaveLength(3);
-      expect(page.split(words.footerAppStore).length).toBeGreaterThan(3);
+      expect(theStoreListingIsOpen).toBe(false);
+      expect(page).not.toContain(`aria-label="${words.store}"`);
+      expect(page).not.toContain(words.storeSmall);
     },
   );
 
-  it('names no host but the community chat she chooses to open, in any language', async () => {
+  it.each(languages)(
+    'holds back every sentence that belongs to a press with no page, in %s',
+    async (language) => {
+      const words = wordsIn(language);
+      const page = await pageIn(language);
+      const stillSaid = theKeysTheHomePageHoldsBack.filter((key) => page.includes(words[key]));
+
+      expect(stillSaid).toEqual([]);
+    },
+  );
+
+  it.each(languages)('says what each phase is, and presses nowhere, in %s', async (language) => {
+    const words = wordsIn(language);
+    const page = await pageIn(language);
+
+    // The four cards of the phases keep their words. The guide behind each one is not written, so
+    // the card is a card and not a press, and nothing on the page points at the calculator.
+    for (const key of [
+      'learnPeriodTitle',
+      'learnFollicularTitle',
+      'learnOvulationTitle',
+      'learnLutealTitle',
+    ] as const) {
+      expect(page).toContain(words[key]);
+    }
+
+    expect(page).not.toContain(`href="/${language}/calculator/"`);
+    expect(page).not.toContain(`href="/${language}/support/"`);
+  });
+
+  it('names no host but the three she chooses to open, in any language', async () => {
     for (const language of languages) {
       expect(hostsAPageMayNotName(await pageIn(language))).toEqual([]);
     }

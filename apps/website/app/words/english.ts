@@ -5,11 +5,12 @@
  * here is the board's own sentence. A word that reads oddly reads that way on the canvas too, and
  * the canvas is where it changes.
  *
- * Three of these sentences are written elsewhere first and copied here, and a test reads the copy
+ * Some of these sentences are written elsewhere first and copied here, and a test reads the copy
  * against the original so the two cannot drift. The price is the application's own line, because a
  * reader who meets Emi here and buys it there must be told the same number twice. The two denials
  * are approved sentences of the honesty gate, word for word, and they are also the sentences the
- * approved board draws.
+ * approved board draws. The forecast card says how sure Emi is, and names a month and a day of a
+ * month, in the application's own words, because the card is a picture of the home screen.
  *
  * The brand line stays in English in all three languages: it says what the four letters of the
  * name stand for, and a translation of it would name something Emi is not called. So do the name
@@ -19,8 +20,8 @@
  * `lib/thePlaceholders.ts` rather than here: a hole is not a word of the product, and it reads the
  * same in every language until the text that fills it arrives.
  *
- * `{day}` and `{phase}` are filled by the ring, which is the one part of the page that changes
- * while she reads it.
+ * `{day}` and `{phase}` are filled by the ring, and the holes of the forecast card are filled by
+ * the day she opens the page. Those two are the parts of the page that change while she reads it.
  */
 export const english = {
   brandLine: 'Emi. Every Month Insights.',
@@ -39,7 +40,7 @@ export const english = {
   // The hero, and the ring a reader can move through a cycle.
   heroHeadline: 'Understand your body, safely.',
   heroLine:
-    'Emi starts with your cycle: a forecast from your own data, and how sure it is. Then accurate education, and a community where you can ask what people are told not to. Your data is always encrypted.',
+    'Emi starts with your cycle: a forecast from your own data, and how sure it is. Then accurate education, and a community where you can ask what people are told not to. Your records are encrypted on your phone.',
   heroPriceLine: 'Free for your first month.',
   heroCancel: 'Cancel anytime.',
   ringLabel: 'Cycle ring at day {day} of about 31, {phase}.',
@@ -58,9 +59,33 @@ export const english = {
     'Emi learns from your own cycles, not from an average. It gives you a window, not a single date, and says how confident it is. Until it has two full cycles, it tells you it is still learning.',
   cycleScreenAlt: 'The Emi home screen with the ring at day 8 of about 31.',
   cycleNextLabel: 'Your next period',
-  cycleNextRange: 'Between the 8th and the 14th of October',
-  cycleNextConfidence: 'High confidence, from your last 6 cycles',
+  cycleNextRange: 'Between the {from} and the {to} of {month}',
+  cycleNextRangeAcrossMonths: 'Between the {from} of {fromMonth} and the {to} of {toMonth}',
+  cycleNextConfidence: 'Based on your last 6 cycles',
   cycleDenial: 'Emi is not a contraceptive and not a medical device.',
+
+  // The twelve months and the four endings a day of a month takes, which the card above is
+  // written out of. They are the application's own words, read against its catalogue by a test,
+  // so the window on this page and the window on her home screen are said the same way.
+  //
+  // An ending is held as the whole day rather than as the letters after it, because Russian and
+  // Spanish add nothing to the number and a word of this site is never empty.
+  cycleMonthJanuary: 'January',
+  cycleMonthFebruary: 'February',
+  cycleMonthMarch: 'March',
+  cycleMonthApril: 'April',
+  cycleMonthMay: 'May',
+  cycleMonthJune: 'June',
+  cycleMonthJuly: 'July',
+  cycleMonthAugust: 'August',
+  cycleMonthSeptember: 'September',
+  cycleMonthOctober: 'October',
+  cycleMonthNovember: 'November',
+  cycleMonthDecember: 'December',
+  cycleDayFirst: '{day}st',
+  cycleDaySecond: '{day}nd',
+  cycleDayThird: '{day}rd',
+  cycleDayOther: '{day}th',
 
   // The four guides, one for each phase of the ring above.
   learnEyebrow: 'EDUCATION',
@@ -115,7 +140,7 @@ export const english = {
   carouselPlay: 'Play',
 
   // The one promise the whole product rests on.
-  privacyHeadline: 'Your data is always encrypted.',
+  privacyHeadline: 'Your records are encrypted on your phone.',
   privacyLink: 'How Emi protects your data ›',
 
   // For a reader who is not ready to install anything.
@@ -136,13 +161,22 @@ export const english = {
     'Emi encrypts each day on your phone, with a key that stays on your phone. The code is public, so you can check this page against it.',
   protectionReadTheCode: 'Read the code',
   protectionReadTheDocument: 'Read the full document ›',
+
+  // The rest of the page is about her records, and the product holds three other things. A reader
+  // who meets them for the first time in the policy has been told half the answer on the page that
+  // promised to tell her all of it. Each fact here is one the policy states, and the press goes to
+  // the policy, because that is where the detail belongs.
+  protectionAlsoBefore:
+    'Emi also has an optional account, takes payments, and sends anonymous crash and usage reports only if you switch them on. Read',
+  protectionAlsoPolicy: 'the privacy policy',
+  protectionAlsoAfter: ' to see what each one holds and why.',
   protectionScreenAlt:
     'The Privacy screen in Emi. It says: Only you can read your days. Encrypted on this phone, with a key only you hold.',
 
   // What happens to one day, in the order it happens in.
   protectionDayHeadline: 'What happens to one day.',
   protectionLogTitle: 'You log a day.',
-  protectionLogLine: 'Period, symptoms, mood, sex or a note.',
+  protectionLogLine: 'Period, symptoms, mood or sex.',
   protectionSealTitle: 'Your phone seals it.',
   protectionSealLine:
     'Emi encrypts the day before it writes it. The key is in your iPhone keychain.',
@@ -165,8 +199,9 @@ export const english = {
   // The four limits, at the size of everything above them.
   protectionLimitsHeadline: 'What Emi does not defend against.',
   protectionLimitsLine: 'Four limits, stated here and not hidden. Each one says what you can do.',
-  protectionLostTitle: 'A lost phone and a lost code',
-  protectionLostLine: 'The days are gone. An Emi that could recover them could read them.',
+  protectionLostTitle: 'A lost phone',
+  protectionLostLine:
+    'Nothing restores it yet, so the days go with the phone. Use Download data in Emi to keep a copy.',
   protectionUnlockedTitle: 'A phone somebody can unlock',
   protectionUnlockedLine: 'They can read the screen. Keep the app lock on. It is on by default.',
   protectionHostileTitle: 'A phone running something hostile',

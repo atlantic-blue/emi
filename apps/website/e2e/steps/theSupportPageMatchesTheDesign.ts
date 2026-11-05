@@ -19,21 +19,23 @@ import {
 const theDesign = theDesignAt('support', 'render', 'Support.html');
 
 /**
- * The parts of the page this scenario holds against the board, each found by the element that
- * opens it and the element that closes it.
+ * The part of the page this scenario holds against the board, found by the element that opens it
+ * and the element that closes it.
  *
- * The three are what the board still describes. The middle is not: the board draws four cards
- * where the page draws three, it answers the first question with a restore nobody built, and it
- * draws the line that says nothing matched, which the page draws only once a reader has typed a
- * word no question carries.
+ * The title is what the board still describes. The rest of the page is not: the board draws four
+ * cards where the page draws three, it answers the first question with a restore nobody built,
+ * and it draws the line that says nothing matched, which the page draws only once a reader has
+ * typed a word no question carries. The two bands the whole site shares are out for the reason
+ * they are out of the other two comparisons: each drew presses to pages nobody has built yet, so
+ * the site holds those presses back and the board still draws them. A comparison of any of those
+ * would report the same difference every run, and a comparison nobody can read is a comparison
+ * nobody keeps.
  *
- * The box of each part is read in each document rather than given here, because the page is a
- * different height from the board, so the band at the foot sits further down one of them.
+ * The box is read in each document rather than given here, because the page is a different height
+ * from the board, so the title sits at a different height in each.
  */
 const theParts: readonly APartOfAPage[] = [
-  { called: 'the-band-at-the-top', from: 'body > div > header', to: 'body > div > header' },
   { called: 'the-title-of-the-support-page', from: 'main h1', to: 'main h1' },
-  { called: 'the-band-at-the-foot', from: 'body > div > footer', to: 'body > div > footer' },
 ];
 
 const { Given, Then } = createBdd(test);
@@ -62,7 +64,7 @@ Given(
 );
 
 Then(
-  'each part of the support page she reads is as tall as that part of the design',
+  'the title of the support page she reads is as tall as the title of the design',
   ({ comparing }) => {
     expect(comparing.parts.map((pair) => pair.called)).toEqual(theParts.map((part) => part.called));
 
@@ -77,7 +79,7 @@ Then(
 );
 
 Then(
-  'each part of the support page is the design, to within one pixel in a thousand',
+  'the title of the support page is the design, to within one pixel in a thousand',
   ({ comparing }) => {
     for (const pair of comparing.parts) {
       howMuchOfThePartMoved(pair);

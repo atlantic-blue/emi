@@ -208,6 +208,7 @@ export function howMuchOfItMovedOutside(looking: WhatSheIsLookingAt, called: str
 
   const drawn = theRowsBetween(inTheDesign, design.height);
   const built = theRowsBetween(onThePage, page.height);
+  let rowsRead = 0;
 
   for (const [at, rows] of drawn.entries()) {
     const against = built[at];
@@ -216,12 +217,26 @@ export function howMuchOfItMovedOutside(looking: WhatSheIsLookingAt, called: str
       throw new Error(`The page has no rows to hold stretch ${at} of the design against.`);
     }
 
+    // Two bands that meet leave no rows between them, and a band at the top or at the foot of a
+    // page leaves none outside it. A stretch of no rows on both sides says nothing about either
+    // document, so it is passed over. A stretch of no rows on one side only is a real difference
+    // and goes to the comparison, which refuses it on the heights.
+    if (rows.to === rows.from && against.to === against.from) {
+      continue;
+    }
+
+    rowsRead += rows.to - rows.from;
+
     holdOneAgainstTheOther(
       rowsOf(design, rows.from, rows.to),
       rowsOf(page, against.from, against.to),
       `${called}-${theNameOfTheRows(at, drawn.length)}`,
     );
   }
+
+  // A reading that passed over every stretch reports the same as a page that is the design, so the
+  // rows it did read are part of the reading.
+  expect(rowsRead).toBeGreaterThan(0);
 }
 
 function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
@@ -308,6 +323,192 @@ export async function theBandOfTheReviews(page: Page): Promise<ABandToLeaveOut> 
 
     return { from: row, to: row };
   });
+}
+
+/**
+ * Where the band at the top of every page stands in the document a browser is looking at.
+ *
+ * It is left out of every comparison, because the board draws six ways into the product and the
+ * site draws the two whose page exists. It is the same height on both sides, so what is under it
+ * still lines up to the pixel.
+ */
+export async function theBandAtTheTop(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, 'body > div > header', 'band at the top');
+}
+
+/**
+ * Where the band at the foot of every page stands. It is left out for the reason the band at the
+ * top is: the board draws twelve presses and four groups, and the site draws the four presses
+ * whose page exists, in three groups.
+ */
+export async function theBandAtTheFoot(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, 'body > div > footer', 'band at the foot');
+}
+
+/**
+ * Where the band at the head of the home page stands. The board draws a press to Apple's store in
+ * it, and Apple has issued no address for the listing, so the site draws the words beside where
+ * that press stood and the band is shorter.
+ */
+export async function theBandOfTheHero(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, 'section[aria-labelledby="hero-title"]', 'band at the head');
+}
+
+/**
+ * Where the card of the forecast stands on the home page. The board writes two days of October
+ * 2026 into it and the page counts a week from the day it is drawn for, so the two hold different
+ * words in a card whose height the longer sentence can change.
+ */
+export async function theForecastCard(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'section[aria-labelledby="forecast-title"] div div div',
+    'forecast card',
+  );
+}
+
+/**
+ * Where the one promise of the home page stands. The board promises that her data is always
+ * encrypted, and an export is a readable file she holds, so the page says where the encryption
+ * happens and what it covers, in a sentence that is longer.
+ */
+export async function theWordsOfThePromise(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, '#privacy-title', 'promise under the band of the founders');
+}
+
+/**
+ * Where the opening of the page that explains the encryption stands: from the top of the first
+ * paragraph to the foot of the last one. The board draws one paragraph there and the page draws a
+ * second under it, about the account, the payments and the anonymous reports.
+ */
+export async function theOpeningOfTheEncryptionPage(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const opens = document.querySelector('main > section:nth-of-type(1) > p');
+    const closes = document.querySelector('main > section:nth-of-type(1) > p:last-of-type');
+
+    if (opens === null || closes === null) {
+      throw new Error('The document draws no opening paragraph on the encryption page.');
+    }
+
+    return {
+      from: Math.round(opens.getBoundingClientRect().top + window.scrollY),
+      to: Math.round(closes.getBoundingClientRect().bottom + window.scrollY),
+    };
+  });
+}
+
+/**
+ * Where the first of the three steps stands: the whole card, not the sentence inside it.
+ *
+ * The board says she can log a note and there is no note to log yet, so the page names one thing
+ * fewer and the sentence is a line shorter. The card is the smallest box that holds every row that
+ * differs: on a desktop the three cards stand in one row and the row is as tall as the tallest of
+ * them, so the card is the same height on both sides while the design draws a second line of text
+ * where the page draws the ground of the card. Leaving out the sentence alone would leave those
+ * rows in the comparison and count a height the band never lost.
+ */
+export async function theFirstStepCard(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(2) > div > div > div:first-child',
+    'first of the three steps',
+  );
+}
+
+/**
+ * Where the card that says she holds a recovery code stands, on the dark band. No screen of the
+ * application shows her one, so the page carries the badge that says it is designed and not built,
+ * and the card is taller than the board's.
+ */
+export async function theCardOfTheRecoveryCode(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(3) > div > div > div:nth-child(2)',
+    'card of the recovery code',
+  );
+}
+
+/**
+ * Where the first of the four limits stands. The board tells her to keep a code, and nothing
+ * restores a lost phone yet, so the page tells her to download her data instead.
+ */
+export async function theFirstLimit(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(4) > div > div:nth-child(2) > div:first-child',
+    'first limit',
+  );
+}
+
+/** Where the band at the end of the home page stands, which draws the second press to the store. */
+export async function theBandAtTheEnd(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, 'section[aria-labelledby="end-title"]', 'band at the end');
+}
+
+/**
+ * Where the band of the two offers stands in the document a browser is looking at.
+ *
+ * The board draws it, and the site draws it only once the free calculator and the support page
+ * exist, because each of its two cards is a press and the sentence explaining the press. A
+ * document that holds the band is measured by the band itself, and a document without it reports
+ * the row where it would stand and no height, which is the foot of the band above it.
+ */
+export async function theBandOfTheTwoOffers(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const down = (box: DOMRect): { from: number; to: number } => ({
+      from: Math.round(box.top + window.scrollY),
+      to: Math.round(box.bottom + window.scrollY),
+    });
+
+    const band = document.querySelector('section[aria-labelledby="try-title"]');
+
+    if (band !== null) {
+      return down(band.getBoundingClientRect());
+    }
+
+    // The band of reviews stands above it on the board. The page draws neither, so the row is the
+    // foot of the band above that one, which is the same row the band of reviews reports.
+    const above =
+      document.querySelector('section[aria-labelledby="reviews-title"]') ??
+      document.querySelector('section[aria-labelledby="privacy-title"]');
+
+    if (above === null) {
+      throw new Error('The document draws no band above where the two offers would stand.');
+    }
+
+    const row = Math.round(above.getBoundingClientRect().bottom + window.scrollY);
+
+    return { from: row, to: row };
+  });
+}
+
+/**
+ * The rows one element of a document occupies, read in the browser rather than written down,
+ * because the page and the design are not the same height and the same band therefore sits at two
+ * different places down each of them.
+ */
+async function rowsOfTheFirst(
+  page: Page,
+  selector: string,
+  called: string,
+): Promise<ABandToLeaveOut> {
+  return await page.evaluate(
+    ([selector, called]) => {
+      const band = document.querySelector(selector as string);
+
+      if (band === null) {
+        throw new Error(`The document draws no ${called as string}.`);
+      }
+
+      const box = band.getBoundingClientRect();
+
+      return {
+        from: Math.round(box.top + window.scrollY),
+        to: Math.round(box.bottom + window.scrollY),
+      };
+    },
+    [selector, called] as const,
+  );
 }
 
 /**

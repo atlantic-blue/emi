@@ -5,9 +5,12 @@ import { brandEyebrowOf, isLanguage, wordsIn } from '@/app/words';
 import { CarouselsProvider } from '@/components/carousels';
 import { CycleRing } from '@/components/cycleRing';
 import { type Founder, FounderNote } from '@/components/founderNote';
+import { NextPeriodWindow } from '@/components/nextPeriodWindow';
 import { type Review, ReviewRow } from '@/components/reviewRow';
-import { JULIANS_PHOTOGRAPH, NO_PAGE_YET, THE_EMI_COMMUNITY } from '@/lib/addresses';
+import { JULIANS_PHOTOGRAPH, THE_APP_STORE_LISTING, THE_EMI_COMMUNITY } from '@/lib/addresses';
+import { asADayNumber, theDayOf } from '@/lib/theNextPeriodRange';
 import { theCardsOf, theRealReviews } from '@/lib/theReviews';
+import { theStoreListingIsOpen } from '@/lib/theStoreListing';
 
 /**
  * The page a woman meets Emi on, in the language her address names. A language the site does not
@@ -27,6 +30,11 @@ import { theCardsOf, theRealReviews } from '@/lib/theReviews';
  * from a cache, and a build that drew the three pages once would still have to be deployed to say
  * a different price.
  *
+ * One sentence of it is worked out rather than written: the window of the forecast card, which is
+ * counted from the day it is drawn for. A cache that holds the page for a day draws a window a day
+ * older, and her browser counts it again from her own clock, so the card never names a day that
+ * has passed.
+ *
  * One band of the board is not on the page. It says what other people think of Emi, and nobody has
  * said anything yet, so the board's six cards stood on the live page as six holes in brackets. The
  * band is drawn from `lib/theReviews.ts` and that list is empty, so the page draws eight of the
@@ -35,6 +43,16 @@ import { theCardsOf, theRealReviews } from '@/lib/theReviews';
 
 /** Each band, at the measures the board gives it. One place, so the order reads as one. */
 const theWidestBand = 'max-w-[1120px]';
+
+/**
+ * Whether the free calculator and the support page exist. Both are still to be built, so the page
+ * draws neither the band that offers them nor a press to either one.
+ *
+ * It reads false until those two pages ship, and the list the sitemap is written from says which
+ * pages the site serves. The scenario of step 26.26 holds the two together, so this cannot go on
+ * reading false after a page arrives.
+ */
+const theCalculatorAndSupportExist: boolean = false;
 
 /** Apple's own mark, which is Apple's drawing and not Emi's, at the two sizes the board draws it. */
 function AppleMark({ paint }: { paint: string }) {
@@ -138,19 +156,21 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                 {words.heroLine}
               </p>
               <div className="flex flex-wrap items-center gap-x-spaceXl gap-y-spaceLg pt-spaceSm">
-                <a
-                  aria-label={words.store}
-                  className="box-content flex min-h-[52px] items-center gap-spaceSm rounded bg-siteBlack px-margin text-siteCard no-underline"
-                  href={NO_PAGE_YET}
-                >
-                  <AppleMark paint={websiteColour.siteCard} />
-                  <span className="flex flex-col">
-                    <span className="text-[12px] leading-[16px]">{words.storeSmall}</span>
-                    <span className="text-[19px] leading-[20px] font-semibold">
-                      {words.footerAppStore}
+                {theStoreListingIsOpen ? (
+                  <a
+                    aria-label={words.store}
+                    className="box-content flex min-h-[52px] items-center gap-spaceSm rounded bg-siteBlack px-margin text-siteCard no-underline"
+                    href={THE_APP_STORE_LISTING}
+                  >
+                    <AppleMark paint={websiteColour.siteCard} />
+                    <span className="flex flex-col">
+                      <span className="text-[12px] leading-[16px]">{words.storeSmall}</span>
+                      <span className="text-[19px] leading-[20px] font-semibold">
+                        {words.footerAppStore}
+                      </span>
                     </span>
-                  </span>
-                </a>
+                  </a>
+                ) : null}
                 <span className="text-[14px] leading-[20px] text-siteQuietText">
                   {words.heroPriceLine}
                   <br />
@@ -191,7 +211,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                   {words.cycleNextLabel}
                 </span>
                 <span className="font-display text-[24px] leading-[30px] font-semibold">
-                  {words.cycleNextRange}
+                  <NextPeriodWindow drawnOn={asADayNumber(theDayOf(new Date()))} language={lang} />
                 </span>
                 <span className="text-[14px] leading-[20px] text-siteQuietText">
                   {words.cycleNextConfidence}
@@ -220,9 +240,11 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             </div>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-margin">
               {theGuides.map((guide) => (
-                <a
+                // The guide behind each card is not written yet, so the card says what the phase is
+                // and presses nowhere. It becomes a press again on the day the guides ship, by
+                // drawing an `a` here with `under('calculator/')` and the same classes.
+                <div
                   className="flex min-h-[200px] flex-col gap-spaceSm rounded-[24px] bg-siteCard p-marginMd text-siteText no-underline"
-                  href={under('calculator/')}
                   key={guide.label}
                 >
                   <span
@@ -237,7 +259,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
                     aria-hidden="true"
                     className={`mt-auto h-[6px] rounded-full ${guide.rule}`}
                   />
-                </a>
+                </div>
               ))}
             </div>
           </div>
@@ -348,39 +370,51 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
           </section>
         )}
 
-        <section aria-labelledby="try-title" className="bg-siteCard">
-          <div
-            className={`mx-auto grid ${theWidestBand} grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-spaceXl px-spaceXl py-[96px]`}
-          >
-            <a
-              className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
-              href={under('calculator/')}
+        {/* The band of the two offers. The calculator and the support page are both still to be
+            built, and each of these two cards is a press and the sentence that explains the press,
+            so neither has anything left to say without its page. The band comes back whole on the
+            day those two pages ship. Its words are in the catalogues under tryTitle, tryLine,
+            tryLink, askTitle, askLine and askLink, and the board draws it at
+            docs/design/website/home-v2/boards/MainV2.dc.html. */}
+        {theCalculatorAndSupportExist ? (
+          <section aria-labelledby="try-title" className="bg-siteCard">
+            <div
+              className={`mx-auto grid ${theWidestBand} grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-spaceXl px-spaceXl py-[96px]`}
             >
-              <span
-                className="font-display text-[32px] leading-[40px] font-semibold"
-                id="try-title"
+              <a
+                className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
+                href={under('calculator/')}
               >
-                {words.tryTitle}
-              </span>
-              <span className="text-[16px] leading-[24px] text-siteQuietText">{words.tryLine}</span>
-              <span className="mt-auto text-[16px] font-semibold text-siteAccent">
-                {words.tryLink}
-              </span>
-            </a>
-            <a
-              className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
-              href={under('support/')}
-            >
-              <span className="font-display text-[32px] leading-[40px] font-semibold">
-                {words.askTitle}
-              </span>
-              <span className="text-[16px] leading-[24px] text-siteQuietText">{words.askLine}</span>
-              <span className="mt-auto text-[16px] font-semibold text-siteAccent">
-                {words.askLink}
-              </span>
-            </a>
-          </div>
-        </section>
+                <span
+                  className="font-display text-[32px] leading-[40px] font-semibold"
+                  id="try-title"
+                >
+                  {words.tryTitle}
+                </span>
+                <span className="text-[16px] leading-[24px] text-siteQuietText">
+                  {words.tryLine}
+                </span>
+                <span className="mt-auto text-[16px] font-semibold text-siteAccent">
+                  {words.tryLink}
+                </span>
+              </a>
+              <a
+                className="flex min-h-[200px] flex-col gap-spaceMd rounded-[24px] bg-siteTint p-[36px] text-siteText no-underline"
+                href={under('support/')}
+              >
+                <span className="font-display text-[32px] leading-[40px] font-semibold">
+                  {words.askTitle}
+                </span>
+                <span className="text-[16px] leading-[24px] text-siteQuietText">
+                  {words.askLine}
+                </span>
+                <span className="mt-auto text-[16px] font-semibold text-siteAccent">
+                  {words.askLink}
+                </span>
+              </a>
+            </div>
+          </section>
+        ) : null}
 
         <section aria-labelledby="end-title" className="bg-siteNight text-siteTintDeep">
           <div className="mx-auto flex max-w-[760px] flex-col items-center gap-spaceXl px-spaceXl py-[120px] text-center">
@@ -390,19 +424,21 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             >
               {words.heroHeadline}
             </h2>
-            <a
-              aria-label={words.store}
-              className="box-content flex min-h-[52px] items-center gap-spaceSm rounded bg-siteCard px-margin text-siteBlack no-underline"
-              href={NO_PAGE_YET}
-            >
-              <AppleMark paint={websiteColour.siteBlack} />
-              <span className="flex flex-col text-left">
-                <span className="text-[12px] leading-[16px]">{words.storeSmall}</span>
-                <span className="text-[19px] leading-[20px] font-semibold">
-                  {words.footerAppStore}
+            {theStoreListingIsOpen ? (
+              <a
+                aria-label={words.store}
+                className="box-content flex min-h-[52px] items-center gap-spaceSm rounded bg-siteCard px-margin text-siteBlack no-underline"
+                href={THE_APP_STORE_LISTING}
+              >
+                <AppleMark paint={websiteColour.siteBlack} />
+                <span className="flex flex-col text-left">
+                  <span className="text-[12px] leading-[16px]">{words.storeSmall}</span>
+                  <span className="text-[19px] leading-[20px] font-semibold">
+                    {words.footerAppStore}
+                  </span>
                 </span>
-              </span>
-            </a>
+              </a>
+            ) : null}
             <span className="text-[14px] leading-[20px] text-siteNightQuietText">
               {`${words.heroPriceLine} ${words.heroCancel}`}
             </span>

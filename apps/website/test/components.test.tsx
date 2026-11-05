@@ -4,11 +4,17 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { wordsIn } from '../app/words';
+import { type SiteWordKey, wordsIn } from '../app/words';
 import { EmiIcon } from '../components/emiIcon';
-import { SiteFooter, footerGroups } from '../components/siteFooter';
-import { ICON_FILE, SiteHeader } from '../components/siteHeader';
-import { NO_PAGE_YET } from '../lib/addresses';
+import {
+  SiteFooter,
+  footerGroups,
+  theAddressOfAPress,
+  theGroupsOfTheBand,
+  theTerms,
+} from '../components/siteFooter';
+import { ICON_FILE, SiteHeader, mainLinks, theWayIn, theWaysIn } from '../components/siteHeader';
+import { NO_PAGE_YET, THE_EMI_BETA, THE_EMI_CODE } from '../lib/addresses';
 import { Button, buttonVariants } from '../components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Separator } from '../components/ui/separator';
@@ -162,7 +168,7 @@ describe('the band at the top of every page', () => {
     expect(markup(<SiteHeader language="ru" />)).toContain('href="/ru/"');
   });
 
-  it('offers the way in, the language and the menu, each one a thumb can land on', () => {
+  it('offers the language and the menu, each one a thumb can land on', () => {
     const drawn = header();
     const words = wordsIn('en');
 
@@ -171,16 +177,43 @@ describe('the band at the top of every page', () => {
       words.headerMainLabel,
       words.headerLanguageLabel,
       words.headerMenuLabel,
-      words.headerSignInLabel,
     ]) {
       expect(drawn).toContain(`aria-label="${label}"`);
     }
 
-    // Two squares she presses, the menu and the way to her account, and the way home which is as
-    // tall as a thumb needs without being as wide.
-    expect(drawn.match(/(?<![a-z-])h-\[44px\] w-\[44px\]/g)?.length).toBe(2);
+    // One square she presses, the menu, and the way home which is as tall as a thumb needs
+    // without being as wide. The way to her account is the second square, and it comes back with
+    // the page it waits for.
+    expect(drawn.match(/(?<![a-z-])h-\[44px\] w-\[44px\]/g)?.length).toBe(1);
     expect(drawn).toContain('min-h-[44px]');
     expect(MINIMUM_TAP_TARGET).toBe(44);
+  });
+
+  it('draws the two ways in whose page exists, and holds the other four until theirs do', () => {
+    const drawn = header();
+    const words = wordsIn('en');
+
+    expect(mainLinks).toHaveLength(6);
+    expect(theWaysIn().map((link) => link.path)).toEqual(['', 'privacy/']);
+
+    for (const link of mainLinks) {
+      expect({
+        word: link.word,
+        drawn: drawn.includes(`>${words[link.word]}</a>`),
+        address: drawn.includes(`href="/en/${link.path}"`),
+      }).toEqual({
+        word: link.word,
+        drawn: link.waitsForItsPage !== true,
+        address: link.waitsForItsPage !== true,
+      });
+    }
+  });
+
+  it('holds the way to her account until the page she signs in on exists', () => {
+    expect(theWayIn.waitsForItsPage).toBe(true);
+    expect(theWayIn.path).toBe('sign-in/');
+    expect(header()).not.toContain(`aria-label="${wordsIn('en').headerSignInLabel}"`);
+    expect(header()).not.toContain('href="/en/sign-in/"');
   });
 
   it(
@@ -201,14 +234,31 @@ describe('the band at the foot of every page', () => {
   const footer = (): string => markup(<SiteFooter language="en" />);
 
   /**
-   * The presses of the band that nobody has an address for yet. Written out rather than read off
-   * the shape of a link, because a count taken from the shape follows it: the day one of them
-   * gains an address, the derived count drops by one as well, the band is one press shorter, and
-   * nothing fails.
+   * The presses of the band that wait for the page behind them, with the press to the store among
+   * them: Apple issues its address with the pre-order. Written out rather than read off the flag
+   * each one carries, because a list taken from the flag follows it, and the day somebody draws a
+   * press whose page is not there nothing would fail.
    */
-  const theWordsWaitingForAnAddress = ['footerAppStore', 'footerBeta', 'footerOpenCode'];
+  const theWordsWaitingForTheirPage: readonly SiteWordKey[] = [
+    'footerAppStore',
+    'footerBuyOnTheWeb',
+    'footerTransparency',
+    'footerCalculator',
+    'footerGuides',
+    'footerPulse',
+    'footerSupport',
+    'footerAccount',
+  ];
 
-  it('says what Emi is not, and names no company but the community chat', () => {
+  /** The presses the band draws, in its order, which is every press whose page a reader can open. */
+  const theWordsTheBandDraws: readonly SiteWordKey[] = [
+    'footerBeta',
+    'footerHowEmiProtects',
+    'footerOpenCode',
+    'footerCommunity',
+  ];
+
+  it('says what Emi is not, and names no company but the three a press carries', () => {
     const drawn = footer();
 
     expect(drawn).toContain(wordsIn('en').footerDisclaimer);
@@ -216,20 +266,70 @@ describe('the band at the foot of every page', () => {
     expect(drawn).not.toContain('style=');
   });
 
-  it('carries the four groups the board carries, three links in each', () => {
+  it('holds the four groups of the board, three links in each, and draws the three left with a press', () => {
     const drawn = footer();
     const words = wordsIn('en');
 
     expect(footerGroups).toHaveLength(4);
 
     for (const group of footerGroups) {
-      expect(drawn).toContain(`aria-label="${words[group.title]}"`);
       expect(group.links).toHaveLength(3);
-
-      for (const link of group.links) {
-        expect(drawn).toContain(words[link.word]);
-      }
     }
+
+    // The group about learning has a press for the calculator, a press for the guides and a press
+    // for Pulse, and none of the three pages exists, so the band draws neither it nor its heading.
+    expect(theGroupsOfTheBand().map((group) => group.title)).toEqual([
+      'footerEmiGroup',
+      'footerPrivacyGroup',
+      'footerHelpGroup',
+    ]);
+    expect(drawn).not.toContain(`aria-label="${words.footerLearnGroup}"`);
+
+    for (const group of theGroupsOfTheBand()) {
+      expect(drawn).toContain(`aria-label="${words[group.title]}"`);
+    }
+  });
+
+  it('draws each press whose page exists, and holds the eight that wait for theirs', () => {
+    const drawn = footer();
+    const words = wordsIn('en');
+    const everyLink = footerGroups.flatMap((group) => group.links);
+
+    expect(
+      everyLink.filter((link) => link.waitsForItsPage === true).map((link) => link.word),
+    ).toEqual(theWordsWaitingForTheirPage);
+    expect(theGroupsOfTheBand().flatMap((group) => group.links.map((link) => link.word))).toEqual(
+      theWordsTheBandDraws,
+    );
+
+    for (const word of theWordsWaitingForTheirPage) {
+      expect({ word, drawn: drawn.includes(`>${words[word]}</a>`) }).toEqual({
+        word,
+        drawn: false,
+      });
+    }
+
+    for (const word of theWordsTheBandDraws) {
+      expect({ word, drawn: drawn.includes(`>${words[word]}</a>`) }).toEqual({
+        word,
+        drawn: true,
+      });
+    }
+  });
+
+  it('sends her off the site for the beta and for the code, and nowhere else', () => {
+    const drawn = footer();
+    const leaving = [...drawn.matchAll(/<a ([^>]*)>([^<]*)<\/a>/g)].filter(([, attributes = '']) =>
+      attributes.includes('rel="noopener"'),
+    );
+
+    expect(leaving.map(([, , words = '']) => words)).toEqual([
+      wordsIn('en').footerBeta,
+      wordsIn('en').footerOpenCode,
+      wordsIn('en').footerCommunity,
+    ]);
+    expect(drawn).toContain(`href="${THE_EMI_BETA}"`);
+    expect(drawn).toContain(`href="${THE_EMI_CODE}"`);
   });
 
   it('names who she would be paying, and lets her read the page in her own language', () => {
@@ -241,22 +341,41 @@ describe('the band at the foot of every page', () => {
     expect(drawn).toContain('Русский');
   });
 
-  it('points a link with no page anywhere yet at the page she is already on', () => {
+  it('draws no press to the page she is already on', () => {
     const drawn = footer();
     const everyAddress = [...drawn.matchAll(/href="([^"]*)"/g)].map(([, found]) => found);
 
-    expect(everyAddress).toContain(NO_PAGE_YET);
+    expect(everyAddress).not.toContain(NO_PAGE_YET);
+    expect(everyAddress.length).toBeGreaterThan(0);
 
-    expect(everyAddress.filter((address) => address === NO_PAGE_YET)).toHaveLength(
-      theWordsWaitingForAnAddress.length,
-    );
-
-    // The band draws each of the three, so the three named above are three presses a reader meets
-    // and not three words nobody uses. A list that drifted out of the band would otherwise hold
-    // the count right while it described a band that is not there.
-    for (const word of theWordsWaitingForAnAddress) {
+    // The eight named above are eight entries of the band and not eight words nobody uses, so a
+    // list that drifted out of the band cannot go on describing a band that is not there.
+    for (const word of theWordsWaitingForTheirPage) {
       expect(footerGroups.flatMap((group) => group.links).map((link) => link.word)).toContain(word);
     }
+  });
+
+  it('refuses a press that has no address at all, by name', () => {
+    // A press with neither an address off the site nor a path under the language used to resolve to
+    // the home page, which does nothing she can see. It refuses now, so the mistake is a failure
+    // rather than a dead press on a live page.
+    expect(() => theAddressOfAPress('en', { word: 'footerAppStore' })).toThrow(/footerAppStore/);
+    expect(() => theAddressOfAPress('en', { word: 'footerAppStore', outside: '' })).toThrow(
+      /footerAppStore/,
+    );
+    expect(theAddressOfAPress('en', { word: 'footerSupport', path: 'support/' })).toBe(
+      '/en/support/',
+    );
+    expect(theAddressOfAPress('ru', { word: 'footerBeta', outside: THE_EMI_BETA })).toBe(
+      THE_EMI_BETA,
+    );
+  });
+
+  it('holds the terms until the page she agrees to them on exists', () => {
+    expect(theTerms.waitsForItsPage).toBe(true);
+    expect(theTerms.path).toBe('terms/');
+    expect(footer()).not.toContain('href="/en/terms/"');
+    expect(footer()).not.toContain(`>${wordsIn('en').footerTerms}</a>`);
   });
 
   it(

@@ -7,6 +7,7 @@ import {
   NO_PAGE_YET,
   SHARE_PREVIEW,
   SITE_ORIGIN,
+  THE_APP_STORE_LISTING,
   THE_EMI_BETA,
   THE_EMI_CODE,
   THE_EMI_COMMUNITY,
@@ -15,6 +16,7 @@ import {
   thePrivacyAddress,
   theSupportAddress,
 } from '../lib/addresses';
+import { theStoreListingIsOpen } from '../lib/theStoreListing';
 import { hostsIn, theOneHost } from '../lib/theOnePrice';
 import { websiteWorkspace } from './stylesheet';
 
@@ -33,8 +35,8 @@ const theInvite = 'https://t.me/+89GgSCh6Ff85YTZk';
 const theCode = 'https://github.com/atlantic-blue/emi';
 
 /**
- * Where Apple hands out the beta, written out for the same reason. It is the third host outside
- * this site a page names, and the support page is the one page that names it.
+ * Where the beta is, written out for the same reason. It is the third host outside this site a page
+ * names, and the operator gave this invite: nobody can derive it, and Apple can close it.
  */
 const theBeta = 'https://testflight.apple.com/join/xFSv5Gqa';
 
@@ -54,6 +56,7 @@ describe('the addresses a page gives a browser', () => {
       'NO_PAGE_YET',
       'SHARE_PREVIEW',
       'SITE_ORIGIN',
+      'THE_APP_STORE_LISTING',
       'THE_EMI_BETA',
       'THE_EMI_CODE',
       'THE_EMI_COMMUNITY',
@@ -63,7 +66,12 @@ describe('the addresses a page gives a browser', () => {
   });
 
   it('writes each one whole, so a browser can follow it as it stands', () => {
-    for (const [name, address] of theAddresses) {
+    // The listing is the one exception, and it is empty rather than a guess: Apple issues the
+    // address with the pre-order, and until it does no press to the store is drawn at all. The
+    // case under this one holds those two facts together.
+    for (const [name, address] of theAddresses.filter(
+      ([name]) => name !== 'THE_APP_STORE_LISTING',
+    )) {
       expect({ name, address }).toEqual({ name, address: address.trim() });
       expect({ name, spaced: /\s/.test(address) }).toEqual({ name, spaced: false });
       // A path, a page on another host, or an address a mail application answers. Those are the
@@ -81,7 +89,7 @@ describe('the addresses a page gives a browser', () => {
     }
   });
 
-  it('sends her to the community she was invited to, on the one host that is not Emi', () => {
+  it('sends her to the community she was invited to, on the first host that is not Emi', () => {
     expect(THE_EMI_COMMUNITY).toBe(theInvite);
 
     const invited = new URL(THE_EMI_COMMUNITY);
@@ -100,7 +108,7 @@ describe('the addresses a page gives a browser', () => {
     expect(open.host).toBe('github.com');
   });
 
-  it('sends her to the beta on the host Apple hands it out from', () => {
+  it('sends her to the beta Apple runs, which is the invite the operator gave', () => {
     expect(THE_EMI_BETA).toBe(theBeta);
 
     const invited = new URL(THE_EMI_BETA);
@@ -108,6 +116,11 @@ describe('the addresses a page gives a browser', () => {
     expect(invited.protocol).toBe('https:');
     expect(invited.host).toBe('testflight.apple.com');
     expect(invited.pathname).toBe('/join/xFSv5Gqa');
+  });
+
+  it('holds the store listing empty until Apple issues it, and draws no press while it is', () => {
+    expect(THE_APP_STORE_LISTING).toBe('');
+    expect(theStoreListingIsOpen).toBe(false);
   });
 
   it('takes a privacy question to this site rather than to a mail company', () => {
@@ -125,7 +138,7 @@ describe('the addresses a page gives a browser', () => {
 
   it('is the one file an outside host is written in, so one edit moves every link that uses it', () => {
     const source = readFileSync(join(websiteWorkspace, 'lib', 'addresses.ts'), 'utf8');
-    const theThreeOutside = [theInvite, theCode, theBeta].map((address) => new URL(address).host);
+    const theThreeOutside = [new URL(theInvite).host, new URL(theCode).host, new URL(theBeta).host];
     const outside = (text: string): string[] =>
       hostsIn(text).filter((host) => host !== theOneHost && !theThreeOutside.includes(host));
 
@@ -136,7 +149,7 @@ describe('the addresses a page gives a browser', () => {
     }
   });
 
-  it('points a link whose page nobody has issued at the page she is already reading', () => {
+  it('keeps the home page as the one address a press can carry without a language', () => {
     expect(NO_PAGE_YET).toBe('/');
   });
 
