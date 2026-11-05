@@ -34,6 +34,9 @@ Feature: The addresses a search engine reads
       | /en/privacy-policy/ |
       | /ru/privacy-policy/ |
       | /es/privacy-policy/ |
+      | /en/support/        |
+      | /ru/support/        |
+      | /es/support/        |
 
   Scenario: the page she reached by accident names no address
     Given a woman opens the page at "/en/nothing/"

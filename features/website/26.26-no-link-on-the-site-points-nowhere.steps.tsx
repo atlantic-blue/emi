@@ -9,6 +9,7 @@ import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
 import PrivacyPolicyPage from '../../apps/website/app/[lang]/privacy-policy/page';
 import ProtectionPage from '../../apps/website/app/[lang]/privacy/page';
+import SupportPage from '../../apps/website/app/[lang]/support/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import { LANGUAGES_ANCHOR } from '../../apps/website/components/siteHeader';
 import {
@@ -18,6 +19,7 @@ import {
   THE_EMI_CODE,
   THE_EMI_COMMUNITY,
   THE_PRIVACY_INBOX,
+  THE_SUPPORT_INBOX,
 } from '../../apps/website/lib/addresses';
 import { thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
 
@@ -53,14 +55,16 @@ function everyAddressTheSiteServes(): string[] {
 
 /**
  * Every address a press may carry that is not a page of this site: the three hosts outside it, and
- * the inbox her mail application answers. Each one is written out whole in `lib/addresses.ts`, so
- * a press that leaves the site leaves it for somewhere a reader of that one file can see.
+ * the two inboxes her mail application answers. Each one is written out whole in
+ * `lib/addresses.ts`, so a press that leaves the site leaves it for somewhere a reader of that one
+ * file can see.
  */
 const theAddressesOffTheSite = [
   THE_EMI_COMMUNITY,
   THE_EMI_CODE,
   THE_EMI_BETA,
   THE_PRIVACY_INBOX,
+  THE_SUPPORT_INBOX,
   // The listing in Apple's store, on the day Apple issues its address. It is empty until then, and
   // no press to the store is drawn while it is empty, so it joins the four only once it is real.
   ...(THE_APP_STORE_LISTING === '' ? [] : [THE_APP_STORE_LISTING]),
@@ -92,6 +96,7 @@ const whatDrawsThePageAt: Readonly<
   '': HomePage,
   'privacy/': ProtectionPage,
   'privacy-policy/': PrivacyPolicyPage,
+  'support/': SupportPage,
 };
 
 /**
@@ -205,9 +210,11 @@ defineFeature(feature, (test) => {
         });
       }
 
-      // The six pages nobody has built yet. Not one of them is pressed anywhere on the site, in
+      // The five pages nobody has built yet. Not one of them is pressed anywhere on the site, in
       // any language, and the list the sitemap is written from is what says they are not built.
-      for (const path of ['buy/', 'calculator/', 'pulse/', 'support/', 'sign-in/', 'terms/']) {
+      // The support page was the sixth of these and it is built now, so it is read below as a
+      // page of the site rather than here as a page nobody can open.
+      for (const path of ['buy/', 'calculator/', 'pulse/', 'sign-in/', 'terms/']) {
         expect(thePagesOfTheSite.map((page) => page.path)).not.toContain(path);
 
         for (const page of opened) {

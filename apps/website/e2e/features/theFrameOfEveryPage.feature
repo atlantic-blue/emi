@@ -7,8 +7,8 @@ Feature: The way in and the way out of every page
   somebody.
 
   Today each page writes those two bands itself. That holds while two pages remember to do it. The
-  site is going to grow a privacy page, a calculator, a support page and a page to buy on, and the
-  first one of those that forgets is a page where a reader has no way on and no way back.
+  site is going to grow a calculator and a page to buy on as well, and the first one of those that
+  forgets is a page where a reader has no way on and no way back.
 
   Two bands is as bad as none, so the count is read here and not only the presence. A band drawn
   twice is a second way in that disagrees with the first, and a reader whose software reads the
@@ -34,6 +34,9 @@ Feature: The way in and the way out of every page
       | /en/privacy-policy/ | en       |
       | /ru/privacy-policy/ | ru       |
       | /es/privacy-policy/ | es       |
+      | /en/support/        | en       |
+      | /ru/support/        | ru       |
+      | /es/support/        | es       |
       | /en/nothing/        | en       |
       | /ru/nothing/        | ru       |
       | /es/nothing/        | es       |

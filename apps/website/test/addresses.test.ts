@@ -12,7 +12,9 @@ import {
   THE_EMI_CODE,
   THE_EMI_COMMUNITY,
   THE_PRIVACY_INBOX,
+  THE_SUPPORT_INBOX,
   thePrivacyAddress,
+  theSupportAddress,
 } from '../lib/addresses';
 import { theStoreListingIsOpen } from '../lib/theStoreListing';
 import { hostsIn, theOneHost } from '../lib/theOnePrice';
@@ -59,6 +61,7 @@ describe('the addresses a page gives a browser', () => {
       'THE_EMI_CODE',
       'THE_EMI_COMMUNITY',
       'THE_PRIVACY_INBOX',
+      'THE_SUPPORT_INBOX',
     ]);
   });
 
@@ -124,6 +127,13 @@ describe('the addresses a page gives a browser', () => {
     expect(THE_PRIVACY_INBOX).toBe('mailto:privacy@myemi.app');
     expect(thePrivacyAddress()).toBe('privacy@myemi.app');
     expect(thePrivacyAddress().split('@')[1]).toBe(theOneHost);
+  });
+
+  it('takes a question about using Emi to the address the support board writes', () => {
+    expect(THE_SUPPORT_INBOX).toBe('mailto:hello@myemi.app');
+    expect(theSupportAddress()).toBe('hello@myemi.app');
+    expect(theSupportAddress().split('@')[1]).toBe(theOneHost);
+    expect(THE_SUPPORT_INBOX).not.toBe(THE_PRIVACY_INBOX);
   });
 
   it('is the one file an outside host is written in, so one edit moves every link that uses it', () => {

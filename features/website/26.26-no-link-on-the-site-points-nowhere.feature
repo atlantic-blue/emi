@@ -10,17 +10,18 @@ Feature: Every press on the site takes her somewhere
 
   So every press on every page leads to a page this site serves, or it leaves the site to an address
   this site writes out whole. There is no third kind. The pages this site serves are the list the
-  sitemap is written from, which is the home page, the page that explains the encryption and the
-  privacy policy, each in three languages. The addresses outside it are three: the Emi Community on
+  sitemap is written from, which is the home page, the page that explains the encryption, the
+  privacy policy and the support page, each in three languages. The addresses outside it are three: the Emi Community on
   Telegram, the code on GitHub, and the beta Apple runs. A fourth is the inbox a privacy question
   goes to, which her mail application answers rather than her browser.
 
-  A press to a page that is still to be built is not drawn at all. Six pages are still to be built,
-  at buy, calculator, pulse, support, sign-in and terms, and the entries that lead to them are held
+  A press to a page that is still to be built is not drawn at all. Five pages are still to be
+  built, at buy, calculator, pulse, sign-in and terms, and the entries that lead to them are held
   in the code with a mark on each, so one edit draws each one again on the day its page ships.
-  Eight presses in the band at the foot, four ways into the product in the band at the top, the way
-  to her account, the terms, the four cards of the phases and the band of the two offers: each one
-  waits for its page. The two presses to Apple's store wait for a listing instead, and Apple opens
+  The support page was the sixth, and it is built now, so what its two entries wait for is step
+  27.3 rather than a page. Eight presses in the band at the foot, four ways into the product in
+  the band at the top, the way to her account, the terms, the four cards of the phases and the
+  band of the two offers: each one waits. The two presses to Apple's store wait for a listing instead, and Apple opens
   the pre-order on 17 November 2026.
 
   The press that offers her the community is the one press this scenario reads whole. It opens in

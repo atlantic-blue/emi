@@ -9,6 +9,7 @@ import {
   THE_EMI_CODE,
   THE_EMI_COMMUNITY,
   THE_PRIVACY_INBOX,
+  THE_SUPPORT_INBOX,
 } from '../../lib/addresses';
 import { LANGUAGES_ANCHOR } from '../../components/siteHeader';
 import { wordsIn } from '../../app/words';
@@ -29,9 +30,9 @@ const theBandAtTheFoot = 'contentinfo';
 
 /**
  * Every address a press may carry that this site does not serve: the three hosts outside it, and
- * the inbox her mail application answers. Each is written out whole in `lib/addresses.ts`.
+ * the two inboxes her mail application answers. Each is written out whole in `lib/addresses.ts`.
  *
- * None of the four is asked for. This site asks no other company for anything, and a press she has
+ * None of the five is asked for. This site asks no other company for anything, and a press she has
  * not made yet asks nobody for anything, so the rule here is that the address is one of these and
  * not that somebody else's host answered a request from a pipeline.
  */
@@ -40,8 +41,9 @@ const theAddressesOffTheSite = [
   THE_EMI_CODE,
   THE_EMI_BETA,
   THE_PRIVACY_INBOX,
+  THE_SUPPORT_INBOX,
   // The listing in Apple's store, on the day Apple issues its address. It is empty until then, and
-  // no press to the store is drawn while it is empty, so it joins the four only once it is real.
+  // no press to the store is drawn while it is empty, so it joins the five only once it is real.
   ...(THE_APP_STORE_LISTING === '' ? [] : [THE_APP_STORE_LISTING]),
 ];
 

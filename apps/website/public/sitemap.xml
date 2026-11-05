@@ -63,4 +63,25 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/privacy-policy/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/privacy-policy/" />
   </url>
+  <url>
+    <loc>https://myemi.app/en/support/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/support/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/support/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/support/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/support/" />
+  </url>
+  <url>
+    <loc>https://myemi.app/ru/support/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/support/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/support/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/support/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/support/" />
+  </url>
+  <url>
+    <loc>https://myemi.app/es/support/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/support/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/support/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/support/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/support/" />
+  </url>
 </urlset>

@@ -15,9 +15,9 @@ Feature: Where a press on a page of the site takes her
   carries. The status is what the rule is about: 200, and nothing else.
 
   Three addresses are off this site: the Emi Community on Telegram, the code on GitHub, and the beta
-  Apple runs. A fourth is the inbox a privacy question goes to, which her mail application answers.
-  Those four are named here, and they are not asked for: this site asks no other company for
-  anything, and a press she has not made yet asks nobody for anything.
+  Apple runs. Two more are the inboxes a privacy question and a support question go to, which her
+  mail application answers. Those five are named here, and they are not asked for: this site asks
+  no other company for anything, and a press she has not made yet asks nobody for anything.
 
   A press to a page that is still to be built is not drawn at all, so no press leads to the page she
   is already reading. The press that offers her the community is read whole: it opens in the tab she
@@ -40,6 +40,9 @@ Feature: Where a press on a page of the site takes her
       | /en/privacy-policy/ |
       | /ru/privacy-policy/ |
       | /es/privacy-policy/ |
+      | /en/support/        |
+      | /ru/support/        |
+      | /es/support/        |
 
   Scenario Outline: the press that offers her the community opens the community
     Given a woman opens the page at "<address>"

@@ -67,11 +67,25 @@ export const THE_APP_STORE_LISTING = '';
 export const THE_PRIVACY_INBOX = 'mailto:privacy@myemi.app';
 
 /**
+ * Where a question about using Emi goes, which the approved support board writes. It is a second
+ * address rather than the one above, because a woman asking why a forecast moved is not writing
+ * about her own data and the two are read by different people.
+ *
+ * Neither address receives mail yet. The domain answered with no mail record on 4 November 2026.
+ */
+export const THE_SUPPORT_INBOX = 'mailto:hello@myemi.app';
+
+/**
  * The same address as a reader reads it on the page, and as she would type it into her own mail
  * application. A press cannot carry this form, so it is not an address of the list above.
  */
 export function thePrivacyAddress(): string {
   return THE_PRIVACY_INBOX.replace('mailto:', '');
+}
+
+/** The support address in the same form, for a page that writes it out rather than pressing it. */
+export function theSupportAddress(): string {
+  return THE_SUPPORT_INBOX.replace('mailto:', '');
 }
 
 /**

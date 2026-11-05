@@ -224,6 +224,34 @@ export const russian: SiteWords = {
   policyContactBefore: 'Вопросы о приватности пишите на',
   policyContactAfter: '. Когда политика меняется, меняется и дата сверху.',
 
+  // Страница поддержки, по boards/Support.dc.html.
+  supportTitle: 'Поддержка Emi',
+  supportSearch: 'Поиск по поддержке',
+  supportNothingFound: 'Ничего не нашлось.',
+  supportNothingFoundAfter: 'и мы ответим на английском, русском или испанском.',
+  supportCannotLookUp:
+    'Мы не видим ваши записи, поэтому не можем найти ваш аккаунт. Расскажите, что у вас на экране.',
+  supportEmailUs: 'Напишите нам',
+  supportEmailUsLine: 'На английском, русском или испанском',
+  supportCommunity: 'Сообщество Emi',
+  supportCommunityLine: 'Спросите других людей, в Telegram',
+  supportBeta: 'Тестовая версия',
+  supportBetaLine: 'Попробуйте следующую версию в TestFlight',
+  supportSubscription: 'Подписка',
+  supportSubscriptionLine: 'Продлить, отменить или получить чек',
+  supportQuestionsHeadline: 'Частые вопросы.',
+  supportLostPhoneQuestion: 'Я потеряла телефон. Вы можете вернуть мои записи?',
+  supportLostPhoneAnswer:
+    'Нет. Синхронизация спроектирована и ещё не сделана, поэтому ваши дни живут только на том телефоне. Остаётся лишь файл, который вы сохранили сами, через «Скачать данные».',
+  supportLearningQuestion: 'Почему Emi говорит, что ещё учится?',
+  supportLearningAnswer:
+    'Emi нужно 2 полных цикла, прежде чем она строит прогноз. До этого она считает по длине цикла, которую вы указали.',
+  supportDeleteQuestion: 'Как удалить всё?',
+  supportDeleteAnswer:
+    'Откройте «Приватность» в приложении и выберите «Удалить данные». Это убирает каждый день, каждый ответ и ключ. Удаление приложения уносит ваши дни и оставляет ключ в связке ключей iPhone.',
+  supportCancelQuestion: 'Как отменить подписку?',
+  supportCancelAnswer: 'Если вы платили в App Store, отмените в настройках аккаунта Apple.',
+
   headerHomeLabel: 'Главная страница Emi',
   headerMainLabel: 'Основное',
   headerEmi: 'Emi',

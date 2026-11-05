@@ -215,6 +215,34 @@ export const spanish: SiteWords = {
   policyContactBefore: 'Envía tus preguntas de privacidad a',
   policyContactAfter: '. Cuando esta política cambia, cambia la fecha de arriba.',
 
+  // La página de soporte, por boards/Support.dc.html.
+  supportTitle: 'Soporte de Emi',
+  supportSearch: 'Buscar en soporte',
+  supportNothingFound: 'No encontramos nada.',
+  supportNothingFoundAfter: 'y respondemos en inglés, ruso o español.',
+  supportCannotLookUp:
+    'No podemos ver tus registros, así que no podemos buscar tu cuenta. Cuéntanos qué ves en la pantalla.',
+  supportEmailUs: 'Escríbenos',
+  supportEmailUsLine: 'En inglés, ruso o español',
+  supportCommunity: 'Comunidad de Emi',
+  supportCommunityLine: 'Pregunta a otras personas, en Telegram',
+  supportBeta: 'La versión de prueba',
+  supportBetaLine: 'Prueba la próxima versión en TestFlight',
+  supportSubscription: 'Suscripción',
+  supportSubscriptionLine: 'Renovar, cancelar o pedir un recibo',
+  supportQuestionsHeadline: 'Preguntas frecuentes.',
+  supportLostPhoneQuestion: 'He perdido el teléfono. ¿Podéis recuperar mis registros?',
+  supportLostPhoneAnswer:
+    'No. La sincronización está diseñada y todavía sin hacer, así que tus días viven solo en ese teléfono. Lo único que queda es el archivo que guardaste tú, con Descargar datos.',
+  supportLearningQuestion: '¿Por qué dice Emi que todavía está aprendiendo?',
+  supportLearningAnswer:
+    'Emi necesita 2 ciclos completos antes de hacer un pronóstico. Hasta entonces cuenta con la duración de ciclo que le das.',
+  supportDeleteQuestion: '¿Cómo borro todo?',
+  supportDeleteAnswer:
+    'Abre Privacidad en la app y elige Borrar datos. Eso quita cada día, cada respuesta y la clave. Borrar la app se lleva tus días y deja la clave en el llavero de tu iPhone.',
+  supportCancelQuestion: '¿Cómo cancelo mi suscripción?',
+  supportCancelAnswer: 'Si pagaste en la App Store, cancela en los ajustes de tu cuenta de Apple.',
+
   headerHomeLabel: 'Página de inicio de Emi',
   headerMainLabel: 'Principal',
   headerEmi: 'Emi',
