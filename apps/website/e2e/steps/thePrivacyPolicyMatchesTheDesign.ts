@@ -19,22 +19,22 @@ import {
 const theDesign = theDesignAt('privacy-policy', 'render', 'Privacy.html');
 
 /**
- * The parts of the page this scenario holds against the board, each found by the element that
- * opens it and the element that closes it.
+ * The part of the page this scenario holds against the board, found by the element that opens it
+ * and the element that closes it.
  *
- * The three are what the board still describes. The words between them are version 1 and the board
- * is not: the board has no account section, no payments, no usage, no processors, no retention, no
- * rights and no legal basis, and its three cards name three things Emi no longer does. A
- * comparison of the middle would report that same difference every run, and a comparison nobody
- * can read is a comparison nobody keeps.
+ * The title is what the board still describes. The words under it are version 1 and the board is
+ * not: the board has no account section, no payments, no usage, no processors, no retention, no
+ * rights and no legal basis, and its three cards name three things Emi no longer does. The two
+ * bands the whole site shares are out for a newer reason: each drew presses to pages nobody has
+ * built yet, so the site holds those presses back and the board still draws them. A comparison of
+ * any of the three would report the same difference every run, and a comparison nobody can read is
+ * a comparison nobody keeps.
  *
- * The box of each part is read in each document rather than given here, because the page is taller
- * than the board, so the band at the foot sits further down it.
+ * The box is read in each document rather than given here, because the page is taller than the
+ * board, so the title sits at a different height in each.
  */
 const theParts: readonly APartOfAPage[] = [
-  { called: 'the-band-at-the-top', from: 'body > div > header', to: 'body > div > header' },
   { called: 'the-title-of-the-policy', from: 'main header h1', to: 'main header p' },
-  { called: 'the-band-at-the-foot', from: 'body > div > footer', to: 'body > div > footer' },
 ];
 
 const { Given, Then } = createBdd(test);
@@ -62,7 +62,7 @@ Given(
   },
 );
 
-Then('each part of the page she reads is as tall as that part of the design', ({ comparing }) => {
+Then('the title of the policy is as tall as the title of the design', ({ comparing }) => {
   expect(comparing.parts.map((pair) => pair.called)).toEqual(theParts.map((part) => part.called));
 
   for (const { called, design, page } of comparing.parts) {
@@ -74,7 +74,7 @@ Then('each part of the page she reads is as tall as that part of the design', ({
   }
 });
 
-Then('each part is the design, to within one pixel in a thousand', ({ comparing }) => {
+Then('the title is the design, to within one pixel in a thousand', ({ comparing }) => {
   for (const pair of comparing.parts) {
     howMuchOfThePartMoved(pair);
   }

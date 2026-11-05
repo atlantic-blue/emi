@@ -20,17 +20,25 @@ Feature: The page she reads is the page that was approved
   desktop and at the width of the phone most of the reading happens on, and on a failure it writes
   the picture of the difference, so the answer names the place rather than only the amount.
 
-  Two bands are the exception. The board was approved while one of the two founders had not
-  written her note, so it draws a hole of 73 characters where the page now draws the 46 words she
-  wrote, and his photograph stands where the board drew two letters. And the board draws a band of
-  six reviews that nobody has written, so the page draws no band there at all until somebody has.
+  Seven bands are the exception, and each is read on its own.
 
-  Both are read on their own: what stands above them, between them and below them is still held to
-  the design, pixel for pixel. The band of the founders is allowed to be taller on the page than on
-  the board by the height her sentences take, and the band of reviews is allowed to be the whole of
-  its height on the board and nothing on the page.
+  Five of them carry a press the site no longer draws. The band at the top draws six ways into the
+  product on the board and the two whose page exists on the page. The band at the foot draws twelve
+  presses on the board and the four whose page exists on the page. The band at the head of the page
+  and the band at the end each draw a press to Apple's store, and Apple has issued no address for
+  the listing. The band of the two offers is a press to the free calculator and a press to support
+  and the sentence explaining each, and neither page is built, so the page draws no rows of it at
+  all.
+
+  The other two are older. The board was approved while one of the two founders had not written her
+  note, so it draws a hole of 73 characters where the page now draws the 46 words she wrote, and
+  his photograph stands where the board drew two letters. And the board draws a band of six reviews
+  that nobody has written, so the page draws no band there at all until somebody has.
+
+  What stands above those seven, between them and below them is still held to the design, pixel for
+  pixel, and the whole of the difference in height is what the seven do.
 
   Scenario: the home page matches the approved design pixel for pixel
     Given a woman opens the home page beside the design the operator approved
-    Then the page she reads is as tall as the design, apart from the note one founder has written and the band of reviews it does not draw
-    And every band but the one the two founders sign and the one with no reviews in it is the design, to within one pixel in a thousand
+    Then the page she reads is as tall as the design, apart from the seven bands it draws differently
+    And every band but those seven is the design, to within one pixel in a thousand

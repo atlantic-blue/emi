@@ -18,14 +18,17 @@ Feature: The privacy policy is laid out the way it was approved
   payments that need it, and anonymous usage she can switch on, so the page now carries fifteen
   sections and says other things in its three cards. Nobody has redrawn the board.
 
-  So this scenario reads the three parts the board still describes: the band at the top of the site,
-  the title with the line under it, and the band at the foot. Each part is measured in each document
-  and then held against the other, in one browser, at the width of a desktop, of a tablet, and of
-  the phone most of the reading happens on. On a failure it writes the picture of the difference, so
-  the answer names the place rather than only the amount. What the words say is read in
-  features/website, where a reader can be held to all three languages at once.
+  The two bands the whole site shares are out as well, and for a newer reason. Each of them drew
+  presses to pages nobody has built yet, so the site holds those presses back and the board still
+  draws them.
 
-  Scenario: the bands and the title of the privacy policy are the approved design
+  So this scenario reads the one part the board still describes: the title with the line under it.
+  It is measured in each document and then held against the other, in one browser, at the width of a
+  desktop, of a tablet, and of the phone most of the reading happens on. On a failure it writes the
+  picture of the difference, so the answer names the place rather than only the amount. What the
+  words say is read in features/website, where a reader can be held to all three languages at once.
+
+  Scenario: the title of the privacy policy is the approved design
     Given a woman opens the privacy policy beside the design the operator approved
-    Then each part of the page she reads is as tall as that part of the design
-    And each part is the design, to within one pixel in a thousand
+    Then the title of the policy is as tall as the title of the design
+    And the title is the design, to within one pixel in a thousand

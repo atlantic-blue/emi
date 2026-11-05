@@ -82,6 +82,17 @@ async function pageIn(language: Language): Promise<string> {
   return renderToStaticMarkup(await HomePage({ params: Promise.resolve({ lang: language }) }));
 }
 
+/**
+ * The two bands of the board the page does not draw, by the heading each names itself to her
+ * software by.
+ *
+ * Nobody has written a review of Emi yet, so the band of reviews is held back whole. The band of
+ * the two offers is a press to the free calculator and a press to support, and the sentence
+ * explaining each, and neither page is built. Each comes back whole on the day what it waits for
+ * arrives.
+ */
+const theBandsHeldBack = ['reviews-title', 'try-title'];
+
 defineFeature(feature, (test) => {
   test('the home page matches the approved design pixel for pixel', ({ given, then, and }) => {
     const drawn: Partial<Record<Language, string>> = {};
@@ -96,7 +107,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'she reads eight of the nine bands of the board the operator drew last, in its order',
+      'she reads seven of the nine bands of the board the operator drew last, in its order',
       () => {
         const wanted = bandsOfTheDesign();
         const found = openingTagsOf(drawn.en ?? '', 'section').map(
@@ -111,10 +122,12 @@ defineFeature(feature, (test) => {
         expect(wanted).toContain('reviews-title');
         expect(wanted).not.toContain('price-title');
 
-        // The page draws every band of the board except the reviews, in the board's own order. The
+        // The page draws every band of the board except those two, in the board's own order. The
         // order is read against the board rather than written out, so a band that drifted up or down
         // the page fails here as it did before.
-        expect(found).toEqual(wanted.filter((band) => band !== 'reviews-title'));
+        expect(wanted).toContain('try-title');
+        expect(found).toEqual(wanted.filter((band) => !theBandsHeldBack.includes(band)));
+        expect(found).toHaveLength(7);
       },
     );
 
@@ -302,7 +315,7 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'a browser holds the page against the board at all three widths, leaving out the two bands that differ, and keeps the picture of any difference',
+      'a browser holds the page against the board at all three widths, leaving out the seven bands that differ, and keeps the picture of any difference',
       () => {
         const suite = asPlaywrightReadsIt();
         const sentence = 'the home page matches the approved design pixel for pixel';
@@ -325,17 +338,22 @@ defineFeature(feature, (test) => {
         expect(theSteps).toContain('pixelmatch');
         expect(theSteps).toContain('writeFileSync');
 
-        // Two bands are left out, and nothing else is. The board drew a hole where one of the
-        // two founders has since written her note, so that band is a different height on each
-        // side. And the band of reviews is on the board and not on the page, so it is left out at
-        // its full height on the board and at no height on the page. Every row outside those two
-        // is still held to the board, so the scenario says which parts of the page it leaves out
-        // and nothing else.
-        expect(theFeature).toContain(
-          'every band but the one the two founders sign and the one with no reviews in it is the design',
-        );
+        // Seven bands are left out, and nothing else is. Five of them carry a press the site no
+        // longer draws, because the page behind it is still to be built or because Apple has
+        // issued no address for the listing. The board drew a hole where one of the two founders
+        // has since written her note, so that band is a different height on each side. And the
+        // band of reviews is on the board and not on the page, so it is left out at its full
+        // height on the board and at no height on the page. Every row outside those seven is
+        // still held to the board, so the scenario says which parts of the page it leaves out and
+        // nothing else.
+        expect(theFeature).toContain('every band but those seven is the design');
         expect(theSteps).toContain('note-title');
         expect(theSteps).toContain('reviews-title');
+        expect(theSteps).toContain('try-title');
+        expect(theSteps).toContain('hero-title');
+        expect(theSteps).toContain('end-title');
+        expect(theSteps).toContain('body > div > header');
+        expect(theSteps).toContain('body > div > footer');
         expect(theSteps).toContain('above-the-bands');
         expect(theSteps).toContain('between-the-bands');
         expect(theSteps).toContain('under-the-bands');

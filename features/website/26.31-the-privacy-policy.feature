@@ -26,7 +26,9 @@ Feature: The privacy policy
   the page that is not true. The date is no longer one of them: it reads 4 November 2026.
 
   The page is built by hand from a board that was approved before any of this existed, so a browser
-  holds the bands and the title against that board and leaves the words alone. What a picture
+  holds the title against that board and leaves the words alone. The two bands the whole site shares
+  are left out of that comparison: each of them draws presses to pages nobody has built yet, so the
+  site holds those presses back and the board still draws them. What a picture
   cannot see is read here instead: that every new section arrives in all three languages, that the
   three holes are still holes, that each of the three addresses she can write to is a mail link,
   that the two presses go where the board sends them, that the page names its own address, and that
@@ -46,4 +48,4 @@ Feature: The privacy policy
     And the page names its own address, so a search engine keeps it apart from the home page
     And the list a crawler reads names the page in each of the three languages
     And the page writes no style of its own, so her browser refuses nothing
-    And a browser holds the bands and the title of the page against the board, and keeps the picture of any difference
+    And a browser holds the title of the page against the board, and keeps the picture of any difference

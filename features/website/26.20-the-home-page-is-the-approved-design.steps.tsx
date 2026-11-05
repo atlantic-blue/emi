@@ -6,10 +6,21 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
-import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
+import {
+  type Language,
+  type SiteWordKey,
+  brandEyebrowOf,
+  languages,
+  wordsIn,
+} from '../../apps/website/app/words';
 import { markerTransformOf, phaseKeyOf } from '../../apps/website/components/cycleRing';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
+import {
+  theKeysTheFrameHoldsBack,
+  theKeysTheHomePageHoldsBack,
+  theWordsHeldBackIn,
+} from '../../apps/website/test/theWordsAPressTookWithIt';
 
 const feature = loadFeature(join(__dirname, '26.20-the-home-page-is-the-approved-design.feature'));
 
@@ -86,11 +97,17 @@ function bandsOfTheDesign(): { band: string; ground: string }[] {
 }
 
 /**
- * The band of the design the page does not draw. Nobody has written a review of Emi yet, so the
- * band of reviews is held back whole rather than drawn with six cards of holes in it, which is
- * `apps/website/lib/theReviews.ts` being empty.
+ * The two bands of the design the page does not draw.
+ *
+ * Nobody has written a review of Emi yet, so the band of reviews is held back whole rather than
+ * drawn with six cards of holes in it, which is `apps/website/lib/theReviews.ts` being empty.
+ *
+ * The band of the two offers is two cards, and each card is a press and the sentence that explains
+ * the press: one to the free calculator and one to support. Neither page is built, so a press to
+ * either would answer 404, and the band has nothing left to say without them. It comes back whole
+ * on the day those two pages ship.
  */
-const THE_BAND_HELD_BACK = 'reviews-title';
+const THE_BANDS_HELD_BACK = ['reviews-title', 'try-title'];
 
 /** One band of the design, as its own markup, so what stands inside it can be read on its own. */
 function theBandOfTheDesign(band: string): string {
@@ -105,9 +122,16 @@ function theBandOfTheDesign(band: string): string {
   return markup.slice(opens, closes);
 }
 
-/** The design with one band cut out of it, which is what the rest of the board still says. */
-function theDesignWithout(band: string): string {
-  return theDesign().replace(theBandOfTheDesign(band), '');
+/** The design with those bands cut out of it, which is what the rest of the board still says. */
+function theDesignWithout(bands: readonly string[]): string {
+  return bands.reduce((markup, band) => markup.replace(theBandOfTheDesign(band), ''), theDesign());
+}
+
+/** The grounds the design paints, in its order, without the bands the page holds back. */
+function groundsOfTheDesign(): string[] {
+  return bandsOfTheDesign()
+    .filter(({ band }) => !THE_BANDS_HELD_BACK.includes(band))
+    .map(({ ground }) => ground);
 }
 
 /** The property each element sets a rule with, which is how a rule on four sides is told from one. */
@@ -150,7 +174,9 @@ function rulesIn(markup: string, stylesheet: string): Rule[] {
  */
 function rulesOfTheDesign(): string[] {
   return [
-    ...theDesignWithout(THE_BAND_HELD_BACK).matchAll(/border(-(?:top|bottom|left|right))?:\s*1px/g),
+    ...theDesignWithout(THE_BANDS_HELD_BACK).matchAll(
+      /border(-(?:top|bottom|left|right))?:\s*1px/g,
+    ),
   ].map(([, side]) => side?.slice(1) ?? 'every side');
 }
 
@@ -220,19 +246,29 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      "she reads eight of the nine bands of the approved board, in the board's order and on its grounds",
+      "she reads seven of the nine bands of the approved board, in the board's order and on its grounds",
       () => {
         const bands = openingTagsOf(drawn.en ?? '', 'section');
         const onTheBoard = bandsOfTheDesign();
-        const wanted = onTheBoard
-          .filter(({ band }) => band !== THE_BAND_HELD_BACK)
-          .map(({ ground }) => ground);
+        const wanted = groundsOfTheDesign();
 
+        // Nine on the board. The two left out are the band of reviews, which nobody has written
+        // one for, and the band of the two offers, whose two pages are still to be built.
         expect(onTheBoard).toHaveLength(9);
-        expect(onTheBoard.map(({ band }) => band)).toContain(THE_BAND_HELD_BACK);
-        expect(wanted).toHaveLength(8);
+
+        for (const band of THE_BANDS_HELD_BACK) {
+          expect({ band, onTheBoard: onTheBoard.map((each) => each.band).includes(band) }).toEqual({
+            band,
+            onTheBoard: true,
+          });
+          expect({
+            band,
+            onThePage: (drawn.en ?? '').includes(`aria-labelledby="${band}"`),
+          }).toEqual({ band, onThePage: false });
+        }
+
+        expect(wanted).toHaveLength(7);
         expect(bands).toHaveLength(wanted.length);
-        expect(drawn.en).not.toContain(THE_BAND_HELD_BACK);
 
         const painted = bands.map((tag) => {
           const found = /background-color:\s*([^;]+)/.exec(drawnBy(tag, stylesheet));
@@ -252,15 +288,18 @@ defineFeature(feature, (test) => {
       // with so that a second one cannot arrive under the same exception.
       const filled = said.filter((text) => text.startsWith('[IULIIA'));
 
-      // And the band of reviews is held back whole, so its own sentences are not on the page. A
-      // sentence counts as held back only when the rest of the board does not say it as well: the
-      // press that holds both carousels still reads the same in both bands, and that one is still
+      // And two bands are held back whole, so their own sentences are not on the page. A sentence
+      // counts as held back only when the rest of the board does not say it as well: the press
+      // that holds both carousels still reads the same in both bands, and that one is still
       // required here.
-      const elsewhere = visibleTextOf(theDesignWithout(THE_BAND_HELD_BACK));
-      const heldBack = visibleTextOf(theBandOfTheDesign(THE_BAND_HELD_BACK)).filter(
-        (text) => !elsewhere.includes(text),
+      const elsewhere = visibleTextOf(theDesignWithout(THE_BANDS_HELD_BACK));
+      const heldBack = THE_BANDS_HELD_BACK.flatMap((band) =>
+        visibleTextOf(theBandOfTheDesign(band)).filter((text) => !elsewhere.includes(text)),
       );
-      const excused = [...filled, ...heldBack];
+
+      // The board also draws every press the two bands the whole site shares no longer draw, so
+      // the sentences those presses took with them are the third exception to this reading.
+      const excused = [...filled, ...heldBack, ...theWordsHeldBackIn('en')];
 
       expect(filled).toHaveLength(1);
       expect(heldBack.length).toBeGreaterThan(0);
@@ -290,6 +329,13 @@ defineFeature(feature, (test) => {
       );
 
       expect(keysDrawn.length).toBeGreaterThan(50);
+      expect(
+        keysDrawn.filter((key) =>
+          [...theKeysTheFrameHoldsBack, ...theKeysTheHomePageHoldsBack].includes(
+            key as SiteWordKey,
+          ),
+        ),
+      ).toEqual([]);
 
       for (const language of ['ru', 'es'] as const) {
         const shown = shownIn(language);
@@ -358,13 +404,15 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the five links of the legal line are underlined, because the board underlines them',
+      'the four links of the legal line are underlined, because the board underlines them',
       () => {
+        // The board underlines five. The terms are the fifth, and that page is still to be built,
+        // so the press is not drawn and the four left are what the page underlines.
         const underlined = underlinedInTheDesign();
 
         expect(underlined).toEqual(['Privacy policy', 'Terms', 'English', 'Русский', 'Español']);
 
-        for (const text of underlined) {
+        for (const text of underlined.filter((text) => text !== wordsIn('en').footerTerms)) {
           const anchor = theAnchorAround(drawn.en ?? '', text);
 
           expect(drawnBy(anchor, stylesheet)).toContain('text-decoration-line: underline');

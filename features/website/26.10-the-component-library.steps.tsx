@@ -63,11 +63,20 @@ const theCommunitySheCanOpen = 'https://t.me/+89GgSCh6Ff85YTZk';
  */
 const theCodeSheCanRead = 'https://github.com/atlantic-blue/emi';
 
+/**
+ * The third, and the same argument again: the beta, which Apple runs and the band at the foot of
+ * every page offers. The whole invite rather than the host, so any other address on Apple's host
+ * is still refused, and the operator can close this one.
+ */
+const theBetaSheCanJoin = 'https://testflight.apple.com/join/xFSv5Gqa';
+
 function reachesAnotherCompany(source: string): boolean {
-  const withoutWhatSheChose = [theSiteItself, theCommunitySheCanOpen, theCodeSheCanRead].reduce(
-    (text, allowed) => text.split(allowed).join(''),
-    source,
-  );
+  const withoutWhatSheChose = [
+    theSiteItself,
+    theCommunitySheCanOpen,
+    theCodeSheCanRead,
+    theBetaSheCanJoin,
+  ].reduce((text, allowed) => text.split(allowed).join(''), source);
 
   return (
     /https?:\/\//.test(withoutWhatSheChose) ||
@@ -222,6 +231,12 @@ defineFeature(feature, (test) => {
       expect(reachesAnotherCompany(`she presses ${theCommunitySheCanOpen}`)).toBe(false);
       expect(reachesAnotherCompany('https://t.me/+somebody-elses-invite')).toBe(true);
       expect(reachesAnotherCompany('fetch("https://api.telegram.org/sendMessage")')).toBe(true);
+
+      // The same for the beta. The invite the operator gave reads clean, and any other address on
+      // Apple's host is still refused.
+      expect(reachesAnotherCompany(`she presses ${theBetaSheCanJoin}`)).toBe(false);
+      expect(reachesAnotherCompany('https://testflight.apple.com/join/somebody-else')).toBe(true);
+      expect(reachesAnotherCompany('fetch("https://api.apple.com/apps")')).toBe(true);
 
       const typing = readable.filter((file) =>
         /#[0-9a-fA-F]{3,8}\b/.test(readFileSync(file, 'utf8')),
