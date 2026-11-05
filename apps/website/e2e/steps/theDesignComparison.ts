@@ -310,6 +310,35 @@ export async function theBandOfTheReviews(page: Page): Promise<ABandToLeaveOut> 
   });
 }
 
+/**
+ * Where the phone stands in the page a browser is looking at: the rows its frame occupies.
+ *
+ * The board and the page draw the same screenshot in the same frame, and the board crops it to its
+ * top edge, which stops part way down a row of the screen. The page pulls the picture up so the
+ * frame stops on the rule under that row instead, so the two sides differ inside the frame and
+ * nowhere else. The frame is the same height on both, so the rows above it and the rows below it
+ * are each still held to the design, pixel for pixel.
+ *
+ * Read in the browser rather than written down, because the page and the design are not the same
+ * height and the frame therefore sits at two different places down the page.
+ */
+export async function theBandOfThePhone(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const phone = document.querySelector('main img');
+
+    if (phone === null) {
+      throw new Error('The page draws no phone under its title.');
+    }
+
+    const box = phone.getBoundingClientRect();
+
+    return {
+      from: Math.floor(box.top + window.scrollY),
+      to: Math.ceil(box.bottom + window.scrollY),
+    };
+  });
+}
+
 /** One part of a page, held against the same part of the design it was drawn from. */
 export interface APairOfPictures {
   readonly called: string;
