@@ -11,6 +11,10 @@ import PrivacyPage, { generateMetadata } from '../../apps/website/app/[lang]/pri
 import { type Language, type SiteWordKey, languages, wordsIn } from '../../apps/website/app/words';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
+import {
+  theKeysTheFrameHoldsBack,
+  theWordsHeldBackIn,
+} from '../../apps/website/test/theWordsAPressTookWithIt';
 import { SITEMAP_FILE, thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
 
 const feature = loadFeature(join(__dirname, '26.30-the-page-that-explains-the-encryption.feature'));
@@ -200,11 +204,20 @@ defineFeature(feature, (test) => {
 
       expect(inTheMiddle.length).toBeGreaterThan(25);
       expect(overtaken).toEqual(theSentencesTheBoardSaidFirst);
-      expect(
-        said.filter(
-          (text) => !overtaken.includes(text) && !visibleTextOf(inEnglish()).includes(text),
-        ),
-      ).toEqual([]);
+
+      // The board draws every press of the two bands the whole site shares, and the site draws
+      // only the presses whose page exists, so the sentences those presses took with them are
+      // one exception to this reading. The three the product overtook are the other.
+      const heldBack = theWordsHeldBackIn('en');
+      const absentFromThePage = said.filter(
+        (text) =>
+          !visibleTextOf(inEnglish()).includes(text) &&
+          !heldBack.includes(text) &&
+          !overtaken.includes(text),
+      );
+
+      expect(absentFromThePage).toEqual([]);
+      expect(inTheMiddle.filter((text) => heldBack.includes(text))).toEqual([]);
 
       // The board is in English, so the other two pages are held to the keys the English page
       // draws rather than to the board's own sentences. A key drawn in one language and not in
@@ -216,6 +229,10 @@ defineFeature(feature, (test) => {
       const keysDrawn = Object.keys(english).filter((key) =>
         shownInEnglish.has(english[key as keyof typeof english]),
       );
+
+      expect(
+        keysDrawn.filter((key) => theKeysTheFrameHoldsBack.includes(key as SiteWordKey)),
+      ).toEqual([]);
 
       expect(keysDrawn.length).toBeGreaterThan(40);
 

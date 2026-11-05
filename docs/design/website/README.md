@@ -5,8 +5,8 @@ canvas. A session cannot open that canvas, so the design is committed here, and 
 builds the site builds it from these files.
 
 One directory for each page: `home-v2/` is "Home, version 2", `protection/` is "How Emi protects
-your data", and `privacy-policy/` is "Privacy policy". Each one holds the same four things,
-described below for the home page.
+your data", `privacy-policy/` is "Privacy policy", and `support/` is "Emi Support". Each one
+holds the same four things, described below for the home page.
 
 ## What is here
 
@@ -53,6 +53,70 @@ The date at the top is the one hole this board keeps. It reads `LAST UPDATED [DA
 and on the page, because nobody set a date for the policy, and a page showing a date it was never
 given would be the first sentence on it that is not true. Setting the date is an edit to the board
 and to the three catalogues of words together.
+
+## The support page
+
+`support/` holds the same shapes again: `boards/Support.dc.html` with its tablet and phone boards,
+the same header and footer boards, `render/Support.html` with the faces it loads and the one
+drawing it fetches, which is the mark in the band at the top, and `reference/Support-1280.png`,
+`-834.png` and `-390.png`.
+
+The board sets its two headings in Newsreader, from the same files `protection/` uses. It draws no
+screenshot, so the page adds no file to the ones the edge serves.
+
+### The three lines this page changed in the render program
+
+`support/render-board.ts` is `protection/render-board.ts` with three lines changed.
+
+The first line reads the `sc-if` band of a board. It keeps the band when the value is true and
+drops it when the value is false. This board holds one such band, around the line that reads
+"Nothing found", and the other three boards hold none. Without that line the program stops on the
+hole inside the tag and writes nothing.
+
+The second line reads the browser from `EMI_CHROME` when that name is set, the way
+`share-preview/render.ts` reads it. The value behind it is the same Google Chrome of a Mac.
+
+The third line copies the two Inter files from `home-v2/render/fonts/`. The other three programs
+read those files from a directory beside themselves that nobody committed, so none of the three
+runs from a fresh clone.
+
+### Where the three pictures come from
+
+A machine with no Chrome drew them, with the headless Chromium shell of Playwright, from the
+markup beside them. The other three pages name a Mac here. This command wrote the markup and the
+pictures into `render/`, and the three pictures were moved to `reference/` after it:
+
+```
+EMI_CHROME=<the browser> node --experimental-strip-types \
+  docs/design/website/support/render-board.ts \
+  "$PWD/docs/design/website/support/boards" \
+  "$PWD/docs/design/website/support/render" Support 1280 834 390
+```
+
+Both paths must be whole. The program writes the address of the markup into the browser, and a
+browser refuses a relative one. The mark in the band at the top is not copied by the program: it
+is `render/assets/2f3b95d653826b5ca02acab62e8534de.svg`, taken from `protection/` byte for byte.
+
+### Four parts of this board are not true today
+
+The board is the design the operator approved and no character of it changed. These four parts of
+it describe a product that does not exist yet, so the page built from it may not copy them as they
+are.
+
+1. The first question reads "I lost my phone. Can you restore my records?" and the answer reads
+   "Only with your recovery code". Sync and restore are designed and are not built. Today a lost
+   phone loses every day she recorded, unless she exported her data first.
+
+2. The board writes to `hello@myemi.app`. The live site writes to `privacy@myemi.app`, which
+   `apps/website/lib/addresses.ts` holds as `THE_PRIVACY_INBOX`. Neither address receives mail
+   today. On 2026-11-04 `myemi.app` answered with no mail record and no text record.
+
+3. The Subscription card and the words "your profile" point at `Profile.dc.html`, which is the
+   account page. The site does not serve that page yet.
+
+4. The Emi Community card and The beta card both point at `#`. The first address is
+   `THE_EMI_COMMUNITY` in `apps/website/lib/addresses.ts`. The second is
+   `https://testflight.apple.com/join/xFSv5Gqa`, which no file of this repository holds yet.
 
 ## How the design changes
 

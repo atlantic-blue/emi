@@ -16,6 +16,11 @@ import {
 import { markerTransformOf, phaseKeyOf } from '../../apps/website/components/cycleRing';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
+import {
+  theKeysTheFrameHoldsBack,
+  theKeysTheHomePageHoldsBack,
+  theWordsHeldBackIn,
+} from '../../apps/website/test/theWordsAPressTookWithIt';
 
 const feature = loadFeature(join(__dirname, '26.20-the-home-page-is-the-approved-design.feature'));
 
@@ -118,13 +123,50 @@ function drawnBy(tag: string, stylesheet: string): string {
     .join(' ');
 }
 
-/** The ground the design paints a band on, from the band's own style. */
-function groundsOfTheDesign(): string[] {
-  return openingTagsOf(theDesign(), 'section').map((tag) => {
-    const found = /background:\s*([^;"]+)/.exec(tag);
+/** What the design labels each band with, and the ground it paints that band on. */
+function bandsOfTheDesign(): { band: string; ground: string }[] {
+  return openingTagsOf(theDesign(), 'section').map((tag) => ({
+    band: /aria-labelledby="([^"]+)"/.exec(tag)?.[1] ?? '',
+    ground: (/background:\s*([^;"]+)/.exec(tag)?.[1] ?? '').trim(),
+  }));
+}
 
-    return (found?.[1] ?? '').trim();
-  });
+/**
+ * The two bands of the design the page does not draw.
+ *
+ * Nobody has written a review of Emi yet, so the band of reviews is held back whole rather than
+ * drawn with six cards of holes in it, which is `apps/website/lib/theReviews.ts` being empty.
+ *
+ * The band of the two offers is two cards, and each card is a press and the sentence that explains
+ * the press: one to the free calculator and one to support. Neither page is built, so a press to
+ * either would answer 404, and the band has nothing left to say without them. It comes back whole
+ * on the day those two pages ship.
+ */
+const THE_BANDS_HELD_BACK = ['reviews-title', 'try-title'];
+
+/** One band of the design, as its own markup, so what stands inside it can be read on its own. */
+function theBandOfTheDesign(band: string): string {
+  const markup = theDesign();
+  const opens = markup.indexOf(`<section aria-labelledby="${band}"`);
+  const closes = markup.indexOf('</section>', opens);
+
+  if (opens < 0 || closes < 0) {
+    throw new Error(`The design draws no band called ${band}.`);
+  }
+
+  return markup.slice(opens, closes);
+}
+
+/** The design with those bands cut out of it, which is what the rest of the board still says. */
+function theDesignWithout(bands: readonly string[]): string {
+  return bands.reduce((markup, band) => markup.replace(theBandOfTheDesign(band), ''), theDesign());
+}
+
+/** The grounds the design paints, in its order, without the bands the page holds back. */
+function groundsOfTheDesign(): string[] {
+  return bandsOfTheDesign()
+    .filter(({ band }) => !THE_BANDS_HELD_BACK.includes(band))
+    .map(({ ground }) => ground);
 }
 
 /** The property each element sets a rule with, which is how a rule on four sides is told from one. */
@@ -166,9 +208,11 @@ function rulesIn(markup: string, stylesheet: string): Rule[] {
  * puts on one side becoming four is the drift this exists to catch, and so is the reverse.
  */
 function rulesOfTheDesign(): string[] {
-  return [...theDesign().matchAll(/border(-(?:top|bottom|left|right))?:\s*1px/g)].map(
-    ([, side]) => side?.slice(1) ?? 'every side',
-  );
+  return [
+    ...theDesignWithout(THE_BANDS_HELD_BACK).matchAll(
+      /border(-(?:top|bottom|left|right))?:\s*1px/g,
+    ),
+  ].map(([, side]) => side?.slice(1) ?? 'every side');
 }
 
 /**
@@ -237,12 +281,28 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      "she reads the nine bands of the approved board, in the board's order and on its grounds",
+      "she reads seven of the nine bands of the approved board, in the board's order and on its grounds",
       () => {
         const bands = openingTagsOf(drawn.en ?? '', 'section');
+        const onTheBoard = bandsOfTheDesign();
         const wanted = groundsOfTheDesign();
 
-        expect(wanted).toHaveLength(9);
+        // Nine on the board. The two left out are the band of reviews, which nobody has written
+        // one for, and the band of the two offers, whose two pages are still to be built.
+        expect(onTheBoard).toHaveLength(9);
+
+        for (const band of THE_BANDS_HELD_BACK) {
+          expect({ band, onTheBoard: onTheBoard.map((each) => each.band).includes(band) }).toEqual({
+            band,
+            onTheBoard: true,
+          });
+          expect({
+            band,
+            onThePage: (drawn.en ?? '').includes(`aria-labelledby="${band}"`),
+          }).toEqual({ band, onThePage: false });
+        }
+
+        expect(wanted).toHaveLength(7);
         expect(bands).toHaveLength(wanted.length);
 
         const painted = bands.map((tag) => {
@@ -268,15 +328,30 @@ defineFeature(feature, (test) => {
       // a deliberate edit of this list and of the list of what the page says in its place.
       const overtaken = theSentencesTheBoardSaidFirst.filter((text) => said.includes(text));
 
+      // And two bands are held back whole, so their own sentences are not on the page. A sentence
+      // counts as held back only when the rest of the board does not say it as well: the press
+      // that holds both carousels still reads the same in both bands, and that one is still
+      // required here.
+      const elsewhere = visibleTextOf(theDesignWithout(THE_BANDS_HELD_BACK));
+      const heldBack = THE_BANDS_HELD_BACK.flatMap((band) =>
+        visibleTextOf(theBandOfTheDesign(band)).filter((text) => !elsewhere.includes(text)),
+      );
+
+      // The board also draws every press the two bands the whole site shares no longer draw, so
+      // the sentences those presses took with them are a third exception to this reading, and
+      // the four the product overtook are a fourth.
+      const excused = [...filled, ...heldBack, ...theWordsHeldBackIn('en'), ...overtaken];
+
       expect(filled).toHaveLength(1);
+      expect(heldBack.length).toBeGreaterThan(0);
       expect(overtaken).toEqual(theSentencesTheBoardSaidFirst);
       expect(said.length).toBeGreaterThan(80);
+
+      // Every other sentence of the board is on the page, and not one of the held back ones is.
       expect(
-        said.filter(
-          (text) =>
-            !filled.includes(text) && !overtaken.includes(text) && !(drawn.en ?? '').includes(text),
-        ),
+        said.filter((text) => !excused.includes(text) && !(drawn.en ?? '').includes(text)),
       ).toEqual([]);
+      expect(heldBack.filter((text) => (drawn.en ?? '').includes(text))).toEqual([]);
 
       // The board is in English, so the other two pages are held to the keys the English page
       // draws rather than to the board's own sentences. A key drawn in one language and not in
@@ -296,6 +371,13 @@ defineFeature(feature, (test) => {
       );
 
       expect(keysDrawn.length).toBeGreaterThan(50);
+      expect(
+        keysDrawn.filter((key) =>
+          [...theKeysTheFrameHoldsBack, ...theKeysTheHomePageHoldsBack].includes(
+            key as SiteWordKey,
+          ),
+        ),
+      ).toEqual([]);
 
       for (const language of ['ru', 'es'] as const) {
         const shown = shownIn(language);
@@ -367,6 +449,8 @@ defineFeature(feature, (test) => {
     );
 
     and('every rule sits on the sides the board puts it on, and on no others', () => {
+      // Read off the board without the band it holds back, because the three presses of that band
+      // each draw a rule all the way round and none of the three is on the page.
       const wanted = rulesOfTheDesign();
       const found = rulesIn(drawn.en ?? '', stylesheet);
 
@@ -382,13 +466,15 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the five links of the legal line are underlined, because the board underlines them',
+      'the four links of the legal line are underlined, because the board underlines them',
       () => {
+        // The board underlines five. The terms are the fifth, and that page is still to be built,
+        // so the press is not drawn and the four left are what the page underlines.
         const underlined = underlinedInTheDesign();
 
         expect(underlined).toEqual(['Privacy policy', 'Terms', 'English', 'Русский', 'Español']);
 
-        for (const text of underlined) {
+        for (const text of underlined.filter((text) => text !== wordsIn('en').footerTerms)) {
           const anchor = theAnchorAround(drawn.en ?? '', text);
 
           expect(drawnBy(anchor, stylesheet)).toContain('text-decoration-line: underline');

@@ -103,7 +103,7 @@ defineFeature(feature, (test) => {
 
       expect(aPageNobodyHasWrittenYet).toContain(`aria-label="${words.headerHomeLabel}"`);
       expect(aPageNobodyHasWrittenYet).toContain(words.footerCopyright);
-      expect(aPageNobodyHasWrittenYet).toContain(words.footerSupport);
+      expect(aPageNobodyHasWrittenYet).toContain(words.footerCommunity);
     });
 
     and(

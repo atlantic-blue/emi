@@ -2,13 +2,24 @@ import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import { defineFeature, loadFeature } from 'jest-cucumber';
+import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
+import PrivacyPolicyPage from '../../apps/website/app/[lang]/privacy-policy/page';
+import ProtectionPage from '../../apps/website/app/[lang]/privacy/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
-import { SiteFooter } from '../../apps/website/components/siteFooter';
-import { NO_PAGE_YET, THE_EMI_COMMUNITY } from '../../apps/website/lib/addresses';
+import { LANGUAGES_ANCHOR } from '../../apps/website/components/siteHeader';
+import {
+  NO_PAGE_YET,
+  THE_APP_STORE_LISTING,
+  THE_EMI_BETA,
+  THE_EMI_CODE,
+  THE_EMI_COMMUNITY,
+  THE_PRIVACY_INBOX,
+} from '../../apps/website/lib/addresses';
+import { thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
 
 const feature = loadFeature(join(__dirname, '26.26-no-link-on-the-site-points-nowhere.feature'));
 
@@ -29,7 +40,33 @@ const whatTheBrowserReads = join(
   'everyPressTakesHerSomewhere.feature',
 );
 
-/** One thing on the page a woman can press, as she meets it. */
+/**
+ * The pages this site serves, each at its own address under each language. It is the list the
+ * sitemap is written from, so an address in it is an address a crawler is promised and a reader
+ * gets a page for, and a page that ships is added there once.
+ */
+function everyAddressTheSiteServes(): string[] {
+  return languages.flatMap((language) =>
+    thePagesOfTheSite.map((page) => `/${language}/${page.path}`),
+  );
+}
+
+/**
+ * Every address a press may carry that is not a page of this site: the three hosts outside it, and
+ * the inbox her mail application answers. Each one is written out whole in `lib/addresses.ts`, so
+ * a press that leaves the site leaves it for somewhere a reader of that one file can see.
+ */
+const theAddressesOffTheSite = [
+  THE_EMI_COMMUNITY,
+  THE_EMI_CODE,
+  THE_EMI_BETA,
+  THE_PRIVACY_INBOX,
+  // The listing in Apple's store, on the day Apple issues its address. It is empty until then, and
+  // no press to the store is drawn while it is empty, so it joins the four only once it is real.
+  ...(THE_APP_STORE_LISTING === '' ? [] : [THE_APP_STORE_LISTING]),
+];
+
+/** One thing on a page a woman can press, as she meets it. */
 interface APressSheCanMake {
   /** Where it takes her. */
   readonly address: string;
@@ -41,32 +78,39 @@ interface APressSheCanMake {
   readonly handsNothingBack: boolean;
 }
 
+/** One page of the site as a reader receives it: the address she opened, and the document. */
+interface APageSheOpened {
+  readonly address: string;
+  readonly language: Language;
+  readonly presses: readonly APressSheCanMake[];
+}
+
+/** What draws each page of the site, by the path the list of pages gives it. */
+const whatDrawsThePageAt: Readonly<
+  Record<string, (asked: { params: Promise<{ lang: string }> }) => Promise<ReactNode>>
+> = {
+  '': HomePage,
+  'privacy/': ProtectionPage,
+  'privacy-policy/': PrivacyPolicyPage,
+};
+
 /**
- * The page Next.js draws for an address, as a reader receives it. Next.js puts the page inside the
- * root layout and answers with one document, so the scenario composes them the same way.
+ * The whole document Next.js answers an address with, which is the page inside the root layout.
+ * The band at the top and the band at the foot belong to the layout, so a read of the page alone
+ * would read fewer presses than she is handed.
  */
-async function thePageAt(lang: string): Promise<string> {
-  const page = await HomePage({ params: Promise.resolve({ lang }) });
+async function theDocumentAt(path: string, lang: Language): Promise<string> {
+  const draw = whatDrawsThePageAt[path];
+
+  if (draw === undefined) {
+    throw new Error(`Nothing draws the page at ${path}, so the list of pages has moved.`);
+  }
+
+  const page = await draw({ params: Promise.resolve({ lang }) });
 
   return renderToStaticMarkup(
     await RootLayout({ children: page, params: Promise.resolve({ lang }) }),
   );
-}
-
-/**
- * The part of the document the page itself fills. The band at the top and the band at the foot
- * belong to every page of the site, and the one way home the band at the top carries is the one
- * press that is supposed to lead to the page she is on.
- */
-function insideThePage(markup: string): string {
-  const opens = markup.indexOf('<main');
-  const closes = markup.indexOf('</main>');
-
-  if (opens < 0 || closes < opens) {
-    throw new Error('The document carries no part of its own, so there is nothing to read.');
-  }
-
-  return markup.slice(opens, closes);
 }
 
 /** Every press in a piece of markup, in the order a reader meets it. */
@@ -89,58 +133,118 @@ function everyPressIn(markup: string): APressSheCanMake[] {
   });
 }
 
+/** The part of a document the band at the foot of the page fills. */
+function theBandAtTheFootOf(markup: string): string {
+  const opens = markup.indexOf('<footer');
+  const closes = markup.indexOf('</footer>');
+
+  if (opens < 0 || closes < opens) {
+    throw new Error('The document carries no band at its foot, so there is nothing to read.');
+  }
+
+  return markup.slice(opens, closes);
+}
+
+/** The part of a document the page itself fills, between the two bands the whole site shares. */
+function insideThePage(markup: string): string {
+  const opens = markup.indexOf('<main');
+  const closes = markup.indexOf('</main>');
+
+  if (opens < 0 || closes < opens) {
+    throw new Error('The document carries no part of its own, so there is nothing to read.');
+  }
+
+  return markup.slice(opens, closes);
+}
+
 defineFeature(feature, (test) => {
   test('no link on the site points nowhere', ({ given, then, and }) => {
-    const presses = new Map<Language, APressSheCanMake[]>();
+    const opened: APageSheOpened[] = [];
     const atTheFoot = new Map<Language, APressSheCanMake[]>();
+    const insideTheHomePage = new Map<Language, APressSheCanMake[]>();
 
-    given('a woman opens the home page in each of the three languages', async () => {
+    given('a woman opens every page of the site in each of the three languages', async () => {
       for (const language of languages) {
-        presses.set(language, everyPressIn(insideThePage(await thePageAt(language))));
-        atTheFoot.set(
-          language,
-          everyPressIn(renderToStaticMarkup(<SiteFooter language={language} />)),
-        );
+        for (const page of thePagesOfTheSite) {
+          const document = await theDocumentAt(page.path, language);
+
+          opened.push({
+            address: `/${language}/${page.path}`,
+            language,
+            presses: everyPressIn(document),
+          });
+
+          if (page.path === '') {
+            atTheFoot.set(language, everyPressIn(theBandAtTheFootOf(document)));
+            insideTheHomePage.set(language, everyPressIn(insideThePage(document)));
+          }
+        }
       }
 
-      for (const language of languages) {
-        // A read that found nothing to read reports the same as a page where every press is
-        // right, so the count of what was read is part of the scenario.
-        expect((presses.get(language) ?? []).length).toBeGreaterThan(8);
-        expect((atTheFoot.get(language) ?? []).length).toBeGreaterThan(8);
+      // A read that found nothing to read reports the same as a page where every press is right,
+      // so the count of what was read is part of the scenario. Nine pages, and the band at the
+      // top and the band at the foot of each of them.
+      expect(opened).toHaveLength(languages.length * thePagesOfTheSite.length);
+      expect(thePagesOfTheSite.length).toBeGreaterThan(2);
+
+      for (const page of opened) {
+        expect({ address: page.address, enough: page.presses.length > 8 }).toEqual({
+          address: page.address,
+          enough: true,
+        });
       }
     });
 
-    then('each press inside the page moves her somewhere', () => {
-      for (const language of languages) {
-        const leadingSomewhere = (presses.get(language) ?? []).filter(
-          (press) => press.address !== NO_PAGE_YET,
-        );
+    then('no press takes her to a page that is still to be built', () => {
+      for (const page of opened) {
+        const leadingNowhere = page.presses.filter((press) => press.address === NO_PAGE_YET);
 
-        expect(leadingSomewhere.length).toBeGreaterThan(6);
+        expect({ onThePage: page.address, leadingNowhere: leadingNowhere.length }).toEqual({
+          onThePage: page.address,
+          leadingNowhere: 0,
+        });
+      }
 
-        for (const press of leadingSomewhere) {
-          // A page of this site sits under the language she is reading, and the one address that
-          // is not of this site is the community's.
+      // The six pages nobody has built yet. Not one of them is pressed anywhere on the site, in
+      // any language, and the list the sitemap is written from is what says they are not built.
+      for (const path of ['buy/', 'calculator/', 'pulse/', 'support/', 'sign-in/', 'terms/']) {
+        expect(thePagesOfTheSite.map((page) => page.path)).not.toContain(path);
+
+        for (const page of opened) {
           expect({
-            called: press.called,
-            takesHerOn:
-              press.address.startsWith(`/${language}/`) || press.address === THE_EMI_COMMUNITY,
-          }).toEqual({ called: press.called, takesHerOn: true });
+            onThePage: page.address,
+            waitingFor: path,
+            pressed: page.presses.some((press) => press.address.endsWith(`/${path}`)),
+          }).toEqual({ onThePage: page.address, waitingFor: path, pressed: false });
         }
       }
     });
 
     and(
-      'the only presses that lead nowhere are the two to the store, which Apple has not opened yet',
+      'every press she meets leads to a page of this site, or off it to an address the site names',
       () => {
-        for (const language of languages) {
-          const words = wordsIn(language);
-          const leadingNowhere = (presses.get(language) ?? []).filter(
-            (press) => press.address === NO_PAGE_YET,
-          );
+        const served = everyAddressTheSiteServes();
 
-          expect(leadingNowhere.map((press) => press.called)).toEqual([words.store, words.store]);
+        for (const page of opened) {
+          for (const press of page.presses) {
+            // The three kinds a press carries. An address of this site, which is one of the pages
+            // the sitemap names. An address off it, written out whole in the one file that holds
+            // them. Or the list of languages, which stands on the page she is already reading.
+            expect({
+              onThePage: page.address,
+              called: press.called,
+              address: press.address,
+              leadsSomewhere:
+                served.includes(press.address) ||
+                theAddressesOffTheSite.includes(press.address) ||
+                press.address === `#${LANGUAGES_ANCHOR}`,
+            }).toEqual({
+              onThePage: page.address,
+              called: press.called,
+              address: press.address,
+              leadsSomewhere: true,
+            });
+          }
         }
       },
     );
@@ -152,7 +256,7 @@ defineFeature(feature, (test) => {
 
         for (const language of languages) {
           const words = wordsIn(language);
-          const inThePage = (presses.get(language) ?? []).filter(
+          const inThePage = (insideTheHomePage.get(language) ?? []).filter(
             (press) => press.called === words.communityJoin,
           );
           const inTheBand = (atTheFoot.get(language) ?? []).filter(
@@ -179,13 +283,17 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('a browser reads the same page the same way', () => {
+    and('a browser reads the same pages the same way', () => {
       const read = readFileSync(whatTheBrowserReads, 'utf8');
 
       expect(read).toContain('Scenario Outline: every press on the page takes her somewhere');
 
-      for (const language of languages) {
-        expect(read).toContain(`| /${language}/ `);
+      // The browser reads the status the site answers each press with, which this tier cannot,
+      // and it reads every page of the site in every language rather than the home page alone.
+      expect(read).toContain('answers 200');
+
+      for (const address of everyAddressTheSiteServes()) {
+        expect(read).toContain(`| ${address} `);
       }
     });
   });

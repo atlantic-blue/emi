@@ -71,7 +71,10 @@ defineFeature(feature, (test) => {
         expect(page).toContain(words.heroLine);
         expect(page).toContain(words.heroPriceLine);
         expect(page).toContain(words.heroCancel);
-        expect(page).toContain(words.store);
+
+        // The press to Apple's store is not drawn: Apple has issued no address for the listing,
+        // and it opens the pre-order on 17 November 2026.
+        expect(page).not.toContain(words.store);
 
         // The approved board names no amount on this page, so neither does the page. The till is
         // where a reader is told what a month costs, and `price` is held to the application's own
@@ -136,9 +139,9 @@ defineFeature(feature, (test) => {
       'no page asks another company for anything, and no page keeps anything on her machine',
       () => {
         for (const language of languages) {
-          // A press is not a request. The community chat is the one host the page writes down, and
-          // her browser goes there when she decides to and not while the page loads, which is what
-          // the browser reads below.
+          // A press is not a request. The community chat, the code and the beta are the three hosts
+          // the page writes down, and her browser goes to one of them when she decides to and not
+          // while the page loads, which is what the browser reads below.
           expect(hostsAPageMayNotName(pages.get(language) ?? '')).toEqual([]);
         }
 

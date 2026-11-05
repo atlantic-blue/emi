@@ -26,25 +26,6 @@ export interface ABandToLeaveOut {
 }
 
 /**
- * One area of a page a comparison leaves out, found by the element it starts at the top of and the
- * element it ends at the bottom of, and named by what a reader calls that part of the page.
- *
- * Both documents are asked for the same two elements, so an area is the same part of the page on
- * each side however far down the page it has moved. Where one document draws more there than the
- * other, the two ends can be two different elements on the page and one element in the design.
- */
-export interface AnAreaOfAPage {
-  readonly called: string;
-  readonly from: string;
-  readonly to: string;
-}
-
-/** Where one of those areas stands in a picture, in rows, with the name it was asked for. */
-export interface AnAreaMeasured extends ABandToLeaveOut {
-  readonly called: string;
-}
-
-/**
  * How a page of the site is held against the design it was drawn from. Two pages are built from
  * two boards and each has a scenario of its own, so the sentences differ and the reading does not.
  * One reading, because a second copy of it is a second set of numbers somebody can move.
@@ -132,17 +113,69 @@ export function bothOf(looking: WhatSheIsLookingAt): { design: PNG; page: PNG } 
   return { design: atTheDesign, page: atThePage };
 }
 
-export function bothSetsOfAreasOf(looking: WhatSheIsLookingAt): {
-  inTheDesign: AnAreaMeasured[];
-  onThePage: AnAreaMeasured[];
+export function bothSetsOfBandsOf(looking: WhatSheIsLookingAt): {
+  inTheDesign: readonly ABandToLeaveOut[];
+  onThePage: readonly ABandToLeaveOut[];
 } {
-  const { theAreasInTheDesign, theAreasOnThePage } = looking;
+  const { theBandsInTheDesign, theBandsOnThePage } = looking;
 
-  if (theAreasInTheDesign.length === 0 || theAreasOnThePage.length === 0) {
-    throw new Error('Every area has to be measured on both sides before it can be left out.');
+  if (theBandsInTheDesign === null || theBandsOnThePage === null) {
+    throw new Error('The bands have to be measured on both sides before they can be left out.');
   }
 
-  return { inTheDesign: theAreasInTheDesign, onThePage: theAreasOnThePage };
+  return { inTheDesign: theBandsInTheDesign, onThePage: theBandsOnThePage };
+}
+
+/**
+ * The stretches of a picture a comparison reads: from the top to the first band left out, between
+ * one band and the next, and from the last band to the foot. A band left out is named rather than
+ * painted over, so every row outside the bands is still held to the design.
+ */
+function theRowsBetween(bands: readonly ABandToLeaveOut[], height: number): ABandToLeaveOut[] {
+  const rows: ABandToLeaveOut[] = [];
+  let from = 0;
+
+  for (const band of bands) {
+    if (band.from < from || band.to < band.from) {
+      throw new Error(`A band from ${band.from} to ${band.to} is out of order or inside out.`);
+    }
+
+    rows.push({ from, to: band.from });
+    from = band.to;
+  }
+
+  rows.push({ from, to: height });
+
+  return rows;
+}
+
+/** What the failure calls one of those stretches, so a reader knows which part of the page moved. */
+function theNameOfTheRows(at: number, of: number): string {
+  if (at === 0) {
+    return 'above-the-bands';
+  }
+
+  if (at === of - 1) {
+    return 'under-the-bands';
+  }
+
+  return of > 3 ? `between-the-bands-${at}` : 'between-the-bands';
+}
+
+/** How much taller the page is than the design, which is the bands left out and nothing else. */
+export function howMuchTheBandsGrewBy(
+  inTheDesign: readonly ABandToLeaveOut[],
+  onThePage: readonly ABandToLeaveOut[],
+): number {
+  return onThePage.reduce((grown, band, at) => {
+    const drawn = inTheDesign[at];
+
+    if (drawn === undefined) {
+      throw new Error(`The design has no band to hold band ${at} of the page against.`);
+    }
+
+    return grown + (band.to - band.from) - (drawn.to - drawn.from);
+  }, 0);
 }
 
 /**
@@ -156,67 +189,54 @@ export function howMuchOfItMoved(looking: WhatSheIsLookingAt, called: string): v
 }
 
 /**
- * The same comparison, with the named areas of each side left out. Each area is a place the page
- * and the design are allowed to differ, and each one is allowed to be a different height on the
- * two sides, so the rows between one area and the next are read from the bottom of the area above
- * them on each side. Nothing is painted over and nothing is skipped past: every row outside the
- * areas is held to the design, pixel for pixel.
+ * The same comparison, with named bands of each side left out. A band left out is where the page
+ * and the design are allowed to differ, and it is allowed to be a different height on each side,
+ * so the stretches between them are read in order from the top of both pictures. Nothing is
+ * painted over and nothing is skipped past: every row outside those bands is held to the design as
+ * before.
  *
- * Each stretch between two areas has to be the same height on both sides, or the pages differ
- * somewhere other than the areas and the comparison would be reading one part of the page against
- * another. That is what the height of each stretch being equal says, and a failure names the area
- * the stretch sits above.
+ * Each pair of stretches has to be the same height, or the pages differ somewhere other than the
+ * bands and the comparison would be reading one section of the page against another.
  */
-export function howMuchOfItMovedOutsideTheAreas(looking: WhatSheIsLookingAt, called: string): void {
+export function howMuchOfItMovedOutside(looking: WhatSheIsLookingAt, called: string): void {
   const { design, page } = bothOf(looking);
-  const { inTheDesign, onThePage } = bothSetsOfAreasOf(looking);
+  const { inTheDesign, onThePage } = bothSetsOfBandsOf(looking);
 
   expect(page.width).toBe(design.width);
-  expect(onThePage.map((area) => area.called)).toEqual(inTheDesign.map((area) => area.called));
+  expect(onThePage).toHaveLength(inTheDesign.length);
+  expect(inTheDesign.length).toBeGreaterThan(0);
 
-  let downTheDesign = 0;
-  let downThePage = 0;
+  const drawn = theRowsBetween(inTheDesign, design.height);
+  const built = theRowsBetween(onThePage, page.height);
+  let rowsRead = 0;
 
-  for (const [at, area] of inTheDesign.entries()) {
-    const onTheOther = onThePage[at];
+  for (const [at, rows] of drawn.entries()) {
+    const against = built[at];
 
-    if (onTheOther === undefined) {
-      throw new Error(`${area.called} was not measured on the page.`);
+    if (against === undefined) {
+      throw new Error(`The page has no rows to hold stretch ${at} of the design against.`);
     }
+
+    // Two bands that meet leave no rows between them, and a band at the top or at the foot of a
+    // page leaves none outside it. A stretch of no rows on both sides says nothing about either
+    // document, so it is passed over. A stretch of no rows on one side only is a real difference
+    // and goes to the comparison, which refuses it on the heights.
+    if (rows.to === rows.from && against.to === against.from) {
+      continue;
+    }
+
+    rowsRead += rows.to - rows.from;
 
     holdOneAgainstTheOther(
-      rowsOf(design, downTheDesign, area.from),
-      rowsOf(page, downThePage, onTheOther.from),
-      `${called}-above-${area.called}`,
+      rowsOf(design, rows.from, rows.to),
+      rowsOf(page, against.from, against.to),
+      `${called}-${theNameOfTheRows(at, drawn.length)}`,
     );
-
-    downTheDesign = area.to;
-    downThePage = onTheOther.to;
   }
 
-  holdOneAgainstTheOther(
-    rowsOf(design, downTheDesign, design.height),
-    rowsOf(page, downThePage, page.height),
-    `${called}-under-the-last-area`,
-  );
-}
-
-/**
- * How much taller the page is than the design inside the areas that were left out, which is the
- * whole of the difference in the height of the two documents where nothing else moved.
- */
-export function howMuchTheAreasGrew(looking: WhatSheIsLookingAt): number {
-  const { inTheDesign, onThePage } = bothSetsOfAreasOf(looking);
-
-  return onThePage.reduce((grown, area, at) => {
-    const inTheOther = inTheDesign[at];
-
-    if (inTheOther === undefined) {
-      throw new Error(`${area.called} was not measured in the design.`);
-    }
-
-    return grown + (area.to - area.from) - (inTheOther.to - inTheOther.from);
-  }, 0);
+  // A reading that passed over every stretch reports the same as a page that is the design, so the
+  // rows it did read are part of the reading.
+  expect(rowsRead).toBeGreaterThan(0);
 }
 
 function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
@@ -225,6 +245,8 @@ function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
 
   expect(page.width).toBe(width);
   expect(page.height).toBe(height);
+  // A stretch of no rows at all compares clean whatever either side draws, and a band that swallowed
+  // the whole page would leave every stretch empty, so an empty one is refused rather than passed.
   expect(height).toBeGreaterThan(0);
 
   const differing = pixelmatch(design.data, page.data, difference.data, width, height, {
@@ -250,57 +272,266 @@ function holdOneAgainstTheOther(design: PNG, page: PNG, called: string): void {
 }
 
 /**
- * Where each named area stands in the document a browser is looking at, in rows down the page.
- * Read in the browser rather than written down, because the page and the design put the same part
- * of the page at different heights, and both are measured the same way.
- *
- * The areas come back in the order they were asked for, and that order has to be the order they
- * stand in down the page, or the stretches between them would overlap and a comparison of them
- * would be reading one part of the page against another.
+ * Where the band of the two founders stands in the page a browser is looking at: the top of the
+ * note, and the row under the band that holds it. Read in the browser rather than written down,
+ * because the page and the design put the band at different heights and both are measured the same
+ * way.
  */
-export async function theAreasToLeaveOut(
+export async function theBandOfTheFounders(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const band = document.querySelector('section[aria-labelledby="note-title"]');
+    const note = band?.querySelector('blockquote');
+
+    if (band === null || band === undefined || note === null || note === undefined) {
+      throw new Error('The page draws no band of the two founders.');
+    }
+
+    const top = note.getBoundingClientRect().top + window.scrollY;
+    const under = band.getBoundingClientRect().bottom + window.scrollY;
+
+    return { from: Math.floor(top), to: Math.ceil(under) };
+  });
+}
+
+/**
+ * Where the band of reviews stands in the document a browser is looking at. The design draws it,
+ * and the page draws it only once somebody has written a review, so a document that holds the band
+ * is measured by the band itself and a document without it reports the row where it would stand
+ * and no height. The row is the foot of the band above it, which is the top of the band in the
+ * document that has one, so the two sides line up to the pixel.
+ */
+export async function theBandOfTheReviews(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const down = (box: DOMRect): { from: number; to: number } => ({
+      from: Math.round(box.top + window.scrollY),
+      to: Math.round(box.bottom + window.scrollY),
+    });
+
+    const band = document.querySelector('section[aria-labelledby="reviews-title"]');
+
+    if (band !== null) {
+      return down(band.getBoundingClientRect());
+    }
+
+    const above = document.querySelector('section[aria-labelledby="privacy-title"]');
+
+    if (above === null) {
+      throw new Error('The document draws no band above where the reviews would stand.');
+    }
+
+    const row = Math.round(above.getBoundingClientRect().bottom + window.scrollY);
+
+    return { from: row, to: row };
+  });
+}
+
+/**
+ * Where the band at the top of every page stands in the document a browser is looking at.
+ *
+ * It is left out of every comparison, because the board draws six ways into the product and the
+ * site draws the two whose page exists. It is the same height on both sides, so what is under it
+ * still lines up to the pixel.
+ */
+export async function theBandAtTheTop(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, 'body > div > header', 'band at the top');
+}
+
+/**
+ * Where the band at the foot of every page stands. It is left out for the reason the band at the
+ * top is: the board draws twelve presses and four groups, and the site draws the four presses
+ * whose page exists, in three groups.
+ */
+export async function theBandAtTheFoot(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, 'body > div > footer', 'band at the foot');
+}
+
+/**
+ * Where the band at the head of the home page stands. The board draws a press to Apple's store in
+ * it, and Apple has issued no address for the listing, so the site draws the words beside where
+ * that press stood and the band is shorter.
+ */
+export async function theBandOfTheHero(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, 'section[aria-labelledby="hero-title"]', 'band at the head');
+}
+
+/**
+ * Where the card of the forecast stands on the home page. The board writes two days of October
+ * 2026 into it and the page counts a week from the day it is drawn for, so the two hold different
+ * words in a card whose height the longer sentence can change.
+ */
+export async function theForecastCard(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'section[aria-labelledby="forecast-title"] div div div',
+    'forecast card',
+  );
+}
+
+/**
+ * Where the one promise of the home page stands. The board promises that her data is always
+ * encrypted, and an export is a readable file she holds, so the page says where the encryption
+ * happens and what it covers, in a sentence that is longer.
+ */
+export async function theWordsOfThePromise(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, '#privacy-title', 'promise under the band of the founders');
+}
+
+/**
+ * Where the opening of the page that explains the encryption stands: from the top of the first
+ * paragraph to the foot of the last one. The board draws one paragraph there and the page draws a
+ * second under it, about the account, the payments and the anonymous reports.
+ */
+export async function theOpeningOfTheEncryptionPage(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const opens = document.querySelector('main > section:nth-of-type(1) > p');
+    const closes = document.querySelector('main > section:nth-of-type(1) > p:last-of-type');
+
+    if (opens === null || closes === null) {
+      throw new Error('The document draws no opening paragraph on the encryption page.');
+    }
+
+    return {
+      from: Math.round(opens.getBoundingClientRect().top + window.scrollY),
+      to: Math.round(closes.getBoundingClientRect().bottom + window.scrollY),
+    };
+  });
+}
+
+/**
+ * Where the line under the first of the three steps stands. The board says she can log a note and
+ * there is no note to log yet, so the page names one thing fewer.
+ */
+export async function theLineAboutWhatSheLogs(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(2) > div > div > div:first-child > p',
+    'line about what she logs',
+  );
+}
+
+/**
+ * Where the card that says she holds a recovery code stands, on the dark band. No screen of the
+ * application shows her one, so the page carries the badge that says it is designed and not built,
+ * and the card is taller than the board's.
+ */
+export async function theCardOfTheRecoveryCode(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(3) > div > div > div:nth-child(2)',
+    'card of the recovery code',
+  );
+}
+
+/**
+ * Where the first of the four limits stands. The board tells her to keep a code, and nothing
+ * restores a lost phone yet, so the page tells her to download her data instead.
+ */
+export async function theFirstLimit(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(4) > div > div:nth-child(2) > div:first-child',
+    'first limit',
+  );
+}
+
+/** Where the band at the end of the home page stands, which draws the second press to the store. */
+export async function theBandAtTheEnd(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, 'section[aria-labelledby="end-title"]', 'band at the end');
+}
+
+/**
+ * Where the band of the two offers stands in the document a browser is looking at.
+ *
+ * The board draws it, and the site draws it only once the free calculator and the support page
+ * exist, because each of its two cards is a press and the sentence explaining the press. A
+ * document that holds the band is measured by the band itself, and a document without it reports
+ * the row where it would stand and no height, which is the foot of the band above it.
+ */
+export async function theBandOfTheTwoOffers(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const down = (box: DOMRect): { from: number; to: number } => ({
+      from: Math.round(box.top + window.scrollY),
+      to: Math.round(box.bottom + window.scrollY),
+    });
+
+    const band = document.querySelector('section[aria-labelledby="try-title"]');
+
+    if (band !== null) {
+      return down(band.getBoundingClientRect());
+    }
+
+    // The band of reviews stands above it on the board. The page draws neither, so the row is the
+    // foot of the band above that one, which is the same row the band of reviews reports.
+    const above =
+      document.querySelector('section[aria-labelledby="reviews-title"]') ??
+      document.querySelector('section[aria-labelledby="privacy-title"]');
+
+    if (above === null) {
+      throw new Error('The document draws no band above where the two offers would stand.');
+    }
+
+    const row = Math.round(above.getBoundingClientRect().bottom + window.scrollY);
+
+    return { from: row, to: row };
+  });
+}
+
+/**
+ * The rows one element of a document occupies, read in the browser rather than written down,
+ * because the page and the design are not the same height and the same band therefore sits at two
+ * different places down each of them.
+ */
+async function rowsOfTheFirst(
   page: Page,
-  areas: readonly AnAreaOfAPage[],
-): Promise<AnAreaMeasured[]> {
-  const measured: AnAreaMeasured[] = [];
+  selector: string,
+  called: string,
+): Promise<ABandToLeaveOut> {
+  return await page.evaluate(
+    ([selector, called]) => {
+      const band = document.querySelector(selector as string);
 
-  for (const area of areas) {
-    const rows = await page.evaluate(
-      ([from, to]) => {
-        const opens = document.querySelector(from as string);
-        const closes = document.querySelector(to as string);
+      if (band === null) {
+        throw new Error(`The document draws no ${called as string}.`);
+      }
 
-        if (opens === null || closes === null) {
-          throw new Error(`The document holds no ${from} or no ${to}.`);
-        }
+      const box = band.getBoundingClientRect();
 
-        return {
-          top: opens.getBoundingClientRect().top + window.scrollY,
-          bottom: closes.getBoundingClientRect().bottom + window.scrollY,
-        };
-      },
-      [area.from, area.to] as const,
-    );
+      return {
+        from: Math.round(box.top + window.scrollY),
+        to: Math.round(box.bottom + window.scrollY),
+      };
+    },
+    [selector, called] as const,
+  );
+}
 
-    const from = Math.floor(rows.top);
-    const to = Math.ceil(rows.bottom);
-    const above = measured.at(-1);
+/**
+ * Where the phone stands in the page a browser is looking at: the rows its frame occupies.
+ *
+ * The board and the page draw the same screenshot in the same frame, and the board crops it to its
+ * top edge, which stops part way down a row of the screen. The page pulls the picture up so the
+ * frame stops on the rule under that row instead, so the two sides differ inside the frame and
+ * nowhere else. The frame is the same height on both, so the rows above it and the rows below it
+ * are each still held to the design, pixel for pixel.
+ *
+ * Read in the browser rather than written down, because the page and the design are not the same
+ * height and the frame therefore sits at two different places down the page.
+ */
+export async function theBandOfThePhone(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const phone = document.querySelector('main img');
 
-    if (to <= from) {
-      throw new Error(`The area called ${area.called} measured ${to - from} px tall.`);
+    if (phone === null) {
+      throw new Error('The page draws no phone under its title.');
     }
 
-    if (above !== undefined && from < above.to) {
-      throw new Error(
-        `The area called ${area.called} starts at row ${from}, which is above the bottom of ` +
-          `${above.called} at row ${above.to}. The areas have to be named down the page.`,
-      );
-    }
+    const box = phone.getBoundingClientRect();
 
-    measured.push({ called: area.called, from, to });
-  }
-
-  return measured;
+    return {
+      from: Math.floor(box.top + window.scrollY),
+      to: Math.ceil(box.bottom + window.scrollY),
+    };
+  });
 }
 
 /** One part of a page, held against the same part of the design it was drawn from. */

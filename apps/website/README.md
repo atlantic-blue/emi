@@ -48,7 +48,7 @@ the site's own palette starts with `site`, because Tailwind carries one flat nam
 otherwise answer `bg-ground` with whichever of the two was written last.
 
 `phone:` is the one breakpoint the board adds, at `websitePhoneWidth`. At that width and narrower
-the six links in the band at the top are not drawn and the menu button is.
+the links in the band at the top are not drawn and the menu button is.
 
 The theme is TypeScript rather than a block inside the stylesheet. The rule that refuses a colour
 outside the token package is an eslint rule, and eslint reads TypeScript and not stylesheets, so a
@@ -85,8 +85,10 @@ words of the application. A sentence that already exists there is copied from th
 written again: the price line is the application's own, and `test/words.test.ts` reads the two
 against each other so they cannot drift. The home page names no amount, because the board took it
 off; the till is the one place a reader is told what a month costs. `lib/thePlaceholders.ts` holds
-the text the board leaves a hole for, which is not a word of a catalogue because it reads the same
-in every language until the text that fills it arrives. The band at the foot opens with an
+the text the privacy policy leaves a hole for, which is not a word of a catalogue because it reads
+the same in every language until the text that fills it arrives. `lib/theReviews.ts` holds what
+people have said about Emi, in their own words and with their permission, and the home page draws
+the band of reviews only while that list holds something. The band at the foot opens with an
 approved denial of
 `tools/pipeline/forbiddenClaims.ts`, word for word, and the same test reads it against the gate's
 own list. It is also the board's own sentence, so the gate and the design agree and neither has to

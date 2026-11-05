@@ -14,7 +14,12 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 import { servedFonts } from '../../apps/website/app/fonts';
 import { wordsIn } from '../../apps/website/app/words';
-import { SiteFooter, footerGroups } from '../../apps/website/components/siteFooter';
+import {
+  SiteFooter,
+  footerGroups,
+  theGroupsOfTheBand,
+  theTerms,
+} from '../../apps/website/components/siteFooter';
 import { ICON_FILE, SiteHeader, mainLinks } from '../../apps/website/components/siteHeader';
 import { fontLoaderCalls } from '../../apps/website/test/doubles/nextFontLocal';
 import { declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
@@ -130,22 +135,35 @@ defineFeature(feature, (test) => {
       expect(header).not.toContain('style=');
     });
 
-    and('she can follow the six ways into the product from the top of the page', () => {
-      const main = header.slice(header.indexOf('<nav'), header.indexOf('</nav>'));
+    and(
+      'she can follow the ways into the product whose page exists from the top of the page',
+      () => {
+        const main = header.slice(header.indexOf('<nav'), header.indexOf('</nav>'));
 
-      expect(main).toContain(`aria-label="${words.headerMainLabel}"`);
-      expect(linksIn(main)).toEqual([
-        { address: '/en/', words: words.headerEmi },
-        { address: '/en/privacy/', words: words.headerPrivacy },
-        { address: '/en/calculator/', words: words.headerCalculator },
-        { address: '/en/pulse/', words: words.headerPulse },
-        { address: '/en/buy/', words: words.headerBuy },
-        { address: '/en/support/', words: words.headerSupport },
-      ]);
-      expect(mainLinks).toHaveLength(6);
-    });
+        expect(main).toContain(`aria-label="${words.headerMainLabel}"`);
+        expect(linksIn(main)).toEqual([
+          { address: '/en/', words: words.headerEmi },
+          { address: '/en/privacy/', words: words.headerPrivacy },
+        ]);
 
-    and('on a phone those six fold into one button she can press', async () => {
+        // The band holds all six the board drew. Four of them wait for a page: the calculator, Pulse,
+        // the till and support are each marked in the code, so each one is drawn again by taking one
+        // line off its entry on the day its page ships.
+        expect(mainLinks).toHaveLength(6);
+        expect(
+          mainLinks.filter((link) => link.waitsForItsPage === true).map((link) => link.path),
+        ).toEqual(['calculator/', 'pulse/', 'buy/', 'support/']);
+
+        for (const waiting of ['Calculator', 'Pulse', 'Buy', 'Support']) {
+          expect({ waiting, drawn: main.includes(`>${waiting}</a>`) }).toEqual({
+            waiting,
+            drawn: false,
+          });
+        }
+      },
+    );
+
+    and('on a phone those fold into one button she can press', async () => {
       const button = theElementCarrying(header, `aria-label="${words.headerMenuLabel}"`);
       const main = theElementCarrying(header, `aria-label="${words.headerMainLabel}"`);
       const stylesheet = await stylesheetFor([
@@ -217,7 +235,7 @@ defineFeature(feature, (test) => {
     );
 
     and(
-      'the foot of the page tells her where to get the application, how Emi protects her, what she can learn and how to reach somebody',
+      'the foot of the page tells her where to get the application, how Emi protects her and how to reach somebody',
       () => {
         expect(footerGroups.map((group) => words[group.title])).toEqual([
           words.footerEmiGroup,
@@ -226,16 +244,29 @@ defineFeature(feature, (test) => {
           words.footerHelpGroup,
         ]);
 
-        for (const group of footerGroups) {
+        // The group about learning offers the calculator, the guides and Pulse, and none of the
+        // three pages exists, so the band draws neither it nor its heading. A heading over nothing
+        // reads as a part of the page that failed to load.
+        expect(theGroupsOfTheBand().map((group) => words[group.title])).toEqual([
+          words.footerEmiGroup,
+          words.footerPrivacyGroup,
+          words.footerHelpGroup,
+        ]);
+        expect(footer).not.toContain(`aria-label="${words.footerLearnGroup}"`);
+
+        for (const group of theGroupsOfTheBand()) {
           const whole = footer.slice(
             footer.indexOf(`aria-label="${words[group.title]}"`),
             footer.indexOf('</nav>', footer.indexOf(`aria-label="${words[group.title]}"`)),
           );
 
-          expect(group.links).toHaveLength(3);
           expect(linksIn(whole).map((link) => link.words)).toEqual(
             group.links.map((link) => words[link.word]),
           );
+        }
+
+        for (const group of footerGroups) {
+          expect(group.links).toHaveLength(3);
         }
       },
     );
@@ -248,14 +279,17 @@ defineFeature(feature, (test) => {
 
         const legal = linksIn(footer.slice(footer.lastIndexOf('<div')));
 
+        // The terms are the one press of the legal line that waits for its page, and the press is
+        // drawn again by taking one line off its entry on the day that page ships.
         expect(legal.map((link) => link.words)).toEqual([
           words.footerPrivacyPolicy,
-          words.footerTerms,
           'English',
           'Русский',
           'Español',
         ]);
-        expect(legal.slice(2).map((link) => link.address)).toEqual(['/en/', '/ru/', '/es/']);
+        expect(theTerms.waitsForItsPage).toBe(true);
+        expect(footer).not.toContain(`>${words.footerTerms}</a>`);
+        expect(legal.slice(1).map((link) => link.address)).toEqual(['/en/', '/ru/', '/es/']);
       },
     );
 

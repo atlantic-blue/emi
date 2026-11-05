@@ -2,19 +2,48 @@ import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { createBdd } from 'playwright-bdd';
 
-import { NO_PAGE_YET, THE_EMI_COMMUNITY } from '../../lib/addresses';
+import {
+  NO_PAGE_YET,
+  THE_APP_STORE_LISTING,
+  THE_EMI_BETA,
+  THE_EMI_CODE,
+  THE_EMI_COMMUNITY,
+  THE_PRIVACY_INBOX,
+} from '../../lib/addresses';
+import { LANGUAGES_ANCHOR } from '../../components/siteHeader';
 import { wordsIn } from '../../app/words';
 import type { Language } from '../../app/words';
 import { test } from './fixtures';
 import type { APressSheCanMake } from './fixtures';
 
 /**
- * The two landmarks the presses are divided by. Read by role rather than by element, because that
- * is what her software goes by.
+ * The three landmarks the presses are divided by. Read by role rather than by element, because
+ * that is what her software goes by. The band at the top carries the ways into the product, so a
+ * read that left it out would read fewer presses than she meets.
  */
+const theBandAtTheTop = 'banner';
+
 const thePageItself = 'main';
 
 const theBandAtTheFoot = 'contentinfo';
+
+/**
+ * Every address a press may carry that this site does not serve: the three hosts outside it, and
+ * the inbox her mail application answers. Each is written out whole in `lib/addresses.ts`.
+ *
+ * None of the four is asked for. This site asks no other company for anything, and a press she has
+ * not made yet asks nobody for anything, so the rule here is that the address is one of these and
+ * not that somebody else's host answered a request from a pipeline.
+ */
+const theAddressesOffTheSite = [
+  THE_EMI_COMMUNITY,
+  THE_EMI_CODE,
+  THE_EMI_BETA,
+  THE_PRIVACY_INBOX,
+  // The listing in Apple's store, on the day Apple issues its address. It is empty until then, and
+  // no press to the store is drawn while it is empty, so it joins the four only once it is real.
+  ...(THE_APP_STORE_LISTING === '' ? [] : [THE_APP_STORE_LISTING]),
+];
 
 const { Then, When } = createBdd(test);
 
@@ -28,6 +57,7 @@ When('she reads every press the page offers her', async ({ page, pressing }) => 
   pressing.reading = (await page.locator('html').getAttribute('lang')) ?? '';
 
   for (const [role, into] of [
+    [theBandAtTheTop, pressing.atTheTop],
     [thePageItself, pressing.inThePage],
     [theBandAtTheFoot, pressing.atTheFoot],
   ] as const) {
@@ -35,35 +65,78 @@ When('she reads every press the page offers her', async ({ page, pressing }) => 
   }
 
   // A read that found nothing to read reports the same as a page where every press is right, so
-  // the count of what was read is part of the scenario.
-  expect(pressing.inThePage.length).toBeGreaterThan(8);
-  expect(pressing.atTheFoot.length).toBeGreaterThan(8);
+  // the count of what was read is part of the scenario. At the width of a phone the row of ways
+  // into the product folds into the menu button, so what is left up there is the way home and the
+  // way to the list of languages.
+  expect(pressing.atTheTop.length).toBeGreaterThan(1);
+  expect(pressing.inThePage.length).toBeGreaterThan(1);
+  expect(pressing.atTheFoot.length).toBeGreaterThan(6);
 });
 
-Then('each press she can see moves her somewhere', ({ pressing }) => {
-  const language = pressing.reading;
+Then(
+  'each press she can see answers 200, or leaves the site for an address this site names',
+  async ({ page, pressing }) => {
+    const language = pressing.reading;
 
-  expect(language).not.toBe('');
+    expect(language).not.toBe('');
 
-  const leadingSomewhere = pressing.inThePage.filter((press) => press.address !== NO_PAGE_YET);
+    const everyPress = [...pressing.atTheTop, ...pressing.inThePage, ...pressing.atTheFoot];
 
-  expect(leadingSomewhere.length).toBeGreaterThan(6);
+    expect(everyPress.length).toBeGreaterThan(10);
 
-  for (const press of leadingSomewhere) {
-    // A page of this site sits under the language she is reading, and the one address that is not
-    // of this site is the community's.
+    const ofThisSite = new Set<string>();
+
+    for (const press of everyPress) {
+      if (press.address === `#${LANGUAGES_ANCHOR}`) {
+        // The list of languages stands on the page she is already reading, so there is no address
+        // to ask for. What is read instead is that the list is there to be moved to.
+        await expect(page.locator(`#${LANGUAGES_ANCHOR}`)).toHaveCount(1);
+        continue;
+      }
+
+      if (press.address.startsWith('/')) {
+        // A page of this site sits under a language, because the site serves no page at the root
+        // and the edge moves the root on to one.
+        expect({
+          called: press.called,
+          underALanguage: /^\/(en|ru|es)\//.test(press.address),
+        }).toEqual({ called: press.called, underALanguage: true });
+
+        ofThisSite.add(press.address);
+        continue;
+      }
+
+      expect({ called: press.called, address: press.address, named: true }).toEqual({
+        called: press.called,
+        address: press.address,
+        named: theAddressesOffTheSite.includes(press.address),
+      });
+    }
+
+    expect(ofThisSite.size).toBeGreaterThan(3);
+
+    for (const address of [...ofThisSite].sort()) {
+      const answer = await page.request.get(address, { maxRedirects: 0 });
+
+      expect({ address, status: answer.status() }).toEqual({ address, status: 200 });
+    }
+  },
+);
+
+Then('no press takes her to a page that is still to be built', ({ pressing }) => {
+  const everyPress = [...pressing.atTheTop, ...pressing.inThePage, ...pressing.atTheFoot];
+  const leadingNowhere = everyPress.filter((press) => press.address === NO_PAGE_YET);
+
+  expect(leadingNowhere.map((press) => press.called)).toEqual([]);
+
+  // The six pages nobody has built yet. A press to one of them is not drawn at all, so none of
+  // the six appears at the end of any address on the page.
+  for (const path of ['buy/', 'calculator/', 'pulse/', 'support/', 'sign-in/', 'terms/']) {
     expect({
-      called: press.called,
-      takesHerOn: press.address.startsWith(`/${language}/`) || press.address === THE_EMI_COMMUNITY,
-    }).toEqual({ called: press.called, takesHerOn: true });
+      waitingFor: path,
+      pressed: everyPress.some((press) => press.address.endsWith(`/${path}`)),
+    }).toEqual({ waitingFor: path, pressed: false });
   }
-});
-
-Then('the only presses that lead nowhere are the two to the store', ({ pressing }) => {
-  const words = wordsIn(pressing.reading as Language);
-  const leadingNowhere = pressing.inThePage.filter((press) => press.address === NO_PAGE_YET);
-
-  expect(leadingNowhere.map((press) => press.called)).toEqual([words.store, words.store]);
 });
 
 Then(

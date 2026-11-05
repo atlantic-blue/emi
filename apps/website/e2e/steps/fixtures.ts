@@ -1,10 +1,8 @@
 import type { PNG } from 'pngjs';
 
-import type { APairOfPictures } from './theDesignComparison';
+import type { ABandToLeaveOut, APairOfPictures } from './theDesignComparison';
 
 import { test as bdd } from 'playwright-bdd';
-
-import type { AnAreaMeasured } from './theDesignComparison';
 
 /** What the server said when she asked for the address, which the steps after the ask read. */
 export interface WhatTheSiteAnswered {
@@ -66,8 +64,8 @@ export interface APressSheCanSee {
 }
 
 /**
- * The two pictures the pixel comparison holds against each other: the design the operator approved,
- * and the page the site serves. Decoded, because what the comparison reads is pixels and not bytes.
+ * Each part of the page the pixel comparison holds against the design, with the picture of each
+ * taken from both documents. The three pages of the site each name their own parts.
  *
  * A fixture rather than a variable in the module, because the two widths run as two tests and a
  * variable here would be one value shared by both.
@@ -76,22 +74,28 @@ export interface WhatSheIsLookingAt {
   atTheDesign: PNG | null;
   atThePage: PNG | null;
   /**
-   * Where each area the comparison leaves out stands in each of the two, down the page. The board
-   * drew a hole where one of the founders has since written her note, and three more places where
-   * version 1 says something the board does not, so each of those is a different height on the two
-   * sides and the rows between them are what line up.
+   * Where each band the comparison leaves out stands in each of the two, in the order a reader
+   * meets them down the page.
+   *
+   * Seven are left out of the home page and three of the page that explains the encryption. Most
+   * of them carry a press the site no longer draws, because the page behind it is still to be
+   * built or because Apple has issued no address for the listing. The board drew a hole where one
+   * of the two founders has since written her note, so that band is a different height on each
+   * side. And nobody has written a review, so the band of reviews is the whole of its height on
+   * the board and nothing at all on the page. The rows outside them all are what line up.
    */
-  readonly theAreasInTheDesign: AnAreaMeasured[];
-  readonly theAreasOnThePage: AnAreaMeasured[];
+  theBandsInTheDesign: readonly ABandToLeaveOut[] | null;
+  theBandsOnThePage: readonly ABandToLeaveOut[] | null;
 }
 
 /**
- * Each part of the page the pixel comparison holds against the design: the band at the top, the
- * title, and the band at the foot, with the picture of each taken from both documents.
+ * Each part of the page the pixel comparison holds against the design, with the picture of each
+ * taken from both documents.
  *
- * Several parts rather than one whole page, because the words of the policy are version 1 and the
- * board is not, so the page is taller than the drawing and says other things in the middle. The
- * parts named here are the ones the board still describes.
+ * Parts rather than one whole page, because the words of the privacy policy are version 1 and its
+ * board is not, so the page is taller than the drawing and says other things in the middle, and
+ * because the two bands the whole site shares draw presses the board still has. The one part named
+ * there is what the board still describes.
  *
  * A fixture rather than a variable in the module, because three widths run as three tests and a
  * variable here would be one value shared by all of them.
@@ -118,14 +122,16 @@ export interface APressSheCanMake {
 }
 
 /**
- * Every press the page offers her, divided by where it sits. The band at the foot belongs to every
- * page of the site and the part in the middle belongs to the page, and the two carry one press each
- * to the same place, so each one is read on its own.
+ * Every press the page offers her, divided by where it sits. The band at the top and the band at
+ * the foot belong to every page of the site and the part in the middle belongs to the page, and two
+ * of the three carry one press each to the same place, so each one is read on its own.
  *
  * A fixture rather than a variable in the module, because three widths run as three tests and a
  * variable here would be one value shared by all of them.
  */
 export interface WhatEveryPressDoes {
+  /** The ways into the product, which the band at the top of every page carries. */
+  readonly atTheTop: APressSheCanMake[];
   readonly inThePage: APressSheCanMake[];
   readonly atTheFoot: APressSheCanMake[];
   /** The language the page declared, which says what a path of this site has to start with. */
@@ -210,8 +216,8 @@ export const test = bdd.extend<{
     await handTo({
       atTheDesign: null,
       atThePage: null,
-      theAreasInTheDesign: [],
-      theAreasOnThePage: [],
+      theBandsInTheDesign: null,
+      theBandsOnThePage: null,
     });
   },
   comparing: async ({}, handTo) => {
@@ -221,7 +227,7 @@ export const test = bdd.extend<{
     await handTo({ refused: [], floors: null, presses: [] });
   },
   pressing: async ({}, handTo) => {
-    await handTo({ inThePage: [], atTheFoot: [], reading: '' });
+    await handTo({ atTheTop: [], inThePage: [], atTheFoot: [], reading: '' });
   },
   cameBack: async ({}, handTo) => {
     await handTo({ status: null, headers: {}, landedOn: null });
