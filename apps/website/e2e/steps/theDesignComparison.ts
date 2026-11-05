@@ -354,6 +354,92 @@ export async function theBandOfTheHero(page: Page): Promise<ABandToLeaveOut> {
   return await rowsOfTheFirst(page, 'section[aria-labelledby="hero-title"]', 'band at the head');
 }
 
+/**
+ * Where the card of the forecast stands on the home page. The board writes two days of October
+ * 2026 into it and the page counts a week from the day it is drawn for, so the two hold different
+ * words in a card whose height the longer sentence can change.
+ */
+export async function theForecastCard(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'section[aria-labelledby="forecast-title"] div div div',
+    'forecast card',
+  );
+}
+
+/**
+ * Where the one promise of the home page stands. The board promises that her data is always
+ * encrypted, and an export is a readable file she holds, so the page says where the encryption
+ * happens and what it covers, in a sentence that is longer.
+ */
+export async function theWordsOfThePromise(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(page, '#privacy-title', 'promise under the band of the founders');
+}
+
+/**
+ * Where the opening of the page that explains the encryption stands: from the top of the first
+ * paragraph to the foot of the last one. The board draws one paragraph there and the page draws a
+ * second under it, about the account, the payments and the anonymous reports.
+ */
+export async function theOpeningOfTheEncryptionPage(page: Page): Promise<ABandToLeaveOut> {
+  return await page.evaluate(() => {
+    const opens = document.querySelector('main > section:nth-of-type(1) > p');
+    const closes = document.querySelector('main > section:nth-of-type(1) > p:last-of-type');
+
+    if (opens === null || closes === null) {
+      throw new Error('The document draws no opening paragraph on the encryption page.');
+    }
+
+    return {
+      from: Math.round(opens.getBoundingClientRect().top + window.scrollY),
+      to: Math.round(closes.getBoundingClientRect().bottom + window.scrollY),
+    };
+  });
+}
+
+/**
+ * Where the first of the three steps stands: the whole card, not the sentence inside it.
+ *
+ * The board says she can log a note and there is no note to log yet, so the page names one thing
+ * fewer and the sentence is a line shorter. The card is the smallest box that holds every row that
+ * differs: on a desktop the three cards stand in one row and the row is as tall as the tallest of
+ * them, so the card is the same height on both sides while the design draws a second line of text
+ * where the page draws the ground of the card. Leaving out the sentence alone would leave those
+ * rows in the comparison and count a height the band never lost.
+ */
+export async function theFirstStepCard(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(2) > div > div > div:first-child',
+    'first of the three steps',
+  );
+}
+
+/**
+ * Where the card that says she holds a recovery code stands, on the dark band. No screen of the
+ * application shows her one, so the page carries the badge that says it is designed and not built,
+ * and the card is taller than the board's.
+ */
+export async function theCardOfTheRecoveryCode(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(3) > div > div > div:nth-child(2)',
+    'card of the recovery code',
+  );
+}
+
+/**
+ * Where the first of the four limits stands. The board tells her to keep a code, and nothing
+ * restores a lost phone yet, so the page tells her to download her data instead.
+ */
+export async function theFirstLimit(page: Page): Promise<ABandToLeaveOut> {
+  return await rowsOfTheFirst(
+    page,
+    'main > section:nth-of-type(4) > div > div:nth-child(2) > div:first-child',
+    'first limit',
+  );
+}
+
 /** Where the band at the end of the home page stands, which draws the second press to the store. */
 export async function theBandAtTheEnd(page: Page): Promise<ABandToLeaveOut> {
   return await rowsOfTheFirst(page, 'section[aria-labelledby="end-title"]', 'band at the end');

@@ -42,6 +42,41 @@ const widths = [1280, 834, 390];
 /** One pixel in a thousand, which is the budget the browser suite holds the page to. */
 const theBudget = 0.001;
 
+/**
+ * The four sentences of the board that version 1 overtook, word for word as the board draws them.
+ *
+ * Two of them promise that her data is always encrypted, and an export is a readable file she
+ * holds, so the page says where the encryption happens and what it covers. The other two are the
+ * forecast card: the application names no confidence, and the board's two days in October 2026
+ * were in the past for every reader after that month.
+ *
+ * Nobody has redrawn the board, so the page says what the product does and this list is why the
+ * reading below does not fail on it.
+ */
+const theSentencesTheBoardSaidFirst: readonly string[] = [
+  'Emi starts with your cycle: a forecast from your own data, and how sure it is. Then accurate education, and a community where you can ask what people are told not to. Your data is always encrypted.',
+  'Between the 8th and the 14th of October',
+  'High confidence, from your last 6 cycles',
+  'Your data is always encrypted.',
+];
+
+/** What the page says in each of those places, which is read in every language. */
+const theWordsThePageSaysInstead: readonly SiteWordKey[] = [
+  'heroLine',
+  'cycleNextConfidence',
+  'privacyHeadline',
+];
+
+/**
+ * How sure the forecast is, in the application's own words with the board's count of cycles
+ * written in. The application never says a confidence, so neither does this card.
+ */
+const theConfidenceTheApplicationSays: Readonly<Record<Language, string>> = {
+  en: 'Based on your last 6 cycles',
+  ru: 'По вашим последним 6 циклам',
+  es: 'Según tus últimos 6 ciclos',
+};
+
 function read(file: string): string {
   return readFileSync(file, 'utf8');
 }
@@ -288,6 +323,11 @@ defineFeature(feature, (test) => {
       // with so that a second one cannot arrive under the same exception.
       const filled = said.filter((text) => text.startsWith('[IULIIA'));
 
+      // And four sentences of the board say more than version 1 does, so the page says what it
+      // does instead. Each one is written out here rather than matched by a pattern, so a fifth is
+      // a deliberate edit of this list and of the list of what the page says in its place.
+      const overtaken = theSentencesTheBoardSaidFirst.filter((text) => said.includes(text));
+
       // And two bands are held back whole, so their own sentences are not on the page. A sentence
       // counts as held back only when the rest of the board does not say it as well: the press
       // that holds both carousels still reads the same in both bands, and that one is still
@@ -298,11 +338,13 @@ defineFeature(feature, (test) => {
       );
 
       // The board also draws every press the two bands the whole site shares no longer draw, so
-      // the sentences those presses took with them are the third exception to this reading.
-      const excused = [...filled, ...heldBack, ...theWordsHeldBackIn('en')];
+      // the sentences those presses took with them are a third exception to this reading, and
+      // the four the product overtook are a fourth.
+      const excused = [...filled, ...heldBack, ...theWordsHeldBackIn('en'), ...overtaken];
 
       expect(filled).toHaveLength(1);
       expect(heldBack.length).toBeGreaterThan(0);
+      expect(overtaken).toEqual(theSentencesTheBoardSaidFirst);
       expect(said.length).toBeGreaterThan(80);
 
       // Every other sentence of the board is on the page, and not one of the held back ones is.
@@ -344,6 +386,26 @@ defineFeature(feature, (test) => {
         );
 
         expect(absent).toEqual([]);
+      }
+
+      // And what the page says where the board has been overtaken, in all three languages. The
+      // check above reads the board, so it would pass on a page that had quietly gone back to the
+      // board's own wording in one language.
+      for (const language of languages) {
+        const shown = shownIn(language);
+        const words = wordsIn(language);
+        const absent = theWordsThePageSaysInstead.filter((key) => !shown.has(words[key]));
+
+        expect(absent).toEqual([]);
+        expect(words.heroLine.endsWith(words.privacyHeadline)).toBe(true);
+        expect(words.cycleNextConfidence).toBe(theConfidenceTheApplicationSays[language]);
+
+        // The window is counted from the day the page is drawn, so the sentence itself is read in
+        // apps/website/test, with the clock stood in for. What is read here is that the card is
+        // not drawing a hole of the catalogue at a reader.
+        expect(
+          [...shown].filter((text) => /\{(from|to|month|fromMonth|toMonth)\}/.test(text)),
+        ).toEqual([]);
       }
     });
 

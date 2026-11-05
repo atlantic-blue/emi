@@ -338,20 +338,26 @@ defineFeature(feature, (test) => {
         expect(theSteps).toContain('pixelmatch');
         expect(theSteps).toContain('writeFileSync');
 
-        // Seven bands are left out, and nothing else is. Five of them carry a press the site no
+        // Nine parts are left out, and nothing else is. Five of them carry a press the site no
         // longer draws, because the page behind it is still to be built or because Apple has
         // issued no address for the listing. The board drew a hole where one of the two founders
         // has since written her note, so that band is a different height on each side. And the
         // band of reviews is on the board and not on the page, so it is left out at its full
-        // height on the board and at no height on the page. Every row outside those seven is
-        // still held to the board, so the scenario says which parts of the page it leaves out and
-        // nothing else.
-        expect(theFeature).toContain('every band but those seven is the design');
+        // height on the board and at no height on the page.
+        //
+        // The last two are the card of the forecast and the promise under the band of the
+        // founders, which say what version 1 does rather than what the board drew. Each of those
+        // two is the element that changed and not the band around it. Every row outside the nine
+        // is still held to the board, so the scenario says which parts of the page it leaves out
+        // and nothing else.
+        expect(theFeature).toContain('every part of the page but those nine is the design');
         expect(theSteps).toContain('note-title');
         expect(theSteps).toContain('reviews-title');
         expect(theSteps).toContain('try-title');
         expect(theSteps).toContain('hero-title');
         expect(theSteps).toContain('end-title');
+        expect(theSteps).toContain('forecast-title');
+        expect(theSteps).toContain('#privacy-title');
         expect(theSteps).toContain('body > div > header');
         expect(theSteps).toContain('body > div > footer');
         expect(theSteps).toContain('above-the-bands');

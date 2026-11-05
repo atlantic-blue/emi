@@ -20,7 +20,7 @@ Feature: The page she reads is the page that was approved
   desktop and at the width of the phone most of the reading happens on, and on a failure it writes
   the picture of the difference, so the answer names the place rather than only the amount.
 
-  Seven bands are the exception, and each is read on its own.
+  Nine parts are the exception, and each is read on its own.
 
   Five of them carry a press the site no longer draws. The band at the top draws six ways into the
   product on the board and the two whose page exists on the page. The band at the foot draws twelve
@@ -30,15 +30,23 @@ Feature: The page she reads is the page that was approved
   and the sentence explaining each, and neither page is built, so the page draws no rows of it at
   all.
 
-  The other two are older. The board was approved while one of the two founders had not written her
-  note, so it draws a hole of 73 characters where the page now draws the 46 words she wrote, and
-  his photograph stands where the board drew two letters. And the board draws a band of six reviews
+  Two are older. The board was approved while one of the two founders had not written her note, so
+  it draws a hole of 73 characters where the page now draws the 46 words she wrote, and his
+  photograph stands where the board drew two letters. And the board draws a band of six reviews
   that nobody has written, so the page draws no band there at all until somebody has.
 
-  What stands above those seven, between them and below them is still held to the design, pixel for
-  pixel, and the whole of the difference in height is what the seven do.
+  The last two are sentences the product overtook. The board's forecast card says "High confidence"
+  and names the 8th to the 14th of October 2026. The application names no confidence, and those two
+  days were in the past for every reader after that month, so the card says how many cycles the
+  window came from and counts a week from the day she opens the page. The board also promises twice
+  that her data is always encrypted, and an export is a readable file she holds, so the promise
+  under the band of the founders says that her records are encrypted on her phone. Each of those
+  two is the sentence that changed and not the band around it.
+
+  What stands above those nine, between them and below them is still held to the design, pixel for
+  pixel, and the whole of the difference in height is what the nine do.
 
   Scenario: the home page matches the approved design pixel for pixel
     Given a woman opens the home page beside the design the operator approved
-    Then the page she reads is as tall as the design, apart from the seven bands it draws differently
-    And every band but those seven is the design, to within one pixel in a thousand
+    Then the page she reads is as tall as the design, apart from the nine parts it draws differently
+    And every part of the page but those nine is the design, to within one pixel in a thousand

@@ -20,7 +20,7 @@ export const russian: SiteWords = {
 
   heroHeadline: 'Понимайте своё тело бережно.',
   heroLine:
-    'Emi начинает с вашего цикла: прогноз по вашим собственным данным и то, насколько он точен. Затем точные знания и сообщество, где можно спросить о том, о чём говорить не принято. Ваши данные всегда зашифрованы.',
+    'Emi начинает с вашего цикла: прогноз по вашим собственным данным и то, насколько он точен. Затем точные знания и сообщество, где можно спросить о том, о чём говорить не принято. Ваши записи зашифрованы на вашем телефоне.',
   heroPriceLine: 'Первый месяц бесплатно.',
   heroCancel: 'Отменить можно в любой момент.',
   ringLabel: 'Кольцо цикла, день {day} из примерно 31, {phase}.',
@@ -38,8 +38,25 @@ export const russian: SiteWords = {
     'Emi учится на ваших собственных циклах, а не на среднем значении. Она даёт окно, а не одну дату, и говорит, насколько уверена. Пока у неё нет двух полных циклов, она говорит, что ещё учится.',
   cycleScreenAlt: 'Главный экран Emi с кольцом на дне 8 из примерно 31.',
   cycleNextLabel: 'Ваши следующие месячные',
-  cycleNextRange: 'Между 8 и 14 октября',
-  cycleNextConfidence: 'Высокая уверенность, по вашим последним 6 циклам',
+  cycleNextRange: 'Между {from} и {to} {month}',
+  cycleNextRangeAcrossMonths: 'Между {from} {fromMonth} и {to} {toMonth}',
+  cycleNextConfidence: 'По вашим последним 6 циклам',
+  cycleMonthJanuary: 'января',
+  cycleMonthFebruary: 'февраля',
+  cycleMonthMarch: 'марта',
+  cycleMonthApril: 'апреля',
+  cycleMonthMay: 'мая',
+  cycleMonthJune: 'июня',
+  cycleMonthJuly: 'июля',
+  cycleMonthAugust: 'августа',
+  cycleMonthSeptember: 'сентября',
+  cycleMonthOctober: 'октября',
+  cycleMonthNovember: 'ноября',
+  cycleMonthDecember: 'декабря',
+  cycleDayFirst: '{day}',
+  cycleDaySecond: '{day}',
+  cycleDayThird: '{day}',
+  cycleDayOther: '{day}',
   cycleDenial: 'Emi не является средством контрацепции и не является медицинским изделием.',
 
   learnEyebrow: 'ОБУЧЕНИЕ',
@@ -89,7 +106,7 @@ export const russian: SiteWords = {
   carouselPause: 'Пауза',
   carouselPlay: 'Пуск',
 
-  privacyHeadline: 'Ваши данные всегда зашифрованы.',
+  privacyHeadline: 'Ваши записи зашифрованы на вашем телефоне.',
   privacyLink: 'Как Emi оберегает ваши данные ›',
 
   tryTitle: 'Пока не готовы скачивать?',
@@ -106,12 +123,16 @@ export const russian: SiteWords = {
     'Emi шифрует каждый день на вашем телефоне ключом, который остаётся на телефоне. Код открыт, и вы можете сверить эту страницу с ним.',
   protectionReadTheCode: 'Открыть код',
   protectionReadTheDocument: 'Читать полный документ ›',
+  protectionAlsoBefore:
+    'У Emi также есть необязательный аккаунт, она принимает платежи и отправляет анонимные отчёты о сбоях и об использовании, только если вы это включите. Прочитайте',
+  protectionAlsoPolicy: 'политику конфиденциальности',
+  protectionAlsoAfter: ', чтобы узнать, что хранит каждый из них и зачем.',
   protectionScreenAlt:
     'Экран «Приватность» в Emi. На нём написано: ваши дни можете читать только вы. Зашифровано на этом телефоне ключом, который есть только у вас.',
 
   protectionDayHeadline: 'Что происходит с одним днём.',
   protectionLogTitle: 'Вы записываете день.',
-  protectionLogLine: 'Месячные, симптомы, настроение, секс или заметка.',
+  protectionLogLine: 'Месячные, симптомы, настроение или секс.',
   protectionSealTitle: 'Телефон запечатывает его.',
   protectionSealLine:
     'Emi шифрует день до того, как записать его. Ключ лежит в связке ключей вашего iPhone.',
@@ -134,8 +155,9 @@ export const russian: SiteWords = {
   protectionLimitsHeadline: 'От чего Emi не спасает.',
   protectionLimitsLine:
     'Четыре предела, названные здесь и не спрятанные. Каждый говорит, что вы можете сделать.',
-  protectionLostTitle: 'Потерян телефон и потерян код',
-  protectionLostLine: 'Дни пропали. Emi, которая могла бы их вернуть, могла бы их и прочитать.',
+  protectionLostTitle: 'Потерянный телефон',
+  protectionLostLine:
+    'Восстановления пока нет, поэтому дни уходят вместе с телефоном. Нажмите «Скачать данные» в Emi, чтобы сохранить копию.',
   protectionUnlockedTitle: 'Телефон, который кто-то может разблокировать',
   protectionUnlockedLine:
     'Он прочитает экран. Держите блокировку приложения включённой. Она включена по умолчанию.',

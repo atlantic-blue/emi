@@ -8,9 +8,16 @@ import { theLinksOf } from '@/lib/theAddressesOfAPage';
 /**
  * The page that explains the encryption, in the language her address names. It is the board the
  * operator approved, `docs/design/website/protection/boards/Protection.dc.html`, part for part and
- * value for value, with its plain render beside it. A browser holds this page against that render
- * at three widths and refuses a difference of more than one pixel in a thousand, so a measure
- * written here that the board does not draw fails that comparison.
+ * value for value, with its plain render beside it. A browser holds the parts of this page the
+ * board still describes against that render at three widths and refuses a difference of more than
+ * one pixel in a thousand, so a measure written here that the board does not draw fails that
+ * comparison.
+ *
+ * Three places say what version 1 does rather than what the board drew, because the board was
+ * drawn before any of it existed. There is no free note to log. Nothing restores a lost phone, so
+ * the first limit names the export instead of a code. And the product has an account, payments and
+ * anonymous reports, which the paragraph under the opening sentence names and the policy explains.
+ * Nobody has redrawn the board, so those parts are the ones the picture comparison leaves out.
  *
  * Every value is a class and none is a style attribute, because the content policy of SITE-6 names
  * a secret for a style and a style written on an element cannot carry one, so a browser would
@@ -43,11 +50,18 @@ interface AStep {
   readonly badge?: 'built' | 'designed';
 }
 
-/** What one of the three keys is: a drawing, a title and a line. */
+/**
+ * What one of the three keys is: a drawing, a title and a line, and for one of them a badge.
+ *
+ * The badge is the same sentence the step about the sync carries, for the same reason. The code
+ * that would open the vault on another phone is written and nothing in the application reaches it,
+ * so a reader who takes this card as built believes she has a way back that she does not have.
+ */
 interface AKey {
   readonly drawing: React.ReactNode;
   readonly title: string;
   readonly line: string;
+  readonly badge?: 'designed';
 }
 
 /** What one of the four limits is: a title and what she can do about it. */
@@ -155,6 +169,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
       ),
       title: words.protectionYouTitle,
       line: words.protectionYouLine,
+      badge: 'designed',
     },
     {
       drawing: (
@@ -193,6 +208,15 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
         </h1>
         <p className="max-w-[620px] text-[19px] leading-[28px] text-siteQuietText">
           {words.protectionLine}
+        </p>
+        {/* The three things the rest of the page does not describe, and the press to the document
+            that describes them. The board was drawn when Emi had none of them. */}
+        <p className="max-w-[620px] text-[19px] leading-[28px] text-siteQuietText">
+          {`${words.protectionAlsoBefore} `}
+          <a className="text-siteAccent" href={`/${lang}/privacy-policy/`}>
+            {words.protectionAlsoPolicy}
+          </a>
+          {words.protectionAlsoAfter}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-spaceXl gap-y-spaceMd">
           <a
@@ -260,6 +284,11 @@ export default async function PrivacyPage({ params }: { params: Promise<{ lang: 
                 {holder.drawing}
                 <h3 className="text-[19px] leading-[26px] font-semibold">{holder.title}</h3>
                 <p className="text-[16px] leading-[24px] text-siteNightQuietText">{holder.line}</p>
+                {holder.badge === 'designed' ? (
+                  <span className="rounded-full border-hairline border-siteNightQuietText px-spaceMd py-[3px] text-[12px] leading-[16px] font-semibold text-siteTintDeep">
+                    {words.protectionNotBuilt}
+                  </span>
+                ) : null}
               </div>
             ))}
           </div>
