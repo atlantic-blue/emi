@@ -6,6 +6,7 @@ import { CappedText as Text } from '@emi/ui';
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Chip } from '../../components/Chip';
+import { HeadingRow } from '../../components/HeadingRow';
 import { LockLine } from '../../components/LockLine';
 import { RoundIconButton } from '../../components/RoundIconButton';
 import { Screen } from '../../components/Screen';
@@ -33,6 +34,7 @@ export const sexPageTestID = 'sex-page';
 export const sexPageBackTestID = 'sex-page-back';
 export const sexPageHighlightsTestID = 'sex-page-highlights';
 export const sexPageDayTestID = 'sex-page-day';
+export const sexPageDayRowTestID = 'sex-page-day-row';
 export const sexPageQuestionTestID = 'sex-page-question';
 export const sexPageFertileTestID = 'sex-page-fertile';
 export const sexPageLockTestID = 'sex-page-lock';
@@ -96,20 +98,23 @@ export function SexPage(props: Props): ReactNode {
         />
 
         <View style={styles.where}>
-          <View style={styles.dayRow}>
-            <Text style={styles.day} testID={sexPageDayTestID}>
-              {props.heading}
-            </Text>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded: isChoosingDay }}
-              onPress={() => setIsChoosingDay((was) => !was)}
-              style={styles.chooseDay}
-              testID={sexPageChooseDayTestID}
-            >
-              <Text style={styles.chooseDayLabel}>{sexPageCopy.chooseDay}</Text>
-            </Pressable>
-          </View>
+          <HeadingRow
+            end={
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: isChoosingDay }}
+                onPress={() => setIsChoosingDay((was) => !was)}
+                style={styles.chooseDay}
+                testID={sexPageChooseDayTestID}
+              >
+                <Text style={styles.chooseDayLabel}>{sexPageCopy.chooseDay}</Text>
+              </Pressable>
+            }
+            heading={props.heading}
+            headingStyle={styles.day}
+            headingTestID={sexPageDayTestID}
+            testID={sexPageDayRowTestID}
+          />
           {isChoosingDay ? (
             <Card testID={sexPageDaysTestID}>
               <Calendar
@@ -181,15 +186,8 @@ const styles = StyleSheet.create({
   chooseDayLabel: { color: colour.accent, ...textStyle('body-sm') },
   day: {
     color: colour.secondaryText,
-    flexShrink: 1,
     textTransform: 'uppercase',
     ...textStyle('label-md'),
-  },
-  dayRow: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: space.spaceMd,
-    justifyContent: 'space-between',
   },
   evenUp: { width: MINIMUM_TAP_TARGET },
   fertile: {
