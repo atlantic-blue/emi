@@ -7,6 +7,7 @@ import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
 import type { DayVault } from '../../src/services/vault/dayVault';
+import { fluidGridCellTestID } from '../../src/components/FluidGrid';
 import { listDayLogs } from '../../src/data/dayLogRepository';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
@@ -22,7 +23,7 @@ import {
 import {
   Today,
   todayAllSymptomsTestID,
-  todayCellTestID,
+  todayGridTestID,
   todayIcons,
   todayTestID,
 } from '../../src/features/onboarding/Today';
@@ -310,10 +311,10 @@ describe('what she feels today is her first logged day', () => {
 
       await sheReachesToday();
 
-      for (const slug of todaySymptoms) {
-        const cell = screen.getByTestId(todayCellTestID(slug));
+      for (const [at, slug] of todaySymptoms.entries()) {
+        const cell = screen.getByTestId(fluidGridCellTestID(todayGridTestID, at));
         const basis = Number.parseFloat(
-          String((StyleSheet.flatten(cell.props.style) as { flexBasis?: string }).flexBasis),
+          String((StyleSheet.flatten(cell.props.style) as { width?: string }).width),
         );
 
         // Three fit on a row and a fourth does not.
