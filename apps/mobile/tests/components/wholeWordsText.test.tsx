@@ -17,7 +17,8 @@ import {
   groupTileNameTestID,
   groupTileTestID,
 } from '../../src/features/log/GroupTiles';
-import { HEADER_END, LogHeader, logHeaderEndTestID } from '../../src/features/log/LogHeader';
+import { LogHeader, logHeaderTestID } from '../../src/features/log/LogHeader';
+import { screenHeaderEndTestID } from '../../src/components/ScreenHeader';
 import { groupHeadings } from '../../src/features/log/SymptomGroup';
 
 /**
@@ -174,7 +175,7 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
     }
   });
 
-  it('should give Done in the log header the shrink rule and an end slot that grows past the board width', async () => {
+  it('should give Done in the log header the shrink rule and an end that never gives up its width', async () => {
     await render(
       <LogHeader
         doneLabel="Готово"
@@ -189,13 +190,10 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
     );
 
     expectTheShrinkRule(textLinkLabelTestID('done') ?? '');
-    const slot = StyleSheet.flatten(screen.getByTestId(logHeaderEndTestID).props.style) as {
-      readonly width?: number;
-      readonly minWidth?: number;
-      readonly flexGrow?: number;
-    };
+    const slot = StyleSheet.flatten(
+      screen.getByTestId(screenHeaderEndTestID(logHeaderTestID)).props.style,
+    ) as { readonly width?: number; readonly flexShrink?: number };
     expect(slot.width).toBeUndefined();
-    expect(slot.minWidth).toBe(HEADER_END);
-    expect(slot.flexGrow).toBe(1);
+    expect(slot.flexShrink).toBe(0);
   });
 });

@@ -1,14 +1,13 @@
 import { join } from 'node:path';
 
-import { space } from '@emi/tokens';
 import { screen } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 
 import {
   calendarEarlierTestID,
   calendarHeaderEndTestID,
   calendarHeaderStartTestID,
-  calendarHeaderTestID,
   calendarLaterTestID,
   calendarTitleTestID,
 } from '../../src/features/calendar/CalendarScreen';
@@ -38,14 +37,6 @@ import {
   theSheetSheReads,
   whatTheMonthScreenDrew,
 } from '../fixtures/theMonthSheOpens';
-import {
-  type Box,
-  type MeasuredWordRow,
-  anIPhone16,
-  theRowOfWords,
-  toATenthOfAPoint,
-} from '../fixtures/theWidthOfARow';
-import { theWidthOfWords } from '../fixtures/theWidthOfWords';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -60,13 +51,6 @@ const appDirectory = join(__dirname, '..', '..', 'src', 'app');
 
 /** Midday on the day the drawing of the month rings, so the month reads the same in any zone. */
 const whenSheOpensTheMonth = (): Date => new Date(`${theDaySheOpensTheMonth()}T12:00:00.000Z`);
-
-/**
- * Points. Every width the title could arrive at, from nothing to far wider than any glass. A month
- * name is longer in Spanish than in English, and longer again in Russian, so the rule is held at
- * each of these rather than at the English width alone.
- */
-const everyWidthATitleCouldTake: readonly number[] = [0, 20, 60, 120, 200, 400, 1000];
 
 interface OpenApp {
   readonly pathname: () => string;
@@ -88,31 +72,6 @@ async function shePresses(testID: string): Promise<void> {
 /** The day the address carries, which is where the month she is reading is held. */
 function theDayTheAddressCarries(app: OpenApp): string {
   return String(app.searchParams()[dayParameter] ?? '');
-}
-
-/**
- * The header that carries the month title, laid out on an iPhone 16: the way back, the title, and
- * Today. Each side keeps one fixed width, so the title stands in the middle of the glass.
- *
- * A style is the same in every language and only the words change, so one render carries every
- * case and a language arrives as a width. The title is swept rather than measured, because no
- * width for Russian is read here.
- */
-function theRowOfTheTitle(titleWidth: number): MeasuredWordRow {
-  const aCell = (testID: string, words: number): { box: Box; words: number } => ({
-    box: screen.getByTestId(testID) as unknown as Box,
-    words,
-  });
-
-  return theRowOfWords(
-    screen.getByTestId(calendarHeaderTestID) as unknown as Box,
-    [
-      aCell(calendarHeaderStartTestID, 0),
-      aCell(calendarTitleTestID, titleWidth),
-      aCell(calendarHeaderEndTestID, theWidthOfWords(calendarCopy.today, 'button-md')),
-    ],
-    anIPhone16.width,
-  );
 }
 
 function theWaysToAnotherMonth(): Control[] {
@@ -251,57 +210,24 @@ describe('she swipes back two months and reads a day in that month', () => {
     });
   });
 
-  describe('the header the title shares with the way back and Today, at 393 points across', () => {
-    it.each(everyWidthATitleCouldTake)(
-      'stands a gap between the title and each way at a title of %p points',
-      async (titleWidth) => {
-        await sheOpens('/calendar');
-
-        const row = theRowOfTheTitle(titleWidth);
-
-        expect(row.separations).toHaveLength(2);
-
-        for (const separation of row.separations) {
-          expect(separation).toBeGreaterThanOrEqual(space.spaceSm);
-        }
-      },
-    );
-
-    it('ends inside the row, whatever the title asks for', async () => {
+  describe('the header the title shares with the way back and Today', () => {
+    it('draws the whole month with no line limit, so the title is never cut', async () => {
       await sheOpens('/calendar');
 
-      for (const titleWidth of everyWidthATitleCouldTake) {
-        const row = theRowOfTheTitle(titleWidth);
+      const title = screen.getByTestId(calendarTitleTestID);
 
-        expect(row.rightEdge).toBeLessThanOrEqual(row.width);
+      expect(title.props.numberOfLines).toBeUndefined();
+      expect(title).toHaveTextContent(monthLabel(theMonthSheOpens));
+    });
+
+    it('never takes a point off the way back or Today', async () => {
+      await sheOpens('/calendar');
+
+      for (const end of [calendarHeaderStartTestID, calendarHeaderEndTestID]) {
+        expect(StyleSheet.flatten(screen.getByTestId(end).props.style)).toMatchObject({
+          flexShrink: 0,
+        });
       }
-    });
-
-    it('never takes a point off the way back or Today, which keep one width each', async () => {
-      await sheOpens('/calendar');
-
-      for (const titleWidth of everyWidthATitleCouldTake) {
-        const [start, , end] = theRowOfTheTitle(titleWidth).cellWidths;
-
-        expect(start).toBe(end);
-        expect(start).toBeGreaterThanOrEqual(theWidthOfWords(calendarCopy.today, 'button-md'));
-      }
-    });
-
-    it('draws the title on one line, so giving way never makes the row taller', async () => {
-      await sheOpens('/calendar');
-
-      expect(screen.getByTestId(calendarTitleTestID).props.numberOfLines).toBe(1);
-    });
-
-    it('leaves the English month its whole width, and lets it give way past that', async () => {
-      await sheOpens('/calendar');
-
-      const theWholeTitle = theWidthOfWords(monthLabel(theMonthSheOpens), 'headline-sm');
-      const [, asDrawn] = theRowOfTheTitle(theWholeTitle).cellWidths;
-
-      expect(asDrawn).toBe(toATenthOfAPoint(theWholeTitle));
-      expect(theRowOfTheTitle(1000).cellWidths[1]).toBeLessThan(1000);
     });
   });
 
