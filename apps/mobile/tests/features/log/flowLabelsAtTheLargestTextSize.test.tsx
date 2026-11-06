@@ -13,7 +13,12 @@ import {
   flowOptionTestID,
 } from '../../../src/features/log/FlowPicker';
 import { logFlowDoneTestID } from '../../../src/features/log/LogFlow';
-import { logHeaderDoneRoomTestID, logHeaderEndTestID } from '../../../src/features/log/LogHeader';
+import { logHeaderTestID } from '../../../src/features/log/LogHeader';
+import {
+  screenHeaderEndTestID,
+  screenHeaderStartTestID,
+  screenHeaderWordTestID,
+} from '../../../src/components/ScreenHeader';
 import { type Language, languages } from '../../../src/language/language';
 
 let mockPhoneTag: string | undefined = 'en-GB';
@@ -270,12 +275,30 @@ describe('the five flow words at the largest text size on the smallest iPhone', 
       await render(theLogIn(language));
       const done = doneAtTheLargestTextSize[language];
 
-      const room = screen.getByTestId(logHeaderDoneRoomTestID, { includeHiddenElements: true });
-      await fireEvent(room, 'layout', {
+      await fireEvent(screen.getByTestId(logHeaderTestID), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: 335, height: MINIMUM_TAP_TARGET } },
+      });
+      await fireEvent(screen.getByTestId(screenHeaderStartTestID(logHeaderTestID)), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width: MINIMUM_TAP_TARGET, height: 0 } },
+      });
+      await fireEvent(screen.getByTestId(screenHeaderEndTestID(logHeaderTestID)), 'layout', {
         nativeEvent: { layout: { x: 0, y: 0, width: done, height: 0 } },
       });
+      await fireEvent(
+        screen.getByTestId(screenHeaderWordTestID(logHeaderTestID, 'Today'), {
+          includeHiddenElements: true,
+        }),
+        'layout',
+        { nativeEvent: { layout: { x: 0, y: 0, width: 60, height: 0 } } },
+      );
 
-      expect(styleOf<ViewStyle>(logHeaderEndTestID).minWidth).toBeGreaterThanOrEqual(done);
+      expect(styleOf<ViewStyle>(`${logHeaderTestID}-end-side`).minWidth).toBeGreaterThanOrEqual(
+        done,
+      );
+      expect(styleOf<ViewStyle>(screenHeaderEndTestID(logHeaderTestID)).flexShrink).toBe(0);
+      expect(
+        screen.queryByTestId('log-header-done-room', { includeHiddenElements: true }),
+      ).toBeNull();
       expect(styleOf<TextStyle>(textLinkLabelTestID(logFlowDoneTestID) ?? '').fontSize).toBe(
         textStyle('button-md').fontSize,
       );
