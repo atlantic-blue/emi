@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 import { sheGivesAPeriod } from '../fixtures/thePastPeriods';
 
+import { fluidGridCellTestID } from '../../src/components/FluidGrid';
 import { readProfile } from '../../src/data/profileRepository';
 import { migrate } from '../../src/data/schema';
 import { writeSetting } from '../../src/data/settingRepository';
@@ -17,7 +18,7 @@ import { symptomGroupTestID } from '../../src/features/log/SymptomGroup';
 import { groupsInHerOrder } from '../../src/features/log/herOrder';
 import {
   Focus as FocusScreen,
-  focusCellTestID,
+  focusGridTestID,
   focusIcons,
   focusTestID,
 } from '../../src/features/onboarding/Focus';
@@ -246,10 +247,10 @@ describe('the log opens on what she said changes with her cycle', () => {
 
       await sheReachesTheFocus();
 
-      for (const group of focusValues) {
-        const cell = screen.getByTestId(focusCellTestID(group));
+      for (const [at, group] of focusValues.entries()) {
+        const cell = screen.getByTestId(fluidGridCellTestID(focusGridTestID, at));
         const basis = Number.parseFloat(
-          String((StyleSheet.flatten(cell.props.style) as { flexBasis?: string }).flexBasis),
+          String((StyleSheet.flatten(cell.props.style) as { width?: string }).width),
         );
 
         // Three fit on a row and a fourth does not.
