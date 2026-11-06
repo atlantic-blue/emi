@@ -4,6 +4,7 @@ import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { HeadingRow } from '../../components/HeadingRow';
 import { Screen } from '../../components/Screen';
 import { publishedFigureReads } from '../home/copy';
 import { figuresCopy, publishedMeasurementName } from './copy';
@@ -45,6 +46,14 @@ export function citationFigureTestID(measures: PublishedMeasurement): string {
   return `${citationRowTestID(measures)}-figure`;
 }
 
+export function citationLeadTestID(measures: PublishedMeasurement): string {
+  return `${citationRowTestID(measures)}-lead`;
+}
+
+export function citationLabelTestID(measures: PublishedMeasurement): string {
+  return `${citationLeadTestID(measures)}-label`;
+}
+
 export function citationPaperTestID(measures: PublishedMeasurement): string {
   return `${citationRowTestID(measures)}-paper`;
 }
@@ -72,12 +81,17 @@ export function CitationRow({
       style={separated ? [styles.row, styles.separated] : styles.row}
       testID={citationRowTestID(figure.measures)}
     >
-      <View style={styles.lead}>
-        <Text style={styles.what}>{publishedMeasurementName[figure.measures]}</Text>
-        <Text style={styles.figure} testID={citationFigureTestID(figure.measures)}>
-          {publishedFigureReads(figure)}
-        </Text>
-      </View>
+      <HeadingRow
+        end={
+          <Text style={styles.figure} testID={citationFigureTestID(figure.measures)}>
+            {publishedFigureReads(figure)}
+          </Text>
+        }
+        heading={publishedMeasurementName[figure.measures]}
+        headingStyle={styles.what}
+        headingTestID={citationLabelTestID(figure.measures)}
+        testID={citationLeadTestID(figure.measures)}
+      />
 
       <Text style={styles.paper} testID={citationPaperTestID(figure.measures)}>
         {figure.citation.source}
@@ -173,14 +187,6 @@ const styles = StyleSheet.create({
   identifier: {
     color: colour.quietIcon,
     ...textStyle('label-sm'),
-  },
-  // The measurement and the figure sit on one line with room between them, so the column of
-  // figures reads down the page and she can compare three papers without reading three sentences.
-  lead: {
-    alignItems: 'baseline',
-    columnGap: space.spaceSm,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   leave: {
     alignItems: 'center',

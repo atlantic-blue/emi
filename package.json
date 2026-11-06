@@ -49,6 +49,7 @@
     "generate:focus-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern focusLargestText",
     "generate:guide-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern guideLargestText",
     "generate:phase-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern phaseLargestText",
+    "generate:sex-figures-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern sexFiguresLargestText",
     "generate:three-periods-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern threePeriods.picture",
     "generate:history-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern history.picture",
     "generate:export-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern export.picture",
