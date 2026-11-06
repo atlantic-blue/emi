@@ -19,7 +19,6 @@ import {
 } from '../../src/features/log/GroupTiles';
 import { HEADER_END, LogHeader, logHeaderEndTestID } from '../../src/features/log/LogHeader';
 import { groupHeadings } from '../../src/features/log/SymptomGroup';
-import { OnAPhone } from '../fixtures/theSafeArea';
 
 /**
  * Issue 320: on the smallest iPhone, at 375 points, a label in a tile, a chip or a header slot
