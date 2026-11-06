@@ -67,6 +67,7 @@
     "generate:privacy-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern privacy.picture",
     "generate:your-answers-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern yourAnswers.picture",
     "generate:answer-cycle-length-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answerCycleLength.picture",
+    "generate:answer-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answerLargestText",
     "generate:calendar-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern calendar.picture",
     "generate:calendar-russian-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern calendarRussian.picture",
     "generate:edit-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern editPeriod.picture",
