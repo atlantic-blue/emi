@@ -1,14 +1,16 @@
 import type { Flow } from '@emi/cycle';
-import { MINIMUM_TAP_TARGET, textStyle } from '@emi/tokens';
+import { MINIMUM_TAP_TARGET, space, textStyle } from '@emi/tokens';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import * as TheReactTheApplicationShips from 'react';
 import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 
 import { textLinkLabelTestID } from '../../../src/components/Button';
+import { fluidGridCellTestID, fluidGridWordTestID } from '../../../src/components/FluidGrid';
+import * as theFlowPicker from '../../../src/features/log/FlowPicker';
 import {
+  flowGridTestID,
   flowLabelTestID,
   flowOptionTestID,
-  flowPickerTestID,
 } from '../../../src/features/log/FlowPicker';
 import { logFlowDoneTestID } from '../../../src/features/log/LogFlow';
 import { logHeaderDoneRoomTestID, logHeaderEndTestID } from '../../../src/features/log/LogHeader';
@@ -22,16 +24,15 @@ jest.mock('expo-localization', () => ({
 }));
 
 /**
- * At the largest text size the five words under the flow discs do not fit across the row of the
- * smallest iPhone in Spanish and in Russian. Where they do not fit, every second word moves to a
- * lower line and each word keeps its full size. Save keeps its whole word at its full size too.
+ * The five words under the flow discs wrap onto more lines, in the order of the options, when the
+ * widest word does not fit its column with a gap beside it. No word moves out of its column and no
+ * word shrinks.
  *
  * The sizes below were read on the iPhone SE (3rd generation) simulator at the largest text size,
- * from the layout of each word on the one row, where a word is drawn at its own width.
+ * from the layout of each word on one line, where a word is drawn at its own width.
  */
 
 const theRowOnTheSmallestIPhone = 303;
-const THE_DISC = 54;
 const TEXT_GROWTH = 1.3;
 const ONE_LINE = 23.5;
 
@@ -97,71 +98,112 @@ function theLogIn(language: Language): TheReactTheApplicationShips.ReactElement 
   return drawn;
 }
 
-/** The phone lays the row out and reports the size of each word, as it does on each screen. */
+function theWordOf(flow: Flow): string {
+  return String(screen.getByTestId(flowLabelTestID(flow)).props.children);
+}
+
+/** The phone lays the row out and reports the width of each word, as it does on each screen. */
 async function thePhoneLaysOutTheRow(words: Readonly<Record<Flow, number>>): Promise<void> {
+  await fireEvent(screen.getByTestId(flowGridTestID), 'layout', {
+    nativeEvent: { layout: { x: 0, y: 0, width: theRowOnTheSmallestIPhone, height: 100 } },
+  });
   for (const flow of theFiveInOrder) {
-    await fireEvent(screen.getByTestId(flowLabelTestID(flow)), 'layout', {
+    const word = screen.getByTestId(fluidGridWordTestID(flowGridTestID, theWordOf(flow)), {
+      includeHiddenElements: true,
+    });
+
+    await fireEvent(word, 'layout', {
       nativeEvent: { layout: { x: 0, y: 0, width: words[flow], height: ONE_LINE } },
     });
   }
-  await fireEvent(screen.getByTestId(flowPickerTestID), 'layout', {
-    nativeEvent: { layout: { x: 0, y: 0, width: theRowOnTheSmallestIPhone, height: 100 } },
-  });
 }
-
-interface DrawnWord {
-  readonly flow: Flow;
-  readonly line: 'upper' | 'lower';
-  readonly left: number;
-  readonly right: number;
-}
-
-type Shifted = TextStyle & { readonly transform?: readonly { readonly translateX?: number }[] };
 
 function styleOf<T>(testID: string): T {
   return (StyleSheet.flatten(screen.getByTestId(testID).props.style) ?? {}) as T;
 }
 
+interface DrawnWord {
+  readonly flow: Flow;
+  readonly line: number;
+  readonly left: number;
+  readonly right: number;
+}
+
 /**
- * Where each word lands, laid out the way the row asks: the options spread with the free room
- * shared between them, and each word centred on its option and moved by its own shift.
+ * Where each word lands: each option takes its share of the row, the options fill a line from the
+ * left and then go down, and each word is centred in its option.
  */
 function whereTheWordsAre(words: Readonly<Record<Flow, number>>): DrawnWord[] {
-  const options = theFiveInOrder.map((flow) => {
-    const option = styleOf<ViewStyle>(flowOptionTestID(flow));
-    const width = typeof option.width === 'number' ? option.width : Math.max(THE_DISC, words[flow]);
-
-    return { flow, width, label: styleOf<Shifted>(flowLabelTestID(flow)) };
-  });
-  const free = theRowOnTheSmallestIPhone - options.reduce((sum, each) => sum + each.width, 0);
-  const between = free / (options.length - 1);
-
+  let line = 0;
   let from = 0;
 
-  return options.map(({ flow, width, label }) => {
-    const centre = from + width / 2 + (label.transform?.[0]?.translateX ?? 0);
-    from += width + between;
+  return theFiveInOrder.map((flow, at) => {
+    const share = styleOf<ViewStyle>(fluidGridCellTestID(flowGridTestID, at)).width;
 
-    return {
-      flow,
-      line: typeof label.marginTop === 'number' && label.marginTop > 0 ? 'lower' : 'upper',
-      left: centre - words[flow] / 2,
-      right: centre + words[flow] / 2,
-    };
+    if (typeof share !== 'string' || !share.endsWith('%')) {
+      throw new Error(`the option ${flow} has no share of the row`);
+    }
+
+    const width = (theRowOnTheSmallestIPhone * Number.parseFloat(share)) / 100;
+
+    if (from + width > theRowOnTheSmallestIPhone + 0.01) {
+      line += 1;
+      from = 0;
+    }
+
+    const centre = from + width / 2;
+    from += width;
+
+    return { flow, line, left: centre - words[flow] / 2, right: centre + words[flow] / 2 };
   });
+}
+
+function theLines(drawn: readonly DrawnWord[]): Flow[][] {
+  const lines: Flow[][] = [];
+
+  for (const word of drawn) {
+    lines[word.line] = [...(lines[word.line] ?? []), word.flow];
+  }
+
+  return lines;
 }
 
 function gapsOnEachLine(drawn: readonly DrawnWord[]): number[] {
-  return (['upper', 'lower'] as const).flatMap((line) => {
-    const onIt = drawn.filter((word) => word.line === line);
+  return drawn.flatMap((word, at) => {
+    const before = drawn[at - 1];
 
-    return onIt.slice(1).map((word, at) => word.left - (onIt[at]?.right ?? 0));
+    return before !== undefined && before.line === word.line ? [word.left - before.right] : [];
   });
 }
 
-function linesOf(drawn: readonly DrawnWord[], line: DrawnWord['line']): Flow[] {
-  return drawn.filter((word) => word.line === line).map((word) => word.flow);
+function atTheNormalSize(words: Readonly<Record<Flow, number>>): Record<Flow, number> {
+  return Object.fromEntries(
+    theFiveInOrder.map((flow) => [flow, words[flow] / TEXT_GROWTH]),
+  ) as Record<Flow, number>;
 }
+
+describe('the flow options no longer stagger their words', () => {
+  it('should carry no lower line layout', () => {
+    expect(Object.keys(theFlowPicker)).not.toContain('isOnTheLowerLine');
+    expect(Object.keys(theFlowPicker)).not.toContain('sidewaysShift');
+    expect(Object.keys(theFlowPicker)).not.toContain('wordsOverflowTheRow');
+  });
+
+  for (const language of languages) {
+    it(`should never push a word down or sideways out of its option in ${language}`, async () => {
+      await render(theLogIn(language));
+      await thePhoneLaysOutTheRow(wordsAtTheLargestTextSize[language]);
+
+      for (const flow of theFiveInOrder) {
+        const label = styleOf<TextStyle & { transform?: unknown }>(flowLabelTestID(flow));
+
+        expect(label.marginTop).toBeUndefined();
+        expect(label.transform).toBeUndefined();
+        expect(label.width).toBeUndefined();
+      }
+    });
+  }
+});
 
 describe('the five flow words at the largest text size on the smallest iPhone', () => {
   afterEach(() => {
@@ -171,15 +213,28 @@ describe('the five flow words at the largest text size on the smallest iPhone', 
   for (const language of languages) {
     const words = wordsAtTheLargestTextSize[language];
 
-    it(`should leave a gap on each side of every word, inside the row, in ${language}`, async () => {
+    it(`should read the words in option order, three and then two, in ${language}`, async () => {
+      await render(theLogIn(language));
+      await thePhoneLaysOutTheRow(words);
+
+      expect(theLines(whereTheWordsAre(words))).toEqual([
+        ['none', 'spotting', 'light'],
+        ['medium', 'heavy'],
+      ]);
+      expect(screen.getAllByTestId(/^flow-option-/).map((option) => option.props.testID)).toEqual(
+        theFiveInOrder.map(flowOptionTestID),
+      );
+    });
+
+    it(`should keep at least the column gap between every two words, inside the row, in ${language}`, async () => {
       await render(theLogIn(language));
       await thePhoneLaysOutTheRow(words);
 
       const drawn = whereTheWordsAre(words);
 
-      expect(gapsOnEachLine(drawn).length).toBeGreaterThanOrEqual(3);
+      expect(gapsOnEachLine(drawn)).toHaveLength(3);
       for (const gap of gapsOnEachLine(drawn)) {
-        expect(gap).toBeGreaterThan(0);
+        expect(gap).toBeGreaterThanOrEqual(space.spaceXs);
       }
       for (const word of drawn) {
         expect(word.left).toBeGreaterThanOrEqual(0);
@@ -192,25 +247,21 @@ describe('the five flow words at the largest text size on the smallest iPhone', 
       await thePhoneLaysOutTheRow(words);
 
       for (const flow of theFiveInOrder) {
-        const style = styleOf<TextStyle>(flowLabelTestID(flow));
-
-        expect(style.fontSize).toBe(textStyle('label-md').fontSize);
+        expect(styleOf<TextStyle>(flowLabelTestID(flow)).fontSize).toBe(
+          textStyle('label-md').fontSize,
+        );
         expect(screen.getByTestId(flowLabelTestID(flow)).props.adjustsFontSizeToFit).toBeFalsy();
-        if (typeof style.width === 'number') {
-          expect(style.width).toBeGreaterThanOrEqual(words[flow]);
-        }
       }
     });
 
-    it(`should keep the press target of each word at least ${MINIMUM_TAP_TARGET} points in ${language}`, async () => {
+    it(`should keep the press target of each option at least ${MINIMUM_TAP_TARGET} points in ${language}`, async () => {
       await render(theLogIn(language));
       await thePhoneLaysOutTheRow(words);
 
       for (const flow of theFiveInOrder) {
         const option = styleOf<ViewStyle>(flowOptionTestID(flow));
-        const width = typeof option.width === 'number' ? option.width : THE_DISC;
 
-        expect(width).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
+        expect(option.minWidth).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
         expect(option.minHeight).toBeGreaterThanOrEqual(MINIMUM_TAP_TARGET);
       }
     });
@@ -231,48 +282,37 @@ describe('the five flow words at the largest text size on the smallest iPhone', 
     });
   }
 
-  for (const language of ['ru', 'es'] as const) {
-    it(`should move Spotting and Medium to a lower line in ${language}, where the row is too short`, async () => {
-      await render(theLogIn(language));
-      await thePhoneLaysOutTheRow(wordsAtTheLargestTextSize[language]);
+  it('should keep the one line in English at the normal text size', async () => {
+    const words = atTheNormalSize(wordsAtTheLargestTextSize.en);
 
-      const drawn = whereTheWordsAre(wordsAtTheLargestTextSize[language]);
-
-      expect(linesOf(drawn, 'upper')).toEqual(['none', 'light', 'heavy']);
-      expect(linesOf(drawn, 'lower')).toEqual(['spotting', 'medium']);
-      expect(styleOf<TextStyle>(flowLabelTestID('medium')).marginTop).toBe(ONE_LINE);
-    });
-  }
-
-  it('should keep the one row in English, where the five words fit', async () => {
     await render(theLogIn('en'));
-    await thePhoneLaysOutTheRow(wordsAtTheLargestTextSize.en);
+    await thePhoneLaysOutTheRow(words);
 
-    expect(linesOf(whereTheWordsAre(wordsAtTheLargestTextSize.en), 'lower')).toEqual([]);
-    expect(styleOf<ViewStyle>(flowOptionTestID('spotting')).width).toBeUndefined();
+    expect(theLines(whereTheWordsAre(words))).toEqual([theFiveInOrder]);
   });
 
-  it('should keep the one row in Russian at the normal text size', async () => {
-    const atTheNormalSize = Object.fromEntries(
-      theFiveInOrder.map((flow) => [flow, wordsAtTheLargestTextSize.ru[flow] / TEXT_GROWTH]),
-    ) as Record<Flow, number>;
+  it('should keep at least the column gap between the Russian words at the normal text size', async () => {
+    const words = atTheNormalSize(wordsAtTheLargestTextSize.ru);
 
     await render(theLogIn('ru'));
-    await thePhoneLaysOutTheRow(atTheNormalSize);
+    await thePhoneLaysOutTheRow(words);
 
-    expect(linesOf(whereTheWordsAre(atTheNormalSize), 'lower')).toEqual([]);
-    expect(styleOf<ViewStyle>(flowOptionTestID('heavy')).width).toBeUndefined();
+    for (const gap of gapsOnEachLine(whereTheWordsAre(words))) {
+      expect(gap).toBeGreaterThanOrEqual(space.spaceXs);
+    }
   });
 
-  it('should pick the flow of a word on the lower line and keep the two lines after the pick', async () => {
+  it('should pick the flow of a word on the second line and keep the lines after the pick', async () => {
     await render(theLogIn('ru'));
     await thePhoneLaysOutTheRow(wordsAtTheLargestTextSize.ru);
 
-    await fireEvent.press(screen.getByTestId(flowOptionTestID('spotting')));
+    await fireEvent.press(screen.getByTestId(flowOptionTestID('heavy')));
 
-    expect(screen.getByTestId(flowOptionTestID('spotting'))).toBeChecked();
+    expect(screen.getByTestId(flowOptionTestID('heavy'))).toBeChecked();
     expect(screen.getByTestId(flowOptionTestID('none'))).not.toBeChecked();
-    expect(styleOf<TextStyle>(flowLabelTestID('spotting')).marginTop).toBe(ONE_LINE);
-    expect(styleOf<ViewStyle>(flowOptionTestID('spotting')).width).toBe(THE_DISC);
+    expect(theLines(whereTheWordsAre(wordsAtTheLargestTextSize.ru))).toEqual([
+      ['none', 'spotting', 'light'],
+      ['medium', 'heavy'],
+    ]);
   });
 });
