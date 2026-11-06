@@ -70,6 +70,7 @@
     "generate:answer-cycle-length-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answerCycleLength.picture",
     "generate:calendar-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern calendar.picture",
     "generate:calendar-russian-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern calendarRussian.picture",
+    "generate:calendar-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern calendarLargestText",
     "generate:edit-period-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern editPeriod.picture",
     "generate:wash-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern wash.picture",
     "generate:answers-again-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answersAgain.picture",
