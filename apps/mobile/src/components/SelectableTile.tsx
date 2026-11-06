@@ -1,9 +1,7 @@
 import { MINIMUM_TAP_TARGET, type IconName, colour, radius, space, textStyle } from '@emi/tokens';
 import { Icon, CappedText as Text } from '@emi/ui';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-
-import { WholeWordsText } from './WholeWordsText';
+import { Pressable, type StyleProp, StyleSheet, type TextStyle, View } from 'react-native';
 
 /**
  * One category in the grid she logs a day from. A drawing, what it is, and what is recorded there
@@ -26,8 +24,6 @@ interface Props {
   readonly isChosen: boolean;
   readonly onPress: () => void;
   readonly testID?: string;
-  /** Told once when a word of the title is still cut at the smallest size a label takes. */
-  readonly onWordCutAtTheFloor?: () => void;
 }
 
 /** Points. The height the document draws the tile at, which holds a well and two lines. */
@@ -70,6 +66,18 @@ export function tileWellTestID(testID: string): string {
   return `${testID}-well`;
 }
 
+/**
+ * The title as a grid measures each of its words: the face of the title, with the room the box
+ * takes on each side of it and the room the cell keeps beside the box. `FluidGrid` adds its gap of
+ * `spaceXs` to every word, and the sides of the cells already hold that gap, so it is taken out.
+ */
+export function tileWordStyle(cellSide: number): StyleProp<TextStyle> {
+  return [
+    styles.title,
+    { paddingHorizontal: space.spaceSm + TILE_BORDER + cellSide - space.spaceXs / 2 },
+  ];
+}
+
 export function SelectableTile({
   icon,
   title,
@@ -77,7 +85,6 @@ export function SelectableTile({
   isChosen,
   onPress,
   testID = 'tile',
-  onWordCutAtTheFloor,
 }: Props): ReactNode {
   return (
     <Pressable
@@ -104,12 +111,9 @@ export function SelectableTile({
           size={TILE_ICON}
         />
       </View>
-      <WholeWordsText
-        label={title}
-        onWordCutAtTheFloor={onWordCutAtTheFloor}
-        style={styles.title}
-        testID={tileTitleTestID(testID)}
-      />
+      <Text style={styles.title} testID={tileTitleTestID(testID)}>
+        {title}
+      </Text>
       {note === undefined ? null : (
         <Text style={isChosen ? styles.noteChosen : styles.note}>{note}</Text>
       )}

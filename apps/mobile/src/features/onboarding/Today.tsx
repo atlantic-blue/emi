@@ -1,9 +1,10 @@
 import { type IconName, space } from '@emi/tokens';
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { TextLink } from '../../components/Button';
-import { SelectableTile } from '../../components/SelectableTile';
+import { FluidGrid } from '../../components/FluidGrid';
+import { SelectableTile, tileWordStyle } from '../../components/SelectableTile';
 import { OnboardingScreen } from './OnboardingScreen';
 import { firstRunCopy, todayChoices, todayLabels } from './copy';
 import type { TodaySymptom } from './firstRun';
@@ -13,18 +14,10 @@ export function todayTestID(slug: TodaySymptom): string {
   return `today-${slug}`;
 }
 
-/** A share of the row, in the form a style reads. */
-type TileBasis = `${number}%`;
+export const todayGridTestID = 'today-grid';
 
-/** The share of the row one tile takes: three to a row, as the redesign draws them. */
-export const BOARD_TILE_BASIS: TileBasis = '30%';
-
-/**
- * In Russian, breast tenderness holds a word too wide for a third of the smallest iPhone even at
- * the smallest size a label takes. The grid then lays the tiles two to a row, so the word stays
- * whole.
- */
-export const NARROW_TILE_BASIS: TileBasis = '45%';
+/** The board draws the feelings three to a row. */
+export const TODAY_COLUMNS = 3;
 
 /** The link under the six, which opens every symptom Emi knows. */
 export const todayAllSymptomsTestID = 'today-all-symptoms';
@@ -81,8 +74,6 @@ export function Today({
   onBack,
   onSkip,
 }: Props): ReactNode {
-  const [basis, setBasis] = useState<TileBasis>(BOARD_TILE_BASIS);
-
   return (
     <OnboardingScreen
       actionIsReady={chosen.length > 0}
@@ -101,26 +92,28 @@ export function Today({
       wayPastSits="underTheAction"
     >
       <View style={styles.grid}>
-        {todayChoices.map((slug) => (
-          <View
-            key={slug}
-            // The floor as well as the basis: a basis alone that changes after the first layout
-            // leaves the row as it was drawn on the phone.
-            style={[styles.cell, { flexBasis: basis, minWidth: basis }]}
-            testID={todayCellTestID(slug)}
-          >
-            <SelectableTile
-              icon={todayIcons[slug]}
-              isChosen={chosen.includes(slug)}
-              onPress={() => {
-                onPress(slug);
-              }}
-              onWordCutAtTheFloor={() => setBasis(NARROW_TILE_BASIS)}
-              testID={todayTestID(slug)}
-              title={todayLabels[slug]}
-            />
-          </View>
-        ))}
+        <FluidGrid
+          cellAtLeast={0}
+          labelStyle={tileWordStyle(space.spaceXs)}
+          labels={todayChoices.map((slug) => todayLabels[slug])}
+          most={TODAY_COLUMNS}
+          rowGap={space.spaceSm}
+          testID={todayGridTestID}
+        >
+          {todayChoices.map((slug) => (
+            <View key={slug} style={styles.cell} testID={todayCellTestID(slug)}>
+              <SelectableTile
+                icon={todayIcons[slug]}
+                isChosen={chosen.includes(slug)}
+                onPress={() => {
+                  onPress(slug);
+                }}
+                testID={todayTestID(slug)}
+                title={todayLabels[slug]}
+              />
+            </View>
+          ))}
+        </FluidGrid>
       </View>
       <View style={styles.allSymptoms}>
         <TextLink
@@ -135,8 +128,6 @@ export function Today({
 
 const styles = StyleSheet.create({
   allSymptoms: { alignItems: 'center', paddingTop: space.spaceSm },
-  // Three to a row, as the redesign draws them, each one taking what is left of the row after the
-  // two gaps, so the six feelings stand in two rows of three. The share itself is set on the cell.
-  cell: { flexGrow: 1 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
+  cell: { paddingHorizontal: space.spaceXs },
+  grid: { marginHorizontal: -space.spaceXs },
 });

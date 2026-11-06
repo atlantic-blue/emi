@@ -12,12 +12,18 @@ import {
   screenHeaderStartTestID,
   screenHeaderWordTestID,
 } from '../../src/components/ScreenHeader';
+import { headingRowEndTestID, headingRowMeasureTestID } from '../../src/components/HeadingRow';
 import { listCycles } from '../../src/data/cycleRepository';
 import { recordedDays } from '../../src/features/cycle/rebuild';
 import type { RingInput } from '../../src/features/cycle/ringInput';
 import { ringInputFor } from '../../src/features/cycle/ringInput';
 import { flowGridTestID, flowLabelTestID } from '../../src/features/log/FlowPicker';
-import { LogFlow, logFlowWhenTestID } from '../../src/features/log/LogFlow';
+import {
+  LogFlow,
+  logFlowFlowTopTestID,
+  logFlowSymptomsTopTestID,
+  logFlowWhenTestID,
+} from '../../src/features/log/LogFlow';
 import { logHeaderTestID } from '../../src/features/log/LogHeader';
 import { dateWords } from '../../src/features/onboarding/days';
 import { words } from '../../src/language';
@@ -41,7 +47,7 @@ function theCaveat(name: string, picture: string): string {
     `Rendered, not observed: drawn from the tree the log screen produced under the test runner with`,
     `the phone language set to ${name}, at 375 by 667 points, which is the glass of an iPhone SE, with`,
     'every run of text grown by 1.3 times, the limit the largest text size reaches. The width of each',
-    `word, of each word of the title and of the done link is the one the iPhone SE simulator reported at the largest text size,`,
+    `word, of each word of the title, of each card heading and its link, and of the done link is the one the iPhone SE simulator reported at the largest text size,`,
     `handed to the screen as the phone hands it. The page is ${picture}.`,
     'Reproduce with: npm run generate:flow-largest-text-picture.',
   ].join(' ');
@@ -69,6 +75,22 @@ const theTitleWords: Readonly<Record<Language, Readonly<Record<string, number>>>
   en: { Entry: 60.5, for: 32.5, today: 64, Wednesday: 129, 24: 29, June: 53.5 },
   es: { Registro: 93, de: 27.5, hoy: 41.5, Miércoles: 106, 24: 29, junio: 54 },
   ru: { Запись: 86.5, за: 28.5, сегодня: 97, Среда: 76, 24: 28.5, июня: 65 },
+};
+const theCardTops: Readonly<
+  Record<Language, Readonly<Record<string, { readonly heading: number; readonly end: number }>>>
+> = {
+  en: {
+    [logFlowFlowTopTestID]: { heading: 71, end: 151.5 },
+    [logFlowSymptomsTopTestID]: { heading: 118.5, end: 77 },
+  },
+  es: {
+    [logFlowFlowTopTestID]: { heading: 61.5, end: 99 },
+    [logFlowSymptomsTopTestID]: { heading: 102, end: 75.5 },
+  },
+  ru: {
+    [logFlowFlowTopTestID]: { heading: 123, end: 188 },
+    [logFlowSymptomsTopTestID]: { heading: 172.5, end: 75 },
+  },
 };
 
 const theDaySheOpensIt = 14;
@@ -181,6 +203,17 @@ async function drawn(language: Language, state: State): Promise<DrawnScreen> {
       'layout',
       { nativeEvent: { layout: { x: 0, y: 0, width, height: ONE_LINE } } },
     );
+  }
+  for (const [testID, top] of Object.entries(theCardTops[language])) {
+    for (const [at, width] of [
+      [testID, theRow],
+      [headingRowMeasureTestID(testID), top.heading],
+      [headingRowEndTestID(testID), top.end],
+    ] as const) {
+      await fireEvent(screen.getByTestId(at, { includeHiddenElements: true }), 'layout', {
+        nativeEvent: { layout: { x: 0, y: 0, width, height: ONE_LINE } },
+      });
+    }
   }
 
   const tree = atTextSize(theScreenIn(view), MAXIMUM_TEXT_GROWTH);
