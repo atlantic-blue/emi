@@ -15,7 +15,6 @@ import {
 import {
   hygienePageBackTestID,
   hygienePageHeadingTestID,
-  hygienePageProductsTestID,
   hygienePageTestID,
   productTileTestID,
 } from '../../../src/features/hygiene/HygieneProductsPage';
@@ -101,7 +100,9 @@ describe('the Hygiene products page', () => {
     await screen.findByTestId(hygienePageTestID);
     expect(screen.getByText('Hygiene products')).toBeTruthy();
     expect(saidUnder(hygienePageHeadingTestID)).toBe('Choose a product to learn about it');
-    expect(textIn(screen.getByTestId(hygienePageProductsTestID))).toEqual([
+    expect(
+      productOrder.flatMap((slug) => textIn(screen.getByTestId(productTileTestID(slug)))),
+    ).toEqual([
       'Panty liner',
       'Pad',
       'Reusable cloth pad',

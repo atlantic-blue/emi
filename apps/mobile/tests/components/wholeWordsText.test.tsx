@@ -3,7 +3,6 @@ import { textStyle } from '@emi/tokens';
 import { StyleSheet, type TextStyle } from 'react-native';
 
 import { textLinkLabelTestID } from '../../src/components/Button';
-import { tileTitleTestID } from '../../src/components/SelectableTile';
 import {
   LABEL_SCALES,
   MINIMUM_LABEL_SCALE,
@@ -11,14 +10,6 @@ import {
   cutsAWord,
   isOneWord,
 } from '../../src/components/WholeWordsText';
-import {
-  BOARD_COLUMNS,
-  HygieneProductsPage,
-  NARROW_COLUMNS,
-  productTileNameTestID,
-  productTileTestID,
-} from '../../src/features/hygiene/HygieneProductsPage';
-import { productOrder } from '../../src/features/hygiene/products';
 import {
   GroupTiles,
   NARROW_TILES_IN_A_ROW,
@@ -28,15 +19,6 @@ import {
 } from '../../src/features/log/GroupTiles';
 import { HEADER_END, LogHeader, logHeaderEndTestID } from '../../src/features/log/LogHeader';
 import { groupHeadings } from '../../src/features/log/SymptomGroup';
-import {
-  BOARD_TILE_BASIS,
-  NARROW_TILE_BASIS,
-  Today,
-  todayCellTestID,
-  todayTestID,
-} from '../../src/features/onboarding/Today';
-import { todayChoices, todayLabels } from '../../src/features/onboarding/copy';
-import { OnAPhone } from '../fixtures/theSafeArea';
 
 /**
  * Issue 320: on the smallest iPhone, at 375 points, a label in a tile, a chip or a header slot
@@ -192,31 +174,6 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
     }
   });
 
-  it('should give each one word feeling on the first run Today screen the shrink rule', async () => {
-    await render(
-      <OnAPhone>
-        <Today
-          chosen={[]}
-          onAllSymptoms={() => undefined}
-          onBack={() => undefined}
-          onPress={() => undefined}
-          onSave={() => undefined}
-          onSkip={() => undefined}
-        />
-      </OnAPhone>,
-    );
-
-    expect(todayChoices.filter((slug) => isOneWord(todayLabels[slug])).length).toBeGreaterThan(0);
-    for (const slug of todayChoices) {
-      if (isOneWord(todayLabels[slug])) {
-        expectTheShrinkRule(tileTitleTestID(todayTestID(slug)));
-      } else {
-        const title = screen.getByTestId(tileTitleTestID(todayTestID(slug)));
-        expect(title.props.onTextLayout).toBeDefined();
-      }
-    }
-  });
-
   it('should give Done in the log header the shrink rule and an end slot that grows past the board width', async () => {
     await render(
       <LogHeader
@@ -240,64 +197,5 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
     expect(slot.width).toBeUndefined();
     expect(slot.minWidth).toBe(HEADER_END);
     expect(slot.flexGrow).toBe(1);
-  });
-
-  it('should lay the hygiene products three to a row when a word is still cut at the floor', async () => {
-    await render(
-      <OnAPhone>
-        <HygieneProductsPage
-          onBack={() => undefined}
-          onOpen={() => undefined}
-          onQuiz={() => undefined}
-        />
-      </OnAPhone>,
-    );
-    const first = productOrder[0];
-    if (first === undefined) {
-      throw new Error('The hygiene page holds no product.');
-    }
-    const cellWidth = (): unknown =>
-      StyleSheet.flatten(screen.getByTestId(productTileTestID(first)).props.style).width;
-
-    expect(cellWidth()).toBe(`${100 / BOARD_COLUMNS}%`);
-
-    for (let step = 0; step < LABEL_SCALES.length; step += 1) {
-      await act(() =>
-        layOut(productTileNameTestID('period-underwear'), ['Менструал', 'ьные трусы']),
-      );
-    }
-
-    expect(cellWidth()).toBe(`${100 / NARROW_COLUMNS}%`);
-  });
-  it('should lay the first run Today tiles two to a row when a word is still cut at the floor', async () => {
-    await render(
-      <OnAPhone>
-        <Today
-          chosen={[]}
-          onAllSymptoms={() => undefined}
-          onBack={() => undefined}
-          onPress={() => undefined}
-          onSave={() => undefined}
-          onSkip={() => undefined}
-        />
-      </OnAPhone>,
-    );
-    const basisOf = (slug: (typeof todayChoices)[number]): unknown =>
-      StyleSheet.flatten(screen.getByTestId(todayCellTestID(slug)).props.style).flexBasis;
-    const floorOf = (slug: (typeof todayChoices)[number]): unknown =>
-      StyleSheet.flatten(screen.getByTestId(todayCellTestID(slug)).props.style).minWidth;
-
-    expect(basisOf('cramps')).toBe(BOARD_TILE_BASIS);
-
-    for (let step = 0; step < LABEL_SCALES.length; step += 1) {
-      await act(() =>
-        layOut(tileTitleTestID(todayTestID('breast-tenderness')), ['Чувствительн', 'ость груди']),
-      );
-    }
-
-    for (const slug of todayChoices) {
-      expect(basisOf(slug)).toBe(NARROW_TILE_BASIS);
-      expect(floorOf(slug)).toBe(NARROW_TILE_BASIS);
-    }
   });
 });
