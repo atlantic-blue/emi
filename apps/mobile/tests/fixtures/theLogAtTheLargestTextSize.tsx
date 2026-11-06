@@ -7,6 +7,11 @@ import { AccessibilityInfo } from 'react-native';
 import type { Metrics } from 'react-native-safe-area-context';
 
 import { fluidGridWordTestID } from '../../src/components/FluidGrid';
+import {
+  screenHeaderEndTestID,
+  screenHeaderStartTestID,
+  screenHeaderWordTestID,
+} from '../../src/components/ScreenHeader';
 import { headingRowEndTestID, headingRowMeasureTestID } from '../../src/components/HeadingRow';
 import { listCycles } from '../../src/data/cycleRepository';
 import { recordedDays } from '../../src/features/cycle/rebuild';
@@ -17,8 +22,9 @@ import {
   LogFlow,
   logFlowFlowTopTestID,
   logFlowSymptomsTopTestID,
+  logFlowWhenTestID,
 } from '../../src/features/log/LogFlow';
-import { logHeaderDoneRoomTestID } from '../../src/features/log/LogHeader';
+import { logHeaderTestID } from '../../src/features/log/LogHeader';
 import { dateWords } from '../../src/features/onboarding/days';
 import { words } from '../../src/language';
 import type { Language } from '../../src/language/language';
@@ -41,7 +47,7 @@ function theCaveat(name: string, picture: string): string {
     `Rendered, not observed: drawn from the tree the log screen produced under the test runner with`,
     `the phone language set to ${name}, at 375 by 667 points, which is the glass of an iPhone SE, with`,
     'every run of text grown by 1.3 times, the limit the largest text size reaches. The width of each',
-    `word, of each card heading and its link, and of the done link is the one the iPhone SE simulator reported at the largest text size,`,
+    `word, of each word of the title, of each card heading and its link, and of the done link is the one the iPhone SE simulator reported at the largest text size,`,
     `handed to the screen as the phone hands it. The page is ${picture}.`,
     'Reproduce with: npm run generate:flow-largest-text-picture.',
   ].join(' ');
@@ -63,6 +69,13 @@ const theWords: Readonly<Record<Language, Readonly<Record<Flow, number>>>> = {
   ru: { none: 31.5, spotting: 56.5, light: 76.5, medium: 74, heavy: 89 },
 };
 const theDone: Readonly<Record<Language, number>> = { en: 63, es: 75, ru: 123.5 };
+const theHeader = 335;
+const theWayOut = 44;
+const theTitleWords: Readonly<Record<Language, Readonly<Record<string, number>>>> = {
+  en: { Entry: 60.5, for: 32.5, today: 64, Wednesday: 129, 24: 29, June: 53.5 },
+  es: { Registro: 93, de: 27.5, hoy: 41.5, Miércoles: 106, 24: 29, junio: 54 },
+  ru: { Запись: 86.5, за: 28.5, сегодня: 97, Среда: 76, 24: 28.5, июня: 65 },
+};
 const theCardTops: Readonly<
   Record<Language, Readonly<Record<string, { readonly heading: number; readonly end: number }>>>
 > = {
@@ -166,6 +179,31 @@ async function drawn(language: Language, state: State): Promise<DrawnScreen> {
       { nativeEvent: { layout: { x: 0, y: 0, width, height: ONE_LINE } } },
     );
   }
+  for (const [at, width] of [
+    [logHeaderTestID, theHeader],
+    [screenHeaderStartTestID(logHeaderTestID), theWayOut],
+    [screenHeaderEndTestID(logHeaderTestID), theDone[language]],
+  ] as const) {
+    await fireEvent(screen.getByTestId(at), 'layout', {
+      nativeEvent: { layout: { x: 0, y: 0, width, height: ONE_LINE } },
+    });
+  }
+  const title = String(screen.getByTestId(logFlowWhenTestID).props.children);
+
+  for (const word of new Set(title.split(/\s+/))) {
+    const width = theTitleWords[language][word];
+
+    if (width === undefined) {
+      throw new Error(`no width was read on the simulator for "${word}"`);
+    }
+    await fireEvent(
+      screen.getByTestId(screenHeaderWordTestID(logHeaderTestID, word), {
+        includeHiddenElements: true,
+      }),
+      'layout',
+      { nativeEvent: { layout: { x: 0, y: 0, width, height: ONE_LINE } } },
+    );
+  }
   for (const [testID, top] of Object.entries(theCardTops[language])) {
     for (const [at, width] of [
       [testID, theRow],
@@ -177,11 +215,6 @@ async function drawn(language: Language, state: State): Promise<DrawnScreen> {
       });
     }
   }
-  await fireEvent(
-    screen.getByTestId(logHeaderDoneRoomTestID, { includeHiddenElements: true }),
-    'layout',
-    { nativeEvent: { layout: { x: 0, y: 0, width: theDone[language], height: 0 } } },
-  );
 
   const tree = atTextSize(theScreenIn(view), MAXIMUM_TEXT_GROWTH);
 
