@@ -1,10 +1,10 @@
 import { colour, space, textStyle } from '@emi/tokens';
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { CappedText as Text } from '@emi/ui';
 
+import { FluidGrid } from '../../components/FluidGrid';
 import { Screen } from '../../components/Screen';
-import { WholeWordsText } from '../../components/WholeWordsText';
 import { words } from '../../language';
 import { HowToChoose } from './HowToChoose';
 import { HygieneHeader } from './HygieneHeader';
@@ -14,7 +14,7 @@ import { type ProductSlug, productOf, productOrder } from './products';
 
 /**
  * The Hygiene products page, from the hygieneProducts board (issue 304): the eight products in a
- * grid of four columns, a quarter of the width each, each one the way to its own page, and the
+ * grid of up to four columns, each one the way to its own page, and the
  * board's "How to choose" card under the grid (issue 305), and the card that opens "Find a
  * product to try" under that (issue 306).
  */
@@ -35,13 +35,6 @@ export function productTileNameTestID(slug: ProductSlug): string {
 /** The board lays the products four to a row. */
 export const BOARD_COLUMNS = 4;
 
-/**
- * A product name in Russian holds a word too wide for a quarter of the smallest iPhone even at
- * the smallest size a label takes. The grid then lays the products three to a row, so the word
- * stays whole.
- */
-export const NARROW_COLUMNS = 3;
-
 /** Points, from the board: the tile, its corner and the drawing inside it. */
 const TILE = 68;
 const TILE_CORNER = 20;
@@ -54,8 +47,6 @@ interface Props {
 }
 
 export function HygieneProductsPage({ onBack, onOpen, onQuiz }: Props): ReactNode {
-  const [columns, setColumns] = useState(BOARD_COLUMNS);
-
   return (
     <Screen drawsTheWash testID={hygienePageTestID}>
       <ScrollView contentContainerStyle={styles.body}>
@@ -65,7 +56,14 @@ export function HygieneProductsPage({ onBack, onOpen, onQuiz }: Props): ReactNod
           {words('hygiene.heading')}
         </Text>
 
-        <View style={styles.grid} testID={hygienePageProductsTestID}>
+        <FluidGrid
+          cellAtLeast={TILE}
+          labelStyle={styles.label}
+          labels={productOrder.map((slug) => productOf(slug).name)}
+          most={BOARD_COLUMNS}
+          rowGap={space.spaceLg}
+          testID={hygienePageProductsTestID}
+        >
           {productOrder.map((slug) => {
             const name = productOf(slug).name;
 
@@ -75,22 +73,19 @@ export function HygieneProductsPage({ onBack, onOpen, onQuiz }: Props): ReactNod
                 accessibilityRole="button"
                 key={slug}
                 onPress={() => onOpen(slug)}
-                style={[styles.cell, { width: `${100 / columns}%` }]}
+                style={styles.cell}
                 testID={productTileTestID(slug)}
               >
                 <View style={styles.tile}>
                   <ProductDrawing colour={colour.ovulationInk} size={DRAWING} slug={slug} />
                 </View>
-                <WholeWordsText
-                  label={name}
-                  onWordCutAtTheFloor={() => setColumns(NARROW_COLUMNS)}
-                  style={styles.label}
-                  testID={productTileNameTestID(slug)}
-                />
+                <Text style={styles.label} testID={productTileNameTestID(slug)}>
+                  {name}
+                </Text>
               </Pressable>
             );
           })}
-        </View>
+        </FluidGrid>
 
         <HowToChoose />
 
@@ -102,12 +97,7 @@ export function HygieneProductsPage({ onBack, onOpen, onQuiz }: Props): ReactNod
 
 const styles = StyleSheet.create({
   body: { gap: space.spaceLg, paddingHorizontal: space.margin, paddingVertical: space.spaceXl },
-  cell: {
-    alignItems: 'center',
-    gap: space.spaceSm,
-    paddingHorizontal: space.spaceXs,
-  },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: space.spaceLg },
+  cell: { alignItems: 'center', gap: space.spaceSm },
   heading: { color: colour.text, ...textStyle('headline-md') },
   label: { color: colour.text, textAlign: 'center', ...textStyle('label-md') },
   tile: {
