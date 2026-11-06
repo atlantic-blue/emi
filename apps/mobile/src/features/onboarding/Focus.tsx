@@ -3,7 +3,8 @@ import { type IconName, space } from '@emi/tokens';
 import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { SelectableTile } from '../../components/SelectableTile';
+import { FluidGrid } from '../../components/FluidGrid';
+import { SelectableTile, tileWordStyle } from '../../components/SelectableTile';
 import { OnboardingScreen } from './OnboardingScreen';
 import { firstRunCopy, focusChoices, focusLabels } from './copy';
 
@@ -16,6 +17,11 @@ export function focusTestID(group: FocusGroup): string {
 export function focusCellTestID(group: FocusGroup): string {
   return `focus-cell-${group}`;
 }
+
+export const focusGridTestID = 'focus-grid';
+
+/** The board draws the groups three to a row. */
+export const FOCUS_COLUMNS = 3;
 
 /**
  * The drawing on each tile. A map rather than a list, so an eighth value arriving in `Focus`
@@ -62,27 +68,34 @@ export function Focus({ chosen, onPress, onContinue, onBack, onSkip }: Props): R
       title={firstRunCopy.focus.title}
     >
       <View style={styles.grid}>
-        {focusChoices.map((group) => (
-          <View key={group} style={styles.cell} testID={focusCellTestID(group)}>
-            <SelectableTile
-              icon={focusIcons[group]}
-              isChosen={chosen.includes(group)}
-              onPress={() => {
-                onPress(group);
-              }}
-              testID={focusTestID(group)}
-              title={focusLabels[group]}
-            />
-          </View>
-        ))}
+        <FluidGrid
+          cellAtLeast={0}
+          labelStyle={tileWordStyle(space.spaceXs)}
+          labels={focusChoices.map((group) => focusLabels[group])}
+          most={FOCUS_COLUMNS}
+          rowGap={space.spaceSm}
+          testID={focusGridTestID}
+        >
+          {focusChoices.map((group) => (
+            <View key={group} style={styles.cell} testID={focusCellTestID(group)}>
+              <SelectableTile
+                icon={focusIcons[group]}
+                isChosen={chosen.includes(group)}
+                onPress={() => {
+                  onPress(group);
+                }}
+                testID={focusTestID(group)}
+                title={focusLabels[group]}
+              />
+            </View>
+          ))}
+        </FluidGrid>
       </View>
     </OnboardingScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  // Three to a row, as the redesign draws them. The cells do not grow, so the seventh group stands
-  // centred under the two rows of three at the width of the others.
-  cell: { flexBasis: '31%', flexGrow: 0 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm, justifyContent: 'center' },
+  cell: { paddingHorizontal: space.spaceXs },
+  grid: { marginHorizontal: -space.spaceXs },
 });

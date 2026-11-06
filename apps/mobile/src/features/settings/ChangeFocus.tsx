@@ -3,7 +3,8 @@ import { space } from '@emi/tokens';
 import { type ReactNode, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { SelectableTile } from '../../components/SelectableTile';
+import { FluidGrid } from '../../components/FluidGrid';
+import { SelectableTile, tileWordStyle } from '../../components/SelectableTile';
 import { firstRunCopy, focusChoices, focusLabels, focusNamesInASentence } from '../onboarding/copy';
 import { focusAfterPressing } from '../onboarding/firstRun';
 import { focusIcons } from '../onboarding/Focus';
@@ -14,6 +15,11 @@ import { yourAnswersCopy } from './copy';
 export function changeFocusTestID(group: FocusGroup): string {
   return `answer-focus-${group}`;
 }
+
+export const changeFocusGridTestID = 'answer-focus-grid';
+
+/** The answer screen draws the groups two to a row. */
+const COLUMNS = 2;
 
 interface Props {
   /** The groups she already chose, in the order she chose them, and empty where she chose none. */
@@ -49,27 +55,34 @@ export function ChangeFocus({ gave, onSave, onCancel }: Props): ReactNode {
       title={yourAnswersCopy.rows.focus}
     >
       <View style={styles.grid}>
-        {focusChoices.map((group) => (
-          <View key={group} style={styles.cell}>
-            <SelectableTile
-              icon={focusIcons[group]}
-              isChosen={chosen.includes(group)}
-              onPress={() => {
-                setChosen(focusAfterPressing(chosen, group));
-              }}
-              testID={changeFocusTestID(group)}
-              title={focusLabels[group]}
-            />
-          </View>
-        ))}
+        <FluidGrid
+          cellAtLeast={0}
+          labelStyle={tileWordStyle(space.spaceXs)}
+          labels={focusChoices.map((group) => focusLabels[group])}
+          most={COLUMNS}
+          rowGap={space.spaceSm}
+          testID={changeFocusGridTestID}
+        >
+          {focusChoices.map((group) => (
+            <View key={group} style={styles.cell}>
+              <SelectableTile
+                icon={focusIcons[group]}
+                isChosen={chosen.includes(group)}
+                onPress={() => {
+                  setChosen(focusAfterPressing(chosen, group));
+                }}
+                testID={changeFocusTestID(group)}
+                title={focusLabels[group]}
+              />
+            </View>
+          ))}
+        </FluidGrid>
       </View>
     </AnswerScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  // Two to a row, each one taking what is left of the row after the gap, so a long group name
-  // widens its tile rather than being cut.
-  cell: { flexBasis: '45%', flexGrow: 1 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.spaceSm },
+  cell: { paddingHorizontal: space.spaceXs },
+  grid: { marginHorizontal: -space.spaceXs },
 });
