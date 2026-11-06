@@ -17,7 +17,7 @@ import {
   highlightPageTitleTestID,
   highlightParagraphTestID,
 } from '../../../src/features/highlight/HighlightPage';
-import { highlightTestID } from '../../../src/features/highlight/HighlightRow';
+import { highlightGridTestID, highlightTestID } from '../../../src/features/highlight/HighlightRow';
 import { readings } from '../../../src/features/highlight/highlights';
 import { hygienePageTestID } from '../../../src/features/hygiene/HygieneProductsPage';
 import { dayRefusedTestID } from '../../../src/features/log/DayRefused';
@@ -592,10 +592,11 @@ describe('the highlights', () => {
     expect(screen.queryByTestId(highlightPageTestID)).toBeNull();
   });
 
-  it('should carry the row in a sideways scroll, so more highlights fit than the width holds', async () => {
+  it('should wrap the row onto more lines rather than scroll it sideways, so more highlights fit than the width holds', async () => {
     await sheOpensThePeriodPage(aPeriodLongAgo);
 
-    expect(screen.getByTestId(periodPageHighlightsTestID).props.horizontal).toBe(true);
+    expect(screen.getByTestId(periodPageHighlightsTestID).props.horizontal).toBeUndefined();
+    expect(screen.getByTestId(highlightGridTestID(periodPageHighlightsTestID))).toBeTruthy();
   });
 });
 
