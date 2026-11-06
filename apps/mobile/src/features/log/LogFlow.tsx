@@ -13,6 +13,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { PrimaryButton } from '../../components/Button';
 import { Card } from '../../components/Card';
+import { HeadingRow } from '../../components/HeadingRow';
 import { CycleRing } from '../../components/CycleRing';
 import { LockLine } from '../../components/LockLine';
 import { RowGroup } from '../../components/RowGroup';
@@ -77,6 +78,8 @@ export const logFlowPhaseTestID = 'log-flow-phase';
 
 /** The heading over the flow picker. */
 export const logFlowTitleTestID = 'log-flow-title';
+export const logFlowFlowTopTestID = 'log-flow-flow-top';
+export const logFlowSymptomsTopTestID = 'log-flow-symptoms-top';
 
 /** The line under the flow that says what the flow she picked means. */
 export const logFlowCaptionTestID = 'log-flow-caption';
@@ -176,20 +179,23 @@ export function LogFlow(props: Props): ReactNode {
 
         <Card testID={logFlowFlowCardTestID}>
           <View style={styles.inside}>
-            <View style={styles.cardTop}>
-              <Text accessibilityRole="header" style={styles.title} testID={logFlowTitleTestID}>
-                {logFlowCopy.title}
-              </Text>
-              <Pressable
-                accessibilityRole="link"
-                onPress={props.onOtherDischarge}
-                style={styles.search}
-                testID={logFlowOtherDischargeTestID}
-              >
-                <Text style={styles.searchLabel}>{logFlowCopy.otherDischarge}</Text>
-                <Icon colour={colour.secondaryText} name="chevron" size={SEARCH_CHEVRON} />
-              </Pressable>
-            </View>
+            <HeadingRow
+              end={
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={props.onOtherDischarge}
+                  style={styles.search}
+                  testID={logFlowOtherDischargeTestID}
+                >
+                  <Text style={styles.searchLabel}>{logFlowCopy.otherDischarge}</Text>
+                  <Icon colour={colour.secondaryText} name="chevron" size={SEARCH_CHEVRON} />
+                </Pressable>
+              }
+              heading={logFlowCopy.title}
+              headingStyle={styles.title}
+              headingTestID={logFlowTitleTestID}
+              testID={logFlowFlowTopTestID}
+            />
             <FlowPicker chosen={props.chosen} onPick={props.onPick} />
             {props.chosen === undefined || props.chosen === 'none' ? null : (
               <Text style={styles.hint} testID={logFlowCaptionTestID}>
@@ -203,20 +209,22 @@ export function LogFlow(props: Props): ReactNode {
 
         <Card testID={logFlowSymptomsCardTestID}>
           <View style={styles.inside}>
-            <View style={styles.cardTop}>
-              <Text accessibilityRole="header" style={styles.title}>
-                {logFlowCopy.symptoms}
-              </Text>
-              <Pressable
-                accessibilityRole="link"
-                onPress={props.onSearch}
-                style={styles.search}
-                testID={logFlowSearchTestID}
-              >
-                <Text style={styles.searchLabel}>{logFlowCopy.search}</Text>
-                <Icon colour={colour.secondaryText} name="chevron" size={SEARCH_CHEVRON} />
-              </Pressable>
-            </View>
+            <HeadingRow
+              end={
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={props.onSearch}
+                  style={styles.search}
+                  testID={logFlowSearchTestID}
+                >
+                  <Text style={styles.searchLabel}>{logFlowCopy.search}</Text>
+                  <Icon colour={colour.secondaryText} name="chevron" size={SEARCH_CHEVRON} />
+                </Pressable>
+              }
+              heading={logFlowCopy.symptoms}
+              headingStyle={styles.title}
+              testID={logFlowSymptomsTopTestID}
+            />
             <TheSymptomsOfTheDay held={props.symptoms} onToggle={props.onToggleSymptom} />
             <GroupTiles groups={props.groups} onOpen={props.onOpenGroup} />
           </View>
@@ -334,7 +342,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.margin,
     paddingTop: space.spaceMd,
   },
-  cardTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   day: { color: colour.text, ...textStyle('headline-sm') },
   foot: { padding: space.margin },
   hint: { color: colour.secondaryText, ...textStyle('body-sm') },
