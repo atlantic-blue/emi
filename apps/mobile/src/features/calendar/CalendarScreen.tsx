@@ -4,6 +4,11 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { Screen } from '../../components/Screen';
+import {
+  ScreenHeader,
+  screenHeaderEndTestID,
+  screenHeaderStartTestID,
+} from '../../components/ScreenHeader';
 import { herDayLabel } from '../cycle/copy';
 import type { HerDay } from '../cycle/herWeek';
 import { monthLabel } from '../onboarding/days';
@@ -24,18 +29,15 @@ export const calendarHeadingTestID = 'calendar-screen-heading';
 export const calendarEarlierTestID = 'calendar-screen-earlier';
 export const calendarLaterTestID = 'calendar-screen-later';
 export const calendarEditPeriodTestID = 'calendar-screen-edit-period';
-/** The two sides of the header, the way back and Today, which keep the same width. */
-export const calendarHeaderStartTestID = 'calendar-screen-header-start';
-export const calendarHeaderEndTestID = 'calendar-screen-header-end';
+/** The way back and Today, each drawn at its own full size. */
+export const calendarHeaderStartTestID = screenHeaderStartTestID(calendarHeaderTestID);
+export const calendarHeaderEndTestID = screenHeaderEndTestID(calendarHeaderTestID);
 /** The row under the header that carries the two ways to another month. */
 export const calendarPagesTestID = 'calendar-screen-pages';
 /** The line above the legend that says how long until her next period. */
 export const calendarNextPeriodTestID = 'calendar-screen-next-period';
 /** The panel at the foot, which holds the card of the day she pressed. */
 export const calendarPanelTestID = 'calendar-screen-panel';
-
-/** Points. Each side of the header, which holds the way back or the word for today. */
-const THE_SIDE_OF_THE_HEADER = 88;
 
 /** Points. The way back is read at the size every other way back is read at. */
 const BACK_MARK_SIZE = 22;
@@ -138,8 +140,18 @@ export function CalendarScreen({
   return (
     <Screen drawsTheWash testID={calendarScreenTestID} washPhase={phaseOn?.(today)?.phase}>
       <ScrollView contentContainerStyle={styles.body}>
-        <View style={styles.header} testID={calendarHeaderTestID}>
-          <View style={styles.side} testID={calendarHeaderStartTestID}>
+        <ScreenHeader
+          end={
+            <Pressable
+              accessibilityRole="button"
+              onPress={onToday}
+              style={styles.link}
+              testID={calendarTodayTestID}
+            >
+              <Text style={styles.todayLabel}>{calendarCopy.today}</Text>
+            </Pressable>
+          }
+          start={
             <Pressable
               accessibilityLabel={calendarCopy.back}
               accessibilityRole="button"
@@ -151,26 +163,11 @@ export function CalendarScreen({
                 <Icon colour={colour.text} name="chevron" size={BACK_MARK_SIZE} />
               </View>
             </Pressable>
-          </View>
-          <Text
-            accessibilityRole="header"
-            numberOfLines={1}
-            style={styles.title}
-            testID={calendarTitleTestID}
-          >
-            {monthLabel(month)}
-          </Text>
-          <View style={[styles.side, styles.sideEnd]} testID={calendarHeaderEndTestID}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onToday}
-              style={styles.link}
-              testID={calendarTodayTestID}
-            >
-              <Text style={styles.todayLabel}>{calendarCopy.today}</Text>
-            </Pressable>
-          </View>
-        </View>
+          }
+          testID={calendarHeaderTestID}
+          title={monthLabel(month)}
+          titleTestID={calendarTitleTestID}
+        />
 
         <View style={styles.pages} testID={calendarPagesTestID}>
           <Pressable
@@ -247,12 +244,6 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceXl,
   },
   foot: { justifyContent: 'flex-end', marginTop: 'auto' },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: space.spaceSm,
-    justifyContent: 'space-between',
-  },
   link: {
     justifyContent: 'center',
     minHeight: MINIMUM_TAP_TARGET,
@@ -268,18 +259,6 @@ const styles = StyleSheet.create({
     ...textStyle('choice-sm'),
   },
   pages: { flexDirection: 'row', justifyContent: 'space-between' },
-  // The two sides of the header are the same width, so the month name stands in the middle of the
-  // glass whatever the word for today is.
-  side: { flexDirection: 'row', minWidth: THE_SIDE_OF_THE_HEADER, width: THE_SIDE_OF_THE_HEADER },
-  sideEnd: { justifyContent: 'flex-end' },
-  // The month name is the only box in its row that gives way. It is longer in Spanish than in
-  // English, and longer again in a face the phone substitutes, so the width comes off the words.
-  title: {
-    color: colour.text,
-    flexShrink: 1,
-    textAlign: 'center',
-    ...textStyle('headline-sm'),
-  },
   todayLabel: {
     color: colour.accent,
     ...textStyle('button-md'),
