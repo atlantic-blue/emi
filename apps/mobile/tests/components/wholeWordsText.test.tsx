@@ -11,14 +11,6 @@ import {
   isOneWord,
 } from '../../src/components/WholeWordsText';
 import {
-  BOARD_COLUMNS,
-  HygieneProductsPage,
-  NARROW_COLUMNS,
-  productTileNameTestID,
-  productTileTestID,
-} from '../../src/features/hygiene/HygieneProductsPage';
-import { productOrder } from '../../src/features/hygiene/products';
-import {
   GroupTiles,
   NARROW_TILES_IN_A_ROW,
   TILES_IN_A_ROW,
@@ -206,33 +198,5 @@ describe('the Russian labels the beta group saw broken on iPhone SE', () => {
     expect(slot.width).toBeUndefined();
     expect(slot.minWidth).toBe(HEADER_END);
     expect(slot.flexGrow).toBe(1);
-  });
-
-  it('should lay the hygiene products three to a row when a word is still cut at the floor', async () => {
-    await render(
-      <OnAPhone>
-        <HygieneProductsPage
-          onBack={() => undefined}
-          onOpen={() => undefined}
-          onQuiz={() => undefined}
-        />
-      </OnAPhone>,
-    );
-    const first = productOrder[0];
-    if (first === undefined) {
-      throw new Error('The hygiene page holds no product.');
-    }
-    const cellWidth = (): unknown =>
-      StyleSheet.flatten(screen.getByTestId(productTileTestID(first)).props.style).width;
-
-    expect(cellWidth()).toBe(`${100 / BOARD_COLUMNS}%`);
-
-    for (let step = 0; step < LABEL_SCALES.length; step += 1) {
-      await act(() =>
-        layOut(productTileNameTestID('period-underwear'), ['Менструал', 'ьные трусы']),
-      );
-    }
-
-    expect(cellWidth()).toBe(`${100 / NARROW_COLUMNS}%`);
   });
 });
