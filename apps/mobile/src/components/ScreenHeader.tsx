@@ -22,18 +22,30 @@ export function screenHeaderWordTestID(testID: string, word: string): string {
   return `${testID}-word-${word}`;
 }
 
+export function screenHeaderBeforeTitleTestID(testID: string): string {
+  return `${testID}-before-title`;
+}
+
+export function screenHeaderAfterTitleTestID(testID: string): string {
+  return `${testID}-after-title`;
+}
+
 export interface HeaderWidths {
   readonly rowWidth: number;
   readonly startWidth: number;
   readonly endWidth: number;
   readonly longestWord: number;
   readonly gap: number;
+  /** The buttons that sit right beside the title, with the gap each one keeps from it. */
+  readonly besideTitle?: number;
 }
 
 export function titleFitsBetween(widths: HeaderWidths): boolean {
   const side = Math.max(widths.startWidth, widths.endWidth);
 
-  return widths.longestWord <= widths.rowWidth - 2 * side - 2 * widths.gap;
+  return (
+    widths.longestWord <= widths.rowWidth - 2 * side - 2 * widths.gap - (widths.besideTitle ?? 0)
+  );
 }
 
 interface Props {
@@ -42,6 +54,9 @@ interface Props {
   readonly testID: string;
   readonly end?: ReactNode;
   readonly titleTestID?: string;
+  /** A button drawn right before the title, which moves with the title when it moves under. */
+  readonly beforeTitle?: ReactNode;
+  readonly afterTitle?: ReactNode;
 }
 
 const GAP = space.spaceSm;
@@ -52,11 +67,19 @@ export function ScreenHeader(props: Props): ReactNode {
   const [startWidth, setStartWidth] = useState<number | undefined>(undefined);
   const [endWidth, setEndWidth] = useState<number | undefined>(undefined);
   const [wordWidths, setWordWidths] = useState<Readonly<Record<string, number>>>({});
+  const [beforeWidth, setBeforeWidth] = useState<number | undefined>(undefined);
+  const [afterWidth, setAfterWidth] = useState<number | undefined>(undefined);
+  const hasBefore = props.beforeTitle !== undefined;
+  const hasAfter = props.afterTitle !== undefined;
   const isMeasured =
     rowWidth > 0 &&
     startWidth !== undefined &&
     endWidth !== undefined &&
+    (!hasBefore || beforeWidth !== undefined) &&
+    (!hasAfter || afterWidth !== undefined) &&
     words.every((word) => wordWidths[word] !== undefined);
+  const besideTitle =
+    (hasBefore ? (beforeWidth ?? 0) + GAP : 0) + (hasAfter ? (afterWidth ?? 0) + GAP : 0);
   const side = isMeasured ? Math.max(startWidth, endWidth) : undefined;
   const isTitleUnder =
     isMeasured &&
@@ -66,6 +89,7 @@ export function ScreenHeader(props: Props): ReactNode {
       endWidth,
       longestWord: Math.max(0, ...words.map((word) => wordWidths[word] ?? 0)),
       gap: GAP,
+      besideTitle,
     });
 
   const measure = (
@@ -119,15 +143,44 @@ export function ScreenHeader(props: Props): ReactNode {
       </View>
     </View>
   );
-  const title = (
+  const titleText = (
     <Text
       accessibilityRole="header"
-      style={[styles.title, isTitleUnder ? undefined : styles.titleBetween]}
+      style={[
+        styles.title,
+        isTitleUnder && !hasBefore && !hasAfter ? undefined : styles.titleBetween,
+      ]}
       testID={props.titleTestID}
     >
       {props.title}
     </Text>
   );
+  const title =
+    !hasBefore && !hasAfter ? (
+      titleText
+    ) : (
+      <View style={[styles.titleRow, isTitleUnder ? undefined : styles.titleBetween]}>
+        {hasBefore ? (
+          <View
+            onLayout={(event) => setBeforeWidth(Math.ceil(event.nativeEvent.layout.width))}
+            style={styles.natural}
+            testID={screenHeaderBeforeTitleTestID(props.testID)}
+          >
+            {props.beforeTitle}
+          </View>
+        ) : null}
+        {titleText}
+        {hasAfter ? (
+          <View
+            onLayout={(event) => setAfterWidth(Math.ceil(event.nativeEvent.layout.width))}
+            style={styles.natural}
+            testID={screenHeaderAfterTitleTestID(props.testID)}
+          >
+            {props.afterTitle}
+          </View>
+        ) : null}
+      </View>
+    );
 
   if (isTitleUnder) {
     return (
@@ -190,5 +243,6 @@ const styles = StyleSheet.create({
   startSide: { justifyContent: 'flex-start' },
   title: { color: colour.text, textAlign: 'center', ...textStyle('headline-sm') },
   titleBetween: { flexBasis: 0, flexGrow: 1, flexShrink: 1 },
+  titleRow: { alignItems: 'center', columnGap: GAP, flexDirection: 'row' },
   word: { alignSelf: 'flex-start', flexShrink: 0 },
 });

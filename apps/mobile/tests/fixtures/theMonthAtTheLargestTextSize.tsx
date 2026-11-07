@@ -3,7 +3,11 @@ import { fireEvent, render, screen } from '@testing-library/react-native';
 import { AccessibilityInfo } from 'react-native';
 import type { Metrics } from 'react-native-safe-area-context';
 
-import { screenHeaderWordTestID } from '../../src/components/ScreenHeader';
+import {
+  screenHeaderAfterTitleTestID,
+  screenHeaderBeforeTitleTestID,
+  screenHeaderWordTestID,
+} from '../../src/components/ScreenHeader';
 import {
   CalendarScreen,
   calendarHeaderEndTestID,
@@ -29,7 +33,7 @@ function theCaveat(name: string, picture: string): string {
     `Rendered, not observed: drawn from the tree the month screen produced under the test runner with`,
     `the phone language set to ${name}, at 375 by 667 points, which is the glass of an iPhone SE, with`,
     'every run of text grown by 1.3 times, the limit the largest text size reaches. The width of the',
-    'header, of the way back, of Today and of each word of the month is the one the iPhone SE',
+    'header, of the way back, of Today, of the arrows and of each word of the month is the one the iPhone SE',
     `simulator reported at the largest text size, handed to the screen as the phone hands it. The page is ${picture}.`,
     'Reproduce with: npm run generate:calendar-largest-text-picture.',
   ].join(' ');
@@ -65,6 +69,8 @@ async function drawn(language: Language): Promise<DrawnScreen> {
     [calendarHeaderTestID, theHeader],
     [calendarHeaderStartTestID, theWayBack],
     [calendarHeaderEndTestID, theToday[language]],
+    [screenHeaderBeforeTitleTestID(calendarHeaderTestID), theWayBack],
+    [screenHeaderAfterTitleTestID(calendarHeaderTestID), theWayBack],
     ...monthLabel(month)
       .split(/\s+/)
       .map(
@@ -86,7 +92,7 @@ async function drawn(language: Language): Promise<DrawnScreen> {
 
   return {
     title: monthLabel(month),
-    note: 'The month is drawn whole between the way back and Today, which keep their full size.',
+    note: 'The month is drawn whole with an arrow on each side, and the way back, Today and the arrows keep their full size.',
     tree,
   };
 }

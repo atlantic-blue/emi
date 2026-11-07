@@ -11,7 +11,7 @@ import {
 } from '../../components/ScreenHeader';
 import { herDayLabel } from '../cycle/copy';
 import type { HerDay } from '../cycle/herWeek';
-import { monthLabel } from '../onboarding/days';
+import { addMonths, monthLabel } from '../onboarding/days';
 import { CycleMonth, MonthLegend, type MonthSquare } from './CycleMonth';
 import { DaySheet } from './DaySheet';
 import { calendarCopy, daySheetWords, monthLegendCopy, theWaitSaid } from './copy';
@@ -32,8 +32,6 @@ export const calendarEditPeriodTestID = 'calendar-screen-edit-period';
 /** The way back and Today, each drawn at its own full size. */
 export const calendarHeaderStartTestID = screenHeaderStartTestID(calendarHeaderTestID);
 export const calendarHeaderEndTestID = screenHeaderEndTestID(calendarHeaderTestID);
-/** The row under the header that carries the two ways to another month. */
-export const calendarPagesTestID = 'calendar-screen-pages';
 /** The line above the legend that says how long until her next period. */
 export const calendarNextPeriodTestID = 'calendar-screen-next-period';
 /** The panel at the foot, which holds the card of the day she pressed. */
@@ -70,7 +68,7 @@ interface Props {
   /** The way to the screen she opens, which is where today is. */
   readonly onToday: () => void;
   readonly onPressDay: (day: string) => void;
-  /** The way to the month before the one she is reading. */
+  /** The way to the month before the one she is reading, the arrow left of the month name. */
   readonly onEarlierMonth: () => void;
   /** The way to the month after it, which reaches months she has not lived yet. */
   readonly onLaterMonth: () => void;
@@ -110,6 +108,19 @@ export function CalendarScreen({
   onEditPeriod,
 }: Props): ReactNode {
   const held = new Map(days.map((day) => [day.day, day]));
+  const aWayToAMonth = (testID: string, count: number, onPress: () => void): ReactNode => (
+    <Pressable
+      accessibilityLabel={monthLabel(addMonths(month, count))}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.arrow}
+      testID={testID}
+    >
+      <View style={count < 0 ? styles.backMark : undefined}>
+        <Icon colour={colour.text} name="chevron" size={BACK_MARK_SIZE} />
+      </View>
+    </Pressable>
+  );
 
   const squareOf = (day: string): MonthSquare => {
     const hers = held.get(day);
@@ -141,6 +152,8 @@ export function CalendarScreen({
     <Screen drawsTheWash testID={calendarScreenTestID} washPhase={phaseOn?.(today)?.phase}>
       <ScrollView contentContainerStyle={styles.body}>
         <ScreenHeader
+          afterTitle={aWayToAMonth(calendarLaterTestID, 1, onLaterMonth)}
+          beforeTitle={aWayToAMonth(calendarEarlierTestID, -1, onEarlierMonth)}
           end={
             <Pressable
               accessibilityRole="button"
@@ -168,27 +181,6 @@ export function CalendarScreen({
           title={monthLabel(month)}
           titleTestID={calendarTitleTestID}
         />
-
-        <View style={styles.pages} testID={calendarPagesTestID}>
-          <Pressable
-            accessibilityLabel={calendarCopy.earlierMonth}
-            accessibilityRole="button"
-            onPress={onEarlierMonth}
-            style={styles.link}
-            testID={calendarEarlierTestID}
-          >
-            <Text style={styles.pageLabel}>{calendarCopy.earlier}</Text>
-          </Pressable>
-          <Pressable
-            accessibilityLabel={calendarCopy.laterMonth}
-            accessibilityRole="button"
-            onPress={onLaterMonth}
-            style={styles.link}
-            testID={calendarLaterTestID}
-          >
-            <Text style={styles.pageLabel}>{calendarCopy.later}</Text>
-          </Pressable>
-        </View>
 
         {waitForNextPeriod === undefined ? null : (
           <Text style={styles.nextPeriod} testID={calendarNextPeriodTestID}>
@@ -236,6 +228,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: MINIMUM_TAP_TARGET,
   },
+  arrow: {
+    alignItems: 'center',
+    height: MINIMUM_TAP_TARGET,
+    justifyContent: 'center',
+    width: MINIMUM_TAP_TARGET,
+  },
   backMark: { transform: TURNED_AROUND },
   body: {
     flexGrow: 1,
@@ -254,11 +252,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     ...textStyle('choice-sm'),
   },
-  pageLabel: {
-    color: colour.secondaryText,
-    ...textStyle('choice-sm'),
-  },
-  pages: { flexDirection: 'row', justifyContent: 'space-between' },
   todayLabel: {
     color: colour.accent,
     ...textStyle('button-md'),

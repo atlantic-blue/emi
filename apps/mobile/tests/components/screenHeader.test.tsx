@@ -4,6 +4,8 @@ import { Pressable, StyleSheet, Text, type TextStyle, type ViewStyle } from 'rea
 
 import {
   ScreenHeader,
+  screenHeaderAfterTitleTestID,
+  screenHeaderBeforeTitleTestID,
   screenHeaderEndTestID,
   screenHeaderStartTestID,
   screenHeaderWordTestID,
@@ -37,6 +39,77 @@ describe('whether a title fits between the two ends', () => {
     expect(
       titleFitsBetween({ rowWidth: 343, startWidth: 120, endWidth: 44, longestWord: 100, gap: 8 }),
     ).toBe(false);
+  });
+
+  it('takes the buttons beside the title off the room, so a title that fitted alone moves under', () => {
+    const widths = { rowWidth: 343, startWidth: 44, endWidth: 70, longestWord: 150, gap: 8 };
+
+    expect(titleFitsBetween(widths)).toBe(true);
+    expect(titleFitsBetween({ ...widths, besideTitle: 104 })).toBe(false);
+  });
+});
+
+async function theHeaderWithArrows(title: string): Promise<void> {
+  await render(
+    <ScreenHeader
+      afterTitle={<Pressable accessibilityRole="button" testID="later" />}
+      beforeTitle={<Pressable accessibilityRole="button" testID="earlier" />}
+      end={<Pressable accessibilityRole="button" testID="cancel" />}
+      start={<Pressable accessibilityRole="button" testID="back" />}
+      testID={headerTestID}
+      title={title}
+      titleTestID={titleTestID}
+    />,
+  );
+}
+
+async function measuredWithArrows(
+  rowWidth: number,
+  words: Readonly<Record<string, number>>,
+): Promise<void> {
+  await measured(rowWidth, words);
+  await layOut(screenHeaderBeforeTitleTestID(headerTestID), 44);
+  await layOut(screenHeaderAfterTitleTestID(headerTestID), 44);
+}
+
+function drawnOrderWithArrows(): readonly string[] {
+  return screen
+    .getAllByTestId(/^(back|earlier|title|later|cancel)$/)
+    .map((element) => element.props.testID as string);
+}
+
+describe('a header with a button on each side of the title', () => {
+  it('draws the buttons right beside the title, between the two ends, when it fits', async () => {
+    await theHeaderWithArrows('Ноябрь 2026');
+    await measuredWithArrows(343, { Ноябрь: 70, '2026': 44 });
+
+    expect(styleOf(headerTestID).flexDirection).toBe('row');
+    expect(drawnOrderWithArrows()).toEqual(['back', 'earlier', 'title', 'later', 'cancel']);
+  });
+
+  it('moves the title and both its buttons under the ends when the title does not fit', async () => {
+    await theHeaderWithArrows('Ноябрь 2026');
+    await measuredWithArrows(343, { Ноябрь: 100, '2026': 57 });
+
+    expect(styleOf(headerTestID).flexDirection).toBe('column');
+    expect(drawnOrderWithArrows()).toEqual(['back', 'cancel', 'earlier', 'title', 'later']);
+  });
+
+  it('keeps both buttons at their full size and never shrinks or cuts the title', async () => {
+    await theHeaderWithArrows('Ноябрь 2026');
+    await measuredWithArrows(343, { Ноябрь: 100, '2026': 57 });
+
+    expect(styleOf(screenHeaderBeforeTitleTestID(headerTestID)).flexShrink).toBe(0);
+    expect(styleOf(screenHeaderAfterTitleTestID(headerTestID)).flexShrink).toBe(0);
+    expect(screen.getByTestId(titleTestID).props.numberOfLines).toBeUndefined();
+    expect(styleOf(titleTestID).fontSize).toBe(textStyle('headline-sm').fontSize);
+  });
+
+  it('keeps the title between the ends until both buttons beside it are measured', async () => {
+    await theHeaderWithArrows('Ноябрь 2026');
+    await measured(343, { Ноябрь: 100, '2026': 57 });
+
+    expect(styleOf(headerTestID).flexDirection).toBe('row');
   });
 });
 
