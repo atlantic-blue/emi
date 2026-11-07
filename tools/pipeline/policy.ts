@@ -78,6 +78,24 @@ export function statementsIn(policy: string): PolicyStatement[] {
     }));
 }
 
+/**
+ * The whole text of one statement, found by the name it carries. A condition is part of what a
+ * grant allows and `statementsIn` reads only the actions and the resources, so a rule about a
+ * condition reads the statement as it is written.
+ */
+export function statementTextIn(policy: string, sid: string): string {
+  const found = policy
+    .split(/\bstatement\s*\{/)
+    .slice(1)
+    .find((body) => new RegExp(`sid\\s*=\\s*"${sid}"`).test(body));
+
+  if (found === undefined) {
+    throw new Error(`the policy has no statement named ${sid}`);
+  }
+
+  return found;
+}
+
 export function defaultOf(configuration: string, variable: string): string {
   const found = /default\s+=\s+"([^"]*)"/.exec(bodyOf(configuration, `variable "${variable}"`));
 
