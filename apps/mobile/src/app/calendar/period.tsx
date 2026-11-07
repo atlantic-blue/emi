@@ -12,6 +12,7 @@ import {
   deletePeriod,
   savePeriodRange,
   theDaysOf,
+  whatAPressHolds,
   whereTheEditorOpens,
 } from '../../features/calendar/savePeriod';
 import { recordedDays } from '../../features/cycle/rebuild';
@@ -58,6 +59,7 @@ export default function EditPeriodRoute(): ReactNode {
   const { held } = opened;
   const [listed, setListed] = useState<DaysListed>(opened.listed);
   const [ticked, setTicked] = useState<readonly string[]>(() => held);
+  const [filled, setFilled] = useState<readonly string[]>([]);
   const rescheduleTheReminder = useRescheduleHerReminder();
 
   const leave = useCallback(() => {
@@ -80,11 +82,14 @@ export default function EditPeriodRoute(): ReactNode {
     leave();
   }, [database, held, leave, rescheduleTheReminder, today, vault]);
 
-  const toggle = useCallback((each: string) => {
-    setTicked((hersNow) =>
-      hersNow.includes(each) ? hersNow.filter((one) => one !== each) : [...hersNow, each].sort(),
-    );
-  }, []);
+  const toggle = useCallback(
+    (each: string) => {
+      const after = whatAPressHolds(ticked, each);
+      setTicked(after.ticked);
+      setFilled((marked) => [...marked.filter((one) => one !== each), ...after.filled]);
+    },
+    [ticked],
+  );
 
   const addTheDay = useCallback((each: string) => {
     setTicked((hersNow) => (hersNow.includes(each) ? hersNow : [...hersNow, each].sort()));
@@ -108,6 +113,7 @@ export default function EditPeriodRoute(): ReactNode {
 
   return (
     <EditPeriodScreen
+      filled={filled}
       held={held}
       listed={theDaysOf(listed)}
       onAddBefore={addBefore}

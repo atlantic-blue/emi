@@ -39,6 +39,8 @@ export const english = {
   'calendar.editPeriod.deleteLine':
     'Emi marks every day of this period as no bleeding. Symptoms and notes on those days stay.',
   'calendar.editPeriod.deleteTitle': 'Delete this period?',
+  'calendar.editPeriod.filled':
+    'Emi marked the days between with a medium flow. You can change the flow on each day.',
   'calendar.editPeriod.lead': {
     one: 'Press the days you bled. Emi holds {count} day, from {date}.',
     other: 'Press the days you bled. Emi holds {count} days, from {date}.',

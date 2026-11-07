@@ -17,6 +17,7 @@ export const editPeriodCancelTestID = 'edit-period-cancel';
 export const editPeriodLeadTestID = 'edit-period-lead';
 export const editPeriodListTestID = 'edit-period-list';
 export const editPeriodChangeTestID = 'edit-period-change';
+export const editPeriodFilledTestID = 'edit-period-filled';
 export const editPeriodSaveTestID = 'edit-period-save';
 export const editPeriodAddBeforeTestID = 'edit-period-add-before';
 export const editPeriodAddAfterTestID = 'edit-period-add-after';
@@ -54,6 +55,8 @@ interface Props {
   readonly listed: readonly string[];
   /** The days she is holding as her period right now, which is what a tick says. */
   readonly ticked: readonly string[];
+  /** The days Emi marked between a first and a last day she pressed, while they are still ticked. */
+  readonly filled?: readonly string[];
   readonly onToggle: (day: string) => void;
   /** Adds the day before the first listed day, which is how she reaches a day outside the list. */
   readonly onAddBefore: () => void;
@@ -87,6 +90,7 @@ export function EditPeriodScreen({
   held,
   listed,
   ticked,
+  filled = [],
   onToggle,
   onAddBefore,
   onAddAfter,
@@ -96,6 +100,8 @@ export function EditPeriodScreen({
 }: Props): ReactNode {
   const changed = whatSheChanged({ held, ticked });
   const hers = new Set(ticked);
+  const wasHeld = new Set(held);
+  const isAnyDayFilled = filled.some((day) => hers.has(day) && !wasHeld.has(day));
   const [isAsking, setIsAsking] = useState(false);
 
   return (
@@ -173,6 +179,11 @@ export function EditPeriodScreen({
           <Text style={styles.changeWords} testID={editPeriodChangeTestID}>
             {ticked.length === 0 ? editPeriodCopy.noDayLeft : whatSheChangedSaid(changed)}
           </Text>
+          {isAnyDayFilled ? (
+            <Text style={styles.changeWords} testID={editPeriodFilledTestID}>
+              {editPeriodCopy.filled}
+            </Text>
+          ) : null}
         </View>
 
         {held.length === 0 ? null : (
@@ -241,6 +252,7 @@ const styles = StyleSheet.create({
   change: {
     backgroundColor: colour.accentSoft,
     borderRadius: radius.xl,
+    gap: space.spaceMd,
     padding: space.spaceMd,
   },
   changeWords: { color: colour.text, ...textStyle('body-sm') },
