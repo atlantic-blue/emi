@@ -47,8 +47,16 @@ address, which may be a relay address at `privaterelay.appleid.com`. Google hand
 an address and whether the address is verified. Neither one is asked for a name, a picture or a
 profile. Each credential is read from the parameter store and no value is in this repository.
 
-Neither app client lists a provider yet, so nothing offers either button. The callback addresses
-and the buttons belong to the sign in page.
+The website client lists both providers, beside `COGNITO`, which is the code sent to her address.
+It allows the authorization code flow with the scopes `openid` and `email`, and it keeps no
+client secret, so a browser proves the exchange with a code challenge instead. It comes back to
+`https://myemi.app/<language>/sign-in/returning/` and signs out to
+`https://myemi.app/<language>/sign-in/`, one pair for each language the site serves. A fourth
+language on the site needs a fourth pair here, and the infrastructure test refuses the pair that is
+missing.
+
+The client on her phone lists no provider. It signs in with the code alone, and the screen that
+offers Apple and Google on a phone is work of its own.
 
 One domain on the pool, `auth.myemi.app`, with one certificate for that name in us-east-1 and one
 record pointing at it. Apple and Google were both set up by hand against that one address, and

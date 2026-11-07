@@ -19,7 +19,14 @@ import {
   statementsReaching,
   valueOf,
 } from './policy.ts';
-import { credentialValuesIn } from './signIn.ts';
+import {
+  credentialValuesIn,
+  theSiteAddress,
+  theWaysAClientOffers,
+  websiteSignInProblems,
+} from './signIn.ts';
+import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
+import { languages } from '../../apps/website/app/words/language.ts';
 
 const repositoryRoot = resolve(__dirname, '..', '..');
 const infrastructureDirectory = join(repositoryRoot, 'infra');
@@ -1461,11 +1468,94 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(configuration).not.toContain('"Telegram"');
     });
 
-    // Neither client lists a provider yet, so no button of Emi opens one. The callback addresses
-    // and the buttons belong to the sign in page.
-    it('leaves both clients unchanged, so nothing offers a provider yet', () => {
-      expect(cognito).not.toContain('supported_identity_providers');
-      expect(cognito).not.toContain('callback_urls');
+    // This rule read the other way while no client listed a provider. The buttons on the sign in
+    // page are the other half of this, and they arrive with the page that draws them.
+    it('offers Apple, Google and the code of the pool through the website client', () => {
+      expect(theWaysAClientOffers(configuration, 'website')).toEqual([
+        'COGNITO',
+        'SignInWithApple',
+        'Google',
+      ]);
+    });
+
+    it('offers each provider through the resource that makes it, so no apply offers one early', () => {
+      const offered = listedIn(inClient('website'), 'supported_identity_providers');
+
+      expect(offered.slice(1)).toEqual([
+        'aws_cognito_identity_provider.apple.provider_name',
+        'aws_cognito_identity_provider.google.provider_name',
+      ]);
+      expect(inClient('website')).not.toContain('"SignInWithApple"');
+    });
+
+    it('leaves the application on her phone offering the code alone', () => {
+      const phone = inClient('iphone');
+
+      expect(listedIn(phone, 'supported_identity_providers')).toEqual([]);
+      expect(listedIn(phone, 'callback_urls')).toEqual([]);
+      expect(listedIn(phone, 'allowed_oauth_flows')).toEqual([]);
+    });
+
+    it('hands the browser a code to exchange, and never a token in an address', () => {
+      const site = inClient('website');
+
+      expect(listedIn(site, 'allowed_oauth_flows')).toEqual(['code']);
+      expect(site).toContain('allowed_oauth_flows_user_pool_client = true');
+      expect(listedIn(site, 'allowed_oauth_flows')).not.toContain('implicit');
+    });
+
+    it('asks for the subject and the address, and refuses a wider scope', () => {
+      expect(listedIn(inClient('website'), 'allowed_oauth_scopes')).toEqual(['openid', 'email']);
+      expect(
+        websiteSignInProblems(
+          configuration.replace(
+            'allowed_oauth_scopes = ["openid", "email"]',
+            'allowed_oauth_scopes = ["openid", "email", "profile"]',
+          ),
+          languages,
+        ),
+      ).toEqual([
+        'the site asks for the scopes "openid email profile", and it may ask for "openid email" alone',
+      ]);
+    });
+
+    it('comes back to the page of each language the site serves, and signs out to each sign in page', () => {
+      const site = inClient('website');
+      const address = (written: string): string => valueOf(configuration, written);
+
+      expect(listedIn(site, 'callback_urls').map(address)).toEqual([
+        'https://myemi.app/en/sign-in/returning/',
+        'https://myemi.app/ru/sign-in/returning/',
+        'https://myemi.app/es/sign-in/returning/',
+      ]);
+      expect(listedIn(site, 'logout_urls').map(address)).toEqual([
+        'https://myemi.app/en/sign-in/',
+        'https://myemi.app/ru/sign-in/',
+        'https://myemi.app/es/sign-in/',
+      ]);
+      expect(languages).toEqual(['en', 'ru', 'es']);
+      // The rules of the pool write the host out, and the site holds its own. A second spelling
+      // of a host is a sign in that works on one of the two and not on the other.
+      expect(theSiteAddress).toBe(SITE_ORIGIN);
+    });
+
+    // The code sent to her address signs a woman in today, and it travels in this flow. A client
+    // that lost it would lose a sign in that works, and the two new providers would not replace it.
+    it('keeps the flow the code sent to her address travels in', () => {
+      expect(listedIn(inClient('website'), 'explicit_auth_flows')).toContain('ALLOW_USER_AUTH');
+      expect(
+        websiteSignInProblems(
+          configuration.replace(
+            'explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]\n\n  # The three ways',
+            'explicit_auth_flows = ["ALLOW_REFRESH_TOKEN_AUTH"]\n\n  # The three ways',
+          ),
+          languages,
+        ),
+      ).toEqual(['the site lost ALLOW_USER_AUTH, so the code sent to her address signs nobody in']);
+    });
+
+    it('meets every rule of the sign in of the site', () => {
+      expect(websiteSignInProblems(configuration, languages)).toEqual([]);
     });
 
     it('holds no secret and no private key, because this repository is public', () => {
