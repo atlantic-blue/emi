@@ -11,6 +11,12 @@ pool carries a `depends_on` on the role policy for that reason. If a merge still
 because the grant had not landed yet, run the deploy workflow again on `main`. The second run
 reads the policy the first one wrote.
 
+The sender does not rely on that. Pull request 515 changed the apply role and made the user pool
+in one apply, the create ran one second after the policy change, and the account refused it. So
+the grants the sender needs merged on their own first, in step 28.7, and this step adds the
+resources on top of a grant that is already active. A step that adds a resource of a service the
+roles have never touched is two merges, in that order.
+
 ## What this builds
 
 One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
@@ -35,7 +41,48 @@ The pool bills by monthly active user. Ten thousand of those are free each month
 costs 0.015 United States dollars, so a month in which nobody signs in costs nothing. Read live on
 5 November 2026 at https://aws.amazon.com/cognito/pricing/.
 
-### The email code cannot be delivered yet
+One sender, `myemi.app`, verified in eu-central-1 as an email identity. The service holds the
+signing key and rotates it, so no key of Emi is written anywhere. The envelope sender is
+`mail.myemi.app`, so a bounce returns to Emi and the policy check reads a domain of Emi.
+
+One address under it, `no-reply@myemi.app`, shown as Emi. A woman reads `Emi
+<no-reply@myemi.app>` in the from line. The domain identity covers every address under it, so the
+address needs no identity of its own. Nothing receives mail there: a reply is lost, and the
+messages carry the account screen as the way to answer. Receiving mail for an address a person
+writes to is a step of its own.
+
+Seven records in the myemi.app zone carry it: three names that hold the signature, one mail
+exchange record for the envelope sender, one Sender Policy Framework record for the envelope
+sender, one more for the domain itself, and one Domain based Message Authentication record at
+`_dmarc.myemi.app`. That last policy is `p=none` and it names no reporting address, because
+myemi.app receives no mail yet. The identity stays unverified, and sends nothing, until the
+records spread.
+
+One configuration set, `emi`, which is the default of the identity. Every message is counted on
+it, so the bounce and complaint rates of Emi are visible apart from the other product of this
+account. Reputation belongs to the account and the region, so a complaint rate earned elsewhere in
+this account can still pause Emi.
+
+One topic, `emi-email-outcomes`. The configuration set publishes a bounce and a complaint to it,
+and its policy lets the mail service publish for this configuration set alone. Nothing subscribes
+to it yet. The function that writes the outcome onto the account item is a later step, so until
+then an event arrives and is dropped.
+
+Two alarms on that configuration set: `emi-email-bounce-rate` at 5 percent and
+`emi-email-complaint-rate` at 0.1 percent. The service recommends staying under those rates and
+may pause an account above 10 percent and 0.5 percent, so each alarm sits at half the rate that
+hurts.
+
+Neither alarm carries an action, and that is deliberate. There is no topic a person reads and no
+address to raise, so the alarm state is the whole signal. Read it in the CloudWatch console, or
+with `aws cloudwatch describe-alarms --alarm-name-prefix emi-email --region eu-central-1`. A later
+step can give both alarms an action once there is somewhere to send one.
+
+The mail carries no monthly fee and costs 0.10 United States dollars for each 1,000 messages, so a
+month in which Emi sends nothing costs nothing for it. The zone already exists for the website, so
+the records add nothing to that.
+
+### The email code is one step away
 
 The pool allows the email one time code as a first factor. Amazon Cognito sends that code through
 Amazon Simple Email Service and through nothing else, so a pool with no sender verified cannot
@@ -44,14 +91,35 @@ https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html, 
 one time password authentication carries the footnote: requires the Essentials feature plan or
 higher and an Amazon Simple Email Service email configuration.
 
-The account holds no sender today. `aws sesv2 list-email-identities --region eu-central-1`
-answered one identity on 5 November 2026, `datexpats.com`, whose verification failed and whose
-sending is off. So the sign in with a code is configured and it is not usable.
+The sender above is the first half of that. The pool still names no sender: it carries no
+`email_configuration` block, so Amazon Cognito sends a code from its own address. The block that
+points the pool at this identity is a step of its own, and it waits for the identity to be
+verified, because a pool that names an unverified identity refuses every send.
 
-What closes it is step 18 of `docs/design/accounts.md`: a verified `myemi.app` identity in
-eu-central-1 with its signing records, and then an `email_configuration` block on the pool that
-names it. That is a step of its own, because it writes records into the myemi.app zone and it
-carries its own alarms.
+Before this step the account held no sender of Emi. `aws sesv2 list-email-identities --region
+eu-central-1` answered one identity on 5 November 2026, `datexpats.com`, whose verification failed
+and whose sending is off. That identity belongs to another product, and nothing here touches it.
+
+### Register the sender with Apple, which no test can see
+
+Apple delivers to a private relay address only mail from a sender it knows. A woman who signs in
+with Apple and hides her address has an address at `privaterelay.appleid.com`, and Apple refuses
+mail from a domain or an address it does not hold. A sender nobody registered bounces silently for
+every Apple user.
+
+So a person opens the Apple developer account and registers the sender by hand, under
+Certificates, Identifiers and Profiles, then Sign in with Apple, then email sources:
+
+1. Add the domain `myemi.app`, and let Apple verify it.
+2. Add the address `no-reply@myemi.app`, which is the one address Emi sends from.
+
+Apple then matches a message against those entries by the Sender Policy Framework record of the
+visible sender and by the signature, and the records above carry both.
+
+Nothing in this repository can read the Apple developer account, so no test says whether this is
+done. The proof is one message sent to a relay address and seen to arrive, and the design asks for
+that before the feature ships. This was read from secondary sources and not measured: Apple's own
+page is drawn by a script and could not be read.
 
 ### What the next step needs from the operator
 
@@ -78,8 +146,9 @@ that can apply.
 ## What it costs when nobody uses it
 
 Almost nothing. The table bills per request, so an idle table pays for storage only. The api and
-the functions bill per call. The user pool bills by monthly active user. No resource here bills by
-the hour.
+the functions bill per call. The user pool bills by monthly active user. The sender bills by
+message, the topic bills by message, and an alarm costs nothing while it is one metric alarm. No
+resource here bills by the hour.
 
 ## The bootstrap, which ran on 2026-09-18
 

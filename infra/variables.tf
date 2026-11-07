@@ -51,3 +51,9 @@ variable "domain_name" {
   type        = string
   default     = "myemi.app"
 }
+
+variable "zone_id" {
+  description = "Zone the registration made for the domain. Terraform reads it and never creates it, and the pipeline may change a record in this zone and no other"
+  type        = string
+  default     = "Z06550332F4OHMRD78K"
+}
