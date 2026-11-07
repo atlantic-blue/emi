@@ -6,6 +6,7 @@ import { CappedText as Text } from '@emi/ui';
 import { PrimaryButton } from '../../components/Button';
 import { RoundIconButton } from '../../components/RoundIconButton';
 import { Screen } from '../../components/Screen';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { answerCopy, gaveAtFirstRunSentence } from './copy';
 
 export const answerScreenTestID = 'answer-screen';
@@ -64,28 +65,32 @@ export function AnswerScreen({
 }: Props): ReactNode {
   return (
     <Screen drawsTheWash testID={answerScreenTestID}>
-      <View style={styles.header} testID={answerHeaderTestID}>
-        <View style={styles.backMark}>
-          <RoundIconButton
-            accessibilityLabel={answerCopy.back}
-            icon="chevron"
-            onPress={onCancel}
-            testID={answerBackTestID}
-          />
-        </View>
-
-        <Text accessibilityRole="header" style={styles.title} testID={answerTitleTestID}>
-          {title}
-        </Text>
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={onCancel}
-          style={styles.cancel}
-          testID={answerCancelTestID}
-        >
-          <Text style={styles.cancelLabel}>{answerCopy.cancel}</Text>
-        </Pressable>
+      <View style={styles.header}>
+        <ScreenHeader
+          end={
+            <Pressable
+              accessibilityRole="button"
+              onPress={onCancel}
+              style={styles.cancel}
+              testID={answerCancelTestID}
+            >
+              <Text style={styles.cancelLabel}>{answerCopy.cancel}</Text>
+            </Pressable>
+          }
+          start={
+            <View style={styles.backMark}>
+              <RoundIconButton
+                accessibilityLabel={answerCopy.back}
+                icon="chevron"
+                onPress={onCancel}
+                testID={answerBackTestID}
+              />
+            </View>
+          }
+          testID={answerHeaderTestID}
+          title={title}
+          titleTestID={answerTitleTestID}
+        />
       </View>
 
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
@@ -144,13 +149,7 @@ const styles = StyleSheet.create({
     ...textStyle('label-md'),
   },
   footer: { padding: space.margin },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: space.spaceMd,
-    paddingTop: space.spaceSm,
-  },
+  header: { paddingHorizontal: space.spaceMd, paddingTop: space.spaceSm },
   line: {
     color: colour.secondaryText,
     ...textStyle('body-sm'),
@@ -167,9 +166,4 @@ const styles = StyleSheet.create({
     rowGap: space.spaceSm,
   },
   scroll: { flex: 1 },
-  title: {
-    color: colour.text,
-    textAlign: 'center',
-    ...textStyle('headline-sm'),
-  },
 });
