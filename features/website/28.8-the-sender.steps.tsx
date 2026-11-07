@@ -186,9 +186,9 @@ defineFeature(feature, (test) => {
       expect(valuesIn(record('sender_policy'))).toEqual(['v=spf1 include:amazonses.com ~all']);
     });
 
-    and('the pool still names no sender, because that is a step of its own', () => {
-      expect(block('resource "aws_cognito_user_pool" "accounts"')).not.toContain(
-        'email_configuration',
+    and('the pool reads the sender, and the sender names no pool', () => {
+      expect(block('resource "aws_cognito_user_pool" "accounts"')).toContain(
+        'source_arn            = aws_sesv2_email_identity.sender.arn',
       );
       expect(email).not.toContain('aws_cognito');
     });

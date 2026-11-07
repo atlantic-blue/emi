@@ -82,23 +82,40 @@ The mail carries no monthly fee and costs 0.10 United States dollars for each 1,
 month in which Emi sends nothing costs nothing for it. The zone already exists for the website, so
 the records add nothing to that.
 
-### The email code is one step away
+### The email code leaves from Emi
 
 The pool allows the email one time code as a first factor. Amazon Cognito sends that code through
-Amazon Simple Email Service and through nothing else, so a pool with no sender verified cannot
-deliver one. Read on 5 November 2026 at
+Amazon Simple Email Service and through nothing else. Read on 5 November 2026 at
 https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html, where the row for
 one time password authentication carries the footnote: requires the Essentials feature plan or
 higher and an Amazon Simple Email Service email configuration.
 
-The sender above is the first half of that. The pool still names no sender: it carries no
-`email_configuration` block, so Amazon Cognito sends a code from its own address. The block that
-points the pool at this identity is a step of its own, and it waits for the identity to be
-verified, because a pool that names an unverified identity refuses every send.
+The pool now carries that configuration. Its sending account is `DEVELOPER`, which means the pool
+calls the mail service in this account rather than borrowing an address of the service. The source
+is the `myemi.app` identity, the from address is `Emi <no-reply@myemi.app>`, and every message is
+counted on the `emi` configuration set, so a bounced code reaches the same two alarms as any other
+message. The daily limit is the limit of the account, not the 50 messages the service lends a pool.
 
-Before this step the account held no sender of Emi. `aws sesv2 list-email-identities --region
-eu-central-1` answered one identity on 5 November 2026, `datexpats.com`, whose verification failed
-and whose sending is off. That identity belongs to another product, and nothing here touches it.
+Saving that setting makes a service linked role,
+`AWSServiceRoleForAmazonCognitoIdpEmailService`, the first time it is saved. The role carries the
+send, it refuses every `ses:List` call, and only `email.cognito-idp.amazonaws.com` may assume it,
+so no role of Emi holds a way to write as Emi. The grant that lets a merge make it is in
+`github-oidc.tf`, and it landed in a merge of its own.
+
+The identity was ready before this landed. On 7 November 2026 `aws sesv2 get-email-identity
+--email-identity myemi.app --region eu-central-1` answered `VerifiedForSendingStatus` true,
+`DkimAttributes.Status` SUCCESS, signing enabled, `MailFromDomain` `mail.myemi.app` with a status
+of SUCCESS, and a default configuration set of `emi`.
+
+Existing is not the same as verified, and that matters for a rebuild. The pool is ordered after the
+identity, so an apply never names a sender that does not exist. It cannot wait for the Domain Name
+System to spread, and the service refuses to send from an identity whose records have not answered
+yet. So an account built from nothing takes a second apply: run the deploy workflow again on `main`
+once the records answer.
+
+One identity in this region belongs to another product. `aws sesv2 list-email-identities --region
+eu-central-1` answered `datexpats.com` on 5 November 2026, whose verification failed and whose
+sending is off. Nothing here touches it.
 
 ### Register the sender with Apple, which no test can see
 
