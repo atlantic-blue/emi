@@ -7,7 +7,8 @@ import { StyleSheet, View } from 'react-native';
  * A title between a button at each end. The title wraps between words and is never cut or shrunk.
  * The ends keep their full size, and both take the width of the wider one so the title stays in
  * the middle of the glass. When the longest word of the title does not fit between the ends, the
- * title moves to its own line under them.
+ * title moves to its own line under them. A title with a button beside it is held to one line
+ * instead: when the whole title does not fit between the ends, the title and its buttons move under.
  */
 
 export function screenHeaderStartTestID(testID: string): string {
@@ -20,6 +21,10 @@ export function screenHeaderEndTestID(testID: string): string {
 
 export function screenHeaderWordTestID(testID: string, word: string): string {
   return `${testID}-word-${word}`;
+}
+
+export function screenHeaderWholeTitleTestID(testID: string): string {
+  return `${testID}-whole-title`;
 }
 
 export function screenHeaderBeforeTitleTestID(testID: string): string {
@@ -69,14 +74,17 @@ export function ScreenHeader(props: Props): ReactNode {
   const [wordWidths, setWordWidths] = useState<Readonly<Record<string, number>>>({});
   const [beforeWidth, setBeforeWidth] = useState<number | undefined>(undefined);
   const [afterWidth, setAfterWidth] = useState<number | undefined>(undefined);
+  const [wholeWidth, setWholeWidth] = useState<number | undefined>(undefined);
   const hasBefore = props.beforeTitle !== undefined;
   const hasAfter = props.afterTitle !== undefined;
+  const isKeptOnOneLine = hasBefore || hasAfter;
   const isMeasured =
     rowWidth > 0 &&
     startWidth !== undefined &&
     endWidth !== undefined &&
     (!hasBefore || beforeWidth !== undefined) &&
     (!hasAfter || afterWidth !== undefined) &&
+    (!isKeptOnOneLine || wholeWidth !== undefined) &&
     words.every((word) => wordWidths[word] !== undefined);
   const besideTitle =
     (hasBefore ? (beforeWidth ?? 0) + GAP : 0) + (hasAfter ? (afterWidth ?? 0) + GAP : 0);
@@ -87,7 +95,9 @@ export function ScreenHeader(props: Props): ReactNode {
       rowWidth,
       startWidth,
       endWidth,
-      longestWord: Math.max(0, ...words.map((word) => wordWidths[word] ?? 0)),
+      longestWord: isKeptOnOneLine
+        ? (wholeWidth ?? 0)
+        : Math.max(0, ...words.map((word) => wordWidths[word] ?? 0)),
       gap: GAP,
       besideTitle,
     });
@@ -113,6 +123,16 @@ export function ScreenHeader(props: Props): ReactNode {
           {word}
         </Text>
       ))}
+      {isKeptOnOneLine ? (
+        <Text
+          numberOfLines={1}
+          onLayout={(event) => setWholeWidth(Math.ceil(event.nativeEvent.layout.width))}
+          style={[styles.title, styles.word]}
+          testID={screenHeaderWholeTitleTestID(props.testID)}
+        >
+          {props.title}
+        </Text>
+      ) : null}
     </View>
   );
   const startSide = (

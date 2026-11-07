@@ -6,6 +6,7 @@ import { StyleSheet, type TextStyle, type ViewStyle } from 'react-native';
 import {
   screenHeaderAfterTitleTestID,
   screenHeaderBeforeTitleTestID,
+  screenHeaderWholeTitleTestID,
   screenHeaderWordTestID,
 } from '../../../src/components/ScreenHeader';
 import {
@@ -33,13 +34,17 @@ jest.mock('expo-localization', () => ({
  * size on the glass. When the longest word of the month does not fit between them, the month and
  * its two arrows move to a line of their own under the way back and Today.
  *
- * The widths were read on the iPhone SE (3rd generation) simulator: the header row, the way back,
- * Today, and each word of the month on one line.
+ * The widths at the largest size, and in Russian at the normal size, were read on the iPhone SE
+ * (3rd generation) simulator: the header row, the way back, Today, and each word of the month on
+ * one line. The English and Spanish widths at the normal size are read from the shipped font files
+ * with theWidthOfWords. The whole month is its words plus the space between them at that size.
  */
 
 interface Measured {
   readonly today: number;
   readonly words: Readonly<Record<string, number>>;
+  /** The month on one line: its words and the space between them at that size. */
+  readonly whole: number;
 }
 
 const theRowOnTheSmallestIPhone = 343;
@@ -57,29 +62,43 @@ const theCases: readonly {
     language: 'en',
     size: 'the largest',
     title: 'November 2026',
-    measured: { today: 56, words: { November: 115.5, 2026: 56.5 } },
+    measured: { today: 56, words: { November: 115.5, 2026: 56.5 }, whole: 177.5 },
     line: 'under',
   },
   {
     language: 'es',
     size: 'the largest',
     title: 'Noviembre 2026',
-    measured: { today: 44, words: { Noviembre: 122, 2026: 56.5 } },
-    line: 'between',
+    measured: { today: 44, words: { Noviembre: 122, 2026: 56.5 }, whole: 184 },
+    line: 'under',
   },
   {
     language: 'ru',
     size: 'the largest',
     title: 'Ноябрь 2026',
-    measured: { today: 82.5, words: { Ноябрь: 91.5, 2026: 56.5 } },
+    measured: { today: 82.5, words: { Ноябрь: 91.5, 2026: 56.5 }, whole: 153.5 },
     line: 'under',
   },
   {
     language: 'ru',
     size: 'the normal',
     title: 'Ноябрь 2026',
-    measured: { today: 63.5, words: { Ноябрь: 70.5, 2026: 43.5 } },
-    line: 'between',
+    measured: { today: 63.5, words: { Ноябрь: 70.5, 2026: 43.5 }, whole: 118.5 },
+    line: 'under',
+  },
+  {
+    language: 'en',
+    size: 'the normal',
+    title: 'November 2026',
+    measured: { today: 43.5, words: { November: 89, 2026: 43.5 }, whole: 136.5 },
+    line: 'under',
+  },
+  {
+    language: 'es',
+    size: 'the normal',
+    title: 'Noviembre 2026',
+    measured: { today: 29, words: { Noviembre: 94, 2026: 43.5 }, whole: 141.5 },
+    line: 'under',
   },
 ];
 
@@ -119,6 +138,7 @@ async function thePhoneLaysOutTheHeader(title: string, measured: Measured): Prom
   await layOut(calendarHeaderEndTestID, measured.today);
   await layOut(screenHeaderBeforeTitleTestID(calendarHeaderTestID), anArrow);
   await layOut(screenHeaderAfterTitleTestID(calendarHeaderTestID), anArrow);
+  await layOut(screenHeaderWholeTitleTestID(calendarHeaderTestID), measured.whole);
   for (const word of title.split(/\s+/)) {
     const width = measured.words[word];
 

@@ -6,6 +6,7 @@ import type { Metrics } from 'react-native-safe-area-context';
 import {
   screenHeaderAfterTitleTestID,
   screenHeaderBeforeTitleTestID,
+  screenHeaderWholeTitleTestID,
   screenHeaderWordTestID,
 } from '../../src/components/ScreenHeader';
 import {
@@ -51,6 +52,8 @@ const theHeader = 343;
 const theWayBack = 44;
 const theToday: Readonly<Record<Language, number>> = { en: 56, es: 44, ru: 82.5 };
 const month = theNovember;
+/** The month on one line: its words and the space between them at that size. */
+const theWholeMonth: Readonly<Record<Language, number>> = { en: 177.5, es: 184, ru: 153.5 };
 
 const theWords: Readonly<Record<Language, Readonly<Record<string, number>>>> = {
   en: { November: 115.5, 2026: 56.5 },
@@ -71,6 +74,7 @@ async function drawn(language: Language): Promise<DrawnScreen> {
     [calendarHeaderEndTestID, theToday[language]],
     [screenHeaderBeforeTitleTestID(calendarHeaderTestID), theWayBack],
     [screenHeaderAfterTitleTestID(calendarHeaderTestID), theWayBack],
+    [screenHeaderWholeTitleTestID(calendarHeaderTestID), theWholeMonth[language]],
     ...monthLabel(month)
       .split(/\s+/)
       .map(

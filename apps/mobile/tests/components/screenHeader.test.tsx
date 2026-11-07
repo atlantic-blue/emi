@@ -6,6 +6,7 @@ import {
   ScreenHeader,
   screenHeaderAfterTitleTestID,
   screenHeaderBeforeTitleTestID,
+  screenHeaderWholeTitleTestID,
   screenHeaderEndTestID,
   screenHeaderStartTestID,
   screenHeaderWordTestID,
@@ -66,10 +67,12 @@ async function theHeaderWithArrows(title: string): Promise<void> {
 async function measuredWithArrows(
   rowWidth: number,
   words: Readonly<Record<string, number>>,
+  whole: number,
 ): Promise<void> {
   await measured(rowWidth, words);
   await layOut(screenHeaderBeforeTitleTestID(headerTestID), 44);
   await layOut(screenHeaderAfterTitleTestID(headerTestID), 44);
+  await layOut(screenHeaderWholeTitleTestID(headerTestID), whole);
 }
 
 function drawnOrderWithArrows(): readonly string[] {
@@ -81,7 +84,7 @@ function drawnOrderWithArrows(): readonly string[] {
 describe('a header with a button on each side of the title', () => {
   it('draws the buttons right beside the title, between the two ends, when it fits', async () => {
     await theHeaderWithArrows('Ноябрь 2026');
-    await measuredWithArrows(343, { Ноябрь: 70, '2026': 44 });
+    await measuredWithArrows(343, { Ноябрь: 50, '2026': 26 }, 80);
 
     expect(styleOf(headerTestID).flexDirection).toBe('row');
     expect(drawnOrderWithArrows()).toEqual(['back', 'earlier', 'title', 'later', 'cancel']);
@@ -89,7 +92,7 @@ describe('a header with a button on each side of the title', () => {
 
   it('moves the title and both its buttons under the ends when the title does not fit', async () => {
     await theHeaderWithArrows('Ноябрь 2026');
-    await measuredWithArrows(343, { Ноябрь: 100, '2026': 57 });
+    await measuredWithArrows(343, { Ноябрь: 100, '2026': 57 }, 162);
 
     expect(styleOf(headerTestID).flexDirection).toBe('column');
     expect(drawnOrderWithArrows()).toEqual(['back', 'cancel', 'earlier', 'title', 'later']);
@@ -97,12 +100,31 @@ describe('a header with a button on each side of the title', () => {
 
   it('keeps both buttons at their full size and never shrinks or cuts the title', async () => {
     await theHeaderWithArrows('Ноябрь 2026');
-    await measuredWithArrows(343, { Ноябрь: 100, '2026': 57 });
+    await measuredWithArrows(343, { Ноябрь: 100, '2026': 57 }, 162);
 
     expect(styleOf(screenHeaderBeforeTitleTestID(headerTestID)).flexShrink).toBe(0);
     expect(styleOf(screenHeaderAfterTitleTestID(headerTestID)).flexShrink).toBe(0);
     expect(screen.getByTestId(titleTestID).props.numberOfLines).toBeUndefined();
     expect(styleOf(titleTestID).fontSize).toBe(textStyle('headline-sm').fontSize);
+  });
+
+  it('moves under when every word fits but the whole title would take two lines', async () => {
+    await theHeaderWithArrows('Ноябрь 2026');
+    await measuredWithArrows(343, { Ноябрь: 70, '2026': 44 }, 119);
+
+    expect(styleOf(headerTestID).flexDirection).toBe('column');
+    expect(drawnOrderWithArrows()).toEqual(['back', 'cancel', 'earlier', 'title', 'later']);
+  });
+
+  it('measures the whole title on one line, at the size of the title', async () => {
+    await theHeaderWithArrows('Ноябрь 2026');
+
+    const whole = screen.getByTestId(screenHeaderWholeTitleTestID(headerTestID), {
+      includeHiddenElements: true,
+    });
+
+    expect(whole.props.numberOfLines).toBe(1);
+    expect(whole).toHaveTextContent('Ноябрь 2026');
   });
 
   it('keeps the title between the ends until both buttons beside it are measured', async () => {
