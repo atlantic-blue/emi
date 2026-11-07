@@ -46,6 +46,17 @@ const theSentenceFor: Readonly<Record<WhatWentWrong, keyof SiteWords>> = {
 };
 
 /** The press the board draws as a capsule on the accent, which both states carry. */
+/**
+ * The grey the browser itself draws a placeholder in, which is what the board draws.
+ *
+ * Tailwind writes a placeholder as half of the colour of the words around it, and that is a
+ * different grey from the one the board shows. The two are close enough that one machine reads
+ * them as the same pixel and another does not, so the page passed here and failed on the runner.
+ * `revert` hands the colour back to the browser, which is where the board got it.
+ */
+const theBrowsersOwnPlaceholder = 'placeholder:[color:revert]';
+
+/** The press the board draws as a capsule on the accent, which both states carry. */
 const theAccentPress =
   'flex min-h-[44px] items-center justify-center rounded-full bg-siteSlider px-spaceLg text-body-sm font-semibold whitespace-nowrap text-siteCard';
 
@@ -158,7 +169,7 @@ export function TheSignInForm({
               // A field carries a width of about twenty characters of its own, and a flex row as
               // wide as that field plus the press is wider than a phone. The width is taken off it
               // here and the row gives it whatever is left.
-              className="w-0 min-w-0 flex-1 border-0 bg-transparent px-[2px] text-body-lg leading-[normal] text-siteText outline-offset-[4px]"
+              className={`w-0 min-w-0 flex-1 border-0 bg-transparent px-[2px] text-body-lg leading-[normal] text-siteText outline-offset-[4px] ${theBrowsersOwnPlaceholder}`}
               id="sign-in-address"
               onChange={(typing) => setAddress(typing.target.value)}
               placeholder={words.signInAddressLabel}
@@ -193,7 +204,7 @@ export function TheSignInForm({
         </label>
         <input
           autoComplete="one-time-code"
-          className="box-border min-h-[52px] rounded-[12px] border-hairline border-siteControlLine bg-transparent px-spaceLg text-center font-data text-data-lg leading-[normal] tracking-[0.4em] text-siteText"
+          className={`box-border min-h-[52px] rounded-[12px] border-hairline border-siteControlLine bg-transparent px-spaceLg text-center font-data text-data-lg leading-[normal] tracking-[0.4em] text-siteText ${theBrowsersOwnPlaceholder}`}
           id="sign-in-code"
           inputMode="numeric"
           maxLength={THE_CODE_IS_THIS_LONG}
