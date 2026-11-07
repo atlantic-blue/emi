@@ -556,6 +556,35 @@ data "aws_iam_policy_document" "apply" {
     resources = ["*"]
   }
 
+  # Step 28.10 points the pool at the myemi.app sender, with an email_configuration whose sending
+  # account is DEVELOPER. The first time that setting is saved, Amazon Cognito makes a service
+  # linked role in this account, and it makes it with the credentials of whoever saved the
+  # setting. So the role that applies needs this one action, and the documentation names no other:
+  # "The IAM permissions of this session must include the iam:CreateServiceLinkedRole action."
+  # Read on 7 November 2026 at
+  # https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html
+  #
+  # The role is AWSServiceRoleForAmazonCognitoIdpEmailService. It carries ses:SendEmail and
+  # ses:SendRawEmail, it refuses every ses:List call, and only email.cognito-idp.amazonaws.com may
+  # assume it. So the sending permission lives on a role Emi cannot assume and cannot edit, and
+  # neither pipeline role is given a send of its own.
+  #
+  # Two guards, because this action makes a role. The resource names the path of that one service,
+  # so no other service linked role can be made through it, and the condition names the service
+  # again, which is the form the documentation writes.
+  statement {
+    sid       = "MakeTheEmailServiceRole"
+    effect    = "Allow"
+    actions   = ["iam:CreateServiceLinkedRole"]
+    resources = ["arn:aws:iam::${var.account_id}:role/aws-service-role/email.cognito-idp.amazonaws.com/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "iam:AWSServiceName"
+      values   = ["email.cognito-idp.amazonaws.com"]
+    }
+  }
+
   # ── The sender, which is step 28.8 ─────────────────────────────────────────
 
   # The identity Emi sends from, its signing, its envelope sender domain, and the configuration

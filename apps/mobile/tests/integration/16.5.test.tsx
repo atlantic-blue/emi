@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { screen } from '@testing-library/react-native';
+import { screen, within } from '@testing-library/react-native';
 import { StyleSheet } from 'react-native';
 import { fireEvent, renderRouter } from 'expo-router/testing-library';
 
@@ -8,12 +8,16 @@ import {
   calendarEarlierTestID,
   calendarHeaderEndTestID,
   calendarHeaderStartTestID,
+  calendarHeaderTestID,
   calendarLaterTestID,
   calendarTitleTestID,
 } from '../../src/features/calendar/CalendarScreen';
+import {
+  screenHeaderAfterTitleTestID,
+  screenHeaderBeforeTitleTestID,
+} from '../../src/components/ScreenHeader';
 import { dayTestID } from '../../src/features/calendar/CycleMonth';
 import { daySheetOpenTestID } from '../../src/features/calendar/DaySheet';
-import { calendarCopy } from '../../src/features/calendar/copy';
 import { dayParameter } from '../../src/features/calendar/askedMonth';
 import { logFlowDoneTestID } from '../../src/features/log/LogFlow';
 import { monthLabel, startOfMonth } from '../../src/features/onboarding/days';
@@ -43,8 +47,9 @@ jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureS
 jest.mock('expo-crypto', () => jest.requireActual('../fixtures/expoCrypto'));
 
 /**
- * The way to an earlier month and the way to a later month. Story 9 ends on a day two months
- * behind today, and until these two exist the only month she can read is the month she arrived on.
+ * The way to an earlier month and the way to a later month: an arrow left of the month name and an
+ * arrow right of it, in the header. Story 9 ends on a day two months behind today, and until these
+ * two exist the only month she can read is the month she arrived on.
  */
 
 const appDirectory = join(__dirname, '..', '..', 'src', 'app');
@@ -238,16 +243,58 @@ describe('she swipes back two months and reads a day in that month', () => {
       expect(controlsTooSmallToPress(theWaysToAnotherMonth())).toEqual([]);
     });
 
-    it('each tell somebody listening which way they go', async () => {
+    it('each tell somebody listening the month they go to', async () => {
       await sheOpens('/calendar');
 
       expect(screen.getByTestId(calendarEarlierTestID).props.accessibilityLabel).toBe(
-        calendarCopy.earlierMonth,
+        monthLabel(theMonthBeforeSheOpens()),
       );
       expect(screen.getByTestId(calendarLaterTestID).props.accessibilityLabel).toBe(
-        calendarCopy.laterMonth,
+        monthLabel(theMonthAfterSheOpens()),
       );
-      expect(calendarCopy.earlierMonth).not.toBe(calendarCopy.laterMonth);
+    });
+
+    it('name the new months once she has moved, so the label follows the month she reads', async () => {
+      await sheOpens('/calendar');
+      await shePresses(calendarEarlierTestID);
+
+      expect(screen.getByTestId(calendarEarlierTestID).props.accessibilityLabel).toBe(
+        monthLabel(theMonthTwoBeforeSheOpens()),
+      );
+      expect(screen.getByTestId(calendarLaterTestID).props.accessibilityLabel).toBe(
+        monthLabel(theMonthSheOpens),
+      );
+    });
+
+    it('stand in the header, the arrow back left of the month name and the arrow on right of it', async () => {
+      await sheOpens('/calendar');
+
+      const header = screen.getByTestId(calendarHeaderTestID);
+      const order = within(header)
+        .getAllByTestId(
+          new RegExp(`^(${calendarEarlierTestID}|${calendarTitleTestID}|${calendarLaterTestID})$`),
+        )
+        .map((element) => element.props.testID as string);
+
+      expect(order).toEqual([calendarEarlierTestID, calendarTitleTestID, calendarLaterTestID]);
+      expect(
+        within(screen.getByTestId(screenHeaderBeforeTitleTestID(calendarHeaderTestID))).getByTestId(
+          calendarEarlierTestID,
+        ),
+      ).toBeTruthy();
+      expect(
+        within(screen.getByTestId(screenHeaderAfterTitleTestID(calendarHeaderTestID))).getByTestId(
+          calendarLaterTestID,
+        ),
+      ).toBeTruthy();
+    });
+
+    it('replace the row of Earlier and Later under the header, which is gone', async () => {
+      await sheOpens('/calendar');
+
+      expect(screen.queryByTestId('calendar-screen-pages')).toBeNull();
+      expect(screen.queryByText('Earlier')).toBeNull();
+      expect(screen.queryByText('Later')).toBeNull();
     });
   });
 });
