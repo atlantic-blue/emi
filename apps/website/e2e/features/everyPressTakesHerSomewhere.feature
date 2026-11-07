@@ -43,6 +43,12 @@ Feature: Where a press on a page of the site takes her
       | /en/support/        |
       | /ru/support/        |
       | /es/support/        |
+      | /en/sign-in/        |
+      | /ru/sign-in/        |
+      | /es/sign-in/        |
+      | /en/account/        |
+      | /ru/account/        |
+      | /es/account/        |
 
   Scenario Outline: the press that offers her the community opens the community
     Given a woman opens the page at "<address>"

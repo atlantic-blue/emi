@@ -6,7 +6,9 @@ import NotFound from '../app/[lang]/not-found';
 import HomePage from '../app/[lang]/page';
 import PrivacyPage from '../app/[lang]/privacy/page';
 import PrivacyPolicyPage from '../app/[lang]/privacy-policy/page';
+import SignInPage from '../app/[lang]/sign-in/page';
 import SupportPage from '../app/[lang]/support/page';
+import AccountPage from '../app/[lang]/account/page';
 import { type Language, languages } from '../app/words';
 
 /**
@@ -49,6 +51,12 @@ const privacyPolicyIn = async (language: Language): Promise<string> =>
 const supportPageIn = async (language: Language): Promise<string> =>
   documentAround(await SupportPage({ params: Promise.resolve({ lang: language }) }), language);
 
+const signInPageIn = async (language: Language): Promise<string> =>
+  documentAround(await SignInPage({ params: Promise.resolve({ lang: language }) }), language);
+
+const accountPageIn = async (language: Language): Promise<string> =>
+  documentAround(await AccountPage({ params: Promise.resolve({ lang: language }) }), language);
+
 describe('no page of the site writes a style the policy would refuse', () => {
   it.each(languages)('the page a woman meets Emi on, in %s', async (language) => {
     expect(stylesWrittenInto(await homePageIn(language))).toEqual([]);
@@ -64,6 +72,14 @@ describe('no page of the site writes a style the policy would refuse', () => {
 
   it.each(languages)('the support page, in %s', async (language) => {
     expect(stylesWrittenInto(await supportPageIn(language))).toEqual([]);
+  });
+
+  it.each(languages)('the page she signs in on, in %s', async (language) => {
+    expect(stylesWrittenInto(await signInPageIn(language))).toEqual([]);
+  });
+
+  it.each(languages)('her account, in %s', async (language) => {
+    expect(stylesWrittenInto(await accountPageIn(language))).toEqual([]);
   });
 
   it('the page behind an address the site does not have', async () => {

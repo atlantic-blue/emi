@@ -5,8 +5,9 @@ canvas. A session cannot open that canvas, so the design is committed here, and 
 builds the site builds it from these files.
 
 One directory for each page: `home-v2/` is "Home, version 2", `protection/` is "How Emi protects
-your data", `privacy-policy/` is "Privacy policy", and `support/` is "Emi Support". Each one
-holds the same four things, described below for the home page.
+your data", `privacy-policy/` is "Privacy policy", `support/` is "Emi Support", and `sign-in/`
+holds the page she signs in on and the account she lands on. Each one holds the same four things,
+described below for the home page.
 
 ## What is here
 
@@ -117,6 +118,51 @@ are.
 4. The Emi Community card and The beta card both point at `#`. The first address is
    `THE_EMI_COMMUNITY` in `apps/website/lib/addresses.ts`. The second is
    `https://testflight.apple.com/join/xFSv5Gqa`, which no file of this repository holds yet.
+
+## The page she signs in on
+
+`sign-in/` holds three boards rather than one, because a sign in is three screens and one of
+them is a second state of the first. `boards/SignIn.dc.html` is the page she arrives on,
+`boards/SignInCode.dc.html` is the same page after she has pressed "Send code", and
+`boards/Profile.dc.html` is her account. The same header and footer boards sit beside them, and
+`render/` holds each board as plain markup with the faces it loads and the mark in the band at
+the top. `reference/` holds each of the three at 1280, 834 and 390 pixels wide.
+
+The operator drew no tablet board and no phone board for this page. The other four directories
+hold a board for each width, and those boards are preview frames around the one board rather than
+a different drawing, so nothing of the design is missing here. The three widths are read from the
+markup by the browser suite, the same way they are for the other four pages.
+
+### What the page built from these boards does not copy
+
+The board offers four ways in. Sign in with Apple, Google and Telegram each need a credential only
+a person can make, and step 28.3 makes all three, so the page draws none of the three and none of
+the divider above the form. Their words stay in all three catalogues, so each one comes back with
+one edit. The mark each press carries is Apple own, Google own and Telegram own, and each company
+states how its mark may be drawn, so the three marks arrive with the credentials rather than being
+drawn from memory now.
+
+The account board draws four sections under its head: the subscription, the ways she signs in, the
+preferences and the data. Each one is a step of its own, so the page builds the head of that board
+and nothing under it.
+
+### Where the nine pictures come from
+
+A machine with no Chrome drew them, with the headless Chromium shell of Playwright, from the
+markup beside them. `sign-in/render-board.ts` is `support/render-board.ts` with nothing changed.
+This command wrote the markup and the pictures into `render/`, once for each board, and the nine
+pictures were moved to `reference/` after it:
+
+```
+EMI_CHROME=<the browser> node --experimental-strip-types \
+  docs/design/website/sign-in/render-board.ts \
+  "$PWD/docs/design/website/sign-in/boards" \
+  "$PWD/docs/design/website/sign-in/render" SignIn 1280 834 390
+```
+
+Both paths must be whole. The program writes the address of the markup into the browser, and a
+browser refuses a relative one. The mark in the band at the top is not copied by the program: it
+is `render/assets/2f3b95d653826b5ca02acab62e8534de.svg`, taken from `support/` byte for byte.
 
 ## How the design changes
 

@@ -312,6 +312,47 @@ export const english = {
   supportCancelQuestion: 'How do I cancel my subscription?',
   supportCancelAnswer: 'If you paid in the App Store, cancel in your Apple account settings.',
 
+  // The sign in page, from boards/SignIn.dc.html and boards/SignInCode.dc.html, and the head of
+  // the account page, from boards/Profile.dc.html.
+  //
+  // The board offers four ways in. Three of them need a credential only a person can make, and
+  // step 28.3 makes them, so the page draws the code and holds the other three back. Their words
+  // stay here, in all three languages, so each press comes back with one edit on the day its
+  // credential exists.
+  //
+  // Nothing the page says names the address she typed as known or new. The pool answers the same
+  // way for both, and a page that said which would let anybody test who uses Emi.
+  signInTitle: 'Sign in to Emi',
+  signInLine: 'Use the same way you signed in on your iPhone.',
+  signInApple: 'Sign in with Apple',
+  signInGoogle: 'Sign in with Google',
+  signInTelegram: 'Log in with Telegram',
+  signInOr: 'or',
+  signInAddressLabel: 'Email',
+  signInSendCode: 'Send code',
+  signInWeSendACode: 'We send a code to this address.',
+  signInNoAccountNeeded:
+    'You do not need an account to use Emi. Sign in only to pay on this site or to manage your subscription.',
+  signInWhatTheAccountHolds:
+    'The account holds an id, how you sign in and what you paid for. It never holds your days or the key to them.',
+  signInCodeSentTo: 'We sent a code to {address}.',
+  signInCodeLabel: 'Code',
+  signInCodeSubmit: 'Sign in',
+  signInCodeLasts: 'The code works for 15 minutes.',
+  signInSendANewCode: 'Send a new code ›',
+  signInUseAnotherAddress: 'Use another address ›',
+  signInNeedsAnAddress: 'Type your email address first.',
+  signInNeedsSixDigits: 'Type the 6 digits from the email.',
+  signInCodeIsWrong: 'That code is not right. Check it and type it again.',
+  signInCodeHasExpired: 'That code has expired. Send a new one.',
+  signInTooManyTries: 'Too many tries. Wait a few minutes, then send a new code.',
+  signInNothingReached: 'Your browser could not reach Emi. Check the connection and try again.',
+  signInSending: 'Sending a code…',
+  signInChecking: 'Checking the code…',
+  accountTitle: 'Account',
+  accountRecordsStayOnYourPhone: 'Your records stay on your phone, so they are not here.',
+  accountSignOut: 'Sign out',
+
   // The band at the top of the page, from boards/Header.dc.html.
   headerHomeLabel: 'Emi home',
   headerMainLabel: 'Main',
