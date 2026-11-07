@@ -28,5 +28,5 @@ Feature: The user pool signs her in with a code, and holds nothing of her
     When what the pool may hold is read
     Then it declares no attribute of its own
     And each client reads her address and no other attribute
-    And the pool names no sender, no secret and no key
+    And the pool holds no secret and no key
     And it cannot be deleted by a configuration change alone

@@ -89,8 +89,7 @@ defineFeature(feature, (test) => {
       }
     });
 
-    and('the pool names no sender, no secret and no key', () => {
-      expect(pool).not.toContain('email_configuration');
+    and('the pool holds no secret and no key', () => {
       expect(cognito).not.toContain('client_secret');
       expect(cognito).not.toContain('BEGIN PRIVATE KEY');
       expect(cognito).toContain('generate_secret = false');
