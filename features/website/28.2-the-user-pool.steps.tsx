@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { defineFeature, loadFeature } from 'jest-cucumber';
 
 import { bodyOf, configurationOf, listedIn } from '../../tools/pipeline/policy';
+import { credentialValuesIn } from '../../tools/pipeline/signIn';
 
 const feature = loadFeature(join(__dirname, '28.2-the-user-pool.feature'));
 
@@ -89,9 +90,9 @@ defineFeature(feature, (test) => {
       }
     });
 
+    // A way in names its credentials, so this reads each one for a value rather than for a name.
     and('the pool holds no secret and no key', () => {
-      expect(cognito).not.toContain('client_secret');
-      expect(cognito).not.toContain('BEGIN PRIVATE KEY');
+      expect(credentialValuesIn(cognito)).toEqual([]);
       expect(cognito).toContain('generate_secret = false');
     });
 

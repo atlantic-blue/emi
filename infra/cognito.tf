@@ -164,3 +164,145 @@ output "website_client_id" {
   description = "Client identifier myemi.app signs her in with"
   value       = aws_cognito_user_pool_client.website.id
 }
+
+# ── The address the pool answers on ──────────────────────────────────────────
+
+locals {
+  # Apple and Google were both set up by hand against this one address, and each of them returns
+  # to https://auth.myemi.app/oauth2/idpresponse. A pool domain of any other name answers nothing.
+  sign_in_domain = "auth.${var.domain_name}"
+}
+
+# The certificate the distribution of the pool domain serves. It is asked for in us-east-1 because
+# that is the only region CloudFront reads one from, and the module waits for the proof records to
+# be read, so nothing can attach a certificate that is still pending.
+module "sign_in_certificate" {
+  source = "../infrastructure/modules/certificate"
+
+  providers = {
+    aws = aws.us_east_1
+  }
+
+  domain_name = local.sign_in_domain
+  zone_id     = data.aws_route53_zone.sender.zone_id
+}
+
+# Amazon Cognito refuses a custom domain whose parent domain resolves to nothing, which it treats
+# as a domain being taken over. So myemi.app has to answer an A record before this is made. The
+# website writes that record, in the other root, and infra/README.md says so.
+resource "aws_cognito_user_pool_domain" "sign_in" {
+  domain          = local.sign_in_domain
+  user_pool_id    = aws_cognito_user_pool.accounts.id
+  certificate_arn = module.sign_in_certificate.certificate_arn
+}
+
+# Where auth.myemi.app points. The target is the distribution Amazon Cognito made, in an account of
+# its own, so the name and the zone are read back from the domain rather than written here.
+resource "aws_route53_record" "sign_in" {
+  zone_id = data.aws_route53_zone.sender.zone_id
+  name    = local.sign_in_domain
+  type    = "A"
+
+  alias {
+    name                   = aws_cognito_user_pool_domain.sign_in.cloudfront_distribution
+    zone_id                = aws_cognito_user_pool_domain.sign_in.cloudfront_distribution_zone_id
+    evaluate_target_health = false
+  }
+}
+
+# ── The two ways in that Apple and Google hold the keys to ───────────────────
+
+# Each credential is read from the parameter store of this account. Nothing here holds a value, and
+# nothing prints one: the provider marks the value of a parameter sensitive, so a plan writes
+# (sensitive value) in its place. That matters more than usual, because this repository is public
+# and so is every line its pipeline prints.
+data "aws_ssm_parameter" "apple_services_id" {
+  name = "/${var.project_name}/accounts/apple/services-id"
+}
+
+data "aws_ssm_parameter" "apple_team_id" {
+  name = "/${var.project_name}/accounts/apple/team-id"
+}
+
+data "aws_ssm_parameter" "apple_key_id" {
+  name = "/${var.project_name}/accounts/apple/key-id"
+}
+
+data "aws_ssm_parameter" "apple_private_key" {
+  name = "/${var.project_name}/accounts/apple/private-key"
+}
+
+data "aws_ssm_parameter" "google_client_id" {
+  name = "/${var.project_name}/accounts/google/client-id"
+}
+
+data "aws_ssm_parameter" "google_client_secret" {
+  name = "/${var.project_name}/accounts/google/client-secret"
+}
+
+# Sign in with Apple. The provider name is the one the service fixes, and it is the name the
+# address identity_provider=SignInWithApple carries.
+resource "aws_cognito_identity_provider" "apple" {
+  user_pool_id  = aws_cognito_user_pool.accounts.id
+  provider_name = "SignInWithApple"
+  provider_type = "SignInWithApple"
+
+  # The email address and nothing else. Apple also offers a name scope, and Emi does not ask for
+  # it: the account holds an address so Emi can write to her, and her name belongs on her phone.
+  provider_details = {
+    authorize_scopes = "email"
+    client_id        = data.aws_ssm_parameter.apple_services_id.value
+    team_id          = data.aws_ssm_parameter.apple_team_id.value
+    key_id           = data.aws_ssm_parameter.apple_key_id.value
+    private_key      = data.aws_ssm_parameter.apple_private_key.value
+  }
+
+  # The subject is the one thing Apple returns that stays the same when she hides her address, and
+  # the address may be a relay address at privaterelay.appleid.com.
+  attribute_mapping = {
+    email    = "email"
+    username = "sub"
+  }
+
+  # No read of the account returns a private key, and this resource holds the details as a plain
+  # map with nothing computed in it, so the stored details and the configured details can never
+  # agree on this one element. Without this, every later plan proposes the same change forever. A
+  # rotation of the key therefore needs the provider replaced, which infra/README.md names.
+  lifecycle {
+    ignore_changes = [provider_details["private_key"]]
+  }
+}
+
+# Google.
+resource "aws_cognito_identity_provider" "google" {
+  user_pool_id  = aws_cognito_user_pool.accounts.id
+  provider_name = "Google"
+  provider_type = "Google"
+
+  # openid carries the subject and email carries the address. The profile scope would hand over her
+  # name, her picture and her language, and the account holds none of those.
+  provider_details = {
+    authorize_scopes = "openid email"
+    client_id        = data.aws_ssm_parameter.google_client_id.value
+    client_secret    = data.aws_ssm_parameter.google_client_secret.value
+  }
+
+  # A mapped address arrives unverified unless the verification itself is mapped, and Google
+  # returns it. The username needs no entry: the service derives it from the subject.
+  attribute_mapping = {
+    email          = "email"
+    email_verified = "email_verified"
+  }
+
+  # The secret is left out of the comparison for the same reason the Apple key is. A read of this
+  # provider returns whatever the service holds for the secret, and a plan that compared the two
+  # would print that side of the difference into a public log.
+  lifecycle {
+    ignore_changes = [provider_details["client_secret"]]
+  }
+}
+
+output "sign_in_domain" {
+  description = "Address the sign in pages answer on, and the address Apple and Google return to"
+  value       = aws_cognito_user_pool_domain.sign_in.domain
+}
