@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { PrimaryButton, TextLink } from '../../components/Button';
 import { Screen } from '../../components/Screen';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { DeletePeriodSheet } from './DeletePeriodSheet';
 import { aPeriodRowSaid, editPeriodCopy, whatEmiHoldsSaid, whatSheChangedSaid } from './copy';
 import { sheCanSave, whatSheChanged } from './savePeriod';
@@ -99,21 +100,22 @@ export function EditPeriodScreen({
 
   return (
     <Screen drawsTheWash testID={editPeriodScreenTestID}>
-      <View style={styles.header} testID={editPeriodHeaderTestID}>
-        <View style={styles.side}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onCancel}
-            style={styles.cancel}
-            testID={editPeriodCancelTestID}
-          >
-            <Text style={styles.cancelLabel}>{editPeriodCopy.cancel}</Text>
-          </Pressable>
-        </View>
-        <Text accessibilityRole="header" style={styles.title} testID={editPeriodTitleTestID}>
-          {editPeriodCopy.title}
-        </Text>
-        <View style={styles.side} />
+      <View style={styles.header}>
+        <ScreenHeader
+          start={
+            <Pressable
+              accessibilityRole="button"
+              onPress={onCancel}
+              style={styles.cancel}
+              testID={editPeriodCancelTestID}
+            >
+              <Text style={styles.cancelLabel}>{editPeriodCopy.cancel}</Text>
+            </Pressable>
+          }
+          testID={editPeriodHeaderTestID}
+          title={editPeriodCopy.title}
+          titleTestID={editPeriodTitleTestID}
+        />
       </View>
 
       <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
@@ -244,13 +246,7 @@ const styles = StyleSheet.create({
   changeWords: { color: colour.text, ...textStyle('body-sm') },
   delete: { alignItems: 'flex-start' },
   footer: { padding: space.spaceLg },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: space.spaceLg,
-    paddingTop: space.spaceSm,
-  },
+  header: { paddingHorizontal: space.spaceLg, paddingTop: space.spaceSm },
   lead: { color: colour.text, ...textStyle('body-lg') },
   list: {
     backgroundColor: colour.card,
@@ -268,7 +264,6 @@ const styles = StyleSheet.create({
   },
   rowWord: { color: colour.text, flex: 1, ...textStyle('choice-lg') },
   scroll: { flex: 1 },
-  side: { width: 88 },
   tag: { color: colour.accent, ...textStyle('label-md') },
   tick: {
     alignItems: 'center',
@@ -279,5 +274,4 @@ const styles = StyleSheet.create({
   },
   tickOff: { borderColor: colour.line, borderStyle: 'solid', borderWidth: stroke.icon },
   tickOn: { backgroundColor: colour.accent },
-  title: { color: colour.text, textAlign: 'center', ...textStyle('headline-sm') },
 });
