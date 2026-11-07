@@ -833,10 +833,11 @@ and it finishes the two calls to the pool.
 It then sends her to the sign in page of her own language, signed in.
 
 The policy of the site decides one thing here. `policyAllowing` names `connect-src 'self'` and the
-one pool host, and `apps/website/test/theProxy.test.ts` asserts that the directive holds exactly
-three values. The browser calls the sign in function of the api, which is a fourth host, so this
-piece adds that host to the directive and that count goes from three to four. A piece that forgets
-it ships a page that draws a button and a browser that refuses the call.
+one pool host, and `apps/website/test/theProxy.test.ts` asserts that the directive splits into
+exactly three words, which are its own name and those two sources. The browser calls the sign in
+function of the api, which is a third source, so this piece names it in the directive and that count
+goes from three to four. A piece that forgets it ships a page that draws a button and a browser that
+refuses the call.
 
 Telegram also publishes a script, `telegram-login.js`, which draws the button and hands the identity
 token straight to the browser. Emi refuses it for two reasons. Telegram says the script "relies on
@@ -1512,8 +1513,6 @@ The promise: a document that described an empty pool as though it guarded someth
 than no document.
 
 ### Sign in with Telegram
-
-Status: designed
 
 Six pieces, in this order, each one its own pull request. The press comes last, so every piece
 before it adds something nothing calls yet, and each one merges on its own without changing what a
