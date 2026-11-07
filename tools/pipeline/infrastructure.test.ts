@@ -1704,3 +1704,283 @@ describe('the grants the sender needs, which is step 28.7', () => {
     expect(theIdentity).toBe('arn:aws:ses:eu-central-1:230345688874:identity/myemi.app');
   });
 });
+
+// Step 28.8 builds the sender. The grants it stands on merged in step 28.7, in a merge of their
+// own, because an apply reads a policy per request.
+describe('the sender of myemi.app, which is step 28.8', () => {
+  const email = read('infra/email.tf');
+  const readme = read('infra/README.md');
+  const domain = defaultOf('domain_name');
+  const region = defaultOf('region');
+  const project = defaultOf('project_name');
+  const envelopeSender = `mail.${domain}`;
+
+  const identity = bodyOf('resource "aws_sesv2_email_identity" "sender"');
+  const envelope = bodyOf('resource "aws_sesv2_email_identity_mail_from_attributes" "sender"');
+  const set = bodyOf('resource "aws_sesv2_configuration_set" "sender"');
+  const outcomes = bodyOf('resource "aws_sesv2_configuration_set_event_destination" "outcomes"');
+  const topic = bodyOf('resource "aws_sns_topic" "email_outcomes"');
+  const topicPolicy = bodyOf('data "aws_iam_policy_document" "email_outcomes"');
+
+  const recordOf = (name: string): string => bodyOf(`resource "aws_route53_record" "${name}"`);
+  const alarmOf = (name: string): string =>
+    bodyOf(`resource "aws_cloudwatch_metric_alarm" "${name}"`);
+
+  /**
+   * One argument of a block, read as the value the account will see, through any local it names.
+   * A rule about an address has to read the finished address rather than the expression that
+   * composes it.
+   */
+  const argumentOf = (block: string, name: string): string => {
+    const found = new RegExp(`\\n\\s+${name}\\s+=\\s+([^\\n]+)`).exec(block);
+
+    if (found?.[1] === undefined) {
+      throw new Error(`the block names no ${name}`);
+    }
+
+    const written = found[1].trim();
+    const local = /^local\.([a-z_]+)$/.exec(written);
+
+    return valueOf(configuration, local === null ? written : expressionOf(local[1] as string));
+  };
+
+  describe('the mail is signed, and the signature is the service own key', () => {
+    it('turns signing on through the service, so no key of its own is held anywhere', () => {
+      const signing = blockBodyOf(identity, 'dkim_signing_attributes');
+
+      expect(signing).toContain('next_signing_key_length = "RSA_2048_BIT"');
+      expect(signing).not.toContain('domain_signing_private_key');
+      expect(email).not.toContain('BEGIN PRIVATE KEY');
+      expect(email).not.toContain('domain_signing_selector');
+    });
+
+    it('publishes three names, which is what the service returns', () => {
+      const record = recordOf('signing');
+
+      expect(email).toContain('signing_record_count = 3');
+      expect(record).toContain('count = local.signing_record_count');
+      expect(record).toContain('type    = "CNAME"');
+      expect(record).toContain('._domainkey.${var.domain_name}');
+      expect(record).toContain('.dkim.amazonses.com');
+    });
+
+    it('drives no loop from a value that is unknown until the identity exists', () => {
+      expect(loopsIn(email)).toEqual([]);
+      expect(recordOf('signing')).toContain('tokens[count.index]');
+    });
+  });
+
+  describe('the one address Emi writes from', () => {
+    it('sends from an address under the domain the identity carries', () => {
+      expect(email).toContain('sender_address = "no-reply@${var.domain_name}"');
+      expect(valueOf(configuration, '"no-reply@${var.domain_name}"')).toBe(`no-reply@${domain}`);
+    });
+
+    it('is read in her inbox as Emi, with the address beside the name', () => {
+      expect(email).toContain('sender_name    = "Emi"');
+      expect(email).toContain('sender_from    = "${local.sender_name} <${local.sender_address}>"');
+    });
+
+    it('needs no identity of its own, because the domain identity covers it', () => {
+      expect(email).not.toContain('email_identity = local.sender_address');
+      expect([...email.matchAll(/resource "aws_sesv2_email_identity" "/g)]).toHaveLength(1);
+    });
+
+    it('hands the address and the from line on, because step 28.9 reads them', () => {
+      expect(blockBodyOf(email, 'output "sender_address"')).toContain('local.sender_address');
+      expect(blockBodyOf(email, 'output "sender_from"')).toContain('local.sender_from');
+    });
+
+    it('names that address in the readme, because Apple holds each address of its own', () => {
+      expect(readme).toContain('no-reply@myemi.app');
+      expect(readme).toContain('Add the address `no-reply@myemi.app`');
+    });
+  });
+
+  describe('the envelope sender is Emi as well as the visible sender', () => {
+    it('sends from a subdomain of the domain the identity carries', () => {
+      expect(argumentOf(envelope, 'mail_from_domain')).toBe(envelopeSender);
+      expect(argumentOf(envelope, 'email_identity')).toContain('aws_sesv2_email_identity.sender');
+    });
+
+    it('falls back to the service subdomain when the mail exchange record cannot be read', () => {
+      expect(envelope).toContain('behavior_on_mx_failure = "USE_DEFAULT_VALUE"');
+      expect(envelope).not.toContain('REJECT_MESSAGE');
+    });
+
+    it('returns a bounce to the regional address of the service', () => {
+      const record = recordOf('envelope_sender');
+
+      expect(argumentOf(record, 'name')).toBe(envelopeSender);
+      expect(record).toContain('type    = "MX"');
+      expect(listedIn(record, 'records').map((value) => resolved(configuration, value))).toEqual([
+        `10 feedback-smtp.${region}.amazonses.com`,
+      ]);
+    });
+  });
+
+  describe('two policy records, because the envelope and the visible sender are both read', () => {
+    it.each([
+      ['envelope_sender_policy', `mail.${'${var.domain_name}'}`],
+      ['sender_policy', '${var.domain_name}'],
+    ])('names the service in the record at %s, and refuses softly', (name) => {
+      const record = recordOf(name);
+
+      expect(record).toContain('type    = "TXT"');
+      expect(listedIn(record, 'records')).toEqual(['v=spf1 include:amazonses.com ~all']);
+    });
+
+    it('holds one such record at the domain itself, because a domain carries one', () => {
+      const atTheDomain = ['envelope_sender_policy', 'sender_policy'].filter(
+        (name) => argumentOf(recordOf(name), 'name') === domain,
+      );
+
+      expect(atTheDomain).toEqual(['sender_policy']);
+    });
+
+    it('asks a receiving server for nothing, because myemi.app receives no mail yet', () => {
+      const record = recordOf('message_authentication');
+
+      expect(argumentOf(record, 'name')).toBe(`_dmarc.${domain}`);
+      expect(listedIn(record, 'records')).toEqual(['v=DMARC1; p=none;']);
+      expect(record).not.toContain('rua=');
+      expect(record).not.toContain('ruf=');
+    });
+
+    it('writes every record into the zone it read, and declares no zone', () => {
+      const records = [
+        'signing',
+        'envelope_sender',
+        'envelope_sender_policy',
+        'sender_policy',
+        'message_authentication',
+      ];
+
+      for (const name of records) {
+        expect(recordOf(name)).toContain('zone_id = data.aws_route53_zone.sender.zone_id');
+      }
+
+      expect(email).toContain('data "aws_route53_zone" "sender"');
+      expect(email).not.toContain('resource "aws_route53_zone"');
+      expect(blockBodyOf(email, 'data "aws_route53_zone" "sender"')).toContain(
+        'zone_id = var.zone_id',
+      );
+    });
+  });
+
+  describe('the rates of Emi are counted on a set of its own', () => {
+    it('names the set for Emi and turns its reputation measurement on', () => {
+      expect(argumentOf(set, 'configuration_set_name')).toBe(project);
+      expect(blockBodyOf(set, 'reputation_options')).toContain('reputation_metrics_enabled = true');
+    });
+
+    it('makes that set the default of the identity, so a send cannot miss it', () => {
+      expect(identity).toContain(
+        'configuration_set_name = aws_sesv2_configuration_set.sender.configuration_set_name',
+      );
+    });
+
+    it('asks for the bounce and the complaint, and for no open and no click', () => {
+      // The resource names an event_destination_name beside the block, and the interpolation in
+      // its value opens a brace of its own, so the header is read with its brace.
+      const destination = blockBodyOf(outcomes, 'event_destination {');
+
+      expect(listedIn(destination, 'matching_event_types')).toEqual(['BOUNCE', 'COMPLAINT']);
+      expect(destination).toContain('enabled              = true');
+      expect(blockBodyOf(destination, 'sns_destination')).toContain(
+        'topic_arn = aws_sns_topic.email_outcomes.arn',
+      );
+    });
+
+    it('subscribes nothing to the topic yet, because the function is a later step', () => {
+      expect(configuration).not.toContain('resource "aws_sns_topic_subscription"');
+      expect(topic).toContain(`name = "${'${var.project_name}'}-email-outcomes"`);
+    });
+
+    it('lets the mail service publish, and only for the set of Emi in this account', () => {
+      expect(blockBodyOf(topicPolicy, 'principals')).toContain('"ses.amazonaws.com"');
+      expect(listedIn(topicPolicy, 'actions')).toEqual(['sns:Publish']);
+      expect(topicPolicy).toContain('variable = "AWS:SourceAccount"');
+      expect(topicPolicy).toContain('variable = "AWS:SourceArn"');
+      expect(topicPolicy).toContain('values   = [aws_sesv2_configuration_set.sender.arn]');
+      expect(outcomes).toContain('depends_on = [aws_sns_topic_policy.email_outcomes]');
+    });
+  });
+
+  describe('two alarms, each at half the rate that pauses an account', () => {
+    it.each([
+      ['bounce_rate', 'Reputation.BounceRate', '0.05'],
+      ['complaint_rate', 'Reputation.ComplaintRate', '0.001'],
+    ])('watches %s on the set of Emi', (name, metric, threshold) => {
+      const alarm = alarmOf(name);
+
+      expect(alarm).toContain('namespace   = "AWS/SES"');
+      expect(alarm).toContain(`metric_name = "${metric}"`);
+      expect(alarm).toContain(`threshold           = ${threshold}`);
+      expect(alarm).toContain('comparison_operator = "GreaterThanOrEqualToThreshold"');
+      expect(blockBodyOf(alarm, 'dimensions')).toContain(
+        '"ses:configuration-set" = aws_sesv2_configuration_set.sender.configuration_set_name',
+      );
+    });
+
+    it.each(['bounce_rate', 'complaint_rate'])(
+      'reads no measurement as no failure for %s, because a quiet month publishes none',
+      (name) => {
+        expect(alarmOf(name)).toContain('treat_missing_data = "notBreaching"');
+      },
+    );
+
+    it.each(['bounce_rate', 'complaint_rate'])('sends the %s alarm nowhere yet', (name) => {
+      const alarm = alarmOf(name);
+
+      expect(listedIn(alarm, 'alarm_actions')).toEqual([]);
+      expect(listedIn(alarm, 'ok_actions')).toEqual([]);
+      expect(alarm).toContain('alarm_actions = []');
+    });
+
+    it('says in the readme that neither alarm has anywhere to send to, and how to read it', () => {
+      expect(readme).toContain('Neither alarm carries an action');
+      expect(readme).toContain('aws cloudwatch describe-alarms --alarm-name-prefix emi-email');
+    });
+  });
+
+  describe('what no test here can see', () => {
+    it('names the Apple step in the readme, because a relay address refuses an unknown sender', () => {
+      expect(readme).toContain('Certificates, Identifiers and Profiles');
+      expect(readme).toContain('Sign in with Apple');
+      expect(readme).toContain(domain);
+    });
+
+    it('names what the mail costs, which is nothing until a message is sent', () => {
+      expect(email).toContain('0.10 United States dollars for each 1,000 messages');
+    });
+  });
+
+  describe('what the sender is not allowed to hold', () => {
+    it.each([
+      'aws_db_instance',
+      'aws_rds_cluster',
+      'aws_elasticache_cluster',
+      'aws_opensearch_domain',
+      'aws_nat_gateway',
+      'aws_lb',
+      'aws_instance',
+    ])('declares no %s, because it would bill while nobody uses Emi', (kind) => {
+      expect(email).not.toContain(`resource "${kind}"`);
+    });
+
+    it('holds no key, no password and no address of hers', () => {
+      expect(email).not.toContain('BEGIN PRIVATE KEY');
+      expect(email).not.toContain('smtp_password');
+      expect(email).not.toContain('@gmail');
+      expect(email).not.toContain('privaterelay.appleid.com');
+    });
+
+    it('names the pool nowhere, because the sign in code is a step of its own', () => {
+      expect(email).not.toContain('aws_cognito');
+      expect(bodyOf('resource "aws_cognito_user_pool" "accounts"')).not.toContain(
+        'email_configuration',
+      );
+    });
+  });
+});
