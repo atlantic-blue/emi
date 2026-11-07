@@ -138,12 +138,11 @@ done. The proof is one message sent to a relay address and seen to arrive, and t
 that before the feature ships. This was read from secondary sources and not measured: Apple's own
 page is drawn by a script and could not be read.
 
-### What the next step needs from the operator
+### The credentials Apple, Google and Telegram sign in with
 
 Apple, Google and Telegram are not in this pool yet. Each one needs a credential that only a
 person can make, and an apply that reads a parameter nobody created refuses the whole merge. So
-the next step reads each one from the parameter store of this account, in eu-central-1, under
-these names:
+each one is read from the parameter store of this account, in eu-central-1, under these names:
 
 - `/emi/accounts/apple/services-id`, the Services identifier of the Emi application. A string.
 - `/emi/accounts/apple/team-id`, the Apple developer team identifier. A string.
@@ -154,11 +153,48 @@ these names:
 - `/emi/accounts/telegram/bot-id`, the numeric identifier of the Emi bot. A string.
 - `/emi/accounts/telegram/bot-token`, the token BotFather gave for that bot. A secure string.
 
+A person made all eight by hand. `aws ssm describe-parameters --region eu-central-1` listed every
+one of them on 7 November 2026. The Apple private key and the Google secret are secure strings,
+held under `alias/aws/ssm`, which is the key the parameter store makes for this account.
+
 Nothing in this repository holds any of those values, and no log line prints one.
+
+Both roles now read the six under `/emi/accounts/apple/` and `/emi/accounts/google/`, and decrypt
+a secure string only through a parameter store call. Neither role may write a parameter. The
+Telegram pair is inside the same prefix, so the way in that reads it needs no new grant.
 
 Two roles. `emi-github-actions-plan` is assumed by a pull request. It can read the account and it
 can change nothing. `emi-github-actions` is assumed by a merge into `main`. It is the only thing
 that can apply.
+
+### One grant is wider than the rule of this repository
+
+Several grants here stand on every resource. Each of the others is a read, or an action the
+account evaluates against no resource at all. This one writes, and what it writes on is not in
+this account.
+
+Amazon Cognito serves a user pool domain from an Amazon CloudFront distribution that it makes and
+manages in an account of its own. It configures that distribution with the permissions of whoever
+creates the domain. So the distribution is not in account 230345688874, and a pattern that names
+that account can never match it. The documentation gives the statement to copy, with one action
+and a resource of `*`. Read on 7 November 2026 at
+https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-add-custom-domain.html
+
+The statement is `ConfigureTheDomainDistribution` in `github-oidc.tf`, and it carries
+`cloudfront:UpdateDistribution` and nothing else. The cost: this account holds the distributions
+of the other Atlantic Blue products and of the Emi website, and a merge of Emi may now change the
+configuration of any of them. Nothing in this repository does that. A condition on the calling
+service would narrow the grant, the service documents no such key, and nothing here guesses at
+one.
+
+### The address the pool answers on needs a record on the parent domain
+
+Amazon Cognito refuses a custom domain whose parent domain resolves to nothing. It reads that as
+a hijacked domain. So `myemi.app` must answer an A record before `auth.myemi.app` can be made.
+
+It does. `aws route53 list-resource-record-sets --hosted-zone-id Z06550332F4OHMRD78K` answered an
+A record for `myemi.app` aliased to the website distribution on 7 November 2026. The website put
+it there, so the sign in address depends on the website staying up.
 
 ## What it costs when nobody uses it
 
