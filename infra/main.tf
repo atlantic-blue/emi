@@ -35,3 +35,18 @@ provider "aws" {
     }
   }
 }
+
+# A pool domain is served by a CloudFront distribution, and CloudFront reads a certificate from
+# us-east-1 and from nowhere else. So the certificate of the sign in address is asked for through
+# this alias, while the pool itself stays in Europe.
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+
+  default_tags {
+    tags = {
+      Project   = var.project_name
+      ManagedBy = "terraform"
+    }
+  }
+}

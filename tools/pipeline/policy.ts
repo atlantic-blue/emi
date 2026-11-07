@@ -134,6 +134,26 @@ export function valueOf(configuration: string, expression: string): string {
 }
 
 /**
+ * The region of one aliased provider, read from the block that declares the alias. A rule about
+ * where a certificate is asked for has to read the region and not the name of the alias.
+ */
+export function regionOfAlias(configuration: string, alias: string): string {
+  const at = configuration.search(new RegExp(`alias\\s*=\\s*"${alias}"`));
+
+  if (at < 0) {
+    throw new Error(`the configuration declares no provider aliased ${alias}`);
+  }
+
+  const found = /region\s*=\s*"([^"]+)"/.exec(configuration.slice(at));
+
+  if (!found?.[1]) {
+    throw new Error(`the provider aliased ${alias} names no region`);
+  }
+
+  return found[1];
+}
+
+/**
  * True where a statement stands on every resource. Anything else names one, whether it names it
  * as an address pattern or through a local, and naming one is what denies a collection.
  */

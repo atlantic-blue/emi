@@ -41,6 +41,21 @@ The pool bills by monthly active user. Ten thousand of those are free each month
 costs 0.015 United States dollars, so a month in which nobody signs in costs nothing. Read live on
 5 November 2026 at https://aws.amazon.com/cognito/pricing/.
 
+Two ways into that pool: `SignInWithApple` and `Google`. Apple is asked for the email address
+alone, and Google for the subject and the email address alone. Apple hands over a subject and an
+address, which may be a relay address at `privaterelay.appleid.com`. Google hands over a subject,
+an address and whether the address is verified. Neither one is asked for a name, a picture or a
+profile. Each credential is read from the parameter store and no value is in this repository.
+
+Neither app client lists a provider yet, so nothing offers either button. The callback addresses
+and the buttons belong to the sign in page.
+
+One domain on the pool, `auth.myemi.app`, with one certificate for that name in us-east-1 and one
+record pointing at it. Apple and Google were both set up by hand against that one address, and
+each returns to `https://auth.myemi.app/oauth2/idpresponse`, so no other name works. Amazon
+Cognito serves the address from a distribution it makes and manages itself, in an account of its
+own, and it carries no charge of ours. The certificate is free.
+
 One sender, `myemi.app`, verified in eu-central-1 as an email identity. The service holds the
 signing key and rotates it, so no key of Emi is written anywhere. The envelope sender is
 `mail.myemi.app`, so a bounce returns to Emi and the policy check reads a domain of Emi.
@@ -140,9 +155,10 @@ page is drawn by a script and could not be read.
 
 ### The credentials Apple, Google and Telegram sign in with
 
-Apple, Google and Telegram are not in this pool yet. Each one needs a credential that only a
-person can make, and an apply that reads a parameter nobody created refuses the whole merge. So
-each one is read from the parameter store of this account, in eu-central-1, under these names:
+Apple and Google are in this pool. Telegram is not, because it needs a function of its own. Each
+one needs a credential that only a person can make, and an apply that reads a parameter nobody
+created refuses the whole merge. So each one is read from the parameter store of this account, in
+eu-central-1, under these names:
 
 - `/emi/accounts/apple/services-id`, the Services identifier of the Emi application. A string.
 - `/emi/accounts/apple/team-id`, the Apple developer team identifier. A string.
@@ -186,6 +202,38 @@ of the other Atlantic Blue products and of the Emi website, and a merge of Emi m
 configuration of any of them. Nothing in this repository does that. A condition on the calling
 service would narrow the grant, the service documents no such key, and nothing here guesses at
 one.
+
+### Rotating the Apple key, or the Google secret, needs the provider replaced
+
+Amazon Cognito never returns a private key, and the identity provider holds its details as a plain
+map with nothing computed in it. So the stored details and the configured details can never agree
+on the key, and every plan would propose the same change forever. The same reasoning covers the
+Google secret, and there it also keeps a secret out of a public plan log.
+
+Both elements are therefore left out of the comparison, with `ignore_changes`. Everything else
+stays under Terraform: the scopes, the client, the team, the key name and the attribute mapping all
+reach the account on a merge.
+
+The cost is that a new key in the parameter store does not reach the account by itself. A rotation
+is one command, run through the pipeline by a merge that changes nothing else:
+
+```
+terraform -chdir=infra apply -replace=aws_cognito_identity_provider.apple
+```
+
+### What the first sign in has to show
+
+No test here can sign a woman in, so three things are only knowable from the first real sign in.
+
+Whether her address arrives verified. Google returns `email_verified` and the mapping carries it.
+Each client writes `email` alone, so if the address arrives unverified, the write list of the
+client is the first place to look.
+
+Whether Apple delivers to a private relay address. That needs the sender registered in the Apple
+developer account, which the section above describes and no test can see.
+
+Whether the sign in pages answer on `auth.myemi.app`. The domain takes its time to spread after the
+apply, so a first read can fail on a name that is correct.
 
 ### The address the pool answers on needs a record on the parent domain
 

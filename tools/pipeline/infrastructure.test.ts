@@ -11,6 +11,7 @@ import {
   defaultOf as variableDefaultOf,
   grantedOnEveryResource,
   listedIn,
+  regionOfAlias,
   resolved,
   standsOnEveryResource,
   statementTextIn,
@@ -18,6 +19,7 @@ import {
   statementsReaching,
   valueOf,
 } from './policy.ts';
+import { credentialValuesIn } from './signIn.ts';
 
 const repositoryRoot = resolve(__dirname, '..', '..');
 const infrastructureDirectory = join(repositoryRoot, 'infra');
@@ -147,23 +149,6 @@ function loopsIn(configuration: string): string[] {
   return [...configuration.matchAll(/for_each\s*=\s*([\s\S]*?)\n\s*\n/g)].flatMap((match) =>
     match[1] === undefined ? [] : [match[1].trim()],
   );
-}
-
-/** The region of one aliased provider, read from the block that declares the alias. */
-function regionOfAlias(configuration: string, alias: string): string {
-  const at = configuration.search(new RegExp(`alias\\s*=\\s*"${alias}"`));
-
-  if (at < 0) {
-    throw new Error(`the configuration declares no provider aliased ${alias}`);
-  }
-
-  const found = /region\s*=\s*"([^"]+)"/.exec(configuration.slice(at));
-
-  if (!found?.[1]) {
-    throw new Error(`the provider aliased ${alias} names no region`);
-  }
-
-  return found[1];
 }
 
 function expressionOf(name: string): string {
@@ -1467,16 +1452,24 @@ describe('the pool she signs in to, which is step 28.2', () => {
     });
   });
 
-  describe('what this step leaves out, because it needs a key or a sender', () => {
-    it('names no identity provider, so Apple, Google and Telegram wait for their keys', () => {
-      expect(configuration).not.toContain('aws_cognito_identity_provider');
+  describe('what the pool carries, and what it still leaves out', () => {
+    // This rule read the other way while the keys were missing. The pool named no provider at all,
+    // and the file said so.
+    it('names Apple and Google, and leaves Telegram to the sign in that needs a function', () => {
+      expect(cognito).toContain('resource "aws_cognito_identity_provider" "apple"');
+      expect(cognito).toContain('resource "aws_cognito_identity_provider" "google"');
+      expect(configuration).not.toContain('"Telegram"');
+    });
+
+    // Neither client lists a provider yet, so no button of Emi opens one. The callback addresses
+    // and the buttons belong to the sign in page.
+    it('leaves both clients unchanged, so nothing offers a provider yet', () => {
       expect(cognito).not.toContain('supported_identity_providers');
-      expect(cognito).not.toContain('provider_details');
+      expect(cognito).not.toContain('callback_urls');
     });
 
     it('holds no secret and no private key, because this repository is public', () => {
-      expect(cognito).not.toContain('client_secret');
-      expect(cognito).not.toContain('BEGIN PRIVATE KEY');
+      expect(credentialValuesIn(cognito)).toEqual([]);
       expect(cognito).not.toContain('bot_token');
     });
 
@@ -2162,8 +2155,7 @@ describe('the pool sends the code from Emi, which is step 28.10', () => {
 
   describe('what the pool still does not hold', () => {
     it('holds no key and no secret, because this repository is public', () => {
-      expect(cognito).not.toContain('client_secret');
-      expect(cognito).not.toContain('BEGIN PRIVATE KEY');
+      expect(credentialValuesIn(cognito)).toEqual([]);
       expect(cognito).not.toContain('smtp_password');
     });
 
