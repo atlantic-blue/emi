@@ -666,6 +666,484 @@ person may hold", "What Google and Apple learn", and the first paragraph of "Wha
 and what it may not touch". Each one is corrected by the step that builds its screen, and this
 section is the method set until then.
 
+## Sign in with Telegram, through the custom sign in
+
+Status: designed
+
+The section above says that Telegram cannot be an identity provider of the pool. This section builds
+the way in that replaces it.
+
+It is the only way in that never opens the managed login pages of the pool. Amazon Cognito says:
+"you can't process custom authentication within managed login." So this way in needs no pool
+domain, and it works before `auth.myemi.app` exists. Sign in with Apple and Google both wait for
+that domain.
+
+### What I read for this section
+
+Status: designed
+
+I read each source on 7 November 2026. Each line names the fact I took from it.
+
+- Telegram, "Log In With Telegram", at `https://core.telegram.org/bots/telegram-login`. It describes
+  the login library, the native kits for iOS and Android, and the OpenID Connect flow. The
+  authorization request writes `client_id=<YOUR_BOT_ID>`, and the validation step says to check
+  that "`aud` matches your Bot ID". So the client identifier of the newer login is the bot
+  identifier Emi already holds. The token call takes the client secret as basic authorization. The
+  page says: "Note that Telegram does not currently provide a separate UserInfo endpoint."
+- Telegram, the archived widget page, at `https://core.telegram.org/widgets/login-legacy`. The
+  current page calls the iframe widget legacy and links there. It gives the seven fields the widget
+  answers with, and the check `if (hex(HMAC_SHA256(data_check_string, secret_key)) == hash)`, where
+  `secret_key = SHA256(<bot_token>)`.
+- The discovery document at `https://oauth.telegram.org/.well-known/openid-configuration`, read with
+  `curl`. It names the issuer `https://oauth.telegram.org`, the authorization endpoint, the token
+  endpoint and the key set. It names `code` as the only response type, `S256` as a code challenge
+  method, and `RS256` first among four signing algorithms. It names no userinfo endpoint, and it
+  names no nonce among its claims. The absent userinfo endpoint is the measurement the decision
+  above rests on.
+- Amazon Web Services, the custom authentication challenge triggers, the define trigger, and the
+  Lambda trigger page. A trigger "must respond within 5 seconds", and "You can't change this
+  five-second timeout value". The app client "must permit a custom-authentication flow. Activate
+  `ALLOW_CUSTOM_AUTH` (or, for choice-based sign-in, `ALLOW_USER_AUTH`)". "Federated sign-in does
+  not invoke any Custom authentication challenge Lambda triggers."
+- Amazon Web Services, `AdminCreateUser` and `AdminSetUserPassword`. A user who has a password stays
+  in `FORCE_CHANGE_PASSWORD` "until they sign in and set their password". A permanent password makes
+  the status confirmed. A user with no password needs an email address or a telephone number, which
+  a Telegram account does not give Emi.
+
+I read `infra/cognito.tf`, `infra/README.md`, `apps/website/lib/theSignIn.ts`,
+`apps/website/lib/contentSecurityPolicy.ts` and `apps/website/app/[lang]/sign-in/page.tsx` in the
+repository.
+
+I measured nothing against Telegram and nothing against the live pool. Every claim here comes from a
+document, except the discovery document, which I read with `curl`.
+
+### Which Telegram login Emi takes
+
+Status: designed
+
+Telegram offers two. Emi takes the newer one.
+
+The login widget is the older one, and Emi refuses it. A script from Telegram draws a button in a
+page. It answers with seven fields: `id`, `first_name`, `last_name`, `username`, `photo_url`,
+`auth_date` and `hash`. A server checks the answer with a keyed hash, which is the hash based
+message authentication code with SHA-256. The key is the SHA-256 of the bot token, and the value is
+every other field, sorted by name, written as `name=value`, and joined with a line feed. Emi holds
+the bot token today, so this choice needs nothing new.
+
+It costs four things, and the second one decides it.
+
+Telegram calls that page legacy and archived it. A new product that starts on an archived mechanism
+starts with a migration in front of it.
+
+The check needs the bot token inside the function that verifies a sign in. The bot token is the one
+credential that can act as the bot, and feature 7 pays with Telegram Stars through that same bot. So
+this choice puts the payment credential on the sign in path, where nothing else needs it.
+
+The widget is a script in a browser, so the application needs a page of Emi in the middle to run it.
+That is one more surface than the newer login needs.
+
+The answer carries her first name, her last name, her user name and the address of her photograph.
+Emi refuses to receive them, and the widget sends them whether Emi wants them or not.
+
+The newer login at `oauth.telegram.org` is the one Emi takes. It is the standard authorization code
+flow with a code verifier. The surface opens the authorization endpoint, Telegram answers with a
+code, and a function of Emi exchanges that code for an identity token. The identity token is a
+signed json web token, and the function verifies it against the key set Telegram publishes.
+
+It needs one value Emi does not hold: the client secret. Telegram says it is displayed in the
+BotFather mini app, under the bot, under Login Widget, beside the client identifier. The same screen
+registers the allowed addresses. The section below names what the operator does there.
+
+It also needs the bot identifier, which Emi holds at `/emi/accounts/telegram/bot-id` as the string
+`9068004348`. The bot identifier is the client identifier, and it is also the audience the token
+carries. Three places in the Telegram documentation say so, and only BotFather shows the value, so
+the piece that builds the function reads both off that screen before it trusts either.
+
+The newer login gains three things. The signature verifies against a public key, so the one secret
+the verification needs is held by Telegram and not by Emi. The scope decides what arrives, so Emi
+can ask for a subject and nothing else. And the flow is the flow Sign in with Apple and Google
+already use, so the surfaces hold one shape rather than two.
+
+### What the operator makes, and where it comes from
+
+Status: designed
+
+Two things, and nothing in this repository can make either.
+
+The client secret. It is in the BotFather mini app, under the bot `@EmiAppBot`, under Login Widget,
+beside the client identifier. The operator copies it into the parameter store of account
+230345688874, in eu-central-1, at `/emi/accounts/telegram/client-secret`, as a secure string. The
+pipeline reads the name and never the value, the same as the four Apple parameters.
+
+The allowed addresses. Telegram says it processes a login, and redirects a person, only for an
+address that is registered in advance. The same Login Widget screen takes them. Two entries cover
+every surface and every language:
+
+- `https://myemi.app`, which is the origin of the site.
+- `https://myemi.app/en/sign-in/telegram/`, which is the one address Telegram ever redirects to.
+
+The second entry carries `en` because every route of the site sits under a language, and Telegram
+matches the address and not the page. She never reads that address. The page it names is a relay,
+and it sends her on in her own language, which it reads from the state value. One address serves the
+site and the application, so a new language costs nothing in BotFather.
+
+The bot token stays where it is. Nothing in this sign in reads it.
+
+### What Emi asks Telegram for, and what it refuses to receive
+
+Status: designed
+
+Emi asks for the scope `openid` and for nothing else. Telegram says that scope "Returns the user's
+unique identifier and auth timestamp", as the claims `sub`, `iss`, `iat` and `exp`.
+
+Three other scopes exist and Emi asks for none of them. The scope `profile` returns her Telegram
+identifier, her name, her user name and the address of her photograph. The scope `phone` returns
+her verified telephone number. The scope `telegram:bot_access` lets the bot write to her. A fourth
+scope, `ton:wallet`, is in the discovery document and Emi has no use for it.
+
+So the whole answer Emi reads is one subject and three instants. That subject is what a person signs
+in with, and the pool holds a keyed hash of it rather than the subject itself.
+
+A Telegram account gives Emi no email address. So the four transactional messages of the section
+above do not reach a woman who signs in this way, and the account screen says so in one line. She
+signs in with a code sent to her address as well if she wants Emi to be able to write to her.
+
+### How the site starts it
+
+Status: designed
+
+The sign in page holds the press today and does not draw it. `theWaysToSignIn` in
+`apps/website/app/[lang]/sign-in/page.tsx` carries `signInTelegram` with `waitsForItsKeys` true, and
+`theWaysInSheIsOffered` filters it out. The press comes back by taking that one line off it.
+
+The press, and the page Telegram brings her back to, do four things in the browser.
+
+It makes a code verifier of 32 random bytes, a state value of 16 random bytes and a nonce. It keeps
+the three in session storage, under the language she is reading in.
+
+It navigates the window to `https://oauth.telegram.org/auth`, carrying `client_id` as the bot
+identifier, `redirect_uri` as the one registered address, `response_type=code`, `scope=openid`, the
+state value, the code challenge and `code_challenge_method=S256`.
+
+Telegram brings her back to `https://myemi.app/en/sign-in/telegram/`, which is a page this piece
+adds. That page reads the code and the state. It refuses an answer whose state is not the one in
+session storage. Then it calls the sign in function of the api with the code and the code verifier,
+and it finishes the two calls to the pool.
+
+It then sends her to the sign in page of her own language, signed in.
+
+The policy of the site decides one thing here. `policyAllowing` names `connect-src 'self'` and the
+one pool host, and `apps/website/test/theProxy.test.ts` asserts that the directive splits into
+exactly three words, which are its own name and those two sources. The browser calls the sign in
+function of the api, which is a third source, so this piece names it in the directive and that count
+goes from three to four. A piece that forgets it ships a page that draws a button and a browser that
+refuses the call.
+
+Telegram also publishes a script, `telegram-login.js`, which draws the button and hands the identity
+token straight to the browser. Emi refuses it for two reasons. Telegram says the script "relies on
+communicating with a popup window", and that a site serving `Cross-Origin-Opener-Policy:
+same-origin` blocks it, so the script asks the site to loosen a header it sets on purpose. And it
+hands the identity token to the browser, where the subject of a woman using a period tracker has no
+reason to be.
+
+### How the application starts it
+
+Status: designed
+
+The application opens the same authorization address in the authentication session the operating
+system owns, through `expo-auth-session`. That is the component `expo-web-browser` wraps. The path
+above already opens managed login in it, in the step that builds the sign in on the phone. So the
+Telegram press and the Apple press differ in one value, which is the address they open.
+
+Telegram also publishes a native Swift package for iOS. Emi refuses it in version 1. It is a native
+dependency, so it needs a development build and a second code path, and the sheet it replaces works
+today. The cost of refusing it is real and worth writing down: the web sheet shows the login page of
+Telegram, with a telephone number and a code, rather than switching into the Telegram application
+she is already signed in to. A later piece can add the native package, and the function it calls
+does not change, because the identity token is the same token either way.
+
+The redirect needs one hop, because the authentication session of the operating system ends on a
+private scheme and Telegram registers addresses that begin with `https`. So the relay page at
+`https://myemi.app/en/sign-in/telegram/` reads the state value, sees that the application started
+the flow, and navigates to `emi://sign-in/telegram` carrying the code and the state. The session
+ends there and hands the code to the application. The application then calls the sign in function
+and the pool, the same as the browser does.
+
+One thing is unmeasured. Telegram may accept a private scheme among the allowed addresses, and its
+own examples are all `https`. If it accepts one, the hop goes away and the application registers
+`emi://sign-in/telegram` instead. The piece that builds the press tries the private scheme first,
+and it keeps the hop if BotFather refuses one.
+
+### The custom sign in on the pool
+
+Status: designed
+
+Nothing in a user pool issues a token for a user that the pool did not authenticate itself. Emi
+authenticates her against Telegram, outside the pool. The custom sign in is the one mechanism that
+turns that into tokens of the pool, which is why this way in has triggers and the other three do
+not.
+
+One function and three triggers carry it. The function holds every secret. The three triggers hold
+none, and each one is small enough to read in a minute.
+
+The function is `POST /v1/sign-in/telegram`, on the api the vault already answers, with no
+authorizer, because a woman signing in holds no device key for that account yet. It takes the code
+and the code verifier. It does seven things, in this order.
+
+It reads the client secret, the bot identifier and the salt. It exchanges the code at
+`https://oauth.telegram.org/token`, with the client secret as basic authorization and the redirect
+address it holds itself rather than one the caller sends. It verifies the identity token against the
+key set. It makes the user name from the salt and the subject. It creates the user in the pool if
+that user name is absent. It writes the digest of a one time answer, with the user name and the
+instant. It answers the caller with the user name and the one time answer, and with nothing from the
+identity token.
+
+The identity token stops there. It never reaches a browser, a phone or the table, and no part of it
+is written down. The caller learns the user name of its own pool user and a value that is good for
+one answer in the next two minutes.
+
+The three triggers then run inside the pool.
+
+The define trigger is the state machine. On an empty session it asks for `CUSTOM_CHALLENGE`. On a
+session of one custom challenge that the verify trigger accepted, it sets `issueTokens` true. On a
+session of one custom challenge that the verify trigger refused, it sets `failAuthentication` true.
+On anything else it returns the event unmodified, and Amazon Cognito says that "An event returned
+unmodified notifies your user pool to proceed with the default action for the event". That last rule
+is what keeps the email code sign in working, and it is a case of its own.
+
+The create trigger issues the challenge and asks her nothing. She holds the answer already, so
+`publicChallengeParameters` and `privateChallengeParameters` are both empty, and
+`challengeMetadata` reads `TELEGRAM`.
+
+The verify trigger reads the answer. It digests what arrived, deletes the item that digest names on
+the condition that the item is there, and reads the deleted item back in the same call. It accepts
+the answer when the item existed, when its user name equals the user name of the session, and when
+its instant is inside 120 seconds. Otherwise `answerCorrect` is false. The trigger reaches the table
+and reaches nothing else, so it finishes well inside the five seconds the pool allows it.
+
+Each trigger refuses the same way when `userNotFound` is true, which the pool sets because
+`prevent_user_existence_errors` is enabled on both clients. A caller who presents a user name that
+does not exist is given the challenge and then refused, exactly as a caller with a wrong answer is.
+So nobody can ask the pool whether a Telegram account has an Emi account. That is the same rule the
+request authorizer already follows with its decoy public key.
+
+The custom flow and the choice based flow live on the same client. They are two entries in one list:
+`explicit_auth_flows` gains `ALLOW_CUSTOM_AUTH` beside the `ALLOW_USER_AUTH` and
+`ALLOW_REFRESH_TOKEN_AUTH` each client lists today. The application starts this flow with
+`InitiateAuth`, an `AuthFlow` of `CUSTOM_AUTH` and `CHALLENGE_NAME: CUSTOM_CHALLENGE` in the
+parameters, and answers with `RespondToAuthChallenge`, a `ChallengeName` of `CUSTOM_CHALLENGE` and
+the answer under `ANSWER`. The email code sign in keeps its own flow and its own factor, and
+`sign_in_policy` does not change: a custom challenge is not a first factor of choice based sign in.
+
+Sign in with Apple and Google are untouched, and that is measured in the documentation rather than
+assumed. Amazon Cognito says: "Federated sign-in does not invoke any Custom authentication challenge
+Lambda triggers". So the three triggers cannot change what a federated sign in does.
+
+A first time user is created by the function, with `AdminCreateUser`, `MessageAction` of `SUPPRESS`,
+the user name, and no attribute at all. No email address, no telephone number and no custom
+attribute are written, because the pool holds none of them for this way in.
+
+The password is the one part of this the documentation does not settle, so the function asks the
+pool rather than this document guessing. `AdminCreateUser` says that a user with no password needs
+an email address or a telephone number, and a Telegram account gives Emi neither. It also says that
+a user who has a password stays in `FORCE_CHANGE_PASSWORD` until they set their own. So the function
+takes two paths in one order.
+
+It creates the user with no password. The pool carries the email one time code as a first factor, so
+a user with no password is a shape it supports, and that is the shape Emi wants.
+
+If the pool refuses that, the function sends a generated password, then calls
+`AdminSetUserPassword` with `Permanent` true, which the service says makes the status confirmed. The
+generated value is made inside one invocation, it satisfies the default policy of the pool, and it
+is written nowhere. Nothing can present it: neither client lists a password flow, and account
+recovery is `admin_only`. The cost is that the service then refuses to take that password away
+again, and it says so: "You can't remove the password for a user who already has a password".
+
+Each path is a case against a pool double, so neither one waits for a live measurement. The count of
+sign ins that took the second path is worth reading once the sign in runs, because it says which
+shape the pool actually accepts, and `infra/README.md` asks for it.
+
+A user who signs in again is found rather than created. `AdminCreateUser` answers
+`UsernameExistsException`, which the function reads as the ordinary case and not as a failure, the
+same as `makeHerUserIfSheHasNone` reads it on the site today.
+
+### One sign in, from the press to the tokens
+
+Status: designed
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant W as She
+  participant S as The site or the application
+  participant T as Telegram
+  participant X as The sign in function
+  participant D as The vault table
+  participant C as Amazon Cognito
+  participant G as The three triggers
+  W->>S: presses Log in with Telegram
+  S->>S: makes a code verifier and a state value
+  S->>T: opens auth with the bot id, the code challenge and the scope openid
+  W->>T: confirms the login
+  T-->>S: an authorization code, on the registered address
+  S->>S: refuses an answer whose state is not the one it sent
+  S->>X: the code and the code verifier
+  X->>T: exchanges the code with the client secret
+  T-->>X: an identity token carrying the subject
+  X->>T: reads the key set, once for each container
+  T-->>X: the public keys
+  X->>X: verifies the signature, the issuer, the audience and the instants
+  X->>X: makes the user name from the salt and the subject
+  X->>C: creates the user if that user name is absent
+  X->>D: writes the digest of a one time answer, the user name and the instant
+  X-->>S: the user name and the one time answer
+  S->>C: starts the custom sign in for that user name
+  C->>G: define asks for the next challenge
+  G-->>C: the custom challenge
+  C->>G: create issues it
+  G-->>C: no question, because she holds the answer
+  C-->>S: the challenge and a session
+  S->>C: answers with the one time answer
+  C->>G: verify reads the answer
+  G->>D: deletes the digest, on the condition that it is there
+  D-->>G: the user name and the instant it was issued at
+  G-->>C: the answer is correct
+  C->>G: define reads the result
+  G-->>C: issue the tokens
+  C-->>S: an identity token, an access token and a refresh token
+  S-->>W: signed in, and no day of her history is open
+```
+
+Read the last line. A sign in names her account and opens nothing, the same as every other way in.
+The recovery code is still the only thing that wraps the vault key.
+
+### The salt
+
+Status: designed
+
+The salt makes the user name of the pool a value nobody can work back to a Telegram account. The
+user name is `tg_` and a keyed hash of the subject, so a reader who holds the pool, and who knows
+which Telegram account to test for, learns nothing without the salt.
+
+It is 32 bytes. It lives in the parameter store of account 230345688874, in eu-central-1, at
+`/emi/accounts/telegram/salt`, as a secure string.
+
+The sign in function makes it, on the first sign in that finds it absent. It takes 32 bytes from the
+random source of the platform and writes them with `PutParameter` and no overwrite. A function that
+loses that race reads the parameter again and uses the value that won. Nothing else makes it, and
+nothing ever replaces it.
+
+That is why no person sees it. Terraform never holds it, so it is not in the state at
+`s3://abs-terraform/emi/terraform.tfstate`. The operator never types it, so it is in no message and
+no password manager. No response carries it and no log line prints it. Reading it takes a deliberate
+call with the decryption key, which the role of the sign in function holds and nothing else does.
+
+Two rules follow, and both are cases. The write names no overwrite, so the function cannot replace a
+salt that exists. The role carries no delete, so nothing in the account can remove it through the
+pipeline.
+
+The salt is permanent, and that is the whole risk in it. A salt that changes gives every woman a new
+user name, so every Telegram account becomes a new pool user, and the identity link in the vault
+names an account she can no longer reach. The piece that grants it says that in `infra/README.md`,
+beside the bootstrap it already names.
+
+The one time answer uses no salt. It is 32 random bytes, and the table holds its digest, so the
+value itself exists only in the answer of the function and in the call that spends it.
+
+### The refusals, and what each one reads
+
+Status: designed
+
+Five refusals, and each one becomes a case in "The rules a test can fail" below.
+
+A stale answer, on two clocks. The function refuses an identity token whose `exp` has passed, and
+one whose `iat` is more than 300 seconds old, which is the window the request authorizer already
+allows an instant. The verify trigger refuses a one time answer whose instant is more than 120
+seconds old. It reads that instant and never trusts the time to live of the item, because the table
+deletes an expired item some time after it expires rather than at the instant.
+
+The wrong bot. The function refuses a token whose `aud` is not the bot identifier it read from the
+parameter store. Telegram says to check "that `iss` is `https://oauth.telegram.org`, `aud` matches
+your Bot ID, and the token has not expired". A token minted for another bot is a valid token, signed
+by the same key set, so the audience is the only thing that tells the two apart.
+
+A bad signature. The function verifies against a key of the set at
+`https://oauth.telegram.org/.well-known/jwks.json`, chosen by the key identifier of the token. It
+refuses a token whose header names no key in the set, whose algorithm is not one the discovery
+document lists, and whose algorithm is `none`. The key set is read once for each container and held
+in memory, so a sign in pays one request and not two.
+
+A replay. Telegram refuses a second exchange of one code, which I read and did not measure, so Emi
+refuses it as well on its own side. The one time answer is spent by a conditional delete, so the
+second answer finds no item and is refused. A replay of the whole press therefore costs the attacker
+a fresh code from Telegram, which needs her.
+
+An unknown user. The pool sets `userNotFound`, and every trigger treats it as a wrong answer rather
+than as a different outcome. So the refusal for a user name nobody holds reads exactly like the
+refusal for a bad answer.
+
+The nonce is the one check that is not in that list, and this is why. The surface sends one, and the
+function refuses a token that carries a different one, which catches a crossed pairing inside one
+surface. It is not a proof against a caller that lies, because the same caller sends both halves.
+And the discovery document names no nonce among its claims, so Telegram may return none at all. The
+check that does the work is the code verifier, which Telegram holds the challenge for and Emi never
+sends twice.
+
+### The data model of the sign in, at field level
+
+Status: designed
+
+One item is new. The pool holds one user. Three parameters hold the values the function reads. No
+field of the identity token is written anywhere.
+
+The one time answer item, in the table `emi-vault`:
+
+- `pk` is a string, `ANS#` and the answer digest. The answer digest is 26 characters of Crockford
+  base 32, cut from the first 16 bytes of the SHA-256 of the answer. The helper that makes an
+  account identifier makes this one, the same as the identity digest and the transaction digest, so
+  one implementation makes all four.
+- `sk` is the string `META`.
+- `userName` is a string, the `tg_` name the answer belongs to.
+- `issuedAt` is a string, an instant.
+- `ttl` is a number, the seconds of `issuedAt` plus 120. It is the same field the remembered
+  signature carries, and it cleans up rather than refuses.
+
+The item holds no subject, no token, no address and no account identifier. A reader who holds the
+table reads a digest, so nothing in it answers a challenge.
+
+The sign in function writes that item and reads nothing from the table. The verify trigger deletes
+it and reads the two fields the delete returns. The define and create triggers read and write
+nothing outside the event.
+
+The pool user, which the function creates:
+
+- `username` is `tg_` and 26 characters of Crockford base 32, cut from the first 16 bytes of the
+  keyed hash of the subject, which is the hash based message authentication code with SHA-256, keyed
+  by the salt. That is 29 characters, and the pool allows 128.
+- `sub` is the value the pool makes, and the pool alone writes it.
+- `email` is absent, and so is `email_verified`, because the Telegram login returns no address.
+- `identities` is empty, because this is a local user and not a federated one.
+- No custom attribute exists, so the pool carries no account identifier and no device identifier.
+
+The three parameters, in eu-central-1:
+
+- `/emi/accounts/telegram/bot-id`, a string, read as the client identifier and as the audience.
+  Exists today.
+- `/emi/accounts/telegram/client-secret`, a secure string, read for the token call. The operator
+  writes it.
+- `/emi/accounts/telegram/salt`, a secure string of 32 bytes, read for the user name. The function
+  writes it once.
+
+`/emi/accounts/telegram/bot-token` is read by nothing here.
+
+One field of the sections above grows a value. The identity lookup item of
+`docs/design/data-model.md` says that `provider` is `google` or `apple`, and that "There is no
+third value". A Telegram user needs a third, so `provider` takes `telegram` as well, and the sign in
+with a code will need a fourth. The identity digest for a Telegram user is the digest of the issuer
+and the subject of the pool, the same as for every other user, because the link reads a token of the
+pool and never a token of Telegram. The step that writes the link corrects that sentence. Nothing in
+this section writes a link item.
+
 ## The data model, at field level
 
 Status: designed
@@ -751,13 +1229,41 @@ Status: designed
 26. No module under the account directory of the application names a keychain item that belongs to
     the vault, and the key leak gate fails the pipeline on one.
 
+Ten more rules carry the Telegram sign in. They are numbered on from the list above so the path can
+name them.
+
+27. The sign in function refuses a Telegram identity token whose `exp` has passed, and one whose
+    `iat` is more than 300 seconds old.
+28. It refuses a token whose `aud` is not the bot identifier, and one whose `iss` is not
+    `https://oauth.telegram.org`. A case signs a token with the real key set double and the wrong
+    audience.
+29. It refuses a token whose signature does not verify, whose header names a key the set does not
+    hold, and whose algorithm is `none` or one the discovery document does not list.
+30. It sends the client secret to the token endpoint and the redirect address it holds itself. A
+    case sends a different redirect address in the request body and asserts the function ignores it.
+31. It answers with a user name and a one time answer, and with no field of the identity token. A
+    case reads the whole response body and finds no subject.
+32. The user name is `tg_` and the keyed hash of the subject under the salt. Two different subjects
+    give two user names, one subject gives the same user name twice, and a changed salt changes
+    both.
+33. The salt is written once, with no overwrite. A case runs the function twice against a parameter
+    store double and asserts one write and one read.
+34. The verify trigger spends a one time answer exactly once. A case answers twice and asserts the
+    second answer is refused.
+35. The verify trigger refuses an answer whose issue instant is more than 120 seconds old, with the
+    item still in the table, so the refusal comes from the instant and not from the time to live.
+36. The define trigger returns an event it does not recognise unmodified. A case hands it a session
+    carrying `EMAIL_OTP` and asserts the response is untouched, so the sign in with a code keeps
+    working.
+
 ## The path
 
 Status: designed
 
-Twenty two steps. Each one is one intention, one pull request, and it reverts on its own. Each names
-what it depends on, the files it touches, the behaviour it changes, what proves it, and why the
-promise still holds after it.
+Twenty two numbered steps, and one item at the end whose pieces carry names rather than numbers.
+Each piece is one intention, one pull request, and it reverts on its own. Each names what it depends
+on, the files it touches, the behaviour it changes, what proves it, and why the promise still holds
+after it.
 
 Each step ships its behaviour test in the repository shape, in the file named for the step. The
 feature number is the one the operator gives these steps, so the file names take that number.
@@ -1006,6 +1512,120 @@ Proof: `npm run check:documents` reads every status line, and the claims gate re
 The promise: a document that described an empty pool as though it guarded something would be worse
 than no document.
 
+### Sign in with Telegram
+
+Six pieces, in this order, each one its own pull request. The press comes last, so every piece
+before it adds something nothing calls yet, and each one merges on its own without changing what a
+woman sees. The section "Sign in with Telegram, through the custom sign in" above holds the design
+these pieces build.
+
+Two things sit outside them. The operator writes the client secret into the parameter store and
+registers the two addresses in BotFather, and the first piece cannot be applied until that is done.
+And nothing in the path packages `services/vault` into a deployed function yet, which
+`infra/README.md` says: both deployed functions are the placeholders of `infra/lambda.tf`. So this
+sign in is code that answers nothing in the account until a packaging step exists. That step is not
+in this path, and it blocks the last two pieces from working rather than from merging.
+
+**The salt, the client secret and the grants.**
+
+Depends on: nothing in the repository, and the two things the operator makes.
+Files: `infra/lambda.tf`, `infra/github-oidc.tf`, `infra/README.md`,
+`tools/pipeline/infrastructure.test.ts`.
+Behaviour: two roles and their grants, and nothing that runs. The role of the sign in function reads
+the bot identifier, the client secret and the salt by name, writes the salt with no overwrite, and
+writes the one time answer item. It carries no delete on the parameter and no read of the bot token.
+The role of the three triggers reads and writes the table and holds no parameter at all. The apply
+role gains the right to make a function, to let the pool invoke one, and to set the triggers on the
+pool. The readme names what the operator does in BotFather, the one parameter they write, and that
+the salt is permanent.
+Proof: the infrastructure test reads the Terraform text. It asserts the three parameter names, that
+no secret is written as a literal anywhere in the repository, that the trigger role holds no
+parameter read, and that the sign in role holds no delete on the salt. A mutation that adds the bot
+token to the policy is watched failing.
+The promise: a grant moves no bytes, and the one grant this adds reads a secret into a function that
+answers with none of it.
+
+**The function that answers a Telegram code.**
+
+Depends on: the salt, the client secret and the grants.
+Files: `services/vault/src/telegram/`, `services/vault/src/handlers/signInWithTelegram.ts`,
+`infra/api.tf`, `services/vault/tests/telegram.test.ts`.
+Behaviour: `POST /v1/sign-in/telegram` exchanges a code, verifies the identity token, makes the user
+name, creates the pool user if it is absent, writes the one time answer, and answers with the user
+name and that answer. The route carries no authorizer. The key set is read once for each container.
+Proof: the refusal rules 27 to 33 of the list above, from the stale token to the salt. The test
+drives the real module against a token endpoint double, a key set double that signs with a key pair
+the test makes, a parameter store double and a pool double. A mutation that drops the audience check
+is watched failing and then passing again. One case refuses the creation with no password and
+asserts the second path runs, so both shapes the pool may accept are covered without a live call.
+The promise: the function reads an identity token and answers with a user name. No part of the token
+reaches a caller, a log line or the table.
+
+**The three triggers, and the one time answer item.**
+
+Depends on: the salt, the client secret and the grants.
+Files: `services/vault/src/triggers/defineAuthChallenge.ts`,
+`services/vault/src/triggers/createAuthChallenge.ts`,
+`services/vault/src/triggers/verifyAuthChallengeResponse.ts`,
+`services/vault/src/store/answers.ts`, `services/vault/src/store/dynamo.ts`,
+`docs/design/data-model.md`, `services/vault/tests/triggers.test.ts`.
+Behaviour: the state machine, the challenge that asks nothing, and the answer that is spent by a
+conditional delete. The data model document gains the one time answer item before the code writes
+it.
+Proof: the rules 34 to 36 of the list above: the answer spent once, the stale answer, and the event
+the define trigger does not recognise. A case hands the define trigger a session it does not
+recognise and asserts the response is untouched. A mutation that drops the condition from the
+delete is watched failing, because the second answer then succeeds.
+The promise: a trigger reads a digest and an instant. It holds no secret, so nothing in the pool can
+read the salt or the client secret.
+
+**The triggers on the pool, and the custom flow on both clients.**
+
+Depends on: the three triggers, and the function that answers a Telegram code.
+Files: `infra/cognito.tf`, `tools/pipeline/infrastructure.test.ts`, `infra/README.md`.
+Behaviour: the pool names the three triggers, each client lists `ALLOW_CUSTOM_AUTH` beside the two
+flows it lists today, and each function carries the policy that lets this pool alone invoke it.
+`sign_in_policy` does not change.
+Proof: the infrastructure test asserts the three triggers, the new flow on both clients, that the
+first factors are unchanged, and that the invoke policy names this pool and this account. A case
+asserts the email code flow is still listed, because a client that lost it would break the sign in
+that works today.
+The promise: a pool that calls a function of Emi still holds an email address and a subject. It
+holds no vault key and no day.
+
+**The press on the site.**
+
+Depends on: the triggers on the pool.
+Files: `apps/website/app/[lang]/sign-in/page.tsx`, `apps/website/app/[lang]/sign-in/telegram/`,
+`apps/website/lib/theTelegramSignIn.ts`, `apps/website/lib/contentSecurityPolicy.ts`,
+`apps/website/test/theTelegramSignIn.test.ts`, `apps/website/test/theProxy.test.ts`.
+Behaviour: the press loses its `waitsForItsKeys` line and draws, the relay page reads the code and
+refuses a wrong state value, the two calls to the pool finish the sign in, and the content policy
+names the host of the api so the browser may reach it.
+Proof: a case presses the control, answers as Telegram answers, lets the two pool calls happen
+against a double, and reads the page again signed in. A case changes the state value and asserts no
+call is made. The policy test moves from three values to four, and a case asserts the fourth is the
+api and nothing else.
+The promise: the browser holds a code and a one time answer. It never holds a Telegram token, so the
+subject of a woman reading a period tracker is in no browser.
+
+**The press in the application.**
+
+Depends on: the press on the site, because the relay page is the address Telegram redirects to.
+Files: `apps/mobile/src/features/account/SignIn.tsx`,
+`apps/mobile/src/services/account/telegram.ts`, and the behaviour test for this piece, in the
+repository shape.
+Behaviour: the Telegram press opens the authorization address in the authentication session the
+operating system owns, takes the code off the private scheme, and finishes the sign in with the
+function and the pool. The piece tries a private scheme in BotFather first, and it keeps the relay
+hop if Telegram refuses one.
+Proof: a case drives the real module against a stub sheet and a stub api, and asserts the state
+value, the scope and the code challenge method. A case asserts the first run is untouched, by
+running the existing first run cases unchanged. A case asserts the screen offering Telegram offers
+the other ways in as well.
+The promise: the application holds a refresh token of the pool. It holds no Telegram credential and
+it reads no record until her recovery code arrives.
+
 ## What this design moves, and what it may not touch
 
 Status: designed
@@ -1069,6 +1689,22 @@ documented, and I have not put a build through review.
 The money: 70 percent. Feature 7 is not built, so the three rules are designed against contracts
 rather than against a receipt I watched arrive.
 
+The Telegram sign in, as a shape: 85 percent. The flow is the standard one, the discovery document
+is measured, and Amazon Cognito documents that a federated sign in invokes no custom trigger, so the
+three ways in that work today cannot break. The parts under that differ.
+
+The custom flow beside the choice based flow on one client: 85 percent. The service names both
+entries in one list and I read that, and I started no sign in to watch the two live together.
+
+The creation of a first time user: 60 percent, and it is the one thing in this section the
+documentation contradicts itself on. `AdminCreateUser` wants an email address for a user with no
+password, and a Telegram account gives Emi none. So the piece that builds the function measures the
+user status of the first user it makes, and both outcomes are written out with the call that follows
+each.
+
+The five second window of a trigger: 80 percent. The verify trigger reaches the table and nothing
+else, and I measured no invocation.
+
 ## What this design does not answer
 
 Status: designed
@@ -1081,6 +1717,10 @@ must know.
 The Apple developer account, which step 17 cannot start without.
 
 The Google client, which step 16 cannot start without.
+
+The Telegram client secret, and the two addresses registered in BotFather. The first piece of the
+Telegram item cannot be applied without them, and the section above says where in BotFather both
+come from.
 
 The name. A trademark search is still not run, and the pool, both providers and the sending domain
 all carry the name.
