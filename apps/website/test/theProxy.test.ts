@@ -2,6 +2,7 @@ import { getScriptNonceFromHeader } from 'next/dist/server/app-render/get-script
 import { NextRequest } from 'next/server';
 
 import proxy, { config } from '../proxy';
+import { THE_POOL_HOST } from '../lib/theSignIn';
 
 /**
  * What the site puts in front of every page: the policy her browser is given, and the copy the
@@ -78,8 +79,18 @@ describe('the policy a page of the site answers with', () => {
     expect(directive(policy, 'object-src')).toBe(`object-src 'none'`);
     expect(directive(policy, 'base-uri')).toBe(`base-uri 'self'`);
     expect(directive(policy, 'form-action')).toBe(`form-action 'self'`);
-    expect(directive(policy, 'connect-src')).toBe(`connect-src 'self'`);
     expect(directive(policy, 'font-src')).toBe(`font-src 'self'`);
+  });
+
+  it('lets the page she signs in on reach the pool that issues her tokens, and no other host', () => {
+    const policy = policyOn('/en/');
+
+    expect(directive(policy, 'connect-src')).toBe(`connect-src 'self' ${THE_POOL_HOST}`);
+    expect(THE_POOL_HOST).toBe('https://cognito-idp.eu-central-1.amazonaws.com');
+    expect(new URL(THE_POOL_HOST).protocol).toBe('https:');
+    // One host and nothing else. A policy that named a second one would let a script somebody
+    // wrote into a page carry what she typed somewhere Emi does not answer for.
+    expect(directive(policy, 'connect-src').split(' ')).toHaveLength(3);
   });
 
   it('lets a page draw a picture this site serves, and one written into the markup', () => {

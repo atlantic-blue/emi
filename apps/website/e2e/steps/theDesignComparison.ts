@@ -545,6 +545,15 @@ export async function theBandOfThePhone(page: Page): Promise<ABandToLeaveOut> {
   });
 }
 
+/**
+ * What a reader does on the served page before the picture is taken.
+ *
+ * A board is one drawing and a page can be in more than one state, so a board of a later state is
+ * held against the page after she has pressed her way to it. It runs on the served page alone: the
+ * design is a file and there is nothing on it to press.
+ */
+export type HowSheGetsThere = (page: Page) => Promise<void>;
+
 /** One part of a page, held against the same part of the design it was drawn from. */
 export interface APairOfPictures {
   readonly called: string;
@@ -613,6 +622,7 @@ async function picturesOfTheParts(
   address: string,
   window: AWindow,
   parts: readonly APartOfAPage[],
+  pressThrough?: HowSheGetsThere,
 ): Promise<PNG[]> {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   // Back to the window the project gives this run, because the reading before this one left the
@@ -621,6 +631,11 @@ async function picturesOfTheParts(
   await page.goto(address);
   await page.evaluate(() => document.fonts.ready);
   await page.waitForFunction(() => document.fonts.status === 'loaded');
+
+  if (pressThrough !== undefined) {
+    await pressThrough(page);
+    await page.waitForFunction(() => document.fonts.status === 'loaded');
+  }
 
   const height = await page.evaluate(() =>
     Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
@@ -651,9 +666,10 @@ export async function thePartsHeldAgainstTheDesign(
   served: string,
   window: AWindow,
   parts: readonly APartOfAPage[],
+  pressThrough?: HowSheGetsThere,
 ): Promise<APairOfPictures[]> {
   const drawn = await picturesOfTheParts(page, design, window, parts);
-  const built = await picturesOfTheParts(page, served, window, parts);
+  const built = await picturesOfTheParts(page, served, window, parts, pressThrough);
 
   return parts.map((part, at) => {
     const one = drawn[at];

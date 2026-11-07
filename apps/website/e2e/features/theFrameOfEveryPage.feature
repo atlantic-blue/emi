@@ -37,6 +37,12 @@ Feature: The way in and the way out of every page
       | /en/support/        | en       |
       | /ru/support/        | ru       |
       | /es/support/        | es       |
+      | /en/sign-in/        | en       |
+      | /ru/sign-in/        | ru       |
+      | /es/sign-in/        | es       |
+      | /en/account/        | en       |
+      | /ru/account/        | ru       |
+      | /es/account/        | es       |
       | /en/nothing/        | en       |
       | /ru/nothing/        | ru       |
       | /es/nothing/        | es       |

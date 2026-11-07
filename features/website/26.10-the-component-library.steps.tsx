@@ -70,12 +70,23 @@ const theCodeSheCanRead = 'https://github.com/atlantic-blue/emi';
  */
 const theBetaSheCanJoin = 'https://testflight.apple.com/join/xFSv5Gqa';
 
+/**
+ * The fourth, and the only one of the four her browser really asks for: the user pool that signs
+ * her in. It is Emi own account in Amazon Web Services rather than another company service, the
+ * content policy of the site allows this host and no other, and her browser asks it nothing until
+ * she has typed an address and pressed "Send code".
+ *
+ * The whole address rather than the host, so any other address of that company is still refused.
+ */
+const thePoolThatSignsHerIn = 'https://cognito-idp.eu-central-1.amazonaws.com';
+
 function reachesAnotherCompany(source: string): boolean {
   const withoutWhatSheChose = [
     theSiteItself,
     theCommunitySheCanOpen,
     theCodeSheCanRead,
     theBetaSheCanJoin,
+    thePoolThatSignsHerIn,
   ].reduce((text, allowed) => text.split(allowed).join(''), source);
 
   return (
@@ -229,6 +240,10 @@ defineFeature(feature, (test) => {
       // Letting her open the community did not open the chat company either. The one invite reads
       // clean and every other address on the same host is still refused.
       expect(reachesAnotherCompany(`she presses ${theCommunitySheCanOpen}`)).toBe(false);
+      expect(reachesAnotherCompany(`a code from ${thePoolThatSignsHerIn}`)).toBe(false);
+      expect(reachesAnotherCompany('fetch("https://s3.eu-central-1.amazonaws.com/a-bucket")')).toBe(
+        true,
+      );
       expect(reachesAnotherCompany('https://t.me/+somebody-elses-invite')).toBe(true);
       expect(reachesAnotherCompany('fetch("https://api.telegram.org/sendMessage")')).toBe(true);
 

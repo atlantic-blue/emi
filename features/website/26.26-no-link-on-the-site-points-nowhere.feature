@@ -39,6 +39,7 @@ Feature: Every press on the site takes her somewhere
   Scenario: no link on the site points nowhere
     Given a woman opens every page of the site in each of the three languages
     Then no press takes her to a page that is still to be built
+    And the page she signs in on is served, and no press leads to it yet
     And the three presses to the support page are drawn again, now that the page exists
     And every press she meets leads to a page of this site, or off it to an address the site names
     And the press that offers her the community opens the community, in the tab she is reading in

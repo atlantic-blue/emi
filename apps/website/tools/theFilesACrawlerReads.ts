@@ -40,6 +40,8 @@ export const thePagesOfTheSite: readonly PageOfTheSite[] = [
     path: 'support/',
     serves: 'the support page, which the App Store asks for by address',
   },
+  { path: 'sign-in/', serves: 'the page she signs in on, with a code sent to her address' },
+  { path: 'account/', serves: 'her account, which she reaches once she has signed in' },
 ];
 
 /** Where the two files sit. Next.js copies this folder into the assets of the build. */

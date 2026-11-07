@@ -9,7 +9,9 @@ import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
 import PrivacyPolicyPage from '../../apps/website/app/[lang]/privacy-policy/page';
 import ProtectionPage from '../../apps/website/app/[lang]/privacy/page';
+import SignInPage from '../../apps/website/app/[lang]/sign-in/page';
 import SupportPage from '../../apps/website/app/[lang]/support/page';
+import AccountPage from '../../apps/website/app/[lang]/account/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import { LANGUAGES_ANCHOR } from '../../apps/website/components/siteHeader';
 import {
@@ -100,6 +102,8 @@ const whatDrawsThePageAt: Readonly<
   'privacy/': ProtectionPage,
   'privacy-policy/': PrivacyPolicyPage,
   'support/': SupportPage,
+  'sign-in/': SignInPage,
+  'account/': AccountPage,
 };
 
 /**
@@ -213,14 +217,33 @@ defineFeature(feature, (test) => {
         });
       }
 
-      // The five pages nobody has built yet. Not one of them is pressed anywhere on the site, in
+      // The four pages nobody has built yet. Not one of them is pressed anywhere on the site, in
       // any language, and the list the sitemap is written from is what says they are not built.
       // The support page was the sixth of these and it is built now, so it is read below as a
       // page of the site rather than here as a page nobody can open.
-      for (const path of ['buy/', 'calculator/', 'pulse/', 'sign-in/', 'terms/']) {
+      for (const path of ['buy/', 'calculator/', 'pulse/', 'terms/']) {
         expect(thePagesOfTheSite.map((page) => page.path)).not.toContain(path);
 
         for (const page of opened) {
+          expect({
+            onThePage: page.address,
+            waitingFor: path,
+            pressed: page.presses.some((press) => press.address.endsWith(`/${path}`)),
+          }).toEqual({ onThePage: page.address, waitingFor: path, pressed: false });
+        }
+      }
+    });
+
+    and('the page she signs in on is served, and no press leads to it yet', () => {
+      // The page ships in step 28.4 and the two presses that carry her to it stay held back, in
+      // the band at the top and in the band at the foot, until a step takes the mark off each.
+      // So it is a page of the site that no press on the site reaches, which is neither of the
+      // two states above and is read here on its own.
+      expect(thePagesOfTheSite.map((page) => page.path)).toContain('sign-in/');
+      expect(thePagesOfTheSite.map((page) => page.path)).toContain('account/');
+
+      for (const page of opened) {
+        for (const path of ['sign-in/', 'account/']) {
           expect({
             onThePage: page.address,
             waitingFor: path,

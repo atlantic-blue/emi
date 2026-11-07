@@ -71,8 +71,17 @@ When('she reads every press the page offers her', async ({ page, pressing }) => 
   // into the product folds into the menu button, so what is left up there is the way home and the
   // way to the list of languages.
   expect(pressing.atTheTop.length).toBeGreaterThan(1);
-  expect(pressing.inThePage.length).toBeGreaterThan(1);
   expect(pressing.atTheFoot.length).toBeGreaterThan(6);
+
+  // Two pages of the site offer her nothing to press inside the page itself. On the page she
+  // signs in on she types an address and sends a form, and on her account she signs out; neither
+  // is a press that carries an address, so neither is read here. Every other page offers her a
+  // way on, and a page of that kind with nothing in the middle is a page that failed to draw.
+  const offersNoPressOfItsOwn = ['/sign-in/', '/account/'].some((path) =>
+    new URL(page.url()).pathname.endsWith(path),
+  );
+
+  expect(pressing.inThePage.length).toBeGreaterThan(offersNoPressOfItsOwn ? -1 : 1);
 });
 
 Then(
@@ -84,6 +93,8 @@ Then(
 
     const everyPress = [...pressing.atTheTop, ...pressing.inThePage, ...pressing.atTheFoot];
 
+    // The two bands alone carry more than ten, so the floor holds on the two pages that offer
+    // nothing to press in the middle as well.
     expect(everyPress.length).toBeGreaterThan(10);
 
     const ofThisSite = new Set<string>();
@@ -131,10 +142,11 @@ Then('no press takes her to a page that is still to be built', ({ pressing }) =>
 
   expect(leadingNowhere.map((press) => press.called)).toEqual([]);
 
-  // The five pages nobody has built yet. A press to one of them is not drawn at all, so none of
-  // the five appears at the end of any address on the page. The support page was the sixth of
-  // these; it is built, so a press to it is read in the step below as a press the site answers
-  // 200 for.
+  // Five paths no press on this site carries. Four of them are pages nobody has built yet. The
+  // fifth is the page she signs in on, which ships in step 28.4 and is a page of the site: the two
+  // presses that carry her to it, in the band at the top and in the band at the foot, stay held
+  // back until a step takes the mark off each. The support page was the sixth of these; it is
+  // built and pressed, so it is read in the step below as a press the site answers 200 for.
   for (const path of ['buy/', 'calculator/', 'pulse/', 'sign-in/', 'terms/']) {
     expect({
       waitingFor: path,
