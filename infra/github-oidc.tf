@@ -206,6 +206,55 @@ data "aws_iam_policy_document" "plan" {
     resources = ["arn:aws:cognito-idp:*:${var.account_id}:userpool/*"]
   }
 
+  # ── The two ways in that carry a key, read at the apply role's scope ───────
+
+  # A provider of the pool is read by the pool it belongs to, so this is the read of the apply
+  # statement below, at the same scope.
+  statement {
+    sid       = "ReadTheIdentityProviders"
+    effect    = "Allow"
+    actions   = ["cognito-idp:DescribeIdentityProvider"]
+    resources = ["arn:aws:cognito-idp:*:${var.account_id}:userpool/*"]
+  }
+
+  # A pool domain is read by the address it answers on and never by the pool it belongs to, so this
+  # action acts on no resource. A statement that named the pool is refused by the account: on
+  # 7 November 2026 `aws iam simulate-custom-policy` answered allowed on every resource and
+  # implicitDeny on the pool, for this one action.
+  statement {
+    sid       = "ReadTheUserPoolDomain"
+    effect    = "Allow"
+    actions   = ["cognito-idp:DescribeUserPoolDomain"]
+    resources = ["*"]
+  }
+
+  # Apple and Google each need a credential a person makes by hand, and this repository is public,
+  # so the configuration reads all six from the parameter store. A plan reads the same six a merge
+  # does: a parameter it cannot read refuses the plan rather than reporting a difference.
+  statement {
+    sid       = "ReadTheProviderKeys"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/*"]
+  }
+
+  # Two of the six are secure strings under aws/ssm, the key the parameter store makes for this
+  # account, whose identifier the service generates. The condition is what narrows this grant: the
+  # role may decrypt only through a parameter store call, so it opens nothing the statement above
+  # does not already open.
+  statement {
+    sid       = "DecryptAProviderKey"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${var.account_id}:key/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["ssm.${var.region}.amazonaws.com"]
+    }
+  }
+
   # ── The sender of step 28.8, read at the scope the apply role writes at ────
 
   # The identity Emi sends from and the configuration set its rates are counted on.
@@ -582,6 +631,89 @@ data "aws_iam_policy_document" "apply" {
       test     = "StringEquals"
       variable = "iam:AWSServiceName"
       values   = ["email.cognito-idp.amazonaws.com"]
+    }
+  }
+
+  # ── Apple and Google as ways in, and the address the pool answers on ───────
+
+  # A provider belongs to one pool, and a pool address carries an identifier the service generates
+  # rather than the name, so every pool of this account is the tightest pattern the service offers.
+  # That is the scope the pool grant above already stands at. The cost is the same one: on
+  # 7 November 2026 this account held five other pools, of the other Atlantic Blue products, and a
+  # merge of Emi may add a provider to any of them.
+  statement {
+    sid    = "TheIdentityProviders"
+    effect = "Allow"
+    actions = [
+      "cognito-idp:CreateIdentityProvider",
+      "cognito-idp:DeleteIdentityProvider",
+      "cognito-idp:DescribeIdentityProvider",
+      "cognito-idp:UpdateIdentityProvider",
+    ]
+    resources = ["arn:aws:cognito-idp:*:${var.account_id}:userpool/*"]
+  }
+
+  statement {
+    sid    = "TheUserPoolDomain"
+    effect = "Allow"
+    actions = [
+      "cognito-idp:CreateUserPoolDomain",
+      "cognito-idp:DeleteUserPoolDomain",
+      "cognito-idp:UpdateUserPoolDomain",
+    ]
+    resources = ["arn:aws:cognito-idp:*:${var.account_id}:userpool/*"]
+  }
+
+  # Reading a domain names no resource, which the plan policy says more about.
+  statement {
+    sid       = "ReadTheUserPoolDomain"
+    effect    = "Allow"
+    actions   = ["cognito-idp:DescribeUserPoolDomain"]
+    resources = ["*"]
+  }
+
+  # The one grant here that is wider than the rule of this repository, and it is wider because the
+  # service asks for it in those words. A pool domain is served by a CloudFront distribution that
+  # Amazon Cognito makes and manages in an account of its own, and Amazon Cognito configures that
+  # distribution with the permissions of whoever creates the domain. So the distribution this
+  # action is used on is not in account 230345688874, and a pattern naming that account can never
+  # match it.
+  #
+  # The documentation gives the statement to copy, with a resource of "*" and this one action.
+  # Read on 7 November 2026 at
+  # https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-add-custom-domain.html
+  #
+  # The cost: account 230345688874 holds the distributions of the other Atlantic Blue products and
+  # of the Emi website, and a merge of Emi may now change the configuration of any of them. Nothing
+  # in this repository does that, and nothing narrows it either. A condition on the calling service
+  # would narrow it, and the service documents no such key, so it is not guessed at here.
+  statement {
+    sid       = "ConfigureTheDomainDistribution"
+    effect    = "Allow"
+    actions   = ["cloudfront:UpdateDistribution"]
+    resources = ["*"]
+  }
+
+  # The six credentials, read at the scope the plan role reads them at and with the same condition
+  # on the key. A merge reads them and writes none of them: no statement here carries
+  # ssm:PutParameter.
+  statement {
+    sid       = "ReadTheProviderKeys"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/*"]
+  }
+
+  statement {
+    sid       = "DecryptAProviderKey"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${var.account_id}:key/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["ssm.${var.region}.amazonaws.com"]
     }
   }
 

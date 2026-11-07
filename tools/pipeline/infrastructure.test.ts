@@ -57,10 +57,25 @@ const certificateModule = configurationOf(
 
 const bodyOf = (header: string): string => blockBodyOf(configuration, header);
 
+/**
+ * Every action one policy grants, read out of the action lists of its statements. A condition
+ * names a key in the same shape an action is written in, so a search over the whole text reads
+ * kms:ViaService as a grant.
+ */
 function actionsIn(policy: string): string[] {
-  return [...policy.matchAll(/"([a-z0-9-]+:[A-Za-z*]+)"/g)].flatMap((match) =>
-    match[1] ? [match[1]] : [],
-  );
+  return statementsIn(policy).flatMap((statement) => statement.actions);
+}
+
+/**
+ * An action that changes nothing. Almost every read is named Get, List or Describe, and two are
+ * not. apigateway:GET is the one read of that service. kms:Decrypt returns the plaintext of a
+ * ciphertext and changes no key, and the parameter store needs it to hand over a secure string.
+ */
+const aRead = /^(apigateway:GET|kms:Decrypt|[a-z0-9-]+:(Get|List|Describe)[A-Za-z]*)$/;
+
+/** Every action of one policy that is not a read, which is what the plan role may not hold. */
+function writesIn(policy: string): string[] {
+  return actionsIn(policy).filter((action) => !aRead.test(action));
 }
 
 function firstStepOf(name: string): Step {
@@ -193,6 +208,7 @@ const collectionLevelActions: readonly string[] = [
   'cloudfront:ListResponseHeadersPolicies',
   'cloudwatch:DescribeAlarms',
   'cognito-idp:CreateUserPool',
+  'cognito-idp:DescribeUserPoolDomain',
   'cognito-idp:ListUserPools',
   'dynamodb:ListTables',
   'iam:ListOpenIDConnectProviders',
@@ -390,12 +406,8 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
 
     it('gives the plan role nothing but reads', () => {
-      const writes = actionsIn(planPolicy).filter(
-        (action) => !/^(apigateway:GET|[a-z0-9-]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
-      );
-
       expect(actionsIn(planPolicy).length).toBeGreaterThan(0);
-      expect(writes).toEqual([]);
+      expect(writesIn(planPolicy)).toEqual([]);
     });
   });
 
@@ -542,6 +554,10 @@ describe('the infrastructure is applied only by the pipeline', () => {
         'ReadTheWebsiteBucket',
         'ReadTheMyemiZone',
         'ReadTheUserPool',
+        'ReadTheIdentityProviders',
+        'ReadTheUserPoolDomain',
+        'ReadTheProviderKeys',
+        'DecryptAProviderKey',
         'ReadTheSender',
         'ReadTheEmailEventTopic',
         'ReadTheEmailAlarmTags',
@@ -837,11 +853,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
       const actions = actionsIn(planPolicy);
 
       expect(added.filter((action) => !actions.includes(action))).toEqual([]);
-      expect(
-        actions.filter(
-          (action) => !/^(apigateway:GET|[a-z0-9-]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
-        ),
-      ).toEqual([]);
+      expect(writesIn(planPolicy)).toEqual([]);
       expect(statementsReaching(planStatements, 'cloudfront:CreateDistributionWithTags')).toEqual(
         [],
       );
@@ -1753,11 +1765,7 @@ describe('the grants the sender needs, which is step 28.7', () => {
     );
 
     it('adds no action to the plan role that is not a read', () => {
-      expect(
-        actionsIn(planPolicy).filter(
-          (action) => !/^(apigateway:GET|[a-z0-9-]+:(Get|List|Describe)[A-Za-z]*)$/.test(action),
-        ),
-      ).toEqual([]);
+      expect(writesIn(planPolicy)).toEqual([]);
     });
   });
 
