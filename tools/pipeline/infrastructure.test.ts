@@ -13,6 +13,7 @@ import {
   listedIn,
   resolved,
   standsOnEveryResource,
+  statementTextIn,
   statementsIn,
   statementsReaching,
   valueOf,
@@ -1515,6 +1516,101 @@ describe('the pool she signs in to, which is step 28.2', () => {
       ]) {
         expect(scopeOf(planStatements, action)).toEqual([]);
       }
+    });
+  });
+});
+
+// Step 28.10 sets email_configuration on the pool, with an email sending account of DEVELOPER, the
+// myemi.app identity as the source and the configuration set of Emi. Saving that setting makes a
+// service linked role, with the credentials of whoever saved it, so the apply role needs the
+// action that makes one. This step grants it on its own, so step 28.10 cannot race a policy change
+// the way pull request 515 did.
+//
+// The documentation names one action and no other: "The IAM permissions of this session must
+// include the iam:CreateServiceLinkedRole action." Read on 7 November 2026 at
+// https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-email.html. No Simple Email
+// Service action belongs to the caller, because the role carries the send, and no iam:PassRole
+// either, because no role of Emi is handed to the service.
+describe('the grant the pool needs before it may send, which is step 28.9', () => {
+  const planStatements = statementsIn(planPolicy);
+  const applyStatements = statementsIn(applyPolicy);
+  const theEmailService = 'email.cognito-idp.amazonaws.com';
+  const theServiceRoles = `arn:aws:iam::${defaultOf('account_id')}:role/aws-service-role/${theEmailService}/*`;
+  const makeTheRole = 'iam:CreateServiceLinkedRole';
+
+  const scopeOf = (statements: readonly PolicyStatement[], action: string): string[][] =>
+    statementsReaching(statements, action).map((statement) =>
+      statement.resources.map((resource) => resolved(configuration, resource)),
+    );
+
+  describe('a merge may make the role the service sends through', () => {
+    it('grants the one action the documentation names', () => {
+      const granting = statementsReaching(applyStatements, makeTheRole);
+
+      expect(granting.map((statement) => statement.sid)).toEqual(['MakeTheEmailServiceRole']);
+      expect(granting[0]?.actions).toEqual([makeTheRole]);
+    });
+
+    it('makes a role under the path of that one service, and under no other path', () => {
+      expect(scopeOf(applyStatements, makeTheRole)).toEqual([[theServiceRoles]]);
+      expect(grantedOnEveryResource(applyStatements, makeTheRole)).toBe(false);
+    });
+
+    it('names the service again in a condition, which is the form the documentation writes', () => {
+      const statement = statementTextIn(applyPolicy, 'MakeTheEmailServiceRole');
+
+      expect(statement).toContain('test     = "StringEquals"');
+      expect(statement).toContain('variable = "iam:AWSServiceName"');
+      expect(listedIn(statement, 'values')).toEqual([theEmailService]);
+    });
+
+    it('reaches no role of Emi through the path of a service, and the other way round', () => {
+      const projectRoles = scopeOf(applyStatements, 'iam:CreateRole');
+
+      expect(projectRoles).toEqual([[`arn:aws:iam::${defaultOf('account_id')}:role/emi-*`]]);
+      expect(projectRoles.flat()).not.toContain(theServiceRoles);
+      expect(statementsReaching(applyStatements, 'iam:CreateRole').map((one) => one.sid)).toEqual([
+        'TheProjectRoles',
+      ]);
+    });
+  });
+
+  describe('what this grant deliberately leaves out', () => {
+    it('sends no message itself, because the service linked role carries the send', () => {
+      for (const action of ['ses:SendEmail', 'ses:SendRawEmail', 'ses:SendBulkEmail']) {
+        expect(scopeOf(applyStatements, action)).toEqual([]);
+        expect(scopeOf(planStatements, action)).toEqual([]);
+      }
+    });
+
+    it('hands no role to the service, because the documentation names no iam:PassRole here', () => {
+      const passing = statementsReaching(applyStatements, 'iam:PassRole');
+
+      expect(passing.map((statement) => statement.sid)).toEqual(['TheProjectRoles']);
+      expect(scopeOf(applyStatements, 'iam:PassRole')).toEqual([
+        [`arn:aws:iam::${defaultOf('account_id')}:role/emi-*`],
+      ]);
+    });
+
+    it('writes no policy on a service linked role, and deletes none', () => {
+      for (const action of [
+        'iam:AttachRolePolicy',
+        'iam:PutRolePolicy',
+        'iam:DeleteServiceLinkedRole',
+        'iam:UpdateRoleDescription',
+      ]) {
+        expect(scopeOf(applyStatements, action).flat()).not.toContain(theServiceRoles);
+      }
+    });
+
+    it('adds nothing to the plan role, because a plan reads the setting through the pool', () => {
+      expect(scopeOf(planStatements, makeTheRole)).toEqual([]);
+      expect(actionsIn(planPolicy).filter((action) => action.startsWith('iam:Create'))).toEqual([]);
+      expect(
+        scopeOf(planStatements, 'cognito-idp:DescribeUserPool').map((resources) =>
+          resources.map((resource) => resource.split(':').slice(-1)[0]),
+        ),
+      ).toEqual([['userpool/*']]);
     });
   });
 });
