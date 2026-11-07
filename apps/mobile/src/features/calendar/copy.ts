@@ -13,11 +13,7 @@ import type { PeriodItWaitsFor, WhatTheSheetSays } from './theDaySheet';
  */
 export const calendarCopy = {
   back: words('calendar.screen.back'),
-  earlier: words('calendar.screen.earlier'),
   editPeriod: words('calendar.screen.editPeriod'),
-  earlierMonth: words('calendar.screen.earlierMonth'),
-  later: words('calendar.screen.later'),
-  laterMonth: words('calendar.screen.laterMonth'),
   openTheDay: words('calendar.daySheet.open'),
   recordSex: words('calendar.screen.recordSex'),
   removePeriodDay: words('calendar.screen.removePeriodDay'),

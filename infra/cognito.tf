@@ -50,9 +50,31 @@ resource "aws_cognito_user_pool" "accounts" {
   # pool takes a person turning this off first, on purpose, in the same way as the vault table.
   deletion_protection = "ACTIVE"
 
+  # The code she signs in with leaves from the Emi sender rather than from an address of the
+  # service. DEVELOPER means the pool calls Amazon Simple Email Service in this account, so the
+  # message is signed as Emi, it is counted on the configuration set of Emi, and its daily limit
+  # is the limit of the account rather than the 50 messages the service lends a pool.
+  #
+  # The from address is the one the sender holds, so the address Emi writes from has one home and
+  # the registration with Apple names the same string.
+  #
+  # Saving this makes a service linked role, with the credentials of whoever saved it. The grant
+  # for that landed in step 28.9, in a merge of its own.
+  email_configuration {
+    email_sending_account = "DEVELOPER"
+    source_arn            = aws_sesv2_email_identity.sender.arn
+    from_email_address    = local.sender_from
+    configuration_set     = aws_sesv2_configuration_set.sender.configuration_set_name
+  }
+
   # The pool is made in the same apply that grants the role the right to make it, and the two are
-  # otherwise unrelated, so the order is said here.
-  depends_on = [aws_iam_role_policy.apply]
+  # otherwise unrelated, so the order is said here. The identity is named for the same reason the
+  # other way round: the pool may not carry a sender that does not exist yet.
+  #
+  # Existing is not the same as verified. The service refuses to send from an identity whose
+  # records have not answered, and no Terraform wait can watch the Domain Name System spread. So
+  # an account built from nothing sets this in a second apply, which the readme says.
+  depends_on = [aws_iam_role_policy.apply, aws_sesv2_email_identity.sender]
 }
 
 # The application on her phone. A public client, because an application on a phone keeps no secret.

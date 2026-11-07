@@ -51,4 +51,4 @@ Feature: Emi sends from myemi.app, signed, and counts its own bounces
     Then it declares no key and no password
     And it asks for no open and no click
     And the records ask a receiving server for nothing yet
-    And the pool still names no sender, because that is a step of its own
+    And the pool reads the sender, and the sender names no pool

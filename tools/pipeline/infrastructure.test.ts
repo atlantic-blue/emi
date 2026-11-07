@@ -1389,8 +1389,11 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(pool).toContain('deletion_protection = "ACTIVE"');
     });
 
-    it('is made after the role is allowed to make it, which is one apply for both', () => {
-      expect(pool).toContain('depends_on = [aws_iam_role_policy.apply]');
+    it('is made after the role is allowed to make it, and after the sender it names', () => {
+      expect(listedIn(pool, 'depends_on')).toEqual([
+        'aws_iam_role_policy.apply',
+        'aws_sesv2_email_identity.sender',
+      ]);
     });
   });
 
@@ -1465,8 +1468,10 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(cognito).not.toContain('bot_token');
     });
 
-    it('names no sender, and the readme says the code waits for one', () => {
-      expect(pool).not.toContain('email_configuration');
+    // This rule read the other way until step 28.10. The pool named no sender, because none was
+    // verified, and the readme said the code could not be delivered. Both are the other way now.
+    it('names the sender of Emi, which step 28.10 gave it', () => {
+      expect(pool).toContain('email_configuration');
       expect(readme).toContain('Amazon Simple Email Service');
     });
   });
@@ -2072,11 +2077,99 @@ describe('the sender of myemi.app, which is step 28.8', () => {
       expect(email).not.toContain('privaterelay.appleid.com');
     });
 
-    it('names the pool nowhere, because the sign in code is a step of its own', () => {
+    // The sender names no pool, and it stays that way: the pool reads the sender, never the
+    // reverse. What changed in step 28.10 is the pool's own side of it.
+    it('names the pool nowhere, because the pool reads the sender and not the reverse', () => {
       expect(email).not.toContain('aws_cognito');
-      expect(bodyOf('resource "aws_cognito_user_pool" "accounts"')).not.toContain(
-        'email_configuration',
+      expect(bodyOf('resource "aws_cognito_user_pool" "accounts"')).toContain(
+        'source_arn            = aws_sesv2_email_identity.sender.arn',
       );
+    });
+  });
+});
+
+// Step 28.10 points the pool at the sender of step 28.8, so the code she signs in with leaves from
+// Emi. The grant it needs merged in step 28.9, in a merge of its own, because an apply reads a
+// policy per request.
+describe('the pool sends the code from Emi, which is step 28.10', () => {
+  const cognito = read('infra/cognito.tf');
+  const readme = read('infra/README.md');
+  const pool = bodyOf('resource "aws_cognito_user_pool" "accounts"');
+  const sending = blockBodyOf(pool, 'email_configuration');
+
+  describe('the code leaves from the sender of Emi', () => {
+    it('calls the mail service in this account, rather than lending the address of the pool', () => {
+      expect(sending).toContain('email_sending_account = "DEVELOPER"');
+      expect(sending).not.toContain('COGNITO_DEFAULT');
+    });
+
+    it('sends from the myemi.app identity, named as the resource and never as a string', () => {
+      expect(sending).toContain('source_arn            = aws_sesv2_email_identity.sender.arn');
+      expect(sending).not.toContain('arn:aws:ses');
+    });
+
+    it('is read in her inbox as Emi, from the one address the sender holds', () => {
+      expect(sending).toContain('from_email_address    = local.sender_from');
+      // The from line is composed of two locals, so the rule reads each one as its value and
+      // puts them together the way the sender does.
+      expect(expressionOf('sender_from')).toBe('${local.sender_name} <${local.sender_address}>');
+      expect(
+        `${resolved(configuration, expressionOf('sender_name'))} <${resolved(
+          configuration,
+          expressionOf('sender_address'),
+        )}>`,
+      ).toBe('Emi <no-reply@myemi.app>');
+      expect(sending).not.toContain('no-reply@verificationemail.com');
+    });
+
+    it('counts the code on the set of Emi, so its bounces reach the alarms of step 28.8', () => {
+      expect(sending).toContain(
+        'configuration_set     = aws_sesv2_configuration_set.sender.configuration_set_name',
+      );
+    });
+
+    it('asks for no reply address, because nothing receives mail at myemi.app', () => {
+      expect(sending).not.toContain('reply_to_email_address');
+    });
+  });
+
+  describe('the order, so an apply never names a sender that does not exist', () => {
+    it('makes the pool after the identity, as well as after the grant', () => {
+      expect(listedIn(pool, 'depends_on')).toEqual([
+        'aws_iam_role_policy.apply',
+        'aws_sesv2_email_identity.sender',
+      ]);
+    });
+
+    it('reads the sender from the resource, so the order holds without the list too', () => {
+      expect(sending).toContain('aws_sesv2_email_identity.sender');
+      expect(sending).toContain('aws_sesv2_configuration_set.sender');
+    });
+
+    it('says in the readme that existing is not verified, and what that costs a rebuild', () => {
+      expect(cognito).toContain('Existing is not the same as verified');
+      expect(readme).toContain('second apply');
+    });
+  });
+
+  describe('what the pool still does not hold', () => {
+    it('holds no key and no secret, because this repository is public', () => {
+      expect(cognito).not.toContain('client_secret');
+      expect(cognito).not.toContain('BEGIN PRIVATE KEY');
+      expect(cognito).not.toContain('smtp_password');
+    });
+
+    it('declares no attribute of hers, which step 28.2 settled and this step does not move', () => {
+      expect(pool).not.toContain('schema {');
+      expect(cognito).not.toContain('custom:');
+    });
+  });
+
+  describe('the readme reads the other way round now', () => {
+    it('says the code is delivered, and no longer that it cannot be', () => {
+      expect(readme).not.toContain('cannot deliver one');
+      expect(readme).not.toContain('one step away');
+      expect(readme).toContain('Emi <no-reply@myemi.app>');
     });
   });
 });
