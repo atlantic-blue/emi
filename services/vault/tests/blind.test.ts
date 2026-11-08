@@ -86,6 +86,17 @@ function sourceFilesUnder(directory: string, prefix = ''): string[] {
   );
 }
 
+/**
+ * Every entry point a bundle is built from. Nothing in the service imports one, so each is a root
+ * of the walk below of its own, and a file reachable from none of the roots is a file that ships
+ * inside no bundle.
+ */
+function entryPointFiles(): string[] {
+  return sourceFilesUnder('src/functions')
+    .map((file) => `src/functions/${file}`)
+    .sort();
+}
+
 interface TakenFrom {
   readonly specifier: string;
   readonly names: readonly string[];
@@ -125,9 +136,9 @@ function importsIn(source: string): TakenFrom[] {
   return taken;
 }
 
-/** Every file the service reaches from its own entry point, and what each one imports. */
+/** Every file the service reaches from its own entry points, and what each one imports. */
 function importGraph(): { files: string[]; taken: TakenFrom[] } {
-  const waiting = ['src/index.ts'];
+  const waiting = ['src/index.ts', ...entryPointFiles()];
   const read = new Set<string>();
   const taken: TakenFrom[] = [];
 
@@ -256,6 +267,9 @@ const allowedKeyWords: readonly string[] = [
   'publicKey',
   'publicKeyIn',
   'recordSortKeyFor',
+  // The api gateway's own word for a method and a path together, which is what the dispatch looks
+  // one of four handlers up by. It opens nothing.
+  'routeKeyOf',
   'signatureSortKeyFor',
   'signedByTheKeyItRegisters',
   'sortKey',
@@ -319,7 +333,7 @@ describe('a marker word in a record never appears in the stored item', () => {
 });
 
 describe('the service cannot open what it holds', () => {
-  it('reaches every file it ships from its own entry point', () => {
+  it('reaches every file it ships from its own entry points', () => {
     const onDisk = sourceFilesUnder('src')
       .map((file) => `src/${file}`)
       .sort();
@@ -362,13 +376,30 @@ describe('the service cannot open what it holds', () => {
     );
   });
 
-  it('holds no key of its own, and reads none from its environment', () => {
+  it('holds no key of its own', () => {
     const source = importGraph()
       .files.map((file) => readFileSync(join(serviceDirectory, file), 'utf8'))
       .join('\n');
     const keyWords = [...new Set(source.match(/[A-Za-z]*[Kk]ey[A-Za-z]*/g) ?? [])].sort();
 
     expect(keyWords).toEqual(keyWords.filter((word) => allowedKeyWords.includes(word)));
-    expect(source).not.toContain('process.env');
+  });
+
+  it('reads its environment in an entry point and nowhere else', () => {
+    const reading = importGraph().files.filter((file) =>
+      readFileSync(join(serviceDirectory, file), 'utf8').includes('process.env'),
+    );
+
+    expect(entryPointFiles().length).toBeGreaterThan(0);
+    expect(reading).toEqual(entryPointFiles());
+  });
+
+  it('reads a table name out of its environment and nothing else at all', () => {
+    const source = importGraph()
+      .files.map((file) => readFileSync(join(serviceDirectory, file), 'utf8'))
+      .join('\n');
+    const read = [...new Set(source.match(/process\.env\.[A-Za-z0-9_]+/g) ?? [])].sort();
+
+    expect(read).toEqual(['process.env.EMI_ARTICLES_TABLE', 'process.env.EMI_VAULT_TABLE']);
   });
 });

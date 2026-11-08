@@ -17,6 +17,9 @@ import type { RecordStore } from '../store/records';
  */
 export const pageBytes = 1024 * 1024;
 
+/** The path a pull reads, which is every record of one account and never one of them. */
+export const recordsPath = '/v1/records';
+
 /** The name of the one parameter a pull takes. */
 export const cursorParameter = 'cursor';
 

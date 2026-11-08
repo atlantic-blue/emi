@@ -35,6 +35,9 @@ import type { AccountStore } from '../store/accounts';
  * nowhere on this side, and no part of them is in this request.
  */
 
+/** The path a registration is sent to, which is the one route of this service with no authorizer. */
+export const accountsPath = '/v1/accounts';
+
 /** Bytes. A body larger than this is refused before it is read, which is contract WIRE-1. */
 export const maximumBodyBytes = 4096;
 
