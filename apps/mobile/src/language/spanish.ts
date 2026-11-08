@@ -1063,6 +1063,7 @@ export const spanish: CatalogueIn<'es'> = {
   'recovery.confirm.wrong': 'No coincide. Mira tu papel e inténtalo otra vez.',
   'recovery.step': 'Paso {step} de {of}',
 
+  'reminder.dailyLog.notification': 'Un momento para registrar tu día en Emi',
   'reminder.notification': 'Un recordatorio de Emi',
   'settings.answer.back': 'Atrás',
   'settings.answer.cancel': 'Cancelar',
@@ -1100,6 +1101,7 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.deleted.withoutTheServer':
     'No pudimos llegar a nuestro servidor para quitar tu cuenta. Nada puede abrir lo que queda allí: la única clave estaba en este teléfono, y se fue con tus días.',
   'settings.reminders.back': 'Atrás',
+  'settings.reminders.dailyLog': 'Recordarme registrar cada día',
   'settings.reminders.earlier': 'Media hora antes',
   'settings.reminders.later': 'Media hora después',
   'settings.reminders.never': 'Nunca',

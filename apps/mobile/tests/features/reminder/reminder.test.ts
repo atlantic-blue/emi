@@ -409,7 +409,7 @@ describe('this phone works it out and this phone raises it', () => {
     expect(asking.map(({ path }) => path)).toEqual([]);
   });
 
-  it('reaches expo-notifications from one file, which names only the scheduler and the permission', () => {
+  it('reaches expo-notifications from one file, which names only the scheduler, the permission and the press', () => {
     const importing = everyFile.filter(({ text }) => text.includes("from 'expo-notifications'"));
 
     expect(importing.map(({ path }) => path.slice(source.length + 1))).toEqual([
@@ -428,7 +428,9 @@ describe('this phone works it out and this phone raises it', () => {
         .sort(),
     ).toEqual([
       'SchedulableTriggerInputTypes',
+      'addNotificationResponseReceivedListener',
       'cancelScheduledNotificationAsync',
+      'getLastNotificationResponseAsync',
       'getPermissionsAsync',
       'requestPermissionsAsync',
       'scheduleNotificationAsync',
