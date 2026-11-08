@@ -81,6 +81,24 @@ describe('the card of a day Emi filled in', () => {
     );
   });
 
+  it('names the period on a day Emi filled in, when a later day without bleeding closed her period', async () => {
+    await herPhoneHolds(
+      whenSheOpensIt,
+      [
+        ...['2026-09-20', '2026-09-21', '2026-09-22'].map(aBleedingDay),
+        { day: '2026-09-27', flow: 'none' as const, recordedAt: '2026-09-27T08:00:00.000Z' },
+      ],
+      herCycleRuns,
+      herPeriodRuns,
+    );
+    await renderRouter(appDirectory, { initialUrl: '/calendar?day=2026-09-01' });
+    await screen.findByTestId(dayTestID('2026-09-23'));
+
+    await shePresses(dayTestID('2026-09-23'));
+
+    expect(theCardLine()).toBe(`Day 4, period. ${english['calendar.daySheet.filledIn']}`);
+  });
+
   it('ends her period the day before when she removes a day Emi filled in, and the later days go', async () => {
     await sheOpensTheMonthWith('2026-10-01');
     await shePresses(dayTestID('2026-10-03'));

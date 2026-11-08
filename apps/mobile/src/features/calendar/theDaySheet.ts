@@ -58,7 +58,8 @@ export function whatTheSheetSays(
   hers: HerDay,
   record: DayRecord | undefined,
 ): WhatTheSheetSays {
-  const expected = theExpectedDays(from).includes(hers.day) ? { expected: true as const } : {};
+  const isExpected = theExpectedDays(from).includes(hers.day);
+  const expected = isExpected ? { expected: true as const } : {};
 
   if (daysBetween(from.today, hers.day) > 0) {
     const period = thePeriodADayWaitsFor(theCyclesAhead(from), hers.day);
@@ -73,7 +74,8 @@ export function whatTheSheetSays(
     };
   }
 
-  const phase = thePhaseOn(from, hers.day);
+  // A day Emi fills in is a period day, even where the ring reads only the days she logged.
+  const phase = isExpected ? 'period' : thePhaseOn(from, hers.day);
   const logged = whatSheMarkedOn(record);
 
   return {
