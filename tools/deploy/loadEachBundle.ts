@@ -1,13 +1,12 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { join } from 'node:path';
 
 import { entriesIn } from './archive.ts';
 import {
   archiveNameOf,
-  buildDirectory,
   bundleFileName,
+  type DeployedFunction,
   deployedFunctions,
   handlerName,
 } from './functions.ts';
@@ -31,17 +30,22 @@ import {
 export const baseImage = 'public.ecr.aws/lambda/nodejs:22';
 
 /** The port the emulator listens on inside the image. */
-const portInsideTheImage = 8080;
+export const portInsideTheImage = 8080;
 
-/** The port it is reached on here. */
-const port = 9000;
+/** How long one emulator is given to answer its first request, which includes its own start. */
+export const readyWithinMilliseconds = 60_000;
 
-const invocationAddress = `http://localhost:${port}/2015-03-31/functions/function/invocations`;
+/** What a command answered, with the two streams kept apart. */
+export interface Answered {
+  readonly status: number;
+  readonly stdout: string;
+  readonly stderr: string;
+}
 
-/** How long the emulator is given to answer the first request, which includes its own start. */
-const readyWithinMilliseconds = 60_000;
+/** How a command is run, so a test drives this check without a container runtime of its own. */
+export type RunsACommand = (command: string, args: readonly string[]) => Answered;
 
-interface LoadCheck {
+export interface LoadCheck {
   /** An event the function can answer with no account behind it. */
   readonly event: unknown;
   /** What the answer owes, read from the answer itself. */
@@ -91,24 +95,53 @@ export const loadChecks: Readonly<Record<string, LoadCheck>> = {
   },
 };
 
-function ran(command: string, args: readonly string[]): { status: number; output: string } {
-  const run = spawnSync(command, args, { encoding: 'utf8' });
+/**
+ * The container a start answered with, read from its own stream. It is read from the output alone
+ * rather than from the output and the errors together, because a run that has to pull the image
+ * first writes the progress of the pull to the errors, and a line of that read as a container is a
+ * container nobody then removes.
+ */
+export function containerIdIn(stdout: string): string | null {
+  const last = stdout
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .pop();
 
-  return { status: run.status ?? 1, output: `${run.stdout ?? ''}${run.stderr ?? ''}`.trim() };
+  return last !== undefined && /^[0-9a-f]{12,64}$/.test(last) ? last : null;
 }
 
-function refuse(message: string): never {
-  process.stderr.write(`${message}\n`);
-  process.exit(1);
+/**
+ * The port on this machine that reaches the emulator, read back from the container rather than
+ * chosen here. Every container is given a port of its own for one reason: two containers on one
+ * fixed port collide, and the second one fails to bind while the first is still letting go of it.
+ */
+export function publishedPortIn(output: string): number | null {
+  for (const line of output.split('\n')) {
+    const found = /:(\d+)\s*$/.exec(line.trim());
+    const port = found?.[1] === undefined ? Number.NaN : Number(found[1]);
+
+    if (Number.isInteger(port) && port > 0) {
+      return port;
+    }
+  }
+
+  return null;
 }
 
-async function answered(event: unknown, until: number): Promise<unknown> {
+/** Everything one run of this check needs, so nothing in it reads the world for itself. */
+export interface LoadRun {
+  readonly run: RunsACommand;
+  /** The directory the build wrote its zips into. */
+  readonly builtInto: string;
+  readonly report: (line: string) => void;
+  readonly functions?: readonly DeployedFunction[];
+}
+
+async function answered(address: string, event: unknown, until: number): Promise<unknown> {
   for (;;) {
     try {
-      const response = await fetch(invocationAddress, {
-        method: 'POST',
-        body: JSON.stringify(event),
-      });
+      const response = await fetch(address, { method: 'POST', body: JSON.stringify(event) });
 
       return (await response.json()) as unknown;
     } catch (thrown) {
@@ -121,96 +154,142 @@ async function answered(event: unknown, until: number): Promise<unknown> {
   }
 }
 
-const repositoryRoot = resolve(import.meta.dirname, '..', '..');
-const given = process.argv.slice(2).find((argument) => !argument.startsWith('--'));
-const builtInto = given === undefined ? join(repositoryRoot, buildDirectory) : resolve(given);
+/**
+ * Every bundle, loaded. It answers how many it loaded, and it raises on the first one that does not
+ * load, carrying what the emulator said. Every container it started is removed before it answers or
+ * raises, so a failure leaves nothing behind holding a port.
+ */
+export async function loadEveryBundle(given: LoadRun): Promise<number> {
+  const list = given.functions ?? deployedFunctions;
+  const containers: string[] = [];
+  const directories: string[] = [];
 
-const docker = ran('docker', ['--version']);
+  const remove = (container: string): void => {
+    const at = containers.indexOf(container);
 
-if (docker.status !== 0) {
-  refuse(`this check runs every bundle in a container and Docker is missing: ${docker.output}`);
-}
+    if (at >= 0) {
+      containers.splice(at, 1);
+      given.run('docker', ['rm', '--force', container]);
+    }
+  };
 
-process.stdout.write(`${docker.output}\n`);
+  const removeWhatIsLeft = (): void => {
+    for (const container of [...containers]) {
+      remove(container);
+    }
 
-if (deployedFunctions.length === 0) {
-  refuse('the list of functions is empty, so this check loaded no bundle at all');
-}
-
-for (const held of deployedFunctions) {
-  const check = loadChecks[held.name];
-
-  if (check === undefined) {
-    refuse(`${held.name} is deployed and no event here proves that its bundle answers`);
-  }
-
-  const archive = join(builtInto, archiveNameOf(held));
-  let bytes: Buffer;
-
-  try {
-    bytes = readFileSync(archive);
-  } catch {
-    refuse(`${archive} is not there, so there is no bundle of ${held.name} to load`);
-  }
-
-  const entries = entriesIn(bytes);
-  const bundle = entries.find((entry) => entry.name === bundleFileName);
-
-  if (bundle === undefined) {
-    const names = entries.map((entry) => entry.name).join(', ');
-
-    refuse(`${archive} holds no ${bundleFileName} at its root, only: ${names}`);
-  }
-
-  const taskRoot = mkdtempSync(join(tmpdir(), `${held.name}-`));
-
-  writeFileSync(join(taskRoot, bundleFileName), bundle.contents);
-
-  const started = ran('docker', [
-    'run',
-    '--rm',
-    '--detach',
-    '--publish',
-    `${port}:${portInsideTheImage}`,
-    '--volume',
-    `${taskRoot}:/var/task:ro`,
-    baseImage,
-    `index.${handlerName}`,
-  ]);
-
-  if (started.status !== 0) {
-    rmSync(taskRoot, { force: true, recursive: true });
-    refuse(`the image would not start for ${held.name}: ${started.output}`);
-  }
-
-  const container = started.output.split('\n').pop() ?? '';
-  let answer: unknown;
-  let failure: string | null = null;
+    for (const directory of directories.splice(0)) {
+      rmSync(directory, { force: true, recursive: true });
+    }
+  };
 
   try {
-    answer = await answered(check.event, Date.now() + readyWithinMilliseconds);
-  } catch (thrown) {
-    failure = `${held.name} answered nothing: ${String(thrown)}`;
+    const docker = given.run('docker', ['--version']);
+
+    if (docker.status !== 0) {
+      throw new Error(
+        `this check runs every bundle in a container and Docker is missing: ${docker.stderr.trim()}`,
+      );
+    }
+
+    given.report(docker.stdout.trim());
+
+    if (list.length === 0) {
+      throw new Error('the list of functions is empty, so this check loaded no bundle at all');
+    }
+
+    for (const held of list) {
+      const check = loadChecks[held.name];
+
+      if (check === undefined) {
+        throw new Error(
+          `${held.name} is deployed and no event here proves that its bundle answers`,
+        );
+      }
+
+      const archive = join(given.builtInto, archiveNameOf(held));
+      let bytes: Buffer;
+
+      try {
+        bytes = readFileSync(archive);
+      } catch {
+        throw new Error(`${archive} is not there, so there is no bundle of ${held.name} to load`);
+      }
+
+      const entries = entriesIn(bytes);
+      const bundle = entries.find((entry) => entry.name === bundleFileName);
+
+      if (bundle === undefined) {
+        const names = entries.map((entry) => entry.name).join(', ');
+
+        throw new Error(`${archive} holds no ${bundleFileName} at its root, only: ${names}`);
+      }
+
+      const taskRoot = mkdtempSync(join(tmpdir(), `${held.name}-`));
+
+      directories.push(taskRoot);
+      writeFileSync(join(taskRoot, bundleFileName), bundle.contents);
+
+      // Docker picks the port on this machine, which is what makes a run of several bundles safe:
+      // nothing here names a port, so nothing here can want one another container still holds.
+      const started = given.run('docker', [
+        'run',
+        '--rm',
+        '--detach',
+        '--publish',
+        `0:${portInsideTheImage}`,
+        '--volume',
+        `${taskRoot}:/var/task:ro`,
+        baseImage,
+        `index.${handlerName}`,
+      ]);
+      const container = containerIdIn(started.stdout);
+
+      if (started.status !== 0 || container === null) {
+        throw new Error(
+          `the image would not start for ${held.name}: ${started.stderr.trim() || started.stdout.trim()}`,
+        );
+      }
+
+      containers.push(container);
+
+      const read = given.run('docker', ['port', container, `${portInsideTheImage}/tcp`]);
+      const port = publishedPortIn(read.stdout);
+
+      if (port === null) {
+        throw new Error(
+          `the container of ${held.name} published no port this machine can reach: ${read.stdout.trim()}${read.stderr.trim()}`,
+        );
+      }
+
+      const address = `http://localhost:${port}/2015-03-31/functions/function/invocations`;
+      let answer: unknown;
+
+      try {
+        answer = await answered(address, check.event, Date.now() + readyWithinMilliseconds);
+      } catch (thrown) {
+        given.report(given.run('docker', ['logs', container]).stdout);
+        throw new Error(`${held.name} answered nothing: ${String(thrown)}`);
+      }
+
+      if (!check.owes(answer)) {
+        given.report(given.run('docker', ['logs', container]).stdout);
+        throw new Error(
+          `${held.name} owes that ${check.describes}, and answered ${JSON.stringify(answer)}`,
+        );
+      }
+
+      given.report(
+        `${held.name}: on port ${port}, ${check.describes}, and it answered ${JSON.stringify(answer)}`,
+      );
+
+      // Removed as soon as its bundle is judged, so one run of several bundles holds one container
+      // at a time rather than every container it has started.
+      remove(container);
+    }
+
+    return list.length;
+  } finally {
+    removeWhatIsLeft();
   }
-
-  if (failure === null && !check.owes(answer)) {
-    failure = `${held.name} owes that ${check.describes}, and answered ${JSON.stringify(answer)}`;
-  }
-
-  if (failure !== null) {
-    process.stderr.write(`${ran('docker', ['logs', container]).output}\n`);
-  }
-
-  ran('docker', ['rm', '--force', container]);
-  rmSync(taskRoot, { force: true, recursive: true });
-
-  if (failure !== null) {
-    refuse(failure);
-  }
-
-  process.stdout.write(
-    `${held.name}: ${check.describes}, and it answered ${JSON.stringify(answer)}\n`,
-  );
 }
-
-process.stdout.write(`${deployedFunctions.length} bundles load the way the platform loads them\n`);
