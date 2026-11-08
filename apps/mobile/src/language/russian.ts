@@ -46,6 +46,8 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.editPeriod.deleteTitle': 'Удалить эти месячные?',
   'calendar.editPeriod.filled':
     'Emi отметила дни между ними средними выделениями. Вы можете изменить выделения для каждого дня.',
+  'calendar.editPeriod.filledIn': 'Заполнено',
+  'calendar.editPeriod.keepFilledIn': 'Сохраните, чтобы оставить дни, которые отметила Emi.',
   'calendar.editPeriod.lead': {
     one: 'Укажите дни с месячными. Emi хранит {count} день, с {date}.',
     few: 'Укажите дни с месячными. Emi хранит {count} дня, с {date}.',

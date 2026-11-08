@@ -120,7 +120,7 @@ describe('where the period editor opens', () => {
   it('opens on the day she pressed when Emi holds no period at all', () => {
     const opened = whereTheEditorOpens([], [], { day: yesterday, today });
 
-    expect(opened).toEqual({ held: [], listed: { from: yesterday, to: today } });
+    expect(opened).toEqual({ expected: [], held: [], listed: { from: yesterday, to: today } });
   });
 
   it('ticks a lone period day she logged after a gap, and every other day of that period', () => {

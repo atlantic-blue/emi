@@ -45,6 +45,8 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.editPeriod.deleteTitle': '¿Eliminar este periodo?',
   'calendar.editPeriod.filled':
     'Emi marcó los días intermedios con un flujo medio. Puedes cambiar el flujo en cada día.',
+  'calendar.editPeriod.filledIn': 'Completado',
+  'calendar.editPeriod.keepFilledIn': 'Guarda para conservar los días que Emi completó.',
   'calendar.editPeriod.lead': {
     one: 'Pulsa los días que sangraste. Emi guarda {count} día, desde {date}.',
     other: 'Pulsa los días que sangraste. Emi guarda {count} días, desde {date}.',

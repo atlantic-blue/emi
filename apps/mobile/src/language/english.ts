@@ -41,6 +41,8 @@ export const english = {
   'calendar.editPeriod.deleteTitle': 'Delete this period?',
   'calendar.editPeriod.filled':
     'Emi marked the days between with a medium flow. You can change the flow on each day.',
+  'calendar.editPeriod.filledIn': 'Filled in',
+  'calendar.editPeriod.keepFilledIn': 'Save to keep the days Emi filled in.',
   'calendar.editPeriod.lead': {
     one: 'Press the days you bled. Emi holds {count} day, from {date}.',
     other: 'Press the days you bled. Emi holds {count} days, from {date}.',

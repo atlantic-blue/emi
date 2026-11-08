@@ -159,6 +159,10 @@ export const editPeriodCopy = {
   deleteTitle: words('calendar.editPeriod.deleteTitle'),
   /** The note under the list once Emi marked days between a first and a last day she pressed. */
   filled: words('calendar.editPeriod.filled'),
+  /** The marker on a day Emi filled in from her usual length, while it is ticked. */
+  filledIn: words('calendar.editPeriod.filledIn'),
+  /** The change line while the only change is the days Emi filled in. */
+  keepFilledIn: words('calendar.editPeriod.keepFilledIn'),
   noDayLeft: words('calendar.editPeriod.noDayLeft'),
   save: words('calendar.editPeriod.save'),
   title: words('calendar.editPeriod.title'),
