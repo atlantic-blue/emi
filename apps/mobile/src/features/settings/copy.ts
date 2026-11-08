@@ -19,6 +19,9 @@ export const settingsCopy = {
         lead: words('settings.settings.answers'),
         line: words('settings.settings.answersLine'),
       },
+      reminders: {
+        lead: words('settings.settings.reminders'),
+      },
       lock: {
         lead: words('settings.settings.lock'),
         line: words('settings.settings.lockLine'),
@@ -32,6 +35,16 @@ export const settingsCopy = {
         line: words('settings.settings.deleteLine'),
       },
     },
+  },
+  reminders: {
+    back: words('settings.reminders.back'),
+    earlier: words('settings.reminders.earlier'),
+    later: words('settings.reminders.later'),
+    never: words('settings.reminders.never'),
+    note: words('settings.reminders.note'),
+    save: words('settings.reminders.save'),
+    timeOfDay: words('settings.reminders.timeOfDay'),
+    title: words('settings.reminders.title'),
   },
   whoCanSee: {
     title: words('settings.whoCanSee.title'),

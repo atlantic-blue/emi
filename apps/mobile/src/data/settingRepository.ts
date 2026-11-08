@@ -10,6 +10,7 @@ export type SettingKey =
   | 'forecastPopupClosed'
   | 'lockOnReturn'
   | 'reminderLead'
+  | 'reminderTime'
   | 'temperatureUnit'
   | 'tourSeenAt'
   | 'weightUnit';
@@ -20,6 +21,7 @@ export const settingKeys: readonly SettingKey[] = [
   'forecastPopupClosed',
   'lockOnReturn',
   'reminderLead',
+  'reminderTime',
   'temperatureUnit',
   'tourSeenAt',
   'weightUnit',

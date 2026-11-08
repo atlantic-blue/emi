@@ -15,7 +15,12 @@ import {
 import {
   daysBeforeTheRange,
   readReminderLead,
+  readReminderTime,
   reminderHour,
+  reminderTimeMovedBy,
+  reminderTimeSaid,
+  writeNoReminder,
+  writeReminderTime,
   reminderLeads,
   reminderNotificationWords,
   whenToRemindHer,
@@ -316,22 +321,61 @@ describe('the reminder is worked out on this phone from the forecast it already 
     });
   });
 
-  describe('what Settings says about the reminder', () => {
-    it('draws no row for it yet, while the first run keeps her choice in the setting table', () => {
-      expect(settingsRows).not.toContain('reminder');
-      expect(settingKeys).toContain('reminderLead');
+  describe('the time of day she chooses', () => {
+    it('is nine in the morning where she chose none', () => {
+      expect(readReminderTime(herPhoneAfterTheHold('twoDaysBefore'))).toBe(9 * 60);
     });
 
-    it('no longer says the reminder is not built', () => {
-      const source = readFileSync(
-        join(__dirname, '..', '..', '..', 'src', 'features', 'settings', 'SettingsScreen.tsx'),
-        'utf8',
-      );
+    it('puts the reminder at the time she chose, on the same day', async () => {
+      const db = herPhoneAfterTheHold('twoDaysBefore');
+      thePhoneWasAnswered('allow');
+      writeReminderTime(db, 21 * 60 + 30);
 
-      expect(source).not.toMatch(/reminder is not built/i);
-      expect(source).toMatch(
-        /She chooses the reminder in\s+\* the first run and this phone schedules it/,
+      expect(await rescheduleHerReminder(db, herProfileVault(), now)).toBe('scheduled');
+
+      const nine = nineOClockBefore(theFirstDayOfHerRange(), 2);
+      expect(theRemindersOnThePhone()[0]?.at).toEqual(
+        new Date(nine.getFullYear(), nine.getMonth(), nine.getDate(), 21, 30, 0, 0),
       );
+    });
+
+    it('moves half an hour a step, round midnight both ways', () => {
+      expect(reminderTimeMovedBy(9 * 60, 1)).toBe(9 * 60 + 30);
+      expect(reminderTimeMovedBy(0, -1)).toBe(23 * 60 + 30);
+      expect(reminderTimeMovedBy(23 * 60 + 30, 1)).toBe(0);
+    });
+
+    it('is written the way the board writes it', () => {
+      expect(reminderTimeSaid(9 * 60)).toBe('09:00');
+      expect(reminderTimeSaid(21 * 60 + 30)).toBe('21:30');
+    });
+
+    it('refuses a time the screen cannot offer', () => {
+      expect(() => writeReminderTime(herPhoneAfterTheHold(), 9 * 60 + 7)).toThrow();
+    });
+  });
+
+  describe('Never, chosen on Reminders', () => {
+    it('leaves no moment held, and the reschedule takes the reminder off the phone', async () => {
+      const db = herPhoneAfterTheHold('twoDaysBefore');
+      thePhoneWasAnswered('allow');
+      await rescheduleHerReminder(db, herProfileVault(), now);
+
+      expect(theRemindersOnThePhone()).toHaveLength(1);
+
+      writeNoReminder(db);
+
+      expect(readReminderLead(db)).toBeUndefined();
+      expect(await rescheduleHerReminder(db, herProfileVault(), now)).toBe('she-chose-none');
+      expect(theRemindersOnThePhone()).toEqual([]);
+    });
+  });
+
+  describe('what Privacy says about the reminder', () => {
+    it('draws a row for it, and keeps her moment and her time in the setting table', () => {
+      expect(settingsRows).toContain('reminders');
+      expect(settingKeys).toContain('reminderLead');
+      expect(settingKeys).toContain('reminderTime');
     });
   });
 });

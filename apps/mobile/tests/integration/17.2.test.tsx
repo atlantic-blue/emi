@@ -11,6 +11,7 @@ import { exportScreenTestID } from '../../src/features/export/ExportScreen';
 import {
   SettingsScreen,
   settingsAnswersTestID,
+  settingsRemindersTestID,
   settingsDeleteTestID,
   settingsExportTestID,
   settingsLockTestID,
@@ -33,6 +34,7 @@ import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
 import { aBleedingDay, dayOf, herPhoneHolds } from '../fixtures/herPhone';
 import { OnAPhone } from '../fixtures/theSafeArea';
+import { reminderChoiceSaid } from '../../src/features/settings/RemindersScreen';
 
 jest.mock('expo-sqlite', () => jest.requireActual('../data/expoSqlite'));
 jest.mock('expo-secure-store', () => jest.requireActual('../fixtures/expoSecureStore'));
@@ -52,9 +54,7 @@ const theRowPrefix = settingsAnswersTestID.slice(0, -'answers'.length);
 /**
  * Which built row answers for each row the drawing places, in the drawing's own order.
  *
- * A row with nothing under `builtUnder` is a row this step leaves out. The reminder is the only
- * one: she chooses it in the first run, no screen changes it afterwards yet, and the drawing stays
- * the record of where that row goes.
+ * A row with nothing under `builtUnder` would be a row this step leaves out, and there is none.
  */
 interface DrawnRow {
   /** Where the drawing sends the row, or null where it sends it nowhere. */
@@ -64,7 +64,7 @@ interface DrawnRow {
 
 const theRowsOfTheDrawing: readonly DrawnRow[] = [
   { to: 'yourAnswers', builtUnder: [settingsAnswersTestID] },
-  { to: 'reminderSettings', builtUnder: [] },
+  { to: 'reminderSettings', builtUnder: [settingsRemindersTestID] },
   { to: null, builtUnder: [settingsLockTestID] },
   { to: 'export', builtUnder: [settingsExportTestID] },
   { to: 'delete', builtUnder: [settingsDeleteTestID] },
@@ -111,6 +111,8 @@ async function sheOpensPrivacyOnItsOwn(): Promise<void> {
     <OnAPhone>
       <SettingsScreen
         onAnswers={() => undefined}
+        onReminders={() => undefined}
+        reminder={reminderChoiceSaid('twoDaysBefore')}
         onBack={() => undefined}
         onDelete={() => undefined}
         onExport={() => undefined}
@@ -154,13 +156,13 @@ describe('every row of Privacy is at least 44 points and each one opens what it 
       );
     });
 
-    it('leaves one row for this step to skip, and it is the reminder', () => {
-      expect(theRowsThisStepLeavesOut.map(({ to }) => to)).toEqual(['reminderSettings']);
+    it('leaves no row out, now that the reminder is built', () => {
+      expect(theRowsThisStepLeavesOut).toEqual([]);
     });
 
-    it('leaves four rows for this step to build, which is what the screen declares', () => {
-      expect(theRowsThisStepBuilds).toHaveLength(4);
-      expect([...settingsRows]).toEqual(['answers', 'lock', 'export', 'delete']);
+    it('builds all five rows, which is what the screen declares', () => {
+      expect(theRowsThisStepBuilds).toHaveLength(5);
+      expect([...settingsRows]).toEqual(['answers', 'reminders', 'lock', 'export', 'delete']);
     });
   });
 
@@ -169,11 +171,11 @@ describe('every row of Privacy is at least 44 points and each one opens what it 
       await sheOpensPrivacyOnItsOwn();
     });
 
-    it('answers for the heading and for every row of the drawing but the reminder', () => {
+    it('answers for the heading and for every row of the drawing', () => {
       expect(partsMissing(theHeadingAndTheRowsOfTheDrawing(), theIdentifiersDrawn())).toEqual([]);
     });
 
-    it('draws those four rows and no fifth, in the order the drawing places them', () => {
+    it('draws those five rows and no sixth, in the order the drawing places them', () => {
       expect(theRowsSheReads()).toEqual(settingsRows.map(settingsRowTestID));
     });
 
@@ -208,7 +210,7 @@ describe('every row of Privacy is at least 44 points and each one opens what it 
     it('is at least 44 points on both axes, and the failure names any that is not', () => {
       const rows = settingsRows.map((row) => screen.getByTestId(settingsRowTestID(row)));
 
-      expect(rows).toHaveLength(4);
+      expect(rows).toHaveLength(5);
       expect(controlsTooSmallToPress(rows)).toEqual([]);
     });
   });

@@ -14,7 +14,12 @@ import type { ProfileVault } from '../../services/vault/profileVault';
 import { useProfileVault } from '../../services/vault/VaultProvider';
 import { forecastOf } from '../forecast/fromCache';
 import { defaultCycleLengthDays } from '../onboarding/firstRun';
-import { readReminderLead, reminderNotificationWords, whenToRemindHer } from './reminder';
+import {
+  readReminderLead,
+  readReminderTime,
+  reminderNotificationWords,
+  whenToRemindHer,
+} from './reminder';
 
 /** What one reschedule came to. A screen does not read it; a test does. */
 export type ReminderOutcome =
@@ -51,7 +56,7 @@ export async function rescheduleHerReminder(
       return 'the-phone-said-no';
     }
 
-    const moment = whenToRemindHer(herForecast(db, profiles), lead, now);
+    const moment = whenToRemindHer(herForecast(db, profiles), lead, now, readReminderTime(db));
 
     if (moment === undefined) {
       await cancelHerReminder();

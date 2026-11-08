@@ -32,6 +32,7 @@ import { YourAnswers, yourAnswersScreenTestID } from '../../src/features/setting
 import type { HerDay } from '../../src/features/cycle/herWeek';
 import { monthWeeks, weekdayLetter } from '../../src/features/onboarding/days';
 import { aProfileRecord } from './profileRecord';
+import { reminderChoiceSaid } from '../../src/features/settings/RemindersScreen';
 
 /**
  * Every screen the application draws, each named by the test identifier it carries on the glass and
@@ -212,6 +213,8 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
     (): ReactElement => (
       <SettingsScreen
         onAnswers={nothing}
+        onReminders={nothing}
+        reminder={reminderChoiceSaid('twoDaysBefore')}
         onBack={nothing}
         onDelete={nothing}
         onExport={nothing}

@@ -39,6 +39,7 @@ import {
 import { aProfileRecord } from '../fixtures/profileRecord';
 import { resetExpoSqlite } from '../data/expoSqlite';
 import { resetExpoSecureStore } from '../fixtures/expoSecureStore';
+import { reminderChoiceSaid } from '../../src/features/settings/RemindersScreen';
 
 /**
  * Where every screen sits on the glass. A phone keeps the top of it for the clock and the island,
@@ -169,6 +170,8 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
     (): ReactElement => (
       <SettingsScreen
         onAnswers={nothing}
+        onReminders={nothing}
+        reminder={reminderChoiceSaid('twoDaysBefore')}
         onBack={nothing}
         onDelete={nothing}
         onExport={nothing}
@@ -342,6 +345,8 @@ describe('every screen respects the safe area', () => {
         render(
           <SettingsScreen
             onAnswers={nothing}
+            onReminders={nothing}
+            reminder={reminderChoiceSaid('twoDaysBefore')}
             onBack={nothing}
             onDelete={nothing}
             onExport={nothing}

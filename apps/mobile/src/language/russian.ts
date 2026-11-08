@@ -1140,6 +1140,15 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.deleted.title': 'Всё удалено.',
   'settings.deleted.withoutTheServer':
     'Мы не смогли связаться с нашим сервером, чтобы удалить вашу учётную запись. То, что там осталось, не открыть ничем: единственный ключ был на этом телефоне и ушёл вместе с вашими днями.',
+  'settings.reminders.back': 'Назад',
+  'settings.reminders.earlier': 'На полчаса раньше',
+  'settings.reminders.later': 'На полчаса позже',
+  'settings.reminders.never': 'Никогда',
+  'settings.reminders.note':
+    'Телефон рассчитывает это по прогнозу, который уже хранит. Ничего никуда не отправляется.',
+  'settings.reminders.save': 'Сохранить',
+  'settings.reminders.timeOfDay': 'Время',
+  'settings.reminders.title': 'Напоминания',
   'settings.settings.answers': 'Ваши настройки',
   'settings.settings.answersLine': 'Имя и ответы из первой настройки',
   'settings.settings.assurance': 'Только вы можете читать свои дни.',
@@ -1152,6 +1161,7 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.settings.exportLine': 'Сохранить записи или подготовить отчёт для врача',
   'settings.settings.lock': 'Блокировка входа',
   'settings.settings.lockLine': 'Face ID, Touch ID или код телефона',
+  'settings.settings.reminders': 'Напоминания',
   'settings.settings.title': 'Приватность',
   'settings.whoCanSee.example':
     'Если кто-то попросит у Emi ваши записи, например рекламодатель или суд, Emi нечего отдать: ваши записи хранятся на вашем телефоне, а не у нас.',
