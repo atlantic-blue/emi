@@ -15,11 +15,13 @@ import {
   whatAPressHolds,
   whereTheEditorOpens,
 } from '../../features/calendar/savePeriod';
+import { theExpectedDays } from '../../features/cycle/expectedDays';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { useFirstRun } from '../../features/onboarding/FirstRunProvider';
+import { statedPeriodLengthDays } from '../../features/onboarding/firstRun';
 import { localDay, startOfMonth } from '../../features/onboarding/days';
 import { useRescheduleHerReminder } from '../../features/reminder/rescheduleHerReminder';
-import { useVault } from '../../services/vault/VaultProvider';
+import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
 
 /** A day as the address carries it, or nothing where the address names no readable day. */
 function theDayAskedFor(asked: string | undefined): string | undefined {
@@ -48,17 +50,28 @@ function theDayAskedFor(asked: string | undefined): string | undefined {
 export default function EditPeriodRoute(): ReactNode {
   const database = useDatabase();
   const vault = useVault();
+  const profiles = useProfileVault();
   const router = useRouter();
   const { isDone } = useFirstRun();
   const asked = useLocalSearchParams<Record<string, string>>()[dayParameter];
   const [today] = useState(() => localDay(new Date()));
   const day = theDayAskedFor(asked) ?? today;
-  const [opened] = useState(() =>
-    whereTheEditorOpens(recordedDays(database, vault.open), listCycles(database), { day, today }),
-  );
-  const { held } = opened;
+  const [opened] = useState(() => {
+    const records = recordedDays(database, vault.open);
+    const cycles = listCycles(database);
+    const usual = statedPeriodLengthDays(database, profiles);
+    const expected = theExpectedDays({
+      cycles,
+      records,
+      today,
+      ...(usual === undefined ? {} : { statedPeriodLengthDays: usual }),
+    });
+
+    return whereTheEditorOpens(records, cycles, { day, expected, today });
+  });
+  const { expected, held } = opened;
   const [listed, setListed] = useState<DaysListed>(opened.listed);
-  const [ticked, setTicked] = useState<readonly string[]>(() => held);
+  const [ticked, setTicked] = useState<readonly string[]>(() => [...held, ...expected].sort());
   const [filled, setFilled] = useState<readonly string[]>([]);
   const rescheduleTheReminder = useRescheduleHerReminder();
 
@@ -71,10 +84,10 @@ export default function EditPeriodRoute(): ReactNode {
   }, [day, router]);
 
   const save = useCallback(() => {
-    savePeriodRange(database, vault, { held, now: new Date(), ticked, today });
+    savePeriodRange(database, vault, { expected, held, now: new Date(), ticked, today });
     rescheduleTheReminder();
     leave();
-  }, [database, held, leave, rescheduleTheReminder, ticked, today, vault]);
+  }, [database, expected, held, leave, rescheduleTheReminder, ticked, today, vault]);
 
   const deleteIt = useCallback(() => {
     deletePeriod(database, vault, { held, now: new Date(), today });
@@ -113,6 +126,7 @@ export default function EditPeriodRoute(): ReactNode {
 
   return (
     <EditPeriodScreen
+      expected={expected}
       filled={filled}
       held={held}
       listed={theDaysOf(listed)}
