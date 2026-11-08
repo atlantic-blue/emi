@@ -294,6 +294,13 @@ export const spanish: CatalogueIn<'es'> = {
   'home.cycles.line':
     'Cada franja es uno de tus ciclos, empezando por este. Pulsa una para verla completa.',
   'home.calendar': 'El calendario',
+  'home.keepFilledIn.change': 'Cambiarlos',
+  'home.keepFilledIn.keep': 'Conservarlos',
+  'home.keepFilledIn.line': {
+    one: 'Emi completó {count} día de este periodo.',
+    other: 'Emi completó {count} días de este periodo.',
+  },
+  'home.keepFilledIn.title': '¿Conservar los días que Emi completó?',
   'home.greeting': 'Hola, {name}',
   'home.greeting.noName': 'Hola',
   'home.logToday': 'Registrar hoy',

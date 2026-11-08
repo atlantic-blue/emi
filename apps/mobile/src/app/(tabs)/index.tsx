@@ -11,6 +11,7 @@ import { listCycles } from '../../data/cycleRepository';
 import { readProfile } from '../../data/profileRepository';
 import type { Database } from '../../data/database';
 import type { ReadCycle } from '../../features/cycle/cyclesRead';
+import { theDaysToKeep } from '../../features/cycle/expectedDays';
 import { recordedDays } from '../../features/cycle/rebuild';
 import { type RingInput, phaseDaysFor, ringInputFor } from '../../features/cycle/ringInput';
 import { daysLate } from '../../features/forecast/daysLate';
@@ -22,7 +23,7 @@ import {
   theSymptoms,
 } from '../../features/log/askedGroup';
 import { HomeScreen } from '../../features/home/HomeScreen';
-import { logFlow, logOvulationAnswer } from '../../features/log/logDay';
+import { logFlow, logFlows, logOvulationAnswer } from '../../features/log/logDay';
 import { OvulationPopup } from '../../features/ovulation/OvulationPopup';
 import { fertileWindowLabel } from '../../features/ovulation/copy';
 import { theWindowToAskIn } from '../../features/ovulation/signs';
@@ -40,7 +41,7 @@ import type { ProfileVault } from '../../services/vault/profileVault';
 import { cycleParameter } from '../../features/history/askedCycle';
 import { patternParameter } from '../../features/history/askedPattern';
 import { useProfileVault, useVault } from '../../services/vault/VaultProvider';
-import { defaultCycleLengthDays } from '../../features/onboarding/firstRun';
+import { defaultCycleLengthDays, firstRunFlow } from '../../features/onboarding/firstRun';
 
 interface Shown {
   readonly ring: RingInput | undefined;
@@ -77,6 +78,8 @@ interface Shown {
    * ask: outside the window, before a forecast, or once she answered or closed it today.
    */
   readonly ovulationWindow: FertileDates | undefined;
+  /** The days Emi filled in that she is asked to keep, once they are behind her. */
+  readonly daysToKeep: readonly string[];
 }
 
 /**
@@ -117,6 +120,7 @@ function whatSheIsLookingAt(
     // Picked out of the days the ring was built from, so the row under the actions and the ring
     // above it can never stand on two different readings of today.
     loggedToday,
+    daysToKeep: theDaysToKeep(readBack),
     ovulationWindow: theWindowToAskIn(readBack, loggedToday?.ovulationPopup !== undefined),
     phaseDays,
     forecast,
@@ -163,6 +167,15 @@ export default function HomeRoute(): ReactNode {
     },
     [database, profiles, today, vault],
   );
+
+  const keepTheFilledInDays = useCallback(() => {
+    logFlows(database, vault, {
+      days: shown.daysToKeep.map((day) => ({ day, flow: firstRunFlow })),
+      now: new Date(),
+    });
+    setShown(whatSheIsLookingAt(database, vault, profiles, today));
+    rescheduleTheReminder();
+  }, [database, profiles, rescheduleTheReminder, shown.daysToKeep, today, vault]);
 
   const endThePeriod = useCallback(() => {
     logFlow(database, vault, { day: today, flow: 'none', now: new Date() });
@@ -219,6 +232,11 @@ export default function HomeRoute(): ReactNode {
         onOpenPattern={(slug) => router.push(`/history?${patternParameter}=${slug}`)}
         onOpenPatterns={() => router.push('/history')}
         onEndPeriod={endThePeriod}
+        daysToKeep={shown.daysToKeep}
+        onKeepFilledIn={keepTheFilledInDays}
+        onChangeFilledIn={() =>
+          router.push(`/calendar/period?${dayParameter}=${shown.daysToKeep[0] ?? today}`)
+        }
         onPeriod={() => router.push('/period')}
         onSex={() => router.push('/sex')}
         patterns={shown.patterns}

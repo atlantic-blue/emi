@@ -284,3 +284,15 @@ export function ovulationWords(countdown: OvulationCountdown): string {
     ? words('home.ring.ovulation.in', countdown.toDays, { from: countdown.fromDays })
     : words('home.ring.ovulation.within', countdown.toDays);
 }
+
+/** The card on Today that asks her to keep the days Emi filled in. */
+export const keepFilledInCopy = {
+  change: words('home.keepFilledIn.change'),
+  keep: words('home.keepFilledIn.keep'),
+  title: words('home.keepFilledIn.title'),
+} as const;
+
+/** "Emi filled in 4 days of this period.", with the count in the form her language takes. */
+export function keepFilledInLine(count: number): string {
+  return words('home.keepFilledIn.line', count);
+}
