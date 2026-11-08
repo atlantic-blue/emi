@@ -1103,6 +1103,7 @@ export const russian: CatalogueIn<'ru'> = {
   'recovery.confirm.wrong': 'Не совпадает. Посмотрите на бумагу и попробуйте снова.',
   'recovery.step': 'Шаг {step} из {of}',
 
+  'reminder.dailyLog.notification': 'Время отметить ваш день в Emi',
   'reminder.notification': 'Напоминание от Emi',
   'settings.answer.back': 'Назад',
   'settings.answer.cancel': 'Отмена',
@@ -1141,6 +1142,7 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.deleted.withoutTheServer':
     'Мы не смогли связаться с нашим сервером, чтобы удалить вашу учётную запись. То, что там осталось, не открыть ничем: единственный ключ был на этом телефоне и ушёл вместе с вашими днями.',
   'settings.reminders.back': 'Назад',
+  'settings.reminders.dailyLog': 'Напоминать отмечать каждый день',
   'settings.reminders.earlier': 'На полчаса раньше',
   'settings.reminders.later': 'На полчаса позже',
   'settings.reminders.never': 'Никогда',
