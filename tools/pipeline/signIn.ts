@@ -47,6 +47,40 @@ export const signInProviders: readonly SignInProvider[] = [
  */
 export const writtenCredentialMarkers: readonly string[] = ['BEGIN PRIVATE KEY', 'GOCSPX'];
 
+export interface SecretShape {
+  /** What a reader is told was found, because the value itself is never printed. */
+  readonly what: string;
+  /** The shape of the value, which no source of this repository matches. */
+  readonly shape: RegExp;
+}
+
+/**
+ * What a secret looks like once somebody writes the value down, read as the shape of the value and
+ * never as the name of the field. The markers above refuse a word, which is right inside a
+ * provider block and wrong across the whole repository: a test that proves a key is absent has to
+ * name the header of one to prove it.
+ *
+ * So each pattern here needs the value and not the label, and each is written so that its own
+ * source does not match it. A private key carries five dashes on either side of its header. A
+ * Google secret carries a tail after its prefix. A Telegram bot token is the bot identifier, a
+ * colon, and a secret of at least thirty characters.
+ */
+export const writtenSecretShapes: readonly SecretShape[] = [
+  { what: 'a private key', shape: /-{5}BEGIN [A-Z ]*PRIVATE KEY-{5}/ },
+  { what: 'a Google client secret', shape: /GOCSPX-[A-Za-z0-9_-]{20,}/ },
+  { what: 'a Telegram bot token', shape: /[0-9]{8,}:AA[A-Za-z0-9_-]{30,}/ },
+];
+
+/**
+ * Each secret one file writes as a value, named by its kind and by the file that holds it. The
+ * value never reaches the sentence, because the pipeline log of a public repository is public.
+ */
+export function writtenSecretsIn(file: string, contents: string): string[] {
+  return writtenSecretShapes
+    .filter(({ shape }) => shape.test(contents))
+    .map(({ what }) => `${file} writes ${what} as a value, and it belongs in the parameter store`);
+}
+
 /** The one place a credential of a sign in is read from. */
 export const credentialPath = '/emi/accounts/';
 
