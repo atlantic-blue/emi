@@ -15,6 +15,8 @@ export const english = {
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Day {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',
+  'calendar.daySheet.expectedAhead': 'Emi expects your period on this day.',
+  'calendar.daySheet.filledIn': 'Emi filled in this day from your usual period length.',
   'calendar.daySheet.laterPeriod.sameMonth':
     'A later period is likely to start between {from} and {to} {month}.',
   'calendar.daySheet.laterPeriod.spansMonths':

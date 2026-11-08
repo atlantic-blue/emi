@@ -19,6 +19,8 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Día {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} de {month}',
+  'calendar.daySheet.expectedAhead': 'Emi espera tu periodo este día.',
+  'calendar.daySheet.filledIn': 'Emi completó este día según la duración habitual de tu periodo.',
   'calendar.daySheet.laterPeriod.sameMonth':
     'Es probable que un periodo posterior empiece entre el {from} y el {to} de {month}.',
   'calendar.daySheet.laterPeriod.spansMonths':
