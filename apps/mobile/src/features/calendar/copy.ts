@@ -31,6 +31,7 @@ export const forecastPopupCopy = {
 
 /** The words of the legend above the grid, in the order the board places them, and the heart last. */
 export const monthLegendCopy = {
+  expected: words('calendar.legend.expected'),
   fertile: words('calendar.legend.fertile'),
   forecast: words('calendar.legend.forecast'),
   period: words('calendar.legend.period'),
@@ -68,7 +69,7 @@ export function daySheetWords(says: WhatTheSheetSays): DaySheetSaid {
       month: monthNameOf(says.day),
       weekday: weekdayOf(says.day),
     }),
-    line: says.kind === 'ahead' ? theForecastSaid(says.waitsFor) : theLivedDaySaid(says),
+    line: says.kind === 'ahead' ? theDayAheadSaid(says) : theLivedDaySaid(says),
   };
 }
 
@@ -80,6 +81,12 @@ function monthNameOf(day: string): string {
   }
 
   return name;
+}
+
+function theDayAheadSaid(says: Extract<WhatTheSheetSays, { kind: 'ahead' }>): string {
+  return says.expected === true
+    ? words('calendar.daySheet.expectedAhead')
+    : theForecastSaid(says.waitsFor);
 }
 
 /**
@@ -118,7 +125,11 @@ function theForecastSaid(waitsFor: PeriodItWaitsFor | undefined): string {
 
 /** Her cycle day and phase, and what she logged or that she logged nothing. */
 function theLivedDaySaid(says: Extract<WhatTheSheetSays, { kind: 'lived' }>): string {
-  const logged = says.logged ?? words('calendar.daySheet.nothingLogged');
+  const filledIn = words('calendar.daySheet.filledIn');
+  const logged =
+    says.expected === true
+      ? [says.logged, filledIn].filter((said) => said !== undefined).join('. ')
+      : (says.logged ?? words('calendar.daySheet.nothingLogged'));
   const cycle = theCycleSaid(says);
 
   return cycle === undefined
@@ -158,6 +169,10 @@ export const editPeriodCopy = {
   deleteTitle: words('calendar.editPeriod.deleteTitle'),
   /** The note under the list once Emi marked days between a first and a last day she pressed. */
   filled: words('calendar.editPeriod.filled'),
+  /** The marker on a day Emi filled in from her usual length, while it is ticked. */
+  filledIn: words('calendar.editPeriod.filledIn'),
+  /** The change line while the only change is the days Emi filled in. */
+  keepFilledIn: words('calendar.editPeriod.keepFilledIn'),
   noDayLeft: words('calendar.editPeriod.noDayLeft'),
   save: words('calendar.editPeriod.save'),
   title: words('calendar.editPeriod.title'),

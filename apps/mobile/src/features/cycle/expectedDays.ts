@@ -46,3 +46,14 @@ export function theExpectedDays(from: ExpectedDaysFrom): string[] {
 
   return expected;
 }
+
+/**
+ * The days Emi filled in that she is asked to keep: all of them, once the last one is behind her.
+ * None while one of them is still today or ahead of her, because the period may still be running.
+ */
+export function theDaysToKeep(from: ExpectedDaysFrom): string[] {
+  const expected = theExpectedDays(from);
+  const last = expected.at(-1);
+
+  return last !== undefined && last < from.today ? expected : [];
+}

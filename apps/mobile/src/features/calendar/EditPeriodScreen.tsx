@@ -57,6 +57,8 @@ interface Props {
   readonly ticked: readonly string[];
   /** The days Emi marked between a first and a last day she pressed, while they are still ticked. */
   readonly filled?: readonly string[];
+  /** The days Emi filled in from her usual length, which the screen opened ticked. */
+  readonly expected?: readonly string[];
   readonly onToggle: (day: string) => void;
   /** Adds the day before the first listed day, which is how she reaches a day outside the list. */
   readonly onAddBefore: () => void;
@@ -91,6 +93,7 @@ export function EditPeriodScreen({
   listed,
   ticked,
   filled = [],
+  expected = [],
   onToggle,
   onAddBefore,
   onAddAfter,
@@ -98,7 +101,12 @@ export function EditPeriodScreen({
   onCancel,
   onDelete,
 }: Props): ReactNode {
-  const changed = whatSheChanged({ held, ticked });
+  const changed = whatSheChanged({ expected, held, ticked });
+  const keepsWhatEmiFilledIn =
+    expected.length > 0 &&
+    changed.removed.length === 0 &&
+    changed.added.length === expected.length &&
+    changed.added.every((day) => expected.includes(day));
   const hers = new Set(ticked);
   const wasHeld = new Set(held);
   const isAnyDayFilled = filled.some((day) => hers.has(day) && !wasHeld.has(day));
@@ -160,7 +168,11 @@ export function EditPeriodScreen({
                 <Text style={styles.rowWord}>{aPeriodRowSaid(day)}</Text>
                 {change === undefined ? null : (
                   <Text style={styles.tag} testID={editPeriodTagTestID(day)}>
-                    {change === 'added' ? editPeriodCopy.added : editPeriodCopy.takenOff}
+                    {change === 'takenOff'
+                      ? editPeriodCopy.takenOff
+                      : expected.includes(day)
+                        ? editPeriodCopy.filledIn
+                        : editPeriodCopy.added}
                   </Text>
                 )}
               </Pressable>
@@ -177,7 +189,11 @@ export function EditPeriodScreen({
 
         <View style={styles.change}>
           <Text style={styles.changeWords} testID={editPeriodChangeTestID}>
-            {ticked.length === 0 ? editPeriodCopy.noDayLeft : whatSheChangedSaid(changed)}
+            {ticked.length === 0
+              ? editPeriodCopy.noDayLeft
+              : keepsWhatEmiFilledIn
+                ? editPeriodCopy.keepFilledIn
+                : whatSheChangedSaid(changed)}
           </Text>
           {isAnyDayFilled ? (
             <Text style={styles.changeWords} testID={editPeriodFilledTestID}>
@@ -199,7 +215,7 @@ export function EditPeriodScreen({
 
       <View style={styles.footer}>
         <PrimaryButton
-          isReady={sheCanSave({ held, ticked })}
+          isReady={sheCanSave({ expected, held, ticked })}
           label={editPeriodCopy.save}
           onPress={onSave}
           testID={editPeriodSaveTestID}

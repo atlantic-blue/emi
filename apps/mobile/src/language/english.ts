@@ -15,6 +15,8 @@ export const english = {
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Day {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',
+  'calendar.daySheet.expectedAhead': 'Emi expects your period on this day.',
+  'calendar.daySheet.filledIn': 'Emi filled in this day from your usual period length.',
   'calendar.daySheet.laterPeriod.sameMonth':
     'A later period is likely to start between {from} and {to} {month}.',
   'calendar.daySheet.laterPeriod.spansMonths':
@@ -41,6 +43,8 @@ export const english = {
   'calendar.editPeriod.deleteTitle': 'Delete this period?',
   'calendar.editPeriod.filled':
     'Emi marked the days between with a medium flow. You can change the flow on each day.',
+  'calendar.editPeriod.filledIn': 'Filled in',
+  'calendar.editPeriod.keepFilledIn': 'Save to keep the days Emi filled in.',
   'calendar.editPeriod.lead': {
     one: 'Press the days you bled. Emi holds {count} day, from {date}.',
     other: 'Press the days you bled. Emi holds {count} days, from {date}.',
@@ -60,6 +64,7 @@ export const english = {
     'Emi needs a few cycles before it can forecast the months ahead. Add the start of your last three periods, and the forecast is ready now.',
   'calendar.forecastPopup.notNow': 'Not now',
   'calendar.forecastPopup.title': 'Add your last three periods',
+  'calendar.legend.expected': 'Expected',
   'calendar.legend.fertile': 'Fertile',
   'calendar.legend.forecast': 'Forecast',
   'calendar.legend.period': 'Period',
@@ -121,6 +126,7 @@ export const english = {
   'cycle.day.bled': 'you bled',
   'cycle.day.cycleDay': 'cycle day {cycle}',
   'cycle.day.expected': 'your period is expected',
+  'cycle.day.filledIn': 'Emi filled in this day',
   'cycle.day.notYet': 'not yet, this day has not happened',
   'cycle.day.possible': 'your period may come',
   'cycle.figures.back': 'Back',
@@ -284,6 +290,13 @@ export const english = {
   'home.cycles.line':
     'Each strip is one of your cycles, starting with this one. Tap one to see it in full.',
   'home.calendar': 'The calendar',
+  'home.keepFilledIn.change': 'Change them',
+  'home.keepFilledIn.keep': 'Keep them',
+  'home.keepFilledIn.line': {
+    one: 'Emi filled in {count} day of this period.',
+    other: 'Emi filled in {count} days of this period.',
+  },
+  'home.keepFilledIn.title': 'Keep the days Emi filled in?',
   'home.greeting': 'Hello, {name}',
   // What she reads where she gave no name. She is greeted either way, so the top of the screen
   // never opens on a blank line, and nothing stands where a name would be.

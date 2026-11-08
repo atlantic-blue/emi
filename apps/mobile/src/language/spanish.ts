@@ -19,6 +19,8 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Día {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} de {month}',
+  'calendar.daySheet.expectedAhead': 'Emi espera tu periodo este día.',
+  'calendar.daySheet.filledIn': 'Emi completó este día según la duración habitual de tu periodo.',
   'calendar.daySheet.laterPeriod.sameMonth':
     'Es probable que un periodo posterior empiece entre el {from} y el {to} de {month}.',
   'calendar.daySheet.laterPeriod.spansMonths':
@@ -45,6 +47,8 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.editPeriod.deleteTitle': '¿Eliminar este periodo?',
   'calendar.editPeriod.filled':
     'Emi marcó los días intermedios con un flujo medio. Puedes cambiar el flujo en cada día.',
+  'calendar.editPeriod.filledIn': 'Completado',
+  'calendar.editPeriod.keepFilledIn': 'Guarda para conservar los días que Emi completó.',
   'calendar.editPeriod.lead': {
     one: 'Pulsa los días que sangraste. Emi guarda {count} día, desde {date}.',
     other: 'Pulsa los días que sangraste. Emi guarda {count} días, desde {date}.',
@@ -65,6 +69,7 @@ export const spanish: CatalogueIn<'es'> = {
     'Emi necesita algunos ciclos antes de poder pronosticar los próximos meses. Añade el inicio de tus últimos tres periodos y el pronóstico estará listo ahora.',
   'calendar.forecastPopup.notNow': 'Ahora no',
   'calendar.forecastPopup.title': 'Añade tus últimos tres periodos',
+  'calendar.legend.expected': 'Previsto',
   'calendar.legend.fertile': 'Fértil',
   'calendar.legend.forecast': 'Previsión',
   'calendar.legend.period': 'Periodo',
@@ -125,6 +130,7 @@ export const spanish: CatalogueIn<'es'> = {
   'cycle.day.bled': 'sangraste',
   'cycle.day.cycleDay': 'día {cycle} del ciclo',
   'cycle.day.expected': 'se espera tu periodo',
+  'cycle.day.filledIn': 'Emi completó este día',
   'cycle.day.notYet': 'todavía no, este día no ha ocurrido',
   'cycle.day.possible': 'puede llegar tu periodo',
   'cycle.figures.back': 'Atrás',
@@ -288,6 +294,13 @@ export const spanish: CatalogueIn<'es'> = {
   'home.cycles.line':
     'Cada franja es uno de tus ciclos, empezando por este. Pulsa una para verla completa.',
   'home.calendar': 'El calendario',
+  'home.keepFilledIn.change': 'Cambiarlos',
+  'home.keepFilledIn.keep': 'Conservarlos',
+  'home.keepFilledIn.line': {
+    one: 'Emi completó {count} día de este periodo.',
+    other: 'Emi completó {count} días de este periodo.',
+  },
+  'home.keepFilledIn.title': '¿Conservar los días que Emi completó?',
   'home.greeting': 'Hola, {name}',
   'home.greeting.noName': 'Hola',
   'home.logToday': 'Registrar hoy',

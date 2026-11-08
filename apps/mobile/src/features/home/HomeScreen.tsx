@@ -26,6 +26,7 @@ import { CycleTrend } from './CycleTrend';
 import { EmptyRing } from './EmptyRing';
 import { HomeHeader } from './HomeHeader';
 import { LoggedToday } from './LoggedToday';
+import { KeepFilledInDays } from './KeepFilledInDays';
 import { PhaseCard } from './PhaseCard';
 import { RingOfToday } from './RingOfToday';
 import type { RingCountdown } from './ringCountdown';
@@ -183,6 +184,10 @@ interface Props {
   readonly onSex: () => void;
   /** The way to the Period page of today, which the second round action and Log period take her by. */
   readonly onPeriod: () => void;
+  /** The days Emi filled in that she is asked to keep, or nothing while there are none. */
+  readonly daysToKeep?: readonly string[];
+  readonly onKeepFilledIn?: () => void;
+  readonly onChangeFilledIn?: () => void;
   /**
    * Ends the period she is in by recording no bleeding on today. Where today already holds
    * bleeding, End period opens the Period page of today instead, so her own answer is not overwritten.
@@ -243,6 +248,9 @@ export function HomeScreen({
   onLogToday,
   onSex,
   onPeriod,
+  daysToKeep = [],
+  onKeepFilledIn,
+  onChangeFilledIn,
   onEndPeriod,
   onOpenLogged,
   onLogPain,
@@ -305,6 +313,18 @@ export function HomeScreen({
             testID={homePeriodActionTestID}
           />
         </View>
+
+        {daysToKeep.length === 0 ||
+        onKeepFilledIn === undefined ||
+        onChangeFilledIn === undefined ? null : (
+          <View style={styles.keepFilledIn}>
+            <KeepFilledInDays
+              count={daysToKeep.length}
+              onChange={onChangeFilledIn}
+              onKeep={onKeepFilledIn}
+            />
+          </View>
+        )}
 
         {ring === undefined || phaseDays === undefined ? null : (
           <View style={styles.phaseCard}>
@@ -617,6 +637,7 @@ const styles = StyleSheet.create({
     marginTop: space.spaceLg,
   },
   periodAction: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.margin },
+  keepFilledIn: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.margin },
   // The card sits under the ring and names the phase she is in and its days.
   phaseCard: { alignSelf: 'stretch', marginTop: space.spaceLg, paddingHorizontal: space.margin },
   // The line says what to do next, and it names a thing SCREEN-2 keeps under 14 points, so it

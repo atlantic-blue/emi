@@ -20,6 +20,8 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'День {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',
+  'calendar.daySheet.expectedAhead': 'Emi ожидает месячные в этот день.',
+  'calendar.daySheet.filledIn': 'Emi отметила этот день по обычной длительности ваших месячных.',
   'calendar.daySheet.laterPeriod.sameMonth':
     'Последующие месячные, скорее всего, начнутся между {from} и {to} {month}.',
   'calendar.daySheet.laterPeriod.spansMonths':
@@ -46,6 +48,8 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.editPeriod.deleteTitle': 'Удалить эти месячные?',
   'calendar.editPeriod.filled':
     'Emi отметила дни между ними средними выделениями. Вы можете изменить выделения для каждого дня.',
+  'calendar.editPeriod.filledIn': 'Заполнено',
+  'calendar.editPeriod.keepFilledIn': 'Сохраните, чтобы оставить дни, которые отметила Emi.',
   'calendar.editPeriod.lead': {
     one: 'Укажите дни с месячными. Emi хранит {count} день, с {date}.',
     few: 'Укажите дни с месячными. Emi хранит {count} дня, с {date}.',
@@ -67,6 +71,7 @@ export const russian: CatalogueIn<'ru'> = {
     'Emi нужно несколько циклов, чтобы составить прогноз на следующие месяцы. Добавьте начало ваших последних трёх менструаций, и прогноз будет готов сразу.',
   'calendar.forecastPopup.notNow': 'Не сейчас',
   'calendar.forecastPopup.title': 'Добавьте ваши последние три менструации',
+  'calendar.legend.expected': 'Ожидаемые',
   'calendar.legend.fertile': 'Фертильные дни',
   'calendar.legend.forecast': 'Прогноз',
   'calendar.legend.period': 'Месячные',
@@ -129,6 +134,7 @@ export const russian: CatalogueIn<'ru'> = {
   'cycle.day.bled': 'шла кровь',
   'cycle.day.cycleDay': 'день цикла {cycle}',
   'cycle.day.expected': 'ожидаются месячные',
+  'cycle.day.filledIn': 'Emi отметила этот день',
   'cycle.day.notYet': 'ещё нет, этот день не наступил',
   'cycle.day.possible': 'возможны месячные',
   'cycle.figures.back': 'Назад',
@@ -292,6 +298,14 @@ export const russian: CatalogueIn<'ru'> = {
   'home.doctorRecord': 'Вы хотели запись для врача. Она готова в любой момент, в разделе Экспорт.',
   'home.cycles.line': 'Нажмите на цикл, чтобы посмотреть записи за этот период.',
   'home.calendar': 'Календарь',
+  'home.keepFilledIn.change': 'Изменить',
+  'home.keepFilledIn.keep': 'Оставить',
+  'home.keepFilledIn.line': {
+    one: 'Emi отметила {count} день этих месячных.',
+    few: 'Emi отметила {count} дня этих месячных.',
+    many: 'Emi отметила {count} дней этих месячных.',
+  },
+  'home.keepFilledIn.title': 'Оставить дни, которые отметила Emi?',
   'home.greeting': 'Привет, {name}',
   'home.greeting.noName': 'Привет',
   'home.logToday': 'Записать сегодня',

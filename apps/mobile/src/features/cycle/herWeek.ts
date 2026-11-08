@@ -12,6 +12,7 @@ import {
   theDayOfTheCycleAhead,
 } from '../calendar/forecastAhead';
 import { weekdayLetter } from '../onboarding/days';
+import { theExpectedDays } from './expectedDays';
 import { type RingInputFrom, ringInputFor } from './ringInput';
 
 /**
@@ -26,9 +27,10 @@ import { type RingInputFrom, ringInputFor } from './ringInput';
 
 /**
  * The states a day is drawn in. A forecast day is one of the period days counted from the middle of
- * the range, and a possible day is a ringed day either side of them.
+ * the range, and a possible day is a ringed day either side of them. An expected day is a day of
+ * the period she is in that Emi fills in from her usual length.
  */
-export type DayMark = 'bled' | 'today' | 'forecast' | 'possible' | 'plain';
+export type DayMark = 'bled' | 'today' | 'expected' | 'forecast' | 'possible' | 'plain';
 
 /** The week runs Monday to Sunday, which is the week the calendar of the first run already draws. */
 export const DAYS_IN_A_WEEK = 7;
@@ -94,6 +96,7 @@ export function herDaysOn(from: HerDaysFrom, days: readonly string[]): HerDay[] 
   const bled = new Set(
     from.records.filter((record) => isBleeding(record)).map((record) => record.day),
   );
+  const expected = new Set(theExpectedDays(from));
 
   return days.map((day) => {
     const forecast =
@@ -111,7 +114,7 @@ export function herDaysOn(from: HerDaysFrom, days: readonly string[]): HerDay[] 
       date: Number(day.slice(8, 10)),
       day,
       letter: weekdayLetter(day),
-      mark: markOf({ bled, cycleDay, day, forecast, ring, today: from.today }),
+      mark: markOf({ bled, cycleDay, day, expected, forecast, ring, today: from.today }),
     };
   });
 }
@@ -120,18 +123,22 @@ interface MarkFrom {
   readonly bled: ReadonlySet<string>;
   readonly cycleDay: number | undefined;
   readonly day: string;
+  readonly expected: ReadonlySet<string>;
   /** The forecast cycle holding a day ahead of her, or nothing. */
   readonly forecast: CycleAhead | undefined;
   readonly ring: { readonly phases: readonly PhaseSpan[] } | undefined;
   readonly today: string;
 }
 
-function markOf({ bled, cycleDay, day, forecast, ring, today }: MarkFrom): DayMark {
+function markOf({ bled, cycleDay, day, expected, forecast, ring, today }: MarkFrom): DayMark {
   if (day === today) {
     return 'today';
   }
   if (bled.has(day)) {
     return 'bled';
+  }
+  if (expected.has(day)) {
+    return 'expected';
   }
 
   const ahead = daysBetween(today, day) > 0;

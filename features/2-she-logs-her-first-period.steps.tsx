@@ -58,6 +58,13 @@ import * as Localization from 'expo-localization';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
+
+import {
+  keepFilledInKeepTestID,
+  keepFilledInLineTestID,
+  keepFilledInTestID,
+  keepFilledInTitleTestID,
+} from '../apps/mobile/src/features/home/KeepFilledInDays';
 import { useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
 import { render, waitFor, within } from '@testing-library/react-native';
@@ -4234,6 +4241,94 @@ defineFeature(feature, (test) => {
     });
   });
 
+  test('SCREEN-4, she ends her period early from a day Emi filled in', ({ given, when, then }) => {
+    const theFirstDay = addDays(theDaySheOpensIt, -3);
+    const thatDay = addDays(theFirstDay, 1);
+    const theDayAfter = addDays(thatDay, 1);
+    const whatTheSquareSays = (day: string): string =>
+      String(screen.getByTestId(dayTestID(day)).props.accessibilityLabel);
+
+    given(
+      'her phone holds the first day of her period three days ago, and a usual period of 5 days',
+      async () => {
+        jest.setSystemTime(whenSheOpensTheStrip);
+        await herPhoneHolds(whenSheOpensTheStrip, [aBleedingDay(theFirstDay)], 28, 5);
+      },
+    );
+
+    when('she opens the calendar and presses the day after that first day', async () => {
+      await sheOpens('/calendar');
+      await screen.findByTestId(dayTestID(thatDay));
+      await shePresses(dayTestID(thatDay));
+    });
+
+    then('the card says Emi filled in that day, and carries Remove period day', () => {
+      expect(screen.getByTestId(daySheetLineTestID)).toHaveTextContent(
+        'Day 2, period. Emi filled in this day from your usual period length.',
+      );
+      expect(screen.getByTestId(daySheetRemovePeriodDayTestID)).toHaveTextContent(
+        'Remove period day',
+      );
+      expect(whatTheSquareSays(theDayAfter)).toContain('Emi filled in this day');
+    });
+
+    when('she presses Remove period day on that day', async () => {
+      await shePresses(daySheetRemovePeriodDayTestID);
+    });
+
+    then('that day holds no bleeding, and Emi no longer fills in the day after it', () => {
+      const held = readDayLog(herDatabase(), thatDay);
+
+      expect(held === undefined ? undefined : herVault().open(held.payload).flow).toBe('none');
+      expect(whatTheSquareSays(thatDay)).not.toContain('Emi filled in this day');
+      expect(whatTheSquareSays(theDayAfter)).not.toContain('Emi filled in this day');
+    });
+  });
+
+  test('SCREEN-2, she logs the first day, does nothing for five days, and keeps the days with one press', ({
+    given,
+    when,
+    then,
+  }) => {
+    const theFirstDay = addDays(theDaySheOpensIt, -5);
+    const theFilledDays = [1, 2, 3, 4].map((offset) => addDays(theFirstDay, offset));
+
+    given(
+      'her phone holds only the first day of her period, five days ago, and a usual period of 5 days',
+      async () => {
+        jest.setSystemTime(whenSheOpensTheStrip);
+        await herPhoneHolds(whenSheOpensTheStrip, [aBleedingDay(theFirstDay)], 28, 5);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+      await screen.findByTestId(keepFilledInTestID);
+    });
+
+    then('Today asks her to keep the 4 days Emi filled in', () => {
+      expect(screen.getByTestId(keepFilledInTitleTestID)).toHaveTextContent(
+        'Keep the days Emi filled in?',
+      );
+      expect(screen.getByTestId(keepFilledInLineTestID)).toHaveTextContent(
+        'Emi filled in 4 days of this period.',
+      );
+    });
+
+    when('she presses Keep them', async () => {
+      await shePresses(keepFilledInKeepTestID);
+    });
+
+    then('each of those 4 days holds the middle flow, and the card is gone', () => {
+      for (const day of theFilledDays) {
+        const held = readDayLog(herDatabase(), day);
+
+        expect(held === undefined ? undefined : herVault().open(held.payload).flow).toBe('medium');
+      }
+      expect(screen.queryByTestId(keepFilledInTestID)).toBeNull();
+    });
+  });
+
   test('SCREEN-4, she deletes a period she logged by mistake from Your cycles, after she confirms', ({
     given,
     when,
@@ -7146,7 +7241,7 @@ defineFeature(feature, (test) => {
       named = namedValues(described);
       const mentions = painted.flatMap(({ markup }) => coloursDrawnIn(markup));
 
-      expect(mentions).toHaveLength(2443);
+      expect(mentions).toHaveLength(2449);
       expect(new Set(mentions.map(opaqueBaseOf)).size).toBe(35);
       expect(named.size).toBeGreaterThanOrEqual(35);
     });

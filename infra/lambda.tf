@@ -244,3 +244,128 @@ resource "aws_lambda_function" "articles" {
 
   depends_on = [aws_cloudwatch_log_group.articles]
 }
+
+# ── The Telegram sign in: two roles, and no function yet ─────────────────────
+#
+# The account reads a policy per request, and a policy change takes a moment to spread, so a new
+# grant and the resource that needs it can fail together in one apply. These two roles therefore
+# land on their own, before anything assumes them.
+#
+# The salt is the one value in Emi that Terraform never creates, never holds and never reads. The
+# sign in function makes it on the first sign in that finds it absent, so no plan proposes it and
+# the state at s3://abs-terraform/emi/terraform.tfstate does not carry it.
+
+# The function that answers a Telegram code. It is the only thing in Emi that reads the client
+# secret and the salt, and the only thing that may write the salt.
+resource "aws_iam_role" "sign_in_telegram" {
+  name               = "${var.project_name}-sign-in-telegram"
+  assume_role_policy = data.aws_iam_policy_document.lambda_trust.json
+}
+
+data "aws_iam_policy_document" "sign_in_telegram" {
+  # The group arrives with the function, so the grant names the address the runtime writes to
+  # rather than a resource of this root.
+  statement {
+    sid    = "WriteItsOwnLogs"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = ["arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/${var.project_name}-sign-in-telegram:*"]
+  }
+
+  # Three parameters, each named in full. A prefix would reach the bot token as well, and the bot
+  # token is the one credential that can act as the bot, so nothing on the sign in path reads it.
+  statement {
+    sid     = "ReadTheBotIdentifierTheClientSecretAndTheSalt"
+    effect  = "Allow"
+    actions = ["ssm:GetParameter"]
+    resources = [
+      "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/telegram/bot-id",
+      "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/telegram/client-secret",
+      "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/telegram/salt",
+    ]
+  }
+
+  # The client secret and the salt are secure strings under alias/aws/ssm, whose identifier the
+  # service generates. The condition is what narrows this grant: the role may decrypt only through
+  # a parameter store call, so it opens nothing the statement above does not already open.
+  statement {
+    sid       = "DecryptASecureString"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${var.account_id}:key/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["ssm.${var.region}.amazonaws.com"]
+    }
+  }
+
+  # One write, on one parameter. The call names no overwrite, so a salt that exists survives a
+  # function that loses the race to make it. There is no delete anywhere in this role, so nothing
+  # in the account can remove the salt through the pipeline: a salt that changed would give every
+  # Telegram user a new pool user name, and the account she reached yesterday would be unreachable.
+  statement {
+    sid       = "MakeTheSaltOnce"
+    effect    = "Allow"
+    actions   = ["ssm:PutParameter"]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/accounts/telegram/salt"]
+  }
+
+  # One item: the digest of a one time answer, the pool user name it belongs to, and the instant.
+  # The function reads nothing from the table and deletes nothing from it.
+  statement {
+    sid       = "WriteTheOneTimeAnswer"
+    effect    = "Allow"
+    actions   = ["dynamodb:PutItem"]
+    resources = [aws_dynamodb_table.vault.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "sign_in_telegram" {
+  name   = "${var.project_name}-sign-in-telegram"
+  role   = aws_iam_role.sign_in_telegram.id
+  policy = data.aws_iam_policy_document.sign_in_telegram.json
+}
+
+# ── The three triggers of the custom sign in ─────────────────────────────────
+#
+# One role for the define, the create and the verify trigger. It holds no parameter at all, so
+# nothing the pool calls can read the salt or the client secret.
+
+resource "aws_iam_role" "sign_in_challenge" {
+  name               = "${var.project_name}-sign-in-challenge"
+  assume_role_policy = data.aws_iam_policy_document.lambda_trust.json
+}
+
+data "aws_iam_policy_document" "sign_in_challenge" {
+  # Three functions share this role, so the grant covers the three groups their names will carry.
+  statement {
+    sid    = "WriteItsOwnLogs"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = ["arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/${var.project_name}-sign-in-challenge-*:*"]
+  }
+
+  # The verify trigger spends the one time answer with a conditional delete, and that call returns
+  # the item it removed. So the trigger reads the user name and the instant out of its own write,
+  # and the role needs no read of the table. The define and the create trigger reach nothing at all.
+  statement {
+    sid       = "SpendTheOneTimeAnswer"
+    effect    = "Allow"
+    actions   = ["dynamodb:DeleteItem"]
+    resources = [aws_dynamodb_table.vault.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "sign_in_challenge" {
+  name   = "${var.project_name}-sign-in-challenge"
+  role   = aws_iam_role.sign_in_challenge.id
+  policy = data.aws_iam_policy_document.sign_in_challenge.json
+}

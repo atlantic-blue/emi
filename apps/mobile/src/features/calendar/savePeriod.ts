@@ -35,6 +35,8 @@ export interface TheDaysSheIsHolding {
   readonly held: readonly string[];
   /** The days she is holding now, after every press. */
   readonly ticked: readonly string[];
+  /** The days Emi filled in from her usual length, which the picker opened ticked. */
+  readonly expected?: readonly string[];
 }
 
 export interface WhatSheChanged {
@@ -42,13 +44,18 @@ export interface WhatSheChanged {
   readonly removed: readonly string[];
 }
 
-export function whatSheChanged({ held, ticked }: TheDaysSheIsHolding): WhatSheChanged {
+export function whatSheChanged({
+  held,
+  ticked,
+  expected = [],
+}: TheDaysSheIsHolding): WhatSheChanged {
   const wasHers = new Set(held);
   const isHers = new Set(ticked);
+  const wasTicked = new Set([...held, ...expected]);
 
   return {
     added: [...isHers].filter((day) => !wasHers.has(day)).sort(),
-    removed: [...wasHers].filter((day) => !isHers.has(day)).sort(),
+    removed: [...wasTicked].filter((day) => !isHers.has(day)).sort(),
   };
 }
 
@@ -219,6 +226,8 @@ export function theDaysListedFirst(
 export interface WhereTheEditorOpens {
   readonly held: string[];
   readonly listed: DaysListed;
+  /** The days of that period Emi filled in, which the editor opens ticked. */
+  readonly expected: string[];
 }
 
 /**
@@ -231,12 +240,25 @@ export interface WhereTheEditorOpens {
 export function whereTheEditorOpens(
   records: readonly DayRecord[],
   cycles: readonly CycleRow[],
-  { day, today }: { readonly day: string; readonly today: string },
+  {
+    day,
+    today,
+    expected = [],
+  }: { readonly day: string; readonly today: string; readonly expected?: readonly string[] },
 ): WhereTheEditorOpens {
   const asked = day > today ? today : day;
   const around = thePeriodEmiHoldsAround(records, cycles, { day: asked, today });
-  if (around.includes(asked)) {
-    return { held: around, listed: theDaysListedFirst(around, { day: asked, today }) };
+  const first = expected[0];
+  const filledIn =
+    first !== undefined && around.includes(addDays(first, -1))
+      ? expected.filter((each) => each <= today)
+      : [];
+  if (around.includes(asked) || filledIn.includes(asked)) {
+    return {
+      expected: filledIn,
+      held: around,
+      listed: theDaysListedFirst([...around, ...filledIn].sort(), { day: asked, today }),
+    };
   }
 
   const fromTheDay = theDaysListedFirst([], { day: asked, today });
@@ -244,10 +266,11 @@ export function whereTheEditorOpens(
     .map((each) => thePeriodEmiHoldsAround(records, cycles, { day: each, today }))
     .find((period) => period[0] !== undefined && period[0] > asked);
   if (next === undefined) {
-    return { held: [], listed: fromTheDay };
+    return { expected: [], held: [], listed: fromTheDay };
   }
 
   return {
+    expected: [],
     held: next,
     listed: { from: asked, to: theDaysListedFirst(next, { day: asked, today }).to },
   };

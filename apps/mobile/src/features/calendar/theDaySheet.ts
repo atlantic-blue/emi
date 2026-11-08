@@ -2,6 +2,7 @@ import type { DayRecord } from '@emi/crypto';
 import { type DayRange, daysBetween, isBleeding } from '@emi/cycle';
 import type { PhaseName } from '@emi/tokens';
 
+import { theExpectedDays } from '../cycle/expectedDays';
 import type { HerDay, HerDaysFrom } from '../cycle/herWeek';
 import { whatSheMarkedOn } from '../log/copy';
 import { thePeriodADayWaitsFor, theCyclesAhead } from './forecastAhead';
@@ -40,12 +41,16 @@ export type WhatTheSheetSays =
       /** What she marked on it, in her own words, or nothing where she marked nothing. */
       readonly logged?: string;
       readonly bled?: true;
+      /** A day of the period she is in that Emi filled in from her usual length. */
+      readonly expected?: true;
     }
   | {
       readonly kind: 'ahead';
       readonly day: string;
       /** Nothing where the forecast reaches no period on or after that day. */
       readonly waitsFor?: PeriodItWaitsFor;
+      /** A day ahead of the period she is in that Emi expects her to bleed on. */
+      readonly expected?: true;
     };
 
 export function whatTheSheetSays(
@@ -53,6 +58,9 @@ export function whatTheSheetSays(
   hers: HerDay,
   record: DayRecord | undefined,
 ): WhatTheSheetSays {
+  const isExpected = theExpectedDays(from).includes(hers.day);
+  const expected = isExpected ? { expected: true as const } : {};
+
   if (daysBetween(from.today, hers.day) > 0) {
     const period = thePeriodADayWaitsFor(theCyclesAhead(from), hers.day);
 
@@ -62,10 +70,12 @@ export function whatTheSheetSays(
       ...(period === undefined
         ? {}
         : { waitsFor: { mayStart: period.mayStart, order: period.order } }),
+      ...expected,
     };
   }
 
-  const phase = thePhaseOn(from, hers.day);
+  // A day Emi fills in is a period day, even where the ring reads only the days she logged.
+  const phase = isExpected ? 'period' : thePhaseOn(from, hers.day);
   const logged = whatSheMarkedOn(record);
 
   return {
@@ -75,5 +85,6 @@ export function whatTheSheetSays(
     ...(phase === undefined ? {} : { phase }),
     ...(logged === undefined ? {} : { logged }),
     ...(record !== undefined && isBleeding(record) ? { bled: true } : {}),
+    ...expected,
   };
 }
