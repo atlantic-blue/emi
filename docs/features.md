@@ -91,6 +91,15 @@ The contracts it builds:
 - `SEE-3` a tap target of at least 44 points on both axes.
 - `SEE-4` the ring held still when the operating system asks for reduced motion.
 
+Emi fills in the expected days of her period (issue 379). When she logs the first day of a period
+and gave a usual length in the first run, the days after it up to that length are expected, eight
+days in all at most. A day she recorded is hers and is not expected. A recorded day with no
+bleeding ends the period on the day before it. The month draws an expected day with a soft fill,
+and its card says that Emi filled it in. Edit my period opens with these days ticked. Once they
+are behind her, Today asks her to keep them. Keep them writes the middle flow on each one, and
+from then on they count like days she logged. Expected days are never stored, and a day she does
+not keep never counts.
+
 ## Feature 3: Emi predicts, and says how sure it is
 
 The next period as a range with a confidence, and the fertile window as an estimate, computed on the

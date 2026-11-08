@@ -58,6 +58,13 @@ import * as Localization from 'expo-localization';
 import { router } from 'expo-router';
 import { act, fireEvent, renderRouter, screen } from 'expo-router/testing-library';
 import { defineFeature, loadFeature } from 'jest-cucumber';
+
+import {
+  keepFilledInKeepTestID,
+  keepFilledInLineTestID,
+  keepFilledInTestID,
+  keepFilledInTitleTestID,
+} from '../apps/mobile/src/features/home/KeepFilledInDays';
 import { useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
 import { render, waitFor, within } from '@testing-library/react-native';
@@ -4275,6 +4282,50 @@ defineFeature(feature, (test) => {
       expect(held === undefined ? undefined : herVault().open(held.payload).flow).toBe('none');
       expect(whatTheSquareSays(thatDay)).not.toContain('Emi filled in this day');
       expect(whatTheSquareSays(theDayAfter)).not.toContain('Emi filled in this day');
+    });
+  });
+
+  test('SCREEN-2, she logs the first day, does nothing for five days, and keeps the days with one press', ({
+    given,
+    when,
+    then,
+  }) => {
+    const theFirstDay = addDays(theDaySheOpensIt, -5);
+    const theFilledDays = [1, 2, 3, 4].map((offset) => addDays(theFirstDay, offset));
+
+    given(
+      'her phone holds only the first day of her period, five days ago, and a usual period of 5 days',
+      async () => {
+        jest.setSystemTime(whenSheOpensTheStrip);
+        await herPhoneHolds(whenSheOpensTheStrip, [aBleedingDay(theFirstDay)], 28, 5);
+      },
+    );
+
+    when('she opens Emi', async () => {
+      await sheOpens('/');
+      await screen.findByTestId(keepFilledInTestID);
+    });
+
+    then('Today asks her to keep the 4 days Emi filled in', () => {
+      expect(screen.getByTestId(keepFilledInTitleTestID)).toHaveTextContent(
+        'Keep the days Emi filled in?',
+      );
+      expect(screen.getByTestId(keepFilledInLineTestID)).toHaveTextContent(
+        'Emi filled in 4 days of this period.',
+      );
+    });
+
+    when('she presses Keep them', async () => {
+      await shePresses(keepFilledInKeepTestID);
+    });
+
+    then('each of those 4 days holds the middle flow, and the card is gone', () => {
+      for (const day of theFilledDays) {
+        const held = readDayLog(herDatabase(), day);
+
+        expect(held === undefined ? undefined : herVault().open(held.payload).flow).toBe('medium');
+      }
+      expect(screen.queryByTestId(keepFilledInTestID)).toBeNull();
     });
   });
 

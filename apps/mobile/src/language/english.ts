@@ -290,6 +290,13 @@ export const english = {
   'home.cycles.line':
     'Each strip is one of your cycles, starting with this one. Tap one to see it in full.',
   'home.calendar': 'The calendar',
+  'home.keepFilledIn.change': 'Change them',
+  'home.keepFilledIn.keep': 'Keep them',
+  'home.keepFilledIn.line': {
+    one: 'Emi filled in {count} day of this period.',
+    other: 'Emi filled in {count} days of this period.',
+  },
+  'home.keepFilledIn.title': 'Keep the days Emi filled in?',
   'home.greeting': 'Hello, {name}',
   // What she reads where she gave no name. She is greeted either way, so the top of the screen
   // never opens on a blank line, and nothing stands where a name would be.
