@@ -15,6 +15,7 @@ import {
 } from '../fixtures/theMockupScreen';
 import { textIn } from '../fixtures/renderedText';
 import { OnAPhone } from '../fixtures/theSafeArea';
+import { reminderChoiceSaid } from '../../src/features/settings/RemindersScreen';
 
 /**
  * The route the fourth column of the dock carries, which is how the column that opens this screen
@@ -67,6 +68,8 @@ async function sheOpensIt(): Promise<void> {
     <OnAPhone>
       <SettingsScreen
         onAnswers={() => undefined}
+        onReminders={() => undefined}
+        reminder={reminderChoiceSaid('twoDaysBefore')}
         onBack={() => undefined}
         onDelete={() => undefined}
         onExport={() => undefined}

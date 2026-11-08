@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { MINIMUM_TAP_TARGET, colour, radius, stroke } from '@emi/tokens';
 import { screen, within } from '@testing-library/react-native';
 
@@ -63,7 +66,7 @@ import {
   theSecondDesignOfTheRoute,
   theStyleOf,
   theTextStyleOf,
-  theDrawingNothingIsBuiltFor,
+  theReminderDrawing,
   theWashIsAtTheTopOfPrivacy,
   whatPrivacyDoesNotAnswerFor,
   whatTheDrawingAsksFor,
@@ -234,7 +237,8 @@ describe('the Privacy screens match the redesign prototype', () => {
       expect(whatItSays(theRowsOfPrivacy[0] ?? '')).toContain(
         settingsCopy.settings.rows.answers.line,
       );
-      expect(whatItSays(theRowsOfPrivacy[1] ?? '')).toContain(settingsCopy.settings.rows.lock.line);
+      expect(whatItSays(theRowsOfPrivacy[1] ?? '')).toContain(settingsCopy.reminders.never);
+      expect(whatItSays(theRowsOfPrivacy[2] ?? '')).toContain(settingsCopy.settings.rows.lock.line);
     });
   });
 
@@ -449,7 +453,7 @@ describe('the Privacy screens match the redesign prototype', () => {
     });
   });
 
-  describe('the two drawings nothing on the glass answers', () => {
+  describe('the earlier design of Privacy and the reminder drawing', () => {
     it('keeps the earlier design of the same route in the stage and holds no screen to it', () => {
       const second = thePartsOfTheSecondDesign();
 
@@ -458,16 +462,17 @@ describe('the Privacy screens match the redesign prototype', () => {
       expect(thePrivacyDrawings).not.toContain(theSecondDesignOfTheRoute);
     });
 
-    it('keeps the reminder in the stage, and nothing is built for the two parts it alone draws', () => {
+    it('keeps the reminder in the stage, and its screen is built at the route it names', () => {
       const reminder = thePartsOfTheReminderDrawing();
       const itsOwn = reminder.filter((part) =>
         ['SingleChoiceRow', 'ReminderPreview'].includes(part.name),
       );
 
-      expect(theDrawingNothingIsBuiltFor).toBe('reminderSettings');
+      expect(theReminderDrawing).toBe('reminderSettings');
       expect(itsOwn.map((part) => part.name)).toEqual(['SingleChoiceRow', 'ReminderPreview']);
-      expect(itsOwn.every((part) => part.builtUnder.length === 0)).toBe(true);
-      expect(thePrivacyDrawings).not.toContain(theDrawingNothingIsBuiltFor);
+      expect(
+        existsSync(join(__dirname, '..', '..', 'src', 'app', 'settings', 'reminders.tsx')),
+      ).toBe(true);
     });
   });
 

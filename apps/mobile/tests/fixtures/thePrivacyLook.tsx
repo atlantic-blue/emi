@@ -99,12 +99,8 @@ export type PrivacyDrawing = (typeof thePrivacyDrawings)[number];
  */
 export const theSecondDesignOfTheRoute = 'settings';
 
-/**
- * The screen that changes the reminder. She chooses the reminder in the first run and it is held in
- * the setting table, but no screen and no route change it afterwards yet, and the drawing stays the
- * record of where that screen goes.
- */
-export const theDrawingNothingIsBuiltFor = 'reminderSettings';
+/** The screen that changes the reminder, which Privacy opens from its second row. */
+export const theReminderDrawing = 'reminderSettings';
 
 /** Midday, and away from any change of the clocks, so her calendar reads the same anywhere. */
 export const whenSheOpensPrivacy = new Date('2026-05-14T12:00:00.000Z');
@@ -277,7 +273,7 @@ export function thePartsOfTheSecondDesign(): string[] {
   return thePartsOfTheMockup('settings').map((part) => part.name);
 }
 
-/** The parts the drawing of the reminder places, which nothing is built for. */
+/** The parts the earlier drawing of the reminder places. */
 export function thePartsOfTheReminderDrawing(): Part[] {
   return thePartsOfTheMockup('reminderSettings');
 }

@@ -27,11 +27,9 @@ export const settingsRowsTestID = 'settings-rows';
  *
  * A row is an answer she already gave, the lock, or one of the two ways out. Nothing else is a
  * row, so the screen cannot grow into a menu without this list growing first, where somebody has
- * to decide about it. The drawing carries a fifth row for the reminder. She chooses the reminder in
- * the first run and this phone schedules it, but no screen changes it afterwards yet, so the row it
- * will take is not drawn and the drawing is the record of where it goes.
+ * to decide about it.
  */
-export const settingsRows = ['answers', 'lock', 'export', 'delete'] as const;
+export const settingsRows = ['answers', 'reminders', 'lock', 'export', 'delete'] as const;
 
 export type SettingsRowName = (typeof settingsRows)[number];
 
@@ -40,6 +38,7 @@ export function settingsRowTestID(row: SettingsRowName): string {
 }
 
 export const settingsAnswersTestID = settingsRowTestID('answers');
+export const settingsRemindersTestID = settingsRowTestID('reminders');
 export const settingsLockTestID = settingsRowTestID('lock');
 export const settingsExportTestID = settingsRowTestID('export');
 export const settingsDeleteTestID = settingsRowTestID('delete');
@@ -47,6 +46,7 @@ export const settingsDeleteTestID = settingsRowTestID('delete');
 /** The symbol each row carries, so a column of rows reads as symbols before it reads as words. */
 const theSymbolOf: Readonly<Record<SettingsRowName, IconName>> = {
   answers: 'note',
+  reminders: 'bell',
   lock: 'lock',
   export: 'export',
   delete: 'delete',
@@ -64,17 +64,22 @@ const ASSURANCE_ICON = 26;
  * The promise stands at the top in the one colour that reverses, because the rows underneath only
  * make sense to somebody who already knows that nobody else can read any of it.
  *
- * Delete everything is one row among four rather than the only thing here, because the one action
+ * Delete everything is one row among five rather than the only thing here, because the one action
  * that cannot be undone should not be the only thing she can reach from this screen.
  */
 export function SettingsScreen({
+  reminder,
   onAnswers,
+  onReminders,
   onExport,
   onDelete,
   onWhoCanSee,
   onBack,
 }: {
+  /** What the reminder is set to, in the words of the screen that changes it. */
+  readonly reminder: string;
   readonly onAnswers: () => void;
+  readonly onReminders: () => void;
   readonly onExport: () => void;
   readonly onDelete: () => void;
   /** Opens the one page that says where her records are kept and who can read them. */
@@ -113,6 +118,13 @@ export function SettingsScreen({
             line={settingsCopy.settings.rows.answers.line}
             onPress={onAnswers}
             testID={settingsAnswersTestID}
+          />
+          <SettingsRow
+            icon={theSymbolOf.reminders}
+            label={settingsCopy.settings.rows.reminders.lead}
+            onPress={onReminders}
+            testID={settingsRemindersTestID}
+            value={reminder}
           />
           <SettingsRow
             icon={theSymbolOf.lock}

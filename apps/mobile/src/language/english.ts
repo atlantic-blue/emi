@@ -1093,6 +1093,15 @@ export const english = {
   'settings.deleted.title': "It's gone.",
   'settings.deleted.withoutTheServer':
     "We couldn't reach our server to remove your account. Nothing can open what's left there: the only key was on this phone, and it went with your days.",
+  'settings.reminders.back': 'Back',
+  'settings.reminders.earlier': 'Half an hour earlier',
+  'settings.reminders.later': 'Half an hour later',
+  'settings.reminders.never': 'Never',
+  'settings.reminders.note':
+    'This phone works it out from the forecast it already holds. Nothing is sent anywhere.',
+  'settings.reminders.save': 'Save',
+  'settings.reminders.timeOfDay': 'Time of day',
+  'settings.reminders.title': 'Reminders',
   'settings.settings.answers': 'Your answers',
   'settings.settings.answersLine': 'Your name and your answers from setup',
   'settings.settings.assurance': 'Only you can read your days.',
@@ -1104,6 +1113,7 @@ export const english = {
   'settings.settings.exportLine': 'Save your records or make a report for your doctor',
   'settings.settings.lock': 'App lock',
   'settings.settings.lockLine': 'Face ID, Touch ID or your phone passcode',
+  'settings.settings.reminders': 'Reminders',
   'settings.settings.title': 'Privacy',
   'settings.whoCanSee.example':
     'If somebody asks Emi for your records, an advertiser or a court, Emi has nothing to give: your records are on your phone, not with us.',

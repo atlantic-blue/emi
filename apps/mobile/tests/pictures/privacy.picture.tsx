@@ -4,6 +4,7 @@ import { SettingsScreen } from '../../src/features/settings/SettingsScreen';
 import type { DrawnScreen } from '../../../../brand/screens/asHtml';
 import { drawOrCheck } from '../../../../brand/screens/picture';
 import { OnAPhone, theScreenIn } from '../fixtures/theSafeArea';
+import { reminderChoiceSaid } from '../../src/features/settings/RemindersScreen';
 
 /**
  * The screen the fourth column of the dock opens, drawn for somebody to look at. The four rows are
@@ -38,6 +39,8 @@ describe('the screen the dock opens, drawn for somebody to look at', () => {
       <OnAPhone>
         <SettingsScreen
           onAnswers={() => undefined}
+          onReminders={() => undefined}
+          reminder={reminderChoiceSaid('twoDaysBefore')}
           onBack={() => undefined}
           onDelete={() => undefined}
           onExport={() => undefined}

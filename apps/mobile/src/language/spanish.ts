@@ -1097,6 +1097,15 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.deleted.title': 'Ya no está.',
   'settings.deleted.withoutTheServer':
     'No pudimos llegar a nuestro servidor para quitar tu cuenta. Nada puede abrir lo que queda allí: la única clave estaba en este teléfono, y se fue con tus días.',
+  'settings.reminders.back': 'Atrás',
+  'settings.reminders.earlier': 'Media hora antes',
+  'settings.reminders.later': 'Media hora después',
+  'settings.reminders.never': 'Nunca',
+  'settings.reminders.note':
+    'Este teléfono lo calcula con la previsión que ya tiene. No se envía nada a ninguna parte.',
+  'settings.reminders.save': 'Guardar',
+  'settings.reminders.timeOfDay': 'Hora del día',
+  'settings.reminders.title': 'Recordatorios',
   'settings.settings.answers': 'Tus respuestas',
   'settings.settings.answersLine': 'Tu nombre y tus respuestas de la configuración inicial',
   'settings.settings.assurance': 'Solo tú puedes leer tus días.',
@@ -1108,6 +1117,7 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.settings.exportLine': 'Guarda tus registros o prepara un informe para tu médico',
   'settings.settings.lock': 'Bloqueo de la aplicación',
   'settings.settings.lockLine': 'Face ID, Touch ID o el código de tu teléfono',
+  'settings.settings.reminders': 'Recordatorios',
   'settings.settings.title': 'Privacidad',
   'settings.whoCanSee.example':
     'Si alguien pide tus registros a Emi, un anunciante o un tribunal, Emi no tiene nada que dar: tus registros están en tu teléfono, no con nosotros.',
