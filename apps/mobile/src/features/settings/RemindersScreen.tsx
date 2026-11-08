@@ -27,6 +27,8 @@ export const remindersEarlierTestID = 'reminders-earlier';
 export const remindersLaterTestID = 'reminders-later';
 export const remindersNoteTestID = 'reminders-note';
 export const remindersSaveTestID = 'reminders-save';
+/** The foot, which holds the note and Save and never scrolls, so the note is never cut by Save. */
+export const remindersFooterTestID = 'reminders-footer';
 
 /** One of the three moments before her period, or no reminder at all. */
 export type ReminderChoice = ReminderLead | 'never';
@@ -93,7 +95,7 @@ export function RemindersScreen({
 
   return (
     <Screen drawsTheWash testID={remindersScreenTestID}>
-      <ScrollView contentContainerStyle={styles.body}>
+      <ScrollView contentContainerStyle={styles.body} style={styles.scroll}>
         <ScreenHeader
           start={
             <Pressable
@@ -169,16 +171,15 @@ export function RemindersScreen({
             </Pressable>
           </View>
         </View>
+      </ScrollView>
 
+      <View style={styles.footer} testID={remindersFooterTestID}>
         <View style={styles.note}>
           <Icon colour={colour.secondaryText} name="lock" size={NOTE_ICON} />
           <Text style={styles.noteWords} testID={remindersNoteTestID}>
             {settingsCopy.reminders.note}
           </Text>
         </View>
-      </ScrollView>
-
-      <View style={styles.footer}>
         <PrimaryButton
           isReady={hasChanged}
           label={settingsCopy.reminders.save}
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceXl,
   },
   choices: { gap: space.spaceSm },
-  footer: { padding: space.spaceLg },
+  footer: { gap: space.spaceMd, padding: space.spaceLg },
   note: {
     alignItems: 'center',
     flexDirection: 'row',
@@ -225,6 +226,7 @@ const styles = StyleSheet.create({
   previewLine: { color: colour.text, ...textStyle('body-sm') },
   previewName: { color: colour.text, ...textStyle('label-md') },
   previewWords: { flexShrink: 1 },
+  scroll: { flex: 1 },
   step: {
     alignItems: 'center',
     height: MINIMUM_TAP_TARGET,

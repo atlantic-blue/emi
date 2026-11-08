@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 
-import { screen } from '@testing-library/react-native';
+import { screen, within } from '@testing-library/react-native';
 import { act, fireEvent, renderRouter } from 'expo-router/testing-library';
 
 import { rowValueTestID } from '../../../src/components/SettingsRow';
@@ -14,6 +14,8 @@ import {
   remindersBackTestID,
   remindersChoiceTestID,
   remindersEarlierTestID,
+  remindersFooterTestID,
+  remindersNoteTestID,
   remindersLaterTestID,
   remindersPreviewWordsTestID,
   remindersSaveTestID,
@@ -121,6 +123,18 @@ describe('she changes the period reminder from Privacy', () => {
     ).toMatchObject({ checked: true });
     expect(screen.getByTestId(remindersTimeTestID)).toHaveTextContent('09:00');
     expect(saveIsReady()).toBe(false);
+  });
+
+  it('keeps the note whole in the foot beside Save, where no scrolling can put it under Save', async () => {
+    await sheOpens('/settings/reminders');
+
+    const foot = screen.getByTestId(remindersFooterTestID);
+
+    expect(within(foot).getByTestId(remindersNoteTestID)).toHaveTextContent(
+      english['settings.reminders.note'],
+    );
+    expect(within(foot).getByTestId(remindersSaveTestID)).toBeTruthy();
+    expect(screen.getByTestId(remindersNoteTestID).props.numberOfLines).toBeUndefined();
   });
 
   it('offers the three moments and Never, with Never chosen where she chose no reminder', async () => {
