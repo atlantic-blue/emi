@@ -38,6 +38,7 @@ export const settingsCopy = {
   },
   reminders: {
     back: words('settings.reminders.back'),
+    dailyLog: words('settings.reminders.dailyLog'),
     earlier: words('settings.reminders.earlier'),
     later: words('settings.reminders.later'),
     never: words('settings.reminders.never'),
