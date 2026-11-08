@@ -206,7 +206,7 @@ export function CalendarScreen({
                 ? {
                     onOpen: () => onOpenDay(shePressed.day),
                     onRecordSex: () => onRecordSex(shePressed.day),
-                    ...(shePressed.bled === true
+                    ...(shePressed.bled === true || shePressed.expected === true
                       ? { onRemovePeriodDay: () => onRemovePeriodDay(shePressed.day) }
                       : {}),
                   }

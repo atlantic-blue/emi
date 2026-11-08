@@ -69,7 +69,7 @@ export function daySheetWords(says: WhatTheSheetSays): DaySheetSaid {
       month: monthNameOf(says.day),
       weekday: weekdayOf(says.day),
     }),
-    line: says.kind === 'ahead' ? theForecastSaid(says.waitsFor) : theLivedDaySaid(says),
+    line: says.kind === 'ahead' ? theDayAheadSaid(says) : theLivedDaySaid(says),
   };
 }
 
@@ -81,6 +81,12 @@ function monthNameOf(day: string): string {
   }
 
   return name;
+}
+
+function theDayAheadSaid(says: Extract<WhatTheSheetSays, { kind: 'ahead' }>): string {
+  return says.expected === true
+    ? words('calendar.daySheet.expectedAhead')
+    : theForecastSaid(says.waitsFor);
 }
 
 /**
@@ -119,7 +125,11 @@ function theForecastSaid(waitsFor: PeriodItWaitsFor | undefined): string {
 
 /** Her cycle day and phase, and what she logged or that she logged nothing. */
 function theLivedDaySaid(says: Extract<WhatTheSheetSays, { kind: 'lived' }>): string {
-  const logged = says.logged ?? words('calendar.daySheet.nothingLogged');
+  const filledIn = words('calendar.daySheet.filledIn');
+  const logged =
+    says.expected === true
+      ? [says.logged, filledIn].filter((said) => said !== undefined).join('. ')
+      : (says.logged ?? words('calendar.daySheet.nothingLogged'));
   const cycle = theCycleSaid(says);
 
   return cycle === undefined
