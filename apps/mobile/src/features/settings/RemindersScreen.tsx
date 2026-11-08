@@ -375,7 +375,7 @@ const styles = StyleSheet.create({
     padding: (TRACK_HEIGHT - KNOB) / 2,
     width: TRACK_WIDTH,
   },
-  trackOff: { backgroundColor: colour.field },
+  trackOff: { backgroundColor: colour.dockQuiet },
   trackOn: { backgroundColor: colour.accent },
   turned: { transform: TURNED_AROUND },
 });
