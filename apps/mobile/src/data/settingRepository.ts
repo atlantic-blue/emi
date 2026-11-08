@@ -6,6 +6,8 @@ import type { Database } from './database';
  */
 export type SettingKey =
   | 'articleAnswer'
+  | 'dailyLogReminder'
+  | 'dailyLogReminderTime'
   | 'firstRunCompletedAt'
   | 'forecastPopupClosed'
   | 'lockOnReturn'
@@ -17,6 +19,8 @@ export type SettingKey =
 
 export const settingKeys: readonly SettingKey[] = [
   'articleAnswer',
+  'dailyLogReminder',
+  'dailyLogReminderTime',
   'firstRunCompletedAt',
   'forecastPopupClosed',
   'lockOnReturn',

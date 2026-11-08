@@ -1061,6 +1061,7 @@ export const english = {
   'recovery.confirm.wrong': "That doesn't match. Check your paper and try again.",
   'recovery.step': 'Step {step} of {of}',
 
+  'reminder.dailyLog.notification': 'A moment to log your day in Emi',
   'reminder.notification': 'A reminder from Emi',
   'settings.answer.back': 'Back',
   'settings.answer.cancel': 'Cancel',
@@ -1098,6 +1099,7 @@ export const english = {
   'settings.deleted.withoutTheServer':
     "We couldn't reach our server to remove your account. Nothing can open what's left there: the only key was on this phone, and it went with your days.",
   'settings.reminders.back': 'Back',
+  'settings.reminders.dailyLog': 'Remind me to log each day',
   'settings.reminders.earlier': 'Half an hour earlier',
   'settings.reminders.later': 'Half an hour later',
   'settings.reminders.never': 'Never',

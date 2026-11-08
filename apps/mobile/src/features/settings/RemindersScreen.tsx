@@ -8,6 +8,7 @@ import { SingleChoiceRow } from '../../components/ChoiceRow';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { firstRunCopy, reminderChoices, reminderLabels } from '../onboarding/copy';
+import type { DailyLogReminder } from '../reminder/dailyLogReminder';
 import {
   type MinutesOfTheDay,
   type ReminderLead,
@@ -27,6 +28,11 @@ export const remindersEarlierTestID = 'reminders-earlier';
 export const remindersLaterTestID = 'reminders-later';
 export const remindersNoteTestID = 'reminders-note';
 export const remindersSaveTestID = 'reminders-save';
+export const remindersDailyLogCardTestID = 'reminders-daily-log';
+export const remindersDailyLogTestID = 'reminders-daily-log-switch';
+export const remindersDailyLogTimeTestID = 'reminders-daily-log-time';
+export const remindersDailyLogEarlierTestID = 'reminders-daily-log-earlier';
+export const remindersDailyLogLaterTestID = 'reminders-daily-log-later';
 /** The foot, which holds the note and Save and never scrolls, so the note is never cut by Save. */
 export const remindersFooterTestID = 'reminders-footer';
 
@@ -56,10 +62,69 @@ const NOTE_ICON = 16;
 /** The icon set holds one chevron, pointing the way on, so the way back is that drawing turned. */
 const TURNED_AROUND = [{ rotate: '180deg' }] as const;
 
-/** What the reminder is set to: a choice and a time of day. */
+/** What the reminders are set to: the period reminder and its time, the daily log reminder and its time. */
 export interface ReminderSettings {
   readonly choice: ReminderChoice;
   readonly time: MinutesOfTheDay;
+  readonly dailyLog: DailyLogReminder;
+  readonly dailyLogTime: MinutesOfTheDay;
+}
+
+/** Points. The track of the switch and the knob that slides along it. */
+const TRACK_WIDTH = 51;
+const TRACK_HEIGHT = 31;
+const KNOB = 27;
+
+interface TimeOfDayTestIDs {
+  readonly time: string;
+  readonly earlier: string;
+  readonly later: string;
+}
+
+interface TimeOfDayProps {
+  readonly minutes: MinutesOfTheDay;
+  readonly onEarlier: () => void;
+  readonly onLater: () => void;
+  readonly testIDs: TimeOfDayTestIDs;
+}
+
+function TimeOfDay({ minutes, onEarlier, onLater, testIDs }: TimeOfDayProps): ReactNode {
+  const time = reminderTimeSaid(minutes);
+
+  return (
+    <View style={styles.timeRow}>
+      <Text style={styles.timeLabel}>{settingsCopy.reminders.timeOfDay}</Text>
+      <View style={styles.timeControl}>
+        <Pressable
+          accessibilityLabel={settingsCopy.reminders.earlier}
+          accessibilityRole="button"
+          onPress={onEarlier}
+          style={styles.step}
+          testID={testIDs.earlier}
+        >
+          <View style={styles.turned}>
+            <Icon colour={colour.text} name="chevron" size={CHEVRON_SIZE} />
+          </View>
+        </Pressable>
+        <Text
+          accessibilityLabel={`${settingsCopy.reminders.timeOfDay}, ${time}`}
+          style={styles.time}
+          testID={testIDs.time}
+        >
+          {time}
+        </Text>
+        <Pressable
+          accessibilityLabel={settingsCopy.reminders.later}
+          accessibilityRole="button"
+          onPress={onLater}
+          style={styles.step}
+          testID={testIDs.later}
+        >
+          <Icon colour={colour.text} name="chevron" size={CHEVRON_SIZE} />
+        </Pressable>
+      </View>
+    </View>
+  );
 }
 
 interface Props {
@@ -72,6 +137,9 @@ interface Props {
   readonly onLater: () => void;
   readonly onSave: () => void;
   readonly onBack: () => void;
+  readonly onDailyLog: () => void;
+  readonly onDailyLogEarlier: () => void;
+  readonly onDailyLogLater: () => void;
 }
 
 /**
@@ -89,9 +157,16 @@ export function RemindersScreen({
   onLater,
   onSave,
   onBack,
+  onDailyLog,
+  onDailyLogEarlier,
+  onDailyLogLater,
 }: Props): ReactNode {
-  const hasChanged = held.choice !== holding.choice || held.time !== holding.time;
-  const time = reminderTimeSaid(holding.time);
+  const hasChanged =
+    held.choice !== holding.choice ||
+    held.time !== holding.time ||
+    held.dailyLog !== holding.dailyLog ||
+    held.dailyLogTime !== holding.dailyLogTime;
+  const isDailyLogOn = holding.dailyLog === 'on';
 
   return (
     <Screen drawsTheWash testID={remindersScreenTestID}>
@@ -140,36 +215,43 @@ export function RemindersScreen({
         </View>
 
         <View style={styles.timeCard}>
-          <Text style={styles.timeLabel}>{settingsCopy.reminders.timeOfDay}</Text>
-          <View style={styles.timeControl}>
-            <Pressable
-              accessibilityLabel={settingsCopy.reminders.earlier}
-              accessibilityRole="button"
-              onPress={onEarlier}
-              style={styles.step}
-              testID={remindersEarlierTestID}
-            >
-              <View style={styles.turned}>
-                <Icon colour={colour.text} name="chevron" size={CHEVRON_SIZE} />
-              </View>
-            </Pressable>
-            <Text
-              accessibilityLabel={`${settingsCopy.reminders.timeOfDay}, ${time}`}
-              style={styles.time}
-              testID={remindersTimeTestID}
-            >
-              {time}
-            </Text>
-            <Pressable
-              accessibilityLabel={settingsCopy.reminders.later}
-              accessibilityRole="button"
-              onPress={onLater}
-              style={styles.step}
-              testID={remindersLaterTestID}
-            >
-              <Icon colour={colour.text} name="chevron" size={CHEVRON_SIZE} />
-            </Pressable>
-          </View>
+          <TimeOfDay
+            minutes={holding.time}
+            onEarlier={onEarlier}
+            onLater={onLater}
+            testIDs={{
+              earlier: remindersEarlierTestID,
+              later: remindersLaterTestID,
+              time: remindersTimeTestID,
+            }}
+          />
+        </View>
+
+        <View style={styles.dailyLogCard} testID={remindersDailyLogCardTestID}>
+          <Pressable
+            accessibilityRole="switch"
+            accessibilityState={{ checked: isDailyLogOn }}
+            onPress={onDailyLog}
+            style={styles.dailyLogRow}
+            testID={remindersDailyLogTestID}
+          >
+            <Text style={styles.dailyLogLabel}>{settingsCopy.reminders.dailyLog}</Text>
+            <View style={[styles.track, isDailyLogOn ? styles.trackOn : styles.trackOff]}>
+              <View style={[styles.knob, isDailyLogOn && styles.knobOn]} />
+            </View>
+          </Pressable>
+          {isDailyLogOn && (
+            <TimeOfDay
+              minutes={holding.dailyLogTime}
+              onEarlier={onDailyLogEarlier}
+              onLater={onDailyLogLater}
+              testIDs={{
+                earlier: remindersDailyLogEarlierTestID,
+                later: remindersDailyLogLaterTestID,
+                time: remindersDailyLogTimeTestID,
+              }}
+            />
+          )}
         </View>
       </ScrollView>
 
@@ -207,6 +289,20 @@ const styles = StyleSheet.create({
     paddingVertical: space.spaceXl,
   },
   choices: { gap: space.spaceSm },
+  dailyLogCard: {
+    backgroundColor: colour.card,
+    borderRadius: radius.xl,
+    gap: space.spaceSm,
+    padding: space.spaceMd,
+  },
+  dailyLogLabel: { color: colour.text, flexShrink: 1, ...textStyle('choice-lg') },
+  dailyLogRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: space.spaceMd,
+    justifyContent: 'space-between',
+    minHeight: MINIMUM_TAP_TARGET,
+  },
   footer: { gap: space.spaceMd, padding: space.spaceLg },
   note: {
     alignItems: 'center',
@@ -233,6 +329,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: MINIMUM_TAP_TARGET,
   },
+  knob: {
+    backgroundColor: colour.card,
+    borderRadius: radius.full,
+    height: KNOB,
+    width: KNOB,
+  },
+  knobOn: { alignSelf: 'flex-end' },
   tile: {
     alignItems: 'center',
     backgroundColor: colour.accent,
@@ -252,16 +355,27 @@ const styles = StyleSheet.create({
     ...textStyle('headline-sm'),
   },
   timeCard: {
-    alignItems: 'center',
     backgroundColor: colour.card,
     borderRadius: radius.xl,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: space.spaceSm,
-    justifyContent: 'space-between',
     padding: space.spaceMd,
   },
   timeControl: { alignItems: 'center', flexDirection: 'row' },
   timeLabel: { color: colour.text, ...textStyle('choice-lg') },
+  timeRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: space.spaceSm,
+    justifyContent: 'space-between',
+  },
+  track: {
+    borderRadius: radius.full,
+    height: TRACK_HEIGHT,
+    justifyContent: 'center',
+    padding: (TRACK_HEIGHT - KNOB) / 2,
+    width: TRACK_WIDTH,
+  },
+  trackOff: { backgroundColor: colour.dockQuiet },
+  trackOn: { backgroundColor: colour.accent },
   turned: { transform: TURNED_AROUND },
 });
