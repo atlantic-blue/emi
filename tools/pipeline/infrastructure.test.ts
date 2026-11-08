@@ -21,9 +21,11 @@ import {
 } from './policy.ts';
 import {
   credentialValuesIn,
+  pairsIn,
   theSiteAddress,
   theWaysAClientOffers,
   websiteSignInProblems,
+  writtenSecretsIn,
 } from './signIn.ts';
 import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
 import { languages } from '../../apps/website/app/words/language.ts';
@@ -145,6 +147,29 @@ function terraformRoots(): string[] {
     .map((file) => dirname(file));
 
   return [...new Set(roots)].sort();
+}
+
+/**
+ * Every tracked file a person reads as text, which is what a rule about a written secret reads.
+ * A picture and a typeface are left out by their kind: a value pasted into either is not text,
+ * and decoding one as text invents matches nobody wrote.
+ */
+function trackedTextFiles(): string[] {
+  const binaryKinds = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'ico', 'ttf', 'otf', 'woff', 'woff2'];
+  const listed = spawnSync('git', ['ls-files', '--cached', '--exclude-standard'], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+  });
+
+  if (listed.status !== 0) {
+    throw new Error(`git could not list the tracked files: ${listed.stderr}`);
+  }
+
+  return listed.stdout
+    .split('\n')
+    .filter((file) => file.length > 0)
+    .filter((file) => !binaryKinds.includes(file.split('.').slice(-1)[0] ?? ''))
+    .filter((file) => statSync(join(repositoryRoot, file)).isFile());
 }
 
 /**
@@ -2260,6 +2285,210 @@ describe('the pool sends the code from Emi, which is step 28.10', () => {
       expect(readme).not.toContain('cannot deliver one');
       expect(readme).not.toContain('one step away');
       expect(readme).toContain('Emi <no-reply@myemi.app>');
+    });
+  });
+});
+
+// Sign in with Telegram reads three values the parameter store holds and writes one of them. The
+// two roles that reach them ship before anything assumes them: the account reads a policy per
+// request, so a grant and the resource that needs it can fail together in one apply.
+//
+// The salt is the one value Terraform never creates, never holds and never reads. The sign in
+// function makes it on the first sign in that finds it absent, which is why no data source names
+// it and no resource writes it.
+describe('the keys the Telegram sign in may read, and the two roles that reach them', () => {
+  const readme = read('infra/README.md');
+  const signInPolicy = bodyOf('data "aws_iam_policy_document" "sign_in_telegram"');
+  const challengePolicy = bodyOf('data "aws_iam_policy_document" "sign_in_challenge"');
+  const planStatements = statementsIn(planPolicy);
+  const theVaultTable = 'aws_dynamodb_table.vault.arn';
+  const everyFunctionOfEmi = `arn:aws:lambda:*:${defaultOf('account_id')}:function:${defaultOf('project_name')}-*`;
+  const everyRoleOfEmi = `arn:aws:iam::${defaultOf('account_id')}:role/${defaultOf('project_name')}-*`;
+  const everyPool = `arn:aws:cognito-idp:*:${defaultOf('account_id')}:userpool/*`;
+
+  const parameter = (name: string): string =>
+    `arn:aws:ssm:${defaultOf('region')}:${defaultOf('account_id')}:parameter/${defaultOf('project_name')}/accounts/telegram/${name}`;
+
+  const scopeOf = (policy: string, action: string): string[][] =>
+    statementsReaching(statementsIn(policy), action).map((statement) =>
+      statement.resources.map((resource) => resolved(configuration, resource)),
+    );
+
+  /** Every parameter Terraform itself reads, which the salt is deliberately absent from. */
+  const parametersTerraformReads = (): string[] =>
+    [...configuration.matchAll(/data "aws_ssm_parameter" "([a-z_]+)"/g)]
+      .flatMap((match) => (match[1] === undefined ? [] : [match[1]]))
+      .map((name) =>
+        valueOf(configuration, pairsIn(bodyOf(`data "aws_ssm_parameter" "${name}"`)).name ?? ''),
+      );
+
+  describe('the function that answers a Telegram code', () => {
+    it('reads the bot identifier, the client secret and the salt, each named in full', () => {
+      expect(scopeOf(signInPolicy, 'ssm:GetParameter')).toEqual([
+        [parameter('bot-id'), parameter('client-secret'), parameter('salt')],
+      ]);
+    });
+
+    it('reads the bot token nowhere, because the bot token can act as the bot', () => {
+      expect(signInPolicy).not.toContain('bot-token');
+
+      for (const named of scopeOf(signInPolicy, 'ssm:GetParameter').flat()) {
+        expect(named).not.toContain('*');
+      }
+    });
+
+    it('decrypts a secure string only through a parameter store call', () => {
+      const statement = resolved(
+        configuration,
+        statementTextIn(signInPolicy, 'DecryptASecureString'),
+      );
+
+      expect(statement).toContain('variable = "kms:ViaService"');
+      expect(statement).toContain(`"ssm.${defaultOf('region')}.amazonaws.com"`);
+    });
+
+    it('writes the salt, and no other parameter', () => {
+      expect(scopeOf(signInPolicy, 'ssm:PutParameter')).toEqual([[parameter('salt')]]);
+    });
+
+    it('deletes no parameter, so nothing in the account can take the salt away', () => {
+      expect(scopeOf(signInPolicy, 'ssm:DeleteParameter')).toEqual([]);
+      expect(configuration).not.toContain('ssm:Delete');
+    });
+
+    it('writes the one time answer item, and reads and deletes nothing in the table', () => {
+      expect(actionsIn(signInPolicy).sort()).toEqual([
+        'dynamodb:PutItem',
+        'kms:Decrypt',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+        'ssm:GetParameter',
+        'ssm:PutParameter',
+      ]);
+      expect(scopeOf(signInPolicy, 'dynamodb:PutItem')).toEqual([[theVaultTable]]);
+    });
+
+    it('reaches no index of the table and no other table', () => {
+      expect(signInPolicy).not.toContain('/index/');
+      expect(signInPolicy).not.toContain('aws_dynamodb_table.articles');
+    });
+  });
+
+  describe('the three triggers the pool calls', () => {
+    it('spends the one time answer with a delete, which returns the item it removed', () => {
+      expect(actionsIn(challengePolicy).sort()).toEqual([
+        'dynamodb:DeleteItem',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+      ]);
+      expect(scopeOf(challengePolicy, 'dynamodb:DeleteItem')).toEqual([[theVaultTable]]);
+    });
+
+    it('holds no parameter at all, so nothing the pool calls can read the salt', () => {
+      expect(actionsIn(challengePolicy).filter((action) => action.startsWith('ssm:'))).toEqual([]);
+      expect(challengePolicy).not.toContain('kms:');
+      expect(challengePolicy).not.toContain('/accounts/');
+    });
+
+    it('reads nothing of the table, and reaches no index of it and no other table', () => {
+      expect(scopeOf(challengePolicy, 'dynamodb:GetItem')).toEqual([]);
+      expect(scopeOf(challengePolicy, 'dynamodb:Query')).toEqual([]);
+      expect(challengePolicy).not.toContain('/index/');
+      expect(challengePolicy).not.toContain('aws_dynamodb_table.articles');
+    });
+
+    it('is one role for the three of them, assumed by the runtime and by nothing else', () => {
+      expect(bodyOf('resource "aws_iam_role" "sign_in_challenge"')).toContain(
+        'assume_role_policy = data.aws_iam_policy_document.lambda_trust.json',
+      );
+      expect(bodyOf('data "aws_iam_policy_document" "lambda_trust"')).toContain(
+        'identifiers = ["lambda.amazonaws.com"]',
+      );
+    });
+  });
+
+  describe('the salt, which the function makes and Terraform never holds', () => {
+    it('is read by no data source, so no plan and no state carries its value', () => {
+      expect(parametersTerraformReads()).toEqual([
+        '/emi/accounts/apple/services-id',
+        '/emi/accounts/apple/team-id',
+        '/emi/accounts/apple/key-id',
+        '/emi/accounts/apple/private-key',
+        '/emi/accounts/google/client-id',
+        '/emi/accounts/google/client-secret',
+      ]);
+    });
+
+    it('is written by no resource, because a salt that changed would lock every Telegram user out', () => {
+      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+    });
+
+    it('is named in the readme as permanent, beside what the operator did in BotFather', () => {
+      expect(readme).toContain('/emi/accounts/telegram/client-secret');
+      expect(readme).toContain('/emi/accounts/telegram/salt');
+      expect(readme).toContain('BotFather');
+      expect(readme).toContain('permanent');
+    });
+  });
+
+  describe('the apply role already reaches both roles and the functions that assume them', () => {
+    it('makes a function and lets a principal invoke one, in the functions of Emi alone', () => {
+      expect(scopeOf(applyPolicy, 'lambda:CreateFunction')).toEqual([[everyFunctionOfEmi]]);
+      expect(scopeOf(applyPolicy, 'lambda:AddPermission')).toEqual([[everyFunctionOfEmi]]);
+    });
+
+    it('makes a role of Emi, writes its policy, and hands it to a function', () => {
+      for (const action of ['iam:CreateRole', 'iam:PutRolePolicy', 'iam:PassRole']) {
+        expect(scopeOf(applyPolicy, action)).toEqual([[everyRoleOfEmi]]);
+      }
+    });
+
+    it('sets the triggers on the pool through the statement that changes one pool', () => {
+      expect(scopeOf(applyPolicy, 'cognito-idp:UpdateUserPool')).toEqual([[everyPool]]);
+    });
+
+    it('lets a pull request read a function and a role, and make neither', () => {
+      expect(statementsReaching(planStatements, 'lambda:GetFunction')).not.toEqual([]);
+      expect(statementsReaching(planStatements, 'iam:GetRolePolicy')).not.toEqual([]);
+      expect(scopeOf(planPolicy, 'lambda:CreateFunction')).toEqual([]);
+      expect(scopeOf(planPolicy, 'iam:PutRolePolicy')).toEqual([]);
+    });
+  });
+
+  describe('no secret is written as a value anywhere in the repository', () => {
+    const files = trackedTextFiles();
+    const aPrivateKey = `${'-'.repeat(5)}BEGIN PRIVATE KEY${'-'.repeat(5)}\n${'a'.repeat(64)}\n`;
+    const aGoogleSecret = `GOCSPX-${'b'.repeat(28)}`;
+    const aBotToken = `12345678:AA${'c'.repeat(33)}`;
+
+    it('finds none today, and says how many files it read', () => {
+      expect(files.flatMap((file) => writtenSecretsIn(file, read(file)))).toEqual([]);
+      expect(files.length).toBeGreaterThan(500);
+      expect(files).toContain('infra/lambda.tf');
+      expect(files).toContain('tools/pipeline/signIn.ts');
+    });
+
+    it('refuses a private key, a Google secret and a Telegram bot token', () => {
+      expect(writtenSecretsIn('infra/lambda.tf', aPrivateKey)).toEqual([
+        'infra/lambda.tf writes a private key as a value, and it belongs in the parameter store',
+      ]);
+      expect(writtenSecretsIn('infra/lambda.tf', aGoogleSecret)).toHaveLength(1);
+      expect(writtenSecretsIn('infra/lambda.tf', aBotToken)).toHaveLength(1);
+    });
+
+    it('names the kind and never the value, because the pipeline log of this repository is public', () => {
+      const [said] = writtenSecretsIn('a/file.ts', aBotToken);
+
+      expect(said).toContain('a Telegram bot token');
+      expect(said).not.toContain('c'.repeat(33));
+    });
+
+    it('leaves the word alone, because a rule that proves a key is absent has to name its header', () => {
+      expect(
+        writtenSecretsIn('a/test.ts', "expect(sent).not.toContain('BEGIN PRIVATE KEY');\n"),
+      ).toEqual([]);
+      expect(writtenSecretsIn('a/rule.ts', "const markers = ['GOCSPX'];\n")).toEqual([]);
+      expect(writtenSecretsIn('infra/README.md', 'the bot identifier 9068004348\n')).toEqual([]);
     });
   });
 });

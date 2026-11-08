@@ -11,11 +11,10 @@ pool carries a `depends_on` on the role policy for that reason. If a merge still
 because the grant had not landed yet, run the deploy workflow again on `main`. The second run
 reads the policy the first one wrote.
 
-The sender does not rely on that. Pull request 515 changed the apply role and made the user pool
-in one apply, the create ran one second after the policy change, and the account refused it. So
-the grants the sender needs merged on their own first, in step 28.7, and this step adds the
-resources on top of a grant that is already active. A step that adds a resource of a service the
-roles have never touched is two merges, in that order.
+A permission and the resource that needs it can fail together in one apply, because the policy has
+not spread yet. So a grant ships alone and first, and the resources follow in a second merge. A
+change that adds a resource of a service the roles have never touched is two merges, in that
+order.
 
 ## What this builds
 
@@ -31,6 +30,9 @@ are the placeholders that `infra/lambda.tf` holds inline. The real handlers exis
 `services/vault` into either function, so the placeholders are what runs.
 
 Three log groups, each with a retention of 30 days.
+
+Two roles nothing assumes yet, `emi-sign-in-telegram` and `emi-sign-in-challenge`. The section on
+sign in with Telegram below says what each one reads and what each one deliberately cannot.
 
 One Amazon Cognito user pool, `emi-accounts`, with two app clients: `emi-iphone` and
 `emi-website`. The pool is on the Essentials tier, which is the cheapest one that carries the
@@ -176,20 +178,99 @@ eu-central-1, under these names:
 - `/emi/accounts/google/client-secret`, the secret of that client. A secure string.
 - `/emi/accounts/telegram/bot-id`, the numeric identifier of the Emi bot. A string.
 - `/emi/accounts/telegram/bot-token`, the token BotFather gave for that bot. A secure string.
+- `/emi/accounts/telegram/client-secret`, the secret of the Telegram login. A secure string.
 
-A person made all eight by hand. `aws ssm describe-parameters --region eu-central-1` listed every
-one of them on 7 November 2026. The Apple private key and the Google secret are secure strings,
-held under `alias/aws/ssm`, which is the key the parameter store makes for this account.
+A person made all nine by hand. `aws ssm describe-parameters --region eu-central-1` listed the
+first eight on 7 November 2026, and the operator wrote the client secret on 8 November 2026. The
+Apple private key, the Google secret, the bot token and the client secret are secure strings, held
+under `alias/aws/ssm`, which is the key the parameter store makes for this account.
+
+One more name sits under the same prefix: `/emi/accounts/telegram/salt`. Nobody made it, and
+nothing in this repository makes it either. The section below says what it is for.
 
 Nothing in this repository holds any of those values, and no log line prints one.
 
-Both roles now read the six under `/emi/accounts/apple/` and `/emi/accounts/google/`, and decrypt
-a secure string only through a parameter store call. Neither role may write a parameter. The
-Telegram pair is inside the same prefix, so the way in that reads it needs no new grant.
+Both pipeline roles now read the six under `/emi/accounts/apple/` and `/emi/accounts/google/`, and
+decrypt a secure string only through a parameter store call. Neither role may write a parameter.
+The grant reaches the whole `/emi/accounts/` prefix, and the configuration reads no Telegram value
+through it. The sign in function reads those three at run time instead.
 
 Two roles. `emi-github-actions-plan` is assumed by a pull request. It can read the account and it
 can change nothing. `emi-github-actions` is assumed by a merge into `main`. It is the only thing
 that can apply.
+
+### Sign in with Telegram, which is a function and not a provider of the pool
+
+Amazon Cognito calls the userinfo endpoint of an OpenID Connect provider, and Telegram publishes
+none. So Telegram cannot be a provider of this pool. A function of Emi answers the code instead,
+and the pool turns that answer into tokens through its custom sign in.
+
+The operator did three things by hand, on 8 November 2026. Nothing in this repository can do any
+of them.
+
+1. In BotFather, under `@EmiAppBot` and then Login Widget, they switched the bot to the OpenID
+   Connect login. The client identifier is the bot identifier, `9068004348`.
+2. On the same screen, they registered the return address
+   `https://myemi.app/en/sign-in/telegram/` and the trusted origin `https://myemi.app`. Telegram
+   processes a login only for an address it holds in advance. One return address serves the site
+   and the application, so a new language of the site costs nothing here.
+3. They copied the client secret from that screen into
+   `/emi/accounts/telegram/client-secret`, as a secure string.
+
+The bot token stays where it is. Nothing in this sign in reads it, and the grants below say so:
+the sign in role names its three parameters one by one rather than by prefix.
+
+#### The salt is permanent
+
+The user name of the pool is `tg_` and a keyed hash of the Telegram subject, keyed by a salt of 32
+bytes at `/emi/accounts/telegram/salt`. A reader who holds the pool, and who knows which Telegram
+account to test for, learns nothing from that name without the salt.
+
+The sign in function makes the salt, on the first sign in that finds it absent. It writes 32 bytes
+from the random source of the platform. The write names no overwrite. A function that loses that
+race reads the parameter again, and it uses the value that won.
+
+Terraform never creates it, never holds it and never reads it. No data source names it, so the
+state at `s3://abs-terraform/emi/terraform.tfstate` does not carry it. The operator never types
+it, so it is in no message and no password manager. Reading it takes a deliberate call with the
+decryption key, which the role of the sign in function holds and nothing else does.
+
+**The salt is permanent, and that is the whole risk in it.** A salt that changes gives every
+Telegram user a new pool user name. Every Telegram account then becomes a new pool user, and the
+identity link in the vault names an account she can no longer reach. So no role here carries
+`ssm:DeleteParameter`. To read the salt, run the command below under a credential a person holds.
+Never replace it.
+
+```
+aws ssm get-parameter --name /emi/accounts/telegram/salt --with-decryption --region eu-central-1
+```
+
+#### Two roles, and nothing that assumes them yet
+
+`emi-sign-in-telegram` is the role of the function that answers a Telegram code. It reads the bot
+identifier, the client secret and the salt, each named in full. It writes the salt. It writes one
+item to `emi-vault`: the digest of a one time answer, the pool user name it belongs to, and the
+instant. It carries no delete on any parameter, no read of the bot token, and no read of the
+table.
+
+`emi-sign-in-challenge` is the role of the three triggers the pool calls: define, create and
+verify. It deletes one item from `emi-vault`, which is how the verify trigger spends a one time
+answer, and that call returns the item it removed. It holds no parameter at all, so nothing the
+pool calls can read the salt or the client secret.
+
+Neither role is assumed by anything today, because no function exists yet. The grants land on
+their own and first. The account reads a policy per request, so a grant and the resource that needs
+it can fail together in one apply.
+
+The apply role needed nothing new. `TheTwoFunctions` already makes a function and lets a principal
+invoke one. `TheProjectRoles` already makes a role of Emi and hands it to a function.
+`TheUserPool` already sets the triggers on the pool. The infrastructure test holds each of those
+three as a rule, so a change that narrows one of them fails here rather than in an apply.
+
+Two grants are deliberately absent, and the piece that needs each one adds it. The function
+creates a pool user with `AdminCreateUser`, and `emi-sign-in-telegram` holds no Amazon Cognito
+action yet. The pool invokes each trigger through a policy on the function, and no function exists
+to carry one.
 
 ### One grant is wider than the rule of this repository
 
