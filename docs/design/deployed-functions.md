@@ -196,6 +196,19 @@ so a pull request proves the bundles and changes nothing. It reads the apply rol
 variable. It skips every step that reaches the account while that variable is empty. The path filters
 gain `services/vault/**`, `packages/crypto/**`, `packages/tokens/**` and `tools/deploy/**`.
 
+The upload step discards the answer of the call, and that is a constraint rather than a tidy habit.
+`aws lambda update-function-code` prints the whole configuration of the function, and that includes
+its environment variables. This repository printed values into a pipeline log that way
+once. A log of a public repository is readable by anybody, so one line of output is one disclosure.
+
+So the call names what it wants and nothing else. Either `--query` picks the one field worth
+reading, which is the version, or the output goes to `/dev/null`. The website deploy beside it
+already sends that same call to `/dev/null`, with no line saying why, which is how the next person
+drops it.
+
+The same rule covers the wait. `aws lambda wait function-updated` prints nothing on success, and the
+step names no environment variable of its own, so a failing step cannot echo one.
+
 ```mermaid
 flowchart TD
   SRC["services/vault/src: the handlers and the router"] --> LIST["tools/deploy/functions.ts: the name and the entry point of each function"]
@@ -355,16 +368,20 @@ Files: `infra/lambda.tf`, `.github/workflows/deploy.yml`, `infra/README.md`,
 Behaviour: each of the three functions gains `ignore_changes` on its file name and its code hash, so
 an apply never puts the placeholder back. A `functions` job builds on both events and ships on a
 merge. It skips every step that reaches the account while the apply role variable is empty. It
-uploads the authorizer, then the articles, then the vault, and waits after each one. Its last step
-reads the live api and requires a refusal. The readme says three functions rather than two, and says
-that the deployed code is the bundle. The architecture document loses the line about two
+uploads the authorizer, then the articles, then the vault, and waits after each one. Each upload
+discards the answer of the call, so no environment variable of a function reaches the log. Its last
+step reads the live api and requires a refusal. The readme says three functions rather than two, and
+says that the deployed code is the bundle. The architecture document loses the line about two
 placeholders.
 Proof: the infrastructure test. Each function carries `ignore_changes` on both fields. Every function
 in the list has a Terraform resource, and every resource has an entry in the list. So the drift that
 left three functions unpackaged cannot happen again. The `functions` job ships on a push to `main`
 alone. Every step of it that reaches the account carries the guard the plan and apply jobs carry.
-Every route of `infra/api.tf` but the registration and the article read carries the authorizer. A
-mutation that removes `ignore_changes` from the vault function is watched failing. A mutation that
+Every route of `infra/api.tf` but the registration and the article read carries the authorizer.
+No step of the job runs `update-function-code` with its output left open. Either a `--query` names
+one field, or the output is redirected. That case reads every run script of the workflow, and not
+the one line this piece adds. A mutation that removes `ignore_changes` from the vault function is
+watched failing. A mutation that drops the output redirection is watched failing. A mutation that
 drops the authorizer from the pull route is watched failing too.
 The promise: the api answers her phone, and it still refuses an unsigned request. The deploy reads
 that refusal on every merge. So the day it stops being true is the day the deploy fails.
