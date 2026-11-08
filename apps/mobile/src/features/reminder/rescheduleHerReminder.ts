@@ -3,17 +3,29 @@ import { useCallback } from 'react';
 
 import { listCycles } from '../../data/cycleRepository';
 import type { Database } from '../../data/database';
+import { readDayLog } from '../../data/dayLogRepository';
 import { useDatabase } from '../../data/DatabaseProvider';
 import { readProfile } from '../../data/profileRepository';
 import {
+  cancelHerLogReminders,
   cancelHerReminder,
   reminderPermission,
+  scheduleHerLogReminders,
   scheduleHerReminder,
 } from '../../services/notifications/localReminder';
 import type { ProfileVault } from '../../services/vault/profileVault';
 import { useProfileVault } from '../../services/vault/VaultProvider';
 import { forecastOf } from '../forecast/fromCache';
+import { localDay } from '../onboarding/days';
 import { defaultCycleLengthDays } from '../onboarding/firstRun';
+import {
+  DAILY_LOG_REMINDER_DAYS_AHEAD,
+  dailyLogReminderWords,
+  readDailyLogReminder,
+  readDailyLogReminderTime,
+  theEntryOfToday,
+  whenToRemindHerToLog,
+} from './dailyLogReminder';
 import {
   readReminderLead,
   readReminderTime,
@@ -73,6 +85,45 @@ export async function rescheduleHerReminder(
   }
 }
 
+export type LogReminderOutcome =
+  'scheduled' | 'off' | 'the-phone-said-no' | 'the-scheduler-refused';
+
+/**
+ * Puts the daily log reminders on the phone again from today. A day she logged has a record, so a
+ * write of today takes the reminder of today off.
+ */
+export async function rescheduleHerLogReminder(
+  db: Database,
+  now: Date,
+): Promise<LogReminderOutcome> {
+  try {
+    if (readDailyLogReminder(db) === 'off') {
+      await cancelHerLogReminders(DAILY_LOG_REMINDER_DAYS_AHEAD);
+      return 'off';
+    }
+    if ((await reminderPermission()) === 'refused') {
+      return 'the-phone-said-no';
+    }
+
+    const today = localDay(now);
+
+    await scheduleHerLogReminders({
+      moments: whenToRemindHerToLog({
+        at: readDailyLogReminderTime(db),
+        hasLoggedToday: readDayLog(db, today) !== undefined,
+        now,
+        today,
+      }),
+      opens: theEntryOfToday,
+      slots: DAILY_LOG_REMINDER_DAYS_AHEAD,
+      words: dailyLogReminderWords,
+    });
+    return 'scheduled';
+  } catch {
+    return 'the-scheduler-refused';
+  }
+}
+
 /**
  * What a screen calls after a write that can move the forecast: the hold, a flow she logs, a
  * period she edits. It runs in the background and never holds the screen up.
@@ -82,6 +133,10 @@ export function useRescheduleHerReminder(): () => void {
   const profiles = useProfileVault();
 
   return useCallback(() => {
-    void rescheduleHerReminder(database, profiles, new Date());
+    const now = new Date();
+
+    void rescheduleHerReminder(database, profiles, now).then(() =>
+      rescheduleHerLogReminder(database, now),
+    );
   }, [database, profiles]);
 }

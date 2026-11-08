@@ -9,6 +9,7 @@ import { DatabaseProvider } from '../data/DatabaseProvider';
 import { theNavigatorGround } from '../features/chrome/theme';
 import { LockGate } from '../features/lock/LockGate';
 import { FirstRunProvider } from '../features/onboarding/FirstRunProvider';
+import { ReminderPresses } from '../features/reminder/ReminderPresses';
 import { Fonts } from '../features/type/Fonts';
 import { VaultProvider } from '../services/vault/VaultProvider';
 
@@ -47,6 +48,7 @@ export default function RootLayout(): ReactNode {
               <VaultProvider>
                 <FirstRunProvider>
                   <ThemeProvider value={theNavigatorGround}>
+                    <ReminderPresses />
                     <Stack screenOptions={{ headerShown: false }}>
                       <Stack.Screen name="(tabs)" options={{ animationTypeForReplace: 'push' }} />
                       <Stack.Screen

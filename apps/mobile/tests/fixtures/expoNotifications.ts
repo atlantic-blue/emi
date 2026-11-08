@@ -12,8 +12,21 @@
 export interface ScheduledReminder {
   readonly identifier: string;
   readonly body: string;
+  readonly data?: Readonly<Record<string, unknown>>;
   readonly at: Date;
 }
+
+interface PressedReminder {
+  readonly actionIdentifier: string;
+  readonly notification: {
+    readonly request: {
+      readonly identifier: string;
+      readonly content: { readonly data: Readonly<Record<string, unknown>> };
+    };
+  };
+}
+
+type PressListener = (response: PressedReminder) => void;
 
 type HerAnswer = 'allow' | 'refuse';
 
@@ -26,6 +39,7 @@ interface PhoneState {
 
 const phone: PhoneState = { answer: 'allow', answered: false, refuses: false, asked: 0 };
 const scheduled = new Map<string, ScheduledReminder>();
+const pressListeners = new Set<PressListener>();
 
 /** The trigger types the module exports. Emi schedules by date and by nothing else. */
 export const SchedulableTriggerInputTypes = {
@@ -69,7 +83,7 @@ export async function getPermissionsAsync(): Promise<PermissionAnswer> {
 
 interface ScheduleRequest {
   readonly identifier?: string;
-  readonly content: { readonly body?: string };
+  readonly content: { readonly body?: string; readonly data?: Readonly<Record<string, unknown>> };
   readonly trigger: { readonly type: string; readonly date: Date | number };
 }
 
@@ -86,6 +100,7 @@ export async function scheduleNotificationAsync(request: ScheduleRequest): Promi
   scheduled.set(identifier, {
     identifier,
     body: request.content.body ?? '',
+    data: request.content.data,
     at: new Date(request.trigger.date),
   });
 
@@ -98,6 +113,21 @@ export async function cancelScheduledNotificationAsync(identifier: string): Prom
   }
   scheduled.delete(identifier);
   await Promise.resolve();
+}
+
+export const DEFAULT_ACTION_IDENTIFIER = 'expo.modules.notifications.actions.DEFAULT';
+
+export function addNotificationResponseReceivedListener(listener: PressListener): {
+  remove: () => void;
+} {
+  pressListeners.add(listener);
+
+  return { remove: () => pressListeners.delete(listener) };
+}
+
+/** A phone opened by its own hand, never by a press on a reminder. */
+export async function getLastNotificationResponseAsync(): Promise<null> {
+  return await Promise.resolve(null);
 }
 
 export async function getExpoPushTokenAsync(): Promise<never> {
@@ -115,6 +145,7 @@ export function resetExpoNotifications(answer: HerAnswer = 'allow'): void {
   phone.refuses = false;
   phone.asked = 0;
   scheduled.clear();
+  pressListeners.clear();
 }
 
 /** A phone she already answered, the way she answered it. */
@@ -136,4 +167,19 @@ export function timesThePhoneAsked(): number {
 /** Every reminder the phone holds, in the order they were scheduled. */
 export function theRemindersOnThePhone(): readonly ScheduledReminder[] {
   return [...scheduled.values()];
+}
+
+/** She presses a reminder on her lock screen, and the phone opens Emi with it. */
+export function shePressesTheReminder(
+  identifier: string,
+  data: Readonly<Record<string, unknown>>,
+): void {
+  const response: PressedReminder = {
+    actionIdentifier: DEFAULT_ACTION_IDENTIFIER,
+    notification: { request: { identifier, content: { data } } },
+  };
+
+  for (const listener of pressListeners) {
+    listener(response);
+  }
 }

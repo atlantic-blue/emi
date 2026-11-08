@@ -7146,7 +7146,7 @@ defineFeature(feature, (test) => {
       named = namedValues(described);
       const mentions = painted.flatMap(({ markup }) => coloursDrawnIn(markup));
 
-      expect(mentions).toHaveLength(2435);
+      expect(mentions).toHaveLength(2443);
       expect(new Set(mentions.map(opaqueBaseOf)).size).toBe(35);
       expect(named.size).toBeGreaterThanOrEqual(35);
     });
