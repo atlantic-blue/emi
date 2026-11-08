@@ -131,7 +131,7 @@ function named(name: string, names: Readonly<Record<string, string>> | undefined
 function conditionHolds(
   expression: string,
   held: Item | undefined,
-  input: PutItemInput | UpdateItemInput,
+  input: PutItemInput | UpdateItemInput | DeleteItemInput,
 ): boolean {
   return expression.split(' OR ').some((clause) => {
     const exists = /^attribute_exists\(([^)]+)\)$/.exec(clause.trim());
@@ -246,11 +246,19 @@ export function fakeTable(options: FakeTableOptions = {}): FakeTable {
       return Promise.resolve();
     },
 
-    deleteItem: (input: DeleteItemInput): Promise<void> => {
+    deleteItem: (input: DeleteItemInput): Promise<Item | undefined> => {
       checkedTable(input.TableName);
       counted.deleteItem += 1;
 
       const key = keyText(input.Key);
+      const held = items.get(key);
+
+      if (
+        input.ConditionExpression !== undefined &&
+        !conditionHolds(input.ConditionExpression, held, input)
+      ) {
+        return Promise.reject(refusedByCondition());
+      }
 
       // The real table answers a delete of an item that was never there with a success, so this
       // one does too: a delete is the same request whether the item is held or not.
@@ -258,7 +266,12 @@ export function fakeTable(options: FakeTableOptions = {}): FakeTable {
         items.delete(key);
       }
 
-      return Promise.resolve();
+      // The item it took, and only when the caller asked for it. A caller that names no return
+      // value reads nothing back, the same as it would from the deployed table.
+      const took =
+        input.ReturnValues === 'ALL_OLD' && held !== undefined ? copyOfItem(held) : undefined;
+
+      return Promise.resolve(took);
     },
 
     query: (input: QueryInput): Promise<QueryOutput> => {
