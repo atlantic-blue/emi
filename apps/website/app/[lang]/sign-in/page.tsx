@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { type SiteWordKey, type SiteWords, isLanguage, wordsIn } from '@/app/words';
 import { EmiIcon } from '@/components/emiIcon';
 import { TheSignInForm } from '@/components/theSignInForm';
+import { TheWaysSheCanSignIn } from '@/components/theWaysSheCanSignIn';
 import { theLinksOf } from '@/lib/theAddressesOfAPage';
 
 /**
@@ -12,10 +13,9 @@ import { theLinksOf } from '@/lib/theAddressesOfAPage';
  * the top, the mark, the title, the line under it, the ways in, and the two sentences that say
  * what the account is for.
  *
- * The board offers four ways in and the page draws one. Sign in with Apple, Google and Telegram
- * each need a credential only a person can make, and step 28.3 makes them, so each of the three
- * presses and the divider over them wait here the way every other press of this site waits for its
- * page. The three come back by taking one line off each.
+ * The board offers four ways in and the page draws three of them: Apple, Google and the code
+ * sent to her email address. Telegram needs a function of its own, so its press waits here the way
+ * every other press of this site waits for its page, and it comes back by taking one line off it.
  *
  * She does not need an account to use Emi. The page says so under the form, because a sign in page
  * that said nothing would read as a sign in she has to do.
@@ -36,27 +36,28 @@ interface AWayToSignIn {
   readonly word: SiteWordKey;
   readonly ground: string;
   /**
-   * Whether the credential behind it is still to be made. A way marked this way is not drawn, and
-   * it comes back by taking this one line off it on the day step 28.3 lands.
+   * Whether the way in is still to be built. A way marked this way is not drawn, and it comes back
+   * by taking this one line off it on the day the sign in behind it exists.
    */
   readonly waitsForItsKeys?: boolean;
 }
 
 /**
- * The three ways in the board draws above the divider, none of which is drawn today. Each one
- * needs a credential only a person can make, and step 28.3 makes all three.
+ * The three ways in the board draws above the divider, in the order it draws them. Apple and
+ * Google are drawn; Telegram waits for the function that signs her in through it.
  *
- * They are listed rather than deleted, so the page keeps the shape the board gives it and the day
- * the credentials exist is one line of work for each. The mark each press carries is Apple own,
- * Google own and Telegram own, and each company states how its mark may be drawn, so the three
- * marks arrive with the credentials rather than being drawn from memory here.
+ * Each press carries the mark of its own company, drawn as the board draws it in
+ * `components/theMarksOfTheWaysIn.tsx`, because each company fixes how its mark is drawn.
+ *
+ * Apple sits above Google because Apple's review rule asks for a way in that limits what it
+ * learns beside every social sign in, and the board draws it first.
  */
 export const theWaysToSignIn: readonly AWayToSignIn[] = [
-  { word: 'signInApple', ground: 'bg-siteBlack text-siteCard', waitsForItsKeys: true },
+  { word: 'signInApple', ground: 'bg-siteBlack text-siteCard' },
   {
     word: 'signInGoogle',
-    ground: 'border-hairline border-siteControlLine bg-siteCard text-siteText',
-    waitsForItsKeys: true,
+    // Google's own rule and Google's own words, which are neither of them a colour of Emi.
+    ground: 'box-border border-hairline border-markGoogleLine bg-siteCard text-markGoogleText',
   },
   { word: 'signInTelegram', ground: 'bg-siteTint text-siteText', waitsForItsKeys: true },
 ];
@@ -106,15 +107,7 @@ export default async function SignInPage({ params }: { params: Promise<{ lang: s
         {words.signInTitle}
       </h1>
       <TheSignInForm language={lang} words={words}>
-        {offered.map((way) => (
-          <button
-            className={`flex min-h-[52px] items-center justify-center gap-spaceMd rounded-[12px] text-body-lg font-semibold ${way.ground}`}
-            key={way.word}
-            type="button"
-          >
-            {words[way.word]}
-          </button>
-        ))}
+        <TheWaysSheCanSignIn language={lang} ways={offered} words={words} />
 
         {offered.length === 0 ? null : (
           <div className="flex items-center gap-spaceMd py-spaceSm text-body-sm text-siteQuietText">

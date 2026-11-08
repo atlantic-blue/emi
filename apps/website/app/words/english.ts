@@ -349,6 +349,12 @@ export const english = {
   signInNothingReached: 'Your browser could not reach Emi. Check the connection and try again.',
   signInSending: 'Sending a code…',
   signInChecking: 'Checking the code…',
+  signInCouldNotStart:
+    'Emi could not start that sign in. Try again, or ask for a code with the box below.',
+  returningTitle: 'Signing you in',
+  returningWait: 'One moment. Emi is finishing your sign in.',
+  returningDidNotFinish: 'That sign in did not finish. Open the sign in page and press again.',
+  returningTryAgain: 'Back to sign in ›',
   accountTitle: 'Account',
   accountRecordsStayOnYourPhone: 'Your records stay on your phone, so they are not here.',
   accountSignOut: 'Sign out',

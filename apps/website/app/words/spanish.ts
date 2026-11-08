@@ -271,6 +271,12 @@ export const spanish: SiteWords = {
     'Tu navegador no pudo conectar con Emi. Comprueba la conexión e inténtalo otra vez.',
   signInSending: 'Enviando un código…',
   signInChecking: 'Comprobando el código…',
+  signInCouldNotStart:
+    'Emi no pudo iniciar ese acceso. Inténtalo otra vez o pide un código en el campo de abajo.',
+  returningTitle: 'Iniciando tu sesión',
+  returningWait: 'Un momento. Emi está terminando tu acceso.',
+  returningDidNotFinish: 'Ese acceso no terminó. Abre la página de acceso y pulsa otra vez.',
+  returningTryAgain: 'Volver al acceso ›',
   accountTitle: 'Cuenta',
   accountRecordsStayOnYourPhone: 'Tus registros se quedan en tu teléfono, así que no están aquí.',
   accountSignOut: 'Salir',

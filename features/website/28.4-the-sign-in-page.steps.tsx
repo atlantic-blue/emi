@@ -141,7 +141,7 @@ function saidIn(markup: string): string {
 }
 
 defineFeature(feature, (test) => {
-  test('the page offers the one way in that works today', ({ given, then, and }) => {
+  test('the page offers Apple, Google and a code sent to her address', ({ given, then, and }) => {
     const drawn: Partial<Record<Language, string>> = {};
 
     const inEnglish = (): string => drawn.en ?? '';
@@ -170,12 +170,19 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'the three ways in that wait for their keys are not drawn, and their words wait in all three languages',
+      'Telegram alone waits for its own sign in, and its words wait in all three languages',
       () => {
-        const waiting: SiteWordKey[] = ['signInApple', 'signInGoogle', 'signInTelegram'];
+        const waiting: SiteWordKey[] = ['signInTelegram'];
 
-        expect(theWaysToSignIn.map((way) => way.word)).toEqual(waiting);
-        expect(theWaysInSheIsOffered()).toEqual([]);
+        expect(theWaysToSignIn.map((way) => way.word)).toEqual([
+          'signInApple',
+          'signInGoogle',
+          'signInTelegram',
+        ]);
+        expect(theWaysInSheIsOffered().map((way) => way.word)).toEqual([
+          'signInApple',
+          'signInGoogle',
+        ]);
 
         for (const language of languages) {
           const middle = theMiddleOf(drawn[language] ?? '');
@@ -193,13 +200,13 @@ defineFeature(feature, (test) => {
               drawn: false,
             });
           }
-        }
 
-        // The divider over the three is drawn by the same list, so it goes with them. The word
-        // itself is two letters that sit inside other words, so the rule is the element and not
-        // the word: the page draws no rule of the kind the board draws between them.
-        expect(theMiddleOf(inEnglish())).not.toContain('bg-siteLine');
-        expect(wordsIn('en').signInOr.trim().length).toBeGreaterThan(0);
+          // The divider the board draws over the three is drawn now, because two of them are. The
+          // word itself is two letters that sit inside other words, so the rule is the element and
+          // not the word.
+          expect(theMiddleOf(drawn[language] ?? '')).toContain('bg-siteLine');
+          expect(saidIn(middle)).toContain(words.signInOr);
+        }
       },
     );
 
@@ -217,6 +224,9 @@ defineFeature(feature, (test) => {
       const ofThisPage: SiteWordKey[] = [
         'signInTitle',
         'signInLine',
+        'signInApple',
+        'signInGoogle',
+        'signInOr',
         'signInAddressLabel',
         'signInSendCode',
         'signInWeSendACode',

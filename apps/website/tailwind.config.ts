@@ -10,6 +10,7 @@ import {
   websiteFace,
   websiteFaceNames,
   websiteFaceStack,
+  websiteMarkColour,
   websitePhoneWidth,
   websiteTabletWidth,
 } from '@emi/tokens';
@@ -96,10 +97,18 @@ const families = Object.fromEntries(
  * Two palettes, because the site and the phone are two surfaces and the board paints them in
  * different values. Every name of the site's own palette starts with `site`, so one flat namespace
  * carries both without either answering for the other.
+ *
+ * The marks of the two companies she can sign in with carry a third set, each name opening with
+ * `mark`. A press of another company is drawn in the values that company publishes, and those are
+ * not values any band of Emi may paint with, so they stay out of both palettes.
  */
 const config = {
   theme: {
-    colors: { ...fromTokens(colour, (value) => value), ...fromTokens(websiteColour, (v) => v) },
+    colors: {
+      ...fromTokens(colour, (value) => value),
+      ...fromTokens(websiteColour, (v) => v),
+      ...websiteMarkColour,
+    },
     fontFamily: families,
     fontSize: text,
     // A rule Emi draws as a filled box takes its thickness as a height, so the two stroke widths

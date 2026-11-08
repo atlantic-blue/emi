@@ -126,4 +126,25 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/account/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/account/" />
   </url>
+  <url>
+    <loc>https://myemi.app/en/sign-in/returning/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/sign-in/returning/" />
+  </url>
+  <url>
+    <loc>https://myemi.app/ru/sign-in/returning/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/sign-in/returning/" />
+  </url>
+  <url>
+    <loc>https://myemi.app/es/sign-in/returning/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/sign-in/returning/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/sign-in/returning/" />
+  </url>
 </urlset>

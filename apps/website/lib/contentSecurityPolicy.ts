@@ -11,6 +11,7 @@
  * name, which is how Next.js loads them, without naming any of those addresses here.
  */
 
+import { THE_SIGN_IN_HOST } from './theProviderSignIn';
 import { THE_POOL_HOST } from './theSignIn';
 
 /** The name the policy travels under, in a request and in a response alike. */
@@ -42,9 +43,11 @@ export function policyAllowing(nonce: string): string {
     `font-src 'self'`,
     // The sign in page asks Amazon Cognito for a code and answers it with six digits, from her
     // browser, because the service issues the tokens to the browser and no server of this site
-    // sees them. That one host, and no other: a policy naming every host would let a script
-    // somebody managed to write into a page send what she typed anywhere.
-    `connect-src 'self' ${THE_POOL_HOST}`,
+    // sees them. The page she comes back to from Apple or from Google exchanges a code at the
+    // address the pool answers on, which is the second host. Those two, and no other: a policy
+    // naming every host would let a script somebody managed to write into a page send what she
+    // typed anywhere.
+    `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST}`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,

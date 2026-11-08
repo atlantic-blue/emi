@@ -1,6 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
 import { renderToStaticMarkup } from 'react-dom/server';
 
-import { websiteColour } from '@emi/tokens';
+import { websiteColour, websiteMarkColour } from '@emi/tokens';
 
 import RootLayout from '../app/[lang]/layout';
 import AccountPage from '../app/[lang]/account/page';
@@ -18,6 +21,8 @@ import { classesIn, declarationsOf, stylesheetFor } from './stylesheet';
  */
 
 const longEnoughToCompile = 120_000;
+
+const repositoryRoot = resolve(__dirname, '..', '..', '..');
 
 async function theSignInPage(): Promise<string> {
   const page = await SignInPage({ params: Promise.resolve({ lang: 'en' }) });
@@ -37,6 +42,19 @@ async function theAccountPage(): Promise<string> {
 
 function theMiddleOf(markup: string): string {
   return markup.slice(markup.indexOf('<main'), markup.indexOf('</main>'));
+}
+
+/** The press whose words are these, as the opening tag that carries its classes. */
+function pressThatSays(markup: string, words: string): string {
+  const found = [...markup.matchAll(/<button\b[^>]*>(.*?)<\/button>/g)].find(([, inside = '']) =>
+    inside.includes(words),
+  );
+
+  if (found === undefined) {
+    throw new Error(`The page draws no press that says ${words}.`);
+  }
+
+  return /<button\b[^>]*>/.exec(found[0])?.[0] ?? '';
 }
 
 function openingTagsOf(markup: string, element: string): string[] {
@@ -109,11 +127,76 @@ describe('what the page she signs in on draws', () => {
     async () => {
       const markup = await theSignInPage();
       const stylesheet = await stylesheetFor(classesIn(markup));
-      const press = openingTagsOf(theMiddleOf(markup), 'button')[0] ?? '';
+      // The press that sends the code is the last of the three the page draws: Apple and Google
+      // stand over the divider, and this one sits in the row she types her address in.
+      const press = pressThatSays(theMiddleOf(markup), wordsIn('en').signInSendCode);
 
       expect(markup).toContain(`>${wordsIn('en').signInSendCode}</button>`);
       expect(drawnBy(press, stylesheet)).toContain(`background-color: ${websiteColour.siteSlider}`);
       expect(drawnBy(press, stylesheet)).toContain('min-height: 44px');
+    },
+    longEnoughToCompile,
+  );
+
+  it(
+    'draws the press of each company in that company own colours, and in no colour of Emi',
+    async () => {
+      const markup = await theSignInPage();
+      const stylesheet = await stylesheetFor(classesIn(markup));
+      const middle = theMiddleOf(markup);
+      const apple = drawnBy(pressThatSays(middle, wordsIn('en').signInApple), stylesheet);
+      const google = drawnBy(pressThatSays(middle, wordsIn('en').signInGoogle), stylesheet);
+
+      // Apple asks for white on black. Those two are in the palette already, because the board
+      // paints a card white and Apple's press black.
+      expect(apple).toContain(`background-color: ${websiteColour.siteBlack}`);
+      expect(apple).toContain(`color: ${websiteColour.siteCard}`);
+
+      // Google asks for its own rule and its own words on white, and neither value is a value of
+      // Emi. The rule in the palette is a warmer grey, so a press drawn with it is a press Google
+      // does not allow and a press the board does not draw.
+      expect(google).toContain(`background-color: ${websiteColour.siteCard}`);
+      expect(google).toContain(`border-color: ${websiteMarkColour.markGoogleLine}`);
+      expect(google).toContain(`color: ${websiteMarkColour.markGoogleText}`);
+      expect(google).not.toContain(websiteColour.siteControlLine);
+
+      for (const press of [apple, google]) {
+        expect(press).toContain('min-height: 52px');
+        expect(press).toContain('border-radius: 12px');
+      }
+    },
+    longEnoughToCompile,
+  );
+
+  it(
+    'draws the mark of each company as the board draws it, and names neither one aloud',
+    async () => {
+      const markup = await theSignInPage();
+      const board = readFileSync(
+        join(repositoryRoot, 'docs', 'design', 'website', 'sign-in', 'boards', 'SignIn.dc.html'),
+        'utf8',
+      );
+      const outlines = [...board.matchAll(/ d="([^"]+)"/g)].map(([, outline]) => outline ?? '');
+
+      // The two outlines the board draws the mark of Telegram with. Telegram waits for a sign in
+      // of its own, so the page draws neither of them.
+      const telegram = ['M21 4L3 11l6 2 2 6 3-4 5 4 2-15z', 'M9 13l8-6'];
+      const theirs = outlines.filter((outline) => !telegram.includes(outline));
+
+      expect(theirs).toHaveLength(5);
+
+      for (const outline of theirs) {
+        expect(markup).toContain(outline);
+      }
+
+      for (const outline of telegram) {
+        expect(outlines).toContain(outline);
+        expect(markup).not.toContain(outline);
+      }
+
+      // The words beside each mark say which press it is, so a reader whose software reads the
+      // page aloud hears the company once rather than twice.
+      expect(markup).toContain('<svg aria-hidden="true"');
     },
     longEnoughToCompile,
   );

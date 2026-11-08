@@ -503,3 +503,45 @@ export function websiteSignInProblems(
 
   return problems;
 }
+
+// ── Apple beside Google, wherever either one is offered ──────────────────────
+
+/**
+ * The two ways in that ship together, each written as the pair of names a source offers them by.
+ *
+ * Apple's review rule asks an application that offers a social sign in to offer, beside it, a way
+ * in that limits what it collects to a name and an address and lets a person keep that address
+ * private. Sign in with Apple is that way in. So a screen or a page that offers Google and not
+ * Apple is a screen the store refuses, and the two cannot be allowed to drift apart.
+ *
+ * A source offers a way in by one of two names: the key the catalogue of words gives the press, or
+ * the name the service fixes for the provider.
+ */
+export const theWaysInThatShipTogether: readonly { google: string; apple: string }[] = [
+  { google: 'signInGoogle', apple: 'signInApple' },
+  { google: "'Google'", apple: "'SignInWithApple'" },
+];
+
+/** One source the rule reads: the path a reader would type, and the text of the file. */
+export interface ASource {
+  readonly file: string;
+  readonly text: string;
+}
+
+/**
+ * Every place that offers Google and does not offer Apple beside it, each written as the sentence
+ * a reader needs.
+ */
+export function placesOfferingGoogleWithoutApple(sources: readonly ASource[]): string[] {
+  const said: string[] = [];
+
+  for (const { file, text } of sources) {
+    for (const { google, apple } of theWaysInThatShipTogether) {
+      if (text.includes(google) && !text.includes(apple)) {
+        said.push(`${file} offers ${google} and does not offer ${apple} beside it`);
+      }
+    }
+  }
+
+  return said;
+}

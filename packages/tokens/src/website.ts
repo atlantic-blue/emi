@@ -376,3 +376,38 @@ export const websiteTabletWidth = 1023;
  * to each other put two things in motion at two different moments and a reader cannot read either.
  */
 export const websiteCarouselWait = 7000;
+
+/**
+ * The colours another company fixes for its own sign in press, and the names the theme of the site
+ * gives them.
+ *
+ * They are not the palette of Emi and nothing of Emi is painted in them. Each one is the value the
+ * company publishes for its own mark, and the approved board draws the press in those values, so a
+ * press in the palette of Emi would be a press that company does not allow.
+ *
+ * They are kept apart from `websiteColours` for that reason: a value in the palette is a value any
+ * band of the site may use, and these may be used by one press each. A colour written into a page
+ * is a colour nobody measured, which is why they are here rather than in the page that draws them.
+ *
+ * Apple asks for its own mark in white on black. Those two are `siteCard` and `siteBlack` of the
+ * palette already, so Apple's press needs nothing of its own.
+ */
+export const websiteMarkColour = {
+  /** The rule around Google's press. */
+  markGoogleLine: '#747775',
+  /** The words on Google's press. */
+  markGoogleText: '#1F1F1F',
+  /** The four quarters of Google's own mark, in the order the mark draws them. */
+  markGoogleRed: '#EA4335',
+  markGoogleBlue: '#4285F4',
+  markGoogleYellow: '#FBBC05',
+  markGoogleGreen: '#34A853',
+} as const;
+
+/** One colour of another company's mark, by the name the theme gives it. */
+export type WebsiteMarkColourName = keyof typeof websiteMarkColour;
+
+/** The names as data, so a rule can read every one of them. */
+export const websiteMarkColourNames: readonly WebsiteMarkColourName[] = Object.keys(
+  websiteMarkColour,
+) as WebsiteMarkColourName[];

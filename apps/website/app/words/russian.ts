@@ -279,6 +279,12 @@ export const russian: SiteWords = {
   signInNothingReached: 'Браузер не смог связаться с Emi. Проверьте соединение и попробуйте снова.',
   signInSending: 'Отправляем код…',
   signInChecking: 'Проверяем код…',
+  signInCouldNotStart:
+    'Emi не смог начать этот вход. Попробуйте снова или запросите код в поле ниже.',
+  returningTitle: 'Выполняем вход',
+  returningWait: 'Одну минуту. Emi завершает ваш вход.',
+  returningDidNotFinish: 'Этот вход не завершился. Откройте страницу входа и нажмите снова.',
+  returningTryAgain: 'Вернуться к входу ›',
   accountTitle: 'Аккаунт',
   accountRecordsStayOnYourPhone: 'Ваши записи остаются на телефоне, поэтому их здесь нет.',
   accountSignOut: 'Выйти',

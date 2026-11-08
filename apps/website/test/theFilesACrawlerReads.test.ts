@@ -101,15 +101,18 @@ function elsewhereIn(entry: Element): Record<string, string> {
  * list. A directory in brackets is not a page: it is the one that answers 404 for every address
  * the site does not have.
  */
-function thePagesTheRouterServes(): string[] {
-  const routes = join(repositoryRoot, 'apps', 'website', 'app', '[lang]');
+function thePagesTheRouterServes(
+  under = join(repositoryRoot, 'apps', 'website', 'app', '[lang]'),
+): string[] {
+  const pages = readdirSync(under, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('['))
+    .flatMap((entry) => {
+      const deeper = thePagesTheRouterServes(join(under, entry.name)).filter((page) => page !== '');
 
-  return [
-    '',
-    ...readdirSync(routes, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('['))
-      .map((entry) => `${entry.name}/`),
-  ].sort();
+      return [`${entry.name}/`, ...deeper.map((page) => `${entry.name}/${page}`)];
+    });
+
+  return [...(under.endsWith(']') ? [''] : []), ...pages].sort();
 }
 
 /**

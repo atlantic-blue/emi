@@ -84,16 +84,23 @@ function thePageAt(address: string) {
 }
 
 /**
- * Every page under a language that the router really serves. A directory in brackets is not a
- * page: it is the one that answers 404 for every address the site does not have.
+ * Every page under a language that the router really serves, however deep it sits. A directory in
+ * brackets is not a page: it is the one that answers 404 for every address the site does not have.
+ *
+ * A page under another page is read as well. The page Apple and Google send her back to sits under
+ * the page she signs in on, and a reader of the top row alone would miss it, so the list of pages
+ * could lose it and nothing here would say so.
  */
-function thePagesTheRouterServes(): string[] {
-  return [
-    '',
-    ...readdirSync(join(websiteWorkspace, 'app', '[lang]'), { withFileTypes: true })
-      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('['))
-      .map((entry) => `${entry.name}/`),
-  ].sort();
+function thePagesTheRouterServes(under = join(websiteWorkspace, 'app', '[lang]')): string[] {
+  const pages = readdirSync(under, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('['))
+    .flatMap((entry) => {
+      const deeper = thePagesTheRouterServes(join(under, entry.name)).filter((page) => page !== '');
+
+      return [`${entry.name}/`, ...deeper.map((page) => `${entry.name}/${page}`)];
+    });
+
+  return [...(under.endsWith(']') ? [''] : []), ...pages].sort();
 }
 
 defineFeature(feature, (test) => {
