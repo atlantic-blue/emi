@@ -1,3 +1,5 @@
+import { instantAt } from '@emi/crypto';
+
 import type {
   AccountDeletion,
   AccountDeleteStore,
@@ -6,6 +8,12 @@ import type {
   RememberOutcome,
   StoredAccount,
 } from './accounts';
+import {
+  answerWindowSeconds,
+  type OneTimeAnswer,
+  type OneTimeAnswerStore,
+  type SpentAnswer,
+} from './answers';
 import {
   pageCostOf,
   type RecordPage,
@@ -66,6 +74,11 @@ export interface DeleteItemInput extends ExpressionParts {
   readonly TableName: string;
   readonly Key: Item;
   readonly ConditionExpression?: string;
+  /**
+   * Asks for the item the removal took. The table answers with it only when this is named, so a
+   * caller that forgot it reads nothing back and cannot tell a spent answer from a fresh one.
+   */
+  readonly ReturnValues?: 'ALL_OLD';
 }
 
 /** A read along a key, inside one partition. */
@@ -92,7 +105,7 @@ export interface DynamoDbTable {
   putItem(input: PutItemInput): Promise<void>;
   getItem(input: GetItemInput): Promise<Item | undefined>;
   updateItem(input: UpdateItemInput): Promise<void>;
-  deleteItem(input: DeleteItemInput): Promise<void>;
+  deleteItem(input: DeleteItemInput): Promise<Item | undefined>;
   query(input: QueryInput): Promise<QueryOutput>;
 }
 
@@ -121,6 +134,14 @@ export function recordSortKeyFor(recordId: string): string {
 export function signatureSortKeyFor(signature: string): string {
   return `SIG#${signature}`;
 }
+
+/** The partition one Telegram sign in sits in, named by the digest of the answer she holds. */
+export function answerPartitionFor(answerDigest: string): string {
+  return `ANS#${answerDigest}`;
+}
+
+/** The sort key of a one time answer. Its partition holds this item and never a second one. */
+export const answerSortKey = 'META';
 
 /** The index a pull reads: one account's records, in the order they were written. */
 export const byUpdatedIndex = 'byUpdated';
@@ -182,10 +203,15 @@ async function refusedByItsCondition(write: Promise<void>): Promise<boolean> {
 export function dynamoStore(
   table: DynamoDbTable,
   tableName: string,
-): AccountStore & RecordStore & AccountDeleteStore {
+): AccountStore & RecordStore & AccountDeleteStore & OneTimeAnswerStore {
   const keyOf = (accountId: string, sortKey: string): Item => ({
     pk: { S: partitionFor(accountId) },
     sk: { S: sortKey },
+  });
+
+  const answerKeyOf = (answerDigest: string): Item => ({
+    pk: { S: answerPartitionFor(answerDigest) },
+    sk: { S: answerSortKey },
   });
 
   async function countOneMoreRecord(accountId: string): Promise<void> {
@@ -328,6 +354,52 @@ export function dynamoStore(
       await nothingIsLeftUnder(accountId);
 
       return { itemsRemoved: held.length };
+    },
+
+    writeAnswer: async (answer: OneTimeAnswer): Promise<void> => {
+      const issuedAt = instantAt(answer.issuedAt);
+
+      if (issuedAt === null) {
+        throw new Error('an answer is issued at one written instant, and this is not one');
+      }
+
+      await table.putItem({
+        TableName: tableName,
+        Item: {
+          ...answerKeyOf(answer.answerDigest),
+          userName: { S: answer.userName },
+          issuedAt: { S: answer.issuedAt },
+          ttl: { N: String(Math.floor(issuedAt / 1000) + answerWindowSeconds) },
+        },
+      });
+    },
+
+    spendAnswer: async (answerDigest: string): Promise<SpentAnswer | undefined> => {
+      // The condition is what spends it: one of two calls arriving together is refused, so the
+      // same answer cannot be presented twice. The removal answers with the item it took, which
+      // is the whole reason this role needs no read of the table.
+      let removed: Item | undefined;
+
+      try {
+        removed = await table.deleteItem({
+          TableName: tableName,
+          Key: answerKeyOf(answerDigest),
+          ConditionExpression: 'attribute_exists(pk)',
+          ReturnValues: 'ALL_OLD',
+        });
+      } catch (thrown) {
+        if (isConditionalCheckFailure(thrown)) {
+          return undefined;
+        }
+
+        throw thrown;
+      }
+
+      if (removed === undefined) {
+        throw new Error('the table took an answer away and answered with none of it');
+      }
+
+      return { userName: textOf(removed.userName), issuedAt: textOf(removed.issuedAt) };
     },
 
     writeRecord: async (accountId: string, record: StoredRecord): Promise<WriteOutcome> => {

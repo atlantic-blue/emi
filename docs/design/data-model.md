@@ -37,6 +37,7 @@ flowchart TD
     DEV["DEV#deviceId / META: publicKey, accountId, addedBy, addedAt"]
     IDY["IDY#identityDigest / META: accountId, provider, linkedAt"]
     TXN["TXN#transactionDigest / META: accountId, store, firstSeenAt"]
+    ANS["ANS#answerDigest / META: userName, issuedAt, ttl"]
   end
   POOL["Amazon Cognito user pool: subject, email address, the provider she used"]
   ACC --> REC
@@ -50,6 +51,7 @@ flowchart TD
   AIDY -->|"one for one"| IDY
   POOL -.->|"a digest of the issuer and the subject"| IDY
   POOL -.->|"the address, copied once at the link"| ACC
+  POOL -.->|"spends a one time answer, once"| ANS
 ```
 
 ### The items that exist today
@@ -132,6 +134,37 @@ Status: designed
 The transaction digest is 26 characters, cut from the first 16 bytes of the SHA-256 of the store
 name, a newline and the original transaction identifier. The receipt is never stored and the
 transaction identifier never travels past the digest.
+
+### The one time answer item
+
+Status: designed
+
+`pk` is `ANS#` and the answer digest. `sk` is `META`.
+
+The item carries one Telegram sign in. A user pool issues no token for a user it did not
+authenticate itself, and Emi authenticates her against Telegram. So the function that answers the
+code writes this item, and the verify trigger of the custom sign in turns it into tokens.
+
+The answer is 32 bytes from the random source of the platform. The answer digest is 26 characters
+of Crockford base 32, cut from the first 16 bytes of the SHA-256 of those bytes. The helper that
+makes an account identifier makes this one. The answer itself is written nowhere: it exists in the
+answer of the function, and in the call that spends it.
+
+`userName` is the pool user name the answer belongs to, as a string. It is `tg_` and 26 characters.
+
+`issuedAt` is an instant as a string. The verify trigger reads it, and it refuses an answer that is
+more than 120 seconds old.
+
+`ttl` is a number. It is the seconds of `issuedAt` plus 120. It is the field the remembered
+signature carries. The table removes an expired item some time after it expires rather than at the
+instant, so this field cleans up and it never refuses.
+
+The item holds no subject, no token, no address and no account identifier. A reader who holds the
+table reads a digest, so nothing in this item answers a challenge.
+
+The sign in function writes the item and reads nothing from the table. The verify trigger spends it
+with a conditional delete, and that call returns the two fields above. The define trigger and the
+create trigger reach no table at all.
 
 ### The new attributes of the account item
 
@@ -610,6 +643,11 @@ The sign in and the devices:
 - Cap the devices. `UpdateItem` with the condition `deviceCount < :cap`.
 - Claim a receipt. `PutItem` on `TXN#<transactionDigest>` and `META` with
   `attribute_not_exists(pk)`.
+- Write a one time answer. `PutItem` of the whole item on `ANS#<answerDigest>` and `META`. The
+  answer is 32 random bytes, so two sign ins never name one item.
+- Spend a one time answer. `DeleteItem` by whole key, with the condition `attribute_exists(pk)` and
+  `ReturnValues: ALL_OLD`. The call returns the item it removed, so the trigger reads the user name
+  and the instant without a grant to read the table.
 
 The partner link:
 
