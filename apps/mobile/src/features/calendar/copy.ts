@@ -156,6 +156,8 @@ export const editPeriodCopy = {
   deleteKeep: words('calendar.editPeriod.deleteKeep'),
   deleteLine: words('calendar.editPeriod.deleteLine'),
   deleteTitle: words('calendar.editPeriod.deleteTitle'),
+  /** The note under the list once Emi marked days between a first and a last day she pressed. */
+  filled: words('calendar.editPeriod.filled'),
   noDayLeft: words('calendar.editPeriod.noDayLeft'),
   save: words('calendar.editPeriod.save'),
   title: words('calendar.editPeriod.title'),

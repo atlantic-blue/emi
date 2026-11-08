@@ -43,6 +43,8 @@ export const spanish: CatalogueIn<'es'> = {
   'calendar.editPeriod.deleteLine':
     'Emi marca cada día de este periodo como sin sangrado. Los síntomas y las notas de esos días se quedan.',
   'calendar.editPeriod.deleteTitle': '¿Eliminar este periodo?',
+  'calendar.editPeriod.filled':
+    'Emi marcó los días intermedios con un flujo medio. Puedes cambiar el flujo en cada día.',
   'calendar.editPeriod.lead': {
     one: 'Pulsa los días que sangraste. Emi guarda {count} día, desde {date}.',
     other: 'Pulsa los días que sangraste. Emi guarda {count} días, desde {date}.',
