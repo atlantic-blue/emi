@@ -123,7 +123,54 @@ resource "aws_cognito_user_pool_client" "website" {
 
   generate_secret = false
 
+  # The code sent to her address travels in ALLOW_USER_AUTH, and the site signs a woman in that way
+  # today. A client that lost this flow would lose that sign in, so it stays beside the two flows
+  # the providers need.
   explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+
+  # The three ways the site offers. COGNITO is the pool itself, which is the code sent to her
+  # address, and the service reads this list as the whole set a client may use: a list without
+  # COGNITO takes the code sign in away from the site.
+  #
+  # Each provider is named through the resource that makes it, so Terraform makes the provider
+  # before it offers one. A name written as text here would let an apply offer a way in that the
+  # pool does not hold yet, and the person who pressed it would read an error from the service.
+  supported_identity_providers = [
+    "COGNITO",
+    aws_cognito_identity_provider.apple.provider_name,
+    aws_cognito_identity_provider.google.provider_name,
+  ]
+
+  # The authorization code flow, and no other. The service hands the browser a code, and the
+  # browser exchanges it for the tokens. The implicit flow would put a token in the address
+  # itself, which keeps it in her history and in the referrer of the next request.
+  #
+  # The client keeps no secret, because a page of this site keeps nothing a reader cannot read. So
+  # the exchange proves it started the sign in with a code challenge, which is the proof key for
+  # code exchange.
+  allowed_oauth_flows                  = ["code"]
+  allowed_oauth_flows_user_pool_client = true
+
+  # The subject and the address, which is all the account holds. The profile scope would hand over
+  # her name, her picture and her language. The aws.cognito.signin.user.admin scope would let a
+  # script in her browser write her attributes in the pool.
+  allowed_oauth_scopes = ["openid", "email"]
+
+  # Where a provider sends her back to, and where a sign out leaves her. One pair for each language
+  # the site serves, because the page she returns to is written in the language she was reading.
+  # The service matches a callback address as a whole string, so the slash at the end is part of
+  # it: every address of this site carries one.
+  callback_urls = [
+    "https://${var.domain_name}/en/sign-in/returning/",
+    "https://${var.domain_name}/ru/sign-in/returning/",
+    "https://${var.domain_name}/es/sign-in/returning/",
+  ]
+
+  logout_urls = [
+    "https://${var.domain_name}/en/sign-in/",
+    "https://${var.domain_name}/ru/sign-in/",
+    "https://${var.domain_name}/es/sign-in/",
+  ]
 
   auth_session_validity = 15
 
