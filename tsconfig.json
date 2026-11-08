@@ -11,8 +11,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "types": ["jest", "node"],
-    "noEmit": true,
-    "allowImportingTsExtensions": true
+    "noEmit": true
   },
   "include": ["brand", "infrastructure", "tools"]
 }
