@@ -59,6 +59,10 @@ signs in later, never in the first run. Contract SCREEN-1 stays exactly as it is
 tests." Contract SCREEN-1 now moves, and the section "The account is required, and a woman who
 already has days keeps every one" holds the whole of it.
 
+The account is required as a hard gate: no logging at all without an account. The operator decided
+that on 8 November 2026, and question 3 of the section named above holds what it costs and what it
+settles.
+
 ## What I read
 
 Status: built
@@ -237,17 +241,44 @@ the application lands back on the gate at the stage she left.
 
 #### What she sees
 
-Title: Emi needs an account now.
+The gate carries four ways in, one way out, and nothing else. The decision of 8 November 2026 gives
+it no control that reaches the ring, so the words say what she must do rather than offering her a
+choice she does not have.
 
-Lines: Your days stay on this phone, sealed with a key this phone holds. Emi holds 412 days here.
-An account lets a new phone find them, and it carries your subscription between phones. Emi still
-cannot open one of your days, and signing in does not change that.
-
-Actions: Sign in with Apple, Sign in with Google, Sign in with Telegram, Send me a code, and
-whatever control the decision in question 3 adds.
+Actions: Sign in with Apple, Sign in with Google, Sign in with Telegram, and Send me a code. Under
+them, on a phone that holds a day, Delete everything on this phone. That control is a way out of the
+product and never a way past the gate.
 
 The count is read from her own database and written as a number, the same rule the locked screen
-carries. A gate that cannot name what she holds is a gate she has no reason to trust.
+carries. A gate that cannot name what she holds is a gate she has no reason to trust. A phone that
+holds no day leaves the count line out rather than writing a zero.
+
+**English.**
+
+Title: Emi needs an account now.
+
+Lines: Your days stay on this phone, sealed with a key this phone holds. Emi holds 412 days here. An
+account lets a new phone find them, and it carries your subscription between phones. Emi needs the
+account before you log another day. Emi still cannot open one of your days, and signing in does not
+change that.
+
+**Spanish.**
+
+Title: Emi necesita una cuenta ahora.
+
+Lines: Tus días se quedan en este teléfono, cifrados con una clave que tiene este teléfono. Emi
+guarda aquí 412 días. Una cuenta permite que un teléfono nuevo los encuentre, y lleva tu suscripción
+de un teléfono a otro. Emi necesita la cuenta antes de que registres otro día. Emi sigue sin poder
+abrir ninguno de tus días, y entrar no cambia eso.
+
+**Russian.**
+
+Title: Emi нужен аккаунт.
+
+Lines: Ваши дни остаются на этом телефоне, зашифрованные ключом этого телефона. Emi хранит здесь 412
+дней. С аккаунтом новый телефон найдёт их, и аккаунт переносит вашу подписку. Emi нужен аккаунт,
+прежде чем вы запишете ещё один день. Emi всё равно не может открыть ни один ваш день, и вход этого
+не меняет.
 
 #### The merge, in order
 
@@ -366,15 +397,61 @@ accepts asking twice, because the alternative is a second copy of her wrapped ke
 
 #### She has no network
 
-Nothing of hers changes. The stage row stays where it was and the gate says so.
+Nothing of hers changes. The stage row stays where it was, and the gate says what the network costs
+her. The gate is hard, so the two women see two different screens: one cannot start, and one cannot
+log again until she signs in once.
 
-Title: Emi cannot reach your account.
+A new woman cannot start. She answered every question and the hold wrote her answers, so nothing of
+hers is lost. The sign in needs the network, and there is no way past the gate, so Emi says that and
+asks her to come back.
 
-Lines: Your days are safe on this phone. Emi needs the network once, to make the account. Emi will
-ask again.
+**English.** Title: Emi needs the network once.
 
-What she may do while the network is away is the decision in question 3, and the gate draws whatever
-control that decision gives it.
+Lines: Emi cannot make your account without it. Your answers are safe on this phone. Open Emi again
+when you have a signal, and Emi carries on from here.
+
+Actions: Try again.
+
+**Spanish.** Title: Emi necesita la red una vez.
+
+Lines: Sin ella Emi no puede crear tu cuenta. Tus respuestas están seguras en este teléfono. Abre
+Emi otra vez cuando tengas señal, y Emi sigue desde aquí.
+
+Actions: Intentar de nuevo.
+
+**Russian.** Title: Emi нужна сеть один раз.
+
+Lines: Без неё Emi не может создать ваш аккаунт. Ваши ответы в безопасности на этом телефоне.
+Откройте Emi снова, когда появится сигнал, и Emi продолжит с этого места.
+
+Actions: Попробовать снова.
+
+A woman who already has days signs in once before she logs again. Her days stay where they are, and
+the screen says so and names how many. It carries the way to the delete, because a woman who will
+not wait may still take her days off this phone.
+
+**English.** Title: Sign in once to log again.
+
+Lines: Emi holds 412 days on this phone, and they are safe. Emi needs the network once, to make your
+account. You can log again as soon as you sign in. Nothing on this phone is lost while you wait.
+
+Actions: Try again, and Delete everything on this phone.
+
+**Spanish.** Title: Entra una vez para volver a registrar.
+
+Lines: Emi guarda 412 días en este teléfono, y están seguros. Emi necesita la red una vez, para
+crear tu cuenta. Podrás registrar otra vez en cuanto entres. Nada de este teléfono se pierde
+mientras esperas.
+
+Actions: Intentar de nuevo, y Borrar todo en este teléfono.
+
+**Russian.** Title: Войдите один раз, чтобы снова записывать.
+
+Lines: Emi хранит на этом телефоне 412 дней, и они в безопасности. Emi нужна сеть один раз, чтобы
+создать ваш аккаунт. Вы сможете снова записывать сразу после входа. Ничего на этом телефоне не
+теряется, пока вы ждёте.
+
+Actions: Попробовать снова, и Удалить всё на этом телефоне.
 
 #### She signs in with an identity that another account holds
 
@@ -438,15 +515,16 @@ afterwards, through the control she gave it with.
 Errors: a question whose answer nothing in the product reads, except the year of birth. A question
 with no Skip. An answer written to the database or the server in plain text. A password asked for. A
 field for anything other than her name, and the address of a woman who asks for a code. Anything
-written before the hold. The account gate drawn before the hold.
+written before the hold. The account gate drawn before the hold. A control on the gate that reaches
+the ring, and a day logged while the stage row is not `linked`.
 
 Two screens are reached only when her identity already names an account: the locked screen and the
 screen for a woman with no code. They are named apart, the way the every symptom screen is named
 apart today, because no first run reaches them.
 
-The question list keeps its Skip rule, and the gate is not one of the questions. Whether the gate
-itself can be passed is the decision in question 3, so SCREEN-1 takes its last error line from that
-answer.
+The question list keeps its Skip rule, and the gate is not one of the questions. The gate itself
+cannot be passed, which the decision of 8 November 2026 settles, so the last error line above is
+written and no longer waits.
 
 #### Every contract that moves
 
@@ -507,44 +585,43 @@ languages, and the test reads them.
 
 ### Question 3, what required means when she refuses or cannot sign in
 
-Status: designed, except for the one line the operator holds. This design does not choose it.
+Status: designed.
 
-The decision says the account is required. It does not say what the application does in the minute
-she refuses, or in the week her network is away. Four answers are possible, and each one costs
-something real.
+The operator decided this on 8 November 2026. It is a hard gate: no logging at all without an
+account. The gate carries no control that passes it.
 
-**Option one, a hard gate.** No logging without an account. The gate has no way past it.
-What it buys: one shape of user in the whole product, and every later feature reads one account.
-What it costs: a woman with no network cannot log the day she is living. A woman who will not sign
-in walks away at the gate, after she gave Emi her last three periods. The App Store review rule on
-account requirements bears on this, and I did not read the guidelines today, so read guideline
-5.1.1 before this option ships. The website line "It is optional: Emi works without it." becomes
-false, which question 5 fixes either way.
+So the gate stands in front of the product, and three things stand in front of the gate. The first
+run runs to the hold, so she answers every question and her answers are written. The lock draws,
+because a phone that asks for Face ID asks before any screen of Emi. The delete works, because a
+woman who wants her days gone may always have them gone, and the gate carries the way to it.
 
-**Option two, a gate she may pass, and which returns.** She presses Not now. The application
-records as it does today, and the gate draws again at the next launch, or after a stated number of
-days, or the first time she opens anything that needs the account.
-What it buys: no day is ever lost to a radio, and the first run always ends in the ring.
-What it costs: two shapes of user stay in the product for ever, and every later feature carries the
-woman with no account. The word required then means asked every time, which is weaker than the
-decision reads.
+Reading her own days sits behind the gate as well, because the gate sits on the home route. The
+decision names logging, and this design puts the gate in front of the whole product, because a ring
+she may look at and never add a day to reads as broken in a different way.
 
-**Option three, required for the vault and the money, and never for a day.** The application
-records on the phone with no account. The account gates the sync, the restore and the payment.
-What it buys: the trust claim on the website stays as it is, and nothing in the first run changes.
-What it costs: this is close to the account the product has today, with a stronger prompt. It does
-not deliver the decision as it is written.
+What it costs, written here because it is the design working and not a fault. A woman with no
+network cannot start Emi at all. A woman who will not sign in leaves at the gate, after she gave Emi
+her last three periods. A woman who already has days cannot log one more until she signs in once,
+and the section "She has no network" says what each of the two sees.
 
-**Option four, a grace that ends.** The application records from the first launch, and the account
-must arrive within a stated number of days or launches. After that the logging stops until it does.
-What it buys: a plane and a holiday both work, and the account still arrives.
-What it costs: an application that stops recording is an application that lost her days, as she
-reads it. It is the hardest of the four to write on a screen in one sentence, and it is the one most
-likely to arrive as a review in the store.
+Read guideline 5.1.1 of the App Store review rules before this ships. I read no guideline on 7 or 8
+November 2026, so an application that asks for an account before it draws a ring is a review risk
+measured in no way. It stays an open item for the operator, and the section "What this design does
+not answer" names it.
 
-What waits on this answer: the last control on the gate, the last error line of contract SCREEN-1,
-the words of the gate, and whether the section "What works before she ever signs in" keeps its
-first word.
+The three alternatives considered, and what each one would have cost instead.
+
+**A gate she may pass, which returns.** She presses Not now, and the application records as it does
+today. It keeps every day a radio would cost her, and it leaves two shapes of user in the product
+for ever.
+
+**Required for the vault and the money, never for a day.** The account gates the sync, the restore
+and the payment, and the phone records without one. It changes nothing in the first run, and it does
+not deliver the decision.
+
+**A grace that ends.** The application records from the first launch and stops when a stated number
+of days passes with no account. A plane and a holiday both work, and an application that stops
+recording reads to her as an application that lost her days.
 
 ### Question 4, signing in opens no record, and the merge keeps that true
 
@@ -832,16 +909,18 @@ Actions: Sign in, and Not now.
 
 Status: designed
 
-This section changed with the decision of 7 November 2026. Its first word used to be
-"Everything", and the answer now waits on question 3.
+Two decisions changed this section, the one of 7 November 2026 and the one of 8 November 2026. Its
+first word used to be "Everything".
 
-Everything on the phone still runs with no network and with no account: the first run, logging, the
-ring, the forecast, the history, the export, the lock and the delete. None of them calls the api.
+Nothing. The gate is hard, so she reaches no screen of the product before she signs in. She cannot
+log a day, draw the ring, read her history or export a file.
 
-What changed is whether she reaches them before she signs in. The decision says the account is
-required. What the application does when she refuses, or when her network is away, is the decision
-in question 3 of the section "The account is required, and a woman who already has days keeps every
-one".
+Three things run in front of the gate, because each one has to. The first run runs to the hold, so
+she answers every question and her answers are written. The lock draws, because a phone that asks
+for Face ID asks before any screen of Emi. The delete works, and the gate carries the way to it.
+
+Each of those three runs with no network. The delete reaches for the api and finishes without it,
+which `apps/mobile/src/services/sync/deleteAccount.ts` already does and says why.
 
 A woman who signs in still has one vault account and never two. It is made by her device key when the phone
 first registers, under contract WIRE-1, with no email address and no sign in of any kind. Her
@@ -1917,6 +1996,10 @@ above so the path can name them.
 47. No string of the product says the account is optional. The copy test reads every string of the
     application, and the website test reads all three languages of each key the section on the words
     names.
+48. No route that writes a day draws while the stage row is not `linked`. A case opens the log
+    sheet and a day by its address and reads the gate instead of either one.
+49. The gate carries four ways in and one way to the delete, and no control that reaches the ring. A
+    case reads every control on the gate and finds those five.
 
 ## The path
 
@@ -2313,9 +2396,9 @@ the gate is drawn before anything sends a woman to it, and nothing sends her to 
 and the merge both work. A piece that turned the gate on before the ways in existed would lock
 every woman out of the product on the day it merged.
 
-The decision in question 3 reaches the second and the sixth piece. The second piece draws whatever
-control that answer gives the gate, and the sixth decides whether the redirect has a way past it.
-Both pieces wait for the operator on that one line, and the five others do not.
+No piece waits for the operator now. The decision of 8 November 2026 gives the gate no way past it,
+so the second piece draws four ways in and one way to the delete, and the sixth piece writes a
+redirect with nothing that passes it.
 
 **The contract for the account gate, and the first run count that moves.**
 
@@ -2335,12 +2418,12 @@ Files: `apps/mobile/src/data/settingRepository.ts`, `apps/mobile/src/features/ac
 `apps/mobile/src/app/account/`, `apps/mobile/src/language/english.ts`,
 `apps/mobile/src/language/spanish.ts`, `apps/mobile/src/language/russian.ts`, and the behaviour test
 for this piece.
-Behaviour: the two new setting keys, the gate screen with its four ways in and its count of days,
-and the route that draws it. Nothing redirects to it yet, so a woman sees it only by opening the
-address, and the product she has keeps working exactly as it does.
-Proof: a case renders the route, reads the title, the count and the four controls, and asserts the
-home route still draws the ring. Rule 46. A mutation that reads the count from a constant rather
-than from the database is watched failing.
+Behaviour: the two new setting keys, the gate screen with its four ways in, its way to the delete
+and its count of days, and the route that draws it. Nothing redirects to it yet, so a woman sees it
+only by opening the address, and the product she has keeps working exactly as it does.
+Proof: a case renders the route, reads the title, the count and the five controls, and asserts the
+home route still draws the ring. Rules 46 and 49. A mutation that reads the count from a constant
+rather than from the database is watched failing, and so is one that adds a sixth control.
 The promise: the gate reads a count of rows. It reads no day and it holds no key.
 
 **The merge, on a phone that already has days.**
@@ -2385,14 +2468,18 @@ returned.
 
 **The gate becomes the way to the home screen.**
 
-Depends on: the merge, and the decision in question 3.
-Files: `apps/mobile/src/app/(tabs)/index.tsx`, `apps/mobile/tests/fixtures/theFirstRun.ts`,
+Depends on: the merge.
+Files: `apps/mobile/src/app/(tabs)/index.tsx`, `apps/mobile/src/app/(tabs)/log/index.tsx`,
+`apps/mobile/src/app/day/[date].tsx`, `apps/mobile/tests/fixtures/theFirstRun.ts`,
 `apps/mobile/tests/integration/2.3.test.tsx`, and the behaviour test for this piece.
 Behaviour: the third redirect on the home route, beside the two that send her to the welcome and to
-the tour. The first run ends at the gate, and the gate ends at the ring. The fixture that walks the
-first run passes the gate, so the twenty two test files that use it change in one place.
-Proof: rule 37, and the case of contract SCREEN-1 that walks every screen and ends on the home
-route. A mutation that drops the redirect is watched failing.
+the tour, with nothing that passes it. Every route that writes a day carries the same redirect, so
+an address typed by hand reaches the gate as well. The first run ends at the gate, and the gate ends
+at the ring. The fixture that walks the first run passes the gate, so the twenty two test files that
+use it change in one place.
+Proof: rules 37 and 48, and the case of contract SCREEN-1 that walks every screen and ends on the
+home route. A mutation that drops the redirect from the home route is watched failing, and so is one
+that drops it from the log sheet.
 The promise: a redirect reads one row of plain text. It reads no day.
 
 **The words that promised an optional account.**
@@ -2488,11 +2575,13 @@ Status: designed
 The plan overall: 80 percent. The parts differ.
 
 The required account and the merge: 85 percent. The merge is additive on the phone, and every step
-of it is a call the service already takes or a condition on one. The part I am less sure of is the
-decision in question 3, which changes the gate, the words and the last error line of contract
-SCREEN-1. I read no store review guideline on 7 November 2026, and I put no build through review, so
-an application that asks for an account before it draws a ring is a review risk I measured in no
-way.
+of it is a call the service already takes or a condition on one. The hard gate of 8 November 2026
+takes the last open line out of the design, so nothing in it waits for an answer now.
+
+The hard gate through store review: 50 percent, and it is the lowest number in this document. I read
+no review guideline on 7 or 8 November 2026 and I put no build through review. An application that
+asks for an account before it draws a ring is refused by some reviewers and passed by others, and
+reading guideline 5.1.1 is the one thing that moves this number.
 
 The locked state, the ordering of the pull and the second sealing: 90 percent. It follows from the keys and
 from what a phone can hold, and each rule is a case.
@@ -2554,6 +2643,6 @@ all carry the name.
 The feature number these steps belong to, which decides the name of every behaviour test file in the
 path.
 
-What required means when she refuses, or when she cannot reach the network. Question 3 of the
-section "The account is required, and a woman who already has days keeps every one" writes four
-options and what each one costs. Two pieces of the path wait for that one line, and five do not.
+Guideline 5.1.1 of the App Store review rules, read against a hard gate. The operator settled the
+hard gate on 8 November 2026, and nobody has read the guideline or put a build through review. It is
+the open item that can refuse the whole release, so read it before this ships.
