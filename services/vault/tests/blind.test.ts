@@ -174,12 +174,15 @@ function importGraph(): { files: string[]; taken: TakenFrom[] } {
  * sees, which is the point of writing the list out rather than counting the imports.
  */
 const allowedFromCrypto: readonly string[] = [
+  'RandomSource',
   'accountHeader',
+  'accountIdBytes',
   'accountIdFor',
   'base64Of',
   'bodyHashHeader',
   'bodyHashOf',
   'bytesFromBase64',
+  'crockfordBase32',
   'decoyPublicKey',
   'deviceKeyLength',
   'instantAt',
@@ -223,6 +226,16 @@ const namesThatOpenOrSeal: readonly string[] = [
  * word that is not on this list arrives with a reader asking what it unlocks.
  */
 const allowedKeyWords: readonly string[] = [
+  // The keys Telegram publishes, which verify an identity token and open nothing. The set is read
+  // once for each container, and the service holds no half of it that could sign one.
+  'PublishedKey',
+  'createPublicKey',
+  'keyed',
+  'keys',
+  'publishedKeys',
+  'publishedKeysAddress',
+  'publishedKeysFrom',
+  'publishedKeysOnce',
   'ExclusiveStartKey',
   'accountIdContextKey',
   'Key',

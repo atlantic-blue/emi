@@ -72,6 +72,17 @@ resource "aws_apigatewayv2_route" "register" {
   authorization_type = "NONE"
 }
 
+# The sign in with Telegram takes no authorizer, for the same reason registration takes none: a
+# woman signing in holds no device key for the account she is reaching, so there is no stored key
+# to check a signature against. What she sends is a code Telegram gave her, and the function
+# believes it only after Telegram signs an identity token for it.
+resource "aws_apigatewayv2_route" "sign_in_telegram" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/sign-in/telegram"
+  target             = "integrations/${aws_apigatewayv2_integration.vault.id}"
+  authorization_type = "NONE"
+}
+
 resource "aws_apigatewayv2_route" "put_record" {
   api_id             = aws_apigatewayv2_api.vault.id
   route_key          = "PUT /v1/records/{recordId}"
