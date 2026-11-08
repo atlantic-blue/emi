@@ -259,3 +259,40 @@ export function theDaysOf(listed: DaysListed): string[] {
     addDays(listed.from, index),
   );
 }
+
+/** The days she holds after one press, and the days between that Emi marked for her. */
+export interface AfterAPress {
+  readonly ticked: string[];
+  readonly filled: string[];
+}
+
+/**
+ * One press on a row. A ticked day comes off alone. A day before the first or after the last day
+ * she holds becomes the new first or last day, and every day between is marked with it, so a
+ * first and a last day make a whole period. A day inside the period is ticked alone, so a day she
+ * took off stays off.
+ */
+export function whatAPressHolds(ticked: readonly string[], day: string): AfterAPress {
+  if (ticked.includes(day)) {
+    return { filled: [], ticked: ticked.filter((each) => each !== day) };
+  }
+
+  const sorted = [...ticked].sort();
+  const first = sorted[0];
+  const last = sorted.at(-1);
+  let filled: string[] = [];
+
+  if (first !== undefined && day < first) {
+    filled = theDaysBetween(day, first);
+  } else if (last !== undefined && day > last) {
+    filled = theDaysBetween(last, day);
+  }
+
+  return { filled, ticked: [...sorted, ...filled, day].sort() };
+}
+
+function theDaysBetween(from: string, to: string): string[] {
+  return Array.from({ length: Math.max(0, daysBetween(from, to) - 1) }, (_unused, offset) =>
+    addDays(from, offset + 1),
+  );
+}
