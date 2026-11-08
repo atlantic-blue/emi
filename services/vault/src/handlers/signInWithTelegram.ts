@@ -1,6 +1,7 @@
 import type { RandomSource } from '@emi/crypto';
 
 import { answer, bodyTextOf, type HttpRequestEvent, type HttpResponse, refusal } from '../api';
+import type { OneTimeAnswerStore } from '../store/answers';
 import {
   identityTokenFor,
   type PublishedKey,
@@ -8,7 +9,7 @@ import {
   type ReachesTelegram,
 } from '../telegram/exchange';
 import { subjectIn } from '../telegram/identityToken';
-import { type OneTimeAnswerWriter, oneTimeAnswerFor } from '../telegram/oneTimeAnswer';
+import { oneTimeAnswerFor } from '../telegram/oneTimeAnswer';
 import {
   botIdentifierParameter,
   clientSecretParameter,
@@ -49,7 +50,11 @@ export interface WhatTheSignInNeeds {
   readonly parameters: ParameterStore;
   readonly reaches: ReachesTelegram;
   readonly pool: UserPool;
-  readonly answers: OneTimeAnswerWriter;
+  /**
+   * The write half of the answer store, and never the spend: the three triggers hold that one,
+   * so neither role can do the other role's half of the sign in.
+   */
+  readonly answers: Pick<OneTimeAnswerStore, 'writeAnswer'>;
   readonly random: RandomSource;
 }
 
@@ -138,7 +143,7 @@ export async function signInWithTelegram(
 
   const made = oneTimeAnswerFor(userName, now, holds.random);
 
-  await holds.answers.writeOneTimeAnswer(made.written);
+  await holds.answers.writeAnswer(made.written);
 
   return answer(200, { userName, answer: made.answer });
 }

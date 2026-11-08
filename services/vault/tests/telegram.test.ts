@@ -4,6 +4,19 @@ import { base64Of, type RandomSource } from '@emi/crypto';
 
 import { type HttpResponse } from '../src/api';
 import {
+  answerDigestIn,
+  answerIsFresh,
+  answerWindowSeconds,
+  type OneTimeAnswer,
+  type OneTimeAnswerStore,
+} from '../src/store/answers';
+import {
+  answerPartitionFor,
+  answerSortKey,
+  type AttributeValue,
+  dynamoStore,
+} from '../src/store/dynamo';
+import {
   signInTelegram,
   signInWithTelegram,
   theBodyASignInTakes,
@@ -20,12 +33,7 @@ import {
   tokenAddress,
 } from '../src/telegram/exchange';
 import { subjectIn } from '../src/telegram/identityToken';
-import {
-  digestOfOneTimeAnswer,
-  oneTimeAnswerLivesForSeconds,
-  type OneTimeAnswerWriter,
-  type WrittenOneTimeAnswer,
-} from '../src/telegram/oneTimeAnswer';
+
 import {
   botIdentifierParameter,
   clientSecretParameter,
@@ -36,6 +44,7 @@ import {
 } from '../src/telegram/parameters';
 import { type MadeThePoolUser, type PoolUser, type UserPool } from '../src/telegram/pool';
 import { poolUserNameFor, telegramUserNamePrefix } from '../src/telegram/userName';
+import { fakeTable, tableName } from './fixtures/dynamoTable';
 import { requestEvent } from './fixtures/requests';
 
 /**
@@ -233,18 +242,18 @@ function fakePool(does: WhatThePoolDoes = {}): FakePool {
   };
 }
 
-interface FakeAnswers extends OneTimeAnswerWriter {
+interface FakeAnswers extends Pick<OneTimeAnswerStore, 'writeAnswer'> {
   /** Every answer written down, as the record the table would hold. */
-  written(): readonly WrittenOneTimeAnswer[];
+  written(): readonly OneTimeAnswer[];
 }
 
 function fakeAnswers(): FakeAnswers {
-  const held: WrittenOneTimeAnswer[] = [];
+  const held: OneTimeAnswer[] = [];
 
   return {
     written: () => [...held],
 
-    writeOneTimeAnswer: (written: WrittenOneTimeAnswer): Promise<void> => {
+    writeAnswer: (written: OneTimeAnswer): Promise<void> => {
       held.push(written);
 
       return Promise.resolve();
@@ -320,6 +329,10 @@ function aSignIn(how: HowItIsBound = {}): TheSignInUnderTest {
 
 const sheCameBackWith = { code: 'the-code-telegram-gave-her', codeVerifier: 'the-value-she-kept' };
 
+/** One attribute of an item as text, so a case reads the item the table actually holds. */
+const textIn = (value: AttributeValue | undefined): string =>
+  value !== undefined && 'S' in value ? value.S : '';
+
 const bodyOf = (response: { body: string }): Record<string, unknown> =>
   JSON.parse(response.body) as Record<string, unknown>;
 
@@ -342,19 +355,21 @@ describe('the function that answers a Telegram code', () => {
       const [written] = signIn.answers.written();
 
       expect(given.length).toBeGreaterThan(0);
-      expect(written?.digest).toBe(digestOfOneTimeAnswer(given));
+      expect(written?.answerDigest).toBe(answerDigestIn(given));
       expect(JSON.stringify(written)).not.toContain(given);
     });
 
-    it('writes the answer down under the user name, and lets it go in two minutes', async () => {
+    it('writes the answer down under the user name, and the instant it was issued at', async () => {
       const signIn = aSignIn();
 
       await signIn.answer(sheCameBackWith);
       const [written] = signIn.answers.written();
+      const past = new Date(signedAt.getTime() + (answerWindowSeconds + 1) * 1000);
 
       expect(written?.userName).toBe(poolUserNameFor(subject, theSalt));
       expect(written?.issuedAt).toBe(signedAt.toISOString());
-      expect(written?.expiresAt).toBe(atSeconds + oneTimeAnswerLivesForSeconds);
+      expect(answerIsFresh(written?.issuedAt ?? '', signedAt)).toBe(true);
+      expect(answerIsFresh(written?.issuedAt ?? '', past)).toBe(false);
     });
 
     it('makes the pool user, asking the pool for no password and no attribute', async () => {
@@ -763,6 +778,50 @@ describe('the function that answers a Telegram code', () => {
       expect(response.body).not.toContain(clientSecret);
       expect(response.body).not.toContain(base64Of(theSalt));
       expect(response.body).not.toContain(botIdentifier);
+    });
+  });
+
+  describe('the answer as the table holds it', () => {
+    it('is one item the trigger spends, named by the digest of what she holds', async () => {
+      const table = fakeTable();
+      const store = dynamoStore(table, tableName);
+      const telegram = fakeTelegram();
+      const bound = signInTelegram(
+        {
+          parameters: fakeParameters(everythingItNeeds),
+          reaches: telegram.reaches,
+          pool: fakePool(),
+          answers: store,
+          random: risingBytes(),
+        },
+        () => signedAt,
+      );
+
+      const response = await bound(
+        requestEvent(
+          {
+            method: 'POST',
+            path: '/v1/sign-in/telegram',
+            body: JSON.stringify(sheCameBackWith),
+            instant: signedAt,
+          },
+          {},
+        ),
+      );
+      const given = bodyOf(response).answer as string;
+      const digest = answerDigestIn(given) ?? '';
+      const held = table.items().find((item) => 'userName' in item);
+
+      expect(textIn(held?.pk)).toBe(answerPartitionFor(digest));
+      expect(textIn(held?.sk)).toBe(answerSortKey);
+      expect(textIn(held?.userName)).toBe(poolUserNameFor(subject, theSalt));
+      expect(JSON.stringify(table.items())).not.toContain(given);
+
+      await expect(store.spendAnswer(digest)).resolves.toEqual({
+        userName: poolUserNameFor(subject, theSalt),
+        issuedAt: signedAt.toISOString(),
+      });
+      await expect(store.spendAnswer(digest)).resolves.toBeUndefined();
     });
   });
 
