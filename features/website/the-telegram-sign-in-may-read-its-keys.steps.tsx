@@ -100,8 +100,8 @@ defineFeature(feature, (test) => {
       expect(grantedOnEveryResource(signIn, 'ssm:GetParameter')).toBe(false);
     });
 
-    // Feature 7 pays with Telegram Stars through the same bot, so the one credential that can act
-    // as the bot stays off the sign in path. A prefix would reach it.
+    // Payment with Telegram Stars goes through the same bot, so the one credential that can act as
+    // the bot stays off the sign in path. A prefix would reach it.
     and('it reads the bot token through no grant and no prefix', () => {
       expect(signInPolicy).not.toContain('bot-token');
 

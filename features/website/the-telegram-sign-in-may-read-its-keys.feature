@@ -7,10 +7,9 @@ Feature: The Telegram sign in may read its keys, and nothing else may
   That takes one function and three triggers. This step gives each of them a role, and it builds
   nothing that runs.
 
-  The split is the point of the step. An apply reads a policy for each request. Pull request 515
-  changed the apply role and made the user pool in one apply. The create ran one second after the
-  policy change, and the account refused it. So the grants merge on their own, and the functions
-  follow after.
+  The split is the point of the step. A permission and the resource that needs it can fail together
+  in one apply, because the policy has not spread yet. So the grants merge on their own and first,
+  and the functions follow after.
 
   The operator made two things by hand, and nothing in this repository can make either. They
   switched @EmiAppBot to the OpenID Connect login in BotFather, and registered the return address
@@ -19,7 +18,7 @@ Feature: The Telegram sign in may read its keys, and nothing else may
   Four mistakes are easy here. No one of them fails an apply.
 
   The first is a grant by prefix. The Telegram parameters sit beside the bot token, and the bot
-  token is the one credential that can act as the bot. Feature 7 pays with Telegram Stars through
+  token is the one credential that can act as the bot. Payment with Telegram Stars goes through
   that same bot. A prefix puts the payment credential on the sign in path.
 
   The second is a delete on the salt. The user name of the pool is a keyed hash of the Telegram

@@ -11,11 +11,10 @@ pool carries a `depends_on` on the role policy for that reason. If a merge still
 because the grant had not landed yet, run the deploy workflow again on `main`. The second run
 reads the policy the first one wrote.
 
-The sender does not rely on that. Pull request 515 changed the apply role and made the user pool
-in one apply, the create ran one second after the policy change, and the account refused it. So
-the grants the sender needs merged on their own first, in step 28.7, and this step adds the
-resources on top of a grant that is already active. A step that adds a resource of a service the
-roles have never touched is two merges, in that order.
+A permission and the resource that needs it can fail together in one apply, because the policy has
+not spread yet. So a grant ships alone and first, and the resources follow in a second merge. A
+change that adds a resource of a service the roles have never touched is two merges, in that
+order.
 
 ## What this builds
 
@@ -261,7 +260,7 @@ pool calls can read the salt or the client secret.
 
 Neither role is assumed by anything today, because no function exists yet. The grants land on
 their own and first. The account reads a policy per request, so a grant and the resource that needs
-it can fail together in one apply. That is what happened to the sender in pull request 515.
+it can fail together in one apply.
 
 The apply role needed nothing new. `TheTwoFunctions` already makes a function and lets a principal
 invoke one. `TheProjectRoles` already makes a role of Emi and hands it to a function.
