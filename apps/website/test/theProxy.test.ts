@@ -2,6 +2,7 @@ import { getScriptNonceFromHeader } from 'next/dist/server/app-render/get-script
 import { NextRequest } from 'next/server';
 
 import proxy, { config } from '../proxy';
+import { THE_SIGN_IN_HOST } from '../lib/theProviderSignIn';
 import { THE_POOL_HOST } from '../lib/theSignIn';
 
 /**
@@ -82,15 +83,21 @@ describe('the policy a page of the site answers with', () => {
     expect(directive(policy, 'font-src')).toBe(`font-src 'self'`);
   });
 
-  it('lets the page she signs in on reach the pool that issues her tokens, and no other host', () => {
+  it('lets the page she signs in on reach the two hosts that issue her tokens, and no other', () => {
     const policy = policyOn('/en/');
 
-    expect(directive(policy, 'connect-src')).toBe(`connect-src 'self' ${THE_POOL_HOST}`);
+    expect(directive(policy, 'connect-src')).toBe(
+      `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST}`,
+    );
     expect(THE_POOL_HOST).toBe('https://cognito-idp.eu-central-1.amazonaws.com');
+    expect(THE_SIGN_IN_HOST).toBe('https://auth.myemi.app');
     expect(new URL(THE_POOL_HOST).protocol).toBe('https:');
-    // One host and nothing else. A policy that named a second one would let a script somebody
-    // wrote into a page carry what she typed somewhere Emi does not answer for.
-    expect(directive(policy, 'connect-src').split(' ')).toHaveLength(3);
+    expect(new URL(THE_SIGN_IN_HOST).protocol).toBe('https:');
+    // Two hosts and nothing else. The first sends her a code and answers the six digits, the
+    // second exchanges the code Apple and Google send her back with. A policy that named a third
+    // would let a script somebody wrote into a page carry what she typed somewhere Emi does not
+    // answer for.
+    expect(directive(policy, 'connect-src').split(' ')).toHaveLength(4);
   });
 
   it('lets a page draw a picture this site serves, and one written into the markup', () => {

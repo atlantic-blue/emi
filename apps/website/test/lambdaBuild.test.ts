@@ -18,6 +18,8 @@ import {
   colourNames,
   websiteColour,
   websiteColourNames,
+  websiteMarkColour,
+  websiteMarkColourNames,
   websiteFaceNames,
   websiteFontCuts,
 } from '@emi/tokens';
@@ -369,6 +371,10 @@ describe('the site builds into a Lambda function and a folder of assets', () => 
       const written = new Set([
         ...colourNames.map((name) => asWritten(colour[name])),
         ...websiteColourNames.map((name) => asWritten(websiteColour[name])),
+        // The rule and the words of Google's own press, which Google fixes and Emi may not
+        // repaint. They are in the token package and out of both palettes, because one press may
+        // use them and no band of Emi may.
+        ...websiteMarkColourNames.map((name) => asWritten(websiteMarkColour[name])),
       ]);
 
       const strangers = [...built.matchAll(/#[0-9a-fA-F]{3,8}\b/g)]

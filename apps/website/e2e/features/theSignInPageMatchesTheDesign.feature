@@ -10,11 +10,11 @@ Feature: The sign in page is laid out the way it was approved
   measure wider, a field can keep a padding the board never had, a tint can land a shade off, and
   every word is still there, so every test that reads words still passes.
 
-  Two parts of the boards describe a product that does not exist yet. The board offers Sign in with
-  Apple, Google and Telegram over a divider, and each of the three needs a credential only a person
-  can make, so the page draws none of them and the comparison reads the parts that are left. The
-  account board draws four sections under its head, and each one is a step of its own, so only the
-  head is read.
+  The board offers four ways in. Apple and Google are drawn, each in the colours its own company
+  fixes, and each press is held against the board here. Telegram waits for a sign in of its own, so
+  the page draws neither it nor the rows it would take, and the comparison reads each part in its
+  own document for that reason. The account board draws four sections under its head, and each one
+  is a step of its own, so only the head is read.
 
   The code cannot be sent yet either. Steps 28.8 to 28.10 connect the pool to the sender on
   myemi.app, so this scenario answers the service itself with the shapes the service documents, and

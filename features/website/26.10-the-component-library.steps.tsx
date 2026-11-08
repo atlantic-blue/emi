@@ -80,6 +80,14 @@ const theBetaSheCanJoin = 'https://testflight.apple.com/join/xFSv5Gqa';
  */
 const thePoolThatSignsHerIn = 'https://cognito-idp.eu-central-1.amazonaws.com';
 
+/**
+ * The fifth, which is the same pool under a name of Emi. Apple and Google each return a woman to
+ * this address, and the pool answers on it with a certificate for that name, so it is a name of
+ * myemi.app and the account behind it is the account of Emi. Her browser leaves for it when she
+ * presses Apple or Google, and the page she comes back to exchanges a code there.
+ */
+const theAddressThePoolAnswersOn = 'https://auth.myemi.app';
+
 function reachesAnotherCompany(source: string): boolean {
   const withoutWhatSheChose = [
     theSiteItself,
@@ -87,6 +95,7 @@ function reachesAnotherCompany(source: string): boolean {
     theCodeSheCanRead,
     theBetaSheCanJoin,
     thePoolThatSignsHerIn,
+    theAddressThePoolAnswersOn,
   ].reduce((text, allowed) => text.split(allowed).join(''), source);
 
   return (
@@ -241,6 +250,14 @@ defineFeature(feature, (test) => {
       // clean and every other address on the same host is still refused.
       expect(reachesAnotherCompany(`she presses ${theCommunitySheCanOpen}`)).toBe(false);
       expect(reachesAnotherCompany(`a code from ${thePoolThatSignsHerIn}`)).toBe(false);
+      expect(reachesAnotherCompany(`she presses Apple at ${theAddressThePoolAnswersOn}`)).toBe(
+        false,
+      );
+      // The name of the pool rather than every name on it: another address of that company is
+      // still refused, and so is another host under it.
+      expect(reachesAnotherCompany('https://auth.somebody-else.example/oauth2/authorize')).toBe(
+        true,
+      );
       expect(reachesAnotherCompany('fetch("https://s3.eu-central-1.amazonaws.com/a-bucket")')).toBe(
         true,
       );

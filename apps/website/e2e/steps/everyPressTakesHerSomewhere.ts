@@ -73,11 +73,13 @@ When('she reads every press the page offers her', async ({ page, pressing }) => 
   expect(pressing.atTheTop.length).toBeGreaterThan(1);
   expect(pressing.atTheFoot.length).toBeGreaterThan(6);
 
-  // Two pages of the site offer her nothing to press inside the page itself. On the page she
-  // signs in on she types an address and sends a form, and on her account she signs out; neither
-  // is a press that carries an address, so neither is read here. Every other page offers her a
-  // way on, and a page of that kind with nothing in the middle is a page that failed to draw.
-  const offersNoPressOfItsOwn = ['/sign-in/', '/account/'].some((path) =>
+  // Three pages of the site offer her no row of presses inside the page itself. On the page she
+  // signs in on she types an address, presses a way in or sends a form, and on her account she
+  // signs out; not one of those carries an address, so none of them is read here. The page Apple
+  // and Google send her back to offers one press, which is the way back when the return did not
+  // finish. Every other page offers her a row of ways on, and a page of that kind with nothing in
+  // the middle is a page that failed to draw.
+  const offersNoPressOfItsOwn = ['/sign-in/', '/account/', '/sign-in/returning/'].some((path) =>
     new URL(page.url()).pathname.endsWith(path),
   );
 
@@ -136,18 +138,30 @@ Then(
   },
 );
 
-Then('no press takes her to a page that is still to be built', ({ pressing }) => {
+Then('no press takes her to a page that is still to be built', ({ page, pressing }) => {
   const everyPress = [...pressing.atTheTop, ...pressing.inThePage, ...pressing.atTheFoot];
   const leadingNowhere = everyPress.filter((press) => press.address === NO_PAGE_YET);
 
   expect(leadingNowhere.map((press) => press.called)).toEqual([]);
 
-  // Five paths no press on this site carries. Four of them are pages nobody has built yet. The
-  // fifth is the page she signs in on, which ships in step 28.4 and is a page of the site: the two
-  // presses that carry her to it, in the band at the top and in the band at the foot, stay held
-  // back until a step takes the mark off each. The support page was the sixth of these; it is
-  // built and pressed, so it is read in the step below as a press the site answers 200 for.
-  for (const path of ['buy/', 'calculator/', 'pulse/', 'sign-in/', 'terms/']) {
+  // Four paths no press on this site carries, each one a page nobody has built yet. The page she
+  // signs in on is read with them: it is a page of the site, and the two presses that carry her to
+  // it, in the band at the top and in the band at the foot, stay held back until a step takes the
+  // mark off each. The support page was the sixth of these; it is built and pressed, so it is read
+  // in the step below as a press the site answers 200 for.
+  //
+  // The page Apple and Google send her back to is the one place that does offer it. A return that
+  // did not finish leaves her one thing to do, which is to press again, so that press is the end
+  // of a sign in she started rather than a way into one from a page she was reading.
+  const sheCameBackFromAProvider = new URL(page.url()).pathname.endsWith('/sign-in/returning/');
+
+  for (const path of [
+    'buy/',
+    'calculator/',
+    'pulse/',
+    'terms/',
+    ...(sheCameBackFromAProvider ? [] : ['sign-in/']),
+  ]) {
     expect({
       waitingFor: path,
       pressed: everyPress.some((press) => press.address.endsWith(`/${path}`)),

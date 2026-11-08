@@ -5,11 +5,10 @@ Feature: The sign in page, with a code sent to her address
   for anything, so what it asks for and what it says it keeps are the whole of the trust it has to
   earn in one screen.
 
-  The board offers four ways in. Three of them need a credential only a person can make: a key from
-  Apple, a client from Google and a bot from Telegram, all of which step 28.3 makes. So the page
-  draws the fourth, which is a code sent to her email address, and holds the other three back the
-  way this site holds back every press whose page is not there. Their words stay in all three
-  catalogues, so each one comes back with one edit.
+  The board offers four ways in. Three are drawn: Apple, Google and a code sent to her email
+  address. Telegram needs a function of its own, so the page holds that press back the way this
+  site holds back every press whose page is not there, and its words stay in all three catalogues
+  so it comes back with one edit.
 
   One rule runs through every sentence on this page. The pool answers the same way whether or not
   an address has an account, because an answer that said which would let anybody test who uses Emi.
@@ -29,10 +28,10 @@ Feature: The sign in page, with a code sent to her address
   in, the preferences and the data each need a step of their own, and a section drawn with nothing
   behind it would say Emi holds something it does not hold.
 
-  Scenario: the page offers the one way in that works today
+  Scenario: the page offers Apple, Google and a code sent to her address
     Given a woman opens the page she signs in on
     Then she reads the title, the line under it and one box to type her address in
-    And the three ways in that wait for their keys are not drawn, and their words wait in all three languages
+    And Telegram alone waits for its own sign in, and its words wait in all three languages
     And the page tells her she does not need an account, and what the account holds
     And every word the page draws arrives in English, in Russian and in Spanish
     And the title is set in the face the board sets it in, which the site serves itself

@@ -27,9 +27,15 @@ const THE_ADDRESS_THE_BOARD_WRITES = 'iuliia@example.com';
  * The parts of the sign in page held against the board, found by the element that opens each one
  * and the element that closes it.
  *
- * The whole page is read in five parts rather than in one picture, because the board draws three
- * ways in and a divider that the page holds back. Each part is measured in its own document, so
- * the rows the held back presses would have taken do not move anything into the comparison.
+ * The whole page is read in parts rather than in one picture, because the board draws a third way
+ * in that the page holds back: Telegram waits for a sign in of its own. Each part is measured in
+ * its own document, so the rows that held back press would have taken do not move anything into
+ * the comparison.
+ *
+ * The two presses are found by their place after the line under the title rather than by the
+ * element they are made of. The board draws a press as a link, because a canvas has nowhere to go,
+ * and the page draws it as a button, because a press that leaves for Apple is not an address a
+ * reader may copy. The place is the same in both.
  *
  * The box of each part is read in each document rather than given here, because the page is a
  * different height from the board, so the same part sits at a different height in each.
@@ -42,6 +48,16 @@ const theParts: readonly APartOfAPage[] = [
   },
   { called: 'the-title-of-the-sign-in-page', from: 'main h1', to: 'main h1' },
   { called: 'the-line-under-the-title', from: 'main h1 + p', to: 'main h1 + p' },
+  {
+    called: 'the-press-that-signs-her-in-with-apple',
+    from: 'main h1 + p + *',
+    to: 'main h1 + p + *',
+  },
+  {
+    called: 'the-press-that-signs-her-in-with-google',
+    from: 'main h1 + p + * + *',
+    to: 'main h1 + p + * + *',
+  },
   { called: 'the-form-of-the-sign-in-page', from: 'main form', to: 'main form' },
   { called: 'what-the-account-holds', from: 'main form ~ div', to: 'main form ~ div' },
 ];

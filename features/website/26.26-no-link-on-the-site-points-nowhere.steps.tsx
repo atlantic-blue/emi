@@ -10,6 +10,7 @@ import HomePage from '../../apps/website/app/[lang]/page';
 import PrivacyPolicyPage from '../../apps/website/app/[lang]/privacy-policy/page';
 import ProtectionPage from '../../apps/website/app/[lang]/privacy/page';
 import SignInPage from '../../apps/website/app/[lang]/sign-in/page';
+import ReturningPage from '../../apps/website/app/[lang]/sign-in/returning/page';
 import SupportPage from '../../apps/website/app/[lang]/support/page';
 import AccountPage from '../../apps/website/app/[lang]/account/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
@@ -104,6 +105,7 @@ const whatDrawsThePageAt: Readonly<
   'support/': SupportPage,
   'sign-in/': SignInPage,
   'account/': AccountPage,
+  'sign-in/returning/': ReturningPage,
 };
 
 /**

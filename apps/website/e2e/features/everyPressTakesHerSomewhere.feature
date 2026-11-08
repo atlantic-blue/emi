@@ -30,25 +30,28 @@ Feature: Where a press on a page of the site takes her
     And each press she can see answers 200, or leaves the site for an address this site names
 
     Examples:
-      | address             |
-      | /en/                |
-      | /ru/                |
-      | /es/                |
-      | /en/privacy/        |
-      | /ru/privacy/        |
-      | /es/privacy/        |
-      | /en/privacy-policy/ |
-      | /ru/privacy-policy/ |
-      | /es/privacy-policy/ |
-      | /en/support/        |
-      | /ru/support/        |
-      | /es/support/        |
-      | /en/sign-in/        |
-      | /ru/sign-in/        |
-      | /es/sign-in/        |
-      | /en/account/        |
-      | /ru/account/        |
-      | /es/account/        |
+      | address                |
+      | /en/                   |
+      | /ru/                   |
+      | /es/                   |
+      | /en/privacy/           |
+      | /ru/privacy/           |
+      | /es/privacy/           |
+      | /en/privacy-policy/    |
+      | /ru/privacy-policy/    |
+      | /es/privacy-policy/    |
+      | /en/support/           |
+      | /ru/support/           |
+      | /es/support/           |
+      | /en/sign-in/           |
+      | /ru/sign-in/           |
+      | /es/sign-in/           |
+      | /en/account/           |
+      | /ru/account/           |
+      | /es/account/           |
+      | /en/sign-in/returning/ |
+      | /ru/sign-in/returning/ |
+      | /es/sign-in/returning/ |
 
   Scenario Outline: the press that offers her the community opens the community
     Given a woman opens the page at "<address>"

@@ -24,25 +24,28 @@ Feature: The addresses a search engine reads
     And it names the same page in each language, and the English page for a reader of none
 
     Examples:
-      | address             |
-      | /en/                |
-      | /ru/                |
-      | /es/                |
-      | /en/privacy/        |
-      | /ru/privacy/        |
-      | /es/privacy/        |
-      | /en/privacy-policy/ |
-      | /ru/privacy-policy/ |
-      | /es/privacy-policy/ |
-      | /en/support/        |
-      | /ru/support/        |
-      | /es/support/        |
-      | /en/sign-in/        |
-      | /ru/sign-in/        |
-      | /es/sign-in/        |
-      | /en/account/        |
-      | /ru/account/        |
-      | /es/account/        |
+      | address                |
+      | /en/                   |
+      | /ru/                   |
+      | /es/                   |
+      | /en/privacy/           |
+      | /ru/privacy/           |
+      | /es/privacy/           |
+      | /en/privacy-policy/    |
+      | /ru/privacy-policy/    |
+      | /es/privacy-policy/    |
+      | /en/support/           |
+      | /ru/support/           |
+      | /es/support/           |
+      | /en/sign-in/           |
+      | /ru/sign-in/           |
+      | /es/sign-in/           |
+      | /en/account/           |
+      | /ru/account/           |
+      | /es/account/           |
+      | /en/sign-in/returning/ |
+      | /ru/sign-in/returning/ |
+      | /es/sign-in/returning/ |
 
   Scenario: the page she reached by accident names no address
     Given a woman opens the page at "/en/nothing/"
