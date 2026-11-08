@@ -927,6 +927,7 @@ export function theLegendDots(): Readonly<Record<LegendEntry, LegendMark>> {
   };
 
   return {
+    expected: markOf('expected'),
     fertile: markOf('fertile'),
     forecast: markOf('forecast'),
     period: markOf('period'),

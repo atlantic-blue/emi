@@ -31,6 +31,7 @@ export const forecastPopupCopy = {
 
 /** The words of the legend above the grid, in the order the board places them, and the heart last. */
 export const monthLegendCopy = {
+  expected: words('calendar.legend.expected'),
   fertile: words('calendar.legend.fertile'),
   forecast: words('calendar.legend.forecast'),
   period: words('calendar.legend.period'),

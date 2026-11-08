@@ -81,10 +81,10 @@ describe('every colour in the redesign prototype has a name in the design docume
       expect(screens.every((file) => markupOf(file).includes('<x-dc>'))).toBe(true);
     });
 
-    it('reads two thousand four hundred and thirty five colours, under thirty five distinct ones', () => {
+    it('reads two thousand four hundred and forty one colours, under thirty five distinct ones', () => {
       const mentions = painted.flatMap(({ markup }) => coloursDrawnIn(markup));
 
-      expect(mentions).toHaveLength(2435);
+      expect(mentions).toHaveLength(2441);
       expect(basesDrawn.size).toBe(35);
     });
 

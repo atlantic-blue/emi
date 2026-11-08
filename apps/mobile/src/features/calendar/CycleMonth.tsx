@@ -58,8 +58,8 @@ export function sexMarkTestID(day: string): string {
 /** The legend above the columns, which the screen reading a phase asks for. */
 export const monthLegendTestID = 'calendar-legend';
 
-/** The four things the legend names. */
-export type LegendEntry = 'period' | 'forecast' | 'possible' | 'fertile';
+/** The five things the legend names. */
+export type LegendEntry = 'period' | 'expected' | 'forecast' | 'possible' | 'fertile';
 
 /** One entry of that legend: a dot and the word beside it. */
 export function legendTestID(of: LegendEntry): string {
@@ -286,6 +286,10 @@ function theNumber(square: MonthSquare, chosen: boolean): TextStyle[] | TextStyl
     return [styles.dayNumber, styles.dayNumberForecast];
   }
 
+  if (square.mark === 'expected') {
+    return [styles.dayNumber, styles.dayNumberExpected];
+  }
+
   if (square.ovulating !== true && square.fertile === true) {
     return [styles.dayNumber, styles.dayNumberOnTheWindow];
   }
@@ -293,9 +297,18 @@ function theNumber(square: MonthSquare, chosen: boolean): TextStyle[] | TextStyl
   return styles.dayNumber;
 }
 
-/** The four things the legend names, in the order the board places them. */
+/** The five things the legend names, in the order the board places them. */
 const theLegend: readonly { readonly of: LegendEntry; readonly dot: ViewStyle }[] = [
   { dot: { backgroundColor: colour.period }, of: 'period' },
+  {
+    dot: {
+      backgroundColor: colour.accentSoft,
+      borderColor: colour.accent,
+      borderStyle: 'solid',
+      borderWidth: stroke.hairline,
+    },
+    of: 'expected',
+  },
   {
     dot: { borderColor: colour.period, borderStyle: 'dashed', borderWidth: stroke.icon },
     of: 'forecast',
@@ -393,6 +406,7 @@ export function CycleMonth({ testID, month, heading, legend, squareOf }: Props):
  */
 const theMark: Readonly<Record<DayMark, ViewStyle>> = StyleSheet.create({
   bled: { backgroundColor: colour.period, borderColor: colour.period },
+  expected: { backgroundColor: colour.accentSoft, borderColor: colour.accentSoft },
   forecast: { borderColor: colour.period, borderStyle: 'dashed' },
   plain: {},
   possible: { borderColor: colour.luteal, borderStyle: 'dotted' },
@@ -426,6 +440,7 @@ const styles = StyleSheet.create({
     color: colour.text,
     ...textStyle('body-lg'),
   },
+  dayNumberExpected: { color: colour.accentSoftInk },
   dayNumberForecast: { color: colour.period, fontWeight: '800' },
   dayNumberOnFill: { color: colour.onAccent },
   dayNumberOnTheWindow: { color: colour.ovulationInk },
