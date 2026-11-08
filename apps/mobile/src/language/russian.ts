@@ -20,6 +20,8 @@ export const russian: CatalogueIn<'ru'> = {
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'День {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',
+  'calendar.daySheet.expectedAhead': 'Emi ожидает месячные в этот день.',
+  'calendar.daySheet.filledIn': 'Emi отметила этот день по обычной длительности ваших месячных.',
   'calendar.daySheet.laterPeriod.sameMonth':
     'Последующие месячные, скорее всего, начнутся между {from} и {to} {month}.',
   'calendar.daySheet.laterPeriod.spansMonths':

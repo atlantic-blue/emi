@@ -969,6 +969,13 @@ Feature: She opens Emi and logs her first period
     Then that day holds no bleeding, and no cycle starts on it
     And the month no longer fills that day, and its card carries no Remove period day
 
+  Scenario: SCREEN-4, she ends her period early from a day Emi filled in
+    Given her phone holds the first day of her period three days ago, and a usual period of 5 days
+    When she opens the calendar and presses the day after that first day
+    Then the card says Emi filled in that day, and carries Remove period day
+    When she presses Remove period day on that day
+    Then that day holds no bleeding, and Emi no longer fills in the day after it
+
   Scenario: SCREEN-4, she deletes a period she logged by mistake from Your cycles, after she confirms
     Given her phone holds four recorded period days, the last of them today
     When she opens last month in the calendar, opens a day she did not bleed on, and says her period came that day

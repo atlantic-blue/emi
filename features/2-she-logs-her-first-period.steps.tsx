@@ -4234,6 +4234,50 @@ defineFeature(feature, (test) => {
     });
   });
 
+  test('SCREEN-4, she ends her period early from a day Emi filled in', ({ given, when, then }) => {
+    const theFirstDay = addDays(theDaySheOpensIt, -3);
+    const thatDay = addDays(theFirstDay, 1);
+    const theDayAfter = addDays(thatDay, 1);
+    const whatTheSquareSays = (day: string): string =>
+      String(screen.getByTestId(dayTestID(day)).props.accessibilityLabel);
+
+    given(
+      'her phone holds the first day of her period three days ago, and a usual period of 5 days',
+      async () => {
+        jest.setSystemTime(whenSheOpensTheStrip);
+        await herPhoneHolds(whenSheOpensTheStrip, [aBleedingDay(theFirstDay)], 28, 5);
+      },
+    );
+
+    when('she opens the calendar and presses the day after that first day', async () => {
+      await sheOpens('/calendar');
+      await screen.findByTestId(dayTestID(thatDay));
+      await shePresses(dayTestID(thatDay));
+    });
+
+    then('the card says Emi filled in that day, and carries Remove period day', () => {
+      expect(screen.getByTestId(daySheetLineTestID)).toHaveTextContent(
+        'Day 2, period. Emi filled in this day from your usual period length.',
+      );
+      expect(screen.getByTestId(daySheetRemovePeriodDayTestID)).toHaveTextContent(
+        'Remove period day',
+      );
+      expect(whatTheSquareSays(theDayAfter)).toContain('Emi filled in this day');
+    });
+
+    when('she presses Remove period day on that day', async () => {
+      await shePresses(daySheetRemovePeriodDayTestID);
+    });
+
+    then('that day holds no bleeding, and Emi no longer fills in the day after it', () => {
+      const held = readDayLog(herDatabase(), thatDay);
+
+      expect(held === undefined ? undefined : herVault().open(held.payload).flow).toBe('none');
+      expect(whatTheSquareSays(thatDay)).not.toContain('Emi filled in this day');
+      expect(whatTheSquareSays(theDayAfter)).not.toContain('Emi filled in this day');
+    });
+  });
+
   test('SCREEN-4, she deletes a period she logged by mistake from Your cycles, after she confirms', ({
     given,
     when,
