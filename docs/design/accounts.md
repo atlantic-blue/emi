@@ -50,8 +50,18 @@ Emi has an account and it carries an email address, so Emi can write to her. App
 the address over at sign in. A woman who signs in with a code types her address once, to be sent
 one. A woman who signs in with Telegram gives no address, because the Telegram login returns none.
 
-She signs in later, never in the first run. Contract SCREEN-1 stays exactly as it is, and so do its
-tests.
+The account is required, in the application and on the website, and a woman who uses the iPhone
+application today keeps all of her data when she signs in. The sign in sits inside the first run,
+and it sits at the launch of a phone whose first run is already done. The sign in merges her
+identity with the vault account her days are already filed under, so no day is lost, copied or
+orphaned. The operator decided this on 7 November 2026. It replaces the decision that read "She
+signs in later, never in the first run. Contract SCREEN-1 stays exactly as it is, and so do its
+tests." Contract SCREEN-1 now moves, and the section "The account is required, and a woman who
+already has days keeps every one" holds the whole of it.
+
+The account is required as a hard gate: no logging at all without an account. The operator decided
+that on 8 November 2026, and question 3 of the section named above holds what it costs and what it
+settles.
 
 ## What I read
 
@@ -172,20 +182,712 @@ A route takes one authorizer, so the signature authorizer cannot share a route w
 authorizer. The two new calls verify the token inside the handler, against the key set the pool
 publishes.
 
+## The account is required, and a woman who already has days keeps every one
+
+Status: designed
+
+The operator decided this on 7 November 2026. This section answers five questions about that
+decision, and it corrects every section the earlier decision wrote. Each correction says what it
+corrects.
+
+### What the repository holds today, which decides how small the merge is
+
+Status: built
+
+I read each fact below in the repository on 7 November 2026.
+
+The service registers an account. `services/vault/src/handlers/register.ts` reads a public key, a
+wrapped vault key and a recovery salt, derives the account identifier with `accountIdFor`, and
+writes the account item through `services/vault/src/store/dynamo.ts`. The port it writes through is
+`services/vault/src/store/accounts.ts`, and the item holds `publicKey`, `wrappedVaultKey`,
+`recoverySalt`, `createdAt` and `recordCount`.
+
+The application calls one route of the four. `apps/mobile/src/services/sync/deleteAccount.ts` holds
+the only `fetch` call in `apps/mobile/src`, and `/v1/account` is the only path it names. No module
+under `apps/mobile/src` calls the registration, puts a record or pulls one.
+
+The recovery code flow is built, and no route reaches it.
+`apps/mobile/src/features/recovery/RecoveryFlow.tsx` holds the three screens, and no file under
+`apps/mobile/src/app` names it.
+
+Both deployed functions answer 501. `infra/README.md` says they are the placeholders of
+`infra/lambda.tf`, and that no step packages `services/vault` into either one.
+
+So a woman on the current build holds her days in SQLite on her phone, sealed under the vault key in
+her keychain. She holds no recovery code. The vault holds no account for her and no copy of a day.
+
+That makes the merge for a current user additive, and it is the reason no day can be lost. The merge
+wraps the key she already holds. It registers the account her device key already names. It links her
+identity to that account. It reads no day and it writes no day.
+
+One case is larger, and this design carries it already: a woman whose identity names a vault account
+somewhere else, from another phone or from the website. That case is the restore, and the sections
+"Between the sign in and the recovery code" and "The days she wrote before she signed in" hold it.
+
+### Question 1, the woman who already has days
+
+Status: designed
+
+#### Where the application asks her
+
+One redirect, in the place two redirects already sit. `apps/mobile/src/app/(tabs)/index.tsx` sends
+her to the welcome while the first run is not done, and to the tour while the tour is not seen. A
+third redirect sends her to the account gate while the stage row is not `linked`.
+
+That one redirect serves both women. A woman with days has a finished first run, so she meets the
+gate at her next launch. A new woman reaches the home route from the hold, so she meets the same gate
+in the same place. The redirect reads the stage row every time the route draws, so a woman who closes
+the application lands back on the gate at the stage she left.
+
+#### What she sees
+
+The gate carries four ways in, one way out, and nothing else. The decision of 8 November 2026 gives
+it no control that reaches the ring, so the words say what she must do rather than offering her a
+choice she does not have.
+
+Actions: Sign in with Apple, Sign in with Google, Sign in with Telegram, and Send me a code. Under
+them, on a phone that holds a day, Delete everything on this phone. That control is a way out of the
+product and never a way past the gate.
+
+The count is read from her own database and written as a number, the same rule the locked screen
+carries. A gate that cannot name what she holds is a gate she has no reason to trust. A phone that
+holds no day leaves the count line out rather than writing a zero.
+
+**English.**
+
+Title: Emi needs an account now.
+
+Lines: Your days stay on this phone, sealed with a key this phone holds. Emi holds 412 days here. An
+account lets a new phone find them, and it carries your subscription between phones. Emi needs the
+account before you log another day. Emi still cannot open one of your days, and signing in does not
+change that.
+
+**Spanish.**
+
+Title: Emi necesita una cuenta ahora.
+
+Lines: Tus días se quedan en este teléfono, cifrados con una clave que tiene este teléfono. Emi
+guarda aquí 412 días. Una cuenta permite que un teléfono nuevo los encuentre, y lleva tu suscripción
+de un teléfono a otro. Emi necesita la cuenta antes de que registres otro día. Emi sigue sin poder
+abrir ninguno de tus días, y entrar no cambia eso.
+
+**Russian.**
+
+Title: Emi нужен аккаунт.
+
+Lines: Ваши дни остаются на этом телефоне, зашифрованные ключом этого телефона. Emi хранит здесь 412
+дней. С аккаунтом новый телефон найдёт их, и аккаунт переносит вашу подписку. Emi нужен аккаунт,
+прежде чем вы запишете ещё один день. Emi всё равно не может открыть ни один ваш день, и вход этого
+не меняет.
+
+#### The merge, in order
+
+1. She presses a way in. The sign in module opens the managed login in the authentication session
+   the operating system owns, or it asks for a code sent to the address she types. Amazon Cognito
+   answers with an identity token. The module writes the refresh token to the keychain as
+   `emi.identityRefresh.v1`. Nothing else of hers changes yet, and the stage row reads
+   `identity-held`.
+2. The application calls the claim, carrying the token, signed by this device key. The claim is the
+   one call that answers whether this identity already names an account.
+3. The claim is refused. That is every current user, because her identity names no account. The
+   branch is drawn on the phone: the service refuses a claim with no link in the words it refuses a
+   bad token with, and the phone knows its own token is good, so the refusal means no link. The
+   service tells a caller nothing it did not know, and rule 11 stays exactly as it is.
+4. The application shows her the recovery code, with the three screens that exist already. She
+   writes 26 characters down and types them back. `packages/crypto/src/recovery.ts` derives a key
+   from them with Argon2id, and that key wraps the vault key this phone already holds.
+5. The application registers: the public key, the wrapped vault key and the salt, under contract
+   WIRE-1. The account identifier is the one `accountIdFor` cuts from her device public key, so the
+   account this registration makes is the account her phone has named since its first launch. The
+   stage row reads `registered`, and `emi.recoveryConfirmed.v1` is written here and not before,
+   because a recovery code is real only once the server holds the wrapped bytes.
+6. The application links the identity to that account, signed by the device key. The link writes
+   both link items and the email address in one transaction. The stage row reads `linked`.
+7. The gate closes and the ring draws. Every day is where it was, under the key it was already
+   under.
+
+A phone that registered already skips step 4. The registration wrote her wrapped vault key and her
+salt, so she holds a recovery code, and `emi.recoveryConfirmed.v1` holds the instant she confirmed
+it. The gate reads that item: an instant means the server already holds the wrapped bytes, so the
+merge is the claim and the link alone, and the registration it sends is read as done from its 409.
+That is the shape every phone has once feature 6 wires the registration into the application, and
+the merge covers both shapes with the one branch.
+
+Step 3 is the one branch. When the claim answers instead of refusing, her identity already names an
+account and she is on the restore path: the locked screen with the count, her recovery code, the
+second sealing of the days this phone holds, and the pull. That path is the only path in the product
+that replaces a vault key, and the two sections named above hold it.
+
+#### No day is lost, copied or orphaned
+
+Lost: the merge writes nothing to `day_log`. A case reads `revision` and `updated_at` of every row
+before the merge and after it, and both are unchanged.
+
+Copied: the registration body carries three fields and none of them is a day. The account item
+starts with a `recordCount` of 0, and nothing in the merge puts a record.
+
+Orphaned: the account identifier falls out of the device public key, so the merge cannot make a
+second account for this phone. A link is refused when the identity names another account. The
+restore path deletes an account this phone registered before it claims another, which the section
+"The days she wrote before she signed in" designs.
+
+#### A woman who already has days, signing in and keeping them
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant W as She
+  participant P as Emi on her phone
+  participant C as Amazon Cognito
+  participant A as The api
+  participant D as The vault table
+  W->>P: opens the new version
+  P->>P: reads the device key and the vault key from the keychain
+  P-->>W: Emi needs an account now, and 412 days are on this phone
+  W->>P: presses a way in
+  P->>C: signs in, through the system browser or with a code
+  C-->>P: an identity token carrying the subject and the email address
+  P->>A: claim, carrying the token, signed by this device key
+  A->>D: reads the link item for the digest of issuer and subject
+  D-->>A: no item
+  A-->>P: refused, in the words a bad token is refused with
+  P-->>W: shows the 26 characters and asks for them back
+  W->>P: writes them down and types them back
+  P->>P: derives the key with Argon2id and wraps the vault key it holds
+  P->>A: register, carrying the public key, the wrapped key and the salt
+  A->>D: writes the account item, the device item and the device lookup item
+  A-->>P: the account identifier
+  P->>A: link, carrying the token, signed by this device key
+  A->>D: writes both link items and the email address, in one transaction
+  A-->>P: linked
+  P->>P: writes the stage row and reads no day
+  P-->>W: the ring, with every day she had
+```
+
+Read the two writes at the api. One carries a wrapped key the service cannot open, and one carries
+an email address. Neither one carries a day, and no day leaves the phone in this whole sequence.
+
+#### She closes the application halfway
+
+The stage row carries the resume. It is one row in the `setting` table, under the key
+`accountStage`, and it holds one of four values in this order: `asked`, `identity-held`,
+`registered`, `linked`. Each value is written after the work it names succeeds, so the row is never
+ahead of the work.
+
+Every step runs twice safely.
+
+The device key is made once. `deviceKey` returns the key the keychain holds rather than making a
+second one.
+
+The vault key is never replaced on this path, so the wrap reads bytes the phone already holds.
+
+The registration answers 409 for a public key that is registered already, and the phone reads 409 as
+registered. The handler refuses the second write with a condition, so no item is overwritten.
+
+The link needs one change to be safe twice, and the path carries it as a piece of its own. The
+condition on the lookup item becomes this: no item exists, or the item already names this account. A
+second link of the same pair then answers as linked. Without that change a woman who closes the
+application between the write and the answer meets a refusal that tells her her own identity is in
+use.
+
+One stop asks her for the code again. A phone that confirmed the code and did not reach the
+registration holds no wrapped key, because nothing writes the wrapped bytes to the phone. So the
+gate asks her to type the 26 characters again, from the paper she just wrote them on. The design
+accepts asking twice, because the alternative is a second copy of her wrapped key on the disk.
+
+#### She has no network
+
+Nothing of hers changes. The stage row stays where it was, and the gate says what the network costs
+her. The gate is hard, so the two women see two different screens: one cannot start, and one cannot
+log again until she signs in once.
+
+A new woman cannot start. She answered every question and the hold wrote her answers, so nothing of
+hers is lost. The sign in needs the network, and there is no way past the gate, so Emi says that and
+asks her to come back.
+
+**English.** Title: Emi needs the network once.
+
+Lines: Emi cannot make your account without it. Your answers are safe on this phone. Open Emi again
+when you have a signal, and Emi carries on from here.
+
+Actions: Try again.
+
+**Spanish.** Title: Emi necesita la red una vez.
+
+Lines: Sin ella Emi no puede crear tu cuenta. Tus respuestas están seguras en este teléfono. Abre
+Emi otra vez cuando tengas señal, y Emi sigue desde aquí.
+
+Actions: Intentar de nuevo.
+
+**Russian.** Title: Emi нужна сеть один раз.
+
+Lines: Без неё Emi не может создать ваш аккаунт. Ваши ответы в безопасности на этом телефоне.
+Откройте Emi снова, когда появится сигнал, и Emi продолжит с этого места.
+
+Actions: Попробовать снова.
+
+A woman who already has days signs in once before she logs again. Her days stay where they are, and
+the screen says so and names how many. It carries the way to the delete, because a woman who will
+not wait may still take her days off this phone.
+
+**English.** Title: Sign in once to log again.
+
+Lines: Emi holds 412 days on this phone, and they are safe. Emi needs the network once, to make your
+account. You can log again as soon as you sign in. Nothing on this phone is lost while you wait.
+
+Actions: Try again, and Delete everything on this phone.
+
+**Spanish.** Title: Entra una vez para volver a registrar.
+
+Lines: Emi guarda 412 días en este teléfono, y están seguros. Emi necesita la red una vez, para
+crear tu cuenta. Podrás registrar otra vez en cuanto entres. Nada de este teléfono se pierde
+mientras esperas.
+
+Actions: Intentar de nuevo, y Borrar todo en este teléfono.
+
+**Russian.** Title: Войдите один раз, чтобы снова записывать.
+
+Lines: Emi хранит на этом телефоне 412 дней, и они в безопасности. Emi нужна сеть один раз, чтобы
+создать ваш аккаунт. Вы сможете снова записывать сразу после входа. Ничего на этом телефоне не
+теряется, пока вы ждёте.
+
+Actions: Попробовать снова, и Удалить всё на этом телефоне.
+
+#### She signs in with an identity that another account holds
+
+The claim answers, so she goes to the restore path and sees the locked screen with that account's
+count. Two cases sit under that.
+
+It is her own older account. Her recovery code opens it. The days this phone holds are sealed again
+under the recovered key, each revision rises by one, and the pull follows. She keeps both histories,
+and the section "The days she wrote before she signed in" holds the order.
+
+It is an account she cannot open, because the identity reached another woman's vault or because her
+code is gone. She presses I do not have my code, and the screen for a woman with no code gives her
+two ways on.
+
+That screen needs one correction, and the path carries it as a piece of its own. The existing
+paragraph says that starting again gives her a new vault key. For a woman who already has days a new
+vault key is the loss this whole decision exists to prevent, because every day on her phone is
+sealed under the key she holds now. So starting again keeps the vault key this phone holds and every
+day under it, and it leaves the other account alone. A new vault key is correct for a phone with no
+day on it, and for no other phone.
+
+The link stays refused when the identity names another account, and the refusal still names no
+account, so nothing here tells a caller who else uses Emi.
+
+### Question 2, the new users
+
+Status: designed
+
+#### Where the sign in sits in the first run
+
+After the hold, and before the home screen. The hold is the last screen that asks her anything, and
+it writes every answer in one transaction. The gate draws next, on the home route, through the same
+redirect that serves a woman with days.
+
+Three reasons for that place.
+
+She has a reason by then. She has read what Emi is, she has given her last three periods, and her
+first forecast is on the other side of the gate. A sign in asked at the second screen is a sign in
+asked of a woman who does not yet know what she would be signing in for.
+
+The first run keeps its promise that nothing is written before the hold. The gate writes after it,
+and what it writes is an account and never an answer about her body.
+
+The gate is one place and not two. A woman with days and a woman with none meet the same screen,
+through the same redirect, so one set of cases covers both.
+
+The screens of the gate live under a route of their own, `apps/mobile/src/app/account/`, and not
+under `apps/mobile/src/app/onboarding/`. The eleven questions of the first run stay eleven, the step
+counter and the progress bar keep their arithmetic, and `firstRunScreens` does not grow. The gate is
+a screen between the welcome and the home screen, which is what contract SCREEN-1 counts, so
+SCREEN-1 moves even though the question list does not.
+
+#### What SCREEN-1 becomes
+
+Output: at most eleven questions and nine other screens between the welcome and the home screen.
+The five it counts today, the account gate, and the three screens of the recovery code. Every
+question can be passed. It ends with her answers written in one transaction at the hold. Every
+answer it takes is readable afterwards from the Privacy screen. An answer she gave is changeable
+afterwards, through the control she gave it with.
+
+Errors: a question whose answer nothing in the product reads, except the year of birth. A question
+with no Skip. An answer written to the database or the server in plain text. A password asked for. A
+field for anything other than her name, and the address of a woman who asks for a code. Anything
+written before the hold. The account gate drawn before the hold. A control on the gate that reaches
+the ring, and a day logged while the stage row is not `linked`.
+
+Two screens are reached only when her identity already names an account: the locked screen and the
+screen for a woman with no code. They are named apart, the way the every symptom screen is named
+apart today, because no first run reaches them.
+
+The question list keeps its Skip rule, and the gate is not one of the questions. The gate itself
+cannot be passed, which the decision of 8 November 2026 settles, so the last error line above is
+written and no longer waits.
+
+#### Every contract that moves
+
+`SCREEN-1`, as above. The error line that reads "An account, an email address or a password asked
+for" is now the opposite of the product, and the output count rises by four.
+
+`SCREEN-5, the account gate` is new. It declares the gate, the four ways in, the stage row, the
+resume after a close, the refusal to write a day, and the error of a day read or written by the
+merge. The piece that writes the contracts lands it, under the one feature that holds the sign in
+steps.
+
+`docs/features.md` carries one line that moves with SCREEN-1. Under Feature 2 it reads "`SCREEN-1`
+the first run, with no account and no email address, ending at the hold that writes every answer at
+once." The clause about no account goes.
+
+`tools/pipeline/documentation.test.ts` holds two counts by hand. The case named "declares fifty
+three contracts across thirteen groups" becomes fifty four, and the case asserting "53 contract(s)
+mapped to a feature" becomes 54.
+
+`WIRE-1`, `AUTH-1`, `VAULT-1`, `VAULT-2` and `KEEP-3` do not move. The merge registers under WIRE-1
+as it stands, it signs every request under AUTH-1, it creates no vault key so VAULT-1 keeps its
+refusal, and the recovery code of VAULT-2 is still the one way back.
+
+#### Every test that moves
+
+`apps/mobile/tests/integration/2.3.test.tsx`, the case "asks her for no account, no email address
+and no password". The first run now asks for an account, so the case is rewritten. It keeps the two
+halves that stay true: no password, and one field for her name. It gains the address field of the
+code way, which is on the gate and not in the first run.
+
+`apps/mobile/tests/integration/2.3.test.tsx`, the case "has one screen for each question, the hold
+and the tour beside them, and one layout". It reads the files of `app/onboarding` and counts them
+against `firstRunScreens`. The gate adds no file there, so the case stays green, and that is the
+reason the gate sits under its own route. A case is added that reads `app/account` the same way.
+
+`apps/mobile/tests/integration/2.3.test.tsx`, the case that walks every path of the first run and
+ends with `expect(app.pathname()).toBe('/')`. The gate now stands between the hold and the home
+screen, so every case that reaches the home screen through the first run passes the gate. The
+fixture `apps/mobile/tests/fixtures/theFirstRun.ts` carries that, so the fixture changes once and
+the twenty two test files that use it do not.
+
+`apps/mobile/tests/integration/6.2.test.ts`, the case "leaves the server holding her public key and
+nothing else about her", which asserts `expect(JSON.stringify(held)).not.toContain('@')`. An account
+that has signed in holds an email address, so the assertion moves to the registration path, where it
+stays true and says more: an account that has only registered holds nothing about her.
+
+`apps/mobile/tests/integration/6.2.test.ts`, the case "asks her for no email address and no password
+to get there". The registration body still carries exactly three fields, so the case stays green.
+Its name moves, because the product does now ask for an address.
+
+`apps/mobile/tests/integration/22.10.test.tsx`, the case "asks eleven questions in order, her last
+three periods as one, and then the reminder". It asserts `firstRunScreens` word for word. The gate
+is not in that list, so the case stays green, and a mutation that puts the gate in the list is
+watched failing.
+
+The copy test that reads every string of the application. Each string in question 5 moves, in three
+languages, and the test reads them.
+
+### Question 3, what required means when she refuses or cannot sign in
+
+Status: designed.
+
+The operator decided this on 8 November 2026. It is a hard gate: no logging at all without an
+account. The gate carries no control that passes it.
+
+So the gate stands in front of the product, and three things stand in front of the gate. The first
+run runs to the hold, so she answers every question and her answers are written. The lock draws,
+because a phone that asks for Face ID asks before any screen of Emi. The delete works, because a
+woman who wants her days gone may always have them gone, and the gate carries the way to it.
+
+Reading her own days sits behind the gate as well, because the gate sits on the home route. The
+decision names logging, and this design puts the gate in front of the whole product, because a ring
+she may look at and never add a day to reads as broken in a different way.
+
+What it costs, written here because it is the design working and not a fault. A woman with no
+network cannot start Emi at all. A woman who will not sign in leaves at the gate, after she gave Emi
+her last three periods. A woman who already has days cannot log one more until she signs in once,
+and the section "She has no network" says what each of the two sees.
+
+Read guideline 5.1.1 of the App Store review rules before this ships. I read no guideline on 7 or 8
+November 2026, so an application that asks for an account before it draws a ring is a review risk
+measured in no way. It stays an open item for the operator, and the section "What this design does
+not answer" names it.
+
+The three alternatives considered, and what each one would have cost instead.
+
+**A gate she may pass, which returns.** She presses Not now, and the application records as it does
+today. It keeps every day a radio would cost her, and it leaves two shapes of user in the product
+for ever.
+
+**Required for the vault and the money, never for a day.** The account gates the sync, the restore
+and the payment, and the phone records without one. It changes nothing in the first run, and it does
+not deliver the decision.
+
+**A grace that ends.** The application records from the first launch and stops when a stated number
+of days passes with no account. A plane and a holiday both work, and an application that stops
+recording reads to her as an application that lost her days.
+
+### Question 4, signing in opens no record, and the merge keeps that true
+
+Status: designed
+
+The recovery code of contract VAULT-2 is the only thing that wraps the vault key. The merge adds
+three calls and no fourth way in, and the five facts below are each a rule a test can fail.
+
+The merge performs one key operation, and it is the wrap. `packages/crypto/src/recovery.ts` derives
+a key from the 26 characters with Argon2id and the salt, and that key wraps the vault key. The wrap
+runs on the phone. The code is in memory for the length of the gate and it reaches no database, no
+keychain item and no request.
+
+The merge derives nothing from anything a provider returns. The identity token is verified and
+dropped. The token reader returns a digest and an email address, and never the subject. No field of
+the token is written to the table.
+
+The merge never replaces the vault key. For a woman with days the key stays the key her days are
+sealed under, so the merge cannot read a day and cannot write one. The one path that replaces a
+vault key is the restore, and it replaces it with a key derived on the phone from her own code,
+which crosses no wire in either direction.
+
+The server receives a wrapped key and a salt, and it holds no way to open them. That was true on the
+day the registration was built, and the merge sends the same three fields the registration already
+takes. The case that reads the registration body and asserts exactly three keys keeps that property.
+
+The account directory may not name a keychain item of the vault, which the key leak gate holds. The
+merge reads the vault key through the vault key module and wraps it, so the piece that builds the
+merge names that one call in the gate as the single allowed reach, and a mutation that imports
+anything else from the vault directory is watched failing.
+
+So a woman who signs in and has no code still reaches her own ciphertext and cannot read one day of
+it. The required account changes who must sign in. It changes nothing about what a sign in can open.
+
+### Question 5, the words that promised an optional account
+
+Status: designed
+
+Six keys on the website and two in the application promise an optional account. Each one is written
+out below in English, Spanish and Russian. The piece that lands them is named in the path, and it
+merges after the gate, so the product never says an account is needed while it is not.
+
+Two keys are named after the promise rather than after the fact, so the piece renames them.
+`signInNoAccountNeeded` becomes `signInIsNeeded`. In the application
+`onboarding.welcome.line.noAccount` becomes `onboarding.welcome.line.signIn`.
+
+**`signInIsNeeded`, on the sign in page.**
+
+English: Emi needs an account. The account lets you pay, manage your subscription, and find your
+days again on a new phone.
+
+Spanish: Emi necesita una cuenta. La cuenta te permite pagar, gestionar tu suscripción y volver a
+encontrar tus días en un teléfono nuevo.
+
+Russian: Emi нужен аккаунт. С ним вы оплачиваете, управляете подпиской и находите свои дни на новом
+телефоне.
+
+**`signInWhatTheAccountHolds`, on the sign in page.** The account holds an email address, so the
+line says so, and it says which ways in give one.
+
+English: The account holds an identifier, an email address, how you sign in, and what you paid for.
+Apple, Google and the code sent to your address each give Emi the address. Telegram gives none. The
+account never holds your days or the key to them.
+
+Spanish: La cuenta guarda un identificador, un correo electrónico, cómo entras y lo que has pagado.
+Apple, Google y el código que te enviamos dan ese correo a Emi. Telegram no da ninguno. La cuenta
+nunca guarda tus días ni la clave que los abre.
+
+Russian: Аккаунт хранит идентификатор, адрес электронной почты, способ входа и то, что вы оплатили.
+Apple, Google и код на вашу почту дают Emi этот адрес. Telegram не даёт адреса. Аккаунт никогда не
+хранит ваши дни и ключ к ним.
+
+**`policyAccountLine`, on the privacy policy page.** This is the line that ends "It is optional: Emi
+works without it."
+
+English: Your account holds a hashed identifier, your email address, how you sign in, and what you
+paid for. Amazon Web Services keeps it, in Amazon Cognito. It lets you pay on the web or with
+Telegram Stars. It lets you restore your purchases on a new phone. It lets you manage your
+subscription. It never holds health data. Emi needs an account, and Emi still cannot read one of
+your days.
+
+Spanish: Tu cuenta guarda un identificador con hash, tu correo electrónico, cómo inicias sesión y
+qué has pagado. La guarda Amazon Web Services, en Amazon Cognito. Con ella puedes pagar en la web o
+con Telegram Stars. Con ella puedes restaurar tus compras en un teléfono nuevo. Con ella puedes
+gestionar tu suscripción. Nunca guarda datos de salud. Emi necesita una cuenta, y Emi sigue sin
+poder leer ninguno de tus días.
+
+Russian: Ваш аккаунт хранит хешированный идентификатор, ваш адрес электронной почты, способ входа и
+то, за что вы заплатили. Его хранит Amazon Web Services, в Amazon Cognito. С ним вы можете заплатить
+на сайте или через Telegram Stars. С ним вы можете вернуть покупки на новом телефоне. С ним вы можете
+управлять подпиской. Он никогда не хранит данные о здоровье. Emi нужен аккаунт, и Emi всё равно не
+может прочитать ни один ваш день.
+
+**`policyAccountOptional`, the heading above that line.** It reads "Account is optional" today, and
+it is one of three headings at the top of the page.
+
+English: The account holds no day.
+
+Spanish: La cuenta no guarda ningún día.
+
+Russian: Аккаунт не хранит ни одного дня.
+
+**`policyCollectLine`, on the privacy policy page.**
+
+English: Emi cannot read your records. Your account holds your email address and what you paid for.
+Anonymous usage reports stay optional.
+
+Spanish: Emi no puede leer tus registros. Tu cuenta guarda tu correo electrónico y lo que has
+pagado. Los informes de uso anónimos siguen siendo opcionales.
+
+Russian: Emi не может прочитать ваши записи. Ваш аккаунт хранит ваш адрес электронной почты и то, за
+что вы заплатили. Анонимная статистика остаётся необязательной.
+
+**`protectionAlsoBefore`, on the privacy page.** The sentence ends in the middle, because a link
+follows it.
+
+English: Emi has an account, takes payments, and sends anonymous crash and usage reports only if you
+switch them on. Read
+
+Spanish: Emi tiene una cuenta, acepta pagos y envía informes anónimos de errores y de uso solo si tú
+los activas. Lee
+
+Russian: У Emi есть аккаунт, она принимает платежи и отправляет анонимные отчёты о сбоях и об
+использовании, только если вы это включите. Прочитайте
+
+**`onboarding.welcome.line.signIn`, the third line of the welcome screen.** It reads "There is no
+account. Emi never asks for your email address or a password." today.
+
+English: Emi asks you to sign in once, so your days can reach a new phone. Emi never asks for a
+password.
+
+Spanish: Emi te pide iniciar sesión una vez, para que tus días lleguen a un teléfono nuevo. Emi
+nunca te pide una contraseña.
+
+Russian: Emi просит вас войти один раз, чтобы ваши дни попали на новый телефон. Emi никогда не
+просит пароль.
+
+**`settings.whoCanSee.kept.line`, on the Privacy screen.** It reads "Kept encrypted on this phone.
+Emi has no account for you, and sends your records nowhere." today.
+
+English: Kept encrypted on this phone. Your account holds no day, and nobody at Emi can read one.
+
+Spanish: Se guardan cifrados en este teléfono. Tu cuenta no guarda ningún día, y nadie en Emi puede
+leer ninguno.
+
+Russian: Хранятся в зашифрованном виде на этом телефоне. Ваш аккаунт не хранит ни одного дня, и
+никто в Emi не может его прочитать.
+
+The gate itself needs new strings, and the piece that builds the gate writes them in all three
+languages. The words of the gate in this section are the English, and they are the words that piece
+takes.
+
+### The data model of the merge, at field level
+
+Status: designed
+
+Everything the merge reads or writes is below. Nothing else is touched.
+
+#### On the phone, in the keychain
+
+`emi.deviceKey.v1` holds the private key as base 64. The merge reads it. It writes it only on a
+phone that has never made one, through the call that makes a key once.
+
+`emi.accountId.v1` holds the 26 character identifier. The merge reads it and writes nothing to it,
+because the identifier does not change.
+
+`emi.vaultKey.v1` holds 32 bytes as base 64. The merge reads it, wraps a copy of it, and writes
+nothing. The restore path is the one path that writes it.
+
+`emi.recoveryConfirmed.v1` holds an instant as text. The merge writes it after the registration
+answers, and never before.
+
+`emi.identityRefresh.v1` holds the refresh token of the pool. The sign in module writes it. No other
+directory may name it, which the key leak gate holds.
+
+#### On the phone, in the `setting` table
+
+That table is plain text and local, which `apps/mobile/src/data/settingRepository.ts` says in its
+first comment. So it holds no address, no subject and no token.
+
+`accountStage` is one key, and its value is one of `asked`, `identity-held`, `registered` and
+`linked`. Both halves of `settingRepository.ts` take the new key: the `SettingKey` union and the
+`settingKeys` list. A key added to one and not the other compiles and then fails at run time.
+
+`accountProvider` is one key, and its value is one of `apple`, `google`, `telegram` and `code`. The
+gate and the account screen read it to name the way she came in. It carries no address.
+
+Nothing else is written locally. `day_log` is not read and not written. `cycle` is not rebuilt.
+`profile` is not touched.
+
+#### On the phone, in `day_log`, on the restore path only
+
+`payload` is written with the day sealed again under the recovered key. `revision` rises by one, so
+the trigger `day_log_revision_rises` accepts the write. `updated_at` takes the instant of the
+sealing. `synced_revision` is left as it was, so a row sealed again reads as unsent and the sync
+sends it. `id`, `day`, `created_at` and `deleted_at` are not touched.
+
+#### In the vault table, written by the registration
+
+The account item, `pk` of `ACC#<accountId>` and `sk` of `META`. `publicKey` is 32 bytes.
+`wrappedVaultKey` is bytes. `recoverySalt` is 16 bytes. `createdAt` is an instant as text.
+`recordCount` is 0. The write carries a condition on `pk` not existing, so a second registration is
+refused and nothing is overwritten.
+
+The device lookup item, `pk` of `DEV#<deviceId>` and `sk` of `META`. `publicKey` is 32 bytes,
+`accountId` is 26 characters, `addedBy` is `registration`, and `addedAt` is an instant as text. The
+device identifier equals `accountIdFor(publicKey)`, so for this phone it equals the account
+identifier.
+
+The device item on the account side, `pk` of `ACC#<accountId>` and `sk` of `DEV#<deviceId>`, holding
+`addedBy` and `addedAt`. It exists for the delete.
+
+The remembered signature, `pk` of `ACC#<accountId>` and `sk` of `SIG#<signature>`, holding `ttl` as
+a number of seconds. The authorizer writes it on every signed request, so the merge writes three of
+them.
+
+#### In the vault table, written by the link
+
+The identity lookup item, `pk` of `IDY#<identityDigest>` and `sk` of `META`. `accountId` is 26
+characters. `provider` is one of `google`, `apple`, `telegram` and `code`. `linkedAt` is an instant
+as text.
+
+`provider` takes a fourth value with this decision. `docs/design/data-model.md` says of that field
+"There is no third value, because there is no third provider and no local user". The Telegram
+section of this document already adds `telegram`, and the code sent to her address adds `code`. The
+piece that writes the link corrects that sentence to name four values.
+
+The identity item on the account side, `pk` of `ACC#<accountId>` and `sk` of
+`IDY#<identityDigest>`, holding `provider` and `linkedAt`. It exists for the delete.
+
+Both items are written in one transaction. The condition on each one changes with this decision: no
+item exists, or the item already names this account. That is what makes a resumed merge answer as
+linked rather than as refused, and a link to an account other than this one stays refused.
+
+The account item gains the address in the same transaction. `email` is the address the provider
+handed over. `emailProvider` is the provider name. `emailIsRelay` is true when the address ends in
+`privaterelay.appleid.com`. `emailStatus` is `deliverable`. `emailUpdatedAt` is an instant as text.
+`identityCount` rises by one, and the transaction refuses a third identity. A woman who signed in
+with Telegram gets no `email` and no `emailProvider`, because the Telegram login returns no address.
+
+#### In the vault table, read by the claim
+
+The claim reads the identity lookup item for the digest of the issuer and the subject, and it reads
+`accountId` from it. It then reads the account item for `recordCount` and the instant of the last
+write. It reads no record, and a case asserts the answer carries no record and no wrapped key.
+
+#### In the user pool
+
+One user, as the section "The four ways in, at field level" describes it. The merge writes no custom
+attribute, because the pool has none, so the pool holds no account identifier and no count of her
+days.
+
 ## Where the sign in is offered
 
 Status: designed
 
-Status of the first run: unchanged. Nothing in this feature adds a screen, a field or a question to
-it. Contract SCREEN-1 keeps its three screens and its error for an account, an email address or a
-password asked for.
+The first run changed. The decision of 7 November 2026 puts the account gate between the
+hold and the home screen, and contract SCREEN-1 moves with it. The section "The account is required,
+and a woman who already has days keeps every one" holds the gate, its words and its proof. What
+follows was written for a sign in offered after the first run, and it now describes the places a
+woman reaches a sign in after the gate.
 
-The sign in is offered in two places, and she is doing something related in both.
+The sign in is offered in three places, and she is doing something related in each.
 
-The first is the screen that follows the recovery code, in feature 6. She has just written 26
-characters on paper, so the question of losing this phone is already in her head. Emi says what the
-sign in is for and offers it there, with a control to skip that is as easy to press as the one to
-take it.
+The first is the gate, and every woman meets it. It draws after the hold on a new phone, and at the
+next launch on a phone whose first run is already done. The section named above holds its words.
 
 The second is settings, under an entry that says what it does rather than what it is called: Emi on
 another phone. That entry is where she goes on the day the question becomes real. A woman who
@@ -194,7 +896,7 @@ skipped the first offer finds it here, and a woman on a new phone finds it here 
 A third place arrives with feature 7, because a subscription that follows her needs an identity to
 follow. That is out of this design and named in the path as a dependency.
 
-The words at the first offer, which are hers to read in one breath.
+The words below belong to the settings entry, because the gate carries the first offer now.
 
 Title: Use Emi on another phone.
 
@@ -207,11 +909,20 @@ Actions: Sign in, and Not now.
 
 Status: designed
 
-Everything. The whole product runs on one phone with no sign in: the first run, logging, the ring,
-the forecast, the history, the export, the lock, the delete, the encrypted vault in the cloud and
-the subscription.
+Two decisions changed this section, the one of 7 November 2026 and the one of 8 November 2026. Its
+first word used to be "Everything".
 
-A woman who never signs in still has a vault account. It is made by her device key when the phone
+Nothing. The gate is hard, so she reaches no screen of the product before she signs in. She cannot
+log a day, draw the ring, read her history or export a file.
+
+Three things run in front of the gate, because each one has to. The first run runs to the hold, so
+she answers every question and her answers are written. The lock draws, because a phone that asks
+for Face ID asks before any screen of Emi. The delete works, and the gate carries the way to it.
+
+Each of those three runs with no network. The delete reaches for the api and finishes without it,
+which `apps/mobile/src/services/sync/deleteAccount.ts` already does and says why.
+
+A woman who signs in still has one vault account and never two. It is made by her device key when the phone
 first registers, under contract WIRE-1, with no email address and no sign in of any kind. Her
 account identifier is the 26 characters derived from her public key, and every record she has is
 already filed under it.
@@ -344,9 +1055,11 @@ until you delete them.
 
 Actions: Start again on this phone, and Delete what is in my account.
 
-Start again keeps the sign in and leaves the old account alone. She logs from today, on a new vault
-key, and the old ciphertext sits there. Emi says that in one line before she confirms, because a
-woman who finds the code in a drawer next month can still use it.
+Start again keeps the sign in and leaves the old account alone. On a phone that holds days it keeps
+the vault key this phone holds and every day under it, because those days are sealed under that key
+and a new key would lose them. On a phone that holds no day it makes a new vault key and she logs
+from today. Either way the old ciphertext sits where it is, and Emi says that in one line before she
+confirms, because a woman who finds the code in a drawer next month can still use it.
 
 Delete what is in my account is the existing delete, pointed at the account she just claimed. It is
 one press, it has no cooling off period, and it says what it took.
@@ -1181,8 +1894,9 @@ authorizer and forgets this refuses every authorized request.
 
 Status: designed
 
-1. The first run asks for no account, no email address and no password. The cases of contract
-   SCREEN-1 stay green with no edit to them.
+1. The first run asks for no password, and it asks for no field but her name. The account gate
+   draws after the hold and never before it, and the cases of contract SCREEN-1 read the gate as a
+   screen and not as a question.
 2. A device lookup item whose device identifier is not `accountIdFor(publicKey)` is refused at the
    write.
 3. A request naming a device with no lookup item is refused, and it costs the same time as a bad
@@ -1256,6 +1970,37 @@ name them.
     carrying `EMAIL_OTP` and asserts the response is untouched, so the sign in with a code keeps
     working.
 
+Eleven more rules carry the required account and the merge. They are numbered on from the list
+above so the path can name them.
+
+37. The home route sends her to the account gate while the stage row is not `linked`, and it sends
+    her to the gate no more once it is. A case drives the route with each value the row takes.
+38. The merge writes no row of `day_log`. A case reads the revision and the write instant of every
+    row before the merge and after it, and both are unchanged.
+39. A second registration of the same public key answers 409, and the phone reads 409 as
+    registered. A case runs the merge twice and reads one account item from the table.
+40. A second link of the same identity to the same account answers as linked. A case runs the link
+    twice and reads one lookup item and no refusal.
+41. A link of that identity to another account is still refused, and the refusal names no account.
+42. `emi.recoveryConfirmed.v1` is written after the registration answers and never before it. A
+    case fails the registration and asserts the keychain item is absent.
+43. A merge stopped at any stage resumes at that stage. A case stops the merge at each value of the
+    row and drives the next launch from there.
+44. The merge holds the recovery code in memory alone. A case reads the database, every keychain
+    item and every request body afterwards, and finds no part of it.
+45. Starting again on a phone that holds days keeps the vault key and every day. A case writes a
+    day, signs in with an identity that names another account, presses start again, and reads that
+    same day back.
+46. The gate names the number of days the phone holds, read from her own database, and it never
+    says zero while one day exists.
+47. No string of the product says the account is optional. The copy test reads every string of the
+    application, and the website test reads all three languages of each key the section on the words
+    names.
+48. No route that writes a day draws while the stage row is not `linked`. A case opens the log
+    sheet and a day by its address and reads the gate instead of either one.
+49. The gate carries four ways in and one way to the delete, and no control that reaches the ring. A
+    case reads every control on the gate and finds those five.
+
 ## The path
 
 Status: designed
@@ -1278,6 +2023,9 @@ and its consent, and the delete of all of it, each with its errors, mapped under
 Proof: `npm run check:documents`, which fails on a contract that one document names and the other
 does not.
 The promise: a document holds no key.
+Changed on 7 November 2026: the account gate is one more contract this piece declares, and the
+piece named "The contract for the account gate, and the first run count that moves" carries contract
+SCREEN-1 and the two counts.
 
 ### 2. The user pool, in Terraform
 
@@ -1311,6 +2059,9 @@ Behaviour: `POST /v1/account/identity` writes both link items and the email attr
 transaction, behind the signature authorizer that exists.
 Proof: rules 6 to 9. The table double refuses the transaction when either condition fails.
 The promise: the handler writes an account identifier, a digest and an address. It holds no key.
+Changed on 7 November 2026: the condition on each link item becomes "no item exists, or the item
+already names this account", so a resumed merge answers as linked. If this piece has merged by then,
+the piece named "The link answers as linked for the pair it already holds" carries it.
 
 ### 5. The unlink endpoint
 
@@ -1358,6 +2109,10 @@ Proof: a case presses the control, lets the link happen and reads the screen aga
 the first run is untouched, by running the existing first run cases unchanged. The copy test reads
 the new strings.
 The promise: the screen shows a provider, an address and an instant. It shows no key.
+Changed on 7 November 2026: the offer after the recovery code is the account gate, which the piece
+named "The stage row, and the gate drawn at a route of its own" builds. This piece keeps the entry in
+settings and the account screen. Its proof loses the case that asserts the first run is untouched,
+because the first run moves.
 
 ### 9. The key leak rule for the account directory
 
@@ -1411,6 +2166,8 @@ pull after it, and the history screen that says locked rather than empty.
 Proof: rules 14 to 17. A case signs in, asserts the local database is still empty, types a wrong
 code and asserts no request was made, then types the right one and reads the ring off the screen.
 The promise: the pull waits for the key, so no unreadable row ever reaches her database.
+Changed on 7 November 2026: the locked screen is reached from the gate as well, on her own phone,
+when her identity already names an account.
 
 ### 14. The screen for a woman with no code
 
@@ -1421,6 +2178,8 @@ the account.
 Proof: a case asserts both controls and asserts the words. A case presses start again and asserts
 the old account is untouched. A case presses delete and asserts the table is empty afterwards.
 The promise: nothing on this screen suggests anybody can open her days, because nobody can.
+Changed on 7 November 2026: on a phone that holds days, starting again keeps the vault key and every
+day. The piece named "Start again keeps the days this phone holds" carries that.
 
 ### 15. The days she wrote before she signed in
 
@@ -1433,6 +2192,8 @@ Proof: rules 18 and 19. A case writes a day before the sign in and reads that sa
 the restore. A case kills the process halfway and asserts the next launch finishes the sealing.
 The promise: the vault key is replaced by one derived on this phone from her code. It crosses no
 wire either way.
+Changed on 7 November 2026: this is the restore path alone. The merge on a phone whose identity
+names no account seals nothing again, and rule 38 is the case that proves it.
 
 ### 16. Google as an identity provider
 
@@ -1511,6 +2272,8 @@ into built ones.
 Proof: `npm run check:documents` reads every status line, and the claims gate reads the new words.
 The promise: a document that described an empty pool as though it guarded something would be worse
 than no document.
+Changed on 7 November 2026: the words that promised an optional account move in the piece named
+"The words that promised an optional account", and this piece reads them as built.
 
 ### Sign in with Telegram
 
@@ -1626,38 +2389,181 @@ the other ways in as well.
 The promise: the application holds a refresh token of the pool. It holds no Telegram credential and
 it reads no record until her recovery code arrives.
 
+### The required account, and the merge for a woman who already has days
+
+Seven pieces, in this order, each one its own pull request. The order is what keeps `main` usable:
+the gate is drawn before anything sends a woman to it, and nothing sends her to it until a way in
+and the merge both work. A piece that turned the gate on before the ways in existed would lock
+every woman out of the product on the day it merged.
+
+No piece waits for the operator now. The decision of 8 November 2026 gives the gate no way past it,
+so the second piece draws four ways in and one way to the delete, and the sixth piece writes a
+redirect with nothing that passes it.
+
+**The contract for the account gate, and the first run count that moves.**
+
+Depends on: the piece that declares the contracts for the sign in.
+Files: `docs/contracts.md`, `docs/features.md`, `tools/pipeline/documentation.test.ts`.
+Behaviour: contract SCREEN-1 takes the output and the errors the section on question 2 writes, a new
+contract declares the account gate, and the map names it under the one feature that holds the sign
+in steps. The line under Feature 2 loses its clause about no account.
+Proof: `npm run check:documents`, which fails on a contract one document names and the other does
+not. The two counts written by hand in the gate's own test move with it.
+The promise: a document holds no key.
+
+**The stage row, and the gate drawn at a route of its own.**
+
+Depends on: nothing.
+Files: `apps/mobile/src/data/settingRepository.ts`, `apps/mobile/src/features/account/`,
+`apps/mobile/src/app/account/`, `apps/mobile/src/language/english.ts`,
+`apps/mobile/src/language/spanish.ts`, `apps/mobile/src/language/russian.ts`, and the behaviour test
+for this piece.
+Behaviour: the two new setting keys, the gate screen with its four ways in, its way to the delete
+and its count of days, and the route that draws it. Nothing redirects to it yet, so a woman sees it
+only by opening the address, and the product she has keeps working exactly as it does.
+Proof: a case renders the route, reads the title, the count and the five controls, and asserts the
+home route still draws the ring. Rules 46 and 49. A mutation that reads the count from a constant
+rather than from the database is watched failing, and so is one that adds a sixth control.
+The promise: the gate reads a count of rows. It reads no day and it holds no key.
+
+**The merge, on a phone that already has days.**
+
+Depends on: the stage row and the gate, the sign in on the phone, the claim endpoint, the link
+endpoint.
+Files: `apps/mobile/src/features/account/theMerge.ts`,
+`apps/mobile/src/services/account/claim.ts`, `apps/mobile/src/services/sync/register.ts`, and the
+behaviour test for this piece.
+Behaviour: the four calls in order, the branch on the refusal of the claim, the recovery code screens
+reached from the gate, and the stage row written after each step succeeds.
+Proof: rules 38, 39, 42, 43 and 44. One case writes two days, runs the whole merge against a service
+double, and reads both days back with the same revision they had. One case stops at each stage and
+drives the next launch. A mutation that writes the stage row before the call it names is watched
+failing.
+The promise: the merge wraps the key the phone holds and sends the wrapped bytes. It reads no day,
+it writes no day, and it replaces no key.
+
+**The link answers as linked for the pair it already holds.**
+
+Depends on: the link endpoint.
+Files: `services/vault/src/handlers/linkIdentity.ts`, `services/vault/src/store/identities.ts`,
+`services/vault/tests/link.test.ts`.
+Behaviour: the condition on each link item becomes this: no item exists, or the item already names
+this account. A second link of the same pair answers as linked rather than as refused.
+Proof: rules 40 and 41. A mutation that drops the second half of the condition is watched failing,
+because the resumed link is then refused.
+The promise: the condition writes an account identifier and a digest. It moves no key.
+
+**Start again keeps the days this phone holds.**
+
+Depends on: the screen for a woman with no code.
+Files: `apps/mobile/src/features/restore/NoCode.tsx`,
+`apps/mobile/src/features/restore/startAgain.ts`, and the behaviour test for this piece.
+Behaviour: on a phone that holds a day, starting again keeps the vault key and every row. On a phone
+that holds none it makes a key, as it does today. The line she reads before she confirms says which
+of the two is about to happen.
+Proof: rule 45, and a case on a phone with no day that asserts a new key. A mutation that makes a
+key on a phone holding a day is watched failing.
+The promise: the phone keeps the key it holds. Nothing new is derived from anything a provider
+returned.
+
+**The gate becomes the way to the home screen.**
+
+Depends on: the merge.
+Files: `apps/mobile/src/app/(tabs)/index.tsx`, `apps/mobile/src/app/(tabs)/log/index.tsx`,
+`apps/mobile/src/app/day/[date].tsx`, `apps/mobile/tests/fixtures/theFirstRun.ts`,
+`apps/mobile/tests/integration/2.3.test.tsx`, and the behaviour test for this piece.
+Behaviour: the third redirect on the home route, beside the two that send her to the welcome and to
+the tour, with nothing that passes it. Every route that writes a day carries the same redirect, so
+an address typed by hand reaches the gate as well. The first run ends at the gate, and the gate ends
+at the ring. The fixture that walks the first run passes the gate, so the twenty two test files that
+use it change in one place.
+Proof: rules 37 and 48, and the case of contract SCREEN-1 that walks every screen and ends on the
+home route. A mutation that drops the redirect from the home route is watched failing, and so is one
+that drops it from the log sheet.
+The promise: a redirect reads one row of plain text. It reads no day.
+
+**The words that promised an optional account.**
+
+Depends on: the gate becomes the way to the home screen, because the product must need an account
+before any page says it does.
+Files: `apps/website/app/words/english.ts`, `apps/website/app/words/spanish.ts`,
+`apps/website/app/words/russian.ts`, `apps/mobile/src/language/english.ts`,
+`apps/mobile/src/language/spanish.ts`, `apps/mobile/src/language/russian.ts`, the website words
+test, and `apps/mobile/tests/copy/claims.test.ts`.
+Behaviour: the six keys of the website and the two of the application take the text the section on
+the words writes, in all three languages. Two keys are renamed, because each one is named after the
+promise it used to make.
+Proof: rule 47. A case asserts that no string of either surface says the account is optional, and it
+is watched failing against the strings as they read today.
+The promise: a word holds no key, and a word that promises what the product does not do costs more
+than a missing feature.
+
 ## What this design moves, and what it may not touch
 
 Status: designed
 
-Decision D keeps the first run still, so this list is short and every line is a file I read.
+The decision of 7 November 2026 makes this list long, because the first run moves. Every line is a
+file I read on that day.
 
-It moves one test. `apps/mobile/tests/integration/6.2.test.ts`, in the case "leaves the server
-holding her public key and nothing else about her", asserts
-`expect(JSON.stringify(held)).not.toContain('@')`. An account that has signed in holds an email
-address, so that assertion becomes false. It moves to the registration path, where it stays true and
-says more: an account that has never signed in holds nothing about her.
+It moves contract SCREEN-1. The output count rises by four, and the error line that reads "An
+account, an email address or a password asked for" is now the opposite of the product. The section
+on question 2 writes the whole of its new text.
 
-It moves one string. `apps/mobile/src/features/onboarding/copy.ts` line 11 reads "There is no
-account. Emi never asks for your email address or a password." The second sentence stays true, and
-Google and Apple hand the address over so no screen ever asks her to type one. The first sentence
-becomes false once a sign in exists. A line that stays true reads: there is no account to start, and
-Emi never asks you to type an email address or a password.
+It moves one line of `docs/features.md`. Under Feature 2 it reads "`SCREEN-1` the first run, with no
+account and no email address, ending at the hold that writes every answer at once." The clause about
+no account goes.
+
+It moves two counts written by hand in `tools/pipeline/documentation.test.ts`. The case "declares
+fifty three contracts across thirteen groups" becomes fifty four, and the case asserting "53
+contract(s) mapped to a feature" becomes 54.
+
+It moves one case of `apps/mobile/tests/integration/2.3.test.tsx`, "asks her for no account, no
+email address and no password". The first run asks for an account now. The case keeps the two halves
+that stay true, no password and one field for her name, and the earlier decision promised this case
+would never move.
+
+It moves one case of `apps/mobile/tests/integration/6.2.test.ts`, "leaves the server holding her
+public key and nothing else about her", which asserts `expect(JSON.stringify(held)).not.toContain('@')`.
+An account that has signed in holds an email address, so the assertion moves to the registration
+path, where it stays true and says more.
+
+It moves the name of one case of the same file, "asks her for no email address and no password to
+get there". The body stays green, because the registration body still carries three fields, and the
+product does now ask for an address.
+
+It moves one string of the welcome screen. `onboarding.welcome.line.noAccount` reads "There is no
+account. Emi never asks for your email address or a password." Both sentences become false, and the
+key is renamed with the text.
+
+It moves one string of the Privacy screen, `settings.whoCanSee.kept.line`, which reads "Emi has no
+account for you, and sends your records nowhere."
+
+It moves six keys of `apps/website/app/words/`, in English, Spanish and Russian. The section on the
+words writes each one.
 
 It moves one line of the architecture. `docs/architecture.md` line 439 reads "There is no email
 address, no password and no telephone number in the model." The password and the telephone number
 stay out. The email address arrives with a link.
 
-It adds sections rather than moving them, in `docs/architecture.md` and `docs/privacy.md`, and it
-adds contracts in `docs/contracts.md` and their map in `docs/features.md`.
+It moves one sentence of `docs/design/data-model.md`. The identity lookup item says of `provider`
+that "There is no third value". It takes four values: `google`, `apple`, `telegram` and `code`.
 
-It reaches the store listing, which does not exist in this repository yet. Feature 7 step 6 writes
-it, and it says no account to start rather than no account ever.
+It moves one paragraph of this document, under "The woman who has no recovery code". Starting again
+on a phone that holds days keeps the vault key and every day.
 
-It may not touch these, and a pull request that does is wrong. Contract SCREEN-1 keeps its words.
-`apps/mobile/tests/integration/2.3.test.tsx` keeps its case "asks her for no account, no email
-address and no password", and that case keeps passing without an edit. The first run keeps three
-screens and no field to type into.
+It adds sections and contracts, in `docs/architecture.md`, `docs/privacy.md`, `docs/contracts.md`
+and `docs/features.md`.
+
+It reaches the store listing, which does not exist in this repository yet. Feature 7 writes it, and
+it says what the account holds rather than that there is none.
+
+It may not touch these, and a pull request that does is wrong.
+
+The eleven questions of the first run, their order and their Skip. `firstRunScreens`, the step
+counter and the progress bar, which is why the gate lives at a route of its own. The hold writing
+every answer in one transaction, with nothing written before it. The recovery code as the one thing
+that wraps the vault key. The refusal of contract VAULT-1 of a second vault key. Any row of
+`day_log` on the merge path. The refusal that names no account when an identity is already linked.
 
 Nothing above is changed in this pull request. This document names them so the operator can see the
 whole cost of the decision in one place.
@@ -1667,6 +2573,15 @@ whole cost of the decision in one place.
 Status: designed
 
 The plan overall: 80 percent. The parts differ.
+
+The required account and the merge: 85 percent. The merge is additive on the phone, and every step
+of it is a call the service already takes or a condition on one. The hard gate of 8 November 2026
+takes the last open line out of the design, so nothing in it waits for an answer now.
+
+The hard gate through store review: 50 percent, and it is the lowest number in this document. I read
+no review guideline on 7 or 8 November 2026 and I put no build through review. An application that
+asks for an account before it draws a ring is refused by some reviewers and passed by others, and
+reading guideline 5.1.1 is the one thing that moves this number.
 
 The locked state, the ordering of the pull and the second sealing: 90 percent. It follows from the keys and
 from what a phone can hold, and each rule is a case.
@@ -1727,3 +2642,7 @@ all carry the name.
 
 The feature number these steps belong to, which decides the name of every behaviour test file in the
 path.
+
+Guideline 5.1.1 of the App Store review rules, read against a hard gate. The operator settled the
+hard gate on 8 November 2026, and nobody has read the guideline or put a build through review. It is
+the open item that can refuse the whole release, so read it before this ships.
