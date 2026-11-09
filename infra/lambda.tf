@@ -1,6 +1,10 @@
-# Two functions, and neither one holds a key. The authorizer reads a stored public key and checks
-# a signature. The vault reads and writes ciphertext. Feature 6 steps 2 and 3 replace the
-# placeholders below with the real bundles from services/vault.
+# Three functions, and none of them holds a key. The authorizer reads a stored public key and
+# checks a signature. The vault reads and writes ciphertext. The article function answers a
+# catalogue.
+#
+# Each one is created from a placeholder, and each one keeps whatever the pipeline last uploaded
+# to it. The bundle is built and uploaded by the functions job of .github/workflows/deploy.yml,
+# so the code here is what a function answers with until the first merge reaches it.
 
 # The vault placeholder answers every route with 501, so a route that exists before its handler
 # does says so plainly rather than failing in some other way.
@@ -114,6 +118,13 @@ resource "aws_lambda_function" "vault" {
   }
 
   depends_on = [aws_cloudwatch_log_group.vault]
+
+  # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
+  # would read that bundle as drift and put the placeholder back on the next apply, so the route
+  # in front of this function would answer from a placeholder again.
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
 }
 
 # ── The authorizer function ──────────────────────────────────────────────────
@@ -178,6 +189,13 @@ resource "aws_lambda_function" "authorizer" {
   }
 
   depends_on = [aws_cloudwatch_log_group.authorizer]
+
+  # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
+  # would read that bundle as drift and put the placeholder back on the next apply, so the route
+  # in front of this function would answer from a placeholder again.
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
 }
 
 # ── The article function ─────────────────────────────────────────────────────
@@ -243,6 +261,13 @@ resource "aws_lambda_function" "articles" {
   }
 
   depends_on = [aws_cloudwatch_log_group.articles]
+
+  # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
+  # would read that bundle as drift and put the placeholder back on the next apply, so the route
+  # in front of this function would answer from a placeholder again.
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
 }
 
 # ── The Telegram sign in: two roles, and no function yet ─────────────────────

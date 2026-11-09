@@ -27,6 +27,8 @@ import {
   websiteSignInProblems,
   writtenSecretsIn,
 } from './signIn.ts';
+import { deployedFunctions, uploadOrder } from '../deploy/functions.ts';
+import { carriesTheAuthorizer, readTheRoutes, routesWithNoAuthorizer } from '../deploy/routes.ts';
 import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
 import { languages } from '../../apps/website/app/words/language.ts';
 
@@ -882,6 +884,217 @@ describe('the infrastructure is applied only by the pipeline', () => {
 
       expect(backend).toContain('bucket       = "abs-terraform"');
       expect(backend).toContain('key          = "emi/terraform.tfstate"');
+    });
+  });
+});
+
+describe('the deployed functions carry the bundle the pipeline uploads', () => {
+  const functionsJob = 'functions';
+  const theGuard = "env.SHIPS == 'true' && env.ROLE != ''";
+
+  /** Every run script of the workflow, with the job that holds it. */
+  const everyScript = Object.entries(deploy.jobs ?? {}).flatMap(([name, each]) =>
+    (each.steps ?? []).flatMap((step) =>
+      step.run === undefined ? [] : [{ job: name, run: step.run }],
+    ),
+  );
+
+  /**
+   * Every command of one script, with a continuation line joined to the line it continues, so a
+   * rule about one call reads the whole call rather than the line a flag happens to sit on.
+   */
+  function commandsIn(script: string): string[] {
+    return script
+      .replace(/\\\n\s*/g, ' ')
+      .split(/[\n;]/)
+      .map((command) => command.trim())
+      .filter((command) => command.length > 0 && !command.startsWith('#'));
+  }
+
+  const uploads = everyScript.flatMap(({ job: name, run }) =>
+    commandsIn(run)
+      .filter((command) => command.includes('update-function-code'))
+      .map((command) => ({ job: name, command })),
+  );
+
+  /** A step that reaches the account: it assumes a role, or it runs the tool that calls one. */
+  function reachesTheAccount(step: Step): boolean {
+    return (
+      /(^|\s)(aws|terraform) /.test(step.run ?? '') ||
+      (step.uses ?? '').startsWith('aws-actions/') ||
+      (step.uses ?? '').startsWith('hashicorp/setup-terraform')
+    );
+  }
+
+  const lambdaResources = [...configuration.matchAll(/resource "aws_lambda_function" "(\w+)"/g)]
+    .flatMap((found) => (found[1] === undefined ? [] : [`aws_lambda_function.${found[1]}`]))
+    .sort();
+
+  describe('Terraform stops owning the code', () => {
+    it.each(deployedFunctions.map((held) => [held.name, held.resource]))(
+      'leaves the code of %s out of the comparison, so an apply cannot put the placeholder back',
+      (_name, resource) => {
+        expect(bodyOf(`resource "${resource.replace('.', '" "')}"`)).toContain(
+          'ignore_changes = [filename, source_code_hash]',
+        );
+      },
+    );
+
+    it('creates each function from a placeholder, so a function with no upload yet answers 501', () => {
+      for (const held of deployedFunctions) {
+        const body = bodyOf(`resource "${held.resource.replace('.', '" "')}"`);
+
+        expect(body).toContain('filename         = data.archive_file.');
+        expect(body).toContain('source_code_hash = data.archive_file.');
+      }
+    });
+  });
+
+  describe('the list of functions and the Terraform cannot drift apart', () => {
+    it('gives every function in the list a resource that creates it', () => {
+      const missing = deployedFunctions
+        .filter((held) => !lambdaResources.includes(held.resource))
+        .map((held) => `${held.name} is in the list and ${held.resource} is in no Terraform file`);
+
+      expect(deployedFunctions.length).toBeGreaterThan(0);
+      expect(missing).toEqual([]);
+    });
+
+    it('gives every function the Terraform creates an entry in the list, so none ships unpackaged', () => {
+      expect(lambdaResources).toEqual(deployedFunctions.map((held) => held.resource).sort());
+    });
+
+    it('uploads every function in the list, in the order the list names', () => {
+      expect([...uploadOrder].sort()).toEqual(deployedFunctions.map((held) => held.name).sort());
+      expect(
+        forListIn(scriptOf(functionsJob, 'put the new code on each function'), 'name'),
+      ).toEqual([...uploadOrder]);
+    });
+
+    it('uploads the authorizer first, because registration stands behind no authorizer', () => {
+      expect(uploadOrder[0]).toBe('emi-authorizer');
+      expect(uploadOrder[uploadOrder.length - 1]).toBe('emi-vault');
+    });
+  });
+
+  describe('the functions job builds on both events and ships on a merge', () => {
+    it('ships on a push to main and on nothing else', () => {
+      expect(job(functionsJob).env?.SHIPS).toBe(
+        "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}",
+      );
+    });
+
+    it('waits for the apply, and runs anyway on the event that skips it', () => {
+      expect(job(functionsJob).if).toBe(job('website').if);
+    });
+
+    it('builds every bundle and loads each one before anything is uploaded', () => {
+      const names = (job(functionsJob).steps ?? []).map((step) => step.name ?? step.uses ?? '');
+      const built = names.indexOf('build one bundle for each function');
+      const loaded = names.indexOf('load every bundle the way the platform loads it');
+      const uploaded = names.indexOf('put the new code on each function');
+      const read = names.indexOf('read the live api');
+
+      expect(built).toBeGreaterThan(-1);
+      expect(loaded).toBeGreaterThan(built);
+      expect(uploaded).toBeGreaterThan(loaded);
+      expect(read).toBe(names.length - 1);
+    });
+
+    it('proves every bundle on a pull request too, so neither build step waits on the role', () => {
+      const steps = job(functionsJob).steps ?? [];
+      const building = steps.filter((step) =>
+        /npm run (build:functions|check:bundles)/.test(step.run ?? ''),
+      );
+
+      expect(building).toHaveLength(2);
+      expect(building.map((step) => step.if)).toEqual([undefined, undefined]);
+    });
+
+    it('runs at all when a change touches the service, its packages or the deploy tools', () => {
+      for (const event of ['pull_request', 'push']) {
+        for (const named of [
+          'services/vault/**',
+          'packages/crypto/**',
+          'packages/tokens/**',
+          'tools/deploy/**',
+        ]) {
+          expect(deploy.on?.[event]?.paths).toContain(named);
+        }
+      }
+    });
+  });
+
+  describe('while the apply role variable is empty', () => {
+    it('skips every step of the functions job that reaches the account', () => {
+      const reaching = (job(functionsJob).steps ?? []).filter(reachesTheAccount);
+      const unguarded = reaching
+        .filter((step) => step.if !== theGuard)
+        .map((step) => `${step.name ?? step.uses} reaches the account without the guard`);
+
+      expect(reaching.length).toBeGreaterThan(1);
+      expect(unguarded).toEqual([]);
+    });
+
+    it('leaves the functions job one step that says what it waits for', () => {
+      const first = firstStepOf(functionsJob);
+
+      expect(first.if).toBeUndefined();
+      expect(first.run).toContain('infra/README.md');
+    });
+  });
+
+  describe('an upload prints the version and nothing else', () => {
+    // The answer of update-function-code is the whole configuration of the function, and that
+    // carries its environment variables. A log of a public repository is readable by anybody.
+    it('leaves the answer of no upload open, in any job of this workflow', () => {
+      const open = uploads
+        .filter(({ command }) => !command.includes('> /dev/null') && !command.includes('--query'))
+        .map(
+          ({ job: name, command }) => `the ${name} job runs ${command} with its answer left open`,
+        );
+
+      expect(open).toEqual([]);
+    });
+
+    it('reads an upload out of more than one job, so an empty list is not a pass by accident', () => {
+      expect(uploads.map(({ job: name }) => name)).toContain(functionsJob);
+      expect(uploads.length).toBeGreaterThan(1);
+    });
+
+    it('waits for each function to report itself updated before the next one is uploaded', () => {
+      const script = scriptOf(functionsJob, 'put the new code on each function');
+
+      expect(script).toContain('aws lambda wait function-updated');
+      expect(script.indexOf('update-function-code')).toBeLessThan(
+        script.indexOf('aws lambda wait function-updated'),
+      );
+    });
+  });
+
+  describe('no route lets anybody through, which the deploy reads from the live api', () => {
+    const routes = readTheRoutes(repositoryRoot);
+
+    it('puts the authorizer in front of every route but the ones named here', () => {
+      const open = routes
+        .filter((route) => !carriesTheAuthorizer(route))
+        .map((route) => route.resource);
+
+      expect(routes.length).toBeGreaterThan(routesWithNoAuthorizer.length);
+      expect(open.sort()).toEqual([...routesWithNoAuthorizer].sort());
+    });
+
+    it('names each route with no authorizer, so a new one fails here and not in the account', () => {
+      for (const named of routesWithNoAuthorizer) {
+        expect(routes.map((route) => route.resource)).toContain(named);
+      }
+    });
+
+    it('reads the live api as the last step, and requires a refusal of every authorized route', () => {
+      const script = scriptOf(functionsJob, 'read the live api');
+
+      expect(script).toContain('terraform -chdir=infra output -raw api_endpoint');
+      expect(script).toContain('npm run read:live-api');
     });
   });
 });
