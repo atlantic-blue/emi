@@ -20,6 +20,9 @@ android/
 apps/website/e2e/report/
 test-results/
 
+# One zip and one metafile for each deployed function, written by npm run build:functions.
+services/vault/build/
+
 # Terraform working files. The provider lock is committed; the plugins and the plan are not.
 .terraform/
 *.tfstate

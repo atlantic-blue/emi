@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.984.0",
     "@emi/crypto": "*",
     "@emi/tokens": "*"
   }

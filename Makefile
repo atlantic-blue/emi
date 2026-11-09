@@ -16,6 +16,8 @@ install: ## install every dependency from the lock file
 
 check: ## everything the pipeline runs, in the pipeline's order, stopping at the first failure
 	npm run check:patches
+	npm run build:functions
+	npm run check:bundles
 	npm run format:check
 	npm run lint
 	npm run typecheck
@@ -69,4 +71,4 @@ pictures: ## regenerate every generated picture and document
 
 clean: ## remove node_modules and the build output
 	rm -rf node_modules apps/*/node_modules packages/*/node_modules services/*/node_modules
-	rm -rf apps/*/dist apps/*/.expo apps/*/web-build apps/*/.next apps/*/.open-next coverage infra/build
+	rm -rf apps/*/dist apps/*/.expo apps/*/web-build apps/*/.next apps/*/.open-next coverage infra/build services/vault/build
