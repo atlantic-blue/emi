@@ -46,6 +46,10 @@ export const thePagesOfTheSite: readonly PageOfTheSite[] = [
     path: 'sign-in/returning/',
     serves: 'where Apple and Google send her back to, which finishes the sign in',
   },
+  {
+    path: 'sign-in/telegram/',
+    serves: 'where Telegram sends her back to, which finishes the sign in',
+  },
 ];
 
 /** Where the two files sit. Next.js copies this folder into the assets of the build. */

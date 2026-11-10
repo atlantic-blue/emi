@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 import proxy, { config } from '../proxy';
 import { THE_SIGN_IN_HOST } from '../lib/theProviderSignIn';
 import { THE_POOL_HOST } from '../lib/theSignIn';
+import { THE_API_HOST } from '../lib/theTelegramSignIn';
 
 /**
  * What the site puts in front of every page: the policy her browser is given, and the copy the
@@ -83,21 +84,35 @@ describe('the policy a page of the site answers with', () => {
     expect(directive(policy, 'font-src')).toBe(`font-src 'self'`);
   });
 
-  it('lets the page she signs in on reach the two hosts that issue her tokens, and no other', () => {
+  it('lets the page she signs in on reach the three hosts that sign her in, and no other', () => {
     const policy = policyOn('/en/');
 
     expect(directive(policy, 'connect-src')).toBe(
-      `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST}`,
+      `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST} ${THE_API_HOST}`,
     );
     expect(THE_POOL_HOST).toBe('https://cognito-idp.eu-central-1.amazonaws.com');
     expect(THE_SIGN_IN_HOST).toBe('https://auth.myemi.app');
     expect(new URL(THE_POOL_HOST).protocol).toBe('https:');
     expect(new URL(THE_SIGN_IN_HOST).protocol).toBe('https:');
-    // Two hosts and nothing else. The first sends her a code and answers the six digits, the
-    // second exchanges the code Apple and Google send her back with. A policy that named a third
-    // would let a script somebody wrote into a page carry what she typed somewhere Emi does not
-    // answer for.
-    expect(directive(policy, 'connect-src').split(' ')).toHaveLength(4);
+    expect(new URL(THE_API_HOST).protocol).toBe('https:');
+    // Three hosts and nothing else. The first sends her a code and answers the six digits, the
+    // second exchanges the code Apple and Google send her back with, and the third is the api,
+    // which turns the code Telegram sends her back with into one answer for the pool. A policy
+    // that named a fourth would let a script somebody wrote into a page carry what she typed
+    // somewhere Emi does not answer for.
+    expect(directive(policy, 'connect-src').split(' ')).toHaveLength(5);
+  });
+
+  it('names the api as the fourth value of the directive, and nothing else as it', () => {
+    const named = directive(policyOn('/en/'), 'connect-src').split(' ');
+
+    expect(named[4]).toBe(THE_API_HOST);
+    expect(named[4]).toBe('https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com');
+    // The api of Emi, which `infra/README.md` names and which the sign in function answers on.
+    // The host Telegram asks her on is not in this directive and may not be: her browser leaves
+    // the site for it, and the identity token it signs is read by the function alone.
+    expect(named.filter((value) => value.includes('telegram'))).toEqual([]);
+    expect(directive(policyOn('/en/'), 'connect-src')).not.toContain('oauth.telegram.org');
   });
 
   it('lets a page draw a picture this site serves, and one written into the markup', () => {

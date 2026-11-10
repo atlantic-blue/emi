@@ -52,6 +52,9 @@ Feature: Where a press on a page of the site takes her
       | /en/sign-in/returning/ |
       | /ru/sign-in/returning/ |
       | /es/sign-in/returning/ |
+      | /en/sign-in/telegram/  |
+      | /ru/sign-in/telegram/  |
+      | /es/sign-in/telegram/  |
 
   Scenario Outline: the press that offers her the community opens the community
     Given a woman opens the page at "<address>"

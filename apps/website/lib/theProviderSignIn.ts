@@ -109,9 +109,14 @@ function asAnAddressCarriesIt(bytes: Uint8Array): string {
     .replace(/=+$/, '');
 }
 
-/** A value nobody can guess, from the random source of the platform. */
-export function aValueNobodyCanGuess(): string {
-  return asAnAddressCarriesIt(crypto.getRandomValues(new Uint8Array(RANDOM_BYTES)));
+/**
+ * A value nobody can guess, from the random source of the platform. The count of bytes is a
+ * parameter because the Telegram sign in beside this one makes a shorter state value than it makes
+ * a verifier, and one implementation of the random source and of the writing is worth more than
+ * two.
+ */
+export function aValueNobodyCanGuess(bytes: number = RANDOM_BYTES): string {
+  return asAnAddressCarriesIt(crypto.getRandomValues(new Uint8Array(bytes)));
 }
 
 /** The digest of a verifier, which is what the press hands the pool in place of the value. */

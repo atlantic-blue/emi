@@ -3,8 +3,13 @@
 import { useState } from 'react';
 
 import type { Language, SiteWordKey, SiteWords } from '@/app/words';
-import { TheMarkOfApple, TheMarkOfGoogle } from '@/components/theMarksOfTheWaysIn';
+import {
+  TheMarkOfApple,
+  TheMarkOfGoogle,
+  TheMarkOfTelegram,
+} from '@/components/theMarksOfTheWaysIn';
 import { type AWayIn, theOriginSheIsOn, whereAPressTakesHer } from '@/lib/theProviderSignIn';
+import { whereAPressTakesHer as whereATelegramPressTakesHer } from '@/lib/theTelegramSignIn';
 import { goTo } from '@/lib/whereSheGoesNext';
 
 /**
@@ -21,14 +26,17 @@ import { goTo } from '@/lib/whereSheGoesNext';
  * browser runs nothing reads the page and the press does nothing rather than doing something
  * wrong.
  *
- * Telegram is the third way the board draws, and it waits for a function of its own, so the page
- * lists it and does not draw it.
+ * Telegram is the third way the board draws, and it leaves the site for Telegram rather than for
+ * the pool, because a custom sign in cannot be processed inside the managed login pages. Its press
+ * keeps the same three values and sends Telegram a digest of one of them, and Telegram brings her
+ * back to the relay page under `en`, which sends her on in the language she is reading now.
  */
 
 /** What each way in is called in the catalogue, and the mark it carries. */
 const theMarkOf: Readonly<Partial<Record<SiteWordKey, () => React.ReactNode>>> = {
   signInApple: TheMarkOfApple,
   signInGoogle: TheMarkOfGoogle,
+  signInTelegram: TheMarkOfTelegram,
 };
 
 /** The name the service fixes for each way in, which the address she leaves on carries. */
@@ -61,12 +69,16 @@ export function TheWaysSheCanSignIn({
   async function leaveFor(way: SiteWordKey): Promise<void> {
     const named = theNameOf[way];
 
-    if (named === undefined) {
+    if (named === undefined && way !== 'signInTelegram') {
       return;
     }
 
     try {
-      goTo(await whereAPressTakesHer(named, language, theOriginSheIsOn()));
+      goTo(
+        named === undefined
+          ? await whereATelegramPressTakesHer(language, theOriginSheIsOn())
+          : await whereAPressTakesHer(named, language, theOriginSheIsOn()),
+      );
     } catch {
       // A browser that keeps nothing, or one that offers no digest, cannot start this sign in at
       // all. She is told so and the box for a code is under the press, which still works.

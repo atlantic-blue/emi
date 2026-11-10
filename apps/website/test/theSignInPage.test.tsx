@@ -146,6 +146,7 @@ describe('what the page she signs in on draws', () => {
       const middle = theMiddleOf(markup);
       const apple = drawnBy(pressThatSays(middle, wordsIn('en').signInApple), stylesheet);
       const google = drawnBy(pressThatSays(middle, wordsIn('en').signInGoogle), stylesheet);
+      const telegram = drawnBy(pressThatSays(middle, wordsIn('en').signInTelegram), stylesheet);
 
       // Apple asks for white on black. Those two are in the palette already, because the board
       // paints a card white and Apple's press black.
@@ -160,7 +161,15 @@ describe('what the page she signs in on draws', () => {
       expect(google).toContain(`color: ${websiteMarkColour.markGoogleText}`);
       expect(google).not.toContain(websiteColour.siteControlLine);
 
-      for (const press of [apple, google]) {
+      // Telegram fixes no colour for a press, and the board draws it on the tint of Emi with the
+      // words in the colour every other sentence of the page is in. So this is the one press of
+      // the three that carries no colour of another company at all.
+      expect(telegram).toContain(`background-color: ${websiteColour.siteTint}`);
+      expect(telegram).toContain(`color: ${websiteColour.siteText}`);
+      expect(telegram).not.toContain(websiteMarkColour.markGoogleLine);
+      expect(telegram).not.toContain(websiteMarkColour.markGoogleText);
+
+      for (const press of [apple, google, telegram]) {
         expect(press).toContain('min-height: 52px');
         expect(press).toContain('border-radius: 12px');
       }
@@ -169,7 +178,7 @@ describe('what the page she signs in on draws', () => {
   );
 
   it(
-    'draws the mark of each company as the board draws it, and names neither one aloud',
+    'draws the mark of each company as the board draws it, and names none of them aloud',
     async () => {
       const markup = await theSignInPage();
       const board = readFileSync(
@@ -178,20 +187,12 @@ describe('what the page she signs in on draws', () => {
       );
       const outlines = [...board.matchAll(/ d="([^"]+)"/g)].map(([, outline]) => outline ?? '');
 
-      // The two outlines the board draws the mark of Telegram with. Telegram waits for a sign in
-      // of its own, so the page draws neither of them.
-      const telegram = ['M21 4L3 11l6 2 2 6 3-4 5 4 2-15z', 'M9 13l8-6'];
-      const theirs = outlines.filter((outline) => !telegram.includes(outline));
+      // Seven outlines: one for Apple, four for Google, and two for the paper plane the board
+      // draws Telegram with. The page draws all seven now that every press is built.
+      expect(outlines).toHaveLength(7);
 
-      expect(theirs).toHaveLength(5);
-
-      for (const outline of theirs) {
+      for (const outline of outlines) {
         expect(markup).toContain(outline);
-      }
-
-      for (const outline of telegram) {
-        expect(outlines).toContain(outline);
-        expect(markup).not.toContain(outline);
       }
 
       // The words beside each mark say which press it is, so a reader whose software reads the
