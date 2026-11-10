@@ -14,6 +14,10 @@ name: deploy
 # site on both events and ships it on a merge, and then reads the live host with a browser,
 # because the headers and the moves between addresses are added at the edge and no local run has
 # either.
+#
+# The functions job is the same shape for the api. Terraform creates each function from a
+# placeholder and ignores the code as drift, so the bundle of services/vault reaches the account
+# through this job alone. A pull request builds every bundle and uploads none of them.
 
 on:
   pull_request:
@@ -21,7 +25,10 @@ on:
       - 'infra/**'
       - 'infrastructure/**'
       - 'apps/website/**'
+      - 'services/vault/**'
+      - 'packages/crypto/**'
       - 'packages/tokens/**'
+      - 'tools/deploy/**'
       - '.github/workflows/deploy.yml'
   push:
     branches: [main]
@@ -29,7 +36,10 @@ on:
       - 'infra/**'
       - 'infrastructure/**'
       - 'apps/website/**'
+      - 'services/vault/**'
+      - 'packages/crypto/**'
       - 'packages/tokens/**'
+      - 'tools/deploy/**'
       - '.github/workflows/deploy.yml'
 
 permissions:
@@ -277,3 +287,81 @@ jobs:
             apps/website/test-results/
           if-no-files-found: ignore
           retention-days: 7
+
+  functions:
+    name: build and ship the deployed functions
+    needs: [check, apply]
+    runs-on: ubuntu-latest
+    # The same reading as the website job above. The build runs on both events, the apply runs on a
+    # merge alone, and a job that needs a skipped job is skipped with it, so the result of the apply
+    # is read rather than waited for. On a merge the apply goes first, so a function this merge
+    # creates exists before any code is put on it.
+    if: >-
+      always() &&
+      needs.check.result == 'success' &&
+      (needs.apply.result == 'success' || needs.apply.result == 'skipped')
+    env:
+      ROLE: ${{ vars.AWS_APPLY_ROLE_ARN }}
+      SHIPS: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    steps:
+      - name: say whether this job ships anything
+        run: |
+          if [ "${SHIPS}" != "true" ]; then
+            echo "This event builds the bundles and ships nothing. A merge into main ships them."
+          elif [ -z "${ROLE}" ]; then
+            echo "AWS_APPLY_ROLE_ARN is empty, so this job ships nothing."
+            echo "It is waiting for the bootstrap named in infra/README.md to create the roles."
+            echo "Set the repository variable to the apply role address to turn the deploy on."
+          else
+            echo "Shipping the bundles of services/vault as ${ROLE}."
+          fi
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: build one bundle for each function
+        run: npm run build:functions
+      # The same check the pull request ran, on the bundles this job is about to upload, so the
+      # artifact that is proved is the artifact that ships.
+      - name: load every bundle the way the platform loads it
+        run: npm run check:bundles
+      - uses: hashicorp/setup-terraform@v3
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+          terraform_wrapper: false
+      - name: assume the apply role
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE }}
+          aws-region: eu-central-1
+      - name: put the new code on each function
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        run: |
+          # An upload answers with the whole configuration of the function, and that carries its
+          # environment variables. A log of a public repository is readable by anybody, so the call
+          # names the one field worth reading and prints nothing else.
+          #
+          # The authorizer goes first. Registration stands behind no authorizer, so a real vault
+          # makes registration live at once, and a placeholder authorizer would then refuse every
+          # later request of hers until this loop reached it.
+          for name in emi-authorizer emi-articles emi-vault; do
+            version=$(aws lambda update-function-code \
+              --function-name "${name}" \
+              --zip-file "fileb://services/vault/build/${name}.zip" \
+              --no-cli-pager \
+              --query Version --output text)
+            aws lambda wait function-updated --function-name "${name}"
+            echo "${name} now runs version ${version}"
+          done
+      # The last word on this deploy, and the only step that reads what her phone gets. A bundle
+      # that fails to load answers no request at all, so the refusal is read from the live api
+      # rather than from the step above reporting that it uploaded something.
+      - name: read the live api
+        if: env.SHIPS == 'true' && env.ROLE != ''
+        run: |
+          terraform -chdir=infra init -input=false -lock=false
+          npm run read:live-api -- "$(terraform -chdir=infra output -raw api_endpoint)"

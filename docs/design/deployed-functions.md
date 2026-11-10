@@ -31,16 +31,17 @@ reading of 2026-09-18. `POST /v1/accounts` answered 501, so that route reaches i
 
 `services/vault` holds the registration, the request signature, the authorizer, the two record
 endpoints, the delete and the article catalogue. Each one is a factory. It takes a store and gives
-back a function of one event. Nothing binds one to a client of the account. Nothing routes a path to
-one. No step of any path packages them.
+back a function of one event. An entry point of its own binds each one to a client of the account,
+`services/vault/src/router.ts` routes a path to one, and `npm run build:functions` writes one
+bundle for each function. The pipeline uploads those bundles on a merge into `main`, so a
+placeholder is what a function answers with until the first merge reaches it.
 
 Two roles exist and nothing assumes them. `emi-sign-in-telegram` and `emi-sign-in-challenge` are the
 roles of the Telegram sign in. The grants landed on their own, before the functions that need them.
 
-Two lines in the documents are stale, because the count moved from two functions to three.
-`infra/README.md` says "Two functions" under what it builds. `architecture.md` says "the two
-placeholders the Terraform carries". The path below corrects each one, inside the pull request that
-already changes that file.
+Two lines in the documents were stale, because the count moved from two functions to three.
+`infra/README.md` said "Two functions" under what it builds, and `architecture.md` said "the two
+placeholders the Terraform carries". The second pull request of the path below corrected both.
 
 ## What this design decides
 
@@ -174,7 +175,7 @@ them reads it out of a script with a pattern.
 
 ## Where the pipeline builds it, and how Terraform receives it
 
-Status: designed
+Status: built
 
 Terraform receives nothing. That is the decision, and the repository already made it once for the
 website.
@@ -228,17 +229,21 @@ flowchart TD
 
 ## The placeholder goes away with no window where a route lets anybody through
 
-Status: designed
+Status: built
 
 Four things could open a route. Each one gets a rule, and each rule is a case in
 `tools/pipeline/infrastructure.test.ts`.
 
-A route with no authorizer. Two routes are meant to carry none. The registration carries none,
-because the account does not exist yet. The article read carries none, because a request says which
-phase is read and never who is reading it. Every other route carries the authorizer.
+A route with no authorizer. Three routes are meant to carry none, and this design named two of
+them. The registration carries none, because the account does not exist yet. The article read
+carries none, because a request says which phase is read and never who is reading it. The sign in
+with Telegram carries none, because a woman reaching an account from a new phone holds no device
+key for it, and that route landed with its handler after this section was written. Every other
+route carries the authorizer.
 
-The rule reads the routes out of `infra/api.tf` and names those two. A third route with
-`authorization_type = "NONE"` then fails here, rather than in the account.
+The rule reads the routes out of `infra/api.tf` and names those three, in
+`tools/deploy/routes.ts`. A fourth route with `authorization_type = "NONE"` then fails here,
+rather than in the account.
 
 A cached authorizer answer. `authorizer_result_ttl_in_seconds` is zero and may not be raised,
 because a cached answer is a replayed signature that passes. That rule is already a case.
@@ -311,7 +316,7 @@ whether this repository can use one.
 
 ## The deploy order
 
-Status: designed
+Status: built
 
 Inside one run, on a merge into `main`:
 

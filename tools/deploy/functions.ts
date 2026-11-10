@@ -64,3 +64,17 @@ export function archiveNameOf(held: DeployedFunction): string {
 export function metafileNameOf(held: DeployedFunction): string {
   return `${held.name}.meta.json`;
 }
+
+/**
+ * The order the pipeline uploads in, which `.github/workflows/deploy.yml` walks.
+ *
+ * The authorizer goes first. Registration stands behind no authorizer, so a woman can register the
+ * moment the vault bundle is live, and a placeholder authorizer would then refuse every later
+ * request of hers until the next upload finished. Neither order opens a route: a placeholder
+ * authorizer refuses every request, and a placeholder vault answers 501.
+ */
+export const uploadOrder: readonly string[] = [
+  `${projectName}-authorizer`,
+  `${projectName}-articles`,
+  `${projectName}-vault`,
+];

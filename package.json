@@ -25,6 +25,7 @@
     "check:patches": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkPatches.ts",
     "build:functions": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/deploy/buildTheFunctions.ts",
     "check:bundles": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/deploy/checkTheBundlesLoad.ts",
+    "read:live-api": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/deploy/readTheLiveApi.ts",
     "check:documents": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/pipeline/checkDocuments.ts",
     "generate:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts",
     "check:brand": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON tools/brand/writeBrandDocument.ts --check",

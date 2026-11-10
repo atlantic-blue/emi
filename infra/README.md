@@ -24,10 +24,17 @@ time. It holds no key, no date, no symptom, no flow and no note.
 One HTTP api, `emi-vault`, with four routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
-Two functions, `emi-vault` and `emi-authorizer`, on Node 22 and arm64. Both deployed functions
-are the placeholders that `infra/lambda.tf` holds inline. The real handlers exist, in
-`services/vault/src`, and they merged with feature 6 steps 2 and 3. No step in the path packages
-`services/vault` into either function, so the placeholders are what runs.
+Three functions, `emi-vault`, `emi-authorizer` and `emi-articles`, on Node 22 and arm64.
+Terraform creates each one from a placeholder it holds inline, and then leaves the code alone. The
+deployed code is the bundle: the `functions` job of `.github/workflows/deploy.yml` builds one
+bundle for each function out of `services/vault/src` and uploads it on a merge into `main`. Each
+function carries `ignore_changes` on its file name and its code hash, so an apply never puts a
+placeholder back.
+
+A function answers from its placeholder until the first merge reaches it. The vault placeholder and
+the article placeholder answer 501. The authorizer placeholder refuses every request. The last step
+of that job reads the live api and requires a refusal on every route the authorizer stands in front
+of, so a merge that leaves a bundle unloadable fails.
 
 Three log groups, each with a retention of 30 days.
 

@@ -453,8 +453,8 @@ applied, because the first apply needs a credential the pipeline does not hold y
 eu-central-1 and the account is 230345688874.
 
 `services/vault` now holds the account, the request signature, the authorizer, the two record
-endpoints and the storage that writes the items. The bundle the two functions run is not written,
-so what is deployed today is still the two placeholders the Terraform carries.
+endpoints and the storage that writes the items. The pipeline builds one bundle for each function
+and uploads it on a merge, and Terraform ignores the uploaded code as drift.
 
 The storage takes the request shapes DynamoDB takes rather than a client of its own, so the item
 the service writes is the item a test reads. The test that reads one writes a day whose note holds
