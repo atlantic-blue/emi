@@ -347,8 +347,11 @@ jobs:
           #
           # The authorizer goes first. Registration stands behind no authorizer, so a real vault
           # makes registration live at once, and a placeholder authorizer would then refuse every
-          # later request of hers until this loop reached it.
-          for name in emi-authorizer emi-articles emi-vault; do
+          # later request of hers until this loop reached it. The three triggers go before the
+          # function that issues the answer they spend. This list is held in
+          # tools/deploy/functions.ts as well, and the infrastructure test refuses the two the
+          # moment they disagree.
+          for name in emi-authorizer emi-articles emi-sign-in-challenge-define emi-sign-in-challenge-create emi-sign-in-challenge-verify emi-sign-in-telegram emi-vault; do
             version=$(aws lambda update-function-code \
               --function-name "${name}" \
               --zip-file "fileb://services/vault/build/${name}.zip" \

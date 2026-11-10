@@ -31,6 +31,7 @@ const theParameterStore = 'ssm.eu-central-1.amazonaws.com';
 const everyFunctionOfEmi = 'arn:aws:lambda:*:230345688874:function:emi-*';
 const everyRoleOfEmi = 'arn:aws:iam::230345688874:role/emi-*';
 const everyPool = 'arn:aws:cognito-idp:*:230345688874:userpool/*';
+const theOnePool = 'aws_cognito_user_pool.accounts.arn';
 
 const parameterWrites = ['ssm:PutParameter', 'ssm:DeleteParameter', 'ssm:DeleteParameters'];
 
@@ -116,6 +117,8 @@ defineFeature(feature, (test) => {
 
     and('it writes one item to the vault table and reads nothing from it', () => {
       expect([...signIn.flatMap((statement) => statement.actions)].sort()).toEqual([
+        'cognito-idp:AdminCreateUser',
+        'cognito-idp:AdminSetUserPassword',
         'dynamodb:PutItem',
         'kms:Decrypt',
         'logs:CreateLogStream',
@@ -125,6 +128,15 @@ defineFeature(feature, (test) => {
       ]);
       expect(scopeOf(signIn, 'dynamodb:PutItem')).toEqual([[theVaultTable]]);
       expect(signInPolicy).not.toContain('/index/');
+    });
+
+    // Two calls, because the pool may refuse a user with no password and the function then sends
+    // one. Neither call reads a user, so this role cannot ask the pool who signed in with Telegram.
+    and('it holds her pool user on the one pool, and reads no user of it', () => {
+      expect(scopeOf(signIn, 'cognito-idp:AdminCreateUser')).toEqual([[theOnePool]]);
+      expect(scopeOf(signIn, 'cognito-idp:AdminSetUserPassword')).toEqual([[theOnePool]]);
+      expect(grantedOnEveryResource(signIn, 'cognito-idp:AdminCreateUser')).toBe(false);
+      expect(signInPolicy).not.toContain(everyPool);
     });
 
     and('it decrypts a secure string only through a parameter store call', () => {

@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "3.984.0",
     "@aws-sdk/client-dynamodb": "3.984.0",
+    "@aws-sdk/client-ssm": "3.984.0",
     "@emi/crypto": "*",
     "@emi/tokens": "*"
   }

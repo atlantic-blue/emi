@@ -21,9 +21,12 @@ and nobody wrote it yet.
 
 Status: built
 
-`infra/lambda.tf` declares three functions, not two: `emi-vault`, `emi-authorizer` and
-`emi-articles`. All three carry a placeholder. The vault placeholder and the article placeholder
-answer 501. The authorizer placeholder answers `isAuthorized: false` for every request.
+`infra/lambda.tf` declares seven functions. Three answer the vault: `emi-vault`,
+`emi-authorizer` and `emi-articles`. Four carry the sign in with Telegram:
+`emi-sign-in-telegram` and the three triggers `emi-sign-in-challenge-define`,
+`emi-sign-in-challenge-create` and `emi-sign-in-challenge-verify`. All seven carry a placeholder.
+The vault placeholder answers 501, and every function but the authorizer is created from it. The
+authorizer placeholder answers `isAuthorized: false` for every request.
 
 The placeholders work, and that is measured rather than assumed. `infra/README.md` records the
 reading of 2026-09-18. `POST /v1/accounts` answered 501, so that route reaches its function. `GET
@@ -36,8 +39,9 @@ back a function of one event. An entry point of its own binds each one to a clie
 bundle for each function. The pipeline uploads those bundles on a merge into `main`, so a
 placeholder is what a function answers with until the first merge reaches it.
 
-Two roles exist and nothing assumes them. `emi-sign-in-telegram` and `emi-sign-in-challenge` are the
-roles of the Telegram sign in. The grants landed on their own, before the functions that need them.
+The two roles of the Telegram sign in landed on their own, before the functions that need them.
+`emi-sign-in-telegram` is the role of the function that answers a code. `emi-sign-in-challenge` is
+the role the three triggers share. The third pull request below put the four functions on them.
 
 Two lines in the documents were stale, because the count moved from two functions to three.
 `infra/README.md` said "Two functions" under what it builds, and `architecture.md` said "the two
@@ -45,7 +49,7 @@ placeholders the Terraform carries". The second pull request of the path below c
 
 ## What this design decides
 
-Status: designed
+Status: built
 
 One bundle for each function, and not one bundle for all of them. Seven functions once the Telegram
 sign in lands, so seven bundles.
@@ -67,7 +71,7 @@ upload, and one live read that requires a refusal.
 
 ## One bundle for each function
 
-Status: designed
+Status: built
 
 One shared bundle is cheaper. One build, one zip, one upload, and a `handler` value of
 `index.authorizer` or `index.vault` to pick the export. The cost is what each function then loads.
@@ -103,7 +107,7 @@ that takes. The first pull request below reports the figure.
 
 ## The entry point, and the client the port needed
 
-Status: designed
+Status: built
 
 An entry point is a thin file and it holds no branch. It reads its environment. It builds the
 clients. It binds them to the factory the service already exports. It exports `handler`. Nothing
@@ -124,9 +128,11 @@ implementation. It is a pass through. The port already takes the request shapes 
 the adapter adds no behaviour and can hide no difference.
 
 Three clients of the Amazon Web Services software development kit are needed. Each one is imported
-from its own package, so a bundle carries only the service it calls. Every function needs the
+from its own package, so a bundle carries only the service it calls. Five functions need the
 DynamoDB client. The sign in function alone needs the parameter store client and the Amazon Cognito
-client.
+client. The define and the create trigger need none at all: each one decides from the event it is
+handed. Their zips are 532 and 396 bytes, against 361 kilobytes for the sign in function, measured
+on 10 November 2026 by `npm run build:functions`.
 
 The bundle carries those clients rather than reading them from the runtime. The version is then in
 `package-lock.json`. The tests run against the same version the function runs. A runtime that
@@ -139,7 +145,7 @@ somebody has to prove, and this repository has no reason to prove it.
 
 ## The tool, the runtime and the shape of the zip
 
-Status: designed
+Status: built
 
 esbuild, pinned by exact version in the root manifest, as every other tool here is pinned. Version
 0.28.2 is in `package-lock.json` already, as a dependency of `@opennextjs/aws`, which builds the
@@ -269,7 +275,7 @@ Telegram code, so it writes nothing and it reads nobody. A deploy that cannot ge
 
 ## The test that proves a bundle loads the way the platform loads it
 
-Status: designed
+Status: built
 
 An import in node proves that the file parses. It says nothing about whether the platform can find
 the handler. That is the fault that costs a deploy. A runtime resolves an entry point its own way,
@@ -336,7 +342,7 @@ The four functions of the Telegram sign in come last. Their handlers belong to t
 
 ## The path
 
-Status: designed
+Status: built
 
 Three pull requests, in this order, each one its own intention. Each one names five things. What it
 depends on, the files it touches, the behaviour it changes, what proves it, and why the promise of
@@ -399,22 +405,37 @@ Files: `infra/lambda.tf`, `infra/api.tf`, `services/vault/src/functions/`,
 `tools/deploy/functions.ts`, `tools/pipeline/infrastructure.test.ts`, `infra/README.md`.
 Behaviour: four function resources and four log groups, on the two roles that already exist. The
 sign in function takes `emi-sign-in-telegram`, and the three triggers share `emi-sign-in-challenge`.
-That role gains the one grant `infra/README.md` says is deliberately absent: the Amazon Cognito call
-that creates a pool user. `infra/api.tf` gains one integration, the route `POST
-/v1/sign-in/telegram` with no authorizer, and the policy that lets the api invoke that function.
-Each function reads the table name from its environment. The sign in function also reads the pool,
-the client, the return address and the name of each parameter. It reads a name rather than
-building one, so a test can point it somewhere else. The list of functions gains four entries, so
-the build and the upload cover them with no further change.
+The sign in role gains the grant `infra/README.md` says is deliberately absent: the two Amazon
+Cognito calls that hold her pool user, `AdminCreateUser` and `AdminSetUserPassword`, on that one
+pool. The role goes to the sign in function and not to the triggers, because the code creates the
+user in the function that answers the code: `poolUserHeldOrMade` in `src/telegram/pool.ts` is
+called by the handler and by nothing the pool calls. The challenge role gains nothing.
+`infra/api.tf` gains one integration, the route `POST /v1/sign-in/telegram` moved onto it with no
+authorizer, and the policy that lets the api invoke that function.
+
+The environment of each function carries what its entry point reads and nothing else. The sign in
+function reads the table it writes one answer to and the pool it creates her user in. The verify
+trigger reads the table. The define and the create trigger read nothing at all. The three parameter
+names and the return address are constants of the service, in `src/telegram/parameters.ts` and
+`src/telegram/exchange.ts`, each one under test and each one named in full by the role, so neither
+end holds a prefix. The list of functions gains four entries, and the upload order in
+`.github/workflows/deploy.yml` gains the same four names: the infrastructure test refuses the two
+lists the moment they disagree.
 One merge, and not two. `infra/README.md` says a grant ships alone and first, because a policy that
 has not spread can fail the apply that needs it. Nothing calls the new grant during the apply. The
 first call happens when a woman signs in. So one merge costs at most one refused sign in, in the
 minute after it.
-Proof: the infrastructure test reads that each of the four functions names the role meant for it. It
-reads that the sign in function is the only one whose role reads a parameter. The load check covers
-the four new bundles, and each one answers an event it can answer with no account. The metafile cases
-assert that no trigger bundle carries a parameter store client. A mutation that points a trigger at
-the sign in role is watched failing.
+Proof: the infrastructure test reads that each of the seven functions names the role meant for it,
+and that each one carries `ignore_changes` on both fields. It reads that the sign in function is
+the only one whose role reads a parameter, and that the environment of each function is exactly
+what its entry point reads. The sign in route stays without an authorizer, and the list of routes
+allowed to carry none stays at three. The load check covers the four new bundles, and each one
+answers an event it can answer with no account: the define trigger is handed a session with no
+challenge yet, and the sign in function a body with no code, which it refuses with 400 before it
+reads a parameter. The metafile cases assert that no trigger bundle carries a parameter store
+client, and that the two triggers which decide from their event carry no client at all. A mutation
+that points a trigger at the sign in role is watched failing, and so is one that drops
+`ignore_changes` from the sign in function.
 The promise: the pool calls a function of Emi that holds no secret. One function reads the client
 secret and the salt. It answers with a user name and a one time value, and with no part of the
 identity token.

@@ -10,6 +10,8 @@ import {
   deployedFunctions,
   handlerName,
 } from './functions.ts';
+import { telegramChallengeMetadata } from '../../services/vault/src/triggers/createAuthChallenge.ts';
+import { customChallengeName } from '../../services/vault/src/triggers/defineAuthChallenge.ts';
 
 /**
  * Loads every bundle the way the platform loads it, and refuses the ones it cannot.
@@ -60,6 +62,11 @@ function fieldOf(answer: unknown, name: string): unknown {
     : undefined;
 }
 
+/** One field of what a trigger answered, which the pool reads out of its response. */
+function answeredField(answer: unknown, name: string): unknown {
+  return fieldOf(fieldOf(answer, 'response'), name);
+}
+
 /**
  * One check for each function, by name. A function in the list with no check here fails the run, so
  * a bundle cannot join the deploy without an event that proves it answers.
@@ -92,6 +99,39 @@ export const loadChecks: Readonly<Record<string, LoadCheck>> = {
     },
     owes: (answer) => fieldOf(answer, 'statusCode') === 404,
     describes: 'a phase this product does not know is answered 404',
+  },
+  // A body with no code is refused before the function reads a parameter, reaches Telegram or
+  // touches the pool, so a bundle with no account behind it owes this answer.
+  'emi-sign-in-telegram': {
+    event: {
+      rawPath: '/v1/sign-in/telegram',
+      headers: {},
+      requestContext: { http: { method: 'POST' } },
+      body: '{}',
+    },
+    owes: (answer) => fieldOf(answer, 'statusCode') === 400,
+    describes: 'a sign in body with no code is answered 400',
+  },
+  'emi-sign-in-challenge-define': {
+    event: { request: { session: [] }, response: {} },
+    owes: (answer) => answeredField(answer, 'challengeName') === customChallengeName,
+    describes: 'a session with no challenge yet is asked for the custom challenge',
+  },
+  'emi-sign-in-challenge-create': {
+    event: { request: { challengeName: customChallengeName }, response: {} },
+    owes: (answer) => answeredField(answer, 'challengeMetadata') === telegramChallengeMetadata,
+    describes: 'the challenge it issues is marked as the Telegram one',
+  },
+  // An answer that is not base 64 of the length an answer carries has no digest, so the trigger
+  // refuses it without reaching the table at all.
+  'emi-sign-in-challenge-verify': {
+    event: {
+      userName: 'tg_0000000000000000000000000',
+      request: { challengeAnswer: 'this is not an answer' },
+      response: {},
+    },
+    owes: (answer) => answeredField(answer, 'answerCorrect') === false,
+    describes: 'an answer nothing issued is refused',
   },
 };
 

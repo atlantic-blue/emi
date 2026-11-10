@@ -11,6 +11,10 @@ Feature: The Telegram sign in may read its keys, and nothing else may
   in one apply, because the policy has not spread yet. So the grants merge on their own and first,
   and the functions follow after.
 
+  One grant came later, with the functions themselves. The function holds her pool user, and
+  nothing calls that grant during an apply: the first call is a woman signing in. So it cost one
+  merge rather than two.
+
   The operator made two things by hand, and nothing in this repository can make either. They
   switched @EmiAppBot to the OpenID Connect login in BotFather, and registered the return address
   there. Then they wrote the client secret into the parameter store.
@@ -37,6 +41,7 @@ Feature: The Telegram sign in may read its keys, and nothing else may
     And it reads the bot token through no grant and no prefix
     And it writes the salt and no other parameter
     And it writes one item to the vault table and reads nothing from it
+    And it holds her pool user on the one pool, and reads no user of it
     And it decrypts a secure string only through a parameter store call
 
   Scenario: nothing may take the salt away, because the salt is permanent

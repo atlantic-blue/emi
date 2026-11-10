@@ -20,9 +20,8 @@ export interface DeployedFunction {
 export const projectName = 'emi';
 
 /**
- * The three functions the account holds today. The four of the Telegram sign in have their handlers
- * written and no function resource to run on, so they join this list with the Terraform that
- * creates them rather than before it.
+ * The seven functions of the account. Three answer the vault, and four carry the sign in with
+ * Telegram: the function that answers a code, and the three triggers the pool calls.
  */
 export const deployedFunctions: readonly DeployedFunction[] = [
   {
@@ -39,6 +38,26 @@ export const deployedFunctions: readonly DeployedFunction[] = [
     name: `${projectName}-articles`,
     entryPoint: 'services/vault/src/functions/articles.ts',
     resource: 'aws_lambda_function.articles',
+  },
+  {
+    name: `${projectName}-sign-in-telegram`,
+    entryPoint: 'services/vault/src/functions/signInWithTelegram.ts',
+    resource: 'aws_lambda_function.sign_in_telegram',
+  },
+  {
+    name: `${projectName}-sign-in-challenge-define`,
+    entryPoint: 'services/vault/src/functions/defineAuthChallenge.ts',
+    resource: 'aws_lambda_function.sign_in_challenge_define',
+  },
+  {
+    name: `${projectName}-sign-in-challenge-create`,
+    entryPoint: 'services/vault/src/functions/createAuthChallenge.ts',
+    resource: 'aws_lambda_function.sign_in_challenge_create',
+  },
+  {
+    name: `${projectName}-sign-in-challenge-verify`,
+    entryPoint: 'services/vault/src/functions/verifyAuthChallengeResponse.ts',
+    resource: 'aws_lambda_function.sign_in_challenge_verify',
   },
 ];
 
@@ -72,9 +91,16 @@ export function metafileNameOf(held: DeployedFunction): string {
  * moment the vault bundle is live, and a placeholder authorizer would then refuse every later
  * request of hers until the next upload finished. Neither order opens a route: a placeholder
  * authorizer refuses every request, and a placeholder vault answers 501.
+ *
+ * The three triggers go before the function that issues the answer they spend, so no sign in ever
+ * hands out an answer that nothing in the pool can read.
  */
 export const uploadOrder: readonly string[] = [
   `${projectName}-authorizer`,
   `${projectName}-articles`,
+  `${projectName}-sign-in-challenge-define`,
+  `${projectName}-sign-in-challenge-create`,
+  `${projectName}-sign-in-challenge-verify`,
+  `${projectName}-sign-in-telegram`,
   `${projectName}-vault`,
 ];
