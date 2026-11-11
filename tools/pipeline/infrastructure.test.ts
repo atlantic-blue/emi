@@ -269,6 +269,7 @@ const articlesTable = bodyOf('resource "aws_dynamodb_table" "articles"');
 const articlesRoute = bodyOf('resource "aws_apigatewayv2_route" "read_articles"');
 const articlesFunction = bodyOf('resource "aws_lambda_function" "articles"');
 const logFormat = bodyOf('access_log_settings');
+const cors = bodyOf('cors_configuration');
 
 describe('the infrastructure is applied only by the pipeline', () => {
   describe('the merge is the only thing that applies', () => {
@@ -3177,6 +3178,78 @@ describe('the triggers on the pool, and the custom flow on both clients', () => 
 
     it('holds no secret in the file the pool is written in, because this repository is public', () => {
       expect(credentialValuesIn(read('infra/cognito.tf'))).toEqual([]);
+    });
+  });
+});
+
+describe('the api answers the preflight of the site, which is issue 433', () => {
+  describe('the origins it names', () => {
+    it('names the site and nothing else', () => {
+      expect(listedIn(cors, 'allow_origins')).toEqual([SITE_ORIGIN]);
+    });
+
+    it('names no star anywhere in the block, so no other page may read an answer', () => {
+      expect(cors).not.toContain('*');
+    });
+
+    it('names the origin the site itself says it serves from', () => {
+      expect(listedIn(cors, 'allow_origins')).toContain(theSiteAddress);
+    });
+  });
+
+  describe('the methods and the headers it allows', () => {
+    it('allows the one method the site calls across origins, and no other', () => {
+      expect(listedIn(cors, 'allow_methods')).toEqual(['POST']);
+    });
+
+    it('allows the one header that call sends, and no other', () => {
+      expect(listedIn(cors, 'allow_headers')).toEqual(['content-type']);
+    });
+
+    it('allows the method and the header the sign in call is written with', () => {
+      const call = read('apps/website/lib/theTelegramSignIn.ts');
+
+      expect(call).toContain("method: 'POST'");
+      expect(call).toContain("headers: { 'content-type': 'application/json' }");
+      expect(listedIn(cors, 'allow_methods')).toContain('POST');
+      expect(listedIn(cors, 'allow_headers')).toContain('content-type');
+    });
+
+    it('sends no cookie with it, so the api hands no credential back', () => {
+      expect(cors).toMatch(/allow_credentials\s*=\s*false/);
+    });
+
+    it('lets a browser keep the answer, so one sign in is one preflight', () => {
+      expect(Number(/max_age\s*=\s*(\d+)/.exec(cors)?.[1])).toBeGreaterThan(0);
+    });
+  });
+
+  describe('what the preflight does not change', () => {
+    it('leaves every route that carries the authorizer carrying it', () => {
+      const routes = readTheRoutes(repositoryRoot);
+      const guarded = routes.filter(carriesTheAuthorizer).map((route) => route.resource);
+
+      expect(guarded).toEqual(
+        routes
+          .map((route) => route.resource)
+          .filter((resource) => !routesWithNoAuthorizer.includes(resource)),
+      );
+    });
+
+    it('keeps the routes that carry none at the three that are named', () => {
+      const none = readTheRoutes(repositoryRoot)
+        .filter((route) => !carriesTheAuthorizer(route))
+        .map((route) => route.resource);
+
+      expect(none.sort()).toEqual([...routesWithNoAuthorizer].sort());
+      expect(none).toHaveLength(3);
+    });
+
+    it('declares no route for the preflight, because the api answers it before a route is read', () => {
+      const keys = readTheRoutes(repositoryRoot).map((route) => `${route.method} ${route.path}`);
+
+      expect(keys.filter((key) => key.startsWith('OPTIONS'))).toEqual([]);
+      expect(keys.filter((key) => key.includes('$default'))).toEqual([]);
     });
   });
 });

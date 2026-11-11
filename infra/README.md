@@ -24,6 +24,16 @@ time. It holds no key, no date, no symptom, no flow and no note.
 One HTTP api, `emi-vault`, with six routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
+`https://myemi.app` is the only origin that may call this api from a browser. It is the one
+address the site serves from: `https://www.myemi.app` answers a redirect to it. The api allows the
+method POST and the header `content-type`, which is the one call the site makes, and it allows no
+cookie. It names no star, so a page on any other host reads no answer.
+
+A browser sends a preflight before that call, and the api answers the preflight itself. It answers
+before it matches a route, so no authorizer runs for a preflight and no route gives up its
+authorizer. The last step of the `functions` job sends that preflight and fails the deploy when the
+answer does not allow the site, the method and the header.
+
 Seven functions, on Node 22 and arm64. Three answer the vault: `emi-vault`, `emi-authorizer`
 and `emi-articles`. Four carry the sign in with Telegram: `emi-sign-in-telegram` answers a code,
 and `emi-sign-in-challenge-define`, `emi-sign-in-challenge-create` and

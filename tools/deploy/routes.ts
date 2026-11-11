@@ -93,3 +93,15 @@ export function carriesTheAuthorizer(route: ApiRoute): boolean {
 export function addressOf(origin: string, route: ApiRoute): string {
   return `${origin.replace(/\/+$/, '')}${route.path.replace(/\{[^}]+\}/g, nothingIsHere)}`;
 }
+
+/**
+ * The sign in route, which the live read sends a preflight to. The browser calls it from the site
+ * and not from the api address, so it is the one route of this api whose preflight a woman's sign
+ * in depends on.
+ */
+export const theSignInRoute = 'sign_in_telegram';
+
+/** The route the live read sends its preflight to, or nothing where the api declares none. */
+export function theRouteThePreflightReads(routes: readonly ApiRoute[]): ApiRoute | undefined {
+  return routes.find((route) => route.resource === theSignInRoute);
+}
