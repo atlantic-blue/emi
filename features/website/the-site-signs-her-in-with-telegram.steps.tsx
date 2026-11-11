@@ -123,7 +123,14 @@ defineFeature(feature, (test) => {
       const words = wordsIn('en');
 
       expect(said).toContain(words.signInTelegram);
+
+      // The order the board draws them in: Apple, then Google, then Telegram. Apple's review rule
+      // asks for a way in that limits what it learns beside every social sign in, so this press
+      // goes under both of them rather than over either, and a page that offered Google without
+      // Apple is a page the store refuses.
+      expect(said.indexOf(words.signInApple)).toBeLessThan(said.indexOf(words.signInGoogle));
       expect(said.indexOf(words.signInGoogle)).toBeLessThan(said.indexOf(words.signInTelegram));
+
       // The board draws it third, so nothing waits for its keys on this page any more.
       expect(theWaysToSignIn[2]?.word).toBe('signInTelegram');
       expect(theWaysToSignIn.filter((way) => way.waitsForItsKeys === true)).toEqual([]);
