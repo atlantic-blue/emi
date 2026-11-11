@@ -2,10 +2,27 @@
  * The conversation myemi.app has with Amazon Cognito when a woman signs in with a code sent to her
  * email address.
  *
- * Three calls and nothing else. One makes the user if the address has none, one asks for the code,
- * and one answers it. The pool holds her address and a subject. It holds no vault key, no day and
- * no account identifier, so nothing here can open a record: the recovery code is still the only
- * thing that wraps the vault key, and `docs/design/accounts.md` says so.
+ * One email reaches her for one sign in. The service decides which of its two codes that is, and
+ * the two are not the same length: a sign up is confirmed with six digits, and a sign in with an
+ * email one time password takes eight. So the box she types into is as long as the code she was
+ * actually sent, and the words beside it name no number.
+ *
+ * Her first sign in is the passwordless sign up of the service. `SignUp` makes her user and sends
+ * the one email. `ConfirmSignUp` takes the code she types and hands back a session. `InitiateAuth`
+ * takes that session and hands back her tokens, and the service asks for no second code because
+ * the session is the proof she already gave.
+ *
+ * A woman who has signed in before cannot be told apart from a new one before that first email
+ * goes out. The pool carries her address as an alias, so `SignUp` on an address that already has
+ * an account is answered the same way as `SignUp` on a new one, which is what stops anybody
+ * testing who uses Emi. The two part company at `ConfirmSignUp`, which refuses with
+ * `AliasExistsException`, and only for somebody who typed the right code. So the page learns which
+ * she was from her, never from the service, and a reader who cannot read her email learns nothing.
+ * That refusal sends her a sign in code of eight digits and leaves her on the same box.
+ *
+ * The pool holds her address and a subject. It holds no vault key, no day and no account
+ * identifier, so nothing here can open a record: the recovery code is still the only thing that
+ * wraps the vault key, and `docs/design/accounts.md` says so.
  *
  * The pool lists PASSWORD as a first factor because the service refuses a list that leaves it out.
  * No screen of Emi asks for one, this module never sends one, and the website client allows no
@@ -16,9 +33,10 @@
  * none.
  *
  * What is proved, and what is not. Every path below is driven end to end in
- * `test/theSignIn.test.ts` against a stub of the service, because the pool cannot send an email
- * yet: steps 28.8 to 28.10 connect it to the myemi.app sender. The shapes here are the shapes the
- * service documents. Nobody has read a real answer from the live pool with this code.
+ * `test/theSignIn.test.ts` against a stub of the service, and the shapes are the shapes the
+ * service documents. The one answer read from the live pool is the one for an address that has no
+ * user: the service hands back a whole email one time password challenge and sends no email, which
+ * is why no call here can tell a new address from a known one.
  */
 
 /** The region the pool and the vault both run in. */
@@ -57,8 +75,17 @@ const THE_CHOICE_FLOW = 'USER_AUTH';
 /** How long the code is good for, which is the session the client is given. */
 export const THE_CODE_LASTS_MINUTES = 15;
 
-/** How many digits the code has, which is what the field takes and what the words promise. */
-export const THE_CODE_IS_THIS_LONG = 6;
+/**
+ * How many digits the code that confirms a sign up has. The service fixes this number and no
+ * setting of the pool moves it.
+ */
+export const THE_SIGN_UP_CODE_IS_THIS_LONG = 6;
+
+/**
+ * How many digits the code that signs her in has. The service fixes this one too, at a different
+ * number from the one above, which is why the box cannot be one fixed width.
+ */
+export const THE_SIGN_IN_CODE_IS_THIS_LONG = 8;
 
 /**
  * How long a username is, in characters. The username carries nothing about her: the account
@@ -102,11 +129,33 @@ export interface TheTokensSheHolds {
   readonly refreshToken: string;
 }
 
+/** How many digits the box takes, which is one of the two numbers the service sends. */
+export type HowLongTheCodeIs =
+  typeof THE_SIGN_UP_CODE_IS_THIS_LONG | typeof THE_SIGN_IN_CODE_IS_THIS_LONG;
+
+/** Which of the two codes she is holding, and so which call answers it. */
+export type WhichCodeSheHolds = 'theSignUpCode' | 'theSignInCode';
+
 /** Where she is between asking for a code and answering it. */
 export interface TheCodeSheWaitsFor {
+  /** The address she typed, which the page writes back to her and the service signs her in by. */
   readonly address: string;
+
+  /**
+   * The name the service knows her new user by, which only a sign up code needs. The service
+   * refuses an unverified address as a name, so the confirmation names this instead.
+   */
+  readonly username: string;
+
   readonly session: string;
+  readonly digits: HowLongTheCodeIs;
+  readonly answers: WhichCodeSheHolds;
 }
+
+/** What answering a code leaves her with: her tokens, or one more code on its way to her. */
+export type WhatTheCodeLeftHerWith =
+  | { readonly kind: 'sheIsSignedIn'; readonly held: TheTokensSheHolds }
+  | { readonly kind: 'anotherCodeIsOnItsWay'; readonly waitsFor: TheCodeSheWaitsFor };
 
 /** How this module reaches the service. A test hands it one that answers without a network. */
 export type HowItAsks = typeof fetch;
@@ -196,44 +245,65 @@ export function aUsername(): string {
     .join('');
 }
 
-/**
- * The user behind an address, made where the address has none.
- *
- * The pool answers the same way whether or not an address has an account, so this module cannot
- * ask it and has to try. A try that comes back with the address already taken is the ordinary case
- * of a woman who has signed in before, and it is read as nothing happening at all.
- *
- * No password is sent, because the pool carries a one time code as a first factor and there is no
- * password anywhere in Emi. The address is written as the one attribute the client may write, and
- * the service marks it verified the first time she answers a code.
- */
-async function makeHerUserIfSheHasNone(how: HowItAsks, address: string): Promise<void> {
-  const { took, said } = await ask(how, 'SignUp', {
-    ClientId: THE_WEBSITE_CLIENT_ID,
-    Username: aUsername(),
-    UserAttributes: [{ Name: 'email', Value: address }],
-  });
+/** The three tokens out of an answer, or a problem where the answer carried fewer than three. */
+function theTokensIn(said: WhatTheServiceSaid): TheTokensSheHolds {
+  const held = said.AuthenticationResult;
 
-  if (took || theNameOfTheRefusal(said) === 'UsernameExistsException') {
-    return;
+  if (
+    held?.IdToken === undefined ||
+    held.AccessToken === undefined ||
+    held.RefreshToken === undefined
+  ) {
+    throw new ASignInProblem('tooManyTries');
   }
 
-  throw new ASignInProblem(whatWentWrong(said));
+  return { idToken: held.IdToken, accessToken: held.AccessToken, refreshToken: held.RefreshToken };
 }
 
 /**
  * The code, sent to the address she typed.
  *
- * A new address and an address she has used before both end here, holding a session and waiting
- * for six digits. Nothing in the answer says which of the two she was, and nothing the page draws
+ * One call, so one email. No password is sent, because the pool carries a one time code as a first
+ * factor and there is no password anywhere in Emi. The address is written as the one attribute the
+ * client may write, and the service marks it verified when she answers the code.
+ *
+ * The answer says nothing about whether the address had an account, and nothing the page draws
  * afterwards says it either.
  */
 export async function askForACode(
   address: string,
   how: HowItAsks = fetch,
 ): Promise<TheCodeSheWaitsFor> {
-  await makeHerUserIfSheHasNone(how, address);
+  const username = aUsername();
+  const { took, said } = await ask(how, 'SignUp', {
+    ClientId: THE_WEBSITE_CLIENT_ID,
+    Username: username,
+    UserAttributes: [{ Name: 'email', Value: address }],
+  });
 
+  if (!took) {
+    throw new ASignInProblem(whatWentWrong(said));
+  }
+
+  return {
+    address,
+    username,
+    // The service hands back a session only where it can sign her in off the confirmation. Without
+    // one she is confirmed first and sent a sign in code after, which the next function does.
+    session: said.Session ?? '',
+    digits: THE_SIGN_UP_CODE_IS_THIS_LONG,
+    answers: 'theSignUpCode',
+  };
+}
+
+/**
+ * The sign in code, sent to an address the pool already holds an account for.
+ *
+ * This is the only call that sends a code of eight digits, and it is reached in two ways: the
+ * confirmation above refusing an address that already has an account, and her pressing for a new
+ * code while she is holding one of these.
+ */
+async function askForASignInCode(address: string, how: HowItAsks): Promise<TheCodeSheWaitsFor> {
   const { took, said } = await ask(how, 'InitiateAuth', {
     ClientId: THE_WEBSITE_CLIENT_ID,
     AuthFlow: THE_CHOICE_FLOW,
@@ -248,43 +318,101 @@ export async function askForACode(
     throw new ASignInProblem('tooManyTries');
   }
 
-  return { address, session: said.Session };
+  return {
+    address,
+    username: '',
+    session: said.Session,
+    digits: THE_SIGN_IN_CODE_IS_THIS_LONG,
+    answers: 'theSignInCode',
+  };
 }
 
 /**
- * Her tokens, from the six digits she typed.
+ * One more code, on the address she is already waiting on.
  *
- * The service hands back a fresh session with a refusal she may answer again, and that session
- * replaces the one she was holding. A page that kept the old one would answer with a session the
- * service has already closed, and read the answer as a second wrong code.
+ * Which call sends it follows which code she is holding, so the press sends one email and the box
+ * keeps the width it had.
+ */
+export async function sendHerAnotherCode(
+  waiting: TheCodeSheWaitsFor,
+  how: HowItAsks = fetch,
+): Promise<TheCodeSheWaitsFor> {
+  return waiting.answers === 'theSignInCode'
+    ? askForASignInCode(waiting.address, how)
+    : askForACode(waiting.address, how);
+}
+
+/**
+ * Her tokens, from the digits she typed.
+ *
+ * A sign in code is answered in one call. A sign up code is answered in two: the confirmation, and
+ * then the sign in that the session off the confirmation is the whole proof for, so she is never
+ * asked for a second code.
+ *
+ * Where the confirmation refuses because the address already has an account, she is sent a sign in
+ * code and left on the same box. That refusal reaches nobody who did not type the right code, so
+ * it tells a reader of the page nothing it did not already know.
  */
 export async function signInWithTheCode(
   waiting: TheCodeSheWaitsFor,
   code: string,
   how: HowItAsks = fetch,
-): Promise<TheTokensSheHolds> {
-  const { took, said } = await ask(how, 'RespondToAuthChallenge', {
+): Promise<WhatTheCodeLeftHerWith> {
+  if (waiting.answers === 'theSignInCode') {
+    const { took, said } = await ask(how, 'RespondToAuthChallenge', {
+      ClientId: THE_WEBSITE_CLIENT_ID,
+      ChallengeName: THE_CODE_FACTOR,
+      Session: waiting.session,
+      ChallengeResponses: { USERNAME: waiting.address, EMAIL_OTP_CODE: code },
+    });
+
+    if (!took) {
+      // The service hands back a fresh session with a refusal she may answer again, and a page
+      // that kept the old one would answer with a session the service has already closed.
+      throw new ASignInProblem(whatWentWrong(said), said.Session);
+    }
+
+    return { kind: 'sheIsSignedIn', held: theTokensIn(said) };
+  }
+
+  const confirmed = await ask(how, 'ConfirmSignUp', {
     ClientId: THE_WEBSITE_CLIENT_ID,
-    ChallengeName: THE_CODE_FACTOR,
-    Session: waiting.session,
-    ChallengeResponses: { USERNAME: waiting.address, EMAIL_OTP_CODE: code },
+    Username: waiting.username,
+    ConfirmationCode: code,
+    ...(waiting.session === '' ? {} : { Session: waiting.session }),
+  });
+
+  if (!confirmed.took) {
+    if (theNameOfTheRefusal(confirmed.said) === 'AliasExistsException') {
+      return {
+        kind: 'anotherCodeIsOnItsWay',
+        waitsFor: await askForASignInCode(waiting.address, how),
+      };
+    }
+
+    // A refusal here closes no session, so she answers the next code with the one she holds.
+    throw new ASignInProblem(whatWentWrong(confirmed.said));
+  }
+
+  if (confirmed.said.Session === undefined) {
+    return {
+      kind: 'anotherCodeIsOnItsWay',
+      waitsFor: await askForASignInCode(waiting.address, how),
+    };
+  }
+
+  const { took, said } = await ask(how, 'InitiateAuth', {
+    ClientId: THE_WEBSITE_CLIENT_ID,
+    AuthFlow: THE_CHOICE_FLOW,
+    AuthParameters: { USERNAME: waiting.username },
+    Session: confirmed.said.Session,
   });
 
   if (!took) {
-    throw new ASignInProblem(whatWentWrong(said), said.Session);
+    throw new ASignInProblem(whatWentWrong(said));
   }
 
-  const held = said.AuthenticationResult;
-
-  if (
-    held?.IdToken === undefined ||
-    held.AccessToken === undefined ||
-    held.RefreshToken === undefined
-  ) {
-    throw new ASignInProblem('tooManyTries');
-  }
-
-  return { idToken: held.IdToken, accessToken: held.AccessToken, refreshToken: held.RefreshToken };
+  return { kind: 'sheIsSignedIn', held: theTokensIn(said) };
 }
 
 /**

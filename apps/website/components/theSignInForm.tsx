@@ -7,10 +7,11 @@ import { holdTheSession } from '@/lib/theSessionSheHolds';
 import { goTo } from '@/lib/whereSheGoesNext';
 import {
   ASignInProblem,
-  THE_CODE_IS_THIS_LONG,
+  type HowLongTheCodeIs,
   type TheCodeSheWaitsFor,
   type WhatWentWrong,
   askForACode,
+  sendHerAnotherCode,
   signInWithTheCode,
 } from '@/lib/theSignIn';
 
@@ -19,20 +20,36 @@ import {
  * `boards/SignInCode.dc.html`.
  *
  * They are one component because they are one piece of state. She types an address, presses "Send
- * code", and the same column of the page becomes the box for the six digits. The board draws them
- * as two screens because a canvas has no state; a reader meets one page that changes.
+ * code", and the same column of the page becomes the box for the code. The board draws them as two
+ * screens because a canvas has no state; a reader meets one page that changes.
+ *
+ * The box is as wide as the code the service sent her, which is six digits for a sign up and eight
+ * for a sign in, so the width arrives with the code rather than sitting here as a number. The
+ * words beside it name no number, because one number would be wrong half the time.
  *
  * It runs in her browser, which is where it has to run: the service issues the tokens to the
  * browser and a server of this site never sees them. Until it runs, the page draws the address box
  * with no script behind it, so a reader whose browser runs nothing reads the page and the press
  * does nothing rather than doing something wrong.
  *
- * Nothing on this page says whether the address she typed has an account. The pool answers the
- * same way for both, and the words say the same thing for both.
+ * Nothing on this page says whether the address she typed has an account. The first call is the
+ * same call for both, and the words are the same words for both. Where the service refuses the
+ * code because the address already has an account, she is sent a sign in code and left on this
+ * box, and that refusal reaches nobody who did not type the code out of her own email.
  */
 
 /** What the field for the code accepts: digits, and nothing else she could paste into it. */
 const ONLY_DIGITS = /\D/g;
+
+/**
+ * What the field holds after she types or pastes something into it.
+ *
+ * The length is the length of the code the service sent her, which is not the same number for the
+ * two codes it sends, so it arrives here rather than sitting in the field as a constant.
+ */
+export function theDigitsSheTyped(typed: string, digits: HowLongTheCodeIs): string {
+  return typed.replace(ONLY_DIGITS, '').slice(0, digits);
+}
 
 /** The address to come back to after a sign in, which is the only page a sign in leads to. */
 export const WHERE_A_SIGN_IN_LANDS = 'account/';
@@ -77,7 +94,14 @@ export function TheSignInForm({
   const [code, setCode] = useState('');
   const [waiting, setWaiting] = useState<TheCodeSheWaitsFor | null>(null);
   const [said, setSaid] = useState<keyof SiteWords | null>(null);
+  const [whatToDoNext, setWhatToDoNext] = useState<keyof SiteWords | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function waitFor(next: TheCodeSheWaitsFor, toldToDo: keyof SiteWords | null): void {
+    setWaiting(next);
+    setCode('');
+    setWhatToDoNext(toldToDo);
+  }
 
   async function sendACode(): Promise<void> {
     const typed = address.trim();
@@ -92,8 +116,12 @@ export function TheSignInForm({
     setSaid(null);
 
     try {
-      setWaiting(await askForACode(typed));
-      setCode('');
+      // Which call sends it follows the code she is already holding, so one press is one email
+      // whichever of the two she is waiting for.
+      waitFor(
+        waiting === null ? await askForACode(typed) : await sendHerAnotherCode(waiting),
+        null,
+      );
     } catch (problem) {
       setSaid(theSentenceFor[causeOf(problem)]);
     } finally {
@@ -106,17 +134,27 @@ export function TheSignInForm({
       return;
     }
 
-    if (code.length !== THE_CODE_IS_THIS_LONG) {
-      setSaid('signInNeedsSixDigits');
+    if (code.length !== waiting.digits) {
+      setSaid('signInNeedsTheCode');
 
       return;
     }
 
     setBusy(true);
     setSaid(null);
+    setWhatToDoNext(null);
 
     try {
-      holdTheSession(await signInWithTheCode(waiting, code));
+      const answer = await signInWithTheCode(waiting, code);
+
+      if (answer.kind === 'anotherCodeIsOnItsWay') {
+        waitFor(answer.waitsFor, 'signInAnotherCodeIsOnItsWay');
+        setBusy(false);
+
+        return;
+      }
+
+      holdTheSession(answer.held);
       goTo(`/${language}/${WHERE_A_SIGN_IN_LANDS}`);
     } catch (problem) {
       setSaid(theSentenceFor[causeOf(problem)]);
@@ -126,7 +164,7 @@ export function TheSignInForm({
       const again = problem instanceof ASignInProblem ? problem.tryAgainWith : undefined;
 
       if (again !== undefined) {
-        setWaiting({ address: waiting.address, session: again });
+        setWaiting({ ...waiting, session: again });
       }
 
       setBusy(false);
@@ -137,6 +175,7 @@ export function TheSignInForm({
     setWaiting(null);
     setCode('');
     setSaid(null);
+    setWhatToDoNext(null);
   }
 
   const trouble =
@@ -144,6 +183,13 @@ export function TheSignInForm({
       <span className="text-body-sm text-sitePeriodInk" role="alert">
         {words[said]}
       </span>
+    );
+
+  // What she does next is not a refusal, so it is drawn in the quiet line of the board rather
+  // than in the colour the page keeps for something going wrong.
+  const nextStep =
+    whatToDoNext === null ? null : (
+      <span className={`${theQuietLine} text-center`}>{words[whatToDoNext]}</span>
     );
 
   if (waiting === null) {
@@ -207,11 +253,9 @@ export function TheSignInForm({
           className={`box-border min-h-[52px] rounded-[12px] border-hairline border-siteControlLine bg-transparent px-spaceLg text-center font-data text-data-lg leading-[normal] tracking-[0.4em] text-siteText ${theBrowsersOwnPlaceholder}`}
           id="sign-in-code"
           inputMode="numeric"
-          maxLength={THE_CODE_IS_THIS_LONG}
-          onChange={(typing) =>
-            setCode(typing.target.value.replace(ONLY_DIGITS, '').slice(0, THE_CODE_IS_THIS_LONG))
-          }
-          placeholder="000000"
+          maxLength={waiting.digits}
+          onChange={(typing) => setCode(theDigitsSheTyped(typing.target.value, waiting.digits))}
+          placeholder={'0'.repeat(waiting.digits)}
           type="text"
           value={code}
         />
@@ -223,6 +267,7 @@ export function TheSignInForm({
           {busy ? words.signInChecking : words.signInCodeSubmit}
         </button>
         <span className={`${theQuietLine} text-center`}>{words.signInCodeLasts}</span>
+        {nextStep}
         {trouble}
         <div className="flex justify-center gap-spaceXl text-body-sm">
           <button

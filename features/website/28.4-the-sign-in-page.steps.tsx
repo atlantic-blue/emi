@@ -19,8 +19,11 @@ import { type Language, type SiteWordKey, languages, wordsIn } from '../../apps/
 import { THE_SESSION_ENTRY, holdTheSession } from '../../apps/website/lib/theSessionSheHolds';
 import {
   ASignInProblem,
-  THE_CODE_IS_THIS_LONG,
+  THE_SIGN_IN_CODE_IS_THIS_LONG,
+  THE_SIGN_UP_CODE_IS_THIS_LONG,
   THE_WEBSITE_CLIENT_ID,
+  type TheCodeSheWaitsFor,
+  type WhatTheCodeLeftHerWith,
   askForACode,
   signInWithTheCode,
   signOut,
@@ -51,7 +54,11 @@ const theFaceBehindTheClass = websiteFace.serif;
 
 const HER_ADDRESS = 'iuliia@example.com';
 
+/** The code that confirms a sign up, which the service writes six digits long. */
 const SIX_DIGITS = '482913';
+
+/** The code that signs her in, which the service writes eight digits long. */
+const EIGHT_DIGITS = '48291374';
 
 /** One call the stub was given, kept so a step can read what really went out. */
 interface ACallThatWentOut {
@@ -62,9 +69,8 @@ interface ACallThatWentOut {
 /**
  * A stub of the pool, answering the shapes the service documents, one call at a time.
  *
- * A stub rather than the live pool, because the pool cannot send an email until steps 28.8 to
- * 28.10 connect it to the sender, so a run against the live pool would prove that an email did not
- * arrive and nothing else.
+ * A stub rather than the live pool, because a run against the live pool would make a user and
+ * send an email to whoever owns the address.
  */
 function aPool(answers: readonly { status: number; said: Record<string, unknown> }[]) {
   const went: ACallThatWentOut[] = [];
@@ -100,7 +106,48 @@ const refused = (type: string, message = '') => ({
   said: { __type: `com.amazon.coral.service#${type}`, message },
 });
 
-const theCodeIsOnItsWay = took({ ChallengeName: 'EMAIL_OTP', Session: 'a-session' });
+/** The answer to a sign up, carrying the session the confirmation signs her in with. */
+const sheIsSignedUp = took({ UserSub: 'a-subject', Session: 'the-sign-up-session' });
+
+/** The answer to a confirmation, carrying the session that stands in for the code. */
+const sheIsConfirmed = took({ Session: 'the-confirmed-session' });
+
+/** The challenge that carries the sign in code, which is the one of eight digits. */
+const theSignInCodeIsOnItsWay = took({
+  ChallengeName: 'EMAIL_OTP',
+  Session: 'the-sign-in-session',
+});
+
+/** The refusal an address that already has an account is confirmed with. */
+const theAddressAlreadyHasAnAccount = refused('AliasExistsException');
+
+/**
+ * The calls that put an email in her inbox. An `InitiateAuth` carrying a session is the sign in
+ * off a confirmation, and the service takes the code she already gave rather than sending one.
+ */
+function howManyEmails(went: readonly ACallThatWentOut[]): number {
+  return went.filter(
+    (each) => ['SignUp', 'InitiateAuth'].includes(each.call) && each.body.Session === undefined,
+  ).length;
+}
+
+/** Her tokens out of the answer, where the answer is the one that signs her in. */
+function theTokensIn(answer: WhatTheCodeLeftHerWith) {
+  if (answer.kind !== 'sheIsSignedIn') {
+    throw new Error(`She is not signed in: the answer was ${answer.kind}.`);
+  }
+
+  return answer.held;
+}
+
+/** The box she is left in front of, where the answer left her waiting rather than signed in. */
+function theBoxSheIsLeftWith(answer: WhatTheCodeLeftHerWith): TheCodeSheWaitsFor {
+  if (answer.kind !== 'anotherCodeIsOnItsWay') {
+    throw new Error(`She was not left waiting: the answer was ${answer.kind}.`);
+  }
+
+  return answer.waitsFor;
+}
 
 const theTokens = took({
   AuthenticationResult: {
@@ -286,7 +333,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('a code reaches a new address and a known one the same way', ({
+  test('one email reaches a new address and a known one the same way', ({
     given,
     when,
     and,
@@ -296,34 +343,40 @@ defineFeature(feature, (test) => {
     let knownAlready: ReturnType<typeof aPool>;
 
     given('a stub of the pool that answers the way the service documents', () => {
-      brandNew = aPool([took({ UserSub: 'a-subject' }), theCodeIsOnItsWay]);
-      knownAlready = aPool([refused('UsernameExistsException'), theCodeIsOnItsWay]);
+      brandNew = aPool([sheIsSignedUp]);
+      knownAlready = aPool([sheIsSignedUp]);
     });
 
     when('she asks for a code on an address that has never signed in', async () => {
-      expect(await askForACode(HER_ADDRESS, brandNew.how)).toEqual({
+      expect(await askForACode(HER_ADDRESS, brandNew.how)).toMatchObject({
         address: HER_ADDRESS,
-        session: 'a-session',
+        session: 'the-sign-up-session',
+        digits: THE_SIGN_UP_CODE_IS_THIS_LONG,
       });
     });
 
     and('she asks for a code on an address that has signed in before', async () => {
-      expect(await askForACode(HER_ADDRESS, knownAlready.how)).toEqual({
+      expect(await askForACode(HER_ADDRESS, knownAlready.how)).toMatchObject({
         address: HER_ADDRESS,
-        session: 'a-session',
+        session: 'the-sign-up-session',
+        digits: THE_SIGN_UP_CODE_IS_THIS_LONG,
       });
     });
 
-    then('both ask the service the same two things, and no password is among them', () => {
-      expect(brandNew.went.map((each) => each.call)).toEqual(['SignUp', 'InitiateAuth']);
-      expect(knownAlready.went.map((each) => each.call)).toEqual(['SignUp', 'InitiateAuth']);
+    then('each one asks the service for one thing, and no password is among them', () => {
+      expect(brandNew.went.map((each) => each.call)).toEqual(['SignUp']);
+      expect(knownAlready.went.map((each) => each.call)).toEqual(['SignUp']);
       expect(brandNew.went[0]?.body).not.toHaveProperty('Password');
       expect(JSON.stringify(brandNew.went)).not.toContain('PASSWORD');
-      expect(brandNew.went[1]?.body).toMatchObject({
+      expect(brandNew.went[0]?.body).toMatchObject({
         ClientId: THE_WEBSITE_CLIENT_ID,
-        AuthFlow: 'USER_AUTH',
-        AuthParameters: { USERNAME: HER_ADDRESS, PREFERRED_CHALLENGE: 'EMAIL_OTP' },
+        UserAttributes: [{ Name: 'email', Value: HER_ADDRESS }],
       });
+    });
+
+    and('one email goes out for one press, where two used to', () => {
+      expect(howManyEmails(brandNew.went)).toBe(1);
+      expect(howManyEmails(knownAlready.went)).toBe(1);
     });
 
     and('the page says the same words for both, so neither can be told from the other', () => {
@@ -348,21 +401,17 @@ defineFeature(feature, (test) => {
     let pool: ReturnType<typeof aPool>;
 
     given('a stub of the pool that answers the way the service documents', () => {
-      pool = aPool([theTokens]);
+      pool = aPool([sheIsSignedUp, sheIsConfirmed, theTokens]);
       window.sessionStorage.clear();
       document.cookie = '';
     });
 
-    when('she answers the code with the six digits she was sent', async () => {
-      expect(SIX_DIGITS).toHaveLength(THE_CODE_IS_THIS_LONG);
+    when('she answers the code with the digits she was sent', async () => {
+      expect(SIX_DIGITS).toHaveLength(THE_SIGN_UP_CODE_IS_THIS_LONG);
 
-      holdTheSession(
-        await signInWithTheCode(
-          { address: HER_ADDRESS, session: 'a-session' },
-          SIX_DIGITS,
-          pool.how,
-        ),
-      );
+      const waiting = await askForACode(HER_ADDRESS, pool.how);
+
+      holdTheSession(theTokensIn(await signInWithTheCode(waiting, SIX_DIGITS, pool.how)));
     });
 
     then('she holds the three tokens, in sessionStorage and in no cookie', () => {
@@ -386,18 +435,25 @@ defineFeature(feature, (test) => {
         ];
 
         for (const [answer, because] of refusals) {
-          const waiting = { address: HER_ADDRESS, session: 'a-session' };
+          const onePool = aPool([sheIsSignedUp, answer]);
+          const waiting = await askForACode(HER_ADDRESS, onePool.how);
 
-          await expect(
-            signInWithTheCode(waiting, '000000', aPool([answer]).how),
-          ).rejects.toMatchObject({ because });
+          await expect(signInWithTheCode(waiting, '000000', onePool.how)).rejects.toMatchObject({
+            because,
+          });
         }
 
         const reachedNobody: typeof fetch = () => Promise.reject(new TypeError('Failed to fetch'));
 
         await expect(
           signInWithTheCode(
-            { address: HER_ADDRESS, session: 'a-session' },
+            {
+              address: HER_ADDRESS,
+              username: 'A-USERNAME-THE-SUITE-WROTE-X',
+              session: 'the-sign-up-session',
+              digits: THE_SIGN_UP_CODE_IS_THIS_LONG,
+              answers: 'theSignUpCode',
+            },
             SIX_DIGITS,
             reachedNobody,
           ),
@@ -412,7 +468,7 @@ defineFeature(feature, (test) => {
         'signInTooManyTries',
         'signInNothingReached',
         'signInNeedsAnAddress',
-        'signInNeedsSixDigits',
+        'signInNeedsTheCode',
       ];
 
       for (const key of sentences) {
@@ -477,6 +533,66 @@ defineFeature(feature, (test) => {
         },
       ]);
       expect(repositoryRoot.length).toBeGreaterThan(0);
+    });
+  });
+
+  test('an address that already has an account is sent a sign in code of eight digits', ({
+    given,
+    when,
+    then,
+    and,
+  }) => {
+    let pool: ReturnType<typeof aPool>;
+    let left: TheCodeSheWaitsFor;
+    let held: ReturnType<typeof theTokensIn>;
+
+    given('a stub of the pool that answers the way the service documents', () => {
+      pool = aPool([
+        sheIsSignedUp,
+        theAddressAlreadyHasAnAccount,
+        theSignInCodeIsOnItsWay,
+        theTokens,
+      ]);
+    });
+
+    when('she types the code sent to an address that already has an account', async () => {
+      const waiting = await askForACode(HER_ADDRESS, pool.how);
+
+      left = theBoxSheIsLeftWith(await signInWithTheCode(waiting, SIX_DIGITS, pool.how));
+    });
+
+    then('she is left on the same box, waiting for the eight digits of a sign in code', () => {
+      expect(left).toEqual({
+        address: HER_ADDRESS,
+        username: '',
+        session: 'the-sign-in-session',
+        digits: THE_SIGN_IN_CODE_IS_THIS_LONG,
+        answers: 'theSignInCode',
+      });
+      expect(EIGHT_DIGITS).toHaveLength(THE_SIGN_IN_CODE_IS_THIS_LONG);
+    });
+
+    and('those eight digits hand her the three tokens', async () => {
+      held = theTokensIn(await signInWithTheCode(left, EIGHT_DIGITS, pool.how));
+
+      expect(held).toEqual({
+        idToken: 'an-id-token',
+        accessToken: 'an-access-token',
+        refreshToken: 'a-refresh-token',
+      });
+      expect(pool.went.at(-1)?.body).toMatchObject({
+        ChallengeResponses: { USERNAME: HER_ADDRESS, EMAIL_OTP_CODE: EIGHT_DIGITS },
+      });
+    });
+
+    and('no call that went out says which of the two she was before she typed the code', () => {
+      // The first call is the call a new address makes, and it is the whole of what the page
+      // had done before she typed anything.
+      expect(pool.went[0]?.call).toBe('SignUp');
+      expect(pool.went[0]?.body).toMatchObject({
+        UserAttributes: [{ Name: 'email', Value: HER_ADDRESS }],
+      });
+      expect(howManyEmails(pool.went.slice(0, 1))).toBe(1);
     });
   });
 });
