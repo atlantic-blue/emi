@@ -485,7 +485,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         (match) => (match[1] ? [match[1]] : []),
       );
 
-      expect(groups).toHaveLength(4);
+      expect(groups).toHaveLength(8);
       expect(new Set(groups)).toEqual(new Set(['var.log_retention_days']));
       expect(bodyOf('variable "log_retention_days"')).toContain('default     = 30');
     });
@@ -950,6 +950,182 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
     });
   });
 
+  /** What an address of the log service writes before the name of a group. */
+  const theGroups = 'log-group:';
+
+  /** The name of the group one function writes to, read from the group it waits for. */
+  function logGroupNameOf(resource: string): string {
+    const body = bodyOf(`resource "${resource.replace('.', '" "')}"`);
+    const found = /depends_on\s*=\s*\[aws_cloudwatch_log_group\.(\w+)\]/.exec(body);
+
+    if (found?.[1] === undefined) {
+      throw new Error(`${resource} waits for no log group, so the runtime makes its own`);
+    }
+
+    return resolved(
+      configuration,
+      valueOf(
+        configuration,
+        /name\s*=\s*("[^"]*")/.exec(
+          bodyOf(`resource "aws_cloudwatch_log_group" "${found[1]}"`),
+        )?.[1] ?? '',
+      ),
+    );
+  }
+
+  describe('each function runs as the role meant for it', () => {
+    /**
+     * The role each function assumes, written out here rather than read off the resource, because
+     * this list is the rule: the three triggers share one role that holds no parameter at all, and
+     * the function that reads the client secret and the salt is the only one on the other.
+     */
+    const theRoleOf: Readonly<Record<string, string>> = {
+      'emi-authorizer': 'authorizer',
+      'emi-vault': 'vault',
+      'emi-articles': 'articles',
+      'emi-sign-in-telegram': 'sign_in_telegram',
+      'emi-sign-in-challenge-define': 'sign_in_challenge',
+      'emi-sign-in-challenge-create': 'sign_in_challenge',
+      'emi-sign-in-challenge-verify': 'sign_in_challenge',
+    };
+
+    /** The role one function resource names, read out of the resource itself. */
+    function roleIn(resource: string): string {
+      const body = bodyOf(`resource "${resource.replace('.', '" "')}"`);
+      const found = /role\s*=\s*aws_iam_role\.(\w+)\.arn/.exec(body);
+
+      if (found?.[1] === undefined) {
+        throw new Error(`${resource} names no role of this configuration`);
+      }
+
+      return found[1];
+    }
+
+    it('names a role for every function, so none of the cases below reads an empty list', () => {
+      expect(Object.keys(theRoleOf).sort()).toEqual(
+        deployedFunctions.map((held) => held.name).sort(),
+      );
+    });
+
+    it.each(deployedFunctions.map((held) => [held.name, held.resource]))(
+      'runs %s as the role this repository wrote for it',
+      (name, resource) => {
+        expect(roleIn(resource)).toBe(theRoleOf[name]);
+      },
+    );
+
+    it('gives the three triggers one role, which is not the role that reads a secret', () => {
+      const triggers = deployedFunctions.filter((held) => held.name.includes('-challenge-'));
+
+      expect(triggers).toHaveLength(3);
+      expect([...new Set(triggers.map((held) => roleIn(held.resource)))]).toEqual([
+        'sign_in_challenge',
+      ]);
+      expect(roleIn('aws_lambda_function.sign_in_telegram')).not.toBe('sign_in_challenge');
+    });
+
+    it('reads a parameter through the role of the sign in function and through no other', () => {
+      const reading = deployedFunctions
+        .filter((held) => {
+          const policy = bodyOf(`data "aws_iam_policy_document" "${roleIn(held.resource)}"`);
+
+          return actionsIn(policy).some((action) => action.startsWith('ssm:'));
+        })
+        .map((held) => held.name);
+
+      expect(reading).toEqual(['emi-sign-in-telegram']);
+    });
+
+    it('gives the role the pool calls no Amazon Cognito action at all', () => {
+      const challenge = actionsIn(bodyOf('data "aws_iam_policy_document" "sign_in_challenge"'));
+
+      expect(challenge.filter((action) => action.startsWith('cognito-idp:'))).toEqual([]);
+      expect(challenge.filter((action) => action.startsWith('ssm:'))).toEqual([]);
+    });
+
+    it('writes its own log group, under the prefix the challenge role may write', () => {
+      const statement = statementTextIn(
+        bodyOf('data "aws_iam_policy_document" "sign_in_challenge"'),
+        'WriteItsOwnLogs',
+      );
+      const granted = resolved(configuration, listedIn(statement, 'resources')[0] ?? '');
+      const prefix = granted
+        .slice(granted.indexOf(theGroups) + theGroups.length)
+        .replace(/\*:\*$/, '');
+
+      expect(prefix).toBe('/aws/lambda/emi-sign-in-challenge-');
+
+      for (const held of deployedFunctions.filter((named) => named.name.includes('-challenge-'))) {
+        expect(logGroupNameOf(held.resource)).toContain(prefix);
+        expect(logGroupNameOf(held.resource)).toBe(`/aws/lambda/${held.name}`);
+      }
+    });
+
+    it('writes its own log group for every other function too, named after the function', () => {
+      for (const held of deployedFunctions) {
+        expect(logGroupNameOf(held.resource)).toBe(`/aws/lambda/${held.name}`);
+      }
+    });
+  });
+
+  describe('the readme says what the account holds', () => {
+    /** The count of functions, spelled out, which is how the readme writes a count. */
+    const counted: Readonly<Record<number, string>> = { 3: 'Three', 7: 'Seven', 8: 'Eight' };
+
+    it('names the count of deployed functions, which went stale once at two', () => {
+      const readme = read('infra/README.md');
+
+      expect(readme).toContain(`${counted[deployedFunctions.length]} functions`);
+      expect(readme).toContain(`${counted[deployedFunctions.length]} log groups`);
+    });
+  });
+
+  describe('the environment of each function carries what its entry point reads', () => {
+    /** Every name one entry point reads out of its environment, read from the file itself. */
+    function readsFromTheEnvironment(entryPoint: string): string[] {
+      const source = read(entryPoint);
+
+      return [
+        ...new Set(
+          [...source.matchAll(/process\.env\.([A-Z0-9_]+)/g)].flatMap((found) =>
+            found[1] === undefined ? [] : [found[1]],
+          ),
+        ),
+      ].sort();
+    }
+
+    /** Every variable one function resource sets, or nothing where it declares no environment. */
+    function environmentOf(resource: string): string[] {
+      const body = bodyOf(`resource "${resource.replace('.', '" "')}"`);
+
+      if (!body.includes('environment {')) {
+        return [];
+      }
+
+      return [...blockBodyOf(body, 'variables').matchAll(/^\s*([A-Z0-9_]+)\s*=/gm)]
+        .flatMap((found) => (found[1] === undefined ? [] : [found[1]]))
+        .sort();
+    }
+
+    it.each(deployedFunctions.map((held) => [held.name, held.resource, held.entryPoint]))(
+      'gives %s the names it reads and no name it never reads',
+      (_name, resource, entryPoint) => {
+        expect(environmentOf(resource)).toEqual(readsFromTheEnvironment(entryPoint));
+      },
+    );
+
+    it('leaves the two triggers that decide from their event alone with no environment', () => {
+      expect(environmentOf('aws_lambda_function.sign_in_challenge_define')).toEqual([]);
+      expect(environmentOf('aws_lambda_function.sign_in_challenge_create')).toEqual([]);
+    });
+
+    it('reads the two names the sign in function needs, so an empty read is not a pass', () => {
+      expect(readsFromTheEnvironment('services/vault/src/functions/signInWithTelegram.ts')).toEqual(
+        ['EMI_ACCOUNTS_POOL_ID', 'EMI_VAULT_TABLE'],
+      );
+    });
+  });
+
   describe('the list of functions and the Terraform cannot drift apart', () => {
     it('gives every function in the list a resource that creates it', () => {
       const missing = deployedFunctions
@@ -1088,6 +1264,25 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       for (const named of routesWithNoAuthorizer) {
         expect(routes.map((route) => route.resource)).toContain(named);
       }
+    });
+
+    it('leaves the sign in with Telegram carrying none, and three routes carrying none in all', () => {
+      const signIn = routes.find((route) => route.resource === 'sign_in_telegram');
+
+      expect(signIn?.authorizationType).toBe('NONE');
+      expect(signIn?.authorizerId).toBeNull();
+      expect(routesWithNoAuthorizer).toHaveLength(3);
+    });
+
+    it('sends that route to the function of its own, which the api is allowed to invoke', () => {
+      const signIn = bodyOf('resource "aws_apigatewayv2_route" "sign_in_telegram"');
+      const integration = bodyOf('resource "aws_apigatewayv2_integration" "sign_in_telegram"');
+      const permission = bodyOf('resource "aws_lambda_permission" "sign_in_telegram"');
+
+      expect(signIn).toContain('integrations/${aws_apigatewayv2_integration.sign_in_telegram.id}');
+      expect(integration).toContain('aws_lambda_function.sign_in_telegram.invoke_arn');
+      expect(permission).toContain('aws_lambda_function.sign_in_telegram.function_name');
+      expect(permission).toContain('principal     = "apigateway.amazonaws.com"');
     });
 
     it('reads the live api as the last step, and requires a refusal of every authorized route', () => {
@@ -2630,6 +2825,8 @@ describe('the keys the Telegram sign in may read, and the two roles that reach t
 
     it('writes the one time answer item, and reads and deletes nothing in the table', () => {
       expect(actionsIn(signInPolicy).sort()).toEqual([
+        'cognito-idp:AdminCreateUser',
+        'cognito-idp:AdminSetUserPassword',
         'dynamodb:PutItem',
         'kms:Decrypt',
         'logs:CreateLogStream',
@@ -2638,6 +2835,25 @@ describe('the keys the Telegram sign in may read, and the two roles that reach t
         'ssm:PutParameter',
       ]);
       expect(scopeOf(signInPolicy, 'dynamodb:PutItem')).toEqual([[theVaultTable]]);
+    });
+
+    it('holds her pool user on the one pool, with the two calls the code makes', () => {
+      expect(scopeOf(signInPolicy, 'cognito-idp:AdminCreateUser')).toEqual([
+        ['aws_cognito_user_pool.accounts.arn'],
+      ]);
+      expect(scopeOf(signInPolicy, 'cognito-idp:AdminSetUserPassword')).toEqual([
+        ['aws_cognito_user_pool.accounts.arn'],
+      ]);
+      expect(signInPolicy).not.toContain(everyPool);
+    });
+
+    it('reads no user of the pool and lists none, so it cannot ask who signed in with Telegram', () => {
+      const pool = actionsIn(signInPolicy).filter((action) => action.startsWith('cognito-idp:'));
+
+      expect(pool.sort()).toEqual([
+        'cognito-idp:AdminCreateUser',
+        'cognito-idp:AdminSetUserPassword',
+      ]);
     });
 
     it('reaches no index of the table and no other table', () => {
