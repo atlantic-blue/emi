@@ -1859,6 +1859,306 @@ and the subject of the pool, the same as for every other user, because the link 
 pool and never a token of Telegram. The step that writes the link corrects that sentence. Nothing in
 this section writes a link item.
 
+## The site keeps her signed in past the hour
+
+Status: designed
+
+The pool gives tokens that last one hour. It gives a refresh token that lasts thirty days. The site
+never asks for new tokens, so the three tokens in her browser stop working one hour after she signs
+in. She keeps the refresh token for thirty days and the site uses it for one thing only, which is to
+revoke it at the sign out. This section designs the ask.
+
+Nothing on the site sends an access token to anything today. I read every file of
+`apps/website` on 8 November 2026 and found no caller: the tokens are written, read for the sign out,
+and read once more to decide whether the account page draws. So the hour costs a reader nothing she
+can see yet, and it costs her the account the moment the first section of that page needs a token.
+The subscription, the ways she signs in, and the delete each need one. So this lands before them.
+
+### What stays as it is
+
+The tokens stay in `sessionStorage`, under the one name `emi.session`. A woman who signs in on a
+borrowed computer and closes the tab is signed out, and that is the decision, not a limitation.
+`apps/website/lib/theSessionSheHolds.ts` says why in full: no cookie, because a cookie travels with
+every request to every path of the host, and no `localStorage`, because that outlives the window.
+
+The content policy needs no change. `apps/website/lib/contentSecurityPolicy.ts` already names both
+hosts under `connect-src`, because the sign in reaches both of them today.
+
+### What the entry records
+
+The entry holds three tokens. It grows two more values.
+
+`way` is how she came in. It takes four values, `code`, `apple`, `google` and `telegram`, which
+are the values `provider` takes in `docs/design/data-model.md` once the sign in with a code adds its
+own. The site reads it to pick the call, and nothing else reads it.
+
+`whenTheyStopWorking` is an instant from the clock of her own machine. The site computes it from the
+`expires_in` the pool answers with, added to the moment the answer came back. The site does not read
+the `exp` claim of the token. A clock set an hour wrong reads that claim an hour wrong, and the
+arithmetic above measures elapsed time on one clock, so a wrong clock does not move it.
+
+An entry written before this lands carries neither value. The reader of the entry refuses it, so it
+reads as no session at all, and she signs in once more. The cost is one sign in, for a woman whose
+tab stayed open across a deploy, because the entry dies with the tab.
+
+### When the site asks
+
+Three moments, and no timer.
+
+The first is before a call. The site reads the entry. If `whenTheyStopWorking` is five minutes away
+or less, it asks for new tokens, and then it sends the call.
+
+The second is after a call the service refused for the token. A token can stop working before its
+deadline: the operator revokes it, the pool deletes the user, or her clock was wrong after all. So a
+refusal of 401 asks for new tokens once and sends the call once more. A second refusal ends there.
+It never asks twice for one call.
+
+The third is when the account page draws. That page exists for a signed in reader and every section
+of it needs a token. It is the one place where a refused refresh token is worth finding before she
+presses anything.
+
+A timer is refused on purpose. A tab she left open for six hours has nothing to refresh for, and a
+timer keeps a thirty day refresh token in use on a borrowed computer for as long as the tab is open.
+The ask happens when something needs a token, and at no other time.
+
+Five minutes is a choice and not a measurement. It covers a slow call that starts before the
+deadline and finishes after it. The measurement that replaces it is the longest call the account
+page makes, once one of them exists.
+
+### Which call, for each way in
+
+Each way in asks the host that issued its tokens. Two calls cover the four ways in.
+
+The code sent to her address issued its tokens at the pool, so it asks the pool.
+`apps/website/lib/theSignIn.ts` already reaches `https://cognito-idp.eu-central-1.amazonaws.com`.
+The call is `InitiateAuth`, with `AuthFlow` of `REFRESH_TOKEN_AUTH`, the website client, and the
+refresh token in `AuthParameters` under `REFRESH_TOKEN`. Both app clients list
+`ALLOW_REFRESH_TOKEN_AUTH` in `infra/cognito.tf`, so the flow is open to this client today.
+
+Telegram signs in through the custom sign in of the pool, and the pool issues its tokens too, so it
+asks the pool in the same call. Nothing in this section waits for Telegram.
+
+Apple and Google issued their tokens at the token endpoint of the sign in host, so they ask the
+token endpoint. `apps/website/lib/theProviderSignIn.ts` already reaches
+`https://auth.myemi.app/oauth2/token` to exchange the code. The refresh sends `grant_type` of
+`refresh_token`, the website client and the refresh token. The client holds no secret, so the body
+carries none.
+
+Neither answer carries a new refresh token, because the pool rotates no refresh token in
+`infra/cognito.tf`. So the site keeps the refresh token it holds and writes only the two new tokens
+and the new deadline. A step that reads a refresh token out of either answer writes `undefined` over
+a token that works.
+
+One call for both hosts may be possible, because both refresh tokens belong to one pool and one
+client. Nobody measured that, and this design does not rest on it. Asking the issuing host is the
+documented path for each way in, and it keeps each refusal readable as the way in it belongs to.
+
+### One ask at a time
+
+Two calls that start together both read an entry whose deadline has passed, and two asks go out for
+one refresh token. The module holds the ask it started, so the second caller waits on the first and
+both send the same new access token. The held ask is dropped when it settles, so the next deadline
+asks again.
+
+### What she sees when the refresh token is refused
+
+The pool refuses a revoked token, an expired token and a token of a deleted user in the same words,
+which is 400 and `NotAuthorizedException`. The site reads all three as one thing: she is signed out.
+
+It removes the entry. It sends her to the sign in page of the language she was reading, at
+`/en/sign-in/?ended`. The page draws one sentence above the ways in, and the sentence is new in the
+catalogue:
+
+`signInEnded`, in English: Your sign in ended. Sign in again to open your account.
+
+That is the only sentence this design adds, in English, Spanish and Russian. The cause is kept out
+of it, the way the return page keeps the cause out of `returningDidNotFinish`. A reader learns
+nothing from the difference between a revoked token and an expired one, and the next thing she does
+is the same for both.
+
+The marker is in the address and not in storage, so the sentence survives a reload. The address
+carries nothing of hers. A reader who types that address reads a sentence that says nothing about
+her, which costs nothing.
+
+**This needs a design board, and nobody builds the screen without one.** The board
+`docs/design/website/sign-in/boards/SignIn.dc.html` draws the title, the line, the three ways in and
+the address box. It draws no place for this sentence. So the operator approves a board that holds
+it, and the reference pictures at 390, 834 and 1280 come with the board, the way the three in
+`docs/design/website/sign-in/reference/` came.
+
+The account page needs no new screen. The refusal removes the entry, and `TheAccountHeader` already
+moves a reader with no session to the sign in page.
+
+### Two open tabs
+
+Two tabs are two sessions, because `sessionStorage` is a store of one tab. She signs in twice, each
+tab holds its own three tokens and its own refresh token, and each tab asks for its own new tokens.
+A refresh in one tab changes nothing in the other, and nothing needs to.
+
+A tab she opened by duplicating another one is the one case where two tabs hold one refresh token,
+because the browser copies the store into the new tab. The pool rotates no refresh token, so the
+same token answers both tabs and both keep working.
+
+A sign out in one tab revokes that refresh token. In the duplicated case the other tab holds the
+same token, so the next thing that tab asks for is refused, and it reads the sentence above and goes
+to the sign in page. A sign out means signed out, so that is the right end for the second tab.
+
+`TheAccountHeader` subscribes to the `storage` event today. The specification fires that event for
+`sessionStorage` only at windows that share one store, which is a frame of the same tab rather than
+another tab. So that subscription reports nothing between two tabs, and no part of this design asks
+it to. I read the specification and measured nothing in a browser.
+
+### The ask, from the deadline to the sentence
+
+```mermaid
+sequenceDiagram
+    actor W as She
+    participant P as The account page
+    participant E as The entry in sessionStorage
+    participant C as The pool
+    participant A as The sign in host
+    W->>P: opens the account page
+    P->>E: reads the tokens, the way in and the deadline
+    alt the deadline is five minutes away or less
+        alt the way in is a code or Telegram
+            P->>C: InitiateAuth with REFRESH_TOKEN_AUTH
+            C-->>P: an identity token, an access token and how long they last
+        else the way in is Apple or Google
+            P->>A: the token endpoint with grant_type of refresh_token
+            A-->>P: an identity token, an access token and how long they last
+        end
+        P->>E: writes the two new tokens and the new deadline
+        P->>W: the account she asked for
+    else the refresh token is refused
+        P->>E: removes the entry
+        P->>W: the sign in page, and the sentence that her sign in ended
+    end
+```
+
+### The rules a test can fail
+
+These are numbered on from the list of this document so the path can name them.
+
+50. A call made with more than five minutes left on the deadline sends the access token she holds,
+    and no ask goes out. A case drives the real module with a clock it sets, moves the clock to
+    fifty four minutes, and reads the calls that went out.
+51. A call made with five minutes or less on the deadline asks first and sends the new access token.
+    The same case moves the clock to fifty six minutes and reads two calls in order.
+52. The ask for a woman who came in with a code goes to the pool, as `InitiateAuth` with
+    `REFRESH_TOKEN_AUTH` and the refresh token she holds. A case reads the host, the call name and
+    the body.
+53. The ask for a woman who came in with Apple or with Google goes to the token endpoint of the sign
+    in host, with `grant_type` of `refresh_token` and no client secret. A case reads the host and
+    every field of the body.
+54. An answer that carries no refresh token leaves the refresh token in the entry as it was. A case
+    reads the entry after the ask and finds the same refresh token.
+55. A refused ask removes the entry and sends her to the sign in page of her language with the
+    marker in the address. A case asserts the entry is gone and reads the address.
+56. A call the service refuses for the token asks once and sends the call once more. A second
+    refusal stops. A case counts three calls in total and no fourth.
+57. Two calls that start together cause one ask. A case starts both without waiting and counts one
+    ask.
+58. An entry carrying no way in and no deadline reads as no session. A case writes the old three
+    field entry and asserts the reader answers with nothing.
+59. No refresh token reaches a log line, the address bar or the body of any call but the ask. A case
+    reads every call that went out and the address afterwards.
+
+### The path
+
+Five pieces, in this order, each one a pull request of its own. The first three change nothing a
+woman sees, because no call on the site carries a token yet. The fourth draws the sentence. The
+fifth is the first piece a reader can notice.
+
+**The entry records the way in and the deadline.**
+
+Depends on: nothing.
+Files: `apps/website/lib/theSessionSheHolds.ts`, `apps/website/lib/theSignIn.ts`,
+`apps/website/lib/theProviderSignIn.ts`, `apps/website/components/theSignInForm.tsx`,
+`apps/website/components/theReturnFromAProvider.tsx`, `apps/website/test/theSignIn.test.ts`,
+`apps/website/test/theProviderSignIn.test.ts`, and a test of the entry.
+Behaviour: both sign in paths answer with the way in and the instant the tokens stop working, and
+the two components write all five values. The reader refuses an entry that carries three.
+Proof: rule 58, and one case for each way in asserting the entry holds the value the sign in
+answered with. A mutation that drops the deadline from the write is watched failing and then passing
+again.
+The promise: the entry holds two more values about the tokens. It holds nothing more about her.
+
+**The ask, as a module nothing calls.**
+
+Depends on: the entry.
+Files: `apps/website/lib/theTokensSheKeeps.ts`, `apps/website/test/theTokensSheKeeps.test.ts`.
+Behaviour: one function answers with tokens that work. It reads the entry, asks the issuing host
+when the deadline is near, writes the answer back, and holds one ask at a time.
+Proof: rules 50 to 54 and rule 57. The case for rules 50 and 51 drives the real module against a
+stub of each host, with a clock the case sets, and crosses the hour inside one test. A mutation that
+sets the margin to zero is watched failing that case and then passing again.
+The promise: the module sends a refresh token to one of two hosts and answers with two tokens. It
+writes no third thing and reads nothing of her records.
+
+**The gate every call with a token goes through.**
+
+Depends on: the ask.
+Files: `apps/website/lib/aCallSheIsSignedInFor.ts`,
+`apps/website/test/aCallSheIsSignedInFor.test.ts`, `apps/website/lib/whereSheGoesNext.ts`.
+Behaviour: one function sends a call carrying her access token. A refusal of 401 asks once and sends
+the call once more. A refused ask removes the entry and sends her to the sign in page with the
+marker.
+Proof: rules 55, 56 and 59. A mutation that repeats the call a second time is watched failing rule 56.
+The promise: the gate carries an access token to the api of Emi and to nowhere else.
+
+**The sentence on the sign in page.**
+
+Depends on: the gate, and a design board the operator approves.
+Files: `docs/design/website/sign-in/boards/`, `docs/design/website/sign-in/reference/`,
+`apps/website/app/words/english.ts`, `apps/website/app/words/spanish.ts`,
+`apps/website/app/words/russian.ts`, `apps/website/app/[lang]/sign-in/page.tsx`,
+`apps/website/test/theSignInPage.test.tsx`, `apps/website/test/words.test.ts`,
+`apps/website/test/theSignInDesign.test.ts`.
+Behaviour: the page draws `signInEnded` above the ways in when the address carries the marker, and
+draws nothing new when it does not.
+Proof: the design test reads the page against the approved board, in three languages and at the
+three widths. The words test reads the key in all three languages. The browser suite opens the
+address with the marker and reads the sentence.
+The promise: one sentence more on one page. It names no account, no address and no cause.
+
+**The account page asks when it draws.**
+
+Depends on: the gate, and the sentence.
+Files: `apps/website/components/theAccountHeader.tsx`,
+`features/website/the-site-keeps-her-signed-in.feature`,
+`features/website/the-site-keeps-her-signed-in.steps.tsx`, `docs/contracts.md`,
+`docs/features.md`, `tools/pipeline/documentation.test.ts`.
+Behaviour: the account page asks for new tokens once when it draws. A woman whose refresh token
+works reads her account. A woman whose refresh token is refused reads the sign in page and the
+sentence.
+Proof: the scenario drives the page both ways, past the hour with a clock it sets, and ends on what
+she reads rather than on the call that went out. It opens with the contract this piece declares,
+which the feature document maps, and the two counts written by hand in
+`tools/pipeline/documentation.test.ts` move with it.
+The promise: the page asks for tokens and draws an account. It reads no record, because no record is
+in the cloud in a form this site could read.
+
+### How sure I am
+
+Overall: 85 percent.
+
+The two calls and their bodies: 90 percent. Both are the documented shape, both clients already list
+the flow, and the content policy already allows both hosts. I refreshed no token against the
+live pool with this code, and the pool cannot send a code until the sender is verified, so a live
+run of the code path waits on that.
+
+The absent rotation: 85 percent. `infra/cognito.tf` declares no rotation, and a design that read a
+new refresh token out of the answer would break if one ever appears. Rule 54 is what catches that.
+
+The five minute margin: 70 percent. It is a choice with nothing measured behind it.
+
+The two tab behaviour: 80 percent. The per tab store and the copy on a duplicate are both in the
+specification, and I opened no browser to watch either.
+
+The sentence and the board: 60 percent, and it is the lowest number here. The words are a draft, the
+board does not hold a place for them, and the operator approves both before anybody builds that
+piece.
+
 ## The data model, at field level
 
 Status: designed
