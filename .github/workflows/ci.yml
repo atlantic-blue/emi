@@ -48,7 +48,9 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # No system packages. The runner image already holds the libraries Chromium needs, and
+      # a package install reads the Ubuntu mirror, which the runner cannot always resolve.
+      - run: npx playwright install chromium
       # Builds the site, starts it, and reads it with a browser at both widths. The last command
       # of the script refuses a run that carried out no scenario, because a browser suite with
       # nothing to do reports a pass that reads the same as every other pass.
