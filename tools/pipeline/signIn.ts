@@ -35,7 +35,7 @@ export const signInProviders: readonly SignInProvider[] = [
     name: 'google',
     providerName: 'Google',
     scopes: 'openid email',
-    mapping: ['email', 'email_verified'],
+    mapping: ['email', 'email_verified', 'username'],
     credentials: ['client_id', 'client_secret'],
   },
 ];

@@ -131,10 +131,11 @@ defineFeature(feature, (test) => {
       expect(valueOf(configuration, details.authorize_scopes ?? '')).toBe('openid email');
     });
 
-    and('it writes her address and its verification onto the account', () => {
+    and('it writes her address, its verification and her subject onto the account', () => {
       expect(mappingOf('google')).toEqual({
         email: '"email"',
         email_verified: '"email_verified"',
+        username: '"sub"',
       });
     });
 

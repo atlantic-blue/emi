@@ -302,6 +302,15 @@ resource "aws_cognito_identity_provider" "apple" {
     team_id          = data.aws_ssm_parameter.apple_team_id.value
     key_id           = data.aws_ssm_parameter.apple_key_id.value
     private_key      = data.aws_ssm_parameter.apple_private_key.value
+
+    # The service fills these in for a provider of this type. A file that leaves them out asks for
+    # their removal on every plan, and the service writes them back on every apply, so the next
+    # plan finds the same change again.
+    authorize_url                 = "https://appleid.apple.com/auth/authorize"
+    token_url                     = "https://appleid.apple.com/auth/token"
+    oidc_issuer                   = "https://appleid.apple.com"
+    token_request_method          = "POST"
+    attributes_url_add_attributes = "false"
   }
 
   # The subject is the one thing Apple returns that stays the same when she hides her address, and
@@ -332,13 +341,25 @@ resource "aws_cognito_identity_provider" "google" {
     authorize_scopes = "openid email"
     client_id        = data.aws_ssm_parameter.google_client_id.value
     client_secret    = data.aws_ssm_parameter.google_client_secret.value
+
+    # Filled in by the service for this provider type, for the reason the Apple provider above
+    # carries. The address of the attributes ends in an empty field list, and that is the value
+    # the service holds.
+    attributes_url                = "https://people.googleapis.com/v1/people/me?personFields="
+    attributes_url_add_attributes = "true"
+    authorize_url                 = "https://accounts.google.com/o/oauth2/v2/auth"
+    token_url                     = "https://www.googleapis.com/oauth2/v4/token"
+    oidc_issuer                   = "https://accounts.google.com"
+    token_request_method          = "POST"
   }
 
   # A mapped address arrives unverified unless the verification itself is mapped, and Google
-  # returns it. The username needs no entry: the service derives it from the subject.
+  # returns it. The service maps the username onto the subject for this provider type, so the file
+  # names it here for the reason the provider details above are named.
   attribute_mapping = {
     email          = "email"
     email_verified = "email_verified"
+    username       = "sub"
   }
 
   # The secret is left out of the comparison for the same reason the Apple key is. A read of this

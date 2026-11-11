@@ -28,7 +28,7 @@ Feature: Apple and Google sign her in, and the pool answers on auth.myemi.app
     Given the sign in the pool offers
     When the way in through Google is read
     Then it asks Google for the subject and the email address alone
-    And it writes her address and its verification onto the account
+    And it writes her address, its verification and her subject onto the account
     And it reads the client name and the secret from the parameter store
     And it never asks Google for her profile
 
