@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-import { type Answered, notImplemented, readTheLiveApi, refusals } from './liveApi';
+import {
+  type Answered,
+  type AnsweredThePreflight,
+  notImplemented,
+  readTheLiveApi,
+  refusals,
+  theHeaderTheSiteSends,
+} from './liveApi';
 import {
   type ApiRoute,
   addressOf,
@@ -12,7 +19,10 @@ import {
   registrationRoute,
   routesIn,
   routesWithNoAuthorizer,
+  theRouteThePreflightReads,
+  theSignInRoute,
 } from './routes';
+import { SITE_ORIGIN } from '../../apps/website/lib/addresses';
 
 /**
  * The live read of the deploy, driven with no api behind it, and the reader that tells it which
@@ -50,13 +60,41 @@ const registration = route({
   authorizerId: null,
 });
 
+const signIn = route({
+  resource: theSignInRoute,
+  method: 'POST',
+  path: '/v1/sign-in/telegram',
+  authorizationType: 'NONE',
+  authorizerId: null,
+});
+
+/** The preflight answer the api gives when it names the site, which is what a browser needs. */
+const theAnswerABrowserNeeds: AnsweredThePreflight = {
+  allowOrigin: SITE_ORIGIN,
+  allowMethods: 'POST',
+  allowHeaders: theHeaderTheSiteSends,
+};
+
+interface AskedThePreflight {
+  readonly address: string;
+  readonly origin: string;
+  readonly method: string;
+  readonly header: string;
+}
+
 /** A read that answers each address in turn, and remembers everything it was asked. */
-function reading(answers: Readonly<Record<string, number>>, fallback = 401) {
+function reading(
+  answers: Readonly<Record<string, number>>,
+  fallback = 401,
+  preflight: AnsweredThePreflight = theAnswerABrowserNeeds,
+) {
   const asked: Asked[] = [];
+  const preflights: AskedThePreflight[] = [];
   const lines: string[] = [];
 
   return {
     asked,
+    preflights,
     lines,
     read: async (routes: readonly ApiRoute[], origin = theOrigin): Promise<number> =>
       readTheLiveApi({
@@ -66,6 +104,16 @@ function reading(answers: Readonly<Record<string, number>>, fallback = 401) {
           asked.push({ address, method, body });
 
           return { status: answers[address] ?? fallback };
+        },
+        askThePreflight: async (
+          address,
+          requestOrigin,
+          method,
+          header,
+        ): Promise<AnsweredThePreflight> => {
+          preflights.push({ address, origin: requestOrigin, method, header });
+
+          return preflight;
         },
         report: (line) => lines.push(line),
       }),
@@ -139,8 +187,9 @@ describe('the deploy reads the live api, and requires a refusal', () => {
           route({}),
           route({ resource: 'delete_account', method: 'DELETE', path: '/v1/account' }),
           registration,
+          signIn,
         ]),
-      ).resolves.toBe(3);
+      ).resolves.toBe(4);
       expect(run.asked.map((each) => `${each.method} ${each.address}`)).toEqual([
         `GET ${theOrigin}/v1/records`,
         `DELETE ${theOrigin}/v1/account`,
@@ -151,7 +200,7 @@ describe('the deploy reads the live api, and requires a refusal', () => {
     it('presents no signature, and sends a body to the registration alone', async () => {
       const run = reading({});
 
-      await run.read([route({}), registration]);
+      await run.read([route({}), registration, signIn]);
 
       expect(run.asked.map((each) => each.body)).toEqual([undefined, '']);
     });
@@ -159,19 +208,19 @@ describe('the deploy reads the live api, and requires a refusal', () => {
     it.each(refusals)('takes %s as the refusal it owes', async (status) => {
       const run = reading({ [`${theOrigin}/v1/records`]: status });
 
-      await expect(run.read([route({}), registration])).resolves.toBe(2);
+      await expect(run.read([route({}), registration, signIn])).resolves.toBe(3);
       expect(run.lines[0]).toContain(`${status}, so an unsigned request is refused`);
     });
 
     it('fails when a route behind the authorizer answers a request nobody signed', async () => {
       const run = reading({ [`${theOrigin}/v1/records`]: 200 });
 
-      await expect(run.read([route({}), registration])).rejects.toThrow(
+      await expect(run.read([route({}), registration, signIn])).rejects.toThrow(
         /GET \/v1\/records stands behind the authorizer and answered 200/,
       );
     });
 
-    it('asks nothing of a route that carries no authorizer but the registration', async () => {
+    it('sends no unsigned request to a route that carries no authorizer but the registration', async () => {
       const articles = route({
         resource: 'read_articles',
         path: '/v1/articles/{phase}',
@@ -180,7 +229,7 @@ describe('the deploy reads the live api, and requires a refusal', () => {
       });
       const run = reading({});
 
-      await run.read([route({}), articles, registration]);
+      await run.read([route({}), articles, registration, signIn]);
 
       expect(run.asked.map((each) => each.address)).not.toContain(
         `${theOrigin}/v1/articles/${nothingIsHere}`,
@@ -192,7 +241,7 @@ describe('the deploy reads the live api, and requires a refusal', () => {
     it('fails while the placeholder is still the code that answers there', async () => {
       const run = reading({ [`${theOrigin}/v1/accounts`]: notImplemented });
 
-      await expect(run.read([route({}), registration])).rejects.toThrow(
+      await expect(run.read([route({}), registration, signIn])).rejects.toThrow(
         new RegExp(`POST /v1/accounts answered ${notImplemented}`),
       );
     });
@@ -200,7 +249,7 @@ describe('the deploy reads the live api, and requires a refusal', () => {
     it('takes the refusal the handler gives an unsigned body, which is not the placeholder', async () => {
       const run = reading({ [`${theOrigin}/v1/accounts`]: 400 });
 
-      await expect(run.read([route({}), registration])).resolves.toBe(2);
+      await expect(run.read([route({}), registration, signIn])).resolves.toBe(3);
       expect(run.lines[1]).toContain('400, so the bundle answers and not the placeholder');
     });
 
@@ -210,6 +259,105 @@ describe('the deploy reads the live api, and requires a refusal', () => {
       await expect(run.read([route({})])).rejects.toThrow(
         new RegExp(`declares no ${registrationRoute} route`),
       );
+    });
+  });
+
+  describe('the preflight of the sign in, which a browser sends before it sends anything', () => {
+    it('sends it to the sign in route, as the origin of the site and the method of that route', async () => {
+      const run = reading({});
+
+      await run.read([route({}), registration, signIn]);
+
+      expect(run.preflights).toEqual([
+        {
+          address: `${theOrigin}/v1/sign-in/telegram`,
+          origin: SITE_ORIGIN,
+          method: 'POST',
+          header: theHeaderTheSiteSends,
+        },
+      ]);
+    });
+
+    it('invokes no function and writes nothing, because it sends no request of its own', async () => {
+      const run = reading({});
+
+      await run.read([route({}), registration, signIn]);
+
+      expect(run.asked.map((each) => each.address)).not.toContain(
+        `${theOrigin}/v1/sign-in/telegram`,
+      );
+    });
+
+    it('reports the three headers it read, and counts the preflight as a read', async () => {
+      const run = reading({});
+
+      await expect(run.read([route({}), registration, signIn])).resolves.toBe(3);
+      expect(run.lines[2]).toBe(
+        `the preflight of POST /v1/sign-in/telegram from ${SITE_ORIGIN}: ${SITE_ORIGIN}, POST, ` +
+          `${theHeaderTheSiteSends}, so a browser sends the sign in`,
+      );
+    });
+
+    it('fails when the answer carries no allowed origin, which is what she met on the live site', async () => {
+      const run = reading({}, 401, { ...theAnswerABrowserNeeds, allowOrigin: null });
+
+      await expect(run.read([route({}), registration, signIn])).rejects.toThrow(
+        /answered no allowed origin at all, so a browser refuses the sign in before it is sent/,
+      );
+    });
+
+    it('fails when the answer names another origin', async () => {
+      const run = reading({}, 401, {
+        ...theAnswerABrowserNeeds,
+        allowOrigin: 'https://www.myemi.app',
+      });
+
+      await expect(run.read([route({}), registration, signIn])).rejects.toThrow(
+        /answered the origin https:\/\/www\.myemi\.app/,
+      );
+    });
+
+    it('fails when the allowed methods leave out the method the site calls', async () => {
+      const run = reading({}, 401, { ...theAnswerABrowserNeeds, allowMethods: 'GET' });
+
+      await expect(run.read([route({}), registration, signIn])).rejects.toThrow(
+        /allows the methods GET, which do not include POST/,
+      );
+    });
+
+    it('fails when the allowed headers leave out the header the site sends', async () => {
+      const run = reading({}, 401, { ...theAnswerABrowserNeeds, allowHeaders: 'authorization' });
+
+      await expect(run.read([route({}), registration, signIn])).rejects.toThrow(
+        new RegExp(
+          `allows the headers authorization, which do not include ${theHeaderTheSiteSends}`,
+        ),
+      );
+    });
+
+    it('reads a list of several names, and the star, the way a browser reads them', async () => {
+      const run = reading({}, 401, {
+        allowOrigin: SITE_ORIGIN,
+        allowMethods: 'GET,POST,DELETE',
+        allowHeaders: '*',
+      });
+
+      await expect(run.read([route({}), registration, signIn])).resolves.toBe(3);
+    });
+
+    it('fails where the api declares no sign in route at all', async () => {
+      const run = reading({});
+
+      await expect(run.read([route({}), registration])).rejects.toThrow(
+        new RegExp(`declares no ${theSignInRoute} route`),
+      );
+    });
+
+    it('names the sign in route of the api the Terraform declares, so the path is never invented', () => {
+      const found = theRouteThePreflightReads(readTheRoutes(repositoryRoot));
+
+      expect(found?.method).toBe('POST');
+      expect(found?.path).toBe('/v1/sign-in/telegram');
     });
   });
 

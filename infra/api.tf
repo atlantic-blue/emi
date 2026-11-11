@@ -2,6 +2,17 @@ resource "aws_apigatewayv2_api" "vault" {
   name          = "${var.project_name}-vault"
   protocol_type = "HTTP"
   description   = "The encrypted vault. Ciphertext in, ciphertext out, no key anywhere behind it"
+
+  # The site is the only browser that calls this api from another address, so one origin is named
+  # and a wildcard is refused. The api answers the preflight itself, before it matches a route, so
+  # no authorizer runs for one and no route gives its authorizer up by being listed here.
+  cors_configuration {
+    allow_origins     = ["https://myemi.app"]
+    allow_methods     = ["POST"]
+    allow_headers     = ["content-type"]
+    allow_credentials = false
+    max_age           = 86400
+  }
 }
 
 resource "aws_cloudwatch_log_group" "api" {
