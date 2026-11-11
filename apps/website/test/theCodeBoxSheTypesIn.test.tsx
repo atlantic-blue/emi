@@ -5,7 +5,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { TheSignInForm, theDigitsSheTyped } from '../components/theSignInForm';
-import { wordsIn } from '../app/words';
+import { type Language, type SiteWords, languages, wordsIn } from '../app/words';
 import { THE_SIGN_IN_CODE_IS_THIS_LONG, THE_SIGN_UP_CODE_IS_THIS_LONG } from '../lib/theSignIn';
 
 /**
@@ -70,7 +70,7 @@ const theSignInCodeIsOnItsWay = took({
 });
 
 /** The page, mounted into a document, as her browser mounts it. */
-async function theSignInPage(): Promise<HTMLElement> {
+async function theSignInPage(language: Language = 'en'): Promise<HTMLElement> {
   const where = document.createElement('div');
 
   document.body.append(where);
@@ -79,7 +79,7 @@ async function theSignInPage(): Promise<HTMLElement> {
 
   await act(async () => {
     root.render(
-      <TheSignInForm language="en" words={words}>
+      <TheSignInForm language={language} words={wordsIn(language)}>
         <div />
       </TheSignInForm>,
     );
@@ -123,7 +123,7 @@ function theCodeBox(where: HTMLElement): HTMLInputElement {
 }
 
 /** Her address typed in, and the press that sends her a code. */
-async function sheAsksForACode(where: HTMLElement): Promise<void> {
+async function sheAsksForACode(where: HTMLElement, said: SiteWords = words): Promise<void> {
   const address = where.querySelector<HTMLInputElement>('#sign-in-address');
 
   if (address === null) {
@@ -131,7 +131,7 @@ async function sheAsksForACode(where: HTMLElement): Promise<void> {
   }
 
   await sheTypes(address, HER_ADDRESS);
-  await shePresses(where, words.signInSendCode);
+  await shePresses(where, said.signInSendCode);
 }
 
 beforeEach(() => {
@@ -242,5 +242,57 @@ describe('what the box keeps of what she typed', () => {
     expect(theDigitsSheTyped('4829 1374', THE_SIGN_IN_CODE_IS_THIS_LONG)).toBe('48291374');
     expect(theDigitsSheTyped('Code: 482913', THE_SIGN_UP_CODE_IS_THIS_LONG)).toBe('482913');
     expect(theDigitsSheTyped('482913749', THE_SIGN_IN_CODE_IS_THIS_LONG)).toBe('48291374');
+  });
+});
+
+/**
+ * The pool allows an email code to no user Google or Apple made. It sends her the eight digits
+ * like any other address and then refuses them, so the page has one sentence to say and it is not
+ * the one about waiting: no new code can work, and a woman told to wait waits for nothing.
+ */
+describe('the address she signs in with Google or Apple', () => {
+  const theProviderRefusal: AnAnswer = {
+    status: 400,
+    said: {
+      __type: 'NotAuthorizedException',
+      message: 'EXTERNAL_PROVIDER user is not authorized to authenticate with EMAIL_OTP.',
+    },
+  };
+
+  it.each(languages)('says so in %s, and sends her no code she cannot use', async (language) => {
+    const said = wordsIn(language);
+    const service = aService([
+      sheIsSignedUp,
+      theAddressAlreadyHasAnAccount,
+      theSignInCodeIsOnItsWay,
+      theProviderRefusal,
+    ]);
+
+    const where = await theSignInPage(language);
+
+    await sheAsksForACode(where, said);
+    await sheTypes(theCodeBox(where), '482913');
+    await shePresses(where, said.signInCodeSubmit);
+    await sheTypes(theCodeBox(where), '48291374');
+    await shePresses(where, said.signInCodeSubmit);
+
+    expect(where.querySelector('[role="alert"]')?.textContent).toBe(
+      said.signInAddressUsesGoogleOrApple,
+    );
+    expect(where.textContent).not.toContain(said.signInTooManyTries);
+
+    await shePresses(where, said.signInSendANewCode);
+
+    // The press for a new code reaches the service with nothing, and she reads the same sentence
+    // rather than waiting for an email the pool would refuse again.
+    expect(service.calls).toEqual([
+      'SignUp',
+      'ConfirmSignUp',
+      'InitiateAuth',
+      'RespondToAuthChallenge',
+    ]);
+    expect(where.querySelector('[role="alert"]')?.textContent).toBe(
+      said.signInAddressUsesGoogleOrApple,
+    );
   });
 });

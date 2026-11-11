@@ -59,6 +59,7 @@ const theSentenceFor: Readonly<Record<WhatWentWrong, keyof SiteWords>> = {
   theCodeIsWrong: 'signInCodeIsWrong',
   theCodeHasExpired: 'signInCodeHasExpired',
   tooManyTries: 'signInTooManyTries',
+  sheSignsInWithGoogleOrApple: 'signInAddressUsesGoogleOrApple',
   nothingReachedTheService: 'signInNothingReached',
 };
 
@@ -96,6 +97,10 @@ export function TheSignInForm({
   const [said, setSaid] = useState<keyof SiteWords | null>(null);
   const [whatToDoNext, setWhatToDoNext] = useState<keyof SiteWords | null>(null);
   const [busy, setBusy] = useState(false);
+  // The pool allows an email code to no user Google or Apple made, so once it has refused this
+  // address the press for a new code would send her an email she cannot use. It says the same
+  // sentence again instead, and she signs in with the press she signed in with before.
+  const [noCodeCanSignHerIn, setNoCodeCanSignHerIn] = useState(false);
 
   function waitFor(next: TheCodeSheWaitsFor, toldToDo: keyof SiteWords | null): void {
     setWaiting(next);
@@ -105,6 +110,12 @@ export function TheSignInForm({
 
   async function sendACode(): Promise<void> {
     const typed = address.trim();
+
+    if (noCodeCanSignHerIn) {
+      setSaid(theSentenceFor.sheSignsInWithGoogleOrApple);
+
+      return;
+    }
 
     if (typed === '') {
       setSaid('signInNeedsAnAddress');
@@ -157,7 +168,10 @@ export function TheSignInForm({
       holdTheSession(answer.held);
       goTo(`/${language}/${WHERE_A_SIGN_IN_LANDS}`);
     } catch (problem) {
-      setSaid(theSentenceFor[causeOf(problem)]);
+      const because = causeOf(problem);
+
+      setSaid(theSentenceFor[because]);
+      setNoCodeCanSignHerIn(because === 'sheSignsInWithGoogleOrApple');
       // The service hands back a fresh session with a refusal she may answer again. Keeping the
       // old one would answer with a session the service has closed, and the next code she typed
       // would be read as wrong whatever she typed.
@@ -176,6 +190,7 @@ export function TheSignInForm({
     setCode('');
     setSaid(null);
     setWhatToDoNext(null);
+    setNoCodeCanSignHerIn(false);
   }
 
   const trouble =

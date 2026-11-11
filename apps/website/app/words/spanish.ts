@@ -268,6 +268,7 @@ export const spanish: SiteWords = {
   signInCodeIsWrong: 'Ese código no es correcto. Compruébalo y escríbelo otra vez.',
   signInCodeHasExpired: 'Ese código ha caducado. Envía uno nuevo.',
   signInTooManyTries: 'Demasiados intentos. Espera unos minutos y envía un código nuevo.',
+  signInAddressUsesGoogleOrApple: 'Ya has usado esta dirección para entrar con Google o Apple.',
   signInNothingReached:
     'Tu navegador no pudo conectar con Emi. Comprueba la conexión e inténtalo otra vez.',
   signInSending: 'Enviando un código…',

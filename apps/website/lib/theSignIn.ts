@@ -98,7 +98,11 @@ const THE_USERNAME_LETTERS = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
 
 /** What a reader is told when a sign in does not go through. One cause, one sentence. */
 export type WhatWentWrong =
-  'theCodeIsWrong' | 'theCodeHasExpired' | 'tooManyTries' | 'nothingReachedTheService';
+  | 'theCodeIsWrong'
+  | 'theCodeHasExpired'
+  | 'tooManyTries'
+  | 'sheSignsInWithGoogleOrApple'
+  | 'nothingReachedTheService';
 
 /**
  * A sign in that did not go through, carrying the cause and nothing else.
@@ -188,6 +192,14 @@ function theNameOfTheRefusal(said: WhatTheServiceSaid): string {
 }
 
 /**
+ * The service refusing to sign in a woman whose user Google or Apple made. The pool allows an
+ * email code to no such user, whatever the code is, so a new code can never work and the page says
+ * so rather than telling her to wait. The refusal is named the same as several others, so the
+ * message is the only thing that tells them apart.
+ */
+const SHE_SIGNS_IN_WITH_A_PROVIDER = 'external_provider';
+
+/**
  * Which sentence a refusal becomes.
  *
  * A session the service has closed reads as expired rather than as wrong, because the next thing
@@ -202,6 +214,10 @@ function whatWentWrong(said: WhatTheServiceSaid): WhatWentWrong {
 
   if (refusal === 'CodeMismatchException') {
     return 'theCodeIsWrong';
+  }
+
+  if (refusal === 'NotAuthorizedException' && sentence.includes(SHE_SIGNS_IN_WITH_A_PROVIDER)) {
+    return 'sheSignsInWithGoogleOrApple';
   }
 
   if (refusal === 'ExpiredCodeException' || sentence.includes('expired')) {
