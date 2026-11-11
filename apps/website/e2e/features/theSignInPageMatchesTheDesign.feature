@@ -16,9 +16,9 @@ Feature: The sign in page is laid out the way it was approved
   one page that changes, so the same part sits at a different height in each. The account board
   draws four sections under its head, and each one is a step of its own, so only the head is read.
 
-  The code cannot be sent yet either. Steps 28.8 to 28.10 connect the pool to the sender on
-  myemi.app, so this scenario answers the service itself with the shapes the service documents, and
-  presses through to the box for the six digits on an answer the suite wrote.
+  This scenario answers the service itself with the shapes the service documents, and presses
+  through to the box for the code on an answer the suite wrote, because a run against the live
+  pool would make a user and write to whoever owns the address.
 
   Each part is measured in each document and then held against the other, in one browser, at the
   width of a desktop, of a tablet, and of the phone most of the reading happens on. On a failure it

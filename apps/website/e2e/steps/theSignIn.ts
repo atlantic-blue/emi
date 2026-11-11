@@ -9,9 +9,13 @@ import { test } from './fixtures';
 /**
  * The sign in, driven end to end in a browser.
  *
- * The service is answered by the suite rather than by the live pool, because the pool cannot send
- * an email until steps 28.8 to 28.10 connect it to the sender on myemi.app. Every shape below is
- * one the service documents, and nobody has read a real answer from the live pool with this code.
+ * The service is answered by the suite rather than by the live pool, because a run against the
+ * live pool makes a user and sends an email to whoever owns the address. Every shape below is one
+ * the service documents.
+ *
+ * The suite answers as the service answers an address that has never signed in, which is the one
+ * of the two cases that ends in tokens off the first code. The other case is driven in
+ * apps/website/test/theCodeBoxSheTypesIn.test.tsx, where the box widens to eight digits.
  *
  * Each scenario ends on what she is left looking at rather than on the call the page made. A page
  * that asked the service correctly and then drew the wrong screen is a page that does not work.
@@ -20,7 +24,10 @@ import { test } from './fixtures';
 /** The address she types, which is the one the board writes into the second screen. */
 const HER_ADDRESS = 'iuliia@example.com';
 
-/** The six digits the suite sends her, which the pool below accepts and nothing else does. */
+/**
+ * The digits the suite sends her, which the pool below accepts and nothing else does. Six of
+ * them, because the code that confirms an address is the one she is answering here.
+ */
 const THE_CODE_SHE_IS_SENT = '482913';
 
 const words = wordsIn('en');
@@ -32,28 +39,35 @@ interface AnAnswer {
 }
 
 /**
- * A pool that sends a code and takes one answer.
+ * A pool that sends one code and takes one answer.
  *
- * The address is read as one that already has a user, which is the ordinary case and the one that
- * says the least: the pool answers a new address the same way, so neither the page nor this
- * scenario can tell the two apart.
+ * One email for one press. The sign up sends it, the confirmation takes the digits she types, and
+ * the sign in off the session that confirmation carried asks her for nothing more.
  */
 async function aPoolThatAnswers(page: Page): Promise<void> {
   await page.route(`${THE_POOL_HOST}/**`, async (route) => {
     const call = (route.request().headers()['x-amz-target'] ?? '').split('.').pop();
     const body = JSON.parse(route.request().postData() ?? '{}') as {
-      ChallengeResponses?: { EMAIL_OTP_CODE?: string };
+      ConfirmationCode?: string;
+      Session?: string;
     };
 
     const answers: Record<string, AnAnswer> = {
-      SignUp: { status: 400, said: { __type: 'UsernameExistsException' } },
-      InitiateAuth: {
+      SignUp: {
         status: 200,
-        said: { ChallengeName: 'EMAIL_OTP', Session: 'a-session-the-suite-wrote' },
+        said: { UserSub: 'a-subject', Session: 'a-sign-up-session-the-suite-wrote' },
       },
-      RespondToAuthChallenge:
-        body.ChallengeResponses?.EMAIL_OTP_CODE === THE_CODE_SHE_IS_SENT
+      ConfirmSignUp:
+        body.ConfirmationCode === THE_CODE_SHE_IS_SENT
           ? {
+              status: 200,
+              said: { Session: 'a-confirmed-session-the-suite-wrote' },
+            }
+          : { status: 400, said: { __type: 'CodeMismatchException' } },
+      InitiateAuth:
+        body.Session === undefined
+          ? { status: 400, said: { __type: 'NotAuthorizedException' } }
+          : {
               status: 200,
               said: {
                 AuthenticationResult: {
@@ -61,13 +75,6 @@ async function aPoolThatAnswers(page: Page): Promise<void> {
                   AccessToken: 'an-access-token',
                   RefreshToken: 'a-refresh-token',
                 },
-              },
-            }
-          : {
-              status: 400,
-              said: {
-                __type: 'CodeMismatchException',
-                Session: 'another-session-the-suite-wrote',
               },
             },
     };
@@ -119,6 +126,16 @@ Then(
     await expect(page.locator('#sign-in-address')).toHaveCount(0);
     await expect(page.locator('main')).toContainText(HER_ADDRESS);
     await expect(page.locator('main')).toContainText(words.signInCodeLasts);
+    // The box is as wide as the code that went out, and this is the one that confirms an
+    // address. The box she types a sign in code into takes two more.
+    await expect(page.locator('#sign-in-code')).toHaveAttribute(
+      'maxlength',
+      String(THE_CODE_SHE_IS_SENT.length),
+    );
+
+    await page.fill('#sign-in-code', THE_CODE_SHE_IS_SENT);
+
+    await expect(page.locator('#sign-in-code')).toHaveValue(THE_CODE_SHE_IS_SENT);
   },
 );
 

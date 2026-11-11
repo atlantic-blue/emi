@@ -98,24 +98,38 @@ const theHeadOfTheAccount: readonly APartOfAPage[] = [
 /**
  * The pool, answering the way the service documents.
  *
- * The real pool cannot send an email until steps 28.8 to 28.10 connect it to the sender, so a run
- * against it would prove that an email did not arrive and nothing else. The two calls a press of
- * "Send code" makes are answered here instead: the first says the address already has a user,
- * which is the ordinary case, and the second hands back the challenge and a session.
+ * The real pool sends a real email, so a run against it would make a user and write to whoever
+ * owns the address. One call is answered here instead, because a press of "Send code" makes one:
+ * the sign up, which the service answers with a session and sends her the code that confirms the
+ * address. That is the code the board draws a box for.
+ *
+ * Any other call is refused loudly rather than answered. This scenario reaches the box and stops,
+ * so a call it did not use to make means the flow moved underneath it, and a double that answered
+ * everything would hide that.
  */
 async function aPoolThatAnswers(page: Page): Promise<void> {
   await page.route(`${THE_POOL_HOST}/**`, async (route) => {
     const call = (route.request().headers()['x-amz-target'] ?? '').split('.').pop();
-    const signingUp = call === 'SignUp';
+
+    if (call !== 'SignUp') {
+      throw new Error(
+        `The page asked the pool for ${call}, and reaching the box for the code takes a SignUp.`,
+      );
+    }
 
     await route.fulfill({
-      status: signingUp ? 400 : 200,
+      status: 200,
       contentType: 'application/x-amz-json-1.1',
-      body: JSON.stringify(
-        signingUp
-          ? { __type: 'UsernameExistsException' }
-          : { ChallengeName: 'EMAIL_OTP', Session: 'a-session-the-suite-wrote' },
-      ),
+      body: JSON.stringify({
+        UserSub: 'a-subject-the-suite-wrote',
+        UserConfirmed: false,
+        CodeDeliveryDetails: {
+          AttributeName: 'email',
+          DeliveryMedium: 'EMAIL',
+          Destination: 'i***@e***',
+        },
+        Session: 'a-session-the-suite-wrote',
+      }),
     });
   });
 }

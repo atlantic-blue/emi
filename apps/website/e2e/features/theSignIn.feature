@@ -8,9 +8,11 @@ Feature: What a woman is left with when she signs in
   browser has, and the page she lands on reads it for itself. So a browser drives it here, from
   the address box to the account and back out again.
 
-  The pool cannot send an email yet. Steps 28.8 to 28.10 connect it to the sender on myemi.app, so
-  the service is answered here with the shapes it documents, and the six digits are a code this
-  suite wrote.
+  The pool sends a real email, so the service is answered here with the shapes it documents
+  rather than for real: a run against the live pool would make a user and write to whoever owns
+  the address. The six digits are a code this suite wrote, and they are the code that confirms an
+  address. The code that signs a woman in is eight digits long, and the box widens to take it in
+  apps/website/test/theCodeBoxSheTypesIn.test.tsx.
 
   Scenario: she asks for a code and is left waiting for six digits
     Given a woman opens the page she signs in on, with a pool that answers

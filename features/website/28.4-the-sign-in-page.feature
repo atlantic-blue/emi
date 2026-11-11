@@ -12,12 +12,20 @@ Feature: The sign in page, with a code sent to her address
 
   One rule runs through every sentence on this page. The pool answers the same way whether or not
   an address has an account, because an answer that said which would let anybody test who uses Emi.
-  So a new address and an address she has used before reach the same screen, by the same two calls,
+  So a new address and an address she has used before reach the same screen, by the same one call,
   and the page says the same words for both.
 
-  The code cannot be sent yet. Steps 28.8 to 28.10 connect the pool to the sender on myemi.app, so
-  the conversation here is proved against a stub of the service rather than against the live pool,
-  and nobody has read a real answer from the pool with this code.
+  One email reaches her for one sign in. The service sends two different codes, six digits to
+  confirm an address and eight to sign a woman in, so the box is as wide as the code she was sent
+  and the words beside it name no number. The two addresses part company only at the confirmation,
+  which refuses an address that already has an account, and only for somebody who typed the code
+  out of that address. A reader who cannot read her email learns nothing from this page.
+
+  The pool sends a real email, so the conversation here is proved against a stub of the service:
+  a run against the live pool would make a user and write to whoever owns the address. One answer
+  was read from the live pool, for an address that has no user at all, and the service handed back
+  a whole email one time password challenge and sent no email. That reading is why the page cannot
+  tell the two addresses apart before the first email goes out.
 
   Nothing of hers is kept. The tokens live in sessionStorage, which the tab takes with it when she
   closes it, and no cookie carries them. A woman who signs in on a borrowed machine and closes the
@@ -39,16 +47,17 @@ Feature: The sign in page, with a code sent to her address
     And the list a crawler reads names the page in each of the three languages
     And the page writes no style of its own, so her browser refuses nothing
 
-  Scenario: a code reaches a new address and a known one the same way
+  Scenario: one email reaches a new address and a known one the same way
     Given a stub of the pool that answers the way the service documents
     When she asks for a code on an address that has never signed in
     And she asks for a code on an address that has signed in before
-    Then both ask the service the same two things, and no password is among them
+    Then each one asks the service for one thing, and no password is among them
+    And one email goes out for one press, where two used to
     And the page says the same words for both, so neither can be told from the other
 
   Scenario: the code she types signs her in, and each refusal says what to do next
     Given a stub of the pool that answers the way the service documents
-    When she answers the code with the six digits she was sent
+    When she answers the code with the digits she was sent
     Then she holds the three tokens, in sessionStorage and in no cookie
     And a wrong code, an expired code, too many tries and no connection each say their own sentence
     And every one of those sentences arrives in English, in Russian and in Spanish
@@ -58,3 +67,10 @@ Feature: The sign in page, with a code sent to her address
     Then she reads the title and the sentence that says her records are not on this site
     And the four sections of the board are not drawn
     And a sign out asks the service to revoke the token that outlives the window
+
+  Scenario: an address that already has an account is sent a sign in code of eight digits
+    Given a stub of the pool that answers the way the service documents
+    When she types the code sent to an address that already has an account
+    Then she is left on the same box, waiting for the eight digits of a sign in code
+    And those eight digits hand her the three tokens
+    And no call that went out says which of the two she was before she typed the code

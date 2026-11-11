@@ -1,12 +1,15 @@
 import {
   ASignInProblem,
-  THE_CODE_IS_THIS_LONG,
   THE_POOL_HOST,
   THE_POOL_ID,
   THE_POOL_REGION,
+  THE_SIGN_IN_CODE_IS_THIS_LONG,
+  THE_SIGN_UP_CODE_IS_THIS_LONG,
   THE_WEBSITE_CLIENT_ID,
+  type TheCodeSheWaitsFor,
   aUsername,
   askForACode,
+  sendHerAnotherCode,
   signInWithTheCode,
   signOut,
 } from '../lib/theSignIn';
@@ -14,14 +17,19 @@ import {
 /**
  * The sign in, driven end to end against a stub of Amazon Cognito.
  *
- * It is a stub and not the live pool on purpose. The pool cannot send an email until steps 28.8 to
- * 28.10 connect it to the myemi.app sender, so a run against the live pool would prove that an
- * email did not arrive and nothing else. The stub answers the shapes the service documents, one
- * call at a time, and every path a reader can take is driven through it.
+ * It is a stub and not the live pool, because a run against the live pool makes a user and sends
+ * an email to whoever owns the address. Every shape below is one the service documents.
  *
- * The two paths that matter most are the new address and the address she has used before. The pool
- * answers the same way for both, so this reads the calls that went out and asserts that the two
- * runs are the same two calls, carrying no sign of which she was.
+ * Two readings sit behind these cases and neither can be made from the repository, so they are
+ * written out here. An address that already belongs to an account is signed up again without a
+ * refusal, because the pool carries the address as an alias, and the collision is raised by the
+ * confirmation as `AliasExistsException`. And an address with no user at all is answered by
+ * `InitiateAuth` with a whole email one time password challenge and no email, which was read from
+ * the live pool on 2026-11-11. Together they are why no call can tell the two apart before the
+ * first email goes out.
+ *
+ * The count of email causing calls is what most of this file is about. One sign in sends one
+ * email, so each case reads the calls that went out and says how many of them reach her inbox.
  */
 
 /** One call the stub was given, kept so a case can read what really went out. */
@@ -40,6 +48,24 @@ interface AnAnswer {
 const NOTHING_IS_THERE = Symbol('nothing is there');
 
 type WhatTheStubDoes = AnAnswer | typeof NOTHING_IS_THERE;
+
+/**
+ * The calls that put an email in her inbox. `SignUp` sends the code that confirms the address, and
+ * `InitiateAuth` with a preferred challenge sends the code that signs her in. Nothing else the
+ * module calls sends anything.
+ */
+const THE_CALLS_THAT_SEND_AN_EMAIL = ['SignUp', 'InitiateAuth'];
+
+/** How many of the calls that went out reached her inbox. */
+function howManyEmails(went: readonly ACallThatWentOut[]): number {
+  return went.filter(
+    (each) =>
+      THE_CALLS_THAT_SEND_AN_EMAIL.includes(each.call) &&
+      // An `InitiateAuth` carrying a session is the sign in off a confirmation, and the service
+      // takes the code she already gave rather than sending another.
+      each.body.Session === undefined,
+  ).length;
+}
 
 /** The stub: a queue of answers, and the record of every call that was made. */
 function aService(answers: readonly WhatTheStubDoes[]) {
@@ -84,11 +110,35 @@ const refused = (type: string, message = ''): AnAnswer => ({
   said: { __type: `com.amazon.coral.service#${type}`, message },
 });
 
-/** The challenge the service hands back when the code is on its way to her address. */
-const theCodeIsOnItsWay = (session: string) =>
-  took({ ChallengeName: 'EMAIL_OTP', Session: session, ChallengeParameters: {} });
+/**
+ * The answer to a sign up, which carries the session the confirmation signs her in with. The
+ * service writes one for a pool that signs a woman in without a password.
+ */
+const sheIsSignedUp = took({
+  UserSub: 'a-subject',
+  UserConfirmed: false,
+  CodeDeliveryDetails: {
+    AttributeName: 'email',
+    DeliveryMedium: 'EMAIL',
+    Destination: 'i***@e***',
+  },
+  Session: 'the-sign-up-session',
+});
 
-/** The tokens the service hands back when she answered the code. */
+/** The answer to a confirmation, which carries the session that stands in for the code. */
+const sheIsConfirmed = took({ Session: 'the-confirmed-session' });
+
+/** The challenge the service hands back when the sign in code is on its way to her address. */
+const theSignInCodeIsOnItsWay = took({
+  ChallengeName: 'EMAIL_OTP',
+  Session: 'the-sign-in-session',
+  ChallengeParameters: {
+    CODE_DELIVERY_DELIVERY_MEDIUM: 'EMAIL',
+    CODE_DELIVERY_DESTINATION: 'i***@e***',
+  },
+});
+
+/** The tokens the service hands back when she is through. */
 const theTokens = took({
   AuthenticationResult: {
     IdToken: 'an-id-token',
@@ -99,7 +149,31 @@ const theTokens = took({
 
 const HER_ADDRESS = 'iuliia@example.com';
 
+/** The code that confirms a sign up, which the service writes six digits long. */
 const SIX_DIGITS = '482913';
+
+/** The code that signs her in, which the service writes eight digits long. */
+const EIGHT_DIGITS = '48291374';
+
+/** Her tokens out of an answer, where the answer is the one that signs her in. */
+function theTokensIn(answer: Awaited<ReturnType<typeof signInWithTheCode>>) {
+  if (answer.kind !== 'sheIsSignedIn') {
+    throw new Error(`She is not signed in: the answer was ${answer.kind}.`);
+  }
+
+  return answer.held;
+}
+
+/** The box she is left in front of, where the answer left her waiting rather than signed in. */
+function theBoxSheIsLeftWith(
+  answer: Awaited<ReturnType<typeof signInWithTheCode>>,
+): TheCodeSheWaitsFor {
+  if (answer.kind !== 'anotherCodeIsOnItsWay') {
+    throw new Error(`She was not left waiting: the answer was ${answer.kind}.`);
+  }
+
+  return answer.waitsFor;
+}
 
 describe('a woman signs in to myemi.app with a code sent to her address', () => {
   describe('the pool the site signs her in to', () => {
@@ -123,203 +197,425 @@ describe('a woman signs in to myemi.app with a code sent to her address', () => 
       expect(one).not.toBe(other);
       expect(one.toLowerCase()).not.toContain('iuliia');
     });
+
+    it('holds the two lengths the service sends, which are not the same length', () => {
+      expect(THE_SIGN_UP_CODE_IS_THIS_LONG).toBe(6);
+      expect(THE_SIGN_IN_CODE_IS_THIS_LONG).toBe(8);
+      expect(SIX_DIGITS).toHaveLength(THE_SIGN_UP_CODE_IS_THIS_LONG);
+      expect(EIGHT_DIGITS).toHaveLength(THE_SIGN_IN_CODE_IS_THIS_LONG);
+    });
   });
 
-  describe('she asks for a code', () => {
-    it('sends a code to an address that has never signed in, and leaves her waiting for it', async () => {
-      const service = aService([took({ UserSub: 'a-subject' }), theCodeIsOnItsWay('a-session')]);
+  describe('an address that has never signed in', () => {
+    it('sends her one email and nothing else, and leaves her waiting for six digits', async () => {
+      const service = aService([sheIsSignedUp]);
 
       const waiting = await askForACode(HER_ADDRESS, service.how);
 
-      expect(waiting).toEqual({ address: HER_ADDRESS, session: 'a-session' });
-      expect(service.went.map((each) => each.call)).toEqual(['SignUp', 'InitiateAuth']);
+      expect(service.went.map((each) => each.call)).toEqual(['SignUp']);
+      expect(howManyEmails(service.went)).toBe(1);
+      expect(waiting.digits).toBe(THE_SIGN_UP_CODE_IS_THIS_LONG);
+      expect(waiting.answers).toBe('theSignUpCode');
+      expect(waiting).toMatchObject({ address: HER_ADDRESS, session: 'the-sign-up-session' });
       expect(service.whatIsLeft()).toBe(0);
     });
 
-    it('sends a code to an address that has signed in before, and leaves her in the same place', async () => {
-      const service = aService([
-        refused('UsernameExistsException'),
-        theCodeIsOnItsWay('a-session'),
-      ]);
+    it('asks for her address and for no password, and names her user at random', async () => {
+      const service = aService([sheIsSignedUp]);
 
       const waiting = await askForACode(HER_ADDRESS, service.how);
-
-      expect(waiting).toEqual({ address: HER_ADDRESS, session: 'a-session' });
-      expect(service.went.map((each) => each.call)).toEqual(['SignUp', 'InitiateAuth']);
-    });
-
-    it('makes the same two calls for a new address and a known one, so neither can be told from the other', async () => {
-      const brandNew = aService([took({ UserSub: 'a-subject' }), theCodeIsOnItsWay('one')]);
-      const knownAlready = aService([refused('UsernameExistsException'), theCodeIsOnItsWay('two')]);
-
-      await askForACode(HER_ADDRESS, brandNew.how);
-      await askForACode(HER_ADDRESS, knownAlready.how);
-
-      const withoutTheUsername = (went: ACallThatWentOut[]) =>
-        went.map(({ call, body }) => ({ call, body: { ...body, Username: 'a-username' } }));
-
-      expect(withoutTheUsername(brandNew.went)).toEqual(withoutTheUsername(knownAlready.went));
-    });
-
-    it('asks for the code factor and never for a password', async () => {
-      const service = aService([took({}), theCodeIsOnItsWay('a-session')]);
-
-      await askForACode(HER_ADDRESS, service.how);
-
-      const [signUp, started] = service.went;
+      const [signUp] = service.went;
 
       expect(signUp?.body).not.toHaveProperty('Password');
-      expect(signUp?.body.UserAttributes).toEqual([{ Name: 'email', Value: HER_ADDRESS }]);
-      expect(started?.body).toEqual({
+      expect(signUp?.body).toMatchObject({
         ClientId: THE_WEBSITE_CLIENT_ID,
-        AuthFlow: 'USER_AUTH',
-        AuthParameters: { USERNAME: HER_ADDRESS, PREFERRED_CHALLENGE: 'EMAIL_OTP' },
+        Username: waiting.username,
+        UserAttributes: [{ Name: 'email', Value: HER_ADDRESS }],
       });
+      expect(waiting.username).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}$/);
       expect(JSON.stringify(service.went)).not.toContain('PASSWORD');
     });
 
-    it('says nothing reached the service when her browser reached nobody', async () => {
-      const service = aService([NOTHING_IS_THERE]);
+    it('takes the six digits she types and hands her the three tokens, with no second code', async () => {
+      const service = aService([sheIsSignedUp, sheIsConfirmed, theTokens]);
 
-      await expect(askForACode(HER_ADDRESS, service.how)).rejects.toMatchObject({
-        because: 'nothingReachedTheService',
-      });
-    });
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+      const answer = await signInWithTheCode(waiting, SIX_DIGITS, service.how);
 
-    it('says to wait when the service refuses to send another code', async () => {
-      const service = aService([
-        refused('UsernameExistsException'),
-        refused('LimitExceededException', 'Attempt limit exceeded, please try after some time.'),
-      ]);
-
-      await expect(askForACode(HER_ADDRESS, service.how)).rejects.toMatchObject({
-        because: 'tooManyTries',
-      });
-    });
-
-    it('refuses an answer that carries no session, because there would be nothing to answer with', async () => {
-      const service = aService([took({}), took({ ChallengeName: 'EMAIL_OTP' })]);
-
-      await expect(askForACode(HER_ADDRESS, service.how)).rejects.toBeInstanceOf(ASignInProblem);
-    });
-  });
-
-  describe('she answers the code', () => {
-    const waiting = { address: HER_ADDRESS, session: 'a-session' };
-
-    it('hands her the three tokens, from the session she was given', async () => {
-      const service = aService([theTokens]);
-
-      const held = await signInWithTheCode(waiting, SIX_DIGITS, service.how);
-
-      expect(held).toEqual({
+      expect(theTokensIn(answer)).toEqual({
         idToken: 'an-id-token',
         accessToken: 'an-access-token',
         refreshToken: 'a-refresh-token',
       });
-      expect(service.went[0]).toEqual({
-        call: 'RespondToAuthChallenge',
-        body: {
-          ClientId: THE_WEBSITE_CLIENT_ID,
-          ChallengeName: 'EMAIL_OTP',
-          Session: 'a-session',
-          ChallengeResponses: { USERNAME: HER_ADDRESS, EMAIL_OTP_CODE: SIX_DIGITS },
-        },
+      expect(service.went.map((each) => each.call)).toEqual([
+        'SignUp',
+        'ConfirmSignUp',
+        'InitiateAuth',
+      ]);
+      // One email for the whole sign in. The second call answers the code she was sent and the
+      // third signs her in off the session that answer carried.
+      expect(howManyEmails(service.went)).toBe(1);
+      expect(service.whatIsLeft()).toBe(0);
+    });
+
+    it('confirms her by the name the service knows her by, carrying the session it gave', async () => {
+      const service = aService([sheIsSignedUp, sheIsConfirmed, theTokens]);
+
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+
+      await signInWithTheCode(waiting, SIX_DIGITS, service.how);
+
+      const [, confirmed, signedIn] = service.went;
+
+      expect(confirmed?.body).toEqual({
+        ClientId: THE_WEBSITE_CLIENT_ID,
+        Username: waiting.username,
+        ConfirmationCode: SIX_DIGITS,
+        Session: 'the-sign-up-session',
+      });
+      expect(signedIn?.body).toEqual({
+        ClientId: THE_WEBSITE_CLIENT_ID,
+        AuthFlow: 'USER_AUTH',
+        AuthParameters: { USERNAME: waiting.username },
+        Session: 'the-confirmed-session',
       });
     });
 
-    it('says the code is wrong, and carries the session the service left open for the next try', async () => {
+    it('confirms her without a session where the service gave none, and sends the sign in code', async () => {
       const service = aService([
-        { status: 400, said: { __type: 'CodeMismatchException', Session: 'another-session' } },
+        took({ UserSub: 'a-subject', UserConfirmed: false }),
+        took({}),
+        theSignInCodeIsOnItsWay,
+        theTokens,
       ]);
 
-      await expect(signInWithTheCode(waiting, '000000', service.how)).rejects.toMatchObject({
-        because: 'theCodeIsWrong',
-        tryAgainWith: 'another-session',
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+
+      expect(waiting.session).toBe('');
+
+      const left = theBoxSheIsLeftWith(await signInWithTheCode(waiting, SIX_DIGITS, service.how));
+
+      expect(service.went[1]?.body).not.toHaveProperty('Session');
+      expect(left.digits).toBe(THE_SIGN_IN_CODE_IS_THIS_LONG);
+      expect(theTokensIn(await signInWithTheCode(left, EIGHT_DIGITS, service.how))).toMatchObject({
+        idToken: 'an-id-token',
       });
     });
+  });
 
-    it('says the code has expired', async () => {
-      const service = aService([refused('ExpiredCodeException')]);
+  describe('an address that already has a user', () => {
+    it('is signed up the same way, because the service refuses nothing until she proves the address', async () => {
+      const brandNew = aService([sheIsSignedUp]);
+      const knownAlready = aService([sheIsSignedUp]);
 
-      await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toMatchObject({
-        because: 'theCodeHasExpired',
-      });
+      await askForACode(HER_ADDRESS, brandNew.how);
+      await askForACode(HER_ADDRESS, knownAlready.how);
+
+      // The username is the one value that differs, and it is written at random, so it carries
+      // nothing about her and nothing about which of the two she was.
+      const withoutTheUsername = (went: ACallThatWentOut[]) =>
+        went.map(({ call, body }) => ({ call, body: { ...body, Username: 'a-username' } }));
+
+      expect(withoutTheUsername(brandNew.went)).toEqual(withoutTheUsername(knownAlready.went));
+      expect(String(brandNew.went[0]?.body.Username)).not.toBe(
+        String(knownAlready.went[0]?.body.Username),
+      );
     });
 
-    it('says the code has expired when the service closed the session it was answered in', async () => {
+    it('sends her the sign in code once she types the first one, and takes eight digits', async () => {
       const service = aService([
-        refused('NotAuthorizedException', 'Invalid session for the user, session is expired.'),
+        sheIsSignedUp,
+        refused('AliasExistsException', 'An account with the email already exists.'),
+        theSignInCodeIsOnItsWay,
+        theTokens,
       ]);
 
-      await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toMatchObject({
-        because: 'theCodeHasExpired',
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+      const left = theBoxSheIsLeftWith(await signInWithTheCode(waiting, SIX_DIGITS, service.how));
+
+      expect(left).toEqual({
+        address: HER_ADDRESS,
+        username: '',
+        session: 'the-sign-in-session',
+        digits: THE_SIGN_IN_CODE_IS_THIS_LONG,
+        answers: 'theSignInCode',
       });
+
+      const answer = await signInWithTheCode(left, EIGHT_DIGITS, service.how);
+
+      expect(theTokensIn(answer)).toEqual({
+        idToken: 'an-id-token',
+        accessToken: 'an-access-token',
+        refreshToken: 'a-refresh-token',
+      });
+      expect(service.went.map((each) => each.call)).toEqual([
+        'SignUp',
+        'ConfirmSignUp',
+        'InitiateAuth',
+        'RespondToAuthChallenge',
+      ]);
+      expect(service.whatIsLeft()).toBe(0);
     });
 
-    it('says to wait when she has tried too many times', async () => {
-      const service = aService([refused('TooManyFailedAttemptsException')]);
+    it('asks for the code factor and for no password, and answers with the address she typed', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        refused('AliasExistsException'),
+        theSignInCodeIsOnItsWay,
+        theTokens,
+      ]);
+
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+      const left = theBoxSheIsLeftWith(await signInWithTheCode(waiting, SIX_DIGITS, service.how));
+
+      await signInWithTheCode(left, EIGHT_DIGITS, service.how);
+
+      const [, , asked, answered] = service.went;
+
+      expect(asked?.body).toEqual({
+        ClientId: THE_WEBSITE_CLIENT_ID,
+        AuthFlow: 'USER_AUTH',
+        AuthParameters: { USERNAME: HER_ADDRESS, PREFERRED_CHALLENGE: 'EMAIL_OTP' },
+      });
+      expect(answered?.body).toEqual({
+        ClientId: THE_WEBSITE_CLIENT_ID,
+        ChallengeName: 'EMAIL_OTP',
+        Session: 'the-sign-in-session',
+        ChallengeResponses: { USERNAME: HER_ADDRESS, EMAIL_OTP_CODE: EIGHT_DIGITS },
+      });
+      expect(JSON.stringify(service.went)).not.toContain('PASSWORD');
+    });
+
+    it('sends one email for each code, and never two at once', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        refused('AliasExistsException'),
+        theSignInCodeIsOnItsWay,
+        theTokens,
+      ]);
+
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+
+      // The one call that went out is the one that emailed her. Asking for a code used to send
+      // two, and the second of the two was the one she could answer.
+      expect(howManyEmails(service.went)).toBe(1);
+
+      const left = theBoxSheIsLeftWith(await signInWithTheCode(waiting, SIX_DIGITS, service.how));
+
+      expect(howManyEmails(service.went)).toBe(2);
+
+      await signInWithTheCode(left, EIGHT_DIGITS, service.how);
+
+      // Answering the second code sends nothing, so the whole run emailed her twice: once for the
+      // address, and once to sign her in.
+      expect(howManyEmails(service.went)).toBe(2);
+    });
+
+    it('says to wait where the service refuses to send the sign in code', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        refused('AliasExistsException'),
+        refused('LimitExceededException', 'Attempt limit exceeded, please try after some time.'),
+      ]);
+
+      const waiting = await askForACode(HER_ADDRESS, service.how);
 
       await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toMatchObject({
         because: 'tooManyTries',
       });
     });
 
-    it('says nothing reached the service when her browser reached nobody', async () => {
-      const service = aService([NOTHING_IS_THERE]);
+    it('refuses a challenge that carries no session, because there would be nothing to answer with', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        refused('AliasExistsException'),
+        took({ ChallengeName: 'EMAIL_OTP' }),
+      ]);
 
-      await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toMatchObject({
-        because: 'nothingReachedTheService',
-      });
-    });
-
-    it('refuses an answer that carries no tokens, so no empty session is ever held', async () => {
-      const service = aService([took({ AuthenticationResult: { IdToken: 'one' } })]);
+      const waiting = await askForACode(HER_ADDRESS, service.how);
 
       await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toBeInstanceOf(
         ASignInProblem,
       );
     });
+  });
 
-    it('answers the code that is six digits long, which is the length the words promise', () => {
-      expect(THE_CODE_IS_THIS_LONG).toBe(6);
-      expect(SIX_DIGITS).toHaveLength(THE_CODE_IS_THIS_LONG);
+  describe('a code she typed wrong', () => {
+    it('leaves a sign up code answerable again, on the session she is holding', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        refused('CodeMismatchException'),
+        sheIsConfirmed,
+        theTokens,
+      ]);
+
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+
+      await expect(signInWithTheCode(waiting, '000000', service.how)).rejects.toMatchObject({
+        because: 'theCodeIsWrong',
+        tryAgainWith: undefined,
+      });
+
+      // The refusal closed nothing, so the session she was holding answers the next try, and it
+      // sent her no second email.
+      expect(theTokensIn(await signInWithTheCode(waiting, SIX_DIGITS, service.how))).toMatchObject({
+        idToken: 'an-id-token',
+      });
+      expect(service.went.at(-2)?.body).toMatchObject({ Session: 'the-sign-up-session' });
+      expect(howManyEmails(service.went)).toBe(1);
+    });
+
+    it('carries the fresh session the service left open for a sign in code', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        refused('AliasExistsException'),
+        theSignInCodeIsOnItsWay,
+        { status: 400, said: { __type: 'CodeMismatchException', Session: 'another-session' } },
+      ]);
+
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+      const left = theBoxSheIsLeftWith(await signInWithTheCode(waiting, SIX_DIGITS, service.how));
+
+      await expect(signInWithTheCode(left, '00000000', service.how)).rejects.toMatchObject({
+        because: 'theCodeIsWrong',
+        tryAgainWith: 'another-session',
+      });
+    });
+
+    it('says the code has expired, and says it for the session the service closed', async () => {
+      const expired: readonly AnAnswer[] = [
+        refused('ExpiredCodeException'),
+        refused('NotAuthorizedException', 'Invalid session for the user, session is expired.'),
+      ];
+
+      for (const answer of expired) {
+        const forTheSignUp = aService([sheIsSignedUp, answer]);
+        const waiting = await askForACode(HER_ADDRESS, forTheSignUp.how);
+
+        await expect(
+          signInWithTheCode(waiting, SIX_DIGITS, forTheSignUp.how),
+        ).rejects.toMatchObject({ because: 'theCodeHasExpired' });
+
+        const forTheSignIn = aService([answer]);
+
+        await expect(
+          signInWithTheCode(
+            {
+              address: HER_ADDRESS,
+              username: '',
+              session: 'the-sign-in-session',
+              digits: THE_SIGN_IN_CODE_IS_THIS_LONG,
+              answers: 'theSignInCode',
+            },
+            EIGHT_DIGITS,
+            forTheSignIn.how,
+          ),
+        ).rejects.toMatchObject({ because: 'theCodeHasExpired' });
+      }
+    });
+
+    it('says to wait when she has tried too many times', async () => {
+      const service = aService([sheIsSignedUp, refused('TooManyFailedAttemptsException')]);
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+
+      await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toMatchObject({
+        because: 'tooManyTries',
+      });
+    });
+
+    it('refuses an answer that carries no tokens, so no empty session is ever held', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        sheIsConfirmed,
+        took({ AuthenticationResult: { IdToken: 'one' } }),
+      ]);
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+
+      await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toBeInstanceOf(
+        ASignInProblem,
+      );
+    });
+  });
+
+  describe('a browser that reached nobody', () => {
+    it('says so when she asks for a code', async () => {
+      const service = aService([NOTHING_IS_THERE]);
+
+      await expect(askForACode(HER_ADDRESS, service.how)).rejects.toMatchObject({
+        because: 'nothingReachedTheService',
+      });
+    });
+
+    it('says so when she answers one', async () => {
+      const service = aService([sheIsSignedUp, NOTHING_IS_THERE]);
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+
+      await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toMatchObject({
+        because: 'nothingReachedTheService',
+      });
     });
   });
 
   describe('she sends a new code, and she uses another address', () => {
-    it('sends a new code on the same address, and the second session replaces the first', async () => {
+    it('sends a new sign up code, and the second session replaces the first', async () => {
       const service = aService([
-        refused('UsernameExistsException'),
-        theCodeIsOnItsWay('one'),
-        refused('UsernameExistsException'),
-        theCodeIsOnItsWay('two'),
+        sheIsSignedUp,
+        took({ UserSub: 'a-subject', Session: 'a-second-sign-up-session' }),
+        sheIsConfirmed,
         theTokens,
       ]);
 
       const first = await askForACode(HER_ADDRESS, service.how);
-      const second = await askForACode(HER_ADDRESS, service.how);
+      const second = await sendHerAnotherCode(first, service.how);
 
-      expect([first.session, second.session]).toEqual(['one', 'two']);
+      expect([first.session, second.session]).toEqual([
+        'the-sign-up-session',
+        'a-second-sign-up-session',
+      ]);
+      expect(second.digits).toBe(THE_SIGN_UP_CODE_IS_THIS_LONG);
+      expect(service.went.map((each) => each.call)).toEqual(['SignUp', 'SignUp']);
 
       await signInWithTheCode(second, SIX_DIGITS, service.how);
 
-      expect(service.went.at(-1)?.body).toMatchObject({ Session: 'two' });
+      expect(service.went.at(-2)?.body).toMatchObject({ Session: 'a-second-sign-up-session' });
+    });
+
+    it('sends a new sign in code the way the sign in code was sent, and not by signing her up', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        refused('AliasExistsException'),
+        theSignInCodeIsOnItsWay,
+        took({ ChallengeName: 'EMAIL_OTP', Session: 'a-second-sign-in-session' }),
+        theTokens,
+      ]);
+
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+      const left = theBoxSheIsLeftWith(await signInWithTheCode(waiting, SIX_DIGITS, service.how));
+      const again = await sendHerAnotherCode(left, service.how);
+
+      expect(service.went.map((each) => each.call)).toEqual([
+        'SignUp',
+        'ConfirmSignUp',
+        'InitiateAuth',
+        'InitiateAuth',
+      ]);
+      expect(again.session).toBe('a-second-sign-in-session');
+      expect(again.digits).toBe(THE_SIGN_IN_CODE_IS_THIS_LONG);
+
+      await signInWithTheCode(again, EIGHT_DIGITS, service.how);
+
+      expect(service.went.at(-1)?.body).toMatchObject({ Session: 'a-second-sign-in-session' });
     });
 
     it('starts again on another address, and answers with that address and not the first', async () => {
-      const service = aService([
-        took({ UserSub: 'a-subject' }),
-        theCodeIsOnItsWay('a-session'),
-        theTokens,
-      ]);
+      const service = aService([sheIsSignedUp, sheIsConfirmed, theTokens]);
 
       const waiting = await askForACode('another@example.com', service.how);
 
       await signInWithTheCode(waiting, SIX_DIGITS, service.how);
 
-      expect(service.went.at(-1)?.body).toMatchObject({
-        ChallengeResponses: { USERNAME: 'another@example.com', EMAIL_OTP_CODE: SIX_DIGITS },
+      expect(service.went[0]?.body).toMatchObject({
+        UserAttributes: [{ Name: 'email', Value: 'another@example.com' }],
       });
       expect(JSON.stringify(service.went)).not.toContain(HER_ADDRESS);
     });
@@ -356,15 +652,14 @@ describe('a woman signs in to myemi.app with a code sent to her address', () => 
 
   describe('what never leaves her browser', () => {
     it('never puts her address, her code or a token into the words of a problem', async () => {
-      const service = aService([
-        refused('UsernameExistsException'),
-        refused('CodeMismatchException'),
-      ]);
+      const service = aService([sheIsSignedUp, refused('CodeMismatchException')]);
 
       let problem: ASignInProblem | null = null;
 
       try {
-        await askForACode(HER_ADDRESS, service.how);
+        const waiting = await askForACode(HER_ADDRESS, service.how);
+
+        await signInWithTheCode(waiting, SIX_DIGITS, service.how);
       } catch (raised) {
         problem = raised as ASignInProblem;
       }
