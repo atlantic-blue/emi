@@ -50,8 +50,9 @@ sign in function runs as the first one. The three triggers share the second. The
 with Telegram below says what each one reads and what each one deliberately cannot.
 
 One Amazon Cognito user pool, `emi-accounts`, with two app clients: `emi-iphone` and
-`emi-website`. The pool is on the Essentials tier, which is the cheapest one that carries the
-email one time code. It holds an email address, a subject and the way she signed in. It holds no
+`emi-website`. The pool names the three triggers of the custom sign in, and both clients allow the
+custom flow. The pool is on the Essentials tier, which is the cheapest one that carries the email
+one time code. It holds an email address, a subject and the way she signed in. It holds no
 vault key, no day and no account identifier.
 
 The pool bills by monthly active user. Ten thousand of those are free each month, and the next one
@@ -285,10 +286,32 @@ invoke one. `TheProjectRoles` already makes a role of Emi and hands it to a func
 `TheUserPool` already sets the triggers on the pool. The infrastructure test holds each of those
 three as a rule, so a change that narrows one of them fails here rather than in an apply.
 
-One grant is still deliberately absent, and the piece that needs it adds it. The pool invokes each
-trigger through a policy on the function, and the pool does not name the triggers yet. That piece
-sets the triggers on the pool, adds the custom flow to each client, and carries the invoke policy
-with them.
+#### The pool calls three triggers, and both clients allow the custom flow
+
+The pool names three triggers: `emi-sign-in-challenge-define`, `emi-sign-in-challenge-create` and
+`emi-sign-in-challenge-verify`. The define trigger is the state machine. The create trigger issues a
+challenge and asks her nothing, because she holds the answer already. The verify trigger spends that
+answer once. Each one is named through the resource that makes it, so an apply cannot point the pool
+at a function the account does not hold.
+
+Each function carries a policy that lets this pool invoke it, and nothing else. The principal is
+`cognito-idp.amazonaws.com`, and the source address is the address of `emi-accounts`. So no other
+pool of this account, and no pool of another account, may call a function of Emi.
+
+Both clients list `ALLOW_CUSTOM_AUTH` beside `ALLOW_USER_AUTH` and `ALLOW_REFRESH_TOKEN_AUTH`. A
+client without the custom flow cannot answer a challenge of the pool at all. Neither client lost a
+flow, so the code sent to her address still signs her in.
+
+`sign_in_policy` did not change. A custom challenge is not a first factor of choice based sign in,
+so the two factors stay `PASSWORD` and `EMAIL_OTP`.
+
+Sign in with Apple and Sign in with Google are untouched. Amazon Cognito says that federated sign in
+invokes no custom authentication trigger, so these three cannot change what a federated sign in
+does.
+
+Every grant this needs was already there. The apply role sets the triggers through
+`cognito-idp:UpdateUserPool`, and it adds a policy to a function through `lambda:AddPermission`, in
+the functions of Emi alone. So no grant landed with this piece.
 
 ### One grant is wider than the rule of this repository
 

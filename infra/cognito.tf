@@ -67,6 +67,25 @@ resource "aws_cognito_user_pool" "accounts" {
     configuration_set     = aws_sesv2_configuration_set.sender.configuration_set_name
   }
 
+  # The three triggers of the custom sign in, which is the one way in the pool cannot run on its
+  # own. Sign in with Telegram authenticates her outside the pool, and the custom sign in is what
+  # turns that into tokens of this pool. The define trigger is the state machine, the create
+  # trigger issues a challenge she already holds the answer to, and the verify trigger spends that
+  # answer once.
+  #
+  # Federated sign in invokes no custom authentication trigger, so Sign in with Apple and Sign in
+  # with Google reach none of these three.
+  #
+  # Each one is named through the resource that makes it, so Terraform makes the function before
+  # the pool names it. An address written as text here would let an apply point the pool at a
+  # function the account does not hold, and the pool refuses every sign in that reaches a trigger
+  # it cannot invoke.
+  lambda_config {
+    define_auth_challenge          = aws_lambda_function.sign_in_challenge_define.arn
+    create_auth_challenge          = aws_lambda_function.sign_in_challenge_create.arn
+    verify_auth_challenge_response = aws_lambda_function.sign_in_challenge_verify.arn
+  }
+
   # The pool is made in the same apply that grants the role the right to make it, and the two are
   # otherwise unrelated, so the order is said here. The identity is named for the same reason the
   # other way round: the pool may not carry a sender that does not exist yet.
@@ -77,6 +96,36 @@ resource "aws_cognito_user_pool" "accounts" {
   depends_on = [aws_iam_role_policy.apply, aws_sesv2_email_identity.sender]
 }
 
+# ── The three triggers the pool invokes ──────────────────────────────────────
+#
+# A function refuses a caller that no policy on it names, so the pool cannot run a trigger until
+# each one carries this. The principal is the service, and the source address is this pool, so no
+# other pool of this account and no pool of another account may invoke a function of Emi.
+
+resource "aws_lambda_permission" "sign_in_challenge_define" {
+  statement_id  = "AllowInvokeFromThePool"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.sign_in_challenge_define.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.accounts.arn
+}
+
+resource "aws_lambda_permission" "sign_in_challenge_create" {
+  statement_id  = "AllowInvokeFromThePool"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.sign_in_challenge_create.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.accounts.arn
+}
+
+resource "aws_lambda_permission" "sign_in_challenge_verify" {
+  statement_id  = "AllowInvokeFromThePool"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.sign_in_challenge_verify.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.accounts.arn
+}
+
 # The application on her phone. A public client, because an application on a phone keeps no secret.
 resource "aws_cognito_user_pool_client" "iphone" {
   name         = "${var.project_name}-iphone"
@@ -84,9 +133,11 @@ resource "aws_cognito_user_pool_client" "iphone" {
 
   generate_secret = false
 
-  # Choice based sign in is the only flow a one time code travels in. The refresh keeps her signed
-  # in. No password flow is listed, so a client cannot present a password even if one existed.
-  explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+  # Choice based sign in is the only flow a one time code travels in. The custom flow is the one
+  # Sign in with Telegram starts, and the three triggers above carry it. The refresh keeps her
+  # signed in. No password flow is listed, so a client cannot present a password even if one
+  # existed.
+  explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]
 
   # An email takes minutes to arrive, so the session that carries a code lasts the longest the
   # service allows.
@@ -125,8 +176,9 @@ resource "aws_cognito_user_pool_client" "website" {
 
   # The code sent to her address travels in ALLOW_USER_AUTH, and the site signs a woman in that way
   # today. A client that lost this flow would lose that sign in, so it stays beside the two flows
-  # the providers need.
-  explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]
+  # the providers need. ALLOW_CUSTOM_AUTH is the flow Sign in with Telegram starts, and a client
+  # without it cannot answer a challenge of the pool at all.
+  explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]
 
   # The three ways the site offers. COGNITO is the pool itself, which is the code sent to her
   # address, and the service reads this list as the whole set a client may use: a list without

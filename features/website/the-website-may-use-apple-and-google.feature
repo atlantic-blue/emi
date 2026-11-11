@@ -47,7 +47,7 @@ Feature: The site may sign her in with Apple and with Google
     Given the sign in the pool offers
     When the client her phone signs her in with is read
     Then it offers no provider and names no return address
-    And it allows the same two flows it allowed before
+    And it allows the code flow, the refresh and the custom flow
 
   Scenario: a scope outside the subject and the address is refused
     Given the sign in the pool offers

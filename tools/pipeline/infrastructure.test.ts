@@ -22,6 +22,7 @@ import {
 import {
   credentialValuesIn,
   pairsIn,
+  theCodeSignInFlow,
   theSiteAddress,
   theWaysAClientOffers,
   websiteSignInProblems,
@@ -1839,10 +1840,11 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(inClient(name)).toContain('generate_secret = false');
     });
 
-    it.each(clients)('lets the %s client start a code sign in and refresh, and no more', (name) => {
+    it.each(clients)('lets the %s client start a code sign in, refresh, and no more', (name) => {
       expect(listedIn(inClient(name), 'explicit_auth_flows')).toEqual([
         'ALLOW_USER_AUTH',
         'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_CUSTOM_AUTH',
       ]);
     });
 
@@ -1979,8 +1981,8 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(
         websiteSignInProblems(
           configuration.replace(
-            'explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH"]\n\n  # The three ways',
-            'explicit_auth_flows = ["ALLOW_REFRESH_TOKEN_AUTH"]\n\n  # The three ways',
+            'explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]\n\n  # The three ways',
+            'explicit_auth_flows = ["ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]\n\n  # The three ways',
           ),
           languages,
         ),
@@ -2977,6 +2979,204 @@ describe('the keys the Telegram sign in may read, and the two roles that reach t
       ).toEqual([]);
       expect(writtenSecretsIn('a/rule.ts', "const markers = ['GOCSPX'];\n")).toEqual([]);
       expect(writtenSecretsIn('infra/README.md', 'the bot identifier 9068004348\n')).toEqual([]);
+    });
+  });
+});
+
+// The custom sign in is the one way in a user pool cannot run on its own. Sign in with Telegram
+// authenticates her outside the pool, and these three triggers turn that answer into tokens of the
+// pool.
+//
+// Each trigger is named through the resource that makes it, so an apply cannot point the pool at a
+// function the account does not hold.
+describe('the triggers on the pool, and the custom flow on both clients', () => {
+  const readme = read('infra/README.md');
+  const pool = bodyOf('resource "aws_cognito_user_pool" "accounts"');
+  const triggers = pairsIn(blockBodyOf(pool, 'lambda_config'));
+  const bothClients = ['iphone', 'website'] as const;
+  const threeTriggers = ['define', 'create', 'verify'] as const;
+  const theCustomFlow = 'ALLOW_CUSTOM_AUTH';
+  const theRefreshFlow = 'ALLOW_REFRESH_TOKEN_AUTH';
+
+  const client = (name: string): string =>
+    bodyOf(`resource "aws_cognito_user_pool_client" "${name}"`);
+
+  const flowsOf = (name: string): string[] => listedIn(client(name), 'explicit_auth_flows');
+
+  const theFunction = (trigger: string): Record<string, string> =>
+    pairsIn(bodyOf(`resource "aws_lambda_function" "sign_in_challenge_${trigger}"`));
+
+  const permission = (trigger: string): Record<string, string> =>
+    pairsIn(bodyOf(`resource "aws_lambda_permission" "sign_in_challenge_${trigger}"`));
+
+  /** Every invoke policy of this configuration, by the name of the resource that makes it. */
+  const permissionsNamed = (): string[] =>
+    [...configuration.matchAll(/resource "aws_lambda_permission" "([a-z_]+)"/g)].flatMap((found) =>
+      found[1] === undefined ? [] : [found[1]],
+    );
+
+  describe('the pool names the three triggers, each at the address of its function', () => {
+    it('names the define trigger, which is the state machine of the sign in', () => {
+      expect(triggers.define_auth_challenge).toBe(
+        'aws_lambda_function.sign_in_challenge_define.arn',
+      );
+    });
+
+    it('names the create trigger, which issues a challenge she holds the answer to', () => {
+      expect(triggers.create_auth_challenge).toBe(
+        'aws_lambda_function.sign_in_challenge_create.arn',
+      );
+    });
+
+    it('names the verify trigger, which spends the one time answer', () => {
+      expect(triggers.verify_auth_challenge_response).toBe(
+        'aws_lambda_function.sign_in_challenge_verify.arn',
+      );
+    });
+
+    it('names no other trigger, so the pool calls nothing on a sign up or on a token', () => {
+      expect(Object.keys(triggers).sort()).toEqual([
+        'create_auth_challenge',
+        'define_auth_challenge',
+        'verify_auth_challenge_response',
+      ]);
+    });
+
+    // A resource reference makes the function before the pool names it. An address written as
+    // text would let an apply point the pool at a function the account does not hold.
+    it('names each one through the resource that makes it, and none of them as text', () => {
+      for (const address of Object.values(triggers)) {
+        expect(address).toMatch(/^aws_lambda_function\.sign_in_challenge_[a-z]+\.arn$/);
+      }
+    });
+
+    it('reaches a function of Emi that this root makes', () => {
+      for (const trigger of threeTriggers) {
+        expect(valueOf(configuration, theFunction(trigger).function_name ?? '')).toBe(
+          `${defaultOf('project_name')}-sign-in-challenge-${trigger}`,
+        );
+      }
+    });
+  });
+
+  describe('both clients allow the custom flow, and neither one lost a flow', () => {
+    it.each(bothClients)('lets the %s client start the custom sign in', (name) => {
+      expect(flowsOf(name)).toContain(theCustomFlow);
+    });
+
+    // The code sent to her address signs a woman in today. A client that lost that flow would lose
+    // a sign in that works, so the custom flow is added beside it and replaces nothing.
+    it.each(bothClients)('keeps the flow the code travels in on the %s client', (name) => {
+      expect(flowsOf(name)).toContain(theCodeSignInFlow);
+      expect(flowsOf(name)).toContain(theRefreshFlow);
+    });
+
+    it.each(bothClients)('allows no password flow on the %s client, which 28.2 settled', (name) => {
+      expect(flowsOf(name).join(' ')).not.toContain('PASSWORD');
+    });
+
+    it('still meets every rule of the sign in of the site', () => {
+      expect(websiteSignInProblems(configuration, languages)).toEqual([]);
+    });
+  });
+
+  describe('the first factors and the recovery are the ones 28.2 settled', () => {
+    it('allows the same two first factors, because a custom challenge is not one', () => {
+      expect(listedIn(blockBodyOf(pool, 'sign_in_policy'), 'allowed_first_auth_factors')).toEqual([
+        'PASSWORD',
+        'EMAIL_OTP',
+      ]);
+    });
+
+    it('asks for no second factor, and recovers through an administrator alone', () => {
+      expect(pool).toContain('mfa_configuration = "OFF"');
+      expect(blockBodyOf(pool, 'recovery_mechanism')).toContain('name     = "admin_only"');
+    });
+
+    it('declares no attribute, so a trigger of the pool reads nothing of her', () => {
+      expect(pool).not.toContain('schema {');
+      expect(configuration).not.toContain('custom:');
+    });
+
+    // Amazon Cognito says that federated sign in invokes no custom authentication trigger, so
+    // these three cannot change what Sign in with Apple or Sign in with Google does.
+    it('offers both providers on the website client, which the triggers cannot reach', () => {
+      expect(listedIn(client('website'), 'supported_identity_providers')).toEqual([
+        'COGNITO',
+        'aws_cognito_identity_provider.apple.provider_name',
+        'aws_cognito_identity_provider.google.provider_name',
+      ]);
+    });
+  });
+
+  describe('only this pool may invoke a trigger', () => {
+    it.each(threeTriggers)(
+      'lets the service invoke the %s trigger, and no other action',
+      (name) => {
+        expect(valueOf(configuration, permission(name).action ?? '')).toBe('lambda:InvokeFunction');
+        expect(valueOf(configuration, permission(name).principal ?? '')).toBe(
+          'cognito-idp.amazonaws.com',
+        );
+      },
+    );
+
+    // A policy with no source address lets every pool of every account invoke the function, and
+    // the service accepts one. So the address is the whole narrowing, and it names this pool.
+    it.each(threeTriggers)('names this pool on the %s trigger', (name) => {
+      expect(permission(name).source_arn).toBe('aws_cognito_user_pool.accounts.arn');
+    });
+
+    it.each(threeTriggers)('names the %s function of this account', (name) => {
+      expect(permission(name).function_name).toBe(
+        `aws_lambda_function.sign_in_challenge_${name}.function_name`,
+      );
+      expect(defaultOf('account_id')).toBe('230345688874');
+    });
+
+    it('carries one policy for each trigger, and no fourth one', () => {
+      expect(permissionsNamed().filter((name) => name.startsWith('sign_in_challenge_'))).toEqual([
+        'sign_in_challenge_define',
+        'sign_in_challenge_create',
+        'sign_in_challenge_verify',
+      ]);
+    });
+  });
+
+  describe('the apply role needed nothing new, and the readme says what changed', () => {
+    it('already sets the triggers, through the statement that changes one pool', () => {
+      expect(
+        statementsReaching(statementsIn(applyPolicy), 'cognito-idp:UpdateUserPool').map(
+          (statement) => statement.sid,
+        ),
+      ).toEqual(['TheUserPool']);
+    });
+
+    it('already adds a policy to a function, in the functions of Emi alone', () => {
+      expect(
+        statementsReaching(statementsIn(applyPolicy), 'lambda:AddPermission').map((statement) =>
+          statement.resources.map((resource) => resolved(configuration, resource)),
+        ),
+      ).toEqual([
+        [`arn:aws:lambda:*:${defaultOf('account_id')}:function:${defaultOf('project_name')}-*`],
+      ]);
+    });
+
+    it('lets a pull request read the policy of a function and write none', () => {
+      expect(statementsReaching(statementsIn(planPolicy), 'lambda:GetPolicy')).not.toEqual([]);
+      expect(statementsReaching(statementsIn(planPolicy), 'lambda:AddPermission')).toEqual([]);
+    });
+
+    it('says the pool calls three triggers, and that both clients allow the custom flow', () => {
+      for (const trigger of threeTriggers) {
+        expect(readme).toContain(`${defaultOf('project_name')}-sign-in-challenge-${trigger}`);
+      }
+
+      expect(readme).toContain(theCustomFlow);
+      expect(readme).toContain('cognito-idp.amazonaws.com');
+    });
+
+    it('holds no secret in the file the pool is written in, because this repository is public', () => {
+      expect(credentialValuesIn(read('infra/cognito.tf'))).toEqual([]);
     });
   });
 });
