@@ -47,7 +47,7 @@ defineFeature(feature, (test) => {
           'explicit_auth_flows',
         );
 
-        expect(flows).toEqual(['ALLOW_USER_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH']);
+        expect(flows).toEqual(['ALLOW_USER_AUTH', 'ALLOW_REFRESH_TOKEN_AUTH', 'ALLOW_CUSTOM_AUTH']);
         expect(flows.join(' ')).not.toContain('PASSWORD');
       }
     });

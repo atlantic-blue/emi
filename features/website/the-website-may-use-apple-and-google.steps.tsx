@@ -74,6 +74,7 @@ defineFeature(feature, (test) => {
       expect(listedIn(client, 'explicit_auth_flows')).toEqual([
         theCodeSignInFlow,
         'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_CUSTOM_AUTH',
       ]);
     });
   });
@@ -147,10 +148,11 @@ defineFeature(feature, (test) => {
       expect(listedIn(client, 'allowed_oauth_scopes')).toEqual([]);
     });
 
-    and('it allows the same two flows it allowed before', () => {
+    and('it allows the code flow, the refresh and the custom flow', () => {
       expect(listedIn(client, 'explicit_auth_flows')).toEqual([
         theCodeSignInFlow,
         'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_CUSTOM_AUTH',
       ]);
     });
   });
@@ -217,8 +219,8 @@ defineFeature(feature, (test) => {
     when('the client loses the flow the code travels in', () => {
       said = websiteSignInProblems(
         changed(
-          `explicit_auth_flows = ["${theCodeSignInFlow}", "ALLOW_REFRESH_TOKEN_AUTH"]\n\n  # The three ways`,
-          'explicit_auth_flows = ["ALLOW_REFRESH_TOKEN_AUTH"]\n\n  # The three ways',
+          `explicit_auth_flows = ["${theCodeSignInFlow}", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]\n\n  # The three ways`,
+          'explicit_auth_flows = ["ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]\n\n  # The three ways',
         ),
         languages,
       );
