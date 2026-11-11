@@ -1,19 +1,19 @@
 import { websiteColour, websiteMarkColour } from '@emi/tokens';
 
 /**
- * The mark of Apple and the mark of Google, each as the approved board draws it in
- * `docs/design/website/sign-in/boards/SignIn.dc.html`.
+ * The mark of Apple, the mark of Google and the mark of Telegram, each as the approved board
+ * draws it in `docs/design/website/sign-in/boards/SignIn.dc.html`.
  *
- * Each company fixes its own mark and publishes how it may be drawn, so neither one is redrawn
- * here and neither one is painted in a colour of Emi. The outlines, the canvas and the sizes are
- * the board's, byte for byte, and the browser scenario holds each press against the board.
+ * Each company fixes its own mark and publishes how it may be drawn, so none is redrawn here and
+ * none is painted in a colour of Emi. The outlines, the canvas and the sizes are the board's,
+ * byte for byte, and the browser scenario holds each press against the board.
  *
  * They travel in the markup rather than as a file, for the reason the mark of Emi does: the
  * element Next.js offers for a picture writes a style on itself, and the content policy of this
  * site refuses a style written on an element.
  *
- * Neither mark is named for a reader's software. The words beside it say which press it is, and a
- * name on the mark would have her software read the company twice.
+ * No mark is named for a reader's software. The words beside it say which press it is, and a name
+ * on the mark would have her software read the company twice.
  */
 
 /** Apple asks for its mark in white, which is the ground a card of this site sits on. */
@@ -48,6 +48,30 @@ export function TheMarkOfGoogle() {
         d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
         fill={websiteMarkColour.markGoogleGreen}
       />
+    </svg>
+  );
+}
+
+/**
+ * Telegram is drawn as the board draws it, which is a paper plane in two strokes rather than the
+ * disc of the company. The board paints it in the colour of the words beside it, so the press sits
+ * on the tint of Emi and carries no second brand colour.
+ */
+export function TheMarkOfTelegram() {
+  return (
+    <svg
+      aria-hidden
+      fill="none"
+      height="20"
+      stroke={websiteColour.siteText}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.75"
+      viewBox="0 0 24 24"
+      width="20"
+    >
+      <path d="M21 4L3 11l6 2 2 6 3-4 5 4 2-15z" />
+      <path d="M9 13l8-6" />
     </svg>
   );
 }

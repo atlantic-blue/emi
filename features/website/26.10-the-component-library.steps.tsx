@@ -88,6 +88,25 @@ const thePoolThatSignsHerIn = 'https://cognito-idp.eu-central-1.amazonaws.com';
  */
 const theAddressThePoolAnswersOn = 'https://auth.myemi.app';
 
+/**
+ * The sixth, which is the api of Emi. The sign in function answers the code Telegram sends her
+ * back with, and the content policy of the site names this host so her browser may reach it. It
+ * is the account of Emi in Amazon Web Services rather than another company's service.
+ *
+ * The whole address rather than the host, so any other api of that region is still refused.
+ */
+const theApiThatSignsHerIn = 'https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com';
+
+/**
+ * The seventh, and the one address of another company a page really names. Her browser leaves the
+ * site for it when she presses Log in with Telegram, and a page she has left is a page asking
+ * nobody for anything: the content policy of the site names this host in no directive, so nothing
+ * of Emi can fetch from it.
+ *
+ * The whole address rather than the host, so any other address of that company is still refused.
+ */
+const theLoginSheLeavesForOnTelegram = 'https://oauth.telegram.org';
+
 function reachesAnotherCompany(source: string): boolean {
   const withoutWhatSheChose = [
     theSiteItself,
@@ -96,6 +115,8 @@ function reachesAnotherCompany(source: string): boolean {
     theBetaSheCanJoin,
     thePoolThatSignsHerIn,
     theAddressThePoolAnswersOn,
+    theApiThatSignsHerIn,
+    theLoginSheLeavesForOnTelegram,
   ].reduce((text, allowed) => text.split(allowed).join(''), source);
 
   return (
@@ -250,6 +271,12 @@ defineFeature(feature, (test) => {
       // clean and every other address on the same host is still refused.
       expect(reachesAnotherCompany(`she presses ${theCommunitySheCanOpen}`)).toBe(false);
       expect(reachesAnotherCompany(`a code from ${thePoolThatSignsHerIn}`)).toBe(false);
+      // Letting her leave for Telegram did not open that company either. The one authorization
+      // address reads clean and every other address on the same host is still refused.
+      expect(reachesAnotherCompany(`she leaves for ${theLoginSheLeavesForOnTelegram}/auth`)).toBe(
+        false,
+      );
+      expect(reachesAnotherCompany('fetch("https://core.telegram.org/bots")')).toBe(true);
       expect(reachesAnotherCompany(`she presses Apple at ${theAddressThePoolAnswersOn}`)).toBe(
         false,
       );

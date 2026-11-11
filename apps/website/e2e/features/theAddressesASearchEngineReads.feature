@@ -46,6 +46,9 @@ Feature: The addresses a search engine reads
       | /en/sign-in/returning/ |
       | /ru/sign-in/returning/ |
       | /es/sign-in/returning/ |
+      | /en/sign-in/telegram/  |
+      | /ru/sign-in/telegram/  |
+      | /es/sign-in/telegram/  |
 
   Scenario: the page she reached by accident names no address
     Given a woman opens the page at "/en/nothing/"

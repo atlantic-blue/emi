@@ -48,4 +48,4 @@ Feature: What a woman is left with when she signs in with Apple or with Google
   Scenario: the page offers Apple wherever it offers Google
     Given a woman opens the page she signs in on, with a pool that answers a provider
     Then she reads a press for Apple beside the press for Google
-    And she reads no press for Telegram, which waits for a sign in of its own
+    And she reads a press for Telegram as well, which leaves for Telegram and not for the pool

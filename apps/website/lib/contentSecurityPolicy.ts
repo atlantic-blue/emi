@@ -13,6 +13,7 @@
 
 import { THE_SIGN_IN_HOST } from './theProviderSignIn';
 import { THE_POOL_HOST } from './theSignIn';
+import { THE_API_HOST } from './theTelegramSignIn';
 
 /** The name the policy travels under, in a request and in a response alike. */
 export const POLICY_HEADER = 'content-security-policy';
@@ -44,10 +45,14 @@ export function policyAllowing(nonce: string): string {
     // The sign in page asks Amazon Cognito for a code and answers it with six digits, from her
     // browser, because the service issues the tokens to the browser and no server of this site
     // sees them. The page she comes back to from Apple or from Google exchanges a code at the
-    // address the pool answers on, which is the second host. Those two, and no other: a policy
-    // naming every host would let a script somebody managed to write into a page send what she
-    // typed anywhere.
-    `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST}`,
+    // address the pool answers on, which is the second host. The page Telegram sends her back to
+    // hands its code to the sign in function of the api, which is the third. Those three, and no
+    // other: a policy naming every host would let a script somebody managed to write into a page
+    // send what she typed anywhere.
+    //
+    // The host Telegram asks her on is in no directive. Her browser leaves the site for it, and a
+    // page she has left is a page that is asking nobody for anything.
+    `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST} ${THE_API_HOST}`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,

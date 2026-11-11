@@ -17,6 +17,7 @@ import { SITE_ORIGIN } from '../../apps/website/lib/addresses';
 import { aNonce, policyAllowing } from '../../apps/website/lib/contentSecurityPolicy';
 import { THE_SIGN_IN_HOST } from '../../apps/website/lib/theProviderSignIn';
 import { THE_POOL_HOST } from '../../apps/website/lib/theSignIn';
+import { THE_API_HOST } from '../../apps/website/lib/theTelegramSignIn';
 import { thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
 import { type ASource, placesOfferingGoogleWithoutApple } from '../../tools/pipeline/signIn';
 
@@ -102,7 +103,6 @@ defineFeature(feature, (test) => {
 
       expect(said).toContain(words.signInApple);
       expect(said).toContain(words.signInGoogle);
-      expect(said).not.toContain(words.signInTelegram);
       expect(theWaysToSignIn.map((way) => way.word)).toEqual([
         'signInApple',
         'signInGoogle',
@@ -119,14 +119,11 @@ defineFeature(feature, (test) => {
     and('each press carries the mark of its own company, drawn as the board draws it', () => {
       const board = readFileSync(theBoard, 'utf8');
       const outlines = [...board.matchAll(/ d="([^"]+)"/g)].map(([, outline]) => outline ?? '');
-      const telegram = ['M21 4L3 11l6 2 2 6 3-4 5 4 2-15z', 'M9 13l8-6'];
 
-      for (const outline of outlines.filter((each) => !telegram.includes(each))) {
+      expect(outlines.length).toBeGreaterThan(0);
+
+      for (const outline of outlines) {
         expect(inEnglish()).toContain(outline);
-      }
-
-      for (const outline of telegram) {
-        expect(inEnglish()).not.toContain(outline);
       }
     });
 
@@ -252,14 +249,25 @@ defineFeature(feature, (test) => {
       expect(THE_SIGN_IN_HOST).toBe('https://auth.myemi.app');
     });
 
-    and('it allows no third host, and no page writes a style of its own', () => {
-      const connect =
-        policy.split('; ').find((directive) => directive.startsWith('connect-src')) ?? '';
+    and(
+      'it allows no host outside the three that sign her in, and no page writes a style of its own',
+      () => {
+        const connect =
+          policy.split('; ').find((directive) => directive.startsWith('connect-src')) ?? '';
 
-      expect(connect.split(' ')).toHaveLength(4);
-      expect(policy).toContain(`default-src 'self'`);
-      expect(policy).toContain(`frame-ancestors 'none'`);
-    });
+        // The pool, the host it answers the managed login on, and the api the Telegram sign in
+        // calls. A fourth value would be a host Emi does not answer for.
+        expect(connect.split(' ')).toEqual([
+          'connect-src',
+          `'self'`,
+          THE_POOL_HOST,
+          THE_SIGN_IN_HOST,
+          THE_API_HOST,
+        ]);
+        expect(policy).toContain(`default-src 'self'`);
+        expect(policy).toContain(`frame-ancestors 'none'`);
+      },
+    );
   });
 
   test('every place that offers Google offers Apple beside it', ({ given, when, then, and }) => {

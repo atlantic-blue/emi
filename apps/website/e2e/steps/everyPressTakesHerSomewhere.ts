@@ -73,15 +73,18 @@ When('she reads every press the page offers her', async ({ page, pressing }) => 
   expect(pressing.atTheTop.length).toBeGreaterThan(1);
   expect(pressing.atTheFoot.length).toBeGreaterThan(6);
 
-  // Three pages of the site offer her no row of presses inside the page itself. On the page she
+  // Four pages of the site offer her no row of presses inside the page itself. On the page she
   // signs in on she types an address, presses a way in or sends a form, and on her account she
-  // signs out; not one of those carries an address, so none of them is read here. The page Apple
-  // and Google send her back to offers one press, which is the way back when the return did not
-  // finish. Every other page offers her a row of ways on, and a page of that kind with nothing in
-  // the middle is a page that failed to draw.
-  const offersNoPressOfItsOwn = ['/sign-in/', '/account/', '/sign-in/returning/'].some((path) =>
-    new URL(page.url()).pathname.endsWith(path),
-  );
+  // signs out; not one of those carries an address, so none of them is read here. The two pages a
+  // company sends her back to each offer one press, which is the way back when the sign in did
+  // not finish. Every other page offers her a row of ways on, and a page of that kind with
+  // nothing in the middle is a page that failed to draw.
+  const offersNoPressOfItsOwn = [
+    '/sign-in/',
+    '/account/',
+    '/sign-in/returning/',
+    '/sign-in/telegram/',
+  ].some((path) => new URL(page.url()).pathname.endsWith(path));
 
   expect(pressing.inThePage.length).toBeGreaterThan(offersNoPressOfItsOwn ? -1 : 1);
 });
@@ -150,17 +153,19 @@ Then('no press takes her to a page that is still to be built', ({ page, pressing
   // mark off each. The support page was the sixth of these; it is built and pressed, so it is read
   // in the step below as a press the site answers 200 for.
   //
-  // The page Apple and Google send her back to is the one place that does offer it. A return that
-  // did not finish leaves her one thing to do, which is to press again, so that press is the end
-  // of a sign in she started rather than a way into one from a page she was reading.
-  const sheCameBackFromAProvider = new URL(page.url()).pathname.endsWith('/sign-in/returning/');
+  // The two pages a company sends her back to are the places that do offer it. A sign in that did
+  // not finish leaves her one thing to do, which is to press again, so that press is the end of a
+  // sign in she started rather than a way into one from a page she was reading.
+  const sheCameBackFromACompany = ['/sign-in/returning/', '/sign-in/telegram/'].some((path) =>
+    new URL(page.url()).pathname.endsWith(path),
+  );
 
   for (const path of [
     'buy/',
     'calculator/',
     'pulse/',
     'terms/',
-    ...(sheCameBackFromAProvider ? [] : ['sign-in/']),
+    ...(sheCameBackFromACompany ? [] : ['sign-in/']),
   ]) {
     expect({
       waitingFor: path,

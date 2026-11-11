@@ -17,8 +17,9 @@ Feature: The site signs her in with Apple and with Google
   What Apple and Google learn is that she uses Emi. Neither one receives a day, a symptom or a
   date, because the account holds the subject and the address and the press asks for nothing else.
 
-  Telegram is the fourth way the board draws. It needs a function of its own, so its press waits
-  and its words wait with it.
+  Telegram is the fourth way the board draws, and it is built beside these two. It leaves for
+  Telegram rather than for the pool and it has a relay page of its own, so it is read in its own
+  feature. What is read here is that its press sits beside these two and takes nothing from them.
 
   Scenario: the page draws the two presses, and the words arrive in three languages
     Given a woman opens the page she signs in on
@@ -37,7 +38,7 @@ Feature: The site signs her in with Apple and with Google
   Scenario: the page may reach the pool that answers on auth.myemi.app
     Given the policy every page of the site answers with
     Then it allows the host the pool answers on, beside the host the code sign in asks
-    And it allows no third host, and no page writes a style of its own
+    And it allows no host outside the three that sign her in, and no page writes a style of its own
 
   Scenario: every place that offers Google offers Apple beside it
     Given every source of this repository
