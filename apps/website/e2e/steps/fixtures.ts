@@ -1,3 +1,4 @@
+import type { Page } from '@playwright/test';
 import type { PNG } from 'pngjs';
 
 import type { ABandToLeaveOut, APairOfPictures } from './theDesignComparison';
@@ -172,6 +173,16 @@ export interface APageTheListNames {
 }
 
 /**
+ * The second page of the same browser, which the scenario about two pages opens.
+ *
+ * A fixture rather than a variable in the module, because three widths run as three tests and a
+ * variable here would be one value shared by all of them.
+ */
+export interface WhatSheAlsoHasOpen {
+  page: Page | null;
+}
+
+/**
  * A scenario asks for one address and then reads the answer across several steps, so the answer
  * is a fixture rather than a variable in the module: two widths run as two tests, and a variable
  * here would be one value shared by both.
@@ -196,6 +207,7 @@ export const test = bdd.extend<{
   looking: WhatSheIsLookingAt;
   comparing: WhatSheIsComparing;
   pressing: WhatEveryPressDoes;
+  alsoOpen: WhatSheAlsoHasOpen;
 }>({
   answered: async ({}, handTo) => {
     await handTo({ status: null, landedOn: null, moves: 0, movedBy: null });
@@ -228,6 +240,9 @@ export const test = bdd.extend<{
   },
   pressing: async ({}, handTo) => {
     await handTo({ atTheTop: [], inThePage: [], atTheFoot: [], reading: '' });
+  },
+  alsoOpen: async ({}, handTo) => {
+    await handTo({ page: null });
   },
   cameBack: async ({}, handTo) => {
     await handTo({ status: null, headers: {}, landedOn: null });

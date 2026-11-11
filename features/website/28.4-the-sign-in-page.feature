@@ -27,10 +27,10 @@ Feature: The sign in page, with a code sent to her address
   a whole email one time password challenge and sent no email. That reading is why the page cannot
   tell the two addresses apart before the first email goes out.
 
-  Nothing of hers is kept. The tokens live in sessionStorage, which the tab takes with it when she
-  closes it, and no cookie carries them. A woman who signs in on a borrowed machine and closes the
-  tab has signed out. The account page reads that store for itself, and a reader with no session is
-  moved to this page rather than shown an account that is not hers.
+  Nothing of hers is kept on this site. The tokens live in localStorage, and no cookie carries
+  them. Every tab of her browser reads the one session, and she is still signed in after she closes
+  the tab and opens the site again. The account page reads that store for itself, and a reader with
+  no session is moved to this page rather than shown an account that is not hers.
 
   The account page is the head of its board and nothing else. The subscription, the ways she signs
   in, the preferences and the data each need a step of their own, and a section drawn with nothing
@@ -58,7 +58,7 @@ Feature: The sign in page, with a code sent to her address
   Scenario: the code she types signs her in, and each refusal says what to do next
     Given a stub of the pool that answers the way the service documents
     When she answers the code with the digits she was sent
-    Then she holds the three tokens, in sessionStorage and in no cookie
+    Then she holds the three tokens, in localStorage and in no cookie
     And a wrong code, an expired code, too many tries and no connection each say their own sentence
     And every one of those sentences arrives in English, in Russian and in Spanish
 

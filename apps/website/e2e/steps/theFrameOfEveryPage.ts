@@ -19,9 +19,9 @@ const { Given, Then } = createBdd(test);
  * A session, written into the browser before any page of it loads.
  *
  * Her account is a page of this site and it reads the browser for itself, because the tokens live
- * in `sessionStorage` and a server of this site never sees them. A reader with no session is
- * moved to the page she signs in on, so a browser with no session would read that page under the
- * address of her account and report on the wrong page.
+ * in `localStorage` and a server of this site never sees them. A reader with no session is moved
+ * to the page she signs in on, so a browser with no session would read that page under the address
+ * of her account and report on the wrong page.
  *
  * Nothing else on the site reads this entry, so every other page draws exactly as it does for a
  * reader who never signed in.
@@ -35,7 +35,7 @@ const aSessionSheIsHolding = {
 Given('a woman opens the page at {string}', async ({ page, answered }, address: string) => {
   await page.addInitScript(
     ([entry, held]) => {
-      window.sessionStorage.setItem(entry as string, held as string);
+      window.localStorage.setItem(entry as string, held as string);
     },
     [THE_SESSION_ENTRY, JSON.stringify(aSessionSheIsHolding)] as const,
   );
