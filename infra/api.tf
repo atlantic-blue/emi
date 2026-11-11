@@ -72,6 +72,17 @@ resource "aws_apigatewayv2_route" "register" {
   authorization_type = "NONE"
 }
 
+# The sign in has a function of its own, and the sign in is the only handler its bundle carries. So
+# the one route that reaches the client secret and the salt answers nothing else, and its role may
+# write one item to the table and read none.
+resource "aws_apigatewayv2_integration" "sign_in_telegram" {
+  api_id                 = aws_apigatewayv2_api.vault.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.sign_in_telegram.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+}
+
 # The sign in with Telegram takes no authorizer, for the same reason registration takes none: a
 # woman signing in holds no device key for the account she is reaching, so there is no stored key
 # to check a signature against. What she sends is a code Telegram gave her, and the function
@@ -79,7 +90,7 @@ resource "aws_apigatewayv2_route" "register" {
 resource "aws_apigatewayv2_route" "sign_in_telegram" {
   api_id             = aws_apigatewayv2_api.vault.id
   route_key          = "POST /v1/sign-in/telegram"
-  target             = "integrations/${aws_apigatewayv2_integration.vault.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.sign_in_telegram.id}"
   authorization_type = "NONE"
 }
 
@@ -130,6 +141,14 @@ resource "aws_lambda_permission" "articles" {
   statement_id  = "AllowInvokeFromTheApi"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.articles.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "sign_in_telegram" {
+  statement_id  = "AllowInvokeFromTheApi"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.sign_in_telegram.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
 }

@@ -188,7 +188,11 @@ function saidIn(markup: string): string {
 }
 
 defineFeature(feature, (test) => {
-  test('the page offers Apple, Google and a code sent to her address', ({ given, then, and }) => {
+  test('the page offers Apple, Google, Telegram and a code sent to her address', ({
+    given,
+    then,
+    and,
+  }) => {
     const drawn: Partial<Record<Language, string>> = {};
 
     const inEnglish = (): string => drawn.en ?? '';
@@ -217,25 +221,20 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'Telegram alone waits for its own sign in, and its words wait in all three languages',
+      'every way in the board draws is drawn, and its words arrive in all three languages',
       () => {
-        const waiting: SiteWordKey[] = ['signInTelegram'];
+        const theThree: SiteWordKey[] = ['signInApple', 'signInGoogle', 'signInTelegram'];
 
-        expect(theWaysToSignIn.map((way) => way.word)).toEqual([
-          'signInApple',
-          'signInGoogle',
-          'signInTelegram',
-        ]);
-        expect(theWaysInSheIsOffered().map((way) => way.word)).toEqual([
-          'signInApple',
-          'signInGoogle',
-        ]);
+        expect(theWaysToSignIn.map((way) => way.word)).toEqual(theThree);
+        // Nothing waits for its keys any more, so the list the page draws is the whole list. A
+        // way in put back on the shelf would show up here as a shorter one.
+        expect(theWaysInSheIsOffered().map((way) => way.word)).toEqual(theThree);
 
         for (const language of languages) {
           const middle = theMiddleOf(drawn[language] ?? '');
           const words = wordsIn(language);
 
-          for (const key of waiting) {
+          for (const key of theThree) {
             expect({ language, key, held: words[key].trim().length > 0 }).toEqual({
               language,
               key,
@@ -244,15 +243,21 @@ defineFeature(feature, (test) => {
             expect({ language, key, drawn: saidIn(middle).includes(words[key]) }).toEqual({
               language,
               key,
-              drawn: false,
+              drawn: true,
             });
           }
 
-          // The divider the board draws over the three is drawn now, because two of them are. The
-          // word itself is two letters that sit inside other words, so the rule is the element and
-          // not the word.
-          expect(theMiddleOf(drawn[language] ?? '')).toContain('bg-siteLine');
-          expect(saidIn(middle)).toContain(words.signInOr);
+          // The order the board draws them in. Apple is first because its review rule asks for a
+          // way in that limits what it learns beside every social sign in.
+          const said = saidIn(middle);
+
+          expect(said.indexOf(words.signInApple)).toBeLessThan(said.indexOf(words.signInGoogle));
+          expect(said.indexOf(words.signInGoogle)).toBeLessThan(said.indexOf(words.signInTelegram));
+
+          // The divider the board draws under the three. The word itself is two letters that sit
+          // inside other words, so the rule is the element and not the word.
+          expect(middle).toContain('bg-siteLine');
+          expect(said).toContain(words.signInOr);
         }
       },
     );
@@ -273,6 +278,7 @@ defineFeature(feature, (test) => {
         'signInLine',
         'signInApple',
         'signInGoogle',
+        'signInTelegram',
         'signInOr',
         'signInAddressLabel',
         'signInSendCode',

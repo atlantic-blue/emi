@@ -27,12 +27,12 @@ const THE_ADDRESS_THE_BOARD_WRITES = 'iuliia@example.com';
  * The parts of the sign in page held against the board, found by the element that opens each one
  * and the element that closes it.
  *
- * The whole page is read in parts rather than in one picture, because the board draws a third way
- * in that the page holds back: Telegram waits for a sign in of its own. Each part is measured in
- * its own document, so the rows that held back press would have taken do not move anything into
- * the comparison.
+ * The whole page is read in parts rather than in one picture, because the board and the page are
+ * different heights: the board draws the two states of the sign in as two screens and the page is
+ * one page that changes. Each part is measured in its own document, so a part that sits at a
+ * different height in each is still held against the right one.
  *
- * The two presses are found by their place after the line under the title rather than by the
+ * The three presses are found by their place after the line under the title rather than by the
  * element they are made of. The board draws a press as a link, because a canvas has nowhere to go,
  * and the page draws it as a button, because a press that leaves for Apple is not an address a
  * reader may copy. The place is the same in both.
@@ -58,8 +58,36 @@ const theParts: readonly APartOfAPage[] = [
     from: 'main h1 + p + * + *',
     to: 'main h1 + p + * + *',
   },
+  {
+    called: 'the-press-that-logs-her-in-with-telegram',
+    from: 'main h1 + p + * + * + *',
+    to: 'main h1 + p + * + * + *',
+  },
   { called: 'the-form-of-the-sign-in-page', from: 'main form', to: 'main form' },
   { called: 'what-the-account-holds', from: 'main form ~ div', to: 'main form ~ div' },
+];
+
+/**
+ * The parts of the same page once she has asked for a code, which is the second board.
+ *
+ * Neither the board nor the page draws a way in on that screen: she has chosen the code, so the
+ * three presses and the divider over them are gone from both. So this list names the parts that
+ * are still there, and it names them by what they are rather than by where they sit.
+ */
+const thePartsOfTheCodeBox: readonly APartOfAPage[] = [
+  {
+    called: 'the-mark-over-the-box-for-the-code',
+    from: 'main > *:first-child',
+    to: 'main > *:first-child',
+  },
+  { called: 'the-title-over-the-box-for-the-code', from: 'main h1', to: 'main h1' },
+  { called: 'the-line-that-says-where-the-code-went', from: 'main h1 + p', to: 'main h1 + p' },
+  { called: 'the-box-for-the-code', from: 'main form', to: 'main form' },
+  {
+    called: 'what-the-account-holds-under-the-code',
+    from: 'main form ~ div',
+    to: 'main form ~ div',
+  },
 ];
 
 /** The head of her account, which is every part of that board the page builds. */
@@ -156,7 +184,7 @@ Given(
         `file://${design}`,
         '/en/sign-in/',
         theWindowOf(page),
-        theParts,
+        thePartsOfTheCodeBox,
         async (looking) => {
           await looking.fill('#sign-in-address', THE_ADDRESS_THE_BOARD_WRITES);
           await looking.getByRole('button', { name: 'Send code' }).click();

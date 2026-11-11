@@ -13,9 +13,9 @@ import { theLinksOf } from '@/lib/theAddressesOfAPage';
  * the top, the mark, the title, the line under it, the ways in, and the two sentences that say
  * what the account is for.
  *
- * The board offers four ways in and the page draws three of them: Apple, Google and the code
- * sent to her email address. Telegram needs a function of its own, so its press waits here the way
- * every other press of this site waits for its page, and it comes back by taking one line off it.
+ * The board offers four ways in and the page draws all four: Apple, Google, Telegram and the code
+ * sent to her email address. Telegram leaves for Telegram rather than for the pool, because a
+ * custom sign in cannot be processed inside the managed login pages of the pool.
  *
  * She does not need an account to use Emi. The page says so under the form, because a sign in page
  * that said nothing would read as a sign in she has to do.
@@ -37,14 +37,14 @@ interface AWayToSignIn {
   readonly ground: string;
   /**
    * Whether the way in is still to be built. A way marked this way is not drawn, and it comes back
-   * by taking this one line off it on the day the sign in behind it exists.
+   * by taking this one line off it on the day the sign in behind it exists. Every way in the board
+   * draws is built, so no entry carries it today and the filter below has nothing to take out.
    */
   readonly waitsForItsKeys?: boolean;
 }
 
 /**
- * The three ways in the board draws above the divider, in the order it draws them. Apple and
- * Google are drawn; Telegram waits for the function that signs her in through it.
+ * The three ways in the board draws above the divider, in the order it draws them.
  *
  * Each press carries the mark of its own company, drawn as the board draws it in
  * `components/theMarksOfTheWaysIn.tsx`, because each company fixes how its mark is drawn.
@@ -59,7 +59,7 @@ export const theWaysToSignIn: readonly AWayToSignIn[] = [
     // Google's own rule and Google's own words, which are neither of them a colour of Emi.
     ground: 'box-border border-hairline border-markGoogleLine bg-siteCard text-markGoogleText',
   },
-  { word: 'signInTelegram', ground: 'bg-siteTint text-siteText', waitsForItsKeys: true },
+  { word: 'signInTelegram', ground: 'bg-siteTint text-siteText' },
 ];
 
 /** The ways in the page draws, which is every one whose credential exists. */

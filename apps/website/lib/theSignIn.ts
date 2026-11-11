@@ -416,6 +416,70 @@ export async function signInWithTheCode(
 }
 
 /**
+ * The flow a one time answer travels in, which the Telegram sign in is the one reader of. The
+ * pool authenticates nobody here: the sign in function of the api authenticates her against
+ * Telegram, and this flow turns that into tokens of the pool.
+ */
+const THE_CUSTOM_FLOW = 'CUSTOM_AUTH';
+
+/** The one challenge the three triggers of the pool issue, which asks her nothing. */
+const THE_CUSTOM_CHALLENGE = 'CUSTOM_CHALLENGE';
+
+/**
+ * Her tokens, from a user name and one answer the sign in function of the api made.
+ *
+ * Two calls. The first starts the custom flow and the pool answers with the challenge and a
+ * session. The second answers the challenge, and the verify trigger spends the answer by deleting
+ * the item its digest names.
+ *
+ * She types nothing here and holds nothing she has to remember. The answer is good for one
+ * challenge inside two minutes, so a refusal means the two minutes passed or the answer was
+ * already spent, and in both of those the next thing she does is press again.
+ */
+export async function signInWithTheOneTimeAnswer(
+  userName: string,
+  oneTimeAnswer: string,
+  how: HowItAsks = fetch,
+): Promise<TheTokensSheHolds> {
+  const started = await ask(how, 'InitiateAuth', {
+    ClientId: THE_WEBSITE_CLIENT_ID,
+    AuthFlow: THE_CUSTOM_FLOW,
+    AuthParameters: { USERNAME: userName, CHALLENGE_NAME: THE_CUSTOM_CHALLENGE },
+  });
+
+  if (!started.took) {
+    throw new ASignInProblem(whatWentWrong(started.said));
+  }
+
+  if (started.said.ChallengeName !== THE_CUSTOM_CHALLENGE || started.said.Session === undefined) {
+    throw new ASignInProblem('tooManyTries');
+  }
+
+  const answered = await ask(how, 'RespondToAuthChallenge', {
+    ClientId: THE_WEBSITE_CLIENT_ID,
+    ChallengeName: THE_CUSTOM_CHALLENGE,
+    Session: started.said.Session,
+    ChallengeResponses: { USERNAME: userName, ANSWER: oneTimeAnswer },
+  });
+
+  if (!answered.took) {
+    throw new ASignInProblem(whatWentWrong(answered.said));
+  }
+
+  const held = answered.said.AuthenticationResult;
+
+  if (
+    held?.IdToken === undefined ||
+    held.AccessToken === undefined ||
+    held.RefreshToken === undefined
+  ) {
+    throw new ASignInProblem('tooManyTries');
+  }
+
+  return { idToken: held.IdToken, accessToken: held.AccessToken, refreshToken: held.RefreshToken };
+}
+
+/**
  * The end of a sign in. The refresh token is the one that outlives the window, so it is the one
  * the service is asked to revoke. A sign out that only forgot the tokens would leave a token
  * working for thirty days on whatever had read it.

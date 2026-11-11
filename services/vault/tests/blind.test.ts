@@ -97,6 +97,16 @@ function entryPointFiles(): string[] {
     .sort();
 }
 
+/**
+ * The two entry points that read no name at all. The define trigger decides from the session it is
+ * handed and the create trigger asks her nothing, so neither one reaches the account and neither
+ * one has a name to be given. Every other entry point reads at least the table it writes to.
+ */
+const entryPointsThatReadNothing: readonly string[] = [
+  'src/functions/createAuthChallenge.ts',
+  'src/functions/defineAuthChallenge.ts',
+];
+
 interface TakenFrom {
   readonly specifier: string;
   readonly names: readonly string[];
@@ -207,6 +217,9 @@ const allowedFromCrypto: readonly string[] = [
   'refusalMessages',
   'signatureHeader',
   'signatureVerifies',
+  // The platform's own generator, which the sign in draws a salt and a one time answer from. It
+  // raises on a runtime that has none rather than falling back to something weaker.
+  'systemRandom',
   'wrappedVaultKeyLength',
 ];
 
@@ -390,16 +403,22 @@ describe('the service cannot open what it holds', () => {
       readFileSync(join(serviceDirectory, file), 'utf8').includes('process.env'),
     );
 
-    expect(entryPointFiles().length).toBeGreaterThan(0);
-    expect(reading).toEqual(entryPointFiles());
+    expect(entryPointFiles().length).toBeGreaterThan(entryPointsThatReadNothing.length);
+    expect(reading).toEqual(
+      entryPointFiles().filter((file) => !entryPointsThatReadNothing.includes(file)),
+    );
   });
 
-  it('reads a table name out of its environment and nothing else at all', () => {
+  it('reads a table, and the pool she signs in to, and nothing else at all', () => {
     const source = importGraph()
       .files.map((file) => readFileSync(join(serviceDirectory, file), 'utf8'))
       .join('\n');
     const read = [...new Set(source.match(/process\.env\.[A-Za-z0-9_]+/g) ?? [])].sort();
 
-    expect(read).toEqual(['process.env.EMI_ARTICLES_TABLE', 'process.env.EMI_VAULT_TABLE']);
+    expect(read).toEqual([
+      'process.env.EMI_ACCOUNTS_POOL_ID',
+      'process.env.EMI_ARTICLES_TABLE',
+      'process.env.EMI_VAULT_TABLE',
+    ]);
   });
 });

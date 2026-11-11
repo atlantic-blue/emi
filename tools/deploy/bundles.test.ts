@@ -63,6 +63,27 @@ function modulesIn(name: string): string[] {
 const vaultFunction = 'emi-vault';
 const authorizerFunction = 'emi-authorizer';
 const articleFunction = 'emi-articles';
+const signInFunction = 'emi-sign-in-telegram';
+const defineTrigger = 'emi-sign-in-challenge-define';
+const createTrigger = 'emi-sign-in-challenge-create';
+const verifyTrigger = 'emi-sign-in-challenge-verify';
+
+/** The three clients of the account this service binds, each in a package of its own. */
+const theTableClient = '@aws-sdk/client-dynamodb';
+const theSecretClient = '@aws-sdk/client-ssm';
+const thePoolClient = '@aws-sdk/client-cognito-identity-provider';
+
+/**
+ * The functions that read or write a table. The define and the create trigger decide from the
+ * event they are handed, so neither one holds a client of anything.
+ */
+const functionsThatReachTheTable = [
+  vaultFunction,
+  authorizerFunction,
+  articleFunction,
+  signInFunction,
+  verifyTrigger,
+];
 
 describe('one bundle for each deployed function, in the shape the runtime unpacks', () => {
   describe('the list the build reads', () => {
@@ -158,17 +179,50 @@ describe('one bundle for each deployed function, in the shape the runtime unpack
       expect(modulesIn(articleFunction)).not.toContain('services/vault/src/router.ts');
     });
 
-    it('carries the client of the one table its function reads, and no other service of the account', () => {
-      for (const held of deployedFunctions) {
-        const carried = modulesIn(held.name);
-
+    it('carries the client of the one table its function reads, where its function reads one', () => {
+      for (const held of functionsThatReachTheTable) {
         expect(
-          carried.filter((module) => module.includes('@aws-sdk/client-dynamodb')).length,
+          modulesIn(held).filter((module) => module.includes(theTableClient)).length,
         ).toBeGreaterThan(0);
-        expect(carried.filter((module) => module.includes('@aws-sdk/client-ssm'))).toEqual([]);
-        expect(
-          carried.filter((module) => module.includes('@aws-sdk/client-cognito-identity-provider')),
-        ).toEqual([]);
+      }
+    });
+
+    it('holds the sign in handler alone, so the route that reaches a secret answers nothing else', () => {
+      expect(modulesIn(signInFunction).filter((module) => module.includes('/handlers/'))).toEqual([
+        'services/vault/src/handlers/signInWithTelegram.ts',
+      ]);
+    });
+
+    it('leaves the parameter store out of every bundle but the one that reads a secret', () => {
+      const carrying = deployedFunctions
+        .filter((held) => modulesIn(held.name).some((module) => module.includes(theSecretClient)))
+        .map((held) => held.name);
+
+      expect(carrying).toEqual([signInFunction]);
+    });
+
+    it('leaves the pool client out of every bundle but that same one', () => {
+      const carrying = deployedFunctions
+        .filter((held) => modulesIn(held.name).some((module) => module.includes(thePoolClient)))
+        .map((held) => held.name);
+
+      expect(carrying).toEqual([signInFunction]);
+    });
+
+    it('leaves the two triggers that decide from their event alone with no client at all', () => {
+      for (const held of [defineTrigger, createTrigger]) {
+        expect(modulesIn(held).filter((module) => module.includes('@aws-sdk/'))).toEqual([]);
+        expect(modulesIn(held).filter((module) => module.includes('/store/'))).toEqual([]);
+      }
+    });
+
+    it('leaves the sign in and the triggers out of the vault bundle, and the vault out of theirs', () => {
+      expect(modulesIn(vaultFunction)).not.toContain(
+        'services/vault/src/handlers/signInWithTelegram.ts',
+      );
+
+      for (const held of [signInFunction, defineTrigger, createTrigger, verifyTrigger]) {
+        expect(modulesIn(held)).not.toContain('services/vault/src/router.ts');
       }
     });
   });

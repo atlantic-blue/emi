@@ -1,6 +1,7 @@
-# Three functions, and none of them holds a key. The authorizer reads a stored public key and
+# Seven functions, and none of them holds a key. The authorizer reads a stored public key and
 # checks a signature. The vault reads and writes ciphertext. The article function answers a
-# catalogue.
+# catalogue. The sign in with Telegram answers a code, and the three triggers of the custom sign in
+# turn one answer of it into tokens of the pool.
 #
 # Each one is created from a placeholder, and each one keeps whatever the pipeline last uploaded
 # to it. The bundle is built and uploaded by the functions job of .github/workflows/deploy.yml,
@@ -270,11 +271,12 @@ resource "aws_lambda_function" "articles" {
   }
 }
 
-# ── The Telegram sign in: two roles, and no function yet ─────────────────────
+# ── The Telegram sign in: two roles ──────────────────────────────────────────
 #
 # The account reads a policy per request, and a policy change takes a moment to spread, so a new
-# grant and the resource that needs it can fail together in one apply. These two roles therefore
-# land on their own, before anything assumes them.
+# grant and the resource that needs it can fail together in one apply. These two roles landed on
+# their own, before anything assumed them. The grant that holds her pool user comes with the
+# function below, because nothing calls it during an apply: the first call is a woman signing in.
 #
 # The salt is the one value in Emi that Terraform never creates, never holds and never reads. The
 # sign in function makes it on the first sign in that finds it absent, so no plan proposes it and
@@ -348,6 +350,19 @@ data "aws_iam_policy_document" "sign_in_telegram" {
     actions   = ["dynamodb:PutItem"]
     resources = [aws_dynamodb_table.vault.arn]
   }
+
+  # The function holds her pool user: it creates the user, and on the second path the pool may
+  # force it sets a password nothing can present. Both calls stand on this one pool. No other
+  # Amazon Cognito action is named here, so nothing on this path reads a user or lists one.
+  statement {
+    sid    = "HoldHerPoolUser"
+    effect = "Allow"
+    actions = [
+      "cognito-idp:AdminCreateUser",
+      "cognito-idp:AdminSetUserPassword",
+    ]
+    resources = [aws_cognito_user_pool.accounts.arn]
+  }
 }
 
 resource "aws_iam_role_policy" "sign_in_telegram" {
@@ -393,4 +408,134 @@ resource "aws_iam_role_policy" "sign_in_challenge" {
   name   = "${var.project_name}-sign-in-challenge"
   role   = aws_iam_role.sign_in_challenge.id
   policy = data.aws_iam_policy_document.sign_in_challenge.json
+}
+
+# ── The four functions of the Telegram sign in ───────────────────────────────
+#
+# Each one is created from the 501 placeholder the vault function uses, and each one keeps whatever
+# the pipeline last uploaded to it. Nothing invokes the three triggers yet: the pool names them,
+# and adding them to the pool is a piece of its own, so the placeholder answer of a trigger is
+# never read by anything.
+
+resource "aws_cloudwatch_log_group" "sign_in_telegram" {
+  name              = "/aws/lambda/${var.project_name}-sign-in-telegram"
+  retention_in_days = var.log_retention_days
+}
+
+# It reads the pool it creates her user in, and the table it writes one answer to. The three
+# parameters it reads are named by services/vault/src/telegram/parameters.ts, and the role above
+# names those same three one by one.
+resource "aws_lambda_function" "sign_in_telegram" {
+  function_name = "${var.project_name}-sign-in-telegram"
+  role          = aws_iam_role.sign_in_telegram.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 512
+  # It exchanges a code with Telegram and reads the key set, so it waits on a service of somebody
+  # else twice.
+  timeout = 10
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  environment {
+    variables = {
+      EMI_VAULT_TABLE      = aws_dynamodb_table.vault.name
+      EMI_ACCOUNTS_POOL_ID = aws_cognito_user_pool.accounts.id
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.sign_in_telegram]
+
+  # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
+  # would read that bundle as drift and put the placeholder back on the next apply, so the route
+  # in front of this function would answer from a placeholder again.
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
+}
+
+resource "aws_cloudwatch_log_group" "sign_in_challenge_define" {
+  name              = "/aws/lambda/${var.project_name}-sign-in-challenge-define"
+  retention_in_days = var.log_retention_days
+}
+
+# The state machine of the custom sign in. It decides from the session it is handed, so it reads
+# no name and holds no client. The pool allows a trigger five seconds.
+resource "aws_lambda_function" "sign_in_challenge_define" {
+  function_name = "${var.project_name}-sign-in-challenge-define"
+  role          = aws_iam_role.sign_in_challenge.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 256
+  timeout       = 5
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  depends_on = [aws_cloudwatch_log_group.sign_in_challenge_define]
+
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
+}
+
+resource "aws_cloudwatch_log_group" "sign_in_challenge_create" {
+  name              = "/aws/lambda/${var.project_name}-sign-in-challenge-create"
+  retention_in_days = var.log_retention_days
+}
+
+# It issues a challenge that asks her nothing, because she holds the answer already, so it too
+# reads no name and holds no client.
+resource "aws_lambda_function" "sign_in_challenge_create" {
+  function_name = "${var.project_name}-sign-in-challenge-create"
+  role          = aws_iam_role.sign_in_challenge.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 256
+  timeout       = 5
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  depends_on = [aws_cloudwatch_log_group.sign_in_challenge_create]
+
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
+}
+
+resource "aws_cloudwatch_log_group" "sign_in_challenge_verify" {
+  name              = "/aws/lambda/${var.project_name}-sign-in-challenge-verify"
+  retention_in_days = var.log_retention_days
+}
+
+# The one trigger that reaches the table. It spends the one time answer with a conditional delete
+# and reads the two fields that delete returns, so it names the table and nothing else.
+resource "aws_lambda_function" "sign_in_challenge_verify" {
+  function_name = "${var.project_name}-sign-in-challenge-verify"
+  role          = aws_iam_role.sign_in_challenge.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 256
+  timeout       = 5
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  environment {
+    variables = {
+      EMI_VAULT_TABLE = aws_dynamodb_table.vault.name
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.sign_in_challenge_verify]
+
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
 }

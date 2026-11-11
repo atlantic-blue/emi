@@ -210,8 +210,10 @@ The recovery code flow is built, and no route reaches it.
 `apps/mobile/src/features/recovery/RecoveryFlow.tsx` holds the three screens, and no file under
 `apps/mobile/src/app` names it.
 
-Both deployed functions answer 501. `infra/README.md` says they are the placeholders of
-`infra/lambda.tf`, and that no step packages `services/vault` into either one.
+Every deployed function answers from its placeholder until a merge uploads a bundle to it. The
+packaging is built: `infra/README.md` says that the `functions` job of
+`.github/workflows/deploy.yml` builds one bundle for each of the seven functions and uploads them
+on a merge into `main`.
 
 So a woman on the current build holds her days in SQLite on her phone, sealed under the vault key in
 her keychain. She holds no recovery code. The vault holds no account for her and no copy of a day.
@@ -2282,12 +2284,16 @@ before it adds something nothing calls yet, and each one merges on its own witho
 woman sees. The section "Sign in with Telegram, through the custom sign in" above holds the design
 these pieces build.
 
-Two things sit outside them. The operator writes the client secret into the parameter store and
+One thing sits outside them. The operator writes the client secret into the parameter store and
 registers the two addresses in BotFather, and the first piece cannot be applied until that is done.
-And nothing in the path packages `services/vault` into a deployed function yet, which
-`infra/README.md` says: both deployed functions are the placeholders of `infra/lambda.tf`. So this
-sign in is code that answers nothing in the account until a packaging step exists. That step is not
-in this path, and it blocks the last two pieces from working rather than from merging.
+They did both on 8 November 2026, which `infra/README.md` records.
+
+The packaging that this sign in needs is built, and it is designed in
+`docs/design/deployed-functions.md` rather than here. Its third piece put the four functions of
+this sign in in the account, on the two roles the first piece below made, and gave the sign in role
+the two Amazon Cognito calls that hold her pool user. So the four pieces below that write code now
+have something in the account to run on, and what is still missing is the pool naming the three
+triggers, which is the fifth piece.
 
 **The salt, the client secret and the grants.**
 

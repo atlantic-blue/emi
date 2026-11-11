@@ -147,4 +147,25 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/sign-in/returning/" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/sign-in/returning/" />
   </url>
+  <url>
+    <loc>https://myemi.app/en/sign-in/telegram/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/sign-in/telegram/" />
+  </url>
+  <url>
+    <loc>https://myemi.app/ru/sign-in/telegram/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/sign-in/telegram/" />
+  </url>
+  <url>
+    <loc>https://myemi.app/es/sign-in/telegram/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://myemi.app/en/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myemi.app/ru/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://myemi.app/es/sign-in/telegram/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://myemi.app/en/sign-in/telegram/" />
+  </url>
 </urlset>

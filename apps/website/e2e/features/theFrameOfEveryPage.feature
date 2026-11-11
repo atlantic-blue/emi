@@ -46,6 +46,9 @@ Feature: The way in and the way out of every page
       | /en/sign-in/returning/ | en       |
       | /ru/sign-in/returning/ | ru       |
       | /es/sign-in/returning/ | es       |
+      | /en/sign-in/telegram/  | en       |
+      | /ru/sign-in/telegram/  | ru       |
+      | /es/sign-in/telegram/  | es       |
       | /en/nothing/           | en       |
       | /ru/nothing/           | ru       |
       | /es/nothing/           | es       |

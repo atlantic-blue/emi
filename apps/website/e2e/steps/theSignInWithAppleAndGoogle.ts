@@ -264,6 +264,12 @@ Then('she reads a press for Apple beside the press for Google', async ({ page })
   expect(presses.indexOf(words.signInApple)).toBeLessThan(presses.indexOf(words.signInGoogle));
 });
 
-Then('she reads no press for Telegram, which waits for a sign in of its own', async ({ page }) => {
-  await expect(page.locator('main')).not.toContainText(words.signInTelegram);
-});
+Then(
+  'she reads a press for Telegram as well, which leaves for Telegram and not for the pool',
+  async ({ page }) => {
+    await expect(page.getByRole('button', { name: words.signInTelegram })).toHaveCount(1);
+    // This press is not one of the two above. It leaves for Telegram, so nothing it does reaches
+    // the pool that answers Apple and Google, and the scenario of its own reads where it goes.
+    expect(whatTheBrowserDid(page).leftFor).toEqual([]);
+  },
+);

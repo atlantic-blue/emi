@@ -21,25 +21,33 @@ order.
 One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
 time. It holds no key, no date, no symptom, no flow and no note.
 
-One HTTP api, `emi-vault`, with four routes. It answers at
+One HTTP api, `emi-vault`, with six routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
-Three functions, `emi-vault`, `emi-authorizer` and `emi-articles`, on Node 22 and arm64.
+Seven functions, on Node 22 and arm64. Three answer the vault: `emi-vault`, `emi-authorizer`
+and `emi-articles`. Four carry the sign in with Telegram: `emi-sign-in-telegram` answers a code,
+and `emi-sign-in-challenge-define`, `emi-sign-in-challenge-create` and
+`emi-sign-in-challenge-verify` are the three triggers of the custom sign in.
+
 Terraform creates each one from a placeholder it holds inline, and then leaves the code alone. The
 deployed code is the bundle: the `functions` job of `.github/workflows/deploy.yml` builds one
 bundle for each function out of `services/vault/src` and uploads it on a merge into `main`. Each
 function carries `ignore_changes` on its file name and its code hash, so an apply never puts a
 placeholder back.
 
+The upload order is the authorizer, the articles, the three triggers, the sign in and then the
+vault. The triggers go before the function that issues the answer they spend.
+
 A function answers from its placeholder until the first merge reaches it. The vault placeholder and
 the article placeholder answer 501. The authorizer placeholder refuses every request. The last step
 of that job reads the live api and requires a refusal on every route the authorizer stands in front
 of, so a merge that leaves a bundle unloadable fails.
 
-Three log groups, each with a retention of 30 days.
+Seven log groups, each with a retention of 30 days.
 
-Two roles nothing assumes yet, `emi-sign-in-telegram` and `emi-sign-in-challenge`. The section on
-sign in with Telegram below says what each one reads and what each one deliberately cannot.
+Two roles of the sign in with Telegram, `emi-sign-in-telegram` and `emi-sign-in-challenge`. The
+sign in function runs as the first one. The three triggers share the second. The section on sign in
+with Telegram below says what each one reads and what each one deliberately cannot.
 
 One Amazon Cognito user pool, `emi-accounts`, with two app clients: `emi-iphone` and
 `emi-website`. The pool is on the Essentials tier, which is the cheapest one that carries the
@@ -252,32 +260,35 @@ Never replace it.
 aws ssm get-parameter --name /emi/accounts/telegram/salt --with-decryption --region eu-central-1
 ```
 
-#### Two roles, and nothing that assumes them yet
+#### Two roles, and the four functions that assume them
 
 `emi-sign-in-telegram` is the role of the function that answers a Telegram code. It reads the bot
 identifier, the client secret and the salt, each named in full. It writes the salt. It writes one
 item to `emi-vault`: the digest of a one time answer, the pool user name it belongs to, and the
-instant. It carries no delete on any parameter, no read of the bot token, and no read of the
-table.
+instant. It creates her user in the pool, and sets a permanent password on the second path the pool
+may force, both on `emi-accounts` alone. It carries no delete on any parameter, no read of the bot
+token, no read of the table, and no read of a pool user.
 
 `emi-sign-in-challenge` is the role of the three triggers the pool calls: define, create and
 verify. It deletes one item from `emi-vault`, which is how the verify trigger spends a one time
 answer, and that call returns the item it removed. It holds no parameter at all, so nothing the
 pool calls can read the salt or the client secret.
 
-Neither role is assumed by anything today, because no function exists yet. The grants land on
-their own and first. The account reads a policy per request, so a grant and the resource that needs
-it can fail together in one apply.
+Both roles landed on their own and first, before the functions that assume them. The account reads
+a policy per request, so a grant and the resource that needs it can fail together in one apply. The
+grant that holds her pool user came with the functions, in one merge rather than two, because
+nothing calls it during an apply: the first call is a woman signing in, so that merge costs at most
+one refused sign in in the minute after it.
 
 The apply role needed nothing new. `TheTwoFunctions` already makes a function and lets a principal
 invoke one. `TheProjectRoles` already makes a role of Emi and hands it to a function.
 `TheUserPool` already sets the triggers on the pool. The infrastructure test holds each of those
 three as a rule, so a change that narrows one of them fails here rather than in an apply.
 
-Two grants are deliberately absent, and the piece that needs each one adds it. The function
-creates a pool user with `AdminCreateUser`, and `emi-sign-in-telegram` holds no Amazon Cognito
-action yet. The pool invokes each trigger through a policy on the function, and no function exists
-to carry one.
+One grant is still deliberately absent, and the piece that needs it adds it. The pool invokes each
+trigger through a policy on the function, and the pool does not name the triggers yet. That piece
+sets the triggers on the pool, adds the custom flow to each client, and carries the invoke policy
+with them.
 
 ### One grant is wider than the rule of this repository
 
