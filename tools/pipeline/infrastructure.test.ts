@@ -2053,6 +2053,65 @@ describe('the pool she signs in to, which is step 28.2', () => {
   });
 });
 
+describe('the two providers propose no change of their own, which is issue 565', () => {
+  /**
+   * What the service fills in for each provider type. Every value is read from the plan that
+   * proposed its removal, because a value written from memory is a value the next plan changes.
+   */
+  const filledInByTheService: Record<string, Record<string, Record<string, string>>> = {
+    apple: {
+      provider_details: {
+        authorize_url: '"https://appleid.apple.com/auth/authorize"',
+        token_url: '"https://appleid.apple.com/auth/token"',
+        oidc_issuer: '"https://appleid.apple.com"',
+        token_request_method: '"POST"',
+        attributes_url_add_attributes: '"false"',
+      },
+    },
+    google: {
+      provider_details: {
+        attributes_url: '"https://people.googleapis.com/v1/people/me?personFields="',
+        attributes_url_add_attributes: '"true"',
+        authorize_url: '"https://accounts.google.com/o/oauth2/v2/auth"',
+        token_url: '"https://www.googleapis.com/oauth2/v4/token"',
+        oidc_issuer: '"https://accounts.google.com"',
+        token_request_method: '"POST"',
+      },
+      attribute_mapping: {
+        username: '"sub"',
+      },
+    },
+  };
+
+  const whateverAPlanWouldRemove = (): string[] => {
+    const found: string[] = [];
+
+    for (const [provider, blocks] of Object.entries(filledInByTheService)) {
+      const resource = bodyOf(`resource "aws_cognito_identity_provider" "${provider}"`);
+
+      for (const [block, fields] of Object.entries(blocks)) {
+        const declared = pairsIn(blockBodyOf(resource, block));
+
+        for (const [field, value] of Object.entries(fields)) {
+          if (declared[field] !== value) {
+            found.push(
+              `the ${provider} provider declares ${field} as ${declared[field] ?? 'nothing'} in ${block}, and the service holds ${value}`,
+            );
+          }
+        }
+      }
+    }
+
+    return found;
+  };
+
+  describe('every field the service fills in is declared with the value the service holds', () => {
+    it('leaves a plan of either provider with nothing to remove', () => {
+      expect(whateverAPlanWouldRemove()).toEqual([]);
+    });
+  });
+});
+
 // Step 28.10 sets email_configuration on the pool, with an email sending account of DEVELOPER, the
 // myemi.app identity as the source and the configuration set of Emi. Saving that setting makes a
 // service linked role, with the credentials of whoever saved it, so the apply role needs the
