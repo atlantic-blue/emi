@@ -2,8 +2,9 @@
  * The challenge, issued. It asks her nothing, because she already holds the answer: the sign in
  * function gave it to her surface with the user name, and the pool never sent anything.
  *
- * So both parameter sets are empty. A public parameter would travel to the caller, and a private
- * one would travel to the verify trigger, and neither has anything to carry here.
+ * So each parameter map carries one constant and nothing of hers. A map the service can read as
+ * empty refuses the whole sign in: the pool answers the caller that the user name or the password
+ * is wrong, before the verify trigger runs and whether or not the pool holds that user name.
  */
 
 /** What this trigger is handed, and the three fields the pool reads back. */
@@ -23,13 +24,18 @@ export interface CreateAuthChallengeEvent {
 /** What the session is marked as, so a reader of a sign in knows which way in it was. */
 export const telegramChallengeMetadata = 'TELEGRAM';
 
-/** The same empty challenge for every caller, whether or not the pool holds that user name. */
+/** The one parameter of this challenge, which names the way in and says nothing about her. */
+export const telegramChallengeParameters: Readonly<Record<string, string>> = {
+  challenge: telegramChallengeMetadata,
+};
+
+/** The same challenge for every caller, whether or not the pool holds that user name. */
 export function createAuthChallenge(event: CreateAuthChallengeEvent): CreateAuthChallengeEvent {
   return {
     ...event,
     response: {
-      publicChallengeParameters: {},
-      privateChallengeParameters: {},
+      publicChallengeParameters: { ...telegramChallengeParameters },
+      privateChallengeParameters: { ...telegramChallengeParameters },
       challengeMetadata: telegramChallengeMetadata,
     },
   };
