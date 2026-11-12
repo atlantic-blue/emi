@@ -1634,9 +1634,11 @@ goes to every caller, so neither map says whether the pool holds that user name.
 
 The verify trigger reads the answer. It digests what arrived, deletes the item that digest names on
 the condition that the item is there, and reads the deleted item back in the same call. It accepts
-the answer when the item existed, when its user name equals the user name of the session, and when
-its instant is inside 120 seconds. Otherwise `answerCorrect` is false. The trigger reaches the table
-and reaches nothing else, so it finishes well inside the five seconds the pool allows it.
+the answer when the item existed, when its user name is the same pool user as the user name of the
+session, and when its instant is inside 120 seconds. The pool holds a user name without case and
+hands the trigger the name it stored, so the two names are read without case. Otherwise
+`answerCorrect` is false. The trigger reaches the table and reaches nothing else, so it finishes
+well inside the five seconds the pool allows it.
 
 Each trigger refuses the same way when `userNotFound` is true, which the pool sets because
 `prevent_user_existence_errors` is enabled on both clients. A caller who presents a user name that

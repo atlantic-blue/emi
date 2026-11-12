@@ -23,6 +23,15 @@ export interface VerifyAuthChallengeEvent {
 }
 
 /**
+ * Whether two names are one user of the pool. The pool holds a user name without case, so the name
+ * the sign in function derived and the name the pool hands this trigger are the same user while
+ * their cases differ, and this is the only place that reads both of them.
+ */
+function oneUserOfThePool(written: string, handed: string): boolean {
+  return written.toLowerCase() === handed.toLowerCase();
+}
+
+/**
  * Three things make an answer right: the item was there, it names this user, and it was issued
  * inside the window. The instant comes from the item rather than from its time to live, because
  * the table removes an expired item some time after it expires.
@@ -41,7 +50,7 @@ export async function verifyAuthChallengeResponse(
   const correct =
     spent !== undefined &&
     event.request.userNotFound !== true &&
-    spent.userName === event.userName &&
+    oneUserOfThePool(spent.userName, event.userName) &&
     answerIsFresh(spent.issuedAt, now);
 
   return { ...event, response: { answerCorrect: correct } };
