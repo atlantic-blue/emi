@@ -68,6 +68,19 @@ function answeredField(answer: unknown, name: string): unknown {
 }
 
 /**
+ * Whether both parameter maps of a challenge carry something. The service refuses a challenge it
+ * reads as empty, and the pool answers that refusal to the caller as a wrong user name or
+ * password, so a bundle that answers with an empty pair signs nobody in.
+ */
+function bothParameterMapsCarrySomething(answer: unknown): boolean {
+  return (['publicChallengeParameters', 'privateChallengeParameters'] as const).every((name) => {
+    const map = answeredField(answer, name);
+
+    return typeof map === 'object' && map !== null && Object.keys(map).length > 0;
+  });
+}
+
+/**
  * One check for each function, by name. A function in the list with no check here fails the run, so
  * a bundle cannot join the deploy without an event that proves it answers.
  */
@@ -119,8 +132,10 @@ export const loadChecks: Readonly<Record<string, LoadCheck>> = {
   },
   'emi-sign-in-challenge-create': {
     event: { request: { challengeName: customChallengeName }, response: {} },
-    owes: (answer) => answeredField(answer, 'challengeMetadata') === telegramChallengeMetadata,
-    describes: 'the challenge it issues is marked as the Telegram one',
+    owes: (answer) =>
+      answeredField(answer, 'challengeMetadata') === telegramChallengeMetadata &&
+      bothParameterMapsCarrySomething(answer),
+    describes: 'the challenge it issues is marked as the Telegram one and carries its parameter',
   },
   // An answer that is not base 64 of the length an answer carries has no digest, so the trigger
   // refuses it without reaching the table at all.

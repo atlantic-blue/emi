@@ -13,6 +13,8 @@ import {
   portInsideTheImage,
   publishedPortIn,
 } from './loadEachBundle';
+import { createAuthChallenge } from '../../services/vault/src/triggers/createAuthChallenge';
+import { customChallengeName } from '../../services/vault/src/triggers/defineAuthChallenge';
 
 /**
  * The check that loads every bundle, driven without a container runtime.
@@ -324,6 +326,31 @@ describe('every bundle is loaded in a container of its own, and two in a row can
 
       expect(loadChecks[unchecked.name]).toBeUndefined();
       expect(ran.thrown?.message).toContain('no event here proves that its bundle answers');
+    });
+  });
+
+  describe('the challenge a create trigger bundle owes', () => {
+    const check = loadChecks['emi-sign-in-challenge-create'];
+
+    it('takes what the trigger answers', () => {
+      const created = createAuthChallenge({
+        request: { challengeName: customChallengeName },
+        response: {},
+      });
+
+      expect(check?.owes(created)).toBe(true);
+    });
+
+    it('refuses a challenge whose two parameter maps are empty', () => {
+      const empty = {
+        response: {
+          publicChallengeParameters: {},
+          privateChallengeParameters: {},
+          challengeMetadata: 'TELEGRAM',
+        },
+      };
+
+      expect(check?.owes(empty)).toBe(false);
     });
   });
 

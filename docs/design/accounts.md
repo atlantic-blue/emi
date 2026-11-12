@@ -1627,8 +1627,10 @@ unmodified notifies your user pool to proceed with the default action for the ev
 is what keeps the email code sign in working, and it is a case of its own.
 
 The create trigger issues the challenge and asks her nothing. She holds the answer already, so
-`publicChallengeParameters` and `privateChallengeParameters` are both empty, and
-`challengeMetadata` reads `TELEGRAM`.
+each parameter map carries one constant, `challenge: TELEGRAM`, and `challengeMetadata` reads
+`TELEGRAM`. Amazon Cognito refuses a challenge it reads as empty, and the pool then answers the
+caller that the user name or the password is wrong, so two empty maps sign nobody in. The same pair
+goes to every caller, so neither map says whether the pool holds that user name.
 
 The verify trigger reads the answer. It digests what arrived, deletes the item that digest names on
 the condition that the item is there, and reads the deleted item back in the same call. It accepts

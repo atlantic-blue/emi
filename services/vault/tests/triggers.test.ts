@@ -10,6 +10,7 @@ import { answerPartitionFor, answerSortKey, dynamoStore } from '../src/store/dyn
 import {
   createAuthChallenge,
   telegramChallengeMetadata,
+  telegramChallengeParameters,
 } from '../src/triggers/createAuthChallenge';
 import {
   type ChallengeResult,
@@ -122,7 +123,7 @@ describe('the three triggers of the custom sign in', () => {
       const walked = await theWholeWalk(issued, issued.presented, atOnce);
 
       expect(walked.challenge).toBe(customChallengeName);
-      expect(walked.asked).toEqual({});
+      expect(walked.asked).toEqual(telegramChallengeParameters);
       expect(walked.answerCorrect).toBe(true);
       expect(walked.issueTokens).toBe(true);
       expect(walked.failAuthentication).toBe(false);
@@ -229,13 +230,23 @@ describe('the three triggers of the custom sign in', () => {
       });
 
       expect(created.response).toEqual({
-        publicChallengeParameters: {},
-        privateChallengeParameters: {},
+        publicChallengeParameters: telegramChallengeParameters,
+        privateChallengeParameters: telegramChallengeParameters,
         challengeMetadata: telegramChallengeMetadata,
       });
     });
 
-    it('asks a user name the pool does not hold the same nothing', () => {
+    it('leaves neither parameter map empty, because an empty pair refuses her sign in', () => {
+      const created = createAuthChallenge({
+        request: { challengeName: customChallengeName },
+        response: {},
+      });
+
+      expect(Object.keys(created.response.publicChallengeParameters ?? {})).not.toHaveLength(0);
+      expect(Object.keys(created.response.privateChallengeParameters ?? {})).not.toHaveLength(0);
+    });
+
+    it('asks a user name the pool does not hold the same challenge', () => {
       const held = createAuthChallenge({
         request: { challengeName: customChallengeName },
         response: {},
