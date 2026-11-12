@@ -2,7 +2,7 @@
  * How the two pages of the account move a reader from one address to another.
  *
  * A whole load rather than the move the framework offers inside the page. The session lives in
- * `sessionStorage` and a server of this site never sees it, so the page she lands on has to read
+ * `localStorage` and a server of this site never sees it, so the page she lands on has to read
  * the browser for itself, and a whole load is the one way that reading cannot be skipped. It also
  * leaves both components drawable on a server with no router mounted, which is how every test of
  * this repository draws a page.

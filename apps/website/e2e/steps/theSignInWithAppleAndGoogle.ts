@@ -114,7 +114,7 @@ async function whatSheIsHolding(page: Page): Promise<{
 }> {
   return await page.evaluate(
     ([session, started]) => ({
-      session: window.sessionStorage.getItem(session as string),
+      session: window.localStorage.getItem(session as string),
       started: window.sessionStorage.getItem(started as string),
       cookie: document.cookie,
     }),

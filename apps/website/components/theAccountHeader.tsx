@@ -3,7 +3,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
-import { letTheSessionGo, theSessionHeld } from '@/lib/theSessionSheHolds';
+import { letTheSessionGo, theSessionHeld, whenTheSessionChanges } from '@/lib/theSessionSheHolds';
 import { signOut } from '@/lib/theSignIn';
 import { goInsteadTo, goTo } from '@/lib/whereSheGoesNext';
 
@@ -14,8 +14,8 @@ import { goInsteadTo, goTo } from '@/lib/whereSheGoesNext';
  * The sections under it on the board are the subscription, the ways she signs in, the preferences
  * and the data. Each one is its own step and none of them is drawn here.
  *
- * It runs in her browser because the session runs there. The tokens live in `sessionStorage` and
- * a server of this site never reads them, so a server cannot tell a signed in reader from anybody
+ * It runs in her browser because the session runs there. The tokens live in `localStorage` and a
+ * server of this site never reads them, so a server cannot tell a signed in reader from anybody
  * else and the page has to ask once it is drawn. A reader with no session is moved to the page she
  * signs in on rather than shown an account that is not hers.
  *
@@ -29,18 +29,6 @@ export const WHERE_A_READER_WITH_NO_SESSION_GOES = 'sign-in/';
 
 /** Where a sign out leaves her, which is the home page in the language she was reading. */
 export const WHERE_A_SIGN_OUT_LANDS = '';
-
-/**
- * What changes the entry, which is another tab of the same browser. Nothing in this tab changes it
- * without leaving the page, so this subscribes and has nothing to report.
- */
-function whenTheSessionChanges(tell: () => void): () => void {
-  window.addEventListener('storage', tell);
-
-  return () => {
-    window.removeEventListener('storage', tell);
-  };
-}
 
 /**
  * What is known about her session, in three states rather than two.

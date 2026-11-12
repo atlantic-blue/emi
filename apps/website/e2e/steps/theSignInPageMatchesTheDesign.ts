@@ -138,7 +138,7 @@ async function aPoolThatAnswers(page: Page): Promise<void> {
 async function aSessionSheIsHolding(page: Page): Promise<void> {
   await page.addInitScript(
     ([entry, held]) => {
-      window.sessionStorage.setItem(entry as string, held as string);
+      window.localStorage.setItem(entry as string, held as string);
     },
     [
       THE_SESSION_ENTRY,

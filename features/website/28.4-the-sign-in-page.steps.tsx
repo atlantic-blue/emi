@@ -408,6 +408,7 @@ defineFeature(feature, (test) => {
 
     given('a stub of the pool that answers the way the service documents', () => {
       pool = aPool([sheIsSignedUp, sheIsConfirmed, theTokens]);
+      window.localStorage.clear();
       window.sessionStorage.clear();
       document.cookie = '';
     });
@@ -420,13 +421,13 @@ defineFeature(feature, (test) => {
       holdTheSession(theTokensIn(await signInWithTheCode(waiting, SIX_DIGITS, pool.how)));
     });
 
-    then('she holds the three tokens, in sessionStorage and in no cookie', () => {
-      expect(JSON.parse(window.sessionStorage.getItem(THE_SESSION_ENTRY) ?? 'null')).toEqual({
+    then('she holds the three tokens, in localStorage and in no cookie', () => {
+      expect(JSON.parse(window.localStorage.getItem(THE_SESSION_ENTRY) ?? 'null')).toEqual({
         idToken: 'an-id-token',
         accessToken: 'an-access-token',
         refreshToken: 'a-refresh-token',
       });
-      expect(window.localStorage.getItem(THE_SESSION_ENTRY)).toBeNull();
+      expect(window.sessionStorage.getItem(THE_SESSION_ENTRY)).toBeNull();
       expect(document.cookie).not.toContain('an-id-token');
       expect(document.cookie).not.toContain('a-refresh-token');
     });

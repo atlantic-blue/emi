@@ -183,19 +183,19 @@ Then('she is left on her account, holding a session no cookie carries', async ({
 
   const held = await page.evaluate(
     (entry) => ({
-      inTheTab: window.sessionStorage.getItem(entry),
       acrossTabs: window.localStorage.getItem(entry),
+      inTheTab: window.sessionStorage.getItem(entry),
       inACookie: document.cookie,
     }),
     THE_SESSION_ENTRY,
   );
 
-  expect(JSON.parse(held.inTheTab ?? 'null')).toEqual({
+  expect(JSON.parse(held.acrossTabs ?? 'null')).toEqual({
     idToken: 'an-id-token',
     accessToken: 'an-access-token',
     refreshToken: 'a-refresh-token',
   });
-  expect(held.acrossTabs).toBeNull();
+  expect(held.inTheTab).toBeNull();
   expect(held.inACookie).not.toContain('an-id-token');
   expect(held.inACookie).not.toContain('a-refresh-token');
 });
@@ -220,6 +220,66 @@ Then(
     await expect(page.locator('#sign-in-address')).toHaveCount(1);
     await expect(page.locator('#sign-in-code')).toHaveCount(0);
     await expect(page.locator('main')).toContainText(words.signInWeSendACode);
+  },
+);
+
+/**
+ * The second page, and the session read in both.
+ *
+ * A page of the same browser context, which is what a new tab of her browser is. The pool is
+ * answered on this page too: a sign out asks the service to revoke the refresh token, and a page
+ * with no answer for it would reach the live pool.
+ */
+When('she opens her account in a second page of the same browser', async ({ page, alsoOpen }) => {
+  const second = await page.context().newPage();
+
+  await aPoolThatAnswers(second);
+  await second.goto('/en/account/');
+
+  alsoOpen.page = second;
+});
+
+/** The second page, or a failure naming the step that opens it. */
+function theSecondPage(alsoOpen: { page: Page | null }): Page {
+  if (alsoOpen.page === null) {
+    throw new Error('No second page is open: open one first.');
+  }
+
+  return alsoOpen.page;
+}
+
+Then('the second page reads her as signed in', async ({ alsoOpen }) => {
+  const second = theSecondPage(alsoOpen);
+
+  await expect(second.getByRole('heading', { level: 1 })).toHaveText(words.accountTitle);
+  await expect(second.getByRole('button', { name: words.accountSignOut })).toHaveCount(1);
+  expect(new URL(second.url()).pathname).toBe('/en/account/');
+});
+
+Then(
+  'a sign out in the second page leaves the first page signed out',
+  async ({ page, alsoOpen }) => {
+    const second = theSecondPage(alsoOpen);
+
+    await second.getByRole('button', { name: words.accountSignOut }).click();
+
+    // The first page is left where a reader with no session is left, and nobody reloaded it. It
+    // reads the change out of the browser, which is the whole reason the entry outlives the tab.
+    await page.waitForURL('**/en/sign-in/');
+
+    await expect(page.locator('#sign-in-address')).toHaveCount(1);
+    await expect(page.getByRole('button', { name: words.accountSignOut })).toHaveCount(0);
+
+    const held = await page.evaluate(
+      (entry) => ({
+        acrossTabs: window.localStorage.getItem(entry),
+        inTheTab: window.sessionStorage.getItem(entry),
+      }),
+      THE_SESSION_ENTRY,
+    );
+
+    expect(held.acrossTabs).toBeNull();
+    expect(held.inTheTab).toBeNull();
   },
 );
 
