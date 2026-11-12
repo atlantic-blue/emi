@@ -7,6 +7,7 @@ import {
   THE_SIGN_UP_CODE_IS_THIS_LONG,
   THE_WEBSITE_CLIENT_ID,
   type TheCodeSheWaitsFor,
+  type WhatWentWrong,
   aUsername,
   askForACode,
   sendHerAnotherCode,
@@ -154,6 +155,15 @@ const SIX_DIGITS = '482913';
 
 /** The code that signs her in, which the service writes eight digits long. */
 const EIGHT_DIGITS = '48291374';
+
+/** The box a woman is in front of while she holds a sign in code, with the session it answers. */
+const theBoxForASignInCode: TheCodeSheWaitsFor = {
+  address: HER_ADDRESS,
+  username: '',
+  session: 'the-sign-in-session',
+  digits: THE_SIGN_IN_CODE_IS_THIS_LONG,
+  answers: 'theSignInCode',
+};
 
 /** Her tokens out of an answer, where the answer is the one that signs her in. */
 function theTokensIn(answer: Awaited<ReturnType<typeof signInWithTheCode>>) {
@@ -534,6 +544,56 @@ describe('a woman signs in to myemi.app with a code sent to her address', () => 
       await expect(signInWithTheCode(waiting, SIX_DIGITS, service.how)).rejects.toBeInstanceOf(
         ASignInProblem,
       );
+    });
+  });
+
+  /**
+   * The pool allows an email code to no user Google or Apple made. It answers the challenge and
+   * sends her the eight digits like any other address, and refuses the digits she types whatever
+   * she types, so no new code can work and the page may not tell her to wait for one.
+   *
+   * The refusal arrives at the one call that answers the code, which she reaches only by typing
+   * the first code out of her own email, so the sentence reaches nobody who cannot read it.
+   */
+  describe('an address she signs in with Google or Apple', () => {
+    const theProviderRefusal = refused(
+      'NotAuthorizedException',
+      'EXTERNAL_PROVIDER user is not authorized to authenticate with EMAIL_OTP.',
+    );
+
+    it('says she signs in with Google or Apple, where the refusal names the provider', async () => {
+      const service = aService([
+        sheIsSignedUp,
+        refused('AliasExistsException'),
+        theSignInCodeIsOnItsWay,
+        theProviderRefusal,
+      ]);
+
+      const waiting = await askForACode(HER_ADDRESS, service.how);
+      const left = theBoxSheIsLeftWith(await signInWithTheCode(waiting, SIX_DIGITS, service.how));
+
+      await expect(signInWithTheCode(left, EIGHT_DIGITS, service.how)).rejects.toMatchObject({
+        because: 'sheSignsInWithGoogleOrApple',
+      });
+    });
+
+    it('leaves every other refusal of the same name the sentence it had', async () => {
+      const otherRefusals: readonly [AnAnswer, WhatWentWrong][] = [
+        [
+          refused('NotAuthorizedException', 'Invalid session for the user, session is expired.'),
+          'theCodeHasExpired',
+        ],
+        [refused('NotAuthorizedException', 'Incorrect username or password.'), 'tooManyTries'],
+        [refused('NotAuthorizedException'), 'tooManyTries'],
+      ];
+
+      for (const [answer, because] of otherRefusals) {
+        const service = aService([answer]);
+
+        await expect(
+          signInWithTheCode(theBoxForASignInCode, EIGHT_DIGITS, service.how),
+        ).rejects.toMatchObject({ because });
+      }
     });
   });
 
