@@ -129,6 +129,16 @@ describe('the three triggers of the custom sign in', () => {
       expect(walked.failAuthentication).toBe(false);
     });
 
+    it('issues the tokens when the pool hands the trigger the name without its case', async () => {
+      const issued = await anAnswerFor();
+
+      const walked = await theWholeWalk(issued, issued.presented, atOnce, userName.toLowerCase());
+
+      expect(walked.answerCorrect).toBe(true);
+      expect(walked.issueTokens).toBe(true);
+      expect(walked.failAuthentication).toBe(false);
+    });
+
     it('leaves nothing in the table once the sign in is done', async () => {
       const issued = await anAnswerFor();
 
