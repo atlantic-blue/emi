@@ -267,9 +267,11 @@ jobs:
             --output text)
           aws cloudfront wait invalidation-completed \
             --distribution-id "${DISTRIBUTION}" --id "${cleared}"
+      # No system packages. The runner image already holds the libraries Chromium needs, and
+      # a package install reads the Ubuntu mirror, which the runner cannot always resolve.
       - name: install the browser that reads the live site
         if: env.SHIPS == 'true' && env.ROLE != ''
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
       # The last word on the deploy, and the only step that reads what she gets. It reads the real
       # host, so it answers the sentences a local site cannot: the headers the distribution adds,
       # and the moves a function at the edge makes.

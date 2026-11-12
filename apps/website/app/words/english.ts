@@ -347,6 +347,8 @@ export const english = {
   signInCodeIsWrong: 'That code is not right. Check it and type it again.',
   signInCodeHasExpired: 'That code has expired. Send a new one.',
   signInTooManyTries: 'Too many tries. Wait a few minutes, then send a new code.',
+  signInAddressUsesGoogleOrApple:
+    'You have already used this address to sign in with Google or Apple.',
   signInNothingReached: 'Your browser could not reach Emi. Check the connection and try again.',
   signInSending: 'Sending a code…',
   signInChecking: 'Checking the code…',

@@ -277,6 +277,8 @@ export const russian: SiteWords = {
   signInCodeIsWrong: 'Этот код не подходит. Проверьте его и введите снова.',
   signInCodeHasExpired: 'Срок кода истёк. Отправьте новый.',
   signInTooManyTries: 'Слишком много попыток. Подождите несколько минут и отправьте новый код.',
+  signInAddressUsesGoogleOrApple:
+    'Вы уже использовали этот адрес для входа через Google или Apple.',
   signInNothingReached: 'Браузер не смог связаться с Emi. Проверьте соединение и попробуйте снова.',
   signInSending: 'Отправляем код…',
   signInChecking: 'Проверяем код…',
