@@ -29,7 +29,7 @@ Feature: What a woman is left with when she logs in with Telegram
     Given a woman opens the page she signs in on in Russian, with Telegram and the api answered
     When she presses Log in with Telegram
     Then she leaves for Telegram with the bot of Emi, a state and a digest
-    And she comes back signed in, and is left on the page she signs in on in Russian
+    And she comes back signed in, and is left on her account in Russian
     And the api was given the code and the verifier, and the pool was answered once
 
   Scenario: a return her browser did not start signs nobody in
