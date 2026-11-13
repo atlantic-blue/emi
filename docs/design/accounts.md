@@ -1310,6 +1310,9 @@ search.
 Contracts WIRE-5 and PAY-4 are untouched. A pull, an export and a delete work whatever any of this
 says.
 
+The card on myemi.app and Telegram Stars are two more routes to the same answer, and
+`docs/design/payments.md` designs both.
+
 ## The four ways in, at field level
 
 Status: designed
