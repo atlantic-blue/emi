@@ -258,9 +258,10 @@ rather than change them.
 Verified by a test.
 
 Output: the vault service imports the envelope's validator and nothing else from the crypto package.
+The claim handler holds a vault key for the length of one call and opens no payload with it.
 
-Errors: the service imports a decrypt function, or holds a key of any kind. A test reads the
-service's own import graph.
+Errors: the service imports a decrypt function. A vault key in a log line, an access log entry or a
+table attribute. A test reads the service's own import graph.
 
 ## VAULT, key handling on the phone
 
@@ -278,16 +279,18 @@ crash report.
 The operator's half: the key survives the application being deleted and installed again. That is the
 platform's behaviour, and platforms change it, so it is measured on a device and not assumed.
 
-### VAULT-2, the recovery code
+### VAULT-2, the vault key wrapped in the cloud
 
 Verified by a test.
 
-Input: 26 characters of Crockford base 32, and a salt of 16 bytes.
+Input: the vault key as 32 bytes, and the account identifier as the encryption context.
 
-Output: a key from Argon2id, and the vault key wrapped under it.
+Output: the ciphertext the Amazon key service returns, written to the account item, and the same 32
+bytes handed back to a phone that passes a verified claim.
 
-Errors: the code stored anywhere. The salt used by two accounts. An unlock slower than one second on
-the slowest device tested, which moves the parameters and records the new number.
+Errors: the plaintext key in a log line, an access log entry or a table attribute. A decrypt by any
+role but the one the claim function runs as. A decrypt whose encryption context does not name the
+account the caller proved. A second role in the account that may call the key.
 
 ### VAULT-3, the lock
 
@@ -424,12 +427,12 @@ Errors: an edit that does not raise the revision. An edit to a future day.
 
 Verified by a test.
 
-Input: a public key, a wrapped vault key and a recovery salt, signed by the key being registered.
+Input: a public key and a vault key, signed by the key being registered.
 
 Output: an account identifier.
 
-Errors: a public key that is already registered. A signature that does not verify. A body over 4
-kilobytes.
+Errors: a public key that is already registered. A signature that does not verify. A vault key that
+is not 32 bytes. A body over 4 kilobytes.
 
 ### WIRE-2, put a record
 

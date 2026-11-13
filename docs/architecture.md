@@ -1,7 +1,7 @@
 # The architecture of Emi
 
 Emi is a period and cycle tracker. The predictions are arithmetic on her own phone. The cloud holds
-ciphertext and no key.
+ciphertext, and it holds her vault key wrapped by the Amazon key service.
 
 This document says what runs on the phone, what runs in Amazon Web Services, and what crosses
 between the two.
@@ -89,7 +89,7 @@ purpose, because the design may name a thing before anybody builds it. This list
 - `brand` holds the mark, the icons and the fonts, as drawn files and the programs that write
   them.
 - `services/vault` holds the service behind the api: the account, the request signature and the
-  authorizer. It holds no key, so it can read nothing it stores.
+  authorizer. It imports no function that can open a day, so it reads nothing it stores.
 - `infra` holds the Terraform: the table, the api, the two functions and the two roles. The
   pipeline validates it on every pull request. Nothing is applied yet.
 - `features` holds the behaviour tier: one file for each feature, written as scenarios a
@@ -324,7 +324,11 @@ check the authorizer cannot make.
 Status: built
 
 The key that encrypts every day she logs is thirty two random bytes. It is made once, on her phone,
-at first run. It is never transmitted.
+at first run. No code in this repository transmits it today.
+
+The design of 13 November 2026 sends it once, at the registration, so the cloud can wrap it under
+the Amazon key service and hand it back to a phone that passes a verified sign in.
+`docs/design/accounts.md` holds that at field level, and nothing here is built yet.
 
 It goes in the keychain and not in the database. The platform deletes an application's database
 with the application, so a woman who reinstalls Emi would find her own history unreadable. The
@@ -415,8 +419,8 @@ claim in this product that cannot check itself.
 A server that cannot be reached does not stop any of it. A woman who presses delete wants her days
 gone now, and a radio she cannot use is no reason to leave readable days on the phone in her hand.
 So the phone is emptied either way and the screen says what happened: we could not reach our server,
-and nothing can open what is up there, because the only key was on this phone and it went with her
-days. A refusal from the api is read the same way, since an unknown account and a signature that
+and nothing is left up there that belongs to her, because the delete removes her key with
+everything else in one request. A refusal from the api is read the same way, since an unknown account and a signature that
 does not verify are answered identically by design, and the honest reading of a refusal is that the
 delete did not happen.
 
@@ -427,7 +431,9 @@ without one never made an account for there to be anything to take.
 
 Status: designed
 
-The server holds an encrypted vault and no keys. Nothing here can read a day.
+The server holds an encrypted vault, and it holds each vault key wrapped by the Amazon key service.
+One function may unwrap one account key, after a verified sign in, and nothing else in the cloud can
+read a day.
 
 ```mermaid
 flowchart TD
@@ -443,9 +449,10 @@ flowchart TD
     GW --> AUTH["Authorizer: verify the request signature"]
     AUTH --> FN["Lambda: the vault service"]
     FN --> DDB[("DynamoDB: ciphertext, revision, write time")]
+    FN --> KMS["The key service: one key, one context for each account"]
     FN --> STORE["Apple and Google: is she subscribed?"]
   end
-  KC -.->|"never sent"| GW
+  KC -->|"the vault key, once, at the registration"| GW
 ```
 
 The Terraform for all of this is in `infra` and it is read on every pull request. None of it is
@@ -462,7 +469,9 @@ a rare word and then looks for that word in every attribute of the item that rea
 second test walks the service from its entry point and asserts it imports no function that could
 open an envelope.
 
-The dotted line is the product. The key never crosses it.
+The line from the keychain to the gateway is the change of 13 November 2026. The vault key crosses
+it once, at the registration, and crosses back once, to a phone that passes a verified claim. No day
+crosses it in the clear at any point.
 
 ## The article catalogue
 
@@ -504,14 +513,22 @@ This is the honest cost, written here rather than left for a reader to find.
 The server learns how many records an account holds. It learns the instant of each write. Padding
 the write times would cost battery and buy little, so Emi states this rather than fixes it.
 
-The server cannot see a date, a symptom, a flow, a note or a name, because it holds no key.
+The storage cannot see a date, a symptom, a flow, a note or a name. The payload is sealed, and the
+key that opens it is not beside it: it sits in the Amazon key service, and one function may ask for
+it, for one account, after a verified sign in. `docs/design/accounts.md` holds the grants.
 
 ## What this deliberately does not defend
 
 Status: designed
 
-A woman who loses her phone and loses her recovery code has lost her data. Emi cannot recover it. An
-Emi that could recover it would be an Emi that could read it.
+A woman whose provider account somebody else holds has lost her privacy, not her data. The sign in
+is what opens her days on a new phone, so the second factor on her Apple, Google or Telegram account
+is the whole defence, and Emi does not own it. Emi sends her a message the moment a new phone binds
+to her account.
+
+Emi itself can read her days, because Emi holds her vault key in the cloud. The operator took that
+cost on 13 November 2026, so that a lost phone costs her nothing. `docs/privacy.md` states it as
+the first of the five attacks this design accepts.
 
 A person holding an unlocked phone can read everything, until the biometric lock is on.
 

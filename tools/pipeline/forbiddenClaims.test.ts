@@ -322,11 +322,11 @@ describe('the privacy document names a defence for every key the design has', ()
     expect(subsectionsUnder(fenced, keyHeading)).toEqual([]);
   });
 
-  it('names the four attacks it does not defend against, each with what she can do', () => {
+  it('names the five attacks it does not defend against, each with what she can do', () => {
     const named = subsectionsUnder(privacy, refusalHeading).map((subsection) => subsection.title);
 
     expect(named).toEqual([...acceptedAttacks]);
-    expect(named).toHaveLength(4);
+    expect(named).toHaveLength(5);
     expect(refusalProblems(privacy)).toEqual([]);
   });
 
