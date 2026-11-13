@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
 import { WHERE_SHE_TRIES_AGAIN } from '@/components/theReturnFromAProvider';
+import { WHERE_A_SIGN_IN_LANDS } from '@/components/theSignInForm';
 import { holdTheSession } from '@/lib/theSessionSheHolds';
 import {
   forgetWhatSheStarted,
@@ -21,8 +22,9 @@ import { goTo } from '@/lib/whereSheGoesNext';
  * which is under `en`, so the language she pressed in travels in the state value and this half
  * reads it from there. The page she lands on is in that language, which is the one she was reading.
  *
- * The session is held the way a code sign in holds it, through `holdTheSession`. One sign in, one
- * session, one place that writes it.
+ * The session is held the way a code sign in holds it, through `holdTheSession`, and she is left
+ * on the same page a code sign in leaves her on. One sign in, one session, one place that writes
+ * it.
  *
  * One sentence covers every way a return can fail: a state this browser did not write, a press
  * nobody made, a refusal from Telegram, a refusal from the sign in function, a refusal from the
@@ -32,9 +34,6 @@ import { goTo } from '@/lib/whereSheGoesNext';
  * The cause is kept out of the page on purpose. A reader learns nothing from it, and a sentence
  * that named it would be a sentence about the service rather than about what she does next.
  */
-
-/** Where a finished sign in leaves her, which is the page she signs in on in her own language. */
-export const WHERE_THE_SIGN_IN_LANDS = 'sign-in/';
 
 export function TheReturnFromTelegram({
   language,
@@ -53,7 +52,7 @@ export function TheReturnFromTelegram({
 
         forgetWhatSheStarted(came.language);
         holdTheSession(came.tokens);
-        goTo(`/${came.language}/${WHERE_THE_SIGN_IN_LANDS}`);
+        goTo(`/${came.language}/${WHERE_A_SIGN_IN_LANDS}`);
       } catch {
         // The kept value goes either way, and it goes under the language the state named rather
         // than under the language of this page. A value left behind would be offered to the next

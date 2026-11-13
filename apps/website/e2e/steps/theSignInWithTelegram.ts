@@ -187,25 +187,23 @@ Then('she leaves for Telegram with the bot of Emi, a state and a digest', async 
   expect(left.searchParams.get('redirect_uri')).toContain(`/en/${WHERE_TELEGRAM_SENDS_HER_BACK}`);
 });
 
-Then(
-  'she comes back signed in, and is left on the page she signs in on in Russian',
-  async ({ page }) => {
-    await page.waitForURL('**/ru/sign-in/');
+Then('she comes back signed in, and is left on her account in Russian', async ({ page }) => {
+  await page.waitForURL('**/ru/account/');
 
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.signInTitle);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.accountTitle);
+  await expect(page.getByRole('button', { name: words.accountSignOut })).toHaveCount(1);
 
-    const holding = await whatSheIsHolding(page);
+  const holding = await whatSheIsHolding(page);
 
-    expect(JSON.parse(holding.session ?? 'null')).toEqual({
-      idToken: 'an-id-token',
-      accessToken: 'an-access-token',
-      refreshToken: 'a-refresh-token',
-    });
-    // The three values the press kept are gone, because a return is good for one sign in.
-    expect(holding.started).toBeNull();
-    expect(holding.cookie).not.toContain('an-id-token');
-  },
-);
+  expect(JSON.parse(holding.session ?? 'null')).toEqual({
+    idToken: 'an-id-token',
+    accessToken: 'an-access-token',
+    refreshToken: 'a-refresh-token',
+  });
+  // The three values the press kept are gone, because a return is good for one sign in.
+  expect(holding.started).toBeNull();
+  expect(holding.cookie).not.toContain('an-id-token');
+});
 
 Then(
   'the api was given the code and the verifier, and the pool was answered once',
