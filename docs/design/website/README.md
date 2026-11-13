@@ -105,8 +105,11 @@ it describe a product that does not exist yet, so the page built from it may not
 are.
 
 1. The first question reads "I lost my phone. Can you restore my records?" and the answer reads
-   "Only with your recovery code". Sync and restore are designed and are not built. Today a lost
-   phone loses every day she recorded, unless she exported her data first.
+   "Only with your recovery code". Two things are wrong with it now. Sync and restore are designed
+   and are not built, so today a lost phone loses every day she recorded unless she exported first.
+   And the recovery code left the design on 13 November 2026: a sign in alone restores her days,
+   because Emi keeps her vault key in the cloud. The page answers with the sign in, and
+   `docs/design/accounts.md` holds the words.
 
 2. The board writes to `hello@myemi.app`. The live site writes to `privacy@myemi.app`, which
    `apps/website/lib/addresses.ts` holds as `THE_PRIVACY_INBOX`. Neither address receives mail

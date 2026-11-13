@@ -1,10 +1,12 @@
 # What the encryption defends, and what it does not
 
-Emi rests on one claim: nobody else can read her days. This repository is public so that a reader
-can check the claim against the code rather than believe the marketing.
+Emi rests on one claim: her days are sealed on her phone, and nobody who takes the database can
+read them. Emi itself can, because Emi holds her key in the cloud so that a new phone can find her
+history. This repository is public so that a reader can check both halves against the code rather
+than believe the marketing.
 
 This document says which keys exist, where each one lives, what one day looks like once it is
-encrypted, and the four attacks Emi accepts rather than fixes. The refusals are the part that makes
+encrypted, and the five attacks Emi accepts rather than fixes. The refusals are the part that makes
 the rest worth reading.
 
 Emi is not a contraceptive. Emi is not a medical device. Emi makes no claim to prevent or achieve a
@@ -33,36 +35,45 @@ string in the application, and fails the pipeline on the forbidden wording.
 Status: designed
 
 Emi encrypts each day on the phone, with a key that stays on the phone, and sends only the result.
+Emi also keeps a copy of that key in the cloud, wrapped by the Amazon key service, so that a new
+phone can read her days after she signs in.
 
-Nothing that leaves the phone can be read by Emi, by Amazon Web Services, or by anybody who takes a
-copy of the database. The server keeps ciphertext, a revision number and a write time. It holds no
-key, so there is no request anybody can make of it that returns a day.
+So the claim has two halves and this document gives both. Nothing that leaves the phone can be read
+by anybody who takes a copy of the database, because the payload is sealed and the key is not beside
+it. Emi can read it, because Emi holds the key and the function that unwraps it.
+
+The operator made that trade on 13 November 2026. What it buys is a woman who changes her phone and
+finds her history waiting, with nothing to type and no paper to keep. What it costs is the sentence
+above, written here, in the store listing and on the privacy page rather than hidden.
 
 ## The keys, and what guards each one
 
 Status: designed
 
-There are five keys. Two live on the phone and never leave it. One lives in her hands. One is
-computed when she needs it. One lives on the server and is useless there.
+There are four keys. Two live on the phone. One lives in the Amazon key service and never leaves
+it. One lives on the server and opens only through the third.
 
 ```mermaid
 flowchart TD
-  CODE["Recovery code: 26 characters, shown once"] -->|"argon2id"| RKEY["Recovery key: 32 bytes, never stored"]
-  RKEY -->|"wraps"| WRAP["Wrapped vault key"]
-  VKEY["Vault key: 32 random bytes"] -.->|"the bytes that are wrapped"| WRAP
-  VKEY -->|"XChaCha20-Poly1305"| PAY["The payload of one day"]
+  VKEY["Vault key: 32 random bytes"] -->|"XChaCha20-Poly1305"| PAY["The payload of one day"]
+  VKEY -->|"sent once, at the registration"| API["The api"]
+  API -->|"Encrypt, with the account identifier as the context"| AKEY["The account key, in the key service"]
+  AKEY --> WRAP["Wrapped vault key"]
   DKEY["Device key: Ed25519 private key"] -->|"signs every request"| SRV
-  WRAP --> SRV[("The server: wrapped key, salt, ciphertext")]
+  WRAP --> SRV[("The server: wrapped key, ciphertext")]
   PAY --> SRV
+  SRV -->|"returned to a verified claim, and to nothing else"| VKEY
 ```
 
 ### The vault key
 
-Lives: the keychain on the phone, as `emi.vaultKey.v1`, through expo-secure-store.
+Lives: the keychain on the phone, as `emi.vaultKey.v1`, through expo-secure-store. A copy lives in
+the cloud, wrapped by the key service.
 
-Defence: it is 32 random bytes from `expo-crypto`, and it is never transmitted. It encrypts every
-payload. Without it the ciphertext is 53 bytes of noise, so a copy of the server database, or of
-the phone database on its own, buys nothing.
+Defence: it is 32 random bytes from `expo-crypto`. It encrypts every payload. Without it the
+ciphertext is 53 bytes of noise, so a copy of the server database, or of the phone database on its
+own, buys nothing. It crosses the wire twice in its life: once when the phone registers it, and
+once when a verified claim returns it to a new phone.
 
 ### The device key
 
@@ -73,30 +84,25 @@ the body of every request, so a request nobody signed is refused. The server sto
 only. A person who steals the public half can prove nothing and read nothing, because this key
 never touches a payload.
 
-### The recovery code
+### The account key in the key service
 
-Lives: her hands. It is shown once, at setup, and Emi never stores it.
+Lives: the Amazon Web Services Key Management Service, in eu-central-1. It never leaves the service,
+and no part of Emi ever holds its bytes.
 
-Defence: it is 26 characters of Crockford base 32, which carries 130 bits. Guessing it is not an
-attack anybody can run. Emi cannot read it back to her later, which is the same property that stops
-anybody else reading it.
-
-### The recovery key
-
-Lives: nowhere. It is computed from the recovery code and the salt when she restores a phone, and
-it is dropped again.
-
-Defence: `argon2id` with 19456 kibibytes of memory, two passes and one lane turns the code into 32
-bytes. The memory cost is what makes a guessing run expensive rather than cheap. Step 6.4 measures
-the real cost on a device and raises the parameters to whatever keeps the unlock under one second.
+Defence: one customer managed key wraps the vault key of every account, and the account identifier
+travels with each call as the encryption context. The service refuses a decrypt whose context does
+not match the one the ciphertext was sealed under. Two roles may call it: the registration function
+may encrypt, and the function that answers a verified claim may decrypt. The key policy names those
+two and nothing else.
 
 ### The wrapped vault key
 
-Lives: the server, in the account item, beside a 16 byte salt.
+Lives: the server, in the account item.
 
-Defence: it is the vault key encrypted under the recovery key, so the server holds it and can do
-nothing with it. It is the one thing that lets a new phone read her old days. That is why losing
-the recovery code loses the data.
+Defence: it is the vault key encrypted under the account key, so the table alone holds nothing
+usable. A reader who takes the database and not the grants holds bytes that open nowhere. One
+function of Emi holds the grant, which is what makes a new phone work, and which is why this
+document says Emi can read her days.
 
 ## One day, once it is encrypted
 
@@ -204,15 +210,32 @@ rebuild writes recorded cycles only, so every row on a phone today holds 0.
 
 Status: designed
 
-Four attacks are stated here rather than fixed. Each one is written with what she can do about it.
+Five attacks are stated here rather than fixed. Each one is written with what she can do about it.
 
-### A lost phone and a lost recovery code
+### Emi itself, and anybody who can compel Emi
 
-The days are gone. Emi cannot recover them, and an Emi that could recover them would be an Emi that
-could read them. There is no support desk that can help, by design.
+Emi holds her vault key, wrapped by the Amazon key service, and one function of Emi may unwrap it.
+So Emi can read her days. A court order, a mistake in a policy, or a person inside Amazon with
+enough rights each reaches the same key.
 
-What to do: write the recovery code down at setup, and keep it away from the phone. The setup screen
-says this in one sentence before it shows the code.
+Before 13 November 2026 that key was 26 characters on a piece of paper, and nobody at Emi could get
+it. The cost of that design was every woman who lost the paper, and the operator judged that cost
+higher than this one.
+
+What to do: read this sentence before she trusts the product with anything she could not say out
+loud. Emi states it here, on the privacy page and in the store listing, so the choice is made with
+the fact rather than against it. Her export is always hers, and her delete takes everything in one
+press with no retention period.
+
+### A sign in somebody else completes
+
+Her account opens her days now, so a person who holds her Apple account, her Google account or her
+Telegram account can sign in as her on a new phone and read her history. The sign in is the whole
+defence, and Emi does not own it.
+
+What to do: turn on the second factor of whichever provider she signs in with. Read the message Emi
+sends the moment a new phone binds to her account, which is the one message that tells her this
+happened.
 
 ### A phone somebody else can unlock
 

@@ -166,19 +166,22 @@ The contracts it builds:
 
 ## Feature 6: Her cycle survives a new phone
 
-The encrypted vault in Amazon Web Services, the recovery code, and her history restored onto a
-second phone. Seven steps.
+The encrypted vault in Amazon Web Services, the sign in, and her history restored onto a second
+phone. Seven steps.
 
-The whole cloud lives here. The server holds ciphertext and no key, so it can store a day and never
-read one.
+The whole cloud lives here. The server holds ciphertext, and it holds her vault key wrapped by the
+Amazon key service. One function may unwrap it, and only for a phone that passes a verified sign
+in. The operator took that cost on 13 November 2026, so that a new phone needs no code on paper.
 
 The contracts it builds:
 
 - `TABLE-3` the sync state row, of which exactly one may exist.
 - `TABLE-4` the vault table, whose every attribute a test reads to prove no day is in it.
-- `ENVELOPE-4` the service that imports the validator alone, and holds no key of any kind.
-- `VAULT-2` the recovery code, the salt and the wrapped vault key, with the unlock time measured.
-- `WIRE-1` register an account from a public key, signed by the key that it registers.
+- `ENVELOPE-4` the service that imports the validator alone, and opens no payload with the key it
+  holds for one call.
+- `VAULT-2` the vault key wrapped in the cloud, released to a verified claim and to nothing else.
+- `WIRE-1` register an account from a public key and a vault key, signed by the key that it
+  registers.
 - `WIRE-2` put a record, refusing a revision that does not rise.
 - `WIRE-3` pull the records written after a cursor.
 - `WIRE-4` delete every item of an account, with no confirmation on the server.

@@ -45,7 +45,7 @@ each one arrives as its own file.
 
 Status: built
 
-The recovery code, and every number a reader has to copy. The design system sets `data-lg` and
+The code Emi sends to her email address, and every number a reader has to copy. The design system sets `data-lg` and
 `data-sm` in it. A monospaced figure holds its place as it changes, so a number does not move while
 she reads it, and one character cannot be mistaken for another.
 
