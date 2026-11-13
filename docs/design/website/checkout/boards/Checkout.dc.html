@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Buy Emi</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"Newsreader";src:url("ds/emi/fonts/Newsreader16pt-Regular.ttf");font-weight:400}
+@font-face{font-family:"Newsreader";src:url("ds/emi/fonts/Newsreader16pt-Medium.ttf");font-weight:500}
+@font-face{font-family:"Plus Jakarta Sans";src:url("ds/emi/fonts/PlusJakartaSans-Regular.ttf");font-weight:400}
+@font-face{font-family:"Plus Jakarta Sans";src:url("ds/emi/fonts/PlusJakartaSans-SemiBold.ttf");font-weight:600}
+@font-face{font-family:"JetBrains Mono";src:url("ds/emi/fonts/JetBrainsMono-Medium.ttf");font-weight:500}
+body{margin:0;background:#FFFFFF}
+a{color:#843117}a:hover{color:#5C2018}
+@media (max-width: 640px){h1[style*="font-size: 64px"]{font-size:48px !important;line-height:52px !important}h2[style*="font-size: 32px"]{font-size:24px !important;line-height:30px !important}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; color: #1F1B19; font-family: &quot;Plus Jakarta Sans&quot;, system-ui, sans-serif;">
+<dc-import name="Header" hint-size="100%,48px"></dc-import>
+<main style="box-sizing: border-box; max-width: 1024px; margin: 0 auto; padding: 56px 24px 96px; display: flex; flex-direction: column; gap: 40px;">
+<header style="display: flex; flex-direction: column; gap: 8px;">
+<h1 style="margin: 0; font-family: &quot;Newsreader&quot;, Georgia, serif; font-size: 48px; line-height: 56px; font-weight: 500; letter-spacing: -0.02em;">Buy Emi</h1>
+<span style="font-size: 16px; line-height: 24px; color: #56423D;">Signed in with Apple. <a href="SignIn.dc.html" style="text-decoration: none;">Not you? ›</a></span>
+</header>
+<div style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start;">
+<div style="flex: 999 1 420px; min-width: 0; background: #FBF2EE; border-radius: 24px; min-height: 520px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+<span aria-hidden="true" style="position: absolute; width: 360px; height: 360px; border-radius: 9999px; background: rgba(217,125,110,0.18); left: -40px; top: -60px;"></span>
+<span aria-hidden="true" style="position: absolute; width: 280px; height: 280px; border-radius: 9999px; background: rgba(155,132,158,0.18); right: -40px; bottom: -40px;"></span>
+<img src="/_blob/797e3d46d2df35dd822032622f5dc2e5" alt="The Emi home screen with the ring." style="position: relative; width: 260px; height: auto; border-radius: 36px; box-shadow: 0 4px 20px -2px rgba(31, 27, 25, 0.05);">
+</div>
+<div style="flex: 1 1 340px; display: flex; flex-direction: column; gap: 28px;">
+<section aria-labelledby="plan-title" style="display: flex; flex-direction: column; gap: 12px;">
+<h2 id="plan-title" style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 600;">Plan. <span style="color: #56423D; font-weight: 400;">Emi, every month.</span></h2>
+<div style="border: 2px solid #A3482C; border-radius: 16px; padding: 20px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+<span style="display: flex; flex-direction: column;"><span style="font-size: 16px; line-height: 24px; font-weight: 600;">Monthly</span><span style="font-size: 14px; line-height: 20px; color: #56423D;">Renews every month</span></span>
+<span style="font-family: &quot;JetBrains Mono&quot;, ui-monospace, monospace; font-size: 16px; font-weight: 500;">£29.99 a month</span>
+</div>
+</section>
+<section aria-labelledby="method-title" style="display: flex; flex-direction: column; gap: 12px;">
+<h2 id="method-title" style="margin: 0; font-size: 19px; line-height: 26px; font-weight: 600;">Payment. <span style="color: #56423D; font-weight: 400;">How would you like to pay?</span></h2>
+<button type="button" aria-pressed="{{cardPressed}}" onClick="{{pickCard}}" style="{{cardStyle}}">
+<span style="display: flex; flex-direction: column; text-align: left;"><span style="font-size: 16px; line-height: 24px; font-weight: 600;">Card</span><span style="font-size: 14px; line-height: 20px; color: #56423D;">On this site</span></span>
+<svg width="28" height="20" viewBox="0 0 28 20" fill="none" stroke="#56423D" stroke-width="1.5" aria-hidden="true"><rect x="1" y="1" width="26" height="18" rx="3"></rect><path d="M1 7h26"></path></svg>
+</button>
+<button type="button" aria-pressed="{{starsPressed}}" onClick="{{pickStars}}" style="{{starsStyle}}">
+<span style="display: flex; flex-direction: column; text-align: left;"><span style="font-size: 16px; line-height: 24px; font-weight: 600;">Telegram Stars</span><span style="font-size: 14px; line-height: 20px; color: #56423D;">In the Emi bot</span></span>
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#56423D" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"></path></svg>
+</button>
+</section>
+<sc-if value="{{isCard}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 12px;">
+<div style="min-height: 120px; border: 1px dashed #89726C; border-radius: 16px; background: #FBF2EE; display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px; font-size: 14px; line-height: 20px; color: #56423D;">[CARD FORM FROM THE PAYMENT PROVIDER]</div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #56423D;">By paying you agree to the <a href="#">terms</a>.</p>
+<button type="button" style="min-height: 52px; border: 0; border-radius: 12px; background: #A3482C; color: #FFFFFF; font: inherit; font-size: 16px; font-weight: 600;">Pay £29.99</button>
+</div>
+</sc-if>
+<sc-if value="{{isStars}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 12px;">
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: #56423D;">Open the Emi bot and pay there. Then log in with Telegram on your iPhone, and Emi unlocks by itself.</p>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #56423D;">By paying you agree to the <a href="#">terms</a>.</p>
+<a href="#" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 12px; background: #A3482C; color: #FFFFFF; font-size: 16px; font-weight: 600; text-decoration: none;">Open the Emi bot</a>
+</div>
+</sc-if>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: #56423D;">Cancel on your account page at any time. The payment links to your account. It never links to your records.</p>
+</div>
+</div>
+</main>
+<dc-import name="Footer" hint-size="100%,340px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1100}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { method: 'card' };
+}
+renderVals() {
+const base = 'display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 16px 20px; background: #FFFFFF; border-radius: 16px; font: inherit; color: #1F1B19; cursor: pointer; ';
+const on = base + 'border: 2px solid #A3482C;';
+const off = base + 'border: 1px solid #89726C; margin: 1px 0;';
+const isCard = this.state.method === 'card';
+return {
+isCard: isCard,
+isStars: !isCard,
+cardPressed: isCard ? 'true' : 'false',
+starsPressed: isCard ? 'false' : 'true',
+cardStyle: isCard ? on : off,
+starsStyle: isCard ? off : on,
+pickCard: () => this.setState({ method: 'card' }),
+pickStars: () => this.setState({ method: 'stars' })
+};
+}
+}
+</script>
+</body>
+</html>

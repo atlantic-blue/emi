@@ -164,6 +164,19 @@ Both paths must be whole. The program writes the address of the markup into the 
 browser refuses a relative one. The mark in the band at the top is not copied by the program: it
 is `render/assets/2f3b95d653826b5ca02acab62e8534de.svg`, taken from `support/` byte for byte.
 
+## The page she buys Emi on
+
+`checkout/` holds one board, `boards/Checkout.dc.html`. It is the page she chooses a payment on.
+It shows the plan, the choice between a card and Telegram Stars, a space the payment provider
+fills, and one button for each choice.
+
+This directory holds no `render/` and no `reference/`. The other six hold the markup and the
+pictures beside the board. The step that builds this page writes them, because a picture of an
+empty space is not a picture of the page. `docs/design/payments.md` designs what goes in that
+space, and names the boards this page still needs.
+
+The formatter skips this directory, the same as the other six.
+
 ## How the design changes
 
 The canvas is where the design changes. Nobody edits these files by hand. A change to the design
