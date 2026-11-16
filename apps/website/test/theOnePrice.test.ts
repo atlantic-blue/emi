@@ -13,7 +13,6 @@ import {
   problemsWithThePeriod,
   problemsWithWhatItCosts,
   theAmountOf,
-  theOldPeriod,
   theOneAmount,
   theOneHost,
   theOnePeriod,
@@ -107,24 +106,13 @@ describe('the site asks for one price', () => {
     ]);
   });
 
-  /**
-   * A count of people carries a separator between its thousands, which is the separator an amount
-   * of money carries between its euros and its cents. One of the founders' notes says she worked
-   * with over 1,500 women, and a reader of that sentence is not being quoted a price.
-   */
   it('reads a count of thousands as a count and not as money', () => {
     expect(amountsOfMoneyIn('over 1,500 women')).toEqual([]);
     expect(amountsOfMoneyIn('más de 1.500 mujeres')).toEqual([]);
     expect(amountsOfMoneyIn('39 euros a year')).toEqual(['39 euros']);
-
-    // A currency sign in front still makes a figure money, however it is grouped.
     expect(amountsOfMoneyIn('€1,500 a year')).toEqual(['€1,500']);
   });
 
-  /**
-   * A figure of 39 carries no separator, so nothing inside it says it is money. The word beside it
-   * does, in each of the three languages, and a count of years in the same sentence does not.
-   */
   it('reads the price out of each language and leaves a count of years alone', () => {
     expect(amountsOfMoneyIn(theOnePrice.en)).toEqual(['39 euros']);
     expect(amountsOfMoneyIn(theOnePrice.ru)).toEqual(['39 евро']);
@@ -143,14 +131,10 @@ describe('the site asks for one price', () => {
   });
 });
 
-/**
- * Emi is one product, sold by the year. A page or a screen that priced her by the month would be
- * asking for a product no store carries, and both of them copy the sentence held here.
- */
 describe('the price covers a year', () => {
-  it('holds a period for each language, and the period Emi stopped selling', () => {
+  it('holds a period for each language the site serves', () => {
     expect(Object.keys(theOnePeriod).sort()).toEqual([...languages].sort());
-    expect(Object.keys(theOldPeriod).sort()).toEqual([...languages].sort());
+    expect(languages.every((language) => theOnePeriod[language].length > 0)).toBe(true);
   });
 
   it.each(languages)('ends the sentence on the year the page shows her, in %s', (language) => {
@@ -164,23 +148,19 @@ describe('the price covers a year', () => {
     expect(problemsWithThePeriod(language, String(line))).toEqual([]);
   });
 
-  it('refuses a monthly price, which is the product Emi stopped selling', () => {
+  it('refuses a price that names a month, and says what the sentence must end on', () => {
     expect(problemsWithThePeriod('en', 'One month free, then 39 euros a month.')).toEqual([
-      '"One month free, then 39 euros a month." does not end "a year.", and Emi is sold by the year',
-      '"One month free, then 39 euros a month." asks for a price "a month.", which Emi does not sell',
+      '"One month free, then 39 euros a month." does not end "a year.", which is the period the price covers',
     ]);
     expect(problemsWithThePeriod('ru', 'Первый месяц бесплатно, затем 39 евро в месяц.')).toEqual([
-      '"Первый месяц бесплатно, затем 39 евро в месяц." does not end "в год.", and Emi is sold by the year',
-      '"Первый месяц бесплатно, затем 39 евро в месяц." asks for a price "в месяц.", which Emi does not sell',
+      '"Первый месяц бесплатно, затем 39 евро в месяц." does not end "в год.", which is the period the price covers',
     ]);
     expect(problemsWithThePeriod('es', 'Un mes gratis, después 39 euros al mes.')).toEqual([
-      '"Un mes gratis, después 39 euros al mes." does not end "al año.", and Emi is sold by the year',
-      '"Un mes gratis, después 39 euros al mes." asks for a price "al mes.", which Emi does not sell',
+      '"Un mes gratis, después 39 euros al mes." does not end "al año.", which is the period the price covers',
     ]);
   });
 
-  // The month she pays nothing for is still a month, and it is not the period of the price.
-  it('keeps the free month, which names a month and is not a monthly price', () => {
+  it('offers the first month free, in every language', () => {
     expect(theOnePrice.en).toContain('One month free');
     expect(theOnePrice.ru).toContain('Первый месяц бесплатно');
     expect(theOnePrice.es).toContain('Un mes gratis');

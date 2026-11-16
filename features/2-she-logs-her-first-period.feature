@@ -753,7 +753,7 @@ Feature: She opens Emi and logs her first period
     When she opens Emi and reads the card about money on the tour
     Then the card tells her the first month is free and the price after it is 39 euros a year
     And a woman who reads Emi in Russian or in Spanish is told the same free month and the same price
-    And no language still tells her the price buys her a month
+    And no language names a monthly price
 
   Scenario: SCREEN-1, the first run asks her name and then the year she was born
     Given she has never opened Emi before

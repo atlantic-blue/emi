@@ -9,10 +9,6 @@ import { SITE_ORIGIN } from '@/lib/addresses';
  * price on the page, decides on it, and meets the store's own figure one press later. The gap
  * between the two is the moment she stops believing the rest of the page. The address is the same
  * kind of promise: a host nobody serves is a dead link at best, and somebody else's site at worst.
- *
- * The period is part of the price. 39 a month and 39 a year are two products, and only one of
- * them is the one the stores carry, so the words are held to the whole sentence rather than to a
- * figure found somewhere inside them.
  */
 
 /** What the page asks her for, written as each language writes it, full stop and all. */
@@ -22,27 +18,17 @@ export const theOnePrice: Readonly<Record<Language, string>> = {
   es: 'Un mes gratis, después 39 euros al año.',
 };
 
-/**
- * How each language ends the sentence. The free month is a month and the price is not, so the two
- * are told apart by the period that follows the amount rather than by the word month alone.
- */
+/** How each language ends the sentence, full stop and all. */
 export const theOnePeriod: Readonly<Record<Language, string>> = {
   en: 'a year.',
   ru: 'в год.',
   es: 'al año.',
 };
 
-/** The period of the product Emi stopped selling, which no page and no screen may go back to. */
-export const theOldPeriod: Readonly<Record<Language, string>> = {
-  en: 'a month.',
-  ru: 'в месяц.',
-  es: 'al mes.',
-};
-
 /**
- * The amount on its own, with a full stop between the parts where it has parts. Russian and
- * Spanish write the comma their readers write, so an amount is read into this one form before two
- * of them are compared.
+ * The amount on its own, with a full stop where it carries a separator. Russian and Spanish
+ * write the comma their readers write, so an amount is read into this one form before two of them
+ * are compared.
  */
 export const theOneAmount = '39';
 
@@ -61,13 +47,13 @@ export function whoseWordsAreIn(file: string): Language | null {
   return whoseWordsTheyAre[file.slice(file.lastIndexOf('/') + 1)] ?? null;
 }
 
-/** The one currency Emi is sold in, as each language of the site writes it after the figure. */
+/** The currency, as each language of the site writes it after the figure. */
 const currencyWord = 'euros?|евро';
 
 /**
- * Every amount of money a text names: a figure a currency sign or a currency word marks as money,
- * and a figure with a separator and two places after it. A price of 39 carries no separator, so
- * the word beside it is the only thing that tells it from a count.
+ * Every amount of money a text names. A currency sign or a currency word beside a figure makes
+ * it money, and so does a separator with two places after it. The price carries no separator, so
+ * the word beside the figure is the only thing that tells it from a count.
  *
  * A separator between thousands is not a separator between the parts of an amount, which is why
  * the two places have to be the last two digits of the figure. English writes a count of people as
@@ -136,23 +122,15 @@ export function problemsWithWhatItCosts(said: WhatOneFileSays): string[] {
   return problems;
 }
 
-/** What is wrong with the period a price names, as one sentence for each thing that is wrong. */
+/** What is wrong with the period a price names, or nothing where it names the right one. */
 export function problemsWithThePeriod(language: Language, said: string): string[] {
-  const problems: string[] = [];
-
-  if (!said.endsWith(theOnePeriod[language])) {
-    problems.push(
-      `"${said}" does not end "${theOnePeriod[language]}", and Emi is sold by the year`,
-    );
+  if (said.endsWith(theOnePeriod[language])) {
+    return [];
   }
 
-  if (said.includes(theOldPeriod[language])) {
-    problems.push(
-      `"${said}" asks for a price "${theOldPeriod[language]}", which Emi does not sell`,
-    );
-  }
-
-  return problems;
+  return [
+    `"${said}" does not end "${theOnePeriod[language]}", which is the period the price covers`,
+  ];
 }
 
 /** What is wrong with the addresses a file names, as one sentence for each one. */

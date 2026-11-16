@@ -7735,8 +7735,8 @@ defineFeature(feature, (test) => {
       es: 'Un mes gratis, después 39 euros al año.',
       ru: 'Первый месяц бесплатно, затем 39 евро в год.',
     };
-    // Each language says month in the free month too, so the period of the price is read with
-    // the word in front of it rather than with the word on its own.
+    // Each language names a month in the free month, so the period is read with the word in
+    // front of it rather than with the word on its own.
     const howEachLanguageSaysAMonth: Readonly<Record<Language, RegExp>> = {
       en: /a month/iu,
       es: /al mes/iu,
@@ -7775,7 +7775,7 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('no language still tells her the price buys her a month', () => {
+    and('no language names a monthly price', () => {
       for (const language of languages) {
         const said = thePriceLineIn(language);
 

@@ -19,8 +19,7 @@ export function isLanguage(tag: string): tag is Language {
 
 /**
  * The language and the region a page is written for, as a chat application wants it: a tag of two
- * halves, where the list above holds only the first. The region is the one Emi is sold in, and
- * the English of every page of this site is the British one.
+ * halves, where the list above holds only the first.
  */
 const locales: Readonly<Record<Language, string>> = {
   en: 'en_GB',
