@@ -51,9 +51,10 @@ The operator made each one. Do not argue with them here.
    in the cloud. `docs/design/accounts.md` carries that change. This document does not repeat it.
 8. The Stripe account is verified. The operator said so on 16 November 2026. The first price object
    is still made with the tax inside the amount.
-9. A delete does not delete payments. The payment record stays, and the delete does not cancel the
-   subscription at Stripe. The operator decided that on 16 November 2026, and contract KEEP-3 now
-   says it. Section 1 says what the record holds afterwards.
+9. A delete keeps the payment record and stops the renewal. It sets the Stripe subscription to
+   cancel at the end of the period she paid for, and the rest of that year is not refunded. The
+   operator decided that on 16 November 2026, and contract KEEP-3 now says it. Section 1 says what
+   the record holds afterwards.
 10. The terms page has a board named Terms on the canvas, and its own pull request builds the page.
     The two terms links of the checkout point at `/{language}/terms/`.
 
@@ -284,10 +285,17 @@ application makes, carrying nothing about her, so a second sign in on the same a
 different name and a different digest. A payment made that way is then unreachable, and no screen
 can find it. She reaches it only if Apple, Google or Telegram is the way that paid.
 
-Her subscription also keeps running. The delete does not cancel at Stripe, so the next renewal
-charges her and writes a date onto an item no account points at. So the account page offers Cancel
-renewal, and the delete screen says the subscription is still running before she presses delete.
-Board question 8 is that screen.
+Her subscription stops at the end of the year she paid for. The delete sets `cancel_at_period_end`
+on the subscription, which is the same call the Cancel renewal row makes, so Stripe charges her
+nothing more and refunds nothing. The year she bought runs to its end, and then the state moves to
+`lapsed` the way any other cancel does.
+
+The delete finds the subscription through the items it already walks. It reads `payerDigest` off
+each `IDY#` item before removing it, reads `subscriptionRef` off the `PAY#` item, and makes the
+call. So the delete needs the Stripe secret key, which it does not hold today, and step 10 of the
+path is that change.
+
+The delete screen says all of this before she presses it. Board question 8 is that screen.
 
 ---
 
@@ -736,9 +744,9 @@ Line: "Your payment is taken. Your account updates in a moment."
 **She paid in Stars and she is signed in another way.** Title: No subscription here. Action: Sign
 in with Telegram. Line: "A payment in Stars shows up when you sign in with Telegram."
 
-**She deletes her account while the subscription runs.** Title: This does not stop the payment.
-Actions: Cancel renewal, Delete anyway. Line: "Cancel the renewal first, or Stripe charges you
-again next year."
+**She deletes her account while the subscription runs.** Title: Your year is already paid.
+Actions: Delete everything, Keep my account. Line: "Emi stops the renewal, and the rest of this
+year is not refunded."
 
 **A Stars payment is refunded.** Title: Refunded. Action: Buy Emi. Line: "Your Stars are back.
 Everything you wrote stays, and new entries stop."
@@ -772,8 +780,7 @@ has no board.
 6. What does the account page show after she cancels, while the year she paid for still runs?
 7. What does the Emi bot say first, and what does the Open the Emi bot button point at?
 8. What does the delete screen say to a woman whose subscription is still running? The delete
-   leaves the payment and does not cancel at Stripe, so she is charged again next year unless she
-   cancels first.
+   stops the renewal and refunds nothing, so she has to read that before she presses it.
 
 ---
 
@@ -785,8 +792,8 @@ Each step is one pull request with one intention. Each one ships its tests in th
 infrastructure is applied from a machine: every step that adds a resource adds its Terraform, and
 the merge deploys it.
 
-Steps 1 to 4 are the shared half. Steps 5 to 10 are the Stripe route, which is built first. Steps
-11 to 13 are Telegram Stars, and they come after all of the above.
+Steps 1 to 4 are the shared half. Steps 5 to 11 are the Stripe route, which is built first. Steps
+12 to 14 are Telegram Stars, and they come after all of the above.
 
 **1. The contracts for the money.**
 Files: `docs/contracts.md`, `docs/features.md`.
@@ -862,34 +869,45 @@ Proof: a cancel leaves the paid date alone and moves the state. A changed paymen
 the old one.
 Depends on: step 8, and the Terms board of the website canvas.
 
-**10. The application reads the entitlement.**
+**10. The delete stops the renewal.**
+Files: `services/vault/src/handlers/deleteAccount.ts`, `services/vault/src/payments/`,
+`infra/lambda.tf`.
+Behaviour: the delete reads `payerDigest` off each `IDY#` item before removing it, reads
+`subscriptionRef` off the `PAY#` item, and sets `cancel_at_period_end` on that subscription. The
+payment item is left alone. The role gains the one parameter it needs for the secret key.
+Proof: a delete against a double leaves the `PAY#` item in the table and records the cancel call.
+A second test reads that the item holds no account identifier afterwards. A mutation that removes
+the cancel call is watched failing.
+Depends on: step 9.
+
+**11. The application reads the entitlement.**
 Files: `apps/mobile/src/`.
 Behaviour: the launch read of contract PAY-2 asks the api as well as the store, and keeps the
 furthest date.
 Proof: a test gives the store nothing and the api a date, and the write stays open.
 Depends on: step 4.
 
-**11. The Emi bot, and the invoice.**
+**12. The Emi bot, and the invoice.**
 Files: `services/bot/`, `infra/api.tf`, `infra/lambda.tf`.
 Behaviour: the bot answers one command with an invoice link. The token is read from the parameter
 store.
 Proof: the call carries `XTR` and one price, and the payload carries the digest.
-Depends on: step 10, the shape and the price of section 4, the sanctions answer of question 1, and
+Depends on: step 11, the shape and the price of section 4, the sanctions answer of question 1, and
 board question 7.
 
-**12. The Stars payment and each renewal.**
+**13. The Stars payment and each renewal.**
 Files: `services/bot/`.
 Behaviour: the pre checkout query is answered first. A successful payment writes the item. A later
 payment moves the date.
 Proof: a first payment and a later one are fed in, and the item is read after each one. An answer
 to the pre checkout query that takes longer than the limit fails the test.
-Depends on: step 11.
+Depends on: step 12.
 
-**13. The account page for a Stars payer.**
+**14. The account page for a Stars payer.**
 Files: `apps/website/components/`, the three word catalogues.
 Behaviour: the card says Stars, and sends her to Telegram to cancel.
 Proof: a test reads that no Change card row and no Cancel renewal row is drawn.
-Depends on: step 12, and board question 4.
+Depends on: step 13, and board question 4.
 
 ---
 
@@ -901,7 +919,7 @@ One question is open.
 
 1. **The sanctions check.** Issue 427 asks whether a company in the United Kingdom may take a
    payment from a person in Russia. The Stars route exists for that case. Nothing of it is built
-   until the answer is in writing. Blocks steps 11 to 13, and nothing before them.
+   until the answer is in writing. Blocks steps 12 to 14, and nothing before them.
 
 Three more were open and the operator answered them on 16 November 2026. Each one is a decision
 now, in "The decisions this design starts from". The Stripe account is verified, so nothing waits

@@ -552,11 +552,12 @@ Errors: a field present in the database and absent from the export.
 Verified by a test.
 
 Output: the local database empty, the keychain items gone, and the server account gone. The
-payment record stays, because it is the record of a sale and it holds nothing of hers.
+payment record stays, because it is the record of a sale and it holds nothing of hers, and its
+subscription is set to cancel at the end of the period it paid for.
 
 Errors: any row, any keychain item or any item of her account that remains. A way back after it. A
 delay or a cooling off period. A payment record that carries an account identifier, a record
-identifier or anything else that names her.
+identifier or anything else that names her. A subscription that renews after the account is gone.
 
 ### KEEP-4, no third party sees anything
 
