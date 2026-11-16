@@ -42,9 +42,8 @@ The operator made each one. Do not argue with them here.
    set that on 4 November 2026.
 4. The Stripe route is built first. The Telegram Stars route stays in this document as a later
    route, and every step of it comes after the Stripe steps.
-5. She pays with Apple Pay, Google Pay or a card, on our own page, through one Stripe element. It
-   is not Stripe's hosted Checkout page. Change card, receipts and cancel are on our account page
-   too.
+5. She pays with Apple Pay, Google Pay or a card, on our own page. It is not Stripe's hosted
+   Checkout page. Change card, receipts and cancel are on our account page too.
 6. The account is required to pay. She signs in on myemi.app first. Sign in with Apple, Google,
    Telegram and a code sent to her address all work there today, through one Amazon Cognito user
    pool in eu-central-1.
@@ -53,9 +52,10 @@ The operator made each one. Do not argue with them here.
 
 Two approved boards carry the screens.
 
-`docs/design/website/checkout/boards/Checkout.dc.html` is the page she buys on. It shows a plan
-card, a choice between Card and Telegram Stars, a space the payment provider fills, and one button
-for each choice. Its words carry the yearly price.
+`docs/design/website/checkout/boards/Checkout.dc.html` is the page she buys on. The operator
+approved this drawing of it on 16 November 2026. It shows a plan card and two choices: "Apple Pay,
+Google Pay or card" on this site, and "Telegram Stars" in the Emi bot. Section 3 reads the first
+choice row by row. Its words carry the yearly price.
 
 `docs/design/website/sign-in/boards/Profile.dc.html` is her account. Its subscription card reads
 "Emi, monthly", a monthly price, a renewal date, "Active", "Paid with Card, on this site", and
@@ -108,10 +108,20 @@ https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-subscription-curren
 item.
 
 Stripe, the Payment Element: https://docs.stripe.com/payments/payment-element
-It has a `wallets` option, described as "Whether to show wallets like Apple Pay or Google Pay. The
-default is to show them when possible." It also says that when the Payment Element and the Express
-Checkout Element sit on one page, "wallet payment methods such as Apple Pay and Google Pay are only
-displayed in the Express Checkout Element to avoid duplication."
+It says that when the Payment Element and the Express Checkout Element sit on one page, "wallet
+payment methods such as Apple Pay and Google Pay are only displayed in the Express Checkout Element
+to avoid duplication."
+
+Stripe, the Express Checkout Element: https://docs.stripe.com/elements/express-checkout-element
+It "presents one-click payment methods that are active, supported, and set up", and says "a
+customer won't see a Google Pay button if they don't have Google Pay set up". For the case where
+nothing is available it says: "If no wallets are available, provide another option for your
+customer to pay", and it gives the `availablepaymentmethodschange` event to read that with.
+
+Stripe, an Elements instance without an intent:
+https://docs.stripe.com/js/elements_object/create_without_intent
+This reference covers the Express Checkout Element. `mode` is required there, and `amount` is
+"Required when `mode` is `payment` or `subscription`".
 
 Stripe, Apple Pay on the web: https://docs.stripe.com/apple-pay?platform=web
 "If you use Elements or embedded Checkout, you need to register your domain." It says Stripe
@@ -320,15 +330,27 @@ no second item and no second query is needed to find out who paid.
 The digest is the only thing of ours that reaches Stripe. Stripe holds her card and the address her
 bank needs. Emi holds neither.
 
-### What she can pay with, and one element
+### What she can pay with, and what the board draws
 
-The page shows one Stripe Payment Element. It draws Apple Pay and Google Pay when her browser and
-her device offer them, and the card form under them. The `wallets` option of that element defaults
-to showing them when possible, so one element is the whole choice.
+The board draws the first choice as "Apple Pay, Google Pay or card", on this site. Under it, in
+this order: an Apple Pay button, a Google Pay button, a line that reads "or pay by card", the card
+form, the terms line, and a button that reads "Pay €39".
 
-The Express Checkout Element is not used. Stripe says that when both sit on one page, the wallets
-draw in the Express Checkout Element alone, to avoid showing them twice. The board draws one space
-for a payment form, and one element fills it.
+That order is two Stripe elements rather than one. The two buttons are the Express Checkout
+Element. The card form is the Payment Element. Stripe names that pairing itself: when both sit on
+one page, "wallet payment methods such as Apple Pay and Google Pay are only displayed in the
+Express Checkout Element to avoid duplication". So each wallet draws once, above the line, and the
+card form draws once, below it.
+
+Stripe draws only the wallets the device has. The element "presents one-click payment methods that
+are active, supported, and set up", and a woman "won't see a Google Pay button if they don't have
+Google Pay set up". So she sees two buttons, or one, or none.
+
+None is a real state, and the page handles it. Stripe gives the `availablepaymentmethodschange`
+event for exactly that, and says: "If no wallets are available, provide another option for your
+customer to pay." So the buttons and the line that reads "or pay by card" are drawn only once that
+event names at least one wallet. A woman on a desktop browser with no wallet set up sees the card
+form alone, with no line over nothing.
 
 ### What registering myemi.app for Apple Pay needs
 
@@ -347,7 +369,14 @@ that already lives in the parameter store, and the result is a setting inside th
 
 Google Pay needs the same registration and nothing else.
 
-Two notes, each one a thing that is easy to read the wrong way.
+One thing here I inferred rather than read. This page collects a payment method and takes no money,
+so both elements run in the setup mode. Stripe's reference for an Elements instance without an
+intent covers the Express Checkout Element, and it requires `amount` only when the mode is
+`payment` or `subscription`, which leaves `setup` as the third mode. No page I read says in a
+sentence that the wallets draw in that mode. So the step that builds this page proves it on a real
+device before it writes anything else.
+
+Two more notes, each one a thing that is easy to read the wrong way.
 
 Stripe recommends Apple Pay merchant tokens for a payment the shop starts later, and a yearly
 renewal is exactly that. It is a setting of the integration rather than code here, and the step that
@@ -371,8 +400,8 @@ the same and there is always one thing to confirm.
 2. The function makes the customer, or reads the one the item already names.
 3. The function makes a SetupIntent for that customer, with `usage` set to `off_session`.
 4. The function writes the `PAY#` item with `payerRef` and no `paidUntil`.
-5. The site mounts the Payment Element on the client secret of that SetupIntent, and calls
-   `stripe.confirmSetup`. She presses Apple Pay, Google Pay or the card form here, and Strong
+5. The site mounts both elements on the client secret of that SetupIntent, and calls
+   `stripe.confirmSetup`. She presses a wallet button or fills the card form here, and Strong
    Customer Authentication happens here if her bank asks for it.
 6. The site tells the function the setup is done. The function sets the payment method as
    `invoice_settings.default_payment_method` on the customer.
@@ -409,7 +438,7 @@ sequenceDiagram
   Stripe-->>Pay: the client secret of the setup
   Pay->>Table: write the payer item, with no paid until date
   Pay-->>Site: the client secret
-  Site->>Stripe: one Payment Element, wallets and the card form
+  Site->>Stripe: the wallet button or the card form, whichever she presses
   Stripe-->>Site: the setup succeeded
   Site->>Pay: the setup is done
   Pay->>Stripe: make it the default, then create the yearly subscription
@@ -760,11 +789,12 @@ Depends on: step 3, and the verified Stripe account of question 2.
 
 **6. The payment form on the Buy Emi page.**
 Files: `apps/website/app/[lang]/checkout/`, `apps/website/components/`, the three word catalogues.
-Behaviour: the page of the approved board, with one Payment Element mounted. The wallets draw
-themselves when the browser offers them. The Stars choice is drawn and says it is not ready yet.
+Behaviour: the page of the approved board. The Express Checkout Element draws the wallets the
+device has, and the Payment Element draws the card form under the line. The Stars choice is drawn
+and says it is not ready yet.
 Proof: a test drives the page, confirms the setup through a double, and reads the state the page
-leaves her in. A second test reads that no Express Checkout Element is mounted. The one price gate
-holds the words.
+leaves her in. A second test answers the wallet event with no wallet, and reads that neither button
+and no line that reads "or pay by card" is drawn. The one price gate holds the words.
 Depends on: step 5, the domain registration of section 3, and board question 2.
 
 **7. The webhook.**
@@ -858,10 +888,11 @@ Stripe's current documentation and cited above. What lowers it is two things. St
 parameter I take legacy. And `tax_behavior` cannot be changed after the price is made, so a wrong
 first press costs a price object and every subscription on it.
 
-The wallets: 80 per cent. The element option, the domain registration and the merchant validation
-are quoted from Stripe's own pages. What lowers it is that nobody has drawn Apple Pay on a device
-against this account, and a wallet that will not take a payment the shop starts later is a refusal
-I have written and not seen.
+The wallets: 70 per cent. The pairing of the two elements, what each one draws, the domain
+registration and the merchant validation are quoted from Stripe's own pages. What lowers it is the
+setup mode, which I read out of a reference table rather than out of a sentence. Nobody has drawn
+Apple Pay on a device against this account, and a wallet that will not take a payment the shop
+starts later is a refusal I have written and not seen.
 
 The Stars route: 65 per cent. The Bot api is quoted exactly and the limits are its own words. What
 lowers it is that the price is a year and the subscription period is 30 days, so the shape is not
