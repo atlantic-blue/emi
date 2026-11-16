@@ -204,7 +204,7 @@ health as an intimate editorial practice. The tone is reassuring, dignified and 
 The movement is warm minimalism with the refinement of good stationery.
 
 - Generous space, on a warm paper ground, with a soft wash at the top of each screen.
-- One face for every word, in four weights, with monospaced figures for the recovery code.
+- One face for every word, in four weights, with monospaced figures for the code she is sent.
 - Low contrast hairlines and soft card surfaces, rather than dramatic shadows.
 - A lowercase wordmark, `emi`, which reads as quiet rather than institutional.
 - Abstract continuous line work and circular phase ribbons. No anatomical or floral drawing.
@@ -254,7 +254,8 @@ contrast floor on the ground.
 
 One face carries every word of the application, in four weights: regular for running text, semibold
 for a quiet label, bold for a heading inside a card, and extra bold for a number and a screen title.
-A monospaced face carries the recovery code, where a reader has to tell one character from another.
+A monospaced face carries the code Emi sends to her address, where a reader has to tell one
+character from another.
 
 The scale runs from the label the dock draws up to the cycle day inside the ring. Every role names
 its own line height, and no role is set below the line height floor.

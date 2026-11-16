@@ -19,18 +19,18 @@ export const plainValues: readonly string[] = [
   'Whether a cycle is a forecast',
 ];
 
-/** The keys of section 7.1 of the design, in the order the document explains them. */
+/** The keys of the design, in the order the document explains them. */
 export const designKeys: readonly string[] = [
   'The vault key',
   'The device key',
-  'The recovery code',
-  'The recovery key',
+  'The account key in the key service',
   'The wrapped vault key',
 ];
 
-/** The four attacks the design accepts rather than fixes. */
+/** The attacks the design accepts rather than fixes. */
 export const acceptedAttacks: readonly string[] = [
-  'A lost phone and a lost recovery code',
+  'Emi itself, and anybody who can compel Emi',
+  'A sign in somebody else completes',
   'A phone somebody else can unlock',
   'A phone running something hostile',
   'What the outside learns without reading a day',
