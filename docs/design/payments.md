@@ -1,8 +1,8 @@
-# Payments: a card on myemi.app, and Telegram Stars in the Emi bot
+# Payments: a card and a wallet on myemi.app, and Telegram Stars later
 
 Emi has one price and three ways to pay it. The store route is built into the application and
-contracts PAY-1 to PAY-4 already describe it. This document designs the other two: a card on our
-own page, and Telegram Stars in the Emi bot.
+contracts PAY-1 to PAY-4 already describe it. This document designs the other two: a payment on our
+own page through Stripe, and Telegram Stars in the Emi bot.
 
 Two sentences hold the design up.
 
@@ -10,7 +10,7 @@ A payment says one thing about one sign in: this way in is paid until this date.
 whose records those are, and nothing it writes can reach a record.
 
 The account is the join. She signs in first, pays second, and the payment lands against the sign in
-she used. A woman who pays one way and signs in another way is the hard case, and section 3 is
+she used. A woman who pays one way and signs in another way is the hard case, and section 2 is
 about that moment.
 
 This document writes no product code. It answers
@@ -33,34 +33,41 @@ Status: designed
 
 The operator made each one. Do not argue with them here.
 
-1. Two routes in this round. A card on myemi.app through Stripe, and Telegram Stars through the
-   Emi bot.
-2. The card form is on our own page, with the Stripe Payment Element. It is not Stripe's hosted
-   Checkout page. Change card, receipts and cancel are on our account page too.
-3. The price is 29.99 pounds a month, every month, after one free month. The operator set this on
-   31 October 2026. Issues 427 and 435 still say a year. That is out of date.
-4. Atlantic Blue Solutions Limited is the seller of record. It handles value added tax itself. The
-   operator set this on 4 November 2026.
-5. The account is required to pay. She signs in on myemi.app first. Sign in with Apple, Google,
+1. The price is 39 euros a year, with value added tax inside that amount. The first month is free.
+   The operator set this on 16 November 2026. It replaces 29.99 pounds a month, which issues 427
+   and 435 and the first draft of this document carried.
+2. Stripe sells one yearly price in euros, and the tax is inside the amount. So the figure she
+   reads is the figure she pays, in every country.
+3. Atlantic Blue Solutions Limited is the seller of record and handles the tax itself. The operator
+   set that on 4 November 2026.
+4. The Stripe route is built first. The Telegram Stars route stays in this document as a later
+   route, and every step of it comes after the Stripe steps.
+5. She pays with Apple Pay, Google Pay or a card, on our own page, through one Stripe element. It
+   is not Stripe's hosted Checkout page. Change card, receipts and cancel are on our account page
+   too.
+6. The account is required to pay. She signs in on myemi.app first. Sign in with Apple, Google,
    Telegram and a code sent to her address all work there today, through one Amazon Cognito user
    pool in eu-central-1.
-6. On 13 November 2026 the operator removed the recovery code. Emi keeps each account's vault key
+7. On 13 November 2026 the operator removed the recovery code. Emi keeps each account's vault key
    in the cloud. `docs/design/accounts.md` carries that change. This document does not repeat it.
 
 Two approved boards carry the screens.
 
 `docs/design/website/checkout/boards/Checkout.dc.html` is the page she buys on. It shows a plan
-card, a choice between Card and Telegram Stars, a space for the card form, and one button.
+card, a choice between Card and Telegram Stars, a space the payment provider fills, and one button
+for each choice. Its words carry the yearly price.
 
 `docs/design/website/sign-in/boards/Profile.dc.html` is her account. Its subscription card reads
-"Emi, monthly", the price, the renewal date, "Active", "Paid with Card, on this site", and three
-rows: Receipts, Change card and Cancel renewal.
+"Emi, monthly", a monthly price, a renewal date, "Active", "Paid with Card, on this site", and
+three rows: Receipts, Change card and Cancel renewal. That board still names a month. Question 5 of
+section 8 is that board.
 
 ## What I read, and when
 
 Status: designed
 
-I read each source on 13 November 2026. Each line names the one fact I took from it.
+I read each source on 13 November 2026, and the four about wallets and tax on 16 November 2026.
+Each line names the one fact I took from it.
 
 Stripe, build a subscriptions integration with Elements and the Subscriptions api:
 https://docs.stripe.com/billing/subscriptions/build-subscriptions?payment-ui=elements&api-integration=paymentintents
@@ -69,6 +76,11 @@ The subscription is created with `payment_behavior=default_incomplete`. The page
 `subscription.latest_invoice.confirmation_secret.client_secret`. It names `invoice.paid`,
 `invoice.payment_failed`, `customer.subscription.created`, `customer.subscription.updated` and
 `customer.subscription.deleted` as the events to read.
+
+Stripe, create a price: https://docs.stripe.com/api/prices/create
+`currency` is a three letter code in lower case. `unit_amount` is an integer in the smallest unit
+of that currency. `tax_behavior` is one of `inclusive`, `exclusive` or `unspecified`, and the page
+says: "Once specified as either `inclusive` or `exclusive`, it cannot be changed."
 
 Stripe, free trial periods: https://docs.stripe.com/billing/subscriptions/trials/free-trials
 `trial_period_days` is an integer and the trial must be 730 days or less. The page marks this
@@ -94,6 +106,24 @@ Stripe, the period fields moved:
 https://docs.stripe.com/changelog/basil/2025-03-31/deprecate-subscription-current-period-start-and-end
 `current_period_start` and `current_period_end` left the subscription and went to each subscription
 item.
+
+Stripe, the Payment Element: https://docs.stripe.com/payments/payment-element
+It has a `wallets` option, described as "Whether to show wallets like Apple Pay or Google Pay. The
+default is to show them when possible." It also says that when the Payment Element and the Express
+Checkout Element sit on one page, "wallet payment methods such as Apple Pay and Google Pay are only
+displayed in the Express Checkout Element to avoid duplication."
+
+Stripe, Apple Pay on the web: https://docs.stripe.com/apple-pay?platform=web
+"If you use Elements or embedded Checkout, you need to register your domain." It says Stripe
+handles Apple merchant validation: "Stripe handles Apple merchant validation for you, including
+creating an Apple Merchant ID and Certificate Signing Request." It recommends Apple Pay merchant
+tokens for a payment the shop starts later, which a renewal is.
+
+Stripe, register domains for payment methods:
+https://docs.stripe.com/payments/payment-methods/pmd-registration
+A domain is registered with one call to `/v1/payment_method_domains` using the live secret key, or
+with one press in the dashboard. Every host is registered on its own, "including registering
+top-level domains and subdomains". The page names no file for the site to serve.
 
 Telegram, payments for digital goods: https://core.telegram.org/bots/payments-stars
 It says: "Remember to specify `XTR` in the `currency` field, since all sales of digital goods and
@@ -164,13 +194,13 @@ one day of anybody's history, and a test reads that policy rather than trusting 
 
 `sk` is the string `META`.
 
-`paidUntil` is a string, an instant. It is absent until the first payment or the first free month
-lands. It is the one field every reader wants.
+`paidUntil` is a string, an instant. It is absent until the free month or the first payment lands.
+It is the one field every reader wants.
 
 `route` is a string. It is `card` or `stars`. It is what the account page says she paid with.
 
 `state` is a string. It is `active`, `cancelling`, `lapsed` or `refunded`. `cancelling` means she
-stopped the renewal and the month she paid for still runs.
+stopped the renewal and the year she paid for still runs.
 
 `payerRef` is a string, the Stripe customer identifier. It is absent on the Stars route.
 
@@ -208,9 +238,10 @@ A delete removes the `PAY#` item with everything else. Contract KEEP-3 says any 
 remains is an error, and this is a server item. The books are not lost. Stripe holds every invoice
 and Telegram holds every Stars transaction, and those are the records the seller keeps.
 
-One consequence follows, and it is question 7 of section 10. A woman who deletes her account inside
-a month she paid for, and then signs in again, reads no date. The next renewal writes one, because
-Stripe and Telegram both keep charging until somebody stops them.
+One consequence follows, and it is question 4 of section 10. A woman who deletes her account inside
+a year she paid for, and then signs in again, reads no date. The next renewal writes one, a year
+later, because Stripe keeps charging until somebody stops it. So a delete can cost her eleven
+months she already bought.
 
 ---
 
@@ -264,14 +295,23 @@ section 7.
 
 ---
 
-## 3. The card route
+## 3. The Stripe route, which is built first
 
 Status: designed
 
 ### The objects in Stripe
 
-One product, Emi. One price of 2999 in `gbp`, recurring every month. One customer for each payer
-digest. One subscription for each customer.
+One product, Emi. One price of 3900 in `eur`, recurring every year, with `tax_behavior` set to
+`inclusive`. One customer for each payer digest. One subscription for each customer.
+
+`inclusive` is the whole tax decision in one parameter. The 39 euros she reads is the 39 euros she
+pays, and the tax sits inside it. Stripe Tax is not used, and `automatic_tax` stays off, because
+Atlantic Blue Solutions Limited works the tax out of the amount itself.
+
+One trap, and it is permanent. Stripe says `tax_behavior` "cannot be changed" once it is set. A
+price created without it, or created as `exclusive`, is a price that has to be replaced, and every
+subscription on it has to be moved. So the first price object of the live account is the one that
+matters, and the step that makes it reads this paragraph first.
 
 The payer digest goes into the `metadata` of the customer and of the subscription. That is the
 reverse index. A webhook carries a customer identifier, and the metadata on it names the digest, so
@@ -280,6 +320,43 @@ no second item and no second query is needed to find out who paid.
 The digest is the only thing of ours that reaches Stripe. Stripe holds her card and the address her
 bank needs. Emi holds neither.
 
+### What she can pay with, and one element
+
+The page shows one Stripe Payment Element. It draws Apple Pay and Google Pay when her browser and
+her device offer them, and the card form under them. The `wallets` option of that element defaults
+to showing them when possible, so one element is the whole choice.
+
+The Express Checkout Element is not used. Stripe says that when both sit on one page, the wallets
+draw in the Express Checkout Element alone, to avoid showing them twice. The board draws one space
+for a payment form, and one element fills it.
+
+### What registering myemi.app for Apple Pay needs
+
+Apple Pay on the web needs the domain registered with Stripe. That is one call to
+`/v1/payment_method_domains` with the live secret key, or one press on the payment method domains
+page of the dashboard. Each host is registered on its own, so a subdomain that draws the button
+needs its own registration.
+
+Stripe does the rest. Its page says it handles Apple merchant validation itself, including creating
+the Apple Merchant ID and the Certificate Signing Request. So Emi needs no Apple Developer account,
+no merchant identifier and no certificate.
+
+Nothing of this enters the repository. The Stripe page for Elements names no file for the site to
+serve, no key and no identifier. The registration is one act by a person holding the secret key
+that already lives in the parameter store, and the result is a setting inside the Stripe account.
+
+Google Pay needs the same registration and nothing else.
+
+Two notes, each one a thing that is easy to read the wrong way.
+
+Stripe recommends Apple Pay merchant tokens for a payment the shop starts later, and a yearly
+renewal is exactly that. It is a setting of the integration rather than code here, and the step that
+builds the page names it.
+
+Stripe limits Apple Pay for a digital subscription sold inside an iOS application. myemi.app is a
+web site in a browser and the Emi application sells nothing through this page. The rule that binds
+the application is in section 6, not here.
+
 ### The first payment, with a free month
 
 The free month means the first invoice is zero, so there is no payment to confirm. Stripe makes a
@@ -287,31 +364,36 @@ SetupIntent in that case, but the deferred payment page says `pending_setup_inte
 nothing needs authentication. A flow that waits for that field therefore works on some cards and
 not on others.
 
-So the card is collected first, and the subscription is made second. The order is always the same
-and there is always one thing to confirm.
+So the payment method is collected first, and the subscription is made second. The order is always
+the same and there is always one thing to confirm.
 
 1. The site asks the payments function to start. The request carries her identity token.
 2. The function makes the customer, or reads the one the item already names.
 3. The function makes a SetupIntent for that customer, with `usage` set to `off_session`.
 4. The function writes the `PAY#` item with `payerRef` and no `paidUntil`.
 5. The site mounts the Payment Element on the client secret of that SetupIntent, and calls
-   `stripe.confirmSetup`. Strong Customer Authentication happens here if her bank asks for it.
+   `stripe.confirmSetup`. She presses Apple Pay, Google Pay or the card form here, and Strong
+   Customer Authentication happens here if her bank asks for it.
 6. The site tells the function the setup is done. The function sets the payment method as
    `invoice_settings.default_payment_method` on the customer.
-7. The function creates the subscription with the price, `trial_period_days` set to 30,
+7. The function creates the subscription with the yearly price, `trial_period_days` set to 30,
    `payment_settings[save_default_payment_method]` set to `on_subscription`, and
    `trial_settings[end_behavior][missing_payment_method]` set to `cancel`.
 8. The webhook writes `paidUntil` when the event arrives.
+
+The dates follow from that. The free month ends 30 days after she pays nothing. Stripe then charges
+39 euros and the year runs from that day. So `paidUntil` moves twice: once to the end of the free
+month, and once to a year after it.
 
 Stripe marks `trial_period_days` legacy and recommends the Trial Offer api instead. The legacy
 parameter is taken here because it needs one price object and one integer. A trial offer needs two
 price objects, the `flexible` billing mode and api version `2026-09-30.endive` or later. If Stripe
 withdraws the parameter, the change is one function and one line.
 
-If the operator decides the free month does not apply on the web, the shape changes by one step.
-The subscription is then created with `payment_behavior=default_incomplete`, the function expands
+If the operator ever drops the free month, the shape changes by one step. The subscription is then
+created with `payment_behavior=default_incomplete`, the function expands
 `latest_invoice.confirmation_secret`, and the site calls `stripe.confirmPayment` on that client
-secret rather than `stripe.confirmSetup`. Question 3 of section 10 is that decision.
+secret rather than `stripe.confirmSetup`.
 
 ```mermaid
 sequenceDiagram
@@ -322,20 +404,19 @@ sequenceDiagram
   participant Hook as The webhook function
   participant Table as The vault table
   She->>Site: opens Buy Emi, already signed in
-  Site->>Pay: start a card subscription, with her identity token
+  Site->>Pay: start a subscription, with her identity token
   Pay->>Stripe: create the customer, then a SetupIntent
   Stripe-->>Pay: the client secret of the setup
   Pay->>Table: write the payer item, with no paid until date
   Pay-->>Site: the client secret
-  Site->>Stripe: the Payment Element confirms the card
+  Site->>Stripe: one Payment Element, wallets and the card form
   Stripe-->>Site: the setup succeeded
   Site->>Pay: the setup is done
-  Pay->>Stripe: make the card the default, then create the subscription
+  Pay->>Stripe: make it the default, then create the yearly subscription
   Stripe-->>Hook: customer.subscription.created, trialing
-  Hook->>Table: write paid until, from the item period end
-  She->>Site: opens her account page
-  Site->>Pay: read the subscription
-  Pay-->>She: Active. Renews on 1 Dec 2026
+  Hook->>Table: write paid until, the end of the free month
+  Stripe-->>Hook: a month later, invoice.paid for 39 euros
+  Hook->>Table: move paid until a year forward
 ```
 
 ### The events the service reads, and what each one writes
@@ -352,7 +433,7 @@ and `paidUntil` from `items.data[0].current_period_end`. For a subscription in i
 instant is the end of the free month.
 
 `customer.subscription.updated` writes `paidUntil` from the same place, and `state` as `cancelling`
-when `cancel_at_period_end` is true. It is the event that moves the date forward each month.
+when `cancel_at_period_end` is true. It is the event that moves the date forward each year.
 
 `invoice.paid` writes `paidUntil` from the subscription item period of the invoice line, and
 `state` as `active`. It is the event the Stripe guide names for giving access, and it is read as
@@ -365,7 +446,7 @@ is not a lapse, and a woman whose bank blocked one attempt keeps writing to her 
 the date she paid for runs out.
 
 `customer.subscription.deleted` sets `state` to `lapsed`. It leaves `paidUntil` where it is, so the
-month she paid for still works.
+year she paid for still works.
 
 Two traps, named because each one fails at run time and not at compile time.
 
@@ -384,31 +465,49 @@ three rows and no fourth destination.
 
 Change card makes a second SetupIntent for the same customer, mounts the Payment Element again, and
 on success sets the new payment method as the default on the customer and on the subscription. The
-old payment method is detached afterwards, so a card she replaced is not left on file.
+old payment method is detached afterwards, so a card she replaced is not left on file. A wallet is
+collected the same way, because a wallet is a payment method like any other here.
 
 Receipts lists the invoices of the customer and shows the date, the amount and a link for each one.
 The link is the hosted invoice page Stripe already serves. Emi builds no invoice of its own and
 stores no copy.
 
-Cancel renewal updates the subscription with `cancel_at_period_end` set to true. The month she paid
+Cancel renewal updates the subscription with `cancel_at_period_end` set to true. The year she paid
 for runs to its end. The account page then says the date it ends, and offers to turn the renewal
 back on, which is the same call with false.
 
 ---
 
-## 4. The Telegram Stars route
+## 4. The Telegram Stars route, which comes later
 
 Status: designed
+
+This route is designed and it is not next. The operator put every step of it after the Stripe
+steps on 16 November 2026. The sections below stand so that the Stripe work does not design itself
+into a corner.
+
+### A year does not fit a Stars subscription
+
+The price is a year. A Stars subscription renews only every 30 days: the reference says
+`subscription_period` "must always be 2592000 (30 days) if specified". So a Stars subscription
+cannot sell a year.
+
+Two shapes answer that, and neither is chosen. An invoice with no `subscription_period` is a single
+payment, so it can sell a year and renew nothing, and she buys it again each year. A Stars
+subscription at a twelfth of the year renews every 30 days, and twelve of those is 360 days rather
+than a year.
+
+The operator decides the shape and the number of Stars when the Stars steps start. Nothing is built
+on it now, and section 9 says those steps wait.
 
 ### The invoice
 
 The bot sells one thing. `createInvoiceLink` is called with `currency` set to `XTR`, exactly one
-price component, `subscription_period` set to 2592000, and a `payload` that carries the payer
-digest and nothing else.
+price component, and a `payload` that carries the payer digest and nothing else.
+`subscription_period` is set only if the operator chooses the renewing shape above.
 
-The reference is strict about three of those. Digital goods are sold in Stars only. `prices` must
-hold exactly one item for a Stars payment. The period must always be 2592000 seconds, which is 30
-days.
+The reference is strict about two of those. Digital goods are sold in Stars only. `prices` must
+hold exactly one item for a Stars payment.
 
 The payload is at most 128 bytes and the digest is 26 characters, so the whole payer digest fits
 and is read straight back on the payment.
@@ -422,7 +521,7 @@ sequenceDiagram
   participant TG as Telegram
   participant Table as The vault table
   She->>Bot: opens the bot from the Buy Emi page
-  Bot->>TG: createInvoiceLink, XTR, one price, period 2592000
+  Bot->>TG: createInvoiceLink, XTR, one price
   TG-->>Bot: an invoice link
   Bot-->>She: the invoice
   She->>TG: pays in Stars
@@ -430,7 +529,7 @@ sequenceDiagram
   Bot-->>TG: answerPreCheckoutQuery, ok, within 10 seconds
   TG->>Bot: successful payment, is first recurring
   Bot->>Table: write paid until, from the expiration date
-  TG->>Bot: a month later, successful payment, is recurring
+  TG->>Bot: on a renewing invoice, a later successful payment
   Bot->>Table: move paid until forward
 ```
 
@@ -439,11 +538,11 @@ bot answers it before it writes anything, because the write is not what the cloc
 
 The payment itself arrives as a message carrying `successful_payment`. The bot reads four fields.
 `invoice_payload` gives the payer digest. `subscription_expiration_date` gives the instant that
-becomes `paidUntil`. `is_first_recurring` says this is the first month. `telegram_payment_charge_id`
-becomes `chargeRef`.
+becomes `paidUntil` on a renewing invoice. `is_first_recurring` says this is the first period.
+`telegram_payment_charge_id` becomes `chargeRef`.
 
-A renewal is the same message with `is_recurring` true and `is_first_recurring` absent. It carries
-a new expiration date and a new charge identifier, so the write is the same write.
+On a single payment there is no expiration date, so the bot works `paidUntil` out from the instant
+of the payment and the length the operator chose.
 
 The bot writes `route` as `stars` and `state` as `active`. It writes no Telegram user identifier at
 all.
@@ -468,20 +567,19 @@ to the instant of the refund.
 
 Each one is a fact with a source, not an opinion.
 
-There is no free trial. `createInvoiceLink` has no trial parameter, the period must always be
-2592000 seconds, and the first payment happens when she confirms. The Telegram page on bot star
-subscriptions names no trial and no discount. So a free month on this route must come from Emi
-itself, written as a `paidUntil` before any payment. That is question 3 of section 10.
+There is no period but 30 days. The section above is the whole consequence.
 
-There is no price above 10000 Stars. The reference says "Subscription price must no exceed 10000
-Telegram Stars".
+There is no free trial. `createInvoiceLink` has no trial parameter, and the first payment happens
+when she confirms. The Telegram page on bot star subscriptions names no trial and no discount. So
+the free month on this route must come from Emi itself, written as a `paidUntil` before any
+payment, which means a person with many Telegram accounts gets many free months.
 
-There is no period but a month. 30 days is the only value the reference allows today.
+There is no price above 10000 Stars on a subscription. The reference says "Subscription price must
+no exceed 10000 Telegram Stars".
 
 The money does not arrive as money. Issue 427 records the terms: each payment is held for up to 21
 days, the smallest withdrawal is 1000 Stars, and the payout comes through Fragment as Toncoin,
-which then has to be sold. None of that is in this repository and none of it is a code decision. It
-is the reason question 1 of section 10 is a question and not a number.
+which then has to be sold. None of that is in this repository and none of it is a code decision.
 
 ---
 
@@ -494,7 +592,7 @@ written by hand by the operator. No value is in this repository, in a manifest, 
 the pipeline or in a comment.
 
 `/emi/payments/stripe/secret-key` is the Stripe secret key. The payments function and the webhook
-function read it.
+function read it. The domain registration of section 3 uses the same key, by hand, once.
 
 `/emi/payments/stripe/webhook-secret` is the signing secret of the webhook endpoint. The webhook
 function reads it, and refuses a body it cannot verify.
@@ -527,8 +625,8 @@ key. The environment holds the name of a parameter, which is public by design.
 Status: designed
 
 The application asks the api one question on launch and reads one instant back. It never learns
-which route paid. Card, Stars and the store all answer the same shape, so no screen of the
-application can name a route it is not allowed to name.
+which route paid. The wallet, the card, Stars and the store all answer the same shape, so no screen
+of the application can name a route it is not allowed to name.
 
 Guideline 3.1.1 says, for every storefront but the United States one, that an application and its
 metadata "may not include buttons, external links, or other calls to action that direct customers
@@ -542,7 +640,7 @@ Community, and a message the operator sends.
 Guideline 3.1.3(b) is what makes the unlock allowed. An application that works across platforms may
 let her reach what she bought on a web site, "provided those items are also available as in-app
 purchases within the app". Contract PAY-1 puts the same subscription in both stores, so the
-condition holds.
+condition holds. The two prices need not be the same number.
 
 One test can fail on this. The existing wording gate reads every screen of the application and the
 store listing. It gains the website host, the word Stars and any amount of money outside the one
@@ -562,7 +660,10 @@ One screen, one title, the actions, and at most one line. The line is the whole 
 
 **Her bank wants to check it is her.** The Payment Element asks on its own and most women see only
 that. When the check does not finish, title: Your bank stopped the check. Action: Try again. Line:
-"The check did not finish, so the card is not saved yet."
+"The check did not finish, so the payment is not saved yet."
+
+**Her wallet has no card the shop can charge later.** Title: This wallet will not work here.
+Action: Use a card. Line: "Emi charges once a year, and this wallet cannot be charged again."
 
 **The payment went through and the page does not know yet.** Title: Thank you. Action: Refresh.
 Line: "Your payment is taken. Your account updates in a moment."
@@ -573,7 +674,7 @@ in with Telegram. Line: "A payment in Stars shows up when you sign in with Teleg
 **A Stars payment is refunded.** Title: Refunded. Action: Buy Emi. Line: "Your Stars are back.
 Everything you wrote stays, and new entries stop."
 
-**The month ran out.** Title: Emi needs renewing. Action: Buy Emi. Line: "Everything you wrote
+**The year ran out.** Title: Emi needs renewing. Action: Buy Emi. Line: "Everything you wrote
 stays, and new entries stop until you renew."
 
 The last two say the same thing on purpose, because contract PAY-4 says the same thing in both
@@ -588,18 +689,20 @@ Status: designed
 Each one is a question for the operator. None is drawn here, and no step below builds a screen that
 has no board.
 
-1. What does she see on the page straight after a card payment? Is it the account page, or a page
-   of its own that says thank you?
+1. What does she see on the page straight after a payment? Is it the account page, or a page of its
+   own that says thank you?
 2. What does a refused card look like on the Buy Emi board? Where does the line sit, and does the
-   card form stay open?
+   payment form stay open?
 3. What does the account page show for a woman who has not paid? The approved board draws an active
    subscription and nothing else.
 4. What does the account page show for a woman who paid in Stars? The approved card reads "Paid
    with Card, on this site", and the three rows under it are Receipts, Change card and Cancel
    renewal. None of the three is possible on the Stars route.
-5. What does the account page show after she cancels, while the month she paid for still runs?
-6. What does the Emi bot say first, and what does the Open the Emi bot button point at?
-7. Which page do the two "terms" links on the Buy Emi board point at? Both point at nothing today.
+5. The approved account board names a month, not a year, and names a card rather than a wallet.
+   What does that card read now? This question blocks the account page.
+6. What does the account page show after she cancels, while the year she paid for still runs?
+7. What does the Emi bot say first, and what does the Open the Emi bot button point at?
+8. Which page do the two "terms" links on the Buy Emi board point at? Both point at nothing today.
 
 ---
 
@@ -611,12 +714,13 @@ Each step is one pull request with one intention. Each one ships its tests in th
 infrastructure is applied from a machine: every step that adds a resource adds its Terraform, and
 the merge deploys it.
 
-Steps 1 to 4 are the shared half. Steps 5 to 9 are the card. Steps 10 to 12 are Stars.
+Steps 1 to 4 are the shared half. Steps 5 to 10 are the Stripe route, which is built first. Steps
+11 to 13 are Telegram Stars, and they come after all of the above.
 
 **1. The contracts for the money.**
 Files: `docs/contracts.md`, `docs/features.md`.
-Behaviour: PAY-5 names the entitlement record and the one question it answers. PAY-6 names the card
-route. PAY-7 names the Stars route. PAY-8 names the entitlement read.
+Behaviour: PAY-5 names the entitlement record and the one question it answers. PAY-6 names the
+Stripe route. PAY-7 names the Stars route. PAY-8 names the entitlement read.
 Proof: the documents gate holds the two files to each other, so a contract in one and not the other
 fails the run.
 Depends on: nothing.
@@ -641,24 +745,27 @@ Depends on: step 2.
 Files: `services/vault/src/handlers/`, `services/vault/src/router.ts`, `infra/api.tf`.
 Behaviour: one route behind the signature authorizer answers one instant. It walks the `IDY#` items
 of the account and takes the furthest date, including the account item's own.
-Proof: an account with a Stars payment and no Telegram link reads no date. The same account with
-the link reads the date.
+Proof: an account whose only payment sits under another way in reads no date. The same account with
+that way linked reads the date.
 Depends on: step 3, and the link endpoint of `docs/design/accounts.md`.
 
 **5. The Stripe objects, and the start of a subscription.**
 Files: `services/vault/src/payments/`, `infra/api.tf`, `infra/lambda.tf`.
 Behaviour: one route behind a token authorizer of the pool makes the customer and the SetupIntent,
 and writes the item. The secret key is read from the parameter store.
-Proof: the calls are made against a double that answers what Stripe answers, and a second test
-reads that no environment variable holds a key.
-Depends on: step 3.
+Proof: the calls are made against a double that answers what Stripe answers. A second test reads
+that no environment variable holds a key. A third reads that the price is 3900, `eur`, yearly and
+`inclusive`.
+Depends on: step 3, and the verified Stripe account of question 2.
 
-**6. The Payment Element on the Buy Emi page.**
+**6. The payment form on the Buy Emi page.**
 Files: `apps/website/app/[lang]/checkout/`, `apps/website/components/`, the three word catalogues.
-Behaviour: the page of the approved board, with the card form mounted and the Stars choice drawn.
+Behaviour: the page of the approved board, with one Payment Element mounted. The wallets draw
+themselves when the browser offers them. The Stars choice is drawn and says it is not ready yet.
 Proof: a test drives the page, confirms the setup through a double, and reads the state the page
-leaves her in. The one price gate holds the words.
-Depends on: step 5, and board question 2 of section 8.
+leaves her in. A second test reads that no Express Checkout Element is mounted. The one price gate
+holds the words.
+Depends on: step 5, the domain registration of section 3, and board question 2.
 
 **7. The webhook.**
 Files: `services/vault/src/payments/`, `infra/api.tf`, `infra/lambda.tf`.
@@ -673,41 +780,43 @@ Files: `apps/website/app/[lang]/account/`, `apps/website/components/`, the three
 Behaviour: the card of the approved board, with the date, the state and the route.
 Proof: a test renders each state and reads the words. A woman with no payment sees the board of
 question 3.
-Depends on: step 7, and board questions 3 and 5 of section 8.
+Depends on: step 7, and board questions 3, 5 and 6.
 
 **9. Change card, receipts and cancel.**
 Files: `services/vault/src/payments/`, `apps/website/components/`.
 Behaviour: the three rows do what section 3 says. Cancel sets `cancel_at_period_end`.
-Proof: a cancel leaves the paid date alone and moves the state. A changed card detaches the old one.
-Depends on: step 8.
+Proof: a cancel leaves the paid date alone and moves the state. A changed payment method detaches
+the old one.
+Depends on: step 8, and the terms page of question 3.
 
-**10. The Emi bot, and the invoice.**
-Files: `services/bot/`, `infra/api.tf`, `infra/lambda.tf`.
-Behaviour: the bot answers one command with an invoice link. The token is read from the parameter
-store.
-Proof: the call carries `XTR`, one price and the period 2592000, and the payload carries the digest.
-Depends on: step 3, question 1 of section 10, and board question 6 of section 8.
-
-**11. The Stars payment and each renewal.**
-Files: `services/bot/`.
-Behaviour: the pre checkout query is answered first. A successful payment writes the item. A
-renewal moves the date.
-Proof: a first payment and a renewal are fed in, and the item is read after each one. An answer to
-the pre checkout query that takes longer than the limit fails the test.
-Depends on: step 10.
-
-**12. The account page for a Stars payer.**
-Files: `apps/website/components/`, the three word catalogues.
-Behaviour: the card says Stars, and sends her to Telegram to cancel.
-Proof: a test reads that no Change card row and no Cancel renewal row is drawn.
-Depends on: step 11, and board question 4 of section 8.
-
-**13. The application reads the entitlement.**
+**10. The application reads the entitlement.**
 Files: `apps/mobile/src/`.
 Behaviour: the launch read of contract PAY-2 asks the api as well as the store, and keeps the
 furthest date.
 Proof: a test gives the store nothing and the api a date, and the write stays open.
 Depends on: step 4.
+
+**11. The Emi bot, and the invoice.**
+Files: `services/bot/`, `infra/api.tf`, `infra/lambda.tf`.
+Behaviour: the bot answers one command with an invoice link. The token is read from the parameter
+store.
+Proof: the call carries `XTR` and one price, and the payload carries the digest.
+Depends on: step 10, the shape and the price of section 4, the sanctions answer of question 1, and
+board question 7.
+
+**12. The Stars payment and each renewal.**
+Files: `services/bot/`.
+Behaviour: the pre checkout query is answered first. A successful payment writes the item. A later
+payment moves the date.
+Proof: a first payment and a later one are fed in, and the item is read after each one. An answer
+to the pre checkout query that takes longer than the limit fails the test.
+Depends on: step 11.
+
+**13. The account page for a Stars payer.**
+Files: `apps/website/components/`, the three word catalogues.
+Behaviour: the card says Stars, and sends her to Telegram to cancel.
+Proof: a test reads that no Change card row and no Cancel renewal row is drawn.
+Depends on: step 12, and board question 4.
 
 ---
 
@@ -715,31 +824,23 @@ Depends on: step 4.
 
 Status: designed
 
-Each one blocks a step. None is mine to decide.
+Four questions are open. Each one blocks a step, and none is mine to decide.
 
-1. **The price in Stars.** 29.99 pounds is about 38 United States dollars. Issue 427 works out that
-   about 2300 Stars gives Emi about 30 dollars, and costs her about 32 dollars through Fragment or
-   about 46 dollars through Telegram's own purchase. So the two prices cannot both match. Which
-   one is held: what she pays, or what Emi receives? The cap is 10000 Stars. Blocks step 10.
-2. **The sanctions check.** Issue 427 asks whether a company in the United Kingdom may take a
-   payment from a person in Russia. The Stars route exists for that case. Nothing is built until
-   the answer is in writing. Blocks steps 10 to 12.
-3. **The free month, on each route.** Does it apply on the web? Stripe can give it with one
-   parameter. Does it apply in Stars? Telegram cannot give it at all, so Emi would have to write a
-   date before any payment, which means a person with many Telegram accounts gets many free months.
-   Blocks steps 5 and 10.
-4. **Value added tax.** Atlantic Blue Solutions Limited is the seller of record and handles it
-   itself. Is 29.99 pounds the price including tax in every country, or is tax added on top? Stripe
-   Tax works this out and charges a fee for it. Blocks step 5.
-5. **Which Stripe account.** The money belongs to Atlantic Blue Solutions Limited. The account has
-   to exist and be verified before any key exists. Blocks step 5.
-6. **The terms page.** Both "terms" links on the approved board point at nothing. Which page is it,
-   and does it exist? Blocks step 6.
-7. **The delete, and a month she paid for.** Contract KEEP-3 removes every server item, so a delete
-   removes the payment record as well. She then reads no date until the next renewal writes one. Is
-   that right, or should a delete stop the subscription at Stripe and in the bot? Blocks step 3.
+1. **The sanctions check.** Issue 427 asks whether a company in the United Kingdom may take a
+   payment from a person in Russia. The Stars route exists for that case. Nothing of it is built
+   until the answer is in writing. Blocks steps 11 to 13, and nothing before them.
+2. **The verified Stripe account.** The money belongs to Atlantic Blue Solutions Limited. The
+   account has to exist and be verified before any key exists, and before the first price object is
+   made, which is the object `tax_behavior` cannot be changed on. Blocks step 5.
+3. **The terms page.** Both "terms" links on the approved board point at nothing. Which page is it,
+   and does it exist? Blocks steps 6 and 9.
+4. **The delete, and the rest of a year.** Contract KEEP-3 removes every server item, so a delete
+   removes the payment record as well. With a year, a woman who deletes in month two loses ten
+   months she already paid for, and Stripe keeps charging until somebody stops it. Should a delete
+   also cancel the subscription at Stripe? Blocks step 3.
 
----
+The shape and the price of the Stars route are a decision for later, by the operator, on
+16 November 2026. Section 4 holds what is already known about it.
 
 ## How sure I am
 
@@ -750,24 +851,29 @@ The whole design: 80 per cent.
 The entitlement record and the payer digest: 90 per cent. The shape follows the four digests this
 repository already makes, and the one new attribute sits on an item the delete already walks. What
 lowers it is the delete. Contract KEEP-3 decides what the code does, and nobody has decided what
-she should be left with, which is question 7 of section 10.
+she should be left with, which is question 4.
 
-The card route: 85 per cent. Every call and every event name is read from Stripe's current
-documentation on 13 November 2026 and cited above. What lowers it is the free month. Stripe marks
-the parameter I take legacy, and the recommended replacement needs a newer api version and a second
-price object.
+The Stripe route: 85 per cent. Every call, every parameter and every event name is read from
+Stripe's current documentation and cited above. What lowers it is two things. Stripe marks the trial
+parameter I take legacy. And `tax_behavior` cannot be changed after the price is made, so a wrong
+first press costs a price object and every subscription on it.
 
-The Stars route: 70 per cent. The Bot api is quoted exactly and the limits are its own words. What
-lowers it is everything outside the code. The payout terms in issue 427 are from a blog and not
-from Telegram. The sanctions answer is not written anywhere. Nobody has asked a woman in Russia
-whether she would pay this way.
+The wallets: 80 per cent. The element option, the domain registration and the merchant validation
+are quoted from Stripe's own pages. What lowers it is that nobody has drawn Apple Pay on a device
+against this account, and a wallet that will not take a payment the shop starts later is a refusal
+I have written and not seen.
+
+The Stars route: 65 per cent. The Bot api is quoted exactly and the limits are its own words. What
+lowers it is that the price is a year and the subscription period is 30 days, so the shape is not
+chosen yet. The payout terms in issue 427 are from a blog and not from Telegram. The sanctions
+answer is not written anywhere.
 
 The App Store rule: 75 per cent. The two guidelines are quoted from Apple's own page. What lowers
 it is that no reviewer has read this build, and a wording gate can only catch the words we thought
 of.
 
-The path: 80 per cent. The three board questions of section 8 block three steps, and a step with no
-board is a step that invents a screen.
+The path: 80 per cent. The board questions of section 8 block three steps, and a step with no board
+is a step that invents a screen.
 
 ## What this design does not answer
 
@@ -778,8 +884,8 @@ The App Store route itself. Contracts PAY-1 to PAY-4 carry it, and it is in mile
 Linking a second way in to one account, which is
 https://github.com/atlantic-blue/emi/issues/558.
 
-A refund of a card payment. Stripe can do it and nobody has said when Emi would.
+A refund of a Stripe payment. Stripe can do it and nobody has said when Emi would.
 
-A price in any currency but the pound.
+A price in any currency but the euro.
 
 Whether a woman who already pays in a store should be shown a price on the website at all.
