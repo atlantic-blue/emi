@@ -202,13 +202,12 @@ something she can actually log.
 
 ### Card 4 of 4, from features 5, 6 and 7
 
-Title: Your days are yours alone.
+Title: Your days are sealed on this phone.
 
-Line: Everything you log is encrypted on this phone, with a key that never leaves it. Our server
-only holds a locked copy it can't open.
+Line: Everything you log is encrypted on this phone, and our server only holds the locked copy.
 
-Line: Keep your recovery code, and your history follows you to a new phone. We can't open your
-history, so we can never hand it to anyone.
+Line: Sign in once, and your history follows you to a new phone. We keep your key for that, so we
+could open your history, and we tell you that here rather than anywhere else.
 
 Line: Your first month is free, then it's 29.99 pounds a month. There's no free version, because a
 free app is paid for with your data.
@@ -603,12 +602,13 @@ travel; it redraws in steps as the work reports progress.
 
 No screen of the tour and no screen of the first run draws this. Nothing there takes long enough:
 the end of the first run is one transaction of three writes and one cache rebuild over a single day.
-There is one genuine computation in the product, and it is the recovery code. `deriveRecoveryKey` in
-`packages/crypto/src/recovery.ts` runs Argon2id over 19,456 kibibytes for two passes. The comment
-above the parameters records about 106 milliseconds on the machine they were written on, and says a
-phone is slower. Contract VAULT-2 puts a ceiling on that unlock and feature 6 step 8 measures it on
-the slowest phone available. `RecoveryFlow.tsx` is built and no route renders it yet, so this
-movement is specified here and drawn when that flow is routed.
+One screen waits on work it does not control, and it is Getting your days. The claim returns her
+vault key, the phone writes it to the keychain, and then it pulls every record and opens each one.
+The screen names the number of days and never the word loading. `docs/design/accounts.md` holds
+that screen and the call behind it.
+
+The recovery code used to hold this place. It ran Argon2id over 19,456 kibibytes for two passes,
+and the decision of 13 November 2026 takes it out of the product.
 
 **9. The ring arrives.** She answers the last question and the home screen opens. The ring fades up
 from 0.94 of its size. She is left looking at her own ring, on the day of her cycle she is on.

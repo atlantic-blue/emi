@@ -1,6 +1,7 @@
 # The data model: every item and every field
 
-Emi keeps one table in Amazon Web Services. It holds ciphertext and metadata, and it holds no key.
+Emi keeps one table in Amazon Web Services. It holds ciphertext, metadata, and her vault key
+wrapped by the Amazon key service.
 This document names every item in that table, every attribute of every item, and the query that
 reads it.
 
@@ -29,7 +30,7 @@ and a local index `byUpdated` that sorts records by their write time. None of th
 ```mermaid
 flowchart TD
   subgraph Table["One table: emi-vault"]
-    ACC["ACC#accountId / META: publicKey, wrappedVaultKey, recoverySalt, createdAt, recordCount, deviceCount, identityCount, email, emailProvider, emailIsRelay, emailStatus, emailUpdatedAt, marketingConsentAt, marketingConsentWording, marketingStoppedAt, subscribedUntil, subscriptionStore, subscriptionTransaction, subscriptionCheckedAt"]
+    ACC["ACC#accountId / META: publicKey, wrappedVaultKey, vaultKeyWrappedAt, createdAt, recordCount, deviceCount, identityCount, email, emailProvider, emailIsRelay, emailStatus, emailUpdatedAt, marketingConsentAt, marketingConsentWording, marketingStoppedAt, subscribedUntil, subscriptionStore, subscriptionTransaction, subscriptionCheckedAt"]
     REC["ACC#accountId / REC#recordId: payload, revision, updatedAt"]
     SIG["ACC#accountId / SIG#signature: ttl"]
     ADEV["ACC#accountId / DEV#deviceId: addedBy, addedAt"]
@@ -62,6 +63,10 @@ The account item is `ACC#<accountId>` and `META`. It holds `publicKey` as 32 byt
 `wrappedVaultKey` as bytes, `recoverySalt` as 16 bytes, `createdAt` as an instant string and
 `recordCount` as a number.
 
+`recoverySalt` leaves this item with the decision of 13 November 2026, and `vaultKeyWrappedAt`
+arrives as an instant string beside the wrapped key. `wrappedVaultKey` then holds the ciphertext
+the Amazon key service returns, rather than bytes a recovery key wrapped.
+
 The record item is `ACC#<accountId>` and `REC#<recordId>`. It holds `payload` as bytes, `revision`
 as a number and `updatedAt` as an instant string. The identifier is a universally unique identifier
 of version 7.
@@ -81,8 +86,8 @@ this one, so there is one implementation of that shape.
 
 `accountId` is the 26 character account identifier, and finding it is the whole purpose of the item.
 
-`provider` is `google` or `apple`. There is no third value, because there is no third provider and
-no local user.
+`provider` is one of `google`, `apple`, `telegram` and `code`. The last two arrive with the Telegram
+sign in and with the code sent to her address.
 
 `linkedAt` is an instant as a string.
 
@@ -110,8 +115,8 @@ Status: designed
 The device identifier is 26 characters, and it equals `accountIdFor(publicKey)`, so a device cannot
 choose its own name any more than an account can.
 
-It holds `publicKey` as 32 bytes, `accountId` as 26 characters, `addedBy` as one of `registration`,
-`claim` or `recovery`, and `addedAt` as an instant string.
+It holds `publicKey` as 32 bytes, `accountId` as 26 characters, `addedBy` as `registration` or
+`claim`, and `addedAt` as an instant string.
 
 This is the one item the authorizer reads. It carries no wrapped key, no salt, no email address and
 no count.
@@ -248,12 +253,14 @@ flowchart TD
 
 A link needs a key he holds and the server does not.
 
-Her phone draws two values of 26 characters, from the alphabet the recovery code of contract
-VAULT-2 uses. One is the share identifier, and it travels to the server. The other is the link
-secret, and it never does. She shows him the secret once, on her screen.
+Her phone draws two values of 26 characters, from the alphabet the account identifier uses. One is
+the share identifier, and it travels to the server. The other is the link secret, and it never
+does. She shows him the secret once, on her screen.
 
 The calendar key is `argon2id` over that secret and a salt of 16 bytes, which is the derivation
-`recoveryKeyFrom` already performs. The salt is an attribute of the share item, because a salt is
+`recoveryKeyFrom` performs today. The decision of 13 November 2026 deletes the recovery code and
+the module that holds it, so the step that deletes it moves this derivation rather than removing
+it, and `docs/design/accounts.md` names that step. The salt is an attribute of the share item, because a salt is
 not a key. Her phone seals the calendar under the key with the envelope of contract ENVELOPE-1, and
 the server stores the ciphertext.
 
@@ -595,7 +602,8 @@ logged. A screen that counts the days she logged reads it that way.
 
 ### Where each field goes after the seal
 
-- The server stores the envelope as `payload` and cannot read any field.
+- The storage holds the envelope as `payload` and reads no field of it. One function of Emi can
+  open it, with the vault key a verified claim returns, and `docs/design/accounts.md` holds that.
 - The export opens every row and carries every field, because it walks the record rather than a
   list of names.
 - Delete everything empties `day_log`, so every field goes with its row.
