@@ -82,11 +82,18 @@ export function readTheRoutes(repositoryRoot: string): ApiRoute[] {
 }
 
 /**
- * True where the request authorizer stands in front of a route. Both halves are read: a route that
- * asks for a custom authorizer and names none is refused by the api gateway rather than guarded.
+ * The two ways a route is guarded. CUSTOM is the signature of her phone, which is a function of
+ * ours. JWT is the token authorizer of the pool, which the api gateway runs itself: it verifies
+ * the signature, the issuer and the audience before any function of ours is reached.
+ */
+export const guardedBy: readonly string[] = ['CUSTOM', 'JWT'];
+
+/**
+ * True where an authorizer stands in front of a route. Both halves are read: a route that asks for
+ * an authorizer and names none is refused by the api gateway rather than guarded.
  */
 export function carriesTheAuthorizer(route: ApiRoute): boolean {
-  return route.authorizationType === 'CUSTOM' && route.authorizerId !== null;
+  return guardedBy.includes(route.authorizationType) && route.authorizerId !== null;
 }
 
 /** The address one route answers on, with every path parameter filled. */
