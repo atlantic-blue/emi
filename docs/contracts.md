@@ -551,10 +551,12 @@ Errors: a field present in the database and absent from the export.
 
 Verified by a test.
 
-Output: the local database empty, the keychain items gone, and the server account gone.
+Output: the local database empty, the keychain items gone, and the server account gone. The
+payment record stays, because it is the record of a sale and it holds nothing of hers.
 
-Errors: any row, any keychain item or any server item that remains. A way back after it. A delay or
-a cooling off period.
+Errors: any row, any keychain item or any item of her account that remains. A way back after it. A
+delay or a cooling off period. A payment record that carries an account identifier, a record
+identifier or anything else that names her.
 
 ### KEEP-4, no third party sees anything
 

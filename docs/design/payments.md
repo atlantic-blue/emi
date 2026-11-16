@@ -49,6 +49,13 @@ The operator made each one. Do not argue with them here.
    pool in eu-central-1.
 7. On 13 November 2026 the operator removed the recovery code. Emi keeps each account's vault key
    in the cloud. `docs/design/accounts.md` carries that change. This document does not repeat it.
+8. The Stripe account is verified. The operator said so on 16 November 2026. The first price object
+   is still made with the tax inside the amount.
+9. A delete does not delete payments. The payment record stays, and the delete does not cancel the
+   subscription at Stripe. The operator decided that on 16 November 2026, and contract KEEP-3 now
+   says it. Section 1 says what the record holds afterwards.
+10. The terms page has a board named Terms on the canvas, and its own pull request builds the page.
+    The two terms links of the checkout point at `/{language}/terms/`.
 
 Two approved boards carry the screens.
 
@@ -244,14 +251,43 @@ items, collects each `payerDigest`, reads each `PAY#` item, and answers the furt
 finds, or the account item's own `subscribedUntil` when that is further. The identity count is
 capped, so the number of reads is capped with it.
 
-A delete removes the `PAY#` item with everything else. Contract KEEP-3 says any server item that
-remains is an error, and this is a server item. The books are not lost. Stripe holds every invoice
-and Telegram holds every Stars transaction, and those are the records the seller keeps.
+### What a delete leaves behind
 
-One consequence follows, and it is question 4 of section 10. A woman who deletes her account inside
-a year she paid for, and then signs in again, reads no date. The next renewal writes one, a year
-later, because Stripe keeps charging until somebody stops it. So a delete can cost her eleven
-months she already bought.
+A delete does not touch the payment. Contract KEEP-3 carries that now: the local database, the
+keychain items and her account go, and the payment record stays.
+
+The item holds afterwards exactly what it held before. The payer digest in its key, the paid until
+instant, the route, the state, the reference into Stripe or the Telegram charge identifier, and the
+three instants. It never held an account identifier or a record identifier, so a delete takes
+nothing out of it and leaves nothing of her records in it. A reader who holds the table after a
+delete reads that a digest paid until a date.
+
+What the delete does remove is the link. `payerDigest` sits on the `IDY#` item under her account
+partition, and that item goes with everything else. So the payment survives and no account points
+at it.
+
+### How a new sign in finds the payment again
+
+The payer digest is cut from the pool user name, not from the pool subject. A delete removes her
+user from the pool, so a new sign in makes a new subject, and a key built on the subject would be
+lost. The user name is the part that comes back, for three of the four ways in.
+
+Sign in with Apple makes a user the pool names `SignInWithApple_` and the subject Apple returns.
+Google makes `Google_` and its subject. Telegram makes `tg_` and the keyed hash of its subject,
+under a salt the parameter store refuses to overwrite. Each of those three is worked out from the
+provider rather than from the pool, so the same person signing in again gets the same user name,
+the same payer digest and the same item. The link is written again at the next link, she reads her
+date back, and change card, receipts and cancel work again.
+
+The code sent to her address cannot come back. That user name is a random identifier the
+application makes, carrying nothing about her, so a second sign in on the same address makes a
+different name and a different digest. A payment made that way is then unreachable, and no screen
+can find it. She reaches it only if Apple, Google or Telegram is the way that paid.
+
+Her subscription also keeps running. The delete does not cancel at Stripe, so the next renewal
+charges her and writes a date onto an item no account points at. So the account page offers Cancel
+renewal, and the delete screen says the subscription is still running before she presses delete.
+Board question 8 is that screen.
 
 ---
 
@@ -700,6 +736,10 @@ Line: "Your payment is taken. Your account updates in a moment."
 **She paid in Stars and she is signed in another way.** Title: No subscription here. Action: Sign
 in with Telegram. Line: "A payment in Stars shows up when you sign in with Telegram."
 
+**She deletes her account while the subscription runs.** Title: This does not stop the payment.
+Actions: Cancel renewal, Delete anyway. Line: "Cancel the renewal first, or Stripe charges you
+again next year."
+
 **A Stars payment is refunded.** Title: Refunded. Action: Buy Emi. Line: "Your Stars are back.
 Everything you wrote stays, and new entries stop."
 
@@ -731,7 +771,9 @@ has no board.
    What does that card read now? This question blocks the account page.
 6. What does the account page show after she cancels, while the year she paid for still runs?
 7. What does the Emi bot say first, and what does the Open the Emi bot button point at?
-8. Which page do the two "terms" links on the Buy Emi board point at? Both point at nothing today.
+8. What does the delete screen say to a woman whose subscription is still running? The delete
+   leaves the payment and does not cancel at Stripe, so she is charged again next year unless she
+   cancels first.
 
 ---
 
@@ -785,7 +827,7 @@ and writes the item. The secret key is read from the parameter store.
 Proof: the calls are made against a double that answers what Stripe answers. A second test reads
 that no environment variable holds a key. A third reads that the price is 3900, `eur`, yearly and
 `inclusive`.
-Depends on: step 3, and the verified Stripe account of question 2.
+Depends on: step 3.
 
 **6. The payment form on the Buy Emi page.**
 Files: `apps/website/app/[lang]/checkout/`, `apps/website/components/`, the three word catalogues.
@@ -795,7 +837,8 @@ and says it is not ready yet.
 Proof: a test drives the page, confirms the setup through a double, and reads the state the page
 leaves her in. A second test answers the wallet event with no wallet, and reads that neither button
 and no line that reads "or pay by card" is drawn. The one price gate holds the words.
-Depends on: step 5, the domain registration of section 3, and board question 2.
+Depends on: step 5, the domain registration of section 3, the page built from the Terms board, and
+board question 2.
 
 **7. The webhook.**
 Files: `services/vault/src/payments/`, `infra/api.tf`, `infra/lambda.tf`.
@@ -810,14 +853,14 @@ Files: `apps/website/app/[lang]/account/`, `apps/website/components/`, the three
 Behaviour: the card of the approved board, with the date, the state and the route.
 Proof: a test renders each state and reads the words. A woman with no payment sees the board of
 question 3.
-Depends on: step 7, and board questions 3, 5 and 6.
+Depends on: step 7, and board questions 3, 5, 6 and 8.
 
 **9. Change card, receipts and cancel.**
 Files: `services/vault/src/payments/`, `apps/website/components/`.
 Behaviour: the three rows do what section 3 says. Cancel sets `cancel_at_period_end`.
 Proof: a cancel leaves the paid date alone and moves the state. A changed payment method detaches
 the old one.
-Depends on: step 8, and the terms page of question 3.
+Depends on: step 8, and the Terms board of the website canvas.
 
 **10. The application reads the entitlement.**
 Files: `apps/mobile/src/`.
@@ -854,20 +897,15 @@ Depends on: step 12, and board question 4.
 
 Status: designed
 
-Four questions are open. Each one blocks a step, and none is mine to decide.
+One question is open.
 
 1. **The sanctions check.** Issue 427 asks whether a company in the United Kingdom may take a
    payment from a person in Russia. The Stars route exists for that case. Nothing of it is built
    until the answer is in writing. Blocks steps 11 to 13, and nothing before them.
-2. **The verified Stripe account.** The money belongs to Atlantic Blue Solutions Limited. The
-   account has to exist and be verified before any key exists, and before the first price object is
-   made, which is the object `tax_behavior` cannot be changed on. Blocks step 5.
-3. **The terms page.** Both "terms" links on the approved board point at nothing. Which page is it,
-   and does it exist? Blocks steps 6 and 9.
-4. **The delete, and the rest of a year.** Contract KEEP-3 removes every server item, so a delete
-   removes the payment record as well. With a year, a woman who deletes in month two loses ten
-   months she already paid for, and Stripe keeps charging until somebody stops it. Should a delete
-   also cancel the subscription at Stripe? Blocks step 3.
+
+Three more were open and the operator answered them on 16 November 2026. Each one is a decision
+now, in "The decisions this design starts from". The Stripe account is verified, so nothing waits
+on it. The terms page has a board and its own pull request. A delete does not delete payments.
 
 The shape and the price of the Stars route are a decision for later, by the operator, on
 16 November 2026. Section 4 holds what is already known about it.
@@ -880,8 +918,8 @@ The whole design: 80 per cent.
 
 The entitlement record and the payer digest: 90 per cent. The shape follows the four digests this
 repository already makes, and the one new attribute sits on an item the delete already walks. What
-lowers it is the delete. Contract KEEP-3 decides what the code does, and nobody has decided what
-she should be left with, which is question 4.
+lowers it is one way in. A payment made with the code sent to her address cannot be found after a
+delete, because that pool user name is random. The design says so and does not fix it.
 
 The Stripe route: 85 per cent. Every call, every parameter and every event name is read from
 Stripe's current documentation and cited above. What lowers it is two things. Stripe marks the trial
