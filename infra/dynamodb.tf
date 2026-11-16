@@ -2,6 +2,11 @@
 # ACC#<accountId> / REC#<recordId>, so one account's items sit in one partition and a pull reads
 # them in one query.
 #
+# A payment is PAY#<payerDigest> / META, in a partition of its own. It is in this table rather
+# than in a second one because a second table adds a deploy, a backup setting and a role for no
+# gain, and a partition of its own is what keeps it away from every account partition. The role
+# that writes it names the prefix, which is in infra/lambda.tf.
+#
 # The table is ciphertext and metadata. It never holds a date, a symptom, a flow or a note, which
 # is contract TABLE-4 and the reason the product exists. The attribute rules are proved in feature
 # 6 step 3, against a written item.

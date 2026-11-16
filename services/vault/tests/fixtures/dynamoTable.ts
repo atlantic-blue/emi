@@ -146,17 +146,87 @@ function conditionHolds(
       return held === undefined || !(named(absent[1], input.ExpressionAttributeNames) in held);
     }
 
-    const lower = /^(\S+) < (:\S+)$/.exec(clause.trim());
+    const lower = /^(\S+) (<|<=) (:\S+)$/.exec(clause.trim());
 
-    if (lower?.[1] !== undefined && lower[2] !== undefined) {
-      const attribute = held?.[named(lower[1], input.ExpressionAttributeNames)];
-      const against = input.ExpressionAttributeValues?.[lower[2]];
+    if (lower?.[1] !== undefined && lower[3] !== undefined) {
+      const attribute = numberOf(held?.[named(lower[1], input.ExpressionAttributeNames)]);
+      const against = numberOf(input.ExpressionAttributeValues?.[lower[3]]);
 
-      return numberOf(attribute) < numberOf(against);
+      return lower[2] === '<' ? attribute < against : attribute <= against;
     }
 
     throw new Error(`this table does not understand the condition "${clause.trim()}"`);
   });
+}
+
+/**
+ * The clauses of one update expression. A comma inside a function call does not separate two
+ * clauses, so the split counts brackets rather than reading commas.
+ */
+function clausesIn(expression: string): string[] {
+  const clauses: string[] = [];
+  let depth = 0;
+  let from = 0;
+
+  for (let at = 0; at < expression.length; at += 1) {
+    if (expression[at] === '(') {
+      depth += 1;
+    }
+
+    if (expression[at] === ')') {
+      depth -= 1;
+    }
+
+    if (expression[at] === ',' && depth === 0) {
+      clauses.push(expression.slice(from, at));
+      from = at + 1;
+    }
+  }
+
+  clauses.push(expression.slice(from));
+
+  return clauses.map((clause) => clause.trim()).filter((clause) => clause.length > 0);
+}
+
+/**
+ * One set written onto the item. `if_not_exists` reads the item as it stood before the call, the
+ * way the table reads it, so a field it keeps is the field an earlier write put there and never
+ * one a clause of this same expression just set.
+ */
+function setOn(
+  onto: Item,
+  before: Item | undefined,
+  clauses: string,
+  input: UpdateItemInput,
+): Item {
+  const written: Record<string, AttributeValue> = { ...onto };
+
+  for (const clause of clausesIn(clauses)) {
+    const assignment = /^(\S+) = (.+)$/.exec(clause);
+
+    if (assignment?.[1] === undefined || assignment[2] === undefined) {
+      throw new Error(`this table does not understand the update "${clause}"`);
+    }
+
+    const keeping = /^if_not_exists\((\S+), (:\S+)\)$/.exec(assignment[2]);
+    const held =
+      keeping?.[1] === undefined ? undefined : named(keeping[1], input.ExpressionAttributeNames);
+
+    if (held !== undefined && before !== undefined && held in before) {
+      continue;
+    }
+
+    const names = keeping?.[2] ?? assignment[2];
+    const value = input.ExpressionAttributeValues?.[names];
+
+    if (value === undefined) {
+      throw new Error(`the update names ${names}, and the request carries no value by that name`);
+    }
+
+    written[named(assignment[1], input.ExpressionAttributeNames)] = copyOf(value);
+  }
+
+  return written;
 }
 
 /** A table that answers the way the deployed one answers, for everything the vault asks it. */
@@ -229,6 +299,14 @@ export function fakeTable(options: FakeTableOptions = {}): FakeTable {
         !conditionHolds(input.ConditionExpression, held, input)
       ) {
         return Promise.reject(refusedByCondition());
+      }
+
+      const setting = /^SET (.+)$/.exec(input.UpdateExpression.trim());
+
+      if (setting?.[1] !== undefined) {
+        items.set(key, setOn(held ?? copyOfItem(input.Key), held, setting[1], input));
+
+        return Promise.resolve();
       }
 
       const adding = /^ADD (\S+) (:\S+)$/.exec(input.UpdateExpression.trim());
