@@ -468,6 +468,47 @@ A route takes one authorizer, so the signature authorizer cannot share a route w
 authorizer. The two new calls verify the token inside the handler, against the key set the pool
 publishes.
 
+## Why the token carries no nonce
+
+Status: designed
+
+This design asked for a nonce. The phone was to open the sign in with a nonce equal to the digest
+of the device public key, and the reader was to refuse a token that carried another value. That
+bound a bearer token to one device.
+
+No way in can send that nonce. I read each one on 16 November 2026, in the repository and in the
+live pool, rather than assuming it.
+
+The phone client of the pool holds no authorization code flow and no identity provider. The
+authorize address of the pool is the one place a nonce is sent, and the phone never reaches it.
+The phone signs in with `USER_AUTH`, which carries the code sent to her address, and with
+`CUSTOM_AUTH`, which carries Sign in with Telegram. Neither call takes a nonce.
+
+The site sends none either. `apps/website/lib/theProviderSignIn.ts` sends the state value and the
+code challenge, and nothing else a token comes back with.
+
+The pool names the three challenge triggers of the Telegram sign in and no trigger that writes a
+claim. So nothing adds the value afterwards.
+
+A reader that asks for a nonce refuses every token the product makes. A reader that reads one only
+when it is there never runs the check. So the design names the binding it really has.
+
+The binding is the signed request. The token travels in the body. Contract AUTH-1 signs the
+method, the path, the instant and the digest of that body with the device key. The authorizer
+writes each signature down and refuses the same one twice. So a token sent again, or sent from a
+machine that holds no device key of the account, is refused before the reader sees it.
+
+What this costs, written plainly. A person who takes her identity token, inside the hour it lives,
+and who holds a device key of an account of their own, can link her identity to that account. Her
+next sign in then lands on that account and not on hers. The nonce refused that, and nothing in
+this design refuses it now.
+
+Three things limit it. The token lives one hour. It travels only inside a sealed connection, and
+it is written to no log line and to no item of the table. And the link is refused once she has
+linked that identity herself, which she does when she signs in for the first time. The piece that
+builds the reader does not close this. Closing it needs a nonce the pool can carry, and that is a
+decision of its own.
+
 ## The account is required, and a woman who already has days keeps every one
 
 Status: designed
@@ -617,7 +658,7 @@ sequenceDiagram
   A->>D: writes the account item, the device item and the device lookup item
   A-->>P: the account identifier
   P->>A: link, carrying the token, signed by this device key
-  A->>D: writes both link items and the email address, in one transaction
+  A->>D: writes both link items, the payer digest and the email address, in one transaction
   A-->>P: linked
   P->>P: writes the stage row and reads no day
   P-->>W: the ring, with every day she had
@@ -1106,6 +1147,10 @@ them.
 
 #### In the vault table, written by the link
 
+The link is written from her phone and from nowhere else. The route sits behind the signature
+authorizer, which needs a device key, and only the phone holds one. The site signs her in and
+cannot link, which the section "One sign in, one account, and what a person may hold" carries.
+
 The identity lookup item, `pk` of `IDY#<identityDigest>` and `sk` of `META`. `accountId` is 26
 characters. `provider` is one of `google`, `apple`, `telegram` and `code`. `linkedAt` is an instant
 as text.
@@ -1116,7 +1161,9 @@ section of this document already adds `telegram`, and the code sent to her addre
 piece that writes the link corrects that sentence to name four values.
 
 The identity item on the account side, `pk` of `ACC#<accountId>` and `sk` of
-`IDY#<identityDigest>`, holding `provider` and `linkedAt`. It exists for the delete.
+`IDY#<identityDigest>`, holding `provider`, `linkedAt` and `payerDigest`. The payer digest is
+cut from the `cognito:username` claim of the same token, and `docs/design/payments.md` reads it
+to find what she paid. It exists for the delete.
 
 Both items are written in one transaction. The condition on each one changes with this decision: no
 item exists, or the item already names this account. That is what makes a resumed merge answer as
@@ -1414,7 +1461,7 @@ sequenceDiagram
   participant K as The key service
   participant D as The vault table
   W->>P: presses a way in
-  P->>B: opens managed login with a code challenge and a nonce
+  P->>B: opens managed login with a code challenge
   B->>C: Apple, Google, Telegram, or a code sent to her address
   C-->>B: an authorization code
   B-->>P: the code, on the redirect address
@@ -1547,6 +1594,11 @@ provider, and at most two.
 A link is refused when that identity already names another account. The refusal says the identity is
 already in use and never which account, because an answer that named one would let anybody test who
 uses Emi.
+
+Linking happens on her phone. The route sits behind the signature authorizer, so the caller signs
+the request with a device key of the account, and the phone is the one surface that holds one.
+myemi.app signs her in and reads what she paid. It links no second way in, and this design gives
+it no route to do so. A woman who wants two ways in presses the second one in Emi on her phone.
 
 She may link both providers to one account, and that is the recommended state: two ways back rather
 than one. The account screen shows which providers are linked and offers the other.
@@ -1792,6 +1844,21 @@ Google makes the same shape, named `Google_` followed by the subject.
 Telegram makes a local user named `tg_` followed by a salted hash of her Telegram identifier, so
 the pool never holds the raw one. `email` is absent, because the Telegram login returns no address.
 No password is set, and the verify trigger is what authenticates her.
+
+### The two clients, and what a token names
+
+The pool holds two app clients. The application on her phone signs in with
+`aws_cognito_user_pool_client.iphone`, and myemi.app signs in with
+`aws_cognito_user_pool_client.website`. A token names in `aud` the client it was issued to.
+
+So the reader checks the audience against the set of those two, and never against one. A token
+issued to another client, or by another pool, is refused.
+
+Each token also carries `cognito:username`, which is the name of the section above: a random
+identifier for the code sent to her address, `SignInWithApple_` and a subject, `Google_` and a
+subject, or `tg_` and a salted hash. The reader returns that name, and the link writes a digest
+of it as `payerDigest`. `docs/design/payments.md` says why a payment is held under that digest
+and under nothing else. The raw name is written nowhere.
 
 ### Why the word PASSWORD is in the configuration
 
@@ -2354,10 +2421,12 @@ Status: designed
    write.
 3. A request naming a device with no lookup item is refused, and it costs the same time as a bad
    signature, measured the way the existing timing case measures it.
-4. An identity token is refused when the issuer is not the pool, when the audience is not the app
-   client, when it is expired, when the nonce does not equal the digest of the device public key,
-   when the signature does not verify, or when the use is not identity.
-5. The token reader returns a digest and the email address. It never returns the subject.
+4. An identity token is refused when the issuer is not the pool, when the audience is neither
+   client of the pool, when it is expired, when the signature does not verify, or when the use is
+   not identity. There is no nonce check, and the section "Why the token carries no nonce" says
+   why.
+5. The token reader returns a digest, the email address and the pool user name. It never returns
+   the subject.
 6. A link is written only for the account in the authorizer context. The handler cannot create an
    account.
 7. An identity already linked to another account is refused, and the refusal names no account.
@@ -2524,21 +2593,25 @@ The promise: a pool holds an email address and a subject. It holds no vault key 
 
 Depends on: nothing.
 Files: `services/vault/src/identity/token.ts`, `services/vault/tests/identity.test.ts`.
-Behaviour: verifies a token against the key set and checks the issuer, the audience, the use, the
-expiry and the nonce. It returns the digest and the email address. It is a module with no route.
-Proof: rules 4 and 5, one case for each refusal, by name. A mutation that drops the nonce check is
-watched failing and then passing again.
-The promise: the reader returns a digest and an address. It returns no subject and holds no key.
+Behaviour: verifies a token against the key set and checks the issuer, the audience, the use and
+the expiry. It returns the digest, the email address and the pool user name. It is a module with no
+route.
+Proof: rules 4 and 5, one case for each refusal, by name. A mutation that widens the audience to
+any string is watched failing and then passing again.
+The promise: the reader returns a digest, an address and a user name. It returns no subject and
+holds no key.
 
 ### 4. The link endpoint
 
 Depends on: 3.
 Files: `services/vault/src/handlers/linkIdentity.ts`, `services/vault/src/store/identities.ts`,
 `services/vault/src/store/dynamo.ts`, `infra/api.tf`, `services/vault/tests/link.test.ts`.
-Behaviour: `POST /v1/account/identity` writes both link items and the email attributes in one
-transaction, behind the signature authorizer that exists.
+Behaviour: `POST /v1/account/identity` writes both link items, the payer digest and the email
+attributes in one transaction, behind the signature authorizer that exists. The phone is the one
+caller, because the signature needs a device key and only the phone holds one.
 Proof: rules 6 to 9. The table double refuses the transaction when either condition fails.
-The promise: the handler writes an account identifier, a digest and an address. It holds no key.
+The promise: the handler writes an account identifier, a digest, a payer digest and an address. It
+holds no key.
 Changed on 7 November 2026: the condition on each link item becomes "no item exists, or the item
 already names this account", so a resumed merge answers as linked. If this piece has merged by then,
 the piece named "The link answers as linked for the pair it already holds" carries it.
@@ -2572,10 +2645,11 @@ Depends on: 2.
 Files: `apps/mobile/src/services/account/signIn.ts`,
 `apps/mobile/src/services/account/identityStore.ts`, and the integration test for this step.
 Behaviour: opens managed login in the authentication session the operating system owns, with a code
-challenge and a nonce equal to the digest of the device public key, exchanges the code, and keeps
-the refresh token in the keychain as `emi.identityRefresh.v1`.
-Proof: a case drives the real module against a stub token endpoint and asserts the nonce. A case
-asserts a mismatched state value is refused.
+challenge, exchanges the code, and keeps the refresh token in the keychain as
+`emi.identityRefresh.v1`. It sends no nonce, and the section "Why the token carries no nonce"
+says why.
+Proof: a case asserts a mismatched state value is refused. A case asserts the exchange sends the
+code verifier.
 The promise: this module never reads the vault key, and step 9 makes that a rule the pipeline holds.
 
 ### 8. Where the sign in is offered
