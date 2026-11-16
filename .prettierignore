@@ -43,3 +43,7 @@ docs/design/website/support/
 # The approved design of the sign in page and the head of the account, three boards committed as
 # the canvas and its renderer wrote them, for the same reason as the home page above.
 docs/design/website/sign-in/
+
+# The approved design of the checkout page, committed as the canvas wrote it, for the
+# same reason as the home page above.
+docs/design/website/checkout/
