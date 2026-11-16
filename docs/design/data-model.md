@@ -39,6 +39,7 @@ flowchart TD
     IDY["IDY#identityDigest / META: accountId, provider, linkedAt"]
     TXN["TXN#transactionDigest / META: accountId, store, firstSeenAt"]
     ANS["ANS#answerDigest / META: userName, issuedAt, ttl"]
+    PAY["PAY#payerDigest / META: paidUntil, route, state, payerRef, subscriptionRef, chargeRef, eventAt, firstSeenAt, updatedAt"]
   end
   POOL["Amazon Cognito user pool: subject, email address, the provider she used"]
   ACC --> REC
@@ -53,6 +54,7 @@ flowchart TD
   POOL -.->|"a digest of the issuer and the subject"| IDY
   POOL -.->|"the address, copied once at the link"| ACC
   POOL -.->|"spends a one time answer, once"| ANS
+  AIDY -.->|"names the payment, and the delete takes this link"| PAY
 ```
 
 ### The items that exist today
@@ -170,6 +172,41 @@ table reads a digest, so nothing in this item answers a challenge.
 The sign in function writes the item and reads nothing from the table. The verify trigger spends it
 with a conditional delete, and that call returns the two fields above. The define trigger and the
 create trigger reach no table at all.
+
+### The payment item
+
+Status: built
+
+`pk` is `PAY#` and the payer digest. `sk` is `META`. It is a partition of its own, so a query of an
+account partition reaches no payment, and a read of a payment reaches nothing of hers.
+
+The payer digest is 26 characters of Crockford base 32, cut from the pool identifier, a newline and
+the pool user name. `packages/crypto/src/payer.ts` makes it, with the helper that makes an account
+identifier.
+
+`paidUntil` is an instant as a string. It is absent until the free month or the first payment
+lands, and it is the one field every reader wants.
+
+`route` is `card` or `stars`. `state` is `active`, `cancelling`, `lapsed` or `refunded`, where
+`cancelling` is the renewal stopped while the year she paid for still runs.
+
+`payerRef` and `subscriptionRef` are the Stripe customer and the Stripe subscription, and both are
+absent on the Stars route. `chargeRef` is the Telegram charge identifier of the last payment, and it
+is absent on the card route.
+
+`eventAt` is a number, the seconds of the event that last wrote this item. Every write is
+conditional on a newer `eventAt`, because Stripe promises no order of delivery. Without it a retry
+of yesterday's event puts an old date over a new one.
+
+`firstSeenAt` and `updatedAt` are instants as strings. The first write sets both, and every later
+one moves `updatedAt` alone.
+
+The item holds no name, no address, no card number, no country, no Telegram user identifier, no
+account identifier and no record identifier. A reader who holds the table learns that a digest paid
+until a date. That is why a delete of her account leaves this item where it is: there is nothing of
+hers in it to remove. The delete takes the link instead, which is `payerDigest` on the identity item.
+
+`services/vault/src/payments/` reads and writes it today. No route reaches it yet.
 
 ### The new attributes of the account item
 
@@ -656,6 +693,14 @@ The sign in and the devices:
 - Spend a one time answer. `DeleteItem` by whole key, with the condition `attribute_exists(pk)` and
   `ReturnValues: ALL_OLD`. The call returns the item it removed, so the trigger reads the user name
   and the instant without a grant to read the table.
+
+The payment, which the store carries out and no route reaches yet:
+
+- Read a payment. `GetItem` on `PAY#<payerDigest>` and `META`, with a consistent read.
+- Write a payment. `UpdateItem` with a set of the fields the event carried, and the condition
+  `attribute_not_exists(eventAt) OR eventAt < :eventAt`. It is an update and not a whole item,
+  because an event says what it knows and a field it leaves out has to survive it. The condition is
+  the order of delivery, which Stripe does not promise.
 
 The partner link:
 

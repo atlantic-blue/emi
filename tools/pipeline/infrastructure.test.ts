@@ -30,6 +30,7 @@ import {
 } from './signIn.ts';
 import { deployedFunctions, uploadOrder } from '../deploy/functions.ts';
 import { carriesTheAuthorizer, readTheRoutes, routesWithNoAuthorizer } from '../deploy/routes.ts';
+import { paymentPartitionPrefix } from '../../services/vault/src/payments/entitlements.ts';
 import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
 import { languages } from '../../apps/website/app/words/language.ts';
 
@@ -558,6 +559,44 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(articlesTable).toContain('billing_mode = "PAY_PER_REQUEST"');
       expect(articlesTable).toContain('hash_key  = "pk"');
       expect(articlesTable).toContain('range_key = "sk"');
+    });
+  });
+
+  describe('the payment partition, which is contract PAY-5', () => {
+    const payments = bodyOf('data "aws_iam_policy_document" "payments"');
+    const partition = statementTextIn(payments, 'ReadAndWriteOnePaymentPartition');
+
+    it('stands on the prefix the service writes, so it reaches no account partition', () => {
+      expect(partition).toContain('variable = "dynamodb:LeadingKeys"');
+      expect(partition).toContain('test     = "ForAllValues:StringLike"');
+      expect(listedIn(partition, 'values')).toEqual([`${paymentPartitionPrefix}*`]);
+    });
+
+    it('carries the Null condition beside it, so a call that names no key is refused', () => {
+      const conditions = partition.split('condition {').slice(1);
+      const refusing = conditions.find((held) => held.includes('test     = "Null"'));
+
+      expect(conditions).toHaveLength(2);
+      expect(refusing).toContain('variable = "dynamodb:LeadingKeys"');
+      expect(listedIn(refusing ?? '', 'values')).toEqual(['false']);
+    });
+
+    it('reads and writes one item by its key, and never queries or scans the table', () => {
+      expect(actionsIn(payments).sort()).toEqual([
+        'dynamodb:GetItem',
+        'dynamodb:UpdateItem',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+      ]);
+    });
+
+    it('reaches the table itself and no index, because an index read names no leading key', () => {
+      expect(listedIn(partition, 'resources')).toEqual(['aws_dynamodb_table.vault.arn']);
+      expect(payments).not.toContain('/index/');
+    });
+
+    it('holds no parameter, so nothing here reads the Stripe key until a function needs it', () => {
+      expect(actionsIn(payments).filter((action) => action.startsWith('ssm:'))).toEqual([]);
     });
   });
 

@@ -539,3 +539,63 @@ resource "aws_lambda_function" "sign_in_challenge_verify" {
     ignore_changes = [filename, source_code_hash]
   }
 }
+
+# ── The payments role ────────────────────────────────────────────────────────
+#
+# The role lands before the functions that assume it, so the grant is reviewable on its own and a
+# later merge adds a function to a role that already exists. Nothing assumes it yet.
+#
+# It reaches one partition prefix of the vault table and no account partition at all, so the
+# function that writes a payment cannot read one day of anybody's history. The parameter grants of
+# docs/design/payments.md section 5 arrive with the functions that read them, one parameter each.
+
+resource "aws_iam_role" "payments" {
+  name               = "${var.project_name}-payments"
+  assume_role_policy = data.aws_iam_policy_document.lambda_trust.json
+}
+
+data "aws_iam_policy_document" "payments" {
+  # The groups arrive with the functions, so the grant names the addresses the runtime writes to
+  # rather than resources of this root.
+  statement {
+    sid    = "WriteItsOwnLogs"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    resources = ["arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/${var.project_name}-payments-*:*"]
+  }
+
+  # One item, by its whole key, under a partition that opens with PAY#. There is no query and no
+  # scan here, and the two conditions are what make the limit real rather than a promise about the
+  # code: a ForAllValues test is true when the request names no key at all, which a scan does not,
+  # so the Null condition beside it refuses a request that leaves the key out.
+  statement {
+    sid    = "ReadAndWriteOnePaymentPartition"
+    effect = "Allow"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem",
+    ]
+    resources = [aws_dynamodb_table.vault.arn]
+
+    condition {
+      test     = "ForAllValues:StringLike"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["PAY#*"]
+    }
+
+    condition {
+      test     = "Null"
+      variable = "dynamodb:LeadingKeys"
+      values   = ["false"]
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "payments" {
+  name   = "${var.project_name}-payments"
+  role   = aws_iam_role.payments.id
+  policy = data.aws_iam_policy_document.payments.json
+}
