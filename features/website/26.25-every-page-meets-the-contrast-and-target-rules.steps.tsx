@@ -311,46 +311,39 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and(
-      'the pages ask her for one price, 29.99 pounds a month, in each of the three languages',
-      () => {
-        expect(languages.map((language) => theOnePrice[language])).toEqual([
-          'One month free, then 29.99 pounds a month.',
-          'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
-          'Un mes gratis, después 29,99 libras al mes.',
-        ]);
+    and('the pages ask her for one price, 39 euros a year, in each of the three languages', () => {
+      expect(languages.map((language) => theOnePrice[language])).toEqual([
+        'One month free, then 39 euros a year.',
+        'Первый месяц бесплатно, затем 39 евро в год.',
+        'Un mes gratis, después 39 euros al año.',
+      ]);
 
-        for (const language of languages) {
-          expect(wordsIn(language).price).toBe(theOnePrice[language]);
-          expect(theOnePrice[language]).toBe(
-            theApplication[language]['onboarding.tour.price.line'],
-          );
-        }
+      for (const language of languages) {
+        expect(wordsIn(language).price).toBe(theOnePrice[language]);
+        expect(theOnePrice[language]).toBe(theApplication[language]['onboarding.tour.price.line']);
+      }
 
-        const amounts = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
+      const amounts = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
 
-        expect(amounts).toHaveLength(languages.length);
-        expect(amounts.map((amount) => theAmountOf(amount))).toEqual(
-          amounts.map(() => theOneAmount),
-        );
-        expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
-        expect(everyFileOfTheWords().flatMap(problemsWithTheAddress)).toEqual([]);
-        expect(theOneHost).toBe('myemi.app');
-      },
-    );
+      expect(amounts).toHaveLength(languages.length);
+      expect(amounts.map((amount) => theAmountOf(amount))).toEqual(amounts.map(() => theOneAmount));
+      expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
+      expect(everyFileOfTheWords().flatMap(problemsWithTheAddress)).toEqual([]);
+      expect(theOneHost).toBe('myemi.app');
+    });
 
     and('words that named another amount, another period or another address are refused', () => {
       const english = read(join(theWords, 'english.ts'));
       const language = read(join(theWords, 'language.ts'));
-      const cheaper = english.replace('29.99 pounds a month', '£24.99 a month');
-      const yearly = english.replace('29.99 pounds a month', '29.99 pounds a year');
+      const cheaper = english.replace('39 euros a year', '€24.99 a year');
+      const monthly = english.replace('39 euros a year', '39 euros a month');
       const elsewhere = language.replace('myemi.app', 'emi-tracker.com');
 
       expect(problemsWithWhatItCosts({ file: 'english.ts', text: cheaper })).toEqual([
-        'english.ts asks for £24.99, and the one price is 29.99 a month',
+        'english.ts asks for €24.99, and the one price is 39 a year',
         `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
       ]);
-      expect(problemsWithWhatItCosts({ file: 'english.ts', text: yearly })).toEqual([
+      expect(problemsWithWhatItCosts({ file: 'english.ts', text: monthly })).toEqual([
         `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
       ]);
       expect(problemsWithTheAddress({ file: 'language.ts', text: elsewhere })).toEqual([

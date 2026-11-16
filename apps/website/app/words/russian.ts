@@ -12,7 +12,7 @@ export const russian: SiteWords = {
   brandLine: 'Emi. Every Month Insights.',
   store: 'Загрузите в App Store',
   storeSmall: 'Загрузите в',
-  price: 'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
+  price: 'Первый месяц бесплатно, затем 39 евро в год.',
   languageLabel: 'Язык',
   pageDescription: 'Трекер цикла и менструаций, который оставляет ваши записи вам.',
   sharePictureAlt:
@@ -305,7 +305,7 @@ export const russian: SiteWords = {
   headerSignInLabel: 'Войти',
 
   footerDisclaimer:
-    'Emi не является средством контрацепции и не является медицинским изделием. Прогноз даёт оценку по вашим прошлым циклам. Первый месяц бесплатно при месячной подписке в App Store.',
+    'Emi не является средством контрацепции и не является медицинским изделием. Прогноз даёт оценку по вашим прошлым циклам. Первый месяц бесплатно при годовой подписке в App Store.',
   footerEmiGroup: 'Emi',
   footerAppStore: 'App Store',
   footerBeta: 'Участвовать в тестировании',
