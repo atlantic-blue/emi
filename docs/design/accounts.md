@@ -217,10 +217,10 @@ in account 230345688874, under the alias `alias/emi-vault-keys`.
 
 The reason is the price, and I read it rather than assumed it. On 13 November 2026 the pricing
 programming interface answered one United States dollar for each customer managed key version in EU
-Frankfurt, and three United States cents for each 10,000 requests. Emi costs 29.99 pounds a year,
-which is about 2.50 pounds a month. So a key for each account would spend a large part of what each
-woman pays on the key service alone, before Emi stores one day. One shared key costs one dollar a
-month in total, and 10,000 sign ins cost three cents.
+Frankfurt, and three United States cents for each 10,000 requests. Emi costs 39 euros a year, value
+added tax included, which is about 3.25 euros a month. So a key for each account would spend a
+large part of what each woman pays on the key service alone, before Emi stores one day. One shared
+key costs one dollar a month in total, and 10,000 sign ins cost three cents.
 
 The price is for each key version rather than for each key, and rotation makes versions. So a key
 that rotates once a year may cost one dollar more each year. I did not measure that, so the step
