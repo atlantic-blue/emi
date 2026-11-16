@@ -367,7 +367,7 @@ stay open forever, and only new writes stop.
 
 None of that is built. There is no product in either store, nothing reads an entitlement on launch,
 no receipt is checked anywhere, and no screen asks her for money. The design is in `features.md` as
-five contracts and nothing in the application answers to them yet.
+nine contracts and nothing in the application answers to them yet.
 
 Nothing to show: not one line of this feature is built, so every screen it will have is a design
 rather than a picture, and drawing one here would be an illustration of a product that does not
