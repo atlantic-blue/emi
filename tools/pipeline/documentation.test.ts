@@ -444,9 +444,9 @@ describe('a contract in one document and missing from the other fails the run', 
   const declared = contractsDeclaredIn(contracts);
   const mapped = contractsMappedIn(features);
 
-  it('declares fifty three contracts across thirteen groups', () => {
-    expect(declared).toHaveLength(53);
-    expect(new Set(declared).size).toBe(53);
+  it('declares fifty seven contracts across thirteen groups', () => {
+    expect(declared).toHaveLength(57);
+    expect(new Set(declared).size).toBe(57);
     expect(new Set(declared.map((contract) => contract.split('-')[0])).size).toBe(13);
   });
 
@@ -473,7 +473,7 @@ describe('a contract in one document and missing from the other fails the run', 
   it('counts the mapped contracts in the run this repository makes', () => {
     const run = check();
 
-    expect(run.output).toContain(`53 contract(s) mapped to a feature in ${featureDocument}`);
+    expect(run.output).toContain(`57 contract(s) mapped to a feature in ${featureDocument}`);
     expect(run.status).toBe(0);
   }, 180_000);
 
@@ -574,6 +574,90 @@ describe('a contract in one document and missing from the other fails the run', 
     ].join('\n');
 
     expect(contractsDeclaredIn(document)).toEqual(['TOKEN-1']);
+  });
+});
+
+/**
+ * The four contracts of the money carry numbers somebody decided once: the price, the tax inside
+ * it, the free month, and what a delete leaves behind. A document can lose a number in an edit and
+ * still read well, and every later step of the payments design builds from these sentences. The
+ * body is read with its whitespace collapsed, so a sentence still matches when the document wraps
+ * it across two lines.
+ */
+describe('the contracts for the money say what was decided about it', () => {
+  const mapped = contractsMappedIn(features);
+
+  const bodyOf = (contract: string): string => {
+    const lines = contracts.split('\n');
+    const opens = lines.findIndex((line) => line.startsWith(`### ${contract},`));
+
+    expect(opens).toBeGreaterThan(-1);
+
+    const after = lines.slice(opens + 1);
+    const ends = after.findIndex((line) => line.startsWith('### ') || line.startsWith('## '));
+
+    return (ends === -1 ? after : after.slice(0, ends)).join(' ').replace(/\s+/g, ' ');
+  };
+
+  it('gives the entitlement record, the two routes and the read to feature 7', () => {
+    const money = ['PAY-5', 'PAY-6', 'PAY-7', 'PAY-8'];
+    const mine = mapped.filter((entry) => money.includes(entry.contract));
+
+    expect(mine.map((entry) => entry.contract)).toEqual(money);
+    expect(new Set(mine.map((entry) => entry.feature))).toEqual(new Set(['Feature 7']));
+  });
+
+  it('names every field of the entitlement record, and refuses what would name her', () => {
+    const record = bodyOf('PAY-5');
+
+    for (const field of [
+      '`PAY#`',
+      '`META`',
+      '`paidUntil`',
+      '`route`',
+      '`state`',
+      '`payerRef`',
+      '`subscriptionRef`',
+      '`chargeRef`',
+      '`eventAt`',
+      '`firstSeenAt`',
+      '`updatedAt`',
+      '`payerDigest`',
+    ]) {
+      expect(record).toContain(field);
+    }
+
+    expect(record).toContain('an account identifier, a record identifier');
+  });
+
+  it('asks one question of that record, and takes one instant back', () => {
+    expect(bodyOf('PAY-5')).toContain('Is this account paid until a date?');
+    expect(bodyOf('PAY-8')).toContain('one instant');
+  });
+
+  it('prices the year at 39 euros with the tax inside it, after one free month', () => {
+    const stripe = bodyOf('PAY-6');
+
+    expect(stripe).toContain('one price of 3900 in `eur`, recurring every year');
+    expect(stripe).toContain('`tax_behavior` set to `inclusive`');
+    expect(stripe).toContain('she pays 39 euros');
+    expect(stripe).toContain('`trial_period_days` set to 30, so the first month is free');
+  });
+
+  it('keeps the payment on a delete, and stops the renewal at the end of the paid year', () => {
+    expect(bodyOf('PAY-5')).toContain('A delete of her account leaves this item exactly as it was');
+    expect(bodyOf('PAY-6')).toContain(
+      'A cancel sets `cancel_at_period_end` on the subscription, and so does a delete of her account',
+    );
+    expect(bodyOf('PAY-6')).toContain('runs to its end and Emi refunds nothing');
+  });
+
+  it('sells the Stars route in Stars alone, and answers Telegram inside its limit', () => {
+    const stars = bodyOf('PAY-7');
+
+    expect(stars).toContain('`currency` set to `XTR`, exactly one price component');
+    expect(stars).toContain('within 10 seconds');
+    expect(stars).toContain('A Telegram user identifier written to the table.');
   });
 });
 
