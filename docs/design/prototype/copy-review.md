@@ -16,9 +16,11 @@ mark, write the number. Every privacy line below is checked against `docs/privac
 - Never write AES, enclave, hardware key, audited, zero knowledge or zero cloud. The key is in the
   keychain, the envelope is XChaCha20-Poly1305, and no auditor has read Emi.
 - Never write "never leaves this phone" about a day. A sealed day goes to the server so a new phone
-  can restore it. The server holds ciphertext it cannot read.
-- The approved privacy sentence, from `docs/privacy.md` line 34: "Emi encrypts each day on the phone,
-  with a key that stays on the phone, and sends only the result."
+  can restore it. The storage holds ciphertext, and her key sits beside it wrapped by the Amazon key
+  service, which `docs/privacy.md` states as the first attack this design accepts.
+- The approved privacy sentence, from `docs/privacy.md`: "Emi encrypts each day on the phone,
+  with a key that stays on the phone, and sends only the result." Since 13 November 2026 a screen
+  that says it must not imply Emi cannot read a day, because Emi can.
 
 ## Photographs replaced with icons
 

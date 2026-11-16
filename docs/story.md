@@ -346,14 +346,18 @@ up there to reach, and the screen has a second sentence for the case where it ca
 
 She loses her phone, buys another one, and her history is still hers. That is the whole of this
 feature, and it is the one place a cloud exists at all: an encrypted vault in Amazon Web Services
-that holds ciphertext and no key, so it can store a day and never read one.
+that holds ciphertext, and her vault key beside it, wrapped by the Amazon key service.
 
 The half that runs on the phone is written. Her phone makes a device key, keeps it in the keychain,
-and signs every request over the method, the path, the instant and a hash of the body. The recovery
-code, which is the only thing that can unwrap her vault key on a second phone, has its screens:
-`RecoverySetup`, `ShowRecoveryCode` and `ConfirmRecoveryCode`. The service that answers is written
-too, with one handler each to register an account from a public key, to put a record, to pull the
-records after a cursor and to delete every item of an account.
+and signs every request over the method, the path, the instant and a hash of the body. The service
+that answers is written too, with one handler each to register an account from a public key, to put
+a record, to pull the records after a cursor and to delete every item of an account.
+
+A second phone finds her days through a sign in, and the operator decided on 13 November 2026 that
+nothing else is needed. Emi keeps her vault key in the cloud, wrapped by the Amazon key service, and
+one function hands it back after a verified sign in. The recovery code screens that are in the
+repository, `RecoverySetup`, `ShowRecoveryCode` and `ConfirmRecoveryCode`, reach no route and leave
+the product with that decision.
 
 Nothing to show: the vault is not running, `docs/architecture.md` says so, no route opens the
 recovery screens, and nothing yet sends a day up or pulls one down. A second phone cannot restore
