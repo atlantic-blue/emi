@@ -10,11 +10,11 @@
  * identifier and no record identifier is sent, and no card number is ever read back.
  */
 
-/** What one call carries. Every call of this api is a form, so the body is always written. */
+/** What one call carries. A read carries no body, and a write carries a form. */
 export interface AskedOfStripe {
   readonly method: string;
   readonly headers: Readonly<Record<string, string>>;
-  readonly body: string;
+  readonly body?: string;
 }
 
 /** What one call comes back with, as the status and the text. */
@@ -36,11 +36,14 @@ export const customersAddress = `${stripeApi}/customers`;
 export const setupIntentsAddress = `${stripeApi}/setup_intents`;
 
 /**
- * The field the payer digest travels in, on the customer and later on the subscription. It is the
- * reverse index: a webhook carries a customer and the metadata on it names the digest, so the
- * event is written down without a second item and without a query.
+ * The key the payer digest travels under, in the metadata of the customer and later of the
+ * subscription. It is the reverse index: a webhook carries a customer and the metadata on it names
+ * the digest, so the event is written down without a second item and without a query.
  */
-export const payerDigestField = 'metadata[payerDigest]';
+export const payerDigestKey = 'payerDigest';
+
+/** The field that key is written as, which is how this api takes one key of a metadata map. */
+export const payerDigestField = `metadata[${payerDigestKey}]`;
 
 /**
  * The setup is made for a payment Emi starts later, which is what a yearly renewal is. A setup
@@ -117,6 +120,7 @@ export interface WhatACallHolds {
 interface AnObjectStripeMade {
   readonly id?: unknown;
   readonly client_secret?: unknown;
+  readonly metadata?: Readonly<Record<string, unknown>>;
   readonly error?: { readonly code?: unknown; readonly type?: unknown };
 }
 
@@ -205,4 +209,26 @@ export async function setupIntentFor(
   }
 
   return { setupRef, clientSecret };
+}
+
+/** Where one customer is read, which is how a webhook learns which digest an event is about. */
+export function customerAddressFor(customerRef: string): string {
+  return `${customersAddress}/${encodeURIComponent(customerRef)}`;
+}
+
+/**
+ * The digest the customer of an event was made under, or nothing at all where the customer carries
+ * none. A customer somebody made by hand in the dashboard is the second case, and it is not a
+ * failure: no payment of Emi was ever written under it.
+ */
+export async function payerDigestOfCustomer(
+  held: WhatACallHolds,
+  customerRef: string,
+): Promise<string | null> {
+  const answered = await held.reaches(customerAddressFor(customerRef), {
+    method: 'GET',
+    headers: headersFor(held.secretKey),
+  });
+
+  return textIn(objectIn(answered, 'customer').metadata?.[payerDigestKey]);
 }

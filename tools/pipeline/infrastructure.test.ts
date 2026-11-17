@@ -32,7 +32,11 @@ import { deployedFunctions, uploadOrder } from '../deploy/functions.ts';
 import { carriesTheAuthorizer, readTheRoutes, routesWithNoAuthorizer } from '../deploy/routes.ts';
 import { paymentPartitionPrefix } from '../../services/vault/src/payments/entitlements.ts';
 import { subscriptionPath } from '../../services/vault/src/payments/startSubscription.ts';
-import { stripeSecretKeyParameter } from '../../services/vault/src/payments/stripeKey.ts';
+import { webhookPath } from '../../services/vault/src/payments/webhook.ts';
+import {
+  stripeSecretKeyParameter,
+  stripeWebhookSecretParameter,
+} from '../../services/vault/src/payments/stripeSecrets.ts';
 import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
 import { languages } from '../../apps/website/app/words/language.ts';
 
@@ -490,7 +494,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         (match) => (match[1] ? [match[1]] : []),
       );
 
-      expect(groups).toHaveLength(9);
+      expect(groups).toHaveLength(10);
       expect(new Set(groups)).toEqual(new Set(['var.log_retention_days']));
       expect(bodyOf('variable "log_retention_days"')).toContain('default     = 30');
     });
@@ -599,16 +603,17 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(payments).not.toContain('/index/');
     });
 
-    it('reads the one parameter the key lives in, named in full, and no prefix of it', () => {
-      const key = statementTextIn(payments, 'ReadTheStripeSecretKey');
+    it('reads the two parameters the secrets live in, each named in full, and no prefix', () => {
+      const secrets = statementTextIn(payments, 'ReadTheStripeSecrets');
 
       expect(actionsIn(payments).filter((action) => action.startsWith('ssm:'))).toEqual([
         'ssm:GetParameter',
       ]);
-      expect(listedIn(key, 'resources')).toEqual([
+      expect(listedIn(secrets, 'resources')).toEqual([
         'arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key',
+        'arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/webhook-secret',
       ]);
-      expect(key).not.toContain('*');
+      expect(secrets).not.toContain('*');
     });
 
     it('decrypts a secure string through the parameter store alone', () => {
@@ -665,6 +670,41 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
   });
 
+  describe('the route the deliveries of Stripe arrive on', () => {
+    const route = bodyOf('resource "aws_apigatewayv2_route" "stripe_events"');
+
+    it('answers on the path the handler answers, so the two cannot drift apart', () => {
+      expect(route).toContain(`route_key          = "POST ${webhookPath}"`);
+    });
+
+    it('carries no authorizer, because Stripe signs each delivery instead', () => {
+      expect(route).toContain('authorization_type = "NONE"');
+      expect(route).not.toContain('authorizer_id');
+      expect(routesWithNoAuthorizer).toContain('stripe_events');
+    });
+
+    it('reaches the webhook function, which the api is allowed to invoke', () => {
+      const integration = bodyOf('resource "aws_apigatewayv2_integration" "payments_webhook"');
+      const permission = bodyOf('resource "aws_lambda_permission" "payments_webhook"');
+
+      expect(route).toContain('integrations/${aws_apigatewayv2_integration.payments_webhook.id}');
+      expect(integration).toContain('aws_lambda_function.payments_webhook.invoke_arn');
+      expect(permission).toContain('aws_lambda_function.payments_webhook.function_name');
+      expect(permission).toContain('principal     = "apigateway.amazonaws.com"');
+    });
+
+    it('runs the money in two functions on one role, and neither one reads an account', () => {
+      const webhookFunction = bodyOf('resource "aws_lambda_function" "payments_webhook"');
+      const environment = blockBodyOf(webhookFunction, 'variables');
+
+      expect(webhookFunction).toContain('role          = aws_iam_role.payments.arn');
+      expect(listedIn(environment, 'variables')).toEqual([]);
+      expect(environment).toContain('EMI_VAULT_TABLE');
+      expect(environment.toLowerCase()).not.toContain('stripe');
+      expect(environment).not.toContain('EMI_ACCOUNTS_POOL_ID');
+    });
+  });
+
   describe('the Stripe secret key, which lives in the parameter store and nowhere else', () => {
     const payments = bodyOf('data "aws_iam_policy_document" "payments"');
     const theFunction = bodyOf('resource "aws_lambda_function" "payments_subscription"');
@@ -676,11 +716,15 @@ describe('the infrastructure is applied only by the pipeline', () => {
         .flatMap((found) => (found[1] === undefined ? [] : [found[1]]));
     }
 
-    it('reads the key from one parameter, named in full by the code and by the role', () => {
+    it('reads each secret from its own parameter, named in full by the code and by the role', () => {
+      const secrets = statementTextIn(payments, 'ReadTheStripeSecrets');
+
       expect(stripeSecretKeyParameter).toBe('/emi/payments/stripe/secret-key');
-      expect(statementTextIn(payments, 'ReadTheStripeSecretKey')).toContain(
-        stripeSecretKeyParameter.replace('/emi/', '${var.project_name}/'),
-      );
+      expect(stripeWebhookSecretParameter).toBe('/emi/payments/stripe/webhook-secret');
+
+      for (const parameter of [stripeSecretKeyParameter, stripeWebhookSecretParameter]) {
+        expect(secrets).toContain(parameter.replace('/emi/', '${var.project_name}/'));
+      }
     });
 
     it('holds the key in no environment variable of any function, because a deploy log is public', () => {
@@ -704,17 +748,21 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(theFunction).toContain('role          = aws_iam_role.payments.arn');
     });
 
-    it('reads the key through the parameter store in the one file of the service that names it', () => {
+    it('reads the secrets through the parameter store in the one file of the service that names them', () => {
       const source = join(repositoryRoot, 'services', 'vault', 'src');
       const naming = readdirSync(source, { encoding: 'utf8', recursive: true })
         .filter((entry) => statSync(join(source, entry)).isFile())
-        .filter((entry) =>
-          readFileSync(join(source, entry), 'utf8').includes(stripeSecretKeyParameter),
-        )
+        .filter((entry) => {
+          const text = readFileSync(join(source, entry), 'utf8');
+
+          return (
+            text.includes(stripeSecretKeyParameter) || text.includes(stripeWebhookSecretParameter)
+          );
+        })
         .map((entry) => entry.split(sep).join('/'));
 
-      expect(naming).toEqual(['payments/stripeKey.ts']);
-      expect(read('services/vault/src/payments/stripeKey.ts')).not.toContain('process.env');
+      expect(naming).toEqual(['payments/stripeSecrets.ts']);
+      expect(read('services/vault/src/payments/stripeSecrets.ts')).not.toContain('process.env');
     });
 
     it('names no Stripe secret in the pipeline, so no job can carry one into a function', () => {
@@ -1157,6 +1205,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       'emi-sign-in-challenge-create': 'sign_in_challenge',
       'emi-sign-in-challenge-verify': 'sign_in_challenge',
       'emi-payments-subscription': 'payments',
+      'emi-payments-webhook': 'payments',
     };
 
     /** The role one function resource names, read out of the resource itself. */
@@ -1194,7 +1243,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       expect(roleIn('aws_lambda_function.sign_in_telegram')).not.toBe('sign_in_challenge');
     });
 
-    it('reads a parameter through the two roles that need one, and through no other', () => {
+    it('reads a parameter through the roles that need one, and through no other', () => {
       const reading = deployedFunctions
         .filter((held) => {
           const policy = bodyOf(`data "aws_iam_policy_document" "${roleIn(held.resource)}"`);
@@ -1203,7 +1252,11 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
         })
         .map((held) => held.name);
 
-      expect(reading.sort()).toEqual(['emi-payments-subscription', 'emi-sign-in-telegram']);
+      expect(reading.sort()).toEqual([
+        'emi-payments-subscription',
+        'emi-payments-webhook',
+        'emi-sign-in-telegram',
+      ]);
     });
 
     it('gives the role the pool calls no Amazon Cognito action at all', () => {
@@ -1240,7 +1293,12 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
 
   describe('the readme says what the account holds', () => {
     /** The count of functions, spelled out, which is how the readme writes a count. */
-    const counted: Readonly<Record<number, string>> = { 3: 'Three', 7: 'Seven', 8: 'Eight' };
+    const counted: Readonly<Record<number, string>> = {
+      3: 'Three',
+      7: 'Seven',
+      8: 'Eight',
+      9: 'Nine',
+    };
 
     it('names the count of deployed functions, which went stale once at two', () => {
       const readme = read('infra/README.md');
@@ -1441,7 +1499,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
 
       expect(signIn?.authorizationType).toBe('NONE');
       expect(signIn?.authorizerId).toBeNull();
-      expect(routesWithNoAuthorizer).toHaveLength(3);
+      expect(routesWithNoAuthorizer).toHaveLength(4);
     });
 
     it('sends that route to the function of its own, which the api is allowed to invoke', () => {
@@ -3410,7 +3468,7 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
         .map((route) => route.resource);
 
       expect(none.sort()).toEqual([...routesWithNoAuthorizer].sort());
-      expect(none).toHaveLength(3);
+      expect(none).toHaveLength(4);
     });
 
     it('declares no route for the preflight, because the api answers it before a route is read', () => {

@@ -353,7 +353,7 @@ jobs:
           # function that issues the answer they spend. This list is held in
           # tools/deploy/functions.ts as well, and the infrastructure test refuses the two the
           # moment they disagree.
-          for name in emi-authorizer emi-articles emi-sign-in-challenge-define emi-sign-in-challenge-create emi-sign-in-challenge-verify emi-sign-in-telegram emi-payments-subscription emi-vault; do
+          for name in emi-authorizer emi-articles emi-sign-in-challenge-define emi-sign-in-challenge-create emi-sign-in-challenge-verify emi-sign-in-telegram emi-payments-subscription emi-payments-webhook emi-vault; do
             version=$(aws lambda update-function-code \
               --function-name "${name}" \
               --zip-file "fileb://services/vault/build/${name}.zip" \

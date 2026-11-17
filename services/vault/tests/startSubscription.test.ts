@@ -17,7 +17,7 @@ import {
   subscriptionPath,
   type WhatTheStartNeeds,
 } from '../src/payments/startSubscription';
-import { stripeSecretKeyOnce, stripeSecretKeyParameter } from '../src/payments/stripeKey';
+import { stripeSecretKeyOnce, stripeSecretKeyParameter } from '../src/payments/stripeSecrets';
 import type { ParameterStore, ParameterWrite } from '../src/telegram/parameters';
 import { fakeTable, tableName, type FakeTable } from './fixtures/dynamoTable';
 import { aClientSecret, aCustomerRef, fakeStripe, type FakeStripe } from './fixtures/stripe';

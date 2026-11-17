@@ -544,8 +544,8 @@ resource "aws_lambda_function" "sign_in_challenge_verify" {
 #
 # One role for every function of the money. It reaches one partition prefix of the vault table and
 # no account partition at all, so a function that writes a payment cannot read one day of anybody's
-# history. The parameter grants of docs/design/payments.md section 5 arrive with the functions that
-# read them, one parameter each, so the webhook signing secret is named by no statement yet.
+# history. It names each parameter of docs/design/payments.md section 5 in full, so no grant here
+# reaches the bot token under the neighbouring prefix.
 
 resource "aws_iam_role" "payments" {
   name               = "${var.project_name}-payments"
@@ -591,14 +591,17 @@ data "aws_iam_policy_document" "payments" {
     }
   }
 
-  # One parameter, named in full, which is the Stripe secret key. A prefix would reach the signing
-  # secret of the webhook as well, and each function of this route reads its own value and no other.
-  # Nothing in this repository creates the parameter or gives it a value.
+  # Two parameters, each named in full: the secret key, which both functions read, and the signing
+  # secret of the webhook endpoint. A prefix would reach every parameter of this product, and
+  # nothing in this repository creates either one or gives either one a value.
   statement {
-    sid       = "ReadTheStripeSecretKey"
-    effect    = "Allow"
-    actions   = ["ssm:GetParameter"]
-    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key"]
+    sid     = "ReadTheStripeSecrets"
+    effect  = "Allow"
+    actions = ["ssm:GetParameter"]
+    resources = [
+      "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key",
+      "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/webhook-secret",
+    ]
   }
 
   # The key is a secure string under alias/aws/ssm, whose identifier the service generates. The
@@ -656,6 +659,46 @@ resource "aws_lambda_function" "payments_subscription" {
   }
 
   depends_on = [aws_cloudwatch_log_group.payments_subscription]
+
+  # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
+  # would read that bundle as drift and put the placeholder back on the next apply, so the route
+  # in front of this function would answer from a placeholder again.
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
+}
+
+# The function that answers a delivery of Stripe. It verifies the signature before it reads one
+# field of the body, reads the customer of the event to learn which digest paid, and writes the
+# payment item. Its environment carries the table and no secret of any kind.
+
+resource "aws_cloudwatch_log_group" "payments_webhook" {
+  name              = "/aws/lambda/${var.project_name}-payments-webhook"
+  retention_in_days = var.log_retention_days
+}
+
+resource "aws_lambda_function" "payments_webhook" {
+  function_name = "${var.project_name}-payments-webhook"
+  role          = aws_iam_role.payments.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 512
+  # It reads two parameters and one customer of Stripe, so it waits on a service of somebody else
+  # twice. Stripe gives an endpoint far longer than this and sends the delivery again after a
+  # failure, so a timeout costs a retry rather than a payment.
+  timeout = 10
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  environment {
+    variables = {
+      EMI_VAULT_TABLE = aws_dynamodb_table.vault.name
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.payments_webhook]
 
   # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
   # would read that bundle as drift and put the placeholder back on the next apply, so the route
