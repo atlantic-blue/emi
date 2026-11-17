@@ -161,7 +161,7 @@ Then('no press takes her to a page that is still to be built', ({ page, pressing
   );
 
   for (const path of [
-    'buy/',
+    'checkout/',
     'calculator/',
     'pulse/',
     'terms/',

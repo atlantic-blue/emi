@@ -12,9 +12,12 @@ import {
   problemsWithTheAddress,
   problemsWithWhatItCosts,
   theAmountOf,
-  theOneAmount,
   theOneHost,
   theOnePrice,
+  thePriceOfTheStore,
+  thePriceOnThisSite,
+  thePricesOfTheTwoWays,
+  theWayThatCharges,
   whoseWordsAreIn,
 } from '../lib/theOnePrice';
 import { websiteWorkspace } from './stylesheet';
@@ -51,7 +54,7 @@ function theWordsBut(file: string, said: string, instead: string): WhatOneFileSa
   return { file, text: text.replace(said, instead) };
 }
 
-describe('the site asks for one price', () => {
+describe('the site asks for one price in each shop it sells through', () => {
   it('reads every file of the words, so nothing is measured on an empty directory', () => {
     const read = everyFileOfTheWords();
 
@@ -66,33 +69,75 @@ describe('the site asks for one price', () => {
     expect(read.every(({ text }) => text.length > 0)).toBe(true);
   });
 
-  it('holds a price for each language the site serves, and none of them empty', () => {
-    expect(Object.keys(theOnePrice).sort()).toEqual([...languages].sort());
-    expect(languages.every((language) => theOnePrice[language].length > 0)).toBe(true);
+  it('holds a price for each language the site serves, in each shop, and none of them empty', () => {
+    expect(thePricesOfTheTwoWays).toHaveLength(2);
+
+    for (const way of thePricesOfTheTwoWays) {
+      expect(Object.keys(way.said).sort()).toEqual([...languages].sort());
+      expect(languages.every((language) => way.said[language].length > 0)).toBe(true);
+    }
   });
 
-  it.each(languages)('says the one price on the page she reads, in %s', (language) => {
-    expect(wordsIn(language).price).toBe(theOnePrice[language]);
+  it.each(languages)('says what the store charges on the page she reads, in %s', (language) => {
+    expect(wordsIn(language).price).toBe(thePriceOfTheStore.said[language]);
 
     // The store charges what the application says it charges, so the page and the application say
     // one sentence. A site that drifted from it would ask her for a product nobody sells.
-    expect(theOnePrice[language]).toBe(theApplication[language]['onboarding.tour.price.line']);
+    expect(thePriceOfTheStore.said[language]).toBe(
+      theApplication[language]['onboarding.tour.price.line'],
+    );
   });
 
-  it('names 29.99 a month and no other amount anywhere in the words', () => {
-    const found = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
+  it.each(languages)('says what this site charges on the page she buys on, in %s', (language) => {
+    const said = wordsIn(language).checkoutPrice;
 
-    expect(found.length).toBe(languages.length);
-    expect(found.map((amount) => theAmountOf(amount))).toEqual(found.map(() => theOneAmount));
+    expect(said).toBe(thePriceOnThisSite.said[language]);
+    expect(amountsOfMoneyIn(said).map(theAmountOf)).toEqual([thePriceOnThisSite.amount]);
+  });
+
+  it('names the free month, the year and the tax in the sentence this site says', () => {
+    expect(thePriceOnThisSite.said.en).toBe(
+      'One month free, then 39 euros a year, value added tax included.',
+    );
+    expect(thePriceOnThisSite.amount).toBe('39');
+  });
+
+  it('names the two amounts the two shops charge, and no other, anywhere in the words', () => {
+    const found = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
+    const charged = thePricesOfTheTwoWays.map((way) => way.amount);
+
+    expect(found.length).toBeGreaterThan(languages.length);
+    expect([...new Set(found.map((amount) => theAmountOf(amount)))].sort()).toEqual(
+      [...charged].sort(),
+    );
     expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
+  });
+
+  it('reads an amount written with the euro sign, before it and after it', () => {
+    expect(amountsOfMoneyIn('€39 a year').map(theAmountOf)).toEqual(['39']);
+    expect(amountsOfMoneyIn('39 € в год').map(theAmountOf)).toEqual(['39']);
+    expect(theWayThatCharges('€39')).toBe(thePriceOnThisSite);
+    expect(theWayThatCharges('29.99')).toBe(thePriceOfTheStore);
+    expect(theWayThatCharges('£24.99')).toBeUndefined();
+  });
+
+  it('refuses the price of one shop written in the words of the other', () => {
+    const swapped = theWordsBut(
+      'english.ts',
+      'One month free, then 39 euros a year, value added tax included.',
+      'One month free, then 39 euros a month.',
+    );
+
+    expect(problemsWithWhatItCosts(swapped)).toEqual([
+      `english.ts names money outside its price, which reads "${thePriceOnThisSite.said.en}"`,
+    ]);
   });
 
   it('refuses words that ask for a different amount, and says what she would be asked for', () => {
     const cheaper = theWordsBut('english.ts', '29.99 pounds a month', '£24.99 a month');
 
     expect(problemsWithWhatItCosts(cheaper)).toEqual([
-      'english.ts asks for £24.99, and the one price is 29.99 a month',
-      `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
+      'english.ts asks for £24.99, and the two prices are 29.99 and 39',
     ]);
   });
 
@@ -100,7 +145,7 @@ describe('the site asks for one price', () => {
     const yearly = theWordsBut('english.ts', '29.99 pounds a month', '29.99 pounds a year');
 
     expect(problemsWithWhatItCosts(yearly)).toEqual([
-      `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
+      `english.ts names money outside its price, which reads "${theOnePrice.en}"`,
     ]);
   });
 
@@ -112,7 +157,7 @@ describe('the site asks for one price', () => {
   it('reads a count of thousands as a count and not as money', () => {
     expect(amountsOfMoneyIn('over 1,500 women')).toEqual([]);
     expect(amountsOfMoneyIn('más de 1.500 mujeres')).toEqual([]);
-    expect(amountsOfMoneyIn('29.99 pounds a month')).toEqual(['29.99']);
+    expect(amountsOfMoneyIn('29.99 pounds a month').map(theAmountOf)).toEqual(['29.99']);
 
     // A pound sign in front still makes a figure money, however it is grouped.
     expect(amountsOfMoneyIn('£1,500 a month')).toEqual(['£1,500']);
@@ -120,7 +165,7 @@ describe('the site asks for one price', () => {
 
   it('refuses an amount in a file that holds the words of no language', () => {
     expect(problemsWithWhatItCosts({ file: 'words.ts', text: 'it costs 19.99' })).toEqual([
-      'words.ts asks for 19.99, and the one price is 29.99 a month',
+      'words.ts asks for 19.99, and the two prices are 29.99 and 39',
       'words.ts names money, and it holds the words of no language of the site',
     ]);
     expect(whoseWordsAreIn('words.ts')).toBe(null);

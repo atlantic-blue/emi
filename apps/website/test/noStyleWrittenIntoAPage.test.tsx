@@ -9,6 +9,7 @@ import PrivacyPolicyPage from '../app/[lang]/privacy-policy/page';
 import SignInPage from '../app/[lang]/sign-in/page';
 import SupportPage from '../app/[lang]/support/page';
 import AccountPage from '../app/[lang]/account/page';
+import CheckoutPage from '../app/[lang]/checkout/page';
 import { type Language, languages } from '../app/words';
 
 /**
@@ -57,6 +58,9 @@ const signInPageIn = async (language: Language): Promise<string> =>
 const accountPageIn = async (language: Language): Promise<string> =>
   documentAround(await AccountPage({ params: Promise.resolve({ lang: language }) }), language);
 
+const checkoutPageIn = async (language: Language): Promise<string> =>
+  documentAround(await CheckoutPage({ params: Promise.resolve({ lang: language }) }), language);
+
 describe('no page of the site writes a style the policy would refuse', () => {
   it.each(languages)('the page a woman meets Emi on, in %s', async (language) => {
     expect(stylesWrittenInto(await homePageIn(language))).toEqual([]);
@@ -80,6 +84,10 @@ describe('no page of the site writes a style the policy would refuse', () => {
 
   it.each(languages)('her account, in %s', async (language) => {
     expect(stylesWrittenInto(await accountPageIn(language))).toEqual([]);
+  });
+
+  it.each(languages)('the page she buys Emi on, in %s', async (language) => {
+    expect(stylesWrittenInto(await checkoutPageIn(language))).toEqual([]);
   });
 
   it('the page behind an address the site does not have', async () => {
