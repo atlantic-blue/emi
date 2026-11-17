@@ -125,6 +125,31 @@ export const loadChecks: Readonly<Record<string, LoadCheck>> = {
     owes: (answer) => fieldOf(answer, 'statusCode') === 400,
     describes: 'a sign in body with no code is answered 400',
   },
+  // A request the token authorizer handed nothing on from is refused before the function reads the
+  // secret key or reaches Stripe, so a bundle with no account behind it owes this answer. The path
+  // is written out here, and a case of loadEachBundle.test.ts holds it to the one the handler names.
+  'emi-payments-subscription': {
+    event: {
+      rawPath: '/v1/payments/subscription',
+      headers: {},
+      requestContext: { http: { method: 'POST' } },
+    },
+    owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+    describes: 'a request carrying no token of the pool is refused',
+  },
+  // A header carrying no signature at all is refused by its shape, before the function reads a
+  // parameter, reaches Stripe or parses one field of the body. So a bundle with no account behind
+  // it owes this answer, and a container that cannot read the secret still proves the bundle runs.
+  'emi-payments-webhook': {
+    event: {
+      rawPath: '/v1/payments/webhook',
+      headers: { 'stripe-signature': 't=1' },
+      requestContext: { http: { method: 'POST' } },
+      body: '{"type":"invoice.paid"}',
+    },
+    owes: (answer) => fieldOf(answer, 'statusCode') === 400,
+    describes: 'a delivery carrying no signature of this account is refused',
+  },
   'emi-sign-in-challenge-define': {
     event: { request: { session: [] }, response: {} },
     owes: (answer) => answeredField(answer, 'challengeName') === customChallengeName,

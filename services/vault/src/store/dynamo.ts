@@ -181,7 +181,11 @@ function recordFrom(item: Item): StoredRecord {
   };
 }
 
-async function refusedByItsCondition(write: Promise<void>): Promise<boolean> {
+/**
+ * Whether a write was turned away by its own condition. A refusal is an answer here, so a caller
+ * reads an outcome rather than catching the table's error, and a fault of any other kind travels.
+ */
+export async function refusedByItsCondition(write: Promise<void>): Promise<boolean> {
   try {
     await write;
   } catch (thrown) {

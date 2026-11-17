@@ -1,0 +1,234 @@
+/**
+ * The objects Emi keeps in Stripe, and the two calls that make them.
+ *
+ * Both calls travel through one port, so a test reads the address, the headers and the body the
+ * function actually sent. The secret key is an argument rather than a value this module holds,
+ * because it is read from the parameter store when a container starts and never from the
+ * environment of a function.
+ *
+ * The payer digest is the only thing of ours that reaches Stripe. No address, no name, no account
+ * identifier and no record identifier is sent, and no card number is ever read back.
+ */
+
+/** What one call carries. A read carries no body, and a write carries a form. */
+export interface AskedOfStripe {
+  readonly method: string;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly body?: string;
+}
+
+/** What one call comes back with, as the status and the text. */
+export interface AnsweredByStripe {
+  readonly status: number;
+  readonly body: string;
+}
+
+/** How this module reaches Stripe. A test hands it one that answers without a network. */
+export type ReachesStripe = (address: string, asked: AskedOfStripe) => Promise<AnsweredByStripe>;
+
+/** Where the objects are made. Every address below hangs under this one. */
+export const stripeApi = 'https://api.stripe.com/v1';
+
+/** Where a customer is made, one for each payer digest. */
+export const customersAddress = `${stripeApi}/customers`;
+
+/** Where the setup that collects her payment method is made. */
+export const setupIntentsAddress = `${stripeApi}/setup_intents`;
+
+/**
+ * The key the payer digest travels under, in the metadata of the customer and later of the
+ * subscription. It is the reverse index: a webhook carries a customer and the metadata on it names
+ * the digest, so the event is written down without a second item and without a query.
+ */
+export const payerDigestKey = 'payerDigest';
+
+/** The field that key is written as, which is how this api takes one key of a metadata map. */
+export const payerDigestField = `metadata[${payerDigestKey}]`;
+
+/**
+ * The setup is made for a payment Emi starts later, which is what a yearly renewal is. A setup
+ * without this is refused by the bank at the renewal rather than at the press, so the woman who
+ * paid reads nothing and the charge never lands.
+ */
+export const offSession = 'off_session';
+
+/** What the price object of the live account carries. Nothing here creates it. */
+export interface YearlyPrice {
+  /** The amount, in the smallest unit of the currency. */
+  readonly amount: number;
+  readonly currency: string;
+  /** How often Stripe charges it. */
+  readonly interval: string;
+  /**
+   * The tax sits inside the amount, so the figure she reads is the figure she pays in every
+   * country. Stripe refuses to change this once the price exists, so a price created without it
+   * has to be replaced and every subscription on it moved.
+   */
+  readonly taxBehaviour: string;
+  /** Days of the free month, which Stripe takes as `trial_period_days`. */
+  readonly freeMonthDays: number;
+}
+
+/** The one price Emi sells: 39 euros a year, the tax inside it, after one free month. */
+export const theYearlyPrice: YearlyPrice = {
+  amount: 3900,
+  currency: 'eur',
+  interval: 'year',
+  taxBehaviour: 'inclusive',
+  freeMonthDays: 30,
+};
+
+/** Every way a call of Stripe fails, as a value, so a caller matches a reason and not words. */
+export type StripeRefusal = 'the-call-was-refused' | 'the-answer-names-no-object';
+
+/**
+ * Raised when a call does not come back with the object it asked for. The message carries the
+ * status and the code Stripe named, and never the body: a body reaches a log line, and the answer
+ * to a customer call carries whatever the customer already holds.
+ */
+export class StripeError extends Error {
+  readonly refusal: StripeRefusal;
+
+  constructor(refusal: StripeRefusal, message: string) {
+    super(message);
+    this.name = 'StripeError';
+    this.refusal = refusal;
+  }
+}
+
+/** A form body, written the way this api reads every request. */
+export function formBodyOf(fields: readonly (readonly [string, string])[]): string {
+  return fields
+    .map(([name, value]) => `${encodeURIComponent(name)}=${encodeURIComponent(value)}`)
+    .join('&');
+}
+
+/** The headers every call carries. The key is here and in no other line of this service. */
+export function headersFor(secretKey: string): Record<string, string> {
+  return {
+    authorization: `Bearer ${secretKey}`,
+    'content-type': 'application/x-www-form-urlencoded',
+  };
+}
+
+/** What a call is bound to: one way of reaching Stripe, and the key it is made with. */
+export interface WhatACallHolds {
+  readonly reaches: ReachesStripe;
+  readonly secretKey: string;
+}
+
+interface AnObjectStripeMade {
+  readonly id?: unknown;
+  readonly client_secret?: unknown;
+  readonly metadata?: Readonly<Record<string, unknown>>;
+  readonly error?: { readonly code?: unknown; readonly type?: unknown };
+}
+
+function objectIn(answered: AnsweredByStripe, what: string): AnObjectStripeMade {
+  let read: AnObjectStripeMade | null = null;
+
+  try {
+    read = JSON.parse(answered.body) as AnObjectStripeMade;
+  } catch {
+    read = null;
+  }
+
+  if (answered.status < 200 || answered.status >= 300) {
+    const named = read?.error?.code ?? read?.error?.type ?? 'nothing';
+    throw new StripeError(
+      'the-call-was-refused',
+      `Stripe answered ${answered.status} to the ${what} and named ${String(named)}`,
+    );
+  }
+
+  if (read === null) {
+    throw new StripeError('the-answer-names-no-object', `the ${what} answered no readable object`);
+  }
+
+  return read;
+}
+
+function textIn(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+/**
+ * The customer one digest pays under. Emi sends the digest and nothing else, so Stripe holds her
+ * card and the address her bank needs, and the record of who that is stays with Stripe.
+ */
+export async function customerFor(held: WhatACallHolds, payerDigest: string): Promise<string> {
+  const answered = await held.reaches(customersAddress, {
+    method: 'POST',
+    headers: headersFor(held.secretKey),
+    body: formBodyOf([[payerDigestField, payerDigest]]),
+  });
+
+  const id = textIn(objectIn(answered, 'customer').id);
+
+  if (id === null) {
+    throw new StripeError('the-answer-names-no-object', 'the customer call named no customer');
+  }
+
+  return id;
+}
+
+/** The setup, and the secret the page mounts both elements on. */
+export interface SetupToCollectACard {
+  readonly setupRef: string;
+  readonly clientSecret: string;
+}
+
+/**
+ * The setup that collects her payment method. The payment method is collected before any
+ * subscription exists, because the first invoice of a free month is zero and there is then
+ * nothing to confirm: a page waiting for a payment to confirm would work on some cards and not on
+ * others.
+ */
+export async function setupIntentFor(
+  held: WhatACallHolds,
+  customerRef: string,
+): Promise<SetupToCollectACard> {
+  const answered = await held.reaches(setupIntentsAddress, {
+    method: 'POST',
+    headers: headersFor(held.secretKey),
+    body: formBodyOf([
+      ['customer', customerRef],
+      ['usage', offSession],
+      // The two elements of the page draw the methods the device has, and both read that list off
+      // this setup. A setup that names its methods one by one draws no wallet the account adds later.
+      ['automatic_payment_methods[enabled]', 'true'],
+    ]),
+  });
+
+  const made = objectIn(answered, 'setup');
+  const setupRef = textIn(made.id);
+  const clientSecret = textIn(made.client_secret);
+
+  if (setupRef === null || clientSecret === null) {
+    throw new StripeError('the-answer-names-no-object', 'the setup call named no setup to confirm');
+  }
+
+  return { setupRef, clientSecret };
+}
+
+/** Where one customer is read, which is how a webhook learns which digest an event is about. */
+export function customerAddressFor(customerRef: string): string {
+  return `${customersAddress}/${encodeURIComponent(customerRef)}`;
+}
+
+/**
+ * The digest the customer of an event was made under, or nothing at all where the customer carries
+ * none. A customer somebody made by hand in the dashboard is the second case, and it is not a
+ * failure: no payment of Emi was ever written under it.
+ */
+export async function payerDigestOfCustomer(
+  held: WhatACallHolds,
+  customerRef: string,
+): Promise<string | null> {
+  const answered = await held.reaches(customerAddressFor(customerRef), {
+    method: 'GET',
+    headers: headersFor(held.secretKey),
+  });
+
+  return textIn(objectIn(answered, 'customer').metadata?.[payerDigestKey]);
+}

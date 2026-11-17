@@ -9,7 +9,7 @@ resource "aws_apigatewayv2_api" "vault" {
   cors_configuration {
     allow_origins     = ["https://myemi.app"]
     allow_methods     = ["POST"]
-    allow_headers     = ["content-type"]
+    allow_headers     = ["authorization", "content-type"]
     allow_credentials = false
     max_age           = 86400
   }
@@ -160,6 +160,84 @@ resource "aws_lambda_permission" "sign_in_telegram" {
   statement_id  = "AllowInvokeFromTheApi"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.sign_in_telegram.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
+}
+
+# The token authorizer of the pool, which is the one authorizer that is not a function of ours. It
+# verifies the signature, the issuer and the audience of an identity token before the payments
+# function runs, so a token minted by another pool or by another client never reaches the money.
+#
+# The audience is the site alone. The application on her phone sells through the App Store, and
+# section 6 of docs/design/payments.md says it sells nothing through this route, so a token of the
+# iPhone client is refused here.
+resource "aws_apigatewayv2_authorizer" "pool_token" {
+  api_id          = aws_apigatewayv2_api.vault.id
+  authorizer_type = "JWT"
+  name            = "${var.project_name}-pool-token"
+
+  identity_sources = ["$request.header.Authorization"]
+
+  jwt_configuration {
+    audience = [aws_cognito_user_pool_client.website.id]
+    issuer   = "https://${aws_cognito_user_pool.accounts.endpoint}"
+  }
+}
+
+# The money runs in a function of its own, under the role that reaches the payment partition and
+# the Stripe secret key. The vault function reaches neither, and this one reaches no account
+# partition, so neither one can do the other's half.
+resource "aws_apigatewayv2_integration" "payments_subscription" {
+  api_id                 = aws_apigatewayv2_api.vault.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.payments_subscription.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+}
+
+# The press on Buy Emi. It makes the customer and the setup her card is collected on, and the
+# payer digest it writes under is cut from a claim of her own token, so the request names no
+# account and carries no body at all.
+resource "aws_apigatewayv2_route" "start_subscription" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/payments/subscription"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
+resource "aws_lambda_permission" "payments_subscription" {
+  statement_id  = "AllowInvokeFromTheApi"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.payments_subscription.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
+}
+
+# The webhook runs in a function of its own, under the same role as the subscription route. It is
+# the one route of the money with no authorizer, because Stripe holds no token of this account.
+resource "aws_apigatewayv2_integration" "payments_webhook" {
+  api_id                 = aws_apigatewayv2_api.vault.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.payments_webhook.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+}
+
+# The deliveries of Stripe. They carry no authorizer because Stripe signs each one instead, and the
+# function verifies that signature against the signing secret before it reads one field of the
+# body. A body that fails the check is answered 400 and written nowhere.
+resource "aws_apigatewayv2_route" "stripe_events" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/payments/webhook"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_webhook.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_lambda_permission" "payments_webhook" {
+  statement_id  = "AllowInvokeFromTheApi"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.payments_webhook.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
 }

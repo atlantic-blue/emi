@@ -314,9 +314,10 @@ cannot make one.
 
 The key is the pool user name, which both sides can work out alone.
 
-The site reads it from the identity token, in the `cognito:username` claim. The bot works it out
-from the Telegram subject. `services/vault/src/telegram/userName.ts` already builds that name
-today: it is `tg_` and 26 characters of the keyed hash of the subject under the salt in the
+It is read from the identity token, in the `cognito:username` claim. The site reads it to pay, and
+the identity token reader of the vault reads it so the link can write it. The bot works the same
+name out from the Telegram subject. `services/vault/src/telegram/userName.ts` already builds that
+name today: it is `tg_` and 26 characters of the keyed hash of the subject under the salt in the
 parameter store. The bot reads the same salt and gets the same name, whether or not the pool holds
 a user by it.
 
@@ -337,9 +338,10 @@ payment names the Telegram digest. Sign in with Apple names the Apple digest. He
 link for each way she has linked, and the entitlement read walks those links. The Apple way finds
 no payment, because none was made against it.
 
-So she sees no subscription, and the money is not lost. The fix is to sign in with Telegram, on the
-site or on the phone, which the board already tells her to do: "Then log in with Telegram on your
-iPhone, and Emi unlocks by itself."
+So she sees no subscription, and the money is not lost. The fix is to link Telegram to the same
+account, in Emi on her phone, which the board already tells her to do: "Then log in with Telegram
+on your iPhone, and Emi unlocks by itself." The site cannot link a second way in: the link needs a
+request signed by a device key, and only the phone holds one.
 
 Linking a second way in to one account is https://github.com/atlantic-blue/emi/issues/558. It is
 not built. Until it is, one account reaches one payment through the one way in that paid.

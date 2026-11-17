@@ -190,10 +190,19 @@ The contracts it builds:
 
 ## Feature 7: She pays every year, and the price is the promise
 
-One month free, then 39 euros a year. Read and export stay open forever if she stops paying. Six
-steps.
+One month free, then 39 euros a year in the stores, with the value added tax inside that amount.
+Read and export stay open forever if she stops paying. Six steps build the store route, and
+`docs/design/payments.md` holds the path of the two routes away from it.
 
 The price is the product. There is no free tier, because a free tier is paid for with her data.
+
+Two more routes sell the same subscription. She pays on myemi.app with a wallet or a card, through
+Stripe, or she pays in Telegram Stars in the Emi bot. Both of those cost the same 39 euros a year,
+after one free month. A payment says one thing about one way in: this way in is paid until this
+date. It never says whose records those are.
+
+A delete of her account keeps the payment, because it is the record of a sale, and stops the
+subscription at the end of the year she paid for.
 
 The contracts it builds:
 
@@ -202,6 +211,12 @@ The contracts it builds:
 - `PAY-2` the entitlement, read on launch, kept when the store cannot be reached.
 - `PAY-3` the receipt checked on the server, against the store that issued it.
 - `PAY-4` a lapse that stops new writes and nothing else.
+- `PAY-5` the entitlement record, in a partition of its own, which answers one question with one
+  instant and names nobody.
+- `PAY-6` the Stripe route, at 39 euros a year with the tax inside the amount, after one free
+  month.
+- `PAY-7` the Telegram Stars route, an invoice in Stars that writes the same record.
+- `PAY-8` the entitlement read, one instant, which says nothing about how she paid.
 - `WIRE-5` a pull and a delete that work whatever the subscription says.
 
 ## Feature 8: Anybody can read how it works
