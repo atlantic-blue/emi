@@ -20,6 +20,7 @@
     "@emi/content": "*",
     "@emi/crypto": "*",
     "@emi/cycle": "*",
+    "@emi/sign-in": "*",
     "@emi/tokens": "*",
     "@emi/ui": "*",
     "@gluestack-ui/core": "5.0.15",

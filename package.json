@@ -69,6 +69,7 @@
     "generate:lock-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern lock.picture",
     "generate:dock-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern bottomNavigation.picture",
     "generate:privacy-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern privacy.picture",
+    "generate:sign-in-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern signIn.picture",
     "generate:your-answers-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern yourAnswers.picture",
     "generate:answer-cycle-length-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answerCycleLength.picture",
     "generate:answer-largest-text-picture": "jest --ci --config brand/screens/jest.config.js --testPathPattern answerLargestText",

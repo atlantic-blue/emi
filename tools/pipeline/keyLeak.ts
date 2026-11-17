@@ -65,6 +65,11 @@ export const keyholdingItems: readonly KeyholdingItem[] = [
     constant: 'recoveryConfirmedItem',
     home: join(interfaceRoot, 'services', 'vault'),
   },
+  {
+    item: 'emi.identityRefresh.v1',
+    constant: 'identityRefreshItem',
+    home: join(interfaceRoot, 'services', 'signIn'),
+  },
 ];
 
 /** The source the service is made of. It holds a wrapped key and no way at all to unwrap one. */

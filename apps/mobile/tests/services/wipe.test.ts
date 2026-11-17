@@ -175,8 +175,8 @@ describe('the local delete', () => {
       expect(store.items()).toEqual({});
     });
 
-    it('names four items, one for each the design keeps in the keychain', () => {
-      expect(new Set(wipedKeychainItems).size).toBe(4);
+    it('names five items, one for each the design keeps in the keychain', () => {
+      expect(new Set(wipedKeychainItems).size).toBe(5);
     });
   });
 

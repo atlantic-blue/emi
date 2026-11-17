@@ -16,6 +16,38 @@ import type { CatalogueIn } from './words';
  * so a Spanish sentence cannot claim what the English sentence may not.
  */
 export const spanish: CatalogueIn<'es'> = {
+  'account.account.back': 'Atrás',
+  'account.account.email': 'Correo',
+  'account.account.signedInWith': 'Sesión iniciada con',
+  'account.account.since': 'Desde',
+  'account.account.title': 'Emi en otro teléfono',
+  'account.code.anotherCodeIsOnItsWay': 'Revisa tu correo otra vez y escribe el código más nuevo.',
+  'account.code.back': 'Atrás',
+  'account.code.label': 'Código',
+  'account.code.lasts': 'El código sirve durante 15 minutos.',
+  'account.code.sendANewCode': 'Enviar un código nuevo ›',
+  'account.code.sentTo': 'Enviamos un código a {address}.',
+  'account.code.signIn': 'Entrar',
+  'account.code.useAnotherAddress': 'Usar otra dirección ›',
+  'account.gate.apple': 'Entrar con Apple',
+  'account.gate.email': 'Correo electrónico',
+  'account.gate.google': 'Entrar con Google',
+  'account.gate.or': 'o',
+  'account.gate.sendCode': 'Enviar código',
+  'account.gate.telegram': 'Entrar con Telegram',
+  'account.gate.title': 'Entra en Emi',
+  'account.problem.addressIsNotValid':
+    'Esa no es una dirección de correo. Compruébala y escríbela otra vez.',
+  'account.problem.codeHasExpired': 'Ese código ha caducado. Envía uno nuevo.',
+  'account.problem.codeIsWrong': 'Ese código no es correcto. Compruébalo y escríbelo otra vez.',
+  'account.problem.needsTheCode': 'Escribe el código del correo.',
+  'account.problem.nothingReached':
+    'Tu teléfono no pudo conectar con Emi. Comprueba la conexión e inténtalo otra vez.',
+  'account.problem.signsInWithGoogleOrApple':
+    'Ya has usado esta dirección para entrar con Google o Apple.',
+  'account.problem.tooManyTries':
+    'Demasiados intentos. Espera unos minutos y envía un código nuevo.',
+  'account.way.email': 'Correo',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Día {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} de {month}',
@@ -1123,6 +1155,7 @@ export const spanish: CatalogueIn<'es'> = {
   'settings.reminders.save': 'Guardar',
   'settings.reminders.timeOfDay': 'Hora del día',
   'settings.reminders.title': 'Recordatorios',
+  'settings.settings.account': 'Emi en otro teléfono',
   'settings.settings.answers': 'Tus respuestas',
   'settings.settings.answersLine': 'Tu nombre y tus respuestas de la configuración inicial',
   'settings.settings.assurance': 'Solo tú puedes leer tus días.',

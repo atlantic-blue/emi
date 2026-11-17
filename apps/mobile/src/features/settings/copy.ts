@@ -15,6 +15,9 @@ export const settingsCopy = {
       line: words('settings.settings.assuranceLine'),
     },
     rows: {
+      account: {
+        lead: words('settings.settings.account'),
+      },
       answers: {
         lead: words('settings.settings.answers'),
         line: words('settings.settings.answersLine'),
