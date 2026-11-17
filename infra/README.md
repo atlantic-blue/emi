@@ -21,7 +21,7 @@ order.
 One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
 time. It holds no key, no date, no symptom, no flow and no note.
 
-One HTTP api, `emi-vault`, with eight routes. It answers at
+One HTTP api, `emi-vault`, with nine routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
 `https://myemi.app` is the only origin that may call this api from a browser. It is the one
