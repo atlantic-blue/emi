@@ -4,7 +4,7 @@ import { SSMClient } from '@aws-sdk/client-ssm';
 import { dynamoEntitlementStore } from '../payments/dynamoEntitlements';
 import { reachesStripe } from '../payments/reachesStripe';
 import { startSubscription } from '../payments/startSubscription';
-import { stripeSecretKeyOnce } from '../payments/stripeKey';
+import { stripeSecretKeyOnce } from '../payments/stripeSecrets';
 import { dynamoTable } from '../store/dynamoTable';
 import { parameterStore } from '../telegram/parameterStore';
 

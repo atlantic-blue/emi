@@ -214,6 +214,34 @@ resource "aws_lambda_permission" "payments_subscription" {
   source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
 }
 
+# The webhook runs in a function of its own, under the same role as the subscription route. It is
+# the one route of the money with no authorizer, because Stripe holds no token of this account.
+resource "aws_apigatewayv2_integration" "payments_webhook" {
+  api_id                 = aws_apigatewayv2_api.vault.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.payments_webhook.invoke_arn
+  payload_format_version = "2.0"
+  timeout_milliseconds   = 10000
+}
+
+# The deliveries of Stripe. They carry no authorizer because Stripe signs each one instead, and the
+# function verifies that signature against the signing secret before it reads one field of the
+# body. A body that fails the check is answered 400 and written nowhere.
+resource "aws_apigatewayv2_route" "stripe_events" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/payments/webhook"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_webhook.id}"
+  authorization_type = "NONE"
+}
+
+resource "aws_lambda_permission" "payments_webhook" {
+  statement_id  = "AllowInvokeFromTheApi"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.payments_webhook.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vault.execution_arn}/*/*"
+}
+
 resource "aws_lambda_permission" "vault" {
   statement_id  = "AllowInvokeFromTheApi"
   action        = "lambda:InvokeFunction"

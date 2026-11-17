@@ -296,9 +296,11 @@ const allowedKeyWords: readonly string[] = [
   // parameter store at run time, it is never an environment variable, and no file of this service
   // holds its value. It opens no record: a record is opened by a key that never leaves her phone.
   'secretKey',
-  'stripeKey',
   'stripeSecretKeyOnce',
   'stripeSecretKeyParameter',
+  // The key of the metadata map the payer digest travels under, in Stripe. It is the name of a
+  // field and never a value, and the digest under it names no person.
+  'payerDigestKey',
 ];
 
 describe('a marker word in a record never appears in the stored item', () => {

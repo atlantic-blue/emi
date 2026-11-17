@@ -34,12 +34,15 @@ export const apiConfiguration = 'infra/api.tf';
  * Registration carries none because the account does not exist yet, so there is no stored key to
  * check a signature against. The sign in carries none because a woman reaching an account from a
  * new phone holds no device key for it. The article read carries none because a request says which
- * phase is read and never who is reading it.
+ * phase is read and never who is reading it. The deliveries of Stripe carry none because Stripe
+ * holds no token of this account: it signs each delivery, and the function verifies that signature
+ * before it reads one field of the body.
  */
 export const routesWithNoAuthorizer: readonly string[] = [
   'register',
   'sign_in_telegram',
   'read_articles',
+  'stripe_events',
 ];
 
 /** The registration route, which the live read asks for a status that is not the placeholder's. */

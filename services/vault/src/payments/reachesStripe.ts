@@ -17,7 +17,7 @@ export function reachesStripe(fetches: StripeFetches = fetch): ReachesStripe {
     const answered = await fetches(address, {
       method: asked.method,
       headers: { ...asked.headers },
-      body: asked.body,
+      ...(asked.body === undefined ? {} : { body: asked.body }),
     });
 
     return { status: answered.status, body: await answered.text() };

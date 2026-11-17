@@ -20,6 +20,12 @@ import {
   thatTokenStartsNothing,
   type WhatTheStartNeeds,
 } from '../../services/vault/src/payments/startSubscription';
+import {
+  thatDeliveryIsNotSigned,
+  webhookFor,
+  webhookPath,
+  type WhatTheWebhookNeeds,
+} from '../../services/vault/src/payments/webhook';
 import { createAuthChallenge } from '../../services/vault/src/triggers/createAuthChallenge';
 import { customChallengeName } from '../../services/vault/src/triggers/defineAuthChallenge';
 
@@ -394,6 +400,37 @@ describe('every bundle is loaded in a container of its own, and two in a row can
       expect(check?.owes({ statusCode: 200, body: '{"clientSecret":"seti_1_secret_1"}' })).toBe(
         false,
       );
+    });
+  });
+
+  describe('the refusal a webhook bundle owes', () => {
+    const check = loadChecks['emi-payments-webhook'];
+
+    /** Every port the webhook needs, each one raising, so a call that happens is a failure here. */
+    const nothingItMayReach = (): WhatTheWebhookNeeds => ({
+      entitlements: {
+        readEntitlement: () => Promise.reject(new Error('the table was read')),
+        writeEntitlement: () => Promise.reject(new Error('the table was written')),
+      },
+      reaches: () => Promise.reject(new Error('Stripe was called')),
+      signingSecret: () => Promise.reject(new Error('the parameter store was read')),
+      secretKey: () => Promise.reject(new Error('the parameter store was read')),
+      clock: () => new Date('2026-11-16T09:00:00.000Z'),
+    });
+
+    it('asks on the path the handler answers, so the two cannot drift apart', () => {
+      expect((check?.event as { rawPath?: string } | undefined)?.rawPath).toBe(webhookPath);
+    });
+
+    it('takes the refusal the handler answers that delivery with, having read no secret', async () => {
+      const answered = await webhookFor(check?.event as HttpRequestEvent, nothingItMayReach());
+
+      expect(check?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatDeliveryIsNotSigned });
+    });
+
+    it('refuses the answer a bundle that took an unsigned delivery would give', () => {
+      expect(check?.owes({ statusCode: 200, body: '{"written":true}' })).toBe(false);
     });
   });
 

@@ -1,5 +1,10 @@
 import type { AnsweredByStripe, AskedOfStripe, ReachesStripe } from '../../src/payments/stripe';
-import { customersAddress, setupIntentsAddress } from '../../src/payments/stripe';
+import {
+  customerAddressFor,
+  customersAddress,
+  payerDigestKey,
+  setupIntentsAddress,
+} from '../../src/payments/stripe';
 
 /**
  * Stripe, as far as the money reaches it: a double that answers what Stripe answers, and records
@@ -20,10 +25,14 @@ export interface WhatStripeAnswers {
   readonly customerRef?: string;
   readonly setupRef?: string;
   readonly clientSecret?: string;
+  /** The digest the metadata of the customer carries, which is what a read of it answers. */
+  readonly holdsThePayerDigest?: string;
   /** A status and a body for the customer call, where the test wants a refusal instead. */
   readonly refusesTheCustomer?: AnsweredByStripe;
   /** The same for the setup call. */
   readonly refusesTheSetup?: AnsweredByStripe;
+  /** The same for the read of one customer, which is how a delivery names the digest. */
+  readonly refusesTheCustomerRead?: AnsweredByStripe;
 }
 
 /** The double, and the calls it took. */
@@ -47,6 +56,23 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
   return {
     reaches: async (address: string, asked: AskedOfStripe): Promise<AnsweredByStripe> => {
       calls.push({ address, asked });
+
+      // A read of one customer, which is the address of the customer itself rather than the list.
+      if (address.startsWith(`${customersAddress}/`)) {
+        return (
+          answers.refusesTheCustomerRead ?? {
+            status: 200,
+            body: JSON.stringify({
+              id: address.slice(customersAddress.length + 1),
+              object: 'customer',
+              metadata:
+                answers.holdsThePayerDigest === undefined
+                  ? {}
+                  : { [payerDigestKey]: answers.holdsThePayerDigest },
+            }),
+          }
+        );
+      }
 
       if (address === customersAddress) {
         return (
@@ -81,3 +107,6 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
     fieldsOf: (call: OneCall) => Object.fromEntries(new URLSearchParams(call.asked.body).entries()),
   };
 }
+
+/** The address a read of one customer is sent to, so a test does not write it out itself. */
+export const readOfTheCustomer = (customerRef: string): string => customerAddressFor(customerRef);
