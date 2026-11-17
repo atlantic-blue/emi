@@ -86,6 +86,8 @@ purpose, because the design may name a thing before anybody builds it. This list
   from the endpoint, and the rule for how long an answer is held.
 - `packages/ui` holds the chrome: the components copied in from gluestack, the icon, and the dock at
   the bottom of the screen. A screen draws from here rather than inventing a look of its own.
+- `packages/sign-in` holds the sign in with an email code against the Amazon Cognito pool. The
+  website and the application both import it, each through its own client of the pool.
 - `brand` holds the mark, the icons and the fonts, as drawn files and the programs that write
   them.
 - `services/vault` holds the service behind the api: the account, the request signature and the
