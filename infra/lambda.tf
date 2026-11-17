@@ -542,12 +542,10 @@ resource "aws_lambda_function" "sign_in_challenge_verify" {
 
 # ── The payments role ────────────────────────────────────────────────────────
 #
-# The role lands before the functions that assume it, so the grant is reviewable on its own and a
-# later merge adds a function to a role that already exists. Nothing assumes it yet.
-#
-# It reaches one partition prefix of the vault table and no account partition at all, so the
-# function that writes a payment cannot read one day of anybody's history. The parameter grants of
-# docs/design/payments.md section 5 arrive with the functions that read them, one parameter each.
+# One role for every function of the money. It reaches one partition prefix of the vault table and
+# no account partition at all, so a function that writes a payment cannot read one day of anybody's
+# history. The parameter grants of docs/design/payments.md section 5 arrive with the functions that
+# read them, one parameter each, so the webhook signing secret is named by no statement yet.
 
 resource "aws_iam_role" "payments" {
   name               = "${var.project_name}-payments"
@@ -592,10 +590,77 @@ data "aws_iam_policy_document" "payments" {
       values   = ["false"]
     }
   }
+
+  # One parameter, named in full, which is the Stripe secret key. A prefix would reach the signing
+  # secret of the webhook as well, and each function of this route reads its own value and no other.
+  # Nothing in this repository creates the parameter or gives it a value.
+  statement {
+    sid       = "ReadTheStripeSecretKey"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key"]
+  }
+
+  # The key is a secure string under alias/aws/ssm, whose identifier the service generates. The
+  # condition is what narrows this grant: the role may decrypt only through a parameter store call,
+  # so it opens nothing the statement above does not already open.
+  statement {
+    sid       = "DecryptASecureString"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${var.account_id}:key/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["ssm.${var.region}.amazonaws.com"]
+    }
+  }
 }
 
 resource "aws_iam_role_policy" "payments" {
   name   = "${var.project_name}-payments"
   role   = aws_iam_role.payments.id
   policy = data.aws_iam_policy_document.payments.json
+}
+
+# The function that answers the press on Buy Emi. It makes the customer and the setup, writes the
+# payment item, and reads the secret key from the parameter store on the first request a container
+# takes. Its environment carries the table and the pool, and no secret of any kind: a Lambda update
+# prints the whole configuration of a function, and the log of this pipeline is public.
+
+resource "aws_cloudwatch_log_group" "payments_subscription" {
+  name              = "/aws/lambda/${var.project_name}-payments-subscription"
+  retention_in_days = var.log_retention_days
+}
+
+resource "aws_lambda_function" "payments_subscription" {
+  function_name = "${var.project_name}-payments-subscription"
+  role          = aws_iam_role.payments.arn
+  runtime       = "nodejs22.x"
+  architectures = ["arm64"]
+  handler       = "index.handler"
+  memory_size   = 512
+  # It reads a parameter and makes two objects in Stripe, so it waits on a service of somebody
+  # else twice.
+  timeout = 10
+
+  filename         = data.archive_file.vault_placeholder.output_path
+  source_code_hash = data.archive_file.vault_placeholder.output_base64sha256
+
+  environment {
+    variables = {
+      EMI_VAULT_TABLE      = aws_dynamodb_table.vault.name
+      EMI_ACCOUNTS_POOL_ID = aws_cognito_user_pool.accounts.id
+    }
+  }
+
+  depends_on = [aws_cloudwatch_log_group.payments_subscription]
+
+  # The functions job of .github/workflows/deploy.yml uploads the bundle on a merge. Terraform
+  # would read that bundle as drift and put the placeholder back on the next apply, so the route
+  # in front of this function would answer from a placeholder again.
+  lifecycle {
+    ignore_changes = [filename, source_code_hash]
+  }
 }

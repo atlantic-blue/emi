@@ -212,6 +212,9 @@ const allowedFromCrypto: readonly string[] = [
   'instantHeader',
   'instantIsFresh',
   'instantWindowSeconds',
+  // Who paid, which is the pool and her pool user name run through the same digest the account
+  // identifier is made with. It names no person and opens nothing.
+  'payerDigestFor',
   'presentedSignatureIn',
   'readEnvelope',
   'readWrappedVaultKey',
@@ -289,6 +292,13 @@ const allowedKeyWords: readonly string[] = [
   'signatureSortKeyFor',
   'signedByTheKeyItRegisters',
   'sortKey',
+  // The Stripe secret key, which charges a card and reads nothing of hers. It is read from the
+  // parameter store at run time, it is never an environment variable, and no file of this service
+  // holds its value. It opens no record: a record is opened by a key that never leaves her phone.
+  'secretKey',
+  'stripeKey',
+  'stripeSecretKeyOnce',
+  'stripeSecretKeyParameter',
 ];
 
 describe('a marker word in a record never appears in the stored item', () => {

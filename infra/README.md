@@ -21,23 +21,24 @@ order.
 One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
 time. It holds no key, no date, no symptom, no flow and no note.
 
-One HTTP api, `emi-vault`, with six routes. It answers at
+One HTTP api, `emi-vault`, with seven routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
 `https://myemi.app` is the only origin that may call this api from a browser. It is the one
 address the site serves from: `https://www.myemi.app` answers a redirect to it. The api allows the
-method POST and the header `content-type`, which is the one call the site makes, and it allows no
-cookie. It names no star, so a page on any other host reads no answer.
+method POST and the headers `authorization` and `content-type`, which are the two calls the site
+makes, and it allows no cookie. It names no star, so a page on any other host reads no answer.
 
 A browser sends a preflight before that call, and the api answers the preflight itself. It answers
 before it matches a route, so no authorizer runs for a preflight and no route gives up its
 authorizer. The last step of the `functions` job sends that preflight and fails the deploy when the
 answer does not allow the site, the method and the header.
 
-Seven functions, on Node 22 and arm64. Three answer the vault: `emi-vault`, `emi-authorizer`
+Eight functions, on Node 22 and arm64. Three answer the vault: `emi-vault`, `emi-authorizer`
 and `emi-articles`. Four carry the sign in with Telegram: `emi-sign-in-telegram` answers a code,
 and `emi-sign-in-challenge-define`, `emi-sign-in-challenge-create` and
-`emi-sign-in-challenge-verify` are the three triggers of the custom sign in.
+`emi-sign-in-challenge-verify` are the three triggers of the custom sign in. One answers the press
+on Buy Emi: `emi-payments-subscription`.
 
 Terraform creates each one from a placeholder it holds inline, and then leaves the code alone. The
 deployed code is the bundle: the `functions` job of `.github/workflows/deploy.yml` builds one
@@ -45,19 +46,24 @@ bundle for each function out of `services/vault/src` and uploads it on a merge i
 function carries `ignore_changes` on its file name and its code hash, so an apply never puts a
 placeholder back.
 
-The upload order is the authorizer, the articles, the three triggers, the sign in and then the
-vault. The triggers go before the function that issues the answer they spend.
+The upload order is the authorizer, the articles, the three triggers, the sign in, the payments
+function and then the vault. The triggers go before the function that issues the answer they spend.
 
 A function answers from its placeholder until the first merge reaches it. The vault placeholder and
 the article placeholder answer 501. The authorizer placeholder refuses every request. The last step
 of that job reads the live api and requires a refusal on every route the authorizer stands in front
 of, so a merge that leaves a bundle unloadable fails.
 
-Seven log groups, each with a retention of 30 days.
+Eight log groups, each with a retention of 30 days.
 
 Two roles of the sign in with Telegram, `emi-sign-in-telegram` and `emi-sign-in-challenge`. The
 sign in function runs as the first one. The three triggers share the second. The section on sign in
 with Telegram below says what each one reads and what each one deliberately cannot.
+
+One role of the money, `emi-payments`. The payments function runs as it. It reads and writes one
+item under a partition that opens with `PAY#`, by its whole key, with no query and no scan, so it
+reaches no account partition at all. It reads `/emi/payments/stripe/secret-key` and no other
+parameter, and it writes no parameter and deletes none.
 
 One Amazon Cognito user pool, `emi-accounts`, with two app clients: `emi-iphone` and
 `emi-website`. The pool names the three triggers of the custom sign in, and both clients allow the
@@ -322,6 +328,26 @@ does.
 Every grant this needs was already there. The apply role sets the triggers through
 `cognito-idp:UpdateUserPool`, and it adds a policy to a function through `lambda:AddPermission`, in
 the functions of Emi alone. So no grant landed with this piece.
+
+### The Stripe secret key is written by a person, and read at run time
+
+The payments route reads `/emi/payments/stripe/secret-key`, a secure string in eu-central-1. The
+operator writes it by hand from the Stripe dashboard. Nothing in this repository creates it, gives
+it a value or reads its value into a plan: no `aws_ssm_parameter` resource and no data source
+names it, so the state at `s3://abs-terraform/emi/terraform.tfstate` does not carry it.
+
+The key is never an environment variable. A Lambda update prints the whole configuration of a
+function, and the log of this pipeline is public, so a key in the environment would be a key in a
+log that anybody can read. What the environment of `emi-payments-subscription` holds is the table
+name and the pool identifier, and both are public by design.
+
+Until the parameter holds a value, the route answers 502 and writes nothing. Write it with the
+command below, under a credential a person holds:
+
+```
+aws ssm put-parameter --name /emi/payments/stripe/secret-key --type SecureString \
+  --value "<the key from the Stripe dashboard>" --region eu-central-1
+```
 
 ### One grant is wider than the rule of this repository
 

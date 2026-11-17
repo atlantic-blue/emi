@@ -31,6 +31,8 @@ import {
 import { deployedFunctions, uploadOrder } from '../deploy/functions.ts';
 import { carriesTheAuthorizer, readTheRoutes, routesWithNoAuthorizer } from '../deploy/routes.ts';
 import { paymentPartitionPrefix } from '../../services/vault/src/payments/entitlements.ts';
+import { subscriptionPath } from '../../services/vault/src/payments/startSubscription.ts';
+import { stripeSecretKeyParameter } from '../../services/vault/src/payments/stripeKey.ts';
 import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
 import { languages } from '../../apps/website/app/words/language.ts';
 
@@ -488,7 +490,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         (match) => (match[1] ? [match[1]] : []),
       );
 
-      expect(groups).toHaveLength(8);
+      expect(groups).toHaveLength(9);
       expect(new Set(groups)).toEqual(new Set(['var.log_retention_days']));
       expect(bodyOf('variable "log_retention_days"')).toContain('default     = 30');
     });
@@ -585,8 +587,10 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(actionsIn(payments).sort()).toEqual([
         'dynamodb:GetItem',
         'dynamodb:UpdateItem',
+        'kms:Decrypt',
         'logs:CreateLogStream',
         'logs:PutLogEvents',
+        'ssm:GetParameter',
       ]);
     });
 
@@ -595,8 +599,132 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(payments).not.toContain('/index/');
     });
 
-    it('holds no parameter, so nothing here reads the Stripe key until a function needs it', () => {
-      expect(actionsIn(payments).filter((action) => action.startsWith('ssm:'))).toEqual([]);
+    it('reads the one parameter the key lives in, named in full, and no prefix of it', () => {
+      const key = statementTextIn(payments, 'ReadTheStripeSecretKey');
+
+      expect(actionsIn(payments).filter((action) => action.startsWith('ssm:'))).toEqual([
+        'ssm:GetParameter',
+      ]);
+      expect(listedIn(key, 'resources')).toEqual([
+        'arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key',
+      ]);
+      expect(key).not.toContain('*');
+    });
+
+    it('decrypts a secure string through the parameter store alone', () => {
+      const decrypt = statementTextIn(payments, 'DecryptASecureString');
+
+      expect(listedIn(decrypt, 'values')).toEqual(['ssm.${var.region}.amazonaws.com']);
+      expect(decrypt).toContain('variable = "kms:ViaService"');
+    });
+
+    it('writes no parameter, so nothing in the pipeline can replace the key or remove it', () => {
+      expect(actionsIn(payments)).not.toContain('ssm:PutParameter');
+      expect(actionsIn(payments)).not.toContain('ssm:DeleteParameter');
+      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+    });
+  });
+
+  describe('the route that starts a subscription, which is contract PAY-6', () => {
+    const route = bodyOf('resource "aws_apigatewayv2_route" "start_subscription"');
+    const authorizer = bodyOf('resource "aws_apigatewayv2_authorizer" "pool_token"');
+
+    it('answers on the path the handler names, so the two cannot drift apart', () => {
+      expect(route).toContain(`route_key          = "POST ${subscriptionPath}"`);
+    });
+
+    it('stands behind the token authorizer of the pool, and behind no signature', () => {
+      expect(route).toContain('authorization_type = "JWT"');
+      expect(route).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(route).not.toContain('aws_apigatewayv2_authorizer.signature');
+    });
+
+    it('believes a token of this pool alone, minted for the site alone', () => {
+      expect(authorizer).toContain(
+        'issuer   = "https://${aws_cognito_user_pool.accounts.endpoint}"',
+      );
+      expect(listedIn(authorizer, 'audience')).toEqual(['aws_cognito_user_pool_client.website.id']);
+      expect(listedIn(authorizer, 'identity_sources')).toEqual(['$request.header.Authorization']);
+    });
+
+    it('reaches the payments function, which the api is allowed to invoke', () => {
+      const integration = bodyOf('resource "aws_apigatewayv2_integration" "payments_subscription"');
+      const permission = bodyOf('resource "aws_lambda_permission" "payments_subscription"');
+
+      expect(route).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+      expect(integration).toContain('aws_lambda_function.payments_subscription.invoke_arn');
+      expect(permission).toContain('aws_lambda_function.payments_subscription.function_name');
+      expect(permission).toContain('principal     = "apigateway.amazonaws.com"');
+    });
+
+    it('lets the browser send the token, because the site calls this api from another origin', () => {
+      expect(listedIn(cors, 'allow_headers')).toContain('authorization');
+      expect(listedIn(cors, 'allow_methods')).toContain('POST');
+    });
+  });
+
+  describe('the Stripe secret key, which lives in the parameter store and nowhere else', () => {
+    const payments = bodyOf('data "aws_iam_policy_document" "payments"');
+    const theFunction = bodyOf('resource "aws_lambda_function" "payments_subscription"');
+
+    /** Every environment variable every function of Emi sets, read out of the Terraform. */
+    function everyEnvironmentName(): string[] {
+      return [...configuration.matchAll(/environment \{\s*variables = \{([^}]*)\}/g)]
+        .flatMap((found) => [...(found[1] ?? '').matchAll(/^\s*([A-Z0-9_]+)\s*=/gm)])
+        .flatMap((found) => (found[1] === undefined ? [] : [found[1]]));
+    }
+
+    it('reads the key from one parameter, named in full by the code and by the role', () => {
+      expect(stripeSecretKeyParameter).toBe('/emi/payments/stripe/secret-key');
+      expect(statementTextIn(payments, 'ReadTheStripeSecretKey')).toContain(
+        stripeSecretKeyParameter.replace('/emi/', '${var.project_name}/'),
+      );
+    });
+
+    it('holds the key in no environment variable of any function, because a deploy log is public', () => {
+      const names = everyEnvironmentName();
+
+      expect(names.length).toBeGreaterThan(0);
+      expect([...new Set(names)].sort()).toEqual([
+        'EMI_ACCOUNTS_POOL_ID',
+        'EMI_ARTICLES_TABLE',
+        'EMI_VAULT_TABLE',
+      ]);
+    });
+
+    it('gives the payments function the table and the pool, and no secret of any kind', () => {
+      const environment = blockBodyOf(theFunction, 'variables');
+
+      expect(environment).toContain('EMI_VAULT_TABLE');
+      expect(environment).toContain('EMI_ACCOUNTS_POOL_ID');
+      expect(environment.toLowerCase()).not.toContain('stripe');
+      expect(environment.toLowerCase()).not.toContain('key');
+      expect(theFunction).toContain('role          = aws_iam_role.payments.arn');
+    });
+
+    it('reads the key through the parameter store in the one file of the service that names it', () => {
+      const source = join(repositoryRoot, 'services', 'vault', 'src');
+      const naming = readdirSync(source, { encoding: 'utf8', recursive: true })
+        .filter((entry) => statSync(join(source, entry)).isFile())
+        .filter((entry) =>
+          readFileSync(join(source, entry), 'utf8').includes(stripeSecretKeyParameter),
+        )
+        .map((entry) => entry.split(sep).join('/'));
+
+      expect(naming).toEqual(['payments/stripeKey.ts']);
+      expect(read('services/vault/src/payments/stripeKey.ts')).not.toContain('process.env');
+    });
+
+    it('names no Stripe secret in the pipeline, so no job can carry one into a function', () => {
+      expect(deployText.toLowerCase()).not.toContain('stripe');
+      expect(read('.github/workflows/ci.yml').toLowerCase()).not.toContain('stripe');
+    });
+
+    it('creates the parameter nowhere, because the operator writes the key by hand', () => {
+      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+      expect(configuration).not.toContain('data "aws_ssm_parameter" "stripe');
     });
   });
 
@@ -1018,7 +1146,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
     /**
      * The role each function assumes, written out here rather than read off the resource, because
      * this list is the rule: the three triggers share one role that holds no parameter at all, and
-     * the function that reads the client secret and the salt is the only one on the other.
+     * the two functions that read a secret are the only ones on a role that names a parameter.
      */
     const theRoleOf: Readonly<Record<string, string>> = {
       'emi-authorizer': 'authorizer',
@@ -1028,6 +1156,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       'emi-sign-in-challenge-define': 'sign_in_challenge',
       'emi-sign-in-challenge-create': 'sign_in_challenge',
       'emi-sign-in-challenge-verify': 'sign_in_challenge',
+      'emi-payments-subscription': 'payments',
     };
 
     /** The role one function resource names, read out of the resource itself. */
@@ -1065,7 +1194,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       expect(roleIn('aws_lambda_function.sign_in_telegram')).not.toBe('sign_in_challenge');
     });
 
-    it('reads a parameter through the role of the sign in function and through no other', () => {
+    it('reads a parameter through the two roles that need one, and through no other', () => {
       const reading = deployedFunctions
         .filter((held) => {
           const policy = bodyOf(`data "aws_iam_policy_document" "${roleIn(held.resource)}"`);
@@ -1074,7 +1203,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
         })
         .map((held) => held.name);
 
-      expect(reading).toEqual(['emi-sign-in-telegram']);
+      expect(reading.sort()).toEqual(['emi-payments-subscription', 'emi-sign-in-telegram']);
     });
 
     it('gives the role the pool calls no Amazon Cognito action at all', () => {
@@ -3241,8 +3370,8 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
       expect(listedIn(cors, 'allow_methods')).toEqual(['POST']);
     });
 
-    it('allows the one header that call sends, and no other', () => {
-      expect(listedIn(cors, 'allow_headers')).toEqual(['content-type']);
+    it('allows the two headers the site sends, and no other', () => {
+      expect(listedIn(cors, 'allow_headers')).toEqual(['authorization', 'content-type']);
     });
 
     it('allows the method and the header the sign in call is written with', () => {
