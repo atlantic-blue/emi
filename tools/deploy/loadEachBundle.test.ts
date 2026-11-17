@@ -13,6 +13,13 @@ import {
   portInsideTheImage,
   publishedPortIn,
 } from './loadEachBundle';
+import type { HttpRequestEvent } from '../../services/vault/src/api';
+import {
+  startSubscriptionFor,
+  subscriptionPath,
+  thatTokenStartsNothing,
+  type WhatTheStartNeeds,
+} from '../../services/vault/src/payments/startSubscription';
 import { createAuthChallenge } from '../../services/vault/src/triggers/createAuthChallenge';
 import { customChallengeName } from '../../services/vault/src/triggers/defineAuthChallenge';
 
@@ -351,6 +358,42 @@ describe('every bundle is loaded in a container of its own, and two in a row can
       };
 
       expect(check?.owes(empty)).toBe(false);
+    });
+  });
+
+  describe('the refusal a payments bundle owes', () => {
+    const check = loadChecks['emi-payments-subscription'];
+
+    /** Every port the start needs, each one raising, so a call that happens is a failure here. */
+    const nothingItMayReach = (): WhatTheStartNeeds => ({
+      entitlements: {
+        readEntitlement: () => Promise.reject(new Error('the table was read')),
+        writeEntitlement: () => Promise.reject(new Error('the table was written')),
+      },
+      reaches: () => Promise.reject(new Error('Stripe was called')),
+      secretKey: () => Promise.reject(new Error('the parameter store was read')),
+      poolId: 'eu-central-1_NOTAPOOL',
+      clock: () => new Date('2026-11-16T09:00:00.000Z'),
+    });
+
+    it('asks on the path the handler answers, so the two cannot drift apart', () => {
+      expect((check?.event as { rawPath?: string } | undefined)?.rawPath).toBe(subscriptionPath);
+    });
+
+    it('takes the refusal the handler answers that event with', async () => {
+      const answered = await startSubscriptionFor(
+        check?.event as HttpRequestEvent,
+        nothingItMayReach(),
+      );
+
+      expect(check?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatTokenStartsNothing });
+    });
+
+    it('refuses the answer a bundle that let that request through would give', () => {
+      expect(check?.owes({ statusCode: 200, body: '{"clientSecret":"seti_1_secret_1"}' })).toBe(
+        false,
+      );
     });
   });
 
