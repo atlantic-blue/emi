@@ -166,19 +166,22 @@ The contracts it builds:
 
 ## Feature 6: Her cycle survives a new phone
 
-The encrypted vault in Amazon Web Services, the recovery code, and her history restored onto a
-second phone. Seven steps.
+The encrypted vault in Amazon Web Services, the sign in, and her history restored onto a second
+phone. Seven steps.
 
-The whole cloud lives here. The server holds ciphertext and no key, so it can store a day and never
-read one.
+The whole cloud lives here. The server holds ciphertext, and it holds her vault key wrapped by the
+Amazon key service. One function may unwrap it, and only for a phone that passes a verified sign
+in. The operator took that cost on 13 November 2026, so that a new phone needs no code on paper.
 
 The contracts it builds:
 
 - `TABLE-3` the sync state row, of which exactly one may exist.
 - `TABLE-4` the vault table, whose every attribute a test reads to prove no day is in it.
-- `ENVELOPE-4` the service that imports the validator alone, and holds no key of any kind.
-- `VAULT-2` the recovery code, the salt and the wrapped vault key, with the unlock time measured.
-- `WIRE-1` register an account from a public key, signed by the key that it registers.
+- `ENVELOPE-4` the service that imports the validator alone, and opens no payload with the key it
+  holds for one call.
+- `VAULT-2` the vault key wrapped in the cloud, released to a verified claim and to nothing else.
+- `WIRE-1` register an account from a public key and a vault key, signed by the key that it
+  registers.
 - `WIRE-2` put a record, refusing a revision that does not rise.
 - `WIRE-3` pull the records written after a cursor.
 - `WIRE-4` delete every item of an account, with no confirmation on the server.
@@ -187,10 +190,19 @@ The contracts it builds:
 
 ## Feature 7: She pays every month, and the price is the promise
 
-One month free, then 29.99 pounds a month. Read and export stay open forever if she stops
-paying. Six steps.
+One month free, then 29.99 pounds a month in the stores. Read and export stay open forever if she
+stops paying. Six steps build the store route, and `docs/design/payments.md` holds the path of the
+two routes away from it.
 
 The price is the product. There is no free tier, because a free tier is paid for with her data.
+
+Two more routes sell the same subscription. She pays on myemi.app with a wallet or a card, through
+Stripe, or she pays in Telegram Stars in the Emi bot. Both of those cost 39 euros a year, with the
+value added tax inside that amount, after one free month. A payment says one thing about one way
+in: this way in is paid until this date. It never says whose records those are.
+
+A delete of her account keeps the payment, because it is the record of a sale, and stops the
+subscription at the end of the year she paid for.
 
 The contracts it builds:
 
@@ -199,6 +211,12 @@ The contracts it builds:
 - `PAY-2` the entitlement, read on launch, kept when the store cannot be reached.
 - `PAY-3` the receipt checked on the server, against the store that issued it.
 - `PAY-4` a lapse that stops new writes and nothing else.
+- `PAY-5` the entitlement record, in a partition of its own, which answers one question with one
+  instant and names nobody.
+- `PAY-6` the Stripe route, at 39 euros a year with the tax inside the amount, after one free
+  month.
+- `PAY-7` the Telegram Stars route, an invoice in Stars that writes the same record.
+- `PAY-8` the entitlement read, one instant, which says nothing about how she paid.
 - `WIRE-5` a pull and a delete that work whatever the subscription says.
 
 ## Feature 8: Anybody can read how it works

@@ -67,6 +67,8 @@ const signInFunction = 'emi-sign-in-telegram';
 const defineTrigger = 'emi-sign-in-challenge-define';
 const createTrigger = 'emi-sign-in-challenge-create';
 const verifyTrigger = 'emi-sign-in-challenge-verify';
+const paymentsFunction = 'emi-payments-subscription';
+const webhookFunction = 'emi-payments-webhook';
 
 /** The three clients of the account this service binds, each in a package of its own. */
 const theTableClient = '@aws-sdk/client-dynamodb';
@@ -83,6 +85,8 @@ const functionsThatReachTheTable = [
   articleFunction,
   signInFunction,
   verifyTrigger,
+  paymentsFunction,
+  webhookFunction,
 ];
 
 describe('one bundle for each deployed function, in the shape the runtime unpacks', () => {
@@ -193,12 +197,29 @@ describe('one bundle for each deployed function, in the shape the runtime unpack
       ]);
     });
 
-    it('leaves the parameter store out of every bundle but the one that reads a secret', () => {
+    it('leaves the parameter store out of every bundle but the three that read a secret', () => {
       const carrying = deployedFunctions
         .filter((held) => modulesIn(held.name).some((module) => module.includes(theSecretClient)))
         .map((held) => held.name);
 
-      expect(carrying).toEqual([signInFunction]);
+      expect(carrying.sort()).toEqual([paymentsFunction, signInFunction, webhookFunction].sort());
+    });
+
+    it('holds the start of a subscription alone, so the money answers no route of the vault', () => {
+      const carried = modulesIn(paymentsFunction);
+
+      expect(carried.filter((module) => module.includes('/handlers/'))).toEqual([]);
+      expect(carried).toContain('services/vault/src/payments/startSubscription.ts');
+      expect(carried).not.toContain('services/vault/src/router.ts');
+      expect(carried).not.toContain('services/vault/src/store/accounts.ts');
+    });
+
+    it('keeps the two halves of the money apart, so neither bundle holds the other', () => {
+      expect(modulesIn(webhookFunction)).not.toContain(
+        'services/vault/src/payments/startSubscription.ts',
+      );
+      expect(modulesIn(paymentsFunction)).not.toContain('services/vault/src/payments/webhook.ts');
+      expect(modulesIn(webhookFunction)).toContain('services/vault/src/payments/webhook.ts');
     });
 
     it('leaves the pool client out of every bundle but that same one', () => {

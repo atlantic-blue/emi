@@ -30,6 +30,13 @@ import {
 } from './signIn.ts';
 import { deployedFunctions, uploadOrder } from '../deploy/functions.ts';
 import { carriesTheAuthorizer, readTheRoutes, routesWithNoAuthorizer } from '../deploy/routes.ts';
+import { paymentPartitionPrefix } from '../../services/vault/src/payments/entitlements.ts';
+import { subscriptionPath } from '../../services/vault/src/payments/startSubscription.ts';
+import { webhookPath } from '../../services/vault/src/payments/webhook.ts';
+import {
+  stripeSecretKeyParameter,
+  stripeWebhookSecretParameter,
+} from '../../services/vault/src/payments/stripeSecrets.ts';
 import { SITE_ORIGIN } from '../../apps/website/lib/addresses.ts';
 import { languages } from '../../apps/website/app/words/language.ts';
 
@@ -487,7 +494,7 @@ describe('the infrastructure is applied only by the pipeline', () => {
         (match) => (match[1] ? [match[1]] : []),
       );
 
-      expect(groups).toHaveLength(8);
+      expect(groups).toHaveLength(10);
       expect(new Set(groups)).toEqual(new Set(['var.log_retention_days']));
       expect(bodyOf('variable "log_retention_days"')).toContain('default     = 30');
     });
@@ -558,6 +565,214 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(articlesTable).toContain('billing_mode = "PAY_PER_REQUEST"');
       expect(articlesTable).toContain('hash_key  = "pk"');
       expect(articlesTable).toContain('range_key = "sk"');
+    });
+  });
+
+  describe('the payment partition, which is contract PAY-5', () => {
+    const payments = bodyOf('data "aws_iam_policy_document" "payments"');
+    const partition = statementTextIn(payments, 'ReadAndWriteOnePaymentPartition');
+
+    it('stands on the prefix the service writes, so it reaches no account partition', () => {
+      expect(partition).toContain('variable = "dynamodb:LeadingKeys"');
+      expect(partition).toContain('test     = "ForAllValues:StringLike"');
+      expect(listedIn(partition, 'values')).toEqual([`${paymentPartitionPrefix}*`]);
+    });
+
+    it('carries the Null condition beside it, so a call that names no key is refused', () => {
+      const conditions = partition.split('condition {').slice(1);
+      const refusing = conditions.find((held) => held.includes('test     = "Null"'));
+
+      expect(conditions).toHaveLength(2);
+      expect(refusing).toContain('variable = "dynamodb:LeadingKeys"');
+      expect(listedIn(refusing ?? '', 'values')).toEqual(['false']);
+    });
+
+    it('reads and writes one item by its key, and never queries or scans the table', () => {
+      expect(actionsIn(payments).sort()).toEqual([
+        'dynamodb:GetItem',
+        'dynamodb:UpdateItem',
+        'kms:Decrypt',
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+        'ssm:GetParameter',
+      ]);
+    });
+
+    it('reaches the table itself and no index, because an index read names no leading key', () => {
+      expect(listedIn(partition, 'resources')).toEqual(['aws_dynamodb_table.vault.arn']);
+      expect(payments).not.toContain('/index/');
+    });
+
+    it('reads the two parameters the secrets live in, each named in full, and no prefix', () => {
+      const secrets = statementTextIn(payments, 'ReadTheStripeSecrets');
+
+      expect(actionsIn(payments).filter((action) => action.startsWith('ssm:'))).toEqual([
+        'ssm:GetParameter',
+      ]);
+      expect(listedIn(secrets, 'resources')).toEqual([
+        'arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key',
+        'arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/webhook-secret',
+      ]);
+      expect(secrets).not.toContain('*');
+    });
+
+    it('decrypts a secure string through the parameter store alone', () => {
+      const decrypt = statementTextIn(payments, 'DecryptASecureString');
+
+      expect(listedIn(decrypt, 'values')).toEqual(['ssm.${var.region}.amazonaws.com']);
+      expect(decrypt).toContain('variable = "kms:ViaService"');
+    });
+
+    it('writes no parameter, so nothing in the pipeline can replace the key or remove it', () => {
+      expect(actionsIn(payments)).not.toContain('ssm:PutParameter');
+      expect(actionsIn(payments)).not.toContain('ssm:DeleteParameter');
+      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+    });
+  });
+
+  describe('the route that starts a subscription, which is contract PAY-6', () => {
+    const route = bodyOf('resource "aws_apigatewayv2_route" "start_subscription"');
+    const authorizer = bodyOf('resource "aws_apigatewayv2_authorizer" "pool_token"');
+
+    it('answers on the path the handler names, so the two cannot drift apart', () => {
+      expect(route).toContain(`route_key          = "POST ${subscriptionPath}"`);
+    });
+
+    it('stands behind the token authorizer of the pool, and behind no signature', () => {
+      expect(route).toContain('authorization_type = "JWT"');
+      expect(route).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(route).not.toContain('aws_apigatewayv2_authorizer.signature');
+    });
+
+    it('believes a token of this pool alone, minted for the site alone', () => {
+      expect(authorizer).toContain(
+        'issuer   = "https://${aws_cognito_user_pool.accounts.endpoint}"',
+      );
+      expect(listedIn(authorizer, 'audience')).toEqual(['aws_cognito_user_pool_client.website.id']);
+      expect(listedIn(authorizer, 'identity_sources')).toEqual(['$request.header.Authorization']);
+    });
+
+    it('reaches the payments function, which the api is allowed to invoke', () => {
+      const integration = bodyOf('resource "aws_apigatewayv2_integration" "payments_subscription"');
+      const permission = bodyOf('resource "aws_lambda_permission" "payments_subscription"');
+
+      expect(route).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+      expect(integration).toContain('aws_lambda_function.payments_subscription.invoke_arn');
+      expect(permission).toContain('aws_lambda_function.payments_subscription.function_name');
+      expect(permission).toContain('principal     = "apigateway.amazonaws.com"');
+    });
+
+    it('lets the browser send the token, because the site calls this api from another origin', () => {
+      expect(listedIn(cors, 'allow_headers')).toContain('authorization');
+      expect(listedIn(cors, 'allow_methods')).toContain('POST');
+    });
+  });
+
+  describe('the route the deliveries of Stripe arrive on', () => {
+    const route = bodyOf('resource "aws_apigatewayv2_route" "stripe_events"');
+
+    it('answers on the path the handler answers, so the two cannot drift apart', () => {
+      expect(route).toContain(`route_key          = "POST ${webhookPath}"`);
+    });
+
+    it('carries no authorizer, because Stripe signs each delivery instead', () => {
+      expect(route).toContain('authorization_type = "NONE"');
+      expect(route).not.toContain('authorizer_id');
+      expect(routesWithNoAuthorizer).toContain('stripe_events');
+    });
+
+    it('reaches the webhook function, which the api is allowed to invoke', () => {
+      const integration = bodyOf('resource "aws_apigatewayv2_integration" "payments_webhook"');
+      const permission = bodyOf('resource "aws_lambda_permission" "payments_webhook"');
+
+      expect(route).toContain('integrations/${aws_apigatewayv2_integration.payments_webhook.id}');
+      expect(integration).toContain('aws_lambda_function.payments_webhook.invoke_arn');
+      expect(permission).toContain('aws_lambda_function.payments_webhook.function_name');
+      expect(permission).toContain('principal     = "apigateway.amazonaws.com"');
+    });
+
+    it('runs the money in two functions on one role, and neither one reads an account', () => {
+      const webhookFunction = bodyOf('resource "aws_lambda_function" "payments_webhook"');
+      const environment = blockBodyOf(webhookFunction, 'variables');
+
+      expect(webhookFunction).toContain('role          = aws_iam_role.payments.arn');
+      expect(listedIn(environment, 'variables')).toEqual([]);
+      expect(environment).toContain('EMI_VAULT_TABLE');
+      expect(environment.toLowerCase()).not.toContain('stripe');
+      expect(environment).not.toContain('EMI_ACCOUNTS_POOL_ID');
+    });
+  });
+
+  describe('the Stripe secret key, which lives in the parameter store and nowhere else', () => {
+    const payments = bodyOf('data "aws_iam_policy_document" "payments"');
+    const theFunction = bodyOf('resource "aws_lambda_function" "payments_subscription"');
+
+    /** Every environment variable every function of Emi sets, read out of the Terraform. */
+    function everyEnvironmentName(): string[] {
+      return [...configuration.matchAll(/environment \{\s*variables = \{([^}]*)\}/g)]
+        .flatMap((found) => [...(found[1] ?? '').matchAll(/^\s*([A-Z0-9_]+)\s*=/gm)])
+        .flatMap((found) => (found[1] === undefined ? [] : [found[1]]));
+    }
+
+    it('reads each secret from its own parameter, named in full by the code and by the role', () => {
+      const secrets = statementTextIn(payments, 'ReadTheStripeSecrets');
+
+      expect(stripeSecretKeyParameter).toBe('/emi/payments/stripe/secret-key');
+      expect(stripeWebhookSecretParameter).toBe('/emi/payments/stripe/webhook-secret');
+
+      for (const parameter of [stripeSecretKeyParameter, stripeWebhookSecretParameter]) {
+        expect(secrets).toContain(parameter.replace('/emi/', '${var.project_name}/'));
+      }
+    });
+
+    it('holds the key in no environment variable of any function, because a deploy log is public', () => {
+      const names = everyEnvironmentName();
+
+      expect(names.length).toBeGreaterThan(0);
+      expect([...new Set(names)].sort()).toEqual([
+        'EMI_ACCOUNTS_POOL_ID',
+        'EMI_ARTICLES_TABLE',
+        'EMI_VAULT_TABLE',
+      ]);
+    });
+
+    it('gives the payments function the table and the pool, and no secret of any kind', () => {
+      const environment = blockBodyOf(theFunction, 'variables');
+
+      expect(environment).toContain('EMI_VAULT_TABLE');
+      expect(environment).toContain('EMI_ACCOUNTS_POOL_ID');
+      expect(environment.toLowerCase()).not.toContain('stripe');
+      expect(environment.toLowerCase()).not.toContain('key');
+      expect(theFunction).toContain('role          = aws_iam_role.payments.arn');
+    });
+
+    it('reads the secrets through the parameter store in the one file of the service that names them', () => {
+      const source = join(repositoryRoot, 'services', 'vault', 'src');
+      const naming = readdirSync(source, { encoding: 'utf8', recursive: true })
+        .filter((entry) => statSync(join(source, entry)).isFile())
+        .filter((entry) => {
+          const text = readFileSync(join(source, entry), 'utf8');
+
+          return (
+            text.includes(stripeSecretKeyParameter) || text.includes(stripeWebhookSecretParameter)
+          );
+        })
+        .map((entry) => entry.split(sep).join('/'));
+
+      expect(naming).toEqual(['payments/stripeSecrets.ts']);
+      expect(read('services/vault/src/payments/stripeSecrets.ts')).not.toContain('process.env');
+    });
+
+    it('names no Stripe secret in the pipeline, so no job can carry one into a function', () => {
+      expect(deployText.toLowerCase()).not.toContain('stripe');
+      expect(read('.github/workflows/ci.yml').toLowerCase()).not.toContain('stripe');
+    });
+
+    it('creates the parameter nowhere, because the operator writes the key by hand', () => {
+      expect(configuration).not.toContain('resource "aws_ssm_parameter"');
+      expect(configuration).not.toContain('data "aws_ssm_parameter" "stripe');
     });
   });
 
@@ -979,7 +1194,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
     /**
      * The role each function assumes, written out here rather than read off the resource, because
      * this list is the rule: the three triggers share one role that holds no parameter at all, and
-     * the function that reads the client secret and the salt is the only one on the other.
+     * the two functions that read a secret are the only ones on a role that names a parameter.
      */
     const theRoleOf: Readonly<Record<string, string>> = {
       'emi-authorizer': 'authorizer',
@@ -989,6 +1204,8 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       'emi-sign-in-challenge-define': 'sign_in_challenge',
       'emi-sign-in-challenge-create': 'sign_in_challenge',
       'emi-sign-in-challenge-verify': 'sign_in_challenge',
+      'emi-payments-subscription': 'payments',
+      'emi-payments-webhook': 'payments',
     };
 
     /** The role one function resource names, read out of the resource itself. */
@@ -1026,7 +1243,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
       expect(roleIn('aws_lambda_function.sign_in_telegram')).not.toBe('sign_in_challenge');
     });
 
-    it('reads a parameter through the role of the sign in function and through no other', () => {
+    it('reads a parameter through the roles that need one, and through no other', () => {
       const reading = deployedFunctions
         .filter((held) => {
           const policy = bodyOf(`data "aws_iam_policy_document" "${roleIn(held.resource)}"`);
@@ -1035,7 +1252,11 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
         })
         .map((held) => held.name);
 
-      expect(reading).toEqual(['emi-sign-in-telegram']);
+      expect(reading.sort()).toEqual([
+        'emi-payments-subscription',
+        'emi-payments-webhook',
+        'emi-sign-in-telegram',
+      ]);
     });
 
     it('gives the role the pool calls no Amazon Cognito action at all', () => {
@@ -1072,7 +1293,12 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
 
   describe('the readme says what the account holds', () => {
     /** The count of functions, spelled out, which is how the readme writes a count. */
-    const counted: Readonly<Record<number, string>> = { 3: 'Three', 7: 'Seven', 8: 'Eight' };
+    const counted: Readonly<Record<number, string>> = {
+      3: 'Three',
+      7: 'Seven',
+      8: 'Eight',
+      9: 'Nine',
+    };
 
     it('names the count of deployed functions, which went stale once at two', () => {
       const readme = read('infra/README.md');
@@ -1273,7 +1499,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
 
       expect(signIn?.authorizationType).toBe('NONE');
       expect(signIn?.authorizerId).toBeNull();
-      expect(routesWithNoAuthorizer).toHaveLength(3);
+      expect(routesWithNoAuthorizer).toHaveLength(4);
     });
 
     it('sends that route to the function of its own, which the api is allowed to invoke', () => {
@@ -3202,8 +3428,8 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
       expect(listedIn(cors, 'allow_methods')).toEqual(['POST']);
     });
 
-    it('allows the one header that call sends, and no other', () => {
-      expect(listedIn(cors, 'allow_headers')).toEqual(['content-type']);
+    it('allows the two headers the site sends, and no other', () => {
+      expect(listedIn(cors, 'allow_headers')).toEqual(['authorization', 'content-type']);
     });
 
     it('allows the method and the header the sign in call is written with', () => {
@@ -3242,7 +3468,7 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
         .map((route) => route.resource);
 
       expect(none.sort()).toEqual([...routesWithNoAuthorizer].sort());
-      expect(none).toHaveLength(3);
+      expect(none).toHaveLength(4);
     });
 
     it('declares no route for the preflight, because the api answers it before a route is read', () => {

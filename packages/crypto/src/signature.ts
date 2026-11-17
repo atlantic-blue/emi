@@ -151,6 +151,15 @@ export function crockfordBase32(bytes: Uint8Array): string {
 }
 
 /**
+ * The shape every identifier here is written in: the first sixteen bytes of the digest of the
+ * bytes, in Crockford base 32. The account identifier, the identity digest and the payer digest
+ * are all this function over different bytes, so no second implementation of the shape can drift.
+ */
+export function digestOf(bytes: Uint8Array): string {
+  return crockfordBase32(sha256(bytes).subarray(0, accountIdBytes));
+}
+
+/**
  * Who she is, to the server: the first sixteen bytes of the digest of her public key. The server
  * learns nothing from it, because it is derived from a value she chose at random on her own phone.
  */
@@ -162,7 +171,7 @@ export function accountIdFor(publicKey: Uint8Array): string {
     );
   }
 
-  return crockfordBase32(sha256(publicKey).subarray(0, accountIdBytes));
+  return digestOf(publicKey);
 }
 
 /** The public half of a private key she already holds, so a reinstall recovers the whole pair. */

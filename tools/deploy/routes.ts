@@ -34,12 +34,15 @@ export const apiConfiguration = 'infra/api.tf';
  * Registration carries none because the account does not exist yet, so there is no stored key to
  * check a signature against. The sign in carries none because a woman reaching an account from a
  * new phone holds no device key for it. The article read carries none because a request says which
- * phase is read and never who is reading it.
+ * phase is read and never who is reading it. The deliveries of Stripe carry none because Stripe
+ * holds no token of this account: it signs each delivery, and the function verifies that signature
+ * before it reads one field of the body.
  */
 export const routesWithNoAuthorizer: readonly string[] = [
   'register',
   'sign_in_telegram',
   'read_articles',
+  'stripe_events',
 ];
 
 /** The registration route, which the live read asks for a status that is not the placeholder's. */
@@ -82,11 +85,18 @@ export function readTheRoutes(repositoryRoot: string): ApiRoute[] {
 }
 
 /**
- * True where the request authorizer stands in front of a route. Both halves are read: a route that
- * asks for a custom authorizer and names none is refused by the api gateway rather than guarded.
+ * The two ways a route is guarded. CUSTOM is the signature of her phone, which is a function of
+ * ours. JWT is the token authorizer of the pool, which the api gateway runs itself: it verifies
+ * the signature, the issuer and the audience before any function of ours is reached.
+ */
+export const guardedBy: readonly string[] = ['CUSTOM', 'JWT'];
+
+/**
+ * True where an authorizer stands in front of a route. Both halves are read: a route that asks for
+ * an authorizer and names none is refused by the api gateway rather than guarded.
  */
 export function carriesTheAuthorizer(route: ApiRoute): boolean {
-  return route.authorizationType === 'CUSTOM' && route.authorizerId !== null;
+  return guardedBy.includes(route.authorizationType) && route.authorizerId !== null;
 }
 
 /** The address one route answers on, with every path parameter filled. */

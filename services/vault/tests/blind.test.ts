@@ -199,10 +199,12 @@ const allowedFromCrypto: readonly string[] = [
   'accountHeader',
   'accountIdBytes',
   'accountIdFor',
+  'accountIdLength',
   'base64Of',
   'bodyHashHeader',
   'bodyHashOf',
   'bytesFromBase64',
+  'crockfordAlphabet',
   'crockfordBase32',
   'decoyPublicKey',
   'deviceKeyLength',
@@ -210,6 +212,9 @@ const allowedFromCrypto: readonly string[] = [
   'instantHeader',
   'instantIsFresh',
   'instantWindowSeconds',
+  // Who paid, which is the pool and her pool user name run through the same digest the account
+  // identifier is made with. It names no person and opens nothing.
+  'payerDigestFor',
   'presentedSignatureIn',
   'readEnvelope',
   'readWrappedVaultKey',
@@ -274,6 +279,7 @@ const allowedKeyWords: readonly string[] = [
   'articleSortKeyFor',
   'decoyPublicKey',
   'deviceKeyLength',
+  'entitlementSortKey',
   'everyKeyUnder',
   'key',
   'keyOf',
@@ -286,6 +292,15 @@ const allowedKeyWords: readonly string[] = [
   'signatureSortKeyFor',
   'signedByTheKeyItRegisters',
   'sortKey',
+  // The Stripe secret key, which charges a card and reads nothing of hers. It is read from the
+  // parameter store at run time, it is never an environment variable, and no file of this service
+  // holds its value. It opens no record: a record is opened by a key that never leaves her phone.
+  'secretKey',
+  'stripeSecretKeyOnce',
+  'stripeSecretKeyParameter',
+  // The key of the metadata map the payer digest travels under, in Stripe. It is the name of a
+  // field and never a value, and the digest under it names no person.
+  'payerDigestKey',
 ];
 
 describe('a marker word in a record never appears in the stored item', () => {

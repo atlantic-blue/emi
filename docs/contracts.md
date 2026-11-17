@@ -258,9 +258,10 @@ rather than change them.
 Verified by a test.
 
 Output: the vault service imports the envelope's validator and nothing else from the crypto package.
+The claim handler holds a vault key for the length of one call and opens no payload with it.
 
-Errors: the service imports a decrypt function, or holds a key of any kind. A test reads the
-service's own import graph.
+Errors: the service imports a decrypt function. A vault key in a log line, an access log entry or a
+table attribute. A test reads the service's own import graph.
 
 ## VAULT, key handling on the phone
 
@@ -278,16 +279,18 @@ crash report.
 The operator's half: the key survives the application being deleted and installed again. That is the
 platform's behaviour, and platforms change it, so it is measured on a device and not assumed.
 
-### VAULT-2, the recovery code
+### VAULT-2, the vault key wrapped in the cloud
 
 Verified by a test.
 
-Input: 26 characters of Crockford base 32, and a salt of 16 bytes.
+Input: the vault key as 32 bytes, and the account identifier as the encryption context.
 
-Output: a key from Argon2id, and the vault key wrapped under it.
+Output: the ciphertext the Amazon key service returns, written to the account item, and the same 32
+bytes handed back to a phone that passes a verified claim.
 
-Errors: the code stored anywhere. The salt used by two accounts. An unlock slower than one second on
-the slowest device tested, which moves the parameters and records the new number.
+Errors: the plaintext key in a log line, an access log entry or a table attribute. A decrypt by any
+role but the one the claim function runs as. A decrypt whose encryption context does not name the
+account the caller proved. A second role in the account that may call the key.
 
 ### VAULT-3, the lock
 
@@ -424,12 +427,12 @@ Errors: an edit that does not raise the revision. An edit to a future day.
 
 Verified by a test.
 
-Input: a public key, a wrapped vault key and a recovery salt, signed by the key being registered.
+Input: a public key and a vault key, signed by the key being registered.
 
 Output: an account identifier.
 
-Errors: a public key that is already registered. A signature that does not verify. A body over 4
-kilobytes.
+Errors: a public key that is already registered. A signature that does not verify. A vault key that
+is not 32 bytes. A body over 4 kilobytes.
 
 ### WIRE-2, put a record
 
@@ -528,6 +531,104 @@ Output: reading, exporting and deleting stay open forever. Only new writes stop.
 
 Errors: anything that makes her own history unreadable to her.
 
+### PAY-5, the entitlement record
+
+Verified by a test.
+
+Output: one item in the vault table of `TABLE-4`, in a partition of its own. The partition key is
+`PAY#` and the payer digest, which is 26 characters of Crockford base 32. The sort key is `META`.
+`paidUntil` is an instant, and it is absent until the free month or the first payment lands.
+`route` is `card` or `stars`. `state` is `active`, `cancelling`, `lapsed` or `refunded`, and
+`cancelling` means she stopped the renewal while the year she paid for still runs. `payerRef` and
+`subscriptionRef` are the two Stripe identifiers, and both are absent on the Stars route.
+`chargeRef` is the Telegram charge identifier of the last payment, and it is absent on the card
+route. `eventAt` is a number of seconds, and a write happens only when its own `eventAt` is newer
+than the one on the item, because Stripe promises no order of delivery. `firstSeenAt` and
+`updatedAt` are instants. An account reaches the item through `payerDigest`, one attribute on the
+identity item the account already holds.
+
+A caller asks this item one question. Is this account paid until a date? The answer is one instant
+and nothing else. A screen turns that instant into words.
+
+A delete of her account leaves this item exactly as it was, because it is the record of a sale and
+it holds nothing of hers. The delete removes the link instead, so the payment stays and no account
+points at it.
+
+Errors: an item carrying an account identifier, a record identifier, a name, an address, a card
+number, a country or a Telegram user identifier. A write from an older event that moves the date
+back. A query of an account partition that reaches this item. A role that can read a partition
+whose key does not open with `PAY#`, or that can scan the table, which a test reads from the policy
+document itself. An item removed by a delete.
+
+### PAY-6, the Stripe route
+
+Verified by a test.
+
+Input: her identity token, and the payment method she gives Stripe on myemi.app.
+
+Output: one product, and one price of 3900 in `eur`, recurring every year, with `tax_behavior` set
+to `inclusive`. So she reads 39 euros, she pays 39 euros, and the value added tax sits inside that
+amount in every country. One customer for each payer digest, and the digest is in the metadata of
+the customer and of the subscription, which is the only thing of ours that reaches Stripe. The
+payment method is collected first, on a SetupIntent with `usage` set to `off_session`. The
+subscription is created second, with the yearly price and `trial_period_days` set to 30, so the
+first month is free and Stripe takes 39 euros at the end of it. The webhook verifies the
+`Stripe-Signature` header before it reads one field of the body, reads five events, and writes
+`paidUntil` from `items.data[0].current_period_end`. A cancel sets `cancel_at_period_end` on the
+subscription, and so does a delete of her account, so the year she paid for runs to its end and
+Emi refunds nothing.
+
+Errors: a price in another currency, at another amount, with another period, or with a
+`tax_behavior` that is not `inclusive`, which Stripe refuses to change once the price exists. A
+body read before its signature is verified, or accepted when the signature does not verify. A
+period read from the subscription rather than from the subscription item, which reads nothing and
+leaves the account looking unpaid. An older event that moves a newer date back. An event the
+function does not know, answered as a failure instead of 200. The secret key in this repository, in
+a manifest, in a variable of the pipeline or in the environment of a function. A card number, a
+name or an address written by Emi anywhere.
+
+### PAY-7, the Telegram Stars route
+
+Verified by a test.
+
+Input: a payment in Telegram Stars, made in the Emi bot.
+
+Output: an invoice from `createInvoiceLink`, with `currency` set to `XTR`, exactly one price
+component, and a `payload` that carries the payer digest and nothing else. The bot answers the pre
+checkout query within 10 seconds, before it writes anything, because Telegram cancels the payment
+after that. The payment arrives as `successful_payment`, and the bot reads four fields of it:
+`invoice_payload` for the digest, `subscription_expiration_date` for the instant that becomes
+`paidUntil`, `is_first_recurring` for whether this is the first period, and
+`telegram_payment_charge_id` for `chargeRef`. It writes the item of `PAY-5`, with `route` as
+`stars` and `state` as `active`. A refund moves `state` to `refunded` and `paidUntil` to the
+instant of the refund.
+
+The invoice is one payment for a year, or a subscription that renews every 30 days, which is the
+only period Telegram sells. The operator chooses the shape and the number of Stars before anybody
+builds this route, and both shapes write the same item.
+
+Errors: a currency that is not `XTR`. A price of more than one component. A payload carrying
+anything beyond the digest. A pre checkout query answered later than 10 seconds. A Telegram user
+identifier written to the table. A subscription period that is not 2592000 seconds. A subscription
+price above 10000 Stars.
+
+### PAY-8, the entitlement read
+
+Verified by a test.
+
+Input: nothing beyond the signature of `AUTH-1`.
+
+Output: one instant, which is the furthest date this account is paid until. The read takes
+`payerDigest` from each identity item of the account, reads the `PAY#` item each one names, and
+keeps the furthest `paidUntil` of them. It keeps the account item's own `subscribedUntil` as well,
+so a payment in a store and a payment on the site answer through one route. The number of reads is
+capped, because the number of ways in is capped.
+
+Errors: a reply carrying a route, a price, a payment method, a Stripe identifier or anything else
+about the payment, because the caller asked one question. A payment made against a way in this
+account has not linked, answered as paid. A read refused because the date passed, which `PAY-4`
+and `WIRE-5` keep open.
+
 ## KEEP, the promises about her data
 
 ### KEEP-1, nothing about her reaches a log
@@ -551,10 +652,13 @@ Errors: a field present in the database and absent from the export.
 
 Verified by a test.
 
-Output: the local database empty, the keychain items gone, and the server account gone.
+Output: the local database empty, the keychain items gone, and the server account gone. The
+payment record stays, because it is the record of a sale and it holds nothing of hers, and its
+subscription is set to cancel at the end of the period it paid for.
 
-Errors: any row, any keychain item or any server item that remains. A way back after it. A delay or
-a cooling off period.
+Errors: any row, any keychain item or any item of her account that remains. A way back after it. A
+delay or a cooling off period. A payment record that carries an account identifier, a record
+identifier or anything else that names her. A subscription that renews after the account is gone.
 
 ### KEEP-4, no third party sees anything
 
