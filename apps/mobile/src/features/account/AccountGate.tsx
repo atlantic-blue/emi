@@ -33,17 +33,12 @@ function AWayIn({
   readonly label: string;
   readonly isDark: boolean;
   readonly testID: string;
-  /** Absent for a way in that is not built, which is drawn and takes no press. */
-  readonly onPress?: () => void;
+  readonly onPress: () => void;
 }): ReactNode {
-  const isBuilt = onPress !== undefined;
-
   return (
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
-      accessibilityState={{ disabled: !isBuilt }}
-      disabled={!isBuilt}
       onPress={onPress}
       style={[styles.wayIn, isDark ? styles.wayInDark : styles.wayInLight]}
       testID={testID}
@@ -54,8 +49,7 @@ function AWayIn({
 }
 
 /**
- * The way into the account. Apple and Google are drawn as the board draws them and take no press,
- * because they are not built. The one line under the address is empty until something goes wrong,
+ * The way into the account. The one line under the address is empty until something goes wrong,
  * and then it says what.
  */
 export function AccountGate({
@@ -63,6 +57,8 @@ export function AccountGate({
   problem,
   onAddress,
   onSendCode,
+  onApple,
+  onGoogle,
   onTelegram,
 }: {
   readonly address: string;
@@ -70,6 +66,8 @@ export function AccountGate({
   readonly problem: string | null;
   readonly onAddress: (address: string) => void;
   readonly onSendCode: () => void;
+  readonly onApple: () => void;
+  readonly onGoogle: () => void;
   readonly onTelegram: () => void;
 }): ReactNode {
   return (
@@ -85,8 +83,18 @@ export function AccountGate({
           {accountGateCopy.title}
         </Text>
 
-        <AWayIn isDark label={accountGateCopy.apple} testID={accountGateAppleTestID} />
-        <AWayIn isDark={false} label={accountGateCopy.google} testID={accountGateGoogleTestID} />
+        <AWayIn
+          isDark
+          label={accountGateCopy.apple}
+          onPress={onApple}
+          testID={accountGateAppleTestID}
+        />
+        <AWayIn
+          isDark={false}
+          label={accountGateCopy.google}
+          onPress={onGoogle}
+          testID={accountGateGoogleTestID}
+        />
         <AWayIn
           isDark={false}
           label={accountGateCopy.telegram}

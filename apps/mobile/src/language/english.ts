@@ -33,8 +33,12 @@ export const english = {
   'account.gate.telegram': 'Log in with Telegram',
   'account.gate.title': 'Sign in to Emi',
   'account.problem.addressIsNotValid': 'That is not an email address. Check it and type it again.',
+  'account.problem.appleDidNotFinish':
+    'That sign in did not finish. Press Sign in with Apple and try again.',
   'account.problem.codeHasExpired': 'That code has expired. Send a new one.',
   'account.problem.codeIsWrong': 'That code is not right. Check it and type it again.',
+  'account.problem.googleDidNotFinish':
+    'That sign in did not finish. Press Sign in with Google and try again.',
   'account.problem.needsTheCode': 'Type the code from the email.',
   'account.problem.nothingReached':
     'Your phone could not reach Emi. Check the connection and try again.',
@@ -43,7 +47,9 @@ export const english = {
   'account.problem.telegramDidNotFinish':
     'That sign in did not finish. Press Log in with Telegram and try again.',
   'account.problem.tooManyTries': 'Too many tries. Wait a few minutes, then send a new code.',
+  'account.way.apple': 'Apple',
   'account.way.email': 'Email',
+  'account.way.google': 'Google',
   'account.way.telegram': 'Telegram',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Day {day}, {phase}',

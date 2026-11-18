@@ -515,11 +515,12 @@ export function websiteSignInProblems(
  * Apple is a screen the store refuses, and the two cannot be allowed to drift apart.
  *
  * A source offers a way in by one of two names: the key the catalogue of words gives the press, or
- * the name the service fixes for the provider.
+ * the name the service fixes for the provider. The service names Google by the word a person reads,
+ * so a catalogue that shows her the word Google shows the word Apple beside it.
  */
-export const theWaysInThatShipTogether: readonly { google: string; apple: string }[] = [
-  { google: 'signInGoogle', apple: 'signInApple' },
-  { google: "'Google'", apple: "'SignInWithApple'" },
+export const theWaysInThatShipTogether: readonly { google: string; apple: readonly string[] }[] = [
+  { google: 'signInGoogle', apple: ['signInApple'] },
+  { google: "'Google'", apple: ["'SignInWithApple'", "'Apple'"] },
 ];
 
 /** One source the rule reads: the path a reader would type, and the text of the file. */
@@ -537,8 +538,8 @@ export function placesOfferingGoogleWithoutApple(sources: readonly ASource[]): s
 
   for (const { file, text } of sources) {
     for (const { google, apple } of theWaysInThatShipTogether) {
-      if (text.includes(google) && !text.includes(apple)) {
-        said.push(`${file} offers ${google} and does not offer ${apple} beside it`);
+      if (text.includes(google) && !apple.some((name) => text.includes(name))) {
+        said.push(`${file} offers ${google} and does not offer ${apple.join(' or ')} beside it`);
       }
     }
   }
