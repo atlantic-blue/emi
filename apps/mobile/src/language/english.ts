@@ -40,8 +40,11 @@ export const english = {
     'Your phone could not reach Emi. Check the connection and try again.',
   'account.problem.signsInWithGoogleOrApple':
     'You have already used this address to sign in with Google or Apple.',
+  'account.problem.telegramDidNotFinish':
+    'That sign in did not finish. Press Log in with Telegram and try again.',
   'account.problem.tooManyTries': 'Too many tries. Wait a few minutes, then send a new code.',
   'account.way.email': 'Email',
+  'account.way.telegram': 'Telegram',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Day {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',
