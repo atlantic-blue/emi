@@ -19,8 +19,9 @@ Feature: The site may sign her in with Apple and with Google
   was reading. So each language has a return address and a sign out address, and the languages are
   read from the site rather than typed here.
 
-  The application on her phone does not change. It signs in with the code alone, and a provider on
-  that client would offer a press no screen of the application draws.
+  The application on her phone offers the same three ways. A provider sends her phone back to one
+  address on the private scheme of the application, because a page of the site would leave her in
+  the browser.
 
   Scenario: the site offers Apple, Google and the code sent to her address
     Given the sign in the pool offers
@@ -43,10 +44,10 @@ Feature: The site may sign her in with Apple and with Google
     And one sign out address names the sign in page of each language
     And every rule of the sign in of the site is met
 
-  Scenario: the application on her phone signs in with the code alone
+  Scenario: the application on her phone offers the same ways, back to its own scheme
     Given the sign in the pool offers
     When the client her phone signs her in with is read
-    Then it offers no provider and names no return address
+    Then it offers Apple, Google and the code, and comes back to the private scheme alone
     And it allows the code flow, the refresh and the custom flow
 
   Scenario: a scope outside the subject and the address is refused
