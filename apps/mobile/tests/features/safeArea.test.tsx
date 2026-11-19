@@ -169,6 +169,7 @@ const everyScreen: readonly (readonly [string, () => ReactElement])[] = [
     settingsScreenTestID,
     (): ReactElement => (
       <SettingsScreen
+        onAccount={nothing}
         onAnswers={nothing}
         onReminders={nothing}
         reminder={reminderChoiceSaid('twoDaysBefore')}
@@ -344,6 +345,7 @@ describe('every screen respects the safe area', () => {
       await expect(
         render(
           <SettingsScreen
+            onAccount={nothing}
             onAnswers={nothing}
             onReminders={nothing}
             reminder={reminderChoiceSaid('twoDaysBefore')}

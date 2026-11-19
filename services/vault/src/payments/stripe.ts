@@ -26,6 +26,16 @@ export interface AnsweredByStripe {
 /** How this module reaches Stripe. A test hands it one that answers without a network. */
 export type ReachesStripe = (address: string, asked: AskedOfStripe) => Promise<AnsweredByStripe>;
 
+/**
+ * The version of the api every call is made in.
+ *
+ * A call that names no version is answered in the default version of the account. That is the
+ * version the account was opened on. The webhook endpoint in Stripe is set to the version here,
+ * so a delivery carries fields an older answer does not. The period of a subscription is one of
+ * them. The calls and the events must name one version.
+ */
+export const stripeApiVersion = '2026-10-28.endive';
+
 /** Where the objects are made. Every address below hangs under this one. */
 export const stripeApi = 'https://api.stripe.com/v1';
 
@@ -108,6 +118,7 @@ export function headersFor(secretKey: string): Record<string, string> {
   return {
     authorization: `Bearer ${secretKey}`,
     'content-type': 'application/x-www-form-urlencoded',
+    'stripe-version': stripeApiVersion,
   };
 }
 
@@ -123,6 +134,7 @@ interface AnObjectStripeMade {
   readonly metadata?: Readonly<Record<string, unknown>>;
   readonly data?: unknown;
   readonly has_more?: unknown;
+  readonly cancel_at_period_end?: unknown;
   readonly error?: { readonly code?: unknown; readonly type?: unknown };
 }
 
@@ -322,4 +334,41 @@ export async function invoicesOf(
       .filter((one): one is ListedInvoice => one !== null),
     moreToCome: listed.has_more === true,
   };
+}
+
+/** Where one subscription is read and updated. The update of this api is a post, not a patch. */
+export function subscriptionAddressFor(subscriptionRef: string): string {
+  return `${stripeApi}/subscriptions/${encodeURIComponent(subscriptionRef)}`;
+}
+
+/** The field that stops a renewal at the end of the period she paid for, and starts it again. */
+export const cancelAtPeriodEndField = 'cancel_at_period_end';
+
+/**
+ * Stops the renewal, or starts it again, and answers whether the subscription renews afterwards.
+ *
+ * The answer is read rather than assumed. The field Stripe sends back is what the renewal now is,
+ * so a call that was taken and did something else writes the something else onto the item.
+ */
+export async function renewalOfSubscription(
+  held: WhatACallHolds,
+  subscriptionRef: string,
+  renewing: boolean,
+): Promise<boolean> {
+  const answered = await held.reaches(subscriptionAddressFor(subscriptionRef), {
+    method: 'POST',
+    headers: headersFor(held.secretKey),
+    body: formBodyOf([[cancelAtPeriodEndField, renewing ? 'false' : 'true']]),
+  });
+
+  const said = objectIn(answered, 'subscription')[cancelAtPeriodEndField];
+
+  if (typeof said !== 'boolean') {
+    throw new StripeError(
+      'the-answer-names-no-object',
+      'the subscription call named no renewal to read',
+    );
+  }
+
+  return !said;
 }

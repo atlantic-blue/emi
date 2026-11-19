@@ -1,10 +1,13 @@
 import type { AnsweredByStripe, AskedOfStripe, ReachesStripe } from '../../src/payments/stripe';
 import {
+  cancelAtPeriodEndField,
   customerAddressFor,
   customersAddress,
   invoicesAddress,
   payerDigestKey,
   setupIntentsAddress,
+  subscriptionAddressFor,
+  stripeApi,
 } from '../../src/payments/stripe';
 
 /**
@@ -40,6 +43,13 @@ export interface WhatStripeAnswers {
   readonly holdsAPageAfterThat?: boolean;
   /** A status and a body for the list call, where the test wants a refusal instead. */
   readonly refusesTheInvoiceList?: AnsweredByStripe;
+  /** The same for the update of one subscription, which is how a renewal is stopped. */
+  readonly refusesTheSubscription?: AnsweredByStripe;
+  /**
+   * What the updated subscription answers its renewal as. The double echoes the field it was
+   * asked for unless a test names this, which is what Stripe does.
+   */
+  readonly saysTheRenewalStopped?: boolean;
 }
 
 /** The double, and the calls it took. */
@@ -97,6 +107,22 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
         );
       }
 
+      // One subscription, which is the address of the subscription itself rather than the list.
+      if (address.startsWith(`${stripeApi}/subscriptions/`)) {
+        const asItWasAsked = new URLSearchParams(asked.body).get(cancelAtPeriodEndField) === 'true';
+
+        return (
+          answers.refusesTheSubscription ?? {
+            status: 200,
+            body: JSON.stringify({
+              id: address.slice(address.lastIndexOf('/') + 1),
+              object: 'subscription',
+              [cancelAtPeriodEndField]: answers.saysTheRenewalStopped ?? asItWasAsked,
+            }),
+          }
+        );
+      }
+
       if (address === customersAddress) {
         return (
           answers.refusesTheCustomer ?? {
@@ -134,3 +160,7 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
 
 /** The address a read of one customer is sent to, so a test does not write it out itself. */
 export const readOfTheCustomer = (customerRef: string): string => customerAddressFor(customerRef);
+
+/** The address an update of one subscription is sent to. */
+export const updateOfTheSubscription = (subscriptionRef: string): string =>
+  subscriptionAddressFor(subscriptionRef);

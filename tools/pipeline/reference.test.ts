@@ -127,6 +127,7 @@ describe('an export with no documentation comment fails the pipeline', () => {
         '@emi/content',
         '@emi/crypto',
         '@emi/cycle',
+        '@emi/sign-in',
         '@emi/tokens',
         '@emi/ui',
         '@emi/vault',
@@ -135,6 +136,7 @@ describe('an export with no documentation comment fails the pipeline', () => {
         'docs/reference/content.md',
         'docs/reference/crypto.md',
         'docs/reference/cycle.md',
+        'docs/reference/sign-in.md',
         'docs/reference/tokens.md',
         'docs/reference/ui.md',
         'docs/reference/vault.md',
@@ -159,7 +161,7 @@ describe('an export with no documentation comment fails the pipeline', () => {
     });
 
     it('counted a surface worth reading, rather than nothing at all', () => {
-      expect(counts.packages).toBe(6);
+      expect(counts.packages).toBe(7);
       expect(counts.files).toBeGreaterThan(12);
       expect(counts.symbols).toBeGreaterThan(100);
     });

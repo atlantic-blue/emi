@@ -12,8 +12,10 @@ import { TheSubscriptionCard } from '../components/theSubscriptionCard';
 import { THE_SESSION_ENTRY } from '../lib/theSessionSheHolds';
 import {
   type WhatSheHolds,
+  THE_FIELD_A_RENEWAL_TRAVELS_IN,
   WHERE_A_SUBSCRIPTION_IS_READ,
   theDateShape,
+  whatTheRenewalRowDoes,
   whichCardSheReads,
 } from '../lib/theSubscriptionSheHolds';
 
@@ -55,26 +57,71 @@ const now = new Date('2026-11-16T09:00:00.000Z');
 const theYearEnds = '2027-12-16T09:00:00.000Z';
 const theYearEnded = '2026-10-01T09:00:00.000Z';
 
-/** The api, answering one read with what the route would answer. */
-function anApi(said: WhatSheHolds | null): {
+/** One call the card made, as it left the browser. */
+interface OneCall {
+  address: string;
+  method: string;
+  token: string;
+  body?: string;
+}
+
+/** How the api behaves where the test wants something other than the route's own answer. */
+interface HowTheApiBehaves {
+  /** The change is refused, the way a route that could not reach Stripe refuses it. */
+  readonly refusesTheChange?: boolean;
+}
+
+/**
+ * The api, answering the read and the change the way the route answers them.
+ *
+ * The change moves the state the route moves and leaves the date alone, so a card drawn after a
+ * press is drawn from an answer rather than from anything the card assumed.
+ */
+function anApi(
+  said: WhatSheHolds | null,
+  behaves: HowTheApiBehaves = {},
+): {
   readonly asks: typeof fetch;
-  readonly calls: { address: string; method: string; token: string }[];
+  readonly calls: OneCall[];
 } {
-  const calls: { address: string; method: string; token: string }[] = [];
+  const calls: OneCall[] = [];
+  let held = said;
 
   const asks = ((where: unknown, asked: RequestInit) => {
     const headers = (asked.headers ?? {}) as Record<string, string>;
+    const method = asked.method ?? 'GET';
+    const body = asked.body === undefined ? undefined : String(asked.body);
 
     calls.push({
       address: String(where),
-      method: asked.method ?? 'GET',
+      method,
       token: headers.authorization ?? '',
+      ...(body === undefined ? {} : { body }),
     });
 
+    if (method === 'PATCH') {
+      if (behaves.refusesTheChange === true) {
+        return Promise.resolve({
+          ok: false,
+          status: 502,
+          json: () => Promise.resolve({}),
+        } as Response);
+      }
+
+      const itAsksFor = JSON.parse(body ?? '{}') as Record<string, unknown>;
+
+      held = {
+        ...held,
+        state: itAsksFor[THE_FIELD_A_RENEWAL_TRAVELS_IN] === true ? 'active' : 'cancelling',
+      };
+    }
+
+    const answering = held;
+
     return Promise.resolve({
-      ok: said !== null,
-      status: said === null ? 401 : 200,
-      json: () => Promise.resolve(said ?? {}),
+      ok: answering !== null,
+      status: answering === null ? 401 : 200,
+      json: () => Promise.resolve(answering ?? {}),
     } as Response);
   }) as unknown as typeof fetch;
 
@@ -84,14 +131,24 @@ function anApi(said: WhatSheHolds | null): {
 interface ADrawnCard {
   readonly holder: HTMLElement;
   readonly text: () => string;
-  readonly calls: { address: string; method: string; token: string }[];
+  readonly calls: OneCall[];
+  /** Every row of the card, in the order the board draws them. */
+  readonly rows: () => HTMLButtonElement[];
+  /** The row that stops the renewal and starts it again, which is the last one. */
+  readonly theRenewalRow: () => HTMLButtonElement;
+  /** Presses that row and lets the answer come back, the way her browser does. */
+  readonly pressesTheRenewal: () => Promise<void>;
 }
 
 async function theCardFor(
   said: WhatSheHolds | null,
-  options: { readonly language?: Language; readonly signedIn?: boolean } = {},
+  options: {
+    readonly language?: Language;
+    readonly signedIn?: boolean;
+    readonly api?: HowTheApiBehaves;
+  } = {},
 ): Promise<ADrawnCard> {
-  const api = anApi(said);
+  const api = anApi(said, options.api ?? {});
   const holder = document.createElement('div');
   const language = options.language ?? 'en';
 
@@ -118,7 +175,30 @@ async function theCardFor(
     );
   });
 
-  return { holder, calls: api.calls, text: () => holder.textContent ?? '' };
+  const rows = (): HTMLButtonElement[] => [...holder.querySelectorAll('button')];
+  const theRenewalRow = (): HTMLButtonElement => {
+    const drawn = rows();
+    const last = drawn[drawn.length - 1];
+
+    if (last === undefined) {
+      throw new Error('the card drew no row at all, so there is nothing to press');
+    }
+
+    return last;
+  };
+
+  return {
+    holder,
+    calls: api.calls,
+    rows,
+    theRenewalRow,
+    text: () => holder.textContent ?? '',
+    pressesTheRenewal: async () => {
+      await act(async () => {
+        theRenewalRow().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+    },
+  };
 }
 
 const anActivePayment: WhatSheHolds = {
@@ -190,16 +270,20 @@ describe('the subscription card of her account', () => {
       expect(card.text()).toContain(words.accountPaidWithCard);
     });
 
-    it('draws the three rows the board draws, and refuses a press on each of them', async () => {
+    it('draws the three rows the board draws, with the renewal the only press of them', async () => {
       const card = await theCardFor(anActivePayment);
-      const rows = [...card.holder.querySelectorAll('button')];
 
-      expect(rows.map((row) => row.textContent?.replace('›', ''))).toEqual([
+      expect(card.rows().map((row) => row.textContent?.replace('›', ''))).toEqual([
         words.accountReceipts,
         words.accountChangeCard,
         words.accountCancelRenewal,
       ]);
-      expect(rows.every((row) => row.disabled)).toBe(true);
+      expect(card.rows().map((row) => row.disabled)).toEqual([true, true, false]);
+    });
+
+    it('still says the two rows that are not built yet come later', async () => {
+      const card = await theCardFor(anActivePayment);
+
       expect(card.text()).toContain(words.accountRowsComeLater);
     });
 
@@ -207,6 +291,147 @@ describe('the subscription card of her account', () => {
       const card = await theCardFor(anActivePayment);
 
       expect(card.text()).not.toContain(words.accountBuyEmi);
+    });
+  });
+
+  describe('the press that stops the renewal', () => {
+    it('asks the route to stop renewing, with her token and the one field', async () => {
+      const card = await theCardFor(anActivePayment);
+
+      await card.pressesTheRenewal();
+
+      expect(card.calls[1]).toEqual({
+        address: WHERE_A_SUBSCRIPTION_IS_READ,
+        method: 'PATCH',
+        token: 'Bearer her.id.token',
+        body: JSON.stringify({ [THE_FIELD_A_RENEWAL_TRAVELS_IN]: false }),
+      });
+    });
+
+    it('leaves her reading the card of a renewal that is off, on the day she paid until', async () => {
+      const card = await theCardFor(anActivePayment);
+
+      await card.pressesTheRenewal();
+
+      expect(card.text()).toContain('39 euros a year. Paid until 16 December 2027');
+      expect(card.text()).toContain(words.accountStateRenewalOff);
+      expect(card.text()).not.toContain(words.accountStateActive);
+    });
+
+    it('turns that row into the press that starts the renewal again', async () => {
+      const card = await theCardFor(anActivePayment);
+
+      await card.pressesTheRenewal();
+
+      expect(card.theRenewalRow().textContent).toBe(words.accountTurnRenewalOn);
+      expect(card.theRenewalRow().disabled).toBe(false);
+      expect(card.text()).not.toContain(words.accountCancelRenewal);
+    });
+
+    it('asks the route to renew again when she presses it a second time', async () => {
+      const card = await theCardFor(anActivePayment);
+
+      await card.pressesTheRenewal();
+      await card.pressesTheRenewal();
+
+      expect(card.calls[2]).toEqual({
+        address: WHERE_A_SUBSCRIPTION_IS_READ,
+        method: 'PATCH',
+        token: 'Bearer her.id.token',
+        body: JSON.stringify({ [THE_FIELD_A_RENEWAL_TRAVELS_IN]: true }),
+      });
+    });
+
+    it('leaves her reading the active card again, and the row she started from', async () => {
+      const card = await theCardFor(anActivePayment);
+
+      await card.pressesTheRenewal();
+      await card.pressesTheRenewal();
+
+      expect(card.text()).toContain('39 euros a year. Renews on 16 December 2027');
+      expect(card.text()).toContain(words.accountStateActive);
+      expect(card.theRenewalRow().textContent).toBe(words.accountCancelRenewal);
+    });
+
+    it('offers her nothing to buy, because the year she paid for still runs', async () => {
+      const card = await theCardFor(anActivePayment);
+
+      await card.pressesTheRenewal();
+
+      expect(card.text()).not.toContain(words.accountBuyEmi);
+    });
+  });
+
+  describe('a change the route would not take', () => {
+    it('leaves the card exactly as it was, and says one line that it did not change', async () => {
+      const card = await theCardFor(anActivePayment, { api: { refusesTheChange: true } });
+
+      await card.pressesTheRenewal();
+
+      expect(card.text()).toContain(words.accountRenewalDidNotChange);
+      expect(card.text()).toContain('39 euros a year. Renews on 16 December 2027');
+      expect(card.text()).toContain(words.accountStateActive);
+      expect(card.theRenewalRow().textContent).toBe(words.accountCancelRenewal);
+    });
+
+    it('says nothing of the kind before she has pressed anything', async () => {
+      const card = await theCardFor(anActivePayment, { api: { refusesTheChange: true } });
+
+      expect(card.text()).not.toContain(words.accountRenewalDidNotChange);
+    });
+
+    it('lets her press again, which is the whole of what she can do about it', async () => {
+      const card = await theCardFor(anActivePayment, { api: { refusesTheChange: true } });
+
+      await card.pressesTheRenewal();
+
+      expect(card.theRenewalRow().disabled).toBe(false);
+      expect(card.calls.filter((call) => call.method === 'PATCH')).toHaveLength(1);
+    });
+  });
+
+  describe('a payment with no renewal to stop', () => {
+    it('refuses the press of a woman who paid with Stars, who cancels in Telegram', async () => {
+      const card = await theCardFor({ paidUntil: theYearEnds, state: 'active', route: 'stars' });
+
+      await card.pressesTheRenewal();
+
+      expect(card.theRenewalRow().disabled).toBe(true);
+      expect(card.calls.filter((call) => call.method === 'PATCH')).toEqual([]);
+    });
+
+    it('refuses the press of a payment that lapsed, which has no renewal left', async () => {
+      const card = await theCardFor({ paidUntil: theYearEnds, state: 'lapsed', route: 'card' });
+
+      await card.pressesTheRenewal();
+
+      expect(card.theRenewalRow().textContent).toBe(words.accountCancelRenewal);
+      expect(card.theRenewalRow().disabled).toBe(true);
+      expect(card.calls.filter((call) => call.method === 'PATCH')).toEqual([]);
+    });
+  });
+
+  describe('what the renewal row does', () => {
+    it.each([
+      [{ paidUntil: theYearEnds, state: 'active', route: 'card' } as WhatSheHolds, 'stops'],
+      [{ paidUntil: theYearEnds, state: 'cancelling', route: 'card' } as WhatSheHolds, 'starts'],
+      [{ paidUntil: theYearEnds, state: 'lapsed', route: 'card' } as WhatSheHolds, 'nothing'],
+      [{ paidUntil: theYearEnds, state: 'refunded', route: 'card' } as WhatSheHolds, 'nothing'],
+      [{ paidUntil: theYearEnds, state: 'active', route: 'stars' } as WhatSheHolds, 'nothing'],
+      [{ paidUntil: theYearEnds, state: 'active' } as WhatSheHolds, 'nothing'],
+      [{} as WhatSheHolds, 'nothing'],
+    ])('reads %j as the row that %s', (held, does) => {
+      expect(whatTheRenewalRowDoes(held)).toBe(does);
+    });
+
+    it('offers nothing at all to a woman the route said nothing about', () => {
+      expect(whatTheRenewalRowDoes(null)).toBe('nothing');
+    });
+
+    it('still offers the press where her year ran out while the payment is active', () => {
+      expect(
+        whatTheRenewalRowDoes({ paidUntil: theYearEnded, state: 'active', route: 'card' }),
+      ).toBe('stops');
     });
   });
 

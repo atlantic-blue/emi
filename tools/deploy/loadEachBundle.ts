@@ -159,8 +159,20 @@ export const loadChecks: Readonly<Record<string, readonly LoadCheck[]>> = {
       owes: (answer) => fieldOf(answer, 'statusCode') === 401,
       describes: 'a read carrying no token of the pool is refused',
     },
+    // The press on Cancel renewal, on the same path and the same function. A bundle that answered
+    // the first two and not this one would load and leave every renewal where it was.
+    {
+      event: {
+        rawPath: '/v1/payments/subscription',
+        headers: {},
+        requestContext: { http: { method: 'PATCH' } },
+        body: '{"renewing":false}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a change of a renewal carrying no token of the pool is refused',
+    },
     // The list of her receipts, on a path of its own and the same function. A bundle that
-    // answered the two routes of one subscription and not this one would load and leave the
+    // answered the three routes of one subscription and not this one would load and leave the
     // receipts row of every account page empty.
     {
       event: {
