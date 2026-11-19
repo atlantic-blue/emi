@@ -107,8 +107,31 @@ const theApiThatSignsHerIn = 'https://2pumohtm7l.execute-api.eu-central-1.amazon
  */
 const theLoginSheLeavesForOnTelegram = 'https://oauth.telegram.org';
 
-function reachesAnotherCompany(source: string): boolean {
-  const withoutWhatSheChose = [
+/**
+ * The three hosts of Stripe, which is the one other company a page of this site really asks for.
+ * The operator approved it for the page she buys on in `docs/design/payments.md`: the library is
+ * loaded from Stripe rather than bundled, it calls Stripe once it runs, and a bank answers a check
+ * in a frame Stripe draws.
+ *
+ * The hosts and no path under them, because a host is what the content policy of the site names
+ * and what a browser allows. What keeps this one company rather than permission to reach anybody
+ * is the list below it: only the file that holds these addresses may say them.
+ */
+const theHostsOfStripe: readonly string[] = [
+  'https://js.stripe.com',
+  'https://api.stripe.com',
+  'https://hooks.stripe.com',
+];
+
+/**
+ * The file that may name a host of Stripe, written as the path a reader would type. Every other
+ * file a page is built from is read with the three hosts refused, so a second file that reached
+ * Stripe would be named here before it shipped.
+ */
+const theFileThatTakesACard = 'apps/website/lib/theStripeOnThePage.ts';
+
+function reachesAnotherCompany(source: string, insideTheFile = ''): boolean {
+  const allowedHere = [
     theSiteItself,
     theCommunitySheCanOpen,
     theCodeSheCanRead,
@@ -117,7 +140,12 @@ function reachesAnotherCompany(source: string): boolean {
     theAddressThePoolAnswersOn,
     theApiThatSignsHerIn,
     theLoginSheLeavesForOnTelegram,
-  ].reduce((text, allowed) => text.split(allowed).join(''), source);
+    ...(insideTheFile === theFileThatTakesACard ? theHostsOfStripe : []),
+  ];
+  const withoutWhatSheChose = allowedHere.reduce(
+    (text, allowed) => text.split(allowed).join(''),
+    source,
+  );
 
   return (
     /https?:\/\//.test(withoutWhatSheChose) ||
@@ -253,7 +281,9 @@ defineFeature(feature, (test) => {
 
       expect(readable.length).toBeGreaterThan(8);
 
-      const reaching = readable.filter((file) => reachesAnotherCompany(readFileSync(file, 'utf8')));
+      const reaching = readable.filter((file) =>
+        reachesAnotherCompany(readFileSync(file, 'utf8'), relative(repositoryRoot, file)),
+      );
 
       expect(reaching.map((file) => relative(repositoryRoot, file))).toEqual([]);
 
@@ -290,6 +320,20 @@ defineFeature(feature, (test) => {
       );
       expect(reachesAnotherCompany('https://t.me/+somebody-elses-invite')).toBe(true);
       expect(reachesAnotherCompany('fetch("https://api.telegram.org/sendMessage")')).toBe(true);
+
+      // Stripe is allowed in the one file that holds its addresses, and nowhere else. The same
+      // address in any other file of the site is still refused, and so is any other host of that
+      // company.
+      for (const host of theHostsOfStripe) {
+        expect(reachesAnotherCompany(`it loads ${host}/v3/`, theFileThatTakesACard)).toBe(false);
+        expect(
+          reachesAnotherCompany(`it loads ${host}/v3/`, 'apps/website/components/siteFooter.tsx'),
+        ).toBe(true);
+      }
+
+      expect(
+        reachesAnotherCompany('fetch("https://checkout.stripe.com/pay")', theFileThatTakesACard),
+      ).toBe(true);
 
       // The same for the beta. The invite the operator gave reads clean, and any other address on
       // Apple's host is still refused.

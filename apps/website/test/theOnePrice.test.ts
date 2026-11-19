@@ -83,6 +83,28 @@ describe('the site asks for one price', () => {
     expect(theOnePrice[language]).toBe(theApplication[language]['onboarding.tour.price.line']);
   });
 
+  it.each(languages)('says the same price on the page she buys on, in %s', (language) => {
+    const said = wordsIn(language).checkoutPrice;
+
+    // The page she pays on says what the tax does, because she is charged there and the figure
+    // she reads is the figure the card is charged. The amount and the period are the same one.
+    expect(amountsOfMoneyIn(said).map(theAmountOf)).toEqual([theOneAmount]);
+    expect(said).toContain(theOnePeriod[language].replace('.', ''));
+    expect(problemsWithThePeriod(language, said.replace(/,[^,]*$/, '.'))).toEqual([]);
+  });
+
+  it('says what the tax does on the page she pays on', () => {
+    expect(wordsIn('en').checkoutPrice).toBe(
+      'One month free, then 39 euros a year, value added tax included.',
+    );
+  });
+
+  it('reads an amount written with the euro sign, before the figure and after it', () => {
+    expect(amountsOfMoneyIn('€39 a year').map(theAmountOf)).toEqual([theOneAmount]);
+    expect(amountsOfMoneyIn('39 € в год').map(theAmountOf)).toEqual([theOneAmount]);
+    expect(amountsOfMoneyIn('39 € al año').map(theAmountOf)).toEqual([theOneAmount]);
+  });
+
   it('names 39 a year and no other amount anywhere in the words', () => {
     const found = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
 

@@ -211,6 +211,10 @@ jobs:
         run: npm run build:lambda
         env:
           NEXT_TELEMETRY_DISABLED: '1'
+          # The publishable key of Stripe, which is public by design and still not in this
+          # repository. The operator sets the repository variable. A build with it empty draws the
+          # plan and no payment form, which is a page that sells nothing rather than a broken one.
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}
       - uses: hashicorp/setup-terraform@v3
         if: env.SHIPS == 'true' && env.ROLE != ''
         with:

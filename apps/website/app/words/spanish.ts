@@ -283,6 +283,36 @@ export const spanish: SiteWords = {
   accountRecordsStayOnYourPhone: 'Tus registros se quedan en tu teléfono, así que no están aquí.',
   accountSignOut: 'Salir',
 
+  // The page she buys Emi on, from docs/design/website/checkout/boards/Checkout.dc.html.
+  checkoutTitle: 'Compra Emi',
+  checkoutSignedInWith: 'Sesión iniciada con {way}.',
+  checkoutWayAddress: 'tu correo',
+  checkoutNotYou: '¿No eres tú? ›',
+  checkoutPlanHeading: 'Tu plan.',
+  checkoutPlanEveryYear: 'Emi, cada año.',
+  checkoutPlanYearly: 'Anual',
+  checkoutPlanRenews: 'Se renueva cada año',
+  checkoutPlanAmount: '39 € al año',
+  checkoutPrice:
+    'Un mes gratis, después 39 euros al año, impuesto sobre el valor añadido incluido.',
+  checkoutMethodHeading: 'Pago.',
+  checkoutMethodQuestion: '¿Cómo quieres pagar?',
+  checkoutPayByCard: 'Apple Pay, Google Pay o tarjeta',
+  checkoutPayByCardWhere: 'En este sitio',
+  checkoutPayByStars: 'Telegram Stars',
+  checkoutPayByStarsWhere: 'En el bot de Emi',
+  checkoutOrPayByCard: 'o paga con tarjeta',
+  checkoutTerms: 'Al pagar aceptas los {terms}.',
+  checkoutTermsLink: 'términos',
+  checkoutPay: 'Pagar 39 €',
+  checkoutStarsNotReady:
+    'Pagar con estrellas todavía no está listo. Paga con tarjeta aquí o vuelve más tarde.',
+  checkoutCancelAnyTime:
+    'Cancela en tu página de cuenta cuando quieras. El pago se vincula a tu cuenta. Nunca se vincula a tus registros.',
+  checkoutCouldNotStart: 'Emi no pudo iniciar ese pago. Inténtalo de nuevo en un momento.',
+  checkoutNoPaymentFormYet:
+    'Pagar en este sitio aún no está abierto. Hoy Emi está en la App Store.',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'SUSCRIPCIÓN',
   accountPlanName: 'Emi, anual',

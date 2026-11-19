@@ -362,6 +362,33 @@ export const english = {
   accountRecordsStayOnYourPhone: 'Your records stay on your phone, so they are not here.',
   accountSignOut: 'Sign out',
 
+  // The page she buys Emi on, from docs/design/website/checkout/boards/Checkout.dc.html.
+  checkoutTitle: 'Buy Emi',
+  checkoutSignedInWith: 'Signed in with {way}.',
+  checkoutWayAddress: 'your email address',
+  checkoutNotYou: 'Not you? ›',
+  checkoutPlanHeading: 'Plan.',
+  checkoutPlanEveryYear: 'Emi, every year.',
+  checkoutPlanYearly: 'Yearly',
+  checkoutPlanRenews: 'Renews every year',
+  checkoutPlanAmount: '€39 a year',
+  checkoutPrice: 'One month free, then 39 euros a year, value added tax included.',
+  checkoutMethodHeading: 'Payment.',
+  checkoutMethodQuestion: 'How would you like to pay?',
+  checkoutPayByCard: 'Apple Pay, Google Pay or card',
+  checkoutPayByCardWhere: 'On this site',
+  checkoutPayByStars: 'Telegram Stars',
+  checkoutPayByStarsWhere: 'In the Emi bot',
+  checkoutOrPayByCard: 'or pay by card',
+  checkoutTerms: 'By paying you agree to the {terms}.',
+  checkoutTermsLink: 'terms',
+  checkoutPay: 'Pay €39',
+  checkoutStarsNotReady: 'Paying in Stars is not ready yet. Pay by card here, or come back later.',
+  checkoutCancelAnyTime:
+    'Cancel on your account page at any time. The payment links to your account. It never links to your records.',
+  checkoutCouldNotStart: 'Emi could not start that payment. Try again in a moment.',
+  checkoutNoPaymentFormYet: 'Paying on this site is not open yet. Emi is in the App Store today.',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'SUBSCRIPTION',
   accountPlanName: 'Emi, yearly',

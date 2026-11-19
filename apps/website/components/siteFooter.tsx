@@ -64,7 +64,7 @@ export const footerGroups: readonly FooterGroup[] = [
         waitsForItsPage: !theStoreListingIsOpen,
       },
       { word: 'footerBeta', outside: THE_EMI_BETA },
-      { word: 'footerBuyOnTheWeb', path: 'buy/', waitsForItsPage: true },
+      { word: 'footerBuyOnTheWeb', path: 'checkout/', waitsForItsPage: true },
     ],
   },
   {
