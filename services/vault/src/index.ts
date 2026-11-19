@@ -16,6 +16,7 @@ export * from './handlers/signInWithTelegram';
 export * from './payments/dynamoEntitlements';
 export * from './payments/entitlements';
 export * from './payments/poolToken';
+export * from './payments/readReceipts';
 export * from './payments/readSubscription';
 export * from './payments/reachesStripe';
 export * from './payments/startSubscription';
