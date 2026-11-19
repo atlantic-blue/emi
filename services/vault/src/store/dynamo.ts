@@ -135,6 +135,9 @@ export function signatureSortKeyFor(signature: string): string {
   return `SIG#${signature}`;
 }
 
+/** What the sort key of an identity of one account opens with, named by its digest after it. */
+export const identitySortKeyPrefix = 'IDY#';
+
 /** The partition one Telegram sign in sits in, named by the digest of the answer she holds. */
 export function answerPartitionFor(answerDigest: string): string {
   return `ANS#${answerDigest}`;
@@ -292,7 +295,41 @@ export function dynamoStore(
     }
   }
 
+  /**
+   * The digests of the payments this account's ways in were linked to, read a page at a time. The
+   * key condition names the identity prefix, so this reads the two or three identity items of one
+   * account rather than walking a history the delete is about to remove anyway.
+   */
+  async function payerDigestsUnder(accountId: string): Promise<string[]> {
+    const found: string[] = [];
+    let startAt: Item | undefined = undefined;
+
+    do {
+      const answered: QueryOutput = await table.query({
+        TableName: tableName,
+        KeyConditionExpression: 'pk = :pk AND begins_with(sk, :sk)',
+        ExpressionAttributeValues: {
+          ':pk': { S: partitionFor(accountId) },
+          ':sk': { S: identitySortKeyPrefix },
+        },
+        ProjectionExpression: 'sk, payerDigest',
+        ExclusiveStartKey: startAt,
+      });
+
+      found.push(
+        ...answered.Items.map((item) => textOf(item.payerDigest)).filter(
+          (digest) => digest.length > 0,
+        ),
+      );
+      startAt = answered.LastEvaluatedKey;
+    } while (startAt !== undefined);
+
+    return found;
+  }
+
   return {
+    payerDigestsOf: (accountId: string): Promise<readonly string[]> => payerDigestsUnder(accountId),
+
     readAccount: async (accountId: string): Promise<StoredAccount | undefined> => {
       const item = await table.getItem({
         TableName: tableName,

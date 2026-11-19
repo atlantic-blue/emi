@@ -85,6 +85,32 @@ data "aws_iam_policy_document" "vault" {
       "${aws_dynamodb_table.vault.arn}/index/*",
     ]
   }
+
+  # One parameter, named in full. A delete stops the renewal of the card payment it finds before it
+  # removes anything, and that call needs the secret key. The signing secret of the webhook is not
+  # here and neither is a prefix, so this role reads the one value it has a use for.
+  statement {
+    sid       = "ReadTheStripeSecretKey"
+    effect    = "Allow"
+    actions   = ["ssm:GetParameter"]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key"]
+  }
+
+  # The key is a secure string under alias/aws/ssm, whose identifier the service generates. The
+  # condition is what narrows this grant: the role may decrypt only through a parameter store call,
+  # so it opens nothing the statement above does not already open.
+  statement {
+    sid       = "DecryptASecureString"
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${var.account_id}:key/*"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["ssm.${var.region}.amazonaws.com"]
+    }
+  }
 }
 
 resource "aws_iam_role_policy" "vault" {

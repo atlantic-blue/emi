@@ -3,6 +3,7 @@ import { deleteAccount, accountPath } from './handlers/deleteAccount';
 import { pullRecords, recordsPath } from './handlers/pullRecords';
 import { putRecord, recordPathPrefix } from './handlers/putRecord';
 import { accountsPath, register } from './handlers/register';
+import type { StopsEveryRenewal } from './payments/stopRenewals';
 import type { AccountDeleteStore, AccountStore } from './store/accounts';
 import type { RecordStore } from './store/records';
 
@@ -27,16 +28,20 @@ export const nothingAnswersThatPath = 'nothing answers that path';
 /**
  * The four routes, bound to one store. The clock is passed through rather than read inside each
  * handler, so a test moves every route to the same instant with one argument.
+ *
+ * The renewal the delete stops is passed in rather than defaulted, because a router built without
+ * it would answer every delete and leave each subscription renewing.
  */
 export function routesOf(
   store: VaultStore,
+  stopsRenewals: StopsEveryRenewal,
   clock: () => Date = () => new Date(),
 ): Record<string, SignedRoute> {
   return {
     [`POST ${accountsPath}`]: register(store, clock),
     [`PUT ${recordPathPrefix}`]: putRecord(store, clock),
     [`GET ${recordsPath}`]: pullRecords(store),
-    [`DELETE ${accountPath}`]: deleteAccount(store),
+    [`DELETE ${accountPath}`]: deleteAccount(store, stopsRenewals),
   };
 }
 
@@ -55,8 +60,12 @@ export function routeKeyOf(event: HttpRequestEvent): string {
 }
 
 /** The function the api calls, with the four routes bound to one store. */
-export function router(store: VaultStore, clock: () => Date = () => new Date()): SignedRoute {
-  const routes = routesOf(store, clock);
+export function router(
+  store: VaultStore,
+  stopsRenewals: StopsEveryRenewal,
+  clock: () => Date = () => new Date(),
+): SignedRoute {
+  const routes = routesOf(store, stopsRenewals, clock);
 
   return async (event) => {
     const route = routes[routeKeyOf(event)];

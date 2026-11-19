@@ -281,6 +281,7 @@ const allowedKeyWords: readonly string[] = [
   'deviceKeyLength',
   'entitlementSortKey',
   'everyKeyUnder',
+  'identitySortKeyPrefix',
   'key',
   'keyOf',
   'publicKey',
