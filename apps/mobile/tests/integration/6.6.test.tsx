@@ -9,6 +9,8 @@ import type { AuthorizerEvent, HttpRequestEvent } from '../../../../services/vau
 import { authorizeRequest } from '../../../../services/vault/src/auth/authorizer';
 import { deleteAccountFor } from '../../../../services/vault/src/handlers/deleteAccount';
 import { registerAccount } from '../../../../services/vault/src/handlers/register';
+import { dynamoEntitlementStore } from '../../../../services/vault/src/payments/dynamoEntitlements';
+import { stopsEveryRenewal } from '../../../../services/vault/src/payments/stopRenewals';
 import { putRecordFor } from '../../../../services/vault/src/handlers/putRecord';
 import { dynamoStore, partitionFor } from '../../../../services/vault/src/store/dynamo';
 import {
@@ -188,6 +190,14 @@ interface Sent {
 function theVaultBehindFetch(account: HerVaultAccount, at: Date): Sent[] {
   const store = dynamoStore(account.table, tableName);
   const sent: Sent[] = [];
+  // She never paid, so her account links no payment and the delete has no renewal to stop. Both
+  // the key and the network raise here, so a delete that reached either one fails this case.
+  const stopsRenewals = stopsEveryRenewal({
+    entitlements: dynamoEntitlementStore(account.table, tableName),
+    reaches: () => Promise.reject(new Error('this delete reaches no payment service')),
+    secretKey: () => Promise.reject(new Error('this delete reads no secret')),
+    clock: () => at,
+  });
 
   global.fetch = (async (
     url: string,
@@ -209,6 +219,7 @@ function theVaultBehindFetch(account: HerVaultAccount, at: Date): Sent[] {
     const answered = await deleteAccountFor(
       eventFor(init.method, path, '', init.headers, allowed.context?.accountId),
       store,
+      stopsRenewals,
     );
 
     sent.push({ method: init.method, url, status: answered.statusCode });

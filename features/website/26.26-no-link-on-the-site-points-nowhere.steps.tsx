@@ -14,6 +14,7 @@ import ReturningPage from '../../apps/website/app/[lang]/sign-in/returning/page'
 import TelegramReturnPage from '../../apps/website/app/[lang]/sign-in/telegram/page';
 import SupportPage from '../../apps/website/app/[lang]/support/page';
 import AccountPage from '../../apps/website/app/[lang]/account/page';
+import CheckoutPage from '../../apps/website/app/[lang]/checkout/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import { LANGUAGES_ANCHOR } from '../../apps/website/components/siteHeader';
 import {
@@ -106,6 +107,7 @@ const whatDrawsThePageAt: Readonly<
   'support/': SupportPage,
   'sign-in/': SignInPage,
   'account/': AccountPage,
+  'checkout/': CheckoutPage,
   'sign-in/returning/': ReturningPage,
   'sign-in/telegram/': TelegramReturnPage,
 };

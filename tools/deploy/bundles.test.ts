@@ -197,12 +197,16 @@ describe('one bundle for each deployed function, in the shape the runtime unpack
       ]);
     });
 
-    it('leaves the parameter store out of every bundle but the three that read a secret', () => {
+    it('leaves the parameter store out of every bundle but the four that read a secret', () => {
       const carrying = deployedFunctions
         .filter((held) => modulesIn(held.name).some((module) => module.includes(theSecretClient)))
         .map((held) => held.name);
 
-      expect(carrying.sort()).toEqual([paymentsFunction, signInFunction, webhookFunction].sort());
+      // The vault joins the three because a delete stops the renewal of the payment it finds, and
+      // that call needs the secret key.
+      expect(carrying.sort()).toEqual(
+        [paymentsFunction, signInFunction, vaultFunction, webhookFunction].sort(),
+      );
     });
 
     it('holds the start of a subscription alone, so the money answers no route of the vault', () => {

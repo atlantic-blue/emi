@@ -13,6 +13,11 @@
 
 import { THE_SIGN_IN_HOST } from './theProviderSignIn';
 import { THE_POOL_HOST } from './theSignIn';
+import {
+  THE_STRIPE_API_HOST,
+  THE_STRIPE_FRAME_HOST,
+  THE_STRIPE_SCRIPT_HOST,
+} from './theStripeOnThePage';
 import { THE_API_HOST } from './theTelegramSignIn';
 
 /** The name the policy travels under, in a request and in a response alike. */
@@ -38,7 +43,11 @@ export function aNonce(): string {
 export function policyAllowing(nonce: string): string {
   return [
     `default-src 'self'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    // Stripe's own library, which the page that takes a card loads from Stripe rather than from
+    // this site. A browser that reads 'strict-dynamic' ignores the host beside it and allows the
+    // library because a script carrying the nonce asked for it; a browser that does not read
+    // 'strict-dynamic' reads the host. Stripe refuses a bundled copy of that library.
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${THE_STRIPE_SCRIPT_HOST}`,
     `style-src 'self' 'nonce-${nonce}'`,
     `img-src 'self' data:`,
     `font-src 'self'`,
@@ -52,7 +61,8 @@ export function policyAllowing(nonce: string): string {
     //
     // The host Telegram asks her on is in no directive. Her browser leaves the site for it, and a
     // page she has left is a page that is asking nobody for anything.
-    `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST} ${THE_API_HOST}`,
+    `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST} ${THE_API_HOST} ${THE_STRIPE_API_HOST}`,
+    `frame-src 'self' ${THE_STRIPE_SCRIPT_HOST} ${THE_STRIPE_FRAME_HOST}`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,

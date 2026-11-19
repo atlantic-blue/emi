@@ -4,6 +4,11 @@ import { NextRequest } from 'next/server';
 import proxy, { config } from '../proxy';
 import { THE_SIGN_IN_HOST } from '../lib/theProviderSignIn';
 import { THE_POOL_HOST } from '../lib/theSignIn';
+import {
+  THE_STRIPE_API_HOST,
+  THE_STRIPE_FRAME_HOST,
+  THE_STRIPE_SCRIPT_HOST,
+} from '../lib/theStripeOnThePage';
 import { THE_API_HOST } from '../lib/theTelegramSignIn';
 
 /**
@@ -42,7 +47,7 @@ describe('the policy a page of the site answers with', () => {
 
     expect(secretIn(policy)).not.toBe('');
     expect(directive(policy, 'script-src')).toBe(
-      `script-src 'self' 'nonce-${secretIn(policy)}' 'strict-dynamic'`,
+      `script-src 'self' 'nonce-${secretIn(policy)}' 'strict-dynamic' ${THE_STRIPE_SCRIPT_HOST}`,
     );
   });
 
@@ -84,23 +89,42 @@ describe('the policy a page of the site answers with', () => {
     expect(directive(policy, 'font-src')).toBe(`font-src 'self'`);
   });
 
-  it('lets the page she signs in on reach the three hosts that sign her in, and no other', () => {
+  it('lets the page she signs in on reach the three hosts that sign her in, and Stripe', () => {
     const policy = policyOn('/en/');
 
     expect(directive(policy, 'connect-src')).toBe(
-      `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST} ${THE_API_HOST}`,
+      `connect-src 'self' ${THE_POOL_HOST} ${THE_SIGN_IN_HOST} ${THE_API_HOST} ${THE_STRIPE_API_HOST}`,
     );
     expect(THE_POOL_HOST).toBe('https://cognito-idp.eu-central-1.amazonaws.com');
     expect(THE_SIGN_IN_HOST).toBe('https://auth.myemi.app');
     expect(new URL(THE_POOL_HOST).protocol).toBe('https:');
     expect(new URL(THE_SIGN_IN_HOST).protocol).toBe('https:');
     expect(new URL(THE_API_HOST).protocol).toBe('https:');
-    // Three hosts and nothing else. The first sends her a code and answers the six digits, the
-    // second exchanges the code Apple and Google send her back with, and the third is the api,
-    // which turns the code Telegram sends her back with into one answer for the pool. A policy
-    // that named a fourth would let a script somebody wrote into a page carry what she typed
-    // somewhere Emi does not answer for.
-    expect(directive(policy, 'connect-src').split(' ')).toHaveLength(5);
+    // Four hosts and nothing else. The first sends her a code and answers the six digits, the
+    // second exchanges the code Apple and Google send her back with, the third is the api, which
+    // turns the code Telegram sends her back with into one answer for the pool, and the fourth is
+    // Stripe, which the card form talks to from the page she buys on. A policy that named a fifth
+    // would let a script somebody wrote into a page carry what she typed somewhere Emi does not
+    // answer for.
+    expect(directive(policy, 'connect-src').split(' ')).toHaveLength(6);
+  });
+
+  it('lets Stripe draw the card form and a bank its check, in a frame and nowhere else', () => {
+    const policy = policyOn('/en/');
+
+    expect(directive(policy, 'frame-src')).toBe(
+      `frame-src 'self' ${THE_STRIPE_SCRIPT_HOST} ${THE_STRIPE_FRAME_HOST}`,
+    );
+    expect(THE_STRIPE_SCRIPT_HOST).toBe('https://js.stripe.com');
+    expect(THE_STRIPE_FRAME_HOST).toBe('https://hooks.stripe.com');
+    expect(THE_STRIPE_API_HOST).toBe('https://api.stripe.com');
+
+    for (const host of [THE_STRIPE_SCRIPT_HOST, THE_STRIPE_FRAME_HOST, THE_STRIPE_API_HOST]) {
+      expect(new URL(host).protocol).toBe('https:');
+    }
+
+    // The page may still not be put in a frame by anybody, which is the other half of this.
+    expect(directive(policy, 'frame-ancestors')).toBe(`frame-ancestors 'none'`);
   });
 
   it('names the api as the fourth value of the directive, and nothing else as it', () => {

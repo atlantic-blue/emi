@@ -1,5 +1,6 @@
 import { accountIdFor, base64Of, sealRecord } from '@emi/crypto';
 
+import type { StopsEveryRenewal } from '../src/payments/stopRenewals';
 import { nothingAnswersThatPath, routeKeyOf, router } from '../src/router';
 import { dynamoStore } from '../src/store/dynamo';
 import { fakeTable, tableName } from './fixtures/dynamoTable';
@@ -33,8 +34,18 @@ function answeringStore(withAnAccount: boolean): ReturnType<typeof dynamoStore> 
   return store;
 }
 
+/**
+ * The renewal a delete stops. No case here gives an account a payment, so this answers that there
+ * was nothing to stop, and a route that started reaching Stripe would fail rather than pass.
+ */
+const stopsNothing: StopsEveryRenewal = (payerDigests) => {
+  expect(payerDigests).toEqual([]);
+
+  return Promise.resolve(0);
+};
+
 function answering(withAnAccount = true): ReturnType<typeof router> {
-  return router(answeringStore(withAnAccount), () => now);
+  return router(answeringStore(withAnAccount), stopsNothing, () => now);
 }
 
 function aSealedRecord(): string {
@@ -158,7 +169,7 @@ describe('one function answers the four signed routes and refuses every other pa
         instant: now,
       });
 
-      await router(dynamoStore(table, tableName), () => now)(event);
+      await router(dynamoStore(table, tableName), stopsNothing, () => now)(event);
 
       expect(table.calls()).toMatchObject({ getItem: 0, putItem: 0, query: 0 });
     });

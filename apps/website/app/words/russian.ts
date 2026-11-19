@@ -292,6 +292,35 @@ export const russian: SiteWords = {
   accountRecordsStayOnYourPhone: 'Ваши записи остаются на телефоне, поэтому их здесь нет.',
   accountSignOut: 'Выйти',
 
+  // The page she buys Emi on, from docs/design/website/checkout/boards/Checkout.dc.html.
+  checkoutTitle: 'Купить Emi',
+  checkoutSignedInWith: 'Вход выполнен через {way}.',
+  checkoutWayAddress: 'вашу почту',
+  checkoutNotYou: 'Это не вы? ›',
+  checkoutPlanHeading: 'План.',
+  checkoutPlanEveryYear: 'Emi, каждый год.',
+  checkoutPlanYearly: 'Год',
+  checkoutPlanRenews: 'Продлевается каждый год',
+  checkoutPlanAmount: '39 € в год',
+  checkoutPrice:
+    'Первый месяц бесплатно, затем 39 евро в год, налог на добавленную стоимость включён.',
+  checkoutMethodHeading: 'Оплата.',
+  checkoutMethodQuestion: 'Как вы хотите заплатить?',
+  checkoutPayByCard: 'Apple Pay, Google Pay или карта',
+  checkoutPayByCardWhere: 'На этом сайте',
+  checkoutPayByStars: 'Telegram Stars',
+  checkoutPayByStarsWhere: 'В боте Emi',
+  checkoutOrPayByCard: 'или картой',
+  checkoutTerms: 'Оплачивая, вы соглашаетесь с {terms}.',
+  checkoutTermsLink: 'условиями',
+  checkoutPay: 'Заплатить 39 €',
+  checkoutStarsNotReady:
+    'Оплата звёздами пока не готова. Заплатите картой здесь или вернитесь позже.',
+  checkoutCancelAnyTime:
+    'Отменить можно в любой момент на странице аккаунта. Платёж связан с аккаунтом. Он никогда не связан с вашими записями.',
+  checkoutCouldNotStart: 'Emi не смогла начать оплату. Попробуйте ещё раз через минуту.',
+  checkoutNoPaymentFormYet: 'Оплата на сайте пока не открыта. Сегодня Emi есть в App Store.',
+
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'ПОДПИСКА',
   accountPlanName: 'Emi, на год',

@@ -65,8 +65,15 @@ export interface AccountDeletion {
  */
 export interface AccountDeleteStore {
   /**
-   * Everything under one account, gone: the account item, every record, and every signature the
-   * authorizer remembered, including the signature on the request that asked for this.
+   * Who paid for the ways in that this account holds, read off the identity items before they go.
+   * The link between an account and a payment lives on those items and nowhere else, so a delete
+   * that removed them first would have no way left to find the renewal it has to stop.
+   */
+  payerDigestsOf(accountId: string): Promise<readonly string[]>;
+  /**
+   * Everything under one account, gone: the account item, every record, every identity, and every
+   * signature the authorizer remembered, including the signature on the request that asked for
+   * this.
    */
   deleteEverything(accountId: string): Promise<AccountDeletion>;
 }
