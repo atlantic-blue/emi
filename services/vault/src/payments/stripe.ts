@@ -26,6 +26,16 @@ export interface AnsweredByStripe {
 /** How this module reaches Stripe. A test hands it one that answers without a network. */
 export type ReachesStripe = (address: string, asked: AskedOfStripe) => Promise<AnsweredByStripe>;
 
+/**
+ * The version of the api every call is made in.
+ *
+ * A call that names no version is answered in the default version of the account. That is the
+ * version the account was opened on. The webhook endpoint in Stripe is set to the version here,
+ * so a delivery carries fields an older answer does not. The period of a subscription is one of
+ * them. The calls and the events must name one version.
+ */
+export const stripeApiVersion = '2026-10-28.endive';
+
 /** Where the objects are made. Every address below hangs under this one. */
 export const stripeApi = 'https://api.stripe.com/v1';
 
@@ -108,6 +118,7 @@ export function headersFor(secretKey: string): Record<string, string> {
   return {
     authorization: `Bearer ${secretKey}`,
     'content-type': 'application/x-www-form-urlencoded',
+    'stripe-version': stripeApiVersion,
   };
 }
 
