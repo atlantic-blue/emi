@@ -45,6 +45,12 @@ export const customersAddress = `${stripeApi}/customers`;
 /** Where the setup that collects her payment method is made. */
 export const setupIntentsAddress = `${stripeApi}/setup_intents`;
 
+/** Where the subscriptions are. Nothing in this file creates one. */
+export const subscriptionsAddress = `${stripeApi}/subscriptions`;
+
+/** Where the payment methods are. Only the detach below reaches this one. */
+export const paymentMethodsAddress = `${stripeApi}/payment_methods`;
+
 /**
  * The key the payer digest travels under, in the metadata of the customer and later of the
  * subscription. It is the reverse index: a webhook carries a customer and the metadata on it names
@@ -131,6 +137,10 @@ export interface WhatACallHolds {
 interface AnObjectStripeMade {
   readonly id?: unknown;
   readonly client_secret?: unknown;
+  readonly customer?: unknown;
+  readonly status?: unknown;
+  readonly payment_method?: unknown;
+  readonly invoice_settings?: { readonly default_payment_method?: unknown };
   readonly metadata?: Readonly<Record<string, unknown>>;
   readonly data?: unknown;
   readonly has_more?: unknown;
@@ -338,7 +348,7 @@ export async function invoicesOf(
 
 /** Where one subscription is read and updated. The update of this api is a post, not a patch. */
 export function subscriptionAddressFor(subscriptionRef: string): string {
-  return `${stripeApi}/subscriptions/${encodeURIComponent(subscriptionRef)}`;
+  return `${subscriptionsAddress}/${encodeURIComponent(subscriptionRef)}`;
 }
 
 /** The field that stops a renewal at the end of the period she paid for, and starts it again. */
@@ -371,4 +381,112 @@ export async function renewalOfSubscription(
   }
 
   return !said;
+}
+
+/** Where one setup is read back, which is how a card change learns whose it is. */
+export function setupIntentAddressFor(setupRef: string): string {
+  return `${setupIntentsAddress}/${encodeURIComponent(setupRef)}`;
+}
+
+/** Where one payment method is taken off the customer it is attached to. */
+export function detachAddressFor(paymentMethodRef: string): string {
+  return `${paymentMethodsAddress}/${encodeURIComponent(paymentMethodRef)}/detach`;
+}
+
+/** The field the default of a customer is written as, which is what every invoice is charged to. */
+export const customerDefaultField = 'invoice_settings[default_payment_method]';
+
+/** The field the default of a subscription is written as. */
+export const subscriptionDefaultField = 'default_payment_method';
+
+/** The one status a setup she finished carries. Every other status collected no card. */
+export const setupSucceeded = 'succeeded';
+
+/** One setup, read back: who it was made for, whether she finished it, and what it collected. */
+export interface SetupAsItStands {
+  readonly customerRef: string | null;
+  readonly status: string | null;
+  readonly paymentMethodRef: string | null;
+}
+
+/**
+ * The setup as Stripe holds it, read rather than taken from the caller. The site sends an
+ * identifier and nothing more, so the customer it names and the status it reached are read here:
+ * a caller that sent somebody else's identifier would otherwise move somebody else's card.
+ */
+export async function setupAsItStands(
+  held: WhatACallHolds,
+  setupRef: string,
+): Promise<SetupAsItStands> {
+  const answered = await held.reaches(setupIntentAddressFor(setupRef), {
+    method: 'GET',
+    headers: headersFor(held.secretKey),
+  });
+  const read = objectIn(answered, 'setup');
+
+  return {
+    customerRef: textIn(read.customer),
+    status: textIn(read.status),
+    paymentMethodRef: textIn(read.payment_method),
+  };
+}
+
+/** What every invoice of a customer is charged to today, or nothing where it carries none. */
+export async function defaultPaymentMethodOf(
+  held: WhatACallHolds,
+  customerRef: string,
+): Promise<string | null> {
+  const answered = await held.reaches(customerAddressFor(customerRef), {
+    method: 'GET',
+    headers: headersFor(held.secretKey),
+  });
+
+  return textIn(objectIn(answered, 'customer').invoice_settings?.default_payment_method);
+}
+
+/** Makes one payment method what every invoice of the customer is charged to. */
+export async function chargeTheCustomerTo(
+  held: WhatACallHolds,
+  customerRef: string,
+  paymentMethodRef: string,
+): Promise<void> {
+  const answered = await held.reaches(customerAddressFor(customerRef), {
+    method: 'POST',
+    headers: headersFor(held.secretKey),
+    body: formBodyOf([[customerDefaultField, paymentMethodRef]]),
+  });
+
+  objectIn(answered, 'customer');
+}
+
+/**
+ * Makes one payment method what the renewal is charged to. The subscription carries a default of
+ * its own, and it wins over the one on the customer, so a change that moved only the customer
+ * would leave the yearly charge on the card she replaced.
+ */
+export async function chargeTheSubscriptionTo(
+  held: WhatACallHolds,
+  subscriptionRef: string,
+  paymentMethodRef: string,
+): Promise<void> {
+  const answered = await held.reaches(subscriptionAddressFor(subscriptionRef), {
+    method: 'POST',
+    headers: headersFor(held.secretKey),
+    body: formBodyOf([[subscriptionDefaultField, paymentMethodRef]]),
+  });
+
+  objectIn(answered, 'subscription');
+}
+
+/** Takes one payment method off its customer, so a card she replaced is not left on file. */
+export async function detachPaymentMethod(
+  held: WhatACallHolds,
+  paymentMethodRef: string,
+): Promise<void> {
+  const answered = await held.reaches(detachAddressFor(paymentMethodRef), {
+    method: 'POST',
+    headers: headersFor(held.secretKey),
+  });
+
+  objectIn(answered, 'payment method');
 }

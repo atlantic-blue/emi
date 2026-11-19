@@ -10,7 +10,7 @@ resource "aws_apigatewayv2_api" "vault" {
   # first and sends nothing the answer does not list. Every method the site calls belongs here.
   cors_configuration {
     allow_origins     = ["https://myemi.app"]
-    allow_methods     = ["GET", "PATCH", "POST"]
+    allow_methods     = ["GET", "PATCH", "POST", "PUT"]
     allow_headers     = ["authorization", "content-type"]
     allow_credentials = false
     max_age           = 86400
@@ -236,6 +236,27 @@ resource "aws_apigatewayv2_route" "change_renewal" {
 resource "aws_apigatewayv2_route" "read_receipts" {
   api_id             = aws_apigatewayv2_api.vault.id
   route_key          = "GET /v1/payments/receipts"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
+# The press on Change card, which makes a second setup to collect a payment method. It is the same
+# function and the same authorizer as the routes above, because it reads the same claim of the same
+# token and reaches the one item under her own payer digest.
+resource "aws_apigatewayv2_route" "start_card_change" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/payments/payment-method"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
+# What her browser sends once Stripe has taken the card or the wallet. It names the setup and
+# nothing else, and the function reads that setup back from Stripe to see whose it is.
+resource "aws_apigatewayv2_route" "finish_card_change" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "PUT /v1/payments/payment-method"
   target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id

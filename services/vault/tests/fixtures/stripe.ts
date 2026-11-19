@@ -3,9 +3,13 @@ import {
   cancelAtPeriodEndField,
   customerAddressFor,
   customersAddress,
+  detachAddressFor,
   invoicesAddress,
   payerDigestKey,
+  paymentMethodsAddress,
+  setupIntentAddressFor,
   setupIntentsAddress,
+  setupSucceeded,
   subscriptionAddressFor,
   stripeApi,
 } from '../../src/payments/stripe';
@@ -50,6 +54,18 @@ export interface WhatStripeAnswers {
    * asked for unless a test names this, which is what Stripe does.
    */
   readonly saysTheRenewalStopped?: boolean;
+  /** What every invoice of the customer is charged to today, which a card change replaces. */
+  readonly chargesThePaymentMethod?: string;
+  /** The customer a read of one setup names, which is how a card change learns whose it is. */
+  readonly theSetupWasMadeFor?: string;
+  /** The status that read answers with. Anything but `succeeded` collected no card. */
+  readonly theSetupReached?: string;
+  /** The payment method that read answers with, which is what she gave the browser. */
+  readonly theSetupCollected?: string;
+  /** A status and a body for the read of one setup, where the test wants a refusal instead. */
+  readonly refusesTheSetupRead?: AnsweredByStripe;
+  /** The same for taking the old payment method off the customer. */
+  readonly refusesTheDetach?: AnsweredByStripe;
 }
 
 /** The double, and the calls it took. */
@@ -69,6 +85,15 @@ export const aCustomerRef = 'cus_000000000001';
 export const aSetupRef = 'seti_000000000001';
 export const aClientSecret = `${aSetupRef}_secret_000000000001`;
 
+/** The payment method a read of one setup names, which is the card she has just given. */
+export const aPaymentMethodRef = 'pm_000000000002';
+
+/** The payment method the customer is charged to before a card change, which is the old card. */
+export const theOldPaymentMethodRef = 'pm_000000000001';
+
+/** The subscription the item of a woman paying by card names. */
+export const aSubscriptionRef = 'sub_000000000001';
+
 export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
   const calls: OneCall[] = [];
 
@@ -76,7 +101,34 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
     reaches: async (address: string, asked: AskedOfStripe): Promise<AnsweredByStripe> => {
       calls.push({ address, asked });
 
+      // One setup, read back. It is the address of the setup itself rather than the collection.
+      if (address.startsWith(`${setupIntentsAddress}/`)) {
+        return (
+          answers.refusesTheSetupRead ?? {
+            status: 200,
+            body: JSON.stringify({
+              id: address.slice(setupIntentsAddress.length + 1),
+              object: 'setup_intent',
+              customer: answers.theSetupWasMadeFor ?? aCustomerRef,
+              status: answers.theSetupReached ?? setupSucceeded,
+              payment_method: answers.theSetupCollected ?? aPaymentMethodRef,
+            }),
+          }
+        );
+      }
+
+      // Taking one payment method off its customer, which is the one call under this collection.
+      if (address.startsWith(`${paymentMethodsAddress}/`)) {
+        return (
+          answers.refusesTheDetach ?? {
+            status: 200,
+            body: JSON.stringify({ id: theOldPaymentMethodRef, object: 'payment_method' }),
+          }
+        );
+      }
+
       // A read of one customer, which is the address of the customer itself rather than the list.
+      // The same address takes the write a card change makes, and both answer a customer.
       if (address.startsWith(`${customersAddress}/`)) {
         return (
           answers.refusesTheCustomerRead ?? {
@@ -88,6 +140,9 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
                 answers.holdsThePayerDigest === undefined
                   ? {}
                   : { [payerDigestKey]: answers.holdsThePayerDigest },
+              invoice_settings: {
+                default_payment_method: answers.chargesThePaymentMethod ?? null,
+              },
             }),
           }
         );
@@ -164,3 +219,9 @@ export const readOfTheCustomer = (customerRef: string): string => customerAddres
 /** The address an update of one subscription is sent to. */
 export const updateOfTheSubscription = (subscriptionRef: string): string =>
   subscriptionAddressFor(subscriptionRef);
+
+/** The address a read of one setup is sent to. */
+export const readOfTheSetup = (setupRef: string): string => setupIntentAddressFor(setupRef);
+
+/** The address the old payment method is taken off its customer at. */
+export const detachOf = (paymentMethodRef: string): string => detachAddressFor(paymentMethodRef);

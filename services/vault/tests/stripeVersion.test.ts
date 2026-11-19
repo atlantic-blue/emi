@@ -1,13 +1,24 @@
 import {
+  chargeTheCustomerTo,
+  chargeTheSubscriptionTo,
   customerFor,
+  defaultPaymentMethodOf,
+  detachPaymentMethod,
   invoicesOf,
   payerDigestOfCustomer,
   renewalOfSubscription,
+  setupAsItStands,
   setupIntentFor,
   stripeApiVersion,
   type WhatACallHolds,
 } from '../src/payments/stripe';
-import { aCustomerRef, fakeStripe, type FakeStripe } from './fixtures/stripe';
+import {
+  aCustomerRef,
+  aPaymentMethodRef,
+  aSetupRef,
+  fakeStripe,
+  type FakeStripe,
+} from './fixtures/stripe';
 import { anEvent, theVersionTheEventsCarry } from './fixtures/stripeDeliveries';
 
 /**
@@ -31,7 +42,7 @@ function aPayer(stripe: FakeStripe): WhatACallHolds {
 
 describe('every call of Stripe names the version it is made in', () => {
   describe('the header of each call', () => {
-    it('names the version on every call the port makes, which is five of them', async () => {
+    it('names the version on every call the port makes, which is ten of them', async () => {
       const stripe = fakeStripe({ holdsThePayerDigest: payerDigest });
       const held = aPayer(stripe);
 
@@ -40,8 +51,13 @@ describe('every call of Stripe names the version it is made in', () => {
       await payerDigestOfCustomer(held, aCustomerRef);
       await renewalOfSubscription(held, aSubscriptionRef, false);
       await invoicesOf(held, { customerRef: aCustomerRef, limit: 10 });
+      await setupAsItStands(held, aSetupRef);
+      await defaultPaymentMethodOf(held, aCustomerRef);
+      await chargeTheCustomerTo(held, aCustomerRef, aPaymentMethodRef);
+      await chargeTheSubscriptionTo(held, aSubscriptionRef, aPaymentMethodRef);
+      await detachPaymentMethod(held, aPaymentMethodRef);
 
-      expect(stripe.calls()).toHaveLength(5);
+      expect(stripe.calls()).toHaveLength(10);
 
       for (const call of stripe.calls()) {
         expect(call.asked.headers['stripe-version']).toBe(stripeApiVersion);
