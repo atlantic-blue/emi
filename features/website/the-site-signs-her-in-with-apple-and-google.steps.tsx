@@ -297,8 +297,16 @@ defineFeature(feature, (test) => {
       expect(
         placesOfferingGoogleWithoutApple([{ file: 'infra/cognito.tf', text: "name = 'Google'" }]),
       ).toEqual([
-        "infra/cognito.tf offers 'Google' and does not offer 'SignInWithApple' beside it",
+        "infra/cognito.tf offers 'Google' and does not offer 'SignInWithApple' or 'Apple' beside it",
       ]);
+      expect(
+        placesOfferingGoogleWithoutApple([
+          {
+            file: 'apps/mobile/src/language/english.ts',
+            text: "'account.way.apple': 'Apple',\n'account.way.google': 'Google',",
+          },
+        ]),
+      ).toEqual([]);
     });
   });
 });

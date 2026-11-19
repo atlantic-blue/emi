@@ -33,6 +33,7 @@ import {
 import { deployedFunctions, uploadOrder } from '../deploy/functions.ts';
 import { carriesTheAuthorizer, readTheRoutes, routesWithNoAuthorizer } from '../deploy/routes.ts';
 import { paymentPartitionPrefix } from '../../services/vault/src/payments/entitlements.ts';
+import { receiptsPath } from '../../services/vault/src/payments/readReceipts.ts';
 import { subscriptionPath } from '../../services/vault/src/payments/startSubscription.ts';
 import { webhookPath } from '../../services/vault/src/payments/webhook.ts';
 import {
@@ -715,6 +716,17 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(change).toContain('authorization_type = "JWT"');
       expect(change).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
       expect(change).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+    });
+
+    it('lists her receipts on a path of its own, on the same function and the same authorizer', () => {
+      const receipts = bodyOf('resource "aws_apigatewayv2_route" "read_receipts"');
+
+      expect(receipts).toContain(`route_key          = "GET ${receiptsPath}"`);
+      expect(receipts).toContain('authorization_type = "JWT"');
+      expect(receipts).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(receipts).toContain(
         'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
       );
     });

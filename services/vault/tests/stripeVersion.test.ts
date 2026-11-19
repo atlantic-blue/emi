@@ -1,5 +1,6 @@
 import {
   customerFor,
+  invoicesOf,
   payerDigestOfCustomer,
   renewalOfSubscription,
   setupIntentFor,
@@ -30,7 +31,7 @@ function aPayer(stripe: FakeStripe): WhatACallHolds {
 
 describe('every call of Stripe names the version it is made in', () => {
   describe('the header of each call', () => {
-    it('names the version on every call the port makes, which is four of them', async () => {
+    it('names the version on every call the port makes, which is five of them', async () => {
       const stripe = fakeStripe({ holdsThePayerDigest: payerDigest });
       const held = aPayer(stripe);
 
@@ -38,8 +39,9 @@ describe('every call of Stripe names the version it is made in', () => {
       await setupIntentFor(held, aCustomerRef);
       await payerDigestOfCustomer(held, aCustomerRef);
       await renewalOfSubscription(held, aSubscriptionRef, false);
+      await invoicesOf(held, { customerRef: aCustomerRef, limit: 10 });
 
-      expect(stripe.calls()).toHaveLength(4);
+      expect(stripe.calls()).toHaveLength(5);
 
       for (const call of stripe.calls()) {
         expect(call.asked.headers['stripe-version']).toBe(stripeApiVersion);

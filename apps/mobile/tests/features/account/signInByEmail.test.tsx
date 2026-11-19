@@ -134,25 +134,19 @@ describe('she signs in to Emi with a code sent to her email', () => {
       );
     });
 
-    it('draws Apple and Google, and neither takes a press', async () => {
+    it('draws Apple, Google and Telegram, each with its words and each taking a press', async () => {
       const cognito = theCognitoSheReaches();
       await sheOpensTheAccountRow();
-
-      expect(screen.getByTestId(accountGateTelegramTestID)).toHaveTextContent(
-        english['account.gate.telegram'],
-      );
 
       for (const [testID, label] of [
         [accountGateAppleTestID, english['account.gate.apple']],
         [accountGateGoogleTestID, english['account.gate.google']],
+        [accountGateTelegramTestID, english['account.gate.telegram']],
       ] as const) {
         const button = screen.getByTestId(testID);
 
         expect(button).toHaveTextContent(label);
-        expect(button).toBeDisabled();
-        expect(button.props.accessibilityState).toMatchObject({ disabled: true });
-
-        await fireEvent.press(button);
+        expect(button).not.toBeDisabled();
       }
 
       expect(screen.getByTestId(accountGateScreenTestID)).toBeTruthy();

@@ -26,6 +26,7 @@ import {
   theSessionEnds,
 } from '../../fixtures/expoWebBrowser';
 import { aWrongCode, theCognitoSheReaches } from '../../fixtures/theCognitoSheReaches';
+import { theProviderSignInSheReaches } from '../../fixtures/theProviderSignInSheReaches';
 import { theTelegramSignInSheReaches } from '../../fixtures/theTelegramSignInSheReaches';
 import { OnAPhone } from '../../fixtures/theSafeArea';
 
@@ -115,6 +116,36 @@ describe('the sign in, in Spanish', () => {
       /^app\.es\./,
     );
     expect(service.went).toEqual([]);
+    expect(itemsInTheKeychain()).toEqual({});
+  });
+
+  it('says in Spanish that a sign in with Apple did not finish', async () => {
+    const pool = theProviderSignInSheReaches();
+    theSessionEnds(() =>
+      Promise.resolve({
+        type: 'success',
+        url: 'emi://sign-in/returning?code=a-code&state=a-state-another-phone-wrote',
+      }),
+    );
+
+    await render(
+      <OnAPhone>
+        <SignInFlow
+          keychain={expoKeychain()}
+          onSignedIn={() => undefined}
+          openTheSession={openAuthSessionAsync}
+          signIn={theAppSignIn}
+          today={() => '2026-11-13'}
+        />
+      </OnAPhone>,
+    );
+
+    await fireEvent.press(screen.getByTestId(accountGateAppleTestID));
+
+    expect(await screen.findByTestId(accountGateLineTestID)).toHaveTextContent(
+      'Ese acceso no terminó. Pulsa Entrar con Apple e inténtalo otra vez.',
+    );
+    expect(pool.went).toEqual([]);
     expect(itemsInTheKeychain()).toEqual({});
   });
 });
