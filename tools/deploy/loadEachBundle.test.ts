@@ -15,6 +15,13 @@ import {
 } from './loadEachBundle';
 import type { HttpRequestEvent } from '../../services/vault/src/api';
 import {
+  finishCardChangeFor,
+  paymentMethodPath,
+  startCardChangeFor,
+  thatTokenChangesNoCard,
+  type WhatACardChangeNeeds,
+} from '../../services/vault/src/payments/changeCard';
+import {
   startSubscriptionFor,
   subscriptionPath,
   thatTokenStartsNothing,
@@ -426,6 +433,54 @@ describe('every bundle is loaded in a container of its own, and two in a row can
 
     it('refuses the answer a bundle that read a subscription for nobody would give', () => {
       expect(theRead?.owes({ statusCode: 200, body: '{"state":"active"}' })).toBe(false);
+    });
+    it('owes the two calls of a card change, on the path that handler names', () => {
+      const [, , press, confirm] = loadChecks['emi-payments-subscription'] ?? [];
+
+      for (const check of [press, confirm]) {
+        expect((check?.event as { rawPath?: string } | undefined)?.rawPath).toBe(paymentMethodPath);
+      }
+
+      const methodIn = (check: { event: unknown } | undefined): string | undefined =>
+        (check?.event as { requestContext?: { http?: { method?: string } } } | undefined)
+          ?.requestContext?.http?.method;
+
+      expect(methodIn(press)).toBe('POST');
+      expect(methodIn(confirm)).toBe('PUT');
+    });
+
+    it('takes the refusal each call of a card change answers a request with no token with', async () => {
+      const [, , press, confirm] = loadChecks['emi-payments-subscription'] ?? [];
+      /** Every port a card change needs, each one raising, so a call that happens is a failure. */
+      const nothingACardChangeMayReach = (): WhatACardChangeNeeds => ({
+        entitlements: { readEntitlement: () => Promise.reject(new Error('the table was read')) },
+        reaches: () => Promise.reject(new Error('Stripe was called')),
+        secretKey: () => Promise.reject(new Error('the parameter store was read')),
+        poolId: 'eu-central-1_NOTAPOOL',
+      });
+
+      const pressed = await startCardChangeFor(
+        press?.event as HttpRequestEvent,
+        nothingACardChangeMayReach(),
+      );
+      const confirmed = await finishCardChangeFor(
+        confirm?.event as HttpRequestEvent,
+        nothingACardChangeMayReach(),
+      );
+
+      expect(press?.owes(pressed)).toBe(true);
+      expect(confirm?.owes(confirmed)).toBe(true);
+      expect(JSON.parse(pressed.body)).toEqual({ error: thatTokenChangesNoCard });
+      expect(JSON.parse(confirmed.body)).toEqual({ error: thatTokenChangesNoCard });
+    });
+
+    it('refuses the answer a bundle that let a card change through would give', () => {
+      const [, , press, confirm] = loadChecks['emi-payments-subscription'] ?? [];
+
+      expect(press?.owes({ statusCode: 200, body: '{"clientSecret":"seti_1_secret_1"}' })).toBe(
+        false,
+      );
+      expect(confirm?.owes({ statusCode: 200, body: '{"changed":true}' })).toBe(false);
     });
   });
 
