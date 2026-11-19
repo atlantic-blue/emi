@@ -403,7 +403,10 @@ export const english = {
   accountCancelRenewal: 'Cancel renewal',
   accountTurnRenewalOn: 'Turn renewal on',
   accountRenewalDidNotChange: 'The renewal did not change. Try again.',
-  accountRowsComeLater: 'These are not ready yet.',
+  accountRowsComeLater: 'This is not ready yet.',
+  accountReceiptsEmpty: 'No receipts yet.',
+  accountReceiptsDidNotLoad: 'Emi could not read your receipts. Try again.',
+  accountMoreReceipts: 'Show more',
   accountNoSubscription: 'You have no subscription yet.',
   accountBuyEmi: 'Buy Emi ›',
 

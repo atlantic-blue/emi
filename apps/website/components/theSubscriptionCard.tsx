@@ -3,6 +3,12 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
+import {
+  type OneReceipt,
+  theReceiptAmount,
+  theReceiptDay,
+  theReceiptsSheHolds,
+} from '@/lib/theReceiptsSheHolds';
 import { theSessionHeld, whenTheSessionChanges } from '@/lib/theSessionSheHolds';
 import {
   type HowItAsks,
@@ -24,9 +30,10 @@ import {
  * tokens, so it cannot know whether she pays, and the card is drawn once the browser has asked.
  *
  * The three rows the board draws under the card are Receipts, Change card and Cancel renewal.
- * The third one is a press: it stops the renewal at the end of the year she paid for, and once it
- * is stopped the same row starts it again. The other two are not built yet, so each is drawn as
- * the board draws it, refuses a press, and the line under them says so.
+ * Receipts opens a list of what Stripe holds, inside the card. Cancel renewal stops the renewal at
+ * the end of the year she paid for, and once it is stopped the same row starts it again. Change
+ * card is not built yet, so it is drawn as the board draws it, refuses a press, and the line under
+ * it says so.
  *
  * A change that the route would not take leaves the card exactly as it was and says one line. The
  * card is never drawn from what the press asked for: it is drawn from what the route answered, so
@@ -57,11 +64,14 @@ const whatHerBrowserHolds = (): string | null => theSessionHeld()?.idToken ?? nu
 
 const whatAServerKnows = (): string | undefined => undefined;
 
-/** The two rows of the board that are drawn and do nothing yet. */
-const theRowsThatComeLater = ['accountReceipts', 'accountChangeCard'] as const;
+/** The row of the board that is drawn and does nothing yet. */
+const theRowsThatComeLater = ['accountChangeCard'] as const;
 
 /** One press, from the moment it leaves to the moment the route answers it. */
 type WhereThePressIs = 'waiting' | 'running' | 'refused';
+
+/** Where the read of her receipts is: never asked, asking, answered, or refused. */
+type WhereTheReceiptsAre = 'unasked' | 'running' | 'read' | 'refused';
 
 const rowStyle =
   'flex min-h-[52px] w-full items-center justify-between border-b-hairline border-siteTintLine px-margin text-left text-body-lg last:border-b-0';
@@ -75,6 +85,10 @@ export function TheSubscriptionCard({
   const token = useSyncExternalStore(whenTheSessionChanges, whatHerBrowserHolds, whatAServerKnows);
   const [answered, setAnswered] = useState<{ readonly held: WhatSheHolds | null } | null>(null);
   const [thePress, setThePress] = useState<WhereThePressIs>('waiting');
+  const [receiptsOpen, setReceiptsOpen] = useState(false);
+  const [theReceipts, setTheReceipts] = useState<readonly OneReceipt[]>([]);
+  const [thePageAfter, setThePageAfter] = useState<string | null>(null);
+  const [theReceiptsRead, setTheReceiptsRead] = useState<WhereTheReceiptsAre>('unasked');
 
   useEffect(() => {
     if (token === null || token === undefined) {
@@ -105,6 +119,43 @@ export function TheSubscriptionCard({
   const which = whichCardSheReads(read, now);
   const paidUntil = read?.paidUntil;
   const theRenewal = whatTheRenewalRowDoes(read);
+
+  const readsAPageOfReceipts = (cursor: string | null): void => {
+    if (token === null || token === undefined) {
+      return;
+    }
+
+    setTheReceiptsRead('running');
+
+    void theReceiptsSheHolds(token, cursor, asks).then((page) => {
+      if (page === null) {
+        setTheReceiptsRead('refused');
+
+        return;
+      }
+
+      setTheReceiptsRead('read');
+      setTheReceipts((held) => (cursor === null ? page.receipts : [...held, ...page.receipts]));
+      setThePageAfter(page.cursor);
+    });
+  };
+
+  const pressesReceipts = (): void => {
+    if (receiptsOpen) {
+      setReceiptsOpen(false);
+
+      return;
+    }
+
+    setReceiptsOpen(true);
+
+    // A read she already has is drawn again rather than asked for again, and a read that was
+    // refused is asked for again, because pressing the row twice is the whole of what she can do
+    // about a refusal.
+    if (theReceiptsRead === 'unasked' || theReceiptsRead === 'refused') {
+      readsAPageOfReceipts(null);
+    }
+  };
 
   const pressesTheRenewal = (): void => {
     if (token === null || token === undefined || theRenewal === 'nothing') {
@@ -159,6 +210,60 @@ export function TheSubscriptionCard({
             <div className="flex min-h-[52px] items-center justify-between border-b-hairline border-siteTintLine px-margin text-body-lg">
               <span>{words.accountPaidWith}</span>
               <span className="text-siteQuietText">{words.accountPaidWithCard}</span>
+            </div>
+          ) : null}
+
+          <button
+            aria-expanded={receiptsOpen}
+            className={rowStyle}
+            onClick={pressesReceipts}
+            type="button"
+          >
+            <span>{words.accountReceipts}</span>
+            <span aria-hidden="true">›</span>
+          </button>
+
+          {receiptsOpen ? (
+            <div className="flex flex-col border-b-hairline border-siteTintLine">
+              {theReceiptsRead === 'refused' ? (
+                <span className="px-margin py-spaceMd text-body-sm text-siteAccent" role="status">
+                  {words.accountReceiptsDidNotLoad}
+                </span>
+              ) : null}
+
+              {theReceiptsRead === 'read' && theReceipts.length === 0 ? (
+                <span className="px-margin py-spaceMd text-body-sm text-siteQuietText">
+                  {words.accountReceiptsEmpty}
+                </span>
+              ) : null}
+
+              {theReceipts.map((receipt) => (
+                <a
+                  className={rowStyle}
+                  href={receipt.invoiceUrl}
+                  key={receipt.invoiceUrl}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <span>{theReceiptDay(language, receipt.invoicedAt)}</span>
+                  <span className="text-siteQuietText">
+                    {theReceiptAmount(language, receipt.amount, receipt.currency)}
+                  </span>
+                </a>
+              ))}
+
+              {thePageAfter === null ? null : (
+                <button
+                  className={`${rowStyle} text-siteAccent`}
+                  disabled={theReceiptsRead === 'running'}
+                  onClick={() => {
+                    readsAPageOfReceipts(thePageAfter);
+                  }}
+                  type="button"
+                >
+                  <span>{words.accountMoreReceipts}</span>
+                </button>
+              )}
             </div>
           ) : null}
 

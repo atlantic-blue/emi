@@ -328,6 +328,9 @@ export const spanish: SiteWords = {
   accountTurnRenewalOn: 'Activar la renovación',
   accountRenewalDidNotChange: 'La renovación no cambió. Inténtalo de nuevo.',
   accountRowsComeLater: 'Esto todavía no está listo.',
+  accountReceiptsEmpty: 'Todavía no tienes recibos.',
+  accountReceiptsDidNotLoad: 'Emi no pudo leer tus recibos. Inténtalo de nuevo.',
+  accountMoreReceipts: 'Mostrar más',
   accountNoSubscription: 'Todavía no tienes suscripción.',
   accountBuyEmi: 'Compra Emi ›',
 
