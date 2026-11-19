@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { useCallback, useState } from 'react';
 
 import { useDatabase } from '../../../data/DatabaseProvider';
+import { theRowSaysSheIsSignedInAs } from '../../../features/account/copy';
 import { readReminderLead } from '../../../features/reminder/reminder';
 import { SettingsScreen } from '../../../features/settings/SettingsScreen';
 import { reminderChoiceSaid } from '../../../features/settings/RemindersScreen';
@@ -54,7 +55,7 @@ export default function SettingsRoute(): ReactNode {
       onReminders={() => router.push('/settings/reminders')}
       onWhoCanSee={() => router.push('/settings/who-can-see')}
       reminder={reminder}
-      signedInAs={signIn?.address}
+      signedInAs={signIn === null ? undefined : theRowSaysSheIsSignedInAs(signIn)}
     />
   );
 }

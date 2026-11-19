@@ -2,7 +2,8 @@ import type { WhatWentWrong } from '@emi/sign-in';
 
 import { words } from '../../language';
 import { fullDate } from '../export/copy';
-import type { TheWaySheSignedIn } from '../../services/signIn/herSignIn';
+import type { HerSignIn, TheWaySheSignedIn } from '../../services/signIn/herSignIn';
+import type { WhyTelegramDidNotFinish } from '../../services/signIn/theTelegramSignIn';
 
 export const accountGateCopy = {
   title: words('account.gate.title'),
@@ -37,7 +38,8 @@ export function theCodeWentTo(address: string): string {
 }
 
 /** What she reads when a sign in does not go through, one sentence for each cause. */
-export type AccountProblem = WhatWentWrong | 'addressIsNotValid' | 'needsTheCode';
+export type AccountProblem =
+  WhatWentWrong | WhyTelegramDidNotFinish | 'addressIsNotValid' | 'needsTheCode';
 
 const theSentenceFor: Readonly<Record<AccountProblem, string>> = {
   theCodeIsWrong: words('account.problem.codeIsWrong'),
@@ -47,6 +49,7 @@ const theSentenceFor: Readonly<Record<AccountProblem, string>> = {
   nothingReachedTheService: words('account.problem.nothingReached'),
   addressIsNotValid: words('account.problem.addressIsNotValid'),
   needsTheCode: words('account.problem.needsTheCode'),
+  itDidNotFinish: words('account.problem.telegramDidNotFinish'),
 };
 
 export function theProblemSaid(problem: AccountProblem): string {
@@ -55,6 +58,7 @@ export function theProblemSaid(problem: AccountProblem): string {
 
 const theWaySaid: Readonly<Record<TheWaySheSignedIn, string>> = {
   email: words('account.way.email'),
+  telegram: words('account.way.telegram'),
 };
 
 export function theWaySheSignedInSaid(way: TheWaySheSignedIn): string {
@@ -63,4 +67,9 @@ export function theWaySheSignedInSaid(way: TheWaySheSignedIn): string {
 
 export function theDaySheSignedInSaid(since: string): string {
   return fullDate(since);
+}
+
+/** The second line of the account row in Settings: her address, or the way where there is none. */
+export function theRowSaysSheIsSignedInAs(signIn: HerSignIn): string {
+  return signIn.way === 'email' ? signIn.address : theWaySheSignedInSaid(signIn.way);
 }

@@ -45,9 +45,12 @@ export const russian: CatalogueIn<'ru'> = {
     'Телефон не смог связаться с Emi. Проверьте соединение и попробуйте снова.',
   'account.problem.signsInWithGoogleOrApple':
     'Вы уже использовали этот адрес для входа через Google или Apple.',
+  'account.problem.telegramDidNotFinish':
+    'Этот вход не завершился. Нажмите «Войти через Telegram» и попробуйте снова.',
   'account.problem.tooManyTries':
     'Слишком много попыток. Подождите несколько минут и отправьте новый код.',
   'account.way.email': 'Почта',
+  'account.way.telegram': 'Telegram',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'День {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',

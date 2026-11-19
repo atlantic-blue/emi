@@ -45,9 +45,12 @@ export const spanish: CatalogueIn<'es'> = {
     'Tu teléfono no pudo conectar con Emi. Comprueba la conexión e inténtalo otra vez.',
   'account.problem.signsInWithGoogleOrApple':
     'Ya has usado esta dirección para entrar con Google o Apple.',
+  'account.problem.telegramDidNotFinish':
+    'Ese acceso no terminó. Pulsa Entrar con Telegram e inténtalo otra vez.',
   'account.problem.tooManyTries':
     'Demasiados intentos. Espera unos minutos y envía un código nuevo.',
   'account.way.email': 'Correo',
+  'account.way.telegram': 'Telegram',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Día {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} de {month}',

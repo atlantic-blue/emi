@@ -278,7 +278,13 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   [
     accountGateScreenTestID,
     (): ReactElement => (
-      <AccountGate address="" onAddress={nothing} onSendCode={nothing} problem={null} />
+      <AccountGate
+        address=""
+        onAddress={nothing}
+        onSendCode={nothing}
+        onTelegram={nothing}
+        problem={null}
+      />
     ),
   ],
   [
