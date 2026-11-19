@@ -9,6 +9,7 @@ import { websiteFace, websiteFaceStack } from '@emi/tokens';
 import HomePage from '../../apps/website/app/[lang]/page';
 import { type Language, languages, wordsIn } from '../../apps/website/app/words';
 import { JULIANS_PHOTOGRAPH } from '../../apps/website/lib/addresses';
+import { amountsOfMoneyIn, theAmountOf } from '../../apps/website/lib/theOnePrice';
 import { theRealReviews } from '../../apps/website/lib/theReviews';
 import { classesIn, declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
@@ -37,7 +38,9 @@ function read(file: string): string {
  * of numbers and none of them is money.
  */
 function amountIn(said: string): string {
-  return /\d+[.,]\d\d/.exec(said)?.[0] ?? '';
+  const [found = ''] = amountsOfMoneyIn(said);
+
+  return found;
 }
 
 function theDesign(): string {
@@ -190,6 +193,7 @@ defineFeature(feature, (test) => {
           // asks whether the number a reader is charged appears on a page that no longer names one.
           expect(amountIn(words.price)).toMatch(/\d/);
           expect(drawn[language]).not.toContain(amountIn(words.price));
+          expect(drawn[language]).not.toContain(`${theAmountOf(amountIn(words.price))} `);
           expect(drawn[language]).not.toMatch(/[£$€]/);
           expect(drawn[language]).toContain(words.heroPriceLine);
           expect(drawn[language]).toContain(words.heroCancel);

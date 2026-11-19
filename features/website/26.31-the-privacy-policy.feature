@@ -1,6 +1,6 @@
 Feature: The privacy policy
 
-  A woman decides whether to pay 29.99 pounds a year for a tracker that says nobody else can read
+  A woman decides whether to pay 39 euros a year for a tracker that says nobody else can read
   her days. The band at the foot of every page of this site offers her "Privacy policy", and Apple
   asks for the same address before it will take the application at all, so the page stands between
   Emi and the store.

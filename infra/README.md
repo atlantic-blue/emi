@@ -21,7 +21,7 @@ order.
 One DynamoDB table, `emi-vault`, in eu-central-1. It holds ciphertext, a revision and a write
 time. It holds no key, no date, no symptom, no flow and no note.
 
-One HTTP api, `emi-vault`, with eight routes. It answers at
+One HTTP api, `emi-vault`, with nine routes. It answers at
 `https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com`, in eu-central-1.
 
 `https://myemi.app` is the only origin that may call this api from a browser. It is the one
@@ -92,8 +92,9 @@ client secret, so a browser proves the exchange with a code challenge instead. I
 language on the site needs a fourth pair here, and the infrastructure test refuses the pair that is
 missing.
 
-The client on her phone lists no provider. It signs in with the code alone, and the screen that
-offers Apple and Google on a phone is work of its own.
+The client on her phone lists the same two providers beside `COGNITO`, with the same flow and
+the same two scopes. It comes back to `emi://sign-in/returning`, which is the private scheme the
+authentication session of the phone ends on, and it names no sign out address.
 
 One domain on the pool, `auth.myemi.app`, with one certificate for that name in us-east-1 and one
 record pointing at it. Apple and Google were both set up by hand against that one address, and
