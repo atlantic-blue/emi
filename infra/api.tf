@@ -230,6 +230,17 @@ resource "aws_apigatewayv2_route" "change_renewal" {
   authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
 }
 
+# The receipts row of her account page. It lists the invoices Stripe already holds for the
+# customer she pays under, and Emi keeps no copy of any of them. It is the same function and the
+# same authorizer as the three routes above, because it reads the same claim of the same token.
+resource "aws_apigatewayv2_route" "read_receipts" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "GET /v1/payments/receipts"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
 resource "aws_lambda_permission" "payments_subscription" {
   statement_id  = "AllowInvokeFromTheApi"
   action        = "lambda:InvokeFunction"
