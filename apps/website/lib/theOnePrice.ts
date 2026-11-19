@@ -9,24 +9,28 @@ import { SITE_ORIGIN } from '@/lib/addresses';
  * price on the page, decides on it, and meets the store's own figure one press later. The gap
  * between the two is the moment she stops believing the rest of the page. The address is the same
  * kind of promise: a host nobody serves is a dead link at best, and somebody else's site at worst.
- *
- * The period is part of the price. 29.99 a month and 29.99 a year are two products, and only one
- * of them is the one the stores carry, so the words are held to the whole sentence rather than to
- * a figure found somewhere inside them.
  */
 
 /** What the page asks her for, written as each language writes it, full stop and all. */
 export const theOnePrice: Readonly<Record<Language, string>> = {
-  en: 'One month free, then 29.99 pounds a month.',
-  ru: 'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
-  es: 'Un mes gratis, después 29,99 libras al mes.',
+  en: 'One month free, then 39 euros a year.',
+  ru: 'Первый месяц бесплатно, затем 39 евро в год.',
+  es: 'Un mes gratis, después 39 euros al año.',
+};
+
+/** How each language ends the sentence, full stop and all. */
+export const theOnePeriod: Readonly<Record<Language, string>> = {
+  en: 'a year.',
+  ru: 'в год.',
+  es: 'al año.',
 };
 
 /**
- * The amount on its own, with a full stop between the parts. Russian and Spanish write the comma
- * their readers write, so an amount is read into this one form before two of them are compared.
+ * The amount on its own, with a full stop where it carries a separator. Russian and Spanish
+ * write the comma their readers write, so an amount is read into this one form before two of them
+ * are compared.
  */
-export const theOneAmount = '29.99';
+export const theOneAmount = '39';
 
 /** The one host the site serves, taken from the address its pages already name. */
 export const theOneHost = new URL(SITE_ORIGIN).host;
@@ -43,23 +47,31 @@ export function whoseWordsAreIn(file: string): Language | null {
   return whoseWordsTheyAre[file.slice(file.lastIndexOf('/') + 1)] ?? null;
 }
 
+/** The currency, as each language of the site writes it after the figure. */
+const currencyWord = 'euros?|евро';
+
 /**
- * Every amount of money a text names: a figure with a separator and two places after it, with or
- * without the pound sign in front. A year, a day of the month and a cycle length carry no
- * separator, so none of them is read as money.
+ * Every amount of money a text names. A currency sign or a currency word beside a figure makes
+ * it money, and so does a separator with two places after it. The price carries no separator, so
+ * the word beside the figure is the only thing that tells it from a count.
  *
- * A separator between thousands is not one either, which is why the two places have to be the last
- * two digits of the figure. English writes a count of people as 1,500 and Spanish writes it as
- * 1.500, and the first four characters of both read as an amount of money until a third digit is
- * refused after them.
+ * A separator between thousands is not a separator between the parts of an amount, which is why
+ * the two places have to be the last two digits of the figure. English writes a count of people as
+ * 1,500 and Spanish writes it as 1.500, and the first four characters of both read as an amount of
+ * money until a third digit is refused after them.
  */
 export function amountsOfMoneyIn(text: string): string[] {
-  return [...text.matchAll(/£\s?\d+(?:[.,]\d+)?|\d+[.,]\d{2}(?!\d)/g)].map(([found]) => found);
+  const money = new RegExp(
+    `[£€]\\s?\\d+(?:[.,]\\d+)?|\\d+(?:[.,]\\d+)?\\s(?:${currencyWord})|\\d+[.,]\\d{2}(?!\\d)`,
+    'gi',
+  );
+
+  return [...text.matchAll(money)].map(([found]) => found);
 }
 
 /** One amount in the one form, so an amount written in two languages can be compared. */
 export function theAmountOf(said: string): string {
-  return said.replace(/[£\s]/g, '').replace(',', '.');
+  return said.replace(new RegExp(`[£€\\s]|${currencyWord}`, 'gi'), '').replace(',', '.');
 }
 
 /**
@@ -71,6 +83,21 @@ export function hostsIn(text: string): string[] {
   const host = /\b(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?:app|com|net|org|io|dev|uk|eu|me|ai)\b/gi;
 
   return [...text.matchAll(host)].map(([found]) => found);
+}
+
+/**
+ * The words that are allowed to name an amount. Every other word on the site sends her to one of
+ * these to find out what Emi costs, so a figure anywhere else is a second place for the price to
+ * live, and two places drift apart.
+ */
+export const theWordsThatNameMoney = ['accountPaidUntil', 'accountRenewsOn', 'price'] as const;
+
+/** The words of one catalogue that name an amount, by the key a reader finds them under. */
+export function wordsNamingMoneyIn(said: Readonly<Record<string, string>>): string[] {
+  return Object.entries(said)
+    .filter(([, value]) => amountsOfMoneyIn(value).length > 0)
+    .map(([key]) => key)
+    .sort();
 }
 
 /** One file of the catalogue, as a reader would name it and as it reads. */
@@ -87,9 +114,7 @@ export function problemsWithWhatItCosts(said: WhatOneFileSays): string[] {
 
   for (const amount of amounts) {
     if (theAmountOf(amount) !== theOneAmount) {
-      problems.push(
-        `${said.file} asks for ${amount}, and the one price is ${theOneAmount} a month`,
-      );
+      problems.push(`${said.file} asks for ${amount}, and the one price is ${theOneAmount} a year`);
     }
   }
 
@@ -110,6 +135,17 @@ export function problemsWithWhatItCosts(said: WhatOneFileSays): string[] {
   }
 
   return problems;
+}
+
+/** What is wrong with the period a price names, or nothing where it names the right one. */
+export function problemsWithThePeriod(language: Language, said: string): string[] {
+  if (said.endsWith(theOnePeriod[language])) {
+    return [];
+  }
+
+  return [
+    `"${said}" does not end "${theOnePeriod[language]}", which is the period the price covers`,
+  ];
 }
 
 /** What is wrong with the addresses a file names, as one sentence for each one. */
