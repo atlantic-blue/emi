@@ -171,6 +171,12 @@ resource "aws_sesv2_configuration_set" "sender" {
   reputation_options {
     reputation_metrics_enabled = true
   }
+
+  # Emi sets no delivery options, and Amazon answers with an empty delivery options object that
+  # the provider reads as a block. So every plan removes a value nobody set.
+  lifecycle {
+    ignore_changes = [delivery_options]
+  }
 }
 
 # The bounce and the complaint, and nothing else. A delivery, an open and a click are not asked

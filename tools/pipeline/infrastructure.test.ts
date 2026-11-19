@@ -2844,6 +2844,11 @@ describe('the sender of myemi.app, which is step 28.8', () => {
       expect(blockBodyOf(set, 'reputation_options')).toContain('reputation_metrics_enabled = true');
     });
 
+    it('leaves the delivery options of the set alone, because Emi sets none', () => {
+      expect(set).not.toContain('delivery_options {');
+      expect(blockBodyOf(set, 'lifecycle')).toContain('ignore_changes = [delivery_options]');
+    });
+
     it('makes that set the default of the identity, so a send cannot miss it', () => {
       expect(identity).toContain(
         'configuration_set_name = aws_sesv2_configuration_set.sender.configuration_set_name',
