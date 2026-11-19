@@ -1,7 +1,7 @@
 Feature: The home page is the page that was approved
 
   A woman hears about Emi from somebody and opens myemi.app. She has never seen the product, and
-  this one page is everything she has to go on before she is asked for 29.99 pounds a month.
+  this one page is everything she has to go on before she is asked for 39 euros a year.
 
   The page she has been reading until now follows a prose brief. It says Emi is a calm journal and
   that only she can read her days, and then it asks for the money. The board the operator approved

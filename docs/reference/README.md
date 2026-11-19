@@ -10,7 +10,7 @@ values are in range.
 - `sign-in.md` is `@emi/sign-in`, 19 exported symbols across 2 files.
 - `tokens.md` is `@emi/tokens`, 134 exported symbols across 10 files.
 - `ui.md` is `@emi/ui`, 24 exported symbols across 12 files.
-- `vault.md` is `@emi/vault`, 256 exported symbols across 40 files.
+- `vault.md` is `@emi/vault`, 265 exported symbols across 42 files.
 
 ## The three rules the pipeline enforces
 

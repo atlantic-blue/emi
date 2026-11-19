@@ -748,12 +748,12 @@ Feature: She opens Emi and logs her first period
     And the tour after it draws the ring with its legend, says what the ring is, and names the price
     And the welcome and the tour are in her own language, and say no word a screen refuses
 
-  Scenario: SCREEN-1, the tour says 29.99 pounds a month in every language
+  Scenario: SCREEN-1, the tour says 39 euros a year in every language
     Given she has never opened Emi before
     When she opens Emi and reads the card about money on the tour
-    Then the card tells her the first month is free and the price after it is 29.99 pounds a month
+    Then the card tells her the first month is free and the price after it is 39 euros a year
     And a woman who reads Emi in Russian or in Spanish is told the same free month and the same price
-    And no language still tells her the price buys her a year
+    And no language names a monthly price
 
   Scenario: SCREEN-1, the first run asks her name and then the year she was born
     Given she has never opened Emi before

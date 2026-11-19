@@ -31,7 +31,7 @@ flowchart LR
   S --> F2["2. She logs her first period"]
   S --> F3["3. Emi predicts"]
   S --> F4["4. She logs how she feels"]
-  S --> F7["7. She pays every month"]
+  S --> F7["7. She pays every year"]
   S --> F8["8. Anybody can read how it works"]
   F2 --> F5["5. Nobody else can read her data"]
   F5 --> F6["6. Her cycle survives a new phone"]
@@ -188,25 +188,25 @@ The contracts it builds:
 - `AUTH-1` the request signature, over the method, the path, the instant and the hash of the body.
 - `KEEP-1` a log line that carries a request identifier and a duration, and nothing about her.
 
-## Feature 7: She pays every month, and the price is the promise
+## Feature 7: She pays every year, and the price is the promise
 
-One month free, then 29.99 pounds a month in the stores. Read and export stay open forever if she
-stops paying. Six steps build the store route, and `docs/design/payments.md` holds the path of the
-two routes away from it.
+One month free, then 39 euros a year in the stores, with the value added tax inside that amount.
+Read and export stay open forever if she stops paying. Six steps build the store route, and
+`docs/design/payments.md` holds the path of the two routes away from it.
 
 The price is the product. There is no free tier, because a free tier is paid for with her data.
 
 Two more routes sell the same subscription. She pays on myemi.app with a wallet or a card, through
-Stripe, or she pays in Telegram Stars in the Emi bot. Both of those cost 39 euros a year, with the
-value added tax inside that amount, after one free month. A payment says one thing about one way
-in: this way in is paid until this date. It never says whose records those are.
+Stripe, or she pays in Telegram Stars in the Emi bot. Both of those cost the same 39 euros a year,
+after one free month. A payment says one thing about one way in: this way in is paid until this
+date. It never says whose records those are.
 
 A delete of her account keeps the payment, because it is the record of a sale, and stops the
 subscription at the end of the year she paid for.
 
 The contracts it builds:
 
-- `PAY-1` one monthly auto renewing product at 29.99 pounds, with a one month introductory free
+- `PAY-1` one yearly auto renewing product at 39 euros, with a one month introductory free
   period, in both stores.
 - `PAY-2` the entitlement, read on launch, kept when the store cannot be reached.
 - `PAY-3` the receipt checked on the server, against the store that issued it.
@@ -369,7 +369,7 @@ its condition.
 
 ### Money
 
-- 29.99 pounds a month. State: in version 1, `PAY-1`.
+- 39 euros a year. State: in version 1, `PAY-1`.
 - No free tier paid for with her data. State: in version 1, `KEEP-4`.
 - The price is the trust signal. State: in version 1, `PAY-1`.
 
