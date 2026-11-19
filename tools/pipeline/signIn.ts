@@ -499,11 +499,21 @@ export function websiteSignInProblems(
  * Apple is a screen the store refuses, and the two cannot be allowed to drift apart.
  *
  * A source offers a way in by one of two names: the key the catalogue of words gives the press, or
- * the name the service fixes for the provider.
+ * the name the service fixes for the provider. That second name arrives in two forms, because the
+ * pool writes it in front of the user name it makes. So the form with no closing quote is here
+ * beside the whole name, and a source that reads `Google_000913847` names Google as surely as one
+ * that names the provider itself.
  */
-export const theWaysInThatShipTogether: readonly { google: string; apple: string }[] = [
-  { google: 'signInGoogle', apple: 'signInApple' },
-  { google: "'Google'", apple: "'SignInWithApple'" },
+export interface TwoWaysThatShipTogether {
+  /** Every form a source writes the Google way in, the first of which a sentence names. */
+  readonly google: readonly string[];
+  /** Every form a source writes the Apple way in, the first of which a sentence names. */
+  readonly apple: readonly string[];
+}
+
+export const theWaysInThatShipTogether: readonly TwoWaysThatShipTogether[] = [
+  { google: ['signInGoogle'], apple: ['signInApple'] },
+  { google: ["'Google'", "'Google_"], apple: ["'SignInWithApple'", "'SignInWithApple_"] },
 ];
 
 /** One source the rule reads: the path a reader would type, and the text of the file. */
@@ -521,8 +531,11 @@ export function placesOfferingGoogleWithoutApple(sources: readonly ASource[]): s
 
   for (const { file, text } of sources) {
     for (const { google, apple } of theWaysInThatShipTogether) {
-      if (text.includes(google) && !text.includes(apple)) {
-        said.push(`${file} offers ${google} and does not offer ${apple} beside it`);
+      const offersGoogle = google.some((name) => text.includes(name));
+      const offersApple = apple.some((name) => text.includes(name));
+
+      if (offersGoogle && !offersApple) {
+        said.push(`${file} offers ${google[0]} and does not offer ${apple[0]} beside it`);
       }
     }
   }
