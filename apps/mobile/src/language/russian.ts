@@ -17,6 +17,46 @@ import type { CatalogueIn } from './words';
  * languages, so a Russian sentence cannot claim what the English sentence may not.
  */
 export const russian: CatalogueIn<'ru'> = {
+  'account.account.back': 'Назад',
+  'account.account.email': 'Почта',
+  'account.account.signedInWith': 'Вход через',
+  'account.account.since': 'Дата входа',
+  'account.account.title': 'Emi на другом телефоне',
+  'account.code.anotherCodeIsOnItsWay': 'Проверьте почту ещё раз и введите самый новый код.',
+  'account.code.back': 'Назад',
+  'account.code.label': 'Код',
+  'account.code.lasts': 'Код действует 15 минут.',
+  'account.code.sendANewCode': 'Отправить новый код ›',
+  'account.code.sentTo': 'Мы отправили код на {address}.',
+  'account.code.signIn': 'Войти',
+  'account.code.useAnotherAddress': 'Другой адрес ›',
+  'account.gate.apple': 'Войти через Apple',
+  'account.gate.email': 'Электронная почта',
+  'account.gate.google': 'Войти через Google',
+  'account.gate.or': 'или',
+  'account.gate.sendCode': 'Отправить код',
+  'account.gate.telegram': 'Войти через Telegram',
+  'account.gate.title': 'Вход в Emi',
+  'account.problem.addressIsNotValid': 'Это не адрес почты. Проверьте его и введите снова.',
+  'account.problem.appleDidNotFinish':
+    'Этот вход не завершился. Нажмите «Войти через Apple» и попробуйте снова.',
+  'account.problem.codeHasExpired': 'Срок кода истёк. Отправьте новый.',
+  'account.problem.codeIsWrong': 'Этот код не подходит. Проверьте его и введите снова.',
+  'account.problem.googleDidNotFinish':
+    'Этот вход не завершился. Нажмите «Войти через Google» и попробуйте снова.',
+  'account.problem.needsTheCode': 'Введите код из письма.',
+  'account.problem.nothingReached':
+    'Телефон не смог связаться с Emi. Проверьте соединение и попробуйте снова.',
+  'account.problem.signsInWithGoogleOrApple':
+    'Вы уже использовали этот адрес для входа через Google или Apple.',
+  'account.problem.telegramDidNotFinish':
+    'Этот вход не завершился. Нажмите «Войти через Telegram» и попробуйте снова.',
+  'account.problem.tooManyTries':
+    'Слишком много попыток. Подождите несколько минут и отправьте новый код.',
+  'account.way.apple': 'Apple',
+  'account.way.email': 'Почта',
+  'account.way.google': 'Google',
+  'account.way.telegram': 'Telegram',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'День {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',
@@ -1165,6 +1205,7 @@ export const russian: CatalogueIn<'ru'> = {
   'settings.reminders.save': 'Сохранить',
   'settings.reminders.timeOfDay': 'Время',
   'settings.reminders.title': 'Напоминания',
+  'settings.settings.account': 'Emi на другом телефоне',
   'settings.settings.answers': 'Ваши настройки',
   'settings.settings.answersLine': 'Имя и ответы из первой настройки',
   'settings.settings.assurance': 'Только вы можете читать свои дни.',

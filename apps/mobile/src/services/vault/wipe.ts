@@ -1,6 +1,7 @@
 import type { Database } from '../../data/database';
 import { rebuildTheFile, writeOverWhatIsRemoved } from '../../data/freePages';
 import { cancelHerReminder } from '../notifications/localReminder';
+import { signInKeychainItems } from '../signIn/herSignIn';
 import type { ServerDelete, ServerDeleteOutcome } from '../sync/deleteAccount';
 import { syncKeychainItems } from '../sync/deviceKey';
 import type { SecureStore } from './keychain';
@@ -22,6 +23,7 @@ export const wipedKeychainItems: readonly string[] = [
   vaultKeyItem,
   recoveryConfirmedItem,
   ...syncKeychainItems,
+  ...signInKeychainItems,
 ];
 
 /** All this module is given of the keychain, so nothing here can read an item or list one. */

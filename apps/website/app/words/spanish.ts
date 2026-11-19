@@ -325,6 +325,8 @@ export const spanish: SiteWords = {
   accountReceipts: 'Recibos',
   accountChangeCard: 'Cambiar tarjeta',
   accountCancelRenewal: 'Cancelar la renovación',
+  accountTurnRenewalOn: 'Activar la renovación',
+  accountRenewalDidNotChange: 'La renovación no cambió. Inténtalo de nuevo.',
   accountRowsComeLater: 'Esto todavía no está listo.',
   accountNoSubscription: 'Todavía no tienes suscripción.',
   accountBuyEmi: 'Compra Emi ›',

@@ -12,6 +12,45 @@
  * are held to the same list here as they were on the screens they came from.
  */
 export const english = {
+  'account.account.back': 'Back',
+  'account.account.email': 'Email',
+  'account.account.signedInWith': 'Signed in with',
+  'account.account.since': 'Since',
+  'account.account.title': 'Emi on another phone',
+  'account.code.anotherCodeIsOnItsWay': 'Check your email again, then type the newest code.',
+  'account.code.back': 'Back',
+  'account.code.label': 'Code',
+  'account.code.lasts': 'The code works for 15 minutes.',
+  'account.code.sendANewCode': 'Send a new code ›',
+  'account.code.sentTo': 'We sent a code to {address}.',
+  'account.code.signIn': 'Sign in',
+  'account.code.useAnotherAddress': 'Use another address ›',
+  'account.gate.apple': 'Sign in with Apple',
+  'account.gate.email': 'Email',
+  'account.gate.google': 'Sign in with Google',
+  'account.gate.or': 'or',
+  'account.gate.sendCode': 'Send code',
+  'account.gate.telegram': 'Log in with Telegram',
+  'account.gate.title': 'Sign in to Emi',
+  'account.problem.addressIsNotValid': 'That is not an email address. Check it and type it again.',
+  'account.problem.appleDidNotFinish':
+    'That sign in did not finish. Press Sign in with Apple and try again.',
+  'account.problem.codeHasExpired': 'That code has expired. Send a new one.',
+  'account.problem.codeIsWrong': 'That code is not right. Check it and type it again.',
+  'account.problem.googleDidNotFinish':
+    'That sign in did not finish. Press Sign in with Google and try again.',
+  'account.problem.needsTheCode': 'Type the code from the email.',
+  'account.problem.nothingReached':
+    'Your phone could not reach Emi. Check the connection and try again.',
+  'account.problem.signsInWithGoogleOrApple':
+    'You have already used this address to sign in with Google or Apple.',
+  'account.problem.telegramDidNotFinish':
+    'That sign in did not finish. Press Log in with Telegram and try again.',
+  'account.problem.tooManyTries': 'Too many tries. Wait a few minutes, then send a new code.',
+  'account.way.apple': 'Apple',
+  'account.way.email': 'Email',
+  'account.way.google': 'Google',
+  'account.way.telegram': 'Telegram',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Day {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',
@@ -1119,6 +1158,7 @@ export const english = {
   'settings.reminders.save': 'Save',
   'settings.reminders.timeOfDay': 'Time of day',
   'settings.reminders.title': 'Reminders',
+  'settings.settings.account': 'Emi on another phone',
   'settings.settings.answers': 'Your answers',
   'settings.settings.answersLine': 'Your name and your answers from setup',
   'settings.settings.assurance': 'Only you can read your days.',

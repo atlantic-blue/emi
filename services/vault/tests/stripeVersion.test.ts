@@ -1,6 +1,8 @@
 import {
   customerFor,
+  invoicesOf,
   payerDigestOfCustomer,
+  renewalOfSubscription,
   setupIntentFor,
   stripeApiVersion,
   type WhatACallHolds,
@@ -21,6 +23,7 @@ import { anEvent, theVersionTheEventsCarry } from './fixtures/stripeDeliveries';
 const payerDigest = 'a7f3c1d9e2b40586';
 /** Not the shape of a real key. A value that looked like one would be read as a leak. */
 const theKey = 'the-key-the-operator-wrote-by-hand';
+const aSubscriptionRef = 'sub_000000000001';
 
 function aPayer(stripe: FakeStripe): WhatACallHolds {
   return { reaches: stripe.reaches, secretKey: theKey };
@@ -28,15 +31,17 @@ function aPayer(stripe: FakeStripe): WhatACallHolds {
 
 describe('every call of Stripe names the version it is made in', () => {
   describe('the header of each call', () => {
-    it('names the version on the customer, the setup and the read of one customer', async () => {
+    it('names the version on every call the port makes, which is five of them', async () => {
       const stripe = fakeStripe({ holdsThePayerDigest: payerDigest });
       const held = aPayer(stripe);
 
       await customerFor(held, payerDigest);
       await setupIntentFor(held, aCustomerRef);
       await payerDigestOfCustomer(held, aCustomerRef);
+      await renewalOfSubscription(held, aSubscriptionRef, false);
+      await invoicesOf(held, { customerRef: aCustomerRef, limit: 10 });
 
-      expect(stripe.calls()).toHaveLength(3);
+      expect(stripe.calls()).toHaveLength(5);
 
       for (const call of stripe.calls()) {
         expect(call.asked.headers['stripe-version']).toBe(stripeApiVersion);

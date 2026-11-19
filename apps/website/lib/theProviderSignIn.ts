@@ -1,7 +1,22 @@
 import type { Language } from '@/app/words';
 
 import { SITE_ORIGIN } from './addresses';
-import { THE_WEBSITE_CLIENT_ID, type TheTokensSheHolds } from './theSignIn';
+import {
+  type AWayIn,
+  THE_WEBSITE_CLIENT_ID,
+  TheSignInDidNotFinish,
+  type TheTokensSheHolds,
+  theTokensForTheCode,
+  whereThePoolAsksHerFor,
+} from './theSignIn';
+
+export {
+  type AWayIn,
+  THE_SCOPES,
+  THE_SIGN_IN_HOST,
+  TheSignInDidNotFinish,
+  type WhyItDidNotFinish,
+} from './theSignIn';
 
 /**
  * The conversation myemi.app has with the pool when a woman signs in with Apple or with Google.
@@ -30,47 +45,14 @@ import { THE_WEBSITE_CLIENT_ID, type TheTokensSheHolds } from './theSignIn';
  * this code.
  */
 
-/** The address the pool answers on, which Apple and Google both return to. */
-export const THE_SIGN_IN_HOST = 'https://auth.myemi.app';
-
 /** The page the pool sends her back to, under the language she was reading. */
 export const WHERE_SHE_COMES_BACK_TO = 'sign-in/returning/';
-
-/** The name the service fixes for each way in, which the address she leaves on carries. */
-export type AWayIn = 'SignInWithApple' | 'Google';
-
-/** The subject and the address, which is everything the account holds. */
-export const THE_SCOPES = ['openid', 'email'] as const;
 
 /** The one name the pool reads a kept value under, so a sign out removes one thing. */
 export const WHAT_SHE_STARTED_ENTRY = 'emi.signing-in';
 
 /** How many bytes a state and a verifier are made of. 32 bytes is 256 bits. */
 export const RANDOM_BYTES = 32;
-
-/** Why a return did not sign her in. It is read by a test and never written on the page. */
-export type WhyItDidNotFinish =
-  | 'nothingWasStarted'
-  | 'theStateDidNotMatch'
-  | 'theProviderSaidNo'
-  | 'noCodeCameBack'
-  | 'theServiceRefused'
-  | 'nothingReachedTheService';
-
-/**
- * A return that did not sign her in, carrying the cause and nothing else. The code, the state and
- * the verifier never reach it: a message reaches a log, and this site writes nothing of hers
- * anywhere.
- */
-export class TheSignInDidNotFinish extends Error {
-  readonly because: WhyItDidNotFinish;
-
-  constructor(because: WhyItDidNotFinish) {
-    super(because);
-    this.name = 'TheSignInDidNotFinish';
-    this.because = because;
-  }
-}
 
 /** What a press kept, so the return can prove it started the sign in it is finishing. */
 export interface WhatSheStarted {
@@ -150,20 +132,17 @@ export async function whereAPressTakesHer(
     language,
   };
 
-  const asked = new URLSearchParams({
-    response_type: 'code',
-    client_id: THE_WEBSITE_CLIENT_ID,
-    identity_provider: way,
-    scope: THE_SCOPES.join(' '),
-    redirect_uri: whereSheComesBackTo(language, origin),
+  const address = whereThePoolAsksHerFor({
+    clientId: THE_WEBSITE_CLIENT_ID,
+    way,
+    redirectUri: whereSheComesBackTo(language, origin),
     state: started.state,
-    code_challenge: await theChallengeFor(started.verifier),
-    code_challenge_method: 'S256',
+    codeChallenge: await theChallengeFor(started.verifier),
   });
 
   theStore()?.setItem(WHAT_SHE_STARTED_ENTRY, JSON.stringify(started));
 
-  return `${THE_SIGN_IN_HOST}/oauth2/authorize?${asked.toString()}`;
+  return address;
 }
 
 /** What the press kept, or nothing at all where the entry is absent or unreadable. */
@@ -190,13 +169,6 @@ export function whatSheStarted(): WhatSheStarted | null {
 
 export function forgetWhatSheStarted(): void {
   theStore()?.removeItem(WHAT_SHE_STARTED_ENTRY);
-}
-
-/** What the pool answers an exchange with, read as far as this module reads it and no further. */
-interface WhatThePoolSaid {
-  readonly id_token?: string;
-  readonly access_token?: string;
-  readonly refresh_token?: string;
 }
 
 /**
@@ -231,42 +203,15 @@ export async function theTokensSheCameBackWith(
     throw new TheSignInDidNotFinish('noCodeCameBack');
   }
 
-  let answer: Response;
-
-  try {
-    answer = await how(`${THE_SIGN_IN_HOST}/oauth2/token`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        client_id: THE_WEBSITE_CLIENT_ID,
-        code,
-        redirect_uri: whereSheComesBackTo(started.language, theOriginSheIsOn()),
-        code_verifier: started.verifier,
-      }).toString(),
-    });
-  } catch {
-    // A browser that reached nobody throws rather than answering, so this is the one place a lost
-    // connection is told apart from a refusal.
-    throw new TheSignInDidNotFinish('nothingReachedTheService');
-  }
-
-  const said = (await answer.json().catch(() => ({}))) as WhatThePoolSaid;
-
-  if (
-    !answer.ok ||
-    said.id_token === undefined ||
-    said.access_token === undefined ||
-    said.refresh_token === undefined
-  ) {
-    throw new TheSignInDidNotFinish('theServiceRefused');
-  }
-
-  return {
-    idToken: said.id_token,
-    accessToken: said.access_token,
-    refreshToken: said.refresh_token,
-  };
+  return theTokensForTheCode(
+    {
+      clientId: THE_WEBSITE_CLIENT_ID,
+      code,
+      redirectUri: whereSheComesBackTo(started.language, theOriginSheIsOn()),
+      verifier: started.verifier,
+    },
+    how,
+  );
 }
 
 /**

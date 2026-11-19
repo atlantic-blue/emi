@@ -401,6 +401,8 @@ export const english = {
   accountReceipts: 'Receipts',
   accountChangeCard: 'Change card',
   accountCancelRenewal: 'Cancel renewal',
+  accountTurnRenewalOn: 'Turn renewal on',
+  accountRenewalDidNotChange: 'The renewal did not change. Try again.',
   accountRowsComeLater: 'These are not ready yet.',
   accountNoSubscription: 'You have no subscription yet.',
   accountBuyEmi: 'Buy Emi ›',
