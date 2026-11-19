@@ -13,6 +13,9 @@ import { THE_API_HOST } from './theTelegramSignIn';
 /** The route her account page reads, behind the token authorizer of the pool. */
 export const WHERE_A_SUBSCRIPTION_IS_READ = `${THE_API_HOST}/v1/payments/subscription`;
 
+/** The one field the press carries, which says what the renewal is to be. */
+export const THE_FIELD_A_RENEWAL_TRAVELS_IN = 'renewing';
+
 /** The states the payment record carries, which the service writes and this page reads. */
 export type TheStateOfHerPayment = 'active' | 'cancelling' | 'lapsed' | 'refunded';
 
@@ -22,6 +25,9 @@ export interface WhatSheHolds {
   readonly state?: TheStateOfHerPayment;
   readonly route?: 'card' | 'stars';
 }
+
+/** What the third row of the card offers her: stopping a renewal, starting one, or neither. */
+export type WhatTheRenewalRowDoes = 'stops' | 'starts' | 'nothing';
 
 /** What the card draws, which is one of three things and never two at once. */
 export type WhichCardSheReads = 'noSubscription' | 'active' | 'renewalOff';
@@ -49,6 +55,26 @@ export function whichCardSheReads(held: WhatSheHolds | null, now: Date): WhichCa
   }
 
   return held.state === 'active' && until > now.getTime() ? 'active' : 'renewalOff';
+}
+
+/**
+ * What the third row of the card does, read from the payment rather than from the card she reads.
+ *
+ * A renewal is a thing of the card route alone: a woman who paid with Stars stops hers in
+ * Telegram. A payment that lapsed or was refunded has no renewal left to stop or to start, and a
+ * year that has run out while the payment is still active has one, so the row follows the state
+ * and never the card.
+ */
+export function whatTheRenewalRowDoes(held: WhatSheHolds | null): WhatTheRenewalRowDoes {
+  if (held?.route !== 'card') {
+    return 'nothing';
+  }
+
+  if (held.state === 'active') {
+    return 'stops';
+  }
+
+  return held.state === 'cancelling' ? 'starts' : 'nothing';
 }
 
 /** Whether the date she paid until has passed, which is when she is offered Emi again. */
@@ -110,6 +136,29 @@ interface WhatTheRouteSaid {
 
 const theStates: readonly string[] = ['active', 'cancelling', 'lapsed', 'refunded'];
 
+/** The three fields of one answer, with anything the route did not say left out. */
+async function whatTheAnswerHolds(answered: Response): Promise<WhatSheHolds | null> {
+  if (!answered.ok) {
+    return null;
+  }
+
+  let said: WhatTheRouteSaid;
+
+  try {
+    said = (await answered.json()) as WhatTheRouteSaid;
+  } catch {
+    return null;
+  }
+
+  return {
+    ...(typeof said.paidUntil === 'string' ? { paidUntil: said.paidUntil } : {}),
+    ...(typeof said.state === 'string' && theStates.includes(said.state)
+      ? { state: said.state as TheStateOfHerPayment }
+      : {}),
+    ...(said.route === 'card' || said.route === 'stars' ? { route: said.route } : {}),
+  };
+}
+
 /**
  * What she holds, or nothing at all where the route would not say. A refusal and a failure read
  * the same to the page: it draws the card of a woman with no subscription rather than an error,
@@ -130,23 +179,30 @@ export async function theSubscriptionSheHolds(
     return null;
   }
 
-  if (!answered.ok) {
-    return null;
-  }
+  return whatTheAnswerHolds(answered);
+}
 
-  let said: WhatTheRouteSaid;
+/**
+ * The press that stops the renewal, and the press that starts it again. It answers what she holds
+ * afterwards, or nothing at all where the route would not take it, which the card reads as a
+ * change that did not happen and draws as it was.
+ */
+export async function theRenewalSheSets(
+  idToken: string,
+  renewing: boolean,
+  asks: HowItAsks = fetch,
+): Promise<WhatSheHolds | null> {
+  let answered: Response;
 
   try {
-    said = (await answered.json()) as WhatTheRouteSaid;
+    answered = await asks(WHERE_A_SUBSCRIPTION_IS_READ, {
+      method: 'PATCH',
+      headers: { authorization: `Bearer ${idToken}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ [THE_FIELD_A_RENEWAL_TRAVELS_IN]: renewing }),
+    });
   } catch {
     return null;
   }
 
-  return {
-    ...(typeof said.paidUntil === 'string' ? { paidUntil: said.paidUntil } : {}),
-    ...(typeof said.state === 'string' && theStates.includes(said.state)
-      ? { state: said.state as TheStateOfHerPayment }
-      : {}),
-    ...(said.route === 'card' || said.route === 'stars' ? { route: said.route } : {}),
-  };
+  return whatTheAnswerHolds(answered);
 }
