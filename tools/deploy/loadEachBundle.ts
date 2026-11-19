@@ -183,6 +183,27 @@ export const loadChecks: Readonly<Record<string, readonly LoadCheck[]>> = {
       owes: (answer) => fieldOf(answer, 'statusCode') === 401,
       describes: 'a list of receipts carrying no token of the pool is refused',
     },
+    // The two calls of a card change, on the one path they share. A bundle that answered the press
+    // and not the confirmation would load and leave every Change card row half built.
+    {
+      event: {
+        rawPath: '/v1/payments/payment-method',
+        headers: {},
+        requestContext: { http: { method: 'POST' } },
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a press on Change card carrying no token of the pool is refused',
+    },
+    {
+      event: {
+        rawPath: '/v1/payments/payment-method',
+        headers: {},
+        requestContext: { http: { method: 'PUT' } },
+        body: '{"setupRef":"seti_nothing"}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a confirmed card change carrying no token of the pool is refused',
+    },
   ],
   // A header carrying no signature at all is refused by its shape, before the function reads a
   // parameter, reaches Stripe or parses one field of the body. So a bundle with no account behind

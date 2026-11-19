@@ -33,6 +33,7 @@ import {
 import { deployedFunctions, uploadOrder } from '../deploy/functions.ts';
 import { carriesTheAuthorizer, readTheRoutes, routesWithNoAuthorizer } from '../deploy/routes.ts';
 import { paymentPartitionPrefix } from '../../services/vault/src/payments/entitlements.ts';
+import { paymentMethodPath } from '../../services/vault/src/payments/changeCard.ts';
 import { receiptsPath } from '../../services/vault/src/payments/readReceipts.ts';
 import { subscriptionPath } from '../../services/vault/src/payments/startSubscription.ts';
 import { webhookPath } from '../../services/vault/src/payments/webhook.ts';
@@ -752,6 +753,36 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(listedIn(cors, 'allow_methods')).toEqual(
         expect.arrayContaining(['GET', 'PATCH', 'POST']),
       );
+    });
+  });
+
+  describe('the two routes the Change card row calls', () => {
+    const press = bodyOf('resource "aws_apigatewayv2_route" "start_card_change"');
+    const confirm = bodyOf('resource "aws_apigatewayv2_route" "finish_card_change"');
+
+    it('answers both on the path the handler names, so the two cannot drift apart', () => {
+      expect(press).toContain(`route_key          = "POST ${paymentMethodPath}"`);
+      expect(confirm).toContain(`route_key          = "PUT ${paymentMethodPath}"`);
+    });
+
+    it('stands both behind the token authorizer of the pool, and behind no signature', () => {
+      for (const route of [press, confirm]) {
+        expect(route).toContain('authorization_type = "JWT"');
+        expect(route).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+        expect(route).not.toContain('aws_apigatewayv2_authorizer.signature');
+      }
+    });
+
+    it('runs both in the function that already answers the subscription', () => {
+      for (const route of [press, confirm]) {
+        expect(route).toContain(
+          'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+        );
+      }
+    });
+
+    it('lets the browser send the confirmation, which it preflights because it is a put', () => {
+      expect(listedIn(cors, 'allow_methods')).toContain('PUT');
     });
   });
 
@@ -3577,8 +3608,8 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
      * first and sends nothing this answer does not list. A method missing here is a route of this
      * api that no browser can reach, whatever the route itself says.
      */
-    it('allows the three methods the site calls across origins, and no other', () => {
-      expect(listedIn(cors, 'allow_methods')).toEqual(['GET', 'PATCH', 'POST']);
+    it('allows the four methods the site calls across origins, and no other', () => {
+      expect(listedIn(cors, 'allow_methods')).toEqual(['GET', 'PATCH', 'POST', 'PUT']);
     });
 
     it('allows the two headers the site sends, and no other', () => {

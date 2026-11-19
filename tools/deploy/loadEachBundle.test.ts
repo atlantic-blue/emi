@@ -8,12 +8,20 @@ import { bundleFileName, type DeployedFunction } from './functions';
 import {
   type Answered,
   containerIdIn,
+  type LoadCheck,
   loadChecks,
   loadEveryBundle,
   portInsideTheImage,
   publishedPortIn,
 } from './loadEachBundle';
 import type { HttpRequestEvent } from '../../services/vault/src/api';
+import {
+  finishCardChangeFor,
+  paymentMethodPath,
+  startCardChangeFor,
+  thatTokenChangesNoCard,
+  type WhatACardChangeNeeds,
+} from '../../services/vault/src/payments/changeCard';
 import {
   receiptsFor,
   receiptsPath,
@@ -478,6 +486,63 @@ describe('every bundle is loaded in a container of its own, and two in a row can
 
     it('refuses the answer a bundle that listed receipts for nobody would give', () => {
       expect(theReceipts?.owes({ statusCode: 200, body: '{"receipts":[]}' })).toBe(false);
+    });
+
+    /**
+     * The two calls of a card change, found by the path they answer on rather than by where they
+     * sit in the list. A route added before them would otherwise move them, and a case reading the
+     * wrong event still passes.
+     */
+    const cardChanges = (): readonly (LoadCheck | undefined)[] =>
+      (loadChecks['emi-payments-subscription'] ?? []).filter(
+        (check) => (check.event as { rawPath?: string }).rawPath === paymentMethodPath,
+      );
+
+    /** Every port a card change needs, each one raising, so a call that happens is a failure. */
+    const nothingACardChangeMayReach = (): WhatACardChangeNeeds => ({
+      entitlements: { readEntitlement: () => Promise.reject(new Error('the table was read')) },
+      reaches: () => Promise.reject(new Error('Stripe was called')),
+      secretKey: () => Promise.reject(new Error('the parameter store was read')),
+      poolId: 'eu-central-1_NOTAPOOL',
+    });
+
+    const methodIn = (check: LoadCheck | undefined): string | undefined =>
+      (check?.event as { requestContext?: { http?: { method?: string } } } | undefined)
+        ?.requestContext?.http?.method;
+
+    it('owes a fifth and a sixth answer, which are the two calls of a card change', () => {
+      const [press, confirm] = cardChanges();
+
+      expect(cardChanges()).toHaveLength(2);
+      expect(methodIn(press)).toBe('POST');
+      expect(methodIn(confirm)).toBe('PUT');
+    });
+
+    it('takes the refusal each call of a card change answers a request with no token with', async () => {
+      const [press, confirm] = cardChanges();
+
+      const pressed = await startCardChangeFor(
+        press?.event as HttpRequestEvent,
+        nothingACardChangeMayReach(),
+      );
+      const confirmed = await finishCardChangeFor(
+        confirm?.event as HttpRequestEvent,
+        nothingACardChangeMayReach(),
+      );
+
+      expect(press?.owes(pressed)).toBe(true);
+      expect(confirm?.owes(confirmed)).toBe(true);
+      expect(JSON.parse(pressed.body)).toEqual({ error: thatTokenChangesNoCard });
+      expect(JSON.parse(confirmed.body)).toEqual({ error: thatTokenChangesNoCard });
+    });
+
+    it('refuses the answer a bundle that let a card change through would give', () => {
+      const [press, confirm] = cardChanges();
+
+      expect(press?.owes({ statusCode: 200, body: '{"clientSecret":"seti_1_secret_1"}' })).toBe(
+        false,
+      );
+      expect(confirm?.owes({ statusCode: 200, body: '{"changed":true}' })).toBe(false);
     });
   });
 

@@ -13,6 +13,7 @@ export * from './handlers/putRecord';
 export * from './handlers/readArticles';
 export * from './handlers/register';
 export * from './handlers/signInWithTelegram';
+export * from './payments/changeCard';
 export * from './payments/changeRenewal';
 export * from './payments/dynamoEntitlements';
 export * from './payments/entitlements';
