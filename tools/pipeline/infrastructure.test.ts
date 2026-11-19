@@ -633,6 +633,49 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
   });
 
+  describe('the renewal a delete stops, which is step 10 of the path', () => {
+    const vault = bodyOf('data "aws_iam_policy_document" "vault"');
+
+    it('reads one parameter, the secret key, and no second one', () => {
+      const secret = statementTextIn(vault, 'ReadTheStripeSecretKey');
+
+      expect(actionsIn(vault).filter((action) => action.startsWith('ssm:'))).toEqual([
+        'ssm:GetParameter',
+      ]);
+      expect(listedIn(secret, 'resources')).toEqual([
+        'arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.project_name}/payments/stripe/secret-key',
+      ]);
+      expect(secret).toContain(stripeSecretKeyParameter.replace('/emi/', '${var.project_name}/'));
+      expect(secret).not.toContain(
+        stripeWebhookSecretParameter.replace('/emi/', '${var.project_name}/'),
+      );
+      expect(secret).not.toContain('*');
+    });
+
+    it('writes no parameter and reaches no pool, so a delete can replace no secret', () => {
+      expect(actionsIn(vault)).not.toContain('ssm:PutParameter');
+      expect(actionsIn(vault)).not.toContain('ssm:DeleteParameter');
+      expect(actionsIn(vault).filter((action) => action.startsWith('cognito-idp:'))).toEqual([]);
+    });
+
+    it('decrypts a secure string through the parameter store alone', () => {
+      const decrypt = statementTextIn(vault, 'DecryptASecureString');
+
+      expect(listedIn(decrypt, 'values')).toEqual(['ssm.${var.region}.amazonaws.com']);
+      expect(decrypt).toContain('variable = "kms:ViaService"');
+    });
+
+    it('holds no Stripe value in the environment of the function that deletes', () => {
+      const theFunction = bodyOf('resource "aws_lambda_function" "vault"');
+      const environment = blockBodyOf(theFunction, 'variables');
+
+      expect(theFunction).toContain('role          = aws_iam_role.vault.arn');
+      expect(environment).toContain('EMI_VAULT_TABLE');
+      expect(environment.toLowerCase()).not.toContain('stripe');
+      expect(environment.toLowerCase()).not.toContain('key');
+    });
+  });
+
   describe('the route that starts a subscription, which is contract PAY-6', () => {
     const route = bodyOf('resource "aws_apigatewayv2_route" "start_subscription"');
     const authorizer = bodyOf('resource "aws_apigatewayv2_authorizer" "pool_token"');
@@ -1249,7 +1292,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
     /**
      * The role each function assumes, written out here rather than read off the resource, because
      * this list is the rule: the three triggers share one role that holds no parameter at all, and
-     * the two functions that read a secret are the only ones on a role that names a parameter.
+     * the three functions that read a secret are the only ones on a role that names a parameter.
      */
     const theRoleOf: Readonly<Record<string, string>> = {
       'emi-authorizer': 'authorizer',
@@ -1311,6 +1354,7 @@ describe('the deployed functions carry the bundle the pipeline uploads', () => {
         'emi-payments-subscription',
         'emi-payments-webhook',
         'emi-sign-in-telegram',
+        'emi-vault',
       ]);
     });
 

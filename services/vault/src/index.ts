@@ -21,6 +21,7 @@ export * from './payments/readReceipts';
 export * from './payments/readSubscription';
 export * from './payments/reachesStripe';
 export * from './payments/startSubscription';
+export * from './payments/stopRenewals';
 export * from './payments/stripe';
 export * from './payments/subscriptionRoutes';
 export * from './payments/stripeEvents';

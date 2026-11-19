@@ -359,7 +359,8 @@ export function fakeTable(options: FakeTableOptions = {}): FakeTable {
       const condition = input.KeyConditionExpression.trim();
       const partition = /^pk = (:\S+)$/.exec(condition);
       const after = /^pk = (:\S+) AND updatedAt > (:\S+)$/.exec(condition);
-      const wanted = partition?.[1] ?? after?.[1];
+      const opening = /^pk = (:\S+) AND begins_with\(sk, (:\S+)\)$/.exec(condition);
+      const wanted = partition?.[1] ?? after?.[1] ?? opening?.[1];
 
       if (wanted === undefined) {
         throw new Error(`this table does not understand the key condition "${condition}"`);
@@ -386,6 +387,12 @@ export function fakeTable(options: FakeTableOptions = {}): FakeTable {
         const from = textOf(input.ExpressionAttributeValues?.[after[2]]);
 
         found = found.filter((item) => textOf(item.updatedAt) > from);
+      }
+
+      if (opening?.[2] !== undefined) {
+        const prefix = textOf(input.ExpressionAttributeValues?.[opening[2]]);
+
+        found = found.filter((item) => textOf(item.sk).startsWith(prefix));
       }
 
       if (input.ExclusiveStartKey !== undefined) {
