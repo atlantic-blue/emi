@@ -1,6 +1,6 @@
 Feature: The privacy policy is laid out the way it was approved
 
-  A woman decides whether to pay 29.99 pounds a year for a tracker that promises nobody else can
+  A woman decides whether to pay 39 euros a year for a tracker that promises nobody else can
   read her days. This is the page she reads to decide whether she believes it, and it is the page a
   reviewer at the App Store opens before the listing goes on sale. The store asks for the address
   before it will take the application at all.

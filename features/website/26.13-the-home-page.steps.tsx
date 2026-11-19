@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import HomePage from '../../apps/website/app/[lang]/page';
 import { type Language, brandEyebrowOf, languages, wordsIn } from '../../apps/website/app/words';
+import { amountsOfMoneyIn, theAmountOf } from '../../apps/website/lib/theOnePrice';
 import { hostsAPageMayNotName } from '../../apps/website/test/theHostsAPageMayName';
 import { asPlaywrightReadsIt } from '../../apps/website/test/theConfiguration';
 import { approvedDenials } from '../../tools/pipeline/forbiddenClaims';
@@ -77,15 +78,16 @@ defineFeature(feature, (test) => {
         expect(page).not.toContain(words.store);
 
         // The approved board names no amount on this page, so neither does the page. The till is
-        // where a reader is told what a month costs, and `price` is held to the application's own
+        // where a reader is told what a year costs, and `price` is held to the application's own
         // line by the words test beside the site. A number that arrived here would be a second
         // place the price lives, and two places drift. The amount is taken out of the till's own
         // line, because the ring and every drawing on the page are full of numbers that are not
         // money.
-        const amount = /\d+[.,]\d\d/.exec(words.price)?.[0] ?? '';
+        const [said = ''] = amountsOfMoneyIn(words.price);
 
-        expect(amount).toMatch(/\d/);
-        expect(page).not.toContain(amount);
+        expect(said).toMatch(/\d/);
+        expect(page).not.toContain(said);
+        expect(page).not.toContain(`${theAmountOf(said)} `);
         expect(page).not.toMatch(/[£$€]/);
       }
     });

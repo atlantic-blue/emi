@@ -2,7 +2,7 @@ Feature: The approved faces, the header and the footer
 
   A woman hears about Emi from somebody and opens myemi.app on her phone. She has never seen the
   product. The top of the page is the first thing she reads, and whatever is up there is what she
-  will be asked to pay 29.99 pounds a month for.
+  will be asked to pay 39 euros a year for.
 
   Today the top of the page carries a lowercase word, set in a face the approved design does not
   use. The community chose a different mark in issue 331, the letters EMI inside the open ring, and
