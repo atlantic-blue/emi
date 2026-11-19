@@ -43,9 +43,15 @@ export interface TheElementsOfTheForm {
   submit(): Promise<{ readonly error?: { readonly message?: string } }>;
 }
 
-/** What a confirmation answers with: nothing at all, or the error Stripe wants her to read. */
+/**
+ * What a confirmation answers with: the setup it finished, or the error Stripe wants her to read.
+ *
+ * Both are absent where the library itself never arrived, which the page reads as a refusal: no
+ * card was taken, so nothing of hers moved.
+ */
 export interface WhatTheConfirmationSaid {
   readonly error?: { readonly message?: string };
+  readonly setupIntent?: { readonly id?: string };
 }
 
 /** Stripe, as far as this page uses it. A test hands the form one of these and no library loads. */

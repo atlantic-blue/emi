@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
+import { TheChangeCardForm } from '@/components/theChangeCardForm';
+import { SITE_ORIGIN } from '@/lib/addresses';
 import {
   type OneReceipt,
   theReceiptAmount,
@@ -10,6 +12,7 @@ import {
   theReceiptsSheHolds,
 } from '@/lib/theReceiptsSheHolds';
 import { theSessionHeld, whenTheSessionChanges } from '@/lib/theSessionSheHolds';
+import { type HowStripeArrives, thePublishableKey } from '@/lib/theStripeOnThePage';
 import {
   type HowItAsks,
   type WhatSheHolds,
@@ -30,10 +33,10 @@ import {
  * tokens, so it cannot know whether she pays, and the card is drawn once the browser has asked.
  *
  * The three rows the board draws under the card are Receipts, Change card and Cancel renewal.
- * Receipts opens a list of what Stripe holds, inside the card. Cancel renewal stops the renewal at
- * the end of the year she paid for, and once it is stopped the same row starts it again. Change
- * card is not built yet, so it is drawn as the board draws it, refuses a press, and the line under
- * it says so.
+ * Receipts opens a list of what Stripe holds, inside the card. Change card opens the card form of
+ * the Buy Emi board, inside the card, and closes it again once the service is charging the new
+ * card. Cancel renewal stops the renewal at the end of the year she paid for, and once it is
+ * stopped the same row starts it again.
  *
  * A change that the route would not take leaves the card exactly as it was and says one line. The
  * card is never drawn from what the press asked for: it is drawn from what the route answered, so
@@ -43,11 +46,17 @@ import {
 /** Where a woman with no subscription is offered one, which is the page she buys Emi on. */
 export const WHERE_SHE_BUYS_EMI = 'checkout/';
 
+/** The page this card is drawn on, which a bank that asked her a question sends her back to. */
+export const WHERE_HER_ACCOUNT_IS = 'account/';
+
 /** What the card is bound to, so a test drives the real card against an api that answers it. */
 export interface WhatTheSubscriptionCardNeeds {
   readonly language: Language;
   readonly words: SiteWords;
   readonly asks?: HowItAsks;
+  /** The key the build was given. An empty one opens the row and draws no card form. */
+  readonly publishableKey?: string;
+  readonly stripeArrives?: HowStripeArrives;
   /** The instant the card is drawn for, which decides whether the date she paid until has passed. */
   readonly clock?: () => Date;
 }
@@ -64,9 +73,6 @@ const whatHerBrowserHolds = (): string | null => theSessionHeld()?.idToken ?? nu
 
 const whatAServerKnows = (): string | undefined => undefined;
 
-/** The row of the board that is drawn and does nothing yet. */
-const theRowsThatComeLater = ['accountChangeCard'] as const;
-
 /** One press, from the moment it leaves to the moment the route answers it. */
 type WhereThePressIs = 'waiting' | 'running' | 'refused';
 
@@ -80,6 +86,8 @@ export function TheSubscriptionCard({
   language,
   words,
   asks,
+  publishableKey = thePublishableKey(),
+  stripeArrives,
   clock = () => new Date(),
 }: WhatTheSubscriptionCardNeeds) {
   const token = useSyncExternalStore(whenTheSessionChanges, whatHerBrowserHolds, whatAServerKnows);
@@ -89,6 +97,8 @@ export function TheSubscriptionCard({
   const [theReceipts, setTheReceipts] = useState<readonly OneReceipt[]>([]);
   const [thePageAfter, setThePageAfter] = useState<string | null>(null);
   const [theReceiptsRead, setTheReceiptsRead] = useState<WhereTheReceiptsAre>('unasked');
+  const [theCardFormIsOpen, setTheCardFormIsOpen] = useState(false);
+  const closesTheCardForm = useCallback(() => setTheCardFormIsOpen(false), []);
 
   useEffect(() => {
     if (token === null || token === undefined) {
@@ -267,12 +277,27 @@ export function TheSubscriptionCard({
             </div>
           ) : null}
 
-          {theRowsThatComeLater.map((row) => (
-            <button className={`${rowStyle} text-siteQuietText`} disabled key={row} type="button">
-              <span>{words[row]}</span>
-              <span aria-hidden="true">›</span>
-            </button>
-          ))}
+          <button
+            aria-expanded={theCardFormIsOpen}
+            className={rowStyle}
+            onClick={() => setTheCardFormIsOpen(!theCardFormIsOpen)}
+            type="button"
+          >
+            <span>{words.accountChangeCard}</span>
+            <span aria-hidden="true">›</span>
+          </button>
+
+          {theCardFormIsOpen && token !== null && token !== undefined ? (
+            <TheChangeCardForm
+              asks={asks}
+              comesBackTo={`${SITE_ORIGIN}/${language}/${WHERE_HER_ACCOUNT_IS}`}
+              idToken={token}
+              publishableKey={publishableKey}
+              stripeArrives={stripeArrives}
+              whenTheCardChanged={closesTheCardForm}
+              words={words}
+            />
+          ) : null}
 
           <button
             className={`${rowStyle} ${theRenewal === 'nothing' ? 'text-siteQuietText' : 'text-siteAccent'}`}
@@ -292,12 +317,6 @@ export function TheSubscriptionCard({
           {words.accountRenewalDidNotChange}
         </span>
       ) : null}
-
-      {which === 'noSubscription' ? null : (
-        <span className="ml-spaceLg text-body-sm text-siteQuietText">
-          {words.accountRowsComeLater}
-        </span>
-      )}
 
       {theYearHasRunOut(read, now) ? (
         <a
