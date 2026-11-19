@@ -49,6 +49,9 @@ Feature: Where a press on a page of the site takes her
       | /en/account/           |
       | /ru/account/           |
       | /es/account/           |
+      | /en/checkout/          |
+      | /ru/checkout/          |
+      | /es/checkout/          |
       | /en/sign-in/returning/ |
       | /ru/sign-in/returning/ |
       | /es/sign-in/returning/ |
