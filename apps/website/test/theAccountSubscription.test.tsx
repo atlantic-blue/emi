@@ -20,9 +20,8 @@ import {
 /**
  * The subscription card of her account, driven in a browser against an api that answers it.
  *
- * The board the card is built from names a month and the price of the store. The operator moved
- * the price to a year, so the card is held to the board for the shape it draws and to the words
- * for the figure it names.
+ * The card is held to the board it was drawn from, so a word that moved on the board and not in
+ * the catalogue is caught here rather than by a reader of the page.
  */
 
 const repositoryRoot = resolve(__dirname, '..', '..', '..');
@@ -142,9 +141,9 @@ describe('the subscription card of her account', () => {
       expect(whatTheBoardSays()).toContain(said);
     });
 
-    it('names the plan and the money as the operator moved them, which the board has not', () => {
-      expect(whatTheBoardSays()).toContain('Emi, monthly');
-      expect(whatTheBoardSays()).toContain('£29.99 a month. Renews on');
+    it('names the plan and the money the board names', () => {
+      expect(whatTheBoardSays()).toContain('Emi, yearly');
+      expect(whatTheBoardSays()).toContain('39 euros a year. Renews on');
 
       expect(words.accountPlanName).toBe('Emi, yearly');
       expect(words.accountRenewsOn).toContain('39 euros a year');

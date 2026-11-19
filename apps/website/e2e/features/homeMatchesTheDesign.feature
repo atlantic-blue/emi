@@ -1,7 +1,7 @@
 Feature: The page she reads is the page that was approved
 
   A woman hears about Emi from somebody and opens myemi.app. She has never seen the product, and
-  this one page is everything she has to go on before she is asked for 29.99 pounds a month.
+  this one page is everything she has to go on before she is asked for 39 euros a year.
 
   That page was drawn and approved on a canvas, and the drawing is committed beside this suite. The
   page the site serves is built from it by hand, in another language, through another framework.

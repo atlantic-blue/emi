@@ -5,7 +5,7 @@ export const spanish: SiteWords = {
   brandLine: 'Emi. Every Month Insights.',
   store: 'Descárgala en el App Store',
   storeSmall: 'Descárgala en el',
-  price: 'Un mes gratis, después 29,99 libras al mes.',
+  price: 'Un mes gratis, después 39 euros al año.',
   languageLabel: 'Idioma',
   pageDescription: 'Un registro de ciclo y menstruación que mantiene tus datos contigo.',
   sharePictureAlt:
@@ -312,7 +312,7 @@ export const spanish: SiteWords = {
   headerSignInLabel: 'Iniciar sesión',
 
   footerDisclaimer:
-    'Emi no es un anticonceptivo ni un dispositivo médico. Un pronóstico es una estimación de tus ciclos anteriores. El primer mes es gratis con una suscripción mensual en la App Store.',
+    'Emi no es un anticonceptivo ni un dispositivo médico. Un pronóstico es una estimación de tus ciclos anteriores. El primer mes es gratis con una suscripción anual en la App Store.',
   footerEmiGroup: 'Emi',
   footerAppStore: 'App Store',
   footerBeta: 'Únete a la prueba',
