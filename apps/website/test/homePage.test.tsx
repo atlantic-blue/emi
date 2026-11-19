@@ -12,6 +12,7 @@ import { LANGUAGES_ANCHOR } from '../components/siteHeader';
 import { JULIANS_PHOTOGRAPH } from '../lib/addresses';
 import { theRealReviews } from '../lib/theReviews';
 import { theStoreListingIsOpen } from '../lib/theStoreListing';
+import { amountsOfMoneyIn, theAmountOf } from '../lib/theOnePrice';
 import { theKeysTheHomePageHoldsBack } from './theWordsAPressTookWithIt';
 import { whatTheMarkupDraws } from './stylesheet';
 import { hostsAPageMayNotName } from './theHostsAPageMayName';
@@ -295,13 +296,14 @@ describe('the page a woman meets Emi on', () => {
       expect(page).toContain(words.heroCancel);
 
       // The approved board took the amount off this page. The till is the one place a reader is told
-      // what a month costs, so a number here would be a second place for it to live, and two places
+      // what a year costs, so a number here would be a second place for it to live, and two places
       // for one price is how the page and the till come to say different things. The amount comes out
       // of the till's own line, because the ring is full of numbers that are not money.
-      const amount = /\d+[.,]\d\d/.exec(words.price)?.[0] ?? '';
+      const [said = ''] = amountsOfMoneyIn(words.price);
 
-      expect(amount).toMatch(/\d/);
-      expect(page).not.toContain(amount);
+      expect(said).toMatch(/\d/);
+      expect(page).not.toContain(said);
+      expect(page).not.toContain(`${theAmountOf(said)} `);
       expect(page).not.toMatch(/[£$€]/);
     },
   );

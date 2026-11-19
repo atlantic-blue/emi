@@ -9,10 +9,12 @@ import {
   theCodeSignInFlow,
   theFlowTheSiteUses,
   thePhoneClient,
+  thePhoneReturnAddress,
   thePoolsOwnWay,
   theScopesTheSiteAsksFor,
   theWaysAClientOffers,
   theWebsiteClient,
+  phoneSignInProblems,
   websiteSignInProblems,
 } from '../../tools/pipeline/signIn';
 import { languages } from '../../apps/website/app/words/language';
@@ -130,7 +132,7 @@ defineFeature(feature, (test) => {
     });
   });
 
-  test('the application on her phone signs in with the code alone', ({
+  test('the application on her phone offers the same ways, back to its own scheme', ({
     given,
     when,
     then,
@@ -142,10 +144,14 @@ defineFeature(feature, (test) => {
       client = clientBody(thePhoneClient);
     });
 
-    then('it offers no provider and names no return address', () => {
-      expect(listedIn(client, 'supported_identity_providers')).toEqual([]);
-      expect(listedIn(client, 'callback_urls')).toEqual([]);
-      expect(listedIn(client, 'allowed_oauth_scopes')).toEqual([]);
+    then('it offers Apple, Google and the code, and comes back to the private scheme alone', () => {
+      expect(theWaysAClientOffers(configuration, thePhoneClient)).toEqual([
+        'COGNITO',
+        'SignInWithApple',
+        'Google',
+      ]);
+      expect(listedIn(client, 'callback_urls')).toEqual([thePhoneReturnAddress]);
+      expect(phoneSignInProblems(configuration)).toEqual([]);
     });
 
     and('it allows the code flow, the refresh and the custom flow', () => {
@@ -239,8 +245,16 @@ defineFeature(feature, (test) => {
     given('the sign in the pool offers', readTheSignIn);
 
     when('the site names a provider as text rather than as the resource', () => {
+      const website = clientBody(theWebsiteClient);
+
       said = websiteSignInProblems(
-        changed('aws_cognito_identity_provider.apple.provider_name,', '"SignInWithApple",'),
+        changed(
+          website,
+          website.replace(
+            'aws_cognito_identity_provider.apple.provider_name,',
+            '"SignInWithApple",',
+          ),
+        ),
         languages,
       );
     });

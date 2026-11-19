@@ -21,6 +21,10 @@ import {
   type WhatTheStartNeeds,
 } from '../../services/vault/src/payments/startSubscription';
 import {
+  subscriptionFor,
+  thatTokenReadsNothing,
+} from '../../services/vault/src/payments/readSubscription';
+import {
   thatDeliveryIsNotSigned,
   webhookFor,
   webhookPath,
@@ -343,7 +347,7 @@ describe('every bundle is loaded in a container of its own, and two in a row can
   });
 
   describe('the challenge a create trigger bundle owes', () => {
-    const check = loadChecks['emi-sign-in-challenge-create'];
+    const [check] = loadChecks['emi-sign-in-challenge-create'] ?? [];
 
     it('takes what the trigger answers', () => {
       const created = createAuthChallenge({
@@ -368,7 +372,7 @@ describe('every bundle is loaded in a container of its own, and two in a row can
   });
 
   describe('the refusal a payments bundle owes', () => {
-    const check = loadChecks['emi-payments-subscription'];
+    const [check, theRead] = loadChecks['emi-payments-subscription'] ?? [];
 
     /** Every port the start needs, each one raising, so a call that happens is a failure here. */
     const nothingItMayReach = (): WhatTheStartNeeds => ({
@@ -401,10 +405,32 @@ describe('every bundle is loaded in a container of its own, and two in a row can
         false,
       );
     });
+
+    it('owes a second answer, which is the read her account page makes on the same path', () => {
+      expect((theRead?.event as { rawPath?: string } | undefined)?.rawPath).toBe(subscriptionPath);
+      expect(
+        (theRead?.event as { requestContext?: { http?: { method?: string } } } | undefined)
+          ?.requestContext?.http?.method,
+      ).toBe('GET');
+    });
+
+    it('takes the refusal the read answers a request with no token with', async () => {
+      const answered = await subscriptionFor(theRead?.event as HttpRequestEvent, {
+        entitlements: { readEntitlement: () => Promise.reject(new Error('the table was read')) },
+        poolId: 'eu-central-1_NOTAPOOL',
+      });
+
+      expect(theRead?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatTokenReadsNothing });
+    });
+
+    it('refuses the answer a bundle that read a subscription for nobody would give', () => {
+      expect(theRead?.owes({ statusCode: 200, body: '{"state":"active"}' })).toBe(false);
+    });
   });
 
   describe('the refusal a webhook bundle owes', () => {
-    const check = loadChecks['emi-payments-webhook'];
+    const [check] = loadChecks['emi-payments-webhook'] ?? [];
 
     /** Every port the webhook needs, each one raising, so a call that happens is a failure here. */
     const nothingItMayReach = (): WhatTheWebhookNeeds => ({

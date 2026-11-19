@@ -66,9 +66,8 @@ Google Pay or card" on this site, and "Telegram Stars" in the Emi bot. Section 3
 choice row by row. Its words carry the yearly price.
 
 `docs/design/website/sign-in/boards/Profile.dc.html` is her account. Its subscription card reads
-"Emi, monthly", a monthly price, a renewal date, "Active", "Paid with Card, on this site", and
-three rows: Receipts, Change card and Cancel renewal. That board still names a month. Question 5 of
-section 8 is that board.
+"Emi, yearly", the yearly price, a renewal date, "Active", "Paid with Card, on this site", and
+three rows: Receipts, Change card and Cancel renewal. Question 5 of section 8 is that board.
 
 ## What I read, and when
 
@@ -777,8 +776,7 @@ has no board.
 4. What does the account page show for a woman who paid in Stars? The approved card reads "Paid
    with Card, on this site", and the three rows under it are Receipts, Change card and Cancel
    renewal. None of the three is possible on the Stars route.
-5. The approved account board names a month, not a year, and names a card rather than a wallet.
-   What does that card read now? This question blocks the account page.
+5. The approved account board names a card rather than a wallet. What does that card read now?
 6. What does the account page show after she cancels, while the year she paid for still runs?
 7. What does the Emi bot say first, and what does the Open the Emi bot button point at?
 8. What does the delete screen say to a woman whose subscription is still running? The delete

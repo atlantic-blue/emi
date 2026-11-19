@@ -27,7 +27,7 @@ export const english = {
   brandLine: 'Emi. Every Month Insights.',
   store: 'Download on the App Store',
   storeSmall: 'Download on the',
-  price: 'One month free, then 29.99 pounds a month.',
+  price: 'One month free, then 39 euros a year.',
   languageLabel: 'Language',
   pageDescription: 'A period and cycle tracker that keeps your records to yourself.',
 
@@ -389,6 +389,22 @@ export const english = {
   checkoutCouldNotStart: 'Emi could not start that payment. Try again in a moment.',
   checkoutNoPaymentFormYet: 'Paying on this site is not open yet. Emi is in the App Store today.',
 
+  // The subscription card of the account, from boards/Profile.dc.html.
+  accountSubscriptionHeading: 'SUBSCRIPTION',
+  accountPlanName: 'Emi, yearly',
+  accountRenewsOn: '39 euros a year. Renews on {date}',
+  accountPaidUntil: '39 euros a year. Paid until {date}',
+  accountStateActive: 'Active',
+  accountStateRenewalOff: 'Renewal off',
+  accountPaidWith: 'Paid with',
+  accountPaidWithCard: 'Card, on this site',
+  accountReceipts: 'Receipts',
+  accountChangeCard: 'Change card',
+  accountCancelRenewal: 'Cancel renewal',
+  accountRowsComeLater: 'These are not ready yet.',
+  accountNoSubscription: 'You have no subscription yet.',
+  accountBuyEmi: 'Buy Emi ›',
+
   // The band at the top of the page, from boards/Header.dc.html.
   headerHomeLabel: 'Emi home',
   headerMainLabel: 'Main',
@@ -404,7 +420,7 @@ export const english = {
 
   // The band at the foot of the page, from boards/Footer.dc.html.
   footerDisclaimer:
-    'Emi is not a contraceptive and not a medical device. A forecast is an estimate from your own past cycles. The first month is free with a monthly subscription in the App Store.',
+    'Emi is not a contraceptive and not a medical device. A forecast is an estimate from your own past cycles. The first month is free with a yearly subscription in the App Store.',
   footerEmiGroup: 'Emi',
   footerAppStore: 'App Store',
   footerBeta: 'Join the beta',

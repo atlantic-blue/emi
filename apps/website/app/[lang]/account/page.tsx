@@ -3,15 +3,16 @@ import { notFound } from 'next/navigation';
 
 import { type SiteWords, isLanguage, wordsIn } from '@/app/words';
 import { TheAccountHeader } from '@/components/theAccountHeader';
+import { TheSubscriptionCard } from '@/components/theSubscriptionCard';
 import { theLinksOf } from '@/lib/theAddressesOfAPage';
 
 /**
  * The account page, in the language her address names. It is laid out as the board the operator
  * approved lays it out, `docs/design/website/sign-in/boards/Profile.dc.html`.
  *
- * The head of that board is built and the four sections under it are not. The subscription, the
- * ways she signs in, the preferences and the data each need a step of their own, and a section
- * drawn with nothing behind it would say Emi holds something it does not hold.
+ * The head of that board and the subscription under it are built. The ways she signs in, the
+ * preferences and the data are not: each needs a step of its own, and a section drawn with nothing
+ * behind it would say Emi holds something it does not hold.
  *
  * The board paints the page on the tint rather than on the paper every other page sits on, so the
  * column carries that ground itself.
@@ -58,6 +59,7 @@ export default async function AccountPage({ params }: { params: Promise<{ lang: 
         className={`mx-auto box-border flex ${theColumn} flex-col gap-[32px] px-spaceXl pt-[64px] pb-[96px]`}
       >
         <TheAccountHeader language={lang} words={words} />
+        <TheSubscriptionCard language={lang} words={words} />
       </div>
     </main>
   );
