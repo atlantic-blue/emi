@@ -1,6 +1,12 @@
 import { publishedFigures, symptomGroups } from '@emi/cycle';
 import type { ReactElement } from 'react';
 
+import { Account, accountScreenTestID } from '../../src/features/account/Account';
+import {
+  AccountEmailCode,
+  accountEmailCodeScreenTestID,
+} from '../../src/features/account/AccountEmailCode';
+import { AccountGate, accountGateScreenTestID } from '../../src/features/account/AccountGate';
 import { CalendarScreen, calendarScreenTestID } from '../../src/features/calendar/CalendarScreen';
 import { FiguresScreen, figuresScreenTestID } from '../../src/features/cycle/CitationRow';
 import { ExportScreen, exportScreenTestID } from '../../src/features/export/ExportScreen';
@@ -212,6 +218,7 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
     settingsScreenTestID,
     (): ReactElement => (
       <SettingsScreen
+        onAccount={nothing}
         onAnswers={nothing}
         onReminders={nothing}
         reminder={reminderChoiceSaid('twoDaysBefore')}
@@ -268,4 +275,35 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
   ],
   [coverTestID, (): ReactElement => <Cover />],
   [lockScreenTestID, (): ReactElement => <LockScreen onUnlock={nothing} wasRefused={false} />],
+  [
+    accountGateScreenTestID,
+    (): ReactElement => (
+      <AccountGate address="" onAddress={nothing} onSendCode={nothing} problem={null} />
+    ),
+  ],
+  [
+    accountEmailCodeScreenTestID,
+    (): ReactElement => (
+      <AccountEmailCode
+        address="julia@example.com"
+        code=""
+        digits={6}
+        line={{ words: 'The code works for 15 minutes.', isAProblem: false }}
+        onBack={nothing}
+        onCode={nothing}
+        onSendANewCode={nothing}
+        onSignIn={nothing}
+        onUseAnotherAddress={nothing}
+      />
+    ),
+  ],
+  [
+    accountScreenTestID,
+    (): ReactElement => (
+      <Account
+        onBack={nothing}
+        signIn={{ way: 'email', address: 'julia@example.com', since: '2026-11-13' }}
+      />
+    ),
+  ],
 ];

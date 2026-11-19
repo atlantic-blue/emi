@@ -22,12 +22,18 @@ export const settingsAssuranceTestID = 'settings-assurance';
 /** The one card the rows stand on, which is what carries the hairline between two of them. */
 export const settingsRowsTestID = 'settings-rows';
 
+/** The row that opens the sign in, or the account once she is signed in. */
+export const settingsAccountTestID = 'settings-account';
+
+/** The card the account row stands on, over the rows of Privacy. */
+export const settingsAccountCardTestID = 'settings-account-card';
+
 /**
  * The rows of Privacy, in the order she reads them, and the whole of the screen.
  *
  * A row is an answer she already gave, the lock, or one of the two ways out. Nothing else is a
  * row, so the screen cannot grow into a menu without this list growing first, where somebody has
- * to decide about it.
+ * to decide about it. The account row is not one of them: it stands on a card of its own.
  */
 export const settingsRows = ['answers', 'reminders', 'lock', 'export', 'delete'] as const;
 
@@ -69,6 +75,8 @@ const ASSURANCE_ICON = 26;
  */
 export function SettingsScreen({
   reminder,
+  signedInAs,
+  onAccount,
   onAnswers,
   onReminders,
   onExport,
@@ -78,6 +86,9 @@ export function SettingsScreen({
 }: {
   /** What the reminder is set to, in the words of the screen that changes it. */
   readonly reminder: string;
+  /** Her address where this phone holds a sign in, and left out where it holds none. */
+  readonly signedInAs?: string;
+  readonly onAccount: () => void;
   readonly onAnswers: () => void;
   readonly onReminders: () => void;
   readonly onExport: () => void;
@@ -109,6 +120,18 @@ export function SettingsScreen({
             onPress={onWhoCanSee}
             testID={settingsWhoCanSeeTestID}
           />
+        </View>
+
+        <View style={styles.accountCard}>
+          <RowGroup testID={settingsAccountCardTestID}>
+            <SettingsRow
+              icon="person"
+              label={settingsCopy.settings.rows.account.lead}
+              onPress={onAccount}
+              testID={settingsAccountTestID}
+              value={signedInAs}
+            />
+          </RowGroup>
         </View>
 
         <RowGroup testID={settingsRowsTestID}>
@@ -187,6 +210,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: ASSURANCE_TILE,
   },
+  accountCard: { marginBottom: space.spaceMd },
   assuranceWords: { flexShrink: 1, rowGap: space.spaceXs },
   away: { alignItems: 'center', marginTop: space.spaceLg },
   body: { flexGrow: 1, paddingHorizontal: space.margin, paddingVertical: space.spaceXl },
