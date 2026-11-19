@@ -6,12 +6,12 @@ import type { Language, SiteWords } from '@/app/words';
 import { SITE_ORIGIN } from '@/lib/addresses';
 import { theSessionHeld } from '@/lib/theSessionSheHolds';
 import {
-  type AnElementOfStripe,
   type HowStripeArrives,
   type TheElementsOfTheForm,
   stripeArrives,
 } from '@/lib/theStripeOnThePage';
 import { type HowItAsks, startASubscription } from '@/lib/theSubscriptionSheStarts';
+import { useTheCardFormSheFillsIn } from '@/lib/useTheCardFormSheFillsIn';
 import { goTo } from '@/lib/whereSheGoesNext';
 
 /**
@@ -36,9 +36,6 @@ export const WHERE_A_PAYMENT_LANDS = 'account/';
 
 /** Where the terms sit, under the language she is reading. That page is built by its own step. */
 export const WHERE_THE_TERMS_ARE = 'terms/';
-
-/** The currency the one price is charged in, which both elements are drawn for. */
-export const THE_CURRENCY = 'eur';
 
 /** Which of the two ways she is looking at. The board opens on the card. */
 type TheWayShePays = 'card' | 'stars';
@@ -70,9 +67,35 @@ export function ThePaymentForm({
   const [hasAWallet, setHasAWallet] = useState(false);
   const [paying, setPaying] = useState(false);
   const [whatWentWrong, setWhatWentWrong] = useState<string | null>(null);
-  const theCardForm = useRef<HTMLDivElement | null>(null);
   const theWallets = useRef<HTMLDivElement | null>(null);
-  const held = useRef<{ elements: TheElementsOfTheForm; drawn: AnElementOfStripe[] } | null>(null);
+  // A wallet confirms through the press of Stripe's own element rather than through the one this
+  // page draws, and that element is made once, so it is given the press rather than a copy of it.
+  const pressesPay = useRef<(elements: TheElementsOfTheForm) => void>(() => undefined);
+
+  const drawsTheWallets = useCallback((elements: TheElementsOfTheForm) => {
+    const wallet = elements.create('expressCheckout');
+    const into = theWallets.current;
+
+    wallet.on('ready', (said) => {
+      const offered = said.availablePaymentMethods;
+
+      setHasAWallet(typeof offered === 'object' && offered !== null);
+    });
+    wallet.on('confirm', () => pressesPay.current(elements));
+
+    if (into !== null) {
+      wallet.mount(into);
+    }
+
+    return [wallet];
+  }, []);
+
+  const { drawsTheCardForm, theElements, isComplete, confirms } = useTheCardFormSheFillsIn({
+    publishableKey,
+    stripeArrives: arrives,
+    comesBackTo: `${SITE_ORIGIN}/${language}/${WHERE_A_PAYMENT_LANDS}`,
+    alsoDraws: drawsTheWallets,
+  });
 
   const pay = useCallback(
     async (elements: TheElementsOfTheForm): Promise<void> => {
@@ -85,11 +108,7 @@ export function ThePaymentForm({
       setPaying(true);
       setWhatWentWrong(null);
 
-      const ready = await elements.submit();
-
-      if (ready.error !== undefined) {
-        // Stripe has drawn what is wrong inside its own element, in her language, so the page
-        // repeats nothing and leaves the form where it is.
+      if (!(await isComplete(elements))) {
         setPaying(false);
 
         return;
@@ -104,15 +123,9 @@ export function ThePaymentForm({
         return;
       }
 
-      const stripe = await arrives(publishableKey);
-      const said = await stripe?.confirmSetup({
-        elements,
-        clientSecret: started.clientSecret,
-        confirmParams: { return_url: `${SITE_ORIGIN}/${language}/${WHERE_A_PAYMENT_LANDS}` },
-        redirect: 'if_required',
-      });
+      const said = await confirms(elements, started.clientSecret);
 
-      if (said?.error !== undefined) {
+      if (said.error !== undefined) {
         setPaying(false);
         setWhatWentWrong(said.error.message ?? words.checkoutCouldNotStart);
 
@@ -121,45 +134,12 @@ export function ThePaymentForm({
 
       goTo(`/${language}/${WHERE_A_PAYMENT_LANDS}`);
     },
-    [arrives, asks, language, paying, publishableKey, words.checkoutCouldNotStart],
+    [asks, confirms, isComplete, language, paying, words.checkoutCouldNotStart],
   );
 
   useEffect(() => {
-    if (way !== 'card' || publishableKey.length === 0) {
-      return;
-    }
-
-    let left = false;
-
-    void (async () => {
-      const stripe = await arrives(publishableKey);
-      const card = theCardForm.current;
-      const wallets = theWallets.current;
-
-      if (stripe === null || left || card === null || wallets === null || held.current !== null) {
-        return;
-      }
-
-      const elements = stripe.elements({ mode: 'setup', currency: THE_CURRENCY });
-      const wallet = elements.create('expressCheckout');
-      const form = elements.create('payment');
-
-      wallet.on('ready', (said) => {
-        const offered = said.availablePaymentMethods;
-
-        setHasAWallet(typeof offered === 'object' && offered !== null);
-      });
-      wallet.on('confirm', () => void pay(elements));
-      wallet.mount(wallets);
-      form.mount(card);
-
-      held.current = { elements, drawn: [wallet, form] };
-    })();
-
-    return () => {
-      left = true;
-    };
-  }, [arrives, pay, publishableKey, way]);
+    pressesPay.current = (elements) => void pay(elements);
+  }, [pay]);
 
   if (publishableKey.length === 0) {
     return <p className="text-body-sm text-siteQuietText">{words.checkoutNoPaymentFormYet}</p>;
@@ -211,7 +191,7 @@ export function ThePaymentForm({
               <span className="h-hairline grow bg-siteTintLine" />
             </div>
           ) : null}
-          <div ref={theCardForm} />
+          <div ref={drawsTheCardForm} />
           <p className="text-body-sm text-siteQuietText">
             {terms[0]}
             <a className="text-siteAccent" href={`/${language}/${WHERE_THE_TERMS_ARE}`}>
@@ -228,9 +208,9 @@ export function ThePaymentForm({
             className="min-h-[52px] rounded-lg bg-siteAccent text-body-lg font-semibold text-siteCard"
             disabled={paying}
             onClick={() => {
-              const elements = held.current?.elements;
+              const elements = theElements();
 
-              if (elements !== undefined) {
+              if (elements !== null) {
                 void pay(elements);
               }
             }}
