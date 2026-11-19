@@ -10,12 +10,16 @@ import {
   amountsOfMoneyIn,
   hostsIn,
   problemsWithTheAddress,
+  problemsWithThePeriod,
   problemsWithWhatItCosts,
   theAmountOf,
   theOneAmount,
   theOneHost,
+  theOnePeriod,
   theOnePrice,
+  theWordsThatNameMoney,
   whoseWordsAreIn,
+  wordsNamingMoneyIn,
 } from '../lib/theOnePrice';
 import { websiteWorkspace } from './stylesheet';
 
@@ -79,52 +83,104 @@ describe('the site asks for one price', () => {
     expect(theOnePrice[language]).toBe(theApplication[language]['onboarding.tour.price.line']);
   });
 
-  it('names 29.99 a month and no other amount anywhere in the words', () => {
+  it('names 39 a year and no other amount anywhere in the words', () => {
     const found = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
 
-    expect(found.length).toBe(languages.length);
+    expect(found.length).toBe(languages.length * theWordsThatNameMoney.length);
     expect(found.map((amount) => theAmountOf(amount))).toEqual(found.map(() => theOneAmount));
     expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
   });
 
+  it.each(languages)(
+    'names money under the words that may name it, and no other, in %s',
+    (language) => {
+      expect(wordsNamingMoneyIn(wordsIn(language))).toEqual([...theWordsThatNameMoney].sort());
+    },
+  );
+
+  it('refuses a word that names money and is not one of those', () => {
+    const anotherPlace = { ...wordsIn('en'), supportSubscriptionLine: 'It costs 39 euros a year.' };
+
+    expect(wordsNamingMoneyIn(anotherPlace)).toEqual(
+      [...theWordsThatNameMoney, 'supportSubscriptionLine'].sort(),
+    );
+  });
+
   it('refuses words that ask for a different amount, and says what she would be asked for', () => {
-    const cheaper = theWordsBut('english.ts', '29.99 pounds a month', '£24.99 a month');
+    const cheaper = theWordsBut('english.ts', '39 euros a year', '€24.99 a year');
 
     expect(problemsWithWhatItCosts(cheaper)).toEqual([
-      'english.ts asks for £24.99, and the one price is 29.99 a month',
+      'english.ts asks for €24.99, and the one price is 39 a year',
       `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
     ]);
   });
 
   it('refuses words that keep the amount and change the period, because that is another product', () => {
-    const yearly = theWordsBut('english.ts', '29.99 pounds a month', '29.99 pounds a year');
+    const monthly = theWordsBut('english.ts', '39 euros a year', '39 euros a month');
 
-    expect(problemsWithWhatItCosts(yearly)).toEqual([
+    expect(problemsWithWhatItCosts(monthly)).toEqual([
       `english.ts names money outside the one price, which reads "${theOnePrice.en}"`,
     ]);
   });
 
-  /**
-   * A count of people carries a separator between its thousands, which is the separator an amount
-   * of money carries between its pounds and its pence. One of the founders' notes says she worked
-   * with over 1,500 women, and a reader of that sentence is not being quoted a price.
-   */
   it('reads a count of thousands as a count and not as money', () => {
     expect(amountsOfMoneyIn('over 1,500 women')).toEqual([]);
     expect(amountsOfMoneyIn('más de 1.500 mujeres')).toEqual([]);
-    expect(amountsOfMoneyIn('29.99 pounds a month')).toEqual(['29.99']);
+    expect(amountsOfMoneyIn('39 euros a year')).toEqual(['39 euros']);
+    expect(amountsOfMoneyIn('€1,500 a year')).toEqual(['€1,500']);
+  });
 
-    // A pound sign in front still makes a figure money, however it is grouped.
-    expect(amountsOfMoneyIn('£1,500 a month')).toEqual(['£1,500']);
+  it('reads the price out of each language and leaves a count of years alone', () => {
+    expect(amountsOfMoneyIn(theOnePrice.en)).toEqual(['39 euros']);
+    expect(amountsOfMoneyIn(theOnePrice.ru)).toEqual(['39 евро']);
+    expect(amountsOfMoneyIn(theOnePrice.es)).toEqual(['39 euros']);
+    expect(amountsOfMoneyIn('After 9 years of psychological practice')).toEqual([]);
+    expect(theAmountOf('39 евро')).toBe('39');
   });
 
   it('refuses an amount in a file that holds the words of no language', () => {
     expect(problemsWithWhatItCosts({ file: 'words.ts', text: 'it costs 19.99' })).toEqual([
-      'words.ts asks for 19.99, and the one price is 29.99 a month',
+      'words.ts asks for 19.99, and the one price is 39 a year',
       'words.ts names money, and it holds the words of no language of the site',
     ]);
     expect(whoseWordsAreIn('words.ts')).toBe(null);
     expect(whoseWordsAreIn(join(theWords, 'russian.ts'))).toBe('ru');
+  });
+});
+
+describe('the price covers a year', () => {
+  it('holds a period for each language the site serves', () => {
+    expect(Object.keys(theOnePeriod).sort()).toEqual([...languages].sort());
+    expect(languages.every((language) => theOnePeriod[language].length > 0)).toBe(true);
+  });
+
+  it.each(languages)('ends the sentence on the year the page shows her, in %s', (language) => {
+    expect(problemsWithThePeriod(language, theOnePrice[language])).toEqual([]);
+  });
+
+  it.each(languages)('ends the sentence on the year the screen shows her, in %s', (language) => {
+    const line = theApplication[language]['onboarding.tour.price.line'];
+
+    expect(typeof line).toBe('string');
+    expect(problemsWithThePeriod(language, String(line))).toEqual([]);
+  });
+
+  it('refuses a price that names a month, and says what the sentence must end on', () => {
+    expect(problemsWithThePeriod('en', 'One month free, then 39 euros a month.')).toEqual([
+      '"One month free, then 39 euros a month." does not end "a year.", which is the period the price covers',
+    ]);
+    expect(problemsWithThePeriod('ru', 'Первый месяц бесплатно, затем 39 евро в месяц.')).toEqual([
+      '"Первый месяц бесплатно, затем 39 евро в месяц." does not end "в год.", which is the period the price covers',
+    ]);
+    expect(problemsWithThePeriod('es', 'Un mes gratis, después 39 euros al mes.')).toEqual([
+      '"Un mes gratis, después 39 euros al mes." does not end "al año.", which is the period the price covers',
+    ]);
+  });
+
+  it('offers the first month free, in every language', () => {
+    expect(theOnePrice.en).toContain('One month free');
+    expect(theOnePrice.ru).toContain('Первый месяц бесплатно');
+    expect(theOnePrice.es).toContain('Un mes gratis');
   });
 });
 
