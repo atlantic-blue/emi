@@ -25,6 +25,10 @@ import {
   thatTokenReadsNothing,
 } from '../../services/vault/src/payments/readSubscription';
 import {
+  changeRenewalFor,
+  thatTokenChangesNothing,
+} from '../../services/vault/src/payments/changeRenewal';
+import {
   thatDeliveryIsNotSigned,
   webhookFor,
   webhookPath,
@@ -372,7 +376,7 @@ describe('every bundle is loaded in a container of its own, and two in a row can
   });
 
   describe('the refusal a payments bundle owes', () => {
-    const [check, theRead] = loadChecks['emi-payments-subscription'] ?? [];
+    const [check, theRead, theChange] = loadChecks['emi-payments-subscription'] ?? [];
 
     /** Every port the start needs, each one raising, so a call that happens is a failure here. */
     const nothingItMayReach = (): WhatTheStartNeeds => ({
@@ -426,6 +430,30 @@ describe('every bundle is loaded in a container of its own, and two in a row can
 
     it('refuses the answer a bundle that read a subscription for nobody would give', () => {
       expect(theRead?.owes({ statusCode: 200, body: '{"state":"active"}' })).toBe(false);
+    });
+
+    it('owes a third answer, which is the press that stops a renewal on the same path', () => {
+      expect((theChange?.event as { rawPath?: string } | undefined)?.rawPath).toBe(
+        subscriptionPath,
+      );
+      expect(
+        (theChange?.event as { requestContext?: { http?: { method?: string } } } | undefined)
+          ?.requestContext?.http?.method,
+      ).toBe('PATCH');
+    });
+
+    it('takes the refusal the change answers a request with no token with', async () => {
+      const answered = await changeRenewalFor(
+        theChange?.event as HttpRequestEvent,
+        nothingItMayReach(),
+      );
+
+      expect(theChange?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatTokenChangesNothing });
+    });
+
+    it('refuses the answer a bundle that stopped a renewal for nobody would give', () => {
+      expect(theChange?.owes({ statusCode: 200, body: '{"state":"cancelling"}' })).toBe(false);
     });
   });
 
