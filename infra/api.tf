@@ -206,6 +206,17 @@ resource "aws_apigatewayv2_route" "start_subscription" {
   authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
 }
 
+# Her account page, which reads whether a subscription is running and what the card says. It is
+# the same function and the same authorizer as the press above, because both read one claim of one
+# token and reach one item under one digest.
+resource "aws_apigatewayv2_route" "read_subscription" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "GET /v1/payments/subscription"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
 resource "aws_lambda_permission" "payments_subscription" {
   statement_id  = "AllowInvokeFromTheApi"
   action        = "lambda:InvokeFunction"

@@ -292,6 +292,22 @@ export const russian: SiteWords = {
   accountRecordsStayOnYourPhone: 'Ваши записи остаются на телефоне, поэтому их здесь нет.',
   accountSignOut: 'Выйти',
 
+  // The subscription card of the account, from boards/Profile.dc.html.
+  accountSubscriptionHeading: 'ПОДПИСКА',
+  accountPlanName: 'Emi, на год',
+  accountRenewsOn: '39 евро в год. Продлится {date}',
+  accountPaidUntil: '39 евро в год. Оплачено до {date}',
+  accountStateActive: 'Активна',
+  accountStateRenewalOff: 'Продление выключено',
+  accountPaidWith: 'Оплачено',
+  accountPaidWithCard: 'Картой, на этом сайте',
+  accountReceipts: 'Чеки',
+  accountChangeCard: 'Сменить карту',
+  accountCancelRenewal: 'Отменить продление',
+  accountRowsComeLater: 'Это пока не готово.',
+  accountNoSubscription: 'У вас пока нет подписки.',
+  accountBuyEmi: 'Купить Emi ›',
+
   headerHomeLabel: 'Главная страница Emi',
   headerMainLabel: 'Основное',
   headerEmi: 'Emi',

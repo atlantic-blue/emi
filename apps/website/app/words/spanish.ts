@@ -283,6 +283,22 @@ export const spanish: SiteWords = {
   accountRecordsStayOnYourPhone: 'Tus registros se quedan en tu teléfono, así que no están aquí.',
   accountSignOut: 'Salir',
 
+  // The subscription card of the account, from boards/Profile.dc.html.
+  accountSubscriptionHeading: 'SUSCRIPCIÓN',
+  accountPlanName: 'Emi, anual',
+  accountRenewsOn: '39 euros al año. Se renueva el {date}',
+  accountPaidUntil: '39 euros al año. Pagado hasta el {date}',
+  accountStateActive: 'Activa',
+  accountStateRenewalOff: 'Renovación desactivada',
+  accountPaidWith: 'Pagado con',
+  accountPaidWithCard: 'Tarjeta, en este sitio',
+  accountReceipts: 'Recibos',
+  accountChangeCard: 'Cambiar tarjeta',
+  accountCancelRenewal: 'Cancelar la renovación',
+  accountRowsComeLater: 'Esto todavía no está listo.',
+  accountNoSubscription: 'Todavía no tienes suscripción.',
+  accountBuyEmi: 'Compra Emi ›',
+
   headerHomeLabel: 'Página de inicio de Emi',
   headerMainLabel: 'Principal',
   headerEmi: 'Emi',
