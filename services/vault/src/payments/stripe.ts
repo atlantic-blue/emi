@@ -121,6 +121,7 @@ interface AnObjectStripeMade {
   readonly id?: unknown;
   readonly client_secret?: unknown;
   readonly metadata?: Readonly<Record<string, unknown>>;
+  readonly cancel_at_period_end?: unknown;
   readonly error?: { readonly code?: unknown; readonly type?: unknown };
 }
 
@@ -231,4 +232,41 @@ export async function payerDigestOfCustomer(
   });
 
   return textIn(objectIn(answered, 'customer').metadata?.[payerDigestKey]);
+}
+
+/** Where one subscription is read and updated. The update of this api is a post, not a patch. */
+export function subscriptionAddressFor(subscriptionRef: string): string {
+  return `${stripeApi}/subscriptions/${encodeURIComponent(subscriptionRef)}`;
+}
+
+/** The field that stops a renewal at the end of the period she paid for, and starts it again. */
+export const cancelAtPeriodEndField = 'cancel_at_period_end';
+
+/**
+ * Stops the renewal, or starts it again, and answers whether the subscription renews afterwards.
+ *
+ * The answer is read rather than assumed. The field Stripe sends back is what the renewal now is,
+ * so a call that was taken and did something else writes the something else onto the item.
+ */
+export async function renewalOfSubscription(
+  held: WhatACallHolds,
+  subscriptionRef: string,
+  renewing: boolean,
+): Promise<boolean> {
+  const answered = await held.reaches(subscriptionAddressFor(subscriptionRef), {
+    method: 'POST',
+    headers: headersFor(held.secretKey),
+    body: formBodyOf([[cancelAtPeriodEndField, renewing ? 'false' : 'true']]),
+  });
+
+  const said = objectIn(answered, 'subscription')[cancelAtPeriodEndField];
+
+  if (typeof said !== 'boolean') {
+    throw new StripeError(
+      'the-answer-names-no-object',
+      'the subscription call named no renewal to read',
+    );
+  }
+
+  return !said;
 }

@@ -159,6 +159,18 @@ export const loadChecks: Readonly<Record<string, readonly LoadCheck[]>> = {
       owes: (answer) => fieldOf(answer, 'statusCode') === 401,
       describes: 'a read carrying no token of the pool is refused',
     },
+    // The press on Cancel renewal, on the same path and the same function. A bundle that answered
+    // the first two and not this one would load and leave every renewal where it was.
+    {
+      event: {
+        rawPath: '/v1/payments/subscription',
+        headers: {},
+        requestContext: { http: { method: 'PATCH' } },
+        body: '{"renewing":false}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a change of a renewal carrying no token of the pool is refused',
+    },
   ],
   // A header carrying no signature at all is refused by its shape, before the function reads a
   // parameter, reaches Stripe or parses one field of the body. So a bundle with no account behind

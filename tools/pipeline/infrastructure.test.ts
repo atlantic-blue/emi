@@ -665,6 +665,17 @@ describe('the infrastructure is applied only by the pipeline', () => {
       );
     });
 
+    it('answers a change of the renewal on the same path, function and authorizer', () => {
+      const change = bodyOf('resource "aws_apigatewayv2_route" "change_renewal"');
+
+      expect(change).toContain(`route_key          = "PATCH ${subscriptionPath}"`);
+      expect(change).toContain('authorization_type = "JWT"');
+      expect(change).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(change).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+    });
+
     it('reaches the payments function, which the api is allowed to invoke', () => {
       const integration = bodyOf('resource "aws_apigatewayv2_integration" "payments_subscription"');
       const permission = bodyOf('resource "aws_lambda_permission" "payments_subscription"');
@@ -680,6 +691,12 @@ describe('the infrastructure is applied only by the pipeline', () => {
     it('lets the browser send the token, because the site calls this api from another origin', () => {
       expect(listedIn(cors, 'allow_headers')).toContain('authorization');
       expect(listedIn(cors, 'allow_methods')).toContain('POST');
+    });
+
+    it('answers the preflight for the read and the change this path also takes', () => {
+      expect(listedIn(cors, 'allow_methods')).toEqual(
+        expect.arrayContaining(['GET', 'PATCH', 'POST']),
+      );
     });
   });
 
@@ -3481,8 +3498,13 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
   });
 
   describe('the methods and the headers it allows', () => {
-    it('allows the one method the site calls across origins, and no other', () => {
-      expect(listedIn(cors, 'allow_methods')).toEqual(['POST']);
+    /**
+     * A request carrying an authorization header is never a simple request, so the browser asks
+     * first and sends nothing this answer does not list. A method missing here is a route of this
+     * api that no browser can reach, whatever the route itself says.
+     */
+    it('allows the three methods the site calls across origins, and no other', () => {
+      expect(listedIn(cors, 'allow_methods')).toEqual(['GET', 'PATCH', 'POST']);
     });
 
     it('allows the two headers the site sends, and no other', () => {

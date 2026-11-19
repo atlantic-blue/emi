@@ -8,8 +8,10 @@ import {
   type HowItAsks,
   type WhatSheHolds,
   theDateWritten,
+  theRenewalSheSets,
   theSubscriptionSheHolds,
   theYearHasRunOut,
+  whatTheRenewalRowDoes,
   whichCardSheReads,
 } from '@/lib/theSubscriptionSheHolds';
 
@@ -22,8 +24,13 @@ import {
  * tokens, so it cannot know whether she pays, and the card is drawn once the browser has asked.
  *
  * The three rows the board draws under the card are Receipts, Change card and Cancel renewal.
- * None of them is a press yet, so each is drawn as the board draws it and refuses a press, and the
- * line under them says so.
+ * The third one is a press: it stops the renewal at the end of the year she paid for, and once it
+ * is stopped the same row starts it again. The other two are not built yet, so each is drawn as
+ * the board draws it, refuses a press, and the line under them says so.
+ *
+ * A change that the route would not take leaves the card exactly as it was and says one line. The
+ * card is never drawn from what the press asked for: it is drawn from what the route answered, so
+ * a renewal that did not move on the payment service does not read as moved here.
  */
 
 /** Where a woman with no subscription is offered one, which is the page she buys Emi on. */
@@ -50,7 +57,14 @@ const whatHerBrowserHolds = (): string | null => theSessionHeld()?.idToken ?? nu
 
 const whatAServerKnows = (): string | undefined => undefined;
 
-const theRows = ['accountReceipts', 'accountChangeCard', 'accountCancelRenewal'] as const;
+/** The two rows of the board that are drawn and do nothing yet. */
+const theRowsThatComeLater = ['accountReceipts', 'accountChangeCard'] as const;
+
+/** One press, from the moment it leaves to the moment the route answers it. */
+type WhereThePressIs = 'waiting' | 'running' | 'refused';
+
+const rowStyle =
+  'flex min-h-[52px] w-full items-center justify-between border-b-hairline border-siteTintLine px-margin text-left text-body-lg last:border-b-0';
 
 export function TheSubscriptionCard({
   language,
@@ -60,6 +74,7 @@ export function TheSubscriptionCard({
 }: WhatTheSubscriptionCardNeeds) {
   const token = useSyncExternalStore(whenTheSessionChanges, whatHerBrowserHolds, whatAServerKnows);
   const [answered, setAnswered] = useState<{ readonly held: WhatSheHolds | null } | null>(null);
+  const [thePress, setThePress] = useState<WhereThePressIs>('waiting');
 
   useEffect(() => {
     if (token === null || token === undefined) {
@@ -89,6 +104,23 @@ export function TheSubscriptionCard({
   const read = token === null ? null : (answered?.held ?? null);
   const which = whichCardSheReads(read, now);
   const paidUntil = read?.paidUntil;
+  const theRenewal = whatTheRenewalRowDoes(read);
+
+  const pressesTheRenewal = (): void => {
+    if (token === null || token === undefined || theRenewal === 'nothing') {
+      return;
+    }
+
+    setThePress('running');
+
+    void theRenewalSheSets(token, theRenewal === 'starts', asks).then((held) => {
+      setThePress(held === null ? 'refused' : 'waiting');
+
+      if (held !== null) {
+        setAnswered({ held });
+      }
+    });
+  };
 
   return (
     <section aria-labelledby="her-subscription" className="flex flex-col gap-spaceSm">
@@ -130,19 +162,31 @@ export function TheSubscriptionCard({
             </div>
           ) : null}
 
-          {theRows.map((row) => (
-            <button
-              className="flex min-h-[52px] w-full items-center justify-between border-b-hairline border-siteTintLine px-margin text-left text-body-lg text-siteQuietText last:border-b-0"
-              disabled
-              key={row}
-              type="button"
-            >
+          {theRowsThatComeLater.map((row) => (
+            <button className={`${rowStyle} text-siteQuietText`} disabled key={row} type="button">
               <span>{words[row]}</span>
               <span aria-hidden="true">›</span>
             </button>
           ))}
+
+          <button
+            className={`${rowStyle} ${theRenewal === 'nothing' ? 'text-siteQuietText' : 'text-siteAccent'}`}
+            disabled={theRenewal === 'nothing' || thePress === 'running'}
+            onClick={pressesTheRenewal}
+            type="button"
+          >
+            <span>
+              {theRenewal === 'starts' ? words.accountTurnRenewalOn : words.accountCancelRenewal}
+            </span>
+          </button>
         </div>
       )}
+
+      {thePress === 'refused' ? (
+        <span className="ml-spaceLg text-body-sm text-siteAccent" role="status">
+          {words.accountRenewalDidNotChange}
+        </span>
+      ) : null}
 
       {which === 'noSubscription' ? null : (
         <span className="ml-spaceLg text-body-sm text-siteQuietText">
