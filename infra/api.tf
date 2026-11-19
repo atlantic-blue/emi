@@ -8,7 +8,7 @@ resource "aws_apigatewayv2_api" "vault" {
   # no authorizer runs for one and no route gives its authorizer up by being listed here.
   cors_configuration {
     allow_origins     = ["https://myemi.app"]
-    allow_methods     = ["POST"]
+    allow_methods     = ["POST", "PUT"]
     allow_headers     = ["authorization", "content-type"]
     allow_credentials = false
     max_age           = 86400
@@ -212,6 +212,27 @@ resource "aws_apigatewayv2_route" "start_subscription" {
 resource "aws_apigatewayv2_route" "read_subscription" {
   api_id             = aws_apigatewayv2_api.vault.id
   route_key          = "GET /v1/payments/subscription"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
+# The press on Change card, which makes a second setup to collect a payment method. It is the same
+# function and the same authorizer as the two above, because it reads the same claim of the same
+# token and reaches the one item under her own payer digest.
+resource "aws_apigatewayv2_route" "start_card_change" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "POST /v1/payments/payment-method"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
+# What her browser sends once Stripe has taken the card or the wallet. It names the setup and
+# nothing else, and the function reads that setup back from Stripe to see whose it is.
+resource "aws_apigatewayv2_route" "finish_card_change" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "PUT /v1/payments/payment-method"
   target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
