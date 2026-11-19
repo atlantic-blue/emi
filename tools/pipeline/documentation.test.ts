@@ -214,13 +214,14 @@ describe('the architecture document and the directories on disk cannot drift apa
 
   const onDisk = (directory: string): boolean => existsSync(join(repositoryRoot, directory));
 
-  it('reads the eight workspaces that are on disk today', () => {
+  it('reads the nine workspaces that are on disk today', () => {
     expect(workspaces).toEqual([
       'apps/mobile',
       'apps/website',
       'packages/content',
       'packages/crypto',
       'packages/cycle',
+      'packages/sign-in',
       'packages/tokens',
       'packages/ui',
       'services/vault',
@@ -942,7 +943,7 @@ describe('a new package without a readme fails the pipeline', () => {
   describe('every directory in this repository carries one today', () => {
     const directories = documentedDirectoriesOf(repositoryRoot);
 
-    it('reads the eleven directories somebody can open on their own', () => {
+    it('reads the twelve directories somebody can open on their own', () => {
       expect(directories).toEqual([
         'apps/mobile',
         'apps/website',
@@ -951,6 +952,7 @@ describe('a new package without a readme fails the pipeline', () => {
         'packages/content',
         'packages/crypto',
         'packages/cycle',
+        'packages/sign-in',
         'packages/tokens',
         'packages/ui',
         'services/vault',
@@ -971,6 +973,7 @@ describe('a new package without a readme fails the pipeline', () => {
         '@emi/content',
         '@emi/crypto',
         '@emi/cycle',
+        '@emi/sign-in',
         '@emi/tokens',
         '@emi/ui',
         '@emi/vault',
