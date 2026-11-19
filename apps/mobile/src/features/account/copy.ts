@@ -39,7 +39,12 @@ export function theCodeWentTo(address: string): string {
 
 /** What she reads when a sign in does not go through, one sentence for each cause. */
 export type AccountProblem =
-  WhatWentWrong | WhyTelegramDidNotFinish | 'addressIsNotValid' | 'needsTheCode';
+  | WhatWentWrong
+  | WhyTelegramDidNotFinish
+  | 'appleDidNotFinish'
+  | 'googleDidNotFinish'
+  | 'addressIsNotValid'
+  | 'needsTheCode';
 
 const theSentenceFor: Readonly<Record<AccountProblem, string>> = {
   theCodeIsWrong: words('account.problem.codeIsWrong'),
@@ -50,6 +55,8 @@ const theSentenceFor: Readonly<Record<AccountProblem, string>> = {
   addressIsNotValid: words('account.problem.addressIsNotValid'),
   needsTheCode: words('account.problem.needsTheCode'),
   itDidNotFinish: words('account.problem.telegramDidNotFinish'),
+  appleDidNotFinish: words('account.problem.appleDidNotFinish'),
+  googleDidNotFinish: words('account.problem.googleDidNotFinish'),
 };
 
 export function theProblemSaid(problem: AccountProblem): string {
@@ -58,6 +65,8 @@ export function theProblemSaid(problem: AccountProblem): string {
 
 const theWaySaid: Readonly<Record<TheWaySheSignedIn, string>> = {
   email: words('account.way.email'),
+  apple: words('account.way.apple'),
+  google: words('account.way.google'),
   telegram: words('account.way.telegram'),
 };
 

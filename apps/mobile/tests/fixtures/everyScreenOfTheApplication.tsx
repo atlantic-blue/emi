@@ -281,6 +281,8 @@ export const everyScreenOfTheApplication: readonly (readonly [string, () => Reac
       <AccountGate
         address=""
         onAddress={nothing}
+        onApple={nothing}
+        onGoogle={nothing}
         onSendCode={nothing}
         onTelegram={nothing}
         problem={null}

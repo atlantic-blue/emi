@@ -75,7 +75,7 @@ export function Account({
             testID={accountWayTestID}
             value={theWaySheSignedInSaid(signIn.way)}
           />
-          {signIn.way === 'email' ? (
+          {signIn.way !== 'telegram' ? (
             <AReading
               label={accountCopy.email}
               testID={accountEmailTestID}

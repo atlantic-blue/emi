@@ -13,8 +13,6 @@ import {
   accountWayTestID,
 } from '../../../src/features/account/Account';
 import {
-  accountGateAppleTestID,
-  accountGateGoogleTestID,
   accountGateLineTestID,
   accountGateScreenTestID,
   accountGateTelegramTestID,
@@ -292,18 +290,5 @@ describe('she signs in to Emi with Telegram', () => {
     await shePressesTelegram();
 
     expect(sessionsThatOpened()).toHaveLength(2);
-  });
-
-  it('keeps Apple and Google drawn and taking no press', async () => {
-    theTelegramSignInSheReaches();
-    await sheOpensTheAccountRow();
-
-    for (const testID of [accountGateAppleTestID, accountGateGoogleTestID]) {
-      expect(screen.getByTestId(testID)).toBeDisabled();
-      await fireEvent.press(screen.getByTestId(testID));
-    }
-
-    expect(screen.getByTestId(accountGateTelegramTestID)).not.toBeDisabled();
-    expect(sessionsThatOpened()).toEqual([]);
   });
 });

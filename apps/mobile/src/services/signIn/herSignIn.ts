@@ -6,8 +6,13 @@ export const identityRefreshItem = 'emi.identityRefresh.v1';
 /** Every keychain item this directory keeps, so the delete can reach each one. */
 export const signInKeychainItems: readonly string[] = [identityRefreshItem];
 
-/** The ways into the account the application offers. Apple and Google are not built yet. */
-export type TheWaySheSignedIn = 'email' | 'telegram';
+/** The ways into the account the application offers. */
+export type TheWaySheSignedIn = 'email' | 'apple' | 'google' | 'telegram';
+
+/** The ways in that carry her email address: the one she typed, or the one Apple or Google gave. */
+export type AWayWithAnAddress = Exclude<TheWaySheSignedIn, 'telegram'>;
+
+const theWaysWithAnAddress: readonly unknown[] = ['email', 'apple', 'google'];
 
 /**
  * What the account screen and the Settings row read. The token is never part of it. Telegram hands
@@ -15,7 +20,7 @@ export type TheWaySheSignedIn = 'email' | 'telegram';
  */
 export type HerSignIn =
   | {
-      readonly way: 'email';
+      readonly way: AWayWithAnAddress;
       readonly address: string;
       /** The day she signed in on this phone, as her own calendar reads it. */
       readonly since: string;
@@ -35,7 +40,9 @@ function isTheSignInSheKeeps(held: unknown): held is TheSignInSheKeeps {
   const fields = held as Readonly<Record<string, unknown>>;
   const isTheWayReadable =
     fields.way === 'telegram' ||
-    (fields.way === 'email' && typeof fields.address === 'string' && fields.address !== '');
+    (theWaysWithAnAddress.includes(fields.way) &&
+      typeof fields.address === 'string' &&
+      fields.address !== '');
 
   return (
     isTheWayReadable &&
@@ -50,7 +57,7 @@ export async function keepHerSignIn(keychain: SecureStore, kept: TheSignInSheKee
   await keychain.write(
     identityRefreshItem,
     JSON.stringify(
-      kept.way === 'email'
+      kept.way !== 'telegram'
         ? {
             way: kept.way,
             address: kept.address,
@@ -85,7 +92,7 @@ export async function readHerSignIn(keychain: SecureStore): Promise<HerSignIn | 
     return null;
   }
 
-  return parsed.way === 'email'
+  return parsed.way !== 'telegram'
     ? { way: parsed.way, address: parsed.address, since: parsed.since }
     : { way: parsed.way, since: parsed.since };
 }
