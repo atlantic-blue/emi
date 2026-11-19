@@ -83,7 +83,7 @@ function herSixCycles(): DayRecord[] {
 }
 
 /**
- * A phone that has been through everything Emi can do: it holds all four keychain items, not only
+ * A phone that has been through everything Emi can do: it holds every keychain item, not only
  * the key. The names come from the pipeline's own list rather than from the delete's list, so an
  * item the delete forgot is an item this test still finds afterwards.
  */

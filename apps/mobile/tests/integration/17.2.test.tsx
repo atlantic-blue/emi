@@ -110,6 +110,7 @@ async function sheOpensPrivacyOnItsOwn(): Promise<void> {
   await render(
     <OnAPhone>
       <SettingsScreen
+        onAccount={() => undefined}
         onAnswers={() => undefined}
         onReminders={() => undefined}
         reminder={reminderChoiceSaid('twoDaysBefore')}

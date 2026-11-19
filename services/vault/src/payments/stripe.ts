@@ -26,6 +26,16 @@ export interface AnsweredByStripe {
 /** How this module reaches Stripe. A test hands it one that answers without a network. */
 export type ReachesStripe = (address: string, asked: AskedOfStripe) => Promise<AnsweredByStripe>;
 
+/**
+ * The version of the api every call is made in.
+ *
+ * A call that names no version is answered in the default version of the account. That is the
+ * version the account was opened on. The webhook endpoint in Stripe is set to the version here,
+ * so a delivery carries fields an older answer does not. The period of a subscription is one of
+ * them. The calls and the events must name one version.
+ */
+export const stripeApiVersion = '2026-10-28.endive';
+
 /** Where the objects are made. Every address below hangs under this one. */
 export const stripeApi = 'https://api.stripe.com/v1';
 
@@ -34,6 +44,12 @@ export const customersAddress = `${stripeApi}/customers`;
 
 /** Where the setup that collects her payment method is made. */
 export const setupIntentsAddress = `${stripeApi}/setup_intents`;
+
+/** Where the subscriptions are. Nothing in this file creates one. */
+export const subscriptionsAddress = `${stripeApi}/subscriptions`;
+
+/** Where the payment methods are. Only the detach below reaches this one. */
+export const paymentMethodsAddress = `${stripeApi}/payment_methods`;
 
 /**
  * The key the payer digest travels under, in the metadata of the customer and later of the
@@ -108,6 +124,7 @@ export function headersFor(secretKey: string): Record<string, string> {
   return {
     authorization: `Bearer ${secretKey}`,
     'content-type': 'application/x-www-form-urlencoded',
+    'stripe-version': stripeApiVersion,
   };
 }
 
@@ -125,6 +142,9 @@ interface AnObjectStripeMade {
   readonly payment_method?: unknown;
   readonly invoice_settings?: { readonly default_payment_method?: unknown };
   readonly metadata?: Readonly<Record<string, unknown>>;
+  readonly data?: unknown;
+  readonly has_more?: unknown;
+  readonly cancel_at_period_end?: unknown;
   readonly error?: { readonly code?: unknown; readonly type?: unknown };
 }
 
@@ -237,20 +257,135 @@ export async function payerDigestOfCustomer(
   return textIn(objectIn(answered, 'customer').metadata?.[payerDigestKey]);
 }
 
-/** Where the subscriptions are. Nothing in this file creates one. */
-export const subscriptionsAddress = `${stripeApi}/subscriptions`;
+/** Where the invoices of one customer are listed. Emi keeps no copy of any of them. */
+export const invoicesAddress = `${stripeApi}/invoices`;
 
-/** Where the payment methods are. Only the detach below reaches this one. */
-export const paymentMethodsAddress = `${stripeApi}/payment_methods`;
+/** What one listed invoice carries, as far as a receipt of hers is concerned. */
+export interface ListedInvoice {
+  readonly invoiceRef: string;
+  /** The seconds the invoice was made at. */
+  readonly created: number;
+  /** The amount of the invoice, the tax inside it, in the smallest unit of the currency. */
+  readonly total: number;
+  readonly currency: string;
+  /** The page Stripe serves for it, or nothing at all where Stripe serves none. */
+  readonly invoiceUrl: string | null;
+}
+
+/** One page of invoices, in the order Stripe listed them, and whether a page follows it. */
+export interface ListedInvoices {
+  readonly invoices: readonly ListedInvoice[];
+  readonly moreToCome: boolean;
+}
+
+/** Which invoices are asked for: whose, how many, and where the page starts. */
+export interface WhichInvoices {
+  readonly customerRef: string;
+  readonly limit: number;
+  /** The invoice the page starts after, which is the last one of the page before it. */
+  readonly after?: string;
+}
+
+/** The address one page of invoices is read from, with the three things this api takes. */
+export function invoicesAddressFor(which: WhichInvoices): string {
+  const asked = new URLSearchParams([
+    ['customer', which.customerRef],
+    ['limit', String(which.limit)],
+  ]);
+
+  if (which.after !== undefined) {
+    asked.set('starting_after', which.after);
+  }
+
+  return `${invoicesAddress}?${asked.toString()}`;
+}
+
+function invoiceIn(listed: unknown): ListedInvoice | null {
+  const held = (listed ?? {}) as Readonly<Record<string, unknown>>;
+  const invoiceRef = textIn(held.id);
+  const currency = textIn(held.currency);
+
+  return invoiceRef === null ||
+    currency === null ||
+    typeof held.created !== 'number' ||
+    typeof held.total !== 'number'
+    ? null
+    : {
+        invoiceRef,
+        created: held.created,
+        total: held.total,
+        currency,
+        invoiceUrl: textIn(held.hosted_invoice_url),
+      };
+}
+
+/**
+ * One page of the invoices of one customer. Nothing of the answer is written down anywhere: the
+ * page is read, mapped to the four fields a receipt carries, and let go of.
+ */
+export async function invoicesOf(
+  held: WhatACallHolds,
+  which: WhichInvoices,
+): Promise<ListedInvoices> {
+  const answered = await held.reaches(invoicesAddressFor(which), {
+    method: 'GET',
+    headers: headersFor(held.secretKey),
+  });
+
+  const listed = objectIn(answered, 'invoice list');
+
+  if (!Array.isArray(listed.data)) {
+    throw new StripeError('the-answer-names-no-object', 'the invoice list named no invoices');
+  }
+
+  return {
+    invoices: listed.data
+      .map((one) => invoiceIn(one))
+      .filter((one): one is ListedInvoice => one !== null),
+    moreToCome: listed.has_more === true,
+  };
+}
+
+/** Where one subscription is read and updated. The update of this api is a post, not a patch. */
+export function subscriptionAddressFor(subscriptionRef: string): string {
+  return `${subscriptionsAddress}/${encodeURIComponent(subscriptionRef)}`;
+}
+
+/** The field that stops a renewal at the end of the period she paid for, and starts it again. */
+export const cancelAtPeriodEndField = 'cancel_at_period_end';
+
+/**
+ * Stops the renewal, or starts it again, and answers whether the subscription renews afterwards.
+ *
+ * The answer is read rather than assumed. The field Stripe sends back is what the renewal now is,
+ * so a call that was taken and did something else writes the something else onto the item.
+ */
+export async function renewalOfSubscription(
+  held: WhatACallHolds,
+  subscriptionRef: string,
+  renewing: boolean,
+): Promise<boolean> {
+  const answered = await held.reaches(subscriptionAddressFor(subscriptionRef), {
+    method: 'POST',
+    headers: headersFor(held.secretKey),
+    body: formBodyOf([[cancelAtPeriodEndField, renewing ? 'false' : 'true']]),
+  });
+
+  const said = objectIn(answered, 'subscription')[cancelAtPeriodEndField];
+
+  if (typeof said !== 'boolean') {
+    throw new StripeError(
+      'the-answer-names-no-object',
+      'the subscription call named no renewal to read',
+    );
+  }
+
+  return !said;
+}
 
 /** Where one setup is read back, which is how a card change learns whose it is. */
 export function setupIntentAddressFor(setupRef: string): string {
   return `${setupIntentsAddress}/${encodeURIComponent(setupRef)}`;
-}
-
-/** Where one subscription is written. */
-export function subscriptionAddressFor(subscriptionRef: string): string {
-  return `${subscriptionsAddress}/${encodeURIComponent(subscriptionRef)}`;
 }
 
 /** Where one payment method is taken off the customer it is attached to. */

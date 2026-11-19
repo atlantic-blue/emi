@@ -1,5 +1,10 @@
 import { aValueNobodyCanGuess } from '../lib/theProviderSignIn';
-import { THE_POOL_HOST } from '../lib/theSignIn';
+import {
+  THE_POOL_HOST,
+  THE_REGISTERED_RETURN_ADDRESS,
+  anApplicationStateFor,
+  isAnApplicationState,
+} from '../lib/theSignIn';
 import {
   STATE_BYTES,
   THE_API_HOST,
@@ -7,6 +12,7 @@ import {
   THE_TELEGRAM_SCOPE,
   TheTelegramSignInDidNotFinish,
   VERIFIER_BYTES,
+  aStateFor,
   WHERE_TELEGRAM_ASKS_HER,
   WHERE_TELEGRAM_SENDS_HER_BACK,
   WHERE_THE_SIGN_IN_FUNCTION_ANSWERS,
@@ -497,6 +503,23 @@ describe('the host the browser is allowed to reach', () => {
     // The route the api answers it on, which `infra/api.tf` names and which takes no authorizer.
     expect(new URL(WHERE_THE_SIGN_IN_FUNCTION_ANSWERS).pathname).toBe('/v1/sign-in/telegram');
   });
+});
+
+describe('a sign in the application started', () => {
+  it('comes back to the address the website registers', () => {
+    expect(whereTelegramSendsHerBack(THE_ORIGIN)).toBe(THE_REGISTERED_RETURN_ADDRESS);
+  });
+
+  it.each(['en', 'ru', 'es'] as const)(
+    'carries a mark no state of the website press in %s can carry',
+    (language) => {
+      const theApplicationWrote = anApplicationStateFor(language, aValueNobodyCanGuess(16));
+
+      expect(isAnApplicationState(theApplicationWrote)).toBe(true);
+      expect(isAnApplicationState(aStateFor(language))).toBe(false);
+      expect(theLanguageIn(theApplicationWrote)).toBeNull();
+    },
+  );
 });
 
 /** The digest a press hands Telegram, made here the way the press makes it. */

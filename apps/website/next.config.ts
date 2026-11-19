@@ -11,14 +11,14 @@ import type { NextConfig } from 'next';
  * of those with a 308 to the address without the slash, so the page the contract names is a
  * redirect and the live check of the deploy reads it as one.
  *
- * `@emi/tokens` ships TypeScript rather than a build, because every other workspace reads it that
- * way, so the site compiles it with its own pages.
+ * `@emi/tokens` and `@emi/sign-in` ship TypeScript rather than a build, because every other
+ * workspace reads them that way, so the site compiles them with its own pages.
  */
 const config: NextConfig = {
   output: 'standalone',
   poweredByHeader: false,
   trailingSlash: true,
-  transpilePackages: ['@emi/tokens'],
+  transpilePackages: ['@emi/sign-in', '@emi/tokens'],
 };
 
 export default config;

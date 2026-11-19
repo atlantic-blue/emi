@@ -6,9 +6,11 @@ resource "aws_apigatewayv2_api" "vault" {
   # The site is the only browser that calls this api from another address, so one origin is named
   # and a wildcard is refused. The api answers the preflight itself, before it matches a route, so
   # no authorizer runs for one and no route gives its authorizer up by being listed here.
+  # A request carrying an authorization header is never a simple request, so the browser asks
+  # first and sends nothing the answer does not list. Every method the site calls belongs here.
   cors_configuration {
     allow_origins     = ["https://myemi.app"]
-    allow_methods     = ["POST", "PUT"]
+    allow_methods     = ["GET", "PATCH", "POST", "PUT"]
     allow_headers     = ["authorization", "content-type"]
     allow_credentials = false
     max_age           = 86400
@@ -217,8 +219,30 @@ resource "aws_apigatewayv2_route" "read_subscription" {
   authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
 }
 
+# Cancel renewal, and the press that turns it back on. It is the same function and the same
+# authorizer again, because it reaches the one item under her digest and the one subscription that
+# item names. The year she paid for is not touched by it.
+resource "aws_apigatewayv2_route" "change_renewal" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "PATCH /v1/payments/subscription"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
+# The receipts row of her account page. It lists the invoices Stripe already holds for the
+# customer she pays under, and Emi keeps no copy of any of them. It is the same function and the
+# same authorizer as the three routes above, because it reads the same claim of the same token.
+resource "aws_apigatewayv2_route" "read_receipts" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "GET /v1/payments/receipts"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
 # The press on Change card, which makes a second setup to collect a payment method. It is the same
-# function and the same authorizer as the two above, because it reads the same claim of the same
+# function and the same authorizer as the routes above, because it reads the same claim of the same
 # token and reaches the one item under her own payer digest.
 resource "aws_apigatewayv2_route" "start_card_change" {
   api_id             = aws_apigatewayv2_api.vault.id

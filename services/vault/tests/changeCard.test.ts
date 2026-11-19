@@ -506,15 +506,16 @@ describe('the Change card row of her account page', () => {
       expect(stripe.calls()).toEqual([]);
     });
 
-    it('answers a path this function is wired to and does not take', async () => {
-      const { routes } = await theRoutes();
+    it('answers a path this function is wired to and does not take, and calls nothing', async () => {
+      const { routes, stripe } = await theRoutes();
 
       const answered = await routes({
         ...aRequest('POST', tokenOf()),
         rawPath: '/v1/payments/nothing-is-here',
       });
 
-      expect(answered.statusCode).toBe(404);
+      expect(answered.statusCode).toBe(405);
+      expect(stripe.calls()).toEqual([]);
     });
   });
 });

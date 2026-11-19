@@ -34,6 +34,7 @@ import { deployedFunctions, uploadOrder } from '../deploy/functions.ts';
 import { carriesTheAuthorizer, readTheRoutes, routesWithNoAuthorizer } from '../deploy/routes.ts';
 import { paymentPartitionPrefix } from '../../services/vault/src/payments/entitlements.ts';
 import { paymentMethodPath } from '../../services/vault/src/payments/changeCard.ts';
+import { receiptsPath } from '../../services/vault/src/payments/readReceipts.ts';
 import { subscriptionPath } from '../../services/vault/src/payments/startSubscription.ts';
 import { webhookPath } from '../../services/vault/src/payments/webhook.ts';
 import {
@@ -666,6 +667,28 @@ describe('the infrastructure is applied only by the pipeline', () => {
       );
     });
 
+    it('answers a change of the renewal on the same path, function and authorizer', () => {
+      const change = bodyOf('resource "aws_apigatewayv2_route" "change_renewal"');
+
+      expect(change).toContain(`route_key          = "PATCH ${subscriptionPath}"`);
+      expect(change).toContain('authorization_type = "JWT"');
+      expect(change).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(change).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+    });
+
+    it('lists her receipts on a path of its own, on the same function and the same authorizer', () => {
+      const receipts = bodyOf('resource "aws_apigatewayv2_route" "read_receipts"');
+
+      expect(receipts).toContain(`route_key          = "GET ${receiptsPath}"`);
+      expect(receipts).toContain('authorization_type = "JWT"');
+      expect(receipts).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(receipts).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+    });
+
     it('reaches the payments function, which the api is allowed to invoke', () => {
       const integration = bodyOf('resource "aws_apigatewayv2_integration" "payments_subscription"');
       const permission = bodyOf('resource "aws_lambda_permission" "payments_subscription"');
@@ -681,6 +704,12 @@ describe('the infrastructure is applied only by the pipeline', () => {
     it('lets the browser send the token, because the site calls this api from another origin', () => {
       expect(listedIn(cors, 'allow_headers')).toContain('authorization');
       expect(listedIn(cors, 'allow_methods')).toContain('POST');
+    });
+
+    it('answers the preflight for the read and the change this path also takes', () => {
+      expect(listedIn(cors, 'allow_methods')).toEqual(
+        expect.arrayContaining(['GET', 'PATCH', 'POST']),
+      );
     });
   });
 
@@ -2875,6 +2904,11 @@ describe('the sender of myemi.app, which is step 28.8', () => {
       expect(blockBodyOf(set, 'reputation_options')).toContain('reputation_metrics_enabled = true');
     });
 
+    it('leaves the delivery options of the set alone, because Emi sets none', () => {
+      expect(set).not.toContain('delivery_options {');
+      expect(blockBodyOf(set, 'lifecycle')).toContain('ignore_changes = [delivery_options]');
+    });
+
     it('makes that set the default of the identity, so a send cannot miss it', () => {
       expect(identity).toContain(
         'configuration_set_name = aws_sesv2_configuration_set.sender.configuration_set_name',
@@ -3512,8 +3546,13 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
   });
 
   describe('the methods and the headers it allows', () => {
-    it('allows the two methods the site calls across origins, and no other', () => {
-      expect(listedIn(cors, 'allow_methods')).toEqual(['POST', 'PUT']);
+    /**
+     * A request carrying an authorization header is never a simple request, so the browser asks
+     * first and sends nothing this answer does not list. A method missing here is a route of this
+     * api that no browser can reach, whatever the route itself says.
+     */
+    it('allows the four methods the site calls across origins, and no other', () => {
+      expect(listedIn(cors, 'allow_methods')).toEqual(['GET', 'PATCH', 'POST', 'PUT']);
     });
 
     it('allows the two headers the site sends, and no other', () => {

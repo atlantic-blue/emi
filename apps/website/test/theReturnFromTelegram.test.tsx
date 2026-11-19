@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { TheReturnFromTelegram } from '../components/theReturnFromTelegram';
 import { type Language, wordsIn } from '../app/words';
 import { theSessionHeld } from '../lib/theSessionSheHolds';
-import { THE_POOL_HOST } from '../lib/theSignIn';
+import { THE_POOL_HOST, anApplicationStateFor } from '../lib/theSignIn';
 import {
   WHERE_THE_SIGN_IN_FUNCTION_ANSWERS,
   forgetWhatSheStarted,
@@ -164,5 +164,44 @@ describe('the page Telegram sends her back to', () => {
     expect(whereSheWentNext).toEqual([]);
     expect(theSessionHeld()).toBeNull();
     expect(window.sessionStorage.getItem(theEntryFor('ru'))).toBeNull();
+  });
+});
+
+describe('the page Telegram sends her back to, when the application started the sign in', () => {
+  /** The state the application wrote, as a press on her phone in Spanish writes one. */
+  const THE_STATE_THE_APPLICATION_WROTE = anApplicationStateFor('es', 'a-state-her-phone-wrote');
+
+  it('sends the code and the state on to the application, and asks nobody anything', async () => {
+    whatThePressKept('es', THE_STATE_SHE_WROTE);
+    sheArrivesAt(`?code=a-code&state=${encodeURIComponent(THE_STATE_THE_APPLICATION_WROTE)}`);
+
+    const stub = anApiAndAPool([theUserNameAndTheAnswer, theChallenge, theTokens]);
+
+    const where = await theRelayPage();
+
+    expect(whereSheWentNext).toEqual([
+      `emi://sign-in/telegram?code=a-code&state=${encodeURIComponent(THE_STATE_THE_APPLICATION_WROTE)}`,
+    ]);
+    expect(where.textContent).toBe(wordsIn('en').returningWait);
+    expect(stub.went).toEqual([]);
+    expect(theSessionHeld()).toBeNull();
+    // The verifier is on her phone, so the page reads nothing this browser kept and removes none of it.
+    expect(window.sessionStorage.getItem(theEntryFor('es'))).not.toBeNull();
+  });
+
+  it('sends a refusal from Telegram on to the application too, so its session closes', async () => {
+    sheArrivesAt(
+      `?error=access_denied&state=${encodeURIComponent(THE_STATE_THE_APPLICATION_WROTE)}`,
+    );
+
+    const stub = anApiAndAPool([]);
+
+    const where = await theRelayPage();
+
+    expect(whereSheWentNext).toEqual([
+      `emi://sign-in/telegram?error=access_denied&state=${encodeURIComponent(THE_STATE_THE_APPLICATION_WROTE)}`,
+    ]);
+    expect(where.textContent).toBe(wordsIn('en').returningWait);
+    expect(stub.went).toEqual([]);
   });
 });

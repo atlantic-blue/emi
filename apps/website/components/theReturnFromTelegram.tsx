@@ -6,6 +6,7 @@ import type { Language, SiteWords } from '@/app/words';
 import { WHERE_SHE_TRIES_AGAIN } from '@/components/theReturnFromAProvider';
 import { WHERE_A_SIGN_IN_LANDS } from '@/components/theSignInForm';
 import { holdTheSession } from '@/lib/theSessionSheHolds';
+import { isAnApplicationState, theAddressBackToTheApplication } from '@/lib/theSignIn';
 import {
   forgetWhatSheStarted,
   theLanguageIn,
@@ -33,6 +34,11 @@ import { goTo } from '@/lib/whereSheGoesNext';
  *
  * The cause is kept out of the page on purpose. A reader learns nothing from it, and a sentence
  * that named it would be a sentence about the service rather than about what she does next.
+ *
+ * A state the application wrote is not finished here. The press was made on her phone, so the
+ * verifier is on the phone and nothing is in this browser. The page sends the code and the state on
+ * to the private scheme the authentication session of the phone ends on, and says the wait line
+ * while the session closes.
  */
 
 export function TheReturnFromTelegram({
@@ -46,6 +52,20 @@ export function TheReturnFromTelegram({
   const [didNotFinish, setDidNotFinish] = useState(false);
 
   useEffect(() => {
+    const came = new URLSearchParams(window.location.search);
+
+    if (isAnApplicationState(came.get('state'))) {
+      goTo(
+        theAddressBackToTheApplication({
+          code: came.get('code'),
+          state: came.get('state'),
+          error: came.get('error'),
+        }),
+      );
+
+      return;
+    }
+
     async function finish(): Promise<void> {
       try {
         const came = await theTokensSheCameBackWith(window.location.search);

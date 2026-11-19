@@ -1,24 +1,25 @@
 import type { AnsweredByStripe, AskedOfStripe, ReachesStripe } from '../../src/payments/stripe';
 import {
+  cancelAtPeriodEndField,
   customerAddressFor,
   customersAddress,
   detachAddressFor,
+  invoicesAddress,
   payerDigestKey,
   paymentMethodsAddress,
   setupIntentAddressFor,
   setupIntentsAddress,
   setupSucceeded,
-  subscriptionsAddress,
+  subscriptionAddressFor,
+  stripeApi,
 } from '../../src/payments/stripe';
 
 /**
  * Stripe, as far as the money reaches it: a double that answers what Stripe answers, and records
  * every call so a test reads the address, the headers and the form the function actually sent.
  *
- * It answers the objects by address rather than in order, so a route that called them the wrong
- * way round fails here rather than passing against a double that shrugged. The address of one
- * object is matched before the address of its collection, because the first is a prefix of nothing
- * and the second is a prefix of the first.
+ * It answers each object by address rather than in order, so a start that called them the wrong
+ * way round fails here rather than passing against a double that shrugged.
  */
 
 /** One call, as it left the function. */
@@ -34,6 +35,25 @@ export interface WhatStripeAnswers {
   readonly clientSecret?: string;
   /** The digest the metadata of the customer carries, which is what a read of it answers. */
   readonly holdsThePayerDigest?: string;
+  /** A status and a body for the customer call, where the test wants a refusal instead. */
+  readonly refusesTheCustomer?: AnsweredByStripe;
+  /** The same for the setup call. */
+  readonly refusesTheSetup?: AnsweredByStripe;
+  /** The same for the read of one customer, which is how a delivery names the digest. */
+  readonly refusesTheCustomerRead?: AnsweredByStripe;
+  /** The invoices the list answers with, in the order Stripe lists them. */
+  readonly listsTheseInvoices?: readonly Readonly<Record<string, unknown>>[];
+  /** Whether the list says Stripe holds a page after the one it answered. */
+  readonly holdsAPageAfterThat?: boolean;
+  /** A status and a body for the list call, where the test wants a refusal instead. */
+  readonly refusesTheInvoiceList?: AnsweredByStripe;
+  /** The same for the update of one subscription, which is how a renewal is stopped. */
+  readonly refusesTheSubscription?: AnsweredByStripe;
+  /**
+   * What the updated subscription answers its renewal as. The double echoes the field it was
+   * asked for unless a test names this, which is what Stripe does.
+   */
+  readonly saysTheRenewalStopped?: boolean;
   /** What every invoice of the customer is charged to today, which a card change replaces. */
   readonly chargesThePaymentMethod?: string;
   /** The customer a read of one setup names, which is how a card change learns whose it is. */
@@ -42,16 +62,8 @@ export interface WhatStripeAnswers {
   readonly theSetupReached?: string;
   /** The payment method that read answers with, which is what she gave the browser. */
   readonly theSetupCollected?: string;
-  /** A status and a body for the customer call, where the test wants a refusal instead. */
-  readonly refusesTheCustomer?: AnsweredByStripe;
-  /** The same for the setup call. */
-  readonly refusesTheSetup?: AnsweredByStripe;
-  /** The same for the read of one customer, which is how a delivery names the digest. */
-  readonly refusesTheCustomerRead?: AnsweredByStripe;
-  /** The same for the read of one setup. */
+  /** A status and a body for the read of one setup, where the test wants a refusal instead. */
   readonly refusesTheSetupRead?: AnsweredByStripe;
-  /** The same for the write of the subscription a card change moves. */
-  readonly refusesTheSubscription?: AnsweredByStripe;
   /** The same for taking the old payment method off the customer. */
   readonly refusesTheDetach?: AnsweredByStripe;
 }
@@ -62,6 +74,8 @@ export interface FakeStripe {
   calls(): OneCall[];
   /** The form one call carried, read as the fields the api reads. */
   fieldsOf(call: OneCall): Record<string, string>;
+  /** What one call asked for in its address, which is how a list says whose invoices. */
+  askedIn(call: OneCall): Record<string, string>;
 }
 
 /** The customer identifier the double answers with unless a test names another. */
@@ -87,7 +101,7 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
     reaches: async (address: string, asked: AskedOfStripe): Promise<AnsweredByStripe> => {
       calls.push({ address, asked });
 
-      // One setup, read back. It is the address of the setup itself rather than the list.
+      // One setup, read back. It is the address of the setup itself rather than the collection.
       if (address.startsWith(`${setupIntentsAddress}/`)) {
         return (
           answers.refusesTheSetupRead ?? {
@@ -103,8 +117,18 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
         );
       }
 
+      // Taking one payment method off its customer, which is the one call under this collection.
+      if (address.startsWith(`${paymentMethodsAddress}/`)) {
+        return (
+          answers.refusesTheDetach ?? {
+            status: 200,
+            body: JSON.stringify({ id: theOldPaymentMethodRef, object: 'payment_method' }),
+          }
+        );
+      }
+
       // A read of one customer, which is the address of the customer itself rather than the list.
-      // The same address takes the write that moves its default, and both answer a customer.
+      // The same address takes the write a card change makes, and both answer a customer.
       if (address.startsWith(`${customersAddress}/`)) {
         return (
           answers.refusesTheCustomerRead ?? {
@@ -124,20 +148,32 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
         );
       }
 
-      if (address.startsWith(`${paymentMethodsAddress}/`)) {
+      // The list, which carries what it asks for in the address rather than in a form body.
+      if (address.startsWith(`${invoicesAddress}?`)) {
         return (
-          answers.refusesTheDetach ?? {
+          answers.refusesTheInvoiceList ?? {
             status: 200,
-            body: JSON.stringify({ id: theOldPaymentMethodRef, object: 'payment_method' }),
+            body: JSON.stringify({
+              object: 'list',
+              data: answers.listsTheseInvoices ?? [],
+              has_more: answers.holdsAPageAfterThat === true,
+            }),
           }
         );
       }
 
-      if (address.startsWith(`${subscriptionsAddress}/`)) {
+      // One subscription, which is the address of the subscription itself rather than the list.
+      if (address.startsWith(`${stripeApi}/subscriptions/`)) {
+        const asItWasAsked = new URLSearchParams(asked.body).get(cancelAtPeriodEndField) === 'true';
+
         return (
           answers.refusesTheSubscription ?? {
             status: 200,
-            body: JSON.stringify({ id: aSubscriptionRef, object: 'subscription' }),
+            body: JSON.stringify({
+              id: address.slice(address.lastIndexOf('/') + 1),
+              object: 'subscription',
+              [cancelAtPeriodEndField]: answers.saysTheRenewalStopped ?? asItWasAsked,
+            }),
           }
         );
       }
@@ -173,11 +209,16 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
     },
     calls: () => [...calls],
     fieldsOf: (call: OneCall) => Object.fromEntries(new URLSearchParams(call.asked.body).entries()),
+    askedIn: (call: OneCall) => Object.fromEntries(new URL(call.address).searchParams.entries()),
   };
 }
 
 /** The address a read of one customer is sent to, so a test does not write it out itself. */
 export const readOfTheCustomer = (customerRef: string): string => customerAddressFor(customerRef);
+
+/** The address an update of one subscription is sent to. */
+export const updateOfTheSubscription = (subscriptionRef: string): string =>
+  subscriptionAddressFor(subscriptionRef);
 
 /** The address a read of one setup is sent to. */
 export const readOfTheSetup = (setupRef: string): string => setupIntentAddressFor(setupRef);

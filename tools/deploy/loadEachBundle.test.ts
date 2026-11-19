@@ -8,6 +8,7 @@ import { bundleFileName, type DeployedFunction } from './functions';
 import {
   type Answered,
   containerIdIn,
+  type LoadCheck,
   loadChecks,
   loadEveryBundle,
   portInsideTheImage,
@@ -22,6 +23,11 @@ import {
   type WhatACardChangeNeeds,
 } from '../../services/vault/src/payments/changeCard';
 import {
+  receiptsFor,
+  receiptsPath,
+  thatTokenReadsNoReceipts,
+} from '../../services/vault/src/payments/readReceipts';
+import {
   startSubscriptionFor,
   subscriptionPath,
   thatTokenStartsNothing,
@@ -31,6 +37,10 @@ import {
   subscriptionFor,
   thatTokenReadsNothing,
 } from '../../services/vault/src/payments/readSubscription';
+import {
+  changeRenewalFor,
+  thatTokenChangesNothing,
+} from '../../services/vault/src/payments/changeRenewal';
 import {
   thatDeliveryIsNotSigned,
   webhookFor,
@@ -379,7 +389,7 @@ describe('every bundle is loaded in a container of its own, and two in a row can
   });
 
   describe('the refusal a payments bundle owes', () => {
-    const [check, theRead] = loadChecks['emi-payments-subscription'] ?? [];
+    const [check, theRead, theChange, theReceipts] = loadChecks['emi-payments-subscription'] ?? [];
 
     /** Every port the start needs, each one raising, so a call that happens is a failure here. */
     const nothingItMayReach = (): WhatTheStartNeeds => ({
@@ -434,30 +444,82 @@ describe('every bundle is loaded in a container of its own, and two in a row can
     it('refuses the answer a bundle that read a subscription for nobody would give', () => {
       expect(theRead?.owes({ statusCode: 200, body: '{"state":"active"}' })).toBe(false);
     });
-    it('owes the two calls of a card change, on the path that handler names', () => {
-      const [, , press, confirm] = loadChecks['emi-payments-subscription'] ?? [];
 
-      for (const check of [press, confirm]) {
-        expect((check?.event as { rawPath?: string } | undefined)?.rawPath).toBe(paymentMethodPath);
-      }
-
-      const methodIn = (check: { event: unknown } | undefined): string | undefined =>
-        (check?.event as { requestContext?: { http?: { method?: string } } } | undefined)
-          ?.requestContext?.http?.method;
-
-      expect(methodIn(press)).toBe('POST');
-      expect(methodIn(confirm)).toBe('PUT');
+    it('owes a third answer, which is the press that stops a renewal on the same path', () => {
+      expect((theChange?.event as { rawPath?: string } | undefined)?.rawPath).toBe(
+        subscriptionPath,
+      );
+      expect(
+        (theChange?.event as { requestContext?: { http?: { method?: string } } } | undefined)
+          ?.requestContext?.http?.method,
+      ).toBe('PATCH');
     });
 
-    it('takes the refusal each call of a card change answers a request with no token with', async () => {
-      const [, , press, confirm] = loadChecks['emi-payments-subscription'] ?? [];
-      /** Every port a card change needs, each one raising, so a call that happens is a failure. */
-      const nothingACardChangeMayReach = (): WhatACardChangeNeeds => ({
+    it('takes the refusal the change answers a request with no token with', async () => {
+      const answered = await changeRenewalFor(
+        theChange?.event as HttpRequestEvent,
+        nothingItMayReach(),
+      );
+
+      expect(theChange?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatTokenChangesNothing });
+    });
+
+    it('refuses the answer a bundle that stopped a renewal for nobody would give', () => {
+      expect(theChange?.owes({ statusCode: 200, body: '{"state":"cancelling"}' })).toBe(false);
+    });
+    it('owes a fourth answer, which is the list of receipts on its own path', () => {
+      expect((theReceipts?.event as { rawPath?: string } | undefined)?.rawPath).toBe(receiptsPath);
+    });
+
+    it('takes the refusal the receipts answer a request with no token with', async () => {
+      const answered = await receiptsFor(theReceipts?.event as HttpRequestEvent, {
         entitlements: { readEntitlement: () => Promise.reject(new Error('the table was read')) },
         reaches: () => Promise.reject(new Error('Stripe was called')),
         secretKey: () => Promise.reject(new Error('the parameter store was read')),
         poolId: 'eu-central-1_NOTAPOOL',
       });
+
+      expect(theReceipts?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatTokenReadsNoReceipts });
+    });
+
+    it('refuses the answer a bundle that listed receipts for nobody would give', () => {
+      expect(theReceipts?.owes({ statusCode: 200, body: '{"receipts":[]}' })).toBe(false);
+    });
+
+    /**
+     * The two calls of a card change, found by the path they answer on rather than by where they
+     * sit in the list. A route added before them would otherwise move them, and a case reading the
+     * wrong event still passes.
+     */
+    const cardChanges = (): readonly (LoadCheck | undefined)[] =>
+      (loadChecks['emi-payments-subscription'] ?? []).filter(
+        (check) => (check.event as { rawPath?: string }).rawPath === paymentMethodPath,
+      );
+
+    /** Every port a card change needs, each one raising, so a call that happens is a failure. */
+    const nothingACardChangeMayReach = (): WhatACardChangeNeeds => ({
+      entitlements: { readEntitlement: () => Promise.reject(new Error('the table was read')) },
+      reaches: () => Promise.reject(new Error('Stripe was called')),
+      secretKey: () => Promise.reject(new Error('the parameter store was read')),
+      poolId: 'eu-central-1_NOTAPOOL',
+    });
+
+    const methodIn = (check: LoadCheck | undefined): string | undefined =>
+      (check?.event as { requestContext?: { http?: { method?: string } } } | undefined)
+        ?.requestContext?.http?.method;
+
+    it('owes a fifth and a sixth answer, which are the two calls of a card change', () => {
+      const [press, confirm] = cardChanges();
+
+      expect(cardChanges()).toHaveLength(2);
+      expect(methodIn(press)).toBe('POST');
+      expect(methodIn(confirm)).toBe('PUT');
+    });
+
+    it('takes the refusal each call of a card change answers a request with no token with', async () => {
+      const [press, confirm] = cardChanges();
 
       const pressed = await startCardChangeFor(
         press?.event as HttpRequestEvent,
@@ -475,7 +537,7 @@ describe('every bundle is loaded in a container of its own, and two in a row can
     });
 
     it('refuses the answer a bundle that let a card change through would give', () => {
-      const [, , press, confirm] = loadChecks['emi-payments-subscription'] ?? [];
+      const [press, confirm] = cardChanges();
 
       expect(press?.owes({ statusCode: 200, body: '{"clientSecret":"seti_1_secret_1"}' })).toBe(
         false,
