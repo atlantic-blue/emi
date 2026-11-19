@@ -295,8 +295,8 @@ export const russian: SiteWords = {
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'ПОДПИСКА',
   accountPlanName: 'Emi, на год',
-  accountRenewsOn: '39 евро в год. Продлится {date}',
-  accountPaidUntil: '39 евро в год. Оплачено до {date}',
+  accountRenewsOn: '{amount} евро в год. Продлится {date}',
+  accountPaidUntil: '{amount} евро в год. Оплачено до {date}',
   accountStateActive: 'Активна',
   accountStateRenewalOff: 'Продление выключено',
   accountPaidWith: 'Оплачено',

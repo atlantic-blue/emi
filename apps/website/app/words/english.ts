@@ -365,8 +365,8 @@ export const english = {
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'SUBSCRIPTION',
   accountPlanName: 'Emi, yearly',
-  accountRenewsOn: '39 euros a year. Renews on {date}',
-  accountPaidUntil: '39 euros a year. Paid until {date}',
+  accountRenewsOn: '{amount} euros a year. Renews on {date}',
+  accountPaidUntil: '{amount} euros a year. Paid until {date}',
   accountStateActive: 'Active',
   accountStateRenewalOff: 'Renewal off',
   accountPaidWith: 'Paid with',

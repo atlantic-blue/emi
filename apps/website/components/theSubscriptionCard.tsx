@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
+import { thePriceOnThisSite } from '@/lib/theOnePrice';
 import { theSessionHeld, whenTheSessionChanges } from '@/lib/theSessionSheHolds';
 import {
   type HowItAsks,
@@ -112,10 +113,9 @@ export function TheSubscriptionCard({
             <span className="flex flex-col">
               <span className="text-body-lg font-semibold">{words.accountPlanName}</span>
               <span className="text-body-sm text-siteQuietText">
-                {(which === 'active' ? words.accountRenewsOn : words.accountPaidUntil).replace(
-                  '{date}',
-                  theDateWritten(language, words, paidUntil),
-                )}
+                {(which === 'active' ? words.accountRenewsOn : words.accountPaidUntil)
+                  .replace('{amount}', thePriceOnThisSite.amount)
+                  .replace('{date}', theDateWritten(language, words, paidUntil))}
               </span>
             </span>
             <span className="rounded-full bg-siteTintLine px-spaceMd py-spaceXs text-body-sm font-semibold">

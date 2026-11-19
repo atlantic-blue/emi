@@ -9,6 +9,7 @@ import { createRoot } from 'react-dom/client';
 
 import { type Language, languages, wordsIn } from '../app/words';
 import { TheSubscriptionCard } from '../components/theSubscriptionCard';
+import { thePriceOnThisSite } from '../lib/theOnePrice';
 import { THE_SESSION_ENTRY } from '../lib/theSessionSheHolds';
 import {
   type WhatSheHolds,
@@ -147,7 +148,9 @@ describe('the subscription card of her account', () => {
       expect(whatTheBoardSays()).toContain('£29.99 a month. Renews on');
 
       expect(words.accountPlanName).toBe('Emi, yearly');
-      expect(words.accountRenewsOn).toContain('39 euros a year');
+      expect(words.accountRenewsOn.replace('{amount}', thePriceOnThisSite.amount)).toContain(
+        '39 euros a year',
+      );
       expect(words.accountRenewsOn).toContain('Renews on {date}');
     });
 

@@ -286,8 +286,8 @@ export const spanish: SiteWords = {
   // The subscription card of the account, from boards/Profile.dc.html.
   accountSubscriptionHeading: 'SUSCRIPCIÓN',
   accountPlanName: 'Emi, anual',
-  accountRenewsOn: '39 euros al año. Se renueva el {date}',
-  accountPaidUntil: '39 euros al año. Pagado hasta el {date}',
+  accountRenewsOn: '{amount} euros al año. Se renueva el {date}',
+  accountPaidUntil: '{amount} euros al año. Pagado hasta el {date}',
   accountStateActive: 'Activa',
   accountStateRenewalOff: 'Renovación desactivada',
   accountPaidWith: 'Pagado con',
