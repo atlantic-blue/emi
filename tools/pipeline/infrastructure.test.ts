@@ -654,6 +654,17 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(listedIn(authorizer, 'identity_sources')).toEqual(['$request.header.Authorization']);
     });
 
+    it('answers a read of the same path on the same function and the same authorizer', () => {
+      const read = bodyOf('resource "aws_apigatewayv2_route" "read_subscription"');
+
+      expect(read).toContain(`route_key          = "GET ${subscriptionPath}"`);
+      expect(read).toContain('authorization_type = "JWT"');
+      expect(read).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(read).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+    });
+
     it('reaches the payments function, which the api is allowed to invoke', () => {
       const integration = bodyOf('resource "aws_apigatewayv2_integration" "payments_subscription"');
       const permission = bodyOf('resource "aws_lambda_permission" "payments_subscription"');

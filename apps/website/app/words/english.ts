@@ -362,6 +362,22 @@ export const english = {
   accountRecordsStayOnYourPhone: 'Your records stay on your phone, so they are not here.',
   accountSignOut: 'Sign out',
 
+  // The subscription card of the account, from boards/Profile.dc.html.
+  accountSubscriptionHeading: 'SUBSCRIPTION',
+  accountPlanName: 'Emi, yearly',
+  accountRenewsOn: '39 euros a year. Renews on {date}',
+  accountPaidUntil: '39 euros a year. Paid until {date}',
+  accountStateActive: 'Active',
+  accountStateRenewalOff: 'Renewal off',
+  accountPaidWith: 'Paid with',
+  accountPaidWithCard: 'Card, on this site',
+  accountReceipts: 'Receipts',
+  accountChangeCard: 'Change card',
+  accountCancelRenewal: 'Cancel renewal',
+  accountRowsComeLater: 'These are not ready yet.',
+  accountNoSubscription: 'You have no subscription yet.',
+  accountBuyEmi: 'Buy Emi ›',
+
   // The page she buys Emi on, from docs/design/website/checkout/boards/Checkout.dc.html.
   checkoutTitle: 'Buy Emi',
   checkoutSignedInWith: 'Signed in with {way}.',
