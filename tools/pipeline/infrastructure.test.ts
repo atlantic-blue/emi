@@ -25,6 +25,8 @@ import {
   theCodeSignInFlow,
   theSiteAddress,
   theWaysAClientOffers,
+  phoneSignInProblems,
+  thePhoneReturnAddress,
   websiteSignInProblems,
   writtenSecretsIn,
 } from './signIn.ts';
@@ -2150,12 +2152,56 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(inClient('website')).not.toContain('"SignInWithApple"');
     });
 
-    it('leaves the application on her phone offering the code alone', () => {
+    it('gives the application on her phone the same ways in, back to its own scheme', () => {
       const phone = inClient('iphone');
 
-      expect(listedIn(phone, 'supported_identity_providers')).toEqual([]);
-      expect(listedIn(phone, 'callback_urls')).toEqual([]);
-      expect(listedIn(phone, 'allowed_oauth_flows')).toEqual([]);
+      expect(listedIn(phone, 'supported_identity_providers')).toEqual([
+        'COGNITO',
+        'aws_cognito_identity_provider.apple.provider_name',
+        'aws_cognito_identity_provider.google.provider_name',
+      ]);
+      expect(listedIn(phone, 'allowed_oauth_flows')).toEqual(['code']);
+      expect(listedIn(phone, 'allowed_oauth_scopes')).toEqual(['openid', 'email']);
+      expect(listedIn(phone, 'callback_urls').map((each) => valueOf(configuration, each))).toEqual([
+        thePhoneReturnAddress,
+      ]);
+      expect(listedIn(phone, 'logout_urls')).toEqual([]);
+      expect(phoneSignInProblems(configuration)).toEqual([]);
+    });
+
+    it.each([
+      [
+        'callback_urls = ["emi://sign-in/returning"]',
+        'callback_urls = ["https://myemi.app/en/sign-in/returning/"]',
+        'the phone comes back to https://myemi.app/en/sign-in/returning/, and it comes back to emi://sign-in/returning alone',
+      ],
+      [
+        'allowed_oauth_scopes                 = ["openid", "email"]',
+        'allowed_oauth_scopes                 = ["openid", "email", "profile"]',
+        'the phone asks for the scopes "openid email profile", and it may ask for "openid email" alone',
+      ],
+      [
+        'allowed_oauth_flows                  = ["code"]',
+        'allowed_oauth_flows                  = ["code", "implicit"]',
+        'the phone allows the flows code, implicit, and it may allow "code" alone',
+      ],
+    ])('refuses a phone client that changes %s', (written, changedTo, said) => {
+      expect(written).not.toBe(changedTo);
+      expect(configuration).toContain(written);
+      expect(phoneSignInProblems(configuration.replace(written, changedTo))).toEqual([said]);
+    });
+
+    it('refuses a phone client that offers a provider as text', () => {
+      expect(
+        phoneSignInProblems(
+          configuration.replace(
+            /(resource "aws_cognito_user_pool_client" "iphone"[\s\S]*?)aws_cognito_identity_provider\.google\.provider_name/,
+            '$1"Google"',
+          ),
+        ),
+      ).toEqual([
+        'the phone offers Google as text, and a client offers a provider only through the resource that makes it',
+      ]);
     });
 
     it('hands the browser a code to exchange, and never a token in an address', () => {
