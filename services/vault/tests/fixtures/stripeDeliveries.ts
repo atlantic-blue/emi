@@ -9,6 +9,14 @@ import { webhookPath } from '../../src/payments/webhook';
 /** The signing secret the tests sign with. It is not the shape of a real one. */
 export const theSigningSecret = 'the-signing-secret-the-operator-wrote';
 
+/**
+ * The version the webhook endpoint in Stripe is set to, which every delivery it sends names.
+ *
+ * It is written out here rather than read from the source. A change to the version the calls are
+ * made in then cannot move this one with it. A test compares the two.
+ */
+export const theVersionTheEventsCarry = '2026-10-28.endive';
+
 /** The header Stripe sends, over the timestamp and the body together. */
 export function signatureHeaderFor(body: string, secret: string, signedAt: Date): string {
   const timestamp = Math.floor(signedAt.getTime() / 1000);
@@ -46,6 +54,7 @@ export function anEvent(
   return {
     id: 'evt_000000000001',
     object: 'event',
+    api_version: theVersionTheEventsCarry,
     type,
     created: createdAt,
     livemode: false,
