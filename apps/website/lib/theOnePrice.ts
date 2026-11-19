@@ -62,7 +62,18 @@ const currencyWord = 'euros?|евро';
  */
 export function amountsOfMoneyIn(text: string): string[] {
   const money = new RegExp(
-    `[£€]\\s?\\d+(?:[.,]\\d+)?|\\d+(?:[.,]\\d+)?\\s(?:${currencyWord})|\\d+[.,]\\d{2}(?!\\d)`,
+    [
+      // The sign in front of the figure, which is how English writes the euro, and the sign after
+      // it, which is how Russian and Spanish write it.
+      String.raw`[£€]\s?\d+(?:[.,]\d+)?`,
+      String.raw`\d+(?:[.,]\d+)?\s?€`,
+      // The currency spelled out after the figure, with or without a space. No word boundary
+      // after it: a boundary is written for the Latin alphabet, and it asserts nothing at the end
+      // of a Cyrillic word.
+      String.raw`\d+(?:[.,]\d+)?\s?(?:${currencyWord})`,
+      // A separator with two places after it is money with no sign and no word at all.
+      String.raw`\d+[.,]\d{2}(?!\d)`,
+    ].join('|'),
     'gi',
   );
 
@@ -90,7 +101,14 @@ export function hostsIn(text: string): string[] {
  * these to find out what Emi costs, so a figure anywhere else is a second place for the price to
  * live, and two places drift apart.
  */
-export const theWordsThatNameMoney = ['accountPaidUntil', 'accountRenewsOn', 'price'] as const;
+export const theWordsThatNameMoney = [
+  'accountPaidUntil',
+  'accountRenewsOn',
+  'checkoutPay',
+  'checkoutPlanAmount',
+  'checkoutPrice',
+  'price',
+] as const;
 
 /** The words of one catalogue that name an amount, by the key a reader finds them under. */
 export function wordsNamingMoneyIn(said: Readonly<Record<string, string>>): string[] {

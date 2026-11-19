@@ -808,7 +808,20 @@ describe('the infrastructure is applied only by the pipeline', () => {
     });
 
     it('names no Stripe secret in the pipeline, so no job can carry one into a function', () => {
-      expect(deployText.toLowerCase()).not.toContain('stripe');
+      const named = deployText
+        .split('\n')
+        .filter((line) => line.toLowerCase().includes('stripe'))
+        .filter((line) => !/^\s*#/.test(line));
+
+      // The publishable key is the one value of Stripe the pipeline may carry. It is public by
+      // design, the site is built with it, and it opens nothing: a key that charges a card and a
+      // secret that verifies a delivery are both read from the parameter store at run time.
+      expect(named).toEqual([
+        '          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ vars.STRIPE_PUBLISHABLE_KEY }}',
+      ]);
+      expect(deployText).not.toContain('secrets.STRIPE');
+      expect(deployText).not.toContain(stripeSecretKeyParameter);
+      expect(deployText).not.toContain(stripeWebhookSecretParameter);
       expect(read('.github/workflows/ci.yml').toLowerCase()).not.toContain('stripe');
     });
 

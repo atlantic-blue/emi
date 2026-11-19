@@ -501,10 +501,16 @@ export function websiteSignInProblems(
  * A source offers a way in by one of two names: the key the catalogue of words gives the press, or
  * the name the service fixes for the provider. The service names Google by the word a person reads,
  * so a catalogue that shows her the word Google shows the word Apple beside it.
+ *
+ * The pool writes the name of the provider in front of the user name it makes, and that form reads
+ * as neither of the two above because the name runs on past the quote. A source holding
+ * `Google_000913847` offers Google as surely as one naming the provider, so it is a pair of
+ * its own.
  */
 export const theWaysInThatShipTogether: readonly { google: string; apple: readonly string[] }[] = [
   { google: 'signInGoogle', apple: ['signInApple'] },
   { google: "'Google'", apple: ["'SignInWithApple'", "'Apple'"] },
+  { google: "'Google_", apple: ["'SignInWithApple_"] },
 ];
 
 /** One source the rule reads: the path a reader would type, and the text of the file. */
