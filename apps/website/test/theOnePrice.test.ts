@@ -17,7 +17,9 @@ import {
   theOneHost,
   theOnePeriod,
   theOnePrice,
+  theWordsThatNameMoney,
   whoseWordsAreIn,
+  wordsNamingMoneyIn,
 } from '../lib/theOnePrice';
 import { websiteWorkspace } from './stylesheet';
 
@@ -84,9 +86,24 @@ describe('the site asks for one price', () => {
   it('names 39 a year and no other amount anywhere in the words', () => {
     const found = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
 
-    expect(found.length).toBe(languages.length);
+    expect(found.length).toBe(languages.length * theWordsThatNameMoney.length);
     expect(found.map((amount) => theAmountOf(amount))).toEqual(found.map(() => theOneAmount));
     expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
+  });
+
+  it.each(languages)(
+    'names money under the words that may name it, and no other, in %s',
+    (language) => {
+      expect(wordsNamingMoneyIn(wordsIn(language))).toEqual([...theWordsThatNameMoney].sort());
+    },
+  );
+
+  it('refuses a word that names money and is not one of those', () => {
+    const anotherPlace = { ...wordsIn('en'), supportSubscriptionLine: 'It costs 39 euros a year.' };
+
+    expect(wordsNamingMoneyIn(anotherPlace)).toEqual(
+      [...theWordsThatNameMoney, 'supportSubscriptionLine'].sort(),
+    );
   });
 
   it('refuses words that ask for a different amount, and says what she would be asked for', () => {

@@ -85,6 +85,21 @@ export function hostsIn(text: string): string[] {
   return [...text.matchAll(host)].map(([found]) => found);
 }
 
+/**
+ * The words that are allowed to name an amount. Every other word on the site sends her to one of
+ * these to find out what Emi costs, so a figure anywhere else is a second place for the price to
+ * live, and two places drift apart.
+ */
+export const theWordsThatNameMoney = ['accountPaidUntil', 'accountRenewsOn', 'price'] as const;
+
+/** The words of one catalogue that name an amount, by the key a reader finds them under. */
+export function wordsNamingMoneyIn(said: Readonly<Record<string, string>>): string[] {
+  return Object.entries(said)
+    .filter(([, value]) => amountsOfMoneyIn(value).length > 0)
+    .map(([key]) => key)
+    .sort();
+}
+
 /** One file of the catalogue, as a reader would name it and as it reads. */
 export interface WhatOneFileSays {
   readonly file: string;

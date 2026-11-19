@@ -29,6 +29,8 @@ import {
   theOneAmount,
   theOneHost,
   theOnePrice,
+  theWordsThatNameMoney,
+  wordsNamingMoneyIn,
 } from '../../apps/website/lib/theOnePrice';
 import { declarationsOf, stylesheetFor } from '../../apps/website/test/stylesheet';
 
@@ -325,8 +327,13 @@ defineFeature(feature, (test) => {
 
       const amounts = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
 
-      expect(amounts).toHaveLength(languages.length);
+      expect(amounts).toHaveLength(languages.length * theWordsThatNameMoney.length);
       expect(amounts.map((amount) => theAmountOf(amount))).toEqual(amounts.map(() => theOneAmount));
+
+      for (const language of languages) {
+        expect(wordsNamingMoneyIn(wordsIn(language))).toEqual([...theWordsThatNameMoney].sort());
+      }
+
       expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
       expect(everyFileOfTheWords().flatMap(problemsWithTheAddress)).toEqual([]);
       expect(theOneHost).toBe('myemi.app');
