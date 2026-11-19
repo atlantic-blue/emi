@@ -336,6 +336,9 @@ export const russian: SiteWords = {
   accountTurnRenewalOn: 'Включить продление',
   accountRenewalDidNotChange: 'Продление не изменилось. Попробуйте ещё раз.',
   accountRowsComeLater: 'Это пока не готово.',
+  accountReceiptsEmpty: 'Чеков пока нет.',
+  accountReceiptsDidNotLoad: 'Emi не смогла прочитать ваши чеки. Попробуйте ещё раз.',
+  accountMoreReceipts: 'Показать ещё',
   accountNoSubscription: 'У вас пока нет подписки.',
   accountBuyEmi: 'Купить Emi ›',
 

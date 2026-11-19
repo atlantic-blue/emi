@@ -270,7 +270,7 @@ describe('the subscription card of her account', () => {
       expect(card.text()).toContain(words.accountPaidWithCard);
     });
 
-    it('draws the three rows the board draws, with the renewal the only press of them', async () => {
+    it('draws the three rows the board draws, with Change card the one that is not built', async () => {
       const card = await theCardFor(anActivePayment);
 
       expect(card.rows().map((row) => row.textContent?.replace('›', ''))).toEqual([
@@ -278,10 +278,10 @@ describe('the subscription card of her account', () => {
         words.accountChangeCard,
         words.accountCancelRenewal,
       ]);
-      expect(card.rows().map((row) => row.disabled)).toEqual([true, true, false]);
+      expect(card.rows().map((row) => row.disabled)).toEqual([false, true, false]);
     });
 
-    it('still says the two rows that are not built yet come later', async () => {
+    it('still says the row that is not built yet comes later', async () => {
       const card = await theCardFor(anActivePayment);
 
       expect(card.text()).toContain(words.accountRowsComeLater);
