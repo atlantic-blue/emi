@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
 import { SITE_ORIGIN } from '@/lib/addresses';
+import { thePriceOnThisSite } from '@/lib/theOnePrice';
 import { theSessionHeld } from '@/lib/theSessionSheHolds';
 import {
   type AnElementOfStripe,
@@ -236,7 +237,7 @@ export function ThePaymentForm({
             }}
             type="button"
           >
-            {words.checkoutPay}
+            {words.checkoutPay.replace('{amount}', thePriceOnThisSite.amount)}
           </button>
         </div>
       ) : (

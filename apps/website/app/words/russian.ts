@@ -301,9 +301,7 @@ export const russian: SiteWords = {
   checkoutPlanEveryYear: 'Emi, каждый год.',
   checkoutPlanYearly: 'Год',
   checkoutPlanRenews: 'Продлевается каждый год',
-  checkoutPlanAmount: '39 € в год',
-  checkoutPrice:
-    'Первый месяц бесплатно, затем 39 евро в год, налог на добавленную стоимость включён.',
+  checkoutPlanAmount: '{amount} € в год',
   checkoutMethodHeading: 'Оплата.',
   checkoutMethodQuestion: 'Как вы хотите заплатить?',
   checkoutPayByCard: 'Apple Pay, Google Pay или карта',
@@ -313,7 +311,7 @@ export const russian: SiteWords = {
   checkoutOrPayByCard: 'или картой',
   checkoutTerms: 'Оплачивая, вы соглашаетесь с {terms}.',
   checkoutTermsLink: 'условиями',
-  checkoutPay: 'Заплатить 39 €',
+  checkoutPay: 'Заплатить {amount} €',
   checkoutStarsNotReady:
     'Оплата звёздами пока не готова. Заплатите картой здесь или вернитесь позже.',
   checkoutCancelAnyTime:

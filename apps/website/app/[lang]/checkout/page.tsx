@@ -5,6 +5,7 @@ import { type SiteWords, isLanguage, wordsIn } from '@/app/words';
 import { TheSignedInLine } from '@/components/theSignedInLine';
 import { ThePaymentForm } from '@/components/thePaymentForm';
 import { theLinksOf } from '@/lib/theAddressesOfAPage';
+import { thePriceOnThisSite } from '@/lib/theOnePrice';
 import { thePublishableKey } from '@/lib/theStripeOnThePage';
 
 /**
@@ -19,6 +20,10 @@ import { thePublishableKey } from '@/lib/theStripeOnThePage';
  * Every value is a class and none is a style attribute, because the content policy of SITE-6 names
  * a secret for a style and a style written on an element cannot carry one, so a browser would
  * refuse it and the page would quietly draw wrong.
+ *
+ * The figure and the sentence both come from `lib/theOnePrice.ts` and not from the catalogue of
+ * words. She reads the price here and meets it on her statement a press later, so one file holds
+ * what this site charges and every page that says it reads that file.
  */
 
 /** The path this page sits at under a language, which its own head and the sitemap both name. */
@@ -38,7 +43,7 @@ export async function generateMetadata({
 
   return {
     title: words.checkoutTitle,
-    description: words.checkoutPrice,
+    description: thePriceOnThisSite.said[language],
     alternates: theLinksOf(language, THE_CHECKOUT_PAGE),
   };
 }
@@ -75,9 +80,11 @@ export default async function CheckoutPage({ params }: { params: Promise<{ lang:
                 <span className="text-body-lg font-semibold">{words.checkoutPlanYearly}</span>
                 <span className="text-body-sm text-siteQuietText">{words.checkoutPlanRenews}</span>
               </span>
-              <span className="font-mono text-body-lg font-medium">{words.checkoutPlanAmount}</span>
+              <span className="font-mono text-body-lg font-medium">
+                {words.checkoutPlanAmount.replace('{amount}', thePriceOnThisSite.amount)}
+              </span>
             </div>
-            <p className="text-body-sm text-siteQuietText">{words.checkoutPrice}</p>
+            <p className="text-body-sm text-siteQuietText">{thePriceOnThisSite.said[lang]}</p>
           </section>
 
           <ThePaymentForm language={lang} publishableKey={thePublishableKey()} words={words} />

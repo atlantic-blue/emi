@@ -371,8 +371,7 @@ export const english = {
   checkoutPlanEveryYear: 'Emi, every year.',
   checkoutPlanYearly: 'Yearly',
   checkoutPlanRenews: 'Renews every year',
-  checkoutPlanAmount: '€39 a year',
-  checkoutPrice: 'One month free, then 39 euros a year, value added tax included.',
+  checkoutPlanAmount: '€{amount} a year',
   checkoutMethodHeading: 'Payment.',
   checkoutMethodQuestion: 'How would you like to pay?',
   checkoutPayByCard: 'Apple Pay, Google Pay or card',
@@ -382,7 +381,7 @@ export const english = {
   checkoutOrPayByCard: 'or pay by card',
   checkoutTerms: 'By paying you agree to the {terms}.',
   checkoutTermsLink: 'terms',
-  checkoutPay: 'Pay €39',
+  checkoutPay: 'Pay €{amount}',
   checkoutStarsNotReady: 'Paying in Stars is not ready yet. Pay by card here, or come back later.',
   checkoutCancelAnyTime:
     'Cancel on your account page at any time. The payment links to your account. It never links to your records.',

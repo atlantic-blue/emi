@@ -292,9 +292,7 @@ export const spanish: SiteWords = {
   checkoutPlanEveryYear: 'Emi, cada año.',
   checkoutPlanYearly: 'Anual',
   checkoutPlanRenews: 'Se renueva cada año',
-  checkoutPlanAmount: '39 € al año',
-  checkoutPrice:
-    'Un mes gratis, después 39 euros al año, impuesto sobre el valor añadido incluido.',
+  checkoutPlanAmount: '{amount} € al año',
   checkoutMethodHeading: 'Pago.',
   checkoutMethodQuestion: '¿Cómo quieres pagar?',
   checkoutPayByCard: 'Apple Pay, Google Pay o tarjeta',
@@ -304,7 +302,7 @@ export const spanish: SiteWords = {
   checkoutOrPayByCard: 'o paga con tarjeta',
   checkoutTerms: 'Al pagar aceptas los {terms}.',
   checkoutTermsLink: 'términos',
-  checkoutPay: 'Pagar 39 €',
+  checkoutPay: 'Pagar {amount} €',
   checkoutStarsNotReady:
     'Pagar con estrellas todavía no está listo. Paga con tarjeta aquí o vuelve más tarde.',
   checkoutCancelAnyTime:

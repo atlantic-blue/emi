@@ -89,9 +89,8 @@ describe('the site asks for one price in each shop it sells through', () => {
   });
 
   it.each(languages)('says what this site charges on the page she buys on, in %s', (language) => {
-    const said = wordsIn(language).checkoutPrice;
+    const said = thePriceOnThisSite.said[language];
 
-    expect(said).toBe(thePriceOnThisSite.said[language]);
     expect(amountsOfMoneyIn(said).map(theAmountOf)).toEqual([thePriceOnThisSite.amount]);
   });
 
@@ -102,15 +101,23 @@ describe('the site asks for one price in each shop it sells through', () => {
     expect(thePriceOnThisSite.amount).toBe('39');
   });
 
-  it('names the two amounts the two shops charge, and no other, anywhere in the words', () => {
+  it('names what the store charges, and no amount at all for this site, in the words', () => {
+    // The page she buys on reads its figure and its sentence from this file, so the catalogue of
+    // words carries the store's amount alone. A figure written back into the words would be a
+    // second place this site says what it costs, which is the drift this gate exists to catch.
     const found = everyFileOfTheWords().flatMap(({ text }) => amountsOfMoneyIn(text));
-    const charged = thePricesOfTheTwoWays.map((way) => way.amount);
 
-    expect(found.length).toBeGreaterThan(languages.length);
-    expect([...new Set(found.map((amount) => theAmountOf(amount)))].sort()).toEqual(
-      [...charged].sort(),
-    );
+    expect(found).toHaveLength(languages.length);
+    expect([...new Set(found.map((amount) => theAmountOf(amount)))]).toEqual([
+      thePriceOfTheStore.amount,
+    ]);
     expect(everyFileOfTheWords().flatMap(problemsWithWhatItCosts)).toEqual([]);
+
+    for (const language of languages) {
+      expect(wordsIn(language).checkoutPlanAmount).toContain('{amount}');
+      expect(amountsOfMoneyIn(wordsIn(language).checkoutPlanAmount)).toEqual([]);
+      expect(amountsOfMoneyIn(wordsIn(language).checkoutPay)).toEqual([]);
+    }
   });
 
   it('reads an amount written with the euro sign, before it and after it', () => {
@@ -124,7 +131,7 @@ describe('the site asks for one price in each shop it sells through', () => {
   it('refuses the price of one shop written in the words of the other', () => {
     const swapped = theWordsBut(
       'english.ts',
-      'One month free, then 39 euros a year, value added tax included.',
+      'One month free, then 29.99 pounds a month.',
       'One month free, then 39 euros a month.',
     );
 
