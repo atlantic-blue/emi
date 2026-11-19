@@ -73,15 +73,18 @@ When('she reads every press the page offers her', async ({ page, pressing }) => 
   expect(pressing.atTheTop.length).toBeGreaterThan(1);
   expect(pressing.atTheFoot.length).toBeGreaterThan(6);
 
-  // Four pages of the site offer her no row of presses inside the page itself. On the page she
+  // Five pages of the site offer her no row of presses inside the page itself. On the page she
   // signs in on she types an address, presses a way in or sends a form, and on her account she
   // signs out; not one of those carries an address, so none of them is read here. The two pages a
   // company sends her back to each offer one press, which is the way back when the sign in did
-  // not finish. Every other page offers her a row of ways on, and a page of that kind with
-  // nothing in the middle is a page that failed to draw.
+  // not finish. On the page she buys on she chooses a way to pay and pays, and a build with no
+  // key from Stripe draws the plan and a sentence saying so, which carries no press at all. Every
+  // other page offers her a row of ways on, and a page of that kind with nothing in the middle is
+  // a page that failed to draw.
   const offersNoPressOfItsOwn = [
     '/sign-in/',
     '/account/',
+    '/checkout/',
     '/sign-in/returning/',
     '/sign-in/telegram/',
   ].some((path) => new URL(page.url()).pathname.endsWith(path));

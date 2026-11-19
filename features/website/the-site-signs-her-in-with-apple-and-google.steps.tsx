@@ -251,13 +251,14 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'it allows no host outside the three that sign her in and the one that takes her card, and no page writes a style of its own',
+      'it allows no host outside the three that sign her in and the one that takes a card, and no page writes a style of its own',
       () => {
         const connect =
           policy.split('; ').find((directive) => directive.startsWith('connect-src')) ?? '';
 
-        // The pool, the host it answers the managed login on, the api the Telegram sign in
-        // calls, and the one Stripe answers a card on. A fifth value would be a host nobody chose.
+        // The pool, the host it answers the managed login on, the api the Telegram sign in calls,
+        // and the api of Stripe, which the form on the page she buys on calls from her browser.
+        // A fifth value would be a host Emi neither answers for nor chose.
         expect(connect.split(' ')).toEqual([
           'connect-src',
           `'self'`,

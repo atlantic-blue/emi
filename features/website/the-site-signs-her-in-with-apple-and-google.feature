@@ -38,7 +38,7 @@ Feature: The site signs her in with Apple and with Google
   Scenario: the page may reach the pool that answers on auth.myemi.app
     Given the policy every page of the site answers with
     Then it allows the host the pool answers on, beside the host the code sign in asks
-    And it allows no host outside the three that sign her in and the one that takes her card, and no page writes a style of its own
+    And it allows no host outside the three that sign her in and the one that takes a card, and no page writes a style of its own
 
   Scenario: every place that offers Google offers Apple beside it
     Given every source of this repository

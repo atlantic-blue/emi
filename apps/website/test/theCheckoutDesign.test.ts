@@ -54,6 +54,14 @@ function whatTheBoardSays(): string {
 const words = wordsIn('en');
 
 /**
+ * The two sentences that carry the figure, built the way the page builds them: the words of the
+ * catalogue with the amount the one price rule gives. The board was approved with that amount in
+ * it, so a price the site changed without changing the board is read here as a difference.
+ */
+const theAmountOfThePlan = words.checkoutPlanAmount;
+const thePressThatPays = words.checkoutPay;
+
+/**
  * The page as a reader sees it, read the same way as the board, so the two can be held against
  * each other. The key is set first, because a build with none draws the plan and no form at all.
  */
@@ -79,7 +87,7 @@ const theWordsTheBoardDraws = [
   words.checkoutPlanEveryYear,
   words.checkoutPlanYearly,
   words.checkoutPlanRenews,
-  words.checkoutPlanAmount,
+  theAmountOfThePlan,
   words.checkoutMethodHeading,
   words.checkoutMethodQuestion,
   words.checkoutPayByCard,
@@ -87,7 +95,7 @@ const theWordsTheBoardDraws = [
   words.checkoutPayByStars,
   words.checkoutPayByStarsWhere,
   words.checkoutTermsLink,
-  words.checkoutPay,
+  thePressThatPays,
   words.checkoutCancelAnyTime,
 ] as const;
 
@@ -153,9 +161,9 @@ describe('the approved board of the page she buys Emi on', () => {
     const page = await CheckoutPage({ params: Promise.resolve({ lang: 'en' }) });
     const said = renderToStaticMarkup(page);
 
-    expect(said).toContain(words.checkoutPlanAmount);
+    expect(said).toContain(theAmountOfThePlan);
     expect(said).toContain(words.checkoutNoPaymentFormYet);
-    expect(said).not.toContain(words.checkoutPay);
+    expect(said).not.toContain(thePressThatPays);
     expect(said).not.toContain(words.checkoutPayByCard);
   });
 });

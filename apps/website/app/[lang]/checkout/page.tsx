@@ -19,6 +19,10 @@ import { thePublishableKey } from '@/lib/theStripeOnThePage';
  * Every value is a class and none is a style attribute, because the content policy of SITE-6 names
  * a secret for a style and a style written on an element cannot carry one, so a browser would
  * refuse it and the page would quietly draw wrong.
+ *
+ * The figure and the sentence both come from `lib/theOnePrice.ts` and not from the catalogue of
+ * words. She reads the price here and meets it on her statement a press later, so one file holds
+ * what this site charges and every page that says it reads that file.
  */
 
 /** The path this page sits at under a language, which its own head and the sitemap both name. */

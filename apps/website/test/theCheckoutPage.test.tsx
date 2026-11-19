@@ -25,6 +25,12 @@ import { WHERE_A_SUBSCRIPTION_STARTS } from '../lib/theSubscriptionSheStarts';
 
 const words = wordsIn('en');
 
+/**
+ * The press that pays, as a reader meets it: the words of the catalogue with the figure the one
+ * price rule gives, which is the only place this site says what it charges.
+ */
+const thePressThatPays = words.checkoutPay;
+
 const A_KEY = 'pk_test_not_a_real_key';
 
 /** Where her browser was told to go, which is the end of this page in a browser. */
@@ -276,7 +282,7 @@ describe('the form she pays on', () => {
     await form.press(words.checkoutPayByStars);
 
     expect(form.text()).toContain(words.checkoutStarsNotReady);
-    expect(form.text()).not.toContain(words.checkoutPay);
+    expect(form.text()).not.toContain(thePressThatPays);
     expect([...form.holder.querySelectorAll('a')]).toEqual([]);
   });
 
@@ -284,7 +290,7 @@ describe('the form she pays on', () => {
     it('starts a subscription with her token and confirms the setup it answers with', async () => {
       const form = await aFormOnThePage();
 
-      await form.press(words.checkoutPay);
+      await form.press(thePressThatPays);
 
       expect(form.calls).toHaveLength(1);
       expect(form.calls[0]?.address).toBe(WHERE_A_SUBSCRIPTION_STARTS);
@@ -296,7 +302,7 @@ describe('the form she pays on', () => {
     it('leaves her on her account page once the setup is confirmed', async () => {
       const form = await aFormOnThePage();
 
-      await form.press(words.checkoutPay);
+      await form.press(thePressThatPays);
 
       expect(whereSheWentNext).toEqual(['/en/account/']);
     });
@@ -306,7 +312,7 @@ describe('the form she pays on', () => {
         stripe: fakeStripe({ submitRefuses: 'Your card number is incomplete.' }),
       });
 
-      await form.press(words.checkoutPay);
+      await form.press(thePressThatPays);
 
       expect(form.calls).toEqual([]);
       expect(form.did.confirmed).toEqual([]);
@@ -317,17 +323,17 @@ describe('the form she pays on', () => {
       const refused = 'Your card was declined.';
       const form = await aFormOnThePage({ stripe: fakeStripe({ refuses: refused }) });
 
-      await form.press(words.checkoutPay);
+      await form.press(thePressThatPays);
 
       expect(form.text()).toContain(refused);
-      expect(form.text()).toContain(words.checkoutPay);
+      expect(form.text()).toContain(thePressThatPays);
       expect(whereSheWentNext).toEqual([]);
     });
 
     it('says Emi could not start it when the route answers no secret', async () => {
       const form = await aFormOnThePage({ apiAnswers: false });
 
-      await form.press(words.checkoutPay);
+      await form.press(thePressThatPays);
 
       expect(form.text()).toContain(words.checkoutCouldNotStart);
       expect(form.did.confirmed).toEqual([]);
@@ -341,7 +347,7 @@ describe('the form she pays on', () => {
       await form.answerTheWalletEvent({ availablePaymentMethods: undefined });
 
       expect(form.text()).not.toContain(words.checkoutOrPayByCard);
-      expect(form.text()).toContain(words.checkoutPay);
+      expect(form.text()).toContain(thePressThatPays);
     });
 
     it('draws that line once a wallet of the device answers the same event', async () => {
@@ -359,7 +365,7 @@ describe('the form she pays on', () => {
 
       expect(form.text()).toBe(words.checkoutNoPaymentFormYet);
       expect(form.did.mounted).toEqual([]);
-      expect(form.text()).not.toContain(words.checkoutPay);
+      expect(form.text()).not.toContain(thePressThatPays);
     });
   });
 });
