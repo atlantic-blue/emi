@@ -12,9 +12,17 @@ import type { SiteWords } from '@/app/words';
  * it was.
  */
 
+/**
+ * The names the service fixes for the two providers, which `infra/cognito.tf` creates them under.
+ * The prefixes below are built from them because the service writes the name of the provider and
+ * then an underscore, so a name read here and a provider made there cannot drift apart.
+ */
+export const THE_PROVIDER_OF_APPLE = 'SignInWithApple';
+export const THE_PROVIDER_OF_GOOGLE = 'Google';
+
 /** The three prefixes the service writes, which `docs/design/payments.md` section 1 names. */
-export const THE_PREFIX_OF_APPLE = 'SignInWithApple_';
-export const THE_PREFIX_OF_GOOGLE = 'Google_';
+export const THE_PREFIX_OF_APPLE = `${THE_PROVIDER_OF_APPLE}_`;
+export const THE_PREFIX_OF_GOOGLE = `${THE_PROVIDER_OF_GOOGLE}_`;
 export const THE_PREFIX_OF_TELEGRAM = 'tg_';
 
 /** The claim the pool user name travels in, which is the claim the payment route reads as well. */

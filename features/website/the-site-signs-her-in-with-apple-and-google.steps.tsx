@@ -17,6 +17,7 @@ import { SITE_ORIGIN } from '../../apps/website/lib/addresses';
 import { aNonce, policyAllowing } from '../../apps/website/lib/contentSecurityPolicy';
 import { THE_SIGN_IN_HOST } from '../../apps/website/lib/theProviderSignIn';
 import { THE_POOL_HOST } from '../../apps/website/lib/theSignIn';
+import { THE_STRIPE_API_HOST } from '../../apps/website/lib/theStripeOnThePage';
 import { THE_API_HOST } from '../../apps/website/lib/theTelegramSignIn';
 import { thePagesOfTheSite } from '../../apps/website/tools/theFilesACrawlerReads';
 import { type ASource, placesOfferingGoogleWithoutApple } from '../../tools/pipeline/signIn';
@@ -250,20 +251,22 @@ defineFeature(feature, (test) => {
     });
 
     and(
-      'it allows no host outside the three that sign her in, and no page writes a style of its own',
+      'it allows no host outside the three that sign her in and the one that takes her card, and no page writes a style of its own',
       () => {
         const connect =
           policy.split('; ').find((directive) => directive.startsWith('connect-src')) ?? '';
 
-        // The pool, the host it answers the managed login on, and the api the Telegram sign in
-        // calls. A fourth value would be a host Emi does not answer for.
+        // The pool, the host it answers the managed login on, the api the Telegram sign in
+        // calls, and the one Stripe answers a card on. A fifth value would be a host nobody chose.
         expect(connect.split(' ')).toEqual([
           'connect-src',
           `'self'`,
           THE_POOL_HOST,
           THE_SIGN_IN_HOST,
           THE_API_HOST,
+          THE_STRIPE_API_HOST,
         ]);
+        expect(THE_STRIPE_API_HOST).toBe('https://api.stripe.com');
         expect(policy).toContain(`default-src 'self'`);
         expect(policy).toContain(`frame-ancestors 'none'`);
       },

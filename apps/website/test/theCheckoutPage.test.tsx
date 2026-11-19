@@ -31,6 +31,13 @@ const A_KEY = 'pk_test_not_a_real_key';
 const whereSheWentNext: string[] = [];
 const A_CLIENT_SECRET = 'seti_000000000001_secret_000000000001';
 
+/**
+ * The names the pool writes in front of the subject a provider gave, written out here rather than
+ * read from the page, so a page that renamed one of them would be read saying the wrong thing.
+ */
+const THE_APPLE_NAME = 'SignInWithApple';
+const THE_GOOGLE_NAME = 'Google';
+
 /** The token she holds, which carries the one claim the line under the title reads. */
 function anIdToken(userName: string): string {
   const part = (held: unknown): string =>
@@ -155,7 +162,7 @@ async function aFormOnThePage(
     window.localStorage.setItem(
       THE_SESSION_ENTRY,
       JSON.stringify({
-        idToken: anIdToken('SignInWithApple_000482910'),
+        idToken: anIdToken(`${THE_APPLE_NAME}_000482910`),
         accessToken: 'access',
         refreshToken: 'refresh',
       }),
@@ -229,8 +236,8 @@ describe('the line under the title', () => {
   }
 
   it.each([
-    ['SignInWithApple_000482910', 'Apple'],
-    ['Google_000913847', 'Google'],
+    [`${THE_APPLE_NAME}_000482910`, 'Apple'],
+    [`${THE_GOOGLE_NAME}_000913847`, 'Google'],
     ['tg_0000000000000000000000000', 'Telegram'],
     ['7f3a1c20-0000-4000-8000-000000000000', words.checkoutWayAddress],
   ])('says the way %s signed in, which is %s', async (userName, named) => {

@@ -20,6 +20,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { servedFonts } from '../../apps/website/app/fonts';
 import RootLayout from '../../apps/website/app/[lang]/layout';
 import NotFound from '../../apps/website/app/[lang]/not-found';
+import { aNonce, policyAllowing } from '../../apps/website/lib/contentSecurityPolicy';
 import { SERVED_FACE_VARIABLES } from '../../apps/website/lib/face';
 import { fontLoaderCalls } from '../../apps/website/test/doubles/nextFontLocal';
 import { whatTheMarkupDraws } from '../../apps/website/test/stylesheet';
@@ -107,7 +108,31 @@ const theApiThatSignsHerIn = 'https://2pumohtm7l.execute-api.eu-central-1.amazon
  */
 const theLoginSheLeavesForOnTelegram = 'https://oauth.telegram.org';
 
-function reachesAnotherCompany(source: string): boolean {
+/**
+ * The eighth, and the one company a file of this site really asks for something: Stripe, which
+ * takes her card. The library is loaded from Stripe rather than bundled, because Stripe refuses a
+ * bundled copy and stops fixing one, and the three hosts below are the three the content policy of
+ * the site names. The policy is read for them, so this list cannot grow past what a browser is
+ * allowed to reach.
+ *
+ * They are allowed in one file, which is the file the policy reads them from. Stripe written into
+ * a page, a component or anywhere else on the site is still a company a page asks for something.
+ */
+const theStripeThatTakesHerCard = [
+  'https://js.stripe.com',
+  'https://api.stripe.com',
+  'https://hooks.stripe.com',
+];
+
+/** The one file those three addresses are written in. */
+const theFileStripeIsNamedIn = 'apps/website/lib/theStripeOnThePage.ts';
+
+/** What one file of the site, named by the path a reader would type, is allowed to name. */
+function whatThisFileMayName(file: string): readonly string[] {
+  return file === theFileStripeIsNamedIn ? theStripeThatTakesHerCard : [];
+}
+
+function reachesAnotherCompany(source: string, alsoAllowed: readonly string[] = []): boolean {
   const withoutWhatSheChose = [
     theSiteItself,
     theCommunitySheCanOpen,
@@ -117,6 +142,7 @@ function reachesAnotherCompany(source: string): boolean {
     theAddressThePoolAnswersOn,
     theApiThatSignsHerIn,
     theLoginSheLeavesForOnTelegram,
+    ...alsoAllowed,
   ].reduce((text, allowed) => text.split(allowed).join(''), source);
 
   return (
@@ -253,7 +279,12 @@ defineFeature(feature, (test) => {
 
       expect(readable.length).toBeGreaterThan(8);
 
-      const reaching = readable.filter((file) => reachesAnotherCompany(readFileSync(file, 'utf8')));
+      const reaching = readable.filter((file) =>
+        reachesAnotherCompany(
+          readFileSync(file, 'utf8'),
+          whatThisFileMayName(relative(repositoryRoot, file)),
+        ),
+      );
 
       expect(reaching.map((file) => relative(repositoryRoot, file))).toEqual([]);
 
@@ -296,6 +327,36 @@ defineFeature(feature, (test) => {
       expect(reachesAnotherCompany(`she presses ${theBetaSheCanJoin}`)).toBe(false);
       expect(reachesAnotherCompany('https://testflight.apple.com/join/somebody-else')).toBe(true);
       expect(reachesAnotherCompany('fetch("https://api.apple.com/apps")')).toBe(true);
+
+      // Stripe is allowed in the one file that names it, and nowhere else. A browser may reach
+      // those three hosts, so the policy of the site is read for each of them rather than this
+      // scenario being the place that decides it.
+      const policy = policyAllowing(aNonce());
+
+      for (const host of theStripeThatTakesHerCard) {
+        expect(policy).toContain(host);
+      }
+
+      const inTheStripeFile = whatThisFileMayName(theFileStripeIsNamedIn);
+
+      expect(
+        reachesAnotherCompany("const THE_LIBRARY = 'https://js.stripe.com/v3/'", inTheStripeFile),
+      ).toBe(false);
+      // The same line in any other file of the site is still a company a page asks for something.
+      expect(
+        reachesAnotherCompany(
+          "const THE_LIBRARY = 'https://js.stripe.com/v3/'",
+          whatThisFileMayName('apps/website/components/thePaymentForm.tsx'),
+        ),
+      ).toBe(true);
+      // The three hosts rather than the company: another host of Stripe is refused in that file
+      // too, and so is anybody else.
+      expect(reachesAnotherCompany('fetch("https://dashboard.stripe.com")', inTheStripeFile)).toBe(
+        true,
+      );
+      expect(reachesAnotherCompany('fetch("https://someone-else.example")', inTheStripeFile)).toBe(
+        true,
+      );
 
       const typing = readable.filter((file) =>
         /#[0-9a-fA-F]{3,8}\b/.test(readFileSync(file, 'utf8')),

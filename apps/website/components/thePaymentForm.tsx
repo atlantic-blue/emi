@@ -55,7 +55,7 @@ export interface WhatThePaymentFormNeeds {
 
 const theChoice = (chosen: boolean): string =>
   [
-    'flex w-full min-h-[64px] items-center justify-between gap-spaceMd rounded-lg bg-siteCard px-margin py-spaceLg text-left',
+    'flex min-h-[64px] w-full items-center justify-between gap-spaceMd rounded-lg bg-siteCard px-margin py-spaceLg text-left',
     chosen ? 'border-2 border-siteAccent' : 'border-hairline border-siteControlLine',
   ].join(' ');
 
