@@ -38,16 +38,25 @@ export const spanish: CatalogueIn<'es'> = {
   'account.gate.title': 'Entra en Emi',
   'account.problem.addressIsNotValid':
     'Esa no es una dirección de correo. Compruébala y escríbela otra vez.',
+  'account.problem.appleDidNotFinish':
+    'Ese acceso no terminó. Pulsa Entrar con Apple e inténtalo otra vez.',
   'account.problem.codeHasExpired': 'Ese código ha caducado. Envía uno nuevo.',
   'account.problem.codeIsWrong': 'Ese código no es correcto. Compruébalo y escríbelo otra vez.',
+  'account.problem.googleDidNotFinish':
+    'Ese acceso no terminó. Pulsa Entrar con Google e inténtalo otra vez.',
   'account.problem.needsTheCode': 'Escribe el código del correo.',
   'account.problem.nothingReached':
     'Tu teléfono no pudo conectar con Emi. Comprueba la conexión e inténtalo otra vez.',
   'account.problem.signsInWithGoogleOrApple':
     'Ya has usado esta dirección para entrar con Google o Apple.',
+  'account.problem.telegramDidNotFinish':
+    'Ese acceso no terminó. Pulsa Entrar con Telegram e inténtalo otra vez.',
   'account.problem.tooManyTries':
     'Demasiados intentos. Espera unos minutos y envía un código nuevo.',
+  'account.way.apple': 'Apple',
   'account.way.email': 'Correo',
+  'account.way.google': 'Google',
+  'account.way.telegram': 'Telegram',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'Día {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} de {month}',

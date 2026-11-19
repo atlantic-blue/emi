@@ -1,7 +1,18 @@
 import { ASignInProblem, type TheCodeSheWaitsFor, type TheSignIn } from '@emi/sign-in';
 import { type ReactNode, useRef, useState } from 'react';
 
+import { readingLanguage } from '../../language';
 import { keepHerSignIn } from '../../services/signIn/herSignIn';
+import {
+  type AProvider,
+  TheProviderSignInDidNotFinish,
+  signInWithAProvider,
+} from '../../services/signIn/theProviderSignIn';
+import {
+  type OpenTheSession,
+  TheTelegramSignInDidNotFinish,
+  signInWithTelegram,
+} from '../../services/signIn/theTelegramSignIn';
 import type { SecureStore } from '../../services/vault/keychain';
 import { AccountEmailCode, type TheOneLine } from './AccountEmailCode';
 import { AccountGate } from './AccountGate';
@@ -18,22 +29,41 @@ function causeOf(problem: unknown): AccountProblem {
   return problem instanceof ASignInProblem ? problem.because : 'nothingReachedTheService';
 }
 
+function causeOfTelegram(problem: unknown): AccountProblem {
+  return problem instanceof TheTelegramSignInDidNotFinish ? problem.because : 'itDidNotFinish';
+}
+
+const theProviderDidNotFinish: Readonly<Record<AProvider, AccountProblem>> = {
+  apple: 'appleDidNotFinish',
+  google: 'googleDidNotFinish',
+};
+
+function causeOfAProvider(provider: AProvider, problem: unknown): AccountProblem {
+  return problem instanceof TheProviderSignInDidNotFinish &&
+    problem.because === 'nothingReachedTheService'
+    ? 'nothingReachedTheService'
+    : theProviderDidNotFinish[provider];
+}
+
 /**
  * The two screens of a sign in by email code, which are one piece of state: the address she typed
- * and the code the service is waiting for. A press while a request is out does nothing, because
- * one press is one email.
+ * and the code the service is waiting for, and the presses on Apple, Google and Telegram beside
+ * them. A press while a request is out does nothing, because one press is one email or one browser
+ * session.
  */
 export function SignInFlow({
   signIn,
   keychain,
   today,
   onSignedIn,
+  openTheSession,
 }: {
   readonly signIn: TheSignIn;
   readonly keychain: SecureStore;
   /** The day she is living in, which the account screen reads back as the day she signed in. */
   readonly today: () => string;
   readonly onSignedIn: () => void;
+  readonly openTheSession: OpenTheSession;
 }): ReactNode {
   const [address, setAddress] = useState('');
   const [code, setCode] = useState('');
@@ -123,6 +153,63 @@ export function SignInFlow({
     }
   }
 
+  async function logInWithTelegram(): Promise<void> {
+    if (isAsking.current) {
+      return;
+    }
+
+    isAsking.current = true;
+    setProblem(null);
+
+    try {
+      const came = await signInWithTelegram(readingLanguage(), { signIn, openTheSession });
+
+      if (came.kind === 'sheTurnedBack') {
+        return;
+      }
+
+      await keepHerSignIn(keychain, {
+        way: 'telegram',
+        since: today(),
+        refreshToken: came.held.refreshToken,
+      });
+      onSignedIn();
+    } catch (refused) {
+      setProblem(causeOfTelegram(refused));
+    } finally {
+      isAsking.current = false;
+    }
+  }
+
+  async function signInWith(provider: AProvider): Promise<void> {
+    if (isAsking.current) {
+      return;
+    }
+
+    isAsking.current = true;
+    setProblem(null);
+
+    try {
+      const came = await signInWithAProvider(provider, { openTheSession });
+
+      if (came.kind === 'sheTurnedBack') {
+        return;
+      }
+
+      await keepHerSignIn(keychain, {
+        way: provider,
+        address: came.address,
+        since: today(),
+        refreshToken: came.held.refreshToken,
+      });
+      onSignedIn();
+    } catch (refused) {
+      setProblem(causeOfAProvider(provider, refused));
+    } finally {
+      isAsking.current = false;
+    }
+  }
+
   function useAnotherAddress(): void {
     setWaiting(null);
     setCode('');
@@ -135,7 +222,10 @@ export function SignInFlow({
       <AccountGate
         address={address}
         onAddress={setAddress}
+        onApple={() => void signInWith('apple')}
+        onGoogle={() => void signInWith('google')}
         onSendCode={() => void sendACode()}
+        onTelegram={() => void logInWithTelegram()}
         problem={problem === null ? null : theProblemSaid(problem)}
       />
     );

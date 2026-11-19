@@ -134,7 +134,7 @@ describe('she signs in to Emi with a code sent to her email', () => {
       );
     });
 
-    it('draws Apple, Google and Telegram, and none of them takes a press', async () => {
+    it('draws Apple, Google and Telegram, each with its words and each taking a press', async () => {
       const cognito = theCognitoSheReaches();
       await sheOpensTheAccountRow();
 
@@ -146,10 +146,7 @@ describe('she signs in to Emi with a code sent to her email', () => {
         const button = screen.getByTestId(testID);
 
         expect(button).toHaveTextContent(label);
-        expect(button).toBeDisabled();
-        expect(button.props.accessibilityState).toMatchObject({ disabled: true });
-
-        await fireEvent.press(button);
+        expect(button).not.toBeDisabled();
       }
 
       expect(screen.getByTestId(accountGateScreenTestID)).toBeTruthy();

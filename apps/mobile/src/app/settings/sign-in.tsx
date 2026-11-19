@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { openAuthSessionAsync } from 'expo-web-browser';
 import { type ReactNode, useMemo } from 'react';
 
 import { SignInFlow } from '../../features/account/SignInFlow';
@@ -18,6 +19,7 @@ export default function SignInRoute(): ReactNode {
     <SignInFlow
       keychain={keychain}
       onSignedIn={() => router.replace('/settings/account')}
+      openTheSession={openAuthSessionAsync}
       signIn={theAppSignIn}
       today={() => localDay(new Date())}
     />

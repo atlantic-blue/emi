@@ -38,16 +38,25 @@ export const russian: CatalogueIn<'ru'> = {
   'account.gate.telegram': 'Войти через Telegram',
   'account.gate.title': 'Вход в Emi',
   'account.problem.addressIsNotValid': 'Это не адрес почты. Проверьте его и введите снова.',
+  'account.problem.appleDidNotFinish':
+    'Этот вход не завершился. Нажмите «Войти через Apple» и попробуйте снова.',
   'account.problem.codeHasExpired': 'Срок кода истёк. Отправьте новый.',
   'account.problem.codeIsWrong': 'Этот код не подходит. Проверьте его и введите снова.',
+  'account.problem.googleDidNotFinish':
+    'Этот вход не завершился. Нажмите «Войти через Google» и попробуйте снова.',
   'account.problem.needsTheCode': 'Введите код из письма.',
   'account.problem.nothingReached':
     'Телефон не смог связаться с Emi. Проверьте соединение и попробуйте снова.',
   'account.problem.signsInWithGoogleOrApple':
     'Вы уже использовали этот адрес для входа через Google или Apple.',
+  'account.problem.telegramDidNotFinish':
+    'Этот вход не завершился. Нажмите «Войти через Telegram» и попробуйте снова.',
   'account.problem.tooManyTries':
     'Слишком много попыток. Подождите несколько минут и отправьте новый код.',
+  'account.way.apple': 'Apple',
   'account.way.email': 'Почта',
+  'account.way.google': 'Google',
+  'account.way.telegram': 'Telegram',
   'calendar.daySheet.andLogged': '{said}. {logged}',
   'calendar.daySheet.cycleDay': 'День {day}, {phase}',
   'calendar.daySheet.day': '{weekday}, {date} {month}',

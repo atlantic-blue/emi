@@ -10,14 +10,24 @@ import {
 import {
   accountGateAppleTestID,
   accountGateEmailTestID,
+  accountGateLineTestID,
   accountGateSendCodeTestID,
+  accountGateTelegramTestID,
   accountGateTitleTestID,
 } from '../../../src/features/account/AccountGate';
 import { SignInFlow } from '../../../src/features/account/SignInFlow';
 import { theAppSignIn } from '../../../src/services/signIn/theAppSignIn';
 import { expoKeychain } from '../../../src/services/vault/keychain';
-import { resetExpoSecureStore } from '../../fixtures/expoSecureStore';
+import { itemsInTheKeychain, resetExpoSecureStore } from '../../fixtures/expoSecureStore';
+import {
+  openAuthSessionAsync,
+  resetExpoWebBrowser,
+  sessionsThatOpened,
+  theSessionEnds,
+} from '../../fixtures/expoWebBrowser';
 import { aWrongCode, theCognitoSheReaches } from '../../fixtures/theCognitoSheReaches';
+import { theProviderSignInSheReaches } from '../../fixtures/theProviderSignInSheReaches';
+import { theTelegramSignInSheReaches } from '../../fixtures/theTelegramSignInSheReaches';
 import { OnAPhone } from '../../fixtures/theSafeArea';
 
 jest.mock('expo-secure-store', () => jest.requireActual('../../fixtures/expoSecureStore'));
@@ -29,6 +39,7 @@ const theWrongCodeSentence = 'Ese código no es correcto. Compruébalo y escríb
 describe('the sign in, in Spanish', () => {
   beforeEach(() => {
     resetExpoSecureStore();
+    resetExpoWebBrowser();
   });
 
   afterEach(() => {
@@ -43,6 +54,7 @@ describe('the sign in, in Spanish', () => {
         <SignInFlow
           keychain={expoKeychain()}
           onSignedIn={() => undefined}
+          openTheSession={openAuthSessionAsync}
           signIn={theAppSignIn}
           today={() => '2026-11-13'}
         />
@@ -70,5 +82,70 @@ describe('the sign in, in Spanish', () => {
     expect(await screen.findByText(theWrongCodeSentence)).toBeTruthy();
     expect(screen.getByTestId(accountEmailCodeLineTestID)).toHaveTextContent(theWrongCodeSentence);
     expect(screen.queryByText('El código sirve durante 15 minutos.')).toBeNull();
+  });
+
+  it('writes Telegram in Spanish, and says in Spanish that a return with another state did not finish', async () => {
+    const service = theTelegramSignInSheReaches();
+    theSessionEnds(() =>
+      Promise.resolve({
+        type: 'success',
+        url: 'emi://sign-in/telegram?code=a-code&state=app.es.a-state-another-phone-wrote',
+      }),
+    );
+
+    await render(
+      <OnAPhone>
+        <SignInFlow
+          keychain={expoKeychain()}
+          onSignedIn={() => undefined}
+          openTheSession={openAuthSessionAsync}
+          signIn={theAppSignIn}
+          today={() => '2026-11-13'}
+        />
+      </OnAPhone>,
+    );
+
+    expect(screen.getByTestId(accountGateTelegramTestID)).toHaveTextContent('Entrar con Telegram');
+
+    await fireEvent.press(screen.getByTestId(accountGateTelegramTestID));
+
+    expect(await screen.findByTestId(accountGateLineTestID)).toHaveTextContent(
+      'Ese acceso no terminó. Pulsa Entrar con Telegram e inténtalo otra vez.',
+    );
+    expect(new URL(sessionsThatOpened()[0]?.address ?? '').searchParams.get('state')).toMatch(
+      /^app\.es\./,
+    );
+    expect(service.went).toEqual([]);
+    expect(itemsInTheKeychain()).toEqual({});
+  });
+
+  it('says in Spanish that a sign in with Apple did not finish', async () => {
+    const pool = theProviderSignInSheReaches();
+    theSessionEnds(() =>
+      Promise.resolve({
+        type: 'success',
+        url: 'emi://sign-in/returning?code=a-code&state=a-state-another-phone-wrote',
+      }),
+    );
+
+    await render(
+      <OnAPhone>
+        <SignInFlow
+          keychain={expoKeychain()}
+          onSignedIn={() => undefined}
+          openTheSession={openAuthSessionAsync}
+          signIn={theAppSignIn}
+          today={() => '2026-11-13'}
+        />
+      </OnAPhone>,
+    );
+
+    await fireEvent.press(screen.getByTestId(accountGateAppleTestID));
+
+    expect(await screen.findByTestId(accountGateLineTestID)).toHaveTextContent(
+      'Ese acceso no terminó. Pulsa Entrar con Apple e inténtalo otra vez.',
+    );
+    expect(pool.went).toEqual([]);
+    expect(itemsInTheKeychain()).toEqual({});
   });
 });

@@ -75,7 +75,13 @@ export function Account({
             testID={accountWayTestID}
             value={theWaySheSignedInSaid(signIn.way)}
           />
-          <AReading label={accountCopy.email} testID={accountEmailTestID} value={signIn.address} />
+          {signIn.way !== 'telegram' ? (
+            <AReading
+              label={accountCopy.email}
+              testID={accountEmailTestID}
+              value={signIn.address}
+            />
+          ) : null}
           <AReading
             label={accountCopy.since}
             testID={accountSinceTestID}
