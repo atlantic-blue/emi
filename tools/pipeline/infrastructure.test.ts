@@ -25,6 +25,8 @@ import {
   theCodeSignInFlow,
   theSiteAddress,
   theWaysAClientOffers,
+  phoneSignInProblems,
+  thePhoneReturnAddress,
   websiteSignInProblems,
   writtenSecretsIn,
 } from './signIn.ts';
@@ -652,6 +654,28 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(listedIn(authorizer, 'identity_sources')).toEqual(['$request.header.Authorization']);
     });
 
+    it('answers a read of the same path on the same function and the same authorizer', () => {
+      const read = bodyOf('resource "aws_apigatewayv2_route" "read_subscription"');
+
+      expect(read).toContain(`route_key          = "GET ${subscriptionPath}"`);
+      expect(read).toContain('authorization_type = "JWT"');
+      expect(read).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(read).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+    });
+
+    it('answers a change of the renewal on the same path, function and authorizer', () => {
+      const change = bodyOf('resource "aws_apigatewayv2_route" "change_renewal"');
+
+      expect(change).toContain(`route_key          = "PATCH ${subscriptionPath}"`);
+      expect(change).toContain('authorization_type = "JWT"');
+      expect(change).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(change).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+    });
+
     it('reaches the payments function, which the api is allowed to invoke', () => {
       const integration = bodyOf('resource "aws_apigatewayv2_integration" "payments_subscription"');
       const permission = bodyOf('resource "aws_lambda_permission" "payments_subscription"');
@@ -667,6 +691,12 @@ describe('the infrastructure is applied only by the pipeline', () => {
     it('lets the browser send the token, because the site calls this api from another origin', () => {
       expect(listedIn(cors, 'allow_headers')).toContain('authorization');
       expect(listedIn(cors, 'allow_methods')).toContain('POST');
+    });
+
+    it('answers the preflight for the read and the change this path also takes', () => {
+      expect(listedIn(cors, 'allow_methods')).toEqual(
+        expect.arrayContaining(['GET', 'PATCH', 'POST']),
+      );
     });
   });
 
@@ -2150,12 +2180,56 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(inClient('website')).not.toContain('"SignInWithApple"');
     });
 
-    it('leaves the application on her phone offering the code alone', () => {
+    it('gives the application on her phone the same ways in, back to its own scheme', () => {
       const phone = inClient('iphone');
 
-      expect(listedIn(phone, 'supported_identity_providers')).toEqual([]);
-      expect(listedIn(phone, 'callback_urls')).toEqual([]);
-      expect(listedIn(phone, 'allowed_oauth_flows')).toEqual([]);
+      expect(listedIn(phone, 'supported_identity_providers')).toEqual([
+        'COGNITO',
+        'aws_cognito_identity_provider.apple.provider_name',
+        'aws_cognito_identity_provider.google.provider_name',
+      ]);
+      expect(listedIn(phone, 'allowed_oauth_flows')).toEqual(['code']);
+      expect(listedIn(phone, 'allowed_oauth_scopes')).toEqual(['openid', 'email']);
+      expect(listedIn(phone, 'callback_urls').map((each) => valueOf(configuration, each))).toEqual([
+        thePhoneReturnAddress,
+      ]);
+      expect(listedIn(phone, 'logout_urls')).toEqual([]);
+      expect(phoneSignInProblems(configuration)).toEqual([]);
+    });
+
+    it.each([
+      [
+        'callback_urls = ["emi://sign-in/returning"]',
+        'callback_urls = ["https://myemi.app/en/sign-in/returning/"]',
+        'the phone comes back to https://myemi.app/en/sign-in/returning/, and it comes back to emi://sign-in/returning alone',
+      ],
+      [
+        'allowed_oauth_scopes                 = ["openid", "email"]',
+        'allowed_oauth_scopes                 = ["openid", "email", "profile"]',
+        'the phone asks for the scopes "openid email profile", and it may ask for "openid email" alone',
+      ],
+      [
+        'allowed_oauth_flows                  = ["code"]',
+        'allowed_oauth_flows                  = ["code", "implicit"]',
+        'the phone allows the flows code, implicit, and it may allow "code" alone',
+      ],
+    ])('refuses a phone client that changes %s', (written, changedTo, said) => {
+      expect(written).not.toBe(changedTo);
+      expect(configuration).toContain(written);
+      expect(phoneSignInProblems(configuration.replace(written, changedTo))).toEqual([said]);
+    });
+
+    it('refuses a phone client that offers a provider as text', () => {
+      expect(
+        phoneSignInProblems(
+          configuration.replace(
+            /(resource "aws_cognito_user_pool_client" "iphone"[\s\S]*?)aws_cognito_identity_provider\.google\.provider_name/,
+            '$1"Google"',
+          ),
+        ),
+      ).toEqual([
+        'the phone offers Google as text, and a client offers a provider only through the resource that makes it',
+      ]);
     });
 
     it('hands the browser a code to exchange, and never a token in an address', () => {
@@ -2785,6 +2859,11 @@ describe('the sender of myemi.app, which is step 28.8', () => {
     it('names the set for Emi and turns its reputation measurement on', () => {
       expect(argumentOf(set, 'configuration_set_name')).toBe(project);
       expect(blockBodyOf(set, 'reputation_options')).toContain('reputation_metrics_enabled = true');
+    });
+
+    it('leaves the delivery options of the set alone, because Emi sets none', () => {
+      expect(set).not.toContain('delivery_options {');
+      expect(blockBodyOf(set, 'lifecycle')).toContain('ignore_changes = [delivery_options]');
     });
 
     it('makes that set the default of the identity, so a send cannot miss it', () => {
@@ -3424,8 +3503,13 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
   });
 
   describe('the methods and the headers it allows', () => {
-    it('allows the one method the site calls across origins, and no other', () => {
-      expect(listedIn(cors, 'allow_methods')).toEqual(['POST']);
+    /**
+     * A request carrying an authorization header is never a simple request, so the browser asks
+     * first and sends nothing this answer does not list. A method missing here is a route of this
+     * api that no browser can reach, whatever the route itself says.
+     */
+    it('allows the three methods the site calls across origins, and no other', () => {
+      expect(listedIn(cors, 'allow_methods')).toEqual(['GET', 'PATCH', 'POST']);
     });
 
     it('allows the two headers the site sends, and no other', () => {

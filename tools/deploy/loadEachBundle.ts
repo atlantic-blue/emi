@@ -81,98 +81,141 @@ function bothParameterMapsCarrySomething(answer: unknown): boolean {
 }
 
 /**
- * One check for each function, by name. A function in the list with no check here fails the run, so
- * a bundle cannot join the deploy without an event that proves it answers.
+ * The checks each function owes, by name. A function in the list with none here fails the run, so
+ * a bundle cannot join the deploy without an event that proves it answers. A function answering
+ * more than one route owes one event for each of them, because a bundle that answers the first and
+ * fails the second is a bundle that loaded.
  */
-export const loadChecks: Readonly<Record<string, LoadCheck>> = {
-  'emi-authorizer': {
-    event: {
-      rawPath: '/v1/records',
-      headers: {},
-      requestContext: { http: { method: 'GET' } },
+export const loadChecks: Readonly<Record<string, readonly LoadCheck[]>> = {
+  'emi-authorizer': [
+    {
+      event: {
+        rawPath: '/v1/records',
+        headers: {},
+        requestContext: { http: { method: 'GET' } },
+      },
+      owes: (answer) => fieldOf(answer, 'isAuthorized') === false,
+      describes: 'a request carrying no signature is refused',
     },
-    owes: (answer) => fieldOf(answer, 'isAuthorized') === false,
-    describes: 'a request carrying no signature is refused',
-  },
-  'emi-vault': {
-    event: {
-      rawPath: '/v1/nothing-is-here',
-      headers: {},
-      requestContext: { http: { method: 'GET' } },
+  ],
+  'emi-vault': [
+    {
+      event: {
+        rawPath: '/v1/nothing-is-here',
+        headers: {},
+        requestContext: { http: { method: 'GET' } },
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 404,
+      describes: 'a path no route names is answered 404',
     },
-    owes: (answer) => fieldOf(answer, 'statusCode') === 404,
-    describes: 'a path no route names is answered 404',
-  },
-  'emi-articles': {
-    event: {
-      rawPath: '/v1/articles/nothing-is-here',
-      pathParameters: { phase: 'nothing-is-here' },
-      headers: {},
-      requestContext: { http: { method: 'GET' } },
+  ],
+  'emi-articles': [
+    {
+      event: {
+        rawPath: '/v1/articles/nothing-is-here',
+        pathParameters: { phase: 'nothing-is-here' },
+        headers: {},
+        requestContext: { http: { method: 'GET' } },
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 404,
+      describes: 'a phase this product does not know is answered 404',
     },
-    owes: (answer) => fieldOf(answer, 'statusCode') === 404,
-    describes: 'a phase this product does not know is answered 404',
-  },
+  ],
   // A body with no code is refused before the function reads a parameter, reaches Telegram or
   // touches the pool, so a bundle with no account behind it owes this answer.
-  'emi-sign-in-telegram': {
-    event: {
-      rawPath: '/v1/sign-in/telegram',
-      headers: {},
-      requestContext: { http: { method: 'POST' } },
-      body: '{}',
+  'emi-sign-in-telegram': [
+    {
+      event: {
+        rawPath: '/v1/sign-in/telegram',
+        headers: {},
+        requestContext: { http: { method: 'POST' } },
+        body: '{}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 400,
+      describes: 'a sign in body with no code is answered 400',
     },
-    owes: (answer) => fieldOf(answer, 'statusCode') === 400,
-    describes: 'a sign in body with no code is answered 400',
-  },
+  ],
   // A request the token authorizer handed nothing on from is refused before the function reads the
   // secret key or reaches Stripe, so a bundle with no account behind it owes this answer. The path
   // is written out here, and a case of loadEachBundle.test.ts holds it to the one the handler names.
-  'emi-payments-subscription': {
-    event: {
-      rawPath: '/v1/payments/subscription',
-      headers: {},
-      requestContext: { http: { method: 'POST' } },
+  'emi-payments-subscription': [
+    {
+      event: {
+        rawPath: '/v1/payments/subscription',
+        headers: {},
+        requestContext: { http: { method: 'POST' } },
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a request carrying no token of the pool is refused',
     },
-    owes: (answer) => fieldOf(answer, 'statusCode') === 401,
-    describes: 'a request carrying no token of the pool is refused',
-  },
+    // The read her account page makes, on the same path and the same function. A bundle that
+    // answered the press and not the read would load and leave every account page empty.
+    {
+      event: {
+        rawPath: '/v1/payments/subscription',
+        headers: {},
+        requestContext: { http: { method: 'GET' } },
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a read carrying no token of the pool is refused',
+    },
+    // The press on Cancel renewal, on the same path and the same function. A bundle that answered
+    // the first two and not this one would load and leave every renewal where it was.
+    {
+      event: {
+        rawPath: '/v1/payments/subscription',
+        headers: {},
+        requestContext: { http: { method: 'PATCH' } },
+        body: '{"renewing":false}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a change of a renewal carrying no token of the pool is refused',
+    },
+  ],
   // A header carrying no signature at all is refused by its shape, before the function reads a
   // parameter, reaches Stripe or parses one field of the body. So a bundle with no account behind
   // it owes this answer, and a container that cannot read the secret still proves the bundle runs.
-  'emi-payments-webhook': {
-    event: {
-      rawPath: '/v1/payments/webhook',
-      headers: { 'stripe-signature': 't=1' },
-      requestContext: { http: { method: 'POST' } },
-      body: '{"type":"invoice.paid"}',
+  'emi-payments-webhook': [
+    {
+      event: {
+        rawPath: '/v1/payments/webhook',
+        headers: { 'stripe-signature': 't=1' },
+        requestContext: { http: { method: 'POST' } },
+        body: '{"type":"invoice.paid"}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 400,
+      describes: 'a delivery carrying no signature of this account is refused',
     },
-    owes: (answer) => fieldOf(answer, 'statusCode') === 400,
-    describes: 'a delivery carrying no signature of this account is refused',
-  },
-  'emi-sign-in-challenge-define': {
-    event: { request: { session: [] }, response: {} },
-    owes: (answer) => answeredField(answer, 'challengeName') === customChallengeName,
-    describes: 'a session with no challenge yet is asked for the custom challenge',
-  },
-  'emi-sign-in-challenge-create': {
-    event: { request: { challengeName: customChallengeName }, response: {} },
-    owes: (answer) =>
-      answeredField(answer, 'challengeMetadata') === telegramChallengeMetadata &&
-      bothParameterMapsCarrySomething(answer),
-    describes: 'the challenge it issues is marked as the Telegram one and carries its parameter',
-  },
+  ],
+  'emi-sign-in-challenge-define': [
+    {
+      event: { request: { session: [] }, response: {} },
+      owes: (answer) => answeredField(answer, 'challengeName') === customChallengeName,
+      describes: 'a session with no challenge yet is asked for the custom challenge',
+    },
+  ],
+  'emi-sign-in-challenge-create': [
+    {
+      event: { request: { challengeName: customChallengeName }, response: {} },
+      owes: (answer) =>
+        answeredField(answer, 'challengeMetadata') === telegramChallengeMetadata &&
+        bothParameterMapsCarrySomething(answer),
+      describes: 'the challenge it issues is marked as the Telegram one and carries its parameter',
+    },
+  ],
   // An answer that is not base 64 of the length an answer carries has no digest, so the trigger
   // refuses it without reaching the table at all.
-  'emi-sign-in-challenge-verify': {
-    event: {
-      userName: 'tg_0000000000000000000000000',
-      request: { challengeAnswer: 'this is not an answer' },
-      response: {},
+  'emi-sign-in-challenge-verify': [
+    {
+      event: {
+        userName: 'tg_0000000000000000000000000',
+        request: { challengeAnswer: 'this is not an answer' },
+        response: {},
+      },
+      owes: (answer) => answeredField(answer, 'answerCorrect') === false,
+      describes: 'an answer nothing issued is refused',
     },
-    owes: (answer) => answeredField(answer, 'answerCorrect') === false,
-    describes: 'an answer nothing issued is refused',
-  },
+  ],
 };
 
 /**
@@ -279,9 +322,9 @@ export async function loadEveryBundle(given: LoadRun): Promise<number> {
     }
 
     for (const held of list) {
-      const check = loadChecks[held.name];
+      const checks = loadChecks[held.name];
 
-      if (check === undefined) {
+      if (checks === undefined || checks.length === 0) {
         throw new Error(
           `${held.name} is deployed and no event here proves that its bundle answers`,
         );
@@ -343,25 +386,28 @@ export async function loadEveryBundle(given: LoadRun): Promise<number> {
       }
 
       const address = `http://localhost:${port}/2015-03-31/functions/function/invocations`;
-      let answer: unknown;
 
-      try {
-        answer = await answered(address, check.event, Date.now() + readyWithinMilliseconds);
-      } catch (thrown) {
-        given.report(given.run('docker', ['logs', container]).stdout);
-        throw new Error(`${held.name} answered nothing: ${String(thrown)}`);
-      }
+      for (const check of checks) {
+        let answer: unknown;
 
-      if (!check.owes(answer)) {
-        given.report(given.run('docker', ['logs', container]).stdout);
-        throw new Error(
-          `${held.name} owes that ${check.describes}, and answered ${JSON.stringify(answer)}`,
+        try {
+          answer = await answered(address, check.event, Date.now() + readyWithinMilliseconds);
+        } catch (thrown) {
+          given.report(given.run('docker', ['logs', container]).stdout);
+          throw new Error(`${held.name} answered nothing: ${String(thrown)}`);
+        }
+
+        if (!check.owes(answer)) {
+          given.report(given.run('docker', ['logs', container]).stdout);
+          throw new Error(
+            `${held.name} owes that ${check.describes}, and answered ${JSON.stringify(answer)}`,
+          );
+        }
+
+        given.report(
+          `${held.name}: on port ${port}, ${check.describes}, and it answered ${JSON.stringify(answer)}`,
         );
       }
-
-      given.report(
-        `${held.name}: on port ${port}, ${check.describes}, and it answered ${JSON.stringify(answer)}`,
-      );
 
       // Removed as soon as its bundle is judged, so one run of several bundles holds one container
       // at a time rather than every container it has started.

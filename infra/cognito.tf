@@ -139,6 +139,21 @@ resource "aws_cognito_user_pool_client" "iphone" {
   # existed.
   explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_REFRESH_TOKEN_AUTH", "ALLOW_CUSTOM_AUTH"]
 
+  # The same three ways the site offers, each named through the resource that makes it. The phone
+  # opens the managed login in its authentication session, which ends on the private scheme of the
+  # application, and exchanges the code with a code challenge because it keeps no secret.
+  supported_identity_providers = [
+    "COGNITO",
+    aws_cognito_identity_provider.apple.provider_name,
+    aws_cognito_identity_provider.google.provider_name,
+  ]
+
+  allowed_oauth_flows                  = ["code"]
+  allowed_oauth_flows_user_pool_client = true
+  allowed_oauth_scopes                 = ["openid", "email"]
+
+  callback_urls = ["emi://sign-in/returning"]
+
   # An email takes minutes to arrive, so the session that carries a code lasts the longest the
   # service allows.
   auth_session_validity = 15

@@ -209,7 +209,7 @@ Line: Everything you log is encrypted on this phone, and our server only holds t
 Line: Sign in once, and your history follows you to a new phone. We keep your key for that, so we
 could open your history, and we tell you that here rather than anywhere else.
 
-Line: Your first month is free, then it's 29.99 pounds a month. There's no free version, because a
+Line: Your first month is free, then it's 39 euros a year. There's no free version, because a
 free app is paid for with your data.
 
 Action: Continue.

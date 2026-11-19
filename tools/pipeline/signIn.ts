@@ -342,6 +342,9 @@ export const thePageASignOutLeavesHerOn = 'sign-in/';
 export const theWebsiteClient = 'website';
 export const thePhoneClient = 'iphone';
 
+/** The one address a provider sends her phone back to, on the private scheme of the application. */
+export const thePhoneReturnAddress = 'emi://sign-in/returning';
+
 /** Every address a provider may send her back to, one for each language the site serves. */
 export function theAddressesSheComesBackTo(languages: readonly string[]): string[] {
   return languages.map((language) => `${theSiteAddress}/${language}/${theReturnPage}`);
@@ -482,25 +485,6 @@ export function websiteSignInProblems(
     }
   }
 
-  // The application on her phone signs in with the code alone. A provider on that client would
-  // offer a press no screen of the application draws, and a callback address there would name a
-  // page of the site rather than a screen of the application.
-  try {
-    const phone = clientBody(configuration, thePhoneClient);
-
-    if (listedIn(phone, 'supported_identity_providers').length > 0) {
-      problems.push(
-        `the application on her phone offers ${theWaysAClientOffers(configuration, thePhoneClient).join(', ')}, and it offers the code alone`,
-      );
-    }
-
-    if (listedIn(phone, 'callback_urls').length > 0) {
-      problems.push('the application on her phone names a callback address, and it needs none');
-    }
-  } catch {
-    problems.push('her phone signs her in through no client of the pool');
-  }
-
   return problems;
 }
 
@@ -545,4 +529,76 @@ export function placesOfferingGoogleWithoutApple(sources: readonly ASource[]): s
   }
 
   return said;
+}
+
+/**
+ * Every rule the sign in of the phone breaks. The phone offers the ways the site offers, so a
+ * provider the site gains is a press the phone draws too. It comes back to one address on its own
+ * scheme, because a page of the site would leave her in the browser rather than in the application.
+ */
+export function phoneSignInProblems(configuration: string): string[] {
+  let client = '';
+
+  try {
+    client = clientBody(configuration, thePhoneClient);
+  } catch {
+    return ['her phone signs her in through no client of the pool'];
+  }
+
+  const problems: string[] = [];
+
+  for (const entry of listedIn(client, 'supported_identity_providers')) {
+    if (entry !== thePoolsOwnWay && providerNameBehind(configuration, entry) === null) {
+      problems.push(
+        `the phone offers ${entry} as text, and a client offers a provider only through the resource that makes it`,
+      );
+    }
+  }
+
+  const ways = theWaysAClientOffers(configuration, thePhoneClient);
+  const everyWay = [thePoolsOwnWay, ...signInProviders.map((provider) => provider.providerName)];
+
+  if ([...ways].sort().join(' ') !== [...everyWay].sort().join(' ')) {
+    problems.push(
+      `the phone offers ${ways.join(', ') || 'nothing'}, and it offers ${everyWay.join(', ')}`,
+    );
+  }
+
+  const flows = listedIn(client, 'allowed_oauth_flows');
+
+  if (flows.join(' ') !== theFlowTheSiteUses) {
+    problems.push(
+      `the phone allows the flows ${flows.join(', ') || 'nothing'}, and it may allow "${theFlowTheSiteUses}" alone`,
+    );
+  }
+
+  if (pairsIn(client).allowed_oauth_flows_user_pool_client !== 'true') {
+    problems.push('the phone may not use the flows of the pool, so no press can reach a provider');
+  }
+
+  const scopes = listedIn(client, 'allowed_oauth_scopes');
+
+  if (scopes.join(' ') !== theScopesTheSiteAsksFor.join(' ')) {
+    problems.push(
+      `the phone asks for the scopes "${scopes.join(' ')}", and it may ask for "${theScopesTheSiteAsksFor.join(' ')}" alone`,
+    );
+  }
+
+  const returns = listedIn(client, 'callback_urls').map((address) =>
+    valueOf(configuration, address),
+  );
+
+  if (returns.join(' ') !== thePhoneReturnAddress) {
+    problems.push(
+      `the phone comes back to ${returns.join(', ') || 'nothing'}, and it comes back to ${thePhoneReturnAddress} alone`,
+    );
+  }
+
+  if (!listedIn(client, 'explicit_auth_flows').includes(theCodeSignInFlow)) {
+    problems.push(
+      `the phone lost ${theCodeSignInFlow}, so the code sent to her address signs nobody in`,
+    );
+  }
+
+  return problems;
 }

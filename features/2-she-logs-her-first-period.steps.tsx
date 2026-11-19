@@ -7686,7 +7686,7 @@ defineFeature(feature, (test) => {
         for (const line of tourCopy.lines) {
           expect(tour.getByText(line)).toBeTruthy();
         }
-        expect(tour.getByText('One month free, then 29.99 pounds a month.')).toBeTruthy();
+        expect(tour.getByText('One month free, then 39 euros a year.')).toBeTruthy();
       },
     );
 
@@ -7723,22 +7723,24 @@ defineFeature(feature, (test) => {
    * about money, so a price rewritten in English and left behind in another language would ask two
    * women for two different numbers.
    */
-  test('SCREEN-1, the tour says 29.99 pounds a month in every language', ({
+  test('SCREEN-1, the tour says 39 euros a year in every language', ({
     given,
     when,
     then,
     and,
   }) => {
-    const thePriceSheReads = 'One month free, then 29.99 pounds a month.';
+    const thePriceSheReads = 'One month free, then 39 euros a year.';
     const thePriceInEachLanguage: Readonly<Record<Language, string>> = {
       en: thePriceSheReads,
-      es: 'Un mes gratis, después 29,99 libras al mes.',
-      ru: 'Первый месяц бесплатно, затем 29,99 фунта в месяц.',
+      es: 'Un mes gratis, después 39 euros al año.',
+      ru: 'Первый месяц бесплатно, затем 39 евро в год.',
     };
-    const howEachLanguageSaysAYear: Readonly<Record<Language, RegExp>> = {
-      en: /year/iu,
-      es: /año/iu,
-      ru: /год/iu,
+    // Each language names a month in the free month, so the period is read with the word in
+    // front of it rather than with the word on its own.
+    const howEachLanguageSaysAMonth: Readonly<Record<Language, RegExp>> = {
+      en: /a month/iu,
+      es: /al mes/iu,
+      ru: /в месяц/iu,
     };
     const thePriceLineIn = (language: Language): string =>
       String(theCatalogueOf(language)['onboarding.tour.price.line']);
@@ -7751,7 +7753,7 @@ defineFeature(feature, (test) => {
     });
 
     then(
-      'the card tells her the first month is free and the price after it is 29.99 pounds a month',
+      'the card tells her the first month is free and the price after it is 39 euros a year',
       () => {
         const price = within(screen.getByTestId(tourPriceTestID));
 
@@ -7773,13 +7775,13 @@ defineFeature(feature, (test) => {
       },
     );
 
-    and('no language still tells her the price buys her a year', () => {
+    and('no language names a monthly price', () => {
       for (const language of languages) {
         const said = thePriceLineIn(language);
 
-        expect({ language, aYear: howEachLanguageSaysAYear[language].test(said) }).toEqual({
+        expect({ language, aMonth: howEachLanguageSaysAMonth[language].test(said) }).toEqual({
           language,
-          aYear: false,
+          aMonth: false,
         });
       }
 
