@@ -57,9 +57,15 @@ const theStates: readonly State[] = [
   },
   {
     title: 'Sign in to Emi',
-    note: 'Apple, Google and Telegram are drawn and take no press. Send code asks for the code.',
+    note: 'Apple and Google are drawn and take no press. Log in with Telegram opens Telegram. Send code asks for the code.',
     screen: () => (
-      <AccountGate address={herAddress} onAddress={nothing} onSendCode={nothing} problem={null} />
+      <AccountGate
+        address={herAddress}
+        onAddress={nothing}
+        onSendCode={nothing}
+        onTelegram={nothing}
+        problem={null}
+      />
     ),
   },
   {

@@ -7,7 +7,7 @@ values are in range.
 - `content.md` is `@emi/content`, 23 exported symbols across 6 files.
 - `crypto.md` is `@emi/crypto`, 139 exported symbols across 9 files.
 - `cycle.md` is `@emi/cycle`, 121 exported symbols across 10 files.
-- `sign-in.md` is `@emi/sign-in`, 19 exported symbols across 2 files.
+- `sign-in.md` is `@emi/sign-in`, 38 exported symbols across 3 files.
 - `tokens.md` is `@emi/tokens`, 134 exported symbols across 10 files.
 - `ui.md` is `@emi/ui`, 24 exported symbols across 12 files.
 - `vault.md` is `@emi/vault`, 283 exported symbols across 44 files.

@@ -1,7 +1,27 @@
 import { type Language, isLanguage } from '@/app/words';
 
 import { aValueNobodyCanGuess, theChallengeFor } from './theProviderSignIn';
-import { ASignInProblem, type TheTokensSheHolds, signInWithTheOneTimeAnswer } from './theSignIn';
+import {
+  ASignInProblem,
+  BESIDE_THE_LANGUAGE,
+  STATE_BYTES,
+  type TheTokensSheHolds,
+  VERIFIER_BYTES,
+  WHERE_THE_SIGN_IN_FUNCTION_ANSWERS,
+  signInWithTheOneTimeAnswer,
+  whereTelegramAsksHerFor,
+} from './theSignIn';
+
+export {
+  STATE_BYTES,
+  THE_API_HOST,
+  THE_EMI_BOT_ID,
+  THE_TELEGRAM_HOST,
+  THE_TELEGRAM_SCOPE,
+  VERIFIER_BYTES,
+  WHERE_TELEGRAM_ASKS_HER,
+  WHERE_THE_SIGN_IN_FUNCTION_ANSWERS,
+} from './theSignIn';
 
 /**
  * The conversation myemi.app has with Telegram, and with the sign in function of the api, when a
@@ -38,39 +58,6 @@ import { ASignInProblem, type TheTokensSheHolds, signInWithTheOneTimeAnswer } fr
  * application, and the pool does not name the three triggers yet.
  */
 
-/** The host Telegram answers its own sign in on, which no page of this site ever calls. */
-export const THE_TELEGRAM_HOST = 'https://oauth.telegram.org';
-
-/** Where a press sends her, which is the authorization endpoint the discovery document names. */
-export const WHERE_TELEGRAM_ASKS_HER = `${THE_TELEGRAM_HOST}/auth`;
-
-/**
- * The api the sign in function answers on, which the content policy names so her browser may
- * reach it. It is public configuration of this site, the way the pool host and the website client
- * are: every request a browser makes carries it, and the route it calls takes no authorizer.
- *
- * Written out whole rather than built from the region, so a reader of this file and a reader of
- * the policy see the same characters. `infra/README.md` names the same address.
- */
-export const THE_API_HOST = 'https://2pumohtm7l.execute-api.eu-central-1.amazonaws.com';
-
-/** The route the sign in function answers, which takes a code and a verifier and no signature. */
-export const WHERE_THE_SIGN_IN_FUNCTION_ANSWERS = `${THE_API_HOST}/v1/sign-in/telegram`;
-
-/**
- * The bot of Emi, as the client identifier of this sign in and as the audience its token carries.
- *
- * It is public configuration, read here the way the pool client identifier is read: a named value
- * of this site rather than a number written into the address the press builds. Telegram shows it
- * beside the client secret in the BotFather mini application, the parameter store of the account
- * holds it at `/emi/accounts/telegram/bot-id`, and `infra/README.md` names it. The client secret
- * is the value nothing in this repository holds, and no browser needs it.
- */
-export const THE_EMI_BOT_ID = '9068004348';
-
-/** The one scope Emi asks for, which returns a subject and three instants and nothing of her. */
-export const THE_TELEGRAM_SCOPE = 'openid';
-
 /** The page Telegram sends her back to, which is a relay and not a page she reads. */
 export const WHERE_TELEGRAM_SENDS_HER_BACK = 'sign-in/telegram/';
 
@@ -82,12 +69,6 @@ export const WHERE_TELEGRAM_SENDS_HER_BACK = 'sign-in/telegram/';
  */
 export const THE_LANGUAGE_OF_THE_REGISTERED_ADDRESS: Language = 'en';
 
-/** How many bytes the verifier is made of. 32 bytes is 256 bits. */
-export const VERIFIER_BYTES = 32;
-
-/** How many bytes the state value and the nonce are each made of. 16 bytes is 128 bits. */
-export const STATE_BYTES = 16;
-
 /**
  * The name a press keeps its three values under, with the language she is reading in after it.
  *
@@ -96,9 +77,6 @@ export const STATE_BYTES = 16;
  * cannot be finished with what a press in another language kept.
  */
 export const WHAT_SHE_STARTED_ENTRY = 'emi.signing-in.telegram';
-
-/** What the state value joins its two halves with, which base 64 of an address never writes. */
-const BESIDE_THE_LANGUAGE = '.';
 
 export function theEntryFor(language: Language): string {
   return `${WHAT_SHE_STARTED_ENTRY}${BESIDE_THE_LANGUAGE}${language}`;
@@ -196,19 +174,15 @@ export async function whereAPressTakesHer(language: Language, origin: string): P
     language,
   };
 
-  const asked = new URLSearchParams({
-    client_id: THE_EMI_BOT_ID,
-    redirect_uri: whereTelegramSendsHerBack(origin),
-    response_type: 'code',
-    scope: THE_TELEGRAM_SCOPE,
+  const address = whereTelegramAsksHerFor({
+    redirectUri: whereTelegramSendsHerBack(origin),
     state: started.state,
-    code_challenge: await theChallengeFor(started.verifier),
-    code_challenge_method: 'S256',
+    codeChallenge: await theChallengeFor(started.verifier),
   });
 
   theStore()?.setItem(theEntryFor(language), JSON.stringify(started));
 
-  return `${WHERE_TELEGRAM_ASKS_HER}?${asked.toString()}`;
+  return address;
 }
 
 /** What the press kept, or nothing at all where the entry is absent or unreadable. */

@@ -24,21 +24,27 @@ const MARK_DROP = 32;
 /** Points. The height of each way in. */
 const WAY_IN_HEIGHT = 52;
 
-function AWayInThatIsNotBuilt({
+function AWayIn({
   label,
   isDark,
   testID,
+  onPress,
 }: {
   readonly label: string;
   readonly isDark: boolean;
   readonly testID: string;
+  /** Absent for a way in that is not built, which is drawn and takes no press. */
+  readonly onPress?: () => void;
 }): ReactNode {
+  const isBuilt = onPress !== undefined;
+
   return (
     <Pressable
       accessibilityLabel={label}
       accessibilityRole="button"
-      accessibilityState={{ disabled: true }}
-      disabled
+      accessibilityState={{ disabled: !isBuilt }}
+      disabled={!isBuilt}
+      onPress={onPress}
       style={[styles.wayIn, isDark ? styles.wayInDark : styles.wayInLight]}
       testID={testID}
     >
@@ -48,21 +54,23 @@ function AWayInThatIsNotBuilt({
 }
 
 /**
- * The way into the account. Apple, Google and Telegram are drawn as the board draws them and take
- * no press, because only the email code is built. The one line under the address is empty until
- * something goes wrong, and then it says what.
+ * The way into the account. Apple and Google are drawn as the board draws them and take no press,
+ * because they are not built. The one line under the address is empty until something goes wrong,
+ * and then it says what.
  */
 export function AccountGate({
   address,
   problem,
   onAddress,
   onSendCode,
+  onTelegram,
 }: {
   readonly address: string;
   /** The one line under the address, or null where there is nothing to say. */
   readonly problem: string | null;
   readonly onAddress: (address: string) => void;
   readonly onSendCode: () => void;
+  readonly onTelegram: () => void;
 }): ReactNode {
   return (
     <Screen drawsTheWash givesWayToTheKeyboard testID={accountGateScreenTestID}>
@@ -77,19 +85,12 @@ export function AccountGate({
           {accountGateCopy.title}
         </Text>
 
-        <AWayInThatIsNotBuilt
-          isDark
-          label={accountGateCopy.apple}
-          testID={accountGateAppleTestID}
-        />
-        <AWayInThatIsNotBuilt
-          isDark={false}
-          label={accountGateCopy.google}
-          testID={accountGateGoogleTestID}
-        />
-        <AWayInThatIsNotBuilt
+        <AWayIn isDark label={accountGateCopy.apple} testID={accountGateAppleTestID} />
+        <AWayIn isDark={false} label={accountGateCopy.google} testID={accountGateGoogleTestID} />
+        <AWayIn
           isDark={false}
           label={accountGateCopy.telegram}
+          onPress={onTelegram}
           testID={accountGateTelegramTestID}
         />
 
