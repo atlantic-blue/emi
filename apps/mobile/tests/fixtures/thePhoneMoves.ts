@@ -30,6 +30,16 @@ export function listenersOnTheAppState(): number {
   return theListeners().length;
 }
 
+/** What each listener was handed back, which is the handle the application has to drop. */
+export function subscriptionsOnTheAppState(): { readonly remove: jest.Mock }[] {
+  const added = AppState.addEventListener as unknown as jest.Mock;
+
+  return added.mock.calls
+    .map(([event], at) => ({ event, result: added.mock.results[at] }))
+    .filter(({ event }) => event === 'change')
+    .map(({ result }) => result?.value as { readonly remove: jest.Mock });
+}
+
 async function thePhoneReports(status: AppStateStatus): Promise<void> {
   await act(async () => {
     for (const listener of theListeners()) {

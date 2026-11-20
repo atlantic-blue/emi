@@ -4,7 +4,7 @@ import { type DayRecord } from '@emi/crypto';
 import { type Symptom, addDays, symptoms } from '@emi/cycle';
 import { tabTestID } from '@emi/ui';
 import { fireEvent, renderRouter, screen } from 'expo-router/testing-library';
-import { AccessibilityInfo, AppState } from 'react-native';
+import { AccessibilityInfo } from 'react-native';
 
 import { readSettings } from '../../src/data/settingRepository';
 import { historyScreenTestID } from '../../src/features/history/HistoryScreen';
@@ -31,6 +31,7 @@ import { aBleedingDay, dayOf, herDatabase, herPhoneHolds } from '../fixtures/her
 import { visibleTextIn } from '../fixtures/renderedText';
 import {
   listenersOnTheAppState,
+  subscriptionsOnTheAppState,
   resetTheAppState,
   sheComesBackToEmi,
   sheLeavesEmi,
@@ -294,19 +295,21 @@ describe('the lock shows when she comes back to the application', () => {
     });
   });
 
-  describe('the listener Emi holds on the phone', () => {
-    it('is one, and it goes when Emi does', async () => {
+  describe('the listeners Emi holds on the phone', () => {
+    it('go when Emi does, every one of them', async () => {
       await herPhoneHolds(whenSheOpensIt, herYear(), herCycleLengthDays);
       const app = renderRouter(appDirectory, { initialUrl: '/' });
       const view = await app;
+      const subscriptions = subscriptionsOnTheAppState();
 
-      expect(listenersOnTheAppState()).toBe(1);
+      expect(listenersOnTheAppState()).toBeGreaterThan(0);
+      expect(subscriptions).toHaveLength(listenersOnTheAppState());
 
-      const subscription = (AppState.addEventListener as unknown as jest.Mock).mock.results[0]
-        ?.value as { remove: jest.Mock };
       await view.unmount();
 
-      expect(subscription.remove).toHaveBeenCalled();
+      for (const subscription of subscriptions) {
+        expect(subscription.remove).toHaveBeenCalled();
+      }
     });
   });
 });
