@@ -22,10 +22,11 @@ import {
  * because the form is drawn inside a row she opens and that row is not there to be mounted into
  * until she opens it.
  *
- * A browser also takes that element away again, and hands this module nothing in its place. She
- * picks Telegram Stars, or she closes the Change card row. An element of Stripe lives inside the
- * node it was mounted into, so an element whose node went away draws nothing at all. Each one is
- * destroyed at that moment, and the next node a browser gives is drawn on from the start.
+ * A browser also takes that element away again, and it may hand over another one in its place.
+ * She closes the Change card row, or her session goes and the sign in gate draws the page again.
+ * An element of Stripe lives inside the node it was mounted into, so an element whose node went
+ * away draws nothing at all. Each one is destroyed at that moment, and the next node a browser
+ * gives is drawn on from the start.
  *
  * Stripe itself arrives after the press that needed it, which may be after she moved on. So what
  * it answers is drawn only while the node it was asked for is still the node on the page.

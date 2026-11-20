@@ -377,13 +377,10 @@ export const english = {
   checkoutMethodQuestion: 'How would you like to pay?',
   checkoutPayByCard: 'Apple Pay, Google Pay or card',
   checkoutPayByCardWhere: 'On this site',
-  checkoutPayByStars: 'Telegram Stars',
-  checkoutPayByStarsWhere: 'In the Emi bot',
   checkoutOrPayByCard: 'or pay by card',
   checkoutTerms: 'By paying you agree to the {terms}.',
   checkoutTermsLink: 'terms',
   checkoutPay: 'Pay €39',
-  checkoutStarsNotReady: 'Paying in Stars is not ready yet. Pay by card here, or come back later.',
   checkoutCancelAnyTime:
     'Cancel on your account page at any time. The payment links to your account. It never links to your records.',
   checkoutCouldNotStart: 'Emi could not start that payment. Try again in a moment.',

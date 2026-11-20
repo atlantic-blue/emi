@@ -4,6 +4,7 @@ import {
   customerFor,
   defaultPaymentMethodOf,
   detachPaymentMethod,
+  idempotencyHeader,
   invoicesOf,
   payerDigestOfCustomer,
   renewalOfSubscription,
@@ -11,6 +12,7 @@ import {
   setupIntentFor,
   stripeApiVersion,
   type WhatACallHolds,
+  yearlySubscriptionFor,
 } from '../src/payments/stripe';
 import {
   aCustomerRef,
@@ -42,7 +44,7 @@ function aPayer(stripe: FakeStripe): WhatACallHolds {
 
 describe('every call of Stripe names the version it is made in', () => {
   describe('the header of each call', () => {
-    it('names the version on every call the port makes, which is ten of them', async () => {
+    it('names the version on every call the port makes, which is eleven of them', async () => {
       const stripe = fakeStripe({ holdsThePayerDigest: payerDigest });
       const held = aPayer(stripe);
 
@@ -56,8 +58,13 @@ describe('every call of Stripe names the version it is made in', () => {
       await chargeTheCustomerTo(held, aCustomerRef, aPaymentMethodRef);
       await chargeTheSubscriptionTo(held, aSubscriptionRef, aPaymentMethodRef);
       await detachPaymentMethod(held, aPaymentMethodRef);
+      await yearlySubscriptionFor(held, {
+        customerRef: aCustomerRef,
+        payerDigest,
+        oneOfAKind: 'the-subscription-of-one-setup',
+      });
 
-      expect(stripe.calls()).toHaveLength(10);
+      expect(stripe.calls()).toHaveLength(11);
 
       for (const call of stripe.calls()) {
         expect(call.asked.headers['stripe-version']).toBe(stripeApiVersion);
@@ -75,6 +82,23 @@ describe('every call of Stripe names the version it is made in', () => {
         authorization: `Bearer ${theKey}`,
         'content-type': 'application/x-www-form-urlencoded',
         'stripe-version': stripeApiVersion,
+      });
+    });
+
+    it('keeps all three beside the key that makes two calls of one press one call', async () => {
+      const stripe = fakeStripe();
+
+      await yearlySubscriptionFor(aPayer(stripe), {
+        customerRef: aCustomerRef,
+        payerDigest,
+        oneOfAKind: 'the-subscription-of-one-setup',
+      });
+
+      expect(stripe.calls()[0]?.asked.headers).toEqual({
+        authorization: `Bearer ${theKey}`,
+        'content-type': 'application/x-www-form-urlencoded',
+        'stripe-version': stripeApiVersion,
+        [idempotencyHeader]: 'the-subscription-of-one-setup',
       });
     });
 

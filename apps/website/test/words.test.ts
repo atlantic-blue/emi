@@ -184,7 +184,7 @@ describe('the words of one page in three languages', () => {
   /**
    * The words that stay in English in all three languages. Each one is a name rather than a word:
    * the brand line says what the four letters stand for, Emi is called Emi everywhere, and Apple's
-   * store carries one name in every country. A seventh entry here is a translation somebody forgot.
+   * store carries one name in every country. A fifth entry here is a translation somebody forgot.
    *
    * The names of the two people building Emi are not here, because they are not words of a
    * catalogue at all. They sit beside the band that draws them, where nobody can translate them.
@@ -194,7 +194,6 @@ describe('the words of one page in three languages', () => {
     'headerEmi',
     'footerEmiGroup',
     'footerAppStore',
-    'checkoutPayByStars',
   ];
 
   it('writes every other word of a language in that language', () => {
@@ -216,7 +215,7 @@ describe('the words of one page in three languages', () => {
       expect(spanish[key]).toBe(english[key]);
     }
 
-    expect(namesRatherThanWords.length).toBeLessThan(6);
+    expect(namesRatherThanWords.length).toBeLessThan(5);
   });
 
   /**

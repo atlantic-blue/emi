@@ -4,6 +4,7 @@ import {
   customerAddressFor,
   customersAddress,
   detachAddressFor,
+  idempotencyHeader,
   invoicesAddress,
   payerDigestKey,
   paymentMethodsAddress,
@@ -11,6 +12,7 @@ import {
   setupIntentsAddress,
   setupSucceeded,
   subscriptionAddressFor,
+  subscriptionsAddress,
   stripeApi,
 } from '../../src/payments/stripe';
 
@@ -64,6 +66,10 @@ export interface WhatStripeAnswers {
   readonly theSetupCollected?: string;
   /** A status and a body for the read of one setup, where the test wants a refusal instead. */
   readonly refusesTheSetupRead?: AnsweredByStripe;
+  /** A status and a body for the create of one subscription, where a test wants a refusal. */
+  readonly refusesTheCreate?: AnsweredByStripe;
+  /** The status a created subscription answers with, which is trialing on a free month. */
+  readonly theSubscriptionReached?: string;
   /** The same for taking the old payment method off the customer. */
   readonly refusesTheDetach?: AnsweredByStripe;
 }
@@ -76,6 +82,12 @@ export interface FakeStripe {
   fieldsOf(call: OneCall): Record<string, string>;
   /** What one call asked for in its address, which is how a list says whose invoices. */
   askedIn(call: OneCall): Record<string, string>;
+  /**
+   * Every subscription this account holds, in the order it was created. A repeated idempotency key
+   * makes no second one, the way Stripe makes none, so a test reads how many exist rather than how
+   * many calls were made.
+   */
+  subscriptionsMade(): string[];
 }
 
 /** The customer identifier the double answers with unless a test names another. */
@@ -94,8 +106,50 @@ export const theOldPaymentMethodRef = 'pm_000000000001';
 /** The subscription the item of a woman paying by card names. */
 export const aSubscriptionRef = 'sub_000000000001';
 
+/** The status a subscription on its free month carries. */
+export const trialing = 'trialing';
+
+/** The subscription identifier the double answers the nth create with. */
+export const subscriptionMadeAt = (made: number): string =>
+  `sub_${String(made + 1).padStart(12, '0')}`;
+
 export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
   const calls: OneCall[] = [];
+  const subscriptions: string[] = [];
+  const answeredBefore = new Map<string, AnsweredByStripe>();
+
+  /**
+   * One create, answered the way Stripe answers it: a key it has seen before is replayed with the
+   * answer it gave then, and every other call makes a subscription of its own.
+   */
+  const created = (asked: AskedOfStripe): AnsweredByStripe => {
+    const key = asked.headers[idempotencyHeader];
+    const held = key === undefined ? undefined : answeredBefore.get(key);
+
+    if (held !== undefined) {
+      return held;
+    }
+
+    const subscriptionRef = subscriptionMadeAt(subscriptions.length);
+
+    subscriptions.push(subscriptionRef);
+
+    const answer: AnsweredByStripe = {
+      status: 200,
+      body: JSON.stringify({
+        id: subscriptionRef,
+        object: 'subscription',
+        customer: new URLSearchParams(asked.body).get('customer'),
+        status: answers.theSubscriptionReached ?? trialing,
+      }),
+    };
+
+    if (key !== undefined) {
+      answeredBefore.set(key, answer);
+    }
+
+    return answer;
+  };
 
   return {
     reaches: async (address: string, asked: AskedOfStripe): Promise<AnsweredByStripe> => {
@@ -178,6 +232,11 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
         );
       }
 
+      // The create of one subscription, which is the collection itself rather than one of them.
+      if (address === subscriptionsAddress) {
+        return answers.refusesTheCreate ?? created(asked);
+      }
+
       if (address === customersAddress) {
         return (
           answers.refusesTheCustomer ?? {
@@ -208,6 +267,7 @@ export function fakeStripe(answers: WhatStripeAnswers = {}): FakeStripe {
       };
     },
     calls: () => [...calls],
+    subscriptionsMade: () => [...subscriptions],
     fieldsOf: (call: OneCall) => Object.fromEntries(new URLSearchParams(call.asked.body).entries()),
     askedIn: (call: OneCall) => Object.fromEntries(new URL(call.address).searchParams.entries()),
   };

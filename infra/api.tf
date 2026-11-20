@@ -208,6 +208,18 @@ resource "aws_apigatewayv2_route" "start_subscription" {
   authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
 }
 
+# What her browser sends once Stripe has taken the card or the wallet on the Buy Emi page. It
+# names the setup and nothing else, and the function reads that setup back from Stripe, makes it
+# the card every invoice goes to, and creates the yearly subscription on the customer the press
+# already made.
+resource "aws_apigatewayv2_route" "finish_subscription" {
+  api_id             = aws_apigatewayv2_api.vault.id
+  route_key          = "PUT /v1/payments/subscription"
+  target             = "integrations/${aws_apigatewayv2_integration.payments_subscription.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id
+}
+
 # Her account page, which reads whether a subscription is running and what the card says. It is
 # the same function and the same authorizer as the press above, because both read one claim of one
 # token and reach one item under one digest.

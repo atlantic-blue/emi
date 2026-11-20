@@ -17,6 +17,7 @@ export * from './payments/changeCard';
 export * from './payments/changeRenewal';
 export * from './payments/dynamoEntitlements';
 export * from './payments/entitlements';
+export * from './payments/finishSubscription';
 export * from './payments/poolToken';
 export * from './payments/readReceipts';
 export * from './payments/readSubscription';

@@ -308,14 +308,10 @@ export const russian: SiteWords = {
   checkoutMethodQuestion: 'Как вы хотите заплатить?',
   checkoutPayByCard: 'Apple Pay, Google Pay или карта',
   checkoutPayByCardWhere: 'На этом сайте',
-  checkoutPayByStars: 'Telegram Stars',
-  checkoutPayByStarsWhere: 'В боте Emi',
   checkoutOrPayByCard: 'или картой',
   checkoutTerms: 'Оплачивая, вы соглашаетесь с {terms}.',
   checkoutTermsLink: 'условиями',
   checkoutPay: 'Заплатить 39 €',
-  checkoutStarsNotReady:
-    'Оплата звёздами пока не готова. Заплатите картой здесь или вернитесь позже.',
   checkoutCancelAnyTime:
     'Отменить можно в любой момент на странице аккаунта. Платёж связан с аккаунтом. Он никогда не связан с вашими записями.',
   checkoutCouldNotStart: 'Emi не смогла начать оплату. Попробуйте ещё раз через минуту.',

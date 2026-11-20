@@ -2,6 +2,42 @@
 
 Each version lists what changed for the person who uses Emi. The version is `expo.version` in `apps/mobile/app.json`. The store build number goes up by itself on each build, and a released version names the build it shipped as.
 
+## 0.3.0 (20 November 2026)
+
+Sign in on the phone, the days Emi fills in for her, and a screen for the reminders. The fixes come from the beta feedback of 28 October to 20 November 2026.
+
+### Added
+
+- Settings has a row, Emi on another phone. She types her email, she gets a code, and she signs in. https://github.com/atlantic-blue/emi/issues/517
+- The sign in screen also signs her in with Apple, with Google or with Telegram. The account screen names the way she used. https://github.com/atlantic-blue/emi/issues/517
+- A sign in on the phone lasts a year. Emi renews it each time the app opens. When the renewal fails, the app offers her the way in again. https://github.com/atlantic-blue/emi/issues/517
+- The calendar marks the days of her period that Emi filled in from her usual period length. The day card says that Emi filled a day in, and one press removes it. https://github.com/atlantic-blue/emi/issues/379
+- Today asks her to keep the days Emi filled in, or to change them. Edit my period opens with those days ticked, each one labelled Filled in. https://github.com/atlantic-blue/emi/issues/379
+- Privacy has a Reminders row. It opens a screen where she picks the moment of the reminder and the time of day. https://github.com/atlantic-blue/emi/issues/392
+- A second reminder asks her to log each day. It is off at first, and set to 20:00. A day she logged gets no reminder. https://github.com/atlantic-blue/emi/issues/392
+- Outside her period, the middle of the ring says how many days until her next period. A line under the ring says how long until the estimated ovulation. https://github.com/atlantic-blue/emi/issues/377
+- Home has one large action under the ring. It says Log period, and End period during her period. The Period page starts with Today, Yesterday and Pick a date. https://github.com/atlantic-blue/emi/issues/378
+- The day entry has a Note card, so she writes her own thoughts on any day she lived. Download data carries the note. https://github.com/atlantic-blue/emi/issues/391
+- The calendar marks the most likely days of her next period more strongly, and says in how many days it is likely to start. https://github.com/atlantic-blue/emi/issues/373
+- Arrows beside the month name move the calendar one month. The row with Earlier and Later is gone. https://github.com/atlantic-blue/emi/issues/500
+- In Edit my period, a press on a day before the first day or after the last day marks every day between. https://github.com/atlantic-blue/emi/issues/499
+- The log offers Normal appetite. https://github.com/atlantic-blue/emi/issues/387
+- The food choices offer Spicy and Meat. https://github.com/atlantic-blue/emi/issues/300
+- The welcome says that Emi makes no diagnosis, and that her records can help when she sees a doctor. https://github.com/atlantic-blue/emi/issues/383
+
+### Changed
+
+- Emi costs 39 euros a year, after one free month. The tour says the price in English, Spanish and Russian.
+- Every title, heading and row of options keeps whole words at its full size. Nothing is cut and nothing shrinks, on the smallest iPhone, at the largest text size, in English, Spanish and Russian. https://github.com/atlantic-blue/emi/issues/507 https://github.com/atlantic-blue/emi/issues/416
+- The Russian link on the phase page speaks to her directly. https://github.com/atlantic-blue/emi/issues/498
+
+### Fixed
+
+- The caption under the flow row names the flow she picked and says what it means. Before, it said Spotting for every amount. https://github.com/atlantic-blue/emi/issues/496
+- Edit my period can delete a whole period, after a confirmation. https://github.com/atlantic-blue/emi/issues/497
+- Emi says the period is late while she is still learning the cycle, in place of a range of days that has passed. https://github.com/atlantic-blue/emi/issues/417
+- The calendar day card names the phase in her language. https://github.com/atlantic-blue/emi/issues/415
+
 ## 0.2.1 (28 October 2026)
 
 Fixes from the beta feedback of 18 to 26 October 2026.

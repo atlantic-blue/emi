@@ -699,6 +699,17 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(listedIn(authorizer, 'identity_sources')).toEqual(['$request.header.Authorization']);
     });
 
+    it('answers what her browser sends back on the same path, function and authorizer', () => {
+      const created = bodyOf('resource "aws_apigatewayv2_route" "finish_subscription"');
+
+      expect(created).toContain(`route_key          = "PUT ${subscriptionPath}"`);
+      expect(created).toContain('authorization_type = "JWT"');
+      expect(created).toContain('authorizer_id      = aws_apigatewayv2_authorizer.pool_token.id');
+      expect(created).toContain(
+        'integrations/${aws_apigatewayv2_integration.payments_subscription.id}',
+      );
+    });
+
     it('answers a read of the same path on the same function and the same authorizer', () => {
       const read = bodyOf('resource "aws_apigatewayv2_route" "read_subscription"');
 
@@ -749,9 +760,9 @@ describe('the infrastructure is applied only by the pipeline', () => {
       expect(listedIn(cors, 'allow_methods')).toContain('POST');
     });
 
-    it('answers the preflight for the read and the change this path also takes', () => {
+    it('answers the preflight for the read, the change and the put this path also takes', () => {
       expect(listedIn(cors, 'allow_methods')).toEqual(
-        expect.arrayContaining(['GET', 'PATCH', 'POST']),
+        expect.arrayContaining(['GET', 'PATCH', 'POST', 'PUT']),
       );
     });
   });

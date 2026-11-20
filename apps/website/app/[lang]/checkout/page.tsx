@@ -11,8 +11,8 @@ import { thePublishableKey } from '@/lib/theStripeOnThePage';
 /**
  * The page she buys Emi on, in the language her address names. It is laid out as the board the
  * operator approved lays it out, `docs/design/website/checkout/boards/Checkout.dc.html`: the
- * title, the line that says which way she signed in, the plan, the two ways to pay and the
- * sentence that says what a payment is linked to.
+ * title, the line that says which way she signed in, the plan, the way she pays and the sentence
+ * that says what a payment is linked to.
  *
  * The page is for a woman who is signed in, because a payment lands against the sign in she used.
  * Her browser is the one reader that knows whether she holds a session, so nothing inside the

@@ -5,7 +5,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import CheckoutPage from '../app/[lang]/checkout/page';
-import { wordsIn } from '../app/words';
+import { type Language, languages, wordsIn } from '../app/words';
 import { ThePaymentForm } from '../components/thePaymentForm';
 import { TheSignedInLine } from '../components/theSignedInLine';
 import { THE_SESSION_ENTRY } from '../lib/theSessionSheHolds';
@@ -14,7 +14,10 @@ import type {
   TheElementsOfTheForm,
   TheStripeOnThePage,
 } from '../lib/theStripeOnThePage';
-import { WHERE_A_SUBSCRIPTION_STARTS } from '../lib/theSubscriptionSheStarts';
+import {
+  THE_FIELD_A_SETUP_TRAVELS_IN,
+  WHERE_A_SUBSCRIPTION_STARTS,
+} from '../lib/theSubscriptionSheStarts';
 import { WHERE_SHE_WAS_GOING_ENTRY } from '../lib/whereASignInComesBackTo';
 
 /**
@@ -40,7 +43,8 @@ const A_KEY = 'pk_test_not_a_real_key';
 
 /** Where her browser was told to go, which is the end of this page in a browser. */
 const whereSheWentNext: string[] = [];
-const A_CLIENT_SECRET = 'seti_000000000001_secret_000000000001';
+const A_SETUP = 'seti_000000000001';
+const A_CLIENT_SECRET = `${A_SETUP}_secret_000000000001`;
 
 /**
  * The names the pool writes in front of the subject a provider gave, written out here rather than
@@ -85,7 +89,12 @@ interface AFakeStripe {
 
 /** Stripe, as far as the form drives it. */
 function fakeStripe(
-  options: { readonly refuses?: string; readonly submitRefuses?: string } = {},
+  options: {
+    readonly refuses?: string;
+    readonly submitRefuses?: string;
+    /** Stripe takes the card and answers no setup, which names nothing to create against. */
+    readonly confirmsNoSetup?: boolean;
+  } = {},
 ): AFakeStripe {
   const did: WhatStripeDid = {
     mounted: [],
@@ -129,29 +138,66 @@ function fakeStripe(
       confirmSetup: (asked) => {
         did.confirmed.push(asked);
 
+        if (options.refuses !== undefined) {
+          return Promise.resolve({ error: { message: options.refuses } });
+        }
+
         return Promise.resolve(
-          options.refuses === undefined ? {} : { error: { message: options.refuses } },
+          options.confirmsNoSetup === true ? {} : { setupIntent: { id: A_SETUP } },
         );
       },
     },
   };
 }
 
-/** The api, answering one call with the secret of a setup, and counting what it was asked. */
-function anApi(answers: { readonly ok: boolean }): {
+/** One call the page made, as it left the browser. */
+interface OneCall {
+  readonly address: string;
+  readonly method: string;
+  readonly token: string;
+  readonly body?: string;
+}
+
+/** How the api behaves, where a test wants something other than both calls answering. */
+interface HowTheApiBehaves {
+  /** No setup is opened, the way a route that could not reach Stripe refuses the press. */
+  readonly refusesToStart?: boolean;
+  /** The setup is opened and the subscription is refused, which is the second of the two calls. */
+  readonly refusesToCreate?: boolean;
+  /** The second call is taken and the route answers that nothing was created. */
+  readonly createsNothing?: boolean;
+}
+
+/** The api, answering the press with the secret of a setup and the put with the subscription. */
+function anApi(behaves: HowTheApiBehaves): {
   readonly asks: typeof fetch;
-  readonly calls: { address: string; token: string }[];
+  readonly calls: OneCall[];
 } {
-  const calls: { address: string; token: string }[] = [];
+  const calls: OneCall[] = [];
 
   const asks = ((where: unknown, asked: RequestInit) => {
     const headers = (asked.headers ?? {}) as Record<string, string>;
+    const method = asked.method ?? 'GET';
+    const body = asked.body === undefined ? undefined : String(asked.body);
 
-    calls.push({ address: String(where), token: headers.authorization ?? '' });
+    calls.push({
+      address: String(where),
+      method,
+      token: headers.authorization ?? '',
+      ...(body === undefined ? {} : { body }),
+    });
+
+    if (method === 'PUT') {
+      return Promise.resolve({
+        ok: behaves.refusesToCreate !== true,
+        status: behaves.refusesToCreate === true ? 502 : 200,
+        json: () => Promise.resolve({ started: behaves.createsNothing !== true }),
+      } as Response);
+    }
 
     return Promise.resolve({
-      ok: answers.ok,
-      status: answers.ok ? 200 : 502,
+      ok: behaves.refusesToStart !== true,
+      status: behaves.refusesToStart === true ? 502 : 200,
       json: () => Promise.resolve({ clientSecret: A_CLIENT_SECRET }),
     } as Response);
   }) as unknown as typeof fetch;
@@ -162,29 +208,38 @@ function anApi(answers: { readonly ok: boolean }): {
 interface ADrivenForm {
   readonly holder: HTMLElement;
   readonly did: WhatStripeDid;
-  readonly calls: { address: string; token: string }[];
+  readonly calls: OneCall[];
   readonly press: (named: string) => Promise<void>;
   readonly answerTheWalletEvent: (said: Record<string, unknown>) => Promise<void>;
-  /** The press of a wallet of the device, which Stripe reports on its own element. */
+  /** The press of the wallet button of Stripe, which confirms through its own element. */
   readonly pressesTheWallet: () => Promise<void>;
   /** Lets the library arrive, where the form was built to hold it back. */
   readonly letsStripeArrive: () => Promise<void>;
+  /** The page goes out from under the form, which is what leaving it does to every node of it. */
+  readonly sheLeavesThePage: () => Promise<void>;
   readonly text: () => string;
 }
 
 /**
- * What she is looking at: the elements of Stripe that went into a node the page holds now. An
+ * What she is looking at: the elements of Stripe that went into a node the holder still holds. An
  * element that went into a node the page took away is drawn nowhere she can see it.
  */
+const theElementsIn = (holder: HTMLElement, did: WhatStripeDid): WhereAnElementWent[] =>
+  did.went.filter((drawn) => holder.contains(drawn.into));
+
 const theElementsOnThePage = (form: ADrivenForm): WhereAnElementWent[] =>
-  form.did.went.filter((drawn) => form.holder.contains(drawn.into));
+  theElementsIn(form.holder, form.did);
+
+/** The two elements the page draws, in the order Stripe is asked for them. */
+const THE_PAIR = ['expressCheckout', 'payment'];
 
 async function aFormOnThePage(
   options: {
     readonly publishableKey?: string;
     readonly stripe?: AFakeStripe;
     readonly signedIn?: boolean;
-    readonly apiAnswers?: boolean;
+    readonly api?: HowTheApiBehaves;
+    readonly language?: Language;
     /**
      * Holds the library back until the test lets it arrive. The real one is fetched over a
      * network, so it lands after the press that asked for it, and she may have moved on by then.
@@ -192,8 +247,9 @@ async function aFormOnThePage(
     readonly stripeArrivesLate?: boolean;
   } = {},
 ): Promise<ADrivenForm> {
+  const language = options.language ?? 'en';
   const stripe = options.stripe ?? fakeStripe();
-  const api = anApi({ ok: options.apiAnswers ?? true });
+  const api = anApi(options.api ?? {});
   const holder = document.createElement('div');
   let itArrives = (): void => undefined;
   const theArrival =
@@ -233,10 +289,10 @@ async function aFormOnThePage(
     root.render(
       <ThePaymentForm
         asks={api.asks}
-        language="en"
+        language={language}
         publishableKey={options.publishableKey ?? A_KEY}
         stripeArrives={() => theArrival.then(() => stripe.stripe)}
-        words={words}
+        words={wordsIn(language)}
       />,
     );
   });
@@ -270,6 +326,11 @@ async function aFormOnThePage(
     letsStripeArrive: async () => {
       await act(async () => {
         itArrives();
+      });
+    },
+    sheLeavesThePage: async () => {
+      await act(async () => {
+        root.unmount();
       });
     },
   };
@@ -332,102 +393,50 @@ describe('the form she pays on', () => {
     expect(form.did.mounted).toEqual(['expressCheckout', 'payment']);
   });
 
-  it('draws the two ways to pay, and opens on the card', async () => {
+  it('names the card route she is on, and offers her nothing to choose', async () => {
     const form = await aFormOnThePage();
-    const pressed = [...form.holder.querySelectorAll('button[aria-pressed="true"]')];
 
     expect(form.text()).toContain(words.checkoutPayByCard);
-    expect(form.text()).toContain(words.checkoutPayByStars);
-    expect(pressed.map((button) => button.textContent)).toEqual([
-      `${words.checkoutPayByCard}${words.checkoutPayByCardWhere}`,
-    ]);
+    expect(form.text()).toContain(words.checkoutPayByCardWhere);
+    expect(
+      [...form.holder.querySelectorAll('[aria-pressed]')].map((held) => held.textContent),
+    ).toEqual([]);
   });
 
-  it('says Stars is not ready yet, and draws no press that would open nothing', async () => {
+  it('draws one press, which is the press that pays, with nothing pressed first', async () => {
     const form = await aFormOnThePage();
+    const presses = [...form.holder.querySelectorAll('button')];
 
-    await form.press(words.checkoutPayByStars);
-
-    expect(form.text()).toContain(words.checkoutStarsNotReady);
-    expect(form.text()).not.toContain(thePressThatPays);
-    expect([...form.holder.querySelectorAll('a')]).toEqual([]);
+    expect(presses.map((press) => press.textContent)).toEqual([thePressThatPays]);
+    expect(form.did.mounted).toEqual(['expressCheckout', 'payment']);
   });
 
-  describe('the way back from the Stars panel', () => {
-    it('draws the wallets and the card form into the elements of the page she is on', async () => {
+  it.each(languages)('says nothing about paying in Telegram Stars, in %s', async (language) => {
+    const form = await aFormOnThePage({ language });
+
+    expect(form.text()).not.toContain('Telegram');
+    expect(form.text()).not.toContain('Stars');
+    expect(form.text()).toContain(wordsIn(language).checkoutPay);
+  });
+
+  describe('the page she was reading going away under the form', () => {
+    it('destroys the wallets and the card form, rather than leaving them in a gone node', async () => {
       const form = await aFormOnThePage();
 
-      await form.press(words.checkoutPayByStars);
-      await form.press(words.checkoutPayByCard);
-
-      expect(theElementsOnThePage(form).map((drawn) => drawn.kind)).toEqual([
-        'expressCheckout',
-        'payment',
-      ]);
-      expect(form.did.mounted).toEqual([
-        'expressCheckout',
-        'payment',
-        'expressCheckout',
-        'payment',
-      ]);
-    });
-
-    it('takes the wallets and the card form of the panel it left off the page', async () => {
-      const form = await aFormOnThePage();
-
-      await form.press(words.checkoutPayByStars);
+      await form.sheLeavesThePage();
 
       expect(form.did.destroyed).toEqual(['expressCheckout', 'payment']);
       expect(theElementsOnThePage(form)).toEqual([]);
     });
 
-    it('pays on the card form she is looking at, and leaves her on her account page', async () => {
-      const form = await aFormOnThePage();
-
-      await form.press(words.checkoutPayByStars);
-      await form.press(words.checkoutPayByCard);
-      await form.press(thePressThatPays);
-
-      expect(theElementsOnThePage(form)).toHaveLength(2);
-      expect(form.did.confirmed[0]?.elements).toBe(theElementsOnThePage(form)[0]?.group);
-      expect(form.did.submitted).toBe(1);
-      expect(whereSheWentNext).toEqual(['/en/account/']);
-    });
-
-    it('pays on the wallet she is looking at, when she presses that instead', async () => {
-      const form = await aFormOnThePage();
-
-      await form.press(words.checkoutPayByStars);
-      await form.press(words.checkoutPayByCard);
-      await form.pressesTheWallet();
-
-      expect(theElementsOnThePage(form)).toHaveLength(2);
-      expect(form.did.confirmed[0]?.elements).toBe(theElementsOnThePage(form)[0]?.group);
-      expect(whereSheWentNext).toEqual(['/en/account/']);
-    });
-
-    it('draws nothing at all where Stripe arrives after she picked Stars', async () => {
+    it('draws nothing at all where Stripe arrives after the form went away', async () => {
       const form = await aFormOnThePage({ stripeArrivesLate: true });
 
-      await form.press(words.checkoutPayByStars);
+      await form.sheLeavesThePage();
       await form.letsStripeArrive();
 
       expect(form.did.mounted).toEqual([]);
       expect(theElementsOnThePage(form)).toEqual([]);
-    });
-
-    it('draws on the element of the page where Stripe arrives after she came back', async () => {
-      const form = await aFormOnThePage({ stripeArrivesLate: true });
-
-      await form.press(words.checkoutPayByStars);
-      await form.press(words.checkoutPayByCard);
-      await form.letsStripeArrive();
-
-      expect(theElementsOnThePage(form).map((drawn) => drawn.kind)).toEqual([
-        'expressCheckout',
-        'payment',
-      ]);
-      expect(form.did.mounted).toEqual(['expressCheckout', 'payment']);
     });
   });
 
@@ -437,19 +446,61 @@ describe('the form she pays on', () => {
 
       await form.press(thePressThatPays);
 
-      expect(form.calls).toHaveLength(1);
       expect(form.calls[0]?.address).toBe(WHERE_A_SUBSCRIPTION_STARTS);
+      expect(form.calls[0]?.method).toBe('POST');
       expect(form.calls[0]?.token.startsWith('Bearer ')).toBe(true);
       expect(form.did.submitted).toBe(1);
       expect(form.did.confirmed[0]?.clientSecret).toBe(A_CLIENT_SECRET);
     });
 
-    it('leaves her on her account page once the setup is confirmed', async () => {
+    it('names the setup Stripe confirmed to Emi, which is what creates the subscription', async () => {
+      const form = await aFormOnThePage();
+
+      await form.press(thePressThatPays);
+
+      expect(form.calls.map((call) => call.method)).toEqual(['POST', 'PUT']);
+      expect(form.calls[1]?.address).toBe(WHERE_A_SUBSCRIPTION_STARTS);
+      expect(form.calls[1]?.token).toBe(form.calls[0]?.token);
+      expect(JSON.parse(form.calls[1]?.body ?? '{}')).toEqual({
+        [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP,
+      });
+    });
+
+    it('leaves her on her account page once the subscription is created', async () => {
       const form = await aFormOnThePage();
 
       await form.press(thePressThatPays);
 
       expect(whereSheWentNext).toEqual(['/en/account/']);
+    });
+
+    it('keeps her on the page with the line when the subscription is refused', async () => {
+      const form = await aFormOnThePage({ api: { refusesToCreate: true } });
+
+      await form.press(thePressThatPays);
+
+      expect(form.text()).toContain(words.checkoutCouldNotStart);
+      expect(form.text()).toContain(thePressThatPays);
+      expect(whereSheWentNext).toEqual([]);
+    });
+
+    it('keeps her on the page when the route takes the setup and creates nothing', async () => {
+      const form = await aFormOnThePage({ api: { createsNothing: true } });
+
+      await form.press(thePressThatPays);
+
+      expect(form.text()).toContain(words.checkoutCouldNotStart);
+      expect(whereSheWentNext).toEqual([]);
+    });
+
+    it('creates nothing and keeps her on the page when Stripe names no setup', async () => {
+      const form = await aFormOnThePage({ stripe: fakeStripe({ confirmsNoSetup: true }) });
+
+      await form.press(thePressThatPays);
+
+      expect(form.calls.map((call) => call.method)).toEqual(['POST']);
+      expect(form.text()).toContain(words.checkoutCouldNotStart);
+      expect(whereSheWentNext).toEqual([]);
     });
 
     it('asks the api nothing when the card form itself refuses what she typed', async () => {
@@ -476,12 +527,36 @@ describe('the form she pays on', () => {
     });
 
     it('says Emi could not start it when the route answers no secret', async () => {
-      const form = await aFormOnThePage({ apiAnswers: false });
+      const form = await aFormOnThePage({ api: { refusesToStart: true } });
 
       await form.press(thePressThatPays);
 
       expect(form.text()).toContain(words.checkoutCouldNotStart);
       expect(form.did.confirmed).toEqual([]);
+    });
+  });
+
+  describe('the wallet of her device, which confirms through the element of Stripe', () => {
+    it('makes both calls and lands her, the way the press that pays does', async () => {
+      const form = await aFormOnThePage();
+
+      await form.answerTheWalletEvent({ availablePaymentMethods: { applePay: true } });
+      await form.pressesTheWallet();
+
+      expect(form.calls.map((call) => call.method)).toEqual(['POST', 'PUT']);
+      expect(JSON.parse(form.calls[1]?.body ?? '{}')).toEqual({
+        [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP,
+      });
+      expect(whereSheWentNext).toEqual(['/en/account/']);
+    });
+
+    it('keeps her on the page with the line when that subscription is refused', async () => {
+      const form = await aFormOnThePage({ api: { refusesToCreate: true } });
+
+      await form.pressesTheWallet();
+
+      expect(form.text()).toContain(words.checkoutCouldNotStart);
+      expect(whereSheWentNext).toEqual([]);
     });
   });
 
@@ -535,8 +610,25 @@ function sheHolds(idToken: string): void {
  * Stripe is put on the window before the page draws. The real module writes a script tag for the
  * library when it finds nothing there, and this file reaches no other company for anything.
  */
-async function theCheckoutPageWhileSheHolds(idToken: string | null): Promise<HTMLElement> {
+/**
+ * The page of the last case, which is unmounted before the next one draws. A browser holds one
+ * page at a time, and a page left mounted here still listens for the word that her session
+ * changed, so it would draw its own form again on an event a later case sent.
+ */
+let theLastPage: ReturnType<typeof createRoot> | null = null;
+
+async function theCheckoutPageWhileSheHolds(
+  idToken: string | null,
+  stripe: AFakeStripe = fakeStripe(),
+): Promise<HTMLElement> {
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = A_KEY;
+
+  if (theLastPage !== null) {
+    await act(async () => {
+      theLastPage?.unmount();
+    });
+  }
+
   document.body.innerHTML = '';
   window.localStorage.clear();
   window.sessionStorage.clear();
@@ -551,7 +643,7 @@ async function theCheckoutPageWhileSheHolds(idToken: string | null): Promise<HTM
     },
   });
 
-  (window as unknown as { Stripe: () => TheStripeOnThePage }).Stripe = () => fakeStripe().stripe;
+  (window as unknown as { Stripe: () => TheStripeOnThePage }).Stripe = () => stripe.stripe;
 
   if (idToken !== null) {
     sheHolds(idToken);
@@ -563,8 +655,10 @@ async function theCheckoutPageWhileSheHolds(idToken: string | null): Promise<HTM
 
   const page = await CheckoutPage({ params: Promise.resolve({ lang: 'en' }) });
 
+  theLastPage = createRoot(where);
+
   await act(async () => {
-    createRoot(where).render(page);
+    theLastPage?.render(page);
   });
 
   return where;
@@ -609,7 +703,7 @@ describe('the page she buys Emi on', () => {
     it.each([
       ['a token that names no instant at all', {}],
       ['a token good for years yet', { exp: SHE_IS_GOOD_UNTIL }],
-    ])('reads the plan, the ways to pay and the press that pays, with %s', async (_said, held) => {
+    ])('reads the plan, the way she pays and the press that pays, with %s', async (_said, held) => {
       const page = await theCheckoutPageWhileSheHolds(
         anIdToken(`${THE_APPLE_NAME}_000482910`, held),
       );
@@ -620,13 +714,96 @@ describe('the page she buys Emi on', () => {
       expect(said).toContain(words.checkoutPlanYearly);
       expect(said).toContain(words.checkoutPlanAmount);
       expect(said).toContain(words.checkoutPayByCard);
-      expect(said).toContain(words.checkoutPayByStars);
+      expect(said).toContain(words.checkoutPayByCardWhere);
       expect(said).toContain(thePressThatPays);
       expect(said).toContain(words.checkoutCancelAnyTime);
       // She asked for this page and she is reading it, so nothing was kept and she was moved
       // nowhere at all.
       expect(whereSheWentNext).toEqual([]);
       expect(window.sessionStorage.getItem(WHERE_SHE_WAS_GOING_ENTRY)).toBeNull();
+    });
+  });
+
+  /**
+   * A second tab of the same browser signs her out and signs her in again, which the page reads
+   * off the one store both tabs share. The sign in gate then draws the plan and the form again,
+   * on nodes of its own, and the elements of Stripe belong to the nodes that went away.
+   */
+  describe('her session going and coming back in another tab', () => {
+    const herToken = (): string => anIdToken(`${THE_APPLE_NAME}_000482910`);
+
+    // The page asks the api through the fetch of her browser, which this runner does not carry,
+    // so the press that pays reaches a double of the two calls rather than nothing at all.
+    beforeEach(() => {
+      (globalThis as { fetch?: typeof fetch }).fetch = anApi({}).asks;
+    });
+
+    afterEach(() => {
+      delete (globalThis as { fetch?: typeof fetch }).fetch;
+    });
+
+    /** What a second tab leaves behind: the entry it wrote, and the word to every other tab. */
+    async function herBrowserSays(idToken: string | null): Promise<void> {
+      await act(async () => {
+        if (idToken === null) {
+          window.localStorage.removeItem(THE_SESSION_ENTRY);
+        } else {
+          sheHolds(idToken);
+        }
+
+        window.dispatchEvent(new StorageEvent('storage', { key: THE_SESSION_ENTRY }));
+      });
+    }
+
+    async function pressesOn(page: HTMLElement, named: string): Promise<void> {
+      const pressed = [...page.querySelectorAll('button')].find((button) =>
+        (button.textContent ?? '').includes(named),
+      );
+
+      expect(pressed).toBeDefined();
+
+      await act(async () => {
+        pressed?.click();
+      });
+    }
+
+    it('destroys the wallets and the card form when the gate takes the form away', async () => {
+      const stripe = fakeStripe();
+      const page = await theCheckoutPageWhileSheHolds(herToken(), stripe);
+
+      await herBrowserSays(null);
+
+      expect(page.textContent).toBe('');
+      expect(stripe.did.destroyed).toEqual(THE_PAIR);
+      expect(theElementsIn(page, stripe.did)).toEqual([]);
+    });
+
+    it('draws both of them again, into the elements the gate drew this time', async () => {
+      const stripe = fakeStripe();
+      const page = await theCheckoutPageWhileSheHolds(herToken(), stripe);
+
+      await herBrowserSays(null);
+      await herBrowserSays(herToken());
+
+      expect(theElementsIn(page, stripe.did).map((drawn) => drawn.kind)).toEqual(THE_PAIR);
+      expect(stripe.did.mounted).toEqual([...THE_PAIR, ...THE_PAIR]);
+      expect(stripe.did.destroyed).toEqual(THE_PAIR);
+    });
+
+    it('pays on the card form of the page she came back to, and nothing of the first', async () => {
+      const stripe = fakeStripe();
+      const page = await theCheckoutPageWhileSheHolds(herToken(), stripe);
+
+      await herBrowserSays(null);
+      await herBrowserSays(herToken());
+      await pressesOn(page, thePressThatPays);
+
+      const onThePage = theElementsIn(page, stripe.did);
+
+      expect(onThePage).toHaveLength(2);
+      expect(stripe.did.confirmed[0]?.elements).toBe(onThePage[0]?.group);
+      expect(stripe.did.destroyed).toEqual(THE_PAIR);
+      expect(whereSheWentNext.at(-1)).toBe('/en/account/');
     });
   });
 });

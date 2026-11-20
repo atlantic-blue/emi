@@ -204,6 +204,18 @@ export const loadChecks: Readonly<Record<string, readonly LoadCheck[]>> = {
       owes: (answer) => fieldOf(answer, 'statusCode') === 401,
       describes: 'a confirmed card change carrying no token of the pool is refused',
     },
+    // What the Buy Emi page sends once Stripe has taken her card, on the path of the press. A
+    // bundle that answered the press and not this one would load and charge nobody anything.
+    {
+      event: {
+        rawPath: '/v1/payments/subscription',
+        headers: {},
+        requestContext: { http: { method: 'PUT' } },
+        body: '{"setupRef":"seti_nothing"}',
+      },
+      owes: (answer) => fieldOf(answer, 'statusCode') === 401,
+      describes: 'a finished setup carrying no token of the pool is refused',
+    },
   ],
   // A header carrying no signature at all is refused by its shape, before the function reads a
   // parameter, reaches Stripe or parses one field of the body. So a bundle with no account behind

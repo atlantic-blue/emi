@@ -21,6 +21,9 @@ export const aWrongCode = '111111';
 /** The refresh token the stand in hands back. It is made up and opens nothing. */
 export const theRefreshTokenItHandsBack = 'a-refresh-token-made-up-for-the-test';
 
+/** The refresh token the stand in rotates to, which a refresh hands back in place of the one above. */
+export const theRefreshTokenARefreshRotatesTo = 'a-rotated-refresh-token-made-up-for-the-test';
+
 interface WhatItSays {
   readonly status: number;
   readonly said: Readonly<Record<string, unknown>>;
@@ -44,10 +47,17 @@ const herTokens = took({
   },
 });
 
+/** How the pool is set up for one test, which is what makes its answers differ. */
+interface HowThePoolIsSet {
+  readonly hasAnAccount: boolean;
+  readonly rotates: boolean;
+  readonly acceptsTheToken: boolean;
+}
+
 function answerTo(
   call: string,
   body: Readonly<Record<string, unknown>>,
-  hasAnAccount: boolean,
+  set: HowThePoolIsSet,
 ): WhatItSays {
   if (call === 'SignUp') {
     return took({ UserConfirmed: false, Session: 'the-sign-up-session' });
@@ -58,7 +68,7 @@ function answerTo(
       return refused('CodeMismatchException');
     }
 
-    return hasAnAccount
+    return set.hasAnAccount
       ? refused('AliasExistsException')
       : took({ Session: 'the-confirmed-session' });
   }
@@ -67,6 +77,20 @@ function answerTo(
     return body.Session === undefined
       ? took({ ChallengeName: 'EMAIL_OTP', Session: 'the-sign-in-session' })
       : herTokens;
+  }
+
+  if (call === 'GetTokensFromRefreshToken') {
+    if (!set.acceptsTheToken || body.RefreshToken !== theRefreshTokenItHandsBack) {
+      return refused('NotAuthorizedException');
+    }
+
+    return took({
+      AuthenticationResult: {
+        IdToken: 'a-refreshed-id-token',
+        AccessToken: 'a-refreshed-access-token',
+        ...(set.rotates ? { RefreshToken: theRefreshTokenARefreshRotatesTo } : {}),
+      },
+    });
   }
 
   if (call === 'RespondToAuthChallenge') {
@@ -90,6 +114,10 @@ interface TheStandIn {
   readonly loseTheConnection: () => void;
   /** Answers the confirmation as the pool does for an address that already has an account. */
   readonly holdAnAccountForTheAddress: () => void;
+  /** Hands back a new refresh token on a refresh, as a client with rotation on does. */
+  readonly rotateTheRefreshToken: () => void;
+  /** Refuses the refresh token, as the pool does for one that is expired, replaced or revoked. */
+  readonly stopAcceptingTheRefreshToken: () => void;
 }
 
 /** Puts the stand in where `fetch` is, for the test that calls it. */
@@ -98,6 +126,8 @@ export function theCognitoSheReaches(): TheStandIn {
   let isHeld = false;
   let isOffline = false;
   let hasAnAccount = false;
+  let rotates = false;
+  let acceptsTheToken = true;
   const held: (() => void)[] = [];
 
   const how = async (where: unknown, asked?: RequestInit): Promise<Response> => {
@@ -116,12 +146,18 @@ export function theCognitoSheReaches(): TheStandIn {
     }
 
     if (isHeld) {
-      await new Promise<void>((resolve) => {
+      // The real service answers a cancelled request by raising, so a call with a deadline on it
+      // has to be able to run out here. A double that answered anyway would make a timeout
+      // untestable and the suite green over a phone that waits forever.
+      await new Promise<void>((resolve, reject) => {
+        const signal = asked?.signal;
+
         held.push(resolve);
+        signal?.addEventListener('abort', () => reject(new Error('Aborted')), { once: true });
       });
     }
 
-    const { status, said } = answerTo(call, body, hasAnAccount);
+    const { status, said } = answerTo(call, body, { hasAnAccount, rotates, acceptsTheToken });
 
     return {
       ok: status >= 200 && status < 300,
@@ -146,6 +182,12 @@ export function theCognitoSheReaches(): TheStandIn {
     },
     holdAnAccountForTheAddress: () => {
       hasAnAccount = true;
+    },
+    rotateTheRefreshToken: () => {
+      rotates = true;
+    },
+    stopAcceptingTheRefreshToken: () => {
+      acceptsTheToken = false;
     },
   };
 }
