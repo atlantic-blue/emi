@@ -12,6 +12,10 @@ Feature: What a woman is left with when she signs in
   reads the same session, and a sign out in one page signs her out in the other. The last
   scenario opens two pages and drives both.
 
+  The page she buys Emi on is the other page that asks. A payment lands against the sign in she
+  used, so that page draws nothing of the plan and nothing of the form to a reader with no
+  session: it moves her to the page she signs in on, and the sign in gives her the page back.
+
   The pool sends a real email, so the service is answered here with the shapes it documents
   rather than for real: a run against the live pool would make a user and write to whoever owns
   the address. The six digits are a code this suite wrote, and they are the code that confirms an
@@ -40,6 +44,17 @@ Feature: What a woman is left with when she signs in
   Scenario: her account with no session is the page she signs in on
     Given a woman with no session opens her account
     Then she is left on the page she signs in on
+
+  Scenario: the page she buys Emi on with no session is the page she signs in on
+    Given a woman with no session opens the page she buys Emi on
+    Then she is left on the page she signs in on
+    And she read no word of the plan and no press that pays
+
+  Scenario: a sign in started on the page she buys Emi on gives her that page back
+    Given a woman with no session opens the page she buys Emi on, with a pool that answers
+    When she types her address and presses Send code
+    And she types the six digits and presses Sign in
+    Then she is left on the page she buys Emi on, reading the plan
 
   Scenario: a second page of the same browser reads the same session
     Given a woman opens the page she signs in on, with a pool that answers

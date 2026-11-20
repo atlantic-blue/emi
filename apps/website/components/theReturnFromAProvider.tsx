@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
-import { WHERE_A_SIGN_IN_LANDS } from '@/components/theSignInForm';
 import { forgetWhatSheStarted, theTokensSheCameBackWith } from '@/lib/theProviderSignIn';
 import { holdTheSession } from '@/lib/theSessionSheHolds';
+import { whereASignInLands } from '@/lib/whereASignInComesBackTo';
 import { goTo } from '@/lib/whereSheGoesNext';
 
 /**
@@ -45,7 +45,7 @@ export function TheReturnFromAProvider({
 
         forgetWhatSheStarted();
         holdTheSession(tokens);
-        goTo(`/${language}/${WHERE_A_SIGN_IN_LANDS}`);
+        goTo(whereASignInLands(language));
       } catch {
         // The kept value goes either way. A value left behind would be offered to the next return
         // this tab reads, and a return is good for one sign in.
