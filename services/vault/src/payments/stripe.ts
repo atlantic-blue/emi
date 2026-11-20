@@ -45,7 +45,7 @@ export const customersAddress = `${stripeApi}/customers`;
 /** Where the setup that collects her payment method is made. */
 export const setupIntentsAddress = `${stripeApi}/setup_intents`;
 
-/** Where the subscriptions are. Nothing in this file creates one. */
+/** Where the subscriptions are made, one for each woman who finishes a setup. */
 export const subscriptionsAddress = `${stripeApi}/subscriptions`;
 
 /** Where the payment methods are. Only the detach below reaches this one. */
@@ -94,6 +94,13 @@ export const theYearlyPrice: YearlyPrice = {
   freeMonthDays: 30,
 };
 
+/**
+ * The price object of the live account that the figures above describe. Stripe refuses to change
+ * the amount or the tax behaviour of a price, so a figure that moves is a second price and this
+ * line moves with it.
+ */
+export const theYearlyPriceRef = 'price_1UcRXkHdug2e0off0cVv6OOE';
+
 /** Every way a call of Stripe fails, as a value, so a caller matches a reason and not words. */
 export type StripeRefusal = 'the-call-was-refused' | 'the-answer-names-no-object';
 
@@ -119,12 +126,19 @@ export function formBodyOf(fields: readonly (readonly [string, string])[]): stri
     .join('&');
 }
 
+/**
+ * The header a call carries to say that two of it are one. Stripe answers the second call with
+ * what it answered the first, so a press she makes twice buys one subscription.
+ */
+export const idempotencyHeader = 'idempotency-key';
+
 /** The headers every call carries. The key is here and in no other line of this service. */
-export function headersFor(secretKey: string): Record<string, string> {
+export function headersFor(secretKey: string, oneOfAKind?: string): Record<string, string> {
   return {
     authorization: `Bearer ${secretKey}`,
     'content-type': 'application/x-www-form-urlencoded',
     'stripe-version': stripeApiVersion,
+    ...(oneOfAKind === undefined ? {} : { [idempotencyHeader]: oneOfAKind }),
   };
 }
 
@@ -431,6 +445,34 @@ export async function setupAsItStands(
   };
 }
 
+/** Every way a setup collected nothing a caller may use, as a value rather than as words. */
+export type SetupRefusal = 'another-customer' | 'nothing-was-collected';
+
+/** The payment method one setup collected, or the reason it collected none for this caller. */
+export type WhatASetupCollected =
+  { readonly paymentMethodRef: string } | { readonly refusal: SetupRefusal };
+
+/**
+ * The payment method a setup collected for one customer, read off the setup as Stripe holds it.
+ *
+ * Whose it is comes before what state it reached, so a caller holding the identifier of somebody
+ * else's setup is told one thing and learns nothing about that setup. Both routes that take a
+ * setup from a browser read it through here, so neither one can judge it more loosely than the
+ * other.
+ */
+export function whatASetupCollected(
+  setup: SetupAsItStands,
+  customerRef: string,
+): WhatASetupCollected {
+  if (setup.customerRef !== customerRef) {
+    return { refusal: 'another-customer' };
+  }
+
+  return setup.status !== setupSucceeded || setup.paymentMethodRef === null
+    ? { refusal: 'nothing-was-collected' }
+    : { paymentMethodRef: setup.paymentMethodRef };
+}
+
 /** What every invoice of a customer is charged to today, or nothing where it carries none. */
 export async function defaultPaymentMethodOf(
   held: WhatACallHolds,
@@ -489,4 +531,73 @@ export async function detachPaymentMethod(
   });
 
   objectIn(answered, 'payment method');
+}
+
+/** The field the price of the one line of the subscription is written as. */
+export const subscriptionPriceField = 'items[0][price]';
+
+/** The field the days of the free month are written as. */
+export const trialDaysField = 'trial_period_days';
+
+/** The field that keeps the card of the first charge as the card of every later one. */
+export const savesTheDefaultField = 'payment_settings[save_default_payment_method]';
+
+/** What that field is set to, which is the payment method the subscription is set up with. */
+export const onSubscription = 'on_subscription';
+
+/**
+ * The field that says what a free month ending with no payment method on file does. It is set to
+ * cancel, so a woman whose card is gone by then is not left owing 39 euros she never confirmed.
+ */
+export const whenNoCardIsLeftField = 'trial_settings[end_behavior][missing_payment_method]';
+
+/** What that field is set to. */
+export const cancelTheSubscription = 'cancel';
+
+/** Whose subscription is made, and under which key, so two presses make one of them. */
+export interface WhichSubscription {
+  readonly customerRef: string;
+  /** The digest the metadata carries, which is how a delivery of it names a payer. */
+  readonly payerDigest: string;
+  /**
+   * The key two calls of one press share. Stripe replays the first answer for it, so a retry and
+   * a second press are both answered with the subscription the first call made.
+   */
+  readonly oneOfAKind: string;
+}
+
+/**
+ * The yearly subscription, made on a customer that already holds her payment method, with the
+ * free month in front of it.
+ *
+ * The payment method is set on the customer before this call, so the subscription takes it as its
+ * own and the renewal a year later is charged to the card she gave at the press.
+ */
+export async function yearlySubscriptionFor(
+  held: WhatACallHolds,
+  which: WhichSubscription,
+): Promise<string> {
+  const answered = await held.reaches(subscriptionsAddress, {
+    method: 'POST',
+    headers: headersFor(held.secretKey, which.oneOfAKind),
+    body: formBodyOf([
+      ['customer', which.customerRef],
+      [subscriptionPriceField, theYearlyPriceRef],
+      [trialDaysField, String(theYearlyPrice.freeMonthDays)],
+      [savesTheDefaultField, onSubscription],
+      [whenNoCardIsLeftField, cancelTheSubscription],
+      [payerDigestField, which.payerDigest],
+    ]),
+  });
+
+  const subscriptionRef = textIn(objectIn(answered, 'subscription').id);
+
+  if (subscriptionRef === null) {
+    throw new StripeError(
+      'the-answer-names-no-object',
+      'the subscription call named no subscription',
+    );
+  }
+
+  return subscriptionRef;
 }

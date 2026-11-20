@@ -14,7 +14,10 @@ import type {
   TheElementsOfTheForm,
   TheStripeOnThePage,
 } from '../lib/theStripeOnThePage';
-import { WHERE_A_SUBSCRIPTION_STARTS } from '../lib/theSubscriptionSheStarts';
+import {
+  THE_FIELD_A_SETUP_TRAVELS_IN,
+  WHERE_A_SUBSCRIPTION_STARTS,
+} from '../lib/theSubscriptionSheStarts';
 import { WHERE_SHE_WAS_GOING_ENTRY } from '../lib/whereASignInComesBackTo';
 
 /**
@@ -40,7 +43,8 @@ const A_KEY = 'pk_test_not_a_real_key';
 
 /** Where her browser was told to go, which is the end of this page in a browser. */
 const whereSheWentNext: string[] = [];
-const A_CLIENT_SECRET = 'seti_000000000001_secret_000000000001';
+const A_SETUP = 'seti_000000000001';
+const A_CLIENT_SECRET = `${A_SETUP}_secret_000000000001`;
 
 /**
  * The names the pool writes in front of the subject a provider gave, written out here rather than
@@ -75,7 +79,12 @@ interface AFakeStripe {
 
 /** Stripe, as far as the form drives it. */
 function fakeStripe(
-  options: { readonly refuses?: string; readonly submitRefuses?: string } = {},
+  options: {
+    readonly refuses?: string;
+    readonly submitRefuses?: string;
+    /** Stripe takes the card and answers no setup, which names nothing to create against. */
+    readonly confirmsNoSetup?: boolean;
+  } = {},
 ): AFakeStripe {
   const did: WhatStripeDid = {
     mounted: [],
@@ -108,29 +117,66 @@ function fakeStripe(
       confirmSetup: (asked) => {
         did.confirmed.push(asked);
 
+        if (options.refuses !== undefined) {
+          return Promise.resolve({ error: { message: options.refuses } });
+        }
+
         return Promise.resolve(
-          options.refuses === undefined ? {} : { error: { message: options.refuses } },
+          options.confirmsNoSetup === true ? {} : { setupIntent: { id: A_SETUP } },
         );
       },
     },
   };
 }
 
-/** The api, answering one call with the secret of a setup, and counting what it was asked. */
-function anApi(answers: { readonly ok: boolean }): {
+/** One call the page made, as it left the browser. */
+interface OneCall {
+  readonly address: string;
+  readonly method: string;
+  readonly token: string;
+  readonly body?: string;
+}
+
+/** How the api behaves, where a test wants something other than both calls answering. */
+interface HowTheApiBehaves {
+  /** No setup is opened, the way a route that could not reach Stripe refuses the press. */
+  readonly refusesToStart?: boolean;
+  /** The setup is opened and the subscription is refused, which is the second of the two calls. */
+  readonly refusesToCreate?: boolean;
+  /** The second call is taken and the route answers that nothing was created. */
+  readonly createsNothing?: boolean;
+}
+
+/** The api, answering the press with the secret of a setup and the put with the subscription. */
+function anApi(behaves: HowTheApiBehaves): {
   readonly asks: typeof fetch;
-  readonly calls: { address: string; token: string }[];
+  readonly calls: OneCall[];
 } {
-  const calls: { address: string; token: string }[] = [];
+  const calls: OneCall[] = [];
 
   const asks = ((where: unknown, asked: RequestInit) => {
     const headers = (asked.headers ?? {}) as Record<string, string>;
+    const method = asked.method ?? 'GET';
+    const body = asked.body === undefined ? undefined : String(asked.body);
 
-    calls.push({ address: String(where), token: headers.authorization ?? '' });
+    calls.push({
+      address: String(where),
+      method,
+      token: headers.authorization ?? '',
+      ...(body === undefined ? {} : { body }),
+    });
+
+    if (method === 'PUT') {
+      return Promise.resolve({
+        ok: behaves.refusesToCreate !== true,
+        status: behaves.refusesToCreate === true ? 502 : 200,
+        json: () => Promise.resolve({ started: behaves.createsNothing !== true }),
+      } as Response);
+    }
 
     return Promise.resolve({
-      ok: answers.ok,
-      status: answers.ok ? 200 : 502,
+      ok: behaves.refusesToStart !== true,
+      status: behaves.refusesToStart === true ? 502 : 200,
       json: () => Promise.resolve({ clientSecret: A_CLIENT_SECRET }),
     } as Response);
   }) as unknown as typeof fetch;
@@ -141,9 +187,11 @@ function anApi(answers: { readonly ok: boolean }): {
 interface ADrivenForm {
   readonly holder: HTMLElement;
   readonly did: WhatStripeDid;
-  readonly calls: { address: string; token: string }[];
+  readonly calls: OneCall[];
   readonly press: (named: string) => Promise<void>;
   readonly answerTheWalletEvent: (said: Record<string, unknown>) => Promise<void>;
+  /** The press of the wallet button of Stripe, which confirms through its own element. */
+  readonly pressesTheWallet: () => Promise<void>;
   readonly text: () => string;
 }
 
@@ -152,11 +200,11 @@ async function aFormOnThePage(
     readonly publishableKey?: string;
     readonly stripe?: AFakeStripe;
     readonly signedIn?: boolean;
-    readonly apiAnswers?: boolean;
+    readonly api?: HowTheApiBehaves;
   } = {},
 ): Promise<ADrivenForm> {
   const stripe = options.stripe ?? fakeStripe();
-  const api = anApi({ ok: options.apiAnswers ?? true });
+  const api = anApi(options.api ?? {});
   const holder = document.createElement('div');
 
   document.body.append(holder);
@@ -216,6 +264,11 @@ async function aFormOnThePage(
     answerTheWalletEvent: async (said: Record<string, unknown>) => {
       await act(async () => {
         stripe.did.listeners.get('expressCheckout:ready')?.(said);
+      });
+    },
+    pressesTheWallet: async () => {
+      await act(async () => {
+        stripe.did.listeners.get('expressCheckout:confirm')?.({});
       });
     },
   };
@@ -305,19 +358,61 @@ describe('the form she pays on', () => {
 
       await form.press(thePressThatPays);
 
-      expect(form.calls).toHaveLength(1);
       expect(form.calls[0]?.address).toBe(WHERE_A_SUBSCRIPTION_STARTS);
+      expect(form.calls[0]?.method).toBe('POST');
       expect(form.calls[0]?.token.startsWith('Bearer ')).toBe(true);
       expect(form.did.submitted).toBe(1);
       expect(form.did.confirmed[0]?.clientSecret).toBe(A_CLIENT_SECRET);
     });
 
-    it('leaves her on her account page once the setup is confirmed', async () => {
+    it('names the setup Stripe confirmed to Emi, which is what creates the subscription', async () => {
+      const form = await aFormOnThePage();
+
+      await form.press(thePressThatPays);
+
+      expect(form.calls.map((call) => call.method)).toEqual(['POST', 'PUT']);
+      expect(form.calls[1]?.address).toBe(WHERE_A_SUBSCRIPTION_STARTS);
+      expect(form.calls[1]?.token).toBe(form.calls[0]?.token);
+      expect(JSON.parse(form.calls[1]?.body ?? '{}')).toEqual({
+        [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP,
+      });
+    });
+
+    it('leaves her on her account page once the subscription is created', async () => {
       const form = await aFormOnThePage();
 
       await form.press(thePressThatPays);
 
       expect(whereSheWentNext).toEqual(['/en/account/']);
+    });
+
+    it('keeps her on the page with the line when the subscription is refused', async () => {
+      const form = await aFormOnThePage({ api: { refusesToCreate: true } });
+
+      await form.press(thePressThatPays);
+
+      expect(form.text()).toContain(words.checkoutCouldNotStart);
+      expect(form.text()).toContain(thePressThatPays);
+      expect(whereSheWentNext).toEqual([]);
+    });
+
+    it('keeps her on the page when the route takes the setup and creates nothing', async () => {
+      const form = await aFormOnThePage({ api: { createsNothing: true } });
+
+      await form.press(thePressThatPays);
+
+      expect(form.text()).toContain(words.checkoutCouldNotStart);
+      expect(whereSheWentNext).toEqual([]);
+    });
+
+    it('creates nothing and keeps her on the page when Stripe names no setup', async () => {
+      const form = await aFormOnThePage({ stripe: fakeStripe({ confirmsNoSetup: true }) });
+
+      await form.press(thePressThatPays);
+
+      expect(form.calls.map((call) => call.method)).toEqual(['POST']);
+      expect(form.text()).toContain(words.checkoutCouldNotStart);
+      expect(whereSheWentNext).toEqual([]);
     });
 
     it('asks the api nothing when the card form itself refuses what she typed', async () => {
@@ -344,12 +439,36 @@ describe('the form she pays on', () => {
     });
 
     it('says Emi could not start it when the route answers no secret', async () => {
-      const form = await aFormOnThePage({ apiAnswers: false });
+      const form = await aFormOnThePage({ api: { refusesToStart: true } });
 
       await form.press(thePressThatPays);
 
       expect(form.text()).toContain(words.checkoutCouldNotStart);
       expect(form.did.confirmed).toEqual([]);
+    });
+  });
+
+  describe('the wallet of her device, which confirms through the element of Stripe', () => {
+    it('makes both calls and lands her, the way the press that pays does', async () => {
+      const form = await aFormOnThePage();
+
+      await form.answerTheWalletEvent({ availablePaymentMethods: { applePay: true } });
+      await form.pressesTheWallet();
+
+      expect(form.calls.map((call) => call.method)).toEqual(['POST', 'PUT']);
+      expect(JSON.parse(form.calls[1]?.body ?? '{}')).toEqual({
+        [THE_FIELD_A_SETUP_TRAVELS_IN]: A_SETUP,
+      });
+      expect(whereSheWentNext).toEqual(['/en/account/']);
+    });
+
+    it('keeps her on the page with the line when that subscription is refused', async () => {
+      const form = await aFormOnThePage({ api: { refusesToCreate: true } });
+
+      await form.pressesTheWallet();
+
+      expect(form.text()).toContain(words.checkoutCouldNotStart);
+      expect(whereSheWentNext).toEqual([]);
     });
   });
 
