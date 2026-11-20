@@ -5,7 +5,7 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import CheckoutPage from '../app/[lang]/checkout/page';
-import { wordsIn } from '../app/words';
+import { type Language, languages, wordsIn } from '../app/words';
 import { ThePaymentForm } from '../components/thePaymentForm';
 import { TheSignedInLine } from '../components/theSignedInLine';
 import { THE_SESSION_ENTRY } from '../lib/theSessionSheHolds';
@@ -201,8 +201,10 @@ async function aFormOnThePage(
     readonly stripe?: AFakeStripe;
     readonly signedIn?: boolean;
     readonly api?: HowTheApiBehaves;
+    readonly language?: Language;
   } = {},
 ): Promise<ADrivenForm> {
+  const language = options.language ?? 'en';
   const stripe = options.stripe ?? fakeStripe();
   const api = anApi(options.api ?? {});
   const holder = document.createElement('div');
@@ -237,10 +239,10 @@ async function aFormOnThePage(
     root.render(
       <ThePaymentForm
         asks={api.asks}
-        language="en"
+        language={language}
         publishableKey={options.publishableKey ?? A_KEY}
         stripeArrives={() => Promise.resolve(stripe.stripe)}
-        words={words}
+        words={wordsIn(language)}
       />,
     );
   });
@@ -331,25 +333,30 @@ describe('the form she pays on', () => {
     expect(form.did.mounted).toEqual(['expressCheckout', 'payment']);
   });
 
-  it('draws the two ways to pay, and opens on the card', async () => {
+  it('names the card route she is on, and offers her nothing to choose', async () => {
     const form = await aFormOnThePage();
-    const pressed = [...form.holder.querySelectorAll('button[aria-pressed="true"]')];
 
     expect(form.text()).toContain(words.checkoutPayByCard);
-    expect(form.text()).toContain(words.checkoutPayByStars);
-    expect(pressed.map((button) => button.textContent)).toEqual([
-      `${words.checkoutPayByCard}${words.checkoutPayByCardWhere}`,
-    ]);
+    expect(form.text()).toContain(words.checkoutPayByCardWhere);
+    expect(
+      [...form.holder.querySelectorAll('[aria-pressed]')].map((held) => held.textContent),
+    ).toEqual([]);
   });
 
-  it('says Stars is not ready yet, and draws no press that would open nothing', async () => {
+  it('draws one press, which is the press that pays, with nothing pressed first', async () => {
     const form = await aFormOnThePage();
+    const presses = [...form.holder.querySelectorAll('button')];
 
-    await form.press(words.checkoutPayByStars);
+    expect(presses.map((press) => press.textContent)).toEqual([thePressThatPays]);
+    expect(form.did.mounted).toEqual(['expressCheckout', 'payment']);
+  });
 
-    expect(form.text()).toContain(words.checkoutStarsNotReady);
-    expect(form.text()).not.toContain(thePressThatPays);
-    expect([...form.holder.querySelectorAll('a')]).toEqual([]);
+  it.each(languages)('says nothing about paying in Telegram Stars, in %s', async (language) => {
+    const form = await aFormOnThePage({ language });
+
+    expect(form.text()).not.toContain('Telegram');
+    expect(form.text()).not.toContain('Stars');
+    expect(form.text()).toContain(wordsIn(language).checkoutPay);
   });
 
   describe('the press that pays', () => {
@@ -596,7 +603,7 @@ describe('the page she buys Emi on', () => {
     it.each([
       ['a token that names no instant at all', {}],
       ['a token good for years yet', { exp: SHE_IS_GOOD_UNTIL }],
-    ])('reads the plan, the ways to pay and the press that pays, with %s', async (_said, held) => {
+    ])('reads the plan, the way she pays and the press that pays, with %s', async (_said, held) => {
       const page = await theCheckoutPageWhileSheHolds(
         anIdToken(`${THE_APPLE_NAME}_000482910`, held),
       );
@@ -607,7 +614,7 @@ describe('the page she buys Emi on', () => {
       expect(said).toContain(words.checkoutPlanYearly);
       expect(said).toContain(words.checkoutPlanAmount);
       expect(said).toContain(words.checkoutPayByCard);
-      expect(said).toContain(words.checkoutPayByStars);
+      expect(said).toContain(words.checkoutPayByCardWhere);
       expect(said).toContain(thePressThatPays);
       expect(said).toContain(words.checkoutCancelAnyTime);
       // She asked for this page and she is reading it, so nothing was kept and she was moved
