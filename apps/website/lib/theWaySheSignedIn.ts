@@ -42,7 +42,8 @@ const theNameOfTheWay: Readonly<Record<TheWaySheSignedIn, string | null>> = {
   herAddress: null,
 };
 
-function theClaimsIn(idToken: string): Readonly<Record<string, unknown>> | null {
+/** The claims her identity token carries, or nothing at all where it carries nothing readable. */
+export function theClaimsIn(idToken: string): Readonly<Record<string, unknown>> | null {
   const payload = idToken.split('.')[1];
 
   if (payload === undefined) {

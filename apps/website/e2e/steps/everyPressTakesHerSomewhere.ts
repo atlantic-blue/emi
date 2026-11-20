@@ -78,9 +78,10 @@ When('she reads every press the page offers her', async ({ page, pressing }) => 
   // signs out; not one of those carries an address, so none of them is read here. The two pages a
   // company sends her back to each offer one press, which is the way back when the sign in did
   // not finish. On the page she buys on she pays, and a build with no key from Stripe draws the
-  // plan and a sentence saying so, which carries no press at all. Every other page offers her a
-  // row of ways on, and a page of that kind with nothing in the middle is a page that failed to
-  // draw.
+  // plan and a sentence saying so, which carries no press at all. That page draws for a woman who
+  // is signed in, which is the session the step that opens a page writes. Every other page offers
+  // her a row of ways on, and a page of that kind with nothing in the middle is a page that failed
+  // to draw.
   const offersNoPressOfItsOwn = [
     '/sign-in/',
     '/account/',
@@ -150,11 +151,13 @@ Then('no press takes her to a page that is still to be built', ({ page, pressing
 
   expect(leadingNowhere.map((press) => press.called)).toEqual([]);
 
-  // Four paths no press on this site carries, each one a page nobody has built yet. The page she
+  // Three paths no press on this site carries, each one a page nobody has built yet. The page she
   // signs in on is read with them: it is a page of the site, and the two presses that carry her to
   // it, in the band at the top and in the band at the foot, stay held back until a step takes the
-  // mark off each. The support page was the sixth of these; it is built and pressed, so it is read
-  // in the step below as a press the site answers 200 for.
+  // mark off each. The support page and the page she buys Emi on were both read here once; each
+  // one is built and pressed now, so each is read in the step below as a press the site answers
+  // 200 for. The press to the Buy Emi page is the one her account offers a woman who pays for
+  // nothing, and the card draws it a moment after the page loads, once the api has answered.
   //
   // The two pages a company sends her back to are the places that do offer it. A sign in that did
   // not finish leaves her one thing to do, which is to press again, so that press is the end of a
@@ -164,7 +167,6 @@ Then('no press takes her to a page that is still to be built', ({ page, pressing
   );
 
   for (const path of [
-    'checkout/',
     'calculator/',
     'pulse/',
     'terms/',

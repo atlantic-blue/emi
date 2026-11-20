@@ -1,4 +1,5 @@
 import type { TheTokensSheHolds } from './theSignIn';
+import { theClaimsIn } from './theWaySheSignedIn';
 
 /**
  * Where the tokens of a signed in woman are kept while she reads the site.
@@ -98,6 +99,25 @@ export function theSessionHeld(): TheTokensSheHolds | null {
   } catch {
     return null;
   }
+}
+
+/** The claim an identity token names the instant it stops being good in, counted in seconds. */
+export const WHEN_IT_RUNS_OUT_CLAIM = 'exp';
+
+const MILLISECONDS_IN_A_SECOND = 1_000;
+
+/**
+ * Whether the session she holds has run out, read off the instant her identity token names.
+ *
+ * A token naming no instant this can read has not said it ran out, so it counts as a session. The
+ * question here is whether a session is still good, and not whether a token is well formed: the
+ * api answers that one by checking the signature, and a page that refused what it cannot read
+ * would turn away a woman the api would serve.
+ */
+export function theSessionHasRunOut(held: TheTokensSheHolds, at: number): boolean {
+  const runsOut = theClaimsIn(held.idToken)?.[WHEN_IT_RUNS_OUT_CLAIM];
+
+  return typeof runsOut === 'number' && runsOut * MILLISECONDS_IN_A_SECOND <= at;
 }
 
 export function letTheSessionGo(): void {

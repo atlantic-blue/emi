@@ -1,10 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
+import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 
 import CheckoutPage from '../app/[lang]/checkout/page';
 import { wordsIn } from '../app/words';
+
+/**
+ * The page draws its column for a woman who is signed in, and a server of this site cannot read a
+ * session, so a server render of the page draws the column for nobody at all. The board is held
+ * against what she reads, so that part of the page is stood in for here and driven for real, with
+ * a session and without one, in `theCheckoutPage.test.tsx`.
+ */
+jest.mock('../components/theCheckoutBehindASignIn', () => ({
+  TheCheckoutBehindASignIn: ({ children }: { readonly children: ReactNode }) => children,
+}));
 
 /**
  * The approved board of the Buy Emi page, read against the words the page draws.
