@@ -15,8 +15,9 @@ import { wordsIn } from '../app/words';
  *
  * Two places the page differs from the board, each one a decision the operator can reverse.
  *
- * The board draws a press that opens the Emi bot. No bot exists, so the page says paying in Stars
- * is not ready yet and draws no press that would open nothing.
+ * The board draws two ways to pay, and the second one is Telegram Stars in the Emi bot. No bot
+ * exists, so the operator decided to leave that choice out until the Stars route is built. The
+ * page draws the card route alone, and there is nothing on it to choose.
  *
  * The board draws the wallets and the card form as two boxes the payment provider fills. The page
  * mounts Stripe's two elements there, so neither box carries words of ours.
@@ -92,8 +93,6 @@ const theWordsTheBoardDraws = [
   words.checkoutMethodQuestion,
   words.checkoutPayByCard,
   words.checkoutPayByCardWhere,
-  words.checkoutPayByStars,
-  words.checkoutPayByStarsWhere,
   words.checkoutTermsLink,
   thePressThatPays,
   words.checkoutCancelAnyTime,
@@ -121,7 +120,7 @@ describe('the approved board of the page she buys Emi on', () => {
     const page = await whatThePageSays();
     const missing = theWordsTheBoardDraws.filter((said) => !page.includes(said));
 
-    expect(theWordsTheBoardDraws.length).toBeGreaterThan(13);
+    expect(theWordsTheBoardDraws.length).toBeGreaterThan(12);
     expect(missing).toEqual([]);
   });
 
@@ -142,11 +141,14 @@ describe('the approved board of the page she buys Emi on', () => {
     expect(await whatThePageSays()).toContain(said);
   });
 
-  it('leaves the Emi bot press of the board undrawn, because no bot answers it yet', async () => {
+  it('leaves the Telegram Stars choice of the board out, as the operator decided', async () => {
+    const page = await whatThePageSays();
+
+    expect(whatTheBoardSays()).toContain('Telegram Stars');
     expect(whatTheBoardSays()).toContain('Open the Emi bot');
     expect(Object.values(words)).not.toContain('Open the Emi bot');
-    expect(words.checkoutStarsNotReady).toContain('not ready yet');
-    expect(await whatThePageSays()).not.toContain('Open the Emi bot');
+    expect(page).not.toContain('Telegram Stars');
+    expect(page).not.toContain('Open the Emi bot');
   });
 
   it('leaves the card form of the board to the payment provider, as the board does', async () => {

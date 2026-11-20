@@ -299,14 +299,10 @@ export const spanish: SiteWords = {
   checkoutMethodQuestion: '¿Cómo quieres pagar?',
   checkoutPayByCard: 'Apple Pay, Google Pay o tarjeta',
   checkoutPayByCardWhere: 'En este sitio',
-  checkoutPayByStars: 'Telegram Stars',
-  checkoutPayByStarsWhere: 'En el bot de Emi',
   checkoutOrPayByCard: 'o paga con tarjeta',
   checkoutTerms: 'Al pagar aceptas los {terms}.',
   checkoutTermsLink: 'términos',
   checkoutPay: 'Pagar 39 €',
-  checkoutStarsNotReady:
-    'Pagar con estrellas todavía no está listo. Paga con tarjeta aquí o vuelve más tarde.',
   checkoutCancelAnyTime:
     'Cancela en tu página de cuenta cuando quieras. El pago se vincula a tu cuenta. Nunca se vincula a tus registros.',
   checkoutCouldNotStart: 'Emi no pudo iniciar ese pago. Inténtalo de nuevo en un momento.',
