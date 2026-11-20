@@ -21,6 +21,14 @@ import {
  * Stripe is given the element the moment a browser attaches it, rather than on a pass of its own,
  * because the form is drawn inside a row she opens and that row is not there to be mounted into
  * until she opens it.
+ *
+ * A browser also takes that element away again, and hands this module nothing in its place. She
+ * picks Telegram Stars, or she closes the Change card row. An element of Stripe lives inside the
+ * node it was mounted into, so an element whose node went away draws nothing at all. Each one is
+ * destroyed at that moment, and the next node a browser gives is drawn on from the start.
+ *
+ * Stripe itself arrives after the press that needed it, which may be after she moved on. So what
+ * it answers is drawn only while the node it was asked for is still the node on the page.
  */
 
 /** The currency the one price is charged in, which the elements are drawn for. */
@@ -43,7 +51,10 @@ export interface WhatTheCardFormNeeds {
 
 /** The form on the page: where it is drawn, and the two calls that take what she filled in. */
 export interface TheCardFormOnThePage {
-  /** Given to the element the card form is drawn inside, where its board draws it. */
+  /**
+   * Given to the element the card form is drawn inside, where its board draws it. A browser hands
+   * it that element, and null where it takes the element off the page again.
+   */
   readonly drawsTheCardForm: (into: HTMLDivElement | null) => void;
   /** The group the elements belong to, once Stripe has drawn them, and nothing before that. */
   readonly theElements: () => TheElementsOfTheForm | null;
@@ -66,17 +77,30 @@ export function useTheCardFormSheFillsIn({
   alsoDraws,
 }: WhatTheCardFormNeeds): TheCardFormOnThePage {
   const held = useRef<{ elements: TheElementsOfTheForm; drawn: AnElementOfStripe[] } | null>(null);
+  const theNodeOnThePage = useRef<HTMLDivElement | null>(null);
 
   const drawsTheCardForm = useCallback(
     (into: HTMLDivElement | null): void => {
-      if (into === null || publishableKey.length === 0 || held.current !== null) {
+      theNodeOnThePage.current = into;
+
+      if (into === null) {
+        for (const element of held.current?.drawn ?? []) {
+          element.destroy();
+        }
+
+        held.current = null;
+
+        return;
+      }
+
+      if (publishableKey.length === 0 || held.current !== null) {
         return;
       }
 
       void (async () => {
         const stripe = await arrives(publishableKey);
 
-        if (stripe === null || held.current !== null) {
+        if (stripe === null || held.current !== null || theNodeOnThePage.current !== into) {
           return;
         }
 

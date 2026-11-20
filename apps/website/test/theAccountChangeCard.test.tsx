@@ -110,8 +110,18 @@ function anApi(
   return { asks, calls };
 }
 
+/** One element Stripe drew: what it draws, the node it went into, and the group it belongs to. */
+interface WhereAnElementWent {
+  readonly kind: string;
+  readonly into: HTMLElement;
+  readonly group: TheElementsOfTheForm;
+}
+
 interface WhatStripeDid {
   readonly mounted: string[];
+  /** Where each element went, so a test reads which of them the card she is reading holds. */
+  readonly went: WhereAnElementWent[];
+  readonly destroyed: string[];
   readonly confirmed: Record<string, unknown>[];
   submitted: number;
 }
@@ -130,23 +140,32 @@ function fakeStripe(
     readonly confirmsNoSetup?: boolean;
   } = {},
 ): AFakeStripe {
-  const did: WhatStripeDid = { mounted: [], confirmed: [], submitted: 0 };
+  const did: WhatStripeDid = { mounted: [], went: [], destroyed: [], confirmed: [], submitted: 0 };
 
-  const element = (kind: string): AnElementOfStripe => ({
-    mount: () => did.mounted.push(kind),
+  const element = (kind: string, group: TheElementsOfTheForm): AnElementOfStripe => ({
+    mount: (into) => {
+      did.mounted.push(kind);
+      did.went.push({ kind, into, group });
+    },
     on: () => undefined,
-    destroy: () => undefined,
+    destroy: () => did.destroyed.push(kind),
   });
 
-  const elements: TheElementsOfTheForm = {
-    create: (kind) => element(kind),
-    submit: () => {
-      did.submitted += 1;
+  // Stripe answers a group of its own to each call, and an element belongs to the group that made
+  // it, so a group the row took away is not the group it is drawing now.
+  const aGroupOfElements = (): TheElementsOfTheForm => {
+    const group: TheElementsOfTheForm = {
+      create: (kind) => element(kind, group),
+      submit: () => {
+        did.submitted += 1;
 
-      return Promise.resolve(
-        options.submitRefuses === undefined ? {} : { error: { message: options.submitRefuses } },
-      );
-    },
+        return Promise.resolve(
+          options.submitRefuses === undefined ? {} : { error: { message: options.submitRefuses } },
+        );
+      },
+    };
+
+    return group;
   };
 
   const refused = (): Record<string, unknown> => ({
@@ -156,7 +175,7 @@ function fakeStripe(
   return {
     did,
     stripe: {
-      elements: () => elements,
+      elements: () => aGroupOfElements(),
       confirmSetup: (asked) => {
         did.confirmed.push(asked);
 
@@ -262,6 +281,13 @@ async function theCardFor(
 const theChangeCalls = (card: ADrawnCard): OneCall[] =>
   card.calls.filter((call) => call.address === WHERE_A_CARD_IS_CHANGED);
 
+/**
+ * What she is looking at: the elements of Stripe that went into a node the card holds now. An
+ * element that went into a node the row took away is drawn nowhere she can see it.
+ */
+const theElementsOnTheCard = (card: ADrawnCard): WhereAnElementWent[] =>
+  card.did.went.filter((drawn) => card.holder.contains(drawn.into));
+
 beforeEach(() => {
   // React believes an update was wrapped in act only where the run says it is that kind of run,
   // and without it every answer that arrives after a press prints a warning.
@@ -305,6 +331,47 @@ describe('the Change card row of her account', () => {
 
       expect(card.theSavePress()).toBeUndefined();
       expect(card.theChangeCardRow().getAttribute('aria-expanded')).toBe('false');
+      expect(card.text()).toContain(words.accountPaidWithCard);
+    });
+
+    it('takes the card form off the card when she closes the row', async () => {
+      const card = await theCardFor();
+
+      await card.pressesChangeCard();
+      await card.pressesChangeCard();
+
+      expect(card.did.destroyed).toEqual(['payment']);
+      expect(theElementsOnTheCard(card)).toEqual([]);
+    });
+
+    it('draws the card form again on the element of the row she opened again', async () => {
+      const card = await theCardFor();
+
+      await card.pressesChangeCard();
+      await card.pressesChangeCard();
+      await card.pressesChangeCard();
+
+      expect(theElementsOnTheCard(card).map((drawn) => drawn.kind)).toEqual(['payment']);
+      expect(card.did.mounted).toEqual(['payment', 'payment']);
+      expect(card.theSavePress()?.textContent).toBe(words.accountSaveNewCard);
+    });
+
+    it('changes her card on the form it drew again, and leaves her reading the new one', async () => {
+      const card = await theCardFor();
+
+      await card.pressesChangeCard();
+      await card.pressesChangeCard();
+      await card.pressesChangeCard();
+
+      const sheFillsIn = theElementsOnTheCard(card)[0]?.group;
+
+      expect(sheFillsIn).toBeDefined();
+
+      await card.savesTheCard();
+
+      expect(card.did.confirmed[0]?.elements).toBe(sheFillsIn);
+      expect(theChangeCalls(card).map((call) => call.method)).toEqual(['POST', 'PUT']);
+      expect(card.theSavePress()).toBeUndefined();
       expect(card.text()).toContain(words.accountPaidWithCard);
     });
 
