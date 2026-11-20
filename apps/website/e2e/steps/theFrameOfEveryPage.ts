@@ -18,13 +18,14 @@ const { Given, Then } = createBdd(test);
 /**
  * A session, written into the browser before any page of it loads.
  *
- * Her account is a page of this site and it reads the browser for itself, because the tokens live
- * in `localStorage` and a server of this site never sees them. A reader with no session is moved
- * to the page she signs in on, so a browser with no session would read that page under the address
- * of her account and report on the wrong page.
+ * Her account and the page she buys Emi on both read the browser for themselves, because the
+ * tokens live in `localStorage` and a server of this site never sees them. A reader with no
+ * session is moved to the page she signs in on, so a browser with no session would read that page
+ * under the address of either one and report on the wrong page.
  *
- * Nothing else on the site reads this entry, so every other page draws exactly as it does for a
- * reader who never signed in.
+ * No other page of the site reads this entry, so every other page draws exactly as it does for a
+ * reader who never signed in. What those two pages draw for a reader with no session is read in
+ * `theSignIn.feature`.
  */
 const aSessionSheIsHolding = {
   idToken: 'a-token-the-suite-wrote',

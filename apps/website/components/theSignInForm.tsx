@@ -4,6 +4,7 @@ import { type ReactNode, useState } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
 import { holdTheSession } from '@/lib/theSessionSheHolds';
+import { whereASignInLands } from '@/lib/whereASignInComesBackTo';
 import { goTo } from '@/lib/whereSheGoesNext';
 import {
   ASignInProblem,
@@ -50,9 +51,6 @@ const ONLY_DIGITS = /\D/g;
 export function theDigitsSheTyped(typed: string, digits: HowLongTheCodeIs): string {
   return typed.replace(ONLY_DIGITS, '').slice(0, digits);
 }
-
-/** The address to come back to after a sign in, which is the only page a sign in leads to. */
-export const WHERE_A_SIGN_IN_LANDS = 'account/';
 
 /** Which sentence of the catalogue each cause is told in. */
 const theSentenceFor: Readonly<Record<WhatWentWrong, keyof SiteWords>> = {
@@ -166,7 +164,7 @@ export function TheSignInForm({
       }
 
       holdTheSession(answer.held);
-      goTo(`/${language}/${WHERE_A_SIGN_IN_LANDS}`);
+      goTo(whereASignInLands(language));
     } catch (problem) {
       const because = causeOf(problem);
 
