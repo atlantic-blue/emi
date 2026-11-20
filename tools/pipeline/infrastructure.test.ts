@@ -2205,8 +2205,6 @@ describe('the pool she signs in to, which is step 28.2', () => {
       ]);
     });
 
-    // The phone rotates its refresh token, and Amazon Cognito refuses the refresh flow beside
-    // rotation, so this client lists one flow fewer than the site does.
     it('lets the iphone client start a code sign in, and no more', () => {
       expect(listedIn(inClient('iphone'), 'explicit_auth_flows')).toEqual([
         'ALLOW_USER_AUTH',
@@ -2214,15 +2212,25 @@ describe('the pool she signs in to, which is step 28.2', () => {
       ]);
     });
 
-    it.each(clients)('keeps the %s client signed in for thirty days, by the hour', (name) => {
-      const client = inClient(name);
-      const units = blockBodyOf(client, 'token_validity_units');
+    it.each(clients)('counts the %s tokens in hours and in days', (name) => {
+      const units = blockBodyOf(inClient(name), 'token_validity_units');
 
-      expect(client).toContain('access_token_validity  = 1');
-      expect(client).toContain('id_token_validity      = 1');
-      expect(client).toContain('refresh_token_validity = 30');
       expect(units).toContain('access_token  = "hours"');
+      expect(units).toContain('id_token      = "hours"');
       expect(units).toContain('refresh_token = "days"');
+    });
+
+    it.each(clients)('gives the %s client an hour of access, by the hour', (name) => {
+      expect(inClient(name)).toContain('access_token_validity  = 1');
+      expect(inClient(name)).toContain('id_token_validity      = 1');
+    });
+
+    it('keeps her signed in on the phone for a year', () => {
+      expect(inClient('iphone')).toContain('refresh_token_validity = 365');
+    });
+
+    it('keeps her signed in on the site for thirty days', () => {
+      expect(inClient('website')).toContain('refresh_token_validity = 30');
     });
 
     it.each(clients)('ends the %s token when she signs out', (name) => {
@@ -3485,7 +3493,7 @@ describe('the triggers on the pool, and the custom flow on both clients', () => 
       expect(flowsOf(name)).toContain(theCodeSignInFlow);
     });
 
-    it('keeps the refresh flow on the website client, which rotates no refresh token', () => {
+    it('keeps the refresh flow on the website client, which rotates nothing', () => {
       expect(flowsOf('website')).toContain(theRefreshFlow);
     });
 
@@ -3676,20 +3684,15 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
   });
 });
 
-// Amazon Cognito says of rotation that it "isn't compatible with the authentication flow
-// REFRESH_TOKEN_AUTH", and that to implement it "you must disable this authentication flow in your
-// app client". So turning rotation on takes a flow away, and only two calls can then spend the
-// token: GetTokensFromRefreshToken, and the refresh_token grant of the token endpoint.
-//
-// Rotation reissues inside the window it was given and never extends it. The service says the
-// session "still expires 30 days after the first sign-in, not 30 days after the most recent
-// rotation", so the thirty days below is the whole life of a sign in either way.
+// Rotation refuses REFRESH_TOKEN_AUTH, so the phone refreshes with GetTokensFromRefreshToken or
+// the refresh_token grant, and never with InitiateAuth. Rotation never extends the validity
+// window, so the year below runs from her first sign in.
 describe('the refresh token of her phone rotates', () => {
   const phone = bodyOf('resource "aws_cognito_user_pool_client" "iphone"');
   const site = bodyOf('resource "aws_cognito_user_pool_client" "website"');
 
-  // Read inside each case rather than beside the two clients above. A missing block throws, and a
-  // throw in the body of a describe fails the file before it collects a single case.
+  // A missing block throws, and a throw in the body of a describe fails the file before it
+  // collects a single case.
   const rotation = (): string => blockBodyOf(phone, 'refresh_token_rotation');
 
   describe('the client on her phone', () => {
@@ -3708,10 +3711,10 @@ describe('the refresh token of her phone rotates', () => {
       ]);
     });
 
-    it('keeps the thirty days and the hour, because rotation moves neither', () => {
+    it('keeps a sign in for a year, which rotation does not extend', () => {
       expect(phone).toContain('access_token_validity  = 1');
       expect(phone).toContain('id_token_validity      = 1');
-      expect(phone).toContain('refresh_token_validity = 30');
+      expect(phone).toContain('refresh_token_validity = 365');
     });
   });
 
@@ -3728,7 +3731,7 @@ describe('the refresh token of her phone rotates', () => {
       ]);
     });
 
-    it('keeps the same thirty days and the same hour', () => {
+    it('keeps its own thirty days and the same hour', () => {
       expect(site).toContain('access_token_validity  = 1');
       expect(site).toContain('id_token_validity      = 1');
       expect(site).toContain('refresh_token_validity = 30');

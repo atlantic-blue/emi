@@ -133,15 +133,8 @@ resource "aws_cognito_user_pool_client" "iphone" {
 
   generate_secret = false
 
-  # Choice based sign in is the only flow a one time code travels in. The custom flow is the one
-  # Sign in with Telegram starts, and the three triggers above carry it. No password flow is
-  # listed, so a client cannot present a password even if one existed.
-  #
-  # The rotation below refuses the refresh flow. Amazon Cognito says that rotation "isn't
-  # compatible with the authentication flow REFRESH_TOKEN_AUTH", and that a client must disable
-  # that flow to use rotation. So the phone spends its refresh token with
-  # GetTokensFromRefreshToken, or with the refresh_token grant of the token endpoint. InitiateAuth
-  # refuses it, and the site below keeps the flow because it rotates nothing.
+  # Rotation refuses ALLOW_REFRESH_TOKEN_AUTH, so the flow is absent here and present on the site.
+  # The phone refreshes with GetTokensFromRefreshToken or the refresh_token grant.
   explicit_auth_flows = ["ALLOW_USER_AUTH", "ALLOW_CUSTOM_AUTH"]
 
   # The same three ways the site offers, each named through the resource that makes it. The phone
@@ -165,7 +158,7 @@ resource "aws_cognito_user_pool_client" "iphone" {
 
   access_token_validity  = 1
   id_token_validity      = 1
-  refresh_token_validity = 30
+  refresh_token_validity = 365
 
   token_validity_units {
     access_token  = "hours"
@@ -173,16 +166,8 @@ resource "aws_cognito_user_pool_client" "iphone" {
     refresh_token = "days"
   }
 
-  # Every refresh hands back a new refresh token, and the service invalidates the token it
-  # replaced. A stolen token therefore stops working at her next refresh.
-  #
-  # The thirty days above do not move. The service reissues inside that window and never extends
-  # it: a sign in ends thirty days after the first sign in, and not thirty days after the last
-  # rotation. To stay signed in past that, she signs in again.
-  #
-  # Two screens can refresh at the same moment when the application opens, and the second one then
-  # holds a token the first one already spent. The grace period keeps the replaced token good for
-  # ten seconds, which covers that.
+  # Rotation never extends the window above. The year runs from her first sign in, whatever it
+  # reissues. The grace period lets two screens refreshing at once both spend the same token.
   refresh_token_rotation {
     feature                    = "ENABLED"
     retry_grace_period_seconds = 10

@@ -154,8 +154,6 @@ defineFeature(feature, (test) => {
       expect(phoneSignInProblems(configuration)).toEqual([]);
     });
 
-    // The refresh flow is absent because this client rotates its refresh token, and the service
-    // refuses the two together.
     and('it allows the code flow and the custom flow, and no refresh flow', () => {
       expect(listedIn(client, 'explicit_auth_flows')).toEqual([
         theCodeSignInFlow,

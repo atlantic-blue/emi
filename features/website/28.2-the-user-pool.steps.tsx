@@ -47,8 +47,6 @@ defineFeature(feature, (test) => {
           'explicit_auth_flows',
         );
 
-      // The phone rotates its refresh token, and the service refuses the refresh flow beside
-      // rotation, so the two clients no longer list the same flows.
       expect(flowsOf('iphone')).toEqual(['ALLOW_USER_AUTH', 'ALLOW_CUSTOM_AUTH']);
       expect(flowsOf('website')).toEqual([
         'ALLOW_USER_AUTH',
