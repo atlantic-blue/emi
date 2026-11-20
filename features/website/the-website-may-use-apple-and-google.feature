@@ -48,7 +48,7 @@ Feature: The site may sign her in with Apple and with Google
     Given the sign in the pool offers
     When the client her phone signs her in with is read
     Then it offers Apple, Google and the code, and comes back to the private scheme alone
-    And it allows the code flow, the refresh and the custom flow
+    And it allows the code flow and the custom flow, and no refresh flow
 
   Scenario: a scope outside the subject and the address is refused
     Given the sign in the pool offers
