@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { DatabaseProvider } from '../data/DatabaseProvider';
+import { TheSignInRefresh } from '../features/account/TheSignInRefresh';
 import { theNavigatorGround } from '../features/chrome/theme';
 import { LockGate } from '../features/lock/LockGate';
 import { FirstRunProvider } from '../features/onboarding/FirstRunProvider';
@@ -49,6 +50,7 @@ export default function RootLayout(): ReactNode {
                 <FirstRunProvider>
                   <ThemeProvider value={theNavigatorGround}>
                     <ReminderPresses />
+                    <TheSignInRefresh />
                     <Stack screenOptions={{ headerShown: false }}>
                       <Stack.Screen name="(tabs)" options={{ animationTypeForReplace: 'push' }} />
                       <Stack.Screen
