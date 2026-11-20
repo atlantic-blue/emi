@@ -70,10 +70,12 @@ export async function keepHerSignIn(keychain: SecureStore, kept: TheSignInSheKee
 }
 
 /**
- * Her sign in as this phone holds it, or null where it holds none. An item this version cannot
- * read is read as no sign in, so the screens offer the way in again rather than stopping.
+ * Her sign in as this phone holds it, token and all, or null where it holds none. The token is
+ * read by the one call that spends it and reaches no screen.
  */
-export async function readHerSignIn(keychain: SecureStore): Promise<HerSignIn | null> {
+export async function readTheSignInSheKeeps(
+  keychain: SecureStore,
+): Promise<TheSignInSheKeeps | null> {
   const held = await keychain.read(identityRefreshItem);
 
   if (held === null) {
@@ -88,11 +90,34 @@ export async function readHerSignIn(keychain: SecureStore): Promise<HerSignIn | 
     return null;
   }
 
-  if (!isTheSignInSheKeeps(parsed)) {
+  return isTheSignInSheKeeps(parsed) ? parsed : null;
+}
+
+/**
+ * Her sign in as this phone holds it, or null where it holds none. An item this version cannot
+ * read is read as no sign in, so the screens offer the way in again rather than stopping.
+ */
+export async function readHerSignIn(keychain: SecureStore): Promise<HerSignIn | null> {
+  const kept = await readTheSignInSheKeeps(keychain);
+
+  if (kept === null) {
     return null;
   }
 
-  return parsed.way !== 'telegram'
-    ? { way: parsed.way, address: parsed.address, since: parsed.since }
-    : { way: parsed.way, since: parsed.since };
+  return kept.way !== 'telegram'
+    ? { way: kept.way, address: kept.address, since: kept.since }
+    : { way: kept.way, since: kept.since };
+}
+
+/**
+ * The sign in, gone from this phone. The row in Settings and the account screen read the item, so
+ * removing it is what puts the way in back in front of her.
+ *
+ * The items are the ones this directory declares to the delete rather than a list written again
+ * here, so an item it keeps later goes with the sign in instead of outliving it.
+ */
+export async function forgetHerSignIn(keychain: SecureStore): Promise<void> {
+  for (const item of signInKeychainItems) {
+    await keychain.remove(item);
+  }
 }

@@ -130,6 +130,28 @@ export interface TheTokensSheHolds {
   readonly refreshToken: string;
 }
 
+/**
+ * What a refresh hands back. The pool rotates the refresh token on a client that is set to rotate
+ * and leaves it out otherwise, so the token is the one field a reader cannot count on.
+ */
+export interface TheTokensARefreshHandsBack {
+  readonly idToken: string;
+  readonly accessToken: string;
+  /** The token that replaces the one she spent, or nothing where this client does not rotate. */
+  readonly refreshToken: string | undefined;
+}
+
+/**
+ * What spending a refresh token came to.
+ *
+ * A pool that refused the token is an answer rather than a problem: nobody is watching the call,
+ * and what the phone does next is sign her out. Every other way it can fail raises, so a caller
+ * that cannot tell a refusal from a lost connection cannot sign her out by accident.
+ */
+export type WhatTheRefreshCameTo =
+  | { readonly kind: 'sheIsStillSignedIn'; readonly held: TheTokensARefreshHandsBack }
+  | { readonly kind: 'thePoolRefusedTheToken' };
+
 /** How many digits the box takes, which is one of the two numbers the service sends. */
 export type HowLongTheCodeIs =
   typeof THE_SIGN_UP_CODE_IS_THIS_LONG | typeof THE_SIGN_IN_CODE_IS_THIS_LONG;
@@ -519,6 +541,57 @@ async function signInWithTheOneTimeAnswer(
 }
 
 /**
+ * The refusal the pool gives for a refresh token it no longer accepts, which is the one answer
+ * that ends a sign in. It covers a token that expired, one a rotation replaced, and one a revoke
+ * took out, and the phone does the same thing in all three.
+ */
+const THE_POOL_REFUSED_THE_TOKEN = 'NotAuthorizedException';
+
+/**
+ * Her tokens again, from the refresh token this phone holds.
+ *
+ * `GetTokensFromRefreshToken` rather than the refresh flow of `InitiateAuth`, for two reasons. A
+ * client that rotates its refresh token refuses that flow outright, and this call covers every way
+ * into the account rather than the email code alone, so one call refreshes a sign in that came
+ * through Apple, Google or Telegram as well.
+ *
+ * The answer carries a new refresh token only where the client rotates, and a caller that wrote an
+ * absent one over the token it holds would sign her out at the next open.
+ */
+async function refreshHerTokens(
+  conversation: Conversation,
+  refreshToken: string,
+): Promise<WhatTheRefreshCameTo> {
+  const { took, said } = await ask(conversation, 'GetTokensFromRefreshToken', {
+    ClientId: conversation.clientId,
+    RefreshToken: refreshToken,
+  });
+
+  if (!took) {
+    if (theNameOfTheRefusal(said) === THE_POOL_REFUSED_THE_TOKEN) {
+      return { kind: 'thePoolRefusedTheToken' };
+    }
+
+    throw new ASignInProblem(whatWentWrong(said));
+  }
+
+  const held = said.AuthenticationResult;
+
+  if (held?.IdToken === undefined || held.AccessToken === undefined) {
+    throw new ASignInProblem('tooManyTries');
+  }
+
+  return {
+    kind: 'sheIsStillSignedIn',
+    held: {
+      idToken: held.IdToken,
+      accessToken: held.AccessToken,
+      refreshToken: held.RefreshToken,
+    },
+  };
+}
+
+/**
  * The end of a sign in. The refresh token is the one that outlives the window, so it is the one
  * the service is asked to revoke. A sign out that only forgot the tokens would leave a token
  * working for thirty days on whatever had read it.
@@ -551,6 +624,10 @@ export interface TheSignIn {
     oneTimeAnswer: string,
     how?: HowItAsks,
   ) => Promise<TheTokensSheHolds>;
+  readonly refreshHerTokens: (
+    refreshToken: string,
+    how?: HowItAsks,
+  ) => Promise<WhatTheRefreshCameTo>;
   readonly signOut: (refreshToken: string, how?: HowItAsks) => Promise<void>;
 }
 
@@ -572,6 +649,8 @@ export function theSignInFor(client: TheClient): TheSignIn {
       signInWithTheCode(conversation(how), waiting, code),
     signInWithTheOneTimeAnswer: (userName, oneTimeAnswer, how = fetch) =>
       signInWithTheOneTimeAnswer(conversation(how), userName, oneTimeAnswer),
+    refreshHerTokens: (refreshToken, how = fetch) =>
+      refreshHerTokens(conversation(how), refreshToken),
     signOut: (refreshToken, how = fetch) => signOut(conversation(how), refreshToken),
   };
 }
