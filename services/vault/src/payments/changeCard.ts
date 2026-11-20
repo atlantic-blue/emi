@@ -11,8 +11,8 @@ import {
   type ReachesStripe,
   setupAsItStands,
   setupIntentFor,
-  setupSucceeded,
   type WhatACallHolds,
+  whatASetupCollected,
 } from './stripe';
 
 /**
@@ -197,16 +197,12 @@ export async function finishCardChangeFor(
 
   try {
     const paying: WhatACallHolds = { reaches: held.reaches, secretKey: await held.secretKey() };
-    const setup = await setupAsItStands(paying, setupRef);
+    const setup = whatASetupCollected(await setupAsItStands(paying, setupRef), byCard.payerRef);
 
-    // Whose it is comes before what state it reached, so a caller holding an identifier of
-    // somebody else's setup is told one thing and learns nothing about that setup.
-    if (setup.customerRef !== byCard.payerRef) {
-      return refusal(403, thatSetupIsNotHers);
-    }
-
-    if (setup.status !== setupSucceeded || setup.paymentMethodRef === null) {
-      return refusal(400, thatSetupIsNotFinished);
+    if ('refusal' in setup) {
+      return setup.refusal === 'another-customer'
+        ? refusal(403, thatSetupIsNotHers)
+        : refusal(400, thatSetupIsNotFinished);
     }
 
     const collected = setup.paymentMethodRef;

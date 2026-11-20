@@ -6,28 +6,32 @@ import {
   type WhatACardChangeNeeds,
 } from './changeCard';
 import { changeRenewal } from './changeRenewal';
+import { finishSubscription, type WhatFinishingNeeds } from './finishSubscription';
 import { readReceipts, receiptsPath, type WhatTheReceiptsNeed } from './readReceipts';
 import { readSubscription, type WhatTheReadNeeds } from './readSubscription';
 import { startSubscription, subscriptionPath, type WhatTheStartNeeds } from './startSubscription';
 
 /**
- * The six things the money answers for one sign in: a press that starts a subscription, a read
- * that says whether one is running, a change to the renewal of one, a list of the receipts it has
- * left behind, and the two calls that change the card it is charged to.
+ * The seven things the money answers for one sign in: a press that starts a subscription, the
+ * call that finishes it, a read that says whether one is running, a change to the renewal of one,
+ * a list of the receipts it has left behind, and the two calls that change the card it is charged
+ * to.
  *
- * All six sit behind the token authorizer of the pool and all six are the same function, because
- * they read the same claim, work under the same digest and need the same grants. Six routes of
- * the api reach this function and no other, so a path or a method that is not one of them is
- * refused here rather than guessed at.
+ * All seven sit behind the token authorizer of the pool and all seven are the same function,
+ * because they read the same claim, work under the same digest and need the same grants. Seven
+ * routes of the api reach this function and no other, so a path or a method that is not one of
+ * them is refused here rather than guessed at.
  */
 
 /** What a caller is told for a method this path does not answer. It names no method. */
 export const nothingAnswersThatMethod = 'nothing answers that method';
 
-/** Everything the six routes need between them. */
-export type WhatTheSubscriptionRoutesNeed = WhatTheStartNeeds & WhatACardChangeNeeds;
+/** Everything the seven routes need between them. */
+export type WhatTheSubscriptionRoutesNeed = WhatTheStartNeeds &
+  WhatACardChangeNeeds &
+  WhatFinishingNeeds;
 
-/** The function the api calls for all six, with everything they need bound to it. */
+/** The function the api calls for all seven, with everything they need bound to it. */
 export function subscriptionRoutes(
   held: WhatTheSubscriptionRoutesNeed,
 ): (event: HttpRequestEvent) => Promise<HttpResponse> {
@@ -43,6 +47,7 @@ export function subscriptionRoutes(
   > = {
     [subscriptionPath]: {
       POST: startSubscription(held),
+      PUT: finishSubscription(held),
       PATCH: changeRenewal(held),
       GET: readSubscription(read),
     },
