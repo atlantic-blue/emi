@@ -34,6 +34,11 @@ import {
   type WhatTheStartNeeds,
 } from '../../services/vault/src/payments/startSubscription';
 import {
+  finishSubscriptionFor,
+  thatTokenFinishesNothing,
+  type WhatFinishingNeeds,
+} from '../../services/vault/src/payments/finishSubscription';
+import {
   subscriptionFor,
   thatTokenReadsNothing,
 } from '../../services/vault/src/payments/readSubscription';
@@ -543,6 +548,46 @@ describe('every bundle is loaded in a container of its own, and two in a row can
         false,
       );
       expect(confirm?.owes({ statusCode: 200, body: '{"changed":true}' })).toBe(false);
+    });
+
+    /**
+     * What the Buy Emi page sends once Stripe has taken her card, found by the method and the path
+     * it answers on rather than by where it sits in the list.
+     */
+    const theCreation = (): LoadCheck | undefined =>
+      (loadChecks['emi-payments-subscription'] ?? []).find(
+        (check) =>
+          (check.event as { rawPath?: string }).rawPath === subscriptionPath &&
+          methodIn(check) === 'PUT',
+      );
+
+    /** Every port the creation needs, each one raising, so a call that happens is a failure. */
+    const nothingTheCreationMayReach = (): WhatFinishingNeeds => ({
+      entitlements: { readEntitlement: () => Promise.reject(new Error('the table was read')) },
+      reaches: () => Promise.reject(new Error('Stripe was called')),
+      secretKey: () => Promise.reject(new Error('the parameter store was read')),
+      poolId: 'eu-central-1_NOTAPOOL',
+    });
+
+    it('owes a seventh answer, which is the setup her browser finished on Buy Emi', () => {
+      expect(theCreation()).toBeDefined();
+      expect((theCreation()?.event as { body?: string } | undefined)?.body).toContain('setupRef');
+    });
+
+    it('takes the refusal the creation answers a request with no token with', async () => {
+      const check = theCreation();
+
+      const answered = await finishSubscriptionFor(
+        check?.event as HttpRequestEvent,
+        nothingTheCreationMayReach(),
+      );
+
+      expect(check?.owes(answered)).toBe(true);
+      expect(JSON.parse(answered.body)).toEqual({ error: thatTokenFinishesNothing });
+    });
+
+    it('refuses the answer a bundle that created a subscription for nobody would give', () => {
+      expect(theCreation()?.owes({ statusCode: 200, body: '{"started":true}' })).toBe(false);
     });
   });
 
