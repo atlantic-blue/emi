@@ -2208,23 +2208,40 @@ describe('the pool she signs in to, which is step 28.2', () => {
       expect(inClient(name)).toContain('generate_secret = false');
     });
 
-    it.each(clients)('lets the %s client start a code sign in, refresh, and no more', (name) => {
-      expect(listedIn(inClient(name), 'explicit_auth_flows')).toEqual([
+    it('lets the website client start a code sign in, refresh, and no more', () => {
+      expect(listedIn(inClient('website'), 'explicit_auth_flows')).toEqual([
         'ALLOW_USER_AUTH',
         'ALLOW_REFRESH_TOKEN_AUTH',
         'ALLOW_CUSTOM_AUTH',
       ]);
     });
 
-    it.each(clients)('keeps the %s client signed in for thirty days, by the hour', (name) => {
-      const client = inClient(name);
-      const units = blockBodyOf(client, 'token_validity_units');
+    it('lets the iphone client start a code sign in, and no more', () => {
+      expect(listedIn(inClient('iphone'), 'explicit_auth_flows')).toEqual([
+        'ALLOW_USER_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+      ]);
+    });
 
-      expect(client).toContain('access_token_validity  = 1');
-      expect(client).toContain('id_token_validity      = 1');
-      expect(client).toContain('refresh_token_validity = 30');
+    it.each(clients)('counts the %s tokens in hours and in days', (name) => {
+      const units = blockBodyOf(inClient(name), 'token_validity_units');
+
       expect(units).toContain('access_token  = "hours"');
+      expect(units).toContain('id_token      = "hours"');
       expect(units).toContain('refresh_token = "days"');
+    });
+
+    it.each(clients)('gives the %s client an hour of access, by the hour', (name) => {
+      expect(inClient(name)).toContain('access_token_validity  = 1');
+      expect(inClient(name)).toContain('id_token_validity      = 1');
+    });
+
+    it('keeps her signed in on the phone for a year', () => {
+      expect(inClient('iphone')).toContain('refresh_token_validity = 365');
+    });
+
+    it('keeps her signed in on the site for thirty days', () => {
+      expect(inClient('website')).toContain('refresh_token_validity = 30');
     });
 
     it.each(clients)('ends the %s token when she signs out', (name) => {
@@ -3485,7 +3502,10 @@ describe('the triggers on the pool, and the custom flow on both clients', () => 
     // a sign in that works, so the custom flow is added beside it and replaces nothing.
     it.each(bothClients)('keeps the flow the code travels in on the %s client', (name) => {
       expect(flowsOf(name)).toContain(theCodeSignInFlow);
-      expect(flowsOf(name)).toContain(theRefreshFlow);
+    });
+
+    it('keeps the refresh flow on the website client, which rotates nothing', () => {
+      expect(flowsOf('website')).toContain(theRefreshFlow);
     });
 
     it.each(bothClients)('allows no password flow on the %s client, which 28.2 settled', (name) => {
@@ -3671,6 +3691,67 @@ describe('the api answers the preflight of the site, which is issue 433', () => 
 
       expect(keys.filter((key) => key.startsWith('OPTIONS'))).toEqual([]);
       expect(keys.filter((key) => key.includes('$default'))).toEqual([]);
+    });
+  });
+});
+
+// Rotation refuses REFRESH_TOKEN_AUTH, so the phone refreshes with GetTokensFromRefreshToken or
+// the refresh_token grant, and never with InitiateAuth. Rotation never extends the validity
+// window, so the year below runs from her first sign in.
+describe('the refresh token of her phone rotates', () => {
+  const phone = bodyOf('resource "aws_cognito_user_pool_client" "iphone"');
+  const site = bodyOf('resource "aws_cognito_user_pool_client" "website"');
+
+  // A missing block throws, and a throw in the body of a describe fails the file before it
+  // collects a single case.
+  const rotation = (): string => blockBodyOf(phone, 'refresh_token_rotation');
+
+  describe('the client on her phone', () => {
+    it('hands back a new refresh token on every refresh', () => {
+      expect(rotation()).toContain('feature                    = "ENABLED"');
+    });
+
+    it('leaves the token it rotated out good for ten seconds', () => {
+      expect(rotation()).toContain('retry_grace_period_seconds = 10');
+    });
+
+    it('lists no refresh flow, because the service refuses that flow beside rotation', () => {
+      expect(listedIn(phone, 'explicit_auth_flows')).toEqual([
+        'ALLOW_USER_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+      ]);
+    });
+
+    it('keeps a sign in for a year, which rotation does not extend', () => {
+      expect(phone).toContain('access_token_validity  = 1');
+      expect(phone).toContain('id_token_validity      = 1');
+      expect(phone).toContain('refresh_token_validity = 365');
+    });
+  });
+
+  describe('the client on the site, which this change leaves alone', () => {
+    it('rotates no refresh token', () => {
+      expect(site).not.toContain('refresh_token_rotation');
+    });
+
+    it('keeps all three flows, including the one rotation refuses', () => {
+      expect(listedIn(site, 'explicit_auth_flows')).toEqual([
+        'ALLOW_USER_AUTH',
+        'ALLOW_REFRESH_TOKEN_AUTH',
+        'ALLOW_CUSTOM_AUTH',
+      ]);
+    });
+
+    it('keeps its own thirty days and the same hour', () => {
+      expect(site).toContain('access_token_validity  = 1');
+      expect(site).toContain('id_token_validity      = 1');
+      expect(site).toContain('refresh_token_validity = 30');
+    });
+  });
+
+  describe('the role that applies it', () => {
+    it('may change a client of the pool, which is the call this update makes', () => {
+      expect(actionsIn(applyPolicy)).toContain('cognito-idp:UpdateUserPoolClient');
     });
   });
 });
