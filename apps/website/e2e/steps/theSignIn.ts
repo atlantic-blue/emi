@@ -104,6 +104,19 @@ Given('a woman with no session opens her account', async ({ page }) => {
   await page.goto('/en/account/');
 });
 
+Given('a woman with no session opens the page she buys Emi on', async ({ page }) => {
+  await page.goto('/en/checkout/');
+});
+
+Given(
+  'a woman with no session opens the page she buys Emi on, with a pool that answers',
+  async ({ page }) => {
+    await aPoolThatAnswers(page);
+    await page.goto('/en/checkout/');
+    await expect(page.locator('#sign-in-address')).toHaveCount(1);
+  },
+);
+
 When('she types her address and presses Send code', async ({ page }) => {
   await page.fill('#sign-in-address', HER_ADDRESS);
   await page.getByRole('button', { name: words.signInSendCode }).click();
@@ -288,4 +301,36 @@ Then('she is left on the page she signs in on', async ({ page }) => {
 
   await expect(page.locator('#sign-in-address')).toHaveCount(1);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.signInTitle);
+});
+
+/**
+ * What a browser draws of a page before it runs a line of script: the markup, with every script
+ * taken out of it. The framework sends the page to her browser twice, once as markup and once as
+ * the data her browser draws from, and the second one is data rather than drawing.
+ */
+async function whatABrowserDrawsOf(page: Page, address: string): Promise<string> {
+  const answer = await page.request.get(address);
+
+  expect(answer.status()).toBe(200);
+
+  return (await answer.text()).replace(/<script[\s\S]*?<\/script>/g, ' ');
+}
+
+Then('she read no word of the plan and no press that pays', async ({ page }) => {
+  const drawn = await whatABrowserDrawsOf(page, '/en/checkout/');
+
+  expect(drawn).not.toContain(words.checkoutPlanAmount);
+  expect(drawn).not.toContain(words.checkoutPlanYearly);
+  expect(drawn).not.toContain(words.checkoutPay);
+  // The same reading of the page she is on finds the title of that page, so a reading that found
+  // nothing is a reading of the wrong thing rather than a page drawing nothing.
+  expect(await whatABrowserDrawsOf(page, '/en/sign-in/')).toContain(words.signInTitle);
+});
+
+Then('she is left on the page she buys Emi on, reading the plan', async ({ page }) => {
+  await page.waitForURL('**/en/checkout/');
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(words.checkoutTitle);
+  await expect(page.locator('main')).toContainText(words.checkoutPlanYearly);
+  await expect(page.locator('main')).toContainText(words.checkoutPlanAmount);
 });

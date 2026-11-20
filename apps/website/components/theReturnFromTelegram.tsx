@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 
 import type { Language, SiteWords } from '@/app/words';
 import { WHERE_SHE_TRIES_AGAIN } from '@/components/theReturnFromAProvider';
-import { WHERE_A_SIGN_IN_LANDS } from '@/components/theSignInForm';
 import { holdTheSession } from '@/lib/theSessionSheHolds';
+import { whereASignInLands } from '@/lib/whereASignInComesBackTo';
 import { isAnApplicationState, theAddressBackToTheApplication } from '@/lib/theSignIn';
 import {
   forgetWhatSheStarted,
@@ -72,7 +72,7 @@ export function TheReturnFromTelegram({
 
         forgetWhatSheStarted(came.language);
         holdTheSession(came.tokens);
-        goTo(`/${came.language}/${WHERE_A_SIGN_IN_LANDS}`);
+        goTo(whereASignInLands(came.language));
       } catch {
         // The kept value goes either way, and it goes under the language the state named rather
         // than under the language of this page. A value left behind would be offered to the next
